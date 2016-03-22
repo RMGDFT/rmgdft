@@ -33,8 +33,8 @@
 #include "transition.h"
 
 
-template void ApplyHamiltonian<double>(Kpoint<double> *, double *, double *, double *, double *);
-template void ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *, double *, std::complex<double> *);
+template double ApplyHamiltonian<double>(Kpoint<double> *, double *, double *, double *, double *);
+template double ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *, double *, std::complex<double> *);
 
 // Applies Hamiltonian operator to one orbital
 //
@@ -47,21 +47,22 @@ template void ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<double
 //    h_psi  = H|psi>
 //
 template <typename KpointType>
-void ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv)
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv)
 {
     int pbasis = kptr->pbasis;
 
     // Apply Laplacian to psi
-    ApplyLaplacian (psi, h_psi, ct.kohn_sham_fd_order, "Coarse");
+    double fd_diag = ApplyLaplacian (psi, h_psi, ct.kohn_sham_fd_order, "Coarse");
 
     // Factor of -0.5 and add in potential terms
-    for(int idx = 0;idx < pbasis;idx++) h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + vtot[idx]*psi[idx];
-
+    for(int idx = 0;idx < pbasis;idx++){ 
+        h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + vtot[idx]*psi[idx];
+    }
     // if complex orbitals apply gradient to orbital and compute dot products
-    std::complex<double> *kdr = new std::complex<double>[pbasis]();
 
     if(typeid(KpointType) == typeid(std::complex<double>)) {
 
+        std::complex<double> *kdr = new std::complex<double>[pbasis]();
         KpointType *gx = new KpointType[pbasis];
         KpointType *gy = new KpointType[pbasis];
         KpointType *gz = new KpointType[pbasis];
@@ -76,11 +77,14 @@ void ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_
                                kptr->kvec[2] * (std::complex<double>)gz[idx]);
         }
 
+        for(int idx=0;idx < pbasis;idx++) h_psi[idx] + kdr[idx] + 0.5*kptr->kmag;
+
         delete [] gz;
         delete [] gy;
         delete [] gx;
+        delete [] kdr;
 
-        for(int idx=0;idx < pbasis;idx++) h_psi[idx] + kdr[idx] + 0.5*kptr->kmag;
     }
 
+    return fd_diag;
 }

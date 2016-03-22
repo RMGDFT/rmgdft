@@ -117,9 +117,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     // First time through allocate pinned memory for buffers
     if(!tmp_arrayT) {
 
-        int retval1 = MPI_Alloc_mem(pbasis * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &tmp_arrayT);
-        int retval2 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
-        int retval3 = MPI_Alloc_mem(kptr->nstates * kptr->nstates * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix2);
+        int retval1 = MPI_Alloc_mem(pbasis * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &tmp_arrayT);
+        int retval2 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
+        int retval3 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix2);
 
         if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS)) {
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");

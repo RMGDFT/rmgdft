@@ -53,6 +53,7 @@ template void Davidson<std::complex<double> >(Kpoint<std::complex<double>> *, do
 template <typename OrbitalType>
 void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 {
+//if(ct.scf_steps > 1){MgridSubspace(kptr, vtot);return;}
     RmgTimer RT0("Diagonalization"), *RT1;
     int pbasis = kptr->pbasis;
     char *trans_t = "t";
@@ -73,6 +74,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
     if(ct.is_gamma) factor = 1;
     OrbitalType *NULLptr = NULL;
 
+    double *eigs = new double[ct.max_states];
     OrbitalType *global_matrix1 = new OrbitalType[ct.max_states * ct.max_states];
     OrbitalType *global_matrix2 = new OrbitalType[ct.max_states * ct.max_states];
 
@@ -89,25 +91,8 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 
     // Apply Hamiltonian to current set of eigenvectors. At the current time
     // kptr->ns is also computed in ApplyHamiltonianBlock by AppNls and stored in kptr->ns
-    ApplyHamiltonianBlock (kptr, 0, kptr->nstates, h_psi, vtot); 
- 
+    double fd_diag = ApplyHamiltonianBlock (kptr, 0, kptr->nstates, h_psi, vtot); 
     OrbitalType *s_psi = kptr->ns;
-
-printf("GOT HERE 0\n");fflush(NULL);
-    // Generate a new set of expanded eigenvectors from the residuals
-    for(int st1 = 0;st1 < kptr->nstates;st1++) {
-        for(int idx=0;idx < pbasis;idx++) {
-            kptr->Kstates[st1 + kptr->nstates].psi[idx] = h_psi[st1*pbasis] - kptr->Kstates[st1].eig[0] * s_psi[st1*pbasis];
-        }
-    }    
-printf("GOT HERE 1\n");fflush(NULL);
-
-    // Here would be preconditioning
-
-    kptr->nstates = 2*kptr->nstates;
-    MgridSubspace(kptr, vtot);
-    kptr->nstates /= 2;
-
 #if 0
     // Compute A matrix
     RT1 = new RmgTimer("Davidson: matrix setup/reduce");
@@ -147,18 +132,41 @@ printf("GOT HERE 1\n");fflush(NULL);
     delete RT1;
 #endif
 
+    for(int st1 = 0;st1 < kptr->nstates;st1++) eigs[st1] = kptr->Kstates[st1].eig[0];
 
     // Now we have reduced the original 
+//    RmgGemm (trans_n, trans_n, pbasis, kptr->nstates, kptr->nstates, alpha, s_psi, pbasis, global_matrix1, kptr->nstates, beta, &kptr->orbital_storage[kptr->nstates*pbasis], pbasis, NULLptr, NULLptr, NULLptr, false, true, false, true);
+
+    // Generate initial set of correction vectors. 
+    for(int st1=0;st1 < kptr->nstates;st1++) {
+        for(int idx = 0;idx < pbasis;idx++) {
+            kptr->Kstates[st1+kptr->nstates].psi[idx] = (h_psi[st1*pbasis + idx] - eigs[st1] * s_psi[st1*pbasis + idx]) / 
+                                    (fd_diag + vtot[idx] +kptr->nv[(st1+kptr->nstates)*pbasis+idx] - eigs[st1]);
+        }
+    }
+
+    kptr->nstates += 12;
+    ct.num_states = kptr->nstates;
+    MgridSubspace(kptr, vtot);
+//Subdiag (kptr, vtot, ct.subdiag_driver);
+
+
+    // Here would be preconditioning
+
+    kptr->nstates -= 12;
+ct.num_states = kptr->nstates;
+
 
 #if GPU_ENABLED
     GpuFreeHost(h_psi);
 #else
     delete [] h_psi;
-    delete [] global_matrix2;
-    delete [] global_matrix1;
 #endif
 
-   exit(0); 
+    delete [] global_matrix2;
+    delete [] global_matrix1;
+    delete [] eigs;
+
 }
 
 

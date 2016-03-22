@@ -173,6 +173,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     if(Verify ("calculation_mode", "Band Structure Only", kptr->ControlMap) )
          freeze_occupied = true;
+
+    bool using_davidson = Verify ("kohn_sham_solver","davidson", kptr->ControlMap);
+
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
@@ -305,7 +308,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         }
 
         /* If this is the first time through compute the eigenvalue */
-        if ((cycles == 0) || (potential_acceleration != 0)) 
+        if ((cycles == 0) || (potential_acceleration != 0) || (using_davidson && (cycles == 0))) 
         {
 
             ComputeEig(pbasis, tmp_psi_t, work1_t, res_t, &eig);

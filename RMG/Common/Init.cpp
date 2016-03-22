@@ -193,11 +193,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //    requested we need to allocate memory for the expanded basis including the diagonalization arrays.
 
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
-    int alloc_states = ct.run_states;
-    if (Verify ("start_mode","LCAO Start", Kptr[0]->ControlMap)) alloc_states = ct.init_states;
-    if(potential_acceleration && (alloc_states < 2*ct.run_states)) alloc_states = 2*ct.run_states;
-    if (Verify ("davidson_diagonalization", true, Kptr[0]->ControlMap)) alloc_states = std::max(alloc_states, 2*ct.run_states);
-    ct.max_states = alloc_states;
     
 
 
@@ -233,7 +228,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here
-    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts * alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts * ct.max_states * P0_BASIS + 1024) * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     custat = cudaMallocHost((void **)&nv, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
@@ -246,7 +241,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
-    rptr = new OrbitalType[ct.num_kpts * alloc_states * P0_BASIS + 1024];
+    rptr = new OrbitalType[ct.num_kpts * ct.max_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
     ns = new OrbitalType[ct.max_states * P0_BASIS]();
     if(!ct.norm_conserving_pp) {
@@ -278,7 +273,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         Kptr[kpt]->ns = ns;
         if(!ct.norm_conserving_pp) Kptr[kpt]->Bns = Bns;
 
-        for (st1 = 0; st1 < ct.num_states; st1++)
+        for (st1 = 0; st1 < ct.max_states; st1++)
         {
             Kptr[kpt]->Kstates[st1].kidx = kpt;
             Kptr[kpt]->Kstates[st1].psi = rptr;

@@ -210,13 +210,21 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         ct.run_states = ct.num_states;
     }
 
+    // Now figure out some buffer sizes
+    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    int alloc_states = ct.run_states;
+    if (Verify ("start_mode","LCAO Start", ControlMap)) alloc_states = ct.init_states;
+    if(potential_acceleration && (alloc_states < 2*ct.run_states)) alloc_states = 2*ct.run_states;
+    if (Verify ("kohn_sham_solver", "davidson", ControlMap)) alloc_states = std::max(alloc_states, 2*ct.run_states);
+    ct.max_states = alloc_states;
+
 
     // Set ct.num_states to ct.init_states. After init it is set to ct.run_states
     ct.num_states = ct.init_states;
 
 
     /* Allocate memory for the states */
-    this->Kstates = new State<KpointType>[ct.num_states];
+    this->Kstates = new State<KpointType>[2*ct.max_states];
     this->nstates = ct.num_states;
 
 //    if (verify ("calculation_mode", "Band Structure Only"))
@@ -286,7 +294,7 @@ template <class KpointType> void Kpoint<KpointType>::set_pool(KpointType *pool)
 
     tptr = pool;
 
-    for(state = 0;state < nstates;state++) {
+    for(state = 0;state < ct.max_states;state++) {
         Kstates[state].set_storage(tptr); 
         Kstates[state].Kptr = this;
         Kstates[state].istate = state;

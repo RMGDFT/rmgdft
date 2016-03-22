@@ -120,7 +120,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
 
 
             /*nidx adds offset due to current ion*/
-            sint = &this->Kptr->newsint_local[sidx_local + nidx * ct.num_states * ct.max_nl];
+            sint = &this->Kptr->newsint_local[sidx_local + nidx * ct.max_states * ct.max_nl];
 
             for (i = 0; i < nh; i++)
             {
@@ -163,7 +163,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         for (ion = 0; ion < pct.num_nonloc_ions; ion++)
         {
 
-            StateType *tsint_ptr = &this->Kptr->newsint_local[sidx_local + ion * ct.num_states * ct.max_nl];
+            StateType *tsint_ptr = &this->Kptr->newsint_local[sidx_local + ion * ct.max_states * ct.max_nl];
             for(int jdx = 0;jdx < ct.max_nl;jdx++) {
                 tsint_ptr[jdx] = tsint_ptr[jdx] * t1;
             }

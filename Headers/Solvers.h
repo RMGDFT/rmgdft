@@ -42,9 +42,9 @@ template <typename OrbitalType> void Davidson(Kpoint<OrbitalType> *kptr, double 
 
 
 template <typename KpointType>
-void ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv);
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv);
 template <typename KpointType>
-void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot);
+double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot);
 
 
 

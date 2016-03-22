@@ -38,15 +38,15 @@
 #include "transition.h"
 
 
-template void ApplyHamiltonianBlock<double>(Kpoint<double> *, int, int, double *, double *);
-template void ApplyHamiltonianBlock<std::complex<double> >(Kpoint<std::complex<double>> *, int, int, std::complex<double> *, double *);
+template double ApplyHamiltonianBlock<double>(Kpoint<double> *, int, int, double *, double *);
+template double ApplyHamiltonianBlock<std::complex<double> >(Kpoint<std::complex<double>> *, int, int, std::complex<double> *, double *);
 
 
 // Threaded routine that applies Hamiltonian operator to a block of orbitals of size num_states
 // starting from first_state. 
 
 template <typename KpointType>
-void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot)
+double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot)
 {
     int pbasis = kptr->pbasis;
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -58,6 +58,10 @@ void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_s
     AppNls(kptr, kptr->oldsint_local, kptr->Kstates[first_state].psi, kptr->nv, kptr->ns, kptr->Bns,
            first_state, std::min(ct.non_local_block_size, num_states));
     int first_nls = 0;
+
+    // Apply Hamiltonian to state 0 to get the diagonal from the finite diff operator. Work is repeated
+    // in the thread loop below but that's not much extra work.
+    double fd_diag = ApplyHamiltonian (kptr, kptr->Kstates[0].psi, h_psi, vtot, kptr->nv);
 
     for(int st1=first_state;st1 < first_state + istop;st1+=T->get_threads_per_node()) {
         SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
@@ -75,7 +79,7 @@ void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_s
             thread_control[ist].vtot = vtot;
             thread_control[ist].istate = st1 + ist;
             thread_control[ist].sp = &kptr->Kstates[st1 + ist];
-            thread_control[ist].p1 = (void *)&kptr->Kstates[st1 + ist].psi;
+            thread_control[ist].p1 = (void *)kptr->Kstates[st1 + ist].psi;
             thread_control[ist].p2 = (void *)&h_psi[(st1 + ist) * pbasis];
             thread_control[ist].p3 = (void *)kptr;
             thread_control[ist].nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
@@ -98,4 +102,5 @@ void ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_s
          first_nls++;
     }
     
+    return -0.5 * fd_diag;
 }
