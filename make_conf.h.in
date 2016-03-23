@@ -22,3 +22,6 @@
 
 /* Use async all reduce */
 #define HAVE_ASYNC_ALLREDUCE ${RMG_ASYNC_ALLREDUCE}
+
+
+#define USE_PFFT ${RMG_PFFT_LIBS}

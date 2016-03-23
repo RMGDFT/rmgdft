@@ -31,7 +31,7 @@ logical  :: tCommutp,  tDiagp
   else if( Ieldyn.eq.1) then 
      tCommutp =.true.
      tDiagp   =.false.
-  else if( Ieldyn.eq.1) then 
+  else if( Ieldyn.eq.2) then 
      tCommutp =.false.
      tDiagp   =.true.
   else  
