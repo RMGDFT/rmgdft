@@ -201,14 +201,13 @@ double time1 = my_crtc ();
             //kptr->Kstates[st1+nstates].normalize(kptr->Kstates[st1+nstates].psi, st1+nstates);
         }
 
-#if 1
+#if 0
         // Normalize correction vectors
         double *norms = new double[notconv]();
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis;idx++) norms[st1] += std::norm(psi[(st1 + nbase)*pbasis + idx]);
         }
-        //MPI_Allreduce(MPI_IN_PLACE, (double *)norms, notconv, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        GlobalSums (norms, notconv, pct.grid_comm); 
+        MPI_Allreduce(MPI_IN_PLACE, (double *)norms, notconv, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         for(int st1=0;st1 < notconv;st1++) {
              norms[st1] = 1.0 / sqrt(norms[st1]);
              for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] *= norms[st1];
@@ -275,7 +274,7 @@ double time1 = my_crtc ();
             int *iwork = new int[liwork];
             double vx = 0.0;
             double tol = 1e-14;
-            int ione = 1, info=0;
+            int itype = 1, info=0, ione = 1;
 
             OrbitalType *hsave = new OrbitalType[ct.max_states*ct.max_states];
             OrbitalType *ssave = new OrbitalType[ct.max_states*ct.max_states];
@@ -284,7 +283,7 @@ double time1 = my_crtc ();
                 ssave[i] = sr[i];
             }
 
-            dsygvx (&ione, "V", "I", "U", &nbase, (double *)hr, &ct.max_states, (double *)sr, &ct.max_states,
+            dsygvx (&itype, "V", "I", "U", &nbase, (double *)hr, &ct.max_states, (double *)sr, &ct.max_states,
                                     &vx, &vx, &ione, &nstates,  &tol, &eigs_found, eigsw, (double *)vr, &ct.max_states, work2,
                                     &lwork, iwork, ifail, &info);
 
@@ -317,12 +316,18 @@ printf("STATE %d TOLERANCE = %20.12f\n",st,fabs(eigs[st] - eigsw[st]));
         for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];
 if(pct.gridpe==0)
 printf("ITERATION = %d\n",steps);
-        // Last iteration rotate the orbitals
+        // Check if we converged to the desired tolerance and if so return. If we
+        // have exceeded the maximum number of iterations then we need to do something else.
+        // If the expanded basis is getting too large then we need to rotate the orbitals
+        // and start the davidson iteration again.
         if(steps == (max_steps-1) || ((nbase+notconv) > ct.max_states) || (notconv == 0)) {
 
             if(notconv == 0) {
-                RmgGemm(trans_n, trans_t, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, h_psi, pbasis, 
+                OrbitalType alpha2(1.0);
+                RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha2, psi, pbasis, vr, ct.max_states, beta, h_psi, pbasis, 
                     NULLptr, NULLptr, NULLptr, false, true, false, true);
+                for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = h_psi[idx];
+
                 break;  // done
             }
 
