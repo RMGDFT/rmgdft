@@ -126,12 +126,12 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
         }
 
         #if GPU_ENABLED
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, pbasis * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix2, kptr->nstates * kptr->nstates * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Aij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Bij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Sij, kptr->nstates * kptr->nstates * sizeof(KpointType)), "Error allocating memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, pbasis * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix2, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Aij, ct.max_states * ct.max_states * sizeof(KpointType)), "Error allocating memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Bij, ct.max_states * ct.max_states * sizeof(KpointType)), "Error allocating memory.\n");
+            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Sij, ct.max_states * ct.max_states * sizeof(KpointType)), "Error allocating memory.\n");
         #endif
 
     }

@@ -50,6 +50,8 @@ template void State<double>::normalize(double *, int );
 template void State<std::complex <double> >::normalize(std::complex <double> *, int );
 template void State<double>::set_storage(double *storage);
 template void State<std::complex <double> >::set_storage(std::complex <double> *tpsi);
+template bool State<double>::is_occupied(void);
+template bool State<std::complex <double> >::is_occupied(void);
 
 template <class StateType> State<StateType>::State(void)
 {
@@ -60,6 +62,11 @@ template <class StateType> State<StateType>::State(void)
 template <class StateType> void State<StateType>::set_storage(StateType *storage)
 {
     this->psi = storage;
+}
+
+template <class StateType> bool State<StateType>::is_occupied(void)
+{
+    return ((this->occupation[0] > 0.0) || (this->occupation[1] > 0.0));
 }
 
 template <class StateType> void State<StateType>::normalize(StateType *tpsi, int istate)

@@ -39,6 +39,7 @@ public:
 
     void set_storage(StateType *storage);
     void normalize(StateType *tpsi, int istate);
+    bool is_occupied(void);
 
     // kpoint this state is attached to
     Kpoint<StateType> *Kptr;

@@ -57,13 +57,17 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
     RmgTimer RT0("Davidson"), *RT1;
 
     OrbitalType alpha(1.0);
-    OrbitalType alpha2(2.0);
     OrbitalType beta(0.0);
+    double occupied_tol = std::min(ct.rms, 1.0e-5);
+occupied_tol = 1.0e-8;
+    double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 1.0e-5 );
+
 
     int pbasis = kptr->pbasis;
     int nstates = kptr->nstates;
     int notconv = nstates;
-    int max_steps = 4;
+    int nbase = nstates;
+    int max_steps = 20;
     char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
@@ -84,10 +88,10 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
     double *eigs = new double[ct.max_states];
     double *eigsw = new double[ct.max_states];
     bool *converged = new bool[ct.max_states]();
-    OrbitalType *hr = new OrbitalType[ct.max_states * ct.max_states];
-    OrbitalType *sr = new OrbitalType[ct.max_states * ct.max_states];
+    OrbitalType *hr = new OrbitalType[ct.max_states * ct.max_states]();
+    OrbitalType *sr = new OrbitalType[ct.max_states * ct.max_states]();
     OrbitalType *vr = new OrbitalType[ct.max_states * ct.max_states]();
-    for(int idx = 0;idx < nstates;idx++) vr[idx*ct.max_states + idx] = OrbitalType(1.0);
+    for(int idx = 0;idx < ct.max_states;idx++) vr[idx*ct.max_states + idx] = OrbitalType(1.0);
 
 #if GPU_ENABLED
     cublasStatus_t custat;
@@ -110,20 +114,20 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 #if 1
     // Compute A matrix
     RT1 = new RmgTimer("Davidson: matrix setup/reduce");
-    RmgGemm(trans_a, trans_n, nstates, nstates, pbasis, alpha, psi, pbasis, h_psi, pbasis, beta, hr, ct.max_states, 
+    RmgGemm(trans_a, trans_n, nbase, nbase, pbasis, alpha, psi, pbasis, h_psi, pbasis, beta, hr, ct.max_states, 
             NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqAij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)hr, nstates * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+    MPI_Iallreduce(MPI_IN_PLACE, (double *)hr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)hr, nstates * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)hr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
     // Compute S matrix
-    OrbitalType alpha1(vel);
-    RmgGemm (trans_a, trans_n, nstates, nstates, pbasis, alpha, psi, pbasis, kptr->ns, pbasis, beta, sr, ct.max_states, 
+    OrbitalType alpha1(1.0);
+    RmgGemm (trans_a, trans_n, nbase, nbase, pbasis, alpha1, psi, pbasis, s_psi, pbasis, beta, sr, ct.max_states, 
              NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -134,9 +138,9 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     MPI_Request MPI_reqSij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)sr, nstates * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+    MPI_Iallreduce(MPI_IN_PLACE, (double *)sr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)sr, nstates * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)sr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -147,17 +151,8 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 #endif
 
 
-#if 0
-    for(int st1=0;st1 < nstates;st1++) {
-        for(int idx = 0;idx < pbasis;idx++) {
-            kptr->Kstates[st1+nstates].psi[idx] = (h_psi[st1*pbasis + idx] - eigs[st1] * s_psi[st1*pbasis + idx]) / 
-                                    (fd_diag + vtot[idx] +kptr->nl_Bweight[idx] - eigs[st1]*kptr->nl_weight[idx]);
-        }
-        //kptr->Kstates[st1+nstates].normalize(kptr->Kstates[st1+nstates].psi, st1+nstates);
-    }
-#endif
-
     for(int steps = 0;steps < max_steps;steps++) {
+double time1 = my_crtc ();
 
         // Reorder eigenvectors
         int np = 0;
@@ -168,62 +163,80 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
                 if(np != st) {
                     for(int idx=0;idx < ct.max_states;idx++) vr[idx + np*ct.max_states] = vr[idx + st*ct.max_states];
                 }
-                eigsw[nstates + np] = eigs[st];
+                eigsw[nbase + np] = eigs[st];
                 np++;                
 
             }
 
         }
 
-        int nb1 = nstates;
-#if 1
         // expand the basis set with the residuals ( H - e*S )|psi>
-        RmgGemm(trans_n, trans_n, pbasis, notconv, nstates, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nb1*pbasis], pbasis, 
+        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
         for(int st1=0;st1 < notconv;st1++) {
-            for(int idx=0;idx < pbasis;idx++) psi[(st1 + nb1)*pbasis + idx] = -eigsw[nb1 + st1] * psi[(st1 + nb1)*pbasis + idx];
+            for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis + idx];
         }
 
-        RmgGemm(trans_n, trans_n, pbasis, notconv, nstates, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nb1*pbasis], pbasis, 
+        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 
 
         // Apply preconditioner
+        double eps = 1.0e-4;
+
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx = 0;idx < pbasis;idx++) {
-                psi[(st1 + nb1)*pbasis + idx] /= (fd_diag + vtot[idx] +kptr->nl_Bweight[idx] - eigsw[st1+nb1]*kptr->nl_weight[idx]);
+                psi[(st1 + nbase)*pbasis + idx] /= -(1.0/fd_diag + vtot[idx] +kptr->nl_Bweight[idx] - eigsw[st1+nbase]*kptr->nl_weight[idx]);
+//                psi[(st1 + nbase)*pbasis + idx] /= -(1.0/fd_diag + vtot[idx] - eigsw[st1+nbase]);
+#if 1
+                double scale = std::real(fd_diag + vtot[idx] +kptr->nl_Bweight[idx] - eigsw[st1+nbase]);
+                bool neg = (scale < 0.0);
+                if(fabs(scale) < eps) scale = eps;
+                if(neg) scale = -scale;
+                psi[(st1 + nbase)*pbasis + idx] *= scale;
+#endif
             }
             //kptr->Kstates[st1+nstates].normalize(kptr->Kstates[st1+nstates].psi, st1+nstates);
         }
 
-        // Should we renormalize?
+#if 1
+        // Normalize correction vectors
+        double *norms = new double[notconv]();
+        for(int st1=0;st1 < notconv;st1++) {
+            for(int idx=0;idx < pbasis;idx++) norms[st1] += std::norm(psi[(st1 + nbase)*pbasis + idx]);
+        }
+        //MPI_Allreduce(MPI_IN_PLACE, (double *)norms, notconv, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        GlobalSums (norms, notconv, pct.grid_comm); 
+        for(int st1=0;st1 < notconv;st1++) {
+             norms[st1] = 1.0 / sqrt(norms[st1]);
+             for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] *= norms[st1];
+        }
+        delete [] norms;
 #endif
-
         // Apply Hamiltonian to the new vectors
-        kptr->nstates += notconv;  // Little bit of a hack until we update Betaxpsi
+        kptr->nstates = nbase;  // Little bit of a hack until we update Betaxpsi
         ct.num_states = kptr->nstates;
         Betaxpsi (kptr);
         kptr->mix_betaxpsi(0);
-        //Subdiag (kptr, vtot, ct.subdiag_driver);
-        kptr->nstates -= notconv;  // And back out the hack
+        ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot);
+        kptr->nstates = nstates;  // And back out the hack
         ct.num_states = kptr->nstates;
-        ApplyHamiltonianBlock (kptr, nb1, notconv, &h_psi[nb1*pbasis], vtot);
-
 
         // Update the reduced Hamiltonian and S matrices
-        RmgGemm(trans_a, trans_n, nstates+notconv, notconv, pbasis, alpha, psi, pbasis, &h_psi[nb1*pbasis], pbasis, beta, &hr[nb1*ct.max_states], ct.max_states, 
+        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alpha, psi, pbasis, &h_psi[nbase*pbasis], pbasis, beta, &hr[nbase*ct.max_states], ct.max_states, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
+
 #if HAVE_ASYNC_ALLREDUCE
         // Asynchronously reduce it
         MPI_Request MPI_reqAij;
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)&hr[nb1*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)&hr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
 #else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)&hr[nb1*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, (double *)&hr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
-        RmgGemm(trans_a, trans_n, nstates+notconv, notconv, pbasis, alpha, psi, pbasis, &kptr->ns[nb1*pbasis], pbasis, beta, &sr[nb1*ct.max_states], ct.max_states, 
+        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alpha1, psi, pbasis, &s_psi[nbase*pbasis], pbasis, beta, &sr[nbase*ct.max_states], ct.max_states, 
                  NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -234,9 +247,9 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 #if HAVE_ASYNC_ALLREDUCE
         // Asynchronously reduce Sij request
         MPI_Request MPI_reqSij;
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nb1*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
 #else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)&sr[nb1*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, (double *)&sr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -244,37 +257,105 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
         MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
 
-        nb1 += notconv;
-#if 0
-        for(int i=0;i < nb1;i++) {
-            for(int j=i+1;j < nb1;j++) {
+        nbase = nbase + notconv;
+        for(int i=0;i < nbase;i++) {
+            for(int j=i+1;j < nbase;j++) {
                 hr[j + i*ct.max_states] = hr[i + j*ct.max_states];
                 sr[j + i*ct.max_states] = sr[i + j*ct.max_states];
             }
         }
-#endif
+
+
         {
-            int *ifail = new int[nstates];
-            int lwork = 2 * nstates * nstates + 6 * nstates + 2;
-            int liwork = 6*nstates;
+            int *ifail = new int[nbase];
+            int lwork = 6 * nbase * nbase + 6 * nbase + 2;
+            int liwork = 6*nbase;
             int eigs_found;
             double *work2 = new double[2*lwork];
             int *iwork = new int[liwork];
             double vx = 0.0;
-            double tol = 1e-15;
+            double tol = 1e-14;
             int ione = 1, info=0;
 
-            dsygvx (&ione, "v", "A", "U", &nstates, (double *)hr, &ct.max_states, (double *)sr, &ct.max_states,
-                                    &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigsw, (double *)vr, &ct.max_states, work2,
+            OrbitalType *hsave = new OrbitalType[ct.max_states*ct.max_states];
+            OrbitalType *ssave = new OrbitalType[ct.max_states*ct.max_states];
+            for(int i=0;i<ct.max_states*ct.max_states;i++){
+                hsave[i] = hr[i];
+                ssave[i] = sr[i];
+            }
+
+            dsygvx (&ione, "V", "I", "U", &nbase, (double *)hr, &ct.max_states, (double *)sr, &ct.max_states,
+                                    &vx, &vx, &ione, &nstates,  &tol, &eigs_found, eigsw, (double *)vr, &ct.max_states, work2,
                                     &lwork, iwork, ifail, &info);
+
+            for(int i=0;i<ct.max_states*ct.max_states;i++){
+                hr[i] = hsave[i];
+                sr[i] = ssave[i];
+            }
+            delete [] ssave;
+            delete [] hsave;
+
+printf("NBASE = %d  EIGSFOUND = %d  INFO=%d\n",nbase,eigs_found,info);
         }
 
+
         // Copy updated eigenvalues back
+        int tnotconv = nstates;
         for(int st=0;st < nstates;st++) {
-           if(pct.gridpe==0)
            printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
+            if(kptr->Kstates[st].is_occupied()) {
+                converged[st] = (fabs(eigs[st] - eigsw[st]) < occupied_tol);
+            }
+            else {
+                converged[st] = (fabs(eigs[st] - eigsw[st]) < unoccupied_tol);
+            }
+            if(converged[st]) tnotconv--;
+if(pct.gridpe==0)
+printf("STATE %d TOLERANCE = %20.12f\n",st,fabs(eigs[st] - eigsw[st]));
         }
+        notconv = tnotconv;
         for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];
+if(pct.gridpe==0)
+printf("ITERATION = %d\n",steps);
+        // Last iteration rotate the orbitals
+        if(steps == (max_steps-1) || ((nbase+notconv) > ct.max_states) || (notconv == 0)) {
+
+            if(notconv == 0) {
+                RmgGemm(trans_n, trans_t, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, h_psi, pbasis, 
+                    NULLptr, NULLptr, NULLptr, false, true, false, true);
+                break;  // done
+            }
+
+            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, h_psi, pbasis, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
+
+            for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = h_psi[idx];
+
+            if(steps == (max_steps-1)) break; // Incomplete convergence
+
+            // refresh
+            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
+            for(int idx=0;idx < nstates*pbasis;idx++)s_psi[idx] = psi[nstates*pbasis + idx];
+
+            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, h_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
+            for(int idx=0;idx < nstates*pbasis;idx++)h_psi[idx] = psi[nstates*pbasis + idx];
+
+
+            // Reset hr,sr,vr
+            nbase = nstates;
+            for(int ix=0;ix < ct.max_states*ct.max_states;ix++) hr[ix] = OrbitalType(0.0);
+            for(int ix=0;ix < ct.max_states*ct.max_states;ix++) sr[ix] = OrbitalType(0.0);
+            for(int ix=0;ix < ct.max_states*ct.max_states;ix++) vr[ix] = OrbitalType(0.0);
+            for(int st=0;st < nstates;st++) {
+                hr[st + st*ct.max_states] = eigs[st];
+                sr[st + st*ct.max_states] = OrbitalType(1.0);
+                vr[st + st*ct.max_states] = OrbitalType(1.0);
+            }
+            
+        }
+rmg_printf("\n DAVIDSON STEP TIME = %10.2f\n",my_crtc () - time1);
 
     }
 

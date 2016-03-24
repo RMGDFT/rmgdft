@@ -55,13 +55,13 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
     istop = istop * T->get_threads_per_node();
  
     // Apply the non-local operators to this block of orbitals
-    AppNls(kptr, kptr->oldsint_local, kptr->Kstates[first_state].psi, kptr->nv, kptr->ns, kptr->Bns,
+    AppNls(kptr, kptr->oldsint_local, kptr->Kstates[first_state].psi, kptr->nv, &kptr->ns[first_state*pbasis], kptr->Bns,
            first_state, std::min(ct.non_local_block_size, num_states));
     int first_nls = 0;
 
     // Apply Hamiltonian to state 0 to get the diagonal from the finite diff operator. Work is repeated
     // in the thread loop below but that's not much extra work.
-    double fd_diag = ApplyHamiltonian (kptr, kptr->Kstates[0].psi, h_psi, vtot, kptr->nv);
+    double fd_diag = ApplyHamiltonian (kptr, kptr->Kstates[first_state].psi, &h_psi[first_state*pbasis], vtot, kptr->nv);
 
     for(int st1=first_state;st1 < first_state + istop;st1+=T->get_threads_per_node()) {
         SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
@@ -97,7 +97,7 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
     }
 
     // Process any remaining states in serial fashion
-    for(int st1 = first_state + istop;st1 < num_states;st1++) {
+    for(int st1 = first_state + istop;st1 < first_state + num_states;st1++) {
          ApplyHamiltonian (kptr, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis], vtot, &kptr->nv[first_nls * pbasis]);
          first_nls++;
     }
