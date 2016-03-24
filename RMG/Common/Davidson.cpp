@@ -21,6 +21,7 @@
 */
 
 #include <complex>
+#include <omp.h>
 #include "FiniteDiff.h"
 #include "const.h"
 #include "rmgtypedefs.h"
@@ -60,7 +61,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
     OrbitalType beta(0.0);
     double occupied_tol = std::min(ct.rms, 1.0e-5);
 occupied_tol = 1.0e-8;
-    double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 1.0e-5 );
+    double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 5.0e-1 );
 
 
     int pbasis = kptr->pbasis;
@@ -80,6 +81,7 @@ occupied_tol = 1.0e-8;
     }
     double vel = kptr->L->get_omega() / 
                  ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
+    OrbitalType alphavel(vel);
 
     // For MPI routines
     int factor = 2;
@@ -111,10 +113,9 @@ occupied_tol = 1.0e-8;
     // Copy current eigs into compact array
     for(int st1 = 0;st1 < nstates;st1++) eigs[st1] = kptr->Kstates[st1].eig[0];
 
-#if 1
     // Compute A matrix
     RT1 = new RmgTimer("Davidson: matrix setup/reduce");
-    RmgGemm(trans_a, trans_n, nbase, nbase, pbasis, alpha, psi, pbasis, h_psi, pbasis, beta, hr, ct.max_states, 
+    RmgGemm(trans_a, trans_n, nbase, nbase, pbasis, alphavel, psi, pbasis, h_psi, pbasis, beta, hr, ct.max_states, 
             NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -126,8 +127,7 @@ occupied_tol = 1.0e-8;
 #endif
 
     // Compute S matrix
-    OrbitalType alpha1(1.0);
-    RmgGemm (trans_a, trans_n, nbase, nbase, pbasis, alpha1, psi, pbasis, s_psi, pbasis, beta, sr, ct.max_states, 
+    RmgGemm (trans_a, trans_n, nbase, nbase, pbasis, alphavel, psi, pbasis, s_psi, pbasis, beta, sr, ct.max_states, 
              NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -148,7 +148,6 @@ occupied_tol = 1.0e-8;
     MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
     delete RT1;
-#endif
 
 
     for(int steps = 0;steps < max_steps;steps++) {
@@ -185,23 +184,22 @@ double time1 = my_crtc ();
 
         // Apply preconditioner
         double eps = 1.0e-4;
-
         for(int st1=0;st1 < notconv;st1++) {
+
             for(int idx = 0;idx < pbasis;idx++) {
-                psi[(st1 + nbase)*pbasis + idx] /= -(1.0/fd_diag + vtot[idx] +kptr->nl_Bweight[idx] - eigsw[st1+nbase]*kptr->nl_weight[idx]);
-//                psi[(st1 + nbase)*pbasis + idx] /= -(1.0/fd_diag + vtot[idx] - eigsw[st1+nbase]);
-#if 1
-                double scale = std::real(fd_diag + vtot[idx] +kptr->nl_Bweight[idx] - eigsw[st1+nbase]);
-                bool neg = (scale < 0.0);
-                if(fabs(scale) < eps) scale = eps;
-                if(neg) scale = -scale;
+                double scale = 1.0 / std::real(-(fd_diag + vtot[idx] + kptr->nl_Bweight[idx] - eigsw[st1+nbase]*(1.0+kptr->nl_weight[idx])));
+                if(fabs(scale) < eps) {
+                    bool neg = (scale < 0.0);
+                    scale = eps;
+                    if(neg) scale = -scale;
+                }
                 psi[(st1 + nbase)*pbasis + idx] *= scale;
-#endif
+
             }
-            //kptr->Kstates[st1+nstates].normalize(kptr->Kstates[st1+nstates].psi, st1+nstates);
+
         }
 
-#if 0
+#if 1
         // Normalize correction vectors
         double *norms = new double[notconv]();
         for(int st1=0;st1 < notconv;st1++) {
@@ -224,7 +222,7 @@ double time1 = my_crtc ();
         ct.num_states = kptr->nstates;
 
         // Update the reduced Hamiltonian and S matrices
-        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alpha, psi, pbasis, &h_psi[nbase*pbasis], pbasis, beta, &hr[nbase*ct.max_states], ct.max_states, 
+        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alphavel, psi, pbasis, &h_psi[nbase*pbasis], pbasis, beta, &hr[nbase*ct.max_states], ct.max_states, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -235,7 +233,7 @@ double time1 = my_crtc ();
         MPI_Allreduce(MPI_IN_PLACE, (double *)&hr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
-        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alpha1, psi, pbasis, &s_psi[nbase*pbasis], pbasis, beta, &sr[nbase*ct.max_states], ct.max_states, 
+        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alphavel, psi, pbasis, &s_psi[nbase*pbasis], pbasis, beta, &sr[nbase*ct.max_states], ct.max_states, 
                  NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -265,36 +263,62 @@ double time1 = my_crtc ();
         }
 
 
-        {
-            int *ifail = new int[nbase];
-            int lwork = 6 * nbase * nbase + 6 * nbase + 2;
-            int liwork = 6*nbase;
-            int eigs_found;
-            double *work2 = new double[2*lwork];
-            int *iwork = new int[liwork];
-            double vx = 0.0;
-            double tol = 1e-14;
-            int itype = 1, info=0, ione = 1;
+        if(pct.is_local_master) {
 
-            OrbitalType *hsave = new OrbitalType[ct.max_states*ct.max_states];
-            OrbitalType *ssave = new OrbitalType[ct.max_states*ct.max_states];
-            for(int i=0;i<ct.max_states*ct.max_states;i++){
-                hsave[i] = hr[i];
-                ssave[i] = sr[i];
+            // Increase the resources available to this proc since the others on the local node
+            // will be idle
+            int nthreads = ct.THREADS_PER_NODE;
+            if(pct.procs_per_host > 1) nthreads = pct.ncpus;
+            omp_set_num_threads(nthreads);
+
+
+            {
+                int *ifail = new int[nbase];
+                int lwork = 6 * nbase * nbase + 6 * nbase + 2;
+                int liwork = 6*nbase;
+                int eigs_found;
+                double *work2 = new double[2*lwork];
+                int *iwork = new int[liwork];
+                double vx = 0.0;
+                double tol = 1e-14;
+                int itype = 1, info=0, ione = 1;
+
+                OrbitalType *hsave = new OrbitalType[ct.max_states*ct.max_states];
+                OrbitalType *ssave = new OrbitalType[ct.max_states*ct.max_states];
+                for(int i=0;i<ct.max_states*ct.max_states;i++){
+                    hsave[i] = hr[i];
+                    ssave[i] = sr[i];
+                }
+
+                dsygvx (&itype, "V", "I", "L", &nbase, (double *)hr, &ct.max_states, (double *)sr, &ct.max_states,
+                                        &vx, &vx, &ione, &nstates,  &tol, &eigs_found, eigsw, (double *)vr, &ct.max_states, work2,
+                                        &lwork, iwork, ifail, &info);
+for(int st=0;st<nbase;st++){
+  printf("VV");
+  for(int i=0;i<nbase;i++)printf(" %12.8e ", vr[st*ct.max_states + i]);
+  printf("\n");
+}
+                for(int i=0;i<ct.max_states*ct.max_states;i++){
+                    hr[i] = hsave[i];
+                    sr[i] = ssave[i];
+                }
+                delete [] ssave;
+                delete [] hsave;
+
+                printf("NBASE = %d  EIGSFOUND = %d  INFO=%d\n",nbase,eigs_found,info);
             }
 
-            dsygvx (&itype, "V", "I", "U", &nbase, (double *)hr, &ct.max_states, (double *)sr, &ct.max_states,
-                                    &vx, &vx, &ione, &nstates,  &tol, &eigs_found, eigsw, (double *)vr, &ct.max_states, work2,
-                                    &lwork, iwork, ifail, &info);
+            // Reset omp_num_threads
+            omp_set_num_threads(ct.THREADS_PER_NODE);
 
-            for(int i=0;i<ct.max_states*ct.max_states;i++){
-                hr[i] = hsave[i];
-                sr[i] = ssave[i];
-            }
-            delete [] ssave;
-            delete [] hsave;
+        } // end if pct.is_local_master
 
-printf("NBASE = %d  EIGSFOUND = %d  INFO=%d\n",nbase,eigs_found,info);
+        // If only one proc on this host participated broadcast results to the rest
+        if(pct.procs_per_host > 1) {
+            int factor = 2;
+            if(ct.is_gamma) factor = 1;
+            MPI_Bcast(vr, factor * nstates*ct.max_states, MPI_DOUBLE, 0, pct.local_comm);
+            MPI_Bcast(eigsw, nstates, MPI_DOUBLE, 0, pct.local_comm);
         }
 
 
@@ -309,36 +333,33 @@ printf("NBASE = %d  EIGSFOUND = %d  INFO=%d\n",nbase,eigs_found,info);
                 converged[st] = (fabs(eigs[st] - eigsw[st]) < unoccupied_tol);
             }
             if(converged[st]) tnotconv--;
-if(pct.gridpe==0)
-printf("STATE %d TOLERANCE = %20.12f\n",st,fabs(eigs[st] - eigsw[st]));
+            if(pct.gridpe==0) printf("STATE %d TOLERANCE = %20.12f\n",st,fabs(eigs[st] - eigsw[st]));
         }
         notconv = tnotconv;
         for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];
-if(pct.gridpe==0)
-printf("ITERATION = %d\n",steps);
+
         // Check if we converged to the desired tolerance and if so return. If we
         // have exceeded the maximum number of iterations then we need to do something else.
         // If the expanded basis is getting too large then we need to rotate the orbitals
         // and start the davidson iteration again.
-        if(steps == (max_steps-1) || ((nbase+notconv) > ct.max_states) || (notconv == 0)) {
+        if(steps == (max_steps-1) || ((nbase+notconv) >= ct.max_states) || (notconv == 0)) {
+
+            // Rotate orbitals
+            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, h_psi, pbasis, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
+            for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = h_psi[idx];
 
             if(notconv == 0) {
-                OrbitalType alpha2(1.0);
-                RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha2, psi, pbasis, vr, ct.max_states, beta, h_psi, pbasis, 
-                    NULLptr, NULLptr, NULLptr, false, true, false, true);
-                for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = h_psi[idx];
-
                 break;  // done
             }
 
-            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, h_psi, pbasis, 
-                NULLptr, NULLptr, NULLptr, false, true, false, true);
 
-            for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = h_psi[idx];
+            if(steps == (max_steps-1)) {
+                // Incomplete convergence, what should we do here?
+                break;
+            }
 
-            if(steps == (max_steps-1)) break; // Incomplete convergence
-
-            // refresh
+            // refresh s_psi and h_psi
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
             for(int idx=0;idx < nstates*pbasis;idx++)s_psi[idx] = psi[nstates*pbasis + idx];
@@ -360,7 +381,7 @@ printf("ITERATION = %d\n",steps);
             }
             
         }
-rmg_printf("\n DAVIDSON STEP TIME = %10.2f\n",my_crtc () - time1);
+        rmg_printf("\n DAVIDSON STEP TIME = %10.2f\n",my_crtc () - time1);
 
     }
 
@@ -386,10 +407,3 @@ rmg_printf("\n DAVIDSON STEP TIME = %10.2f\n",my_crtc () - time1);
 }
 
 
-
-
-
-    // Now we have reduced the original 
-//    RmgGemm (trans_n, trans_n, pbasis, nstates, nstates, alpha, s_psi, pbasis, global_matrix1, nstates, beta, &kptr->orbital_storage[nstates*pbasis], pbasis, NULLptr, NULLptr, NULLptr, false, true, false, true);
-
-    // Generate initial set of correction vectors. 
