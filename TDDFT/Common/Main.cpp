@@ -302,6 +302,11 @@ vh_old, vxc_old, ControlMap);
                 pct.descb, pct.desca[1]);
 
         GetNewRho_on(states, rho, rho_matrix);
+
+
+
+
+
     dipole_calculation(rho, dipole_ele);
     rmg_printf("\n  x dipoll2  %f %f", dipole_ion[0], dipole_ele[0]);
     rmg_printf("\n  y dipoll2  %f %f", dipole_ion[1], dipole_ele[1]);
@@ -374,12 +379,12 @@ vh_old, vxc_old, ControlMap);
 
         if(tot_steps == 0 ) 
         {
-            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = Hij[i] 
+           for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = Hij[i] 
                 + (efield[0] * Xij_dist[i] + efield[1] * Yij_dist[i] +
                         efield[2] * Zij_dist[i])/time_step *2.0;
         }
 
-        for(inner_step = 0; inner_step < 4; inner_step++)
+        for(inner_step = 0; inner_step < 2; inner_step++)
         {
 
             
@@ -394,7 +399,6 @@ vh_old, vxc_old, ControlMap);
 
             //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
             mat_global_to_dist(Pn1, mat_X, pct.desca);
-            for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
 
             Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
                     pct.descb, pct.desca[1]);
@@ -404,6 +408,24 @@ vh_old, vxc_old, ControlMap);
             RmgTimer *RT4a = new RmgTimer("1-TOTAL: GetNewRho");
             GetNewRho_on(states, rho, rho_matrix);
             delete(RT4a);
+
+            int iii = get_FP0_BASIS();
+
+            double tcharge = 0.0;
+            for (i = 0; i < get_FP0_BASIS(); i++)
+                tcharge += rho[i];
+            ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
+            ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
+
+
+            ct.tcharge *= get_vel_f();
+
+            double t2 = ct.nel / ct.tcharge;
+            dscal(&iii, &t2, &rho[0], &ione);
+
+
+            if(fabs(t2 -1.0) > 1.0e-11 && pct.gridpe == 0)
+                printf("\n Warning: total charge Normalization constant = %e  \n", t2);
 
             RmgTimer *RT4b = new RmgTimer("1-TOTAL: Updatepot");
             UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
@@ -423,6 +445,7 @@ vh_old, vxc_old, ControlMap);
             dcopy(&ntem, Hij, &ione, Hij_old, &ione);
         }
 
+        for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
         dipole_calculation(rho, dipole_ele);
 
         dipole_ele[0] -= dipole_ion[0];
@@ -509,7 +532,7 @@ int FilenameIncrement1(char *pathname)
 
     }
 
-    
+
     char lognum_str[4]; 
     snprintf(lognum_str, 3, "%02d", lognum);
     std::string nextname = std::string(pathname) + "." + lognum_str;
@@ -526,5 +549,4 @@ int FilenameIncrement1(char *pathname)
     return lognum;
 
 }
-
 
