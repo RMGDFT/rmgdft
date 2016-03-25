@@ -47,6 +47,7 @@ subroutine commutp (P0,P1,Om,N,thrs,maxiter,niter,errmax,iprint)
 !         if (abs(err) <= thrs)  exit lp_bch
 !-v2:
         call tstconv(dP,2*Nsq,N,thrs,ierr,err,tconv)
+        if(iprint>0) write(*,*)'ConvergTest: Niter, errmax =',  iter,err
          errmax=max(errmax, abs(err))
         if (tConv) exit lp_bch 
         iter= iter +1 

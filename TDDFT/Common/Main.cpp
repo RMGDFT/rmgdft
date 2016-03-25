@@ -101,6 +101,7 @@ STATE *states_tem;
 int *state_to_proc;
 STATE *states;
 STATE *states1;
+STATE *states_distribute;
 ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl;
 double *rho, *rho_old, *rhoc, *vh, *vnuc, *vxc, *rhocore, *eig_rho, *vtot, *vtot_c;
 double *rho_oppo, *rho_tot;
@@ -148,7 +149,7 @@ int main(int argc, char **argv)
 
     double *Hmatrix, *Smatrix, *Xij_00, *Yij_00, *Zij_00;
     double *Xij_dist, *Yij_dist, *Zij_dist;
-    double *rho_matrix;
+    double *rho_matrix_local, *rho_matrix;
     double *Hij_t0_dist, *Hij_old;
 
     int Ieldyn=1, iprint = 0;
@@ -294,26 +295,29 @@ vh_old, vxc_old, ControlMap);
     dipole_calculation(rho, dipole_ele);
 
 
+
     rmg_printf("\n  x dipolll  %f %f", dipole_ion[0], dipole_ele[0]);
     rmg_printf("\n  y dipolll  %f %f", dipole_ion[1], dipole_ele[1]);
     rmg_printf("\n  z dipolll  %f %f", dipole_ion[2], dipole_ele[2]);
 
-        Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
-                pct.descb, pct.desca[1]);
+    Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
+            pct.descb, pct.desca[1]);
 
-        GetNewRho_on(states, rho, rho_matrix);
+    InitStatedistribute ();
+    rho_matrix_local = new double[pct.num_local_orbit *pct.num_local_orbit];
 
-
-
-
+    mat_dist_to_global(mat_X, Pn0, pct.desca);
+    MatrixToLocal(states_distribute, Pn0, rho_matrix_local);
+    GetNewRhoLocal (states_distribute, rho, rho_matrix_local, rho_matrix);
 
     dipole_calculation(rho, dipole_ele);
-    rmg_printf("\n  x dipoll2  %f %f", dipole_ion[0], dipole_ele[0]);
-    rmg_printf("\n  y dipoll2  %f %f", dipole_ion[1], dipole_ele[1]);
-    rmg_printf("\n  z dipoll2  %f %f", dipole_ion[2], dipole_ele[2]);
+    rmg_printf("\n  x dipoll3  %f %f", dipole_ion[0], dipole_ele[0]);
+    rmg_printf("\n  y dipoll3  %f %f", dipole_ion[1], dipole_ele[1]);
+    rmg_printf("\n  z dipoll3  %f %f", dipole_ion[2], dipole_ele[2]);
+
 #if 0
     DiagScalapack(states, ct.num_states, Hij_00, Bij_00, rho_matrix, theta);
-        GetNewRho_on(states, rho, rho_matrix);
+    GetNewRho_on(states, rho, rho_matrix);
     write_eigs(states);
     dipole_calculation(rho, dipole_ele);
     rmg_printf("\n  x dipoll3  %f %f", dipole_ion[0], dipole_ele[0]);
@@ -321,7 +325,7 @@ vh_old, vxc_old, ControlMap);
     rmg_printf("\n  z dipoll3  %f %f", dipole_ion[2], dipole_ele[2]);
 
     read_rhomatrix(ct.infile, rho_matrix);
-        GetNewRho_on(states, rho, rho_matrix);
+    GetNewRho_on(states, rho, rho_matrix);
     dipole_calculation(rho, dipole_ele);
     rmg_printf("\n  x dipoll4  %f %f", dipole_ion[0], dipole_ele[0]);
     rmg_printf("\n  y dipoll4  %f %f", dipole_ion[1], dipole_ele[1]);
@@ -379,18 +383,18 @@ vh_old, vxc_old, ControlMap);
 
         if(tot_steps == 0 ) 
         {
-           for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = Hij[i] 
+            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = Hij[i] 
                 + (efield[0] * Xij_dist[i] + efield[1] * Yij_dist[i] +
                         efield[2] * Zij_dist[i])/time_step *2.0;
         }
 
-        for(inner_step = 0; inner_step < 2; inner_step++)
+        for(inner_step = 0; inner_step < 1; inner_step++)
         {
 
-            
+
             for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = 0.5 * time_step*(Hij[i] + Hij_t0_dist[i]);
 
-            
+
             mat_dist_to_global(Hij, Hmatrix, pct.desca);
 
             RmgTimer *RT2a = new RmgTimer("1-TOTAL: ELDYN");
@@ -398,15 +402,10 @@ vh_old, vxc_old, ControlMap);
             delete(RT2a);
 
             //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
-            mat_global_to_dist(Pn1, mat_X, pct.desca);
-
-            Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
-                    pct.descb, pct.desca[1]);
-
-            dcopy(&FP0_BASIS, rho, &ione, rho_old, &ione);
-
+            
             RmgTimer *RT4a = new RmgTimer("1-TOTAL: GetNewRho");
-            GetNewRho_on(states, rho, rho_matrix);
+            MatrixToLocal(states_distribute, Pn1, rho_matrix_local);
+            GetNewRhoLocal (states_distribute, rho, rho_matrix_local, rho_matrix);
             delete(RT4a);
 
             int iii = get_FP0_BASIS();

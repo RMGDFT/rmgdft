@@ -69,6 +69,8 @@
 #define 	PZHEGVX         pzhegvx_
 #define 	pdgetrf     pdgetrf_
 #define 	pdgetrs     pdgetrs_
+#define     pdlmach     pdlmach_
+#define     dlmach      dlmach_
 
 #endif
 #endif
@@ -78,6 +80,8 @@ extern "C" {
 #endif
 
 
+double pdlamch(int *, char *);
+double dlamch(char *);
 int NUMROC (int *, int *, int *, int *, int *);
 int INDXG2P (int *, int *, int *, int *, int *);
 void DESCINIT (int[], int *, int *, int *, int *, int *, int *, int *, int *,

@@ -20,7 +20,8 @@ start_mode="LCAO Start"
 kohn_sham_mucycles="2"
 calculation_mode="Quench Electrons"
 rms_convergence_criterion = "1.0e-06"
-subdiag_driver="lapack"
+subdiag_driver="scalapack"
+non_local_block_size="200"
 
 # List  atomic symbol, coordinates, and movable flag (1 == movable) 
 # symbol and coordinates are required, moveable is optional, default is 1

@@ -220,6 +220,7 @@ typedef struct
     int descb[DLEN];
 
     double *psi1, *psi2;
+    int num_local_orbit;
 
 } PE_CONTROL;
 

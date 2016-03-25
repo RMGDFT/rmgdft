@@ -556,6 +556,7 @@ add_subdirectory (ON/Input EXCLUDE_FROM_ALL)
 add_subdirectory (ON/ON-NEGF-share EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/ELDYN EXCLUDE_FROM_ALL) 
+add_subdirectory (TDDFT/OrbitalProjection EXCLUDE_FROM_ALL) 
 
 add_subdirectory (NEGF/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/SelfEnergy EXCLUDE_FROM_ALL) 
