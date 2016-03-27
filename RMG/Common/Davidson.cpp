@@ -32,6 +32,7 @@
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "RmgGemm.h"
+#include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "GpuAlloc.h"
@@ -45,6 +46,7 @@
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
 #endif
+
 
 int firstflag;
 // Davidson diagonalization solver
@@ -60,9 +62,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
     double occupied_tol = std::min(ct.rms/100000.0, 1.0e-8);
-occupied_tol = 1.0e-12;
     double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 5.0e-1 );
-
     int pbasis = kptr->pbasis;
     int nstates = kptr->nstates;
     int notconv = nstates;
@@ -81,11 +81,13 @@ occupied_tol = 1.0e-12;
     double vel = kptr->L->get_omega() / 
                  ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
     OrbitalType alphavel(vel);
+
 #if 1
 static OrbitalType *sdiag;
 static OrbitalType *nldiag;
 
 if(!firstflag) {
+RT1 = new RmgTimer("Davidson: diagonals");
 sdiag = new OrbitalType[pbasis];
 nldiag = new OrbitalType[pbasis];
 OrbitalType *s1 = new OrbitalType[pbasis];
@@ -101,7 +103,6 @@ for(int i=0;i<pbasis;i++){
     sdiag[i] = kptr->ns[i];
     nldiag[i] = kptr->nv[i];
     kptr->Kstates[0].psi[i] = OrbitalType(0.0);
-//printf("STATUS %d\n",i);
 }
 kptr->nstates = nstates;
 ct.num_states = kptr->nstates;
@@ -109,8 +110,10 @@ ct.num_states = kptr->nstates;
 for(int i=0;i<pbasis;i++)kptr->Kstates[0].psi[i]=s1[i];
 delete [] s1;
 firstflag = 1;
+delete RT1;
 }
 #endif
+
     // For MPI routines
     int factor = 2;
     if(ct.is_gamma) factor = 1;
@@ -135,6 +138,10 @@ firstflag = 1;
 
     // Apply Hamiltonian to current set of eigenvectors. At the current time
     // kptr->ns is also computed in ApplyHamiltonianBlock by AppNls and stored in kptr->ns
+    RT1 = new RmgTimer("Davidson: Betaxpsi");
+    Betaxpsi (kptr);
+    delete RT1;
+    kptr->mix_betaxpsi(0);
     RT1 = new RmgTimer("Davidson: apply hamiltonian");
     double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot); 
     delete RT1;
@@ -178,13 +185,9 @@ firstflag = 1;
     MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
     delete RT1;
-long idum;
-idum = 1314; 
-rand0 (&idum);
 
 
     for(int steps = 0;steps < max_steps;steps++) {
-double time1 = my_crtc ();
 
         // Reorder eigenvectors
         int np = 0;
@@ -218,34 +221,45 @@ double time1 = my_crtc ();
         // Apply preconditioner
         double eps = 1.0e-4;
         for(int st1=0;st1 < notconv;st1++) {
-#if 1
             for(int idx = 0;idx < pbasis;idx++) {
-//                double scale = 1.0 / std::real(-(fd_diag + vtot[idx] + kptr->nl_Bweight[idx] - eigsw[st1+nbase]*(1.0+kptr->nl_weight[idx]*kptr->nl_weight[idx])));
-                double scale = -1.0 / std::real((fd_diag + vtot[idx] + nldiag[idx] - eigsw[st1+nbase]*sdiag[idx]));
+                //double scale = -1.0 / std::real((fd_diag + vtot[idx] + kptr->nl_Bweight[idx] - eigsw[st1+nbase]*(1.0+kptr->nl_weight[idx]*kptr->nl_weight[idx])));
+                double scale = -1.0 / std::real((2.0*fd_diag + vtot[idx] + nldiag[idx] - eigsw[st1+nbase]*sdiag[idx]));
+                double difr = -std::real(fd_diag + vtot[idx] + nldiag[idx] - eigsw[st1+nbase]*sdiag[idx]);
+#if 1
                 if(fabs(scale) < eps) {
                     bool neg = (scale < 0.0);
                     scale = eps;
                     if(neg) scale = -scale;
                 }
                 psi[(st1 + nbase)*pbasis + idx] *= scale;
+#else
+                if(fabs(difr) < eps) {
+                    bool neg = (difr < 0.0);
+                    difr = eps;
+                    if(neg) difr = -difr;
+                }
+                psi[(st1 + nbase)*pbasis + idx] = psi[(st1 + nbase)*pbasis + idx]*psi[(st1 + nbase)*pbasis + idx]/difr;
+#endif
 
             }
-#endif
         }
-//exit(0);
-#if 1
+
         // Normalize correction vectors
+        RT1 = new RmgTimer("Davidson: normalization");
         double *norms = new double[notconv]();
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis;idx++) norms[st1] += vel * std::norm(psi[(st1 + nbase)*pbasis + idx]);
         }
+
         MPI_Allreduce(MPI_IN_PLACE, (double *)norms, notconv, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
         for(int st1=0;st1 < notconv;st1++) {
              norms[st1] = 1.0 / sqrt(norms[st1]);
              for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] *= norms[st1];
         }
         delete [] norms;
-#endif
+        delete RT1;
+
         // Apply Hamiltonian to the new vectors
         kptr->nstates = nbase+notconv;  // Little bit of a hack until we update Betaxpsi
         ct.num_states = kptr->nstates;
@@ -263,6 +277,7 @@ double time1 = my_crtc ();
         ct.num_states = kptr->nstates;
 
         // Update the reduced Hamiltonian and S matrices
+        RT1 = new RmgTimer("Davidson: matrix setup/reduce");
         RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alphavel, psi, pbasis, &h_psi[nbase*pbasis], pbasis, beta, &hr[nbase*ct.max_states], ct.max_states, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
@@ -294,6 +309,7 @@ double time1 = my_crtc ();
         // Wait for S request to finish
         MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
+        delete RT1;
 
         nbase = nbase + notconv;
         for(int i=0;i < nbase;i++) {
@@ -303,9 +319,10 @@ double time1 = my_crtc ();
             }
         }
 
-
+        int info = 0;
         if(pct.is_local_master) {
 
+            RT1 = new RmgTimer("Davidson: diagonalization");
             // Increase the resources available to this proc since the others on the local node
             // will be idle
             int nthreads = ct.THREADS_PER_NODE;
@@ -322,7 +339,7 @@ double time1 = my_crtc ();
                 int *iwork = new int[liwork];
                 double vx = 0.0;
                 double tol = 1.0e-14;
-                int itype = 1, info=0, ione = 1;
+                int itype = 1, ione = 1;
 
                 OrbitalType *hsave = new OrbitalType[ct.max_states*ct.max_states];
                 OrbitalType *ssave = new OrbitalType[ct.max_states*ct.max_states];
@@ -334,14 +351,7 @@ double time1 = my_crtc ();
                 dsygvx (&itype, "V", "I", "L", &nbase, (double *)hr, &ct.max_states, (double *)sr, &ct.max_states,
                                         &vx, &vx, &ione, &nstates,  &tol, &eigs_found, eigsw, (double *)vr, &ct.max_states, work2,
                                         &lwork, iwork, ifail, &info);
-#if 0
-for(int st=0;st<nbase;st++){
-  //printf(" %d  %12.8e \n ", st, vr[st*ct.max_states + st]);
-  if(std::real(vr[st*ct.max_states + st]) < 0.0) {
-      for(int st1=0;st1<nbase;st1++)vr[st1*ct.max_states+st] *= -1.0;
-  }
-}
-#endif
+
                 for(int i=0;i<ct.max_states*ct.max_states;i++){
                     hr[i] = hsave[i];
                     sr[i] = ssave[i];
@@ -349,12 +359,13 @@ for(int st=0;st<nbase;st++){
                 delete [] ssave;
                 delete [] hsave;
 
-                printf("NBASE = %d  EIGSFOUND = %d  INFO=%d\n",nbase,eigs_found,info);
+                printf("scf step = %d, davidson step = %d,  NBASE = %d  EIGSFOUND = %d  INFO=%d\n",ct.scf_steps, steps, nbase,eigs_found,info);
             }
 
             // Reset omp_num_threads
             omp_set_num_threads(ct.THREADS_PER_NODE);
 
+            delete RT1;
         } // end if pct.is_local_master
 
         // If only one proc on this host participated broadcast results to the rest
@@ -369,7 +380,7 @@ for(int st=0;st<nbase;st++){
         // Copy updated eigenvalues back
         int tnotconv = nstates;
         for(int st=0;st < nstates;st++) {
-           printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
+            //printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
             if(kptr->Kstates[st].is_occupied()) {
                 converged[st] = (fabs(eigs[st] - eigsw[st]) < occupied_tol);
             }
@@ -377,35 +388,38 @@ for(int st=0;st<nbase;st++){
                 converged[st] = (fabs(eigs[st] - eigsw[st]) < unoccupied_tol);
             }
             if(converged[st]) tnotconv--;
-            if(pct.gridpe==0) printf("STATE %d TOLERANCE = %20.12f\n",st,fabs(eigs[st] - eigsw[st]));
+            if((pct.gridpe==0) && (info != 0)) printf("STATE %d e0=%20.12f e1=%20.12f  TOLERANCE = %20.12f\n",st,eigs[st],eigsw[st],fabs(eigs[st] - eigsw[st]));
         }
         notconv = tnotconv;
+
         for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];
 
         // Check if we converged to the desired tolerance and if so return. If we
         // have exceeded the maximum number of iterations then we need to do something else.
         // If the expanded basis is getting too large then we need to rotate the orbitals
         // and start the davidson iteration again.
-        if(steps == (max_steps-1) || ((nbase+notconv) >= ct.max_states) || (notconv == 0)) {
+        if(((steps == (max_steps-1)) || ((nbase+notconv) >= ct.max_states) || (notconv == 0)) && (steps > 1)) {
 
             // Rotate orbitals
+            RT1 = new RmgTimer("Davidson: rotate orbitals");
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, h_psi, pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
-//for(int idx=0;idx < nstates*pbasis;idx++)printf("DIFF = %20.12f  %20.12f  %20.12f  %20.12f\n",fabs(psi[idx] - h_psi[idx]), fabs(psi[idx] + h_psi[idx]), psi[idx], h_psi[idx]);
             for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = h_psi[idx];
-printf("NOTCONV = %d  %d\n",notconv,steps);
+            delete RT1;
+
             if(notconv == 0) {
-                printf("CONVERGED davidson\n");
+                printf("davidson converged in %d steps\n", steps);
                 break;  // done
             }
-//exit(0);
 
             if(steps == (max_steps-1)) {
                 // Incomplete convergence, what should we do here?
-                break;
+                throw RmgFatalException() << "Davidson failed to converge, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
             }
 
             // refresh s_psi and h_psi
+            RT1 = new RmgTimer("Davidson: refresh h_psi and s_psi");
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
             for(int idx=0;idx < nstates*pbasis;idx++)s_psi[idx] = psi[nstates*pbasis + idx];
@@ -413,7 +427,7 @@ printf("NOTCONV = %d  %d\n",notconv,steps);
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, h_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
             for(int idx=0;idx < nstates*pbasis;idx++)h_psi[idx] = psi[nstates*pbasis + idx];
-
+            delete RT1;
 
             // Reset hr,sr,vr
             nbase = nstates;
@@ -427,7 +441,6 @@ printf("NOTCONV = %d  %d\n",notconv,steps);
             }
             
         }
-        rmg_printf("\n DAVIDSON STEP TIME = %10.2f\n",my_crtc () - time1);
 
     }
 
@@ -449,7 +462,9 @@ printf("NOTCONV = %d  %d\n",notconv,steps);
     delete [] eigsw;
     delete [] eigs;
 
+    RT1 = new RmgTimer("Davidson: Betaxpsi");
     Betaxpsi (kptr);
+    delete RT1;
     kptr->mix_betaxpsi(0);
     
 }

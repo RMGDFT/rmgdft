@@ -66,7 +66,7 @@ void betaxpsi_pack (KpointType * sint, KpointType * fill_buff,
                             int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
 
 template <typename KpointType>
-void betaxpsi_sum_onwed (KpointType * recv_buff, KpointType * sint,
+void betaxpsi_sum_owned (KpointType * recv_buff, KpointType * sint,
                                  int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
                                  int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
 
@@ -79,8 +79,18 @@ void betaxpsi_write_non_owned (KpointType * sint, KpointType * recv_buff,
 template void Betaxpsi<double>(Kpoint<double> *);
 template void Betaxpsi<std::complex<double> >(Kpoint<std::complex<double>> *);
 
+template void BetaxpsiPartial<double>(Kpoint<double> *, int, int);
+template void BetaxpsiPartial<std::complex<double> >(Kpoint<std::complex<double>> *, int, int);
+
 template <typename KpointType>
 void Betaxpsi (Kpoint<KpointType> *kptr)
+{
+    BetaxpsiPartial(kptr, 0, kptr->nstates);
+}
+
+
+template <typename KpointType>
+void BetaxpsiPartial (Kpoint<KpointType> *kptr, int first_state, int nstates)
 {
     KpointType ZERO_t(0.0);
 
@@ -94,12 +104,12 @@ void Betaxpsi (Kpoint<KpointType> *kptr)
     size_own = 0;
     for (pe = 0; pe < pct.num_owned_pe; pe++)
         size_own += pct.num_owned_ions_per_pe[pe];
-    size_own *= kptr->nstates * ct.max_nl;
+    size_own *= nstates * ct.max_nl;
 
     size_nown = 0;
     for (pe = 0; pe < pct.num_owners; pe++)
         size_nown += pct.num_nonowned_ions_per_pe[pe];
-    size_nown *= kptr->nstates * ct.max_nl;
+    size_nown *= nstates * ct.max_nl;
 
 
     if (size_own) {
@@ -125,28 +135,28 @@ void Betaxpsi (Kpoint<KpointType> *kptr)
 
     /*First post non-blocking receives for data about owned ions from cores who do not own the ions */
     betaxpsi_receive (recv_buff, pct.num_owned_pe, pct.owned_pe_list,
-                       pct.num_owned_ions_per_pe, req_recv, kptr->nstates);
+                       pct.num_owned_ions_per_pe, req_recv, nstates);
 
 
     // Set sint array
-    sint = kptr->newsint_local;
+    sint = &kptr->newsint_local[first_state*pct.num_nonloc_ions*ct.max_nl];
 
-    for (i = 0; i < pct.num_nonloc_ions * kptr->nstates * ct.max_nl; i++)
+    for (i = 0; i < pct.num_nonloc_ions * nstates * ct.max_nl; i++)
     {
         sint[i] = ZERO_t;
     }
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
-    betaxpsi_calculate (kptr, sint, kptr->orbital_storage, kptr->nstates);
+    betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[first_state*kptr->pbasis], nstates);
 
 
     /*Pack data for sending */
     betaxpsi_pack (sint, send_buff, pct.num_owners,
-                    pct.num_nonowned_ions_per_pe, pct.list_ions_per_owner, kptr->nstates);
+                    pct.num_nonowned_ions_per_pe, pct.list_ions_per_owner, nstates);
 
     /*Send <beta|psi> contributions  to the owning PE */
     betaxpsi_send (send_buff, pct.num_owners, pct.owners_list,
-                    pct.num_nonowned_ions_per_pe, req_send, kptr->nstates);
+                    pct.num_nonowned_ions_per_pe, req_send, nstates);
 
     /*Wait until all data is received */
     if(pct.num_owned_pe)
@@ -156,8 +166,8 @@ void Betaxpsi (Kpoint<KpointType> *kptr)
 
 
     /*Unpack received data and sum contributions from all pes for owned ions */
-    betaxpsi_sum_onwed (recv_buff, sint, pct.num_owned_pe,
-                         pct.num_owned_ions_per_pe, pct.list_owned_ions_per_pe, kptr->nstates);
+    betaxpsi_sum_owned (recv_buff, sint, pct.num_owned_pe,
+                         pct.num_owned_ions_per_pe, pct.list_owned_ions_per_pe, nstates);
 
     /*In the second stage, owning cores will send summed data to non-owners */
     send_buff = own_buff;
@@ -169,15 +179,15 @@ void Betaxpsi (Kpoint<KpointType> *kptr)
     
     /*Receive summed data for non-owned ions from owners */
     betaxpsi_receive (recv_buff, pct.num_owners, pct.owners_list,
-                       pct.num_nonowned_ions_per_pe, req_recv, kptr->nstates);
+                       pct.num_nonowned_ions_per_pe, req_recv, nstates);
 
     /*Pack summed data for owned ions to send to non-owners */
     betaxpsi_pack (sint, send_buff, pct.num_owned_pe,
-                    pct.num_owned_ions_per_pe, pct.list_owned_ions_per_pe, kptr->nstates);
+                    pct.num_owned_ions_per_pe, pct.list_owned_ions_per_pe, nstates);
 
     /*Send packed data for owned ions to non-owners */
     betaxpsi_send (send_buff, pct.num_owned_pe, pct.owned_pe_list,
-                    pct.num_owned_ions_per_pe, req_send, kptr->nstates);
+                    pct.num_owned_ions_per_pe, req_send, nstates);
 
     /*Wait until all data is received */
     if(pct.num_owned_pe)
@@ -187,7 +197,7 @@ void Betaxpsi (Kpoint<KpointType> *kptr)
 
     /*Finaly, write received data about non-owned ions into sint array */
     betaxpsi_write_non_owned (sint, recv_buff, pct.num_owners,
-                               pct.num_nonowned_ions_per_pe, pct.list_ions_per_owner, kptr->nstates);
+                               pct.num_nonowned_ions_per_pe, pct.list_ions_per_owner, nstates);
 
 
     if (pct.num_owned_pe)
@@ -224,7 +234,7 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
 #else
     KpointType *nlarray = new KpointType[pct.num_tot_proj * num_states];
 #endif
-    RmgGemm (transa, transn, pct.num_tot_proj, kptr->nstates, pbasis, alpha, 
+    RmgGemm (transa, transn, pct.num_tot_proj, num_states, pbasis, alpha, 
             kptr->nl_weight, pbasis, psi, pbasis, 
             rzero, nlarray, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
 
@@ -344,7 +354,7 @@ void betaxpsi_pack (KpointType * sint, KpointType * fill_buff,
 
 
 template <typename KpointType>
-void betaxpsi_sum_onwed (KpointType * recv_buff, KpointType * sint,
+void betaxpsi_sum_owned (KpointType * recv_buff, KpointType * sint,
         int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
         int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
 {

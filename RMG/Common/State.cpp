@@ -66,6 +66,7 @@ template <class StateType> void State<StateType>::set_storage(StateType *storage
 
 template <class StateType> bool State<StateType>::is_occupied(void)
 {
+    if(!ct.spin_flag) return (this->occupation[0] > 0.0);
     return ((this->occupation[0] > 0.0) || (this->occupation[1] > 0.0));
 }
 

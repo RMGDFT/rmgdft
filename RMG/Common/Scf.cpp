@@ -196,7 +196,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
 
-        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap)) {
+        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || (ct.scf_steps < 4)) {
             MgridSubspace(Kptr[kpt], vtot_psi);
         }
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
