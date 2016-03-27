@@ -49,13 +49,7 @@ void GetNewRhoLocal (STATE * states_distribute, double *rho, double *mat_local, 
 
     rho_temp = new double[pbasis];
 
-    printf("\n adadad 0 \n");
-    fflush(NULL);
 
-    printf("\n adadad %f \n", states_distribute[0].psiR[0]);
-    fflush(NULL);
-    printf("\n adadad a \n");
-    fflush(NULL);
     if(pct.num_local_orbit > 0)
     {
         
@@ -64,18 +58,12 @@ void GetNewRhoLocal (STATE * states_distribute, double *rho, double *mat_local, 
         dgemm ("N", "N", &pbasis, &pct.num_local_orbit, &pct.num_local_orbit, &one, 
                 states_distribute[0].psiR, &pbasis, mat_local, &pct.num_local_orbit, 
                 &zero, psi, &pbasis);
-    printf("\n adadad 1 \n");
-    fflush(NULL);
 
         for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
-    printf("\n adadad 2 \n");
-    fflush(NULL);
 
         for(st1 = 0; st1 < pct.num_local_orbit; st1++)
             for(idx = 0; idx < pbasis; idx++)
                 rho_temp[idx] += states_distribute[st1].psiR[idx] * psi[st1 * pbasis + idx];
-    printf("\n adadad 3 \n");
-    fflush(NULL);
 
         delete [] psi;
     }

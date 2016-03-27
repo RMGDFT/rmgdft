@@ -3,6 +3,9 @@ void GetNewRhoLocal (STATE * states_distribute, double *rho, double *mat_local, 
 void InitStatedistribute ();
 void MapOrbitalToProcess(int st2, STATE *states, STATE *states_distribute, double *psi_whole);
 void MatrixToLocal (STATE *states_distribute, double * A_glob, double * A_local);
+void MatrixToGlobal (STATE *states_distribute, double * A_local, double * A_glob);
+
+void HijUpdateNCpp (STATE * states_distribute, double *vtot_c, double *mat_local, double *mat_global);
 
 
 #ifdef __cplusplus

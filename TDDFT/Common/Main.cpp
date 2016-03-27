@@ -150,7 +150,7 @@ int main(int argc, char **argv)
     double *Hmatrix, *Smatrix, *Xij_00, *Yij_00, *Zij_00;
     double *Xij_dist, *Yij_dist, *Zij_dist;
     double *rho_matrix_local, *rho_matrix;
-    double *Hij_t0_dist, *Hij_old;
+    double *Hmatrix_t0, *Hmatrix_old;
 
     int Ieldyn=1, iprint = 0;
     int n2, numst,i;
@@ -268,8 +268,6 @@ vh_old, vxc_old, ControlMap);
     Xij_dist = new double[n2];
     Yij_dist = new double[n2];
     Zij_dist = new double[n2];
-    Hij_t0_dist = new double[n2];
-    Hij_old = new double[n2];
 
     /*  Xij = <phi|x|phi>, Yij = <phi|y|phi>, Zij = <phi|z|phi>  */ 
 
@@ -286,6 +284,8 @@ vh_old, vxc_old, ControlMap);
     Pn0 = new double[2*n2];
     Pn1 = new double[2*n2];
     Hmatrix = new double[n2];
+    Hmatrix_t0 = new double[n2];
+    Hmatrix_old = new double[n2];
     Smatrix = new double[n2];
 
     /*  matB: overlap matrix, Hij:  Hamiltonian matrix  distributed in
@@ -360,6 +360,7 @@ vh_old, vxc_old, ControlMap);
     if(pct.gridpe == 0)fprintf(dfi, "\n  electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
 
     pre_steps = 0;
+    tot_steps = 0;
 
     if(ct.runflag == Restart_TDDFT) 
     {
@@ -372,37 +373,36 @@ vh_old, vxc_old, ControlMap);
         close(fhand);
     }
 
+    if(pre_steps == 0 ) 
+    {
+        for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = Hij[i] 
+            + (efield[0] * Xij_dist[i] + efield[1] * Yij_dist[i] +
+                    efield[2] * Zij_dist[i])/time_step *2.0;
+    }
+
+    mat_dist_to_global(Hij, Hmatrix, pct.desca);
 
     for(ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
     {
         tot_steps = ct.scf_steps + pre_steps;
 
-        ntem = MXLLDA * MXLCOL;
-        dcopy(&ntem, Hij, &ione, Hij_t0_dist, &ione);
-        dcopy(&ntem, Hij, &ione, Hij_old, &ione);
+        dcopy(&n2, Hmatrix, &ione, Hmatrix_t0, &ione);
+        dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
-        if(tot_steps == 0 ) 
-        {
-            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = Hij[i] 
-                + (efield[0] * Xij_dist[i] + efield[1] * Yij_dist[i] +
-                        efield[2] * Zij_dist[i])/time_step *2.0;
-        }
 
         for(inner_step = 0; inner_step < 1; inner_step++)
         {
 
 
-            for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = 0.5 * time_step*(Hij[i] + Hij_t0_dist[i]);
+            for(i = 0; i < n2; i++) Hmatrix[i] = 0.5 * time_step*(Hmatrix[i] + Hmatrix_t0[i]);
 
-
-            mat_dist_to_global(Hij, Hmatrix, pct.desca);
 
             RmgTimer *RT2a = new RmgTimer("1-TOTAL: ELDYN");
             eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
             delete(RT2a);
 
             //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
-            
+
             RmgTimer *RT4a = new RmgTimer("1-TOTAL: GetNewRho");
             MatrixToLocal(states_distribute, Pn1, rho_matrix_local);
             GetNewRhoLocal (states_distribute, rho, rho_matrix_local, rho_matrix);
@@ -424,24 +424,31 @@ vh_old, vxc_old, ControlMap);
 
 
             if(fabs(t2 -1.0) > 1.0e-11 && pct.gridpe == 0)
-                printf("\n Warning: total charge Normalization constant = %e  \n", t2);
+                printf("\n Warning: total charge Normalization constant = %e  \n", t2-1.0);
 
             RmgTimer *RT4b = new RmgTimer("1-TOTAL: Updatepot");
             UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
             delete(RT4b);
 
             RmgTimer *RT4c = new RmgTimer("1-TOTAL: GetHS");
-            GetHS(states, states1, vtot_c, Hij_00, Bij_00);
+            for (i = 0; i < get_FP0_BASIS(); i++) vtot[i] = vh[i] +vxc[i] - vh_old[i] - vxc_old[i];
+            
+            get_vtot_psi(vtot_c, vtot, Rmg_G->default_FG_RATIO);
+
+            HijUpdateNCpp (states_distribute, vtot_c, rho_matrix_local, Hmatrix);
+
+            for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];
+            //GetHS(states, states1, vtot_c, Hij_00, Bij_00);
+
+            //Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
+             //       pct.desca, pct.desca[1]);
+            //mat_dist_to_global(Hij, Hmatrix, pct.desca);
             delete(RT4c);
 
-            Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
-                    pct.desca, pct.desca[1]);
-
             tem = 0;
-            for(i = 0; i < MXLLDA * MXLCOL; i++) tem += (Hij[i] - Hij_old[i])*(Hij[i] - Hij_old[i]);
-            tem = real_sum_all(tem, pct.grid_comm);
+            for(i = 0; i < n2; i++) tem += (Hmatrix[i] - Hmatrix_old[i])*(Hmatrix[i] - Hmatrix_old[i]);
             if(pct.gridpe == 0) printf("\n step = %d, innerstep = %d, Hij - Hij_old = %e\n", tot_steps, inner_step, tem);
-            dcopy(&ntem, Hij, &ione, Hij_old, &ione);
+            dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
         }
 
         for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
@@ -548,4 +555,5 @@ int FilenameIncrement1(char *pathname)
     return lognum;
 
 }
+
 

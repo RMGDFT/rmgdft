@@ -208,11 +208,9 @@ void InitStatedistribute ()
 
         close (fhand);
 
-        MapOrbitalToProcess(st, states, states_distribute, psi_whole);
+        MapOrbitalToProcess(st2, states, states_distribute, psi_whole);
     }   
 
-    printf("\n dddd %f", states_distribute[0].psiR[0]);
-    fflush(NULL);
 }   
 
 
