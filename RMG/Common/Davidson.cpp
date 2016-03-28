@@ -223,7 +223,7 @@ delete RT1;
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx = 0;idx < pbasis;idx++) {
                 //double scale = -1.0 / std::real((fd_diag + vtot[idx] + kptr->nl_Bweight[idx] - eigsw[st1+nbase]*(1.0+kptr->nl_weight[idx]*kptr->nl_weight[idx])));
-                double scale = -1.0 / std::real((2.0*fd_diag + vtot[idx] + nldiag[idx] - eigsw[st1+nbase]*sdiag[idx]));
+                double scale = -1.0 / std::real((fd_diag + vtot[idx] + nldiag[idx] - eigsw[st1+nbase]*sdiag[idx]));
                 double difr = -std::real(fd_diag + vtot[idx] + nldiag[idx] - eigsw[st1+nbase]*sdiag[idx]);
 #if 1
                 if(fabs(scale) < eps) {
@@ -261,20 +261,14 @@ delete RT1;
         delete RT1;
 
         // Apply Hamiltonian to the new vectors
-        kptr->nstates = nbase+notconv;  // Little bit of a hack until we update Betaxpsi
-        ct.num_states = kptr->nstates;
-
         RT1 = new RmgTimer("Davidson: Betaxpsi");
-        Betaxpsi (kptr);
+        BetaxpsiPartial (kptr, nbase, notconv);
         delete RT1;
         kptr->mix_betaxpsi(0);
 
         RT1 = new RmgTimer("Davidson: apply hamiltonian");
-        //ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot);
-        ApplyHamiltonianBlock (kptr, 0, nbase+notconv, h_psi, vtot);
+        ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot);
         delete RT1;
-        kptr->nstates = nstates;  // And back out the hack
-        ct.num_states = kptr->nstates;
 
         // Update the reduced Hamiltonian and S matrices
         RT1 = new RmgTimer("Davidson: matrix setup/reduce");

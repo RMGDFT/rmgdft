@@ -92,13 +92,11 @@ void Betaxpsi (Kpoint<KpointType> *kptr)
 template <typename KpointType>
 void BetaxpsiPartial (Kpoint<KpointType> *kptr, int first_state, int nstates)
 {
-    KpointType ZERO_t(0.0);
-
-    KpointType *own_buff = NULL, *nown_buff = NULL, *sint = NULL;
+    KpointType *own_buff = NULL, *nown_buff = NULL;
     KpointType *send_buff, *recv_buff;
     MPI_Request *req_send, *req_recv;
     MPI_Request *req_own = NULL, *req_nown = NULL;
-    int size_own, size_nown, pe, i;
+    int size_own, size_nown, pe;
 
     /*Allocate memory for communication */
     size_own = 0;
@@ -139,12 +137,9 @@ void BetaxpsiPartial (Kpoint<KpointType> *kptr, int first_state, int nstates)
 
 
     // Set sint array
-    sint = &kptr->newsint_local[first_state*pct.num_nonloc_ions*ct.max_nl];
+    //sint = &kptr->newsint_local[first_state*pct.num_nonloc_ions*ct.max_nl];
+    KpointType *sint = new KpointType[pct.num_nonloc_ions * nstates * ct.max_nl]();
 
-    for (i = 0; i < pct.num_nonloc_ions * nstates * ct.max_nl; i++)
-    {
-        sint[i] = ZERO_t;
-    }
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
     betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[first_state*kptr->pbasis], nstates);
@@ -209,6 +204,18 @@ void BetaxpsiPartial (Kpoint<KpointType> *kptr, int first_state, int nstates)
     if (size_own)
         delete [] own_buff;
 
+
+    int idx= 0 ;
+    KpointType *tsint = &kptr->newsint_local[first_state*pct.num_nonloc_ions*ct.max_nl];
+    for(int st = 0;st < nstates;st++) {
+        for(int ion = 0;ion < pct.num_nonloc_ions;ion++) {
+            for(int ip = 0;ip < ct.max_nl;ip++) {
+                tsint[idx] = sint[ion*nstates*ct.max_nl + st*ct.max_nl + ip];
+                idx++;
+            }
+        }
+    }
+    delete [] sint;
 }
 
 

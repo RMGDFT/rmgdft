@@ -101,11 +101,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     for(int istate = 0; istate < num_states; istate++)
     {
-        int sindex = (istate + first_state) * ct.max_nl;
+        int sindex = (istate + first_state) * pct.num_nonloc_ions * ct.max_nl;
         for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
         {
             int proj_index = ion * ct.max_nl;
-            psintR = &sintR[ion * num_states * ct.max_nl + sindex];
+            psintR = &sintR[proj_index + sindex];
             //psintI = &sintI[ion * num_states * ct.max_nl + sindex];
             /*Actual index of the ion under consideration*/
             int gion = pct.nonloc_ions_list[ion];

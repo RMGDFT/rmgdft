@@ -140,7 +140,8 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
                         for (int i = 0; i < ct.max_nl; i++)
                         {
-                            sint[i] = Kpts[kpt]->newsint_local[ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
+//                            sint[i] = Kpts[kpt]->newsint_local[ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
+                            sint[i] = Kpts[kpt]->newsint_local[istate*pct.num_nonloc_ions*ct.max_nl + ion * ct.max_nl + i];
     //                        sintR[i] =
     //                            pct.newsintR_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
     //                            + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
