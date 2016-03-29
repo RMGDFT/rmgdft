@@ -47,8 +47,8 @@
 #include <cublas_v2.h>
 #endif
 
+extern double *vnuc;
 
-int firstflag;
 // Davidson diagonalization solver
 
 template void Davidson<double>(Kpoint<double> *, double *);
@@ -61,8 +61,13 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
-    double occupied_tol = std::min(ct.rms/100000.0, 1.0e-8);
-    double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 5.0e-1 );
+    double occupied_tol = std::min(ct.rms/1000.0, 1.0e-5);
+    occupied_tol = fabs(occupied_tol / log(occupied_tol));
+
+    // Need this since the eigensolver may become unstable for very small residuals
+    occupied_tol = std::max(occupied_tol, 5.0e-12);
+Diagonals(kptr);
+    double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 1.0e-5 );
     int pbasis = kptr->pbasis;
     int nstates = kptr->nstates;
     int notconv = nstates;
@@ -82,37 +87,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
                  ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
     OrbitalType alphavel(vel);
 
-#if 1
-static OrbitalType *sdiag;
-static OrbitalType *nldiag;
-
-if(!firstflag) {
-RT1 = new RmgTimer("Davidson: diagonals");
-sdiag = new OrbitalType[pbasis];
-nldiag = new OrbitalType[pbasis];
-OrbitalType *s1 = new OrbitalType[pbasis];
-for(int i=0;i<pbasis;i++)s1[i]=kptr->Kstates[0].psi[i];
-for(int i=0;i<pbasis;i++)kptr->Kstates[0].psi[i] = OrbitalType(0.0);
-kptr->nstates = 1;
-ct.num_states = 1;
-
-for(int i=0;i<pbasis;i++){
-    kptr->Kstates[0].psi[i] = OrbitalType(1.0);
-    Betaxpsi (kptr);
-    AppNls(kptr, kptr->newsint_local, kptr->Kstates[0].psi, kptr->nv, kptr->ns, kptr->Bns, 0, 1);
-    sdiag[i] = kptr->ns[i];
-    nldiag[i] = kptr->nv[i];
-    kptr->Kstates[0].psi[i] = OrbitalType(0.0);
-}
-kptr->nstates = nstates;
-ct.num_states = kptr->nstates;
-
-for(int i=0;i<pbasis;i++)kptr->Kstates[0].psi[i]=s1[i];
-delete [] s1;
-firstflag = 1;
-delete RT1;
-}
-#endif
 
     // For MPI routines
     int factor = 2;
@@ -121,9 +95,12 @@ delete RT1;
     double *eigs = new double[ct.max_states];
     double *eigsw = new double[ct.max_states];
     bool *converged = new bool[ct.max_states]();
+    double *rms_residuals = new double[ct.max_states];
+
     OrbitalType *hr = new OrbitalType[ct.max_states * ct.max_states]();
     OrbitalType *sr = new OrbitalType[ct.max_states * ct.max_states]();
     OrbitalType *vr = new OrbitalType[ct.max_states * ct.max_states]();
+    OrbitalType *ke = new OrbitalType[ct.max_states * pbasis]();
     for(int idx = 0;idx < ct.max_states;idx++) vr[idx*ct.max_states + idx] = OrbitalType(1.0);
 
 #if GPU_ENABLED
@@ -143,7 +120,7 @@ delete RT1;
     delete RT1;
     kptr->mix_betaxpsi(0);
     RT1 = new RmgTimer("Davidson: apply hamiltonian");
-    double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot); 
+    double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot, ke); 
     delete RT1;
     OrbitalType *s_psi = kptr->ns;
 
@@ -216,30 +193,37 @@ delete RT1;
         RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
-
+#if 0
+        for(int st1=0;st1 < nstates;st1++) {
+            if(!converged[st1]) {
+                rms_residuals[st1] = 0.0;
+                for(int idx=0;idx < pbasis;idx++) rms_residuals[st1] += std::norm(psi[(st1 + nbase)*pbasis + idx]);
+                rms_residuals[st1] = sqrt(rms_residuals[st1]/(double)pbasis);
+                printf("RMS_RESIDUAL  %d  %20.12f\n",st1,rms_residuals[st1]);
+            }
+        }
+#endif
 
         // Apply preconditioner
         double eps = 1.0e-4;
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx = 0;idx < pbasis;idx++) {
-                //double scale = -1.0 / std::real((fd_diag + vtot[idx] + kptr->nl_Bweight[idx] - eigsw[st1+nbase]*(1.0+kptr->nl_weight[idx]*kptr->nl_weight[idx])));
-                double scale = -1.0 / std::real((fd_diag + vtot[idx] + nldiag[idx] - eigsw[st1+nbase]*sdiag[idx]));
-                double difr = -std::real(fd_diag + vtot[idx] + nldiag[idx] - eigsw[st1+nbase]*sdiag[idx]);
-#if 1
+                double scale;
+                if(steps >= 0) {
+                    //double scale = -1.0 / std::real((fd_diag + vtot[idx] + kptr->nl_Bweight[idx] - eigsw[st1+nbase]*(1.0+kptr->nl_weight[idx]*kptr->nl_weight[idx])));
+                    scale = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
+                    //scale = std::real(fd_diag + vnuc[idx] - eigsw[st1+nbase]);
+                }
+                else {
+                    scale = std::real(ke[st1*pbasis + idx] + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
+                }
                 if(fabs(scale) < eps) {
                     bool neg = (scale < 0.0);
                     scale = eps;
                     if(neg) scale = -scale;
                 }
+                scale = -1.0 / scale;
                 psi[(st1 + nbase)*pbasis + idx] *= scale;
-#else
-                if(fabs(difr) < eps) {
-                    bool neg = (difr < 0.0);
-                    difr = eps;
-                    if(neg) difr = -difr;
-                }
-                psi[(st1 + nbase)*pbasis + idx] = psi[(st1 + nbase)*pbasis + idx]*psi[(st1 + nbase)*pbasis + idx]/difr;
-#endif
 
             }
         }
@@ -267,7 +251,7 @@ delete RT1;
         kptr->mix_betaxpsi(0);
 
         RT1 = new RmgTimer("Davidson: apply hamiltonian");
-        ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot);
+        ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot, ke);
         delete RT1;
 
         // Update the reduced Hamiltonian and S matrices
@@ -392,7 +376,7 @@ delete RT1;
         // have exceeded the maximum number of iterations then we need to do something else.
         // If the expanded basis is getting too large then we need to rotate the orbitals
         // and start the davidson iteration again.
-        if(((steps == (max_steps-1)) || ((nbase+notconv) >= ct.max_states) || (notconv == 0)) && (steps > 1)) {
+        if(((steps == (max_steps-1)) || ((nbase+notconv) >= ct.max_states) || (notconv == 0))) {
 
             // Rotate orbitals
             RT1 = new RmgTimer("Davidson: rotate orbitals");
@@ -402,13 +386,13 @@ delete RT1;
             delete RT1;
 
             if(notconv == 0) {
-                printf("davidson converged in %d steps\n", steps);
+                if(pct.gridpe == 0) printf("davidson converged in %d steps\n", steps);
                 break;  // done
             }
 
             if(steps == (max_steps-1)) {
                 // Incomplete convergence, what should we do here?
-                throw RmgFatalException() << "Davidson failed to converge, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+                //throw RmgFatalException() << "Davidson failed to converge, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
             }
 
@@ -424,6 +408,7 @@ delete RT1;
             delete RT1;
 
             // Reset hr,sr,vr
+            RT1 = new RmgTimer("Davidson: reset hr,sr,vr");
             nbase = nstates;
             for(int ix=0;ix < ct.max_states*ct.max_states;ix++) hr[ix] = OrbitalType(0.0);
             for(int ix=0;ix < ct.max_states*ct.max_states;ix++) sr[ix] = OrbitalType(0.0);
@@ -433,6 +418,7 @@ delete RT1;
                 sr[st + st*ct.max_states] = OrbitalType(1.0);
                 vr[st + st*ct.max_states] = OrbitalType(1.0);
             }
+            delete RT1;
             
         }
 
@@ -449,9 +435,11 @@ delete RT1;
     delete [] h_psi;
 #endif
 
+    delete [] ke;
     delete [] vr;
     delete [] sr;
     delete [] hr;
+    delete [] rms_residuals;
     delete [] converged;
     delete [] eigsw;
     delete [] eigs;

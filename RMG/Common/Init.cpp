@@ -271,6 +271,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         Kptr[kpt]->set_pool(rptr);
         Kptr[kpt]->nv = nv;
         Kptr[kpt]->ns = ns;
+        Kptr[kpt]->s_diag = new OrbitalType[P0_BASIS];
+        Kptr[kpt]->vnl_diag = new OrbitalType[P0_BASIS];
+
         if(!ct.norm_conserving_pp) Kptr[kpt]->Bns = Bns;
 
         for (st1 = 0; st1 < ct.max_states; st1++)
@@ -281,7 +284,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->Kstates[st1].vxc = vxc;
             Kptr[kpt]->Kstates[st1].vh = vh;
             Kptr[kpt]->Kstates[st1].vnuc = vnuc;
-            Kptr[kpt]->Kstates[st1].pbasis =P0_BASIS;
+            Kptr[kpt]->Kstates[st1].pbasis = P0_BASIS;
             Kptr[kpt]->Kstates[st1].istate = st1;
             rptr +=P0_BASIS;
             rptr1 +=P0_BASIS;

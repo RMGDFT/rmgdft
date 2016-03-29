@@ -33,8 +33,9 @@
 #include "transition.h"
 
 
-template double ApplyHamiltonian<double>(Kpoint<double> *, double *, double *, double *, double *);
-template double ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *, double *, std::complex<double> *);
+template double ApplyHamiltonian<double>(Kpoint<double> *, double *, double *, double *, double *, double *);
+template double ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
+                             std::complex<double> *, double *, std::complex<double> *, std::complex<double> *);
 
 // Applies Hamiltonian operator to one orbital
 //
@@ -47,12 +48,13 @@ template double ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<doub
 //    h_psi  = H|psi>
 //
 template <typename KpointType>
-double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv)
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv, KpointType *ke)
 {
     int pbasis = kptr->pbasis;
 
     // Apply Laplacian to psi
     double fd_diag = ApplyLaplacian (psi, h_psi, ct.kohn_sham_fd_order, "Coarse");
+    if(ke) for(int idx = 0;idx < pbasis;idx++) ke[idx] = -0.5 * h_psi[idx];
 
     // Factor of -0.5 and add in potential terms
     for(int idx = 0;idx < pbasis;idx++){ 

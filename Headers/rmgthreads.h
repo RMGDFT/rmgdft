@@ -33,6 +33,7 @@ typedef struct
     void *p1;
     void *p2;
     void *p3;
+    void *p4;
     int ion;        // Used for threaded beta_xpsi
     int nion;       // Used for threaded beta_xpsi
     double *sintR;    // Used for threaded beta_xpsi
