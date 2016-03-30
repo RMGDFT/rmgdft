@@ -35,19 +35,16 @@ void MatrixToLocal (STATE *states_distribute, double * A_glob, double * A_local)
     int j,  k;
     int jj, kk;
 
-    for(j =0; j < ct.num_states; j++)
-    {
-        for(k=0; k < ct.num_states; k++)
+    for(j =0; j < pct.num_local_orbit; j++)
+        for(k =0; k < pct.num_local_orbit; k++)
         {
-            jj = states_distribute[j].local_index;
-            kk = states_distribute[k].local_index;
+            jj = states_distribute[j].istate;
+            kk = states_distribute[k].istate;
 
-            if(jj >= 0 && kk >=0)
-                A_local[kk * pct.num_local_orbit + jj] = A_glob[k * ct.num_states + j] ;
+            A_local[k * pct.num_local_orbit + j] = A_glob[kk * ct.num_states + jj] ;
 
 
         }
-    }
-
 }
+
 

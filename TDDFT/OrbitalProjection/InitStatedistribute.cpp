@@ -91,7 +91,7 @@ void InitStatedistribute ()
     for (st = 0; st < ct.num_states; st++) 
     {
 
-        ixmin = states[st].ixmax;
+        ixmin = states[st].ixmin;
         ixmax = states[st].ixmax;
 
         if(ixmin >= 0 && ixmax < get_NX_GRID())

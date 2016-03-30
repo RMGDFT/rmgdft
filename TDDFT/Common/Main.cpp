@@ -318,9 +318,9 @@ vh_old, vxc_old, ControlMap);
     GetNewRhoLocal (states_distribute, rho, rho_matrix_local, rho_matrix);
 
     dipole_calculation(rho, dipole_ele);
-    rmg_printf("\n  x dipoll3  %f %f", dipole_ion[0], dipole_ele[0]);
-    rmg_printf("\n  y dipoll3  %f %f", dipole_ion[1], dipole_ele[1]);
-    rmg_printf("\n  z dipoll3  %f %f", dipole_ion[2], dipole_ele[2]);
+    rmg_printf("\n  x dipoll2  %f %f", dipole_ion[0], dipole_ele[0]);
+    rmg_printf("\n  y dipoll2  %f %f", dipole_ion[1], dipole_ele[1]);
+    rmg_printf("\n  z dipoll2  %f %f", dipole_ion[2], dipole_ele[2]);
 
 #if 0
     DiagScalapack(states, ct.num_states, Hij_00, Bij_00, rho_matrix, theta);
