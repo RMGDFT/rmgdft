@@ -184,14 +184,14 @@ unoccupied_tol = occupied_tol * 10.0;
         }
 
         // expand the basis set with the residuals ( H - e*S )|psi>
-        RmgGemm(trans_n, trans_t, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
+        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis + idx];
         }
 
-        RmgGemm(trans_n, trans_t, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
+        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if 0
