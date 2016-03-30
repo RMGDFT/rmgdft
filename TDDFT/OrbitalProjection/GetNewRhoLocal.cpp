@@ -49,6 +49,7 @@ void GetNewRhoLocal (STATE * states_distribute, double *rho, double *mat_local, 
 
     rho_temp = new double[pbasis];
 
+    for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
 
     if(pct.num_local_orbit > 0)
     {
@@ -58,8 +59,6 @@ void GetNewRhoLocal (STATE * states_distribute, double *rho, double *mat_local, 
         dgemm ("N", "N", &pbasis, &pct.num_local_orbit, &pct.num_local_orbit, &one, 
                 states_distribute[0].psiR, &pbasis, mat_local, &pct.num_local_orbit, 
                 &zero, psi, &pbasis);
-
-        for(idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
 
         for(st1 = 0; st1 < pct.num_local_orbit; st1++)
             for(idx = 0; idx < pbasis; idx++)

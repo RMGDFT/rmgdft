@@ -153,8 +153,6 @@ void InitStatedistribute ()
 
         states_distribute[pct.num_local_orbit].istate = st;
         states_distribute[st].local_index = pct.num_local_orbit;
-        states_distribute[pct.num_local_orbit].whichblock = block_i;
-        states_distribute[pct.num_local_orbit].istate_in_block = st_in_block;
         pct.num_local_orbit++;
     }
 

@@ -166,7 +166,7 @@ int main(int argc, char **argv)
     char filename[MAX_PATH+200];
     char char_tem[MAX_PATH+200];
     int ntem, inner_step;
-    double tem;
+    double t2, tem, half=0.5;
 
 
 
@@ -247,8 +247,14 @@ vh_old, vxc_old, ControlMap);
     GetHS(states, states1, vtot_c, Hij_00, Bij_00);
     delete(RT4);
 
+    RmgTimer *RT5 = new RmgTimer("1-TOTAL: others");
     Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
             pct.desca, pct.desca[1]);
+    n2 = MXLLDA * MXLCOL;
+    dcopy(&n2, Hij, &ione, matB, &ione);
+    PDTRAN(&numst, &numst, &half, matB, &ione, &ione, pct.desca,
+                &half, Hij, &ione, &ione, pct.desca);
+
     Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
             pct.desca, pct.desca[1]);
 
@@ -308,6 +314,7 @@ vh_old, vxc_old, ControlMap);
 
     mat_dist_to_global(mat_X, Pn0, pct.desca);
     MatrixToLocal(states_distribute, Pn0, rho_matrix_local);
+    for (i = 0; i< FP0_BASIS; i++) rho[i] = 0.0;
     GetNewRhoLocal (states_distribute, rho, rho_matrix_local, rho_matrix);
 
     dipole_calculation(rho, dipole_ele);
@@ -347,6 +354,8 @@ vh_old, vxc_old, ControlMap);
     efield[2] = ct.z_field_0 * ct.e_field;
 
 
+    delete(RT5);
+
     double fs= 0.02418884;  // 1fs = 0.02418884 *10^-15 second 
     if(pct.gridpe == 0)
     {
@@ -373,6 +382,7 @@ vh_old, vxc_old, ControlMap);
         close(fhand);
     }
 
+    mat_dist_to_global(Hij, Hmatrix_old, pct.desca);
     if(pre_steps == 0 ) 
     {
         for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = Hij[i] 
@@ -387,7 +397,6 @@ vh_old, vxc_old, ControlMap);
         tot_steps = ct.scf_steps + pre_steps;
 
         dcopy(&n2, Hmatrix, &ione, Hmatrix_t0, &ione);
-        dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
 
         for(inner_step = 0; inner_step < 1; inner_step++)
@@ -419,7 +428,7 @@ vh_old, vxc_old, ControlMap);
 
             ct.tcharge *= get_vel_f();
 
-            double t2 = ct.nel / ct.tcharge;
+            t2 = ct.nel / ct.tcharge;
             dscal(&iii, &t2, &rho[0], &ione);
 
 
@@ -438,6 +447,7 @@ vh_old, vxc_old, ControlMap);
             HijUpdateNCpp (states_distribute, vtot_c, rho_matrix_local, Hmatrix);
 
             for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];
+
             //GetHS(states, states1, vtot_c, Hij_00, Bij_00);
 
             //Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
@@ -451,6 +461,7 @@ vh_old, vxc_old, ControlMap);
             dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
         }
 
+       // for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i]*t2;
         for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
         dipole_calculation(rho, dipole_ele);
 

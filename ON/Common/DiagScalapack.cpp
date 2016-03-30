@@ -36,13 +36,14 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     char *uplo = "l", *jobz = "v";
 
     int info;
-    double zero = 0., one = 1., alpha;
+    double zero = 0., one = 1.,half = 0.5,  alpha;
     int st1, st_g;
     double *eigs;
 
     /* for parallel libraries */
     int mb= pct.desca[4];
     int  mxllda2;
+    mxllda2 = MXLLDA * MXLCOL;
 
     RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
 
@@ -51,6 +52,10 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
             pct.desca, pct.desca[1]);
     Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
             pct.desca, pct.desca[1]);
+
+    dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
+    PDTRAN(&numst, &numst, &half, uu_dis, &ione, &ione, pct.desca,
+                &half, Hij, &ione, &ione, pct.desca);
     delete(RT2);
 
 
@@ -70,7 +75,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
      */
 
     /* Transform the generalized eigenvalue problem to a sStandard form */
-    mxllda2 = MXLLDA * MXLCOL;
     dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
     dcopy(&mxllda2, matB, &ione, l_s, &ione);
 
@@ -211,3 +215,4 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
 
 }
 #endif
+

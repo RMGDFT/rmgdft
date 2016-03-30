@@ -45,6 +45,7 @@ void HijUpdateNCpp (STATE * states_distribute, double *vtot_diff, double *mat_lo
 
     maxst = ct.num_states;
     int pbasis = get_P0_BASIS();
+    double vel = get_vel();
 
 
 
@@ -63,12 +64,12 @@ void HijUpdateNCpp (STATE * states_distribute, double *vtot_diff, double *mat_lo
 
         delete [] psi;
 
+        n2 = pct.num_local_orbit * pct.num_local_orbit;
+        dscal (&n2, &vel, mat_local, &ione);
+
     }
 
 
-    n2 = pct.num_local_orbit * pct.num_local_orbit;
-    double vel = get_vel();
-    dscal (&n2, &vel, mat_local, &ione);
 
     MatrixToGlobal(states_distribute, mat_local, A_glob);
 
