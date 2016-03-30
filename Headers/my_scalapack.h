@@ -81,7 +81,6 @@ extern "C" {
 
 
 double pdlamch(int *, char *);
-double dlamch(char *);
 int NUMROC (int *, int *, int *, int *, int *);
 int INDXG2P (int *, int *, int *, int *, int *);
 void DESCINIT (int[], int *, int *, int *, int *, int *, int *, int *, int *,

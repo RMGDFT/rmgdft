@@ -59,14 +59,16 @@ template <typename OrbitalType>
 void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 {
     RmgTimer RT0("Davidson"), *RT1;
-long idum=67934 + (long)pct.gridpe;
 
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
-    double occupied_tol = std::min(ct.rms/10000.0, 1.0e-5);
+    double occupied_tol = std::min(ct.rms/1500.0, 1.0e-5);
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 5.0e-12);
+if(pct.gridpe == 0)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
+RT1 = new RmgTimer("Davidson: diagonals");
 Diagonals(kptr);
+delete RT1;
     double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 1.0e-5 );
 unoccupied_tol = occupied_tol * 10.0;
     int pbasis = kptr->pbasis;
@@ -205,23 +207,18 @@ unoccupied_tol = occupied_tol * 10.0;
         }
 #endif
         // Apply preconditioner
-        double eps = 1.0;
 
         for(int st1=0;st1 < notconv;st1++) {
             double scale_min = 1000000000.0;
             double scale_max = 0.0;
+            double eps = 1500.0;
             for(int idx = 0;idx < pbasis;idx++) {
                 double scale;
-                if(steps > 500) {
-                    //double scale = -1.0 / std::real((fd_diag + vtot[idx] + kptr->nl_Bweight[idx] - eigsw[st1+nbase]*(1.0+kptr->nl_weight[idx]*kptr->nl_weight[idx])));
-                    scale = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]) + eps;
-                    //scale = std::real(fd_diag + vtot[idx] - eigsw[st1+nbase]);
-                }
-                else {
-                    scale = std::real(ke[st1*pbasis + idx] + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]) + eps;
-                }
+                //scale = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]) + eps;
+                scale = std::real(ke[st1*pbasis + idx] + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
 //if(fabs(scale) < scale_min)scale_min=fabs(scale);
 //if(fabs(scale) > scale_max)scale_max=fabs(scale);
+                scale += eps;
                 scale = -1.0 / scale;
                 psi[(st1 + nbase)*pbasis + idx] *= scale;
 
@@ -397,6 +394,7 @@ unoccupied_tol = occupied_tol * 10.0;
             }
 
             if(steps == (max_steps-1)) {
+                if(pct.gridpe == 0) printf("davidson incomplete convergence steps = %d\n", steps);
                 // Incomplete convergence, what should we do here?
                 //throw RmgFatalException() << "Davidson failed to converge, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
