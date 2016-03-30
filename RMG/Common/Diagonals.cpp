@@ -46,16 +46,17 @@ void Diagonals(Kpoint<KpointType> *kptr)
     int pbasis = kptr->pbasis;
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
+    double vel = kptr->L->get_omega() /
+                 ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
 
     double *dnmI;
     double *qqq;
 
     for(int idx = 0;idx < pbasis;idx++) kptr->s_diag[idx] = ONE_t;
+    for(int idx = 0;idx < pbasis;idx++) kptr->vnl_diag[idx] = ZERO_t;
+
     if(pct.num_tot_proj == 0)
-    {
-        for(int idx = 0;idx < pbasis;idx++) kptr->vnl_diag[idx] = ZERO_t;
         return;
-    }
 
 
     for (int ion = 0; ion < pct.num_nonloc_ions; ion++)

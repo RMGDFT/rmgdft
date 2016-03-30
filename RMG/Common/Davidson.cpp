@@ -48,6 +48,7 @@
 #endif
 
 extern double *vnuc;
+extern double *rhoc;
 
 // Davidson diagonalization solver
 
@@ -58,16 +59,16 @@ template <typename OrbitalType>
 void Davidson (Kpoint<OrbitalType> *kptr, double *vtot)
 {
     RmgTimer RT0("Davidson"), *RT1;
+long idum=67934 + (long)pct.gridpe;
 
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
-    double occupied_tol = std::min(ct.rms/1000.0, 1.0e-5);
-    occupied_tol = fabs(occupied_tol / log(occupied_tol));
-
+    double occupied_tol = std::min(ct.rms/10000.0, 1.0e-5);
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 5.0e-12);
 Diagonals(kptr);
     double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 1.0e-5 );
+unoccupied_tol = occupied_tol * 10.0;
     int pbasis = kptr->pbasis;
     int nstates = kptr->nstates;
     int notconv = nstates;
@@ -86,7 +87,6 @@ Diagonals(kptr);
     double vel = kptr->L->get_omega() / 
                  ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
     OrbitalType alphavel(vel);
-
 
     // For MPI routines
     int factor = 2;
@@ -110,7 +110,7 @@ Diagonals(kptr);
     OrbitalType *h_psi = new OrbitalType[pbasis * ct.max_states];
 #endif
 
-    // short verstion
+    // short version
     OrbitalType *psi = kptr->orbital_storage;
 
     // Apply Hamiltonian to current set of eigenvectors. At the current time
@@ -174,6 +174,7 @@ Diagonals(kptr);
 
                 if(np != st) {
                     for(int idx=0;idx < ct.max_states;idx++) vr[idx + np*ct.max_states] = vr[idx + st*ct.max_states];
+                    for(int idx=0;idx < pbasis;idx++) ke[idx + np*pbasis] = ke[idx + st*pbasis];
                 }
                 eigsw[nbase + np] = eigs[st];
                 np++;                
@@ -183,14 +184,14 @@ Diagonals(kptr);
         }
 
         // expand the basis set with the residuals ( H - e*S )|psi>
-        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
+        RmgGemm(trans_n, trans_t, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis + idx];
         }
 
-        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
+        RmgGemm(trans_n, trans_t, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
 #if 0
@@ -203,31 +204,32 @@ Diagonals(kptr);
             }
         }
 #endif
-
         // Apply preconditioner
-        double eps = 1.0e-4;
+        double eps = 1.0;
+
         for(int st1=0;st1 < notconv;st1++) {
+            double scale_min = 1000000000.0;
+            double scale_max = 0.0;
             for(int idx = 0;idx < pbasis;idx++) {
                 double scale;
-                if(steps >= 0) {
+                if(steps > 500) {
                     //double scale = -1.0 / std::real((fd_diag + vtot[idx] + kptr->nl_Bweight[idx] - eigsw[st1+nbase]*(1.0+kptr->nl_weight[idx]*kptr->nl_weight[idx])));
-                    scale = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
-                    //scale = std::real(fd_diag + vnuc[idx] - eigsw[st1+nbase]);
+                    scale = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]) + eps;
+                    //scale = std::real(fd_diag + vtot[idx] - eigsw[st1+nbase]);
                 }
                 else {
-                    scale = std::real(ke[st1*pbasis + idx] + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
+                    scale = std::real(ke[st1*pbasis + idx] + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]) + eps;
                 }
-                if(fabs(scale) < eps) {
-                    bool neg = (scale < 0.0);
-                    scale = eps;
-                    if(neg) scale = -scale;
-                }
+//if(fabs(scale) < scale_min)scale_min=fabs(scale);
+//if(fabs(scale) > scale_max)scale_max=fabs(scale);
                 scale = -1.0 / scale;
                 psi[(st1 + nbase)*pbasis + idx] *= scale;
 
             }
+//MPI_Allreduce(MPI_IN_PLACE, (double *)&scale_min, 1, MPI_DOUBLE, MPI_MIN, pct.grid_comm);
+//MPI_Allreduce(MPI_IN_PLACE, (double *)&scale_max, 1, MPI_DOUBLE, MPI_MAX, pct.grid_comm);
+//if(pct.gridpe==0)printf("SCALE_RATIO STEP=%d  STATE=%d  %20.12f\n",steps,st1,scale_max/scale_min);
         }
-
         // Normalize correction vectors
         RT1 = new RmgTimer("Davidson: normalization");
         double *norms = new double[notconv]();
@@ -337,7 +339,6 @@ Diagonals(kptr);
                 delete [] ssave;
                 delete [] hsave;
 
-                printf("scf step = %d, davidson step = %d,  NBASE = %d  EIGSFOUND = %d  INFO=%d\n",ct.scf_steps, steps, nbase,eigs_found,info);
             }
 
             // Reset omp_num_threads
@@ -352,7 +353,12 @@ Diagonals(kptr);
             if(ct.is_gamma) factor = 1;
             MPI_Bcast(vr, factor * nstates*ct.max_states, MPI_DOUBLE, 0, pct.local_comm);
             MPI_Bcast(eigsw, nstates, MPI_DOUBLE, 0, pct.local_comm);
+            MPI_Bcast(&info, 1, MPI_INT, 0, pct.local_comm);
         }
+        if(info) {
+            throw RmgFatalException() << "No eigenvalues found in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+        }
+
 
 
         // Copy updated eigenvalues back

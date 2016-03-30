@@ -55,7 +55,7 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
     istop = istop * T->get_threads_per_node();
  
     // Apply the non-local operators to this block of orbitals
-    AppNls(kptr, kptr->oldsint_local, kptr->Kstates[first_state].psi, kptr->nv, &kptr->ns[first_state*pbasis], kptr->Bns,
+    AppNls(kptr, kptr->newsint_local, kptr->Kstates[first_state].psi, kptr->nv, &kptr->ns[first_state*pbasis], kptr->Bns,
            first_state, std::min(ct.non_local_block_size, num_states));
     int first_nls = 0;
 
@@ -69,7 +69,7 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
         // Make sure the non-local operators are applied for the next block if needed
         int check = first_nls + T->get_threads_per_node();
         if(check > ct.non_local_block_size) {
-            AppNls(kptr, kptr->oldsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
+            AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
                    st1, std::min(ct.non_local_block_size, num_states - st1));
             first_nls = 0;
         }
