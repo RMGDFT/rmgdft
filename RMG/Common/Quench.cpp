@@ -62,14 +62,17 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     /* ---------- begin scf loop ---------- */
     
+    double start_time = my_crtc ();
+    double elapsed_time;
 
     for (ct.scf_steps = 0, CONVERGED = false;
          ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
     {
 
+        elapsed_time = my_crtc() - start_time;
         if (pct.imgpe == 0)
-            rmg_printf ("\n\nquench: ------ [md: %d/%d  scf: %d/%d] ------\n",
-                    ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps);
+            rmg_printf ("\n\nquench: ----- [md: %3d/%-d  scf: %3d/%-d  scf time: %8.2f secs  RMS[dV]: %8.2e ] -----\n",
+                    ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, elapsed_time, ct.rms);
 
 
         /* perform a single self-consistent step */
@@ -113,6 +116,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     {
 	rmg_printf ("\n");
 	//progress_tag ();
+        rmg_printf ("\n\nquench: ----- [md: %3d/%-d  scf: %3d/%-d  scf time: %8.2f secs  RMS[dV]: %8.2e] -----\n",
+                    ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, elapsed_time, ct.rms);
 	rmg_printf ("potential convergence has been achieved. stopping ...\n");
 	    
 	/*Write PDOS if converged*/
