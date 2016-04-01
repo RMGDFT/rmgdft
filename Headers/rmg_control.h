@@ -722,6 +722,7 @@ typedef struct
 
     // Non-local block size
     int non_local_block_size;
+    int poisson_solver;
 
 } CONTROL;
 

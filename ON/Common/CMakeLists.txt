@@ -1,4 +1,6 @@
 add_library (ON_Common
+ VhPfft.cpp
+ VhDriver.cpp
  UpdatePot.cpp
  OrbitalOptimize.cpp
  DiagScalapack.cpp

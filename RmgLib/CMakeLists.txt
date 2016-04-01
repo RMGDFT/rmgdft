@@ -49,6 +49,7 @@ src/Pw.cpp
 src/RmgTimer.cpp
 src/RmgPrintTimings.cpp
 src/RmgSumAll.cpp
+src/RmgMaxAll.cpp
 src/rmg_error.cpp
 src/get_vh.cpp
 src/packfuncs.cpp

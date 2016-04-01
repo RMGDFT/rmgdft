@@ -5,6 +5,8 @@
 
 template <typename RmgType>
 RmgType RmgSumAll (RmgType x, MPI_Comm comm);
+template <typename RmgType>
+RmgType RmgMaxAll (RmgType x, MPI_Comm comm);
 
 
 #endif

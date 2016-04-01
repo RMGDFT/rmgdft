@@ -396,6 +396,8 @@ vh_old, vxc_old, ControlMap);
     {
         tot_steps = ct.scf_steps + pre_steps;
 
+   //     for(i = 0; i < n2; i++) printf("\n  %d  %d  %e  %e  %e  %e", tot_steps, i, Hmatrix[i], Smatrix[i], Pn0[i], Pn0[n2+i]);
+
         dcopy(&n2, Hmatrix, &ione, Hmatrix_t0, &ione);
 
 

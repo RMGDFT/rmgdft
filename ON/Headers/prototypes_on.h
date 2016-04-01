@@ -13,6 +13,9 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore);
 void KbpsiUpdate(STATE *states);
 void FillOrbitalBorders(double *, double *, int, int, int, int);
+void VhDriver(double *rho, double *rhoc, double *vh);
+void VhPfft(double *rho, double *rhoc, double *vh);
+void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old, double *rho_old, int *CONVERGENCE);
 
 
 #ifdef __cplusplus

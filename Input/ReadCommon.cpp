@@ -170,6 +170,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Kohn-Sham solver.\n", 
                      "kohn_sham_solver must be multigrid or davidson. Resetting to multigrid.\n");
 
+    If.RegisterInputKey("poisson_solver", NULL, &lc.poisson_solver, "multigrid",
+                     CHECK_AND_FIX, OPTIONAL, poisson_solver,
+                     "poisson solver.\n", 
+                     "poisson_solver must be multigrid or pfft. Resetting to multigrid.\n");
+
 
     If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
                      CHECK_AND_FIX, OPTIONAL, crds_units,

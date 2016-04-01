@@ -71,6 +71,7 @@
 #define 	pdgetrs     pdgetrs_
 #define     pdlmach     pdlmach_
 #define     dlmach      dlmach_
+#define     idamax      idamax_
 
 #endif
 #endif
@@ -80,6 +81,7 @@ extern "C" {
 #endif
 
 
+int idamax_(int *, double *, int*);
 double pdlamch(int *, char *);
 int NUMROC (int *, int *, int *, int *, int *);
 int INDXG2P (int *, int *, int *, int *, int *);

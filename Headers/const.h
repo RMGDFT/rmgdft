@@ -223,5 +223,6 @@
 // Kohn-sham solver types
 #define MULTIGRID_SOLVER 0
 #define DAVIDSON_SOLVER 1
+#define POISSON_PFFT_SOLVER 1
 
 #endif /* CONST_H_INCLUDED */
