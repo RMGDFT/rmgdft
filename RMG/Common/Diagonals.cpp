@@ -79,8 +79,8 @@ void Diagonals(Kpoint<KpointType> *kptr)
             for (int j = 0; j < nh; j++)
             {
                 for(int idx = 0;idx < pbasis;idx++) {
-                    kptr->vnl_diag[idx] += dnmI[inh+j] * kptr->nl_weight[(proj_index + i)*pbasis + idx] * kptr->nl_weight[(proj_index + j)*pbasis + idx];
-                    kptr->s_diag[idx] += qqq[inh+j] * kptr->nl_weight[(proj_index + i)*pbasis + idx] * kptr->nl_weight[(proj_index + j)*pbasis + idx];
+                    kptr->vnl_diag[idx] += dnmI[inh+j] * vel * kptr->nl_weight[(proj_index + i)*pbasis + idx] * kptr->nl_weight[(proj_index + j)*pbasis + idx];
+                    kptr->s_diag[idx] += qqq[inh+j] * vel * kptr->nl_weight[(proj_index + i)*pbasis + idx] * kptr->nl_weight[(proj_index + j)*pbasis + idx];
                 }
 
             }

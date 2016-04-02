@@ -200,7 +200,15 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             MgridSubspace(Kptr[kpt], vtot_psi);
         }
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
-            Davidson(Kptr[kpt], vtot_psi);
+            int notconv;
+            Davidson(Kptr[kpt], vtot_psi, notconv);
+            // If Davidson didn't work try a multigrid iteration
+//            if(notconv) {
+//                rmg_printf ("Davidson failed to converge. Attempting multigrid iteration.");
+//                ct.potential_acceleration_constant_step = 0.0; 
+//                ct.potential_acceleration_poisson_step = 0.0;
+//                MgridSubspace(Kptr[kpt], vtot_psi);
+//            }
         }
 
     } // end loop over kpoints

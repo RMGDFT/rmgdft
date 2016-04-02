@@ -38,7 +38,7 @@
 #include "Kpoint.h"
 
 template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, double *vtot);
-template <typename OrbitalType> void Davidson(Kpoint<OrbitalType> *kptr, double *vtot);
+template <typename OrbitalType> void Davidson(Kpoint<OrbitalType> *kptr, double *vtot, int &notconv);
 
 
 template <typename KpointType>
