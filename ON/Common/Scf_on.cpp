@@ -191,17 +191,17 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
 
     //  maximum value in rho_old = rho-rho_prev_step
     idx = idamax(&nfp0, rho_old, &ione);
-    drho_max = rho_old[idx];
+    drho_max = fabs(rho_old[idx]);
 
     for (idx = 0; idx < nfp0; idx++)
         rho_old[idx] = vh[idx] - vh_old[idx];
     idx = idamax(&nfp0, rho_old, &ione);
-    dvh_max = rho_old[idx];
+    dvh_max = fabs(rho_old[idx]);
 
     for (idx = 0; idx < nfp0; idx++)
         rho_old[idx] = vxc[idx] - vxc_old[idx];
     idx = idamax(&nfp0, rho_old, &ione);
-    dvxc_max = rho_old[idx];
+    dvxc_max = fabs(rho_old[idx]);
 
 
     drho_max = RmgMaxAll<double>(drho_max, pct.grid_comm); 
