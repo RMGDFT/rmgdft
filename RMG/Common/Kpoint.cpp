@@ -591,8 +591,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
             /* This will calculate cR coefficients */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
 
-                int sidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
-                int sidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
+                int sidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * pct.num_nonloc_ions * ct.max_nl;
+                int sidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * pct.num_nonloc_ions * ct.max_nl;
                 double sumpsiR = 0.0;
                 double sumbetaR = 0.0;
 
@@ -618,8 +618,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
                     double *qqq = pct.qqq[oion];
 
                     /* get<beta|psi1> and <beta|psi2> */
-                    double *sint1R = &pct.newsintR_local[sidx1 + nidx * this->nstates * ct.max_nl];
-                    double *sint2R = &pct.newsintR_local[sidx2 + nidx * this->nstates * ct.max_nl];
+                    double *sint1R = &pct.newsintR_local[sidx1 + nidx * ct.max_nl];
+                    double *sint2R = &pct.newsintR_local[sidx2 + nidx * ct.max_nl];
 
 
                     for (int i = 0; i < nh; i++)
@@ -661,11 +661,11 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
                 for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
                 {
 
-                    int lsidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * ct.max_nl;
-                    int lsidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * ct.max_nl;
+                    int lsidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * pct.num_nonloc_ions * ct.max_nl;
+                    int lsidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * pct.num_nonloc_ions * ct.max_nl;
 
-                    double *ptr1R = &pct.newsintR_local[lsidx1 + ion * this->nstates * ct.max_nl];
-                    double *ptr2R = &pct.newsintR_local[lsidx2 + ion * this->nstates * ct.max_nl];
+                    double *ptr1R = &pct.newsintR_local[lsidx1 + ion * ct.max_nl];
+                    double *ptr2R = &pct.newsintR_local[lsidx2 + ion * ct.max_nl];
 
                     QMD_daxpy (ct.max_nl, -cR[ist2], ptr1R, incx, ptr2R, incx);
 
@@ -771,8 +771,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
                   double *qqq = pct.qqq[oion];
 
                   /* get<beta|psi1> and <beta|psi2> */
-                  KpointType *sint1 = &this->newsint_local[sidx1 + nidx * this->nstates * ct.max_nl];
-                  KpointType *sint2 = &this->newsint_local[sidx2 + nidx * this->nstates * ct.max_nl];
+                  KpointType *sint1 = &this->newsint_local[sidx1 + nidx * ct.max_nl];
+                  KpointType *sint2 = &this->newsint_local[sidx2 + nidx * ct.max_nl];
 
 
                   for (int i = 0; i < nh; i++)
@@ -824,8 +824,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
                   int lsidx1 = ist1 * ct.max_nl;
                   int lsidx2 = ist2 * ct.max_nl;
 
-                  KpointType *ptr1 = &this->newsint_local[lsidx1 + ion * this->nstates * ct.max_nl];
-                  KpointType *ptr2 = &this->newsint_local[lsidx2 + ion * this->nstates * ct.max_nl];
+                  KpointType *ptr1 = &this->newsint_local[lsidx1 + ion * ct.max_nl];
+                  KpointType *ptr2 = &this->newsint_local[lsidx2 + ion * ct.max_nl];
 
                   for(int inh=0;inh < ct.max_nl;inh++) {
                       ptr2[inh] = ptr2[inh] - cA * ptr1[inh];
@@ -870,13 +870,13 @@ template <class KpointType> void Kpoint<KpointType>::mix_betaxpsi1(int istate)
     for (int ion = 0; ion < pct.num_nonloc_ions; ion++) {
 
         /* For localized <beta|psi>, there is offset due to the ion*/
-        int loffset = ion * this->nstates * ct.max_nl;
+        int loffset = istate * pct.num_nonloc_ions * ct.max_nl;
         for(int idx=0;idx < ct.max_nl;idx++) 
-            this->oldsint_local[loffset + istate * ct.max_nl + idx] *= scale;
+            this->oldsint_local[loffset + ion * ct.max_nl + idx] *= scale;
 
         for(int idx=0;idx < ct.max_nl;idx++) {
-            this->oldsint_local[loffset + istate * ct.max_nl + idx] += 
-                (1.0 - scale) * this->newsint_local[loffset + istate * ct.max_nl + idx];
+            this->oldsint_local[loffset + ion * ct.max_nl + idx] += 
+                (1.0 - scale) * this->newsint_local[loffset + ion * ct.max_nl + idx];
 
         }
 
