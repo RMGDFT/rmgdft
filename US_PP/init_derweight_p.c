@@ -153,14 +153,8 @@ void init_derweight_p (SPECIES * sp,
     int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
     int istop = 9;
     if(npes < istop) istop = npes;
-    idx = 0;
-    while(idx < 9) {
-        for(jdx = 0;jdx < istop;jdx++) {
-            broot[idx] = jdx;
-            idx++;
-        }
-    }
-
+    for(idx = 0; idx < 9; idx++)
+        broot[idx] = idx %istop;
 
     if(pct.gridpe == broot[0]) {
         fftw_execute_dft (p1, weptr1x, gwptr);
@@ -208,6 +202,7 @@ void init_derweight_p (SPECIES * sp,
         fftw_execute_dft (p1, weptr3z, gwptr);
         pack_gftoc (sp, gwptr, r3z);
     }
+
 
     MPI_Bcast(r1x, 2*coarse_size, MPI_DOUBLE, broot[0], pct.grid_comm);
     MPI_Bcast(r1y, 2*coarse_size, MPI_DOUBLE, broot[1], pct.grid_comm);

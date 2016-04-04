@@ -110,13 +110,8 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
     int istop = 3;
     if(npes < istop) istop = npes;
-    idx = 0;
-    while(idx < 3) {
-        for(jdx = 0;jdx < istop;jdx++) {
-            broot[idx] = jdx;
-            idx++;
-        }
-    }
+    for(idx = 0; idx < 3; idx++)
+        broot[idx] = idx%istop;
 
     if(pct.gridpe == broot[0]) {
         fftw_execute_dft (p1, weptr1, gwptr);
