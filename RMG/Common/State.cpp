@@ -55,7 +55,8 @@ template bool State<std::complex <double> >::is_occupied(void);
 
 template <class StateType> State<StateType>::State(void)
 {
-
+    this->occupation[0] = 0.0;
+    this->occupation[1] = 0.0;
 
 }
 

@@ -81,6 +81,7 @@
 #  define		dgetri 	        dgetri_
 #  define		zgetrf 	        zgetrf_
 #  define		zgetri 	        zgetri_
+#  define		dpotri 	        dpotri_
 #  define		dgesv 	        dgesv_
 #  define		zgesv 	        zgesv_
 #  define		ZGESV 	        zgesv_
@@ -159,6 +160,7 @@ void ssyev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
 void cheev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
             double * work1, double * work2, int *lwork, double *, int *info);
 void spotri (char *, int *, double *, int *, int *);
+void dpotri (char *, int *, double *, int *, int *);
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
 void zgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
 void dgetrf( int *, int *, double *, int *, int *, int *);

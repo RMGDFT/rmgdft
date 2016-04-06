@@ -239,7 +239,7 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
 #if GPU_ENABLED
     KpointType *nlarray = (KpointType *)GpuMallocHost(sizeof(KpointType) * pct.num_tot_proj * num_states);
 #else
-    KpointType *nlarray = new KpointType[pct.num_tot_proj * num_states];
+    KpointType *nlarray = new KpointType[pct.num_tot_proj * num_states]();
 #endif
     RmgGemm (transa, transn, pct.num_tot_proj, num_states, pbasis, alpha, 
             kptr->nl_weight, pbasis, psi, pbasis, 

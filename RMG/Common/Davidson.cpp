@@ -57,7 +57,7 @@ template void Davidson<double>(Kpoint<double> *, double *, int &);
 template void Davidson<std::complex<double> >(Kpoint<std::complex<double>> *, double *, int &);
 
 extern "C" void dsygvd_(int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, double *eigs, double *work, int *lwork, int *iwork, int *liwork, int *info);
-int local_diag(double *hr, double *sr, double *eigs, double *vr, int nbase, int nstates, int &notconv);
+int local_diag(double *hr, double *sr, double *eigs, double *vr, int nbase, int nstates);
 
 template <typename OrbitalType>
 void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
@@ -67,11 +67,10 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     OrbitalType beta(0.0);
     double d0 = 1.0;
     if(ct.rms < 0.1) d0 = fabs(log10(ct.rms));
-    double occupied_tol = std::min(ct.rms/d0, 1.0e-5);
+    double occupied_tol = std::min(ct.rms/d0, 1.0e-6);
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 5.0e-12);
     double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 1.0e-5 );
-//unoccupied_tol = occupied_tol * 10.0;
     if(pct.gridpe == 0)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
     RT1 = new RmgTimer("Davidson: diagonals");
@@ -103,8 +102,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     if(ct.is_gamma) factor = 1;
     OrbitalType *NULLptr = NULL;
 
-    int *isort = new int[ct.max_states];
-    double *ked = new double[pbasis]();
     double *eigs = new double[ct.max_states];
     double *eigsw = new double[ct.max_states];
     bool *converged = new bool[ct.max_states]();
@@ -135,13 +132,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot, ke); 
     delete RT1;
     OrbitalType *s_psi = kptr->ns;
-
-    //for(int st = 0;st < nstates;st++) {
-    for(int st = 0;st < nstates;st++) {
-        for(int idx=0;idx<pbasis;idx++) ked[idx] += std::real(ke[st*pbasis+idx]);
-    }
-    for(int idx=0;idx<pbasis;idx++)ked[idx] = ked[idx] / (double)nstates;
-
 
     // Copy current eigs into compact array
     for(int st1 = 0;st1 < nstates;st1++) eigs[st1] = kptr->Kstates[st1].eig[0];
@@ -182,7 +172,8 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 #endif
     delete RT1;
 
-    for(int st1 = 0;st1 < ct.max_states;st1++) isort[st1] = st1;
+    local_diag((double *)hr, (double *)sr, eigs, (double *)vr, nstates, nstates);
+    for(int st=0;st < nstates;st++)eigsw[st] = eigs[st];
 
     for(int steps = 0;steps < max_steps;steps++) {
 
@@ -194,8 +185,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
                 if(np != st) {
                     for(int idx=0;idx < ct.max_states;idx++) vr[idx + np*ct.max_states] = vr[idx + st*ct.max_states];
-                    isort[np] = isort[st];
-                    for(int idx=0;idx < pbasis;idx++) ke[idx + np*pbasis] = ke[idx + st*pbasis];
                 }
                 eigsw[nbase + np] = eigs[st];
                 np++;                
@@ -205,7 +194,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         }
 
         // expand the basis set with the residuals ( H - e*S )|psi>
-        if(steps == 0) {
+        if(steps == 50) {
 
             for(int st1=0;st1 < notconv;st1++) {
                 for(int idx = 0;idx < pbasis;idx++) {
@@ -233,11 +222,10 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
             for(int idx = 0;idx < pbasis;idx++) {
                 double scale;
-                scale = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
-                //scale = std::real(ke[isort[st1]*pbasis + idx] + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
-                //scale = std::real(ked[idx] + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
-                //scale = -1.0 / (scale + std::copysign(0.1,scale));
-
+scale = std::real(ke[st1*pbasis + idx] + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
+scale = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
+scale = std::real(ke[st1*pbasis + idx]);
+scale = std::copysign(fabs(scale) + 0.00001, scale);
                 scale = -1.0 / scale;
                 double d1 = std::real(psi[(st1 + nbase)*pbasis + idx]);
                 psi[(st1 + nbase)*pbasis + idx] = scale*d1;
@@ -246,7 +234,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
 
 
-#if 0
+#if 1
         // Normalize correction vectors
         RT1 = new RmgTimer("Davidson: normalization");
 //for(int st1=0;st1<notconv;st1++)kptr->Kstates[nbase+st1].normalize(kptr->Kstates[nbase+st1].psi, st1);
@@ -383,7 +371,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
 
 
-        // Copy updated eigenvalues back
+        // Check convergence
         int tnotconv = nstates;
         for(int st=0;st < nstates;st++) {
             //printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
@@ -399,19 +387,22 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         }
 
         notconv = tnotconv;
+        // Copy updated eigenvalues back
         for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];
 
         // Check if we converged to the desired tolerance and if so return. If we
         // have exceeded the maximum number of iterations then we need to do something else.
         // If the expanded basis is getting too large then we need to rotate the orbitals
         // and start the davidson iteration again.
-        if(((steps == (max_steps-1)) || ((nbase+notconv) >= ct.max_states) || (notconv == 0))) {
+        if(((steps == (max_steps-1)) || ((nbase+notconv) > ct.max_states) || (notconv == 0))) {
 
             // Rotate orbitals
             RT1 = new RmgTimer("Davidson: rotate orbitals");
-            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, h_psi, pbasis, 
+            OrbitalType *npsi = new OrbitalType[nstates*pbasis];
+            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, npsi, pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
-            for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = h_psi[idx];
+            for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = npsi[idx];
+            delete [] npsi;
             delete RT1;
 
             if(notconv == 0) {
@@ -435,17 +426,21 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, h_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
             for(int idx=0;idx < nstates*pbasis;idx++)h_psi[idx] = psi[nstates*pbasis + idx];
+
+            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, ke, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
+            for(int idx=0;idx < nstates*pbasis;idx++)ke[idx] = psi[nstates*pbasis + idx];
+
             delete RT1;
 
 
             // Reset hr,sr,vr
             RT1 = new RmgTimer("Davidson: reset hr,sr,vr");
-            for(int st1 = 0;st1 < ct.max_states;st1++) isort[st1] = st1;
             nbase = nstates;
             for(int ix=0;ix < ct.max_states*ct.max_states;ix++) hr[ix] = OrbitalType(0.0);
             for(int ix=0;ix < ct.max_states*ct.max_states;ix++) sr[ix] = OrbitalType(0.0);
             for(int ix=0;ix < ct.max_states*ct.max_states;ix++) vr[ix] = OrbitalType(0.0);
-            for(int st=0;st < nstates;st++) {
+            for(int st=0;st < nbase;st++) {
                 hr[st + st*ct.max_states] = eigs[st];
                 sr[st + st*ct.max_states] = OrbitalType(1.0);
                 vr[st + st*ct.max_states] = OrbitalType(1.0);
@@ -474,8 +469,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     delete [] converged;
     delete [] eigsw;
     delete [] eigs;
-    delete [] ked;
-    delete [] isort;
 
 
     RT1 = new RmgTimer("Davidson: Betaxpsi");
