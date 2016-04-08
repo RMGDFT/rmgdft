@@ -36,6 +36,7 @@
 template void CPP_pack_stop<double>(double*, double*, int, int, int);
 template void CPP_pack_stop<float>(float*, float*, int, int, int);
 template void CPP_pack_stop<std::complex<float> >(std::complex<float>*, std::complex<float>*, int, int, int);
+template void CPP_pack_stop<std::complex<double> >(std::complex<double>*, std::complex<double>*, int, int, int);
 template void CPP_pack_ptos<double>(double*, double*, int, int, int);
 template void CPP_pack_ptos<float>(float*, float*, int, int, int);
 template void CPP_pack_ptos<std::complex<float> >(std::complex<float> *, std::complex<float>*, int, int, int);
