@@ -218,22 +218,14 @@ int main(int argc, char **argv)
         vxc_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
         vh_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
 
+        vh_corr = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+        vh_x = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+        vh_y = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+        vh_z = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+
 
         InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old, ControlMap);
 
-        vh_corr = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
-        
-        for(int i = 0; i < Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO); i++) vh_corr[i] = 0.0;
-
-        if(ct.dipole_corr[0] + ct.dipole_corr[1] + ct.dipole_corr[2] > 0)
-        {
-            vh_x = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
-            vh_y = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
-            vh_z = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
-            
-            VhcorrDipoleInit(vh_x, vh_y, vh_z, rhoc);
-
-        }
 
         my_barrier();
 

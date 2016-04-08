@@ -124,7 +124,7 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
         /* save data to file for future restart */
         if (ct.checkpoint)
             if ((ct.md_steps % ct.checkpoint == 0) && (ct.md_steps))
-                write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, states);
+                write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
 
 
         /* check force convergence */

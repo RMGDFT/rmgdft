@@ -41,6 +41,7 @@ extern double *work_memory;
 extern double *wave_global;
 extern double *rho_global;
 extern double *vh_old, *vxc_old, *vh_corr, *vh_x, *vh_y, *vh_z;
+extern double *vh_corr_old;
 
 
 extern double *vcomp, *peaks, *vext ;

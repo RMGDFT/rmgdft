@@ -80,12 +80,15 @@ void DipoleCorrection(double *rho_tot, double *rhoc, double *vh_dipole, double *
         dipole_ion[i] *= get_vel_f();
     }
 
+    
+    if(pct.gridpe == 0) printf("\n dipole %e %e %e", dipole_ele[0] - dipole_ion[0],dipole_ele[1] - dipole_ion[1],dipole_ele[2] - dipole_ion[2]);
+
 
     for(idx = 0; idx < nfp0; idx++) 
     {
-        vh_dipole[idx]  = vh_x[idx] *(dipole_ele[0] - dipole_ion[0]);
-        vh_dipole[idx] += vh_y[idx] *(dipole_ele[1] - dipole_ion[1]);
-        vh_dipole[idx] += vh_z[idx] *(dipole_ele[2] - dipole_ion[2]);
+        vh_dipole[idx]  = vh_x[idx] *(dipole_ele[0] - dipole_ion[0]) ;
+        vh_dipole[idx] += vh_y[idx] *(dipole_ele[1] - dipole_ion[1]) ;
+        vh_dipole[idx] += vh_z[idx] *(dipole_ele[2] - dipole_ion[2]) ;
     }
 }
 

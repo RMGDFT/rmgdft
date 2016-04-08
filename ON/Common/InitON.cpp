@@ -217,6 +217,12 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
 #endif
 
+    if(ct.dipole_corr[0] + ct.dipole_corr[1] + ct.dipole_corr[2] > 0)
+    {
+        VhcorrDipoleInit(vh_x, vh_y, vh_z, rhoc);
+    }
+
+
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
     double fac;
     fac = 1.0 - ct.spin_flag * 2.0/3.0 /(1.0 + pct.spinpe);
@@ -262,7 +268,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         case 1:
         case 5:
         case 6:
-            read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, states);
+            read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
             break;
 
@@ -282,15 +288,17 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
             get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
+            {
                 vh_old[idx] = vh[idx];
-            for (idx = 0; idx < get_FP0_BASIS(); idx++)
                 vxc_old[idx] = vxc[idx];
+                vh_corr[idx] = 0.0;
+            }
     }
 
 
     RmgTimer *RT8 = new RmgTimer("1-TOTAL: init: init_ddd");
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
-        vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx];
+        vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vh_corr[idx];
 
     get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
     get_ddd(vtot);
@@ -312,3 +320,5 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
 
 }
+
+

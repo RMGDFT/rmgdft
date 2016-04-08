@@ -221,9 +221,11 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
     dvxc_max = RmgMaxAll<double>(dvxc_max, pct.grid_comm); 
 
     if(dvxc_max < 1.0e-10) 
+    {
         printf("\n IDX  %d ", idx);
         for (idx = 0; idx < nfp0; idx++)
         printf("\n idx vxc %d  %d  %e  %e  rho = %e  %e", pct.gridpe, idx, vxc[idx], vxc_old[idx], rho[idx], rho_pre[idx]);
+    }
 
     ct.rms = fabs(dvh_max) + fabs(dvxc_max);
     

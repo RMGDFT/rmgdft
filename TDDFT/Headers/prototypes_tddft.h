@@ -27,8 +27,6 @@ void mat_global_to_dist (double *global_mat, double *dist_mat, int *desca);
 
 void eldyn_(int *num_states, double *, double *, double *, double *, int *, int*);
 FILE *my_fopen_increment(char *name);
-void write_data(char *name, double *vh, double *vxc, double *vh_old,
-        double *vxc_old, double *rho, STATE * states);
 
 
 #ifdef __cplusplus

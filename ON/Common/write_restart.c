@@ -153,7 +153,7 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old, double
 	sprintf (newname, "%s%d", name, pct.gridpe);
 
 
-    write_data (name, vh, vxc, vh_old, vxc_old, rho, states);
+    write_data (name, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
 
     write_time = my_crtc () - time0;
 

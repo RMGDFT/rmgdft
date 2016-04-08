@@ -122,7 +122,7 @@ double *vtot_global;
 double *work_memory;
 double *wave_global;
 double *rho_global;
-double *vxc_old, *vh_old;
+double *vxc_old, *vh_old, *vh_corr, *vh_x, *vh_y, *vh_z, *vh_corr_old;
 
 
 int mpi_nprocs;
@@ -223,6 +223,11 @@ int main(int argc, char **argv)
      */
     vxc_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
     vh_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+    vh_corr = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+    vh_corr_old = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+    vh_x = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+    vh_y = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+    vh_z = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
 
 
     InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc,
@@ -438,11 +443,13 @@ vh_old, vxc_old, ControlMap);
                 printf("\n Warning: total charge Normalization constant = %e  \n", t2-1.0);
 
             RmgTimer *RT4b = new RmgTimer("1-TOTAL: Updatepot");
+            dcopy(&FP0_BASIS, vh_corr, &ione, vh_corr_old, &ione);
             UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
             delete(RT4b);
 
             RmgTimer *RT4c = new RmgTimer("1-TOTAL: GetHS");
-            for (i = 0; i < get_FP0_BASIS(); i++) vtot[i] = vh[i] +vxc[i] - vh_old[i] - vxc_old[i];
+            for (i = 0; i < get_FP0_BASIS(); i++) 
+                vtot[i] = vh[i] +vxc[i] - vh_old[i] - vxc_old[i] +vh_corr[i] - vh_corr_old[i];
             
             get_vtot_psi(vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
@@ -476,7 +483,7 @@ vh_old, vxc_old, ControlMap);
                 tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
         if((ct.scf_steps +1)%ct.checkpoint == 0)
         {
-            write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
+            write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, vh_corr, &states[0]); 
             if(pct.gridpe == 0)
             {
                 sprintf(filename, "%s%s", ct.outfile, ".TDDFT_restart");
@@ -497,7 +504,7 @@ vh_old, vxc_old, ControlMap);
 
 
     tot_steps = ct.scf_steps + pre_steps;
-    write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, &states[0]); 
+    write_data(ct.outfile, vh, vxc, vh_old, vxc_old, rho, vh_corr, &states[0]); 
     if(pct.gridpe == 0)
     {
         sprintf(filename, "%s%s", ct.outfile, ".TDDFT_restart");

@@ -33,7 +33,7 @@
  */
 
 void read_data(char *name, double *vh, double *vxc, double *vh_old,
-        double *vxc_old, double *rho, STATE * states)
+        double *vxc_old, double *rho, double *vh_corr, STATE * states)
 {
     int fhand;
     int state;
@@ -95,6 +95,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
     MPI_File_read(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_read(mpi_fhand, vh_old, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_read(mpi_fhand, vxc_old, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_read(mpi_fhand, vh_corr, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_close(&mpi_fhand);
 
     my_barrier();

@@ -142,6 +142,7 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc)
 
         }
     }
+
 }
 
 double gaussintegral(double r, int n)
@@ -170,7 +171,7 @@ double gaussintegral(double r, int n)
     vcorr = fac2n1 *rootpi /(pow(2, n+1)) * erf(r);
 
     sumj = 0.0;
-    for(j = 0; j <n-1; j++)
+    for(j = 0; j <=n-1; j++)
     {
         fac2j1 = 1;
         for(i = 1; i<=2*j+1; i+=2) fac2j1 *= i;

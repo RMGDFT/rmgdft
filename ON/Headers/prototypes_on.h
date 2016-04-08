@@ -52,7 +52,7 @@ void assign_weight_on(SPECIES *, fftw_complex *, double *);
 void quench(STATE *, STATE *, double *, double *, double *, double *, double *, double *, double *, double *, double *);
 void app10_del2(double *, double *, int, int, int, double, double, double);
 void sl_init_comm(int *, int, int, MPI_Comm comm);
-void read_data(char *, double *, double *, double *, double *, double *, STATE *);
+void read_data(char *, double *, double *, double *, double *, double *, double *, STATE *);
 void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
 double app_cil_orbital (double * a, double * b, int dimx, int dimy, int dimz,
               double gridhx, double gridhy, double gridhz);
@@ -633,7 +633,7 @@ void get_ion_ion_overlap_region_orbit ();
 
 void is_state_overlap (STATE * states, char *);
 void init_wf_lcao(STATE * states);
-void write_data(char *name, double *vh, double *vxc, double *vh_old,
+void write_data(char *name, double *, double *vh, double *vxc, double *vh_old,
         double *vxc_old, double *rho, STATE * states);
 
 void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
