@@ -49,6 +49,9 @@ template <typename KpointType>
 void Diagonals(Kpoint<KpointType> *kptr);
 template <typename RmgType>
 void CPP_app_smooth_test (RmgType * f, RmgType *b, int dimx, int dimy, int dimz);
+template <typename OrbitalType>
+void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType *res, double fd_diag, double *eigs, double *vtot, int notconv);
+
 
 
 

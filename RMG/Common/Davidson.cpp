@@ -207,6 +207,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         }
 
         // expand the basis set with the residuals ( H - e*S )|psi>
+        RT1 = new RmgTimer("Davidson: generate residuals");
         RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
 
@@ -216,54 +217,16 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
         RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
+        delete RT1;
 
-        int dimx = G->get_PX0_GRID(1);
-        int dimy = G->get_PY0_GRID(1);
-        int dimz = G->get_PZ0_GRID(1);
-        double *work_t = new double[(dimx + 2)*(dimy + 2)*(dimz + 2)];
-        double *work1_t = new double[(dimx + 2)*(dimy + 2)*(dimz + 2)];
-        double *work2_t = new double[(dimx + 2)*(dimy + 2)*(dimz + 2)];
-                                                                                                        
         // Apply preconditioner
-        for(int st1=0;st1 < notconv;st1++) {
+        RT1 = new RmgTimer("Davidson: precondition");
+        DavPreconditioner (kptr, psi, &psi[nbase*pbasis], fd_diag, &eigsw[nbase], vtot, notconv);
+        delete RT1;
 
-            double eps1 = 0.0;
-            double eps2 = 0.0;
-            for(int idx = 0;idx < pbasis;idx++) {
-                double a1 = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
-                a1 = 1.0 / a1;
-                double r = std::real(psi[(st1 + nbase)*pbasis + idx]);
-                double x = std::real(psi[st1*pbasis + idx]);
-                eps1 += r*x*a1;
-                eps2 += x*x*a1;
-            }
-            double eps = eps1 / eps2;
-
-            for(int idx = 0;idx < pbasis;idx++) {
-                double a1 = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
-
-                a1 = 1.0 / a1;
-                double r = std::real(psi[(st1 + nbase)*pbasis + idx]);
-                double x = std::real(psi[st1*pbasis + idx]);
-                psi[(st1 + nbase)*pbasis + idx] = a1*(-r + eps*x);
-                //psi[(st1 + nbase)*pbasis + idx] = a1*(-r);
-            }
-
-            CPP_pack_ptos<double> (work_t, (double *)&psi[(st1 + nbase)*pbasis], dimx, dimy, dimz);
-            T->trade_images (work_t, dimx, dimy, dimz, FULL_TRADE);
-            CPP_app_smooth<double> (work_t, work1_t, dimx, dimy, dimz);
-            T->trade_images (work1_t, dimx, dimy, dimz, FULL_TRADE);
-            CPP_app_smooth<double> (work1_t, work_t, dimx, dimy, dimz);
-            CPP_pack_stop<double> (work_t, (double *)&psi[(st1 + nbase)*pbasis], dimx, dimy, dimz);
-
-        }
-        delete [] work2_t;
-        delete [] work1_t;
-        delete [] work_t;
-
-
-#if 1
-        // Normalize correction vectors
+        // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials
+        // but that is OK. The goal is to get the magnitudes of all of the vectors being passed to the
+        // diagonalizer roughly equal to improve stability.
         RT1 = new RmgTimer("Davidson: normalization");
         double *norms = new double[notconv]();
         for(int st1=0;st1 < notconv;st1++) {
@@ -278,7 +241,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         }
         delete [] norms;
         delete RT1;
-#endif
+
 
         // Apply Hamiltonian to the new vectors
         RT1 = new RmgTimer("Davidson: Betaxpsi");

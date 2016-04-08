@@ -1,5 +1,6 @@
 add_library (RMG_Common
 app_smooth_test.cpp
+DavPreconditioner.cpp
 ApplyHamiltonian.cpp
 ApplyHamiltonianBlock.cpp 
 Davidson.cpp

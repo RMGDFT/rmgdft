@@ -94,6 +94,7 @@ void Diagonals(Kpoint<KpointType> *kptr)
     int dimy = Rmg_G->get_PY0_GRID(1);
     int dimz = Rmg_G->get_PZ0_GRID(1);
 
+#if 0
     KpointType *work_t = new KpointType[(dimx+2)*(dimy+2)*(dimz+2)];
     KpointType *work1_t = new KpointType[(dimx+2)*(dimy+2)*(dimz+2)];
 
@@ -110,5 +111,6 @@ void Diagonals(Kpoint<KpointType> *kptr)
     kptr->T->trade_images (work1_t, dimx, dimy, dimz, FULL_TRADE);
     CPP_app_smooth (work1_t, work_t, dimx, dimy, dimz);
     CPP_pack_stop (work_t, kptr->s_diag, dimx, dimy, dimz);
+#endif
 }
 
