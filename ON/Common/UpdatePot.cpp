@@ -34,9 +34,6 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     dcopy(&nfp0, vxc, &ione, vxc_old, &ione);
     dcopy(&nfp0, vh, &ione, vh_old, &ione);
 
-    for (idx = 0; idx < nfp0; idx++)
-        vtot[idx] = vxc[idx] + vh[idx];
-
     /* Generate exchange-correlation potential */
     get_vxc(rho, rho_oppo, rhocore, vxc);
 
@@ -56,7 +53,7 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
             rho_tot[idx] = rho[idx] ;
     }
 
-    VhDriver(rho_tot, rhoc, vh);
+    VhDriver(rho_tot, rhoc, vh, vh_corr);
 //    get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
 
 
@@ -64,7 +61,7 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 
     /* evaluate correction vh+vxc */
     for (idx = 0; idx < nfp0; idx++)
-        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vh_corr[idx];
 
 
     get_ddd(vtot);

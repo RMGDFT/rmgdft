@@ -111,7 +111,7 @@ double *vtot_global;
 double *work_memory;
 double *wave_global;
 double *rho_global;
-double *vxc_old, *vh_old;
+double *vxc_old, *vh_old, *vh_corr, *vh_x, *vh_y, *vh_z;
 
 
 int mpi_nprocs;
@@ -221,6 +221,20 @@ int main(int argc, char **argv)
 
         InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old, ControlMap);
 
+        vh_corr = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+        
+        for(int i = 0; i < Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO); i++) vh_corr[i] = 0.0;
+
+        if(ct.dipole_corr[0] + ct.dipole_corr[1] + ct.dipole_corr[2] > 0)
+        {
+            vh_x = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+            vh_y = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+            vh_z = new double[Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO)];
+            
+            VhcorrDipoleInit(vh_x, vh_y, vh_z, rhoc);
+
+        }
+
         my_barrier();
 
         delete(RTi);
@@ -249,7 +263,15 @@ int main(int argc, char **argv)
         RmgTimer *RTw = new RmgTimer("1-TOTAL: write");
         write_rho_x(vh, "vh_xxx");
         write_rho_y(vh, "vh_yyy");
+
         write_rho_z(vh, "vh_zzz");
+        write_rho_z(vxc, "vxc_zzz");
+        write_rho_z(vnuc, "vnuc_zzz");
+        write_rho_z(vh_corr, "vh_corr_zzz");
+        write_rho_z(rho, "rho_zzz");
+
+        write_rho_x(vh_corr, "vh_xxx");
+        write_rho_y(vh_corr, "vh_yyy");
         write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]); 
 
         /* Save state information to file */

@@ -18,7 +18,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 
-void VhDriver(double *rho_tot, double *rhoc, double *vh)
+void VhDriver(double *rho_tot, double *rhoc, double *vh, double *vh_corr)
 {
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     int FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
@@ -41,4 +41,9 @@ void VhDriver(double *rho_tot, double *rhoc, double *vh)
 
         delete(RT1);
     }
+
+
+    if(ct.dipole_corr[0] + ct.dipole_corr[1] + ct.dipole_corr[2] > 0) 
+        DipoleCorrection(rho_tot, rhoc, vh_corr, vh_x, vh_y, vh_z);
+
 }

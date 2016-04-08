@@ -108,6 +108,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     Ri::ReadVector<int> def_kpoint_mesh({{1,1,1}});
     Ri::ReadVector<int> kpoint_is_shift;
     Ri::ReadVector<int> def_kpoint_is_shift({{0,0,0}});
+
+    static Ri::ReadVector<int> DipoleCorrection;
+    Ri::ReadVector<int> DefDipoleCorrection({{0,0,0}});
+
     double celldm[6];
     static double grid_spacing;
     double a0[3], a1[3], a2[3], omega;
@@ -140,6 +144,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("wavefunction_grid", &WavefunctionGrid, &DefWavefunctionGrid, 3, OPTIONAL, 
                      "Three-D (x,y,z) dimensions of the grid the wavefunctions are defined on.\n", 
                      "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid.\n");
+
+    If.RegisterInputKey("dipole_correction", &DipoleCorrection, &DefDipoleCorrection, 3, OPTIONAL, 
+                     "(1,1,1) for molecule, dipole correction in all directions. \n", 
+                     "(0,0,0) means no correction by default, (1,0,0) or others have not programed\n");
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh.\n", 
@@ -835,6 +843,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     int NX_GRID = WavefunctionGrid.vals.at(0);
     int NY_GRID = WavefunctionGrid.vals.at(1);
     int NZ_GRID = WavefunctionGrid.vals.at(2);
+
+    lc.dipole_corr[0] = DipoleCorrection.vals.at(0);
+    lc.dipole_corr[1] = DipoleCorrection.vals.at(1);
+    lc.dipole_corr[2] = DipoleCorrection.vals.at(2);
 
     CheckAndTerminate(NX_GRID, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + boost::lexical_cast<std::string>(NX_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + boost::lexical_cast<std::string>(NY_GRID) + " and only postive values are allowed.");

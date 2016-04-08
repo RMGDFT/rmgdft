@@ -43,7 +43,9 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     int flag;
     int steps;
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    double *rho_pre;
 
+    rho_pre = new double[nfp0];
     RmgTimer *RT = new RmgTimer("2-SCF");
 
     ct.move_centers_at_this_step = 0;
@@ -101,6 +103,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         rmg_printf("FERMI ENERGY = %15.8f\n", ct.efermi * Ha_eV);
 
     dcopy(&nfp0, rho, &ione, rho_old, &ione);
+    dcopy(&nfp0, rho, &ione, rho_pre, &ione);
 
     RmgTimer *RT2 = new RmgTimer("2-SCF: get_new_rho");
     GetNewRho_on(states, rho, work_matrix_row);
@@ -156,7 +159,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
     delete(RT4);
 
-    CheckConvergence(vxc, vh, vxc_old, vh_old, rho_old, CONVERGENCE);
+    CheckConvergence(vxc, vh, vxc_old, vh_old, rho, rho_pre, CONVERGENCE);
 
     RmgTimer *RT5 = new RmgTimer("2-SCF: get_te");
     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
@@ -175,11 +178,13 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
     delete(RT);
+
+    delete [] rho_pre;
 }                               /* end scf */
 
 
 
-void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old, double *rho_old, int *CONVERGENCE)
+void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old, double *rho, double *rho_pre, int *CONVERGENCE)
 {
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     int FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
@@ -190,23 +195,35 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
 
 
     //  maximum value in rho_old = rho-rho_prev_step
-    idx = idamax(&nfp0, rho_old, &ione);
-    drho_max = fabs(rho_old[idx]);
+    for (idx = 0; idx < nfp0; idx++)
+        rho_old[idx] = fabs(rho[idx] - rho_pre[idx]);
+    drho_max = *std::max_element(rho_old, rho_old+nfp0);
+//    idx = idamax(&nfp0, rho_old, &ione);
+//    drho_max = fabs(rho_old[idx]);
 
     for (idx = 0; idx < nfp0; idx++)
-        rho_old[idx] = vh[idx] - vh_old[idx];
-    idx = idamax(&nfp0, rho_old, &ione);
-    dvh_max = fabs(rho_old[idx]);
+        rho_old[idx] = fabs(vh[idx] - vh_old[idx]);
+    dvh_max = *std::max_element(rho_old, rho_old+nfp0);
+//    idx = idamax(&nfp0, rho_old, &ione);
+//    dvh_max = fabs(rho_old[idx]);
 
     for (idx = 0; idx < nfp0; idx++)
-        rho_old[idx] = vxc[idx] - vxc_old[idx];
-    idx = idamax(&nfp0, rho_old, &ione);
-    dvxc_max = fabs(rho_old[idx]);
+        rho_old[idx] = fabs(vxc[idx] - vxc_old[idx]);
+    dvxc_max = *std::max_element(rho_old, rho_old+nfp0);
+//    idx = idamax(&nfp0, rho_old, &ione);
+//    dvxc_max = fabs(rho_old[idx]);
+
+    
 
 
     drho_max = RmgMaxAll<double>(drho_max, pct.grid_comm); 
     dvh_max = RmgMaxAll<double>(dvh_max, pct.grid_comm); 
     dvxc_max = RmgMaxAll<double>(dvxc_max, pct.grid_comm); 
+
+    if(dvxc_max < 1.0e-10) 
+        printf("\n IDX  %d ", idx);
+        for (idx = 0; idx < nfp0; idx++)
+        printf("\n idx vxc %d  %d  %e  %e  rho = %e  %e", pct.gridpe, idx, vxc[idx], vxc_old[idx], rho[idx], rho_pre[idx]);
 
     ct.rms = fabs(dvh_max) + fabs(dvxc_max);
     
@@ -220,8 +237,8 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
 
         fflush(NULL);
 
-        if (ct.rms < ct.thr_rms)
-            *CONVERGENCE = TRUE;
     }
+    if (ct.rms < ct.thr_rms)
+        *CONVERGENCE = TRUE;
 
 }
