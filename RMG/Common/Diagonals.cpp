@@ -31,6 +31,9 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "Solvers.h"
+#include "TradeImages.h"
+#include "packfuncs.h"
+#include "RmgParallelFft.h"
 #include "../Headers/prototypes.h"
 
 
@@ -87,6 +90,25 @@ void Diagonals(Kpoint<KpointType> *kptr)
         }
     }
 
+    int dimx = Rmg_G->get_PX0_GRID(1);
+    int dimy = Rmg_G->get_PY0_GRID(1);
+    int dimz = Rmg_G->get_PZ0_GRID(1);
 
+    KpointType *work_t = new KpointType[(dimx+2)*(dimy+2)*(dimz+2)];
+    KpointType *work1_t = new KpointType[(dimx+2)*(dimy+2)*(dimz+2)];
+
+    CPP_pack_ptos (work_t, kptr->vnl_diag, dimx, dimy, dimz);
+    kptr->T->trade_images (work_t, dimx, dimy, dimz, FULL_TRADE);
+    CPP_app_smooth (work_t, work1_t, dimx, dimy, dimz);
+    kptr->T->trade_images (work1_t, dimx, dimy, dimz, FULL_TRADE);
+    CPP_app_smooth (work1_t, work_t, dimx, dimy, dimz);
+    CPP_pack_stop (work_t, kptr->vnl_diag, dimx, dimy, dimz);
+
+    CPP_pack_ptos (work_t, kptr->s_diag, dimx, dimy, dimz);
+    kptr->T->trade_images (work_t, dimx, dimy, dimz, FULL_TRADE);
+    CPP_app_smooth (work_t, work1_t, dimx, dimy, dimz);
+    kptr->T->trade_images (work1_t, dimx, dimy, dimz, FULL_TRADE);
+    CPP_app_smooth (work1_t, work_t, dimx, dimy, dimz);
+    CPP_pack_stop (work_t, kptr->s_diag, dimx, dimy, dimz);
 }
 

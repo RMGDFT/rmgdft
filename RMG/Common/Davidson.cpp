@@ -22,6 +22,8 @@
 
 #include <complex>
 #include <omp.h>
+#include <cmath>
+#include <float.h>
 #include "FiniteDiff.h"
 #include "const.h"
 #include "rmgtypedefs.h"
@@ -32,12 +34,15 @@
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "RmgGemm.h"
+#include "Mgrid.h"
 #include "RmgException.h"
 #include "Subdiag.h"
 #include "Solvers.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "RmgParallelFft.h"
+#include "TradeImages.h"
+#include "packfuncs.h"
 
 #include "transition.h"
 #include "blas.h"
@@ -63,14 +68,18 @@ template <typename OrbitalType>
 void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 {
     RmgTimer RT0("Davidson"), *RT1;
+    BaseGrid *G = kptr->G;
+    TradeImages *T = kptr->T;
+
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
+    OrbitalType half(0.5);
     double d0 = 1.0;
     if(ct.rms < 0.1) d0 = fabs(log10(ct.rms));
     double occupied_tol = std::min(ct.rms/d0, 1.0e-6);
     // Need this since the eigensolver may become unstable for very small residuals
-    occupied_tol = std::max(occupied_tol, 5.0e-12);
-    double unoccupied_tol = std::max( ( occupied_tol * 5.0 ), 1.0e-5 );
+    occupied_tol = std::max(occupied_tol, 5.0e-14);
+    double unoccupied_tol = std::max( ( occupied_tol * 10.0 ), 1.0e-6 );
     if(pct.gridpe == 0)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
     RT1 = new RmgTimer("Davidson: diagonals");
@@ -96,6 +105,9 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
                  ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
     OrbitalType alphavel(vel);
 
+    double avg_potential = 0.0;
+    for(int idx = 0;idx < pbasis;idx++) avg_potential += vtot[idx];
+    avg_potential = avg_potential / (double)pbasis;
 
     // For MPI routines
     int factor = 2;
@@ -174,6 +186,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
     local_diag((double *)hr, (double *)sr, eigs, (double *)vr, nstates, nstates);
     for(int st=0;st < nstates;st++)eigsw[st] = eigs[st];
+    for(int st=0;st < nstates;st++)eigsw[st+nbase] = eigs[st];
 
     for(int steps = 0;steps < max_steps;steps++) {
 
@@ -194,50 +207,64 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         }
 
         // expand the basis set with the residuals ( H - e*S )|psi>
-        if(steps == 50) {
+        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
 
-            for(int st1=0;st1 < notconv;st1++) {
-                for(int idx = 0;idx < pbasis;idx++) {
-                    psi[(st1 + nbase)*pbasis + idx] = h_psi[st1*pbasis + idx] - eigsw[nbase + st1]*s_psi[st1*pbasis + idx];
-                }
-            }
-
-        }
-        else {
-
-            RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
-                    NULLptr, NULLptr, NULLptr, false, true, false, true);
-
-            for(int st1=0;st1 < notconv;st1++) {
-                for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis + idx];
-            }
-
-            RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
-                    NULLptr, NULLptr, NULLptr, false, true, false, true);
-
+        for(int st1=0;st1 < notconv;st1++) {
+            for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis + idx];
         }
 
+        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
+                NULLptr, NULLptr, NULLptr, false, true, false, true);
+
+        int dimx = G->get_PX0_GRID(1);
+        int dimy = G->get_PY0_GRID(1);
+        int dimz = G->get_PZ0_GRID(1);
+        double *work_t = new double[(dimx + 2)*(dimy + 2)*(dimz + 2)];
+        double *work1_t = new double[(dimx + 2)*(dimy + 2)*(dimz + 2)];
+        double *work2_t = new double[(dimx + 2)*(dimy + 2)*(dimz + 2)];
+                                                                                                        
         // Apply preconditioner
         for(int st1=0;st1 < notconv;st1++) {
 
+            double eps1 = 0.0;
+            double eps2 = 0.0;
             for(int idx = 0;idx < pbasis;idx++) {
-                double scale;
-scale = std::real(ke[st1*pbasis + idx] + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
-scale = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
-scale = std::real(ke[st1*pbasis + idx]);
-scale = std::copysign(fabs(scale) + 0.00001, scale);
-                scale = -1.0 / scale;
-                double d1 = std::real(psi[(st1 + nbase)*pbasis + idx]);
-                psi[(st1 + nbase)*pbasis + idx] = scale*d1;
+                double a1 = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
+                a1 = 1.0 / a1;
+                double r = std::real(psi[(st1 + nbase)*pbasis + idx]);
+                double x = std::real(psi[st1*pbasis + idx]);
+                eps1 += r*x*a1;
+                eps2 += x*x*a1;
             }
-        }
+            double eps = eps1 / eps2;
 
+            for(int idx = 0;idx < pbasis;idx++) {
+                double a1 = std::real(fd_diag + vtot[idx] + kptr->vnl_diag[idx] - eigsw[st1+nbase]*kptr->s_diag[idx]);
+
+                a1 = 1.0 / a1;
+                double r = std::real(psi[(st1 + nbase)*pbasis + idx]);
+                double x = std::real(psi[st1*pbasis + idx]);
+                psi[(st1 + nbase)*pbasis + idx] = a1*(-r + eps*x);
+                //psi[(st1 + nbase)*pbasis + idx] = a1*(-r);
+            }
+
+            CPP_pack_ptos<double> (work_t, (double *)&psi[(st1 + nbase)*pbasis], dimx, dimy, dimz);
+            T->trade_images (work_t, dimx, dimy, dimz, FULL_TRADE);
+            CPP_app_smooth<double> (work_t, work1_t, dimx, dimy, dimz);
+            T->trade_images (work1_t, dimx, dimy, dimz, FULL_TRADE);
+            CPP_app_smooth<double> (work1_t, work_t, dimx, dimy, dimz);
+            CPP_pack_stop<double> (work_t, (double *)&psi[(st1 + nbase)*pbasis], dimx, dimy, dimz);
+
+        }
+        delete [] work2_t;
+        delete [] work1_t;
+        delete [] work_t;
 
 
 #if 1
         // Normalize correction vectors
         RT1 = new RmgTimer("Davidson: normalization");
-//for(int st1=0;st1<notconv;st1++)kptr->Kstates[nbase+st1].normalize(kptr->Kstates[nbase+st1].psi, st1);
         double *norms = new double[notconv]();
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis;idx++) norms[st1] += vel * std::norm(psi[(st1 + nbase)*pbasis + idx]);
@@ -373,20 +400,45 @@ scale = std::copysign(fabs(scale) + 0.00001, scale);
 
         // Check convergence
         int tnotconv = nstates;
+        double max_tol = 0.0;
+        double min_tol = DBL_MAX;
+        int max_tol_state = 0;
+        int min_tol_state = 0;
+        double avg_occ_tol = 0.0;
+        double avg_unocc_tol = 0.0;
+        int occ_states = 0;
+        int unocc_states = 0;
         for(int st=0;st < nstates;st++) {
             //printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
+            double tol = fabs(eigs[st] - eigsw[st]);
+            if(tol > max_tol) {
+                max_tol = tol;
+                max_tol_state = st;
+            }
+            if(tol < min_tol) {
+                min_tol = tol;
+                min_tol_state = st;
+            }
             if(kptr->Kstates[st].is_occupied()) {
                 converged[st] = (fabs(eigs[st] - eigsw[st]) < occupied_tol);
+                avg_occ_tol += tol;
+                occ_states++;
             }
             else {
                 converged[st] = (fabs(eigs[st] - eigsw[st]) < unoccupied_tol);
+                avg_unocc_tol += tol;
+                unocc_states++;
             }
             if(converged[st]) tnotconv--;
             if((pct.gridpe==0) && (info != 0)) printf("STATE %d e0=%20.12f e1=%20.12f  TOLERANCE = %20.12f\n",st,eigs[st],eigsw[st],fabs(eigs[st] - eigsw[st]));
             if((pct.gridpe==0)) printf("STATE %d e0=%20.12f e1=%20.12f  TOLERANCE = %20.12f\n",st,eigs[st],eigsw[st],fabs(eigs[st] - eigsw[st]));
         }
-
         notconv = tnotconv;
+        if(pct.gridpe==0) printf("MIN_TOLERANCE=%20.12e for STATE %d\n", min_tol, min_tol_state);
+        if(pct.gridpe==0) printf("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
+        if(pct.gridpe==0) printf("AVG_OCC_TOLERANCE=%20.12e\n", avg_occ_tol/(double)occ_states);
+        if(pct.gridpe==0) printf("AVG_UNOCC_TOLERANCE=%20.12e\n", avg_unocc_tol/(double)unocc_states);
+
         // Copy updated eigenvalues back
         for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];
 
@@ -470,7 +522,6 @@ scale = std::copysign(fabs(scale) + 0.00001, scale);
     delete [] eigsw;
     delete [] eigs;
 
-
     RT1 = new RmgTimer("Davidson: Betaxpsi");
     Betaxpsi (kptr);
     delete RT1;
@@ -498,7 +549,7 @@ int local_diag(double *hr, double *sr, double *eigs, double *vr, int nbase, int 
                 double *work2 = new double[2*lwork];
                 int *iwork = new int[liwork];
                 double vx = 0.0;
-                double tol = 1.0e-12;
+                double tol = 1.0e-15;
                 int itype = 1, ione = 1;
 
                 double *hsave = new double[ct.max_states*ct.max_states];
