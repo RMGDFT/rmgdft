@@ -104,6 +104,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
 
 
+    double rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
     if (spin_flag)        
     {
 	/*calculate the total charge density in order to calculate hartree potential*/
@@ -126,7 +127,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
         double residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, vh_ext, hartree_min_sweeps, 
                     hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre, 
-                    ct.poi_parm.gl_pst, ct.poi_parm.mucycles, ct.rms/ct.hartree_rms_ratio,
+                    ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target,
                     ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, Rmg_G->get_default_FG_RATIO(), false);
         rmg_printf("Hartree residual = %14.6e\n", residual);
  
@@ -142,7 +143,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     {
     	/* Generate hartree potential */
         RT1 = new RmgTimer("Scf steps: Hartree");
-    	get_vh (rho, rhoc, vh, hartree_min_sweeps, hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, boundaryflag);
+    	get_vh (rho, rhoc, vh, hartree_min_sweeps, hartree_max_sweeps, ct.poi_parm.levels, rms_target, boundaryflag);
         delete(RT1);
     }
 
@@ -197,11 +198,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
 
         if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || (ct.scf_steps < 4)) {
-            ct.mix = 0.7;
             MgridSubspace(Kptr[kpt], vtot_psi);
         }
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
-            ct.mix = 0.3;
             int notconv;
             Davidson(Kptr[kpt], vtot_psi, notconv);
         }
