@@ -43,15 +43,29 @@
 #include "GlobalSums.h"
 #include "blas.h"
 
+template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, double *, int, int, bool);
+template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
+                std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int, bool);
+
 template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, double *, int, int);
 template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
                 std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int);
 
 
+// Version that computes and returns Bns
 template <typename KpointType>
 void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
             KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, 
             int first_state, int num_states)
+{
+    AppNls(kpoint, sintR, psi, nv, ns, Bns, first_state, num_states, true);
+}
+
+// Version that lets you choose to return Bns
+template <typename KpointType>
+void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
+            KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, 
+            int first_state, int num_states, bool need_bns)
 {
 
     // Sanity check
@@ -97,7 +111,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     KpointType *M_dnm = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
     KpointType *M_qqq = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
 #endif
-
 
     for(int istate = 0; istate < num_states; istate++)
     {
@@ -185,9 +198,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, pct.num_tot_proj,
                 ONE_t,  ns, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
 
-        RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
-                ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
-                ZERO_t,  Bns, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
+        if(need_bns) {
+            RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
+                    ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
+                    ZERO_t,  Bns, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
+        }
     }
 
 #if GPU_ENABLED

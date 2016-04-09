@@ -56,13 +56,14 @@
 
 
 
-template void DavPreconditioner<double>(Kpoint<double> *, double *, double *, double, double *, double *, int);
+template void DavPreconditioner<double>(Kpoint<double> *, double *, double *, double, double *, double *, int, double);
 template void DavPreconditioner<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *, 
-                               double, double *, double *, int);
+                               double, double *, double *, int, double);
 
 
 template <typename OrbitalType>
-void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType *res, double fd_diag, double *eigs, double *vtot, int notconv)
+void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType *res, double fd_diag, double *eigs, 
+                        double *vtot, int notconv, double avg_potential)
 {
     BaseGrid *G = kptr->G;
     TradeImages *T = kptr->T;
@@ -94,12 +95,16 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType
     OrbitalType *work_t = new OrbitalType[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     OrbitalType *work1_t = new OrbitalType[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     OrbitalType *work2_t = new OrbitalType[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    double *nvtot = new double[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+
+    for(int idx = 0;idx <pbasis;idx++) nvtot[idx] = -vtot[idx];
 
     // Apply preconditioner
     for(int st1=0;st1 < notconv;st1++) {
 
         double t1 = 0.0;
         for(int idx = 0;idx <pbasis;idx++) t1 += std::real(res[st1*pbasis + idx]);
+
         t1 = real_sum_all(t1, pct.grid_comm) / (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
         // neutralize cell
         for(int idx = 0;idx <pbasis;idx++) res[st1*pbasis + idx] -= OrbitalType(t1);
@@ -108,7 +113,8 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType
         MG.mgrid_solv (work2_t, work1_t, work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                     0, G->get_neighbors(), levels, pre, post, 1,
-                    tstep, 0.0*Zfac, 0.0, NULL,
+                    //tstep, 0.0*Zfac, -avg_potential, NULL,     // which one is best?
+                    tstep, 0.0*Zfac, 0.0, nvtot,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                     G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                     G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
@@ -153,6 +159,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType
 #endif
     }
 
+    delete [] nvtot;
     delete [] work2_t;
     delete [] work1_t;
     delete [] work_t;

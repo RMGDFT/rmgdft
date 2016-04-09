@@ -121,7 +121,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     OrbitalType *hr = new OrbitalType[ct.max_states * ct.max_states]();
     OrbitalType *sr = new OrbitalType[ct.max_states * ct.max_states]();
     OrbitalType *vr = new OrbitalType[ct.max_states * ct.max_states]();
-    OrbitalType *ke = new OrbitalType[ct.max_states * pbasis]();
     for(int idx = 0;idx < nstates;idx++) vr[idx*ct.max_states + idx] = OrbitalType(1.0);
 
 #if GPU_ENABLED
@@ -141,7 +140,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     delete RT1;
     kptr->mix_betaxpsi(0);
     RT1 = new RmgTimer("Davidson: apply hamiltonian");
-    double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot, ke); 
+    double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot); 
     delete RT1;
     OrbitalType *s_psi = kptr->ns;
 
@@ -221,7 +220,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
         // Apply preconditioner
         RT1 = new RmgTimer("Davidson: precondition");
-        DavPreconditioner (kptr, psi, &psi[nbase*pbasis], fd_diag, &eigsw[nbase], vtot, notconv);
+        DavPreconditioner (kptr, psi, &psi[nbase*pbasis], fd_diag, &eigsw[nbase], vtot, notconv, avg_potential);
         delete RT1;
 
         // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials
@@ -250,7 +249,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         kptr->mix_betaxpsi(0);
 
         RT1 = new RmgTimer("Davidson: apply hamiltonian");
-        ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot, ke);
+        ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot);
         delete RT1;
 
 
@@ -472,7 +471,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     delete [] h_psi;
 #endif
 
-    delete [] ke;
     delete [] vr;
     delete [] sr;
     delete [] hr;

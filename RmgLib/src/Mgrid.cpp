@@ -182,7 +182,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     if(pot) 
     {
         T->trade_images (pot, dimx, dimy, dimz, FULL_TRADE);
-//        for (idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * (f_mat[idx] + (RmgType)2.0*(RmgType)pot[idx]*v_mat[idx]);
+        for (idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * (f_mat[idx] + (RmgType)pot[idx]*v_mat[idx]);
     }
     for (idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * f_mat[idx];
 
@@ -992,8 +992,7 @@ void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, i
         res[idx] = 0.0;
     FD.app2_del2 (mat, res, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     if(pot) {
-//BBBBBBBBB
-        for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] + (RmgType)0.0 * (RmgType)pot[idx]*mat[idx] - res[idx];
+        for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] + (RmgType)pot[idx]*mat[idx] - res[idx];
     }
     else {
         for (idx = 0; idx < size; idx++) res[idx] = f_mat[idx] - res[idx];
@@ -1036,8 +1035,7 @@ void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
 
         if(pot) 
         {
-//BBBBBBBBB
-            for (idx = 0; idx < size; idx++) vmat[idx] += (RmgType)scale * (work[idx] - (RmgType)0.0*vmat[idx]*(RmgType)pot[idx] - fmat[idx]);
+            for (idx = 0; idx < size; idx++) vmat[idx] += (RmgType)scale * (work[idx] - vmat[idx]*(RmgType)pot[idx] - fmat[idx]);
         }
         else 
         {
