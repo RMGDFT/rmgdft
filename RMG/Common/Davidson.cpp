@@ -80,7 +80,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 5.0e-14);
     double unoccupied_tol = std::max( ( occupied_tol * 10.0 ), 1.0e-6 );
-    if(pct.gridpe == 0)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
+    //if(pct.gridpe == 0)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
     RT1 = new RmgTimer("Davidson: diagonals");
     Diagonals(kptr);
@@ -394,11 +394,11 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             }
             if(converged[st]) tnotconv--;
             if((pct.gridpe==0) && (info != 0)) printf("STATE %d e0=%20.12f e1=%20.12f  TOLERANCE = %20.12f\n",st,eigs[st],eigsw[st],fabs(eigs[st] - eigsw[st]));
-            if((pct.gridpe==0)) printf("STATE %d e0=%20.12f e1=%20.12f  TOLERANCE = %20.12f\n",st,eigs[st],eigsw[st],fabs(eigs[st] - eigsw[st]));
+            //if((pct.gridpe==0)) printf("STATE %d e0=%20.12f e1=%20.12f  TOLERANCE = %20.12f\n",st,eigs[st],eigsw[st],fabs(eigs[st] - eigsw[st]));
         }
         notconv = tnotconv;
-        if(pct.gridpe==0) printf("MIN_TOLERANCE=%20.12e for STATE %d\n", min_tol, min_tol_state);
-        if(pct.gridpe==0) printf("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
+        //if(pct.gridpe==0) printf("MIN_TOLERANCE=%20.12e for STATE %d\n", min_tol, min_tol_state);
+        //if(pct.gridpe==0) printf("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
         if(pct.gridpe==0) printf("AVG_OCC_TOLERANCE=%20.12e\n", avg_occ_tol/(double)occ_states);
         if(pct.gridpe==0) printf("AVG_UNOCC_TOLERANCE=%20.12e\n", avg_unocc_tol/(double)unocc_states);
 
@@ -441,11 +441,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, h_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, true, false, true);
             for(int idx=0;idx < nstates*pbasis;idx++)h_psi[idx] = psi[nstates*pbasis + idx];
-
-            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, ke, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
-                NULLptr, NULLptr, NULLptr, false, true, false, true);
-            for(int idx=0;idx < nstates*pbasis;idx++)ke[idx] = psi[nstates*pbasis + idx];
-
             delete RT1;
 
 
