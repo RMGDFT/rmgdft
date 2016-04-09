@@ -100,6 +100,7 @@
 #  define               zgeev           zgeev_
 #  define               zgemv           zgemv_
 #  define               zdotc           zdotc_
+#  define               dgels           dgels_
 
 
 #else
@@ -194,6 +195,7 @@ void zgeev(char *, char *, int *, DoubleC*, int *, DoubleC*, DoubleC*, int *, Do
 
 
 void zgemv (char *, int *, int *, DoubleC *, DoubleC*, int *, DoubleC*, int *, DoubleC *,DoubleC *,  int *);
+void dgels(char *trans, int *M, int *N, int *nrhs, double *A, int *lda, double *b, int *ldb, double *work, int *lwork, int *info);
 
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
 

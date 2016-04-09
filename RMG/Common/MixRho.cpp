@@ -33,8 +33,10 @@
 #include "const.h"
 #include "InputKey.h"
 #include "common_prototypes.h"
+#include "RmgParallelFft.h"
 #include "transition.h"
 
+static int pulay_step = 0;
 
 void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
@@ -48,7 +50,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
     /*Linear Mixing*/
-    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1)
+    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || (ct.rms > 5.0e-3))
     {
 	
 	/* Scale old charge density first*/
@@ -61,14 +63,16 @@ void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map
     else {
 	if (Verify("charge_mixing_type","Pulay", ControlMap))
 	{
-	    int step = ct.scf_steps;
 
 	    if (ct.charge_pulay_refresh)
-		step = ct.scf_steps % ct.charge_pulay_refresh;
+		pulay_step = pulay_step % ct.charge_pulay_refresh;
 
 	    /*Use pulay mixing, result will be in rho*/
-	    pulay_rho(step, length, length_x, length_y, length_z, new_rho, rho, ct.charge_pulay_order, &rhohist, &residhist, ct.charge_pulay_special_metrics, ct.charge_pulay_special_metrics_weight);
+
+	    pulay_rho(pulay_step, length, length_x, length_y, length_z, new_rho, rho, ct.charge_pulay_order, &rhohist, &residhist, ct.charge_pulay_special_metrics, ct.charge_pulay_special_metrics_weight);
 	    
+            pulay_step++;
+
 	}
 	    
     }

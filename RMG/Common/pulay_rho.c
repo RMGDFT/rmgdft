@@ -64,6 +64,8 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
     double *fi, *fj, *tptr1, *tptr2;
     int A_size;
     double scale, first_mix;
+    int lwork = MAX_STEPS*20;
+    double work[MAX_STEPS*20];
 
     scale = -1.0 * ct.charge_pulay_scale;
 
@@ -167,11 +169,10 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
         }
 
 
-
         /*   b = A^(-1) * b     */
+        info = 0;
         dgesv(&A_size, &ione, A, &A_size, ipvt, b, &A_size, &info);
-
-	
+        //dgels("T", &A_size, &A_size, &ione, A, &A_size, b, &A_size, work, &lwork, &info);
 	/*Print pulay constants*/
         printf ("\n\nPulay Constants:");
 	for (i = 0; i < size; i++)
