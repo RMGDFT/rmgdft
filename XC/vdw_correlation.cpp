@@ -396,7 +396,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
   // Filter out higher frequencies here to improve stability
-  FftFilter(total_rho, *this->plane_waves, filter_ratio);
+  FftFilter(total_rho, *this->plane_waves, filter_ratio, LOW_PASS);
   CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
   //FftGradientFine(total_rho, gx, gy, gz);
 

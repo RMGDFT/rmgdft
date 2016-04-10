@@ -41,12 +41,13 @@
 
 // On input performs a dft of x which is an array distributed in real space across all node
 // using the plane wave structure defined in pwaves. This is then filtered in g-space with
-// the coefficients of all plane waves with a cutoff greater than the maximum value on the grid
-// set to zero.
+// the coefficients of all plane waves with a cutoff greater than or less than or equal to
+// depending on the type of filtering set to zero.
 void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed across all nodes.
                Pw &pwaves,  // IN:     Plane wave structure that corresponds to the reciprocal space grid for x
-               double factor)  // IN:  Plane wave filtering factor between (0.0, 1.). Closely corresponds to 
+               double factor,  // IN:  Plane wave filtering factor between (0.0, 1.). Closely corresponds to 
                             // maximum frequence on a grid of equivalent density.
+               int filter_type)  // IN: LOW_PASS or HIGH_PASS, defined in const.h
 {
 
   if((factor <= 0.0) || (factor > 1.0))
@@ -79,11 +80,23 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 
   for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
   pfft_execute_dft(plan_forward, (double (*)[2])crho, (double (*)[2])crho);
-  for(int ig=0;ig < pbasis;ig++) {
-      if(pwaves.gmags[ig] > g2cut) {
-          crho[ig] = std::complex<double>(0.0, 0.0);
+  if(filter_type == LOW_PASS) {
+      for(int ig=0;ig < pbasis;ig++) {
+          if(pwaves.gmags[ig] > g2cut) {
+              crho[ig] = std::complex<double>(0.0, 0.0);
+          }
       }
   }
+  else {
+      int gstart=0;
+      if(pct.gridpe == 0) gstart = 1;
+      for(int ig=gstart;ig < pbasis;ig++) {
+          if(pwaves.gmags[ig] <= g2cut) {
+              crho[ig] = std::complex<double>(0.0, 0.0);
+          }
+      }
+  }
+
   pfft_execute_dft(plan_back, (double (*)[2])crho, (double (*)[2])crho);
   for(int i = 0;i < pbasis;i++) x[i] = std::real(crho[i])/(double)global_basis;
 

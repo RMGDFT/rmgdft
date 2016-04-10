@@ -48,7 +48,7 @@ void FftLaplacianFine(double *x, double *lapx);
 
 void FftLaplacian(double *x, double *lapx, Pw &pwaves);
 
-void FftFilter(double *x, Pw &pwaves, double factor);
+void FftFilter(double *x, Pw &pwaves, double factor, int type);
 
 void FftFreqBin(double *x, Pw &pwaves, double *bins);
 
