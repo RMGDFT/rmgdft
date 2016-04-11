@@ -172,7 +172,7 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
         /*   b = A^(-1) * b     */
         info = 0;
         dgesv(&A_size, &ione, A, &A_size, ipvt, b, &A_size, &info);
-        //dgels("T", &A_size, &A_size, &ione, A, &A_size, b, &A_size, work, &lwork, &info);
+        //dgels("N", &A_size, &A_size, &ione, A, &A_size, b, &A_size, work, &lwork, &info);
 	/*Print pulay constants*/
         printf ("\n\nPulay Constants:");
 	for (i = 0; i < size; i++)
@@ -287,16 +287,16 @@ double special_dot_product(double *a, double *b, double *b_trade, double weight,
 		a_value = a[(ix -1) * length_y * length_z + (iy -1) * length_z + iz -1];
 
 		/*First NN*/
-		rvalue += a_value * (weight / 16.0) * 
-		         b_trade[idxp1 + idy + idz]
+		rvalue += a_value * (weight / 16.0) *
+		        (b_trade[idxp1 + idy + idz]
 		       + b_trade[idxm1 + idy + idz]
 		       + b_trade[idx + idyp1 + idz]
 		       + b_trade[idx + idym1 + idz]
 		       + b_trade[idx + idy + idzp1]
-		       + b_trade[idx + idy + idzm1];
+		       + b_trade[idx + idy + idzm1]);
 
-		rvalue += a_value * (weight / 32.0) * 
-		          b_trade[idxp1 + idyp1 + idz]
+		rvalue += a_value * (weight / 32.0) *
+		         (b_trade[idxp1 + idyp1 + idz]
 		        + b_trade[idxp1 + idym1 + idz]
 		        + b_trade[idxp1 + idy + idzp1]
 		        + b_trade[idxp1 + idy + idzm1]
@@ -307,24 +307,23 @@ double special_dot_product(double *a, double *b, double *b_trade, double weight,
 			+ b_trade[idx + idyp1 + idzp1]
 			+ b_trade[idx + idyp1 + idzm1]
 			+ b_trade[idx + idym1 + idzp1]
-			+ b_trade[idx + idym1 + idzm1];
+			+ b_trade[idx + idym1 + idzm1]);
 		
-		rvalue += a_value * (weight / 64.0) 
-		        * b_trade[idxp1 + idyp1 + idzp1]
+		rvalue += a_value * (weight / 64.0) *
+		        (b_trade[idxp1 + idyp1 + idzp1]
 		        + b_trade[idxp1 + idyp1 + idzm1]
 		        + b_trade[idxp1 + idym1 + idzp1]
 		        + b_trade[idxp1 + idym1 + idzm1]
 		        + b_trade[idxm1 + idyp1 + idzp1]
 		        + b_trade[idxm1 + idyp1 + idzm1]
 		        + b_trade[idxm1 + idym1 + idzp1]
-		        + b_trade[idxm1 + idym1 + idzm1];
+		        + b_trade[idxm1 + idym1 + idzm1]);
 
 	    }
 	}
     }
 
 		
-
     return rvalue;
 
 }
