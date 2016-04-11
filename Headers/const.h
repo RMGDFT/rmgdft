@@ -227,6 +227,6 @@
 
 // Fft filtering types
 #define LOW_PASS 0
-#define HIGH_PASS 0
+#define HIGH_PASS 1
 
 #endif /* CONST_H_INCLUDED */

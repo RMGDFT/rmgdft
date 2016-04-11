@@ -88,9 +88,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
       }
   }
   else {
-      int gstart=0;
-      if(pct.gridpe == 0) gstart = 1;
-      for(int ig=gstart;ig < pbasis;ig++) {
+      for(int ig=0;ig < pbasis;ig++) {
           if(pwaves.gmags[ig] <= g2cut) {
               crho[ig] = std::complex<double>(0.0, 0.0);
           }
