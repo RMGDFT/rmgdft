@@ -113,8 +113,8 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType
         MG.mgrid_solv (work2_t, work1_t, work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                     0, G->get_neighbors(), levels, pre, post, 1,
-                    tstep, 0.0*Zfac, -avg_potential, NULL,     // which one is best?
-                    //tstep, 0.0*Zfac, 0.0, nvtot,
+                    tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
+                    //tstep, 1.0*Zfac, 0.0, nvtot,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                     G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                     G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
