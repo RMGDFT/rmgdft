@@ -14,7 +14,6 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 void KbpsiUpdate(STATE *states);
 void FillOrbitalBorders(double *, double *, int, int, int, int);
 void VhDriver(double *rho, double *rhoc, double *vh, double *vh_corr);
-void VhPfft(double *rho, double *rhoc, double *vh);
 void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old, double *, double *rho_old, int *CONVERGENCE);
 double gaussintegral(double, int);
 void DipoleCorrection(double *rho, double *rhoc, double *vcorr, double *vhx, double *vhy, double *vhz);

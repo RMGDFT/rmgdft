@@ -2,7 +2,6 @@ add_library (ON_Common
  VhcorrDipoleInit.cpp
  VhcorrPeriodicPart.cpp
  DipoleCorrection.cpp
- VhPfft.cpp
  VhDriver.cpp
  UpdatePot.cpp
  OrbitalOptimize.cpp
