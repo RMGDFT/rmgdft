@@ -34,12 +34,27 @@
 #include "InputKey.h"
 #include "common_prototypes.h"
 #include "RmgParallelFft.h"
+#include "RmgException.h"
 #include "transition.h"
+#include "blas.h"
+#include "GlobalSums.h"
+#include <float.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <mpi.h>
+#include <boost/circular_buffer.hpp>
+
 
 static int pulay_step = 0;
+static int broyden_step = 0;
 
-void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map<std::string, InputKey *>& ControlMap)
+void mix_johnson(double *xm, double *fm, int NDIM, int ittot);
+
+
+void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
+    RmgTimer RT0("Mix rho");
     double t1, nspin = (ct.spin_flag + 1.0);
     static double **rhohist=NULL, **residhist=NULL;
     int length = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
@@ -47,12 +62,13 @@ void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map
     int length_y = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
     int length_z = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
 
+
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
     /*Linear Mixing*/
-    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || (ct.rms > 5.0e-3))
+    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || (ct.rms > 5.0e-3) || (ct.scf_steps == 0))
     {
-	
+	RmgTimer RT1("Mix rho: Linear");
 	/* Scale old charge density first*/
 	t1 = 1.0 - ct.mix;
         for(int ix = 0;ix < length;ix++) rho[ix] *= t1;
@@ -60,23 +76,35 @@ void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map
 	/*Add the new density*/
         for(int ix = 0;ix < length;ix++) rho[ix] += ct.mix * new_rho[ix];
     }
-    else {
-	if (Verify("charge_mixing_type","Pulay", ControlMap))
-	{
+    else if (Verify("charge_mixing_type","Pulay", ControlMap))
+    {
 
-	    if (ct.charge_pulay_refresh)
-		pulay_step = pulay_step % ct.charge_pulay_refresh;
+	RmgTimer RT1("Mix rho: Pulay");
+        if (ct.charge_pulay_refresh)
+            pulay_step = pulay_step % ct.charge_pulay_refresh;
 
-	    /*Use pulay mixing, result will be in rho*/
+        /*Use pulay mixing, result will be in rho*/
 
-	    pulay_rho(pulay_step, length, length_x, length_y, length_z, new_rho, rho, ct.charge_pulay_order, &rhohist, &residhist, ct.charge_pulay_special_metrics, ct.charge_pulay_special_metrics_weight);
+        pulay_rho(pulay_step, length, length_x, length_y, length_z, new_rho, rho, ct.charge_pulay_order, &rhohist, &residhist, ct.charge_pulay_special_metrics, ct.charge_pulay_special_metrics_weight);
 	    
             pulay_step++;
 
-	}
-	    
     }
-
+    else if (Verify("charge_mixing_type","Broyden", ControlMap))
+    {
+	RmgTimer RT1("Mix rho: Broyden");
+#if 0
+        double *drho = new double[length];
+        for(int i = 0;i < length;i++) drho[i] = new_rho[i] - rho[i];
+        mix_johnson(rho, drho, length, broyden_step);
+        broyden_step++;
+        delete [] drho;
+#else
+        int max_iter=5;
+        BroydenPotential(rho, new_rho, rhoc, vh_in, max_iter, false);
+#endif
+    }
+    
 
     /*Find charge minimum */
     double min = ZERO;
@@ -92,8 +120,6 @@ void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map
     }
 
 
-
-
     /*Find absolute minimum from all PEs */
     min = real_min_all (min, pct.img_comm);
     min2 = real_min_all (min2, pct.img_comm);
@@ -103,6 +129,183 @@ void MixRho (double * new_rho, double * rho, double *rhocore, std::unordered_map
         printf ("\n\n Charge density is NEGATIVE after interpolation, minimum is %e", min);
         printf ("\n Minimum charge density with core charge added is %e", min2);
     }
+    //FftFilter(rho, *fine_pwaves, 0.9, LOW_PASS);
+}
+
+
+
+/*
+ *  The charge density mixing subroutine 
+ *  The program is based on the mixing method by 
+ *  D.D.Johnson, PRB38, 12807(1988). 
+ *  
+ *  Written by Wenchang Lu, Feb. 8, 2000 NCSU
+ */
+
+/*
+
+                  mix_johnson.c
+
+*/
+
+/*  w1, w0,wj, mixing parameters                 */
+#define         w1            0.5
+#define         w0            0.3
+#define         wj            1.0
+#define       maxiter         7
+
+double *un=NULL;
+double *df=NULL;
+double *betakn=NULL;
+double *dff=NULL;
+double *xm1=NULL;
+double *fm1=NULL;
+double *aij=NULL;
+double *aij2=NULL;
+ 
+void mix_johnson(double *xm, double *fm, int NDIM, int ittot)
+{
+
+
+    if(!un) un = new double[NDIM * maxiter]();
+    if(!df) df = new double[NDIM * maxiter]();
+    if(!betakn) betakn = new double[maxiter * maxiter]();
+    if(!dff) dff = new double[NDIM * maxiter]();
+    if(!xm1) xm1 = new double[NDIM];
+    if(!fm1) fm1 = new double[NDIM];
+    if(!aij) aij = new double[maxiter*maxiter];
+    if(!aij2) aij2 = new double[maxiter*maxiter];
+
+    double fnorm, aaa, fnorm2, tem;
+    int  iter, k1, i, j, idx;
+
+
+    iter = ittot % maxiter;
+
+    if(iter == 0)
+    {
+
+        for(i = 0; i < NDIM; i++) {
+            xm1[i] = xm[i];
+            fm1[i] = fm[i]; 
+            xm [i] += w1*fm[i];
+        }   /* endfor */
+
+    }
+    else
+    {
+        fnorm = 0;
+        for(i = 0; i < NDIM; i++) {
+            fm1[i] = fm[i] - fm1[i];
+            fnorm += fm1[i]*fm1[i];
+        } /* endfor */
+        idx = 1;
+
+        MPI_Allreduce(&fnorm, &tem, idx, MPI_DOUBLE,
+                MPI_SUM, MPI_COMM_WORLD);
+        fnorm = tem;
+
+        fnorm = sqrt(fnorm);
+
+        for(i = 0; i < NDIM; i++) {
+            dff[i + (iter-1) * NDIM] = fm1[i]/fnorm;
+            un[i + (iter-1) * NDIM] = w1*dff[i + (iter-1) * NDIM] 
+                + (xm[i] - xm1[i])/fnorm;
+
+            xm1[i] = xm[i];
+            fm1[i] = fm[i]; 
+        }   /* endfor */
+
+        /*
+         * Calculate betakn   
+         */
+
+        if(iter == 1)
+        {
+            betakn[0] = 1.0/(w0*w0 + wj*wj);
+        }
+        else
+        {
+
+            for(i = 0; i < iter-1; i++){
+
+                tem = 0;
+
+                for(j = 0; j < NDIM; j++) {
+                    tem += dff[j+i*NDIM]*dff[j+(iter-1)*NDIM];
+                }   /* endfor  */    
+                tem *= wj*wj;
+                idx = 1;
+                MPI_Allreduce(&tem, &aij[i], idx, MPI_DOUBLE,
+                        MPI_SUM, MPI_COMM_WORLD);
+
+            }   /* endfor */
+
+
+            aaa =0.0;
+            for(i = 0; i < iter-1; i++){
+
+                tem = 0.0;
+                for(j = 0; j < iter-1; j++) 
+                    tem += betakn[i+ j*maxiter]*aij[j];
+                aaa += aij[i]*tem;
+
+            }  /* endfor  */
+
+            betakn[iter-1 + (iter-1) *maxiter] = 1.0/(wj*wj-aaa);
+            for(i = 0; i < iter-1; i++){
+
+                aaa =0.0;
+                for(j = 0; j < iter-1; j++) 
+                    aaa += betakn[i+ j*maxiter]*aij[j]; 
+
+                betakn[i + (iter-1) *maxiter] = -betakn[iter-1 + (iter-1) *maxiter]*aaa;
+                betakn[iter-1 + i* maxiter] = betakn[i+(iter-1) *maxiter];
+
+            }  /* endfor  */
+
+            for(i = 0; i < iter-1; i++){
+                for(j = 0; j < iter-1; j++)
+                    betakn[i+ j* maxiter] += betakn[i+ (iter-1) *maxiter]
+                        *betakn[iter-1+j*maxiter]/betakn[iter-1+ (iter-1) *maxiter];
+            }  /* endfor */
+
+        }
+
+        /*
+         * updating of betakn is finished
+         */
+
+
+        /*
+         * Calculate the new charge density or vector "xm"
+         */
+
+
+        for(i = 0; i < iter; i++){
+            tem = 0.0;
+            for(j = 0; j < NDIM; j++) tem += dff[j+i*NDIM]*fm[j];
+            idx = 1;
+            MPI_Allreduce(&tem, &aij2[i], idx, MPI_DOUBLE,
+                    MPI_SUM, MPI_COMM_WORLD);
+        }  /* endfor */
+
+        for(i = 0; i < iter; i++){
+            tem = 0.0;
+            for(j = 0; j <iter; j++) tem += betakn[i+j*maxiter]*aij2[j];
+            aij[i] = tem;
+        }  /* endfor */
+
+
+        for(i = 0; i < NDIM; i++){
+            aaa = 0.0;
+            for(j = 0; j <iter; j++) aaa += un[i+j*NDIM]*aij[j];
+            xm[i] += w1*fm[i] - aaa;
+        }  /* endfor */
+
+    }
 
 }
+
+
 

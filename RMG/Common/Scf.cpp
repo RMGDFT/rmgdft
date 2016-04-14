@@ -55,14 +55,14 @@ static int firststep = true;
 
 template bool Scf<double> (double *, double *, double *,
           double *, double *, double *, double *, double *, int ,
-          int , int , int , Kpoint<double> **, std::vector<double> &);
+          int , Kpoint<double> **, std::vector<double> &);
 template bool Scf<std::complex<double> > (double *, double *, double *,
           double *, double *, double *, double *, double *, int ,
-          int , int , int , Kpoint<std::complex<double>> **, std::vector<double> &);
+          int , Kpoint<std::complex<double>> **, std::vector<double> &);
 
 template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
-          int hartree_min_sweeps, int hartree_max_sweeps , int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
+          int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
 {
 
     RmgTimer RT0("Scf steps"), *RT1;
@@ -104,7 +104,11 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
 
 
-    double rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
+    // Linear mixing does not require such a high degree of hartree convergence
+    double rms_target = 1.0e-12;
+    if (Verify("charge_mixing_type","Linear", Kptr[0]->ControlMap))
+        rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
+
     if (spin_flag)        
     {
 	/*calculate the total charge density in order to calculate hartree potential*/
@@ -125,8 +129,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             rho_neutral[idx] = rho[idx] - rhoc[idx];
         }
 
-        double residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, vh_ext, hartree_min_sweeps, 
-                    hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre, 
+        double residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, vh_ext, ct.hartree_min_sweeps, 
+                    ct.hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre, 
                     ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target,
                     ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, Rmg_G->get_default_FG_RATIO(), false);
         rmg_printf("Hartree residual = %14.6e\n", residual);
@@ -143,7 +147,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     {
     	/* Generate hartree potential */
         RT1 = new RmgTimer("Scf steps: Hartree");
-    	get_vh (rho, rhoc, vh, hartree_min_sweeps, hartree_max_sweeps, ct.poi_parm.levels, rms_target, boundaryflag);
+    	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, rms_target, boundaryflag);
+
         delete(RT1);
     }
 
@@ -232,7 +237,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     GetNewRho(Kptr, new_rho);
 
     /*Takes care of mixing and checks whether the charge density is negative*/
-    MixRho(new_rho, rho, rhocore, Kptr[0]->ControlMap);
+    MixRho(new_rho, rho, rhocore, vh, rhoc, Kptr[0]->ControlMap);
     
 
     if (spin_flag)

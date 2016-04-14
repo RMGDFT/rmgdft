@@ -63,7 +63,7 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    int ratio = Rmg_G->default_FG_RATIO;
    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(ratio) * Rmg_G->get_NY_GRID(ratio) * Rmg_G->get_NZ_GRID(ratio)));
    int ld_betamix = MAX_BROYDEN_ITER;
-   double nmix = 0.3;
+   double nmix = 0.35;
 
    // Check if this is a reset request
    if(reset) {
@@ -88,10 +88,11 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    }
 
    // Get Hartree potential for the output density
-   double rms_target = std::min(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
+   double rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
+rms_target = 1.0e-12;
    double *vh_out = new double[pbasis]();
    for(int i = 0;i < pbasis;i++) vh_out[i] = vh_in[i];
-   get_vh (new_rho, rhoc, vh_out, 5, 100, ct.poi_parm.levels, rms_target, ct.boundaryflag);
+   get_vh (new_rho, rhoc, vh_out, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, rms_target, ct.boundaryflag);
 
    // Compute convergence measure
    double sum = 0.0;
