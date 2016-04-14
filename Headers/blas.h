@@ -101,6 +101,8 @@
 #  define               zgemv           zgemv_
 #  define               zdotc           zdotc_
 #  define               dgels           dgels_
+#  define               dsytrf          dsytrf_
+#  define               dsytri          dsytri_
 
 
 #else
@@ -196,6 +198,8 @@ void zgeev(char *, char *, int *, DoubleC*, int *, DoubleC*, DoubleC*, int *, Do
 
 void zgemv (char *, int *, int *, DoubleC *, DoubleC*, int *, DoubleC*, int *, DoubleC *,DoubleC *,  int *);
 void dgels(char *trans, int *M, int *N, int *nrhs, double *A, int *lda, double *b, int *ldb, double *work, int *lwork, int *info);
+void dsytrf(char *, int *, double *, int *, int *, double *, int *, int *);
+void dsytri(char *, int *, double *, int *, int *, double *, int *);
 
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
 
