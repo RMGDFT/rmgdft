@@ -372,7 +372,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Maximum number of self consistent steps to perform.\n", 
                      "max_scf_steps must be greater than 0. Resetting to the default value of 500\n");
 
-    If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 5, 2,
+    If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 10, 2,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");

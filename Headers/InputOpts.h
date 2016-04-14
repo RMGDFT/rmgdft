@@ -35,7 +35,8 @@ static std::unordered_map<std::string, int> crds_units = {
 
 static std::unordered_map<std::string, int> charge_mixing_type = {
         {"Linear", 0},
-        {"Pulay", 1}};
+        {"Pulay", 1},
+        {"Broyden", 2}};
 
 static std::unordered_map<std::string, int> relax_mass = {
         {"Atomic", 0},
