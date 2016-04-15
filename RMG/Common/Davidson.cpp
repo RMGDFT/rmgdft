@@ -435,12 +435,12 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             delete RT1;
 
             if(notconv == 0) {
-                if(pct.gridpe == 0) printf("Davidson converged in %d steps\n", steps+1);
+                rmg_printf("Davidson converged in %d steps\n", steps+1);
                 break;  // done
             }
 
             if(steps == (max_steps-1)) {
-                if(pct.gridpe == 0) printf("Davidson incomplete convergence steps = %d\n", steps + 1);
+                rmg_printf("Davidson incomplete convergence steps = %d\n", steps + 1);
                 // Incomplete convergence, what should we do here?
                 //throw RmgFatalException() << "Davidson failed to converge, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 

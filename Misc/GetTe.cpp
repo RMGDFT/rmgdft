@@ -242,10 +242,10 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     rmg_printf ("@@ EXC                = %15.8f %s\n", efactor*ct.XC, eunits);
     rmg_printf ("@@ TOTAL ENERGY       = %15.8f %s\n", efactor*ct.TOTAL, eunits);
     if(ct.scf_steps != 0) {
-        rmg_printf ("@@ estimated error    = %15.8f %s\n", efactor*ct.scf_accuracy, eunits);
+        rmg_printf ("@@ estimated error    =       %9.2e %s\n", efactor*ct.scf_accuracy, eunits);
     }
     else {
-        rmg_printf ("@@ estimated error    = *****************\n", efactor*ct.scf_accuracy, eunits);
+        rmg_printf ("@@ estimated error    =   ****************\n");
     }
         
     if (ct.spin_flag)

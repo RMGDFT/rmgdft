@@ -60,6 +60,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   densgrid[2] = pwaves.global_dimz;
 
   double g2cut = factor*factor*(sqrt(pwaves.gmax))*(sqrt(pwaves.gmax));
+  double g2max = pwaves.gmax;
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
 
@@ -89,7 +90,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   }
   else {
       for(int ig=0;ig < pbasis;ig++) {
-          if(pwaves.gmags[ig] <= g2cut) {
+          if((pwaves.gmags[ig] <= g2cut) || (pwaves.gmags[ig] > pwaves.gmax)) {
               crho[ig] = std::complex<double>(0.0, 0.0);
           }
       }

@@ -60,7 +60,7 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
    int ratio = Rmg_G->default_FG_RATIO;
    int ld_betamix = MAX_BROYDEN_ITER;
-   double nmix = 0.35;
+   double nmix = 0.5;
 
    // Check if this is a reset request
    if(reset) {

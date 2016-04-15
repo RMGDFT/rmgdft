@@ -121,8 +121,8 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
     if (min < ZERO)
     {
-        printf ("\n\n Charge density is NEGATIVE after interpolation, minimum is %e", min);
-        printf ("\n Minimum charge density with core charge added is %e", min2);
+        rmg_printf ("\n\n Charge density is NEGATIVE after interpolation, minimum is %e", min);
+        rmg_printf ("\n Minimum charge density with core charge added is %e", min2);
     }
 
 }
