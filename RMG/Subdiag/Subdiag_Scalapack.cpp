@@ -50,6 +50,8 @@
 template char * Subdiag_Scalapack<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
 template char * Subdiag_Scalapack<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors);
 
+Scalapack *MainSp;
+
 // eigvectors holds Bij on input and the eigenvectors of the matrix on output
 template <typename KpointType>
 char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
@@ -77,7 +79,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     if(!ct.is_gamma) factor=1;
 
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
-    static Scalapack *MainSp;
     if(!MainSp) {
         // Need some code here to decide how to set the number of scalapack groups but for now use just 1
         int scalapack_groups = 1;
@@ -252,7 +253,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     int liwork_tmp;
                     pdsyevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
-                    lwork = 4*(int)lwork_tmp;
+                    lwork = 16*(int)lwork_tmp;
                     liwork = 16*num_states;
                     double *nwork = new double[lwork];
                     int *iwork = new int[liwork];

@@ -81,6 +81,10 @@ template <typename KpointType>
 void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver);
 template <typename KpointType>
 void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *Vdist, KpointType *B, KpointType *work1, KpointType *work2, Scalapack *);
+int GeneralDiag(double *A, double *B, double *eigs, double *V, int M, int N, int ld, int subdiag_driver);
+int GeneralDiagLapack(double *A, double *B, double *eigs, double *V, int M, int N, int ld);
+int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int M, int N, int ld);
+int GeneralDiagMagma(double *A, double *B, double *eigs, double *V, int M, int N, int ld);
 
 
 

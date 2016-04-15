@@ -87,6 +87,7 @@
 #  define		ZGESV 	        zgesv_
 #  define               dgemv           dgemv_
 #  define               dsygvx          dsygvx_
+#  define               dsygvd          dsygvd_
 #  define               zhegvx          zhegvx_
 #  define               zhegst          zhegst_
 #  define               zheevd          zheevd_
@@ -190,7 +191,7 @@ void dsyevr (char *, char *, char *, int *, double *, int *, double *, double *,
 void dtrsm(char *side, char *uplo, char *transa, char *diag, int *M, int *N, double *alpha, double *A, int *lda, double *B, int *ldb);
 void dsygst( int *itype, char *uplo, int *N, double *A, int *LDA, double *B, int *LDB, int *INFO );
 double dzasum(int *, double *A, int *);
-
+void dsygvd(int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, double *eigs, double *work, int *lwork, int *iwork, int *liwork, int *info);
 void zcopy(int *, DoubleC *, int *, DoubleC *, int *);
 void zaxpy(int *, DoubleC *, DoubleC *, int *, DoubleC *, int*);
 void zgeev(char *, char *, int *, DoubleC*, int *, DoubleC*, DoubleC*, int *, DoubleC*, int *, DoubleC*, int *, double *, int * );

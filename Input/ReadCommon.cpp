@@ -663,6 +663,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
                      "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7.\n");
 
+    If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-8, 1.0e-13,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
+                     "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7.\n");
+
     If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-14, 1.0e-3, 1.0e-6,
                      CHECK_AND_FIX, OPTIONAL,
                      "The RMS value of the change in the total potential where we switch the preconditioner from single to double precision.\n",
@@ -678,11 +683,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "The residual value specified by gw_residual_convergence_criterion is applied to this fraction of the total spectrum.\n",
                      "gw_residual_fraction must lie in the range (0.0,1.0). Resetting to default value of 0.90.\n");
 
-    If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio,
-1000.0, DBL_MAX, 10000.0,
+    If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, 1000.0, DBL_MAX, 100000.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Ratio between target RMS for get_vh and RMS total potential.\n",
-                     "hartree_rms_ratio must be in the range (1000.0, 100000.0). Resetting to default value of 10000.0.\n");
+                     "hartree_rms_ratio must be in the range (1000.0, 1000000.0). Resetting to default value of 100000.0.\n");
 
     If.RegisterInputKey("electric_field_magnitude", &lc.e_field, 0.0, DBL_MAX, 0.0,
                      CHECK_AND_TERMINATE, OPTIONAL,

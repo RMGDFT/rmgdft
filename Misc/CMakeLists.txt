@@ -1,4 +1,5 @@
 add_library (Misc
+GeneralDiag.cpp
 VhPfft.cpp
 Fft_Cbindings.cpp
 GetVtotPsi.cpp

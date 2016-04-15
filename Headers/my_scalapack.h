@@ -69,6 +69,7 @@
 #define 	PZHEGVX         pzhegvx_
 #define 	pdgetrf     pdgetrf_
 #define 	pdgetrs     pdgetrs_
+#define 	pdsygvx     pdsygvx_
 #define     pdlmach     pdlmach_
 #define     dlmach      dlmach_
 #define     idamax      idamax_
@@ -126,7 +127,11 @@ void pzgetrf(int *, int*,  double *, int *, int*, int*, int*,int*);
 void pdgetrf(int *, int*,  double *, int *, int*, int*, int*,int*);
 void pdgetrs(char *, int *, int*,  double *, int *, int*, int*, int*, double *, int*, int*, int*, int*);
 void pztranu_(int *, int*,  double *, double *, int *, int*, int*, double *, double *, int *, int*,int*);
-
+void pdsygvx( int *, char *, char *, char *, int *, double *, int *, int *,
+                 int *, double *, int *, int *, int *, double *, double *, int *, int *,
+                 double *, int *, int *, double *, double *, double *, int *, int *, int *,
+                 double *, int *, int *, int *, int *, int *,
+                 double *, int * );
 
 void pdtran_(int *, int*,  double *, double *, int *, int*, int*, double *, double *, int *, int*,int*);
 

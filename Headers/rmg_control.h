@@ -155,9 +155,11 @@ typedef struct
     /* SCF steps iterator */
     int scf_steps;
 
-
-    /* convergence criterion */
+    /* RMS[dV] convergence criterion */
     double thr_rms;
+
+    /* estimated total energy  convergence criterion */
+    double thr_energy;
 
     /* preconditioner single/double precision switch threshold */
     double preconditioner_thr;
