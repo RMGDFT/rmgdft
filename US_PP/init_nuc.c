@@ -168,6 +168,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     /*my_barrier(); */
 
     /*   add the saw-tooth potential induced by applied electric field  */
+    if(ct.runflag == 5 || ct.runflag == 6) return;
     init_efield (vnuc_f);
 
 

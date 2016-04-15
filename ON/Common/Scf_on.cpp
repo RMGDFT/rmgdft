@@ -220,21 +220,15 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
     dvh_max = RmgMaxAll<double>(dvh_max, pct.grid_comm); 
     dvxc_max = RmgMaxAll<double>(dvxc_max, pct.grid_comm); 
 
-    if(dvxc_max < 1.0e-10) 
-    {
-        printf("\n IDX  %d ", idx);
-        for (idx = 0; idx < nfp0; idx++)
-        printf("\n idx vxc %d  %d  %e  %e  rho = %e  %e", pct.gridpe, idx, vxc[idx], vxc_old[idx], rho[idx], rho_pre[idx]);
-    }
 
     ct.rms = fabs(dvh_max) + fabs(dvxc_max);
     
     *CONVERGENCE = FALSE;
     if (pct.gridpe == 0)
     {
-        rmg_printf(" \nSCF CHECKS: RMS[maxdvh ] = %15.5E", dvh_max);
-        rmg_printf(" [maxdrho] = %15.5E", drho_max);
-        rmg_printf(" [maxdvxc] = %15.5E\n", dvxc_max);
+        rmg_printf(" \nSCF CHECKS: RMS[maxdvh ] = %10.5E", dvh_max);
+        rmg_printf(" [maxdrho] = %10.5E", drho_max);
+        rmg_printf(" [maxdvxc] = %10.5E\n", dvxc_max);
 
 
         fflush(NULL);

@@ -79,7 +79,6 @@ void init_efield (double * vnuc)
 /*   xoff, yoff, zoff are same for fine and coarse grid  */
 
 /*  we need to add the saw-tooth potential in fine grid */
-    if(ct.runflag == 5 || ct.runflag == 6) return;
     for (jx = 0; jx < get_FPX0_GRID(); jx++)
     {
         rx = jx * hxxgrid * get_xside() + xoff;
