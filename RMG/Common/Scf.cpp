@@ -74,8 +74,12 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     double t[3];                  /* SCF checks and average potential */
     double max_unocc_res = 0.0;
 
+    int dimx = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
+    int dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
+    int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
+    int FP0_BASIS = dimx * dimy * dimz;
 
-    int P0_BASIS, FP0_BASIS;
+    int P0_BASIS;
 
     /* to hold the send data and receive data of eigenvalues */
     double *rho_tot=NULL;   
@@ -100,8 +104,14 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
     }
 
-    /* Calculate total energy and the new exchange-correlation potential */
-    GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
+
+    /* Evaluate XC energy and potential */
+    RT1 = new RmgTimer("Get vxc");
+    double vtxc;
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    F->v_xc(rho, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
+    delete F;
+    delete RT1;
 
 
     // Linear mixing does not require such a high degree of hartree convergence
@@ -118,14 +128,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 	
 	/* Generate hartree potential */
         RT1 = new RmgTimer("Scf steps: Hartree");
-        int dimx = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
-        int dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
-        int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
-        int pbasis = dimx * dimy * dimz;
-        double *rho_neutral = new double[pbasis];
+        double *rho_neutral = new double[FP0_BASIS];
 
         /* Subtract off compensating charges from rho */
-        for (int idx = 0; idx < pbasis; idx++) {
+        for (int idx = 0; idx < FP0_BASIS; idx++) {
             rho_neutral[idx] = rho[idx] - rhoc[idx];
         }
 
@@ -148,7 +154,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     	/* Generate hartree potential */
         RT1 = new RmgTimer("Scf steps: Hartree");
     	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, rms_target, boundaryflag);
-
         delete(RT1);
     }
 
@@ -228,6 +233,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
     }
 
+    // Calculate total energy 
+    // Eigenvalues are based on in potentials and density
+    GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
 
     if (firststep)
         firststep = false;
@@ -236,9 +244,25 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     RT1 = new RmgTimer("Scf steps: Get rho");
     GetNewRho(Kptr, new_rho);
 
+    // Get Hartree potential for the output density
+    int ratio = Rmg_G->default_FG_RATIO;
+    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(ratio) * Rmg_G->get_NY_GRID(ratio) * Rmg_G->get_NZ_GRID(ratio)));
+    rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
+    double *vh_out = new double[FP0_BASIS];
+    for(int i = 0;i < FP0_BASIS;i++) vh_out[i] = vh[i];
+    get_vh (new_rho, rhoc, vh_out, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, rms_target, ct.boundaryflag);
+
+    // Compute convergence measure (2nd order variational term)
+    double sum = 0.0;
+    for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
+    sum = 0.5 * vel * sum;
+    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    ct.scf_accuracy = sum;
+
+
     /*Takes care of mixing and checks whether the charge density is negative*/
-    MixRho(new_rho, rho, rhocore, vh, rhoc, Kptr[0]->ControlMap);
-    
+    MixRho(new_rho, rho, rhocore, vh, vh_out, rhoc, Kptr[0]->ControlMap);
+    delete [] vh_out; 
 
     if (spin_flag)
 	get_rho_oppo (rho,  rho_oppo);

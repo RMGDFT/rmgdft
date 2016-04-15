@@ -1,6 +1,5 @@
 add_library (RMG_Common
 BroydenPotential.cpp
-app_smooth_test.cpp
 DavPreconditioner.cpp
 ApplyHamiltonian.cpp
 ApplyHamiltonianBlock.cpp 

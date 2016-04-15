@@ -154,15 +154,6 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     }
 
 
-    /* Evaluate XC energy and potential */
-    RmgTimer *RT1 = new RmgTimer("Get vxc");
-    double vtxc;
-    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
-    delete F;
-    delete RT1;
-
-
     esum[1] = 0.0;
     esum[2] = 0.0;
 
@@ -244,24 +235,23 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     char *eunits = ct.energy_output_string[ct.energy_output_units];
     rmg_printf ("\n\n");
-//    progress_tag ();
     rmg_printf ("@@ EIGENVALUE SUM     = %15.8f %s\n", efactor*eigsum, eunits);
-//    progress_tag ();
     rmg_printf ("@@ ION_ION            = %15.8f %s\n", efactor*ct.II, eunits);
-//    progress_tag ();
     rmg_printf ("@@ ELECTROSTATIC      = %15.8f %s\n", -efactor*ct.ES, eunits);
-//    progress_tag ();
     rmg_printf ("@@ VXC                = %15.8f %s\n",  efactor*xcstate, eunits);
     rmg_printf ("@@ EXC                = %15.8f %s\n", efactor*ct.XC, eunits);
-//    progress_tag ();
     rmg_printf ("@@ TOTAL ENERGY       = %15.8f %s\n", efactor*ct.TOTAL, eunits);
+    if(ct.scf_steps != 0) {
+        rmg_printf ("@@ estimated error    = %15.8f %s\n", efactor*ct.scf_accuracy, eunits);
+    }
+    else {
+        rmg_printf ("@@ estimated error    = *****************\n", efactor*ct.scf_accuracy, eunits);
+    }
         
     if (ct.spin_flag)
     {
 	/* Print the total magetization and absolute magnetization into output file */
-//	progress_tag ();
        	rmg_printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
-//       	progress_tag ();
        	rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", fabs(mag) );
     }
 

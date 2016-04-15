@@ -68,18 +68,15 @@ template <typename OrbitalType>
 void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 {
     RmgTimer RT0("Davidson"), *RT1;
-    BaseGrid *G = kptr->G;
-    TradeImages *T = kptr->T;
 
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
-    OrbitalType half(0.5);
     double d0 = 1.0;
     if(ct.rms < 0.1) d0 = fabs(log10(ct.rms));
     double occupied_tol = std::min(ct.rms/d0, 1.0e-6);
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 5.0e-14);
-    double unoccupied_tol = std::max( ( occupied_tol * 10.0 ), 1.0e-6 );
+    double unoccupied_tol = std::max( ( occupied_tol * 10.0 ), 1.0e-5 );
     //if(pct.gridpe == 0)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
     RT1 = new RmgTimer("Davidson: diagonals");
@@ -370,36 +367,54 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         double avg_unocc_tol = 0.0;
         int occ_states = 0;
         int unocc_states = 0;
+        double *tolerances = new double[nstates];
+
         for(int st=0;st < nstates;st++) {
-            //printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
-            double tol = fabs(eigs[st] - eigsw[st]);
-            if(tol > max_tol) {
-                max_tol = tol;
+            tolerances[st] = fabs(eigs[st] - eigsw[st]);
+            if((tolerances[st] > max_tol) && kptr->Kstates[st].is_occupied()) {
+                max_tol = tolerances[st];
                 max_tol_state = st;
-            }
-            if(tol < min_tol) {
-                min_tol = tol;
-                min_tol_state = st;
-            }
-            if(kptr->Kstates[st].is_occupied()) {
-                converged[st] = (fabs(eigs[st] - eigsw[st]) < occupied_tol);
-                avg_occ_tol += tol;
+                avg_occ_tol += tolerances[st];
                 occ_states++;
             }
-            else {
-                converged[st] = (fabs(eigs[st] - eigsw[st]) < unoccupied_tol);
-                avg_unocc_tol += tol;
+            if((tolerances[st] < min_tol) && kptr->Kstates[st].is_occupied()) {
+                min_tol = tolerances[st];
+                min_tol_state = st;
+                avg_unocc_tol += tolerances[st];
                 unocc_states++;
+            }
+        }
+
+        avg_occ_tol = avg_occ_tol / (double)occ_states;
+        avg_unocc_tol = avg_unocc_tol / (double)unocc_states;
+
+        for(int st=0;st < nstates;st++) {
+            //printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
+            if(kptr->Kstates[st].is_occupied()) {
+                if(tolerances[st] < occupied_tol) {
+                    if(steps < 1) {
+                        if(tolerances[st] < 1.4*avg_occ_tol) converged[st] = true;
+                    }
+                    else {
+                        converged[st] = true;
+                    }
+                }
+            }
+            else {
+                converged[st] = (tolerances[st] < unoccupied_tol);
             }
             if(converged[st]) tnotconv--;
             if((pct.gridpe==0) && (info != 0)) printf("STATE %d e0=%20.12f e1=%20.12f  TOLERANCE = %20.12f\n",st,eigs[st],eigsw[st],fabs(eigs[st] - eigsw[st]));
             //if((pct.gridpe==0)) printf("STATE %d e0=%20.12f e1=%20.12f  TOLERANCE = %20.12f\n",st,eigs[st],eigsw[st],fabs(eigs[st] - eigsw[st]));
         }
+        delete [] tolerances;
+
         notconv = tnotconv;
+        //if(pct.gridpe==0) printf("Davidson: notconv = %d\n", notconv);
         //if(pct.gridpe==0) printf("MIN_TOLERANCE=%20.12e for STATE %d\n", min_tol, min_tol_state);
         //if(pct.gridpe==0) printf("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
-        if(pct.gridpe==0) printf("AVG_OCC_TOLERANCE=%20.12e\n", avg_occ_tol/(double)occ_states);
-        if(pct.gridpe==0) printf("AVG_UNOCC_TOLERANCE=%20.12e\n", avg_unocc_tol/(double)unocc_states);
+        //if(pct.gridpe==0) printf("AVG_OCC_TOLERANCE=%20.12e\n", avg_occ_tol);
+        //if(pct.gridpe==0) printf("AVG_UNOCC_TOLERANCE=%20.12e\n", avg_unocc_tol);
 
         // Copy updated eigenvalues back
         for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];

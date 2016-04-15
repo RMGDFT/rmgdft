@@ -488,6 +488,9 @@ typedef struct
     /*Current RMS value*/
     double rms;
 
+    /* 2nd order convergence term  (Vh_out - Vh_in)*(rho_out - rho_in) */
+    double scf_accuracy;
+
     /* Max number of sweeps in get_vh*/
     int hartree_max_sweeps;
     
