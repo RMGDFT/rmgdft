@@ -61,8 +61,8 @@ extern double *rho;
 template void Davidson<double>(Kpoint<double> *, double *, int &);
 template void Davidson<std::complex<double> >(Kpoint<std::complex<double>> *, double *, int &);
 
-extern "C" void dsygvd_(int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, double *eigs, double *work, int *lwork, int *iwork, int *liwork, int *info);
-int local_diag(double *hr, double *sr, double *eigs, double *vr, int nbase, int nstates);
+
+static double occupied_tol = 0.01;
 
 template <typename OrbitalType>
 void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
@@ -71,12 +71,14 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
-    double d0 = 1.0;
-    if(ct.rms < 0.1) d0 = fabs(log10(ct.rms));
-    double occupied_tol = std::min(ct.rms/d0, 1.0e-6);
+    if(ct.scf_steps > 0) {
+        occupied_tol = std::min(occupied_tol, 0.1*ct.scf_accuracy / std::max(1.0, (double)ct.nel));
+    }
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 5.0e-14);
-    double unoccupied_tol = std::max( ( occupied_tol * 10.0 ), 1.0e-5 );
+
+    double unoccupied_tol = std::max(5.0*occupied_tol, 1.0e-5 );
+
     //if(pct.gridpe == 0)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
     RT1 = new RmgTimer("Davidson: diagonals");
@@ -180,7 +182,8 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 #endif
     delete RT1;
 
-    local_diag((double *)hr, (double *)sr, eigs, (double *)vr, nstates, nstates);
+    //local_diag((double *)hr, (double *)sr, eigs, (double *)vr, nstates, nstates);
+    GeneralDiag((double *)hr, (double *)sr, eigs, (double *)vr, nstates, nstates, ct.max_states, ct.subdiag_driver);
     for(int st=0;st < nstates;st++)eigsw[st] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st+nbase] = eigs[st];
 
@@ -293,68 +296,12 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             }
         }
 
-        int info = 0;
-        if(pct.is_local_master) {
-
-            RT1 = new RmgTimer("Davidson: diagonalization");
-            // Increase the resources available to this proc since the others on the local node
-            // will be idle
-            int nthreads = ct.THREADS_PER_NODE;
-            if(pct.procs_per_host > 1) nthreads = pct.ncpus;
-            omp_set_num_threads(nthreads);
-
-
-            {
-                int *ifail = new int[nbase];
-                int lwork = 6 * nbase * nbase + 6 * nbase + 2;
-                int liwork = 6*nbase;
-                int eigs_found;
-                double *work2 = new double[2*lwork];
-                int *iwork = new int[liwork];
-                double vx = 0.0;
-                double tol = 1.0e-15;
-                int itype = 1, ione = 1;
-
-                OrbitalType *hsave = new OrbitalType[ct.max_states*ct.max_states];
-                OrbitalType *ssave = new OrbitalType[ct.max_states*ct.max_states];
-                for(int i=0;i<ct.max_states*ct.max_states;i++){
-                    hsave[i] = hr[i];
-                    ssave[i] = sr[i];
-                }
-
-                dsygvx (&itype, "V", "I", "L", &nbase, (double *)hr, &ct.max_states, (double *)sr, &ct.max_states,
-                                        &vx, &vx, &ione, &nstates,  &tol, &eigs_found, eigsw, (double *)vr, &ct.max_states, work2,
-                                        &lwork, iwork, ifail, &info);
-
-
-                for(int i=0;i<ct.max_states*ct.max_states;i++){
-                    hr[i] = hsave[i];
-                    sr[i] = ssave[i];
-                }
-                delete [] ssave;
-                delete [] hsave;
-
-            }
-
-            // Reset omp_num_threads
-            omp_set_num_threads(ct.THREADS_PER_NODE);
-
-            delete RT1;
-        } // end if pct.is_local_master
-
-
-        // If only one proc on this host participated broadcast results to the rest
-        if(pct.procs_per_host > 1) {
-            int factor = 2;
-            if(ct.is_gamma) factor = 1;
-            MPI_Bcast(vr, factor * nstates*ct.max_states, MPI_DOUBLE, 0, pct.local_comm);
-            MPI_Bcast(eigsw, nstates, MPI_DOUBLE, 0, pct.local_comm);
-            MPI_Bcast(&info, 1, MPI_INT, 0, pct.local_comm);
-        }
+        RT1 = new RmgTimer("Davidson: diagonalization");
+        int info = GeneralDiag((double *)hr, (double *)sr, eigsw, (double *)vr, nbase, nstates, ct.max_states, ct.subdiag_driver);
+        delete RT1;
         if(info) {
-            throw RmgFatalException() << "No eigenvalues found in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+            throw RmgFatalException() << "Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
-
 
 
         // Check convergence
@@ -370,14 +317,16 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         double *tolerances = new double[nstates];
 
         for(int st=0;st < nstates;st++) {
+            double occ = kptr->Kstates[st].occupation[0];
+            if(ct.spin_flag) occ+= kptr->Kstates[st].occupation[1];
             tolerances[st] = fabs(eigs[st] - eigsw[st]);
-            if((tolerances[st] > max_tol) && kptr->Kstates[st].is_occupied()) {
+            if((tolerances[st] > max_tol) && (occ > 0.002)) {
                 max_tol = tolerances[st];
                 max_tol_state = st;
                 avg_occ_tol += tolerances[st];
                 occ_states++;
             }
-            if((tolerances[st] < min_tol) && kptr->Kstates[st].is_occupied()) {
+            if((tolerances[st] < min_tol) && (occ <= 0.002)) {
                 min_tol = tolerances[st];
                 min_tol_state = st;
                 avg_unocc_tol += tolerances[st];
@@ -390,15 +339,10 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
         for(int st=0;st < nstates;st++) {
             //printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
-            if(kptr->Kstates[st].is_occupied()) {
-                if(tolerances[st] < occupied_tol) {
-                    if(steps < 1) {
-                        if(tolerances[st] < 1.4*avg_occ_tol) converged[st] = true;
-                    }
-                    else {
-                        converged[st] = true;
-                    }
-                }
+            double occ = kptr->Kstates[st].occupation[0];
+            if(ct.spin_flag) occ+= kptr->Kstates[st].occupation[1];
+            if(occ > 0.002) {
+                converged[st] = (tolerances[st] < occupied_tol);
             }
             else {
                 converged[st] = (tolerances[st] < unoccupied_tol);
@@ -410,9 +354,9 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         delete [] tolerances;
 
         notconv = tnotconv;
-        //if(pct.gridpe==0) printf("Davidson: notconv = %d\n", notconv);
+        if(pct.gridpe==0) rmg_printf("Davidson: notconv = %d  nbase=%d  occupied_tol=%7.3e\n", notconv, nbase, occupied_tol);
         //if(pct.gridpe==0) printf("MIN_TOLERANCE=%20.12e for STATE %d\n", min_tol, min_tol_state);
-        //if(pct.gridpe==0) printf("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
+        if(pct.gridpe==0) rmg_printf("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
         //if(pct.gridpe==0) printf("AVG_OCC_TOLERANCE=%20.12e\n", avg_occ_tol);
         //if(pct.gridpe==0) printf("AVG_UNOCC_TOLERANCE=%20.12e\n", avg_unocc_tol);
 
@@ -500,65 +444,3 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     
 }
 
-int local_diag(double *hr, double *sr, double *eigs, double *vr, int nbase, int nstates)
-{
-        int info = 0;
-        if(pct.is_local_master) {
-
-            // Increase the resources available to this proc since the others on the local node
-            // will be idle
-            int nthreads = ct.THREADS_PER_NODE;
-            if(pct.procs_per_host > 1) nthreads = pct.ncpus;
-            omp_set_num_threads(nthreads);
-
-
-            {
-                int *ifail = new int[nbase];
-                int lwork = 6 * nbase * nbase + 6 * nbase + 2;
-                int liwork = 6*nbase;
-                int eigs_found;
-                double *work2 = new double[2*lwork];
-                int *iwork = new int[liwork];
-                double vx = 0.0;
-                double tol = 1.0e-15;
-                int itype = 1, ione = 1;
-
-                double *hsave = new double[ct.max_states*ct.max_states];
-                double *ssave = new double[ct.max_states*ct.max_states];
-                for(int i=0;i<ct.max_states*ct.max_states;i++){
-                    hsave[i] = hr[i];
-                    ssave[i] = sr[i];
-                }
-
-//                dsygvx (&itype, "V", "I", "L", &nbase, hr, &ct.max_states, sr, &ct.max_states,
-//                                        &vx, &vx, &ione, &nstates,  &tol, &eigs_found, eigs, vr, &ct.max_states, work2,
-//                                        &lwork, iwork, ifail, &info);
-dsygvd_(&itype, "V", "L", &nstates, hr, &ct.max_states, sr, &ct.max_states, eigs, work2, &lwork, iwork, &liwork, &info);
-for(int ix=0;ix < nstates*ct.max_states;ix++)vr[ix] = hr[ix];
-
-
-                for(int i=0;i<ct.max_states*ct.max_states;i++){
-                    hr[i] = hsave[i];
-                    sr[i] = ssave[i];
-                }
-                delete [] ssave;
-                delete [] hsave;
-
-            }
-
-            // Reset omp_num_threads
-            omp_set_num_threads(ct.THREADS_PER_NODE);
-
-        } // end if pct.is_local_master
-
-
-        // If only one proc on this host participated broadcast results to the rest
-        if(pct.procs_per_host > 1) {
-            int factor = 2;
-            if(ct.is_gamma) factor = 1;
-            MPI_Bcast(vr, factor * nstates*ct.max_states, MPI_DOUBLE, 0, pct.local_comm);
-            MPI_Bcast(eigs, nstates, MPI_DOUBLE, 0, pct.local_comm);
-            MPI_Bcast(&info, 1, MPI_INT, 0, pct.local_comm);
-        }
-        return info;
-}
