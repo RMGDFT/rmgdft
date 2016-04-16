@@ -167,6 +167,8 @@ int main(int argc, char **argv)
     char char_tem[MAX_PATH+200];
     int ntem, inner_step;
     double t2, tem, half=0.5;
+    double one = 1.0, zero = 0.0;
+    int j;
 
 
 
@@ -298,6 +300,8 @@ vh_old, vxc_old, ControlMap);
     Hmatrix_t0 = new double[n2];
     Hmatrix_old = new double[n2];
     Smatrix = new double[n2];
+    double *Cmatrix = new double[n2];
+    double *Xmatrix = new double[n2];
 
     /*  matB: overlap matrix, Hij:  Hamiltonian matrix  distributed in
      *  scalapack way*/
@@ -346,9 +350,13 @@ vh_old, vxc_old, ControlMap);
 #endif
 
     mat_dist_to_global(mat_X, Pn0, pct.desca);
+    mat_dist_to_global(zz_dis, Cmatrix, pct.desca);
+
+
     mat_dist_to_global(matB, Smatrix, pct.desca);
 
-    for(i = 0; i < n2; i++) Pn0[i+n2] = 0.0;
+    for(i = 0; i < 2*n2; i++) Pn0[i] = 0.0;
+    for(i = 0; i < ct.nel/2; i++) Pn0[i*numst + i] = 2.0;
 
 
 
@@ -392,10 +400,14 @@ vh_old, vxc_old, ControlMap);
     {
         for(i = 0; i < MXLLDA * MXLCOL; i++) Hij[i] = Hij[i] 
             + (efield[0] * Xij_dist[i] + efield[1] * Yij_dist[i] +
-                    efield[2] * Zij_dist[i])/time_step *2.0;
+                    efield[2] * Zij_dist[i])/time_step;
     }
 
     mat_dist_to_global(Hij, Hmatrix, pct.desca);
+
+    
+    for(i = 0; i < n2; i++) Smatrix[i] = 0.0;
+    for(i = 0; i < numst; i++) Smatrix[i*numst + i] = 1.0;
 
     for(ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
     {
@@ -403,14 +415,17 @@ vh_old, vxc_old, ControlMap);
 
    //     for(i = 0; i < n2; i++) printf("\n  %d  %d  %e  %e  %e  %e", tot_steps, i, Hmatrix[i], Smatrix[i], Pn0[i], Pn0[n2+i]);
 
-        dcopy(&n2, Hmatrix, &ione, Hmatrix_t0, &ione);
+        dgemm("T", "N", &numst, &numst, &numst,  &one, Cmatrix, &numst,
+                Hmatrix, &numst, &zero, Hmatrix_t0, &numst);
+        dgemm("N", "N", &numst, &numst, &numst,  &one, Hmatrix_t0, &numst,
+                Cmatrix, &numst, &zero, Hmatrix, &numst);
 
 
         for(inner_step = 0; inner_step < 1; inner_step++)
         {
 
 
-            for(i = 0; i < n2; i++) Hmatrix[i] = 0.5 * time_step*(Hmatrix[i] + Hmatrix_t0[i]);
+            for(i = 0; i < n2; i++) Hmatrix[i] = time_step*Hmatrix[i];
 
 
             RmgTimer *RT2a = new RmgTimer("1-TOTAL: ELDYN");
@@ -420,7 +435,27 @@ vh_old, vxc_old, ControlMap);
             //for(i = 0; i < n2; i++) mat_X[i]= Pn1[i];
 
             RmgTimer *RT4a = new RmgTimer("1-TOTAL: GetNewRho");
-            MatrixToLocal(states_distribute, Pn1, rho_matrix_local);
+
+            t2 = 0.0;
+            for(i = 0; i < numst; i++) 
+            {
+                if(pct.gridpe == 0) printf("\n Pn %e", Pn1[i*numst + i]);
+                t2 += Pn1[i*numst + i];
+            }
+
+            if(pct.gridpe == 0) printf("\n Pn1 sum %e", t2);
+
+            //for(i = 0; i < numst; i++) 
+            //for(j = 0; j < numst; j++) 
+            //    Hmatrix_t0[i*numst + j] = Cmatrix[i*numst + j] * Pn1[i*numst + i];
+            dgemm("N", "N", &numst, &numst, &numst,  &one, Cmatrix, &numst,
+                Pn1, &numst, &zero, Hmatrix_t0, &numst);
+
+            dgemm("N", "T", &numst, &numst, &numst,  &one, Hmatrix_t0, &numst,
+                Cmatrix, &numst, &zero, Xmatrix, &numst);
+
+            MatrixToLocal(states_distribute, Xmatrix, rho_matrix_local);
+
             GetNewRhoLocal (states_distribute, rho, rho_matrix_local, rho_matrix);
             delete(RT4a);
 
@@ -458,13 +493,7 @@ vh_old, vxc_old, ControlMap);
             for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];
 
             //GetHS(states, states1, vtot_c, Hij_00, Bij_00);
-
-            //Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
-             //       pct.desca, pct.desca[1]);
-            //mat_dist_to_global(Hij, Hmatrix, pct.desca);
-            delete(RT4c);
-
-            tem = 0;
+            tem = 0.0;
             for(i = 0; i < n2; i++) tem += (Hmatrix[i] - Hmatrix_old[i])*(Hmatrix[i] - Hmatrix_old[i]);
             if(pct.gridpe == 0) printf("\n step = %d, innerstep = %d, Hij - Hij_old = %e\n", tot_steps, inner_step, tem);
             dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);

@@ -32,3 +32,13 @@ FILE *my_fopen_increment(char *name);
 #ifdef __cplusplus
 }
 #endif
+
+
+template <typename OrbitalType> void RmgTddft (double * vxc, double *, 
+          double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
+          Kpoint<OrbitalType> **Kptr);
+template <typename KpointType>
+void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij);
+void VhDriver(double *, double *, double *, double*);
+template <typename KpointType>
+void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, KpointType *Sij);

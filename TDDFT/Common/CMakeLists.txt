@@ -9,6 +9,16 @@ mat_dist_to_global.c
 update_TDDFT.c
 init_TDDFT.c
 )
+
+add_library (RmgTddft
+dipole_calculation.c
+mat_global_to_dist.c
+mat_dist_to_global.c
+RmgTddft.cpp
+../../ON/Common/VhDriver.cpp
+HmatrixUpdate.cpp
+HSmatrix.cpp
+)
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_BINARY_DIR}/Headers/")
 
