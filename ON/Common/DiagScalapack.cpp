@@ -198,16 +198,17 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
         exit(0);
     }
 
+    dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
     pdgetrs("N", &numst, &numst, matB, &ione, &ione, pct.desca, ipiv, 
-            Hij, &ione, &ione, pct.desca, &info);
+            uu_dis, &ione, &ione, pct.desca, &info);
 
     delete [] ipiv;
 
 
     double t1 = 2.0;
-    dscal(&mxllda2, &t1, Hij, &ione);
+    dscal(&mxllda2, &t1, uu_dis, &ione);
 
-    Cpdgemr2d(numst, numst, Hij, ione, ione, pct.desca, theta_ptr, ione, ione,
+    Cpdgemr2d(numst, numst, uu_dis, ione, ione, pct.desca, theta_ptr, ione, ione,
             pct.descb, pct.desca[1]);
     delete(RT1b);
 
