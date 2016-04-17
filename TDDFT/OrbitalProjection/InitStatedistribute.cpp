@@ -39,7 +39,7 @@
 
 
 
-void InitStatedistribute ()
+void InitStatedistribute (STATE *states_distribute)
 {
     int fhand;
     long nbytes;
@@ -83,7 +83,7 @@ void InitStatedistribute ()
     z_off = get_PZ_OFFSET();
 
 //  local_index = -1 means that this orbital is not on this process
-    states_distribute = new STATE[ct.num_states];
+//    states_distribute = new STATE[ct.num_states];
     for (st = 0; st < ct.num_states; st++) states_distribute[st].local_index = -1;
 
     pct.num_local_orbit = 0;
@@ -157,7 +157,8 @@ void InitStatedistribute ()
     }
 
 
-    printf("\n PE %d  num_local_orbit  %d", pct.gridpe, pct.num_local_orbit);
+    printf("\n PE %d  num_local_orbit  %d\n", pct.gridpe, pct.num_local_orbit);
+    fflush(NULL);
     double *rptr;
     size = pct.num_local_orbit * get_P0_BASIS()+1024;
 

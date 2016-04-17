@@ -37,8 +37,8 @@ void dot_product_orbit_xyz_orbit(STATE *orbit1, STATE *orbit2, double *X0, doubl
 
 
     hxgrid = get_hxgrid() * get_xside();
-    hygrid = get_hxgrid() * get_yside();
-    hzgrid = get_hxgrid() * get_zside();
+    hygrid = get_hygrid() * get_yside();
+    hzgrid = get_hzgrid() * get_zside();
 
 
     *X0 = 0.0;

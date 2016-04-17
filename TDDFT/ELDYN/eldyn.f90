@@ -45,7 +45,7 @@ logical  :: tCommutp,  tDiagp
 
 !write(*,*)'-- eldyn -1'
   Nsq= N*N
-  thrs =  1.0d-8
+  thrs =  1.0d-14
   Maxiter = 100
 
 !

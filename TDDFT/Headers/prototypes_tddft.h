@@ -1,6 +1,7 @@
 //#include "typedefs.h"
 void GetNewRhoLocal (STATE * states_distribute, double *rho, double *mat_local, double *rho_matrix);
-void InitStatedistribute ();
+void InitStatedistribute (STATE *states_distrubte);
+
 void MapOrbitalToProcess(int st2, STATE *states, STATE *states_distribute, double *psi_whole);
 void MatrixToLocal (STATE *states_distribute, double * A_glob, double * A_local);
 void MatrixToGlobal (STATE *states_distribute, double * A_local, double * A_glob);

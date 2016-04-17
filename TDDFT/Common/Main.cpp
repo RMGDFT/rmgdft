@@ -265,11 +265,6 @@ vh_old, vxc_old, ControlMap);
     Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
             pct.desca, pct.desca[1]);
 
-
-    get_dm_diag_p(states, matB, mat_X, Hij);
-
-    write_eigs(states);
-
     n2 = (ct.state_end - ct.state_begin) * ct.num_states;
     Xij_00 = new double[n2];
     Yij_00 = new double[n2];
@@ -315,23 +310,12 @@ vh_old, vxc_old, ControlMap);
     rmg_printf("\n  y dipolll  %f %f", dipole_ion[1], dipole_ele[1]);
     rmg_printf("\n  z dipolll  %f %f", dipole_ion[2], dipole_ele[2]);
 
-    Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
-            pct.descb, pct.desca[1]);
 
-    InitStatedistribute ();
+    states_distribute = new STATE[ct.num_states];
+    InitStatedistribute (states_distribute);
+
     rho_matrix_local = new double[pct.num_local_orbit *pct.num_local_orbit];
 
-    mat_dist_to_global(mat_X, Pn0, pct.desca);
-    MatrixToLocal(states_distribute, Pn0, rho_matrix_local);
-    for (i = 0; i< FP0_BASIS; i++) rho[i] = 0.0;
-    GetNewRhoLocal (states_distribute, rho, rho_matrix_local, rho_matrix);
-
-    dipole_calculation(rho, dipole_ele);
-    rmg_printf("\n  x dipoll2  %f %f", dipole_ion[0], dipole_ele[0]);
-    rmg_printf("\n  y dipoll2  %f %f", dipole_ion[1], dipole_ele[1]);
-    rmg_printf("\n  z dipoll2  %f %f", dipole_ion[2], dipole_ele[2]);
-
-#if 0
     DiagScalapack(states, ct.num_states, Hij_00, Bij_00, rho_matrix, theta);
     GetNewRho_on(states, rho, rho_matrix);
     write_eigs(states);
@@ -340,20 +324,9 @@ vh_old, vxc_old, ControlMap);
     rmg_printf("\n  y dipoll3  %f %f", dipole_ion[1], dipole_ele[1]);
     rmg_printf("\n  z dipoll3  %f %f", dipole_ion[2], dipole_ele[2]);
 
-    read_rhomatrix(ct.infile, rho_matrix);
-    GetNewRho_on(states, rho, rho_matrix);
-    dipole_calculation(rho, dipole_ele);
-    rmg_printf("\n  x dipoll4  %f %f", dipole_ion[0], dipole_ele[0]);
-    rmg_printf("\n  y dipoll4  %f %f", dipole_ion[1], dipole_ele[1]);
-    rmg_printf("\n  z dipoll4  %f %f", dipole_ion[2], dipole_ele[2]);
 
-#endif
-
-    mat_dist_to_global(mat_X, Pn0, pct.desca);
     mat_dist_to_global(zz_dis, Cmatrix, pct.desca);
 
-
-    mat_dist_to_global(matB, Smatrix, pct.desca);
 
     for(i = 0; i < 2*n2; i++) Pn0[i] = 0.0;
     for(i = 0; i < ct.nel/2; i++) Pn0[i*numst + i] = 2.0;
@@ -489,6 +462,7 @@ vh_old, vxc_old, ControlMap);
             get_vtot_psi(vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
             HijUpdateNCpp (states_distribute, vtot_c, rho_matrix_local, Hmatrix);
+            delete(RT4c);
 
             for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];
 
