@@ -378,7 +378,6 @@ vh_old, vxc_old, ControlMap);
 
     mat_dist_to_global(Hij, Hmatrix, pct.desca);
 
-    
     for(i = 0; i < n2; i++) Smatrix[i] = 0.0;
     for(i = 0; i < numst; i++) Smatrix[i*numst + i] = 1.0;
 
@@ -416,11 +415,16 @@ vh_old, vxc_old, ControlMap);
                 t2 += Pn1[i*numst + i];
             }
 
+            for(i = 0; i < 10; i++)
+            {
+            if(pct.gridpe == 0) printf("\n");
+            for(j = 0; j < 10; j++)
+                if(pct.gridpe == 0) printf(" %e ", Pn1[i*numst + j]);
+            }
+                
+
             if(pct.gridpe == 0) printf("\n Pn1 sum %e", t2);
 
-            //for(i = 0; i < numst; i++) 
-            //for(j = 0; j < numst; j++) 
-            //    Hmatrix_t0[i*numst + j] = Cmatrix[i*numst + j] * Pn1[i*numst + i];
             dgemm("N", "N", &numst, &numst, &numst,  &one, Cmatrix, &numst,
                 Pn1, &numst, &zero, Hmatrix_t0, &numst);
 
