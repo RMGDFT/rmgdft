@@ -70,7 +70,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     bool CONVERGED = false;
     double t3;
     double *vtot, *vtot_psi, *new_rho;
-    double time1;
     double t[3];                  /* SCF checks and average potential */
     double max_unocc_res = 0.0;
 
@@ -84,7 +83,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     /* to hold the send data and receive data of eigenvalues */
     double *rho_tot=NULL;   
     
-    time1 = my_crtc ();
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
@@ -119,6 +117,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     if (Verify("charge_mixing_type","Linear", Kptr[0]->ControlMap))
         rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
 
+    double hartree_residual;
     if (spin_flag)        
     {
 	/*calculate the total charge density in order to calculate hartree potential*/
@@ -135,11 +134,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
             rho_neutral[idx] = rho[idx] - rhoc[idx];
         }
 
-        double residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, vh_ext, ct.hartree_min_sweeps, 
+        hartree_residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, vh_ext, ct.hartree_min_sweeps, 
                     ct.hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre, 
                     ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target,
                     ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, Rmg_G->get_default_FG_RATIO(), false);
-        rmg_printf("Hartree residual = %14.6e\n", residual);
  
         /* Pack the portion of the hartree potential used by the wavefunctions
          * back into the wavefunction hartree array. */
@@ -153,7 +151,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     {
     	/* Generate hartree potential */
         RT1 = new RmgTimer("Scf steps: Hartree");
-    	get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, rms_target, boundaryflag);
+    	hartree_residual = get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, rms_target, boundaryflag);
         delete(RT1);
     }
 
@@ -182,14 +180,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     if (!firststep)
     {
-        rmg_printf ("\n");
-        //progress_tag ();
-        rmg_printf ("SCF CHECKS: <rho dv>  = %15.8e\n", t[0]);
-        //progress_tag ();
-        rmg_printf ("SCF CHECKS: RMS[dv]   = %15.8e\n", t[1]);
+        //rmg_printf("scf check: <rho dv>   = %8.2e\n", t[0]);
         RMSdV.emplace_back(t[1]);
-        //progress_tag ();
-        rmg_printf ("AVERAGE POTENTIAL <V> = %15.8e\n", t[2]);
+        rmg_printf("hartree residual      = %8.2e\n", hartree_residual);
+        rmg_printf("average potential <V> = %8.2e\n", t[2]);
     }
 
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
@@ -286,7 +280,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     	delete [] rho_tot;
     }
 
-    rmg_printf("\n SCF STEP TIME = %10.2f\n",my_crtc () - time1);
 
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 

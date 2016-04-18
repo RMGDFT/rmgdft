@@ -43,7 +43,7 @@ void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt,
                double * xk, double * wk, double * celldm, int *nr1, int *nr2,
                int *nr3, double *a1, double *a2, double *a3, double *omega, int *wflag);
 }
-extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
+extern "C" double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
 extern "C" void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 extern "C" void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 extern "C" void  get_rho_oppo (double * rho, double * rho_oppo);

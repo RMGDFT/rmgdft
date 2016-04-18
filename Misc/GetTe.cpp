@@ -234,7 +234,6 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     char *eunits = ct.energy_output_string[ct.energy_output_units];
-    rmg_printf ("\n\n");
     rmg_printf ("@@ EIGENVALUE SUM     = %15.8f %s\n", efactor*eigsum, eunits);
     rmg_printf ("@@ ION_ION            = %15.8f %s\n", efactor*ct.II, eunits);
     rmg_printf ("@@ ELECTROSTATIC      = %15.8f %s\n", -efactor*ct.ES, eunits);

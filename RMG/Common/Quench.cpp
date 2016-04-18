@@ -63,6 +63,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     /* ---------- begin scf loop ---------- */
     
     double start_time = my_crtc ();
+    double step_time;
     double elapsed_time;
 
     for (ct.scf_steps = 0, CONVERGED = false;
@@ -72,7 +73,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
 
         /* perform a single self-consistent step */
+        step_time = my_crtc ();
         CONVERGED = Scf (vxc, vh, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+        step_time = my_crtc () - step_time;
 
 
 	/* output the eigenvalues with occupations */
@@ -106,8 +109,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         elapsed_time = my_crtc() - start_time;
         if (pct.imgpe == 0) {
-            rmg_printf ("\n\nquench: ----- [md: %3d/%-d  scf: %3d/%-d  scf time: %8.2f secs  RMS[dV]: %8.2e ] -----\n",
-                    ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, elapsed_time, ct.rms);
+            rmg_printf ("quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]\n\n\n",
+                    ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
         }
 
     }

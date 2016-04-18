@@ -54,13 +54,13 @@
 #endif
 
 
-extern double *rho;
 
 // Davidson diagonalization solver
 
 template void Davidson<double>(Kpoint<double> *, double *, int &);
 template void Davidson<std::complex<double> >(Kpoint<std::complex<double>> *, double *, int &);
 
+#define DAVIDSON_DEBUG 0
 
 static double occupied_tol = 0.01;
 
@@ -79,7 +79,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
     double unoccupied_tol = std::max(5.0*occupied_tol, 1.0e-5 );
 
-    //if(pct.gridpe == 0)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
+    //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
     RT1 = new RmgTimer("Davidson: diagonals");
     Diagonals(kptr);
@@ -354,11 +354,11 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         delete [] tolerances;
 
         notconv = tnotconv;
-        if(pct.gridpe==0) rmg_printf("Davidson: notconv = %d  nbase=%d  occupied_tol=%7.3e\n", notconv, nbase, occupied_tol);
-        //if(pct.gridpe==0) printf("MIN_TOLERANCE=%20.12e for STATE %d\n", min_tol, min_tol_state);
-        if(pct.gridpe==0) rmg_printf("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
-        //if(pct.gridpe==0) printf("AVG_OCC_TOLERANCE=%20.12e\n", avg_occ_tol);
-        //if(pct.gridpe==0) printf("AVG_UNOCC_TOLERANCE=%20.12e\n", avg_unocc_tol);
+        if(pct.gridpe==0 && DAVIDSON_DEBUG) rmg_printf("Davidson: notconv = %d  nbase=%d  occupied_tol=%7.3e\n", notconv, nbase, occupied_tol);
+        //if(pct.gridpe==0 && DAVIDSON_DEBUG) printf("MIN_TOLERANCE=%20.12e for STATE %d\n", min_tol, min_tol_state);
+        if(pct.gridpe==0 && DAVIDSON_DEBUG) rmg_printf("MAX_TOLERANCE=%20.12e for STATE %d\n", max_tol, max_tol_state);
+        //if(pct.gridpe==0 && DAVIDSON_DEBUG) printf("AVG_OCC_TOLERANCE=%20.12e\n", avg_occ_tol);
+        //if(pct.gridpe==0 && DAVIDSON_DEBUG) printf("AVG_UNOCC_TOLERANCE=%20.12e\n", avg_unocc_tol);
 
         // Copy updated eigenvalues back
         for(int st=0;st < nstates;st++) eigs[st] = eigsw[st];

@@ -67,7 +67,7 @@ extern "C" void solv_pois (double * vmat, double * fmat, double * work,
     MG.solv_pois<double>(vmat, fmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, 0.0, k, NULL);
 }
 
-extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag)
+extern "C" double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag)
 {
     int dimx = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO()), dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO()), dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
     int pbasis = dimx * dimy * dimz;
@@ -81,12 +81,12 @@ extern "C" void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sw
     double residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, ct.vh_ext, min_sweeps, max_sweeps, maxlevel, ct.poi_parm.gl_pre, 
                 ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target, 
                 ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, Rmg_G->get_default_FG_RATIO(), true);
-    rmg_printf("Hartree residual = %14.6e", residual);
 
     /* Pack the portion of the hartree potential used by the wavefunctions
      * back into the wavefunction hartree array. */
     CPP_pack_dtos (Rmg_G, vh_eig, ct.vh_ext, dimx, dimy, dimz, boundaryflag);
 
     delete [] rho_neutral;
+    return residual;
 }
 

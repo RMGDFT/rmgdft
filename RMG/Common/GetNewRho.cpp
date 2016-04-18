@@ -213,10 +213,8 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     /* Renormalize charge, there could be some discrpancy because of interpolation */
     double t1 = ct.nel / ct.tcharge;
-    int incx = 1;
-    if (pct.imgpe == 0)
-        rmg_printf ("\n GetNewRho: Normalization constant for new charge is %f\n", t1);
-    QMD_dscal (FP0_BASIS, t1, rho, incx);
+    rmg_printf ("normalization constant for new charge is %f\n", t1);
+    for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
 
     /*Update ct.tcharge, do not really recalculate it, just mutltiply it by normalization constant */
     ct.tcharge *= t1;

@@ -180,7 +180,7 @@ void gcxcblyp_spin (double rho_up, double rho_dw,
 void gram (KPOINT *kpoint, double h, int numst, int maxst, int numpt,
            int maxpt);
 int get_input (FILE *fh, char *id, void *dest, unsigned int flag, char *def);
-void get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
+double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
 char *get_symbol (int atomic_number);
 void global_sums (double *vect, int *length, MPI_Comm comm);
 void init_derweight (void);
