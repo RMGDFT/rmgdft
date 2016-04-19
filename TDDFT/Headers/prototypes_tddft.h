@@ -35,11 +35,12 @@ FILE *my_fopen_increment(char *name);
 #endif
 
 
-template <typename OrbitalType> void RmgTddft (double * vxc, double *, 
-          double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-          Kpoint<OrbitalType> **Kptr);
+template <typename OrbitalType> 
+void RmgTddft (double * vxc, double *, double * vnuc, double * rho, double * rho_oppo,
+     double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 template <typename KpointType>
 void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij);
-void VhDriver(double *, double *, double *, double*);
+void VhDriver(double *, double *, double *);
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, KpointType *Sij);
+void GetNewRho_rmgtddft(double *, double *, double *, double *, int);

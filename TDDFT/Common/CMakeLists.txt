@@ -18,6 +18,7 @@ RmgTddft.cpp
 ../../ON/Common/VhDriver.cpp
 HmatrixUpdate.cpp
 HSmatrix.cpp
+GetNewRho_rmgtddft.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories("${RMG_BINARY_DIR}/Headers/")

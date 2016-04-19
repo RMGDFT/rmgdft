@@ -58,7 +58,6 @@ template void HSmatrix<std::complex<double> >(Kpoint<std::complex<double>> *, do
     template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, KpointType *Sij) 
 {
-    RmgTimer RT0("Diagonalization");
     //rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
 
     BaseGrid *G = kptr->G;
@@ -233,7 +232,6 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
     delete [] tmp_array2T;
 #endif
 
-    delete(RT1);
 
 }
 

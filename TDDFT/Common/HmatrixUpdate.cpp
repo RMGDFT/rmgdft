@@ -114,7 +114,7 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
     /* tmp_arrayT:   V|psi> */
 
     // Compute A matrix
-    KpointType alpha(1.0);
+    KpointType alpha(vel);
     KpointType beta(0.0);
     RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
 
