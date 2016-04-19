@@ -307,11 +307,15 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             work1_t[idx] = work1_t[idx] - work2_t[idx];
         }
 
+
         /* If this is the first time through compute the eigenvalue */
         if ((cycles == 0) || (potential_acceleration != 0) || (using_davidson && (cycles == 0))) 
         {
 
             ComputeEig(pbasis, tmp_psi_t, work1_t, res_t, &eig);
+            // Save this for variational energy correction
+            if((cycles == 0) && (vcycle == 0)) sp->feig[0] = eig;
+
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
 	     * are not defined yet*/

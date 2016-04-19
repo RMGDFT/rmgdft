@@ -253,6 +253,16 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     ct.scf_accuracy = sum;
 
+    // Compute variational energy correction term if any
+    sum = EnergyCorrection(Kptr, rho, new_rho, vh, vh_out, vtot_psi);
+    ct.scf_correction = sum;
+    
+    // Check if this convergence threshold has been reached
+    if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
+
+        if (!firststep && fabs(ct.scf_accuracy) < ct.thr_energy) CONVERGED = true;
+
+    }
 
     /*Takes care of mixing and checks whether the charge density is negative*/
     MixRho(new_rho, rho, rhocore, vh, vh_out, rhoc, Kptr[0]->ControlMap);

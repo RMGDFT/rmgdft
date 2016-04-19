@@ -77,6 +77,9 @@ public:
     double eig[2];
     double oldeig[2];
 
+    // First computed eigenvalue from MgEigState per scf cycle
+    double feig[2];
+
     // Index of the orbital 
     int istate;
 

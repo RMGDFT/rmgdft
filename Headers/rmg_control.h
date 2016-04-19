@@ -493,6 +493,9 @@ typedef struct
     /* 2nd order convergence term  (Vh_out - Vh_in)*(rho_out - rho_in) */
     double scf_accuracy;
 
+    /* variational correction term for potential convergence */
+    double scf_correction;
+
     /* Max number of sweeps in get_vh*/
     int hartree_max_sweeps;
     

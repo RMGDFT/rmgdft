@@ -109,15 +109,15 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     	{
             
             kptr = Kptr[kpt];
-        	t1 = 0.0;
-        	for (state = 0; state < ct.num_states; state++)
-        	{
+            t1 = 0.0;
+            for (state = 0; state < ct.num_states; state++)
+            {
 
-            		t1 += (kptr->Kstates[state].occupation[idx] *
-                   		kptr->Kstates[state].eig[idx]);
+                t1 += (kptr->Kstates[state].occupation[idx] *
+                        kptr->Kstates[state].eig[idx]);
 
-        	}
-        	eigsum += t1 * kptr->kweight;
+            }
+            eigsum += t1 * kptr->kweight;
     	}
     }
 
@@ -228,7 +228,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /* Sum them all up */
-    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II;
+    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.scf_correction;
    
     
     /* Print contributions to total energies into output file */
