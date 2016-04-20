@@ -301,6 +301,9 @@ typedef struct
     /*Order of Broyden mixing for charge density*/
     int charge_broyden_order;
 
+    /* For Davidson diagonalization. Factor to multipy desired tolerance for unoccupied states by. */
+    double unoccupied_tol_factor;
+
     /* Projector mixing parameter */
     double prjmix;
 
