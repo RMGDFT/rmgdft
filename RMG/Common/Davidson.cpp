@@ -77,7 +77,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 5.0e-14);
 
-    double unoccupied_tol = std::max(5.0*occupied_tol, 1.0e-5 );
+    double unoccupied_tol = std::max(100.0*occupied_tol, 1.0e-5 );
 
     //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
