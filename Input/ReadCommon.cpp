@@ -372,7 +372,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Maximum number of self consistent steps to perform.\n", 
                      "max_scf_steps must be greater than 0. Resetting to the default value of 500\n");
 
-    If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 10, 2,
+    If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 10, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
@@ -383,6 +383,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "charge_pulay_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50\n");
 
     If.RegisterInputKey("charge_pulay_refresh", &lc.charge_pulay_refresh, 1, INT_MAX, 100,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
+    If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");

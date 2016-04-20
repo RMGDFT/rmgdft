@@ -298,6 +298,9 @@ typedef struct
     /*Weight for Pulay special metrics*/
     double charge_pulay_special_metrics_weight;
 
+    /*Order of Broyden mixing for charge density*/
+    int charge_broyden_order;
+
     /* Projector mixing parameter */
     double prjmix;
 

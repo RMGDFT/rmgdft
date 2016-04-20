@@ -98,8 +98,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     else if (Verify("charge_mixing_type","Broyden", ControlMap))
     {
 	RmgTimer RT1("Mix rho: Broyden");
-        int max_iter=7;
-        BroydenPotential(rho, new_rho, rhoc, vh_in, vh_out, max_iter, false);
+        BroydenPotential(rho, new_rho, rhoc, vh_in, vh_out, ct.charge_broyden_order, false);
         rmg_printf("Broyden mixing for the charge density.\n");
     }
     
