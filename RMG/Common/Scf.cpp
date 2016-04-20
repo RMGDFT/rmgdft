@@ -113,9 +113,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
 
     // Linear mixing does not require such a high degree of hartree convergence
-    double rms_target = 1.0e-12;
+    double rms_target = 1.0e-14;
     if (Verify("charge_mixing_type","Linear", Kptr[0]->ControlMap))
-        rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
+        rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-14);
 
     double hartree_residual;
     if (spin_flag)        
@@ -133,6 +133,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         for (int idx = 0; idx < FP0_BASIS; idx++) {
             rho_neutral[idx] = rho[idx] - rhoc[idx];
         }
+
+        // Make sure it is completely neutral
+        double sum = 0.0;
+        for(int i=0;i < FP0_BASIS;i++) sum += rho_neutral[i];
+        MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        sum = sum / (double)Rmg_G->get_GLOBAL_BASIS(Rmg_G->get_default_FG_RATIO());
+        for(int i=0;i < FP0_BASIS;i++) rho_neutral[i] -= sum;
 
         hartree_residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, vh_ext, ct.hartree_min_sweeps, 
                     ct.hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre, 
@@ -201,7 +208,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
 
-        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || (ct.scf_steps < 4)) {
+        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || ((ct.scf_steps < 4) && (ct.runflag != RESTART))) {
             MgridSubspace(Kptr[kpt], vtot_psi);
         }
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
@@ -254,7 +261,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     ct.scf_accuracy = sum;
 
     // Compute variational energy correction term if any
-    sum = EnergyCorrection(Kptr, rho, new_rho, vh, vh_out, vtot_psi);
+    sum = EnergyCorrection(Kptr, rho, new_rho, vh, vh_out);
     ct.scf_correction = sum;
     
     // Check if this convergence threshold has been reached
