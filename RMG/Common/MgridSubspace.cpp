@@ -207,7 +207,9 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     if (diag_this_step) {
 
         Subdiag (kptr, vtot_psi, ct.subdiag_driver);
+        RT1 = new RmgTimer("Scf steps: Beta x psi");
         Betaxpsi (kptr);
+        delete(RT1);
         kptr->mix_betaxpsi(0);
         // Projectors are rotated along with orbitals in Subdiag so no need to recalculate
         // after diagonalizing.
