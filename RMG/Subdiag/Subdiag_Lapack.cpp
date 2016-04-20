@@ -62,6 +62,12 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
     int ione = 1;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
+#if SCALAPACK_LIBS
+    // For folded spectrum start with scalapack if available since lapack is so slow on larger problems
+    if(ct.use_folded_spectrum && (ct.scf_steps < 6)  && (ct.runflag != RESTART))
+        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
+#endif
+
     // Lapack is not parallel across MPI procs so only have the local master proc on a node perform
     // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
     if(pct.is_local_master || use_folded) {
@@ -153,17 +159,19 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         if(ct.is_gamma) {
 
             if(use_folded) {
-
                 FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, (double *)eigvectors, SUBDIAG_LAPACK);
                 for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx]; 
 
             }
             else {
 
-                dsygvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
-                                &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
-                                &lwork, iwork, ifail, &info);
-
+//                dsygvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
+//                                &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
+//                                &lwork, iwork, ifail, &info);
+//
+                  dsygvd(&ione, "V", "L", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
+                         eigs, work2, &lwork, iwork, &liwork, &info);
+                  for(int i=0;i<num_states*num_states;i++)eigvectors[i] = Cij[i];
 
             }
 

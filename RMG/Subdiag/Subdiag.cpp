@@ -54,6 +54,10 @@
 template void Subdiag<double>(Kpoint<double> *, double *, int);
 template void Subdiag<std::complex<double> >(Kpoint<std::complex<double>> *, double *, int);
 
+// Temporary hack to enable the use of these arrays in GeneralDiag.
+void *GMatrix1;
+void *GMatrix2;
+
 template <typename KpointType>
 void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 {
@@ -125,6 +129,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
         }
 
+        GMatrix1 = (void *)global_matrix1;
+        GMatrix2 = (void *)global_matrix2;
+
         #if GPU_ENABLED
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, pbasis * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
@@ -147,7 +154,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     AppNls(kptr, kptr->newsint_local, kptr->Kstates[0].psi, kptr->nv, kptr->ns, kptr->Bns,
            0, std::min(ct.non_local_block_size, kptr->nstates));
     int first_nls = 0;
-
 
     // Each thread applies the operator to one wavefunction
     KpointType *a_psi = (KpointType *)tmp_arrayT;

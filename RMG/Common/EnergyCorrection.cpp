@@ -50,15 +50,20 @@
 #include "RmgParallelFft.h"
 
 
-// Computes a correction term if required to make the total energy variational
+// Computes an approximate correction that helps make the total energy variational when using multigrid
+// and potential acceleration to solve the Kohn-Sham equations. When using this combination as a solver
+// the potential and the eigenvalues are updated continuously as the states are processed. This effectively
+// means that there is a mixing of the input and output densities that is specfic to each state. In order
+// to reduce this effect the initial values of the eigenvalues for each state are stored in MgEigState
+// and used to generate a correction factor to be applied in GetTe.
 
 template double EnergyCorrection<double> (Kpoint<double> **,
-              double *, double *, double *, double *, double *);
+              double *, double *, double *, double *);
 template double EnergyCorrection<std::complex<double> > (Kpoint<std::complex<double>> **,
-              double *, double *, double *, double *, double *);
+              double *, double *, double *, double *);
 
 template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **Kptr,
-          double *rho, double *new_rho, double *vh, double *vh_in, double *vtot)
+          double *rho, double *new_rho, double *vh, double *vh_in)
 
 {
 
@@ -84,6 +89,7 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
             }
         }
     }
+
     return ec;
 }
 

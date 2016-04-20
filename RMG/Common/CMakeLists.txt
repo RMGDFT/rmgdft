@@ -1,4 +1,5 @@
 add_library (RMG_Common
+EnergyCorrection.cpp
 BroydenPotential.cpp
 DavPreconditioner.cpp
 ApplyHamiltonian.cpp
