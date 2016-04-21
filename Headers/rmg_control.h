@@ -107,6 +107,10 @@ typedef struct
     /* Output file name */
     char outfile[MAX_PATH];
 
+    char infile_tddft[MAX_PATH];
+    char outfile_tddft[MAX_PATH];
+    bool restart_tddft;
+
     /** File to read the pseudopotentials from */
     /*  char pspfile[MAX_PATH]; */
 

@@ -44,3 +44,8 @@ void VhDriver(double *, double *, double *);
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, KpointType *Sij);
 void GetNewRho_rmgtddft(double *, double *, double *, double *, int);
+void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
+        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, int *tot_steps);
+void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
+        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, int tot_steps);
+

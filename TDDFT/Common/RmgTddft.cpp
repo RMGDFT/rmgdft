@@ -99,6 +99,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 //    double *vh_y = new double[FP0_BASIS];
 //    double *vh_z = new double[FP0_BASIS];
     double *xpsi = new double[P0_BASIS * numst];
+    double dipole_ion[3], dipole_ele[3];
 
 
 
@@ -125,68 +126,78 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     vtot = new double[FP0_BASIS];
     vtot_psi = new double[P0_BASIS];
-
-    for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
-    init_efield(vtot);
-    GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
-
-    HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Akick);
-
-    /* save old vhxc + vnuc */
-    for (int idx = 0; idx < FP0_BASIS; idx++) {
-        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
-    }
-
-    // Transfer vtot from the fine grid to the wavefunction grid
-    GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
-
-    /*Generate the Dnm_I */
-    get_ddd (vtot);
-
-    Betaxpsi (Kptr[0]);
-    HSmatrix (Kptr[0], vtot_psi, (OrbitalType *)Hmatrix, (OrbitalType *)Smatrix);
-
-    dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
-
-             if(pct.gridpe == 0)
-            { 
-                printf("\nHMa\n");
-                for(i = 0; i < 10; i++) 
-                {
-                
-                printf("\n");
-                for(int j = 0; j < 10; j++) printf(" %8.1e",  Hmatrix[i*numst + j]);
-                }
-
-                printf("\nSMa\n");
-                for(i = 0; i < 10; i++) 
-                {
-                
-                printf("\n");
-                for(int j = 0; j < 10; j++) printf(" %8.1e",  Smatrix[i*numst + j]);
-                }
-          }
-
-
-    pre_steps = 0;
     double time_step =0.2;
-    if(pre_steps == 0)
-        for(i = 0; i < n2; i++) Hmatrix[i] += Akick[i]/time_step;
-
-    for(i = 0; i < 2* n2; i++) Pn0[i] = 0.0;
-
-    for(i = 0; i < ct.nel/2; i++) Pn0[i * numst + i] = 2.0;
-
-    double dipole_ion[3], dipole_ele[3];
 
     dipole_calculation(rhoc, dipole_ion);
-    dipole_calculation(rho, dipole_ele);
+
+    if(ct.restart_tddft)
+    {
+        
+        ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, &pre_steps);
+        dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
+
+    }
+    else
+    {
+        for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
+        init_efield(vtot);
+        GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+
+        HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Akick);
+
+        /* save old vhxc + vnuc */
+        for (int idx = 0; idx < FP0_BASIS; idx++) {
+            vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        }
+
+        // Transfer vtot from the fine grid to the wavefunction grid
+        GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+
+        /*Generate the Dnm_I */
+        get_ddd (vtot);
+
+        Betaxpsi (Kptr[0]);
+        HSmatrix (Kptr[0], vtot_psi, (OrbitalType *)Hmatrix, (OrbitalType *)Smatrix);
+
+        dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
+
+        if(pct.gridpe == 0)
+        { 
+            printf("\nHMa\n");
+            for(i = 0; i < 10; i++) 
+            {
+
+                printf("\n");
+                for(int j = 0; j < 10; j++) printf(" %8.1e",  Hmatrix[i*numst + j]);
+            }
+
+            printf("\nSMa\n");
+            for(i = 0; i < 10; i++) 
+            {
+
+                printf("\n");
+                for(int j = 0; j < 10; j++) printf(" %8.1e",  Smatrix[i*numst + j]);
+            }
+        }
 
 
+        pre_steps = 0;
+        for(i = 0; i < n2; i++) Hmatrix[i] += Akick[i]/time_step;
 
-    rmg_printf("\n  x dipolll  %f %f", dipole_ion[0], dipole_ele[0]);
-    rmg_printf("\n  y dipolll  %f %f", dipole_ion[1], dipole_ele[1]);
-    rmg_printf("\n  z dipolll  %f %f", dipole_ion[2], dipole_ele[2]);
+        for(i = 0; i < 2* n2; i++) Pn0[i] = 0.0;
+
+        for(i = 0; i < ct.nel/2; i++) Pn0[i * numst + i] = 2.0;
+
+
+        dipole_calculation(rho, dipole_ele);
+
+        rmg_printf("\n  x dipolll  %f %f", dipole_ion[0], dipole_ele[0]);
+        rmg_printf("\n  y dipolll  %f %f", dipole_ion[1], dipole_ele[1]);
+        rmg_printf("\n  z dipolll  %f %f", dipole_ion[2], dipole_ele[2]);
+
+
+    }
+
 
 
     for(ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
@@ -232,7 +243,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
+        if((ct.scf_steps +1) % ct.checkpoint == 0)
+            WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, tot_steps);
     }
 
+    if(pct.gridpe == 0) fclose(dfi);
+    
 
+    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, tot_steps+1);
 }

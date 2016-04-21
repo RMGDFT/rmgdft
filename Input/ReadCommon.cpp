@@ -96,6 +96,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::string Description;
     std::string Infile;
     std::string Outfile;
+    std::string Infile_tddft;
+    std::string Outfile_tddft;
     std::string wfng_file;
     std::string rhog_file;
     std::string vxc_file;
@@ -131,11 +133,21 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "Input file/path to  read wavefunctions and other binary data from on a restart.\n", 
                      "");
+    If.RegisterInputKey("input_tddft_file", &Infile_tddft, "Waves/wave_tddft.out",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Input file/path to  read wavefunctions and other binary data from on a restart.\n", 
+                     "");
 
     If.RegisterInputKey("output_wave_function_file", &Outfile, "Waves/wave.out",
                      CHECK_AND_FIX, OPTIONAL,
                      "Output file/path to store wavefunctions and other binary data.\n", 
                      "");
+    If.RegisterInputKey("output_tddft_file", &Outfile_tddft, "Waves/wave_tddft.out",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Output file/path to store wavefunctions and other binary data.\n", 
+                     "");
+    If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
+                        "restart TDDFT");
 
     If.RegisterInputKey("processor_grid", &ProcessorGrid, &DefProcessorGrid, 3, OPTIONAL, 
                      "Three-D (x,y,z) layout of the MPI processes.\n", 
@@ -782,6 +794,29 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         std::strncpy(lc.infile, temp, sizeof(lc.infile));
         delete [] temp;
     }
+
+    if(!Infile_tddft.length()) Infile = "Waves/wave_tddft.out";
+    std::strncpy(lc.infile_tddft, Infile_tddft.c_str(), sizeof(lc.infile_tddft));
+
+    if(!Outfile_tddft.length()) Outfile = "Waves/wave_tddft.out";
+    std::strncpy(lc.outfile_tddft, Outfile_tddft.c_str(), sizeof(lc.outfile_tddft));
+
+    if(lc.outfile_tddft[0] !='/') 
+    {
+        char *temp = new char[255];
+        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.outfile_tddft);
+        std::strncpy(lc.outfile_tddft, temp, sizeof(lc.outfile_tddft));
+        delete [] temp;
+    }
+    if(lc.infile[0] !='/') 
+    {
+        char *temp = new char[255];
+        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.infile_tddft);
+        std::strncpy(lc.infile_tddft, temp, sizeof(lc.infile_tddft));
+        delete [] temp;
+    }
+
+
 
 
     if(lc.spin_flag) {

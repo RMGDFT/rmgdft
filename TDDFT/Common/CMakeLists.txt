@@ -1,4 +1,5 @@
 add_library (tddft_Common
+
 read_rhomatrix.c
 dipole_calculation.c
 dot_product_orbit_xyz_orbit.c
@@ -11,6 +12,8 @@ init_TDDFT.c
 )
 
 add_library (RmgTddft
+WriteData_rmgtddft.cpp
+ReadData_rmgtddft.cpp
 dipole_calculation.c
 mat_global_to_dist.c
 mat_dist_to_global.c
