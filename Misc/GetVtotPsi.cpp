@@ -61,7 +61,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     if(grid_ratio == 2) {
 
 #if USE_PFFT
-        FftFilter(vtot, *fine_pwaves, 0.90 / (double)grid_ratio, LOW_PASS);
+        FftFilter(vtot, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
 #endif
 
         for(ix = 0; ix < dimx/2; ix++)
@@ -77,7 +77,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     else if(grid_ratio == 3) {
 
 #if USE_PFFT
-        FftFilter(vtot, *fine_pwaves, 0.90 / (double)grid_ratio, LOW_PASS);
+        FftFilter(vtot, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
 #endif
         for(ix = 0; ix < dimx/3; ix++)
         for(iy = 0; iy < dimy/3; iy++)
@@ -92,7 +92,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     else
     {
 #if USE_PFFT
-        FftFilter(vtot, *fine_pwaves, 0.90 / (double)grid_ratio, LOW_PASS);
+        FftFilter(vtot, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
 #endif
         mg_restrict_6 (vtot, vtot_psi, dimx, dimy, dimz, grid_ratio);
     }

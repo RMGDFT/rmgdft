@@ -59,8 +59,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   densgrid[1] = pwaves.global_dimy;
   densgrid[2] = pwaves.global_dimz;
 
-  double g2cut = factor*factor*(sqrt(pwaves.gmax))*(sqrt(pwaves.gmax));
-  double g2max = pwaves.gmax;
+  double g2cut = factor*factor*pwaves.gcut;
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
 
