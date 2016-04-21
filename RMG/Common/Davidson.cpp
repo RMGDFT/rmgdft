@@ -149,7 +149,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     // Compute A matrix
     RT1 = new RmgTimer("Davidson: matrix setup/reduce");
     RmgGemm(trans_a, trans_n, nbase, nbase, pbasis, alphavel, psi, pbasis, h_psi, pbasis, beta, hr, ct.max_states, 
-            NULLptr, NULLptr, NULLptr, false, true, false, true);
+            NULLptr, NULLptr, NULLptr, false, false, false, false);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -161,7 +161,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
     // Compute S matrix
     RmgGemm (trans_a, trans_n, nbase, nbase, pbasis, alphavel, psi, pbasis, s_psi, pbasis, beta, sr, ct.max_states, 
-             NULLptr, NULLptr, NULLptr, false, true, false, true);
+             NULLptr, NULLptr, NULLptr, false, false, false, false);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
@@ -208,14 +208,14 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         // expand the basis set with the residuals ( H - e*S )|psi>
         RT1 = new RmgTimer("Davidson: generate residuals");
         RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
-                NULLptr, NULLptr, NULLptr, false, true, false, true);
+                NULLptr, NULLptr, NULLptr, false, false, false, false);
 
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis + idx];
         }
 
         RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis, 
-                NULLptr, NULLptr, NULLptr, false, true, false, true);
+                NULLptr, NULLptr, NULLptr, false, false, false, false);
         delete RT1;
 
         // Apply preconditioner
@@ -256,7 +256,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         // Update the reduced Hamiltonian and S matrices
         RT1 = new RmgTimer("Davidson: matrix setup/reduce");
         RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alphavel, psi, pbasis, &h_psi[nbase*pbasis], pbasis, beta, &hr[nbase*ct.max_states], ct.max_states, 
-                NULLptr, NULLptr, NULLptr, false, true, false, true);
+                NULLptr, NULLptr, NULLptr, false, false, false, false);
 
 #if HAVE_ASYNC_ALLREDUCE
         // Asynchronously reduce it
@@ -267,7 +267,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 #endif
 
         RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alphavel, psi, pbasis, &s_psi[nbase*pbasis], pbasis, beta, &sr[nbase*ct.max_states], ct.max_states, 
-                 NULLptr, NULLptr, NULLptr, false, true, false, true);
+                 NULLptr, NULLptr, NULLptr, false, false, false, false);
 
 #if HAVE_ASYNC_ALLREDUCE
         // Wait for Aij request to finish
@@ -373,7 +373,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             RT1 = new RmgTimer("Davidson: rotate orbitals");
             OrbitalType *npsi = new OrbitalType[nstates*pbasis];
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, npsi, pbasis, 
-                NULLptr, NULLptr, NULLptr, false, true, false, true);
+                NULLptr, NULLptr, NULLptr, false, false, false, false);
             for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = npsi[idx];
             delete [] npsi;
             delete RT1;
@@ -393,11 +393,11 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             // refresh s_psi and h_psi
             RT1 = new RmgTimer("Davidson: refresh h_psi and s_psi");
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
-                NULLptr, NULLptr, NULLptr, false, true, false, true);
+                NULLptr, NULLptr, NULLptr, false, false, false, false);
             for(int idx=0;idx < nstates*pbasis;idx++)s_psi[idx] = psi[nstates*pbasis + idx];
 
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, h_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
-                NULLptr, NULLptr, NULLptr, false, true, false, true);
+                NULLptr, NULLptr, NULLptr, false, false, false, false);
             for(int idx=0;idx < nstates*pbasis;idx++)h_psi[idx] = psi[nstates*pbasis + idx];
             delete RT1;
 
