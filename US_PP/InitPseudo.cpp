@@ -94,6 +94,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
     for (isp = 0; isp < ct.num_species; isp++)
     {
         SPECIES *sp = &ct.sp[isp];
+        sp->rc = ct.hmaxgrid;
         if (pct.gridpe == 0 && write_flag)
         {
             snprintf (newname, MAX_PATH, "local_%s.xmgr",  sp->atomic_symbol);
