@@ -182,7 +182,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 #endif
     delete RT1;
 
-    //local_diag((double *)hr, (double *)sr, eigs, (double *)vr, nstates, nstates);
     GeneralDiag((double *)hr, (double *)sr, eigs, (double *)vr, nstates, nstates, ct.max_states, ct.subdiag_driver);
     for(int st=0;st < nstates;st++)eigsw[st] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st+nbase] = eigs[st];

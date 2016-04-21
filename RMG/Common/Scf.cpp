@@ -113,9 +113,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
 
     // Linear mixing does not require such a high degree of hartree convergence
-    double rms_target = 1.0e-14;
+    double rms_target = 1.0e-13;
     if (Verify("charge_mixing_type","Linear", Kptr[0]->ControlMap))
-        rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-14);
+        rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
 
     double hartree_residual;
     if (spin_flag)        
