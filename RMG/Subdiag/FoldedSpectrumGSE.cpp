@@ -58,9 +58,9 @@
 // fs_eigcounts and fs_eigstart are used to collect the data in the MPI_Allgatherv call
 // at the end. A and B are both overwritten.
 //
-template void FoldedSpectrumGSE<double> (double *, double *, double *, int, int, int, int *, int *, int, int);
+template void FoldedSpectrumGSE<double> (double *, double *, double *, int, int, int, int *, int *, int, int, MPI_Comm &);
 template <typename DataType>
-void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver)
+void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver, MPI_Comm &fs_comm)
 {
     RmgTimer RT0("Diagonalization: fs: GSE");
     DataType ZERO_t(0.0);
@@ -257,7 +257,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
     // Make sure everybody has a copy
     RT1 = new RmgTimer("Diagonalization: fs: GSE-Allgatherv");
-    MPI_Allgatherv(MPI_IN_PLACE, istep * n * factor, MPI_DOUBLE, Z, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+    MPI_Allgatherv(MPI_IN_PLACE, istep * n * factor, MPI_DOUBLE, Z, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
     delete(RT1);
 
 }

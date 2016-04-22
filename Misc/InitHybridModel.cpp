@@ -80,10 +80,15 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     MPI_Group_incl(parent, pct.procs_per_host, pct.mpi_local_ranks, &localgroup);
     MPI_Comm_create(comm, localgroup, &pct.local_comm);
 
-    // And finally determine if we are the master process in this group
+    // Determine if we are the master process in this group
     pct.is_local_master = false;
     MPI_Comm_rank(pct.local_comm, &pct.local_rank);
     if(pct.local_rank == 0) pct.is_local_master = true;
+
+    // Create a communicator consisting of only the local masters on each node
+    int color = MPI_UNDEFINED;
+    if(pct.is_local_master) color = 1;
+    MPI_Comm_split(comm, color, localrank, &pct.local_master_comm);
 
     delete [] ranks;
     delete [] hnames; 

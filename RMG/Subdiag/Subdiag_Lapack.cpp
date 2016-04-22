@@ -70,7 +70,12 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
     // Lapack is not parallel across MPI procs so only have the local master proc on a node perform
     // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
-    if(pct.is_local_master || use_folded) {
+    // If folded spectrum is selected we only want the local master to participate on each node as
+    // long as there are at least 12 nodes.
+    int NPES = Rmg_G->get_PE_X() * Rmg_G->get_PE_Y() * Rmg_G->get_PE_Z();
+    int nodes = NPES / pct.procs_per_host;
+
+    if(pct.is_local_master || (use_folded && (nodes < 12))) {
 
         // Increase the resources available to this proc since the others on the local node
         // will be idle
@@ -210,7 +215,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
 
     // If only one proc on this host participated broadcast results to the rest
-    if((pct.procs_per_host > 1) && !use_folded) {
+    if((pct.procs_per_host > 1) && !(use_folded && (nodes < 12))) {
         int factor = 2;
         if(ct.is_gamma) factor = 1;
         MPI_Bcast(eigvectors, factor * num_states*num_states, MPI_DOUBLE, 0, pct.local_comm);

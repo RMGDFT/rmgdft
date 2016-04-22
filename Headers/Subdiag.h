@@ -64,7 +64,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
 void FoldedSpectrumIterator(std::complex<double> *A, int n, double *eigs, int k, std::complex<double> *X, double alpha, int iterations, int istart, int driver);
 
 template <typename DataType>
-void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver);
+void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver, MPI_Comm &fs_comm);
 
 template <typename DataType>
 void FoldedSpectrumScalapackGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, Scalapack *MainSp);
@@ -78,7 +78,7 @@ void FoldedSpectrumSetup(int n, int NPES, int THISPE,
                          int& n_start, int& n_win,
                          int *fs_eigstart, int *fs_eigstop, int *fs_eigcounts, int blocksize);
 template <typename KpointType>
-void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver);
+void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver, MPI_Comm &fs_comm);
 template <typename KpointType>
 void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *Vdist, KpointType *B, KpointType *work1, KpointType *work2, Scalapack *);
 int GeneralDiag(double *A, double *B, double *eigs, double *V, int M, int N, int ld, int subdiag_driver);

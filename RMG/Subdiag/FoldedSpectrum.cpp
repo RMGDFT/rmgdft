@@ -59,6 +59,11 @@ static int *fs_eigstart = NULL;
 static int *fs_eigstop = NULL;
 static int *fs_eigcounts = NULL;
 
+// Communicator for PE's participating in folded spectrum operations
+MPI_Comm fs_comm;
+
+static int FS_NPES;
+static int FS_RANK;
 
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
@@ -91,10 +96,21 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     if(ct.is_gamma) factor = 1;
 
 
-    int FS_NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
-
     // Allocate some memory for our communication book keeping arrays
     if(!fs_eigstart) {
+
+        FS_NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
+        fs_comm = pct.grid_comm;
+        if(pct.procs_per_host > 1) {
+            int tpes = FS_NPES / pct.procs_per_host;
+            if(tpes > 12) {
+                FS_NPES = tpes;
+                fs_comm = pct.local_master_comm;
+            }
+        }
+
+        MPI_Comm_rank(fs_comm, &FS_RANK);
+
         fs_eigstart = new int[FS_NPES];
         fs_eigstop = new int[FS_NPES];
         fs_eigcounts = new int[FS_NPES];
@@ -103,7 +119,7 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     // Set up partition indices and bookeeping arrays
     int eig_start, eig_stop, eig_step;
     int n_start, n_win;
-    FoldedSpectrumSetup(n, FS_NPES, pct.gridpe, eig_start, eig_stop, eig_step,
+    FoldedSpectrumSetup(n, FS_NPES, FS_RANK, eig_start, eig_stop, eig_step,
                         n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, 1);
 
 
@@ -133,7 +149,7 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     double *T = new double[n*n];
 #endif
     for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
-    FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver);
+    FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver, fs_comm);
 
     // Copy back to A
     for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
@@ -221,9 +237,9 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
 #if HAVE_ASYNC_ALLREDUCE
     // Use async MPI to get a copy of the eigs to everyone. Will overlap with the iterator
     MPI_Request MPI_reqeigs;
-    MPI_Iallreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqeigs);
+    MPI_Iallreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, fs_comm, &MPI_reqeigs);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, n_eigs, n, MPI_DOUBLE, MPI_SUM, fs_comm);
 #endif
 
 
@@ -240,17 +256,16 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
 
     // Make sure all PE's have all eigenvectors.
     RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
-    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
     delete(RT2);
 
 
     // Gram-Schmidt ortho for eigenvectors.
     RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
 
-    FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, driver);
+    FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, driver, fs_comm);
     for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
     delete(RT2);
-
 
 
     delete(RT1);

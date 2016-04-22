@@ -87,6 +87,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     static char *trans_t = "t";
     static char *trans_n = "n";
 
+
     int num_states = kptr->nstates;
     int ione = 1;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
@@ -95,7 +96,12 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
     // Magma is not parallel across MPI procs so only have the local master proc on a node perform
     // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
-    if(pct.is_local_master || use_folded) {
+    // If folded spectrum is selected we only want the local master to participate on each node as
+    // long as there are at least 12 nodes.
+    int NPES = Rmg_G->get_PE_X() * Rmg_G->get_PE_Y() * Rmg_G->get_PE_Z();
+    int nodes = NPES / pct.procs_per_host;
+
+    if(pct.is_local_master || (use_folded && (nodes < 12))) {
 
 
         if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
@@ -175,17 +181,10 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
             if(use_folded) {
 
-                int lwork = 3 * num_states * num_states / 9 + num_states;
+                int lwork = num_states * num_states / 3 + num_states;
                 double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));        
                 FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, (double *)Sij, SUBDIAG_MAGMA);
-                delete [] iwork;
                 GpuFreeHost(work);
-                delete [] ifail;
-
-
-                delete(RT1);
-
-                return trans_t;
 
             }
             else {
@@ -224,7 +223,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     } // end if is_local_master
 
     // If only one proc on this host participated broadcast results to the rest
-    if((pct.procs_per_host > 1) && !use_folded) {
+    if((pct.procs_per_host > 1) && !(use_folded && (nodes < 12))) {
         int factor = 2;
         if(ct.is_gamma) factor = 1;
         MPI_Bcast(eigvectors, factor * num_states*num_states, MPI_DOUBLE, 0, pct.local_comm);
@@ -232,6 +231,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
     }
 
+    if(use_folded) return trans_t;
     return trans_n;
 
 #endif

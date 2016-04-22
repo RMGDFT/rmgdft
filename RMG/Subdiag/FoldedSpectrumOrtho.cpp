@@ -54,10 +54,10 @@
 // else <i|j> = I
 //
 
-template void FoldedSpectrumOrtho<double> (int, int, int, int *, int *, double *, double *, int);
+template void FoldedSpectrumOrtho<double> (int, int, int, int *, int *, double *, double *, int, MPI_Comm &);
 
 template <typename KpointType>
-void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver)
+void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver, MPI_Comm &fs_comm)
 {
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
@@ -108,12 +108,12 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
             RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, &V[eig_start*n], n, ZERO_t, &G[eig_start*n], n, 
                     NULLptr, NULLptr, NULLptr, false, false, false, false);
 
-            MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, G, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+            MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, G, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
 
             RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, G, n, &V[eig_start*n], n, ZERO_t, &C[eig_start*n], n, 
                                                 NULLptr, NULLptr, NULLptr, false, false, false, false);
 
-            MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, C, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+            MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, C, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
 
         }
 
@@ -174,7 +174,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
     // greatly reduces the network bandwith required at the cost of doing local transposes.
     RT1 = new RmgTimer("Diagonalization: fs: Gram-allreduce");
-//    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+//    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, fs_comm);
 
     for(int st1 = eig_start;st1 < eig_stop;st1++) {
         for(int st2 = 0;st2 < n;st2++) {
@@ -182,7 +182,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
         }
     }
 
-    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, pct.grid_comm);
+    MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
 
 
     delete(RT1);
