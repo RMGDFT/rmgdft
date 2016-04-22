@@ -167,10 +167,6 @@ int GeneralDiagLapack(double *A, double *B, double *eigs, double *V, int N, int 
 int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, int M, int ld)
 {
 
-    printf("\n GeneralDiagScalapack not fully tested\n");
-    fflush(NULL);
-    exit(0);
-#if 0
 #if !SCALAPACK_LIBS
     rmg_printf("This version of RMG was not built with Scalapack support. Redirecting to LAPACK.");
     return GeneralDiagLapack(A, B, eigs, V, N, M, ld);
@@ -281,7 +277,6 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
 
     return 0;
 
-#endif
 #endif
 
 }
