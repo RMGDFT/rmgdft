@@ -71,7 +71,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     FILE *dfi;
     char filename[MAX_PATH+200];
     int n2,n22, numst, P0_BASIS,i, ione =1;
-    int tot_steps, pre_steps;
+    int tot_steps, pre_steps, tddft_steps;
     int Ieldyn = 1, iprint = 0;
 
     /* to hold the send data and receive data of eigenvalues */
@@ -200,10 +200,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
 
-    for(ct.scf_steps = 0; ct.scf_steps < ct.max_scf_steps; ct.scf_steps++)
+    for(tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
 
-        tot_steps = pre_steps + ct.scf_steps;
+        tot_steps = pre_steps + tddft_steps;
         RmgTimer *RT2a = new RmgTimer("1-TOTAL: ELDYN");
         dscal(&n2, &time_step, Hmatrix, &ione);
         eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
@@ -243,7 +243,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
-        if((ct.scf_steps +1) % ct.checkpoint == 0)
+        if((tddft_steps +1) % ct.checkpoint == 0)
             WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, tot_steps);
     }
 

@@ -323,10 +323,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
 
     /* Dispatch to the correct driver routine */
-        RmgTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
 
-    return;
-    exit(0);
     switch (ct.forceflag)
     {
 
@@ -359,6 +356,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
         break;
 
     case TDDFT:
+        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
         RmgTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
         break;
     default:

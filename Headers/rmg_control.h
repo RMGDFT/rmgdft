@@ -152,6 +152,7 @@ typedef struct
 
     /* Maximum number of SCF steps in a MD steps */
     int max_scf_steps;
+    int tddft_steps;
 
     /* Total number of SCF steps done */
     int total_scf_steps;

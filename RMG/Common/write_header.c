@@ -339,6 +339,10 @@ void write_header (void)
         printf ("    Molecular dynamics using Nudged Elastic Band.\n");
         break;
 
+    case TDDFT:
+        printf ("    TDDFT runs \n");
+        break;
+
     default:
         error_handler ("Unknown molecular dynamics method.");
     }

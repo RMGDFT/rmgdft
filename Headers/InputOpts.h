@@ -60,7 +60,9 @@ static std::unordered_map<std::string, int> calculation_mode = {
         {"Psi Plot", 6},
         {"Band Structure Only", 7},
         {"NEB Relax", 8},
-        {"Dimer Relax", 9}};
+        {"Dimer Relax", 9},
+        {"TDDFT", 10}
+        };
 
 static std::unordered_map<std::string, int> occupations_type = {
         {"Fixed", 0},
