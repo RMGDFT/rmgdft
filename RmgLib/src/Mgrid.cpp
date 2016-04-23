@@ -92,7 +92,7 @@ Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
 Mgrid::~Mgrid(void)
 {
     if(level_flag)
-        std::cout << "Warning: too many multigrid levels were requested " << level_flag << " times." << std::endl;
+        std::cout << "Warning: too many multigrid levels were requested " << level_flag << " times.\n";
 }
 
 
