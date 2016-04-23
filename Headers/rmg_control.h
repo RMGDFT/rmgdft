@@ -744,6 +744,9 @@ typedef struct
     int poisson_solver;
     int dipole_corr[3];
 
+    // Flag to use fine grid for vdf-df
+    bool use_vdwdf_finegrid;
+
 } CONTROL;
 
 

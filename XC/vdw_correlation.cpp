@@ -102,7 +102,6 @@
 //
 //
 //                CHANGE THESE VALUES AT YOUR OWN RISK
-double *oldtrho=NULL;
 int Vdw::Nqs = VDW_NQPOINTS;
 int Vdw::Nrpoints = VDW_NRPOINTS;
 double Vdw::r_max;
@@ -131,11 +130,10 @@ double *Vdw::d2y_dx2;
   
 
 */
-double *oldpotential=NULL;
 Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
 
-  bool use_coarsegrid=true;
+  bool use_coarsegrid = !ct.use_vdwdf_finegrid;
 
   if((type != 1) && (type != 2))
       throw RmgFatalException() << "Vdw type was " << type << " but only 1 or 2 is allowed. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -195,13 +193,13 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // wavefunction grid are used.
   int calc_basis = this->pbasis;
   int N_calc = this->N;
-  double filter_ratio = 0.5;
+  double filter_ratio = 1.0;
   double *calc_rho, *calc_gx, *calc_gy, *calc_gz;
   Pw *planewaves_calc;
   if(use_coarsegrid) {
       calc_basis = this->pbasis_c;    // basis size for rho on this PE
       N_calc = this->N_c;             // total basis size across all nodes
-      filter_ratio = 0.125;
+      filter_ratio = 0.5;
       calc_rho = new double[calc_basis];
       calc_gx = new double[3*calc_basis];
       calc_gy = calc_gx + calc_basis;

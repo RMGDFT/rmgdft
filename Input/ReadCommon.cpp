@@ -206,6 +206,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Type of charge density mixing to use. Linear and Pulay are the available options.\n", 
                      "charge_mixing_type must be either \"Linear\" or \"Pulay\". Terminating.\n");
 
+    If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Coarse",
+                     CHECK_AND_TERMINATE, OPTIONAL, vdwdf_grid_type,
+                     "Type of grid to use when computing vdw-df correlation.\n", 
+                     "vdwdf_grid_type be either \"Coarse\" or \"Fine\". Terminating.\n");
+
     If.RegisterInputKey("relax_mass", NULL, &lc.relax_mass, "Atomic",
                      CHECK_AND_TERMINATE, OPTIONAL, relax_mass,
                      "Mass to use for structural relaxation, either atomic masses, or use the mass of carbon for all atoms.\n", 
@@ -1057,4 +1062,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     lc.energy_output_conversion[1] = 2.0;
     lc.energy_output_string[0] = Hartree_str;
     lc.energy_output_string[1] = Rydberg_str;
+
+    ct.use_vdwdf_finegrid = Verify ("vdwdf_grid_type", "Fine", InputMap);
 }
