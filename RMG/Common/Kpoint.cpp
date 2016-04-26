@@ -925,7 +925,7 @@ template <class KpointType> void Kpoint<KpointType>::write_occ(void)
         for (i = 0; i < ct.num_states; i++)
                 rmg_printf (" %7.2f%s", this->Kstates[i].occupation[idx], ((i % 10 == 9) ? "\n" : ""));
 
-        printf ("\n");
+        rmg_printf ("\n\n");
 
     }
 

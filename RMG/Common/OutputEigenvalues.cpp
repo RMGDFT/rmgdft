@@ -76,6 +76,7 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
             }
             rmg_printf ("\n");
         }
+       rmg_printf ("\n\n");
     }
 }
 

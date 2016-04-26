@@ -132,23 +132,15 @@ void write_force (void)
 
 
         printf ("\n");
-        progress_tag ();
         printf (" mean FX      = %12.8f %s/a0\n", efactor*avfx, eunits);
-        progress_tag ();
         printf (" mean FY      = %12.8f %s/a0\n", efactor*avfy, eunits);
-        progress_tag ();
         printf (" mean FZ      = %12.8f %s/a0\n", efactor*avfz, eunits);
 
         printf ("\n");
-        progress_tag ();
         printf (" max FX       = %12.8f %s/a0   (ion %d)\n", efactor*maxfx, eunits, maxfx_ion + 1);
-        progress_tag ();
         printf (" max FY       = %12.8f %s/a0   (ion %d)\n", efactor*maxfy, eunits, maxfy_ion + 1);
-        progress_tag ();
         printf (" max FZ       = %12.8f %s/a0   (ion %d)\n", efactor*maxfz, eunits, maxfz_ion + 1);
-        progress_tag ();
         printf (" max F[x,y,z] = %12.8f %s/a0\n", efactor*max_all_f, eunits);
-        progress_tag ();
         printf (" max |F|      = %12.8f %s/a0   (ion %d)\n", efactor*maxf, eunits, maxf_ion + 1);
         if (ct.forceflag == MD_FASTRLX)
         {
@@ -157,15 +149,10 @@ void write_force (void)
         }
 
         printf ("\n");
-        progress_tag ();
         printf (" sum FX       = %12.8f %s/a0\n", efactor*sumx, eunits);
-        progress_tag ();
         printf (" sum FY       = %12.8f %s/a0\n", efactor*sumy, eunits);
-        progress_tag ();
         printf (" sum FZ       = %12.8f %s/a0\n", efactor*sumz, eunits);
-        progress_tag ();
         printf (" Average      = %12.8f %s/a0\n", efactor*(fabs (sumx) + fabs (sumy) + fabs (sumz)) / 3.0, eunits);
-        progress_tag ();
         printf (" sqrt < F^2 > = %12.8f %s/a0\n", efactor*avf, eunits);
         printf ("\n");
 

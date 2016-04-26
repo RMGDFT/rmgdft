@@ -68,7 +68,7 @@ void write_occ (STATE * states)
 	for (i = 0; i < ct.num_states; i++)
         	printf (" %7.2f%s", states[i].occupation[idx], ((i % 10 == 9) ? "\n" : ""));
 
-    	printf ("\n");
+    	printf ("\n\n");
 
     }
 
