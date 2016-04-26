@@ -306,6 +306,9 @@ typedef struct
     /*Order of Broyden mixing for charge density*/
     int charge_broyden_order;
 
+    /* Scale factor for Broyden mixing of charge density*/
+    double charge_broyden_scale;
+
     /* For Davidson diagonalization. Factor to multipy desired tolerance for unoccupied states by. */
     double unoccupied_tol_factor;
 

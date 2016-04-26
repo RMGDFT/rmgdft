@@ -418,6 +418,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "");
 
+    If.RegisterInputKey("charge_broyden_scale", &lc.charge_broyden_scale, 0.0, 1.0, 0.50,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "charge_broyden_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50\n");
+
     If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "",

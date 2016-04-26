@@ -60,7 +60,6 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
    int ratio = Rmg_G->default_FG_RATIO;
    int ld_betamix = MAX_BROYDEN_ITER;
-   double nmix = 0.5;
 
    // Check if this is a reset request
    if(reset) {
@@ -166,7 +165,7 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    }
 
    // New density. This is the place to do things with screening and frequency based mixing
-   for(int k=0;k < pbasis;k++)  rhoin[k] =  rhoin[k] + nmix*rhout[k];
+   for(int k=0;k < pbasis;k++)  rhoin[k] =  rhoin[k] + ct.charge_broyden_scale*rhout[k];
    for(int k=0;k < pbasis;k++)  rho[k] = rhoin[k];
 
    delete [] rhoin;
