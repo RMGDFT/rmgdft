@@ -5,7 +5,6 @@ DavPreconditioner.cpp
 ApplyHamiltonian.cpp
 ApplyHamiltonianBlock.cpp 
 Davidson.cpp
-Diagonals.cpp
 MgridSubspace.cpp
 MolecularDynamics.cpp
 GetAugRho.cpp

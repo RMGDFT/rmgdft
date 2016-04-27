@@ -83,8 +83,6 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType
     int dy2 = MG.MG_SIZE (dimy, 0, G->get_NY_GRID(1), G->get_PY_OFFSET(1), G->get_PY0_GRID(1), &iyoff, ct.boundaryflag);
     int dz2 = MG.MG_SIZE (dimz, 0, G->get_NZ_GRID(1), G->get_PZ_OFFSET(1), G->get_PZ0_GRID(1), &izoff, ct.boundaryflag);
 
-    OrbitalType *s_diag = kptr->s_diag;
-    OrbitalType *vnl_diag = kptr->vnl_diag;
 
     int pbasis = kptr->pbasis;
 
@@ -122,41 +120,6 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType
 
         for(int idx = 0;idx <pbasis;idx++) res[st1*pbasis + idx] += eigs[st1] * t1;;
 
-#if 0
-
-        double eps1 = 0.0;
-        double eps2 = 0.0;
-        for(int idx = 0;idx < pbasis;idx++) {
-            double a1 = std::real(fd_diag + vtot[idx] + vnl_diag[idx] - eigs[st1]*s_diag[idx]);
-            a1 = 1.0 / a1;
-            double r = std::real(res[st1*pbasis + idx]);
-            double x = std::real(psi[st1*pbasis + idx]);
-            eps1 += r*x*a1;
-            eps2 += x*x*a1;
-        }
-        double eps = eps1 / eps2;
-
-        for(int idx = 0;idx < pbasis;idx++) {
-
-            double a1 = std::real(fd_diag + vtot[idx] + vnl_diag[idx] - eigs[st1]*s_diag[idx]);
-            a1 = 1.0 / a1;
-            double r = std::real(res[st1*pbasis + idx]);
-            double x = std::real(psi[st1*pbasis + idx]);
-            //res[st1*pbasis + idx] = a1*(-r + eps*x);
-            //psi[st1*pbasis + idx] = a1*(-r);
-        }
-
- CPP_app_smooth_test (&res[st1*pbasis], work_t, dimx, dimy, dimz);
- for(int idx=0;idx < pbasis;idx++)res[st1*pbasis + idx] = work_t[idx];
-
-        CPP_pack_ptos (work_t, &res[st1*pbasis], dimx, dimy, dimz);
-        T->trade_images (work_t, dimx, dimy, dimz, FULL_TRADE);
-        CPP_app_smooth (work_t, work1_t, dimx, dimy, dimz);
-        T->trade_images (work1_t, dimx, dimy, dimz, FULL_TRADE);
-        CPP_app_smooth (work1_t, work_t, dimx, dimy, dimz);
-        CPP_pack_stop (work_t, &res[st1*pbasis], dimx, dimy, dimz);
-
-#endif
     }
 
     delete [] nvtot;

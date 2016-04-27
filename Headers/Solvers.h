@@ -45,8 +45,6 @@ template <typename KpointType>
 double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv);
 template <typename KpointType>
 double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot);
-template <typename KpointType>
-void Diagonals(Kpoint<KpointType> *kptr);
 template <typename RmgType>
 void CPP_app_smooth_test (RmgType * f, RmgType *b, int dimx, int dimy, int dimz);
 template <typename OrbitalType>

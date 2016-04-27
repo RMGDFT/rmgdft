@@ -116,10 +116,6 @@ public:
     KpointType *nl_weight;
     KpointType *nl_Bweight;
 
-    // Pointers to hdiag and sdiag
-    KpointType *vnl_diag;
-    KpointType *s_diag;
-
     // Number of points in orbital basis
     int pbasis;
 

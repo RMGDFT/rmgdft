@@ -75,15 +75,11 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         occupied_tol = std::min(occupied_tol, 0.1*ct.scf_accuracy / std::max(1.0, (double)ct.nel));
     }
     // Need this since the eigensolver may become unstable for very small residuals
-    occupied_tol = std::max(occupied_tol, 5.0e-14);
+    occupied_tol = std::max(occupied_tol, 1.0e-13);
 
     double unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-5 );
 
     //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
-
-    RT1 = new RmgTimer("Davidson: diagonals");
-    Diagonals(kptr);
-    delete RT1;
 
     int pbasis = kptr->pbasis;
     int nstates = kptr->nstates;
@@ -183,6 +179,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     delete RT1;
 
     GeneralDiag((double *)hr, (double *)sr, eigs, (double *)vr, nstates, nstates, ct.max_states, ct.subdiag_driver);
+    for(int st=0;st < nstates;st++)kptr->Kstates[st].feig[0] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st+nbase] = eigs[st];
 

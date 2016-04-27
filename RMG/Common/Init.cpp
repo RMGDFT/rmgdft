@@ -272,8 +272,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         Kptr[kpt]->set_pool(rptr);
         Kptr[kpt]->nv = nv;
         Kptr[kpt]->ns = ns;
-        Kptr[kpt]->s_diag = new OrbitalType[P0_BASIS];
-        Kptr[kpt]->vnl_diag = new OrbitalType[P0_BASIS];
 
         if(!ct.norm_conserving_pp) Kptr[kpt]->Bns = Bns;
 
