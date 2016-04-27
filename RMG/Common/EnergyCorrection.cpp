@@ -69,24 +69,20 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
 
     int nspin = ct.spin_flag + 1;
     double ec = 0.0;
-    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
 
-    if(Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) && potential_acceleration) 
+    for (int is = 0; is < nspin; is++)
     {
-        for (int is = 0; is < nspin; is++)
+        for (int kpt = 0; kpt < ct.num_kpts; kpt++)
         {
-            for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+
+            Kpoint<OrbitalType> *kptr = Kptr[kpt];
+            double t1 = 0.0;
+            for (int st = 0; st < kptr->nstates; st++)
             {
-
-                Kpoint<OrbitalType> *kptr = Kptr[kpt];
-                double t1 = 0.0;
-                for (int st = 0; st < kptr->nstates; st++)
-                {
-                    t1 += (kptr->Kstates[st].occupation[is] * (kptr->Kstates[st].feig[is] - kptr->Kstates[st].eig[is]));
-                }
-                ec += t1 * kptr->kweight;
-
+                t1 += (kptr->Kstates[st].occupation[is] * (kptr->Kstates[st].feig[is] - kptr->Kstates[st].eig[is]));
             }
+            ec += t1 * kptr->kweight;
+
         }
     }
 
