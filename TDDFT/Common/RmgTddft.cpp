@@ -111,11 +111,18 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         exit(0);
     }
 
+    double efield[3];
+    efield[0] = ct.x_field_0 * ct.e_field;
+    efield[1] = ct.y_field_0 * ct.e_field;
+    efield[2] = ct.z_field_0 * ct.e_field;
     if(pct.gridpe == 0)
     {
         sprintf(filename, "%s%s%s", pct.image_path[pct.thisimg], "dipole.dat_", ct.basename);
 
         dfi = fopen(filename, "w");
+
+        fprintf(dfi, "\n  &&electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
+        
     }
 
 
@@ -244,7 +251,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
         if((tddft_steps +1) % ct.checkpoint == 0)
+        {
             WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, tot_steps);
+            fflush(NULL);
+        }
+
     }
 
     if(pct.gridpe == 0) fclose(dfi);

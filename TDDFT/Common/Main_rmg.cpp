@@ -357,6 +357,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
     case TDDFT:
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
         RmgTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
         break;
     default:
