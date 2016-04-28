@@ -90,6 +90,7 @@ void FftInitPlans(void)
                           PFFT_BACKWARD,
                           PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
 
+    delete [] tx;
 }
 
 #endif
