@@ -71,7 +71,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     SPECIES *sp;
     OrbitalType *rptr = NULL, *nv, *ns, *Bns = NULL;
-    double *vtot, *rho_tot, *rptr1=NULL;
+    double *vtot, *rho_tot;
     double time2, fac;
 
     nv = (OrbitalType *)pct.nv;
@@ -254,15 +254,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.ns = (double *)ns;
 
 
-    if(potential_acceleration) {
-        if(ct.is_gamma) {
-            rptr1 = (double *)&rptr[ct.run_states * P0_BASIS];
-        }
-        else {
-            rptr1 = new double[ct.num_kpts * ct.num_states * P0_BASIS]();
-        }
-    }
-
     kpt1 = ct.num_kpts;
 //    if (Verify ("calculation_mode", "Band Structure Only", Kptr[0]->ControlMap))
 //        kpt1 = 1;
@@ -279,14 +270,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {
             Kptr[kpt]->Kstates[st1].kidx = kpt;
             Kptr[kpt]->Kstates[st1].psi = rptr;
-            Kptr[kpt]->Kstates[st1].dvhxc = rptr1;
             Kptr[kpt]->Kstates[st1].vxc = vxc;
             Kptr[kpt]->Kstates[st1].vh = vh;
             Kptr[kpt]->Kstates[st1].vnuc = vnuc;
             Kptr[kpt]->Kstates[st1].pbasis = P0_BASIS;
             Kptr[kpt]->Kstates[st1].istate = st1;
             rptr +=P0_BASIS;
-            rptr1 +=P0_BASIS;
         }
     }
 
@@ -535,7 +524,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     ct.num_states = ct.run_states;
-    for (kpt = 0; kpt < ct.num_kpts; kpt++) Kptr[kpt]->nstates = ct.run_states;
+    for (kpt = 0; kpt < ct.num_kpts; kpt++) {
+        Kptr[kpt]->nstates = ct.run_states;
+        Kptr[kpt]->dvh_skip = 4;
+        // Set up potential acceleration arrays if required
+        if(potential_acceleration) {
+            Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
+            Kptr[kpt]->dvh = new double[ Kptr[kpt]->ndvh * P0_BASIS ];
+        }
+    }
+
     if (Verify ("start_mode","LCAO Start", Kptr[0]->ControlMap) && (ct.num_states != ct.init_states)) {
 
 #if SCALAPACK_LIBS

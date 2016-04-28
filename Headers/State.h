@@ -64,9 +64,6 @@ public:
     /** Total potential */
     double *vtot;
 
-    // dvhxc for potential acceleration
-    double *dvhxc;
-
     /** Total basis size on each processor (dimx*dimy*dimz) */
     int pbasis;
 

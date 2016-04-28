@@ -80,9 +80,6 @@ typedef struct
     /** Total potential */
     double *vtot;
 
-    /** dvhxc */
-    double *dvhxc;
-
     /** Core charge for non-linear core corrections */
     double *rhocore;
 

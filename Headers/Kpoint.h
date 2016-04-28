@@ -116,6 +116,13 @@ public:
     KpointType *nl_weight;
     KpointType *nl_Bweight;
 
+    // Pointer to potential acceleration arrays
+    double *dvh;
+
+    // Number of potential acceleration arrays and the skip factor
+    int ndvh;
+    int dvh_skip;
+
     // Number of points in orbital basis
     int pbasis;
 

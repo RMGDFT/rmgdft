@@ -100,7 +100,8 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     // Generate 2*V*psi
     KpointType *sg_twovpsi_t = new KpointType[sbasis];
     if(potential_acceleration) {
-        CPP_genvpsi (psi, sg_twovpsi_t, sp->dvhxc, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
+        int offset = (sp->istate / kptr->dvh_skip) * pbasis;
+        CPP_genvpsi (psi, sg_twovpsi_t, &kptr->dvh[offset], (void *)kdr, kptr->kmag, dimx, dimy, dimz);
     }
     else {
         CPP_genvpsi (psi, sg_twovpsi_t, vtot, (void *)kdr, kptr->kmag, dimx, dimy, dimz);

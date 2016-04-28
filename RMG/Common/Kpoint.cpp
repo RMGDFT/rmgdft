@@ -214,7 +214,6 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     int alloc_states = ct.run_states;
     if (Verify ("start_mode","LCAO Start", ControlMap)) alloc_states = ct.init_states;
-    if(potential_acceleration && (alloc_states < 2*ct.run_states)) alloc_states = 2*ct.run_states;
     if (Verify ("kohn_sham_solver", "davidson", ControlMap)) alloc_states = std::max(alloc_states, 3*ct.run_states);
     ct.max_states = alloc_states;
 

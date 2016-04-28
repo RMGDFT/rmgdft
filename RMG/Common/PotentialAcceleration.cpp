@@ -55,9 +55,12 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
     int pbasis = kptr->pbasis;
 
 
-    // Save potential used for this orbital and update potential for future orbitals
-    for(int idx = 0;idx <pbasis;idx++) {
-        sp->dvhxc[idx] = nvtot_psi[idx];
+    // Save approximate potential used for this orbital and update potential for future orbitals
+    if(!(sp->istate % kptr->dvh_skip)) {
+        int offset = (sp->istate / kptr->dvh_skip) * pbasis;
+        for(int i = 0;i <pbasis;i++) {
+            kptr->dvh[i + offset] = nvtot_psi[i];
+        }
     }
 
 
