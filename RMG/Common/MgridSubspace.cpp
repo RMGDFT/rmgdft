@@ -75,7 +75,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
         // Update betaxpsi        
         RT1 = new RmgTimer("Scf steps: Beta x psi");
-        Betaxpsi (kptr);
+        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
         kptr->mix_betaxpsi(0);
 
@@ -190,7 +190,8 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
      * it is counterproductive to do so */
     if(!potential_acceleration || (potential_acceleration && (ct.rms <  5.0e-6))) {
         RT1 = new RmgTimer("Scf steps: Beta x psi");
-        Betaxpsi (kptr);
+        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
+
         delete(RT1);
     }
 
@@ -208,7 +209,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
         Subdiag (kptr, vtot_psi, ct.subdiag_driver);
         RT1 = new RmgTimer("Scf steps: Beta x psi");
-        Betaxpsi (kptr);
+        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
         kptr->mix_betaxpsi(0);
         // Projectors are rotated along with orbitals in Subdiag so no need to recalculate
@@ -223,7 +224,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
         // wavefunctions have changed, projectors have to be recalculated */
         RT1 = new RmgTimer("Scf steps: Beta x psi");
-        Betaxpsi (kptr);
+        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
         kptr->mix_betaxpsi(1);
 

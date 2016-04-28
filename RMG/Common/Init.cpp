@@ -471,7 +471,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     // Generate initial Betaxpsi
     for(kpt = 0;kpt < ct.num_kpts;kpt++) {
-        Betaxpsi (Kptr[kpt]);
+        Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
         Kptr[kpt]->mix_betaxpsi(0);
     }
 
@@ -497,7 +497,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             double *new_rho=new double[FP0_BASIS];
             for(kpt = 0;kpt < ct.num_kpts;kpt++) {
                 Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
-                Betaxpsi (Kptr[kpt]);
+                Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
                 Kptr[kpt]->mix_betaxpsi(0);
             }
             // Get new density 

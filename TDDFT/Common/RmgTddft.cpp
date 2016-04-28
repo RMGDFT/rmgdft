@@ -163,7 +163,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         /*Generate the Dnm_I */
         get_ddd (vtot);
 
-        Betaxpsi (Kptr[0]);
+        Betaxpsi (Kptr[0], 0, Kptr[0]->nstates, Kptr[0]->newsint_local, Kptr[0]->nl_weight);
+
         HSmatrix (Kptr[0], vtot_psi, (OrbitalType *)Hmatrix, (OrbitalType *)Smatrix);
 
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);

@@ -48,7 +48,7 @@
 
 
 template <typename KpointType>
-void betaxpsi_calculate (Kpoint<KpointType> * sint_ptr, KpointType * psi, int num_states);
+void betaxpsi_calculate (Kpoint<KpointType> * sint_ptr, KpointType * psi, int num_states, KpointType *);
 
 template <typename KpointType>
 void betaxpsi_receive (KpointType * recv_buff, int num_pes,
@@ -76,21 +76,12 @@ void betaxpsi_write_non_owned (KpointType * sint, KpointType * recv_buff,
                                        int num_ions_per_pe[MAX_NONLOC_PROCS],
                                        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
 
-template void Betaxpsi<double>(Kpoint<double> *);
-template void Betaxpsi<std::complex<double> >(Kpoint<std::complex<double>> *);
-
-template void BetaxpsiPartial<double>(Kpoint<double> *, int, int);
-template void BetaxpsiPartial<std::complex<double> >(Kpoint<std::complex<double>> *, int, int);
-
-template <typename KpointType>
-void Betaxpsi (Kpoint<KpointType> *kptr)
-{
-    BetaxpsiPartial(kptr, 0, kptr->nstates);
-}
+template void Betaxpsi<double>(Kpoint<double> *, int, int, double *, double *);
+template void Betaxpsi<std::complex<double> >(Kpoint<std::complex<double>> *, int, int, std::complex<double> *, std::complex<double> *);
 
 
 template <typename KpointType>
-void BetaxpsiPartial (Kpoint<KpointType> *kptr, int first_state, int nstates)
+void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local, KpointType *nlweight)
 {
     KpointType *own_buff = NULL, *nown_buff = NULL;
     KpointType *send_buff, *recv_buff;
@@ -142,7 +133,7 @@ void BetaxpsiPartial (Kpoint<KpointType> *kptr, int first_state, int nstates)
 
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
-    betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[first_state*kptr->pbasis], nstates);
+    betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[first_state*kptr->pbasis], nstates, nlweight);
 
 
     /*Pack data for sending */
@@ -206,7 +197,7 @@ void BetaxpsiPartial (Kpoint<KpointType> *kptr, int first_state, int nstates)
 
 
     int idx= 0 ;
-    KpointType *tsint = &kptr->newsint_local[first_state*pct.num_nonloc_ions*ct.max_nl];
+    KpointType *tsint = &sint_local[first_state*pct.num_nonloc_ions*ct.max_nl];
     for(int st = 0;st < nstates;st++) {
         for(int ion = 0;ion < pct.num_nonloc_ions;ion++) {
             for(int ip = 0;ip < ct.max_nl;ip++) {
@@ -221,7 +212,7 @@ void BetaxpsiPartial (Kpoint<KpointType> *kptr, int first_state, int nstates)
 
 
 template <typename KpointType>
-void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, KpointType *psi, int num_states)
+void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, KpointType *psi, int num_states, KpointType *nlweight)
 {
     KpointType rzero(0.0);
     KpointType *NULLptr = NULL;
@@ -242,7 +233,7 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
     KpointType *nlarray = new KpointType[pct.num_tot_proj * num_states]();
 #endif
     RmgGemm (transa, transn, pct.num_tot_proj, num_states, pbasis, alpha, 
-            kptr->nl_weight, pbasis, psi, pbasis, 
+            nlweight, pbasis, psi, pbasis, 
             rzero, nlarray, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
 
     for (int nion = 0; nion < pct.num_nonloc_ions; nion++)

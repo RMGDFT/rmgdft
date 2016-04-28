@@ -87,7 +87,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
             Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
             for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
-                Betaxpsi (Kptr[kpt]);
+                Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
                 Kptr[kpt]->mix_betaxpsi(0);
 
                 /* Update the wavefunctions */
@@ -156,7 +156,8 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
             }
 
             /*wavefunctions have changed, projectors have to be recalculated */
-            Betaxpsi (Kptr[kpt]);
+            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
+
             Kptr[kpt]->mix_betaxpsi(0);
 
         } // end loop scf

@@ -131,7 +131,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     // Apply Hamiltonian to current set of eigenvectors. At the current time
     // kptr->ns is also computed in ApplyHamiltonianBlock by AppNls and stored in kptr->ns
     RT1 = new RmgTimer("Davidson: Betaxpsi");
-    Betaxpsi (kptr);
+    Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
     delete RT1;
     kptr->mix_betaxpsi(0);
     RT1 = new RmgTimer("Davidson: apply hamiltonian");
@@ -240,7 +240,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
         // Apply Hamiltonian to the new vectors
         RT1 = new RmgTimer("Davidson: Betaxpsi");
-        BetaxpsiPartial (kptr, nbase, notconv);
+        Betaxpsi (kptr, nbase, notconv, kptr->newsint_local, kptr->nl_weight);
         delete RT1;
         kptr->mix_betaxpsi(0);
 
@@ -434,7 +434,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     delete [] eigs;
 
     RT1 = new RmgTimer("Davidson: Betaxpsi");
-    Betaxpsi (kptr);
+    Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
     delete RT1;
     kptr->mix_betaxpsi(0);
     
