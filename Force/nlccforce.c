@@ -60,7 +60,7 @@ void nlccforce (double * rho, double * vxc)
     int ion, idx;
     int ilow, jlow, klow, ihi, jhi, khi;
     int dimx, dimy, dimz;
-    int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
@@ -81,6 +81,7 @@ void nlccforce (double * rho, double * vxc)
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
     FPZ0_GRID = get_FPZ0_GRID();
+    FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
     FPX_OFFSET = get_FPX_OFFSET();
     FPY_OFFSET = get_FPY_OFFSET();
     FPZ_OFFSET = get_FPZ_OFFSET();
@@ -104,6 +105,16 @@ void nlccforce (double * rho, double * vxc)
     shift[3] = deltac;
 
     sumxc2 = TWO * (shift[0] * shift[0] + shift[2] * shift[2]);
+
+    double *force_nlcc, *gx, *gy, *gz;
+    double rho_at_r;
+    force_nlcc = (double *)malloc(ct.num_ions *3 * sizeof(double));
+    gx = (double *)malloc(FP0_BASIS * sizeof(double));
+    gy = (double *)malloc(FP0_BASIS * sizeof(double));
+    gz = (double *)malloc(FP0_BASIS * sizeof(double));
+
+
+    app_grad (vxc, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
 
     /* Loop over ions */
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -160,38 +171,12 @@ void nlccforce (double * rho, double * vxc)
                                     x[1] = iy * hyygrid - iptr->xtal[1];
                                     x[2] = iz * hzzgrid - iptr->xtal[2];
                                     r = metric (x);
+                                    rho_at_r = AtomicInterpolate (&sp->rhocorelig[0], r);
+                                        sumx +=  rho_at_r * gx[idx]; 
+                                    sumy +=  rho_at_r * gy[idx]; 
+                                    sumz +=  rho_at_r * gz[idx]; 
 
 
-                                    to_cartesian (x, bx);
-
-
-                                    for (ishift = 0; ishift < 4; ishift++)
-                                    {
-                                        axs[0] = bx[0] - shift[ishift];
-                                        axs[1] = bx[1];
-                                        axs[2] = bx[2];
-                                        r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
-                                        sumx +=   AtomicInterpolate (&sp->rhocorelig[0], r) * shift[ishift] * vxc[idx];
-                                    }       /* end for */
-
-
-                                    for (ishift = 0; ishift < 4; ishift++)
-                                    {
-                                        axs[0] = bx[0];
-                                        axs[1] = bx[1] - shift[ishift];
-                                        axs[2] = bx[2];
-                                        r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
-                                        sumy +=   AtomicInterpolate (&sp->rhocorelig[0], r) * shift[ishift] * vxc[idx];
-                                    }       /* end for */
-
-                                    for (ishift = 0; ishift < 4; ishift++)
-                                    {
-                                        axs[0] = bx[0];
-                                        axs[1] = bx[1];
-                                        axs[2] = bx[2] - shift[ishift];
-                                        r = sqrt (axs[0] * axs[0] + axs[1] * axs[1] + axs[2] * axs[2]);
-                                        sumz +=   AtomicInterpolate (&sp->rhocorelig[0], r) * shift[ishift] * vxc[idx];
-                                    }       /* end for */
                                 }   /* end if */
                             }       /* end for */
                         }           /* end for */
@@ -200,27 +185,9 @@ void nlccforce (double * rho, double * vxc)
             }
 
 
-            fl[0] = -sumx/sumxc2 * get_vel_f();
-            fl[1] = -sumy/sumxc2 * get_vel_f();
-            fl[2] = -sumz/sumxc2 * get_vel_f();
-
-
-
-            idx = 3;
-            global_sums (fl, &idx, pct.grid_comm);
-            if (ct.spin_flag)
-            {
-                fl[0] *= 0.5; 
-                fl[1] *= 0.5; 
-                fl[2] *= 0.5; 
-            }
-            /* factor 0.5 is because when calculating exchange correlation
-               half of nonlinear core corection charge is added to spin up and down density */
-
-
-            iptr->force[ct.fpt[0]][0] += fl[0];
-            iptr->force[ct.fpt[0]][1] += fl[1];
-            iptr->force[ct.fpt[0]][2] += fl[2];
+            force_nlcc[ion * 3 + 0] = -sumx * get_vel_f();
+            force_nlcc[ion * 3 + 1] = -sumy * get_vel_f();
+            force_nlcc[ion * 3 + 2] = -sumz * get_vel_f();
 
 
         }                       /* end if */
@@ -228,6 +195,27 @@ void nlccforce (double * rho, double * vxc)
 
     }                           /* end for */
 
+    idx = 3* ion;
+    global_sums (force_nlcc, &idx, pct.grid_comm);
+    double fac_spin = 1.0/(1.0 + ct.spin_flag);
+    /* factor 0.5 is because when calculating exchange correlation
+       half of nonlinear core corection charge is added to spin up and down density */
+
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        printf("\n force_nlcc  %d %e %e %e", ion, force_nlcc[ion*3], force_nlcc[ion*3+1], force_nlcc[ion*3+2]);
+
+        /* Generate ion pointer */
+        iptr = &ct.ions[ion];
+        iptr->force[ct.fpt[0]][0] += force_nlcc[ion*3 + 0] * fac_spin;
+        iptr->force[ct.fpt[0]][1] += force_nlcc[ion*3 + 1] * fac_spin;
+        iptr->force[ct.fpt[0]][2] += force_nlcc[ion*3 + 2] * fac_spin;
+    }
+
+    free(force_nlcc);
+    free(gx);
+    free(gy);
+    free(gz);
 
 }                               /* end nlccforce */
 
