@@ -526,9 +526,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.num_states = ct.run_states;
     for (kpt = 0; kpt < ct.num_kpts; kpt++) {
         Kptr[kpt]->nstates = ct.run_states;
-        Kptr[kpt]->dvh_skip = 4;
+        Kptr[kpt]->dvh_skip = 8;
         // Set up potential acceleration arrays if required
         if(potential_acceleration) {
+            if(ct.run_states <= 256) Kptr[kpt]->dvh_skip = 4;
+            if(ct.run_states <= 128) Kptr[kpt]->dvh_skip = 2;
+            if(ct.run_states <= 64) Kptr[kpt]->dvh_skip = 1;
             Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
             Kptr[kpt]->dvh = new double[ Kptr[kpt]->ndvh * P0_BASIS ];
         }
