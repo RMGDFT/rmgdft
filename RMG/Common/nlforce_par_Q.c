@@ -24,39 +24,35 @@
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
+#include "grid.h"
 #include "main.h"
+#include "common_prototypes.h"
 
-void nlforce_par_Q (double * veff, double * gamma, int ion, ION * iptr, int nh, double * forces)
+void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion, ION * iptr, int nh, double * forces)
 {
     int idx1, idx2, n, m, count, icount, size;
     int *pidx;
-    double tmp[3];
-    double *QnmI_R, *QnmI_x, *QnmI_y, *QnmI_z;
+    double tmp;
+
 
     /*Forces array is assumed to be already initialized */
     /*for(idx1=0;idx1<3;idx1++)  forces[idx1]=0.0; */
 
+
     count = pct.Qidxptrlen[ion];
     pidx = pct.Qindex[ion];
+    double *Qnm;
+
+    Qnm = pct.augfunc[ion];
 
     if (count)
     {
         size = (nh * (nh + 1) / 2) * count;
-        my_malloc (QnmI_R, 3 * size, double);
-        QnmI_x = QnmI_R;
-        QnmI_y = QnmI_x + size;
-        QnmI_z = QnmI_y + size;
 
-        for (idx1 = 0; idx1 < 3 * size; idx1++)
-            QnmI_R[idx1] = 0.0;
-
-        partial_QI (ion, QnmI_R, iptr);
 
         for (icount = 0; icount < count; icount++)
         {
-            tmp[0] = 0.0;
-            tmp[1] = 0.0;
-            tmp[2] = 0.0;
+            tmp = 0.0;
 
             idx2 = 0;
             for (n = 0; n < nh; n++)
@@ -66,28 +62,22 @@ void nlforce_par_Q (double * veff, double * gamma, int ion, ION * iptr, int nh, 
                     idx1 = idx2 * count + icount;
                     if (m == n)
                     {
-                        tmp[0] += QnmI_x[idx1] * gamma[idx2];
-                        tmp[1] += QnmI_y[idx1] * gamma[idx2];
-                        tmp[2] += QnmI_z[idx1] * gamma[idx2];
+                        tmp += Qnm[idx1] * gamma[idx2];
                     }
                     else
                     {
-                        tmp[0] += 2.0 * QnmI_x[idx1] * gamma[idx2];
-                        tmp[1] += 2.0 * QnmI_y[idx1] * gamma[idx2];
-                        tmp[2] += 2.0 * QnmI_z[idx1] * gamma[idx2];
+                        tmp += 2.0 * Qnm[idx1] * gamma[idx2];
                     }
 
                     ++idx2;
                 }
             }
-            forces[0] += veff[pidx[icount]] * tmp[0];
-            forces[1] += veff[pidx[icount]] * tmp[1];
-            forces[2] += veff[pidx[icount]] * tmp[2];
+            forces[0] -= gx[pidx[icount]] * tmp;
+            forces[1] -= gy[pidx[icount]] * tmp;
+            forces[2] -= gz[pidx[icount]] * tmp;
         }
 
-        my_free (QnmI_R);
     }
-
 
 
 }

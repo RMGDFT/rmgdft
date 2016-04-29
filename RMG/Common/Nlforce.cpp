@@ -24,7 +24,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"
 #include "rmgtypedefs.h"
@@ -35,6 +34,13 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "prototypes.h"
+
+
+#include "TradeImages.h"
+#include "RmgException.h"
+#include "Lattice.h"
+#include "FiniteDiff.h"
+#include "transition.h"
 
 
 
@@ -104,6 +110,29 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     /*Loop over ions to setup newsintR_*, this loop is done separately to 
      * insure proper paralelization*/
+    double *gx, *gy, *gz;
+    double hxxgrid, hyygrid, hzzgrid;
+
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
+
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
+
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+    FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
+
+
+
+    gx = new double[FP0_BASIS];
+    gy = new double[FP0_BASIS];
+    gz = new double[FP0_BASIS];
+
+    CPP_app_grad_driver (&Rmg_L, Rmg_T, veff, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid, 6);
+
+
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)
     {
         /*Actual index of the ion under consideration*/
@@ -117,10 +146,14 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         GetGamma (gamma, ion, nh, Kptr);
         delete RT1;
         RT1 = new RmgTimer("Force: non-local nlforce_par_Q");
-        nlforce_par_Q (veff, gamma, gion, iptr, nh, &qforce[3 * gion]);
+        nlforce_par_Q (gx, gy, gz, gamma, gion, iptr, nh, &qforce[3 * gion]);
         delete RT1;
 
     }                           /*end for(ion=0; ion<ions_max; ion++) */
+
+    delete [] gx;
+    delete [] gy;
+    delete [] gz;
 
 
 
@@ -136,7 +169,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         iptr = &ct.ions[ion];
 
         index = 3 * (ion);
-#if VERBOSE
+#if VERBOSE  
     printf("\n  Qforce");
     printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
                     ion,
@@ -287,3 +320,4 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 #endif
 
 }
+

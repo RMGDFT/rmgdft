@@ -112,7 +112,12 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     /*Other things that need to be recalculated when ionic positions change */
     GetWeight (Kptr);
+    RmgTimer *RT1 = new RmgTimer("Force");
+    RmgTimer *RT2 = new RmgTimer("Force: non-local: GetDerweight");
+
     GetDerweight (Kptr);
+    delete RT1;
+    delete RT2;
     get_qqq ();
 
 
