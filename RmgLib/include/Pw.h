@@ -35,6 +35,8 @@
 
 #include "BaseGrid.h"
 #include "Lattice.h"
+#include "pfft.h"
+
 
 typedef struct {
   double a[3];
@@ -59,7 +61,7 @@ private:
     bool is_gamma;
 
 public:
-    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag);
+    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm);
     void index_to_gvector(int *index, double *gvector);
 
     ~Pw(void);
@@ -67,6 +69,11 @@ public:
     // Real space basis on this node and globally
     int pbasis;
     int global_basis;
+
+    // G-space basis info
+    ptrdiff_t local_size;
+    ptrdiff_t local_ni[3], local_i_start[3];
+    ptrdiff_t local_no[3], local_o_start[3];
 
     // Real space grid dimensions on this node
     int dimx;

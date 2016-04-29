@@ -63,7 +63,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
 
-  std::complex<double> *crho = new std::complex<double>[pbasis];
+  std::complex<double> *crho = new std::complex<double>[pwaves.local_size];
   plan_forward = pfft_plan_dft_3d(densgrid,
                                   (double (*)[2])crho,
                                   (double (*)[2])crho,
@@ -80,6 +80,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 
   for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
   pfft_execute_dft(plan_forward, (double (*)[2])crho, (double (*)[2])crho);
+
   if(filter_type == LOW_PASS) {
       for(int ig=0;ig < pbasis;ig++) {
           if(pwaves.gmags[ig] > g2cut) {

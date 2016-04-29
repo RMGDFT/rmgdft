@@ -60,8 +60,8 @@ private:
     Lattice *L;
 
     // Pointer to plane wave objects
-    static Pw *plane_waves;
-    static Pw *plane_waves_c;
+    Pw *plane_waves;
+    Pw *plane_waves_c;
 
     // Pointer to second derivatives used in the spline interpolations
     static double *d2y_dx2;

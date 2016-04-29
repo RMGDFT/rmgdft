@@ -53,6 +53,10 @@ void FftFilter(double *x, Pw &pwaves, double factor, int type);
 void FftFreqBin(double *x, Pw &pwaves, double *bins);
 
 void FftRestrict(double *fine, double *coarse, int ratio);
+
+template <typename InType, typename OutType>
+void PfftForward (InType * in, OutType * out, char *density);
+
 #endif
 
 #endif

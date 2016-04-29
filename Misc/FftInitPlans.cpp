@@ -48,11 +48,20 @@ void FftInitPlans(void)
 
     ptrdiff_t grid[3]; 
 
-    int size = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    int pe_x =  Rmg_G->get_PE_X();
+    int pe_y =  Rmg_G->get_PE_Y();
+    int pe_z =  Rmg_G->get_PE_Z();
 
-    coarse_pwaves = new Pw(*Rmg_G, Rmg_L, 1, false);
-    fine_pwaves = new Pw(*Rmg_G, Rmg_L, Rmg_G->default_FG_RATIO, false);
 
+    std::vector<int> zfactors = {1};
+    GetPrimeFactors(zfactors, pe_z, pe_z);
+
+
+    coarse_pwaves = new Pw(*Rmg_G, Rmg_L, 1, false, pct.pfft_comm);
+    fine_pwaves = new Pw(*Rmg_G, Rmg_L, Rmg_G->default_FG_RATIO, false, pct.pfft_comm);
+
+    // Fine grid size is large enough for both coarse and fine
+    int size = fine_pwaves->local_size;
     std::complex<double> *tx = new std::complex<double>[size];
     grid[0] = Rmg_G->get_NX_GRID(1);
     grid[1] = Rmg_G->get_NY_GRID(1);

@@ -119,8 +119,6 @@ double Vdw::d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
 const double Vdw::epsr = 1.0e-12;
 double Vdw::gmax;
 double Vdw::dk;
-Pw *Vdw::plane_waves;
-Pw *Vdw::plane_waves_c;
 double *Vdw::d2y_dx2;
 
 /*
@@ -336,10 +334,10 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
       kernel_file.close();
 
-      // Plane wave objects
-      this->plane_waves = new Pw(G, L, G.default_FG_RATIO, is_gamma);
+      // Use the global plane wave objects
+      this->plane_waves = fine_pwaves;
       if(use_coarsegrid) {
-          this->plane_waves_c = new Pw(G, L, 1, is_gamma);
+          this->plane_waves_c = coarse_pwaves;
       }
 
       // Allocate memory for the second derivatives used in the spline interpolation and initialize the values
