@@ -21,74 +21,76 @@
 */
 
 
-#include <float.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "transition.h"
+#include "make_conf.h"
 #include "const.h"
-#include "RmgTimer.h"
+#include "grid.h"
 #include "rmgtypedefs.h"
-#include "params.h"
 #include "typedefs.h"
+#include <complex>
+#include "Kpoint.h"
+#include "FiniteDiff.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
-#include "rmg_error.h"
-#include "Kpoint.h"
+#include "transition.h"
+
+template void AssignDerweight<double> (Kpoint<double> *, SPECIES *, int, fftw_complex *, double *);
+template void AssignDerweight<std::complex<double> >(Kpoint<std::complex<double>> *, SPECIES *, int, fftw_complex *, std::complex<double> *);
 
 
-template void AssignDerweight<double> (Kpoint<double> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr);
-template void AssignDerweight<std::complex<double> > (Kpoint<std::complex<double>> *kptr, SPECIES * sp, int ion, fftw_complex * beptr,
-std::complex<double> *rtptr);
-
-
-
-template <typename OrbitalType>
-void AssignDerweight (Kpoint<OrbitalType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, OrbitalType *rtptr)
-        
+template <typename KpointType>
+void AssignDerweight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Nlweight)
 {
 
-    int idx, ix, iy, iz, *dvec;
-    int idx1, docount;
+    Lattice *L = kptr->L;
+    TradeImages *T = kptr->T;
+
+
+    int pbasis = kptr->pbasis;
+    int nldim = sp->nldim;
+    KpointType ZERO_t(0.0);
+
+    std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
+
+    double *Nlweight_R = (double *)Nlweight;
 
     weight_shift_center(sp, beptr);
-    int *pidx = pct.nlindex[ion];
 
-    double *pR = pct.phaseptr[ion];
-    pR += 2 * kptr->kidx * sp->nldim * sp->nldim *sp->nldim;
-    double *pI = pR + sp->nldim * sp->nldim * sp->nldim;
-
-    double *rtptr_R = (double *)rtptr;
-    std::complex<double> *rtptr_C = (std::complex<double> *)rtptr;
+    for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
+    if(pct.idxptrlen[ion] == 0) return;
 
     std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 
 
-    dvec = pct.idxflag[ion];
-    idx = docount = 0;
-    for (ix = 0; ix < sp->nldim; ix++)
+    double *pR = pct.phaseptr[ion];
+    pR += 2 * kptr->kidx * nldim * nldim * nldim;
+    double *pI = pR + nldim * nldim * nldim;
+
+    int *pidx = pct.nlindex[ion];
+    int *dvec = pct.idxflag[ion];
+    int idx = 0;
+    int docount = 0;
+
+
+    idx = 0;
+    docount = 0;
+    for (int ix = 0; ix < sp->nldim; ix++)
     {
 
-        for (iy = 0; iy < sp->nldim; iy++)
+        for (int iy = 0; iy < sp->nldim; iy++)
         {
 
-            for (iz = 0; iz < sp->nldim; iz++)
+            for (int iz = 0; iz < sp->nldim; iz++)
             {
 
                 if (dvec[idx])
                 {
-                    idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
-
-                    if (std::imag(nbeptr[idx1]) > 1.0e-8)
-                    {
-                        printf ("beptr[%d].im=%e\n", idx1, std::imag(nbeptr[idx1]));
-                        rmg_error_handler (__FILE__, __LINE__, "something wrong with the fourier transformation");
+                    int idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
+                    if(ct.is_gamma) {
+                        Nlweight_R[pidx[docount]] = std::real(nbeptr[idx1]);
                     }
-
-                    if(ct.is_gamma)
-                        rtptr_R[pidx[docount]] = std::real(nbeptr[idx1]);
-                    else
-                        rtptr_C[pidx[docount]] = std::real(nbeptr[idx1]) * std::complex<double>(pR[idx1], -pI[idx1]);
+                    else {
+                        Nlweight_C[pidx[docount]] = std::complex<double>(std::real(nbeptr[idx1]) * pR[idx1], -std::real(nbeptr[idx1]) * pI[idx1]);
+                    }
                     docount++;
                 }
 
@@ -98,7 +100,9 @@ void AssignDerweight (Kpoint<OrbitalType> *kptr, SPECIES * sp, int ion, fftw_com
     }
     if (docount != pct.idxptrlen[ion])
     {
-        printf ("docount = %d != %d = pct.idxptrlen[ion = %d]\n", docount, pct.idxptrlen[ion], ion);
+        rmg_printf ("docount = %d != %d = pct.idxptrlen[ion = %d]\n", docount, pct.idxptrlen[ion], ion);
         rmg_error_handler (__FILE__, __LINE__, "wrong numbers of projectors");
     }
+
+
 }
