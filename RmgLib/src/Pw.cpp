@@ -61,9 +61,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   np[0] = G.get_PE_X();
   np[1] = G.get_PE_Y();
   np[2] = G.get_PE_Z();
-  densgrid[0] =  G.get_NX_GRID(G.default_FG_RATIO);
-  densgrid[1] =  G.get_NY_GRID(G.default_FG_RATIO);
-  densgrid[2] =  G.get_NZ_GRID(G.default_FG_RATIO);
+  densgrid[0] =  G.get_NX_GRID(ratio);
+  densgrid[1] =  G.get_NY_GRID(ratio);
+  densgrid[2] =  G.get_NZ_GRID(ratio);
   // get array sizes
   ptrdiff_t local_ni[3], local_i_start[3];
   ptrdiff_t local_no[3], local_o_start[3];
