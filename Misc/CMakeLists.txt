@@ -62,6 +62,9 @@ sl_init_comm.c
 get_opposite_occupancies.c
 get_opposite_eigvals.c
 fill_on.c
+pack_3d.c
+remap_3d.c
+factor.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories(${MAGMA_INCLUDES})
