@@ -276,6 +276,16 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
     for(idx = 0;idx < weight_size;idx++) pct.Bweight[idx] = 0.0;
 
+    if( cudaSuccess != cudaMallocHost((void **)&pct.weight_derx, weight_size * sizeof(double) ))
+        rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
+    for(idx = 0;idx < weight_size;idx++) pct.weight_derx[idx] = 0.0;
+    if( cudaSuccess != cudaMallocHost((void **)&pct.weight_dery, weight_size * sizeof(double) ))
+        rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
+    for(idx = 0;idx < weight_size;idx++) pct.weight_dery[idx] = 0.0;
+    if( cudaSuccess != cudaMallocHost((void **)&pct.weight_derz, weight_size * sizeof(double) ))
+        rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
+    for(idx = 0;idx < weight_size;idx++) pct.weight_derz[idx] = 0.0;
+
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
     if( cudaSuccess != cudaMallocHost((void **)&pct.M_dnm, weight_size * sizeof(double) ))
         rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
@@ -288,6 +298,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 #else
     pct.weight = new double[weight_size]();
     pct.Bweight = new double[weight_size]();
+    pct.weight_derx = new double[weight_size]();
+    pct.weight_dery = new double[weight_size]();
+    pct.weight_derz = new double[weight_size]();
 
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
     pct.M_dnm = new double[weight_size]();
@@ -322,15 +335,29 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     if(ct.is_gamma) factor = 1; 
     pct.newsintR_local = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
     pct.oldsintR_local = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
+    pct.sint_derx = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
+    pct.sint_dery = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
+    pct.sint_derz = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
 
     KpointType *tsintnew_ptr = (KpointType *)pct.newsintR_local;
     KpointType *tsintold_ptr = (KpointType *)pct.oldsintR_local;
+    KpointType *sint_derx_ptr = (KpointType *)pct.sint_derx;
+    KpointType *sint_dery_ptr = (KpointType *)pct.sint_dery;
+    KpointType *sint_derz_ptr = (KpointType *)pct.sint_derz;
+
     for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
         Kptr[kpt]->sint_size = pct.num_nonloc_ions * ct.max_states * ct.max_nl;
         Kptr[kpt]->newsint_local = tsintnew_ptr;
         Kptr[kpt]->oldsint_local = tsintold_ptr;
+        Kptr[kpt]->sint_derx = sint_derx_ptr;
+        Kptr[kpt]->sint_dery = sint_dery_ptr;
+        Kptr[kpt]->sint_derz = sint_derz_ptr;
+
         tsintnew_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
         tsintold_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
+        sint_derx_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
+        sint_dery_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
+        sint_derz_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
     }
     
 

@@ -91,12 +91,10 @@ typedef struct
     double *weight;
     double *Bweight;
 
-#if FDIFF_BETA
     /*These are used for non-local force */
-    double **weight_derx;
-    double **weight_dery;
-    double **weight_derz;
-#endif
+    double *weight_derx;
+    double *weight_dery;
+    double *weight_derz;
 
 
     /** An index array which maps the projectors onto the 3-d grid associated
@@ -172,6 +170,7 @@ typedef struct
     double *oldsintI_local;
     double *newsintR_local;
     double *newsintI_local;
+    double *sint_derx, *sint_dery, *sint_derz;
 
     // Holds non-local and S operators acting on psi
     double *nv;

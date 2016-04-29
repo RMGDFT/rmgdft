@@ -37,13 +37,15 @@
 #include "Kpoint.h"
 
 
-template void AssignDerweight<double> (SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr , Kpoint<double> *kptr);
-template void AssignDerweight<std::complex<double> > (SPECIES * sp, int ion, fftw_complex * beptr, std::complex<double> *rtptr,
-Kpoint<std::complex<double>> *kptr);
+template void AssignDerweight<double> (Kpoint<double> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr);
+template void AssignDerweight<std::complex<double> > (Kpoint<std::complex<double>> *kptr, SPECIES * sp, int ion, fftw_complex * beptr,
+std::complex<double> *rtptr);
 
 
-template <typename OrbitalType> void AssignDerweight (SPECIES * sp, int ion, fftw_complex * beptr, OrbitalType *rtptr,
-        Kpoint<OrbitalType> *kptr)
+
+template <typename OrbitalType>
+void AssignDerweight (Kpoint<OrbitalType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, OrbitalType *rtptr)
+        
 {
 
     int idx, ix, iy, iz, *dvec;

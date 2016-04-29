@@ -60,10 +60,10 @@ template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh 
                 for (istate = 0; istate < ct.num_states; istate++)
                 {
                     t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kweight;
-                    sintN = Kptr[kidx]->newsint_local[ion *  ct.num_states * ct.max_nl +
-                        istate * ct.max_nl + i];
-                    sintM = Kptr[kidx]->newsint_local[ion *  ct.num_states * ct.max_nl +
-                        istate * ct.max_nl + j];
+                    sintN = Kptr[kidx]->newsint_local[istate *pct.num_nonloc_ions * ct.max_nl +
+                        ion * ct.max_nl + i];
+                    sintM = Kptr[kidx]->newsint_local[istate *pct.num_nonloc_ions * ct.max_nl +
+                        ion * ct.max_nl + j];
 
                     //gammaR[idx] += t1 * (std::real(sintN) * std::real(sintM) + std::imag(sintN) * std::imag(sintM));
                     gammaR[idx] += t1 * std::real(sintN * std::conj(sintM));

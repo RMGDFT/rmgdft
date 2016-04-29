@@ -203,7 +203,7 @@ void nlccforce (double * rho, double * vxc)
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        printf("\n force_nlcc  %d %e %e %e", ion, force_nlcc[ion*3], force_nlcc[ion*3+1], force_nlcc[ion*3+2]);
+    //    printf("\n force_nlcc  %d %e %e %e", ion, force_nlcc[ion*3], force_nlcc[ion*3+1], force_nlcc[ion*3+2]);
 
         /* Generate ion pointer */
         iptr = &ct.ions[ion];

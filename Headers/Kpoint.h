@@ -100,6 +100,9 @@ public:
     // Pointer to sint arrays (Betaxpsi)
     KpointType *newsint_local;
     KpointType *oldsint_local;
+    KpointType *sint_derx;
+    KpointType *sint_dery;
+    KpointType *sint_derz;
 
     // Size of the sint arrays
     int sint_size;
@@ -115,6 +118,9 @@ public:
     // Pointers to weight and Bweight and gpu versions
     KpointType *nl_weight;
     KpointType *nl_Bweight;
+    KpointType *nl_weight_derx;
+    KpointType *nl_weight_dery;
+    KpointType *nl_weight_derz;
 
     // Pointer to potential acceleration arrays
     double *dvh;

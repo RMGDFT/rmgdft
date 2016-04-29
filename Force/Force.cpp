@@ -220,7 +220,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
 
     /* The non-linear core correction part if any */
-    RmgTimer *RT4 = new RmgTimer("Force: core correction");
+    RmgTimer *RT4 = new RmgTimer("Force: 1core correction");
     nlccforce (rho, vxc);
     delete RT4;
 

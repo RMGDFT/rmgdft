@@ -88,7 +88,8 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
         logfile << "                                                 Total time            Per SCF/step" << std::endl;
         logfile << "                                                 min      max          min      max" << std::endl;
         count1 = 0;
-        auto t1 = tmain_min.cbegin();
+        //auto t1 = tmain_min.cbegin();
+        auto t1 = tmain.cbegin();
         auto t2 = tmain_max.cbegin();
         for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
             count = std::count(it->first.begin(), it->first.end(), ':');  

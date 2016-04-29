@@ -51,6 +51,9 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             // Identical for gamma point
             Kptr[kpt]->nl_weight = (KpointType *)pct.weight;
             Kptr[kpt]->nl_Bweight = (KpointType *)pct.Bweight;
+            Kptr[kpt]->nl_weight_derx = (KpointType *)pct.weight_derx;
+            Kptr[kpt]->nl_weight_dery = (KpointType *)pct.weight_dery;
+            Kptr[kpt]->nl_weight_derz = (KpointType *)pct.weight_derz;
 
         }
         else {
@@ -58,6 +61,9 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 #if GPU_ENABLED
             if(Kptr[kpt]->nl_weight != NULL) cudaFreeHost(Kptr[kpt]->nl_weight);
             if(Kptr[kpt]->nl_Bweight != NULL) cudaFreeHost(Kptr[kpt]->nl_Bweight);
+            if(Kptr[kpt]->nl_weight_derx != NULL) cudaFreeHost(Kptr[kpt]->nl_weight_derx);
+            if(Kptr[kpt]->nl_weight_dery != NULL) cudaFreeHost(Kptr[kpt]->nl_weight_dery);
+            if(Kptr[kpt]->nl_weight_derz != NULL) cudaFreeHost(Kptr[kpt]->nl_weight_derz);
 
             cudaError_t cuerr;
             // Allocate new storage
@@ -67,7 +73,17 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
                 if(cuerr != cudaSuccess)
                     RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
 
-             cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_Bweight , pbasis * pct.num_tot_proj * sizeof(KpointType) );
+                cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_Bweight , pbasis * pct.num_tot_proj * sizeof(KpointType) );
+                if(cuerr != cudaSuccess)
+                    RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
+
+                cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_weight_derx , pbasis * pct.num_tot_proj * sizeof(KpointType) );
+                if(cuerr != cudaSuccess)
+                    RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
+                cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_weight_dery , pbasis * pct.num_tot_proj * sizeof(KpointType) );
+                if(cuerr != cudaSuccess)
+                    RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
+                cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_weight_derz , pbasis * pct.num_tot_proj * sizeof(KpointType) );
                 if(cuerr != cudaSuccess)
                     RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
 
@@ -76,11 +92,17 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             // Release old memory storage for weights
             if(Kptr[kpt]->nl_weight != NULL) delete [] Kptr[kpt]->nl_weight;
             if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
+            if(Kptr[kpt]->nl_weight_derx != NULL) delete [] Kptr[kpt]->nl_weight_derx;
+            if(Kptr[kpt]->nl_weight_dery != NULL) delete [] Kptr[kpt]->nl_weight_dery;
+            if(Kptr[kpt]->nl_weight_derz != NULL) delete [] Kptr[kpt]->nl_weight_derz;
 
             // Allocate new storage
             if(pct.num_tot_proj) {
                 Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis]();
                 Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis]();
+                Kptr[kpt]->nl_weight_derx = new KpointType[pct.num_tot_proj * pbasis]();
+                Kptr[kpt]->nl_weight_dery = new KpointType[pct.num_tot_proj * pbasis]();
+                Kptr[kpt]->nl_weight_derz = new KpointType[pct.num_tot_proj * pbasis]();
             }
 #endif
         }
@@ -90,6 +112,7 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     /*Other things that need to be recalculated when ionic positions change */
     GetWeight (Kptr);
+    GetDerweight (Kptr);
     get_qqq ();
 
 

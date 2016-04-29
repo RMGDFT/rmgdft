@@ -71,21 +71,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     num_ions = ct.num_ions;
 
-    newsintR_x = new double[3 * size1];
-    newsintR_y = newsintR_x + size1;
-    newsintR_z = newsintR_y + size1;
-
-    newsintI_x = new double[3 * size1];
-    newsintI_y = newsintI_x + size1;
-    newsintI_z = newsintI_y + size1;
-
-
-    /*Initialize */
-    for (isp = 0; isp < 3 * size1; isp++)
-        newsintR_x[isp] = 0.0;
-    for (isp = 0; isp < 3 * size1; isp++)
-        newsintI_x[isp] = 0.0;
-
 
     /*Array for q-force */
     qforce = new double[ 3 * num_ions];
@@ -108,6 +93,14 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     par_omega = par_gamma + 3 * size;
 
 
+    RT1 = new RmgTimer("Force: non-local: betaxpsi");
+    for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+    {
+        Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derx, Kptr[kpt]->nl_weight_derx);
+        Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_dery, Kptr[kpt]->nl_weight_dery);
+        Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derz, Kptr[kpt]->nl_weight_derz);
+    }
+    delete RT1;
 
     /*Loop over ions to setup newsintR_*, this loop is done separately to 
      * insure proper paralelization*/
@@ -117,32 +110,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         gion = pct.nonloc_ions_list[ion];
         
         iptr = &ct.ions[gion];
-
-
-        if (pct.idxptrlen[gion])
-        {
-            sp = &ct.sp[iptr->species];
-
-            in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-            out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-            RT1 = new RmgTimer("Force: non-local fft");
-            p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out),
-                                     FFTW_BACKWARD, FFTW_ESTIMATE);
-            delete RT1;
-
-            RT1 = new RmgTimer("Force: non-local partial betaxpsi");
-            PartialBetaxpsi (gion, p2, newsintR_x, newsintR_y, newsintR_z, newsintI_x, newsintI_y,
-                              newsintI_z, iptr, Kptr);
-            delete RT1;
-
-            /*Release memery for plans */
-            fftw_destroy_plan (p2);
-            fftw_free(out);
-            fftw_free(in);
-
-
-
-        }                       /*end if (pct.idxptrlen[ion]) */
 
         nh = ct.sp[iptr->species].nh;
 
@@ -158,14 +125,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
     RT1 = new RmgTimer("Force: non-local global sums");
-    global_sums (newsintR_x, &size1, pct.grid_comm);
-    global_sums (newsintR_y, &size1, pct.grid_comm);
-    global_sums (newsintR_z, &size1, pct.grid_comm);
-
-    global_sums (newsintI_x, &size1, pct.grid_comm);
-    global_sums (newsintI_y, &size1, pct.grid_comm);
-    global_sums (newsintI_z, &size1, pct.grid_comm);
-
     size1 = 3 * num_ions;
     global_sums (qforce, &size1, pct.img_comm);
     delete RT1;
@@ -177,58 +136,41 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         iptr = &ct.ions[ion];
 
         index = 3 * (ion);
-
 #if VERBOSE
-        old_force[index] = iptr->force[fpt0][0];
-        old_force[index + 1] = iptr->force[fpt0][1];
-        old_force[index + 2] = iptr->force[fpt0][2];
+    printf("\n  Qforce");
+    printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
+                    ion,
+        get_vel_f() * qforce[index],
+        get_vel_f() * qforce[index + 1],get_vel_f() * qforce[index + 2]);
 #endif
+                    
+                    
+
         iptr->force[fpt0][0] += get_vel_f() * qforce[index];
         iptr->force[fpt0][1] += get_vel_f() * qforce[index + 1];
         iptr->force[fpt0][2] += get_vel_f() * qforce[index + 2];
     }
 
-#if VERBOSE
-    printf("\n  Qforce");
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        iptr = &ct.ions[ion];
-
-        index = 3 * (ion);
-            printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
-                    ion,
-                    iptr->force[fpt0][0] - old_force[3 * ion],
-                    iptr->force[fpt0][1] - old_force[3 * ion + 1],
-                    iptr->force[fpt0][2] - old_force[3 * ion + 2]);
-    }
-
-    sum1x = 0.0;
-    sum1y = 0.0;
-    sum1z = 0.0;
-    sum2x = 0.0;
-    sum2y = 0.0;
-    sum2z = 0.0;
-#endif
 
     /*Loop over ions again */
     nion = -1;
     for (ion = 0; ion < pct.num_owned_ions; ion++)
     {
         /*Global index of owned ion*/
-	gion = pct.owned_ions_list[ion];
-	
+        gion = pct.owned_ions_list[ion];
+
         /* Figure out index of owned ion in nonloc_ions_list array, store it in nion*/
-	do {
-	    
-	    nion++;
-	    if (nion >= pct.num_nonloc_ions)
-        {
-            printf("\n Could not find matching entry in pct.nonloc_ions_list for owned ion %d", gion);
-		rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in pct.nonloc_ions_list for owned ion ");
-        }
-	
-	} while (pct.nonloc_ions_list[nion] != gion);
-        
+        do {
+
+            nion++;
+            if (nion >= pct.num_nonloc_ions)
+            {
+                printf("\n Could not find matching entry in pct.nonloc_ions_list for owned ion %d", gion);
+                rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in pct.nonloc_ions_list for owned ion ");
+            }
+
+        } while (pct.nonloc_ions_list[nion] != gion);
+
         iptr = &ct.ions[gion];
 
 
@@ -236,8 +178,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
         RT1 = new RmgTimer("Force: non-local partial gamma");
-        PartialGamma (gion, par_gamma, par_omega, nion, nh, newsintR_x, newsintR_y, newsintR_z,
-                       newsintI_x, newsintI_y, newsintI_z, Kptr);
+        PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr);
         delete RT1;
         RT1 = new RmgTimer("Force: non-local nlforce_par_gamma");
         nlforce_par_gamma (par_gamma, gion, nh, &tmp_force_gamma[3*gion]);
@@ -248,13 +189,13 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         delete RT1;
 
     }                           /*end for(ion=0; ion<num_ions; ion++) */
-    
+
     size1 = 3 * num_ions;
     RT1 = new RmgTimer("Force: non-local global sums");
     global_sums (tmp_force_gamma, &size1, pct.img_comm);
     global_sums (tmp_force_omega, &size1, pct.img_comm);
     delete RT1;
- 
+
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &ct.ions[ion];
@@ -265,7 +206,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         iptr->force[fpt0][2] += tmp_force_gamma[index + 2];
     }
 
-    
+
 
 #if VERBOSE
     if (pct.imgpe == 0)

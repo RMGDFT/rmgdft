@@ -141,6 +141,10 @@ template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
 void GetWeight (Kpoint<KpointType> **Kptr);
+
+template <typename KpointType>
+void GetDerweight (Kpoint<KpointType> **Kptr);
+
 template <typename KpointType>
 void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, KpointType *Bweight, KpointType *Nlweight);
 template <typename KpointType>
@@ -214,17 +218,12 @@ template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh 
 
 template <typename OrbitalType> void PartialGamma (
                     int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
-                    double * newsintR_x, double * newsintR_y, double * newsintR_z,
-                    double * newsintI_x, double * newsintI_y, double * newsintI_z,
                     Kpoint<OrbitalType> **Kptr);
 
 
-template <typename OrbitalType> void GetDerweight (int ion, OrbitalType * beta_x,
-        OrbitalType * beta_y, OrbitalType * beta_z, ION * iptr, fftw_plan p2,
-                    Kpoint<OrbitalType> *kptr);
-
-template <typename OrbitalType> void AssignDerweight (SPECIES * sp, int ion, fftw_complex * beptr, OrbitalType *rtptr,
-        Kpoint<OrbitalType> *kptr);
+template <typename OrbitalType> void AssignDerweight (Kpoint<OrbitalType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, OrbitalType
+*rtptr);
+        
 
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 void ReadOrbitals(char *cfile, STATE  *states, ION *ions,  MPI_Comm comm, unsigned int *);
