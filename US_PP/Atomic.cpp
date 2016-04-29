@@ -132,117 +132,187 @@ void Atomic::RftToLogGrid (
     }                           /* end for */
 
 
-
-    /* Loop over frequency components */
-    for (int ift = 0; ift < gnum; ift++)
+    istep = gnum / npes;
+    switch (lval)
     {
-
-        switch (lval)
-        {
 
         case S_STATE:
 
-            for (int idx = 0; idx < rg_points; idx++)
+            for (int ift = istep * pct.gridpe; ift < istep * pct.gridpe + istep; ift++)
             {
+                for (int idx = 0; idx < rg_points; idx++)
+                {
 
-                t1 = r[idx] * gvec[ift];
+                    t1 = r[idx] * gvec[ift];
 
-                if (t1 > small)
-                    work1[idx] = f[idx] * sin (t1) / t1;
-                else
-                    work1[idx] = f[idx];
-                /*t2 = sin(t1) / t1;
-                   if(t1 < 1.0e-8) t2 = 1.0;
-                   work1[idx] = f[idx] * t2; */
+                    if (t1 > small)
+                        work1[idx] = f[idx] * sin (t1) / t1;
+                    else
+                        work1[idx] = f[idx];
+                    /*t2 = sin(t1) / t1;
+                       if(t1 < 1.0e-8) t2 = 1.0;
+                       work1[idx] = f[idx] * t2; */
 
-            }                   /* end for */
+                }                   /* end for */
+                gcof[ift] = radint1 (work1, r, rab, rg_points);
+            }
+            istep = npes * istep;
+            GlobalSums (gcof, istep, pct.grid_comm);
 
+            for (int ift = istep; ift < gnum; ift++)
+            {
+                for (int idx = 0; idx < rg_points; idx++)
+                {
+
+                    t1 = r[idx] * gvec[ift];
+
+                    if (t1 > small)
+                        work1[idx] = f[idx] * sin (t1) / t1;
+                    else
+                        work1[idx] = f[idx];
+                    /*t2 = sin(t1) / t1;
+                       if(t1 < 1.0e-8) t2 = 1.0;
+                       work1[idx] = f[idx] * t2; */
+
+                }                   /* end for */
+                gcof[ift] = radint1 (work1, r, rab, rg_points);
+            }
             break;
 
         case P_STATE:
 
-            for (int idx = 0; idx < rg_points; idx++)
+            for (int ift = istep * pct.gridpe; ift < istep * pct.gridpe + istep; ift++)
             {
+                for (int idx = 0; idx < rg_points; idx++)
+                {
 
-                t1 = r[idx] * gvec[ift];
-                if (t1 > small)
-                    t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-                work1[idx] = f[idx] * t2;
+                    t1 = r[idx] * gvec[ift];
+                    if (t1 > small)
+                        t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
+                    else
+                        t2 = 0.0;
+                    /*if(t1 < 1.0e-8) t2 = 0.0; */
+                    work1[idx] = f[idx] * t2;
 
-            }                   /* end for */
+                }                   /* end for */
+                gcof[ift] = radint1 (work1, r, rab, rg_points);
+            }
+            istep = npes * istep;
+            GlobalSums (gcof, istep, pct.grid_comm);
+
+            for (int ift = istep; ift < gnum; ift++)
+            {
+               for (int idx = 0; idx < rg_points; idx++)
+                {
+
+                    t1 = r[idx] * gvec[ift];
+                    if (t1 > small)
+                        t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
+                    else
+                        t2 = 0.0;
+                    /*if(t1 < 1.0e-8) t2 = 0.0; */
+                    work1[idx] = f[idx] * t2;
+
+                }                   /* end for */
+                gcof[ift] = radint1 (work1, r, rab, rg_points);
+            }
 
             break;
 
         case D_STATE:
 
-            for (int idx = 0; idx < rg_points; idx++)
+            for (int ift = istep * pct.gridpe; ift < istep * pct.gridpe + istep; ift++)
             {
-
-                t1 = r[idx] * gvec[ift];
-                if (t1 > small)
+                for (int idx = 0; idx < rg_points; idx++)
                 {
-                    t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
-                    t2 -= THREE * cos (t1) / (t1 * t1);
-                }
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-                work1[idx] = f[idx] * t2;
 
-            }                   /* end for */
+                    t1 = r[idx] * gvec[ift];
+                    if (t1 > small)
+                    {
+                        t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
+                        t2 -= THREE * cos (t1) / (t1 * t1);
+                    }
+                    else
+                        t2 = 0.0;
+                    /*if(t1 < 1.0e-8) t2 = 0.0; */
+                    work1[idx] = f[idx] * t2;
+
+                }                   /* end for */
+                gcof[ift] = radint1 (work1, r, rab, rg_points);
+            }
+            istep = npes * istep;
+            GlobalSums (gcof, istep, pct.grid_comm);
+
+            for (int ift = istep; ift < gnum; ift++)
+            {
+                for (int idx = 0; idx < rg_points; idx++)
+                {
+
+                    t1 = r[idx] * gvec[ift];
+                    if (t1 > small)
+                    {
+                        t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
+                        t2 -= THREE * cos (t1) / (t1 * t1);
+                    }
+                    else
+                        t2 = 0.0;
+                    /*if(t1 < 1.0e-8) t2 = 0.0; */
+                    work1[idx] = f[idx] * t2;
+
+                }                   /* end for */
+                gcof[ift] = radint1 (work1, r, rab, rg_points);
+            }
 
             break;
 
         case F_STATE:
 
-            for (int idx = 0; idx < rg_points; idx++)
+            for (int ift = 0; ift < gnum; ift++)
             {
-                t1 = r[idx] * gvec[ift];
-                if (t1 > small)
+                for (int idx = 0; idx < rg_points; idx++)
                 {
-                    t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
-                    t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
-                }
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-                work1[idx] = f[idx] * t2;
-            }                   /* end for */
-
+                    t1 = r[idx] * gvec[ift];
+                    if (t1 > small)
+                    {
+                        t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
+                        t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
+                    }
+                    else
+                        t2 = 0.0;
+                    /*if(t1 < 1.0e-8) t2 = 0.0; */
+                    work1[idx] = f[idx] * t2;
+                }                   /* end for */
+                gcof[ift] = radint1 (work1, r, rab, rg_points);
+            }
             break;
 
         case G_STATE:
 
-            for (int idx = 0; idx < rg_points; idx++)
+            for (int ift = 0; ift < gnum; ift++)
             {
-                t1 = r[idx] * gvec[ift];
-                if (t1 > small)
+                for (int idx = 0; idx < rg_points; idx++)
                 {
-                    t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
-                    t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
-                }
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-                work1[idx] = f[idx] * t2;
-            }                   /*end for */
-
+                    t1 = r[idx] * gvec[ift];
+                    if (t1 > small)
+                    {
+                        t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
+                        t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
+                    }
+                    else
+                        t2 = 0.0;
+                    /*if(t1 < 1.0e-8) t2 = 0.0; */
+                    work1[idx] = f[idx] * t2;
+                }                   /*end for */
+                gcof[ift] = radint1 (work1, r, rab, rg_points);
+            }
             break;
 
         default:
 
             throw RmgFatalException() << "angular momentum l=" << lval << "is not programmed in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-        }                       /* end switch */
+    }                       /* end switch */
 
-
-        /* Get coefficients */
-        gcof[ift] = radint1 (work1, r, rab, rg_points);
-
-    }                           /* end for */
 
     /* Fourier Filter the transform and store in work2 */
     for (int idx = 0; idx < gnum; idx++)
@@ -338,7 +408,6 @@ void Atomic::RftToLogGrid (
 
         for (int idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
         {
-
 
             for (int ift = 0; ift < gnum; ift++)
             {
