@@ -20,8 +20,8 @@
  *
 */
 
-#ifndef RMG_vdW_H
-#define RMG_vdW_H 1
+#ifndef RMG_Atomic_H
+#define RMG_Atomic_H 1
 
 
 #include "BaseGrid.h"
