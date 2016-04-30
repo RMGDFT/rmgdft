@@ -34,9 +34,6 @@
 #include "RmgException.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-
-#if USE_PFFT
-
 #include "RmgParallelFft.h"
 
 void VhPfft(double *rho_tot, double *rhoc, double *vh)
@@ -48,7 +45,6 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
     densgrid[1] = fine_pwaves->global_dimy;
     densgrid[2] = fine_pwaves->global_dimz;
 
-    double g2cut = (sqrt(fine_pwaves->gmax))*(sqrt(fine_pwaves->gmax));
     int global_basis = fine_pwaves->global_basis;
     int pbasis = fine_pwaves->pbasis;
 
@@ -70,16 +66,10 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
     for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho_tot[i]-rhoc[i], 0.0);
     pfft_execute_dft(plan_forward, (double (*)[2])crho, (double (*)[2])crho);
 
-    //  for(int ig=0;ig < pbasis;ig++) {
-    //      if(pwaves.gmags[ig] > g2cut) {
-    //          crho[ig] = std::complex<double>(0.0, 0.0);
-    //      }
-    //  }
-
     double tem = 0.0;
     for(int i = 0;i < pbasis;i++) tem += rho_tot[i] - rhoc[i];
     if(pct.gridpe == 0 && abs(crho[0]) >1.0e-6) 
-        printf("\n WARNING:  total charge is not zero: crho = %e %e rho-rhoc = %e", crho[0], tem); 
+        printf("\n WARNING:  total charge is not zero: crho = %e %e rho-rhoc = %e", std::real(crho[0]), std::imag(crho[0]), tem); 
 
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
@@ -96,11 +86,3 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
 
 }
 
-#else
-void VhPfft(double *rho_tot, double *rhoc, double *vh)
-{
-
-    printf("\n  cannot use VhPfft if not using Pfft\n");
-    fflush(NULL);
-    exit(0);
-#endif
