@@ -34,8 +34,6 @@
 #include "RmgException.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-
-#if USE_PFFT
 #include "RmgParallelFft.h"
 
 void FftLaplacianCoarse(double *x, double *lapx)
@@ -116,4 +114,3 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
     delete [] tx;
 }
 
-#endif

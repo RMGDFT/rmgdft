@@ -62,7 +62,6 @@
 */ 
 
 // Parallel fft library required for now
-#if USE_PFFT
 
 #include <math.h>
 #include <float.h>
@@ -1052,4 +1051,3 @@ void Vdw::info(void) {
 
 }
 
-#endif

@@ -29,7 +29,6 @@
 
 #ifndef RMG_Pw_H
 #define RMG_Pw_H 1
-#if USE_PFFT
 
 // This class is used to handle the integration of plane wave functionality into RMG
 
@@ -96,6 +95,4 @@ public:
 };
 
 
-
-#endif
 #endif

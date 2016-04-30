@@ -26,17 +26,11 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "transition.h"
-
-#if USE_PFFT
 #include "RmgParallelFft.h"
 
 extern "C" void FftFilterFine(double *x,  double factor)
 {
     FftFilter(x, *fine_pwaves, factor, LOW_PASS);
 }
-
-
-
-#endif
 
 

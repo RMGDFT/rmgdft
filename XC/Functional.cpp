@@ -231,11 +231,8 @@ void Functional::nlc(double *rho, double *rho_core, double &etxc, double &vtxc, 
 
     // inlc == 1 corresponds to vdW-DF1 and is the only one programmed currently
     if(inlc == 1) {
-#if USE_PFFT
         Vdw *vdw = new Vdw (*this->Grid, *this->L, *this->T, 1, rho, rho_core, etxc, vtxc, v, this->gammaflag);
-
         delete vdw;
-#endif
     }
     else {
         throw RmgFatalException() << "Non-local correlation correction type not programmed" << " in " << __FILE__ << " at line " << __LINE__ << "\n";

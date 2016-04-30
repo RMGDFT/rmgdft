@@ -28,10 +28,7 @@
 #include "RmgException.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-
-#if USE_PFFT
 #include "RmgParallelFft.h"
-#endif
 
 // This function is used to transfer the potential from the fine
 // grid to the coarse grid that the wavefunctions are defined on.
@@ -60,9 +57,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
 
     if(grid_ratio == 2) {
 
-#if USE_PFFT
         FftFilter(vtot, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
-#endif
 
         for(ix = 0; ix < dimx/2; ix++)
         for(iy = 0; iy < dimy/2; iy++)
@@ -76,9 +71,8 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     }
     else if(grid_ratio == 3) {
 
-#if USE_PFFT
         FftFilter(vtot, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
-#endif
+
         for(ix = 0; ix < dimx/3; ix++)
         for(iy = 0; iy < dimy/3; iy++)
         for(iz = 0; iz < dimz/3; iz++)
@@ -91,9 +85,9 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     }
     else
     {
-#if USE_PFFT
+
         FftFilter(vtot, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
-#endif
+
         mg_restrict_6 (vtot, vtot_psi, dimx, dimy, dimz, grid_ratio);
     }
     delete [] vtot;

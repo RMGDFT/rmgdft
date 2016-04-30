@@ -28,10 +28,8 @@
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "Pw.h"
-
-
-#if USE_PFFT
 #include "pfft.h"
+
 void FftInitPlans(void);
 
 void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
@@ -57,7 +55,6 @@ void FftRestrict(double *fine, double *coarse, int ratio);
 template <typename InType, typename OutType>
 void PfftForward (InType * in, OutType * out, char *density);
 
-#endif
 
 #endif
 #endif

@@ -28,10 +28,7 @@
 #include "RmgException.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-
-#if USE_PFFT
 #include "RmgParallelFft.h"
-#endif
 
 // This function is used to restrict an array from a fine
 // grid to a coarser grid.
@@ -60,10 +57,7 @@ void FftRestrict (double * fine, double * coarse, int grid_ratio)
 
     if(grid_ratio == 2) {
 
-#if USE_PFFT
         FftFilter(temp, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
-#endif
-
         for(ix = 0; ix < dimx/2; ix++)
         for(iy = 0; iy < dimy/2; iy++)
         for(iz = 0; iz < dimz/2; iz++)
@@ -76,9 +70,7 @@ void FftRestrict (double * fine, double * coarse, int grid_ratio)
     }
     else if(grid_ratio == 3) {
 
-#if USE_PFFT
         FftFilter(temp, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
-#endif
         for(ix = 0; ix < dimx/3; ix++)
         for(iy = 0; iy < dimy/3; iy++)
         for(iz = 0; iz < dimz/3; iz++)
@@ -91,9 +83,7 @@ void FftRestrict (double * fine, double * coarse, int grid_ratio)
     }
     else
     {
-#if USE_PFFT
         FftFilter(temp, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
-#endif
         mg_restrict_6 (temp, coarse, dimx, dimy, dimz, grid_ratio);
     }
     delete [] temp;

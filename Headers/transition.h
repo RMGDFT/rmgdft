@@ -25,11 +25,9 @@ extern BaseGrid *Rmg_G;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 
-#if USE_PFFT
-  #include "pfft.h"
-  extern pfft_plan forward_coarse, backward_coarse, forward_fine, backward_fine;
-  extern Pw *coarse_pwaves, *fine_pwaves;
-#endif
+#include "pfft.h"
+extern pfft_plan forward_coarse, backward_coarse, forward_fine, backward_fine;
+extern Pw *coarse_pwaves, *fine_pwaves;
 
 extern "C"
 {

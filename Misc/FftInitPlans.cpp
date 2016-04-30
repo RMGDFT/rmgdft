@@ -35,8 +35,6 @@
 #include "transition.h"
 #include "GlobalSums.h"
 #include "remap_3d.h"
-
-#if USE_PFFT
 #include "RmgParallelFft.h"
 
 // Declared here with extern declarations in transition.h
@@ -199,4 +197,3 @@ void FftInitPlans(void)
 
 }
 
-#endif

@@ -34,8 +34,6 @@
 #include "RmgException.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-
-#if USE_PFFT
 #include "RmgParallelFft.h"
 
 void Fftpack_coarse_to_fine(std::complex<double> *coarse, double *fine,
@@ -193,4 +191,3 @@ void Fftpack_coarse_to_fine(std::complex<double> *coarse, double *fine,
       }
   }
 }
-#endif

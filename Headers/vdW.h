@@ -23,16 +23,13 @@
 #ifndef RMG_vdW_H
 #define RMG_vdW_H 1
 
-#if USE_PFFT
 
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Pw.h"
-#if USE_PFFT
-    #include "pfft.h"
-#endif
+#include "pfft.h"
 
 #define VDW_NQPOINTS  20
 #define VDW_NRPOINTS  1024
@@ -132,12 +129,10 @@ private:
     // cutoff value for density
     static const double epsr;
 
-#if USE_PFFT
     pfft_plan plan_forward;
     pfft_plan plan_back;
     pfft_plan plan_forward_calc;
     pfft_plan plan_back_calc;
-#endif
 
 public:
     Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
@@ -167,6 +162,5 @@ public:
 
 
 
-#endif
 #endif
 #endif

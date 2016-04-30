@@ -50,9 +50,7 @@ typedef struct
     // Communicator associated with the master ranks on each node
     MPI_Comm local_master_comm;
 
-#if USE_PFFT
     MPI_Comm pfft_comm;
-#endif
 
     /* scalapack variables */
     int desca[DLEN];

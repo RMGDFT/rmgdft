@@ -1,4 +1,3 @@
-#if USE_PFFT
 /*
  *
  * Copyright (c) 2015, Emil Briggs
@@ -175,4 +174,3 @@ Pw::~Pw(void)
   delete [] gmags;
 }
 
-#endif

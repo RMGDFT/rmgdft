@@ -34,9 +34,6 @@
 #include "RmgException.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-
-#if USE_PFFT
-
 #include "RmgParallelFft.h"
 
 // On input performs a dft of x which is an array distributed in real space across all node
@@ -110,4 +107,3 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 
 }
 
-#endif

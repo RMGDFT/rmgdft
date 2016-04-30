@@ -45,10 +45,8 @@
 #include "RmgException.h"
 #include "Functional.h"
 #include "Solvers.h"
-#if USE_PFFT
-    #include "pfft.h"
-    #include "RmgParallelFft.h"
-#endif
+#include "pfft.h"
+#include "RmgParallelFft.h"
 
 static void init_alloc_nonloc_mem (void);
 
@@ -103,10 +101,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #endif
 
-#if USE_PFFT
-    // Initialize some commonly used plans
+    // Initialize some commonly used plans for our parallel ffts
     FftInitPlans();
-#endif
 
     /* Allocate storage for non-local projectors */
     pct.newsintR_local = NULL;

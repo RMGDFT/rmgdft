@@ -34,8 +34,6 @@
 #include "RmgException.h"
 #include "RmgSumAll.h"
 #include "transition.h"
-
-#if USE_PFFT
 #include "RmgParallelFft.h"
 
 void FftGradientCoarse(double *x, double *fgx, double *fgy, double *fgz)
@@ -131,4 +129,3 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
     delete [] tx;
 }
 
-#endif

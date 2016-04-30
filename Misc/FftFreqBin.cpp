@@ -36,7 +36,6 @@
 #include "transition.h"
 #include "GlobalSums.h"
 
-#if USE_PFFT
 
 #include "RmgParallelFft.h"
 
@@ -106,4 +105,3 @@ void FftFreqBin(double *x,   // IN:OUT  Input array in real space. Distributed a
   delete [] cvec;
 }
 
-#endif
