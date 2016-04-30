@@ -104,12 +104,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
 
     /* Evaluate XC energy and potential */
-    RT1 = new RmgTimer("Get vxc");
+    RT1 = new RmgTimer("Scf steps: exchange/correlation");
     double vtxc;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     F->v_xc(rho, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
     delete F;
     delete RT1;
+
 
 
     // Linear mixing does not require such a high degree of hartree convergence
@@ -162,6 +163,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         delete(RT1);
     }
 
+    // Make sure the hartree and vxc potentials are bandwidth limited on the fine grid
+    //FftFilter(vh, *fine_pwaves, 1.0, LOW_PASS);
+    //FftFilter(vxc, *fine_pwaves, 1.0, LOW_PASS);
 
     /* check convergence */
     t[0] = t[1] = t[2] = 0.0;
@@ -209,11 +213,15 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
 
         if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || ((ct.scf_steps < 4) && (ct.runflag != RESTART))) {
+            RmgTimer *RT1 = new RmgTimer("Scf steps: MgridSubspace");
             MgridSubspace(Kptr[kpt], vtot_psi);
+            delete RT1;
         }
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
             int notconv;
+            RmgTimer *RT1 = new RmgTimer("Scf steps: Davidson");
             Davidson(Kptr[kpt], vtot_psi, notconv);
+            delete RT1;
         }
 
     } // end loop over kpoints
@@ -242,16 +250,20 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         firststep = false;
 
     /* Generate new density */
-    RT1 = new RmgTimer("Scf steps: Get rho");
+    RT1 = new RmgTimer("Scf steps: GetNewRho");
     GetNewRho(Kptr, new_rho);
+    delete(RT1);
 
     // Get Hartree potential for the output density
     int ratio = Rmg_G->default_FG_RATIO;
     double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(ratio) * Rmg_G->get_NY_GRID(ratio) * Rmg_G->get_NZ_GRID(ratio)));
     rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
     double *vh_out = new double[FP0_BASIS];
+    RT1 = new RmgTimer("Scf steps: Hartree");
     for(int i = 0;i < FP0_BASIS;i++) vh_out[i] = vh[i];
     get_vh (new_rho, rhoc, vh_out, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, rms_target, ct.boundaryflag);
+
+    delete RT1;
 
     // Compute convergence measure (2nd order variational term)
     double sum = 0.0;
@@ -272,13 +284,14 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     }
 
     /*Takes care of mixing and checks whether the charge density is negative*/
+    RT1 = new RmgTimer("Scf steps: MixRho");
     MixRho(new_rho, rho, rhocore, vh, vh_out, rhoc, Kptr[0]->ControlMap);
     delete [] vh_out; 
+    delete RT1;
 
     if (spin_flag)
 	get_rho_oppo (rho,  rho_oppo);
     
-    delete(RT1);
 
 
     /* Make sure we see output, e.g. so we can shut down errant runs */
