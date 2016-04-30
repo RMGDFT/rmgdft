@@ -1,4 +1,5 @@
 add_library (Misc
+Pw.cpp
 PfftForward.cpp
 GeneralDiag.cpp
 VhPfft.cpp
