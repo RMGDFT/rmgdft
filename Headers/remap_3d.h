@@ -13,6 +13,8 @@
 */
 
 /* details of how to do a 3d remap */
+#ifndef RMG_remap_3d_H
+#define RMG_remap_3d_H 1
 
 struct remap_plan_3d {
   double *sendbuf;                  /* buffer for MPI sends */
@@ -68,4 +70,5 @@ int remap_3d_collide(struct extent_3d *,
 #define remap_3d_create_plan_ REMAP_3D_CREATE_PLAN
 #define remap_3d_destroy_plan_ REMAP_3D_DESTROY_PLAN
 
+#endif
 #endif

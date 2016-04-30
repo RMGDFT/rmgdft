@@ -33,6 +33,8 @@
 #include "typedefs.h"
 #include "RmgException.h"
 #include "transition.h"
+#include "GlobalSums.h"
+#include "remap_3d.h"
 
 #if USE_PFFT
 #include "RmgParallelFft.h"
@@ -41,55 +43,127 @@
 pfft_plan forward_coarse, backward_coarse, forward_fine, backward_fine;
 Pw *coarse_pwaves, *fine_pwaves;
 
-
 // Initializes common plans and plane wave objects for reuse.
 void FftInitPlans(void)
 {
 
     ptrdiff_t grid[3]; 
-    ptrdiff_t local_ni[3], local_i_start[3], local_no[3], local_o_start[3];
+    ptrdiff_t coarse_ni[3], coarse_i_start[3], coarse_no[3], coarse_o_start[3];
+    ptrdiff_t fine_ni[3], fine_i_start[3], fine_no[3], fine_o_start[3];
     int np[3];
 
-    // First we check if standard decompositions will work
+    // First we check if standard decomposition with pfft will work
     np[0] = Rmg_G->get_PE_X();
     np[1] = Rmg_G->get_PE_Y();
     np[2] = Rmg_G->get_PE_Z();
-    int dimx = Rmg_G->get_PX0_GRID(1);
-    int dimy = Rmg_G->get_PY0_GRID(1);
-    int dimz = Rmg_G->get_PZ0_GRID(1);
+
 
     pfft_init();
     if( pfft_create_procmesh(3, pct.grid_comm, np, &pct.pfft_comm) ) {
         RmgFatalException() << "Problem initializing PFFT in " << __FILE__ << " at line " << __LINE__ << ".\n";
     }
 
+    // See if we can use pfft without remapping. In and out arrays must be equal in size.
     grid[0] = Rmg_G->get_NX_GRID(1);
     grid[1] = Rmg_G->get_NY_GRID(1);
     grid[2] = Rmg_G->get_NZ_GRID(1);
+    int dimx = Rmg_G->get_PX0_GRID(1);
+    int dimy = Rmg_G->get_PY0_GRID(1);
+    int dimz = Rmg_G->get_PZ0_GRID(1);
 
-    // get array sizes
-    int local_size = pfft_local_size_dft_3d(grid, pct.pfft_comm, PFFT_TRANSPOSED_NONE,
-                                          local_ni, local_i_start, local_no, local_o_start);
+    int coarse_size = pfft_local_size_dft_3d(grid, pct.pfft_comm, PFFT_TRANSPOSED_NONE,
+                                          coarse_ni, coarse_i_start, coarse_no, coarse_o_start);
 
-//printf("local_size = %d\n", local_size);
-//printf("local_ni = %d %d  %d  %d  %d  %d  %d\n", local_size, local_ni[0], local_ni[1], local_ni[2], dimx, dimy, dimz);
-//printf("local_ni_start = %d  %d  %d\n", local_i_start[0], local_i_start[1], local_i_start[2]);
-//printf("local_no = %d  %d  %d  %d\n", local_size, local_no[0], local_no[1], local_no[2]);
-//printf("local_no_start = %d  %d  %d\n", local_o_start[0], local_o_start[1], local_o_start[2]);
-
-
-    std::vector<int> zfactors = {1};
-    GetPrimeFactors(zfactors, np[2], np[2]);
-
+    int coarse_remap = (coarse_ni[0] != dimx) || (coarse_ni[1] != dimy) || (coarse_ni[2] != dimz) ||
+                (coarse_no[0] != dimx) || (coarse_no[1] != dimy) || (coarse_no[2] != dimz);
+    MPI_Allreduce(MPI_IN_PLACE, &coarse_remap, 1, MPI_INT, MPI_SUM, pct.grid_comm);
 
     coarse_pwaves = new Pw(*Rmg_G, Rmg_L, 1, false, pct.pfft_comm);
+    coarse_pwaves->remap = coarse_remap;
+    coarse_pwaves->remap_local_size = coarse_size;
+    coarse_pwaves->fwd_remap = NULL;
+    coarse_pwaves->inv_remap = NULL;
+
+    // Create remap plans if needed
+    int pxoffset, pyoffset, pzoffset;
+    if(coarse_remap) {
+        
+        Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);    
+        coarse_pwaves->fwd_remap = remap_3d_create_plan(
+                           pct.grid_comm,
+                           pzoffset, pzoffset + dimz,
+                           pyoffset, pyoffset + dimy,
+                           pxoffset, pxoffset + dimx,
+                           coarse_o_start[2], coarse_o_start[2] + coarse_no[2],
+                           coarse_o_start[1], coarse_o_start[1] + coarse_no[1],
+                           coarse_o_start[0], coarse_o_start[0] + coarse_no[0],
+                           2, 0, 1, 2);
+
+        coarse_pwaves->inv_remap = remap_3d_create_plan(
+                           pct.grid_comm,
+                           coarse_o_start[2], coarse_o_start[2] + coarse_no[2],
+                           coarse_o_start[1], coarse_o_start[1] + coarse_no[1],
+                           coarse_o_start[0], coarse_o_start[0] + coarse_no[0],
+                           pzoffset, pzoffset + dimz,
+                           pyoffset, pyoffset + dimy,
+                           pxoffset, pxoffset + dimx,
+                           2, 0, 1, 2);
+
+    }
+
+
+
+    grid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
+    grid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
+    grid[2] = Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
+    dimx = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
+    dimy = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
+    dimz = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
+    int fine_size = pfft_local_size_dft_3d(grid, pct.pfft_comm, PFFT_TRANSPOSED_NONE,
+                                          fine_ni, fine_i_start, fine_no, fine_o_start);
+
+    int fine_remap = (fine_ni[0] != dimx) || (fine_ni[1] != dimy) || (fine_ni[2] != dimz) ||
+                (fine_no[0] != dimx) || (fine_no[1] != dimy) || (fine_no[2] != dimz);
+    MPI_Allreduce(MPI_IN_PLACE, &fine_remap, 1, MPI_INT, MPI_SUM, pct.grid_comm);
+
     fine_pwaves = new Pw(*Rmg_G, Rmg_L, Rmg_G->default_FG_RATIO, false, pct.pfft_comm);
+    fine_pwaves->remap = fine_remap;
+    fine_pwaves->remap_local_size = fine_size;
+    fine_pwaves->fwd_remap = NULL;
+    fine_pwaves->inv_remap = NULL;
+
+    if(fine_remap) {
+        
+        Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);    
+        fine_pwaves->fwd_remap = remap_3d_create_plan(
+                           pct.grid_comm,
+                           pzoffset, pzoffset + dimz,
+                           pyoffset, pyoffset + dimy,
+                           pxoffset, pxoffset + dimx,
+                           fine_o_start[2], fine_o_start[2] + fine_no[2],
+                           fine_o_start[1], fine_o_start[1] + fine_no[1],
+                           fine_o_start[0], fine_o_start[0] + fine_no[0],
+                           2, 0, 1, 2);
+
+        fine_pwaves->inv_remap = remap_3d_create_plan(
+                           pct.grid_comm,
+                           fine_o_start[2], fine_o_start[2] + fine_no[2],
+                           fine_o_start[1], fine_o_start[1] + fine_no[1],
+                           fine_o_start[0], fine_o_start[0] + fine_no[0],
+                           pzoffset, pzoffset + dimz,
+                           pyoffset, pyoffset + dimy,
+                           pxoffset, pxoffset + dimx,
+                           2, 0, 1, 2);
+
+    }
+
 
     // Fine grid size is large enough for both coarse and fine
-    int size = fine_pwaves->local_size;
-//printf("DDDDDD %d\n",size);
-    std::complex<double> *tx = new std::complex<double>[size];
+    std::complex<double> *tx = new std::complex<double>[fine_size];
 
+    grid[0] = Rmg_G->get_NX_GRID(1);
+    grid[1] = Rmg_G->get_NY_GRID(1);
+    grid[2] = Rmg_G->get_NZ_GRID(1);
     forward_coarse =  pfft_plan_dft_3d(grid,
                           (double (*)[2])tx,
                           (double (*)[2])tx,
@@ -107,7 +181,6 @@ void FftInitPlans(void)
     grid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
     grid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
     grid[2] = Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
-
     forward_fine =  pfft_plan_dft_3d(grid,
                           (double (*)[2])tx,
                           (double (*)[2])tx,
@@ -123,6 +196,8 @@ void FftInitPlans(void)
                           PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
 
     delete [] tx;
+printf("COARSE = %d\n", coarse_size);
+printf("FINE = %d\n", fine_size);
 }
 
 #endif

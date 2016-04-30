@@ -63,7 +63,8 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
 
-  std::complex<double> *crho = new std::complex<double>[pwaves.local_size];
+  int size = std::max(pbasis, pwaves.remap_local_size);
+  std::complex<double> *crho = new std::complex<double>[size];
   plan_forward = pfft_plan_dft_3d(densgrid,
                                   (double (*)[2])crho,
                                   (double (*)[2])crho,
@@ -79,7 +80,9 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
                                PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
 
   for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
+  if(pwaves.fwd_remap) remap_3d((double *)crho, (double *)crho, NULL, pwaves.fwd_remap);
   pfft_execute_dft(plan_forward, (double (*)[2])crho, (double (*)[2])crho);
+  if(pwaves.inv_remap) remap_3d((double *)crho, (double *)crho, NULL, pwaves.inv_remap);
 
   if(filter_type == LOW_PASS) {
       for(int ig=0;ig < pbasis;ig++) {
@@ -96,7 +99,9 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
       }
   }
 
+  if(pwaves.fwd_remap) remap_3d((double *)crho, (double *)crho, NULL, pwaves.fwd_remap);
   pfft_execute_dft(plan_back, (double (*)[2])crho, (double (*)[2])crho);
+  if(pwaves.inv_remap) remap_3d((double *)crho, (double *)crho, NULL, pwaves.inv_remap);
   for(int i = 0;i < pbasis;i++) x[i] = std::real(crho[i])/(double)global_basis;
 
   pfft_destroy_plan(plan_back);
