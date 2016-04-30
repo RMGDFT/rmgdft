@@ -9,6 +9,11 @@
 #include "grid.h"
 #include "main.h"
 #include "common_prototypes.h"
+#include "params.h"
+#include "math.h"
+#include "AtomicInterpolate.h"
+extern double Atomic_inv_a;
+extern double Atomic_inv_b;
 
 /* Sets Qnm function (part of ultrasfot pseudpotential*/
 
@@ -135,31 +140,27 @@ void get_QI (void)
             }
 
 
-            if (icount)
-            {
-
-
-                my_calloc (pct.Qdvec[ion], idx, int);
-
-                ivec = pct.Qdvec[ion];
-                for (idx1 = 0; idx1 < idx; idx1++)
-                    ivec[idx1] = (int) dvec[idx1];
-
-
-
-                my_calloc (pct.Qindex[ion], icount + 128, int);
-
-                ivec = pct.Qindex[ion];
-                for (idx1 = 0; idx1 < icount; idx1++)
-                    ivec[idx1] = (int) pvec[idx1];
-
-
-                size = nh * (nh + 1) / 2;
-                my_calloc (pct.augfunc[ion], size * icount + 128, double);
-
-            }
-
+            if (!icount) continue;
             pct.Qidxptrlen[ion] = icount;
+
+
+            my_calloc (pct.Qdvec[ion], idx, int);
+
+            ivec = pct.Qdvec[ion];
+            for (idx1 = 0; idx1 < idx; idx1++)
+                ivec[idx1] = (int) dvec[idx1];
+
+
+
+            my_calloc (pct.Qindex[ion], icount + 128, int);
+
+            ivec = pct.Qindex[ion];
+            for (idx1 = 0; idx1 < icount; idx1++)
+                ivec[idx1] = (int) pvec[idx1];
+
+
+            size = nh * (nh + 1) / 2;
+            my_calloc (pct.augfunc[ion], size * icount + 128, double);
 
 
             QI_tpr = pct.augfunc[ion];
@@ -190,6 +191,21 @@ void get_QI (void)
                             to_cartesian (x, cx);
                             ylmr2 (cx, ylm);
 
+                            if((r < LOGGRID_START)) {
+                                r = LOGGRID_START;
+                            }
+
+                            double d0, d1, dm, ic;
+                            d0 = (log (r*Atomic_inv_a) * Atomic_inv_b);
+                            ic = (int)d0;
+                            ic = (ic > 0) ? ic : 1;
+
+                            /* cubic interpolation using forward differences */
+                            d0 -= (double) (ic);
+                            d1 = (d0 - 1.0) * 0.5;
+                            dm = (d0 - 2.0) / 3.0;
+
+
                             num = 0;
                             for (i = 0; i < nh; i++)
                             {
@@ -198,9 +214,9 @@ void get_QI (void)
                                 {
 
                                     idx1 = num * pct.Qidxptrlen[ion] + icount;
-                                    QI_tpr[idx1] = qval (i, j, r, qnmlig,sp->nhtol,
-                                                         sp->nhtom, sp->indv, ylm, ap,
-                                                         lpx, lpl, sp);
+                                    QI_tpr[idx1] = qval (i, j, ic, d0, d1, dm, qnmlig,sp->nhtol,
+                                            sp->nhtom, sp->indv, ylm, ap,
+                                            lpx, lpl, sp);
 
                                     num++;
                                 }
@@ -230,3 +246,62 @@ void get_QI (void)
     my_free (pvec);
 
 }
+
+
+/************************** SVN Revision Information **************************
+ **    $Id$    **
+ ******************************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include "main.h"
+#include <float.h>
+
+
+
+double qval (int ih, int jh, int ic, double d0, double d1, double dm,  double * ptpr, int *nhtol, int *nhtom,
+        int *indv, double * ylm, double ap[][9][9], int lpx[][9], int lpl[][9][9], SPECIES * sp)
+{
+    int ivl, jvl;
+    int nb, mb, nmb, lm, lp, l;
+    double qrad, sum, *ptpr1;
+
+
+
+    nb = indv[ih];
+    mb = indv[jh];
+    if (nb < mb)
+        nmb = mb * (mb + 1) / 2 + nb;
+    else
+        nmb = nb * (nb + 1) / 2 + mb;
+
+    ivl = nhtol[ih] * nhtol[ih] + nhtom[ih];
+    jvl = nhtol[jh] * nhtol[jh] + nhtom[jh];
+
+    sum = 0;
+    for (lm = 0; lm < lpx[ivl][jvl]; lm++)
+    {
+        lp = lpl[ivl][jvl][lm];
+        if (lp == 0)
+            l = 0;
+        else if ((lp >= 1) && (lp < 4))
+            l = 1;
+        else if ((lp >= 4) && (lp < 9))
+            l = 2;
+        else if ((lp >= 9) && (lp < 16))
+            l = 3;
+        else if ((lp >= 16) && (lp < 25))
+            l = 4;
+        else
+            error_handler ("L>4");
+
+        ptpr1 = ptpr + (nmb * sp->nlc + l) * MAX_LOGGRID;
+        /*shuchun wang */
+        qrad = AtomicInterpolateInline_1 (ptpr1, ic, d0, d1, dm);
+        sum += qrad * ap[lp][ivl][jvl] * ylm[lp];
+    }
+    return (sum);
+}
+
+

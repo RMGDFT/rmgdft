@@ -63,4 +63,20 @@ static inline double AtomicInterpolateInline(double *f, double r)
 
 }
 
+static inline double AtomicInterpolateInline_1(double *f, int ic, double d0, double d1, double dm)
+{
+    double f0, g0, g1, g2, h1, h2, i2;
+
+    f0 = f[ic];
+    g0 = f[ic] - f[ic - 1];
+    g1 = f[ic + 1] - f[ic];
+    g2 = f[ic + 2] - f[ic + 1];
+    h1 = g1 - g0;
+    h2 = g2 - g1;
+    i2 = h2 - h1;
+
+    return f0 + d0 * (g1 + d1 * (h2 + dm * i2));
+
+}
+
 #endif

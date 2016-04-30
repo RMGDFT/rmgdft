@@ -24,7 +24,7 @@ backout_mask_function.c
 apply_mask_function.c
 get_QnmL.c
 init_derweight_s.c
-qval.c
+#qval.c
 ylmr2_z.c
 radiff.c
 init_weight.c

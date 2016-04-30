@@ -130,7 +130,9 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     gy = new double[FP0_BASIS];
     gz = new double[FP0_BASIS];
 
+    RT1 = new RmgTimer("Force: non-local: veff grad");
     CPP_app_grad_driver (&Rmg_L, Rmg_T, veff, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid, 6);
+    delete RT1;
 
 
     for (ion = 0; ion < pct.num_nonloc_ions; ion++)
@@ -142,10 +144,10 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
         nh = ct.sp[iptr->species].nh;
 
-        RT1 = new RmgTimer("Force: non-local get gamma");
+        RT1 = new RmgTimer("Force: non-local: get gamma");
         GetGamma (gamma, ion, nh, Kptr);
         delete RT1;
-        RT1 = new RmgTimer("Force: non-local nlforce_par_Q");
+        RT1 = new RmgTimer("Force: non-local: nlforce_par_Q");
         nlforce_par_Q (gx, gy, gz, gamma, gion, iptr, nh, &qforce[3 * gion]);
         delete RT1;
 
@@ -157,7 +159,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
 
-    RT1 = new RmgTimer("Force: non-local global sums");
+    RT1 = new RmgTimer("Force: non-local: global sums");
     size1 = 3 * num_ions;
     global_sums (qforce, &size1, pct.img_comm);
     delete RT1;
@@ -210,21 +212,21 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         nh = ct.sp[iptr->species].nh;
 
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
-        RT1 = new RmgTimer("Force: non-local partial gamma");
+        RT1 = new RmgTimer("Force: non-local: partial gamma");
         PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr);
         delete RT1;
-        RT1 = new RmgTimer("Force: non-local nlforce_par_gamma");
+        RT1 = new RmgTimer("Force: non-local: nlforce_par_gamma");
         nlforce_par_gamma (par_gamma, gion, nh, &tmp_force_gamma[3*gion]);
         delete RT1;
 
-        RT1 = new RmgTimer("Force: non-local nlforce_par_omega");
+        RT1 = new RmgTimer("Force: non-local: nlforce_par_omega");
         nlforce_par_omega (par_omega, gion, nh, &tmp_force_omega[3*gion]);
         delete RT1;
 
     }                           /*end for(ion=0; ion<num_ions; ion++) */
 
     size1 = 3 * num_ions;
-    RT1 = new RmgTimer("Force: non-local global sums");
+    RT1 = new RmgTimer("Force: non-local: global sums");
     global_sums (tmp_force_gamma, &size1, pct.img_comm);
     global_sums (tmp_force_omega, &size1, pct.img_comm);
     delete RT1;

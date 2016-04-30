@@ -34,13 +34,20 @@ template void ReinitIonicPotentials<std::complex<double> >(Kpoint<std::complex<d
 template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * rhocore, double * rhoc)
 {
+    RmgTimer *RT1;
     RmgTimer RT0("ReinitIonicPotentials");
     int pbasis = Kptr[0]->pbasis;
 
     /* Update items that change when the ionic coordinates change */
+    RT1= new RmgTimer("ReinitIonicPotentials: init_nuc");
     init_nuc (vnuc, rhoc, rhocore);
+    delete RT1;
+    RT1= new RmgTimer("ReinitIonicPotentials: get_QI");
     get_QI ();
+    delete RT1;
+    RT1= new RmgTimer("ReinitIonicPotentials: GetNlop");
     GetNlop(Kptr);
+    delete RT1;
 
     // Number of total projectors required is computed in GetNlop so we allocate per
     // k-point storage for the weights here.
@@ -111,14 +118,15 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
 
     /*Other things that need to be recalculated when ionic positions change */
+    RT1= new RmgTimer("ReinitIonicPotentials: GetWeight");
     GetWeight (Kptr);
-    RmgTimer *RT1 = new RmgTimer("Force");
-    RmgTimer *RT2 = new RmgTimer("Force: non-local: GetDerweight");
-
+    delete RT1;
+    RT1= new RmgTimer("ReinitIonicPotentials: GetDereight");
     GetDerweight (Kptr);
     delete RT1;
-    delete RT2;
+    RT1= new RmgTimer("ReinitIonicPotentials: get_qqq");
     get_qqq ();
+    delete RT1;
 
 
 #if 0
