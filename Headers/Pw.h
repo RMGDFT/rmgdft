@@ -69,11 +69,8 @@ public:
     // Real space basis on this node and globally
     int pbasis;
     int global_basis;
-
-    // G-space basis info
-    ptrdiff_t local_size;
-    ptrdiff_t local_ni[3], local_i_start[3];
-    ptrdiff_t local_no[3], local_o_start[3];
+    int remap;
+    int remap_local_size;
 
     // Real space grid dimensions on this node
     int dimx;

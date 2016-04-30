@@ -55,21 +55,6 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   this->global_dimz = G.get_NZ_GRID(ratio);
   this->global_basis = this->global_dimx * this->global_dimy * this->global_dimz;
 
-  // Set up pfft stuff that applies to this plane wave object
-  int np[3];
-  ptrdiff_t densgrid[3];
-  np[0] = G.get_PE_X();
-  np[1] = G.get_PE_Y();
-  np[2] = G.get_PE_Z();
-  densgrid[0] =  G.get_NX_GRID(ratio);
-  densgrid[1] =  G.get_NY_GRID(ratio);
-  densgrid[2] =  G.get_NZ_GRID(ratio);
-  // get array sizes
-  ptrdiff_t local_ni[3], local_i_start[3];
-  ptrdiff_t local_no[3], local_o_start[3];
-  this->local_size = pfft_local_size_dft_3d(densgrid, comm, PFFT_TRANSPOSED_NONE,
-  this->local_ni, this->local_i_start, this->local_no, this->local_o_start);
-
   // Magnitudes of the g-vectors
   this->gmags = new double[this->pbasis]();
 
