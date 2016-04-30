@@ -79,7 +79,6 @@ void FftInitPlans(void)
     MPI_Allreduce(MPI_IN_PLACE, &coarse_remap, 1, MPI_INT, MPI_SUM, pct.grid_comm);
 
     coarse_pwaves = new Pw(*Rmg_G, Rmg_L, 1, false, pct.pfft_comm);
-    coarse_pwaves->remap = coarse_remap;
     coarse_pwaves->remap_local_size = coarse_size;
     coarse_pwaves->fwd_remap = NULL;
     coarse_pwaves->inv_remap = NULL;
@@ -87,26 +86,27 @@ void FftInitPlans(void)
     // Create remap plans if needed
     int pxoffset, pyoffset, pzoffset;
     if(coarse_remap) {
+        if(pct.gridpe == 0) printf("Remapping coarse grids for parallel fft.\n");
         
         Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);    
         coarse_pwaves->fwd_remap = remap_3d_create_plan(
                            pct.grid_comm,
-                           pzoffset, pzoffset + dimz,
-                           pyoffset, pyoffset + dimy,
-                           pxoffset, pxoffset + dimx,
-                           coarse_o_start[2], coarse_o_start[2] + coarse_no[2],
-                           coarse_o_start[1], coarse_o_start[1] + coarse_no[1],
-                           coarse_o_start[0], coarse_o_start[0] + coarse_no[0],
+                           pzoffset, pzoffset + dimz - 1,
+                           pyoffset, pyoffset + dimy - 1,
+                           pxoffset, pxoffset + dimx - 1,
+                           coarse_i_start[2], coarse_i_start[2] + coarse_ni[2] - 1,
+                           coarse_i_start[1], coarse_i_start[1] + coarse_ni[1] - 1,
+                           coarse_i_start[0], coarse_i_start[0] + coarse_ni[0] - 1,
                            2, 0, 1, 2);
 
         coarse_pwaves->inv_remap = remap_3d_create_plan(
                            pct.grid_comm,
-                           coarse_o_start[2], coarse_o_start[2] + coarse_no[2],
-                           coarse_o_start[1], coarse_o_start[1] + coarse_no[1],
-                           coarse_o_start[0], coarse_o_start[0] + coarse_no[0],
-                           pzoffset, pzoffset + dimz,
-                           pyoffset, pyoffset + dimy,
-                           pxoffset, pxoffset + dimx,
+                           coarse_o_start[2], coarse_o_start[2] + coarse_no[2] - 1,
+                           coarse_o_start[1], coarse_o_start[1] + coarse_no[1] - 1,
+                           coarse_o_start[0], coarse_o_start[0] + coarse_no[0] - 1,
+                           pzoffset, pzoffset + dimz - 1,
+                           pyoffset, pyoffset + dimy - 1,
+                           pxoffset, pxoffset + dimx - 1,
                            2, 0, 1, 2);
 
     }
@@ -127,32 +127,32 @@ void FftInitPlans(void)
     MPI_Allreduce(MPI_IN_PLACE, &fine_remap, 1, MPI_INT, MPI_SUM, pct.grid_comm);
 
     fine_pwaves = new Pw(*Rmg_G, Rmg_L, Rmg_G->default_FG_RATIO, false, pct.pfft_comm);
-    fine_pwaves->remap = fine_remap;
     fine_pwaves->remap_local_size = fine_size;
     fine_pwaves->fwd_remap = NULL;
     fine_pwaves->inv_remap = NULL;
 
     if(fine_remap) {
         
+        if(pct.gridpe == 0) printf("Remapping fine grids for parallel fft.\n");
         Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);    
         fine_pwaves->fwd_remap = remap_3d_create_plan(
                            pct.grid_comm,
-                           pzoffset, pzoffset + dimz,
-                           pyoffset, pyoffset + dimy,
-                           pxoffset, pxoffset + dimx,
-                           fine_o_start[2], fine_o_start[2] + fine_no[2],
-                           fine_o_start[1], fine_o_start[1] + fine_no[1],
-                           fine_o_start[0], fine_o_start[0] + fine_no[0],
+                           pzoffset, pzoffset + dimz - 1,
+                           pyoffset, pyoffset + dimy - 1,
+                           pxoffset, pxoffset + dimx - 1,
+                           fine_i_start[2], fine_i_start[2] + fine_ni[2] - 1,
+                           fine_i_start[1], fine_i_start[1] + fine_ni[1] - 1,
+                           fine_i_start[0], fine_i_start[0] + fine_ni[0] - 1,
                            2, 0, 1, 2);
 
         fine_pwaves->inv_remap = remap_3d_create_plan(
                            pct.grid_comm,
-                           fine_o_start[2], fine_o_start[2] + fine_no[2],
-                           fine_o_start[1], fine_o_start[1] + fine_no[1],
-                           fine_o_start[0], fine_o_start[0] + fine_no[0],
-                           pzoffset, pzoffset + dimz,
-                           pyoffset, pyoffset + dimy,
-                           pxoffset, pxoffset + dimx,
+                           fine_o_start[2], fine_o_start[2] + fine_no[2] - 1,
+                           fine_o_start[1], fine_o_start[1] + fine_no[1] - 1,
+                           fine_o_start[0], fine_o_start[0] + fine_no[0] - 1,
+                           pzoffset, pzoffset + dimz - 1,
+                           pyoffset, pyoffset + dimy - 1,
+                           pxoffset, pxoffset + dimx - 1,
                            2, 0, 1, 2);
 
     }
@@ -196,8 +196,7 @@ void FftInitPlans(void)
                           PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
 
     delete [] tx;
-printf("COARSE = %d\n", coarse_size);
-printf("FINE = %d\n", fine_size);
+
 }
 
 #endif

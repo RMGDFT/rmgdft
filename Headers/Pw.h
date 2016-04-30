@@ -70,7 +70,6 @@ public:
     // Real space basis on this node and globally
     int pbasis;
     int global_basis;
-    int remap;
     int remap_local_size;
     struct remap_plan_3d *fwd_remap;
     struct remap_plan_3d *inv_remap;
