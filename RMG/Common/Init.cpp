@@ -409,8 +409,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
     }
 
-    if (ct.runflag == LCAO_START && (ct.forceflag != BAND_STRUCTURE))
+    if (ct.runflag == LCAO_START && (ct.forceflag != BAND_STRUCTURE)) {
+        RT1 = new RmgTimer("Init: LcaoGetRho");
         lcao_get_rho(rho);
+        delete RT1;
+    }
 
 
     ct.rms = 0.0;
@@ -426,10 +429,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         //get_vxc (rho, rho_oppo, rhocore, vxc);
         double etxc, vtxc;
+        RT1 = new RmgTimer("Init: exchange/correlation");
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
         delete F;
+        delete RT1;
 
+        RmgTimer *RT1 = new RmgTimer("Init: hartree");
         if (ct.spin_flag)
         {
             rho_tot = new double[FP0_BASIS];
@@ -440,15 +446,20 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             delete [] rho_tot;
         }
         else
+        {
             get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
+        }
+        delete RT1;
 
     }
 
     // Generate initial Betaxpsi
+    RmgTimer *RT3 = new RmgTimer("Init: betaxpsi");
     for(kpt = 0;kpt < ct.num_kpts;kpt++) {
         Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
         Kptr[kpt]->mix_betaxpsi(0);
     }
+    delete RT3;
 
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
     if(ct.runflag != RESTART) {
@@ -471,9 +482,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             /*Now we can do subspace diagonalization */
             double *new_rho=new double[FP0_BASIS];
             for(kpt = 0;kpt < ct.num_kpts;kpt++) {
+                RmgTimer *RT2 = new RmgTimer("Init: subdiag");
                 Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
+                delete RT2;
+                RmgTimer *RT3 = new RmgTimer("Init: betaxpsi");
                 Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
                 Kptr[kpt]->mix_betaxpsi(0);
+                delete RT3;
             }
             // Get new density 
             GetNewRho(Kptr, new_rho);
