@@ -172,11 +172,10 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
         index = 3 * (ion);
 #if VERBOSE  
-    printf("\n  Qforce");
-    printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
-                    ion,
-        get_vel_f() * qforce[index],
-        get_vel_f() * qforce[index + 1],get_vel_f() * qforce[index + 2]);
+    if (pct.imgpe == 0) {
+        printf ("\n Ion %d QForce  %10.7f  %10.7f  %10.7f", ion, get_vel_f() * qforce[index],
+            get_vel_f() * qforce[index + 1],get_vel_f() * qforce[index + 2]);
+    }
 #endif
                     
                     
