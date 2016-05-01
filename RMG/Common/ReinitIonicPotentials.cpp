@@ -121,7 +121,7 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     RT1= new RmgTimer("ReinitIonicPotentials: GetWeight");
     GetWeight (Kptr);
     delete RT1;
-    RT1= new RmgTimer("ReinitIonicPotentials: GetDereight");
+    RT1= new RmgTimer("ReinitIonicPotentials: GetDerweight");
     GetDerweight (Kptr);
     delete RT1;
     RT1= new RmgTimer("ReinitIonicPotentials: get_qqq");
