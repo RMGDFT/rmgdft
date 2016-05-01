@@ -93,6 +93,5 @@ C    14.7907    11.5939     6.6672    1
 
 input_wave_function_file = "Waves/wave.out"
 output_wave_function_file = "Waves/wave1.out"
-
-
-
+write_pseudopotential_plots = "true"
+max_scf_steps = "5"

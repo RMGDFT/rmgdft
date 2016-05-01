@@ -148,4 +148,33 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
     }
 
+#if 0 
+//  can be used to print out timing for each proce to look at the load balance.
+    for(int rank = 0; rank < 8; rank++)
+    {
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(G->get_rank() == rank) {
+            std::cout<< "rank = " << rank <<std::endl;
+            for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
+                count = std::count(it->first.begin(), it->first.end(), ':');  
+
+                if(count1 < count) {
+                    for(i = 0; i < count1; i++) logfile << "  ";
+                    for(i = 2 * count1; i < 77; i++) logfile <<"-";
+                    logfile <<  std::endl;
+                }
+
+                if(count == 0) logfile << std::endl;
+
+                for(i = 0; i < count; i++) logfile << "  ";
+                std::cout << std::setw(41-count*2) << std::left << it->first << std::setw(10) << std::right  
+                    << it->second << std::endl;
+
+                count1 = count;
+            }
+
+
+        }
+    }
+#endif
 }

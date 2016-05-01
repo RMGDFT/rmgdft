@@ -234,6 +234,7 @@ typedef struct
     int indv[MAX_NL];
     int nhtol[MAX_NL];
     int nhtom[MAX_NL];
+    int nh_l2m[MAX_NL];
     int nh;
 
     /*Atomic charge density on linear grid*/

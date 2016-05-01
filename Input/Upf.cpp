@@ -415,6 +415,7 @@ void LoadUpf(SPECIES *sp)
         sp->nhtol[j] = 0;
         sp->nhtom[j] = 0;
         sp->indv[j] = 0;
+        sp->nh_l2m[j] = 0;
     }
 
     int ih = 0;
@@ -426,6 +427,7 @@ void LoadUpf(SPECIES *sp)
             sp->nhtol[ih] = l;
             sp->nhtom[ih] = k;
             sp->indv[ih] = j;
+            sp->nh_l2m[ih] = l*l + k;
             ++ih;
         }
     }

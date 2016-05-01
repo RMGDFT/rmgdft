@@ -351,7 +351,8 @@ void init_qfunct (void);
 void mg_eig_state (STATE *sp, int tid, double *vtot_psi);
 void mg_eig_state_f (STATE *sp, int tid, double *vtot_psi);
 void ortho (STATE *states, int kpt);
-double qval (int ih, int jh, int ic, double d0, double d1, double dm, double *ptpr, int *nhtol,
+//double qval (int ih, int jh, int, double, double, double, double *, int *nhtol,
+double qval (int ih, int jh, double *qrad, int *nhtol,
            int *nhtom, int *indv, double *ylm, double ap[][9][9], int lpx[][9],
            int lpl[][9][9], SPECIES *sp);
 void reinit_ionic_pp (STATE * states, double * vnuc, double * rhocore, double * rhoc);
