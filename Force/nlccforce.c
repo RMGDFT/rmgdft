@@ -48,11 +48,6 @@
 void nlccforce (double * rho, double * vxc)
 {
 
-    int ishift;
-    double axs[3], bx[3];
-    double shift[4];
-    double fl[3];
-    double deltac;
     double sumx, sumy, sumz;
 
     int ix, iy, iz, ixx, iyy, izz;
