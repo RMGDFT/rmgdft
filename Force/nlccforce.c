@@ -53,7 +53,7 @@ void nlccforce (double * rho, double * vxc)
     double shift[4];
     double fl[3];
     double deltac;
-    double sumxc2, sumx, sumy, sumz;
+    double sumx, sumy, sumz;
 
     int ix, iy, iz, ixx, iyy, izz;
     int xstart, ystart, zstart, xend, yend, zend;
@@ -97,14 +97,6 @@ void nlccforce (double * rho, double * vxc)
     jhi = jlow + FPY0_GRID;
     khi = klow + FPZ0_GRID;
 
-
-    deltac = ct.hmaxgrid / 200.0 / (double) get_FG_RATIO();
-    shift[0] = -TWO * deltac;
-    shift[1] = TWO * deltac;
-    shift[2] = -deltac;
-    shift[3] = deltac;
-
-    sumxc2 = TWO * (shift[0] * shift[0] + shift[2] * shift[2]);
 
     double *force_nlcc, *gx, *gy, *gz;
     double rho_at_r;
