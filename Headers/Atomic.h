@@ -39,6 +39,10 @@ class Atomic {
 private:
 
     double Gcutoff (double g1, double gcut, double width);
+    void backout_mask_function (double *r, double *f, int rg_points, double rmax);
+    void apply_mask_function (double *r, double *f, int rg_points, double rmax, double offset);
+    double mask_function (double x);
+
 
     static int Log_grid_initialized;
     static double a;

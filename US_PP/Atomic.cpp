@@ -706,15 +706,15 @@ void Atomic::FilterPotential (
     if(drpotential_lgrid)
 	der_flag = true;
 
-//    if (ct.mask_function)
-//	apply_mask_function(potential, r, rg_points, rmax, offset);
+    if (ct.mask_function)
+	apply_mask_function(r, potential, rg_points, rmax, offset);
 
 
     /* Transform to g-space and filter it */
     RftToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, gwidth);
 
-//    if (ct.mask_function)
-//	backout_mask_function (potential_lgrid, dr, MAX_LOGGRID,  rmax);
+    if (ct.mask_function)
+	backout_mask_function (r_filtered, potential_lgrid, MAX_LOGGRID, rmax);
 
     /*Evaluate radial derivative, if requested*/
     if (der_flag)
@@ -808,5 +808,57 @@ double Atomic::Interpolate(double *f, double r)
 
     return f0 + d0 * (g1 + d1 * (h2 + dm * i2));
     
+}
+
+/*Applies mask function
+ *   f: a radial function to be filtered
+ *   r: array stored r values
+ *   rg_points: number of points in radial grid
+ *   rcut: The distance after which f should be 0 (after filtering)
+ *   offset: distance from the end at which the result is set to 0
+ *           This function divides the original function by a mask function, which is zero at rcut. 
+ *           For mask function to work correctly, f should be zero at rcut, but sometimes (especially for beta functions)
+ *           f decays very slowly only to reach 0 at infinity. In order to avoid problems with dividing by zero we assume
+ *           that at the distance (rcut-offset) f is zero and set f/mask to zero for r> (rcut-offset).
+ * */
+
+#define VERBOSE 0
+
+
+void Atomic::apply_mask_function (double *r, double *f, int rg_points, double rmax, double offset)
+{
+    for (int idx = 0; idx < rg_points; idx++)
+    {
+        if (r[idx] < rmax-offset) {
+            f[idx] = f[idx]/mask_function(r[idx]/rmax);
+        }
+        else {
+            f[idx] = 0.0;
+        }
+    }
+}
+
+/* Backs out mask function
+ *   r: array stored r values
+ *   f: a radial function to be filtered
+ *   rg_points: number of points in in radial grid
+ *   rmax: The distance after which f should be 0 (after filtering)
+ * */
+
+void Atomic::backout_mask_function (double *r, double *f, int rg_points, double rmax)
+{
+    for (int idx = 0; idx < rg_points; idx++) f[idx] *= mask_function (r[idx]/rmax);
+}
+
+double Atomic::mask_function (double x)
+{
+    if (x >= 1.0)
+        return 0.0;
+
+    if ((x > 0.0) && (x < 1.0))
+        return (0.5*(cos(PI*x)+1));
+        //return (15.8231*x*x*x*x*x -47.1834 *x*x*x*x + 50.0273 *x*x*x -20.3746*x*x + 0.7294*x + 0.9872);
+
+    return 1.0;
 }
 

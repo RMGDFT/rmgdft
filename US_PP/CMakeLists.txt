@@ -15,13 +15,10 @@ init_weight_s.c
 qval_R.c
 rft1.c
 init_derweight.c
-mask_function.c
 init_weight_d.c
 linint.c
 ylmr2_x.c
 aainit.c
-backout_mask_function.c
-apply_mask_function.c
 get_QnmL.c
 init_derweight_s.c
 #qval.c
