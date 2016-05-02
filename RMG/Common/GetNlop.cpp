@@ -330,6 +330,13 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         delete [] pct.newsintR_local;
     if (pct.oldsintR_local)
         delete [] pct.oldsintR_local;
+   
+    if(pct.sint_derx)
+    {
+        delete [] pct.sint_derx;
+        delete [] pct.sint_dery;
+        delete [] pct.sint_derz;
+    }
     
     int factor = 2;
     if(ct.is_gamma) factor = 1; 

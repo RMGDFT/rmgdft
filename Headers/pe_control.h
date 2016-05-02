@@ -135,6 +135,7 @@ typedef struct
     int nonloc_ions_list[MAX_NONLOC_IONS];
     int nonloc_ion_ownflag[MAX_NONLOC_IONS];
 
+
     int num_nonloc_pes;
     int nonloc_pe_list[MAX_NONLOC_PROCS];
     int nonloc_pe_list_ions[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
@@ -164,6 +165,13 @@ typedef struct
      * These are indices within nonloc ions, not absolute ones*/ 
     int list_ions_per_owner[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
     
+    int num_loc_ions;
+    int loc_ions_list[MAX_NONLOC_IONS];
+
+    double *localpp;
+    double *localrhoc;
+    double *localrhonlcc;
+
     double *oldsintR_local;
     double *oldsintI_local;
     double *newsintR_local;

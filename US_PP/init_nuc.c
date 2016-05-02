@@ -67,7 +67,9 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         vnuc_f[idx] = 0.0;
     }
 
-    /* Loop over ions */
+    /* Loop over ions determine num of ions whose local pp has overlap with this pe */
+
+    pct.num_loc_ions = 0;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         /* Generate ion pointer */
@@ -89,6 +91,102 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         dimy = dimy * 2 + 1;
         dimz = dimz * 2 + 1;
         
+
+        xstart = iptr->xtal[0] / hxxgrid - dimx/2;
+        xend = xstart + dimx;
+        ystart = iptr->xtal[1] / hyygrid - dimy/2;
+        yend = ystart + dimy;
+        zstart = iptr->xtal[2] / hzzgrid - dimz/2;
+        zend = zstart + dimz;
+
+
+        bool map_x = false, map_y = false, map_z = false;
+        for (ix = xstart; ix < xend; ix++)
+        {
+            // fold the grid into the unit cell
+            // maxium fold 20 times, local potential can extend to 20-1 unit cell
+            ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
+            if(ixx >= ilow && ixx < ihi)
+            {
+                map_x = true;
+                break;
+            }
+        }
+
+        if(!map_x) continue;
+
+        for (iy = ystart; iy < yend; iy++)
+        {
+            // fold the grid into the unit cell
+            iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
+            if(iyy >= jlow && iyy < jhi)
+            {
+                map_y = true;
+                break;
+            }
+        }
+
+        if(!map_y) continue;
+
+
+        for (iz = zstart; iz < zend; iz++)
+        {
+            // fold the grid into the unit cell
+            izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
+            if(izz >= klow && izz < khi)
+            {
+                map_z = true;
+                break;
+            }
+        }
+
+        if(!map_z) continue;
+
+        pct.loc_ions_list[pct.num_loc_ions] = ion;
+        pct.num_loc_ions ++;
+    }
+
+    if(pct.localpp != NULL) 
+    {
+        free(pct.localpp);
+        free(pct.localrhoc);
+        free(pct.localrhonlcc);
+    }
+
+    pct.localpp = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
+    pct.localrhoc = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
+    pct.localrhonlcc = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
+    for(idx = 0; idx < pct.num_loc_ions *FP0_BASIS; idx++)
+    {
+        pct.localpp[idx] = 0.0;
+        pct.localrhoc[idx] = 0.0;
+        pct.localrhonlcc[idx] = 0.0;
+    }
+
+
+    int ion1;
+    for (ion1 = 0; ion1 < pct.num_loc_ions; ion1++)
+    {
+        ion = pct.loc_ions_list[ion1];
+        /* Generate ion pointer */
+        iptr = &ct.ions[ion];
+
+        /* Get species type */
+        sp = &ct.sp[iptr->species];
+        Zv = sp->zvalence;
+        rc = sp->rc;
+        rc2 = rc * rc;
+        rcnorm = rc * rc * rc * pow (PI, 1.5);
+        rcnorm = 1.0 / rcnorm;
+
+        dimx =  sp->lradius/(hxxgrid*xside);
+        dimy =  sp->lradius/(hyygrid*yside);
+        dimz =  sp->lradius/(hzzgrid*zside);
+
+        dimx = dimx * 2 + 1;
+        dimy = dimy * 2 + 1;
+        dimz = dimz * 2 + 1;
+
 
         xstart = iptr->xtal[0] / hxxgrid - dimx/2;
         xend = xstart + dimx;
@@ -125,12 +223,23 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
                                 r = metric (x);
 
-                                vnuc_f[idx] += AtomicInterpolateInline (&sp->localig[0], r);
-                                rhoc_f[idx] += Zv * exp (-r * r / rc2) * rcnorm;
+                                t1= AtomicInterpolateInline (&sp->localig[0], r);
+                                vnuc_f[idx] += t1;
+                                pct.localpp[ion1 * FP0_BASIS + idx] += t1;
+
+                                t1= Zv * exp (-r * r / rc2) * rcnorm;
+                                rhoc_f[idx] += t1;
+                                pct.localrhoc[ion1 * FP0_BASIS + idx] += t1;
+                                
 
                                 if (sp->nlccflag)
-                                    rhocore_f[idx] += AtomicInterpolateInline (&sp->rhocorelig[0], r);
+                                {
+                    
+                                    t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
+                                    rhocore_f[idx] += t1;
+                                    pct.localrhonlcc[ion1 * FP0_BASIS + idx] += t1;
 
+                                }
 
                             }                           /* end for */
 

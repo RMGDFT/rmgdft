@@ -107,6 +107,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Allocate storage for non-local projectors */
     pct.newsintR_local = NULL;
     pct.oldsintR_local = NULL;
+    pct.sint_derx = NULL;
+    pct.sint_dery = NULL;
+    pct.sint_derz = NULL;
+
+    pct.localpp = NULL;
+    pct.localrhoc = NULL;
+    pct.localrhonlcc = NULL;
+
 
 
     /* Set hartree boundary condition stuff */

@@ -95,95 +95,33 @@ void nlccforce (double * rho, double * vxc, double *force_nlcc)
 
     double *gx, *gy, *gz;
     double rho_at_r;
-    gx = (double *)malloc(FP0_BASIS * sizeof(double));
-    gy = (double *)malloc(FP0_BASIS * sizeof(double));
-    gz = (double *)malloc(FP0_BASIS * sizeof(double));
+    gx = (double *)malloc(3*FP0_BASIS * sizeof(double));
+    gy = gx + FP0_BASIS;
+    gz = gx + 2*FP0_BASIS;
 
 
     app_grad (vxc, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
 
-    /* Loop over ions */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    int ithree = 3;
+    double alpha = -get_vel_f(), zero = 0.0, *force_tmp;
+    
+    force_tmp = (double *)malloc(pct.num_loc_ions * 3 * sizeof(double));
+
+    dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
+            pct.localrhonlcc, &FP0_BASIS, &zero, force_tmp, &ithree); 
+    int ion1;
+    for(ion1 = 0; ion1 <pct.num_loc_ions; ion1++)
     {
+        ion = pct.loc_ions_list[ion1];
+        force_nlcc[ion *3 + 0] = force_tmp[ion1 *3 + 0];
+        force_nlcc[ion *3 + 1] = force_tmp[ion1 *3 + 1];
+        force_nlcc[ion *3 + 2] = force_tmp[ion1 *3 + 2];
 
-        /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+    }
+    
 
-        /* Get species type */
-        sp = &ct.sp[iptr->species];
-
-        if (sp->nlccflag)
-        {
-
-            dimx =  sp->lradius/(hxxgrid*xside);
-            dimy =  sp->lradius/(hyygrid*yside);
-            dimz =  sp->lradius/(hzzgrid*zside);
-
-            dimx = dimx * 2 + 1;
-            dimy = dimy * 2 + 1;
-            dimz = dimz * 2 + 1;
-
-
-            xstart = iptr->xtal[0] / hxxgrid - dimx/2;
-            xend = xstart + dimx;
-            ystart = iptr->xtal[1] / hyygrid - dimy/2;
-            yend = ystart + dimy;
-            zstart = iptr->xtal[2] / hzzgrid - dimz/2;
-            zend = zstart + dimz;
-
-            sumx = sumy = sumz = 0.0;
-            for (ix = xstart; ix < xend; ix++)
-            {
-                // fold the grid into the unit cell
-                ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
-                if(ixx >= ilow && ixx < ihi)
-                {
-
-                    for (iy = ystart; iy < yend; iy++)
-                    {
-                        // fold the grid into the unit cell
-                        iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
-                        if(iyy >= jlow && iyy < jhi)
-                        {
-                            for (iz = zstart; iz < zend; iz++)
-                            {
-                                // fold the grid into the unit cell
-                                izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
-                                if(izz >= klow && izz < khi)
-                                {
-
-                                    idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
-                                    x[0] = ix * hxxgrid - iptr->xtal[0];
-                                    x[1] = iy * hyygrid - iptr->xtal[1];
-                                    x[2] = iz * hzzgrid - iptr->xtal[2];
-                                    r = metric (x);
-                                    rho_at_r = AtomicInterpolate (&sp->rhocorelig[0], r);
-                                    sumx +=  rho_at_r * gx[idx]; 
-                                    sumy +=  rho_at_r * gy[idx]; 
-                                    sumz +=  rho_at_r * gz[idx]; 
-
-
-                                }   /* end if */
-                            }       /* end for */
-                        }           /* end for */
-                    }               /* end for */
-                }                   /* end if */
-            }
-
-
-            force_nlcc[ion * 3 + 0] = -sumx * get_vel_f();
-            force_nlcc[ion * 3 + 1] = -sumy * get_vel_f();
-            force_nlcc[ion * 3 + 2] = -sumz * get_vel_f();
-
-
-        }                       /* end if */
-
-
-    }                           /* end for */
-
+    free(force_tmp);
     free(gx);
-    free(gy);
-    free(gz);
 
 }                               /* end nlccforce */
 
