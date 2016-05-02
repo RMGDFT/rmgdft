@@ -38,20 +38,24 @@
 #include "Kpoint.h"
 #include <complex>
 #include "../Headers/prototypes.h"
+#include "RmgParallelFft.h"
 
 
-void GetAugRho(double *augrho)
+template void GetAugRho<double>(Kpoint<double> **, double *);
+template void GetAugRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
+
+template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double *augrho)
 {
 
     int max_product = (ct.max_nl + 1) * ct.max_nl / 2;
     double *qtpr;
 
-    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-
     double *product = new double[max_product];
+    KpointType *sint = new KpointType[2 * ct.max_nl];
 
-    // Zero out augrho
-    for(int idx = 0;idx < FP0_BASIS;idx++) augrho[idx] = 0.0;
+    int pbasis = Kpts[0]->G->get_P0_BASIS(Kpts[0]->G->default_FG_RATIO);
+    for(int idx = 0;idx < pbasis;idx++)
+        augrho[idx] = 0.0;
 
 
     if(!ct.norm_conserving_pp) {
@@ -73,6 +77,42 @@ void GetAugRho(double *augrho)
 
                 for (int i=0; i < max_product; i++)
                     product[i] = 0.0;
+
+                for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+                {
+
+                    //STATE *sp = ct.kp[kpt].kstate;
+                    /* Loop over states and accumulate charge */
+                    for (int istate = 0; istate < ct.num_states; istate++)
+                    {
+                        double t1 = Kpts[kpt]->Kstates[istate].occupation[0] * ct.kp[kpt].kweight;
+
+                        for (int i = 0; i < ct.max_nl; i++)
+                        {
+                            sint[i] = Kpts[kpt]->newsint_local[istate*pct.num_nonloc_ions*ct.max_nl + ion * ct.max_nl + i];
+                        }               /*end for i */
+
+                        int idx = 0;
+                        for (int i = 0; i < nh; i++)
+                        {
+                            for (int j = i; j < nh; j++)
+                            {
+
+                                if(i == j) {
+
+                                        product[idx] += t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
+
+                                }
+                                else {
+
+                                        product[idx] += 2.0 * t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
+
+                                }
+                                idx++;
+                            }           /*end for j */
+                        }               /*end for i */
+                    }                   /*end for istate */
+                }                       /*end for kpt */
 
 
                 int idx = 0;
@@ -96,8 +136,10 @@ void GetAugRho(double *augrho)
 
     }
 
-    // Do I need to do this?
     symmetrize_rho (augrho);
 
+
+
+    delete [] sint;
     delete [] product;
 }

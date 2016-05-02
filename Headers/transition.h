@@ -70,7 +70,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
 
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho);
-void GetAugRho(double *augrho);
+template <typename OrbitalType> void GetAugRho(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
