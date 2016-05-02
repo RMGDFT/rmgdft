@@ -48,10 +48,10 @@
  * that comes from eigenvalues*/
 #define VERBOSE 0
 
-template void Nlforce<double> (double *, Kpoint<double> **Kptr);
-template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<double>> **Kptr);
+template void Nlforce<double> (double *, Kpoint<double> **Kptr, double *force_nl);
+template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<double>> **Kptr, double *force_nl);
 
-template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType> **Kptr)
+template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType> **Kptr, double *force_nl)
 {
     int ion, isp, index, gion, nion;
     int nh, size, size1;
@@ -94,11 +94,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     gy = new OrbitalType[FP0_BASIS];
     gz = new OrbitalType[FP0_BASIS];
     RmgTimer *RT1;
-#if VERBOSE
-    double *old_force, sum1x, sum1y, sum1z, sum2x, sum2y, sum2z;
-    old_force = new double[ 3 * ct.num_ions];
-#endif
-
 
     size1 = ct.num_kpts * ct.num_states * ct.num_ions * ct.max_nl;
     fpt0 = ct.fpt[0];
@@ -153,7 +148,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
                 Kptr[kpt]->sint_derx[i] *= -1.0;
                 Kptr[kpt]->sint_dery[i] *= -1.0;
                 Kptr[kpt]->sint_derz[i] *= -1.0;
-            if(pct.gridpe == 0) printf("\n %d %e  aaa", i, Kptr[kpt]->sint_derx[i] );
             }
 
         }
@@ -166,8 +160,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
             Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derx, Kptr[kpt]->nl_weight_derx);
             Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_dery, Kptr[kpt]->nl_weight_dery);
             Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derz, Kptr[kpt]->nl_weight_derz);
-            for(int i = 0; i < pct.num_nonloc_ions * ct.num_states * ct.max_nl; i++)
-                if(pct.gridpe == 0) printf("\n %d %e  aaa", i, Kptr[kpt]->sint_derx[i] );
         }
     }
     delete RT1;
@@ -201,32 +193,15 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     delete [] gz;
 
 
-
-    RT1 = new RmgTimer("Force: non-local: global sums");
-    size1 = 3 * num_ions;
-    global_sums (qforce, &size1, pct.img_comm);
-    delete RT1;
-
-
-    /*Add force calculated in nlforce1_par_Q */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for(int i = 0; i < ct.num_ions * 3; i++) 
     {
-        iptr = &ct.ions[ion];
-
-        index = 3 * (ion);
-#if VERBOSE  
-        if (pct.imgpe == 0) {
-            printf ("\n Ion %d QForce  %10.7f  %10.7f  %10.7f", ion, get_vel_f() * qforce[index],
-                    get_vel_f() * qforce[index + 1],get_vel_f() * qforce[index + 2]);
-        }
-#endif
-
-
-
-        iptr->force[fpt0][0] += get_vel_f() * qforce[index];
-        iptr->force[fpt0][1] += get_vel_f() * qforce[index + 1];
-        iptr->force[fpt0][2] += get_vel_f() * qforce[index + 2];
+        qforce[i] *= get_vel_f();
     }
+
+
+
+
+
 
 
     /*Loop over ions again */
@@ -267,89 +242,22 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     }                           /*end for(ion=0; ion<num_ions; ion++) */
 
-    size1 = 3 * num_ions;
-    RT1 = new RmgTimer("Force: non-local: global sums");
-    global_sums (tmp_force_gamma, &size1, pct.img_comm);
-    global_sums (tmp_force_omega, &size1, pct.img_comm);
-    delete RT1;
 
-    for (ion = 0; ion < ct.num_ions; ion++)
+    
+    for(int i = 0; i < ct.num_ions * 3; i++) 
     {
-        iptr = &ct.ions[ion];
-
-        index = 3 * (ion);
-        iptr->force[fpt0][0] += tmp_force_gamma[index];
-        iptr->force[fpt0][1] += tmp_force_gamma[index + 1];
-        iptr->force[fpt0][2] += tmp_force_gamma[index + 2];
+        force_nl[i] += qforce[i];
+        force_nl[i] += tmp_force_gamma[i];
+        force_nl[i] += tmp_force_omega[i];
     }
 
 
-
-#if VERBOSE
-    if (pct.imgpe == 0)
-    {
-        printf ("\n\n True Non-local forces:");
-
-        for (ion = 0; ion < ct.num_ions; ion++)
-        {
-
-            iptr = &ct.ions[ion];
-            printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
-                    ion,
-                    tmp_force_gamma[3 * ion],
-                    tmp_force_gamma[3 * ion+1],
-                    tmp_force_gamma[3 * ion+2]);
-
-            sum1x += iptr->force[fpt0][0] - old_force[3 * ion];
-            sum1y += iptr->force[fpt0][1] - old_force[3 * ion + 1];
-            sum1z += iptr->force[fpt0][2] - old_force[3 * ion + 2];
-        }
-        printf ("\n True NL sum in x, y and z directions: %e %e %e", sum1x, sum1y, sum1z);
-    }
-
+#if VERBOSE  
+    output_force(qforce, "Non-local forces: QForce");
+    output_force(tmp_force_gamma, "Non-local forces: der_gamma term");
+    output_force(tmp_force_omega, "Non-local forces: der_omega term");
 #endif
 
-
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        iptr = &ct.ions[ion];
-
-        index = 3 * (ion);
-
-#if VERBOSE
-        old_force[index] = iptr->force[fpt0][0];
-        old_force[index + 1] = iptr->force[fpt0][1];
-        old_force[index + 2] = iptr->force[fpt0][2];
-#endif
-
-        iptr->force[fpt0][0] += tmp_force_omega[index];
-        iptr->force[fpt0][1] += tmp_force_omega[index + 1];
-        iptr->force[fpt0][2] += tmp_force_omega[index + 2];
-    }
-
-
-#if VERBOSE
-    if (pct.imgpe == 0)
-    {
-        printf ("\n\n Eigenvalue force:");
-
-        for (ion = 0; ion < ct.num_ions; ion++)
-        {
-
-            iptr = &ct.ions[ion];
-            printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
-                    ion,
-                    iptr->force[fpt0][0] - old_force[3 * ion],
-                    iptr->force[fpt0][1] - old_force[3 * ion + 1],
-                    iptr->force[fpt0][2] - old_force[3 * ion + 2]);
-
-            sum2x += iptr->force[fpt0][0] - old_force[3 * ion];
-            sum2y += iptr->force[fpt0][1] - old_force[3 * ion + 1];
-            sum2z += iptr->force[fpt0][2] - old_force[3 * ion + 2];
-        }
-        printf ("\n Eigenvalue force sum in x, y and z directions: %e %e %e", sum2x, sum2y, sum2z);
-    }
-#endif
 
     delete[] par_gamma;
     delete[] gamma;
@@ -357,9 +265,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     delete[] tmp_force_omega;
     delete[] qforce;
 
-#if VERBOSE
-    delete[] old_force;
-#endif
 
 }
 

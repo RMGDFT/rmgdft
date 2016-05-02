@@ -1,6 +1,6 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
+ ******************************************************************************/
 
 /****f* QMD-MGDFT/nlccforce.c *****
  * NAME
@@ -45,7 +45,7 @@
 
 
 
-void nlccforce (double * rho, double * vxc)
+void nlccforce (double * rho, double * vxc, double *force_nlcc)
 {
 
     double sumx, sumy, sumz;
@@ -93,9 +93,8 @@ void nlccforce (double * rho, double * vxc)
     khi = klow + FPZ0_GRID;
 
 
-    double *force_nlcc, *gx, *gy, *gz;
+    double *gx, *gy, *gz;
     double rho_at_r;
-    force_nlcc = (double *)malloc(ct.num_ions *3 * sizeof(double));
     gx = (double *)malloc(FP0_BASIS * sizeof(double));
     gy = (double *)malloc(FP0_BASIS * sizeof(double));
     gz = (double *)malloc(FP0_BASIS * sizeof(double));
@@ -159,7 +158,7 @@ void nlccforce (double * rho, double * vxc)
                                     x[2] = iz * hzzgrid - iptr->xtal[2];
                                     r = metric (x);
                                     rho_at_r = AtomicInterpolate (&sp->rhocorelig[0], r);
-                                        sumx +=  rho_at_r * gx[idx]; 
+                                    sumx +=  rho_at_r * gx[idx]; 
                                     sumy +=  rho_at_r * gy[idx]; 
                                     sumz +=  rho_at_r * gz[idx]; 
 
@@ -182,24 +181,6 @@ void nlccforce (double * rho, double * vxc)
 
     }                           /* end for */
 
-    idx = 3* ion;
-    global_sums (force_nlcc, &idx, pct.grid_comm);
-    double fac_spin = 1.0/(1.0 + ct.spin_flag);
-    /* factor 0.5 is because when calculating exchange correlation
-       half of nonlinear core corection charge is added to spin up and down density */
-
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-    //    printf("\n force_nlcc  %d %e %e %e", ion, force_nlcc[ion*3], force_nlcc[ion*3+1], force_nlcc[ion*3+2]);
-
-        /* Generate ion pointer */
-        iptr = &ct.ions[ion];
-        iptr->force[ct.fpt[0]][0] += force_nlcc[ion*3 + 0] * fac_spin;
-        iptr->force[ct.fpt[0]][1] += force_nlcc[ion*3 + 1] * fac_spin;
-        iptr->force[ct.fpt[0]][2] += force_nlcc[ion*3 + 2] * fac_spin;
-    }
-
-    free(force_nlcc);
     free(gx);
     free(gy);
     free(gz);

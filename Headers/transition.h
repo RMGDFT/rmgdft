@@ -204,7 +204,7 @@ template <typename OrbitalType>
     void Force (double * rho, double * rho_oppo, double * rhoc, double * vh,
         double * vxc, double * vnuc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> 
-    void Nlforce (double * , Kpoint<OrbitalType> **Kptr);
+    void Nlforce (double * , Kpoint<OrbitalType> **Kptr, double *force);
 
 
 template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, double * newsintR_x, double * newsintR_y,
@@ -246,6 +246,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap);
 void FindPhase (int nldim, double * nlcdrs, double * &phase_sin, double* &phase_cos);
 void VhPfft(double *rho, double *rhoc, double *vh);
 void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in, double *vh_out, int max_iter, bool reset);
+void output_force(double *force, char *desc);
 
 
 #endif

@@ -148,7 +148,7 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
     }
 
-#if 0 
+#if 1 
 //  can be used to print out timing for each proce to look at the load balance.
     for(int rank = 0; rank < 8; rank++)
     {

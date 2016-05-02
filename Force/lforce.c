@@ -13,7 +13,7 @@
 
 
 
-void lforce (double * rho, double * vh)
+void lforce (double * rho, double * vh, double *force)
 {
 
     int ix, iy, iz, ixx, iyy, izz;
@@ -149,14 +149,11 @@ void lforce (double * rho, double * vh)
                 }
             }
 
-
-
-
         }                       /* end for */
 
-        iptr->force[ct.fpt[0]][0] -= get_vel_f() * real_sum_all (fx, pct.grid_comm);
-        iptr->force[ct.fpt[0]][1] -= get_vel_f() * real_sum_all (fy, pct.grid_comm);
-        iptr->force[ct.fpt[0]][2] -= get_vel_f() * real_sum_all (fz, pct.grid_comm);
+        force[ion * 3 + 0] = -get_vel_f() * fx;
+        force[ion * 3 + 1] = -get_vel_f() * fy;
+        force[ion * 3 + 2] = -get_vel_f() * fz;
 
     }                           /* end for */
 

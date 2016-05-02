@@ -39,7 +39,7 @@
 #include <math.h>
 
 
-void iiforce (void)
+void iiforce (double *force)
 {
 
     int i, j;
@@ -52,12 +52,8 @@ void iiforce (void)
     n1 = 2.0 / sqrt (PI);
 
     /* Loop over ions and get the ion-ion component of the forces */
-    for (i = 0; i < ct.num_ions; i++)
+    for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
     {
-
-        tx = 0.0;
-        ty = 0.0;
-        tz = 0.0;
 
         /* Get ion pointer */
         iptr1 = &ct.ions[i];
@@ -96,13 +92,9 @@ void iiforce (void)
 
                 to_cartesian (xtal_r, crd_r);
 
-                iptr1->force[ct.fpt[0]][0] += crd_r[0] * s1 * (s2 + s3);
-                iptr1->force[ct.fpt[0]][1] += crd_r[1] * s1 * (s2 + s3);
-                iptr1->force[ct.fpt[0]][2] += crd_r[2] * s1 * (s2 + s3);
-
-                tx += crd_r[0] * s1 * (s2 + s3);
-                ty += crd_r[1] * s1 * (s2 + s3);
-                tz += crd_r[2] * s1 * (s2 + s3);
+                force[i*3 + 0] += crd_r[0] * s1 * (s2 + s3);
+                force[i*3 + 1] += crd_r[1] * s1 * (s2 + s3);
+                force[i*3 + 2] += crd_r[2] * s1 * (s2 + s3);
 
 
             }                   /* end if */

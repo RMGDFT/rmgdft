@@ -384,8 +384,8 @@ double get_QnmL (int idx, int ltot, double r, SPECIES *sp);
 void force (double *rho, double *rho_oppo, double *rhoc, double *vh, double *vxc, double *vnuc);
 
 
-void iiforce (void);
-void lforce (double *rho, double *vh);
+void iiforce (double *force);
+void lforce (double *rho, double *vh, double *force);
 void nlforce (double *veff);
 void get_gamma (double * gammaR, int ion, int nh);
 void partial_gamma (int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
@@ -404,7 +404,7 @@ void qval_R (int ih, int jh, double r, double *x, double *qlig, double *drqlig,
 void ylmr2_x (double *r, double *ylm_x);
 void ylmr2_y (double *r, double *ylm_y);
 void ylmr2_z (double *r, double *ylm_z);
-void nlccforce (double *rho, double *vxc);
+void nlccforce (double *rho, double *vxc, double *force);
 double get_ve_nl (STATE *sta, int istate);
 void pack_rho_ctof (double *rhoc, double *rhof);
 void bspline_interp_full (double *rho, double *rho_f);

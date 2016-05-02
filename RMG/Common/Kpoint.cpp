@@ -220,7 +220,6 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     if (Verify ("kohn_sham_solver", "davidson", ControlMap)) alloc_states = std::max(alloc_states, 3*ct.run_states);
     if (Verify ("force_derivate_type", "wavefunction", ControlMap)) 
     {
-        printf("\n force_de ");
         alloc_states = std::max(alloc_states, 4*ct.run_states);
     }
     ct.max_states = alloc_states;
