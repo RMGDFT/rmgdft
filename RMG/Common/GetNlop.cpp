@@ -335,9 +335,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     if(ct.is_gamma) factor = 1; 
     pct.newsintR_local = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
     pct.oldsintR_local = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
-    pct.sint_derx = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
-    pct.sint_dery = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
-    pct.sint_derz = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
+    pct.sint_derx = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
+    pct.sint_dery = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
+    pct.sint_derz = new double[factor * ct.num_kpts * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
 
     KpointType *tsintnew_ptr = (KpointType *)pct.newsintR_local;
     KpointType *tsintold_ptr = (KpointType *)pct.oldsintR_local;
@@ -355,9 +355,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
         tsintnew_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
         tsintold_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
-        sint_derx_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
-        sint_dery_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
-        sint_derz_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
+        sint_derx_ptr += pct.num_nonloc_ions * ct.num_states * ct.max_nl;
+        sint_dery_ptr += pct.num_nonloc_ions * ct.num_states * ct.max_nl;
+        sint_derz_ptr += pct.num_nonloc_ions * ct.num_states * ct.max_nl;
     }
     
 

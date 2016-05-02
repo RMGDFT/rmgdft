@@ -211,6 +211,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL, kohn_sham_solver,
                      "Kohn-Sham solver.\n", 
                      "kohn_sham_solver must be multigrid or davidson. Resetting to multigrid.\n");
+    If.RegisterInputKey("force_derivate_type", NULL, &lc.force_derivate_type, "wavefunction",
+                     CHECK_AND_FIX, OPTIONAL, force_derivate_type,
+                     "force derivate.\n", 
+                     "force derivate either on wavefunction or projector.\n");
 
     If.RegisterInputKey("poisson_solver", NULL, &lc.poisson_solver, "multigrid",
                      CHECK_AND_FIX, OPTIONAL, poisson_solver,

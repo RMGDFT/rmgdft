@@ -61,9 +61,38 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     int num_ions;
     fftw_plan p2;
     std::complex<double> *in, *out;
-    double *newsintR_x, *newsintR_y, *newsintR_z, *qforce;
-    double *newsintI_x, *newsintI_y, *newsintI_z, *tmp_force_gamma, *tmp_force_omega;
+    double  *qforce;
+    double *tmp_force_gamma, *tmp_force_omega;
     int fpt0;
+
+    OrbitalType *gx, *gy, *gz;
+    OrbitalType *psi, *psi_x, *psi_y, *psi_z;
+    double hxxgrid, hyygrid, hzzgrid;
+    double hxgrid, hygrid, hzgrid;
+
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
+    int PX0_GRID, PY0_GRID, PZ0_GRID, P0_BASIS;
+
+    hxxgrid = get_hxxgrid();
+    hyygrid = get_hyygrid();
+    hzzgrid = get_hzzgrid();
+    hxgrid = get_hxgrid();
+    hygrid = get_hygrid();
+    hzgrid = get_hzgrid();
+
+    FPX0_GRID = get_FPX0_GRID();
+    FPY0_GRID = get_FPY0_GRID();
+    FPZ0_GRID = get_FPZ0_GRID();
+    PX0_GRID = get_PX0_GRID();
+    PY0_GRID = get_PY0_GRID();
+    PZ0_GRID = get_PZ0_GRID();
+    FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
+
+
+
+    gx = new OrbitalType[FP0_BASIS];
+    gy = new OrbitalType[FP0_BASIS];
+    gz = new OrbitalType[FP0_BASIS];
     RmgTimer *RT1;
 #if VERBOSE
     double *old_force, sum1x, sum1y, sum1z, sum2x, sum2y, sum2z;
@@ -100,38 +129,52 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
     RT1 = new RmgTimer("Force: non-local: betaxpsi");
-    for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+
+    if (ct.force_derivate_type == 0)
     {
-        Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derx, Kptr[kpt]->nl_weight_derx);
-        Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_dery, Kptr[kpt]->nl_weight_dery);
-        Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derz, Kptr[kpt]->nl_weight_derz);
+        for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+        {
+            for(int st = 0; st < ct.num_states; st++)
+            {
+                psi = Kptr[kpt]->Kstates[st].psi;
+                psi_x = Kptr[kpt]->Kstates[st + ct.num_states].psi;
+                psi_y = Kptr[kpt]->Kstates[st + 2*ct.num_states].psi;
+                psi_z = Kptr[kpt]->Kstates[st + 3*ct.num_states].psi;
+                CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, 6);
+            }
+
+
+            Betaxpsi(Kptr[kpt], Kptr[kpt]->nstates, Kptr[kpt]->nstates, Kptr[kpt]->sint_derx, Kptr[kpt]->nl_weight);
+            Betaxpsi(Kptr[kpt], 2*Kptr[kpt]->nstates, Kptr[kpt]->nstates, Kptr[kpt]->sint_dery, Kptr[kpt]->nl_weight);
+            Betaxpsi(Kptr[kpt], 3*Kptr[kpt]->nstates, Kptr[kpt]->nstates, Kptr[kpt]->sint_derz, Kptr[kpt]->nl_weight);
+
+            for(int i = 0; i < pct.num_nonloc_ions * ct.num_states * ct.max_nl; i++)
+            {
+                Kptr[kpt]->sint_derx[i] *= -1.0;
+                Kptr[kpt]->sint_dery[i] *= -1.0;
+                Kptr[kpt]->sint_derz[i] *= -1.0;
+            if(pct.gridpe == 0) printf("\n %d %e  aaa", i, Kptr[kpt]->sint_derx[i] );
+            }
+
+        }
+    }
+    else
+    {
+
+        for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+        {
+            Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derx, Kptr[kpt]->nl_weight_derx);
+            Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_dery, Kptr[kpt]->nl_weight_dery);
+            Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derz, Kptr[kpt]->nl_weight_derz);
+            for(int i = 0; i < pct.num_nonloc_ions * ct.num_states * ct.max_nl; i++)
+                if(pct.gridpe == 0) printf("\n %d %e  aaa", i, Kptr[kpt]->sint_derx[i] );
+        }
     }
     delete RT1;
 
-    /*Loop over ions to setup newsintR_*, this loop is done separately to 
-     * insure proper paralelization*/
-    double *gx, *gy, *gz;
-    double hxxgrid, hyygrid, hzzgrid;
-
-    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
-
-    hxxgrid = get_hxxgrid();
-    hyygrid = get_hyygrid();
-    hzzgrid = get_hzzgrid();
-
-    FPX0_GRID = get_FPX0_GRID();
-    FPY0_GRID = get_FPY0_GRID();
-    FPZ0_GRID = get_FPZ0_GRID();
-    FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
-
-
-
-    gx = new double[FP0_BASIS];
-    gy = new double[FP0_BASIS];
-    gz = new double[FP0_BASIS];
 
     RT1 = new RmgTimer("Force: non-local: veff grad");
-    CPP_app_grad_driver (&Rmg_L, Rmg_T, veff, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid, 6);
+    CPP_app_grad_driver (&Rmg_L, Rmg_T, veff, (double *)gx, (double *)gy, (double *)gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid, 6);
     delete RT1;
 
 
@@ -139,7 +182,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     {
         /*Actual index of the ion under consideration*/
         gion = pct.nonloc_ions_list[ion];
-        
+
         iptr = &ct.ions[gion];
 
         nh = ct.sp[iptr->species].nh;
@@ -148,7 +191,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         GetGamma (gamma, ion, nh, Kptr);
         delete RT1;
         RT1 = new RmgTimer("Force: non-local: nlforce_par_Q");
-        nlforce_par_Q (gx, gy, gz, gamma, gion, iptr, nh, &qforce[3 * gion]);
+        nlforce_par_Q ((double *)gx, (double *)gy, (double *)gz, gamma, gion, iptr, nh, &qforce[3 * gion]);
         delete RT1;
 
     }                           /*end for(ion=0; ion<ions_max; ion++) */
@@ -163,8 +206,8 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     size1 = 3 * num_ions;
     global_sums (qforce, &size1, pct.img_comm);
     delete RT1;
-        
-    
+
+
     /*Add force calculated in nlforce1_par_Q */
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -172,13 +215,13 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
         index = 3 * (ion);
 #if VERBOSE  
-    if (pct.imgpe == 0) {
-        printf ("\n Ion %d QForce  %10.7f  %10.7f  %10.7f", ion, get_vel_f() * qforce[index],
-            get_vel_f() * qforce[index + 1],get_vel_f() * qforce[index + 2]);
-    }
+        if (pct.imgpe == 0) {
+            printf ("\n Ion %d QForce  %10.7f  %10.7f  %10.7f", ion, get_vel_f() * qforce[index],
+                    get_vel_f() * qforce[index + 1],get_vel_f() * qforce[index + 2]);
+        }
 #endif
-                    
-                    
+
+
 
         iptr->force[fpt0][0] += get_vel_f() * qforce[index];
         iptr->force[fpt0][1] += get_vel_f() * qforce[index + 1];
@@ -313,8 +356,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     delete[] tmp_force_gamma;
     delete[] tmp_force_omega;
     delete[] qforce;
-    delete[] newsintR_x;
-    delete[] newsintI_x;
 
 #if VERBOSE
     delete[] old_force;

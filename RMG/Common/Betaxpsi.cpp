@@ -197,7 +197,8 @@ void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointTyp
 
 
     int idx= 0 ;
-    KpointType *tsint = &sint_local[first_state*pct.num_nonloc_ions*ct.max_nl];
+//    KpointType *tsint = &sint_local[first_state*pct.num_nonloc_ions*ct.max_nl];
+    KpointType *tsint = sint_local;
     for(int st = 0;st < nstates;st++) {
         for(int ion = 0;ion < pct.num_nonloc_ions;ion++) {
             for(int ip = 0;ip < ct.max_nl;ip++) {

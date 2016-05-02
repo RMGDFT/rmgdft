@@ -83,6 +83,10 @@ static std::unordered_map<std::string, int> kohn_sham_solver = {
         {"multigrid", MULTIGRID_SOLVER},
         {"davidson", DAVIDSON_SOLVER}};
 
+static std::unordered_map<std::string, int> force_derivate_type = {
+        {"wavefunction", 0},
+        {"projector", 1}};
+
 static std::unordered_map<std::string, int> poisson_solver = {
         {"multigrid", MULTIGRID_SOLVER},
         {"pfft", POISSON_PFFT_SOLVER}};

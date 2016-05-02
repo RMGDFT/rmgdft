@@ -389,6 +389,7 @@ typedef struct
 
     /* Kohn sham solver type */
     int kohn_sham_solver;
+    int force_derivate_type;
 
     /* Diagonalization flag and period */
     bool initdiag;

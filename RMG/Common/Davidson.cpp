@@ -71,6 +71,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
+    OrbitalType *newsint;
     if(ct.scf_steps > 0) {
         occupied_tol = std::min(occupied_tol, 0.1*ct.scf_accuracy / std::max(1.0, (double)ct.nel));
     }
@@ -240,7 +241,8 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
         // Apply Hamiltonian to the new vectors
         RT1 = new RmgTimer("Davidson: Betaxpsi");
-        Betaxpsi (kptr, nbase, notconv, kptr->newsint_local, kptr->nl_weight);
+        newsint = kptr->newsint_local + nbase*pct.num_nonloc_ions*ct.max_nl;
+        Betaxpsi (kptr, nbase, notconv, newsint, kptr->nl_weight);
         delete RT1;
         kptr->mix_betaxpsi(0);
 
