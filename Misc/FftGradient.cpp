@@ -50,7 +50,6 @@ void FftGradientFine(double *x, double *fgx, double *fgy, double *fgz)
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
 {
 
-    pfft_plan forw, inv;
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double scale = 1.0 / (double)pwaves.global_basis;
     int isize = pwaves.pbasis;
@@ -60,41 +59,11 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
     std::complex<double> *tx = new std::complex<double>[isize];
     std::complex<double> *cgx = new std::complex<double>[isize];
 
-    if(&pwaves == coarse_pwaves) {
-        forw = forward_coarse;
-        inv = backward_coarse;
-    }
-    else if(&pwaves == fine_pwaves) {
-        forw = forward_fine;
-        inv = backward_fine;
-    }
-    else {
-
-        ptrdiff_t grid[3];
-        grid[0] = pwaves.global_dimx;
-        grid[1] = pwaves.global_dimy;
-        grid[2] = pwaves.global_dimz;
-
-        forw = pfft_plan_dft_3d(grid,
-                              (double (*)[2])tx,
-                              (double (*)[2])tx,
-                              pct.pfft_comm,
-                              PFFT_FORWARD,
-                              PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-
-        inv = pfft_plan_dft_3d(grid,
-                              (double (*)[2])cgx,
-                              (double (*)[2])cgx,
-                              pct.pfft_comm,
-                              PFFT_BACKWARD,
-                              PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-    }
-
     for(int ix = 0;ix < isize;ix++) {
         tx[ix] = std::complex<double>(x[ix], 0.0);
     }
 
-    pfft_execute_dft(forw, (double (*)[2])tx, (double (*)[2])tx);
+    PfftForward(tx, tx, pwaves);
 
     for(int icar=0;icar < 3;icar++) {
 
@@ -110,7 +79,7 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
         }
 
         if(pct.gridpe == 0) cgx[0] = czero;
-        pfft_execute_dft(inv, (double (*)[2])cgx, (double (*)[2])cgx);
+        PfftInverse(cgx, cgx, pwaves);
 
         double *ts;
         if(icar == 0) ts = fgx;
@@ -118,11 +87,6 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
         if(icar == 2) ts = fgz;
 
         for(int ix=0;ix < isize;ix++) ts[ix] = scale * std::real(cgx[ix]);
-    }
-
-    if((&pwaves != coarse_pwaves) && (&pwaves != fine_pwaves)) {
-        pfft_destroy_plan(inv);
-        pfft_destroy_plan(forw);
     }
 
     delete [] cgx;
