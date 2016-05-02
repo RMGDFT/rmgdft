@@ -47,36 +47,31 @@ void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion,
 
     if (count)
     {
-        size = (nh * (nh + 1) / 2) * count;
+        size = (nh * (nh + 1)) / 2;
 
+        idx2 = 0;
+        for (n = 0; n < nh; n++)
+        {
+            for (m = n; m < nh; m++)
+            {
+                if (m != n) gamma[idx2] *= 2.0;
+                idx2++;
+            }
+        }
+
+        double one = 1.0, zero = 0.0, *tmp_arr;
+        int ione = 1;
+        tmp_arr = (double *)malloc(count * sizeof(double));
+
+        dgemm("N", "N", &count, &ione, &size, &one, Qnm, &count, gamma, &size, &zero, tmp_arr, &count); 
 
         for (icount = 0; icount < count; icount++)
         {
-            tmp = 0.0;
-
-            idx2 = 0;
-            for (n = 0; n < nh; n++)
-            {
-                for (m = n; m < nh; m++)
-                {
-                    idx1 = idx2 * count + icount;
-                    if (m == n)
-                    {
-                        tmp += Qnm[idx1] * gamma[idx2];
-                    }
-                    else
-                    {
-                        tmp += 2.0 * Qnm[idx1] * gamma[idx2];
-                    }
-
-                    ++idx2;
-                }
-            }
-            forces[0] -= gx[pidx[icount]] * tmp;
-            forces[1] -= gy[pidx[icount]] * tmp;
-            forces[2] -= gz[pidx[icount]] * tmp;
+            forces[0] -= gx[pidx[icount]] * tmp_arr[icount];
+            forces[1] -= gy[pidx[icount]] * tmp_arr[icount];
+            forces[2] -= gz[pidx[icount]] * tmp_arr[icount];
         }
-
+        free(tmp_arr);
     }
 
 
