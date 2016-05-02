@@ -73,6 +73,10 @@ public:
     struct remap_plan_3d *fwd_remap;
     struct remap_plan_3d *inv_remap;
 
+    // pfft plans to use with this PW object
+    pfft_plan *forward_plan;
+    pfft_plan *backward_plan;
+
     // Real space grid dimensions on this node
     int dimx;
     int dimy;

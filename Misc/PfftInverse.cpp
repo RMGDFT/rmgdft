@@ -32,30 +32,10 @@
 #include "RmgParallelFft.h"
 
 
-// This function performs a parallel forward FFT of a double array using the pfft library.
+// This function performs a parallel inverse FFT of a std::complex<double> array using the pfft library.
 // If the actual processor grid is not directly compatible with the pfft requirements
-// it handles the required data movement in order to perform the FFT.
-void PfftForward (double * in, std::complex<double> * out, Pw &pwaves)
-{
-
-  int size = std::max(pwaves.pbasis, pwaves.remap_local_size);
-  std::complex<double> *buf = new std::complex<double>[size];
-  for(int i = 0;i < pwaves.pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
-
-  if(pwaves.fwd_remap) remap_3d((double *)buf, (double *)buf, NULL, pwaves.fwd_remap);
-  pfft_execute_dft(*pwaves.forward_plan, (double (*)[2])buf, (double (*)[2])buf);
-  if(pwaves.inv_remap) remap_3d((double *)buf, (double *)buf, NULL, pwaves.inv_remap);
-
-  for(int i = 0;i < pwaves.pbasis;i++) out[i] = buf[i];
-
-  delete [] buf;
-}
-
-
-// This function performs a parallel forward FFT of a std::complex<double> array using the pfft library.
-// If the actual processor grid is not directly compatible with the pfft requirements
-// it handles the required data movement in order to perform the FFT.
-void PfftForward (std::complex<double> * in, std::complex<double> * out, Pw &pwaves)
+// it handles the required data movement in order to perform the FFT. No scaling is done.
+void PfftInverse (std::complex<double> * in, std::complex<double> * out, Pw &pwaves)
 {
 
   int size = std::max(pwaves.pbasis, pwaves.remap_local_size);
@@ -63,7 +43,7 @@ void PfftForward (std::complex<double> * in, std::complex<double> * out, Pw &pwa
   for(int i = 0;i < pwaves.pbasis;i++) buf[i] = in[i];
 
   if(pwaves.fwd_remap) remap_3d((double *)buf, (double *)buf, NULL, pwaves.fwd_remap);
-  pfft_execute_dft(*pwaves.forward_plan, (double (*)[2])buf, (double (*)[2])buf);
+  pfft_execute_dft(*pwaves.backward_plan, (double (*)[2])buf, (double (*)[2])buf);
   if(pwaves.inv_remap) remap_3d((double *)buf, (double *)buf, NULL, pwaves.inv_remap);
 
   for(int i = 0;i < pwaves.pbasis;i++) out[i] = buf[i];

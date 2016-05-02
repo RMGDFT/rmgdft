@@ -87,6 +87,7 @@ void FftInitPlans(void)
         if(pct.gridpe == 0) printf("Remapping coarse grids for parallel fft.\n");
         
         Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);    
+        // We only treat the double precision complex case
         coarse_pwaves->fwd_remap = remap_3d_create_plan(
                            pct.grid_comm,
                            pzoffset, pzoffset + dimz - 1,
@@ -95,7 +96,7 @@ void FftInitPlans(void)
                            coarse_i_start[2], coarse_i_start[2] + coarse_ni[2] - 1,
                            coarse_i_start[1], coarse_i_start[1] + coarse_ni[1] - 1,
                            coarse_i_start[0], coarse_i_start[0] + coarse_ni[0] - 1,
-                           2, 0, 1, 2);
+                           sizeof(std::complex<double>)/sizeof(double), 0, 1, 2);
 
         coarse_pwaves->inv_remap = remap_3d_create_plan(
                            pct.grid_comm,
@@ -105,7 +106,7 @@ void FftInitPlans(void)
                            pzoffset, pzoffset + dimz - 1,
                            pyoffset, pyoffset + dimy - 1,
                            pxoffset, pxoffset + dimx - 1,
-                           2, 0, 1, 2);
+                           sizeof(std::complex<double>)/sizeof(double), 0, 1, 2);
 
     }
 
@@ -133,6 +134,7 @@ void FftInitPlans(void)
         
         if(pct.gridpe == 0) printf("Remapping fine grids for parallel fft.\n");
         Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);    
+        // We only treat the double precision complex case
         fine_pwaves->fwd_remap = remap_3d_create_plan(
                            pct.grid_comm,
                            pzoffset, pzoffset + dimz - 1,
@@ -141,7 +143,7 @@ void FftInitPlans(void)
                            fine_i_start[2], fine_i_start[2] + fine_ni[2] - 1,
                            fine_i_start[1], fine_i_start[1] + fine_ni[1] - 1,
                            fine_i_start[0], fine_i_start[0] + fine_ni[0] - 1,
-                           2, 0, 1, 2);
+                           sizeof(std::complex<double>)/sizeof(double), 0, 1, 2);
 
         fine_pwaves->inv_remap = remap_3d_create_plan(
                            pct.grid_comm,
@@ -151,7 +153,7 @@ void FftInitPlans(void)
                            pzoffset, pzoffset + dimz - 1,
                            pyoffset, pyoffset + dimy - 1,
                            pxoffset, pxoffset + dimx - 1,
-                           2, 0, 1, 2);
+                           sizeof(std::complex<double>)/sizeof(double), 0, 1, 2);
 
     }
 
@@ -168,6 +170,7 @@ void FftInitPlans(void)
                           pct.pfft_comm,
                           PFFT_FORWARD,
                           PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+    coarse_pwaves->forward_plan = &forward_coarse;
 
     backward_coarse = pfft_plan_dft_3d(grid,
                           (double (*)[2])tx,
@@ -175,6 +178,8 @@ void FftInitPlans(void)
                           pct.pfft_comm,
                           PFFT_BACKWARD,
                           PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+    coarse_pwaves->backward_plan = &backward_coarse;
+
 
     grid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
     grid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
@@ -185,6 +190,7 @@ void FftInitPlans(void)
                           pct.pfft_comm,
                           PFFT_FORWARD,
                           PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+    fine_pwaves->forward_plan = &forward_fine;
 
     backward_fine = pfft_plan_dft_3d(grid,
                           (double (*)[2])tx,
@@ -192,6 +198,7 @@ void FftInitPlans(void)
                           pct.pfft_comm,
                           PFFT_BACKWARD,
                           PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+    fine_pwaves->backward_plan = &backward_fine;
 
     delete [] tx;
 

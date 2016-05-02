@@ -1,6 +1,7 @@
 add_library (Misc
 Pw.cpp
 PfftForward.cpp
+PfftInverse.cpp 
 GeneralDiag.cpp
 VhPfft.cpp
 Fft_Cbindings.cpp
