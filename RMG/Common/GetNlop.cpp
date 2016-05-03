@@ -604,6 +604,30 @@ static void reset_pct_arrays (int num_ions)
 #endif
     }
 
+    if (pct.weight_derx != NULL) {
+#if GPU_ENABLED
+        cudaFreeHost(pct.weight_derx);
+#else
+        delete [] pct.weight_derx;
+#endif
+    }
+
+    if (pct.weight_dery != NULL) {
+#if GPU_ENABLED
+        cudaFreeHost(pct.weight_dery);
+#else
+        delete [] pct.weight_dery;
+#endif
+    }
+
+    if (pct.weight_derz != NULL) {
+#if GPU_ENABLED
+        cudaFreeHost(pct.weight_derz);
+#else
+        delete [] pct.weight_derz;
+#endif
+    }
+
     if (pct.M_dnm != NULL) {
 #if GPU_ENABLED
         cudaFreeHost(pct.M_dnm);
