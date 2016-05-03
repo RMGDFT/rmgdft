@@ -688,7 +688,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("write_pdos", &lc.pdos_flag, false,
                         "Flag to write partial density of states.");
 
-    If.RegisterInputKey("mask_function_filtering", &lc.mask_function, false,
+    If.RegisterInputKey("mask_function_filtering", &lc.mask_function, true,
                         "Flag indicating whether or not to use mask functions for pseudopotential filtering.");
 
     If.RegisterInputKey("sort_wavefunctions", &lc.sortflag, false, 
@@ -776,7 +776,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "neb_spring_constant must be in the range (0.05, 3.0).\n");
 
-    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 1.0, 3.0, 1.75,
+    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 1.0, 3.0, 2.7,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "energy_cutoff_parameter must be in the range (1.0,3.0). Resetting to default value of 3.0.\n");
@@ -1033,6 +1033,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     lc.qcparm = lc.cparm / (double) lc.FG_RATIO;
     lc.betacparm = lc.cparm / (double) lc.nxfgrid;
     lc.cparm /= (double) lc.FG_RATIO;
+
 
     if (lc.iondt_max < lc.iondt)
         throw RmgFatalException() << "max_ionic_time_step " << lc.iondt_max << " has to be >= than ionic_time_step " << ct.iondt << "\n";

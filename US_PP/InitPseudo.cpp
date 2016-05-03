@@ -94,7 +94,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
     for (isp = 0; isp < ct.num_species; isp++)
     {
         SPECIES *sp = &ct.sp[isp];
-        sp->rc = ct.hmaxgrid;
+        //sp->rc = ct.hmaxgrid;
         if (pct.gridpe == 0 && write_flag)
         {
             snprintf (newname, MAX_PATH, "local_%s.xmgr",  sp->atomic_symbol);
@@ -151,7 +151,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
-        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.25, ct.cparm, sp->localig,
+        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.15, ct.cparm, sp->localig,
                            sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->drlocalig);
 
         /*Write local projector into a file if requested*/
@@ -171,7 +171,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts
-        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, 0.25, ct.cparm, sp->arho_lig,
+        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, 0.15, ct.cparm, sp->arho_lig,
                            sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, NULL);
 
 
@@ -198,7 +198,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, 0.25, ct.betacparm, &sp->betalig[ip][0],
+            A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, 0.15, ct.betacparm, &sp->betalig[ip][0],
             sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0]);
 
 
@@ -244,7 +244,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.25, ct.cparm, &sp->rhocorelig[0],
+            A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.15, ct.cparm, &sp->rhocorelig[0],
                            sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, NULL);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative

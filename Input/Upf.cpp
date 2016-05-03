@@ -468,18 +468,16 @@ void LoadUpf(SPECIES *sp)
     sp->description = new char[description.length() + 1]();
     std::strcpy(sp->description, description.c_str());
 
-    // Stuff not present in the UPF format that RMG requires. We need to find a consistent way of automatically
-    // setting these
-    sp->rc = fabs(2.0 * sp->zvalence / sqrt(PI) / sp->vloc0[0]);
-    sp->rc = 0.50;
-    sp->lradius = 9.0;
-    sp->nlradius = 5.0425;
-    sp->qradius = 4.0425;
-sp->nlradius = 6.0425;
-sp->qradius = 6.0425;
+    // Stuff not present in the UPF format that RMG requires. 
+    // We need to find a consistent way of automatically setting these.
+    sp->rc = 0.75*fabs(2.0 * sp->zvalence / sqrt(PI) / sp->vloc0[0]);
+sp->lradius = 5.2;
+sp->nlradius = 5.2;
+sp->qradius = 5.2;
     sp->lrcut = 7.5;
     sp->rwidth = 8.5; 
     sp->gwidth = 8.0;
+sp->gwidth = 30.0;
 //sp->gwidth = 7.0;
     sp->aradius = 9.0;
     sp->acut = 7.0;
@@ -487,7 +485,7 @@ sp->qradius = 6.0425;
     sp->arwidth = 25.0;
     for(int ip = 0;ip < sp->nbeta;ip++) {
         sp->nlrcut[sp->llbeta[ip]] = 4.8425;
-//        sp->nlrcut[sp->llbeta[ip]] = 4.5;
+        sp->nlrcut[sp->llbeta[ip]] = 4.5;
     }
 
     // Leftover initializations
