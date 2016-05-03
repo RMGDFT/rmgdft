@@ -21,7 +21,7 @@ void lforce (double * rho, double * vh, double *force)
     int ion, idx;
     int ilow, jlow, klow, ihi, jhi, khi;
     int dimx, dimy, dimz;
-    int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
+    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
@@ -45,6 +45,8 @@ void lforce (double * rho, double * vh, double *force)
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();
     FPZ0_GRID = get_FPZ0_GRID();
+    FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
+
     FPX_OFFSET = get_FPX_OFFSET();
     FPY_OFFSET = get_FPY_OFFSET();
     FPZ_OFFSET = get_FPZ_OFFSET();
@@ -60,108 +62,44 @@ void lforce (double * rho, double * vh, double *force)
     jhi = jlow + FPY0_GRID;
     khi = klow + FPZ0_GRID;
 
-    /* Loop over ions */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    double *gx, *gy, *gz;
+    gx = (double *)malloc(3*FP0_BASIS * sizeof(double));
+    gy = gx + FP0_BASIS;
+    gz = gx + 2*FP0_BASIS;
+
+    int ithree = 3;
+    double alpha = -get_vel_f(), zero = 0.0, mone = -1.0, *force_tmp;
+    force_tmp = (double *)malloc(pct.num_loc_ions * 3 * sizeof(double));
+
+
+    app_grad (vh, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
+
+    dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
+            pct.localrhoc, &FP0_BASIS, &zero, force_tmp, &ithree); 
+
+
+    app_grad (rho, gx, gy, gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid);
+
+    dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
+           pct.localpp, &FP0_BASIS, &mone, force_tmp, &ithree); 
+
+
+    int ion1;
+    for(ion1 = 0; ion1 <pct.num_loc_ions; ion1++)
     {
+        ion = pct.loc_ions_list[ion1];
+        
+        force[ion *3 + 0] = force_tmp[ion1 *3 + 0];
+        force[ion *3 + 1] = force_tmp[ion1 *3 + 1];
+        force[ion *3 + 2] = force_tmp[ion1 *3 + 2];
 
-        /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+    }
+    
 
-
-        /* Get species type */
-        sp = &ct.sp[iptr->species];
-
-
-        Zv = sp->zvalence;
-        rc = sp->rc;
-        rc2 = rc * rc;
-        rcnorm = rc * rc * rc * pow (PI, 1.5);
-        rcnorm = ONE / rcnorm;
-        rc2 = sp->rc * sp->rc;
-        norm1 = -Zv * rcnorm / rc2;
-
-
-        dimx =  sp->lradius/(hxxgrid*xside);
-        dimy =  sp->lradius/(hyygrid*yside);
-        dimz =  sp->lradius/(hzzgrid*zside);
-
-        dimx = dimx * 2 + 1;
-        dimy = dimy * 2 + 1;
-        dimz = dimz * 2 + 1;
-
-
-        xstart = iptr->xtal[0] / hxxgrid - dimx/2;
-        xend = xstart + dimx;
-        ystart = iptr->xtal[1] / hyygrid - dimy/2;
-        yend = ystart + dimy;
-        zstart = iptr->xtal[2] / hzzgrid - dimz/2;
-        zend = zstart + dimz;
-
-        fx = fy = fz = 0.0;
-
-        for (ix = xstart; ix < xend; ix++)
-        {
-            // fold the grid into the unit cell
-            ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
-            if(ixx >= ilow && ixx < ihi)
-            {
-
-                for (iy = ystart; iy < yend; iy++)
-                {
-                    // fold the grid into the unit cell
-                    iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
-                    if(iyy >= jlow && iyy < jhi)
-                    {
-                        for (iz = zstart; iz < zend; iz++)
-                        {
-                            // fold the grid into the unit cell
-                            izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
-                            if(izz >= klow && izz < khi)
-                            {
-
-                                idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
-                                x[0] = ix * hxxgrid - iptr->xtal[0];
-                                x[1] = iy * hyygrid - iptr->xtal[1];
-                                x[2] = iz * hzzgrid - iptr->xtal[2];
-                                r = metric (x);
-
-
-
-
-
-                                to_cartesian (x, bx);
-                                r = metric (x);
-
-                                t1 = 2.0 * norm1 * exp (-r * r / rc2);
-                                fx += bx[0] * t1 * vh[idx];
-                                fy += bx[1] * t1 * vh[idx];
-                                fz += bx[2] * t1 * vh[idx];
-
-                                t1 = AtomicInterpolate (&sp->drlocalig[0], r);
-                                fx += -t1 * bx[0] / (r+1.0e-10) * rho[idx];
-                                fy += -t1 * bx[1] / (r+1.0e-10) * rho[idx];
-                                fz += -t1 * bx[2] / (r+1.0e-10) * rho[idx];
-
-
-                            }
-                        }
-                    }
-                }
-            }
-
-        }                       /* end for */
-
-        force[ion * 3 + 0] = -get_vel_f() * fx;
-        force[ion * 3 + 1] = -get_vel_f() * fy;
-        force[ion * 3 + 2] = -get_vel_f() * fz;
-
-    }                           /* end for */
-
-
+    free(force_tmp);
+    free(gx);
 
 
 }                               /* end lforce */
 
 /******/
-
-

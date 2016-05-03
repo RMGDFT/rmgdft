@@ -126,7 +126,3 @@ void nlccforce (double * rho, double * vxc, double *force_nlcc)
 }                               /* end nlccforce */
 
 /******/
-
-
-
-
