@@ -77,11 +77,6 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
 
         /* Get species type */
         sp = &ct.sp[iptr->species];
-        Zv = sp->zvalence;
-        rc = sp->rc;
-        rc2 = rc * rc;
-        rcnorm = rc * rc * rc * pow (PI, 1.5);
-        rcnorm = 1.0 / rcnorm;
 
         dimx =  sp->lradius/(hxxgrid*xside);
         dimy =  sp->lradius/(hyygrid*yside);
