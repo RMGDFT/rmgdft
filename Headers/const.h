@@ -230,4 +230,8 @@
 #define LOW_PASS 0
 #define HIGH_PASS 1
 
+// Force types
+#define WAVEFUNCTION_DERIVATIVE 0
+#define PROJECTOR_DERIVATIVE 1
+
 #endif /* CONST_H_INCLUDED */

@@ -84,8 +84,8 @@ static std::unordered_map<std::string, int> kohn_sham_solver = {
         {"davidson", DAVIDSON_SOLVER}};
 
 static std::unordered_map<std::string, int> force_derivate_type = {
-        {"wavefunction", 0},
-        {"projector", 1}};
+        {"wavefunction", WAVEFUNCTION_DERIVATIVE},
+        {"projector", PROJECTOR_DERIVATIVE}};
 
 static std::unordered_map<std::string, int> poisson_solver = {
         {"multigrid", MULTIGRID_SOLVER},

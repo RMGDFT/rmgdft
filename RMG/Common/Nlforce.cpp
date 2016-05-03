@@ -125,7 +125,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     RT1 = new RmgTimer("Force: non-local: betaxpsi");
 
-    if (ct.force_derivate_type == 0)
+    if (ct.force_derivate_type == WAVEFUNCTION_DERIVATIVE)
     {
         for (int kpt = 0; kpt < ct.num_kpts; kpt++)
         {
