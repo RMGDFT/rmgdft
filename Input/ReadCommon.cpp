@@ -307,7 +307,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Method used to set the occupations of the electronic orbitals.\n", 
                      "occupations_type not supported. Terminating.\n");
 
-    If.RegisterInputKey("interpolation_type", NULL, &lc.interp_flag, "Cubic Polynomial",
+    If.RegisterInputKey("interpolation_type", NULL, &lc.interp_flag, "FFT",
                      CHECK_AND_TERMINATE, OPTIONAL, interpolation_type,
                      "Interpolation method for transferring data between the potential grid and the wavefunction grid.\n", 
                      "interpolation_type not supported. Terminating.\n");
@@ -776,10 +776,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "neb_spring_constant must be in the range (0.05, 3.0).\n");
 
-    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 1.0, 3.0, 2.7,
+    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 1.0, 4.0, 3.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "energy_cutoff_parameter must be in the range (1.0,3.0). Resetting to default value of 3.0.\n");
+                     "energy_cutoff_parameter must be in the range (1.0,4.0). Resetting to default value of 3.0.\n");
 
 
     std::string Occup, Occdown;
