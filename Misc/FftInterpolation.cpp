@@ -76,21 +76,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
   std::complex<double> *base_coarse = new std::complex<double>[pbasis_c];
   std::complex<double> *shifted_coarse = new std::complex<double>[pbasis_c];
   std::complex<double> *backshifted_coarse = new std::complex<double>[pbasis_c];
-  pfft_plan forw, inv;
 
-  forw = pfft_plan_dft_3d(n,
-                          (double (*)[2])base_coarse,
-                          (double (*)[2])base_coarse,
-                          pct.pfft_comm,
-                          PFFT_FORWARD,
-                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-
-  inv = pfft_plan_dft_3d(n,
-                          (double (*)[2])shifted_coarse,
-                          (double (*)[2])backshifted_coarse,
-                          pct.pfft_comm,
-                          PFFT_BACKWARD,
-                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
 
   // Get offset of first grid point on this processor into global grid
   int offset_x, offset_y, offset_z;
@@ -99,7 +85,8 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
 
   // Get the forward transform
   for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(coarse[ix], 0.0);
-  pfft_execute_dft(forw, (double (*)[2])base_coarse, (double (*)[2])base_coarse);
+  PfftForward(base_coarse, base_coarse, *coarse_pwaves);
+
 
   // Loop over phase shifts.
   for(int ix = 0;ix < ratio;ix++) {
@@ -137,7 +124,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
               }
 
               // Backtransform phase shifted coefficients
-              pfft_execute_dft(inv, (double (*)[2])shifted_coarse, (double (*)[2])backshifted_coarse);
+              PfftInverse(shifted_coarse, backshifted_coarse, *coarse_pwaves);
 
               // Pack interpolated values into the fine grid
               for(int ixx = 0;ixx < dimx_c;ixx++) {
@@ -157,10 +144,6 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
   }
 
 
-
-  pfft_destroy_plan(forw);
-  pfft_destroy_plan(inv);
- 
   delete [] backshifted_coarse;
   delete [] shifted_coarse;
   delete [] base_coarse;
