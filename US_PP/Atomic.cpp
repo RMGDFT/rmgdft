@@ -320,7 +320,7 @@ void Atomic::RftToLogGrid (
     for (int idx = 0; idx < gnum; idx++)
     {
 
-        work2[idx] = gcof[idx] * gcutoff (gvec[idx], gcut, width);
+        work2[idx] = gcof[idx] * Gcutoff (gvec[idx], gcut, width);
 
     }                           /* end for */
 

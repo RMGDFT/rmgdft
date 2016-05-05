@@ -14,7 +14,6 @@ init_weight_p.c
 ylmr2.c
 init_weight_s.c
 qval_R.c
-rft1.c
 init_derweight.c
 init_weight_d.c
 linint.c
@@ -27,7 +26,6 @@ ylmr2_z.c
 radiff.c
 init_weight.c
 ylm.c
-filter_potential.c
 init_derweight_d.c
 init_derweight_p.c
 get_QI.c
