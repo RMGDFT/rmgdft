@@ -141,7 +141,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                     }
 
                     A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, 0.25, ct.qcparm, qnmlig_tpr,
-                                        sp->rab, ll, sp->gwidth, sp->nlrcut[sp->llbeta[i]], sp->rwidth, drqnmlig_tpr);
+                                        sp->rab, ll, sp->gwidth, sp->nlrcut[sp->llbeta[i]], sp->rwidth, drqnmlig_tpr, sp->qdim);
 
                     /*Is this necessary ???*/
                     if (ll)

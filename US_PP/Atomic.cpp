@@ -28,7 +28,9 @@
 #include "GlobalSums.h"
 #include "RmgException.h"
 #include "Atomic.h"
-
+#include "BesselRoots.h"
+#include <boost/math/special_functions/math_fwd.hpp>
+#include <boost/math/special_functions/bessel.hpp>
 
 
 
@@ -682,6 +684,76 @@ double Atomic::Gcutoff (double g1, double gcut, double width)
 
 
 
+void Atomic::BesselToLogGrid (
+                   double cparm,        // IN:  filtering parameter
+                   double * f,          // IN:  function to be filtered defined on pseudopotential grid
+                   double * r,          // IN:  pseudopotential grid dimensioned r[rg_points], logarithmic
+                   double * ffil,       // OUT: filtered function defined on RMG standard log grid
+                   double *rab,         // IN:  radial volume element from the pseudopotential file
+                   int rg_points,       // IN:  number of points in pseudopotential radial grid
+                   int lval,            // IN:  momentum l (0=s, 1=p, 2=d)
+                   double rcut,         // IN:  f is defined on [0,rcut] with f(r>=rcut) = 0.0
+                   int iradius)         // IN: radius in grid points where potential is non-zero
+{
+
+    double rN = 1.0 * (double)iradius;
+    int N = (int)rN;
+    if(N > NUM_BESSEL_ROOTS) N = NUM_BESSEL_ROOTS;
+    if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f\n",N, rcut);
+
+    // Normalization coefficient
+    double JNorm = 2.0 / (rcut*rcut);
+
+    /* Get some temporary memory */
+    int alloc = rg_points;
+    if(alloc < RADIAL_GVECS) alloc = RADIAL_GVECS;
+    if (alloc < MAX_LOGGRID)
+        alloc = MAX_LOGGRID;
+    if (alloc < MAX_RGRID)
+        alloc = MAX_RGRID;
+
+    double *work1 = new double[alloc]();
+    double *bcof = new double[alloc]();
+
+    double alpha = (double)lval;
+    for (int i = 0;i < N;i++)
+    {
+        double JN_i = boost::math::cyl_bessel_j(alpha+1.0, J_roots[lval][i]);
+        for (int idx = 0; idx < rg_points; idx++)
+        {
+            double jarg = r[idx] * J_roots[lval][i] / rcut;
+            work1[idx] = f[idx] * boost::math::cyl_bessel_j(alpha, jarg) / r[idx];
+        }
+        bcof[i] = JNorm * radint1 (work1, r, rab, rg_points) / (JN_i * JN_i);
+    }
+
+
+    /* Now we reconstruct the filtered function */
+    /* Zero out the array in which the filtered function is to be returned */
+    for (int idx = 0; idx < MAX_LOGGRID; idx++)
+    {
+        ffil[idx] = ZERO;
+    }                           /* end for */
+
+
+    for (int idx = 0;idx < MAX_LOGGRID;idx++)
+    {
+        if(r_filtered[idx] < rcut) {
+            for (int i = 0;i < N;i++)
+            {
+                double jarg = r_filtered[idx] * J_roots[lval][i] / rcut;
+                ffil[idx] += bcof[i] * boost::math::cyl_bessel_j(alpha, jarg);
+            }
+        }
+    }
+
+
+    /* Release memory */
+    delete [] bcof;
+    delete [] work1;
+
+} // end BesselToLogGrid
+
 
 void Atomic::FilterPotential (
     double *potential,       // IN:  potential to be filtered
@@ -696,12 +768,15 @@ void Atomic::FilterPotential (
     double gwidth,           // IN:  gaussian parameter controlling speed of g-space damping
     double rcut,             // IN:  filtered potential is damped in real space starting here
     double rwidth,           // IN:  gaussian parameter controlling speed of real space damping
-    double *drpotential_lgrid) // OUT: derivative of potential on standard log grid
+    double *drpotential_lgrid, // OUT: derivative of potential on standard log grid
+    int iradius)             // IN: radius in grid points where potential is non-zero
 {
 
     bool der_flag = false;
     const double small = 1.e-8;
 
+    //BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, iradius);
+    //return;
 
     if(drpotential_lgrid)
 	der_flag = true;
@@ -712,6 +787,7 @@ void Atomic::FilterPotential (
 
     /* Transform to g-space and filter it */
     RftToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, gwidth);
+
 
     if (ct.mask_function)
 	backout_mask_function (r_filtered, potential_lgrid, MAX_LOGGRID, rmax);
@@ -761,7 +837,6 @@ void Atomic::FilterPotential (
 
 	}
     }
-
 
 
 } 

@@ -152,7 +152,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
         A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.15, ct.cparm, sp->localig,
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->drlocalig);
+                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->drlocalig, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)
@@ -172,7 +172,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts
         A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, 0.15, ct.cparm, sp->arho_lig,
-                           sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, NULL);
+                           sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, NULL, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
 
         /*Open file for writing beta function*/
@@ -199,7 +199,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, 0.15, ct.betacparm, &sp->betalig[ip][0],
-            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0]);
+            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0], sp->nlfdim/2);
 
 
             /* Is this necessary ??? */
@@ -245,7 +245,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.15, ct.cparm, &sp->rhocorelig[0],
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, NULL);
+                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, NULL, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
              * but I am not sure if this is the right solution, it may be better to fix charge density
