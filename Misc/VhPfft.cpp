@@ -39,32 +39,13 @@
 void VhPfft(double *rho_tot, double *rhoc, double *vh)
 {
 
-    ptrdiff_t densgrid[3];
-    pfft_plan plan_forward, plan_back;
-    densgrid[0] = fine_pwaves->global_dimx;
-    densgrid[1] = fine_pwaves->global_dimy;
-    densgrid[2] = fine_pwaves->global_dimz;
-
-    int global_basis = fine_pwaves->global_basis;
     int pbasis = fine_pwaves->pbasis;
+    int size = std::max(pbasis, fine_pwaves->remap_local_size);
 
-    std::complex<double> *crho = new std::complex<double>[pbasis];
-    plan_forward = pfft_plan_dft_3d(densgrid,
-            (double (*)[2])crho,
-            (double (*)[2])crho,
-            pct.pfft_comm,
-            PFFT_FORWARD,
-            PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-
-    plan_back = pfft_plan_dft_3d(densgrid,
-            (pfft_complex *)crho,
-            (pfft_complex *)crho,
-            pct.pfft_comm,
-            PFFT_BACKWARD,
-            PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+    std::complex<double> *crho = new std::complex<double>[size];
 
     for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho_tot[i]-rhoc[i], 0.0);
-    pfft_execute_dft(plan_forward, (double (*)[2])crho, (double (*)[2])crho);
+    PfftForward(crho, crho, *fine_pwaves);
 
     double tem = 0.0;
     for(int i = 0;i < pbasis;i++) tem += rho_tot[i] - rhoc[i];
@@ -77,11 +58,9 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
         if(fine_pwaves->gmags[ig] > 1.0e-6) crho[ig] = crho[ig]/(fine_pwaves->gmags[ig] *tpiba2);
     }
 
-    pfft_execute_dft(plan_back, (double (*)[2])crho, (double (*)[2])crho);
-    for(int i = 0;i < pbasis;i++) vh[i] = std::real(crho[i])/(double)global_basis * 4.0 * PI;
+    PfftInverse(crho, crho, *fine_pwaves);
+    for(int i = 0;i < pbasis;i++) vh[i] = std::real(crho[i])/(double)fine_pwaves->global_basis * 4.0 * PI;
 
-    pfft_destroy_plan(plan_back);
-    pfft_destroy_plan(plan_forward);
     delete [] crho;
 
 }
