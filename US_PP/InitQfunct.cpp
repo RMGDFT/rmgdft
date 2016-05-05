@@ -41,8 +41,7 @@
 
 void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 {
-    int idx, i, j, k, num, il, jl, ll, it1, ibrav;
-    double t1, t2;
+    int idx, i, j, k, num, il, jl, ll, ibrav;
     double work[MAX_RGRID];
     double *qnmlig_tpr, *drqnmlig_tpr, *qnm_tpr;
     SPECIES *sp;
@@ -82,16 +81,10 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
         }
 
+        sp->qdim = Radius2grid (sp->qradius, ct.hmingrid);
+        sp->qdim = sp->qdim/2*2 +1;
+        sp->qdim = ct.nxfgrid * sp->qdim;
 
-        t1 = 2.0 * scale * (double) get_FG_RATIO() *sp->qradius / ct.hmingrid;
-        /*		t1=2.0 *  scale * sp->qradius / ct.hmingrid;*/
-        t1 = modf (t1, &t2);
-        it1 = (int) t2;
-        if (t1 > 0.5)
-            it1++;
-        if (!(it1 % 2))
-            it1++;
-        sp->qdim = it1;
         /*		sp->qdim = 2 * FG_NX * (it1 / 2) + 1;*/
 
         //        if ((sp->qdim >= get_FNX_GRID()) || (sp->qdim >= get_FNY_GRID())

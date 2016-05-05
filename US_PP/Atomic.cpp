@@ -696,7 +696,7 @@ void Atomic::BesselToLogGrid (
                    int iradius)         // IN: radius in grid points where potential is non-zero
 {
 
-    double rN = 1.0 * (double)iradius;
+    double rN = 0.8*(double)(iradius);
     int N = (int)rN;
     if(N > NUM_BESSEL_ROOTS) N = NUM_BESSEL_ROOTS;
     if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f\n",N, rcut);
@@ -775,8 +775,8 @@ void Atomic::FilterPotential (
     bool der_flag = false;
     const double small = 1.e-8;
 
-    //BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, iradius);
-    //return;
+    BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, iradius);
+    return;
 
     if(drpotential_lgrid)
 	der_flag = true;

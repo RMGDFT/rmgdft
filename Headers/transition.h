@@ -247,6 +247,8 @@ void FindPhase (int nldim, double * nlcdrs, double * &phase_sin, double* &phase_
 void VhPfft(double *rho, double *rhoc, double *vh);
 void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in, double *vh_out, int max_iter, bool reset);
 void output_force(double *force, char *desc);
+int Radius2grid (double radius, double mingrid_spacing);
+
 
 
 #endif
