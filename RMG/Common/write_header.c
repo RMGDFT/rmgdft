@@ -202,7 +202,7 @@ void write_header (void)
 
 
     printf ("\n");
-    printf ("    Energy cutoff  parameter  %12.6f\n", ct.cparm, ct.rhocparm, ct.betaparm);
+    printf ("    Energy cutoff  parameter  %12.6f\n", ct.cparm, ct.rhocparm, ct.betacparm);
 
     /* We compute the equivalent energy cutoff using the density of grid
      * points in the cell with a correction for the grid anisotropy.
