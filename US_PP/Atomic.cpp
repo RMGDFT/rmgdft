@@ -45,6 +45,10 @@ double Atomic_inv_a;
 double Atomic::b;
 double Atomic_inv_b;
 
+using boost::math::policies::policy;
+using boost::math::policies::promote_double;
+typedef policy<promote_double<false> > bessel_policy;
+
 // constructor just sets up logarithmic grid for first instance
 // which is used by all later instances
 Atomic::Atomic(void)
@@ -92,10 +96,10 @@ void Atomic::RftToLogGrid (
                    double width)        // IN:  width of gaussian cutoff in g-space
 {
 
+
     int istep;
-    double t1, t2;
+    double t1;
     int npes = Rmg_G->get_PE_X() * Rmg_G->get_PE_Y() * Rmg_G->get_PE_Z();
-    const double small = 1.e-35;
 
     /* Get some temporary memory */
     int alloc = rg_points;
@@ -116,10 +120,12 @@ void Atomic::RftToLogGrid (
     /* by the largest real-space value of r.                           */
     gvec[0] = PI / (r[rg_points - 1]);
 
-    /* The largest g-vector that we generate is defined by the global */
+    /* The smallest g-vector that we generate is defined by the global */
     /* grid spacing.                                                  */
     double gcut = PI / (cparm * ct.hmaxgrid);
-    double gmax = PI / r[0];
+
+    // The largest g-vector we use corresponds to an energy cutoff of 5483 Rydbergs.
+    double gmax = PI / 0.03;
 
     double gmesh = (log (gmax) - log (gvec[0])) / gnum;
     t1 = exp (gmesh);
@@ -135,185 +141,33 @@ void Atomic::RftToLogGrid (
 
 
     istep = gnum / npes;
-    switch (lval)
+    double alpha = (double)lval + 0.5;
+
+    for (int ift = istep * pct.gridpe; ift < istep * pct.gridpe + istep; ift++)
     {
+        for (int idx = 0; idx < rg_points; idx++)
+        {
 
-        case S_STATE:
+            double jarg = r[idx] * gvec[ift];
+            work1[idx] = f[idx] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
 
-            for (int ift = istep * pct.gridpe; ift < istep * pct.gridpe + istep; ift++)
-            {
-                for (int idx = 0; idx < rg_points; idx++)
-                {
+        }                   /* end for */
+        gcof[ift] = radint1 (work1, r, rab, rg_points);
+    }
+    istep = npes * istep;
+    GlobalSums (gcof, istep, pct.grid_comm);
 
-                    t1 = r[idx] * gvec[ift];
+    for (int ift = istep; ift < gnum; ift++)
+    {
+        for (int idx = 0; idx < rg_points; idx++)
+        {
 
-                    if (t1 > small)
-                        work1[idx] = f[idx] * sin (t1) / t1;
-                    else
-                        work1[idx] = f[idx];
-                    /*t2 = sin(t1) / t1;
-                       if(t1 < 1.0e-8) t2 = 1.0;
-                       work1[idx] = f[idx] * t2; */
+            double jarg = r[idx] * gvec[ift];
+            work1[idx] = f[idx] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
 
-                }                   /* end for */
-                gcof[ift] = radint1 (work1, r, rab, rg_points);
-            }
-            istep = npes * istep;
-            GlobalSums (gcof, istep, pct.grid_comm);
-
-            for (int ift = istep; ift < gnum; ift++)
-            {
-                for (int idx = 0; idx < rg_points; idx++)
-                {
-
-                    t1 = r[idx] * gvec[ift];
-
-                    if (t1 > small)
-                        work1[idx] = f[idx] * sin (t1) / t1;
-                    else
-                        work1[idx] = f[idx];
-                    /*t2 = sin(t1) / t1;
-                       if(t1 < 1.0e-8) t2 = 1.0;
-                       work1[idx] = f[idx] * t2; */
-
-                }                   /* end for */
-                gcof[ift] = radint1 (work1, r, rab, rg_points);
-            }
-            break;
-
-        case P_STATE:
-
-            for (int ift = istep * pct.gridpe; ift < istep * pct.gridpe + istep; ift++)
-            {
-                for (int idx = 0; idx < rg_points; idx++)
-                {
-
-                    t1 = r[idx] * gvec[ift];
-                    if (t1 > small)
-                        t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
-                    else
-                        t2 = 0.0;
-                    /*if(t1 < 1.0e-8) t2 = 0.0; */
-                    work1[idx] = f[idx] * t2;
-
-                }                   /* end for */
-                gcof[ift] = radint1 (work1, r, rab, rg_points);
-            }
-            istep = npes * istep;
-            GlobalSums (gcof, istep, pct.grid_comm);
-
-            for (int ift = istep; ift < gnum; ift++)
-            {
-               for (int idx = 0; idx < rg_points; idx++)
-                {
-
-                    t1 = r[idx] * gvec[ift];
-                    if (t1 > small)
-                        t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
-                    else
-                        t2 = 0.0;
-                    /*if(t1 < 1.0e-8) t2 = 0.0; */
-                    work1[idx] = f[idx] * t2;
-
-                }                   /* end for */
-                gcof[ift] = radint1 (work1, r, rab, rg_points);
-            }
-
-            break;
-
-        case D_STATE:
-
-            for (int ift = istep * pct.gridpe; ift < istep * pct.gridpe + istep; ift++)
-            {
-                for (int idx = 0; idx < rg_points; idx++)
-                {
-
-                    t1 = r[idx] * gvec[ift];
-                    if (t1 > small)
-                    {
-                        t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
-                        t2 -= THREE * cos (t1) / (t1 * t1);
-                    }
-                    else
-                        t2 = 0.0;
-                    /*if(t1 < 1.0e-8) t2 = 0.0; */
-                    work1[idx] = f[idx] * t2;
-
-                }                   /* end for */
-                gcof[ift] = radint1 (work1, r, rab, rg_points);
-            }
-            istep = npes * istep;
-            GlobalSums (gcof, istep, pct.grid_comm);
-
-            for (int ift = istep; ift < gnum; ift++)
-            {
-                for (int idx = 0; idx < rg_points; idx++)
-                {
-
-                    t1 = r[idx] * gvec[ift];
-                    if (t1 > small)
-                    {
-                        t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
-                        t2 -= THREE * cos (t1) / (t1 * t1);
-                    }
-                    else
-                        t2 = 0.0;
-                    /*if(t1 < 1.0e-8) t2 = 0.0; */
-                    work1[idx] = f[idx] * t2;
-
-                }                   /* end for */
-                gcof[ift] = radint1 (work1, r, rab, rg_points);
-            }
-
-            break;
-
-        case F_STATE:
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-                for (int idx = 0; idx < rg_points; idx++)
-                {
-                    t1 = r[idx] * gvec[ift];
-                    if (t1 > small)
-                    {
-                        t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
-                        t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
-                    }
-                    else
-                        t2 = 0.0;
-                    /*if(t1 < 1.0e-8) t2 = 0.0; */
-                    work1[idx] = f[idx] * t2;
-                }                   /* end for */
-                gcof[ift] = radint1 (work1, r, rab, rg_points);
-            }
-            break;
-
-        case G_STATE:
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-                for (int idx = 0; idx < rg_points; idx++)
-                {
-                    t1 = r[idx] * gvec[ift];
-                    if (t1 > small)
-                    {
-                        t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
-                        t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
-                    }
-                    else
-                        t2 = 0.0;
-                    /*if(t1 < 1.0e-8) t2 = 0.0; */
-                    work1[idx] = f[idx] * t2;
-                }                   /*end for */
-                gcof[ift] = radint1 (work1, r, rab, rg_points);
-            }
-            break;
-
-        default:
-
-            throw RmgFatalException() << "angular momentum l=" << lval << "is not programmed in " << __FILE__ << " at line " << __LINE__ << "\n";
-
-    }                       /* end switch */
+        }                   /* end for */
+        gcof[ift] = radint1 (work1, r, rab, rg_points);
+    }
 
 
     /* Fourier Filter the transform and store in work2 */
@@ -326,336 +180,50 @@ void Atomic::RftToLogGrid (
 
 
     /* Zero out the array in which the filtered function is to be returned */
-    for (int idx = 0; idx < MAX_LOGGRID; idx++)
-    {
+    for (int idx = 0; idx < MAX_LOGGRID; idx++) ffil[idx] = ZERO;
 
-        ffil[idx] = ZERO;
-
-    }                           /* end for */
-
-
-
-    /* Now we reconstruct the filtered function */
+    /* Reconstruct the filtered function onto our standard log grid */
     istep = MAX_LOGGRID / npes;
 
-    switch (lval)
+    for (int idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
     {
 
-    case S_STATE:
-
-        for (int idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
+        for (int ift = 0; ift < gnum; ift++)
         {
 
+            double jarg = r_filtered[idx] * gvec[ift];
+            work1[ift] = work2[ift] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
 
-            for (int ift = 0; ift < gnum; ift++)
-            {
-
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                    t2 = sin (t1) / t1;
-                else
-                    t2 = 1.0;
-                /*if(t1 < 1.0e-8) t2 = 1.0; */
-
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
+        }                   /* end for */
 
 
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
+        /* Integrate it */
+        t1 = radint (work1, gvec, gnum, gmesh);
+        ffil[idx] = t1 * TWO / PI;
 
-        }                       /* end for */
-
-
-        istep = npes * istep;
-        GlobalSums (ffil, istep, pct.grid_comm); 
+    }                       /* end for */
 
 
+    istep = npes * istep;
+    GlobalSums (ffil, istep, pct.grid_comm); 
 
-        for (int idx = istep; idx < MAX_LOGGRID; idx++)
+
+    for (int idx = istep; idx < MAX_LOGGRID; idx++)
+    {
+
+        for (int ift = 0; ift < gnum; ift++)
         {
 
+            double jarg = r_filtered[idx] * gvec[ift];
+            work1[ift] = work2[ift] * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
 
-            for (int ift = 0; ift < gnum; ift++)
-            {
+        }                   /* end for */
 
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                    t2 = sin (t1) / t1;
-                else
-                    t2 = 1.0;
-                /*if(t1 < 1.0e-8) t2 = 1.0; */
+        /* Integrate it */
+        t1 = radint (work1, gvec, gnum, gmesh);
+        ffil[idx] = t1 * TWO / PI;
 
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
-
-
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
-
-        }                       /* end for */
-
-
-
-
-        break;
-
-    case P_STATE:
-
-        for (int idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
-        {
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                    t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
-
-
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
-
-        }                       /* end for */
-
-
-        istep = npes * istep;
-        GlobalSums (ffil, istep, pct.grid_comm);
-
-
-        for (int idx = istep; idx < MAX_LOGGRID; idx++)
-        {
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                    t2 = cos (t1) / t1 - sin (t1) / (t1 * t1);
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
-
-
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
-
-        }                       /* end for */
-
-        break;
-
-    case D_STATE:
-
-        for (int idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
-        {
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                {
-                    t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
-                    t2 -= THREE * cos (t1) / (t1 * t1);
-                }
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
-
-
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
-
-
-        }                       /* end for */
-
-
-        istep = npes * istep;
-        GlobalSums (ffil, istep, pct.grid_comm);
-
-        for (int idx = istep; idx < MAX_LOGGRID; idx++)
-        {
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                {
-                    t2 = (THREE / (t1 * t1) - ONE) * sin (t1) / t1;
-                    t2 -= THREE * cos (t1) / (t1 * t1);
-                }
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
-
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
-
-        }                       /* end for */
-
-        break;
-
-    case F_STATE:
-
-        for (int idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
-        {
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                {
-                    t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
-                    t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
-                }
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
-
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
-
-        }                       /* end for */
-
-        istep = npes * istep;
-        GlobalSums (ffil, istep, pct.grid_comm);
-
-        for (int idx = istep; idx < MAX_LOGGRID; idx++)
-        {
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                {
-                    t2 = (15.0 / (t1 * t1) - 6.0) * sin (t1) / (t1 * t1);
-                    t2 += (1.0 - 15.0 / (t1 * t1)) * cos (t1) / t1;
-                }
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
-
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
-
-        }                       /* end for */
-
-        break;
-
-    case G_STATE:
-
-        for (int idx = istep * pct.gridpe; idx < istep * pct.gridpe + istep; idx++)
-        {
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                {
-                    t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
-                    t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
-                }
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
-
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
-
-        }                       /* end for */
-
-        istep = npes * istep;
-        GlobalSums (ffil, istep, pct.grid_comm);
-
-        for (int idx = istep; idx < MAX_LOGGRID; idx++)
-        {
-
-            for (int ift = 0; ift < gnum; ift++)
-            {
-
-                t1 = r_filtered[idx] * gvec[ift];
-                if (t1 > small)
-                {
-                    t2 = (105.0 / (t1 * t1 * t1 * t1) - 45.0 / (t1 * t1) + 1.0) * sin (t1) / t1;
-                    t2 += (10.0 - 105.0 / (t1 * t1)) * cos (t1) / (t1 * t1);
-                }
-                else
-                    t2 = 0.0;
-                /*if(t1 < 1.0e-8) t2 = 0.0; */
-
-                /* G-space cutoff */
-                work1[ift] = work2[ift] * t2;
-
-            }                   /* end for */
-
-            /* Integrate it */
-            t1 = radint (work1, gvec, gnum, gmesh);
-            ffil[idx] = t1 * TWO / PI;
-
-        }                       /* end for */
-
-        break;
-
-    default:
-
-        throw RmgFatalException() << "angular momentum l=" << lval << "is not programmed in " << __FILE__ << " at line " << __LINE__ << "\n";
-
-    }                           /* end switch */
+    }                       /* end for */
 
 
     /* Release memory */
@@ -696,7 +264,7 @@ void Atomic::BesselToLogGrid (
                    int iradius)         // IN: radius in grid points where potential is non-zero
 {
 
-    double rN = 0.7*(double)(iradius);
+    double rN = (double)(iradius);
     int N = (int)rN;
     if(N > NUM_BESSEL_ROOTS) N = NUM_BESSEL_ROOTS;
     if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f\n",N, rcut);
@@ -747,6 +315,13 @@ void Atomic::BesselToLogGrid (
         }
     }
 
+    double rsmooth = 0.7*rcut;
+    for (int idx = 0;idx < MAX_LOGGRID;idx++)
+    {
+        if(r_filtered[idx] >= rsmooth) {
+            ffil[idx] *= exp(-(r_filtered[idx] - rsmooth)*(r_filtered[idx] - rsmooth));
+        }
+    }
 
     /* Release memory */
     delete [] bcof;

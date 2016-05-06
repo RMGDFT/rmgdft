@@ -29,7 +29,7 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 
-#define RADIAL_GVECS 2500
+#define RADIAL_GVECS 1000
 
 
 #ifdef __cplusplus
