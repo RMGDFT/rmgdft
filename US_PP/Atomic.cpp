@@ -357,7 +357,7 @@ void Atomic::FilterPotential (
 	der_flag = true;
 
     if (ct.mask_function)
-	apply_mask_function(r, potential, rg_points, rmax, offset);
+	apply_mask_function(r, potential, rg_points, rmax+offset, offset);
 
 
     /* Transform to g-space and filter it */
@@ -365,7 +365,7 @@ void Atomic::FilterPotential (
 
 
     if (ct.mask_function)
-	backout_mask_function (r_filtered, potential_lgrid, MAX_LOGGRID, rmax);
+	backout_mask_function (r_filtered, potential_lgrid, MAX_LOGGRID, rmax+offset);
 
     /*Evaluate radial derivative, if requested*/
     if (der_flag)

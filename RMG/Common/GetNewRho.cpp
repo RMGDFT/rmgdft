@@ -50,7 +50,6 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     int pbasis = Kpts[0]->pbasis;
     int nstates = Kpts[0]->nstates;
     int max_product = (ct.max_nl + 1) * ct.max_nl / 2;
-    double *qtpr;
 
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
 
@@ -106,93 +105,12 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }
 
 
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     if(!ct.norm_conserving_pp) {
-
-        for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
-        {
-            int gion = pct.nonloc_ions_list[ion];
-            
-            if (pct.Qidxptrlen[gion])
-            {
-                
-                ION *iptr = &ct.ions[gion];
-           
-                int nh = ct.sp[iptr->species].nh;
-                
-                int *ivec = pct.Qindex[gion];
-                int ncount = pct.Qidxptrlen[gion];
-                double *qnmI = pct.augfunc[gion];
-
-                for (int i=0; i < max_product; i++)
-                    product[i] = 0.0;
-
-                for (int kpt = 0; kpt < ct.num_kpts; kpt++)
-                {
-
-                    //STATE *sp = ct.kp[kpt].kstate;
-                    /* Loop over states and accumulate charge */
-                    for (int istate = 0; istate < ct.num_states; istate++)
-                    {
-                        double t1 = Kpts[kpt]->Kstates[istate].occupation[0] * ct.kp[kpt].kweight;
-
-                        for (int i = 0; i < ct.max_nl; i++)
-                        {
-//                            sint[i] = Kpts[kpt]->newsint_local[ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
-                            sint[i] = Kpts[kpt]->newsint_local[istate*pct.num_nonloc_ions*ct.max_nl + ion * ct.max_nl + i];
-    //                        sintR[i] =
-    //                            pct.newsintR_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
-    //                            + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
-
-    //                        if(!ct.is_gamma) {
-    //                            sintI[i] =
-    //                                pct.newsintI_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
-    //                                + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
-    //                        }
-
-                        }               /*end for i */
-
-                        int idx = 0;
-                        for (int i = 0; i < nh; i++)
-                        {
-                            for (int j = i; j < nh; j++)
-                            {
-
-                                if(i == j) {
-
-                                        product[idx] += t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
-
-                                }
-                                else {
-
-                                        product[idx] += 2.0 * t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
-
-                                }
-                                idx++;
-                            }           /*end for j */
-                        }               /*end for i */
-                    }                   /*end for istate */
-                }                       /*end for kpt */
-
-
-                int idx = 0;
-                for (int i = 0; i < nh; i++)
-                {
-                    for (int j = i; j < nh; j++)
-                    {
-                        qtpr = qnmI + idx * ncount;
-                        for (int icount = 0; icount < ncount; icount++)
-                        {
-                            rho[ivec[icount]] += qtpr[icount] * product[idx];
-                        }           /*end for icount */
-                        idx++;
-                    }               /*end for j */
-                }                   /*end for i */
-
-
-            }                       /*end if */
-
-        }                           /*end for ion */
-
+        double *augrho = new double[FP0_BASIS]();
+        GetAugRho(Kpts, augrho);
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += augrho[idx];
+        delete [] augrho;
     }
 
     symmetrize_rho (rho);
@@ -200,7 +118,6 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     /* Check total charge. */
     ct.tcharge = ZERO;
-    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     for (int idx = 0; idx < FP0_BASIS; idx++)
         ct.tcharge += rho[idx];
 

@@ -121,7 +121,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
-        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.15, ct.cparm, sp->localig,
+        double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
+        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, offset, ct.cparm, sp->localig,
                            sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->drlocalig, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
         /*Write local projector into a file if requested*/
@@ -141,7 +142,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts
-        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, 0.15, ct.cparm, sp->arho_lig,
+        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, offset, ct.cparm, sp->arho_lig,
                            sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, NULL, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
 
@@ -168,7 +169,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, 0.15, ct.betacparm, &sp->betalig[ip][0],
+            double offset = ct.hmaxgrid / (double)ct.nxfgrid;
+            offset = ct.hmaxgrid;
+            A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, offset, ct.betacparm, &sp->betalig[ip][0],
             sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0], sp->nlfdim/2);
 
 
@@ -214,7 +217,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, 0.15, ct.cparm, &sp->rhocorelig[0],
+            double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
+            A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, offset, ct.cparm, &sp->rhocorelig[0],
                            sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, NULL, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative

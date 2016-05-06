@@ -239,9 +239,9 @@ typedef struct
     int FG_RATIO;
 
     /* Cutoff parameter */
-    double cparm;
-    double betacparm;
-    double qcparm;
+    double cparm;        // Multiplicative factor
+    double betacparm;    // For beta functions (non-local projectors)
+    double rhocparm;     // For qfunctions and density
 
     /** Total conpensating charge density */
     double crho;

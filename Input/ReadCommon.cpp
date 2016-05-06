@@ -776,10 +776,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "neb_spring_constant must be in the range (0.05, 3.0).\n");
 
-    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 1.0, 4.0, 3.0,
+    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 1.0, 6.0, 2.8,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "energy_cutoff_parameter must be in the range (1.0,4.0). Resetting to default value of 3.0.\n");
+                     "energy_cutoff_parameter must be in the range (1.0,4.0). Resetting to default value of 2.8.\n");
 
 
     std::string Occup, Occdown;
@@ -1030,9 +1030,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     }
 
     // Cutoff parameter 
-    lc.qcparm = lc.cparm / (double) lc.FG_RATIO;
+    lc.rhocparm = lc.cparm / (double) lc.FG_RATIO;
     lc.betacparm = lc.cparm / (double) lc.nxfgrid;
-    lc.cparm /= (double) lc.FG_RATIO;
+    //printf("PARMS = %20.12f  %20.12f\n",lc.rhocparm, lc.betacparm);
 
 
     if (lc.iondt_max < lc.iondt)
