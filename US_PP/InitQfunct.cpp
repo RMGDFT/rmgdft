@@ -134,7 +134,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                     }
 
                     double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
-                    A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, offset, ct.rhocparm, qnmlig_tpr,
+                    A->FilterPotential(work, sp->r, sp->rg_points, ct.mask_function, sp->qradius, offset, ct.rhocparm, qnmlig_tpr,
                                         sp->rab, ll, sp->gwidth, sp->nlrcut[sp->llbeta[i]], sp->rwidth, drqnmlig_tpr, sp->qdim);
 
                     /*Is this necessary ???*/

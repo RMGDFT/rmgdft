@@ -104,7 +104,27 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         /*Filter and interpolate local potential into the internal log grid*/
         Zv = sp->zvalence;
         rc = sp->rc;
+#if 0
+double *work1 = new double[sp->rg_points]();
+//double d1 = radint1 (rrho, sp->r, sp->rab, sp->rg_points);
 
+double trc = 0.01;
+double min_rc;
+double mind1 = 111111111111111110.0;
+for(int steps = 0;steps < 200;steps++) {
+    for(int ix=0;ix < sp->rg_points;ix++)work1[ix] = sp->vloc0[ix] + Zv * erf (sp->r[ix] / trc) / sp->r[ix];
+    for(int ix=0;ix < sp->rg_points;ix++) work1[ix] = work1[ix] * work1[ix]/(sp->r[ix]*sp->r[ix]*sp->r[ix]);
+    double d1 = radint1 (work1, sp->r, sp->rab, sp->rg_points);
+    if(pct.gridpe==0)printf("MIN = %20.12e  %20.12e\n",trc,d1);
+    if(d1 < mind1) {
+        mind1 = d1;
+        min_rc = trc;
+    }
+    trc += 0.01;
+}
+sp->rc = min_rc;
+rc = min_rc;
+#endif
         /* Generate the difference potential */
         for (int idx = 0; idx < sp->rg_points; idx++)
             work[idx] = sp->vloc0[idx] + Zv * erf (sp->r[idx] / rc) / sp->r[idx];
@@ -122,7 +142,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
         double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
-        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, offset, ct.cparm, sp->localig,
+        A->FilterPotential(work, sp->r, sp->rg_points, ct.mask_function, sp->lradius, offset, ct.cparm, sp->localig,
                            sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->drlocalig, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
         /*Write local projector into a file if requested*/
@@ -142,7 +162,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts
-        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, offset, ct.cparm, sp->arho_lig,
+        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, ct.mask_function, sp->lradius, offset, ct.cparm, sp->arho_lig,
                            sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, NULL, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
 
@@ -170,8 +190,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             double offset = ct.hmaxgrid / (double)ct.nxfgrid;
-            offset = ct.hmaxgrid;
-            A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, offset, ct.betacparm, &sp->betalig[ip][0],
+            A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, (bool)ct.mask_function, sp->nlradius, offset, ct.betacparm, &sp->betalig[ip][0],
             sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0], sp->nlfdim/2);
 
 
@@ -218,7 +237,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
-            A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, offset, ct.cparm, &sp->rhocorelig[0],
+            A->FilterPotential(work, sp->r, sp->rg_points, ct.mask_function, sp->lradius, offset, ct.cparm, &sp->rhocorelig[0],
                            sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, NULL, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative

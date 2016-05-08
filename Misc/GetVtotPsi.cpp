@@ -83,6 +83,20 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
         }
 
     }
+    else if(grid_ratio == 4) {
+
+        FftFilter(vtot, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
+
+        for(ix = 0; ix < dimx/4; ix++)
+        for(iy = 0; iy < dimy/4; iy++)
+        for(iz = 0; iz < dimz/4; iz++)
+        {
+            idx = ix * dimy/4 * dimz/4 + iy * dimz/4 + iz;
+            idx1 = 4 *ix * dimy * dimz + 4 *iy * dimz + 4*iz;
+            vtot_psi[idx] = vtot[idx1];
+        }
+
+    }
     else
     {
 

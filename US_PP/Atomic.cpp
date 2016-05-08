@@ -251,7 +251,10 @@ double Atomic::Gcutoff (double g1, double gcut, double width)
 }
 
 
-
+// This routine computes a finite spherical Bessel function expansion of f, defined on
+// the pseudopotential log grid and then uses the coefficients of the expansion to 
+// regenerate a filtered version of f on our internal log grid. The filtering is based
+// on the number of zeros in each spherical bessel function.
 void Atomic::BesselToLogGrid (
                    double cparm,        // IN:  filtering parameter
                    double * f,          // IN:  function to be filtered defined on pseudopotential grid
@@ -270,7 +273,7 @@ void Atomic::BesselToLogGrid (
     if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f\n",N, rcut);
 
     // Normalization coefficient
-    double JNorm = 2.0 / (rcut*rcut);
+    double JNorm = 2.0 / (rcut*rcut*rcut);
 
     /* Get some temporary memory */
     int alloc = rg_points;
@@ -286,11 +289,11 @@ void Atomic::BesselToLogGrid (
     double alpha = (double)lval;
     for (int i = 0;i < N;i++)
     {
-        double JN_i = boost::math::cyl_bessel_j(alpha+1.0, J_roots[lval][i]);
+        double JN_i = sqrt(PI/(2.0*J_roots[lval][i])) * boost::math::cyl_bessel_j(alpha + 1.5, J_roots[lval][i]);
         for (int idx = 0; idx < rg_points; idx++)
         {
             double jarg = r[idx] * J_roots[lval][i] / rcut;
-            work1[idx] = f[idx] * boost::math::cyl_bessel_j(alpha, jarg) / r[idx];
+            work1[idx] = f[idx] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha + 0.5, jarg);
         }
         bcof[i] = JNorm * radint1 (work1, r, rab, rg_points) / (JN_i * JN_i);
     }
@@ -310,16 +313,8 @@ void Atomic::BesselToLogGrid (
             for (int i = 0;i < N;i++)
             {
                 double jarg = r_filtered[idx] * J_roots[lval][i] / rcut;
-                ffil[idx] += bcof[i] * boost::math::cyl_bessel_j(alpha, jarg);
+                ffil[idx] += bcof[i] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha + 0.5, jarg);
             }
-        }
-    }
-
-    double rsmooth = 0.7*rcut;
-    for (int idx = 0;idx < MAX_LOGGRID;idx++)
-    {
-        if(r_filtered[idx] >= rsmooth) {
-            ffil[idx] *= exp(-(r_filtered[idx] - rsmooth)*(r_filtered[idx] - rsmooth));
         }
     }
 
@@ -334,6 +329,7 @@ void Atomic::FilterPotential (
     double *potential,       // IN:  potential to be filtered
     double *r,               // IN:  radial grid for the potential
     int rg_points,           // IN:  number of points in the radial grid
+    bool use_mask,           // IN:  flag for mask function use
     double rmax,             // IN:  mask function parameter
     double offset,           // IN:  mask function parameter
     double parm,             // IN:  filtering parameter
@@ -350,22 +346,22 @@ void Atomic::FilterPotential (
     bool der_flag = false;
     const double small = 1.e-8;
 
-    //BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, iradius);
-    //return;
+    BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, iradius);
+    return;
 
     if(drpotential_lgrid)
 	der_flag = true;
 
-    if (ct.mask_function)
-	apply_mask_function(r, potential, rg_points, rmax+offset, offset);
+    if (use_mask)
+	apply_mask_function(r, potential, rg_points, rmax, 0.0);
 
 
     /* Transform to g-space and filter it */
     RftToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, gwidth);
 
 
-    if (ct.mask_function)
-	backout_mask_function (r_filtered, potential_lgrid, MAX_LOGGRID, rmax+offset);
+    if (use_mask)
+	backout_mask_function (r_filtered, potential_lgrid, MAX_LOGGRID, rmax);
 
     /*Evaluate radial derivative, if requested*/
     if (der_flag)
@@ -411,6 +407,14 @@ void Atomic::FilterPotential (
 	    }               /* end if */
 
 	}
+    }
+    else {
+
+	for (int idx = 0; idx < MAX_LOGGRID; idx++)
+	{
+            if(r_filtered[idx] >= rmax) potential_lgrid[idx] = 0.0;
+        }
+
     }
 
 
