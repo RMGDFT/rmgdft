@@ -50,12 +50,6 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   if((factor <= 0.0) || (factor > 1.0))
       throw RmgFatalException() << "FFT filtering factor must be between 0.0 and 1.0 " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-  ptrdiff_t densgrid[3];
-  pfft_plan plan_forward, plan_back;
-  densgrid[0] = pwaves.global_dimx;
-  densgrid[1] = pwaves.global_dimy;
-  densgrid[2] = pwaves.global_dimz;
-
   double g2cut = factor*factor*pwaves.gcut;
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
