@@ -64,7 +64,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
     for (isp = 0; isp < ct.num_species; isp++)
     {
         SPECIES *sp = &ct.sp[isp];
-        //sp->rc = ct.hmaxgrid;
         if (pct.gridpe == 0 && write_flag)
         {
             snprintf (newname, MAX_PATH, "local_%s.xmgr",  sp->atomic_symbol);
@@ -75,22 +74,25 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         /*Get nldim */
-        int done = false;
+        bool done = false;
+        bool reduced = false;
+        
         while(!done) {
 
             sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
             sp->nldim = sp->nldim/2*2 +1;
-            sp->nlfdim = ct.nxfgrid * sp->nldim;
+            sp->nlfdim = ct.nxfgrid * sp->nldim - 1;
 
             if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID())) {
-                printf("Warning: diameter of non-local projectors %8.4f exceeds cell size. Reducing.\n", sp->nlradius);
-                sp->nlradius *= 0.95;
+                sp->nlradius *= 0.99;
+                reduced = true;
             }
             else {
                 done = true;
             }
 
         }
+        if(reduced) rmg_printf("Warning: diameter of non-local projectors %8.4f exceeds cell size. Reducing. New radius = %12.6f\n", sp->nlradius);
 
 
         /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
@@ -104,27 +106,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         /*Filter and interpolate local potential into the internal log grid*/
         Zv = sp->zvalence;
         rc = sp->rc;
-#if 0
-double *work1 = new double[sp->rg_points]();
-//double d1 = radint1 (rrho, sp->r, sp->rab, sp->rg_points);
 
-double trc = 0.01;
-double min_rc;
-double mind1 = 111111111111111110.0;
-for(int steps = 0;steps < 200;steps++) {
-    for(int ix=0;ix < sp->rg_points;ix++)work1[ix] = sp->vloc0[ix] + Zv * erf (sp->r[ix] / trc) / sp->r[ix];
-    for(int ix=0;ix < sp->rg_points;ix++) work1[ix] = work1[ix] * work1[ix]/(sp->r[ix]*sp->r[ix]*sp->r[ix]);
-    double d1 = radint1 (work1, sp->r, sp->rab, sp->rg_points);
-    if(pct.gridpe==0)printf("MIN = %20.12e  %20.12e\n",trc,d1);
-    if(d1 < mind1) {
-        mind1 = d1;
-        min_rc = trc;
-    }
-    trc += 0.01;
-}
-sp->rc = min_rc;
-rc = min_rc;
-#endif
         /* Generate the difference potential */
         for (int idx = 0; idx < sp->rg_points; idx++)
             work[idx] = sp->vloc0[idx] + Zv * erf (sp->r[idx] / rc) / sp->r[idx];
