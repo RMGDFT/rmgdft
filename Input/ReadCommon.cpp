@@ -1075,11 +1075,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         std::cout << "You have set freeze_occupied=true so potential acceleration is disabled." << std::endl;
     }
 
-    for(auto it = InputMap.begin();it != InputMap.end(); ++it) {
-        std::pair<std::string, InputKey*> Check = *it;
-        InputKey *CheckKey = it->second;
+    // Debug code
+    //for(auto it = InputMap.begin();it != InputMap.end(); ++it) {
+    //    std::pair<std::string, InputKey*> Check = *it;
+    //    InputKey *CheckKey = it->second;
         //std::cout << Check.first << " = " << CheckKey->Print() << std::endl;
-    }
+    //}
 
     // Set up energy output units
     static char *Hartree_str = "Ha";
