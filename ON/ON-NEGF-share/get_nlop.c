@@ -55,7 +55,7 @@ void get_nlop(void)
     /*Do forward transform for each species and store results on the coarse grid */
     init_weight ();
     /*The same for derivative of beta */
-    init_derweight ();
+    //init_derweight ();
 
 
     /*Get memory to store the phase factor applied to the forward Fourier transform
