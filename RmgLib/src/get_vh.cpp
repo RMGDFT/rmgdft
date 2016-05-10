@@ -46,7 +46,7 @@
 #include "packfuncs.h"
 #include "boundary_conditions.h"
 
-#define         PI          3.14159265359
+#define         PI          3.14159265358979323
 
 
 #define MAX_MG_LEVELS 8

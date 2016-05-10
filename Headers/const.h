@@ -57,12 +57,12 @@
 #define		TEN        10.0
 
 
-#define		PI          3.14159265359
-#define		twoPI       6.28318530718
-#define		threePI     9.42477796077
-#define		fourPI     12.56637061436
-#define         SQRT2       1.414213562373
-#define         SQRT3       1.732050807569
+#define		PI          3.14159265358979323
+#define		twoPI       6.28318530717958646
+#define		threePI     9.42477796076937969
+#define		fourPI     12.56637061435917292
+#define         SQRT2       1.41421356237309504880
+#define         SQRT3       1.73205080756887729352
 
 
 /* Physical constants and conversion factors obtained from NIST
