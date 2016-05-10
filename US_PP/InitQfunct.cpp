@@ -47,7 +47,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
     SPECIES *sp;
     char newname1[MAX_PATH], newname2[MAX_PATH];
     FILE *fqq = NULL;
-    FILE *fdq = NULL;
     
     if(ct.norm_conserving_pp) return;
 
@@ -64,14 +63,11 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
         if (Verify ("write_pseudopotential_plots", true, ControlMap))
         {
             snprintf (newname1, MAX_PATH, "q_%s.xmgr", sp->atomic_symbol);
-            snprintf (newname2, MAX_PATH, "drq_%s.xmgr", sp->atomic_symbol);
             if (pct.gridpe == 0)
             {
                 if(NULL == (fqq = fopen (newname1, "w+")))
                     throw RmgFatalException() << "Unable to open pseudopotential graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-                if(NULL == (fdq = fopen (newname2, "w+")))
-                    throw RmgFatalException() << "Unable to open pseudopotential graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
             }
         }
 
@@ -145,7 +141,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                         }
 
                         fprintf (fqq, "&\n");
-                        fprintf (fdq, "&\n");
                     }
                 }               /*end for ll */
             }                   /*end for j */
@@ -154,7 +149,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
         if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
         {
             fclose (fqq);
-            fclose (fdq);
         }
 
     }                           /*end for isp */ 
