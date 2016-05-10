@@ -211,10 +211,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL, kohn_sham_solver,
                      "Kohn-Sham solver.\n", 
                      "kohn_sham_solver must be multigrid or davidson. Resetting to multigrid.\n");
-    If.RegisterInputKey("force_derivate_type", NULL, &lc.force_derivate_type, "wavefunction",
-                     CHECK_AND_FIX, OPTIONAL, force_derivate_type,
-                     "force derivate.\n", 
-                     "force derivate either on wavefunction or projector.\n");
 
     If.RegisterInputKey("poisson_solver", NULL, &lc.poisson_solver, "multigrid",
                      CHECK_AND_FIX, OPTIONAL, poisson_solver,
@@ -687,9 +683,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("write_pdos", &lc.pdos_flag, false,
                         "Flag to write partial density of states.");
-
-    If.RegisterInputKey("mask_function_filtering", &lc.mask_function, true,
-                        "Flag indicating whether or not to use mask functions for pseudopotential filtering.");
 
     If.RegisterInputKey("sort_wavefunctions", &lc.sortflag, false, 
                         "Sort wavefunctions by eigenvalue. Not needed if using subspace diagonalization.");

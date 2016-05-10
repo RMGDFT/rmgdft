@@ -49,7 +49,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
     FILE *psp2 = NULL;
     Atomic *A = new Atomic();
     double *rgrid = A->GetRgrid();
-    int ibrav = Rmg_L.get_ibrav_type();
 
     double *work = new double[MAX_LOGGRID];
 
@@ -125,9 +124,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
         // The difference potential is short ranged so we nlradius here
-        double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
-        A->FilterPotential(work, sp->r, sp->rg_points, ct.mask_function, sp->nlradius, offset, ct.cparm, sp->localig,
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->drlocalig, sp->nldim/2*Rmg_G->default_FG_RATIO);
+        A->FilterPotential(work, sp->r, sp->rg_points, sp->nlradius, ct.cparm, sp->localig,
+                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->nldim/2*Rmg_G->default_FG_RATIO);
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)
@@ -137,17 +135,13 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
             /* output xmgr data separator */
             fprintf (psp, "\n&&\n");
-
-            for (int idx = 0; idx < MAX_LOGGRID; idx++)
-                fprintf (psp, "%e  %e \n", rgrid[idx], sp->drlocalig[idx]);
-
             fclose (psp);
         }
 
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts
-        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, ct.mask_function, sp->lradius, offset, ct.cparm, sp->arho_lig,
-                           sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, NULL, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
+        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, ct.cparm, sp->arho_lig,
+                           sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
 
         /*Open file for writing beta function*/
@@ -173,9 +167,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            double offset = ct.hmaxgrid / (double)ct.nxfgrid;
-            A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, (bool)ct.mask_function, sp->nlradius, offset, ct.betacparm, &sp->betalig[ip][0],
-            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, &sp->drbetalig[ip][0], sp->nlfdim/2);
+            A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
+            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, sp->nlfdim/2);
 
 
             /* Is this necessary ??? */
@@ -190,7 +183,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 {
                     {
                         fprintf (psp, "%e  %e\n", rgrid[idx], sp->betalig[ip][idx]);
-                        fprintf (psp2, "%e  %e\n", rgrid[idx], sp->drbetalig[ip][idx]);
                     }
                 }                   /* end for */
             }
@@ -220,9 +212,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
-            A->FilterPotential(work, sp->r, sp->rg_points, ct.mask_function, sp->lradius, offset, ct.cparm, &sp->rhocorelig[0],
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, NULL, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
+            A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.cparm, &sp->rhocorelig[0],
+                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
              * but I am not sure if this is the right solution, it may be better to fix charge density

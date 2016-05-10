@@ -125,52 +125,38 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
     RT1 = new RmgTimer("Force: non-local: betaxpsi");
-
-    if (ct.force_derivate_type == WAVEFUNCTION_DERIVATIVE)
-    {
-        if(!ct.is_gamma)
-        { printf("\n WARNING:  need more test for wavefunction derivative in force calculation for non-gamma point calculation");
-            fflush(NULL);
-            exit(0);
-        } 
-        for (int kpt = 0; kpt < ct.num_kpts; kpt++)
-        {
-
-            num_occupied = 0;
-            for(int st = 0; st < ct.num_states; st++)
-            {
-                if(Kptr[kpt]->Kstates[st].occupation[0] < 1.0e-10) break;
-                num_occupied++;
-                psi = Kptr[kpt]->Kstates[st].psi;
-                psi_x = Kptr[kpt]->Kstates[st + ct.num_states].psi;
-                psi_y = Kptr[kpt]->Kstates[st + 2*ct.num_states].psi;
-                psi_z = Kptr[kpt]->Kstates[st + 3*ct.num_states].psi;
-                CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, 6);
-            }
-
-
-            Betaxpsi(Kptr[kpt], 1*Kptr[kpt]->nstates, num_occupied, Kptr[kpt]->sint_derx, Kptr[kpt]->nl_weight);
-            Betaxpsi(Kptr[kpt], 2*Kptr[kpt]->nstates, num_occupied, Kptr[kpt]->sint_dery, Kptr[kpt]->nl_weight);
-            Betaxpsi(Kptr[kpt], 3*Kptr[kpt]->nstates, num_occupied, Kptr[kpt]->sint_derz, Kptr[kpt]->nl_weight);
-
-            for(int i = 0; i < pct.num_nonloc_ions * ct.num_states * ct.max_nl; i++)
-            {
-                Kptr[kpt]->sint_derx[i] *= -1.0;
-                Kptr[kpt]->sint_dery[i] *= -1.0;
-                Kptr[kpt]->sint_derz[i] *= -1.0;
-            }
-
-        }
-    }
-    else
+    if(!ct.is_gamma)
+    { printf("\n WARNING:  need more test for wavefunction derivative in force calculation for non-gamma point calculation");
+        fflush(NULL);
+        exit(0);
+    } 
+    for (int kpt = 0; kpt < ct.num_kpts; kpt++)
     {
 
-        for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+        num_occupied = 0;
+        for(int st = 0; st < ct.num_states; st++)
         {
-            Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derx, Kptr[kpt]->nl_weight_derx);
-            Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_dery, Kptr[kpt]->nl_weight_dery);
-            Betaxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->sint_derz, Kptr[kpt]->nl_weight_derz);
+            if(Kptr[kpt]->Kstates[st].occupation[0] < 1.0e-10) break;
+            num_occupied++;
+            psi = Kptr[kpt]->Kstates[st].psi;
+            psi_x = Kptr[kpt]->Kstates[st + ct.num_states].psi;
+            psi_y = Kptr[kpt]->Kstates[st + 2*ct.num_states].psi;
+            psi_z = Kptr[kpt]->Kstates[st + 3*ct.num_states].psi;
+            CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, 6);
         }
+
+
+        Betaxpsi(Kptr[kpt], 1*Kptr[kpt]->nstates, num_occupied, Kptr[kpt]->sint_derx, Kptr[kpt]->nl_weight);
+        Betaxpsi(Kptr[kpt], 2*Kptr[kpt]->nstates, num_occupied, Kptr[kpt]->sint_dery, Kptr[kpt]->nl_weight);
+        Betaxpsi(Kptr[kpt], 3*Kptr[kpt]->nstates, num_occupied, Kptr[kpt]->sint_derz, Kptr[kpt]->nl_weight);
+
+        for(int i = 0; i < pct.num_nonloc_ions * ct.num_states * ct.max_nl; i++)
+        {
+            Kptr[kpt]->sint_derx[i] *= -1.0;
+            Kptr[kpt]->sint_dery[i] *= -1.0;
+            Kptr[kpt]->sint_derz[i] *= -1.0;
+        }
+
     }
     delete RT1;
 

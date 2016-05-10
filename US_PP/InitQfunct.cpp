@@ -43,7 +43,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 {
     int idx, i, j, k, num, il, jl, ll;
     double work[MAX_RGRID];
-    double *qnmlig_tpr, *drqnmlig_tpr, *qnm_tpr;
+    double *qnmlig_tpr, *qnm_tpr;
     SPECIES *sp;
     char newname1[MAX_PATH], newname2[MAX_PATH];
     FILE *fqq = NULL;
@@ -95,7 +95,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         num = (sp->nbeta * (sp->nbeta + 1)) * sp->nlc / 2;
         sp->qnmlig = new double[num * MAX_LOGGRID];
-        sp->drqnmlig = new double[num * MAX_LOGGRID];
         idx = 0;
 
         for (i = 0; i < sp->nbeta; i++)
@@ -119,7 +118,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                             work[k] = get_QnmL (idx, ll, sp->r[k], sp);
                     }
                     qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_LOGGRID;
-                    drqnmlig_tpr = sp->drqnmlig + (idx * sp->nlc + ll) * MAX_LOGGRID;
 
                     if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
                     {
@@ -129,9 +127,8 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 
                     }
 
-                    double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
-                    A->FilterPotential(work, sp->r, sp->rg_points, ct.mask_function, sp->qradius, offset, ct.rhocparm, qnmlig_tpr,
-                                        sp->rab, ll, sp->gwidth, sp->nlrcut[sp->llbeta[i]], sp->rwidth, drqnmlig_tpr, sp->qdim/2);
+                    A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
+                                        sp->rab, ll, sp->gwidth, sp->nlrcut[sp->llbeta[i]], sp->rwidth, sp->qdim/2);
 
                     /*Is this necessary ???*/
                     if (ll)
@@ -145,7 +142,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                         for (k = 0; k < MAX_LOGGRID; k++)
                         {
                             fprintf (fqq, "%e  %e\n", rgrid[k], qnmlig_tpr[k]);
-                            fprintf (fdq, "%e  %e\n", rgrid[k], drqnmlig_tpr[k]);
                         }
 
                         fprintf (fqq, "&\n");

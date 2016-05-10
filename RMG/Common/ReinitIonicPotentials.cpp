@@ -58,12 +58,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             // Identical for gamma point
             Kptr[kpt]->nl_weight = (KpointType *)pct.weight;
             Kptr[kpt]->nl_Bweight = (KpointType *)pct.Bweight;
-            if(ct.force_derivate_type == PROJECTOR_DERIVATIVE)
-            {
-                Kptr[kpt]->nl_weight_derx = (KpointType *)pct.weight_derx;
-                Kptr[kpt]->nl_weight_dery = (KpointType *)pct.weight_dery;
-                Kptr[kpt]->nl_weight_derz = (KpointType *)pct.weight_derz;
-            }
 
         }
         else {
@@ -87,19 +81,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
                 if(cuerr != cudaSuccess)
                     RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
 
-                if(ct.force_derivate_type == PROJECTOR_DERIVATIVE)
-                {
-                    cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_weight_derx , pbasis * pct.num_tot_proj * sizeof(KpointType) );
-                    if(cuerr != cudaSuccess)
-                        RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
-                    cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_weight_dery , pbasis * pct.num_tot_proj * sizeof(KpointType) );
-                    if(cuerr != cudaSuccess)
-                        RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
-                    cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_weight_derz , pbasis * pct.num_tot_proj * sizeof(KpointType) );
-                    if(cuerr != cudaSuccess)
-                        RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
-                }
-
             }
 #else
             // Release old memory storage for weights
@@ -114,12 +95,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
                 Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis]();
                 Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis]();
 
-                if(ct.force_derivate_type == PROJECTOR_DERIVATIVE)
-                {
-                    Kptr[kpt]->nl_weight_derx = new KpointType[pct.num_tot_proj * pbasis]();
-                    Kptr[kpt]->nl_weight_dery = new KpointType[pct.num_tot_proj * pbasis]();
-                    Kptr[kpt]->nl_weight_derz = new KpointType[pct.num_tot_proj * pbasis]();
-                }
             }
 #endif
         }
@@ -131,12 +106,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     RT1= new RmgTimer("ReinitIonicPotentials: GetWeight");
     GetWeight (Kptr);
     delete RT1;
-
-    RT1= new RmgTimer("ReinitIonicPotentials: GetDerweight");
-    if(ct.force_derivate_type == PROJECTOR_DERIVATIVE)
-        GetDerweight (Kptr);
-    delete RT1;
-
 
     RT1= new RmgTimer("ReinitIonicPotentials: get_qqq");
     get_qqq ();

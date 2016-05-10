@@ -389,7 +389,6 @@ typedef struct
 
     /* Kohn sham solver type */
     int kohn_sham_solver;
-    int force_derivate_type;
 
     /* Diagonalization flag and period */
     bool initdiag;
@@ -519,9 +518,6 @@ typedef struct
 
     /*Ratio between target RMS for get_vh and RMS total potential*/
     double hartree_rms_ratio;
-
-    /*Boolean flag for using mask function filtering*/
-    bool mask_function;
 
     /* Potential acceleration constant step factor */
     double potential_acceleration_constant_step;

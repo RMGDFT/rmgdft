@@ -134,7 +134,6 @@ typedef struct
     /* ultrosoft Vanderbilt Qnm_rad(r) function and */
     double *qnm;
     double *qnmlig;
-    double *drqnmlig;
 
     /* the coefficient for pseudosation of Qnm_L(r) */
     double *qfcoef;
@@ -170,16 +169,12 @@ typedef struct
      * and for it's radial derivative.
      */
     double localig[MAX_LOGGRID];
-    double drlocalig[MAX_LOGGRID];
 
     /* Log interpolation storage for the core charge density */
     double rhocorelig[MAX_LOGGRID];
 
     /* Utrosoft Vandbelit Projectors on log interpolation grid */
     double betalig[MAX_NB][MAX_LOGGRID];
-
-    /* Radial derivatives of the Utrosoft Vandbelit Projectors on log interpolation grid */
-    double drbetalig[MAX_NB][MAX_LOGGRID];
 
     /* Array of r and xyz vals used to setup forward fft's for init_weight and init_derweight
      * the r_index array is dimensioned (nlfdim*nlfdim*nlfdim) while the others are nlfdim

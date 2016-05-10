@@ -39,10 +39,6 @@ class Atomic {
 private:
 
     double Gcutoff (double g1, double gcut, double width);
-    void backout_mask_function (double *r, double *f, int rg_points, double rmax);
-    void apply_mask_function (double *r, double *f, int rg_points, double rmax, double offset);
-    double mask_function (double x);
-
 
     static int Log_grid_initialized;
     static double a;
@@ -59,9 +55,9 @@ public:
     ~Atomic (void);
     void RftToLogGrid (double cparm, double * f, double * r, double * ffil, double *rab, int rg_points, int lval, double width);
     void BesselToLogGrid (double cparm, double * f, double * r, double * ffil, double *rab, int rg_points, int lval, double rcut, int iradius);
-    void FilterPotential (double *potential, double *r, int rg_points, bool use_mask, double rmax,
-                              double offset, double parm, double* potential_lgrid, double *rab,
-                              int l_value, double gwidth, double rcut, double rwidth, double *drpotential_lgrid, int iradius);
+    void FilterPotential (double *potential, double *r, int rg_points, double rmax,
+                              double parm, double* potential_lgrid, double *rab,
+                              int l_value, double gwidth, double rcut, double rwidth, int iradius);
     double *GetRgrid(void);
     double Interpolate(double *f, double r);
 

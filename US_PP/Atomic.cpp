@@ -342,9 +342,7 @@ void Atomic::FilterPotential (
     double *potential,       // IN:  potential to be filtered
     double *r,               // IN:  radial grid for the potential
     int rg_points,           // IN:  number of points in the radial grid
-    bool use_mask,           // IN:  flag for mask function use
     double rmax,             // IN:  mask function parameter
-    double offset,           // IN:  mask function parameter
     double parm,             // IN:  filtering parameter
     double* potential_lgrid, // OUT: potential on standard log grid
     double *rab,             // IN:  radial volume element from the pseudopotential file
@@ -352,84 +350,38 @@ void Atomic::FilterPotential (
     double gwidth,           // IN:  gaussian parameter controlling speed of g-space damping
     double rcut,             // IN:  filtered potential is damped in real space starting here
     double rwidth,           // IN:  gaussian parameter controlling speed of real space damping
-    double *drpotential_lgrid, // OUT: derivative of potential on standard log grid
     int iradius)             // IN: radius in grid points where potential is non-zero
 {
 
-    bool der_flag = false;
     const double small = 1.e-8;
 
     BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, iradius);
     return;
 
-    if(drpotential_lgrid)
-	der_flag = true;
-
-    if (use_mask)
-	apply_mask_function(r, potential, rg_points, rmax, 0.0);
-
-
     /* Transform to g-space and filter it */
     RftToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, gwidth);
-
-
-    if (use_mask)
-	backout_mask_function (r_filtered, potential_lgrid, MAX_LOGGRID, rmax);
-
-    /*Evaluate radial derivative, if requested*/
-    if (der_flag)
-    {
-
-	radiff (potential_lgrid, drpotential_lgrid, r_filtered, MAX_LOGGRID, log(LOGGRID_MESHPARM));
-
-	/* Fix up the first point */
-	drpotential_lgrid[1] = 2.0 * drpotential_lgrid[2] - drpotential_lgrid[3];
-	drpotential_lgrid[0] = 2.0 * drpotential_lgrid[1] - drpotential_lgrid[2];
-
-    }
 
     /*Fix up first point in filtered potential*/
     potential_lgrid[0] = 2.0 * potential_lgrid[1] - potential_lgrid[2];
 
-
-    /* Without mask function, result needs to be dampened by gaussian starting at rcut*/
-    if (!ct.mask_function)
+    // Damp oscillatory tails in real space
+    for (int idx = 0; idx < MAX_LOGGRID; idx++)
     {
-	for (int idx = 0; idx < MAX_LOGGRID; idx++)
-	{
-            double rdist = r_filtered[idx];
+        double rdist = r_filtered[idx];
 
-	    if (rdist > rcut)
-	    {
-		double t1 = (rdist - rcut) / rcut;
-		double exp_fac = exp (-rwidth * t1 * t1);
+        if (rdist > rcut)
+        {
+            double t1 = (rdist - rcut) / rcut;
+            double exp_fac = exp (-rwidth * t1 * t1);
 
-		potential_lgrid[idx] *= exp_fac;
+            potential_lgrid[idx] *= exp_fac;
 
-		if (fabs (potential_lgrid[idx]) < small)
-		    potential_lgrid[idx] = 0.0;
+            if (fabs (potential_lgrid[idx]) < small)
+                potential_lgrid[idx] = 0.0;
 
-		if (der_flag)
-		{
-		    drpotential_lgrid[idx] *= exp_fac;
-
-		    if (fabs (drpotential_lgrid[idx]) < small)
-			drpotential_lgrid[idx] = 0.0;
-		}
-
-	    }               /* end if */
-
-	}
-    }
-    else {
-
-	for (int idx = 0; idx < MAX_LOGGRID; idx++)
-	{
-            if(r_filtered[idx] >= rmax) potential_lgrid[idx] = 0.0;
-        }
+        }               /* end if */
 
     }
-
 
 } 
 
@@ -477,55 +429,4 @@ double Atomic::Interpolate(double *f, double r)
     
 }
 
-/*Applies mask function
- *   f: a radial function to be filtered
- *   r: array stored r values
- *   rg_points: number of points in radial grid
- *   rcut: The distance after which f should be 0 (after filtering)
- *   offset: distance from the end at which the result is set to 0
- *           This function divides the original function by a mask function, which is zero at rcut. 
- *           For mask function to work correctly, f should be zero at rcut, but sometimes (especially for beta functions)
- *           f decays very slowly only to reach 0 at infinity. In order to avoid problems with dividing by zero we assume
- *           that at the distance (rcut-offset) f is zero and set f/mask to zero for r> (rcut-offset).
- * */
-
-#define VERBOSE 0
-
-
-void Atomic::apply_mask_function (double *r, double *f, int rg_points, double rmax, double offset)
-{
-    for (int idx = 0; idx < rg_points; idx++)
-    {
-        if (r[idx] < rmax-offset) {
-            f[idx] = f[idx]/mask_function(r[idx]/rmax);
-        }
-        else {
-            f[idx] = 0.0;
-        }
-    }
-}
-
-/* Backs out mask function
- *   r: array stored r values
- *   f: a radial function to be filtered
- *   rg_points: number of points in in radial grid
- *   rmax: The distance after which f should be 0 (after filtering)
- * */
-
-void Atomic::backout_mask_function (double *r, double *f, int rg_points, double rmax)
-{
-    for (int idx = 0; idx < rg_points; idx++) f[idx] *= mask_function (r[idx]/rmax);
-}
-
-double Atomic::mask_function (double x)
-{
-    if (x >= 1.0)
-        return 0.0;
-
-    if ((x > 0.0) && (x < 1.0))
-        //return (0.5*(cos(PI*x)+1));
-        return (15.8231*x*x*x*x*x -47.1834 *x*x*x*x + 50.0273 *x*x*x -20.3746*x*x + 0.7294*x + 0.9872);
-
-    return 1.0;
-}
 
