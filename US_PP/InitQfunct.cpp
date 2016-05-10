@@ -41,7 +41,7 @@
 
 void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 {
-    int idx, i, j, k, num, il, jl, ll, ibrav;
+    int idx, i, j, k, num, il, jl, ll;
     double work[MAX_RGRID];
     double *qnmlig_tpr, *drqnmlig_tpr, *qnm_tpr;
     SPECIES *sp;
@@ -50,7 +50,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
     FILE *fdq = NULL;
     
     if(ct.norm_conserving_pp) return;
-    ibrav = Rmg_L.get_ibrav_type();
 
     Atomic *A = new Atomic();
     double *rgrid = A->GetRgrid();
@@ -58,11 +57,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 
     double *workr = new double[MAX_LOGGRID];
 
-    double scale = 1.0;
-    if (ibrav == CUBIC_BC)
-        scale = 1.1;
-    if (ibrav == CUBIC_FC)
-        scale = 1.3;
     for (int isp = 0; isp < ct.num_species; isp++)
     {
 
@@ -81,9 +75,11 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
         }
 
-        sp->qdim = Radius2grid (sp->qradius, ct.hmingrid);
-        sp->qdim = sp->qdim/2*2 +1;
-        sp->qdim = Rmg_G->default_FG_RATIO  * sp->qdim;
+        sp->qdim = Radius2grid (sp->qradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
+        sp->qdim = sp->qdim/2*2 + 1;
+
+        sp->qradius = 0.5 * ct.hmingrid * (double)(sp->qdim-1) / (double)Rmg_G->default_FG_RATIO;
+        //printf("QQQQQQQ  %d  %20.12f\n",sp->qdim,sp->qradius);
 
         /*		sp->qdim = 2 * FG_NX * (it1 / 2) + 1;*/
 
@@ -135,7 +131,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 
                     double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
                     A->FilterPotential(work, sp->r, sp->rg_points, ct.mask_function, sp->qradius, offset, ct.rhocparm, qnmlig_tpr,
-                                        sp->rab, ll, sp->gwidth, sp->nlrcut[sp->llbeta[i]], sp->rwidth, drqnmlig_tpr, sp->qdim);
+                                        sp->rab, ll, sp->gwidth, sp->nlrcut[sp->llbeta[i]], sp->rwidth, drqnmlig_tpr, sp->qdim/2);
 
                     /*Is this necessary ???*/
                     if (ll)

@@ -1019,12 +1019,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     if(lc.poi_parm.levels == -1) {
         for(lc.poi_parm.levels = 6;lc.poi_parm.levels >= 0;lc.poi_parm.levels--) {
             bool poi_level_err = false;
-            if ((FNX_GRID / (1 << (lc.poi_parm.levels+1))) < 3) poi_level_err = true;
-            if ((FNY_GRID / (1 << (lc.poi_parm.levels+1))) < 3) poi_level_err = true;
-            if ((FNZ_GRID / (1 << (lc.poi_parm.levels+1))) < 3) poi_level_err = true;
-            if ((FNX_GRID % (1 << (lc.poi_parm.levels+1))) != 0) poi_level_err = true;
-            if ((FNY_GRID % (1 << (lc.poi_parm.levels+1))) != 0) poi_level_err = true;
-            if ((FNZ_GRID % (1 << (lc.poi_parm.levels+1))) != 0) poi_level_err = true;
+            if ((FNX_GRID / (1 << (lc.poi_parm.levels+1))) < 2) poi_level_err = true;
+            if ((FNY_GRID / (1 << (lc.poi_parm.levels+1))) < 2) poi_level_err = true;
+            if ((FNZ_GRID / (1 << (lc.poi_parm.levels+1))) < 2) poi_level_err = true;
+            if ((FNX_GRID % (1 << (lc.poi_parm.levels))) != 0) poi_level_err = true;
+            if ((FNY_GRID % (1 << (lc.poi_parm.levels))) != 0) poi_level_err = true;
+            if ((FNZ_GRID % (1 << (lc.poi_parm.levels))) != 0) poi_level_err = true;
             if (!poi_level_err) break;
         }
     }

@@ -80,8 +80,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         while(!done) {
 
             sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
-            sp->nldim = sp->nldim/2*2 +1;
-            sp->nlfdim = ct.nxfgrid * sp->nldim - 1;
+            sp->nldim = sp->nldim/2*2 + 1;
+            sp->nlfdim = ct.nxfgrid * sp->nldim;
 
             if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID())) {
                 sp->nlradius *= 0.99;
@@ -92,8 +92,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
         }
-        if(reduced) rmg_printf("Warning: diameter of non-local projectors %8.4f exceeds cell size. Reducing. New radius = %12.6f\n", sp->nlradius);
-
+        sp->nlradius = 0.5 * ct.hmingrid * (double)(sp->nldim-1);
+        if(reduced) rmg_printf("Warning: diameter of non-local projectors exceeds cell size. Reducing. New radius = %12.6f\n", sp->nlradius);
+        //printf("NLRADIUS  =  %20.12f   NLDIM = %d  NLFDIM = %d\n",sp->nlradius, sp->nldim, sp->nlfdim);
 
         /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
         if (ct.max_nlpoints < (sp->nldim * sp->nldim * sp->nldim))
@@ -123,9 +124,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
+        // The difference potential is short ranged so we nlradius here
         double offset = ct.hmaxgrid / (double)Rmg_G->default_FG_RATIO;
-        A->FilterPotential(work, sp->r, sp->rg_points, ct.mask_function, sp->lradius, offset, ct.cparm, sp->localig,
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->drlocalig, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
+        A->FilterPotential(work, sp->r, sp->rg_points, ct.mask_function, sp->nlradius, offset, ct.cparm, sp->localig,
+                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->drlocalig, sp->nldim/2*Rmg_G->default_FG_RATIO);
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)

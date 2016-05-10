@@ -267,9 +267,22 @@ void Atomic::BesselToLogGrid (
                    int iradius)         // IN: radius in grid points where potential is non-zero
 {
 
-    double rN = (double)(iradius);
-    int N = (int)rN;
-    if(N > NUM_BESSEL_ROOTS) N = NUM_BESSEL_ROOTS;
+    // get minimum grid spacing then find the largest root of the Bessel function such that
+    // the normalized distance between any two roots is larger than the minimum grid spacing.
+    double hmin = rcut / (double)iradius;
+    int N = NUM_BESSEL_ROOTS;
+    for(int i = 0;i < NUM_BESSEL_ROOTS;i++) {
+        for(int j = 0;j < i;j++) {
+            double h = 0.5*rcut * (J_roots[lval][i] - J_roots[lval][j]) / J_roots[lval][i];
+            if(h <= hmin) {
+                N = j;
+                goto Bessel1;
+                break;
+            }
+        }
+    }
+Bessel1:
+
     if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f\n",N, rcut);
 
     // Normalization coefficient
