@@ -149,7 +149,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     /* The non-linear core correction part if any */
     RmgTimer *RT4 = new RmgTimer("Force: 1core correction");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
-    nlccforce (rho, vxc, force_tmp);
+    Nlccforce (rho, vxc, force_tmp);
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i] * fac_spin;
     delete RT4;
 

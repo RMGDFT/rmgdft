@@ -142,7 +142,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
             psi_x = Kptr[kpt]->Kstates[st + ct.num_states].psi;
             psi_y = Kptr[kpt]->Kstates[st + 2*ct.num_states].psi;
             psi_z = Kptr[kpt]->Kstates[st + 3*ct.num_states].psi;
-            CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, 6);
+            CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
         }
 
 
@@ -162,7 +162,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
     RT1 = new RmgTimer("Force: non-local: veff grad");
-    CPP_app_grad_driver (&Rmg_L, Rmg_T, veff, (double *)gx, (double *)gy, (double *)gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid, 6);
+    CPP_app_grad_driver (&Rmg_L, Rmg_T, veff, (double *)gx, (double *)gy, (double *)gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid, ct.kohn_sham_fd_order);
     delete RT1;
 
 

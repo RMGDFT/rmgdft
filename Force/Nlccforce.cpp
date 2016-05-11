@@ -39,42 +39,31 @@
 
 
 
-
-void Lforce (double * rho, double * vh, double *force)
+void Nlccforce (double * rho, double * vxc, double *force_nlcc)
 {
-
 
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     double *gx = new double[3*FP0_BASIS];
     double *gy = gx + FP0_BASIS;
-    double *gz = gy + FP0_BASIS;
-    double *force_tmp = new double[pct.num_loc_ions * 3];
+    double *gz = gx + 2*FP0_BASIS;
+
+    ApplyGradient (vxc, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
+
 
     int ithree = 3;
-    double alpha = -get_vel_f(), zero = 0.0, mone = -1.0;
-
-
-    ApplyGradient (vh, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
-
+    double alpha = -get_vel_f(), zero = 0.0, *force_tmp;
+    
+    force_tmp = new double[pct.num_loc_ions * 3];
 
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
-            pct.localrhoc, &FP0_BASIS, &zero, force_tmp, &ithree); 
-
-
-    ApplyGradient (rho, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
-
-    dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
-           pct.localpp, &FP0_BASIS, &mone, force_tmp, &ithree); 
-
-
+            pct.localrhonlcc, &FP0_BASIS, &zero, force_tmp, &ithree); 
     for(int ion1 = 0; ion1 <pct.num_loc_ions; ion1++)
     {
         int ion = pct.loc_ions_list[ion1];
-        
-        force[ion *3 + 0] = force_tmp[ion1 *3 + 0];
-        force[ion *3 + 1] = force_tmp[ion1 *3 + 1];
-        force[ion *3 + 2] = force_tmp[ion1 *3 + 2];
+        force_nlcc[ion *3 + 0] = force_tmp[ion1 *3 + 0];
+        force_nlcc[ion *3 + 1] = force_tmp[ion1 *3 + 1];
+        force_nlcc[ion *3 + 2] = force_tmp[ion1 *3 + 2];
 
     }
     
@@ -82,6 +71,4 @@ void Lforce (double * rho, double * vh, double *force)
     delete [] force_tmp;
     delete [] gx;
 
-
 }
-
