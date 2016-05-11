@@ -54,10 +54,10 @@ public:
     Atomic (void);
     ~Atomic (void);
     void RftToLogGrid (double cparm, double * f, double * r, double * ffil, double *rab, int rg_points, int lval, double width);
-    void BesselToLogGrid (double cparm, double * f, double * r, double * ffil, double *rab, int rg_points, int lval, double rcut, int iradius);
+    void BesselToLogGrid (double cparm, double * f, double * r, double * ffil, double *rab, int rg_points, int lval, double rcut, int iradius, double ratio);
     void FilterPotential (double *potential, double *r, int rg_points, double rmax,
                               double parm, double* potential_lgrid, double *rab,
-                              int l_value, double gwidth, double rcut, double rwidth, int iradius);
+                              int l_value, double gwidth, double rcut, double rwidth, int iradius, double ratio);
     double *GetRgrid(void);
     double Interpolate(double *f, double r);
 

@@ -46,7 +46,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
     double Zv, rc, t1;
     char newname[MAX_PATH];
     FILE *psp = NULL;
-    FILE *psp2 = NULL;
     Atomic *A = new Atomic();
     double *rgrid = A->GetRgrid();
 
@@ -123,9 +122,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
-        // The difference potential is short ranged so we nlradius here
+        int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->nlradius / ct.hmingrid);
         A->FilterPotential(work, sp->r, sp->rg_points, sp->nlradius, ct.cparm, sp->localig,
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, sp->nldim/2*Rmg_G->default_FG_RATIO);
+                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, iradius, (double)Rmg_G->default_FG_RATIO);
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)
@@ -140,8 +139,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts
-        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, ct.cparm, sp->arho_lig,
-                           sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
+        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->aradius, ct.cparm, sp->arho_lig,
+                           sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, iradius, (double)Rmg_G->default_FG_RATIO);
 
 
         /*Open file for writing beta function*/
@@ -150,10 +149,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             snprintf (newname, MAX_PATH, "beta_%s.xmgr", sp->atomic_symbol);
             if(NULL == (psp = fopen (newname, "w+")))
                throw RmgFatalException() << "Unable to open beta function graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
-
-            snprintf (newname, MAX_PATH, "drbeta_%s.xmgr", sp->atomic_symbol);
-            if(NULL == (psp2 = fopen (newname, "w+")))
-               throw RmgFatalException() << "Unable to open drbeta function graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
 
         /* Write raw beta function into file if requested*/
@@ -162,19 +157,13 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
             if (pct.gridpe == 0 && write_flag)
             {
-                for (int idx = 0; idx < sp->kkbeta; idx++)
-                    fprintf (psp, "%e  %e\n", sp->r[idx], sp->beta[ip][idx]);
+                for (int idx = 0; idx < sp->kkbeta; idx++) fprintf (psp, "%e  %e\n", sp->r[idx], sp->beta[ip][idx]);
                 fprintf (psp, "\n&&\n");
             }
 
+            int iradius = ct.nxfgrid * (int)std::rint(sp->nlradius / ct.hmingrid);
             A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
-            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, sp->nlfdim/2);
-
-
-            /* Is this necessary ??? */
-            if (sp->llbeta[ip])
-                sp->betalig[ip][0] = 0.0;
-
+            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, iradius, (double)ct.nxfgrid);
 
             /* output filtered non-local projector to a file  if requested */
             if (pct.gridpe == 0 && write_flag)
@@ -191,7 +180,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             if (pct.gridpe == 0 && write_flag)
             {
                 fprintf (psp, "\n&&\n");
-                fprintf (psp2, "\n&&\n");
             }
 
         }                       /* end for ip */
@@ -212,8 +200,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.cparm, &sp->rhocorelig[0],
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, (sp->nldim/2)*Rmg_G->default_FG_RATIO);
+            int iradius = ct.nxfgrid * (int)std::rint(sp->nlradius / ct.hmingrid);
+            A->FilterPotential(work, sp->r, sp->rg_points, sp->nlradius, ct.cparm, &sp->rhocorelig[0],
+                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, iradius, (double)ct.nxfgrid);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
              * but I am not sure if this is the right solution, it may be better to fix charge density
@@ -238,7 +227,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         if (pct.gridpe == 0 && write_flag)
         {
             fclose (psp);
-            fclose (psp2);
         }
 
     }                           /* end for */
