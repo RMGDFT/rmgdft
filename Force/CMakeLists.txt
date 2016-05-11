@@ -1,6 +1,6 @@
 add_library (Force
+Lforce.cpp
 constrain.c
-lforce.c
 Force.cpp
 iiforce.c
 nlccforce.c

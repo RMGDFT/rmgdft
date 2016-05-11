@@ -117,11 +117,11 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
         rho_tot = new double[get_FP0_BASIS()];
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
             rho_tot[idx] = rho[idx] + rho_oppo[idx];
-        lforce(rho_tot, vh, force_tmp);
+        Lforce(rho_tot, vh, force_tmp);
         delete[] rho_tot;
     }
     else
-        lforce (rho, vh, force_tmp);
+        Lforce (rho, vh, force_tmp);
 
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
     delete RT2;
