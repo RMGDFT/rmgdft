@@ -1025,6 +1025,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // Cutoff parameter 
     lc.rhocparm = lc.cparm / (double) lc.FG_RATIO;
     lc.betacparm = lc.cparm / (double) lc.nxfgrid;
+lc.rhocparm = 0.8;
+lc.betacparm = 0.8;
     //printf("PARMS = %20.12f  %20.12f\n",lc.rhocparm, lc.betacparm);
 
 

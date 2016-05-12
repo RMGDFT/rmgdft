@@ -471,20 +471,20 @@ void LoadUpf(SPECIES *sp)
     // Stuff not present in the UPF format that RMG requires. 
     // We need to find a consistent way of automatically setting these.
     sp->rc = fabs(2.0 * sp->zvalence / sqrt(PI) / sp->vloc0[0]);
-sp->lradius = 7.5;
-sp->nlradius = 7.5;
-sp->qradius = 4.5;
-    sp->lrcut = 7.5;
+sp->lradius = 5.5;
+sp->nlradius = 5.5;
+sp->qradius = 5.5;
+    sp->lrcut = 4.5;
+sp->lrcut = 3.5;
     sp->rwidth = 8.5; 
     sp->gwidth = 8.0;
-sp->gwidth = 30.0;
+sp->rwidth = 15.0; 
     sp->aradius = 9.0;
     sp->acut = 7.0;
     sp->agwidth = 10.0;
     sp->arwidth = 25.0;
     for(int ip = 0;ip < sp->nbeta;ip++) {
-        sp->nlrcut[sp->llbeta[ip]] = 4.8425;
-        sp->nlrcut[sp->llbeta[ip]] = 4.5;
+        sp->nlrcut[sp->llbeta[ip]] = 3.3;
     }
 
     // Leftover initializations

@@ -264,18 +264,16 @@ void Atomic::BesselToLogGrid (
                    int rg_points,       // IN:  number of points in pseudopotential radial grid
                    int lval,            // IN:  momentum l (0=s, 1=p, 2=d)
                    double rcut,         // IN:  f is defined on [0,rcut] with f(r>=rcut) = 0.0
-                   int iradius,         // IN:  radius in grid points where potential is non-zero
-                   double ratio)        // IN:  ratio of fine to coarse for this object 
+                   int iradius)         // IN:  radius in grid points where potential is non-zero
 {
 
     // get minimum grid spacing then find the largest root of the Bessel function such that
     // the normalized distance between any two roots is larger than the minimum grid spacing.
-    double factor = 0.5;
     double hmin = rcut / (double)iradius;
     int N = NUM_BESSEL_ROOTS;
     for(int i = 0;i < NUM_BESSEL_ROOTS;i++) {
         for(int j = 0;j < i;j++) {
-            double h = factor*rcut * (J_roots[lval][i] - J_roots[lval][j]) / J_roots[lval][i];
+            double h = cparm*rcut * (J_roots[lval][i] - J_roots[lval][j]) / J_roots[lval][i];
             if(h <= hmin) {
                 N = j;
                 goto Bessel1;
@@ -284,7 +282,8 @@ void Atomic::BesselToLogGrid (
         }
     }
 Bessel1:
-    rcut = hmin * J_roots[lval][N] / (factor * (J_roots[lval][N] - J_roots[lval][N-1])) + hmin/ratio;
+    //rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1])) + hmin/ratio;
+    rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1]));
     if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f  hmin = %12.6f\n",N, rcut, hmin);
 
     // Normalization coefficient
@@ -352,20 +351,16 @@ void Atomic::FilterPotential (
     double gwidth,           // IN:  gaussian parameter controlling speed of g-space damping
     double rcut,             // IN:  filtered potential is damped in real space starting here
     double rwidth,           // IN:  gaussian parameter controlling speed of real space damping
-    int iradius,             // IN:  radius in grid points where potential is non-zero
-    double ratio)            // IN:  ratio of fine to coarse for this object
+    int iradius)             // IN:  radius in grid points where potential is non-zero
 {
 
-    const double small = 1.e-8;
-
-    BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, iradius, ratio);
-    return;
+    BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, iradius);
 
     /* Transform to g-space and filter it */
-    RftToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, gwidth);
+//    RftToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, gwidth);
 
     /*Fix up first point in filtered potential*/
-    potential_lgrid[0] = 2.0 * potential_lgrid[1] - potential_lgrid[2];
+//    potential_lgrid[0] = 2.0 * potential_lgrid[1] - potential_lgrid[2];
 
     // Damp oscillatory tails in real space
     for (int idx = 0; idx < MAX_LOGGRID; idx++)
@@ -376,12 +371,7 @@ void Atomic::FilterPotential (
         {
             double t1 = (rdist - rcut) / rcut;
             double exp_fac = exp (-rwidth * t1 * t1);
-
             potential_lgrid[idx] *= exp_fac;
-
-            if (fabs (potential_lgrid[idx]) < small)
-                potential_lgrid[idx] = 0.0;
-
         }               /* end if */
 
     }

@@ -124,7 +124,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Transform to g-space and filter it with filtered function returned on standard log grid
         int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->nlradius / ct.hmingrid);
         A->FilterPotential(work, sp->r, sp->rg_points, sp->nlradius, ct.cparm, sp->localig,
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, iradius, (double)Rmg_G->default_FG_RATIO);
+                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, iradius);
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)
@@ -140,7 +140,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts
         A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->aradius, ct.cparm, sp->arho_lig,
-                           sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, iradius, (double)Rmg_G->default_FG_RATIO);
+                           sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, iradius);
 
 
         /*Open file for writing beta function*/
@@ -161,9 +161,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            int iradius = ct.nxfgrid * (int)std::rint(sp->nlradius / ct.hmingrid);
+            // First set filtered for integration on high density grid
+            int iradius = (int)std::rint(sp->nlradius / ct.hmingrid);
             A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
-            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, iradius, (double)ct.nxfgrid);
+            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, iradius);
 
             /* output filtered non-local projector to a file  if requested */
             if (pct.gridpe == 0 && write_flag)
@@ -202,7 +203,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
             int iradius = ct.nxfgrid * (int)std::rint(sp->nlradius / ct.hmingrid);
             A->FilterPotential(work, sp->r, sp->rg_points, sp->nlradius, ct.cparm, &sp->rhocorelig[0],
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, iradius, (double)ct.nxfgrid);
+                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, iradius);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
              * but I am not sure if this is the right solution, it may be better to fix charge density
