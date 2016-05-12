@@ -451,7 +451,7 @@ double Atomic::GetRange(double *f, double *r, double *rab, int rg_points)
         if(ratio <= 0.999999999) break;
     }
 
-    if(pct.gridpe==0)printf("BREAK = %d  %20.12f  %20.12f  %20.12f  %20.12f\n",i, fsum, f[rg_points-1], r[i], f[i]);
+    //if(pct.gridpe==0)printf("BREAK = %d  %20.12f  %20.12f  %20.12f  %20.12f\n",i, fsum, f[rg_points-1], r[i], f[i]);
     return r[i];
     delete [] f2;
 }
