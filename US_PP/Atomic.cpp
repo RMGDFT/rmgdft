@@ -267,6 +267,7 @@ void Atomic::BesselToLogGrid (
                    int iradius)         // IN:  radius in grid points where potential is non-zero
 {
 
+
     // get minimum grid spacing then find the largest root of the Bessel function such that
     // the normalized distance between any two roots is larger than the minimum grid spacing.
     double hmin = rcut / (double)iradius;
@@ -420,6 +421,39 @@ double Atomic::Interpolate(double *f, double r)
 
     return f0 + d0 * (g1 + d1 * (h2 + dm * i2));
     
+}
+
+
+// This function is used to determine the range of the Beta and Q functions in
+// real space. It first computes the integral of the square of the function
+// and then determines what r includes most of the function.
+double Atomic::GetRange(double *f, double *r, double *rab, int rg_points)
+{
+
+    int i;
+
+    /* Simpson's rule weights */
+    double w0 = 1.0 / 3.0;
+    double w1 = 4.0 / 3.0;
+    double w2 = 2.0 / 3.0;
+    double *f2 = new double[rg_points];
+
+    for(i = 0;i < rg_points;i++) f2[i] = sqrt(f[i] * f[i]);
+
+    double fsum = radint1 (f2, r, rab, rg_points);
+
+    double tsum = fsum;
+
+    for(i = rg_points - 1;i > 1;i--) {
+
+        tsum -= f2[i] * r[i] * r[i] * rab[i] * (( (i) % 2 == 1 ) ? w1 : w2);
+        double ratio = tsum/fsum;
+        if(ratio <= 0.999999999) break;
+    }
+
+    if(pct.gridpe==0)printf("BREAK = %d  %20.12f  %20.12f  %20.12f  %20.12f\n",i, fsum, f[rg_points-1], r[i], f[i]);
+    return r[i];
+    delete [] f2;
 }
 
 
