@@ -94,7 +94,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
             mg_prolong_MAX10 (rho, work, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
             break;
         case FFT_INTERPOLATION:
-            FftFilter(work, *coarse_pwaves, 1.0, LOW_PASS);  // G-vectors within the inscribed sphere
+            //FftFilter(work, *coarse_pwaves, 1.0, LOW_PASS);  // G-vectors within the inscribed sphere
             FftInterpolation (*Kpts[0]->G, work, rho, Rmg_G->default_FG_RATIO);
             break;
         default:
