@@ -71,6 +71,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         }
 
 
+        // Might need to adjust this depending on filtering changes. Also assumes that all beta have roughly the same range
+        sp->nlradius = 4.0 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points);
+
         /*Get nldim */
         bool done = false;
         bool reduced = false;
@@ -124,7 +127,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Transform to g-space and filter it with filtered function returned on standard log grid
         int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->nlradius / ct.hmingrid);
         A->FilterPotential(work, sp->r, sp->rg_points, sp->nlradius, ct.cparm, sp->localig,
-                           sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, iradius);
+                           sp->rab, 0, sp->gwidth, sp->nlrcut[0], sp->rwidth, iradius);
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)
@@ -161,8 +164,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            // First set filtered for integration on high density grid
+            // Filtering for wavefunction grid
             int iradius = (int)std::rint(sp->nlradius / ct.hmingrid);
+            sp->nlrcut[sp->llbeta[ip]] = 0.6*sp->nlradius;
             A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
             sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, iradius);
 
@@ -201,7 +205,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            int iradius = ct.nxfgrid * (int)std::rint(sp->nlradius / ct.hmingrid);
+            int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->nlradius / ct.hmingrid);
             A->FilterPotential(work, sp->r, sp->rg_points, sp->nlradius, ct.cparm, &sp->rhocorelig[0],
                            sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, iradius);
 

@@ -371,7 +371,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Maximum ionic time step to use.\n",
                      "max_ionic_time_step must lie in the range (0.0,150.0). Resetting to the default value of 150.0.\n");
 
-    If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 0, INT_MAX, 10, 
+    If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 10, INT_MAX, 10, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
                      "The number of unoccupied orbitals.\n", 
                      "unoccupied_states_per_kpoint must be greater than 0. Terminating.\n");
@@ -723,7 +723,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
                      "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7.\n");
 
-    If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-14, 1.0e-3, 1.0e-6,
+    If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-14, 1.0e-3, 1.0e-5,
                      CHECK_AND_FIX, OPTIONAL,
                      "The RMS value of the change in the total potential where we switch the preconditioner from single to double precision.\n",
                      "preconditioner_threshold must lie in the range (1.0e-9,1.0e-3). Resetting to default value of 1.0e-6.\n");
@@ -769,10 +769,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "neb_spring_constant must be in the range (0.05, 3.0).\n");
 
-    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 1.0, 6.0, 2.8,
+    If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 0.6, 1.0, 0.8,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "energy_cutoff_parameter must be in the range (1.0,4.0). Resetting to default value of 2.8.\n");
+                     "energy_cutoff_parameter must be in the range (0.6,1.0). Resetting to default value of 0.8.\n");
 
 
     std::string Occup, Occdown;
@@ -1022,12 +1022,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         }
     }
 
-    // Cutoff parameter 
-    lc.rhocparm = lc.cparm / (double) lc.FG_RATIO;
-    lc.betacparm = lc.cparm / (double) lc.nxfgrid;
-lc.rhocparm = 0.8;
-lc.betacparm = 0.8;
-    //printf("PARMS = %20.12f  %20.12f\n",lc.rhocparm, lc.betacparm);
+    // Cutoff parameter -- do we want separate settings for each of these?
+    lc.rhocparm = lc.cparm;
+    lc.betacparm = lc.cparm;
 
 
     if (lc.iondt_max < lc.iondt)

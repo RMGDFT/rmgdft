@@ -42,10 +42,10 @@
 void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 {
     int idx, i, j, k, num, il, jl, ll;
-    double work[MAX_RGRID];
+    double *work = new double[MAX_RGRID]();
     double *qnmlig_tpr, *qnm_tpr;
     SPECIES *sp;
-    char newname1[MAX_PATH], newname2[MAX_PATH];
+    char newname1[MAX_PATH];
     FILE *fqq = NULL;
     
     if(ct.norm_conserving_pp) return;
@@ -71,17 +71,25 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
         }
 
+
+        // Get range of q-functions. Assumes that all of them have roughly the same range
+        qnm_tpr = sp->qnm;
+        for (k = 0; k < sp->rg_points; k++)
+        {
+            if (sp->r[k] >= sp->rinner[0])
+                work[k] = qnm_tpr[k];
+            else
+                work[k] = get_QnmL (0, 0, sp->r[k], sp);
+        }
+        sp->qradius = 3.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
+
+        // Make adjustments so radii terminates on a grid point
         sp->qdim = Radius2grid (sp->qradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
         sp->qdim = sp->qdim/2*2 + 1;
 
         sp->qradius = 0.5 * ct.hmingrid * (double)(sp->qdim-1) / (double)Rmg_G->default_FG_RATIO;
-        //printf("QQQQQQQ  %d  %20.12f\n",sp->qdim,sp->qradius);
+        sp->qcut = 0.66 * sp->qradius;
 
-        /*		sp->qdim = 2 * FG_NX * (it1 / 2) + 1;*/
-
-        //        if ((sp->qdim >= get_FNX_GRID()) || (sp->qdim >= get_FNY_GRID())
-        //            || (sp->qdim >= get_FNZ_GRID()))
-        //            error_handler ("nlocal potential radius exceeds global grid size");
         if (sp->qdim >= get_FNX_GRID()) sp->qdim = get_FNX_GRID();
         if (sp->qdim >= get_FNY_GRID()) sp->qdim = get_FNY_GRID();
         if (sp->qdim >= get_FNZ_GRID()) sp->qdim = get_FNZ_GRID();
@@ -124,7 +132,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                     }
 
                     A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
-                                        sp->rab, ll, sp->gwidth, sp->nlrcut[sp->llbeta[i]], sp->rwidth, sp->qdim/2);
+                                        sp->rab, ll, sp->gwidth, sp->qcut, 40.0, sp->qdim/2);
 
 
                     /*Write final filtered Q function if requested*/
@@ -151,5 +159,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 
     delete A;
     delete [] workr;
+    delete [] work;
 
 }
