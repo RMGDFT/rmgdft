@@ -139,9 +139,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
-        int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->nlradius / ct.hmingrid);
-        A->FilterPotential(work, sp->r, sp->rg_points, 4.0*sp->nlradius, ct.cparm, sp->localig,
-                sp->rab, 0, sp->gwidth, sp->nlrcut[0], sp->rwidth, iradius);
+        sp->lradius = 6.5;
+        int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->lradius / ct.hmingrid);
+        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.cparm, sp->localig,
+                sp->rab, 0, sp->gwidth, 0.6*sp->lradius, sp->rwidth, iradius);
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)
@@ -220,9 +221,11 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->nlradius / ct.hmingrid);
-            A->FilterPotential(work, sp->r, sp->rg_points, sp->nlradius, ct.cparm, &sp->rhocorelig[0],
-                    sp->rab, 0, sp->gwidth, sp->lrcut, sp->rwidth, iradius);
+            double nlccradius = 5.0 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
+
+            int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(nlccradius / ct.hmingrid);
+            A->FilterPotential(work, sp->r, sp->rg_points, nlccradius, ct.cparm, &sp->rhocorelig[0],
+                           sp->rab, 0, sp->gwidth, 0.6*nlccradius, sp->rwidth, iradius);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
              * but I am not sure if this is the right solution, it may be better to fix charge density
