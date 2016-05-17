@@ -251,6 +251,10 @@ int Radius2grid (double radius, double mingrid_spacing);
 void Lforce (double * rho, double * vh, double *force);
 void Nlccforce (double * rho, double * vxc, double *force_nlcc);
 
+void FindFftwPhaseLocalpp (int nldim, double * nlcdrs, std::complex<double> *phase_fft, int level);
+void InitLocalForward();
+void InitLocalBackward(double *, double *, double *);
+
 
 
 
@@ -264,4 +268,5 @@ void Nlccforce (double * rho, double * vxc, double *force_nlcc);
     #define rmg_printf( message, ... ) \
          fprintf( ct.logfile, message, __VA_ARGS__ )
 #endif
+
 

@@ -1,4 +1,8 @@
 add_library (US_PP
+InitLocalForward.cpp
+InitLocalBackward.cpp
+#PackFine2Rhogrid.cpp
+FindFftwPhaseLocalpp.cpp
 Radius2grid.cpp
 FindPhase.cpp
 Atomic.cpp

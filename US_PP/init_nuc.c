@@ -258,7 +258,6 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     if (pct.imgpe==0)
         printf("\nCompensating charge is %.8e\n", ct.crho);
 
-
     t1 = 0.0;
     for (idx = 0; idx < FP0_BASIS; idx++)
     {

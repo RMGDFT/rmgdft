@@ -46,6 +46,8 @@ typedef struct
      */
     //int ldim;
     int ldim_coar;
+    int ldim;
+    int ldim_fine;
     int nldim;
     int nlfdim;
     int qdim;
@@ -215,6 +217,9 @@ typedef struct
 
     /*This will store results of forward fourier transform on the coarse grid */
     fftw_complex *forward_beta;
+    fftw_complex *forward_vnuc;
+    fftw_complex *forward_rhoc;
+    fftw_complex *forward_rhocore;
 
 #if !FDIFF_BETA
     /*This will store results of forward fourier transform for derivatives of beta on the coarse grid */

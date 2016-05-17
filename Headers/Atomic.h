@@ -24,6 +24,7 @@
 #define RMG_Atomic_H 1
 
 
+#include <complex>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
@@ -65,6 +66,7 @@ public:
 
     static double r_filtered[MAX_LOGGRID];
     static double log_r_filtered[MAX_LOGGRID];
+    void PackFine2Rhogrid(std::complex<double> *gweight_fine, int ngrid_fine, std::complex<double> *gweigh, int ngrid);
 
 };
 

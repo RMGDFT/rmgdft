@@ -41,6 +41,7 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     /* Update items that change when the ionic coordinates change */
     RT1= new RmgTimer("ReinitIonicPotentials: init_nuc");
     init_nuc (vnuc, rhoc, rhocore);
+//    InitLocalBackward(vnuc, rhoc, rhocore);
     delete RT1;
     RT1= new RmgTimer("ReinitIonicPotentials: get_QI");
     get_QI ();

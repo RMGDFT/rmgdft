@@ -114,7 +114,11 @@ static inline double qval_inline (int ih, int jh, int ic, double d0, double d1, 
         else if ((lp >= 16) && (lp < 25))
             l = 4;
         else
-            error_handler ("L>4");
+        {
+            printf("\n L>4 in qval_inline \n");
+            fflush(NULL);
+            exit(0);
+        }
 
         ptpr1 = ptpr + (nmb * sp->nlc + l) * MAX_LOGGRID;
         /*shuchun wang */
