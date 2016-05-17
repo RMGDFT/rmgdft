@@ -72,7 +72,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Might need to adjust this depending on filtering changes. Also assumes that all beta have roughly the same range
-        sp->nlradius = 4.0 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points);
+        sp->nlradius = 5.0 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points);
 
         /*Get nldim */
         bool done = false;
@@ -126,7 +126,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
         int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->nlradius / ct.hmingrid);
-        A->FilterPotential(work, sp->r, sp->rg_points, sp->nlradius, ct.cparm, sp->localig,
+        A->FilterPotential(work, sp->r, sp->rg_points, 4.0*sp->nlradius, ct.cparm, sp->localig,
                            sp->rab, 0, sp->gwidth, sp->nlrcut[0], sp->rwidth, iradius);
 
         /*Write local projector into a file if requested*/
@@ -167,8 +167,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             // Filtering for wavefunction grid
             int iradius = (int)std::rint(sp->nlradius / ct.hmingrid);
             sp->nlrcut[sp->llbeta[ip]] = 0.6*sp->nlradius;
+ct.betacparm = 2.0;
             A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
-            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], sp->rwidth, iradius);
+            sp->rab, sp->llbeta[ip], sp->gwidth, sp->nlrcut[sp->llbeta[ip]], 1.5*sp->rwidth, iradius);
 
             /* output filtered non-local projector to a file  if requested */
             if (pct.gridpe == 0 && write_flag)

@@ -43,8 +43,13 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
+    ION *iptr = &ct.ions[ion];
 
-
+    // These are probably not right for anything but simple cubic grids
+    double wx = iptr->nlcrds[0] / ct.hmaxgrid;
+    double wy = iptr->nlcrds[1] / ct.hmaxgrid;
+    double wz = iptr->nlcrds[2] / ct.hmaxgrid;
+//if(pct.gridpe==0)printf("WWWWW  %20.12f  %20.12f  %20.12f\n",wx,wy,wz);
     int pbasis = kptr->pbasis;
     int nldim = sp->nldim;
     KpointType ZERO_t(0.0);
@@ -125,11 +130,20 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     for (int ix = 0; ix < sp->nldim; ix++)
     {
 
+        double w1=1.0;
+        if(ix==0) w1 = 0.5 + wx;
+        if(ix==sp->nldim-1) w1 = 0.5 - wx;
         for (int iy = 0; iy < sp->nldim; iy++)
         {
+            double w2=1.0;
+            if(iy==0) w2 = 0.5 + wy;
+            if(iy==sp->nldim-1) w2 = 0.5 - wy;
 
             for (int iz = 0; iz < sp->nldim; iz++)
             {
+                double w3 = 1.0;
+                if(iz==0) w3 = 0.5 + wz;
+                if(iz==sp->nldim-1) w3 = 0.5 - wz;
 
                 if (dvec[idx])
                 {
@@ -138,11 +152,14 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
                     if(ct.is_gamma) {
                         Nlweight_R[pidx[docount]] = std::real(nbeptr[idx1]);
                         Bweight_R[pidx[docount]] = Btem_array_R[idx1];
+
                     }
                     else {
                         Nlweight_C[pidx[docount]] = std::complex<double>(std::real(nbeptr[idx1]) * pR[idx1], -std::real(nbeptr[idx1]) * pI[idx1]);
                         Bweight_C[pidx[docount]] = Btem_array_C[idx1];
                     }
+                    Nlweight_R[pidx[docount]] *= w1*w2*w3;
+                    Bweight_R[pidx[docount]] *= w1*w2*w3;
                     docount++;
                 }
 
