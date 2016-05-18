@@ -118,9 +118,6 @@ public:
     // Pointers to weight and Bweight and gpu versions
     KpointType *nl_weight;
     KpointType *nl_Bweight;
-    KpointType *nl_weight_derx;
-    KpointType *nl_weight_dery;
-    KpointType *nl_weight_derz;
 
     // Pointer to potential acceleration arrays
     double *dvh;

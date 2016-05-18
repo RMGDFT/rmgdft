@@ -89,12 +89,6 @@ typedef struct
     double *weight;
     double *Bweight;
 
-    /*These are used for non-local force */
-    double *weight_derx;
-    double *weight_dery;
-    double *weight_derz;
-
-
     /** An index array which maps the projectors onto the 3-d grid associated
         with each processor.
     */

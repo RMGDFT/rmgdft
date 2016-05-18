@@ -276,16 +276,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
     for(idx = 0;idx < weight_size;idx++) pct.Bweight[idx] = 0.0;
 
-    if( cudaSuccess != cudaMallocHost((void **)&pct.weight_derx, weight_size * sizeof(double) ))
-        rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
-    for(idx = 0;idx < weight_size;idx++) pct.weight_derx[idx] = 0.0;
-    if( cudaSuccess != cudaMallocHost((void **)&pct.weight_dery, weight_size * sizeof(double) ))
-        rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
-    for(idx = 0;idx < weight_size;idx++) pct.weight_dery[idx] = 0.0;
-    if( cudaSuccess != cudaMallocHost((void **)&pct.weight_derz, weight_size * sizeof(double) ))
-        rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
-    for(idx = 0;idx < weight_size;idx++) pct.weight_derz[idx] = 0.0;
-
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
     if( cudaSuccess != cudaMallocHost((void **)&pct.M_dnm, weight_size * sizeof(double) ))
         rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
@@ -298,9 +288,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 #else
     pct.weight = new double[weight_size]();
     pct.Bweight = new double[weight_size]();
-    pct.weight_derx = new double[weight_size]();
-    pct.weight_dery = new double[weight_size]();
-    pct.weight_derz = new double[weight_size]();
 
     weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
     pct.M_dnm = new double[weight_size]();
@@ -601,30 +588,6 @@ static void reset_pct_arrays (int num_ions)
         cudaFreeHost(pct.Bweight);
 #else
         delete [] pct.Bweight;
-#endif
-    }
-
-    if (pct.weight_derx != NULL) {
-#if GPU_ENABLED
-        cudaFreeHost(pct.weight_derx);
-#else
-        delete [] pct.weight_derx;
-#endif
-    }
-
-    if (pct.weight_dery != NULL) {
-#if GPU_ENABLED
-        cudaFreeHost(pct.weight_dery);
-#else
-        delete [] pct.weight_dery;
-#endif
-    }
-
-    if (pct.weight_derz != NULL) {
-#if GPU_ENABLED
-        cudaFreeHost(pct.weight_derz);
-#else
-        delete [] pct.weight_derz;
 #endif
     }
 

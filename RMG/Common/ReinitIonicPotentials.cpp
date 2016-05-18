@@ -66,9 +66,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 #if GPU_ENABLED
             if(Kptr[kpt]->nl_weight != NULL) cudaFreeHost(Kptr[kpt]->nl_weight);
             if(Kptr[kpt]->nl_Bweight != NULL) cudaFreeHost(Kptr[kpt]->nl_Bweight);
-            if(Kptr[kpt]->nl_weight_derx != NULL) cudaFreeHost(Kptr[kpt]->nl_weight_derx);
-            if(Kptr[kpt]->nl_weight_dery != NULL) cudaFreeHost(Kptr[kpt]->nl_weight_dery);
-            if(Kptr[kpt]->nl_weight_derz != NULL) cudaFreeHost(Kptr[kpt]->nl_weight_derz);
 
             cudaError_t cuerr;
             // Allocate new storage
@@ -87,9 +84,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             // Release old memory storage for weights
             if(Kptr[kpt]->nl_weight != NULL) delete [] Kptr[kpt]->nl_weight;
             if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
-            if(Kptr[kpt]->nl_weight_derx != NULL) delete [] Kptr[kpt]->nl_weight_derx;
-            if(Kptr[kpt]->nl_weight_dery != NULL) delete [] Kptr[kpt]->nl_weight_dery;
-            if(Kptr[kpt]->nl_weight_derz != NULL) delete [] Kptr[kpt]->nl_weight_derz;
 
             // Allocate new storage
             if(pct.num_tot_proj) {
