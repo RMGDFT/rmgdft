@@ -93,7 +93,6 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
         }
 
         /*partial_beta(ion, beta_x, beta_y,beta_z, iptr, p1, p2); */
-        //GetDerweight (ion, beta_x, beta_y, beta_z, iptr, p2, Kptr[kidx]);
 
         for (istate = 0; istate < ct.num_states; istate++)
         {
