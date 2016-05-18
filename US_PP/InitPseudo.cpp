@@ -43,7 +43,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
     int isp, ip;
-    double Zv, rc, t1;
+    double Zv, rc;
     char newname[MAX_PATH];
     FILE *psp = NULL;
     Atomic *A = new Atomic();
@@ -221,11 +221,17 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            double nlccradius = 5.0 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
+            double nlccradius = 2.0 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
+
+            // Make adjustments so radii terminates on a grid point
+            int nlccdim = Radius2grid (nlccradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
+            nlccdim = nlccdim/2*2 + 1;
+            nlccradius = 0.5 * ct.hmingrid * (double)(nlccdim-1) / (double)Rmg_G->default_FG_RATIO;
+            double nlcccut = 0.66 * nlccradius;
 
             int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(nlccradius / ct.hmingrid);
             A->FilterPotential(work, sp->r, sp->rg_points, nlccradius, ct.cparm, &sp->rhocorelig[0],
-                           sp->rab, 0, sp->gwidth, 0.6*nlccradius, sp->rwidth, iradius);
+                           sp->rab, 0, sp->gwidth, nlcccut, sp->rwidth, iradius);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
              * but I am not sure if this is the right solution, it may be better to fix charge density

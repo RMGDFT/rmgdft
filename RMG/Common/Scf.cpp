@@ -118,50 +118,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     if (Verify("charge_mixing_type","Linear", Kptr[0]->ControlMap))
         rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
 
-    double hartree_residual;
-    if (spin_flag)        
-    {
-	/*calculate the total charge density in order to calculate hartree potential*/
-	for (int idx = 0; idx < FP0_BASIS; idx++) {
-            rho_tot[idx] = rho[idx] + rho_oppo[idx];
-        }
-	
-	/* Generate hartree potential */
-        RT1 = new RmgTimer("Scf steps: Hartree");
-        double *rho_neutral = new double[FP0_BASIS];
-
-        /* Subtract off compensating charges from rho */
-        for (int idx = 0; idx < FP0_BASIS; idx++) {
-            rho_neutral[idx] = rho[idx] - rhoc[idx];
-        }
-
-        // Make sure it is completely neutral
-        double sum = 0.0;
-        for(int i=0;i < FP0_BASIS;i++) sum += rho_neutral[i];
-        MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        sum = sum / (double)Rmg_G->get_GLOBAL_BASIS(Rmg_G->get_default_FG_RATIO());
-        for(int i=0;i < FP0_BASIS;i++) rho_neutral[i] -= sum;
-
-        hartree_residual = CPP_get_vh (Rmg_G, &Rmg_L, Rmg_T, rho_neutral, vh_ext, ct.hartree_min_sweeps, 
-                    ct.hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre, 
-                    ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target,
-                    ct.poi_parm.gl_step, ct.poi_parm.sb_step, boundaryflag, Rmg_G->get_default_FG_RATIO(), false);
- 
-        /* Pack the portion of the hartree potential used by the wavefunctions
-         * back into the wavefunction hartree array. */
-        CPP_pack_dtos (Rmg_G, vh, vh_ext, dimx, dimy, dimz, boundaryflag);
-        delete [] rho_neutral;
-
-        delete(RT1);
-
-     }  	
-    else
-    {
-    	/* Generate hartree potential */
-        RT1 = new RmgTimer("Scf steps: Hartree");
-    	hartree_residual = get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, rms_target, boundaryflag);
-        delete(RT1);
-    }
+    RT1 = new RmgTimer("Scf steps: Hartree");
+    double hartree_residual = VhDriver(rho, rhoc, vh, vh_ext, rms_target);
+    delete(RT1);
 
     // Make sure the hartree and vxc potentials are bandwidth limited on the fine grid
     //FftFilter(vh, *fine_pwaves, 1.0, LOW_PASS);
@@ -261,8 +220,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     double *vh_out = new double[FP0_BASIS];
     RT1 = new RmgTimer("Scf steps: Hartree");
     for(int i = 0;i < FP0_BASIS;i++) vh_out[i] = vh[i];
-    get_vh (new_rho, rhoc, vh_out, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, rms_target, ct.boundaryflag);
-
+    VhDriver(new_rho, rhoc, vh_out, vh_ext, rms_target);
     delete RT1;
 
     // Compute convergence measure (2nd order variational term)
