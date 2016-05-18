@@ -1,4 +1,5 @@
 add_library (Misc
+SharedMemory.cpp
 VhDriver.cpp 
 Pw.cpp
 PfftForward.cpp

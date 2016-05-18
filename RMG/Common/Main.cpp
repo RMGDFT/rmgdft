@@ -44,6 +44,7 @@
 #include "transition.h"
 #include "Kpoint.h"
 #include "InputKey.h"
+#include "RmgShm.h"
 #include "blas.h"
 
 
@@ -403,6 +404,8 @@ void report ()
 
 void finish ()
 {
+
+    FreeAllSharedMemory();
 
 #if SCALAPACK_LIBS
     /*Exit Scalapack */
