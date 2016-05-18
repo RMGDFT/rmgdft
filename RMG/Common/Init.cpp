@@ -443,19 +443,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete RT1;
 
         RmgTimer *RT1 = new RmgTimer("Init: hartree");
-        if (ct.spin_flag)
-        {
-            rho_tot = new double[FP0_BASIS];
-            for (idx = 0; idx < FP0_BASIS; idx++)
-                rho_tot[idx] = rho[idx] + rho_oppo[idx];
-
-            get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
-            delete [] rho_tot;
-        }
-        else
-        {
-            get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
-        }
+        double rms_target = 1.0e-10;
+        VhDriver(rho, rhoc, vh, ct.vh_ext, rms_target);
         delete RT1;
 
     }
