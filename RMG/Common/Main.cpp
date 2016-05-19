@@ -162,21 +162,21 @@ int main (int argc, char **argv)
     // Catch exceptions issued by us.
     catch(RmgFatalException const &e) {
         std::cout << e.rwhat() << std::endl;
-        MPI_Finalize();
+        finish ();
         exit(0);
     }
 
     // By std
     catch (std::exception &e) {
         std::cout << "Caught a std exception: " << e.what () << std::endl;
-        MPI_Finalize();
+        finish ();
         exit(0);
     } 
 
     // Catchall
     catch (...) {
         std::cout << "Caught an unknown exception of some type." << std::endl;
-        MPI_Finalize();
+        finish ();
         exit(0);
     } 
 

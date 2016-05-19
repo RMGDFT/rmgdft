@@ -27,7 +27,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
 #include <math.h>
 #include <iostream>
 #include <stdio.h>
@@ -39,44 +39,56 @@
 #include "rmg_error.h"
 #include "RmgShm.h"
 
+using namespace boost::interprocess;
 
 // This collection of functions is used to manage shared memory objects for use
 // by MPI process's running on the same node.
 
 
 // Stores names of all shared blocks that we have allocated
-static std::unordered_set<std::string> shared_segments;
+static std::unordered_map<std::string, mapped_region *> shared_segments;
 
 
 void *AllocSharedMemorySegment(char *name, int size)
 {
-    using namespace boost::interprocess;
+    mapped_region *region;
+    void *rptr;
 
     if(pct.is_local_master) {
+        shared_memory_object::remove(name);
         shared_memory_object segment(open_or_create, name, read_write);
         segment.truncate(size);
     }
 
     MPI_Barrier(pct.local_comm);
-    shared_memory_object segment(open_only, name, read_write);
-    mapped_region region(segment, read_write);
-    void *rptr = static_cast<char*>(region.get_address());
-    shared_segments.emplace(name);
+    try {
+        shared_memory_object segment(open_only, name, read_write);
+        region = new mapped_region(segment, read_write);
+        rptr = static_cast<char*>(region->get_address());
+    }
+    catch(interprocess_exception &ex) {
+        return NULL;
+    }
+    if(size != (int)region->get_size()) {
+        delete region;
+        return NULL;
+    }
+    shared_segments.emplace(name, region);
     return rptr;
 }
 
 void FreeSharedMemory(char *name)
 {
-    using namespace boost::interprocess;
     shared_memory_object::remove(name);
     shared_segments.erase(name);
 }
 
 void FreeAllSharedMemory(void)
 {
-    using namespace boost::interprocess;
     for(auto it = shared_segments.cbegin();it != shared_segments.cend();++it) {
-        shared_memory_object::remove(it->c_str());
+        delete it->second;
+        std::string name = it->first;
+        shared_memory_object::remove(name.c_str());
     }
     shared_segments.erase(shared_segments.begin());
 }
