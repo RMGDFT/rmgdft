@@ -35,6 +35,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <string>
+#include <csignal>
 
 
 // Example of use
@@ -57,6 +58,7 @@ public:
     RmgFatalException( const RmgFatalException &that )
     {
         What += that.ss.str();
+        std::raise(SIGTERM);
     }
 
     virtual ~RmgFatalException() throw(){};
