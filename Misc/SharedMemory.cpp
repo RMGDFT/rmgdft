@@ -49,7 +49,13 @@ using namespace boost::interprocess;
 static std::unordered_map<std::string, mapped_region *> shared_segments;
 
 
-void *AllocSharedMemorySegment(char *name, int size)
+// Called at initialization to cleanup any old shared memory segments
+extern "C" void InitSharedMemory(void)
+{
+
+}
+
+extern "C" void *AllocSharedMemorySegment(char *name, int size)
 {
     mapped_region *region;
     void *rptr;
@@ -77,18 +83,22 @@ void *AllocSharedMemorySegment(char *name, int size)
     return rptr;
 }
 
-void FreeSharedMemory(char *name)
+extern "C" void FreeSharedMemory(char *name)
 {
     shared_memory_object::remove(name);
     shared_segments.erase(name);
 }
 
-void FreeAllSharedMemory(void)
+extern "C" void FreeAllSharedMemory(void)
 {
+
+    if(shared_segments.size() == 0) return;
+
     for(auto it = shared_segments.cbegin();it != shared_segments.cend();++it) {
-        delete it->second;
         std::string name = it->first;
-        shared_memory_object::remove(name.c_str());
+        mapped_region *region = it->second;
+        delete region;
+        if(pct.is_local_master) shared_memory_object::remove(name.c_str());
     }
     shared_segments.erase(shared_segments.begin());
 }

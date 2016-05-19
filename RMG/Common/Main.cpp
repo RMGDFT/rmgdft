@@ -33,6 +33,7 @@
     #include <unistd.h>
 #endif
 #include <unordered_map>
+#include <csignal>
 #include "grid.h"
 #include "const.h"
 #include "RmgTimer.h"
@@ -103,8 +104,17 @@ PE_CONTROL pct;
 
 std::unordered_map<std::string, InputKey *> ControlMap;
 
+extern "C" void term_handler(int signal)
+{
+    finish();
+}
+
 int main (int argc, char **argv)
 {
+
+    // Signal handlers to cleanup in case user terminates
+    std::signal(SIGTERM, term_handler);
+    std::signal(SIGINT, term_handler);
 
 #if (defined(_WIN32) || defined(_WIN64))
     // make default io binary

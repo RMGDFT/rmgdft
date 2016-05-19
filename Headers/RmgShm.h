@@ -30,10 +30,18 @@
 #ifndef RMG_Shm_H
 #define RMG_Shm_H 1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Shared memory objects
 void *AllocSharedMemorySegment(char *name, int size);
 void FreeSharedMemory(char *name);
 void FreeAllSharedMemory(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif
