@@ -76,6 +76,12 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     std::complex<double> *Btem_array_C = (std::complex<double> *)Btem_array;
     double *Btem_array_R = (double *)Btem_array;
 
+    if(pct.gridpe == 0)
+    printf("\n &&  SSS");
+    if(pct.gridpe == 0)
+    for(int ix = 0; ix < nldim; ix++)
+    printf("\n %d %e SSS", ix, std::real(nbeptr[ix * nldim * nldim + nldim/2 * nldim + nldim/2]));
+
 
     for(int ix = 0; ix < nldim * nldim * nldim; ix++) {
         tem_array[ix] = std::real(nbeptr[ix]);

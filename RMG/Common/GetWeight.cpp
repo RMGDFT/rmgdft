@@ -122,10 +122,47 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)sp->forward_beta;
 
+   // These are probably not right for anything but simple cubic grids
+            double wx_0 = iptr->nlcrds[0] / ct.hmaxgrid;
+            double wy_0 = iptr->nlcrds[1] / ct.hmaxgrid;
+            double wz_0 = iptr->nlcrds[2] / ct.hmaxgrid;
+            double w1, w2, w3, ww[3];
+            ww[0] = wx_0;
+            ww[1] = wy_0;
+            ww[2] = wz_0;
+    
+
 
             /* Loop over radial projectors */
             for (ip = 0; ip < sp->num_projectors; ip++)
             {
+
+
+                for(int ix = 0; ix < sp->nldim; ix++)
+                {
+                    w1 = 1.0;
+
+                    if(ix == sp->nldim/2 && ww[0] > 0.0 ) w1 = 1.0 - 2.0 * ww[0] ;
+                    if(ix == sp->nldim/2+1 && ww[0] < 0.0) w1 = 1.0 + 2.0 * ww[0];
+
+                    for(int iy = 0; iy < sp->nldim; iy++)
+                    {
+                        w2 = 1.0;
+                        if(iy == sp->nldim/2 && ww[1] > 0.0 ) w2 = 1.0 - 2.0 * ww[1] ;
+                        if(iy == sp->nldim/2+1 && ww[1] < 0.0) w2 = 1.0 + 2.0 * ww[1];
+                        for(int iz = 0; iz < sp->nldim; iz++)
+                        {
+                            w3 = 1.0;
+                            if(iz == sp->nldim/2 && ww[2] > 0.0 ) w3 = 1.0 - 2.0 * ww[2] ;
+                            if(iz == sp->nldim/2+1 && ww[2] < 0.0) w3 = 1.0 + 2.0 * ww[2];
+
+                            idx = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
+
+                            fptr[idx] = fptr[idx] * w1 * w2 * w3;
+
+                        }
+                    }
+                }
 
 
                 /*Apply the phase factor */
