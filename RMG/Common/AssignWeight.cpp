@@ -49,7 +49,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     double wx = iptr->nlcrds[0] / ct.hmaxgrid;
     double wy = iptr->nlcrds[1] / ct.hmaxgrid;
     double wz = iptr->nlcrds[2] / ct.hmaxgrid;
-//if(pct.gridpe==0)printf("WWWWW  %20.12f  %20.12f  %20.12f\n",wx,wy,wz);
+
     int pbasis = kptr->pbasis;
     int nldim = sp->nldim;
     KpointType ZERO_t(0.0);
@@ -75,12 +75,6 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     std::complex<double> *tem_array_C = (std::complex<double> *)tem_array;
     std::complex<double> *Btem_array_C = (std::complex<double> *)Btem_array;
     double *Btem_array_R = (double *)Btem_array;
-
-    if(pct.gridpe == 0)
-    printf("\n &&  SSS");
-    if(pct.gridpe == 0)
-    for(int ix = 0; ix < nldim; ix++)
-    printf("\n %d %e SSS", ix, std::real(nbeptr[ix * nldim * nldim + nldim/2 * nldim + nldim/2]));
 
 
     for(int ix = 0; ix < nldim * nldim * nldim; ix++) {
