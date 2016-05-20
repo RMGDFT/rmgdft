@@ -12,8 +12,10 @@
 #include "AtomicInterpolate.h"
 
 
-void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
+void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1, bool use_shared)
 {
+
+    if(use_shared && (pct.local_rank > 2)) return;
 
     int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
     double r, ax[3], bx[3], xc, yc, zc, cc, t1;
@@ -21,14 +23,6 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
     double complex *weptr1, *weptr2, *weptr3, *gwptr;
     double complex *r1, *r2, *r3;
     int ixx, iyy, izz;
-
-
-        /*This is something we need to do only once per species, so do not use wisdom */
-//    in = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-//    out = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-
-
- //   p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
 
     /*Number of grid points in th enon-local box in coarse and double grids */
@@ -106,32 +100,53 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 
     }                           /* end for */
 
-    int broot[3], jdx;
-    int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
-    int istop = 3;
-    if(npes < istop) istop = npes;
-    for(idx = 0; idx < 3; idx++)
-        broot[idx] = idx%istop;
+    if(use_shared) {
 
-    if(pct.gridpe == broot[0]) {
-        fftw_execute_dft (p1, weptr1, gwptr);
-        pack_gftoc (sp, gwptr, r1);
+        // Always at least 3 procs per host if use_shared is true
+        if(pct.local_rank == 0) {
+            fftw_execute_dft (p1, weptr1, gwptr);
+            pack_gftoc (sp, gwptr, r1);
+        }
+        if(pct.local_rank == 1) {
+            fftw_execute_dft (p1, weptr2, gwptr);
+            pack_gftoc (sp, gwptr, r2);
+        }
+        if(pct.local_rank == 2) {
+            fftw_execute_dft (p1, weptr3, gwptr);
+            pack_gftoc (sp, gwptr, r3);
+        }
+
     }
+    else {
 
-    if(pct.gridpe == broot[1]) {
-        fftw_execute_dft (p1, weptr2, gwptr);
-        pack_gftoc (sp, gwptr, r2);
+        int broot[3], jdx;
+        int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
+        int istop = 3;
+        if(npes < istop) istop = npes;
+        for(idx = 0; idx < 3; idx++)
+            broot[idx] = idx%istop;
+
+        if(pct.gridpe == broot[0]) {
+            fftw_execute_dft (p1, weptr1, gwptr);
+            pack_gftoc (sp, gwptr, r1);
+        }
+
+        if(pct.gridpe == broot[1]) {
+            fftw_execute_dft (p1, weptr2, gwptr);
+            pack_gftoc (sp, gwptr, r2);
+        }
+
+        if(pct.gridpe == broot[2]) {
+            fftw_execute_dft (p1, weptr3, gwptr);
+            pack_gftoc (sp, gwptr, r3);
+        }
+
+        MPI_Bcast(r1, 2*coarse_size, MPI_DOUBLE, broot[0], pct.grid_comm);
+        MPI_Bcast(r2, 2*coarse_size, MPI_DOUBLE, broot[1], pct.grid_comm);
+        MPI_Bcast(r3, 2*coarse_size, MPI_DOUBLE, broot[2], pct.grid_comm);
+
     }
-
-    if(pct.gridpe == broot[2]) {
-        fftw_execute_dft (p1, weptr3, gwptr);
-        pack_gftoc (sp, gwptr, r3);
-    }
-
-    MPI_Bcast(r1, 2*coarse_size, MPI_DOUBLE, broot[0], pct.grid_comm);
-    MPI_Bcast(r2, 2*coarse_size, MPI_DOUBLE, broot[1], pct.grid_comm);
-    MPI_Bcast(r3, 2*coarse_size, MPI_DOUBLE, broot[2], pct.grid_comm);
-
+    
 
     fftw_free (gwptr);
     fftw_free (weptr3);

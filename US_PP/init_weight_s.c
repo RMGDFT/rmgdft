@@ -11,9 +11,10 @@
 #include "common_prototypes.h"
 #include "AtomicInterpolate.h"
 
-void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
+void init_weight_s (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1, bool use_shared)
 {
 
+    if(use_shared && (pct.local_rank != 0)) return;
     int idx, ix, iy, iz, size, ibegin, iend;
     double r, ax[3], xc, yc, zc;
     double t1, hxx, hyy, hzz;

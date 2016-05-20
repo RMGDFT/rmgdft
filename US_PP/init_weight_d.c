@@ -11,8 +11,10 @@
 #include "common_prototypes.h"
 #include "AtomicInterpolate.h"
 
-void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
+void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1, bool use_shared)
 {
+
+    if(use_shared && (pct.local_rank > 4)) return;
 
     int idx, ix, iy, iz, size, coarse_size, iend, ibegin;
     double r, ax[3], bx[3], xc, yc, zc, t1, t2, rsq1;
@@ -107,20 +109,73 @@ void init_weight_d (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1)
 
     }                           /* end for */
 
-    fftw_execute_dft (p1, weptr1, gwptr);
-    pack_gftoc (sp, gwptr, r1);
+    if(use_shared) {
 
-    fftw_execute_dft (p1, weptr2, gwptr);
-    pack_gftoc (sp, gwptr, r2);
+        // Always at least 5 procs per host if use_shared is true
+        if(pct.local_rank == 0) {
+            fftw_execute_dft (p1, weptr1, gwptr);
+            pack_gftoc (sp, gwptr, r1);
+        }
+        if(pct.local_rank == 1) {
+            fftw_execute_dft (p1, weptr2, gwptr);
+            pack_gftoc (sp, gwptr, r2);
+        }
+        if(pct.local_rank == 2) {
+            fftw_execute_dft (p1, weptr3, gwptr);
+            pack_gftoc (sp, gwptr, r3);
+        }
+        if(pct.local_rank == 3) {
+            fftw_execute_dft (p1, weptr4, gwptr);
+            pack_gftoc (sp, gwptr, r4);
+        }
+        if(pct.local_rank == 4) {
+            fftw_execute_dft (p1, weptr5, gwptr);
+            pack_gftoc (sp, gwptr, r5);
+        }
 
-    fftw_execute_dft (p1, weptr3, gwptr);
-    pack_gftoc (sp, gwptr, r3);
+    }
+    else {
 
-    fftw_execute_dft (p1, weptr4, gwptr);
-    pack_gftoc (sp, gwptr, r4);
+        int broot[5], jdx;
+        int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
+        int istop = 5;
+        if(npes < istop) istop = npes;
+        for(idx = 0; idx < 5; idx++)
+            broot[idx] = idx%istop;
 
-    fftw_execute_dft (p1, weptr5, gwptr);
-    pack_gftoc (sp, gwptr, r5);
+        if(pct.gridpe == broot[0]) {
+            fftw_execute_dft (p1, weptr1, gwptr);
+            pack_gftoc (sp, gwptr, r1);
+        }
+
+        if(pct.gridpe == broot[1]) {
+            fftw_execute_dft (p1, weptr2, gwptr);
+            pack_gftoc (sp, gwptr, r2);
+        }
+
+        if(pct.gridpe == broot[2]) {
+            fftw_execute_dft (p1, weptr3, gwptr);
+            pack_gftoc (sp, gwptr, r3);
+        }
+
+        if(pct.gridpe == broot[3]) {
+            fftw_execute_dft (p1, weptr4, gwptr);
+            pack_gftoc (sp, gwptr, r4);
+        }
+
+        if(pct.gridpe == broot[4]) {
+            fftw_execute_dft (p1, weptr5, gwptr);
+            pack_gftoc (sp, gwptr, r5);
+        }
+
+        MPI_Bcast(r1, 2*coarse_size, MPI_DOUBLE, broot[0], pct.grid_comm);
+        MPI_Bcast(r2, 2*coarse_size, MPI_DOUBLE, broot[1], pct.grid_comm);
+        MPI_Bcast(r3, 2*coarse_size, MPI_DOUBLE, broot[2], pct.grid_comm);
+        MPI_Bcast(r4, 2*coarse_size, MPI_DOUBLE, broot[3], pct.grid_comm);
+        MPI_Bcast(r5, 2*coarse_size, MPI_DOUBLE, broot[4], pct.grid_comm);
+
+    }
+
 
     fftw_free (gwptr);
     fftw_free (weptr5);

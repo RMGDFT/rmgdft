@@ -59,16 +59,19 @@ extern "C" void *AllocSharedMemorySegment(char *name, int size)
 {
     mapped_region *region;
     void *rptr;
+    // Maybe not the best way to do this but should help avoid a name collision
+    std::string newname(name);
+    newname = newname + "435lkj91kmSpv10rwiq";
 
     if(pct.is_local_master) {
-        shared_memory_object::remove(name);
-        shared_memory_object segment(open_or_create, name, read_write);
+        shared_memory_object::remove(newname.c_str());
+        shared_memory_object segment(open_or_create, newname.c_str(), read_write);
         segment.truncate(size);
     }
 
     MPI_Barrier(pct.local_comm);
     try {
-        shared_memory_object segment(open_only, name, read_write);
+        shared_memory_object segment(open_only, newname.c_str(), read_write);
         region = new mapped_region(segment, read_write);
         rptr = static_cast<char*>(region->get_address());
     }
@@ -79,14 +82,16 @@ extern "C" void *AllocSharedMemorySegment(char *name, int size)
         delete region;
         return NULL;
     }
-    shared_segments.emplace(name, region);
+    shared_segments.emplace(newname, region);
     return rptr;
 }
 
 extern "C" void FreeSharedMemory(char *name)
 {
-    shared_memory_object::remove(name);
-    shared_segments.erase(name);
+    std::string newname(name);
+    newname = newname + "435lkj91kmSpv10rwiq";
+    shared_memory_object::remove(newname.c_str());
+    shared_segments.erase(newname);
 }
 
 extern "C" void FreeAllSharedMemory(void)
