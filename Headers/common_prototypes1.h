@@ -205,6 +205,8 @@ void init_weight_p (SPECIES *sp, fftw_complex *rtptr, int ip,
                     fftw_plan p1, bool use_shared);
 void init_weight_d (SPECIES *sp, fftw_complex *rtptr, int ip,
                     fftw_plan p1, bool use_shared);
+void init_weight_f (SPECIES *sp, fftw_complex *rtptr, int ip,
+                    fftw_plan p1, bool use_shared);
 void init_wf (STATE *states);
 void init_nuc (double *vnuc, double *rhoc, double *rhocore);
 void init_pos (void);

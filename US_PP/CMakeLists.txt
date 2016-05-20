@@ -19,6 +19,7 @@ ylmr2.c
 init_weight_s.c
 qval_R.c
 init_weight_d.c
+init_weight_f.c
 linint.c
 ylmr2_x.c
 aainit.c

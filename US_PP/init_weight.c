@@ -53,7 +53,8 @@ void init_weight (void)
                 break;
 
             case F_STATE:
-                error_handler ("Angular momentum state not programmed");
+                prjcount += 7;
+                if(maxl < 3) maxl = 3;
                 break;
 
             default:
@@ -120,7 +121,8 @@ void init_weight (void)
                 break;
 
             case F_STATE:
-                error_handler ("Angular momentum state not programmed");
+                init_weight_f (sp, &sp->forward_beta[prjcount * size], ip, p1, use_shared);
+                prjcount += 7;
                 break;
 
             default:
