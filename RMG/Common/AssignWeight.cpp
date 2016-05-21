@@ -142,8 +142,8 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
             for (int iz = 0; iz < sp->nldim; iz++)
             {
                 double w3 = 1.0;
-                if(iz==0) 0.5*(w3 = 0.5 + wz);
-                if(iz==sp->nldim-1) 0.5*(w3 = 0.5 - wz);
+                if(iz==0) w3 = 0.5*(0.5 + wz);
+                if(iz==sp->nldim-1) w3 = 0.5*(0.5 - wz);
 
                 if (dvec[idx])
                 {
