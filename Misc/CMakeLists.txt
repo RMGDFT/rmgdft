@@ -6,6 +6,7 @@ PfftForward.cpp
 PfftInverse.cpp 
 GeneralDiag.cpp
 VhPfft.cpp
+VhDriver.cpp
 Fft_Cbindings.cpp
 GetVtotPsi.cpp
 FftInitPlans.cpp

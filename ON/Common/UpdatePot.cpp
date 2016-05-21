@@ -53,7 +53,8 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
             rho_tot[idx] = rho[idx] ;
     }
 
-    VhDriver(rho_tot, rhoc, vh);
+    double rms_target = ct.rms/ct.hartree_rms_ratio;
+    VhDriver(rho_tot, rhoc, vh, ct.vh_ext, rms_target);
 //    get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
 
 

@@ -18,7 +18,6 @@ dipole_calculation.c
 mat_global_to_dist.c
 mat_dist_to_global.c
 RmgTddft.cpp
-../../ON/Common/VhDriver.cpp
 HmatrixUpdate.cpp
 HSmatrix.cpp
 GetNewRho_rmgtddft.cpp

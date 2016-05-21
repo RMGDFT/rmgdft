@@ -239,7 +239,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         dcopy(&FP0_BASIS, vxc, &ione, vxc_old, &ione);
 
         get_vxc(rho, rho_oppo, rhocore, vxc);
-        VhDriver(rho, rhoc, vh);
+        VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0-12);
         for (int idx = 0; idx < FP0_BASIS; idx++) {
             vtot[idx] = vxc[idx] + vh[idx]
                 -vxc_old[idx] -vh_old[idx];

@@ -50,6 +50,7 @@
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
 #include "prototypes_tddft.h"
+#include "RmgShm.h"
 
 extern "C" void lbfgs_init(int num_ions, int num_images);
 
