@@ -141,7 +141,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Transform to g-space and filter it with filtered function returned on standard log grid
         sp->lradius = 6.5;
         int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->lradius / ct.hmingrid);
-        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.cparm, sp->localig,
+        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.rhocparm, sp->localig,
                 sp->rab, 0, sp->gwidth, 0.6*sp->lradius, sp->rwidth, iradius);
 
         /*Write local projector into a file if requested*/
@@ -230,7 +230,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             double nlcccut = 0.66 * nlccradius;
 
             int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(nlccradius / ct.hmingrid);
-            A->FilterPotential(work, sp->r, sp->rg_points, nlccradius, ct.cparm, &sp->rhocorelig[0],
+            A->FilterPotential(work, sp->r, sp->rg_points, nlccradius, ct.rhocparm, &sp->rhocorelig[0],
                            sp->rab, 0, sp->gwidth, nlcccut, sp->rwidth, iradius);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
