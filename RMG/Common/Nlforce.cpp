@@ -73,6 +73,12 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
     int PX0_GRID, PY0_GRID, PZ0_GRID, P0_BASIS;
     int num_occupied;
+    std::complex<double> I_t(0.0, 1.0);
+    std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
+    psi_C = (std::complex<double> *) psi;
+    psi_xC = (std::complex<double> *) psi_x;
+    psi_yC = (std::complex<double> *) psi_y;
+    psi_zC = (std::complex<double> *) psi_z;
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
@@ -125,11 +131,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
     RT1 = new RmgTimer("Force: non-local: betaxpsi");
-    if(!ct.is_gamma)
-    { printf("\n WARNING:  need more test for wavefunction derivative in force calculation for non-gamma point calculation");
-        fflush(NULL);
-        exit(0);
-    } 
+
     for (int kpt = 0; kpt < ct.num_kpts; kpt++)
     {
 
@@ -143,6 +145,17 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
             psi_y = Kptr[kpt]->Kstates[st + 2*ct.num_states].psi;
             psi_z = Kptr[kpt]->Kstates[st + 3*ct.num_states].psi;
             CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+            if(!ct.is_gamma)
+            {
+                for(int i = 0; i < P0_BASIS; i++) 
+                {
+                    psi_xC[i] += I_t *  ct.kp[kpt].kvec[0] * psi_C[i];
+                    psi_yC[i] += I_t *  ct.kp[kpt].kvec[1] * psi_C[i];
+                    psi_zC[i] += I_t *  ct.kp[kpt].kvec[2] * psi_C[i];
+                }
+            }
+
+            
         }
 
 
