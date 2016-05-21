@@ -106,7 +106,8 @@ std::unordered_map<std::string, InputKey *> ControlMap;
 
 extern "C" void term_handler(int signal)
 {
-    finish();
+    FreeAllSharedMemory();
+    exit(1);
 }
 
 int main (int argc, char **argv)

@@ -1024,7 +1024,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     // Cutoff parameter -- do we want separate settings for each of these?
     lc.rhocparm = lc.cparm;
-    lc.betacparm = lc.cparm;
+    ct.betacparm = ct.cparm * (ct.nxfgrid - 1);
 
 
     if (lc.iondt_max < lc.iondt)
