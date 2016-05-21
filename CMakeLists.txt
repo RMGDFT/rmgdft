@@ -146,8 +146,9 @@ if (${UNIX})
     find_package(Threads REQUIRED)
     if(CMAKE_USE_PTHREADS_INIT)
         target_link_libraries (${rmg} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
-        target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT})
+        target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
     endif(CMAKE_USE_PTHREADS_INIT)
+    target_link_libraries (rmg-on ${RTLIB})
 endif(${UNIX})
 
 
