@@ -1,4 +1,6 @@
 add_library (Misc
+InitPe4image.cpp
+InitPe4kpspin.cpp
 SharedMemory.cpp
 VhDriver.cpp 
 Pw.cpp

@@ -55,16 +55,10 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
         pelc.images = 1;
         pelc.image_npes[0] = pelc.total_npes;
         lc.images_per_node = 1;
-        lc.spin_flag = 0;
-        pelc.pe_kpoint = 1;
         return;
     }
 
     RmgInputFile If(meta1, InputMap, MPI_COMM_WORLD);
-
-    /* do spin polarized calculation? */
-    If.RegisterInputKey("spin_polarization", &lc.spin_flag, false,
-                        "Spin polarized calculation.");
 
     If.RegisterInputKey("num_images", &pelc.images, 1, INT_MAX, 1,
                      CHECK_AND_TERMINATE, OPTIONAL,
@@ -75,12 +69,6 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
                      CHECK_AND_TERMINATE, OPTIONAL,
                      "number of images per node",
                      "image_per_node must be a positive integer.");
-
-    If.RegisterInputKey("pegroup_for_kpoint", &pelc.pe_kpoint, 1, INT_MAX, 1,
-                     CHECK_AND_TERMINATE, OPTIONAL,
-                     "pegroup_for_kpoint",
-                     "pegroup_for_kpoint must be a positive integer.");
-
 
     std::string ImageInfo;
     If.RegisterInputKey("image_infos", &ImageInfo, "",

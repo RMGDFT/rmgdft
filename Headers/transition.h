@@ -122,6 +122,8 @@ void PermAtoms(int num_ions, ION *ions, unsigned int *);
 void GetPermStateIndex(int num_ions, ION *ions, unsigned int *, unsigned int *, unsigned int *);
 void ReadPermInfo(char *, unsigned int *);
 void WritePermInfo(char *, unsigned int *);
+void InitPe4image();
+void InitPe4kpspin();
 
 
 extern "C" void app_cilr_driver (double * psi, double * a_psi, double *b_psi, double *vtot_eig_s,
@@ -187,6 +189,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr);
 int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm);
 void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm);
 void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& cont, PE_CONTROL& pecont, std::unordered_map<std::string, InputKey *>& Map);
+void AutoSet(CONTROL& cont, PE_CONTROL& pecont, std::unordered_map<std::string, InputKey *>& Map);
 void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap);
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& Map);
 bool Verify(const std::string& KeyName, const std::string& KeyVal, const std::unordered_map<std::string, InputKey *>& Map);

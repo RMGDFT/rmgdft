@@ -121,12 +121,15 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     }
 
-    init_pestr ();
+//    init_pestr ();
+    InitPe4image();
 
     snprintf (ct.cfile, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
     snprintf (ct.shortname, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
     ReadCommon(argc, argv, ct.cfile, ct, pct, ControlMap);
+
+
     if(Verify("start_mode", "Restart From File", ControlMap)) {
         std::string dynfile(ct.infile);
         dynfile = dynfile + ".restart";
@@ -149,6 +152,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     {
         init_kpoints(ct.kpoint_mesh, ct.kpoint_is_shift);
     }
+
+    InitPe4kpspin();
+    AutoSet(ct, pct, ControlMap);
 
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
 
