@@ -143,6 +143,9 @@ int GeneralDiagLapack(double *A, double *B, double *eigs, double *V, int N, int 
                 for(int i=0;i < N*ld;i++) B[i] = Bsave[i];
                 delete [] Bsave;
                 delete [] Asave;
+                delete [] iwork;
+                delete [] work2;
+                delete [] ifail;
 
             }
 
@@ -262,6 +265,9 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         MainSp->CopyDistArrayToSquareMatrix(global_matrix1, distV, N, desca);
         MainSp->Allreduce(MPI_IN_PLACE, global_matrix1, N*M, MPI_DOUBLE, MPI_SUM);
 
+        delete [] distV;
+        delete [] distB;
+        delete [] distA;
     }
 
     // Finally send eigenvalues and vectors to everyone 
