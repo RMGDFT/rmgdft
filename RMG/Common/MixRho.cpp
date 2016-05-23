@@ -51,7 +51,7 @@ static int pulay_step = 0;
 void mix_johnson(double *xm, double *fm, int NDIM, int ittot);
 
 
-void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap)
+void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset)
 {
     RmgTimer RT0("Mix rho");
     double t1, nspin = (ct.spin_flag + 1.0);
@@ -71,11 +71,12 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     {
 	RmgTimer RT1("Mix rho: Linear");
 	/* Scale old charge density first*/
-	t1 = 1.0 - ct.mix;
-        for(int ix = 0;ix < pbasis;ix++) rho[ix] *= t1;
+	t1 = ct.mix;
+        if(reset) t1 = 1.0;
+        for(int ix = 0;ix < pbasis;ix++) rho[ix] *= (1.0 - t1);
 
 	/*Add the new density*/
-        for(int ix = 0;ix < pbasis;ix++) rho[ix] += ct.mix * new_rho[ix];
+        for(int ix = 0;ix < pbasis;ix++) rho[ix] += t1 * new_rho[ix];
         rmg_printf("Simple mixing for the charge density.\n");
     }
     else if (Verify("charge_mixing_type","Pulay", ControlMap))
@@ -85,6 +86,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 	RmgTimer RT1("Mix rho: Pulay");
         if (ct.charge_pulay_refresh)
             pulay_step = pulay_step % ct.charge_pulay_refresh;
+        if(reset) pulay_step = 0;
 
         /*Use pulay mixing, result will be in rho*/
         pulay_rho(pulay_step, pbasis, length_x, length_y, length_z, 
@@ -98,7 +100,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     else if (Verify("charge_mixing_type","Broyden", ControlMap))
     {
 	RmgTimer RT1("Mix rho: Broyden");
-        BroydenPotential(rho, new_rho, rhoc, vh_in, vh_out, ct.charge_broyden_order, false);
+        BroydenPotential(rho, new_rho, rhoc, vh_in, vh_out, ct.charge_broyden_order, reset);
         rmg_printf("Broyden mixing for the charge density.\n");
     }
     

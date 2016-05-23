@@ -243,7 +243,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     /*Takes care of mixing and checks whether the charge density is negative*/
     RT1 = new RmgTimer("Scf steps: MixRho");
-    MixRho(new_rho, rho, rhocore, vh, vh_out, rhoc, Kptr[0]->ControlMap);
+    MixRho(new_rho, rho, rhocore, vh, vh_out, rhoc, Kptr[0]->ControlMap, false);
     delete [] vh_out; 
     delete RT1;
 

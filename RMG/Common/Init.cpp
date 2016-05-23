@@ -488,7 +488,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             }
             // Get new density 
             GetNewRho(Kptr, new_rho);
-            MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap);
+            MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
             delete [] new_rho;
 
             /*Release vtot memory */

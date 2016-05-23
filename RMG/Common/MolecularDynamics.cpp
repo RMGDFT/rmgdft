@@ -61,22 +61,13 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
              double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 {
 
-    double target;
-    double rsteps;
-    double kB, step;
     double rms[3], trms;
     double nosekin, nosepot;
     double iontemp;
-    int it, steps1, isteps, nsteps = 1, nmsteps, N;
+    int it, N;
     int ic;
     ION *iptr;
-    char filename[60];
     std::vector<double> RMSdV;
-
-
-    bool CONVERGED = false;
-
-    target = 0.0;
 
 
     /*Get some memory */
@@ -127,17 +118,10 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     }                           /* end of if pe */
 
 
-
-
-    /* number of substeps used to move charge density */
-    isteps = 8;
-    nmsteps = 4;
-
     ct.ionke = 0.0;
-    step = ct.iondt;
 
     /* define Boltzmann param */
-    kB = 1.0 / (11605.0 * Ha_eV);
+    double kB = 1.0 / (11605.0 * Ha_eV);
 
     /* count up moving atoms */
     N = 0;
@@ -229,64 +213,24 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         /* Do a halfstep update of the velocities */
         velup1 ();
 
-        rsteps = 1.0 / (double) isteps;
-
-        /* do nmsteps iterations to move the hamiltonian smoothly */
-        /* to the next positions                            */
-        for (steps1 = 0; steps1 < nmsteps; steps1++)
-        {
-
-            if (steps1 == 0)
-                nsteps = 4;
-            if (steps1 == 1)
-                nsteps = 2;
-            if (steps1 == 2)
-                nsteps = 1;
-            if (steps1 == 3)
-                nsteps = 1;
-
-            /* Step the ions forward */
-            for (it = 0; it < ct.num_ions; it++)
-            {
-
-                iptr = &ct.ions[it];
-
-                iptr->crds[0] += iptr->velocity[0] * step * rsteps * nsteps;
-                iptr->crds[1] += iptr->velocity[1] * step * rsteps * nsteps;
-                iptr->crds[2] += iptr->velocity[2] * step * rsteps * nsteps;
-
-                to_crystal (iptr->xtal, iptr->crds);
-                to_cartesian (iptr->xtal, iptr->crds);
-
-            }
-
-            /* Update items that change when the ionic coordinates change */
-            ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
-
-            /* Do an scf step */
-//            CONVERGED = scf (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
-            CONVERGED = Scf (vxc, vh, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
-
-        }                       /* end for */
-
-        /* Reset coordinates to their original positions */
-        for (it = 0; it < ct.num_ions; it++)
-        {
-
-            iptr = &ct.ions[it];
-
-            iptr->crds[0] = crdsx[it];
-            iptr->crds[1] = crdsy[it];
-            iptr->crds[2] = crdsz[it];
-            to_crystal (iptr->xtal, iptr->crds);
-            to_cartesian (iptr->xtal, iptr->crds);
-
-        }
+        // Get atomic rho for this ionic configuration and subtract from current rho
+        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+        double *arho = new double[FP0_BASIS];
+        lcao_get_rho(arho);
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
 
 
         /* Update the positions a full timestep */
         //posup ();
 	move_ions (ct.iondt);
+
+        // Get atomic rho for new configuration and add back to rho
+        lcao_get_rho(arho);
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+        delete [] arho;
+
+        /* Update items that change when the ionic coordinates change */
+        ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
 
         /* converge to the ground state at the final positions */
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
@@ -673,12 +617,9 @@ void velup2 ()
     double step, mass;
     double t1, t2;
     double v1, v2, v3;
-    double scale = 1.0, kB;
+    double scale = 1.0;
 
     step = ct.iondt;
-
-    /* define Boltzmann param */
-    kB = 1.0 / (11605.0 * Ha_eV);
 
     switch (ct.forceflag)
     {
