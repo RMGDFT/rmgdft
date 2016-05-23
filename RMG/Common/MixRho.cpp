@@ -38,6 +38,7 @@
 #include "transition.h"
 #include "blas.h"
 #include "GlobalSums.h"
+#include "rmg_alloc.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -67,12 +68,12 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
     /*Linear Mixing*/
-    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || (ct.rms > 5.0e-3) || (ct.scf_steps == 0))
+    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || (ct.rms > 5.0e-3) || (ct.scf_steps < 4))
     {
+        if(reset) return;
 	RmgTimer RT1("Mix rho: Linear");
 	/* Scale old charge density first*/
 	t1 = ct.mix;
-        if(reset) t1 = 1.0;
         for(int ix = 0;ix < pbasis;ix++) rho[ix] *= (1.0 - t1);
 
 	/*Add the new density*/
@@ -86,7 +87,14 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 	RmgTimer RT1("Mix rho: Pulay");
         if (ct.charge_pulay_refresh)
             pulay_step = pulay_step % ct.charge_pulay_refresh;
-        if(reset) pulay_step = 0;
+        if(reset) {
+            pulay_step = 0;
+            if(rhohist) my_free(rhohist);
+            if(residhist) my_free(residhist);
+            rhohist = NULL;
+            residhist = NULL;
+            return;
+        }
 
         /*Use pulay mixing, result will be in rho*/
         pulay_rho(pulay_step, pbasis, length_x, length_y, length_z, 
@@ -101,6 +109,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     {
 	RmgTimer RT1("Mix rho: Broyden");
         BroydenPotential(rho, new_rho, rhoc, vh_in, vh_out, ct.charge_broyden_order, reset);
+        if(reset) return;
         rmg_printf("Broyden mixing for the charge density.\n");
     }
     

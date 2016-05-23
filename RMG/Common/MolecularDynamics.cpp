@@ -232,6 +232,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         /* Update items that change when the ionic coordinates change */
         ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
 
+        // Reset mixing
+        MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
+
         /* converge to the ground state at the final positions */
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
 
