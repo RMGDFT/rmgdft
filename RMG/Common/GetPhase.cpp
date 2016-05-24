@@ -1,3 +1,4 @@
+
 /*
  *
  * Copyright 2014 The RMG Project Developers. See the COPYRIGHT file 
@@ -21,14 +22,34 @@
 */
 
 
+
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
+#include <string.h>
+#include "transition.h"
+#include "const.h"
+#include "RmgTimer.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
 #include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "rmg_error.h"
+#include "Kpoint.h"
+#include "Subdiag.h"
+#include "Functional.h"
+#include "GpuAlloc.h"
+#include "../Headers/prototypes.h"
+#include "ErrorFuncs.h"
+#include "RmgException.h"
+#include "Functional.h"
+#include "Solvers.h"
+#include "pfft.h"
+#include "RmgParallelFft.h"
 
-void get_phase (ION * iptr, double * rtptr, int icount, int *dvec)
+void GetPhase (ION * iptr, std::complex<double> *rtptr)
 {
 
     int kpt, idx, ix, iy, iz, docount;
@@ -38,12 +59,13 @@ void get_phase (ION * iptr, double * rtptr, int icount, int *dvec)
     double hxgrid, hygrid, hzgrid;
     SPECIES *sp;
 
-    hxgrid = get_hxgrid();
-    hygrid = get_hygrid();
-    hzgrid = get_hzgrid();
 
     if (rtptr == NULL)
         return;
+
+    hxgrid = Rmg_G->get_hxgrid(1);
+    hygrid = Rmg_G->get_hygrid(1);
+    hzgrid = Rmg_G->get_hzgrid(1);
 
     /* Get species type */
     sp = &ct.sp[iptr->species];
@@ -54,14 +76,15 @@ void get_phase (ION * iptr, double * rtptr, int icount, int *dvec)
     pbasis = dimx * dimy * dimz;
 
 
-    for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    int kpt_local = 0;
+    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
 
-        idx = 0;
+        kpt_local = kpt/pct.pe_kpoint;
         for (ix = 0; ix < dimx; ix++)
         {
-    
-           xc = iptr->nlxcstart + ix * hxgrid;
+
+            xc = iptr->nlxcstart + ix * hxgrid;
 
             for (iy = 0; iy < dimy; iy++)
             {
@@ -69,22 +92,18 @@ void get_phase (ION * iptr, double * rtptr, int icount, int *dvec)
 
                 for (iz = 0; iz < dimz; iz++)
                 {
-                   zc = iptr->nlzcstart + iz * hzgrid;
+                    zc = iptr->nlzcstart + iz * hzgrid;
 
-                   // ax[0] = xc - iptr->xtal[0];
-                   // ax[1] = yc - iptr->xtal[1];
-                   // ax[2] = zc - iptr->xtal[2];
                     ax[0] = xc ;
                     ax[1] = yc ;
                     ax[2] = zc ;
                     to_cartesian (ax, bx);
                     kdr = ct.kp[kpt].kvec[0] * bx[0] +
-                          ct.kp[kpt].kvec[1] * bx[1] + ct.kp[kpt].kvec[2] * bx[2];
+                        ct.kp[kpt].kvec[1] * bx[1] + ct.kp[kpt].kvec[2] * bx[2];
 
                     idx = ix * dimy * dimz + iy * dimz + iz;
 
-                    rtptr[idx + 2 * kpt * pbasis] = cos (kdr);
-                    rtptr[idx + 2 * kpt * pbasis + pbasis] = sin (kdr);
+                    rtptr[idx + kpt_local * pbasis] = exp(std::complex<double>(0.0, kdr));
 
 
                 }               /* end for */
@@ -98,4 +117,3 @@ void get_phase (ION * iptr, double * rtptr, int icount, int *dvec)
 
 }                               /* end get_phase */
 
-/******/

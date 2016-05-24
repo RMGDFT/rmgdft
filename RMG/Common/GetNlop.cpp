@@ -209,12 +209,12 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             /* Allocate memory for the phase array */
             if ((icount * prj_per_ion)) {
                 itmp = sp->nldim * sp->nldim * sp->nldim;
-                pct.phaseptr[ion] = new double[2 * itmp * ct.num_kpts + 128]();
+                pct.phaseptr[ion] = new double[2*itmp * ct.num_kpts/pct.pe_kpoint + 128]();
             }
             else {
                 pct.phaseptr[ion] = NULL;
             }
-            get_phase (iptr, pct.phaseptr[ion], get_P0_BASIS(), dvec);
+            GetPhase (iptr, (std::complex<double> *)pct.phaseptr[ion]);
 
         }                       /* end if (map) */
 

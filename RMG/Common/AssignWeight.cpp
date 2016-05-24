@@ -81,9 +81,10 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
         tem_array[ix] = std::real(nbeptr[ix]);
     }
 
-    double *pR = pct.phaseptr[ion];
-    pR += 2 * kptr->kidx * nldim * nldim * nldim;
-    double *pI = pR + nldim * nldim * nldim;
+    std::complex<double> *phaseptr = (std::complex<double> *)pct.phaseptr[ion];
+    int kpt_local = (kptr->kidx / pct.pe_kpoint);
+    phaseptr += kpt_local *nldim * nldim * nldim;
+
 
     int *pidx = pct.nlindex[ion];
     int *dvec = pct.idxflag[ion];
@@ -102,7 +103,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
             {
                 int idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
                 if(!ct.is_gamma) {
-                    tem_array_C[idx1] = std::real(nbeptr[idx1]) * std::complex<double> (pR[idx1], -pI[idx1]);
+                    tem_array_C[idx1] = std::real(nbeptr[idx1]) * conj(phaseptr[idx1]);
                 }
 
                 if (dvec[idx])
@@ -155,7 +156,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
                     }
                     else {
-                        Nlweight_C[pidx[docount]] = std::complex<double>(std::real(nbeptr[idx1]) * pR[idx1], -std::real(nbeptr[idx1]) * pI[idx1]);
+                        Nlweight_C[pidx[docount]] = std::real(nbeptr[idx1]) * conj(phaseptr[idx1]);
                         Bweight_C[pidx[docount]] = Btem_array_C[idx1];
                     }
                     Nlweight_R[pidx[docount]] *= w1*w2*w3;

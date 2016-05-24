@@ -258,6 +258,7 @@ void Nlccforce (double * rho, double * vxc, double *force_nlcc);
 void FindFftwPhaseLocalpp (int nldim, double * nlcdrs, std::complex<double> *phase_fft, int level);
 void InitLocalForward();
 void InitLocalBackward(double *, double *, double *);
+void GetPhase (ION *, std::complex<double> *);
 
 
 

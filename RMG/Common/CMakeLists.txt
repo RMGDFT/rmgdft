@@ -1,4 +1,5 @@
 add_library (RMG_Common
+GetPhase.cpp
 EnergyCorrection.cpp
 BroydenPotential.cpp
 DavPreconditioner.cpp
@@ -73,7 +74,6 @@ moldyn.c
 xbsmovie.c
 init_gpu.c
 write_zstates.c
-get_phase.c
 betaxpsi1.c
 symmetry.c
 lbfgs.c

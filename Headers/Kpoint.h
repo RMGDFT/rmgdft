@@ -119,6 +119,8 @@ public:
     KpointType *nl_weight;
     KpointType *nl_Bweight;
 
+    std::complex<double> *phaseikr;
+
     // Pointer to potential acceleration arrays
     double *dvh;
 

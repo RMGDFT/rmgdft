@@ -80,7 +80,7 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
     int NZ_GRID = WavefunctionGrid.vals.at(2);
 
     int ReqNPES = pelc.pe_x * pelc.pe_y * pelc.pe_z; 
-    bool autoset_processor_grid = ((NPES != ReqNPES) && (NPES > 1)); 
+    bool autoset_processor_grid = ((NPES != ReqNPES));
 
     // if this is equal to 1 then user did not try to manually set the
     // wavefunction grid so we have to set it ourselves which this test
