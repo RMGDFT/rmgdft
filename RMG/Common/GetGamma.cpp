@@ -36,6 +36,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "GlobalSums.h"
 
 
 template void GetGamma<double> (double * gammaR, int ion, int nh, Kpoint<double> **Kptr);
@@ -55,7 +56,7 @@ template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh 
         for (j = i; j < nh; j++)
         {
             gammaR[idx] = 0.0;
-            for (kidx = 0; kidx < ct.num_kpts; kidx++)
+            for (kidx = pct.kstart; kidx < ct.num_kpts; kidx+=pct.pe_kpoint)
             {
                 for (istate = 0; istate < ct.num_states; istate++)
                 {
@@ -72,4 +73,10 @@ template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh 
             ++idx;
         }                       /*end for j */
     }                           /*end for i */
+
+
+    idx = (nh*(nh+1))/2;
+
+    GlobalSums(gammaR, idx, pct.kpsub_comm);
+
 }

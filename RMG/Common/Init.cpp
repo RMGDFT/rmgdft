@@ -212,7 +212,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here
-    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts * ct.max_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts/pct.pe_kpoint * ct.max_states * P0_BASIS + 1024) * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     custat = cudaMallocHost((void **)&nv, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
@@ -225,7 +225,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
-    rptr = new OrbitalType[ct.num_kpts * ct.max_states * P0_BASIS + 1024];
+    rptr = new OrbitalType[ct.num_kpts/pct.pe_kpoint * ct.max_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
     ns = new OrbitalType[ct.max_states * P0_BASIS]();
     if(!ct.norm_conserving_pp) {
@@ -237,10 +237,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.ns = (double *)ns;
 
 
-    kpt1 = ct.num_kpts;
-//    if (Verify ("calculation_mode", "Band Structure Only", Kptr[0]->ControlMap))
-//        kpt1 = 1;
-    for (kpt = 0; kpt < kpt1; kpt++)
+    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
 
         Kptr[kpt]->set_pool(rptr);
@@ -290,7 +287,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (ct.runflag == LCAO_START || (ct.forceflag == BAND_STRUCTURE))
     {
         RmgTimer *RT2 = new RmgTimer("Init: LcaoGetPsi");
-        for(kpt = 0; kpt < ct.num_kpts; kpt++) {
+        for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
             LcaoGetPsi(Kptr[kpt]->Kstates);
         }
         delete(RT2);
@@ -298,8 +295,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     if (ct.runflag == RANDOM_START)
     {
-        for (kpt = 0; kpt < ct.num_kpts; kpt++)
-            //init_wf (&Kptr[0]->kstates[kpt * ct.num_states]);
+        for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
             Kptr[kpt]->random_init();
     }
 
@@ -372,7 +368,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (ct.runflag != RESTART) /* Initial run */
     {
         RmgTimer *RT2 = new RmgTimer("Init: normalization");
-        for (kpt = 0; kpt < ct.num_kpts; kpt++)
+        for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
         {
             for (state = 0; state < ct.num_states; state++)
             {
@@ -451,7 +447,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     // Generate initial Betaxpsi
     RmgTimer *RT3 = new RmgTimer("Init: betaxpsi");
-    for(kpt = 0;kpt < ct.num_kpts;kpt++) {
+    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
         Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
         Kptr[kpt]->mix_betaxpsi(0);
     }
@@ -477,7 +473,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
             /*Now we can do subspace diagonalization */
             double *new_rho=new double[FP0_BASIS];
-            for(kpt = 0;kpt < ct.num_kpts;kpt++) {
+            for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
                 RmgTimer *RT2 = new RmgTimer("Init: subdiag");
                 Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
                 delete RT2;
@@ -500,7 +496,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         else
         {
 
-            for (kpt = 0; kpt < ct.num_kpts; kpt++) {
+            for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
                 Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
             }
 
@@ -510,7 +506,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     ct.num_states = ct.run_states;
-    for (kpt = 0; kpt < ct.num_kpts; kpt++) {
+    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
         Kptr[kpt]->nstates = ct.run_states;
         Kptr[kpt]->dvh_skip = 8;
         // Set up potential acceleration arrays if required

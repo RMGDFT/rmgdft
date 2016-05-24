@@ -39,6 +39,7 @@
 #include <complex>
 #include "../Headers/prototypes.h"
 #include "RmgParallelFft.h"
+#include "GlobalSums.h"
 
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
@@ -61,7 +62,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     for(int idx = 0;idx < pbasis;idx++)
         work[idx] = 0.0;
 
-    for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+    for (int kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
 
         /* Loop over states and accumulate charge */
@@ -80,6 +81,8 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         }                       /*end for istate */
 
     }                           /*end for kpt */
+
+    GlobalSums(work, pbasis, pct.kpsub_comm);
 
     /* Interpolate onto fine grid, result will be stored in rho*/
     switch (ct.interp_flag)

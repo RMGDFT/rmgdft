@@ -48,6 +48,7 @@
 #include "Solvers.h"
 #include "../Headers/prototypes.h"
 #include "RmgParallelFft.h"
+#include "RmgSumAll.h"
 
 
 // Computes an approximate correction that helps make the total energy variational when using multigrid
@@ -72,7 +73,7 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
 
     for (int is = 0; is < nspin; is++)
     {
-        for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+        for (int kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
         {
 
             Kpoint<OrbitalType> *kptr = Kptr[kpt];
@@ -86,6 +87,7 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
         }
     }
 
+    ec = RmgSumAll(ec, pct.kpsub_comm);
     return ec;
 }
 

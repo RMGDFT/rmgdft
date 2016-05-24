@@ -67,7 +67,6 @@ debug_write_rho_z.c
 write_pdb.c
 nlforce_par_omega.c
 real_min_all.c
-PartialBetaxpsi.cpp
 neb_relax.c
 app_smooth.cpp
 moldyn.c

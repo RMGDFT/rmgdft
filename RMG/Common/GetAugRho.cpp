@@ -39,6 +39,7 @@
 #include <complex>
 #include "../Headers/prototypes.h"
 #include "RmgParallelFft.h"
+#include "GlobalSums.h"
 
 
 template void GetAugRho<double>(Kpoint<double> **, double *);
@@ -78,7 +79,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                 for (int i=0; i < max_product; i++)
                     product[i] = 0.0;
 
-                for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+                for (int kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
                 {
 
                     //STATE *sp = ct.kp[kpt].kstate;
@@ -136,6 +137,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
     }
 
+    GlobalSums(augrho, pbasis, pct.kpsub_comm);
     symmetrize_rho (augrho);
 
 

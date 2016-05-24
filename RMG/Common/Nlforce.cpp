@@ -54,7 +54,7 @@ template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<dou
 template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType> **Kptr, double *force_nl)
 {
     int ion, isp, index, gion, nion;
-    int nh, size, size1;
+    int nh, size;
     double *gamma, *par_gamma, *par_omega;
     SPECIES *sp;
     ION *iptr;
@@ -102,7 +102,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     gz = new OrbitalType[FP0_BASIS];
     RmgTimer *RT1;
 
-    size1 = ct.num_kpts * ct.num_states * ct.num_ions * ct.max_nl;
     fpt0 = ct.fpt[0];
 
 
@@ -132,7 +131,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     RT1 = new RmgTimer("Force: non-local: betaxpsi");
 
-    for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+    for (int kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
 
         num_occupied = 0;

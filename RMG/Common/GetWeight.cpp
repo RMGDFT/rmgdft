@@ -83,7 +83,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
         pct.Bweight[idx] = 0.0;
     }
 
-    for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
+    for(int kpt = pct.kstart;kpt < ct.num_kpts;kpt+=pct.pe_kpoint) {
 
         /* Loop over ions */
         for (ion1 = 0; ion1 < pct.num_nonloc_ions; ion1++)
