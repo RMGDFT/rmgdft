@@ -53,11 +53,13 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "transition.h"
+#include "RmgSumAll.h"
+#include "GlobalSums.h"
 
 
-static double fd (double mu, double * occ, double eigs[][2], double width, double nel, int num_st);
-static double gs (double mu, double * occ, double eigs[][2], double width, double nel, int num_st);
-static double ef (double mu, double * occ, double eigs[][2], double width, double nel, int num_st);
+static double fd (double mu, double * occ, double *eigs, double width, double nel, int num_st);
+static double gs (double mu, double * occ, double *eigs, double width, double nel, int num_st);
+static double ef (double mu, double * occ, double *eigs, double width, double nel, int num_st);
 
 
 template double Fill (Kpoint<double> **, double, double, double, int, int);
@@ -74,20 +76,27 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     int iter, st, st1, kpt, idx, nks, nspin = (ct.spin_flag + 1);
     State<KpointType> *sp;
     double mu, dmu, mu1, mu2, f, fmid, eig;
-    double (*func) (double, double *, double [][2], double, double, int) = NULL;
+    double (*func) (double, double *, double *, double, double, int) = NULL;
 
     double *occ;
-    double eigs[ct.num_states*ct.num_kpts*nspin][2];
+    double eigs[ct.num_states*ct.num_kpts*nspin];
 
+    nks = ct.num_kpts * ct.num_states;
+    int ntot_states = nspin * nks;
+
+    for(int idx = 0; idx < ntot_states; idx++) eigs[idx] = 0.0;
 
     // Fill eigs
-    for(int idx = 0;idx < nspin;idx++) {
-        for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
-            for(int st = 0;st < ct.num_states;st++) {
-                eigs[kpt*ct.num_states + st][idx] = Kptr[kpt]->Kstates[st].eig[idx];
-            }
+    for(int kpt = pct.kstart;kpt < ct.num_kpts;kpt+=pct.pe_kpoint) {
+        for(int st = 0;st < ct.num_states;st++) {
+            eigs[pct.spinpe * nks + kpt*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[pct.spinpe];
         }
     }
+
+    GlobalSums(eigs, ntot_states, pct.spin_comm);
+    GlobalSums(eigs, ntot_states, pct.kpsub_comm);
+
+
 
     if(nel == 1 && ct.num_kpts == 1 && ct.spin_flag == 0)
     {
@@ -106,32 +115,31 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     switch (occ_flag % 10)
     {
 
-    case OCC_NONE:
-        return 0.0;             /* early return */
+        case OCC_NONE:
+            return 0.0;             /* early return */
 
-    case OCC_FD:
-        /* fermi-dirac occupations: f(x) = 2 / (1 + Exp[x/T]) */
-        func = fd;
-        break;
+        case OCC_FD:
+            /* fermi-dirac occupations: f(x) = 2 / (1 + Exp[x/T]) */
+            func = fd;
+            break;
 
-    case OCC_GS:
-        /* Gaussian occupations:
-           f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
-        func = gs;
-        break;
+        case OCC_GS:
+            /* Gaussian occupations:
+               f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
+            func = gs;
+            break;
 
-    case OCC_EF:
-        /* error-function occupations: f(x) = erfc(x/(aT)),
-           where a = 4/Sqrt[Pi] */
-        func = ef;
-        break;
+        case OCC_EF:
+            /* error-function occupations: f(x) = erfc(x/(aT)),
+               where a = 4/Sqrt[Pi] */
+            func = ef;
+            break;
 
-    default:
-        rmg_error_handler (__FILE__,__LINE__,"unknown filling procedure");
+        default:
+            rmg_error_handler (__FILE__,__LINE__,"unknown filling procedure");
 
     }                           /* end switch */
-    
-    nks = ct.num_kpts * ct.num_states;
+
     occ = new double[nspin * nks];
 
 
@@ -145,17 +153,10 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     mu1 = 1.0e30;
     mu2 = -mu1; 
 
-    for(idx = 0; idx < nspin; idx++)
+    for(idx = 0; idx < ntot_states; idx++)
     {
-    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
-    	{
-        	for (st = 0; st < ct.num_states; st++)
-    		{
-	    		eig = Kptr[kpt]->Kstates[st].eig[idx]; 
-            		mu1 = std::min (eig, mu1);
-            		mu2 = std::max (eig, mu2); 
-		}
-    	}                           
+        mu1 = std::min (eigs[idx], mu1);
+        mu2 = std::max (eigs[idx], mu2); 
     } 
 
 
@@ -206,23 +207,25 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     /* mix occupations */
 
     fmid = 0.0; 
-	
+
     for (idx = 0; idx < nspin; idx++)
     {
-    	st = -1;
-    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
-   	{
-        	for (st1 = 0; st1 < ct.num_states; st1++)
-        	{
-            		st += 1;
-            		sp = &Kptr[kpt]->Kstates[st1];
-	    
-           	 	sp->occupation[idx] = mix * occ[st + idx * nks] + (1.0 - mix) * sp->occupation[idx];
-            		fmid += sp->occupation[idx] * ct.kp[kpt].kweight;
-        	}
-    	}                           /* st and kpt */
+        st = -1;
+        for(int kpt = pct.kstart;kpt < ct.num_kpts;kpt+=pct.pe_kpoint) {
+            {
+                for (st1 = 0; st1 < ct.num_states; st1++)
+                {
+                    st = kpt * ct.num_states + st1;
+                    sp = &Kptr[kpt]->Kstates[st1];
+
+                    sp->occupation[idx] = mix * occ[st + idx * nks] + (1.0 - mix) * sp->occupation[idx];
+                    fmid += sp->occupation[idx] * ct.kp[kpt].kweight;
+                }
+            }                           /* st and kpt */
+        }
     }
 
+    fmid = RmgSumAll(fmid, pct.kpsub_comm);
 
     fmid -= nel;
 
@@ -241,7 +244,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 
 
 
-static double fd (double mu, double * occ, double eigs[][2], double width, double nel, int num_st)
+static double fd (double mu, double * occ, double *eigs, double width, double nel, int num_st)
 {
     int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
     double t1, t2, sumf, eig, fac = (2.0 - ct.spin_flag);
@@ -250,34 +253,34 @@ static double fd (double mu, double * occ, double eigs[][2], double width, doubl
        f(x) = 2 / (1 + Exp[x/T]) */
 
     nks = ct.num_kpts * ct.num_states;
-    
+
     sumf = 0.0; 
-    
+
     for (idx = 0; idx < nspin; idx++)
     {
-    	st = -1;
-    	for (kpt = 0; kpt < ct.num_kpts ; kpt++)
-    	{
-		for (st1 = 0; st1 < ct.num_states; st1++)
-    		{
-			st += 1;
-                        eig = eigs[kpt*ct.num_states + st1][idx];
-        		t1 = (eig - mu) / width;
-        		if (t1 > 0.0)
-        		{
+        st = -1;
+        for (kpt = 0; kpt < ct.num_kpts ; kpt++)
+        {
+            for (st1 = 0; st1 < ct.num_states; st1++)
+            {
+                st = kpt * ct.num_states + st1;
+                eig = eigs[st + idx * nks];
+                t1 = (eig - mu) / width;
+                if (t1 > 0.0)
+                {
 
-        			t2 = exp (-t1);
-                		occ[st + idx * nks] = fac * t2 / (1.0 + t2);
-            
-       		 	}
-        		else
-        		{
-                		t2 = exp (t1);
-               		 	occ[st + idx * nks] = fac / (1.0 + t2);
-        		}                 
-       	        	sumf += occ[st + idx * nks] * ct.kp[kpt].kweight;
-        	}
-    	}                           /* st1 and kpt */
+                    t2 = exp (-t1);
+                    occ[st + idx * nks] = fac * t2 / (1.0 + t2);
+
+                }
+                else
+                {
+                    t2 = exp (t1);
+                    occ[st + idx * nks] = fac / (1.0 + t2);
+                }                 
+                sumf += occ[st + idx * nks] * ct.kp[kpt].kweight;
+            }
+        }                           /* st1 and kpt */
 
     }    
 
@@ -286,44 +289,43 @@ static double fd (double mu, double * occ, double eigs[][2], double width, doubl
 }                               /* fd */
 
 
-static double gs (double mu, double * occ, double eigs[][2], double width, double nel, int num_st)
+static double gs (double mu, double * occ, double *eigs, double width, double nel, int num_st)
 {
     int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
     double t1, sumf, eig, fac;
-    
+
     fac = (2.0 - ct.spin_flag) * 0.5;
 
     /* Gaussian occupations:
        f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
-    
+
     nks = ct.num_kpts * ct.num_states;
 
     sumf = 0.0; 
- 
+
     for (idx = 0; idx < nspin; idx++)
     {
-    	st = -1; 
-    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
-    	{
-        	for (st1 = 0; st1 < ct.num_states; st1++)
-        	{
-            	st += 1;
-                eig = eigs[kpt*ct.num_states + st1][idx];
+        st = -1; 
+        for (kpt = 0; kpt < ct.num_kpts; kpt++)
+        {
+            for (st1 = 0; st1 < ct.num_states; st1++)
+            {
+                st = kpt * ct.num_states + st1;
+                eig = eigs[idx * nks + st];
+                t1 = (eig - mu) / (2.0 * width);
+                if (t1 > 0.0)
+                {
+                    occ[st + idx * nks] = fac * exp (-t1 * (1.0 + 0.5 * t1));
+                }
+                else
+                {
+                    t1 = -t1;
+                    occ[st + idx * nks] = fac * ( 2.0 - exp (-t1 * (1.0 + 0.5 * t1)) );
 
-            	t1 = (eig - mu) / (2.0 * width);
-            	if (t1 > 0.0)
-            	{
-                	occ[st + idx * nks] = fac * exp (-t1 * (1.0 + 0.5 * t1));
-            	}
-            	else
-            	{
-                	t1 = -t1;
-                	occ[st + idx * nks] = fac * ( 2.0 - exp (-t1 * (1.0 + 0.5 * t1)) );
-
-            	}                   /* end if */
-            	sumf += occ[st + idx * nks] * ct.kp[kpt].kweight;
-		}
-    	}
+                }                   /* end if */
+                sumf += occ[st + idx * nks] * ct.kp[kpt].kweight;
+            }
+        }
     }	
 
     return (sumf - nel);
@@ -331,7 +333,7 @@ static double gs (double mu, double * occ, double eigs[][2], double width, doubl
 }                               /* gs */
 
 
-static double ef (double mu, double * occ, double eigs[][2], double width, double nel, int num_st)
+static double ef (double mu, double * occ, double *eigs, double width, double nel, int num_st)
 {
     int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
     double t1, t2, sumf, eig, fac;
@@ -348,31 +350,30 @@ static double ef (double mu, double * occ, double eigs[][2], double width, doubl
 
     for (idx = 0; idx < nspin; idx++)
     {
-    	st = -1;
-    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
-    	{
-        	for (st1 = 0; st1 < ct.num_states; st1++)
-        	{
-            		st += 1;
-            		eig = eigs[kpt*ct.num_states + st1][idx];
+        for (kpt = 0; kpt < ct.num_kpts; kpt++)
+        {
+            for (st1 = 0; st1 < ct.num_states; st1++)
+            {
+                st = kpt * ct.num_states + st1;
+                eig = eigs[st + idx * nks];
 
-            		t1 = (eig - mu) / (t2 * width);
+                t1 = (eig - mu) / (t2 * width);
 
-            		/* debug: this conditional mayn't be necessary */
+                /* debug: this conditional mayn't be necessary */
 
-            		if (t1 > 0.0)
-            		{
-                		occ[st + idx * nks] = fac * erfc (t1);
-            		}
-            		else
-            		{
-                		t1 = -t1;       
-                		occ[st + idx * nks] = fac * ( 1.0 + erf (t1) );
-            		}                   /* end if */
+                if (t1 > 0.0)
+                {
+                    occ[st + idx * nks] = fac * erfc (t1);
+                }
+                else
+                {
+                    t1 = -t1;       
+                    occ[st + idx * nks] = fac * ( 1.0 + erf (t1) );
+                }                   /* end if */
 
-           	 	sumf += occ[st + idx * nks] * ct.kp[kpt].kweight;
-		}
-    	}
+                sumf += occ[st + idx * nks] * ct.kp[kpt].kweight;
+            }
+        }
     }	    
 
     return (sumf - nel);

@@ -76,35 +76,35 @@ void get_opposite_eigvals (STATE * states)
 
     /*Prepare the sending buffer of eigenvalues */
     st = 0;
-    for (kpt =0; kpt < ct.num_kpts; kpt++)
+    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
-	for (st1 = 0; st1 < ct.num_states; st1++)
-	{	
-	    eigval_sd[st] = ct.kp[kpt].kstate[st1].eig[0];
-	    st += 1;
-	}	
+        for (st1 = 0; st1 < ct.num_states; st1++)
+        {	
+            eigval_sd[st] = ct.kp[kpt].kstate[st1].eig[0];
+            st += 1;
+        }	
     }
 
 
     /*Communicate for spin up and spin down energy eigenvalues*/    
     MPI_Sendrecv(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
-	    eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+            eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 
 
     /* Unpack the received eigenvalue to state structure */
     st = 0;
-    for (kpt =0; kpt < ct.num_kpts; kpt++)
+    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
-	for (st1 = 0; st1 < ct.num_states; st1++)
-	{	
-	    ct.kp[kpt].kstate[st1].eig[1] = eigval_rv[st];
-	    st += 1;
+        for (st1 = 0; st1 < ct.num_states; st1++)
+        {	
+            ct.kp[kpt].kstate[st1].eig[1] = eigval_rv[st];
+            st += 1;
 
-	}	
+        }	
     } 
 
 
-	my_free (eigval_sd);
+    my_free (eigval_sd);
 }                               /* end scf */
 
 

@@ -12,8 +12,8 @@ wavefunction_grid="16 16 16"
 write_eigvals_period = "1"
 
 occupations_type=
-"Fixed"  #i.e. use occupations as specified elswhere in this file
-#"Fermi Dirac"
+#"Fixed"  #i.e. use occupations as specified elswhere in this file
+"Fermi Dirac"
 #"Gaussian"
 #"Error Function" 
 
