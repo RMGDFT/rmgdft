@@ -172,48 +172,48 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     /* read state occupations */
     {
-	double *occ = new double[nk * ct.num_states]();
-        
-	read_double (fhand, occ, (nk * ns));
+        double *occ = new double[nk * ct.num_states]();
 
-	rmg_printf ("read_data: read 'occupations'\n"); 
+        read_double (fhand, occ, (nk * ns));
 
-
-	if (ct.forceflag != BAND_STRUCTURE)
-	{
-	    double occ_total = 0.0; 
-
-	    for (ik = 0; ik < nk; ik++)
-		for (is = 0; is < ct.num_states; is++)
-		{
-		    occ_total += ( Kptr[ik]->Kstates[is].occupation[0] = occ[ik * ns + is] );
-		}
+        rmg_printf ("read_data: read 'occupations'\n"); 
 
 
+        if (ct.forceflag != BAND_STRUCTURE)
+        {
+            double occ_total = 0.0; 
 
-	    /* 
-	       since we are using floats on the data file the precision
-	       of the occupations is worse than 1e-10 required by the fill() routine
-	       therefore we need to 'renormalize' the occupations so
-	       that they add up to an integer
-	       it's a hack I know, but whatever... not a biggie
-	     */
+            for (ik = 0; ik < nk; ik++)
+                for (is = 0; is < ct.num_states; is++)
+                {
+                    occ_total += ( Kptr[ik]->Kstates[is].occupation[0] = occ[ik * ns + is] );
+                }
 
-	    {
-		double iocc_total = (double) (int) (occ_total + 0.5);
-		double fac = iocc_total / occ_total;
 
-		    for (ik = 0; ik < nk; ik++)
-			for (is = 0; is < ct.num_states; is++)
-			{
-			    Kptr[ik]->Kstates[is].occupation[0] *= fac;
-			}
-		/* end of normalization*/
-	    }
 
-	}             /* end if */
+            /* 
+               since we are using floats on the data file the precision
+               of the occupations is worse than 1e-10 required by the fill() routine
+               therefore we need to 'renormalize' the occupations so
+               that they add up to an integer
+               it's a hack I know, but whatever... not a biggie
+             */
 
-	delete [] occ;
+            {
+                double iocc_total = (double) (int) (occ_total + 0.5);
+                double fac = iocc_total / occ_total;
+
+                for (ik = 0; ik < nk; ik++)
+                    for (is = 0; is < ct.num_states; is++)
+                    {
+                        Kptr[ik]->Kstates[is].occupation[0] *= fac;
+                    }
+                /* end of normalization*/
+            }
+
+        }             /* end if */
+
+        delete [] occ;
 
     }           /* end of read occupations */
 
@@ -223,15 +223,15 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     /* read state eigenvalues, not needed really */
     {
 
-	/* Read eigenvalue in pairwised case, while in polarized case, 
-	 * it's the eigenvalue for proceesor's own spin  */ 
-	for (ik = 0; ik < nk; ik++)
-	    for (is = 0; is < ns; is++)
-	    {
-		read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
-	    }
+        /* Read eigenvalue in pairwised case, while in polarized case, 
+         * it's the eigenvalue for proceesor's own spin  */ 
+        for (ik = 0; ik < nk; ik++)
+            for (is = 0; is < ns; is++)
+            {
+                read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
+            }
 
-	rmg_printf ("read_data: read 'eigenvalues'\n");
+        rmg_printf ("read_data: read 'eigenvalues'\n");
 
     }      /* end of read eigenvalues */
 
@@ -239,19 +239,19 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     /* read wavefunctions */
     {
-	int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
+        int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
 
-	for (ik = 0; ik < nk; ik++)
-	{
-	    for (is = 0; is < ns; is++)
-	    {
+        for (ik = pct.kstart; ik < ct.num_kpts; ik+=pct.pe_kpoint)
+        {
+            for (is = 0; is < ns; is++)
+            {
 
-		read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+                read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
 
-	    }
-	}
+            }
+        }
 
-	rmg_printf ("read_data: read 'wfns'\n");
+        rmg_printf ("read_data: read 'wfns'\n");
 
     }
 
@@ -259,7 +259,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     // If we have added unoccupied orbitals initialize them to a random state
     if(ct.num_states > ns) {
 
-	for (ik = 0; ik < nk; ik++) {
+        for (ik = pct.kstart; ik < ct.num_kpts; ik+=pct.pe_kpoint) {
 
             int PX0_GRID = Rmg_G->get_PX0_GRID(1);
             int PY0_GRID = Rmg_G->get_PY0_GRID(1);
@@ -307,18 +307,18 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                         for (int iz = 0; iz < PZ0_GRID; iz++)
                         {
 
-                            
+
                             tmp_psiR[idx] = xrand[xoff + ix] * 
-                                            yrand[yoff + iy] * 
-                                            zrand[zoff + iz];
+                                yrand[yoff + iy] * 
+                                zrand[zoff + iz];
                             tmp_psiR[idx] = tmp_psiR[idx] * tmp_psiR[idx];
 
 
                             if(!ct.is_gamma) {
 
                                 tmp_psiI[idx] = xrand[Rmg_G->get_NX_GRID(1) + xoff + ix] * 
-                                                yrand[Rmg_G->get_NY_GRID(1) + yoff + iy] * 
-                                                zrand[Rmg_G->get_NZ_GRID(1) + zoff + iz];
+                                    yrand[Rmg_G->get_NY_GRID(1) + yoff + iy] * 
+                                    zrand[Rmg_G->get_NZ_GRID(1) + zoff + iz];
                                 tmp_psiI[idx] = tmp_psiI[idx] * tmp_psiI[idx];
 
                             }
@@ -373,7 +373,7 @@ static void read_double (int fhand, double * rp, int count)
     ssize_t wanted = sizeof (double) * (ssize_t)count;
     ssize_t size = read (fhand, rp, wanted);
     if(size != wanted)
-	rmg_error_handler (__FILE__, __LINE__,"error reading");
+        rmg_error_handler (__FILE__, __LINE__,"error reading");
 
 }
 static void read_float (int fhand, double * rp, int count)
@@ -385,10 +385,10 @@ static void read_float (int fhand, double * rp, int count)
 
     ssize_t size = read (fhand, buf, wanted);
     if(size != wanted)
-	rmg_error_handler (__FILE__, __LINE__,"error reading");
+        rmg_error_handler (__FILE__, __LINE__,"error reading");
 
     for (i = 0; i < count; i++)
-	rp[i] = (double) buf[i];  /* floats take only 4 bytes instead of 8 bytes for double */
+        rp[i] = (double) buf[i];  /* floats take only 4 bytes instead of 8 bytes for double */
 
     delete [] buf;
 }
@@ -401,7 +401,7 @@ static void read_int (int fhand, int *ip, int count)
     size = count * sizeof (int);
 
     if (size != read (fhand, ip, size))
-	rmg_error_handler (__FILE__, __LINE__,"error reading");
+        rmg_error_handler (__FILE__, __LINE__,"error reading");
 
 }
 

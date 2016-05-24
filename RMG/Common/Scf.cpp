@@ -169,7 +169,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     get_ddd (vtot);
 
     // Loop over k-points
-    for(int kpt = 0;kpt < ct.num_kpts;kpt++) {
+    for(int kpt = pct.kstart;kpt < ct.num_kpts;kpt+=pct.pe_kpoint) {
 
         if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || ((ct.scf_steps < 4) && (ct.runflag != RESTART))) {
             RmgTimer *RT1 = new RmgTimer("Scf steps: MgridSubspace");

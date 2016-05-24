@@ -148,7 +148,7 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     {
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
 
-        for (ik = 0; ik < nk; ik++)
+        for (ik = pct.kstart; ik < ct.num_kpts; ik+=pct.pe_kpoint)
         {
             for (is = 0; is < ns; is++)
             {

@@ -45,37 +45,37 @@ void GetOppositeEigvals (Kpoint<KpointType> ** Kptr)
 
 
     /* allocate memory for eigenvalue send array and receive array */
-    eigval_sd = new double[2 * ct.num_kpts * ct.num_states];
-    eigval_rv = eigval_sd + ct.num_kpts * ct.num_states;
+    eigval_sd = new double[2 * ct.num_kpts/pct.pe_kpoint * ct.num_states];
+    eigval_rv = eigval_sd + ct.num_kpts/pct.pe_kpoint * ct.num_states;
 
 
     /*Prepare the sending buffer of eigenvalues */
     st = 0;
-    for (kpt =0; kpt < ct.num_kpts; kpt++)
+    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
-	for (st1 = 0; st1 < ct.num_states; st1++)
-	{	
-	    eigval_sd[st] = Kptr[kpt]->Kstates[st1].eig[0];
-	    st += 1;
-	}	
+        for (st1 = 0; st1 < ct.num_states; st1++)
+        {	
+            eigval_sd[st] = Kptr[kpt]->Kstates[st1].eig[0];
+            st += 1;
+        }	
     }
 
 
     /*Communicate for spin up and spin down energy eigenvalues*/    
     MPI_Sendrecv(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
-	    eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+            eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 
 
     /* Unpack the received eigenvalue to state structure */
     st = 0;
-    for (kpt =0; kpt < ct.num_kpts; kpt++)
+    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
-	for (st1 = 0; st1 < ct.num_states; st1++)
-	{	
-	    Kptr[kpt]->Kstates[st1].eig[1] = eigval_rv[st];
-	    st += 1;
+        for (st1 = 0; st1 < ct.num_states; st1++)
+        {	
+            Kptr[kpt]->Kstates[st1].eig[1] = eigval_rv[st];
+            st += 1;
 
-	}	
+        }	
     } 
 
 

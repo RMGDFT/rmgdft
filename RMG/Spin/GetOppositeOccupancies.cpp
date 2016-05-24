@@ -46,37 +46,37 @@ void GetOppositeOccupancies (Kpoint<KpointType> ** Kptr)
 
 
     /* allocate memory for occupation send array and receive array */
-    occ_sd = new double[2 * ct.num_kpts * ct.num_states];
-    occ_rv = occ_sd + ct.num_kpts * ct.num_states;
+    occ_sd = new double[2 * ct.num_kpts/pct.pe_kpoint * ct.num_states];
+    occ_rv = occ_sd + ct.num_kpts/pct.pe_kpoint * ct.num_states;
 
 
     /*Prepare the sending buffer of occupancies */
     st = 0;
-    for (kpt =0; kpt < ct.num_kpts; kpt++)
+    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
-	for (st1 = 0; st1 < ct.num_states; st1++)
-	{	
-	    occ_sd[st] = Kptr[kpt]->Kstates[st1].occupation[0];
-	    st += 1;
-	}	
+        for (st1 = 0; st1 < ct.num_states; st1++)
+        {	
+            occ_sd[st] = Kptr[kpt]->Kstates[st1].occupation[0];
+            st += 1;
+        }	
     }
 
 
     /*Communicate for spin up and spin down occupations*/    
     MPI_Sendrecv(occ_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
-	    occ_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+            occ_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 
 
     /* Unpack the received occupations to state structure */
     st = 0;
-    for (kpt =0; kpt < ct.num_kpts; kpt++)
+    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
     {
-	for (st1 = 0; st1 < ct.num_states; st1++)
-	{	
-	    Kptr[kpt]->Kstates[st1].occupation[1] = occ_rv[st];
-	    st += 1;
+        for (st1 = 0; st1 < ct.num_states; st1++)
+        {	
+            Kptr[kpt]->Kstates[st1].occupation[1] = occ_rv[st];
+            st += 1;
 
-	}	
+        }	
     } 
 
 

@@ -52,7 +52,7 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     // Number of total projectors required is computed in GetNlop so we allocate per
     // k-point storage for the weights here.
-    for(int kpt=0;kpt < ct.num_kpts;kpt++) {
+    for(int kpt=pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint) {
 
         if(ct.is_gamma) {
 
@@ -106,14 +106,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     get_qqq ();
     delete RT1;
 
-
-#if 0
-    if (!verify ("calculation_mode", "Band Structure Only"))
-    {
-        betaxpsi (states);
-        mix_betaxpsi(0);
-    }
-#endif
 
 }                               /* end reinit_ionic_pp */
 

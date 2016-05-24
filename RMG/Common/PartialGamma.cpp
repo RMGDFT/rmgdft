@@ -35,6 +35,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "GlobalSums.h"
 
 
 /*Set this to 1 to have forces written out part by part*/
@@ -60,7 +61,7 @@ template <typename OrbitalType> void PartialGamma (
     double beta_pbeta;
 
 
-    size = nh * (nh + 1) / 2;
+    size = (nh * (nh + 1)) / 2;
     gamma_x = par_gammaR;
     gamma_y = gamma_x + size;
     gamma_z = gamma_y + size;
@@ -80,7 +81,7 @@ template <typename OrbitalType> void PartialGamma (
     }
 
 
-    for (kidx = 0; kidx < ct.num_kpts; kidx++)
+    for (kidx = pct.kstart; kidx < ct.num_kpts; kidx+=pct.pe_kpoint)
     {
         for (istate = 0; istate < ct.num_states; istate++)
         {
@@ -138,4 +139,6 @@ template <typename OrbitalType> void PartialGamma (
         }                       /*end for istate */
     }                           /*end for kidx */
 
+    GlobalSums(par_gammaR, 3*size, pct.kpsub_comm);
+    GlobalSums(par_omegaR, 3*size, pct.kpsub_comm);
 }
