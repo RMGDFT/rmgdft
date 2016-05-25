@@ -346,7 +346,6 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                 //relax_tau (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, tau);
                 ;
             else 
-                printf("\n before relax");
             Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
             break;
 

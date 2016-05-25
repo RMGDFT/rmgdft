@@ -800,6 +800,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
 //    }
 
+    If.RegisterInputKey("kpoint_distribution", &pelc.pe_kpoint, -INT_MAX, INT_MAX, -1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "");
+
     If.LoadInputKeys();
 
     // Check items that require custom handling

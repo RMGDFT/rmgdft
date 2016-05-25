@@ -48,21 +48,23 @@ void InitPe4kpspin()
         exit(0);
     }
 
-
-    pct.pe_kpoint = 1;
     int npes;
     npes = pct.image_npes[pct.thisimg]/nspin;
 
-    while(kpt_factors.size()) {
-        if(npes % kpt_factors.back() == 0) {
-            pct.pe_kpoint *= kpt_factors.back();
-            npes /= kpt_factors.back();
+    if(pct.pe_kpoint <1 || pct.pe_kpoint > npes)
+    {
+        pct.pe_kpoint = 1;
+
+        while(kpt_factors.size()) {
+            if(npes % kpt_factors.back() == 0) {
+                pct.pe_kpoint *= kpt_factors.back();
+                npes /= kpt_factors.back();
+            }
+            kpt_factors.pop_back();
         }
-        kpt_factors.pop_back();
     }
     //pct.pe_kpoint = std::min(2, npes);
     //pct.pe_kpoint = 2;
-    pct.pe_kpoint = 1;
     ct.num_kpts_pe = ct.num_kpts / pct.pe_kpoint;
     // set up communicator for spin
     int ndims = 3;

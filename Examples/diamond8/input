@@ -61,9 +61,9 @@ C       0.875000      0.875000      0.375000   1
 "
 
 
-#poisson_solver = "pfft"
+poisson_solver = "pfft"
 potential_acceleration_constant_step = "0.00000000"
-poisson_solver = "multigrid"
+#poisson_solver = "multigrid"
 start_mode=
 "LCAO Start"
 #"Restart From File"
@@ -71,6 +71,8 @@ start_mode=
 
 calculation_mode= "Quench Electrons"
 kpoint_mesh = "2 2 2 "
+kpoint_distribution = "4"
+
 
 
 # Criterion used to judge SCF convergency 
@@ -78,7 +80,7 @@ rms_convergence_criterion="5e-8"
 
 charge_density_mixing="0.72"
 charge_mixing_type= "Linear"
-max_scf_steps="10"
+max_scf_steps="50"
 
 
 # Subspace diagonalization options
