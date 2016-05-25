@@ -486,7 +486,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                 Kptr[kpt]->mix_betaxpsi(0);
                 delete RT3;
             }
-            OutputEigenvalues(Kptr, 0, 0);
+            OutputEigenvalues(Kptr, 0, -1);
             // Get new density 
             GetNewRho(Kptr, new_rho);
             MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);

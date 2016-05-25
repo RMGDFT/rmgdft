@@ -153,14 +153,17 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
                     if(ct.is_gamma) {
                         Nlweight_R[pidx[docount]] = std::real(nbeptr[idx1]);
                         Bweight_R[pidx[docount]] = Btem_array_R[idx1];
+                        Nlweight_R[pidx[docount]] *= w1*w2*w3;
+                        Bweight_R[pidx[docount]] *= w1*w2*w3;
 
                     }
                     else {
                         Nlweight_C[pidx[docount]] = std::real(nbeptr[idx1]) * conj(phaseptr[idx1]);
                         Bweight_C[pidx[docount]] = Btem_array_C[idx1];
+                        Nlweight_C[pidx[docount]] *= w1*w2*w3;
+                        Bweight_C[pidx[docount]] *= w1*w2*w3;
                     }
-                    Nlweight_R[pidx[docount]] *= w1*w2*w3;
-                    Bweight_R[pidx[docount]] *= w1*w2*w3;
+
                     docount++;
                 }
 
