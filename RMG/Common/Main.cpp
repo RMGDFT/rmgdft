@@ -236,8 +236,8 @@ void initialize(int argc, char **argv)
 
 
     /* Initialize some k-point stuff */
-    Kptr_g = new Kpoint<double> * [ct.num_kpts];
-    Kptr_c = new Kpoint<std::complex<double> > * [ct.num_kpts];
+    Kptr_g = new Kpoint<double> * [ct.num_kpts_pe];
+    Kptr_c = new Kpoint<std::complex<double> > * [ct.num_kpts_pe];
 
     ct.is_gamma = true;
     for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
@@ -264,19 +264,20 @@ void initialize(int argc, char **argv)
         rmg_printf("\nUSING REAL ORBITALS\n");
     }
 
-    for (int kpt = 0; kpt < ct.num_kpts; kpt++)
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
+        int kpt1 = kpt + ct.num_kpts_pe* pct.kstart;
         if(ct.is_gamma) {
 
             // Gamma point
-            Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+            Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt1].kpt, ct.kp[kpt1].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
 
         }
         else {
 
             // General case
-            Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt].kpt, ct.kp[kpt].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+            Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt1].kpt, ct.kp[kpt1].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
 
         }
         ct.kp[kpt].kidx = kpt;
@@ -309,14 +310,17 @@ void initialize(int argc, char **argv)
 
 
     /* Write state occupations to stdout */
-    if(ct.is_gamma) {
-        Kptr_g[0]->write_occ(); 
-    }
-    else {
-        Kptr_c[0]->write_occ(); 
+    if(pct.kstart == 0)
+    {
+        if(ct.is_gamma) {
+            Kptr_g[0]->write_occ(); 
+        }
+        else {
+            Kptr_c[0]->write_occ(); 
+        }
     }
 
-    
+
     /* Flush the results immediately */
     fflush (NULL);
 
@@ -337,35 +341,36 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
     switch (ct.forceflag)
     {
 
-    case MD_QUENCH:            /* Quench the electrons */
-    	if (ct.xctype == MGGA_TB09)
-        	//relax_tau (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, tau);
+        case MD_QUENCH:            /* Quench the electrons */
+            if (ct.xctype == MGGA_TB09)
+                //relax_tau (0, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, tau);
                 ;
-	else 
-        	Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
-        break;
+            else 
+                printf("\n before relax");
+            Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            break;
 
-    case MD_FASTRLX:           /* Fast relax */
-        Relax (ct.max_md_steps, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
-        break;
+        case MD_FASTRLX:           /* Fast relax */
+            Relax (ct.max_md_steps, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            break;
 
-    case NEB_RELAX:           /* nudged elastic band relax */
-// Fix later. Calls C version of relax which is deprecated
-//        neb_relax (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
-        break;
+        case NEB_RELAX:           /* nudged elastic band relax */
+            // Fix later. Calls C version of relax which is deprecated
+            //        neb_relax (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+            break;
 
-    case MD_CVE:               /* molecular dynamics */
-    case MD_CVT:
-    case MD_CPT:
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
-        MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
-        break;
+        case MD_CVE:               /* molecular dynamics */
+        case MD_CVT:
+        case MD_CPT:
+            Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
+            break;
 
-    case BAND_STRUCTURE:
-        BandStructure (Kptr, vxc, vh, vnuc);
-        break;
-    default:
-        rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
+        case BAND_STRUCTURE:
+            BandStructure (Kptr, vxc, vh, vnuc);
+            break;
+        default:
+            rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
 
 
     }

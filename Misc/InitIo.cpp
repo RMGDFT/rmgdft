@@ -154,6 +154,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 
     InitPe4kpspin();
+
     AutoSet(ct, pct, ControlMap);
 
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);

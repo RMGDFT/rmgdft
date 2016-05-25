@@ -161,7 +161,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
     }
     else
-	sprintf (newname, "%s%d", name, pct.gridpe);
+	    sprintf (newname, "%s_%d_%d", name, pct.kstart, pct.gridpe);
 
     amode = S_IREAD | S_IWRITE;
     fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);

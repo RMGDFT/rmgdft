@@ -39,7 +39,7 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
     int bs = Verify ("calculation_mode", "Band Structure Only", Kptr[0]->ControlMap);
 
     Kpoint<KpointType> *kptr;
-    nk = (bs) ? 1 : ct.num_kpts;
+    nk = (bs) ? 1 : ct.num_kpts_pe;
 
     for (ik = 0; ik < nk; ik++)
     {

@@ -52,7 +52,8 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     // Number of total projectors required is computed in GetNlop so we allocate per
     // k-point storage for the weights here.
-    for(int kpt=pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint) {
+    for(int kpt=0; kpt < ct.num_kpts_pe; kpt++)
+    {
 
         if(ct.is_gamma) {
 

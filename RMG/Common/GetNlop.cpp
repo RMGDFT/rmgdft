@@ -209,7 +209,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             /* Allocate memory for the phase array */
             if ((icount * prj_per_ion)) {
                 itmp = sp->nldim * sp->nldim * sp->nldim;
-                pct.phaseptr[ion] = new double[2*itmp * ct.num_kpts/pct.pe_kpoint + 128]();
+                pct.phaseptr[ion] = new double[2*itmp * ct.num_kpts_pe + 128]();
             }
             else {
                 pct.phaseptr[ion] = NULL;
@@ -327,11 +327,11 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
-    pct.newsintR_local = new double[factor * ct.num_kpts/pct.pe_kpoint * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
-    pct.oldsintR_local = new double[factor * ct.num_kpts/pct.pe_kpoint * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
-    pct.sint_derx = new double[factor * ct.num_kpts/pct.pe_kpoint * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
-    pct.sint_dery = new double[factor * ct.num_kpts/pct.pe_kpoint * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
-    pct.sint_derz = new double[factor * ct.num_kpts/pct.pe_kpoint * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
+    pct.newsintR_local = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
+    pct.oldsintR_local = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
+    pct.sint_derx = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
+    pct.sint_dery = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
+    pct.sint_derz = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
 
     KpointType *tsintnew_ptr = (KpointType *)pct.newsintR_local;
     KpointType *tsintold_ptr = (KpointType *)pct.oldsintR_local;
@@ -339,7 +339,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     KpointType *sint_dery_ptr = (KpointType *)pct.sint_dery;
     KpointType *sint_derz_ptr = (KpointType *)pct.sint_derz;
 
-    for(int kpt = pct.kstart;kpt < ct.num_kpts;kpt+=pct.pe_kpoint) {
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++){
         Kptr[kpt]->sint_size = pct.num_nonloc_ions * ct.max_states * ct.max_nl;
         Kptr[kpt]->newsint_local = tsintnew_ptr;
         Kptr[kpt]->oldsint_local = tsintold_ptr;

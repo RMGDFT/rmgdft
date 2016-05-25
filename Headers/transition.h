@@ -259,6 +259,7 @@ void FindFftwPhaseLocalpp (int nldim, double * nlcdrs, std::complex<double> *pha
 void InitLocalForward();
 void InitLocalBackward(double *, double *, double *);
 void GetPhase (ION *, std::complex<double> *);
+void PrintSums(double *, int, char*);
 
 
 

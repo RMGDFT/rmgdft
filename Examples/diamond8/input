@@ -61,6 +61,9 @@ C       0.875000      0.875000      0.375000   1
 "
 
 
+#poisson_solver = "pfft"
+potential_acceleration_constant_step = "0.00000000"
+poisson_solver = "multigrid"
 start_mode=
 "LCAO Start"
 #"Restart From File"
@@ -75,7 +78,7 @@ rms_convergence_criterion="5e-8"
 
 charge_density_mixing="0.72"
 charge_mixing_type= "Linear"
-max_scf_steps="50"
+max_scf_steps="10"
 
 
 # Subspace diagonalization options

@@ -81,7 +81,7 @@ template <typename OrbitalType> void PartialGamma (
     }
 
 
-    for (kidx = pct.kstart; kidx < ct.num_kpts; kidx+=pct.pe_kpoint)
+    for (kidx = 0; kidx < ct.num_kpts_pe; kidx++)
     {
         for (istate = 0; istate < ct.num_states; istate++)
         {

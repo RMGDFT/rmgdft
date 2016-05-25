@@ -131,7 +131,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     RT1 = new RmgTimer("Force: non-local: betaxpsi");
 
-    for (int kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
         num_occupied = 0;
@@ -148,9 +148,9 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
             {
                 for(int i = 0; i < P0_BASIS; i++) 
                 {
-                    psi_xC[i] += I_t *  ct.kp[kpt].kvec[0] * psi_C[i];
-                    psi_yC[i] += I_t *  ct.kp[kpt].kvec[1] * psi_C[i];
-                    psi_zC[i] += I_t *  ct.kp[kpt].kvec[2] * psi_C[i];
+                    psi_xC[i] += I_t *  Kptr[kpt]->kvec[0] * psi_C[i];
+                    psi_yC[i] += I_t *  Kptr[kpt]->kvec[1] * psi_C[i];
+                    psi_zC[i] += I_t *  Kptr[kpt]->kvec[2] * psi_C[i];
                 }
             }
 

@@ -77,7 +77,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
     // Loop over k-points
-    for(int kpt = pct.kstart;kpt < ct.num_kpts;kpt+=pct.pe_kpoint) {
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
         int pbasis = Kptr[kpt]->pbasis;
 

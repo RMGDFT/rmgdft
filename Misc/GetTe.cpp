@@ -69,6 +69,7 @@
 #include "Functional.h"
 #include "GlobalSums.h"
 #include "transition.h"
+#include "RmgSumAll.h"
 
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<double> **, int);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double> > **, int);
@@ -105,7 +106,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     for (idx = 0; idx < nspin; idx++)
     {
-    	for (kpt = 0; kpt < ct.num_kpts; kpt++)
+    	for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     	{
             
             kptr = Kptr[kpt];
@@ -122,6 +123,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     }
 
 
+    eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
     /* Evaluate electrostatic energy correction terms */
     esum[0] = 0.0;
     if (ct.spin_flag)

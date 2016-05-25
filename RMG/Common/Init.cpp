@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-*/
+ */
 
 
 
@@ -52,14 +52,14 @@ static void init_alloc_nonloc_mem (void);
 
 
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-           double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr);
+        double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr);
 
 // Instantiate gamma and non-gamma versions
 template void Init<double>(double*, double*, double*, double*, double*, double*, double*, Kpoint<double>**);
 template void Init<std::complex<double> >(double*, double*, double*, double*, double*, double*, double*, Kpoint<std::complex <double> >**);
 
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-           double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
+        double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
 {
 
     RmgTimer RT0("Init");
@@ -124,7 +124,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     ct.vh_pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
     ct.vh_ext = new double[ct.vh_pbasis];
-    
+
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
         vh[idx] = 0.0;
@@ -177,7 +177,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //    requested we need to allocate memory for the expanded basis including the diagonalization arrays.
 
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
-    
+
 
 
     /* Set state pointers and initialize state data */
@@ -206,13 +206,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     size_t gpu_hostbufsize;
     gpu_hostbufsize = 2 * ct.max_states * ct.max_states * sizeof(OrbitalType) + 
-                      3 * ct.max_states * std::max(ct.max_states, P0_BASIS) * sizeof(OrbitalType) +
-                      n_win * n_win * sizeof(OrbitalType);
+        3 * ct.max_states * std::max(ct.max_states, P0_BASIS) * sizeof(OrbitalType) +
+        n_win * n_win * sizeof(OrbitalType);
 
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here
-    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts/pct.pe_kpoint * ct.max_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts_pe * ct.max_states * P0_BASIS + 1024) * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     custat = cudaMallocHost((void **)&nv, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
@@ -225,7 +225,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
-    rptr = new OrbitalType[ct.num_kpts/pct.pe_kpoint * ct.max_states * P0_BASIS + 1024];
+    rptr = new OrbitalType[ct.num_kpts_pe * ct.max_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
     ns = new OrbitalType[ct.max_states * P0_BASIS]();
     if(!ct.norm_conserving_pp) {
@@ -237,7 +237,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.ns = (double *)ns;
 
 
-    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+    for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
         Kptr[kpt]->set_pool(rptr);
@@ -287,7 +287,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (ct.runflag == LCAO_START || (ct.forceflag == BAND_STRUCTURE))
     {
         RmgTimer *RT2 = new RmgTimer("Init: LcaoGetPsi");
-        for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
+        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++){
             LcaoGetPsi(Kptr[kpt]->Kstates);
         }
         delete(RT2);
@@ -295,7 +295,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     if (ct.runflag == RANDOM_START)
     {
-        for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
             Kptr[kpt]->random_init();
     }
 
@@ -368,7 +368,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (ct.runflag != RESTART) /* Initial run */
     {
         RmgTimer *RT2 = new RmgTimer("Init: normalization");
-        for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
             for (state = 0; state < ct.num_states; state++)
             {
@@ -447,7 +447,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     // Generate initial Betaxpsi
     RmgTimer *RT3 = new RmgTimer("Init: betaxpsi");
-    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
+    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+    {
         Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
         Kptr[kpt]->mix_betaxpsi(0);
     }
@@ -473,7 +474,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
             /*Now we can do subspace diagonalization */
             double *new_rho=new double[FP0_BASIS];
-            for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
+            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            {
+
+
                 RmgTimer *RT2 = new RmgTimer("Init: subdiag");
                 Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
                 delete RT2;
@@ -482,6 +486,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                 Kptr[kpt]->mix_betaxpsi(0);
                 delete RT3;
             }
+            OutputEigenvalues(Kptr, 0, 0);
             // Get new density 
             GetNewRho(Kptr, new_rho);
             MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
@@ -496,7 +501,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         else
         {
 
-            for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
+            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            {
                 Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
             }
 
@@ -506,7 +512,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     ct.num_states = ct.run_states;
-    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint){
+    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+    {
         Kptr[kpt]->nstates = ct.run_states;
         Kptr[kpt]->dvh_skip = 8;
         // Set up potential acceleration arrays if required
@@ -522,14 +529,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (Verify ("start_mode","LCAO Start", Kptr[0]->ControlMap) && (ct.num_states != ct.init_states)) {
 
 #if SCALAPACK_LIBS
-    if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {
-        // In case matrix sizes changed
-//        if (pct.scalapack_pe) {
-//            sl_exit(pct.ictxt, 0);
-//        }
-//        sl_init (&pct.ictxt, ct.num_states);
-//        set_desca (pct.desca, &pct.ictxt, ct.num_states);
-    }
+        if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {
+            // In case matrix sizes changed
+            //        if (pct.scalapack_pe) {
+            //            sl_exit(pct.ictxt, 0);
+            //        }
+            //        sl_init (&pct.ictxt, ct.num_states);
+            //        set_desca (pct.desca, &pct.ictxt, ct.num_states);
+        }
 #endif
 
     }

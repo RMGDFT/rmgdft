@@ -73,7 +73,7 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
 
     for (int is = 0; is < nspin; is++)
     {
-        for (int kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
 
             Kpoint<OrbitalType> *kptr = Kptr[kpt];

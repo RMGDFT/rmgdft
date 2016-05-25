@@ -82,7 +82,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 	    sprintf(newname, "%s.dw%d", name, pct.gridpe);
     }
     else
-	sprintf (newname, "%s%d", name, pct.gridpe);
+        sprintf (newname, "%s_%d_%d", name, pct.kstart, pct.gridpe);
 
 
     int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
@@ -241,7 +241,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     {
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
 
-        for (ik = pct.kstart; ik < ct.num_kpts; ik+=pct.pe_kpoint)
+        for (ik = 0; ik < ct.num_kpts_pe; ik++)
         {
             for (is = 0; is < ns; is++)
             {
@@ -259,7 +259,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     // If we have added unoccupied orbitals initialize them to a random state
     if(ct.num_states > ns) {
 
-        for (ik = pct.kstart; ik < ct.num_kpts; ik+=pct.pe_kpoint) {
+        for (ik = 0; ik < ct.num_kpts_pe; ik++){
 
             int PX0_GRID = Rmg_G->get_PX0_GRID(1);
             int PY0_GRID = Rmg_G->get_PY0_GRID(1);

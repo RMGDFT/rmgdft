@@ -460,6 +460,8 @@ typedef struct
 
     /** Total number of k-points being used in the calculation */
     int num_kpts;
+    int num_kpts_pe;
+
 
 
     /** K-point control structure */

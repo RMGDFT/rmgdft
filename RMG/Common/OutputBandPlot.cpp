@@ -98,7 +98,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     min_eig = 1000.0;
     for (int is = 0; is < ct.num_states; is++)
     {
-        for(int ik = 0; ik < ct.num_kpts; ik++)
+        for(int ik = 0; ik < ct.num_kpts_pe; ik++)
         {
 
 
@@ -114,14 +114,14 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
     if(pct.gridpe ==0) fclose (bs_f);
 
-#if PLPLOT_LIBS
+#if PLPLOT_LIBS && 0
     if(pct.gridpe == 0)
     {
-        double *x = new double[ct.num_kpts];
-        double *y = new double[ct.num_kpts * ct.num_states];
+        double *x = new double[ct.num_kpts_pe];
+        double *y = new double[ct.num_kpts_pe * ct.num_states];
         snprintf(pngfile, MAX_PATH, "%s%s", ct.basename, ".bandstructure.png");
         x[0] = 0.0;
-        for(int ik = 1; ik < ct.num_kpts; ik++)
+        for(int ik = 1; ik < ct.num_kpts_pe; ik++)
         {
             kx = (Kptr[ik]->kpt[0] - Kptr[ik-1]->kpt[0]);
             ky = (Kptr[ik]->kpt[1] - Kptr[ik-1]->kpt[1]);
@@ -130,12 +130,14 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
         }
 
         for (int is = 0; is < ct.num_states; is++)
-            for(int ik = 0; ik < ct.num_kpts; ik++)
-                y[is * ct.num_kpts + ik] = Kptr[ik]->Kstates[is].eig[0] * Ha_eV;
-        MultiLinePlot(pngfile, "", "E(eV)", "Band Strucutre", x, y, ct.num_kpts, ct.num_states);
+            for(int ik = 0; ik < ct.num_kpts_pe; ik++)
+                y[is * ct.num_kpts_pe + ik] = Kptr[ik]->Kstates[is].eig[0] * Ha_eV;
+        MultiLinePlot(pngfile, "", "E(eV)", "Band Strucutre", x, y, ct.num_kpts_pe, ct.num_states);
     }
 
 #endif
+
+#if 0
 
     modf(max_eig, &t1);
     max_eig = t1;
@@ -238,7 +240,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     {
         energy = min_eig + i * 0.1;
 
-        for(j = 0; j < num_kpts; j++)
+        for(j = 0; j < ct.num_kpts_pe; j++)
         {
             for (k = 0; k < ct.num_states; k++) {
                 for (l = 0; l < 24; l++) {
@@ -288,6 +290,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
     delete [] tau ;
     delete [] ityp ;
+#endif
 }
 
 

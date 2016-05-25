@@ -60,7 +60,10 @@ void InitPe4kpspin()
         }
         kpt_factors.pop_back();
     }
+    //pct.pe_kpoint = std::min(2, npes);
+    //pct.pe_kpoint = 2;
     pct.pe_kpoint = 1;
+    ct.num_kpts_pe = ct.num_kpts / pct.pe_kpoint;
     // set up communicator for spin
     int ndims = 3;
 
@@ -91,7 +94,6 @@ void InitPe4kpspin()
     MPI_Comm_rank (pct.kpsub_comm, &pct.kstart);
     MPI_Comm_size (pct.grid_comm, &NPES);
     MPI_Comm_size (pct.grid_comm, &pct.grid_npes);
-
 
     // Set up grids and neighbors
     //set_rank(pct.gridpe);

@@ -82,7 +82,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     }
 
     std::complex<double> *phaseptr = (std::complex<double> *)pct.phaseptr[ion];
-    int kpt_local = (kptr->kidx / pct.pe_kpoint);
+    int kpt_local = kptr->kidx ;
     phaseptr += kpt_local *nldim * nldim * nldim;
 
 

@@ -62,14 +62,14 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     for(int idx = 0;idx < pbasis;idx++)
         work[idx] = 0.0;
 
-    for (int kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
         /* Loop over states and accumulate charge */
         for (int istate = 0; istate < nstates; istate++)
         {
 
-            double scale = Kpts[kpt]->Kstates[istate].occupation[0] * ct.kp[kpt].kweight;
+            double scale = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kweight;
 
             OrbitalType *psi = Kpts[kpt]->Kstates[istate].psi;
 
@@ -126,7 +126,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         ct.tcharge += rho[idx];
 
     /* ct.tcharge = real_sum_all (ct.tcharge); */
-    ct.tcharge = real_sum_all (ct.tcharge, pct.img_comm);
+    ct.tcharge = real_sum_all (ct.tcharge, pct.grid_comm);
     ct.tcharge = ct.tcharge * get_vel_f();
 
     /* Renormalize charge, there could be some discrpancy because of interpolation */

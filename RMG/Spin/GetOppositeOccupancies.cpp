@@ -46,13 +46,13 @@ void GetOppositeOccupancies (Kpoint<KpointType> ** Kptr)
 
 
     /* allocate memory for occupation send array and receive array */
-    occ_sd = new double[2 * ct.num_kpts/pct.pe_kpoint * ct.num_states];
-    occ_rv = occ_sd + ct.num_kpts/pct.pe_kpoint * ct.num_states;
+    occ_sd = new double[2 * ct.num_kpts_pe * ct.num_states];
+    occ_rv = occ_sd + ct.num_kpts_pe * ct.num_states;
 
 
     /*Prepare the sending buffer of occupancies */
     st = 0;
-    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         for (st1 = 0; st1 < ct.num_states; st1++)
         {	
@@ -69,7 +69,7 @@ void GetOppositeOccupancies (Kpoint<KpointType> ** Kptr)
 
     /* Unpack the received occupations to state structure */
     st = 0;
-    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         for (st1 = 0; st1 < ct.num_states; st1++)
         {	

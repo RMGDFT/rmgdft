@@ -123,7 +123,7 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     /* write the state occupations, in spin-polarized calculation, 
      * it's occupation for the processor's own spin */ 
     {
-	for (ik = 0; ik < nk; ik++)
+	for (ik = 0; ik < ct.num_kpts_pe; ik++)
 	    for (is = 0; is < ns; is++)
 	    {
 		write_double (fhand, &Kptr[ik]->Kstates[is].occupation[0], 1); 
@@ -134,7 +134,7 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     /* write the state eigenvalues, while in spin-polarized case, 
      * it's eigenvalues of processor's own spin */
     {
-	for (ik = 0; ik < nk; ik++)
+	for (ik = 0; ik < ct.num_kpts_pe; ik++)
 	    for (is = 0; is < ns; is++)
 	    {
 		write_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
@@ -148,7 +148,7 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     {
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
 
-        for (ik = pct.kstart; ik < ct.num_kpts; ik+=pct.pe_kpoint)
+        for (ik = 0; ik < ct.num_kpts_pe; ik++)
         {
             for (is = 0; is < ns; is++)
             {

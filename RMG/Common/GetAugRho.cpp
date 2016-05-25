@@ -79,14 +79,14 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                 for (int i=0; i < max_product; i++)
                     product[i] = 0.0;
 
-                for (int kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+                for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
                 {
 
                     //STATE *sp = ct.kp[kpt].kstate;
                     /* Loop over states and accumulate charge */
                     for (int istate = 0; istate < ct.num_states; istate++)
                     {
-                        double t1 = Kpts[kpt]->Kstates[istate].occupation[0] * ct.kp[kpt].kweight;
+                        double t1 = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kweight;
 
                         for (int i = 0; i < ct.max_nl; i++)
                         {

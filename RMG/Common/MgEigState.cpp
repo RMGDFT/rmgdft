@@ -272,9 +272,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             std::complex<double> I_t(0.0, 1.0);
             for(int idx = 0;idx < pbasis;idx++) {
 
-                kdr[idx] = -I_t * (ct.kp[sp->kidx].kvec[0] * (std::complex<double>)gx[idx] +
-                                               ct.kp[sp->kidx].kvec[1] * (std::complex<double>)gy[idx] +
-                                               ct.kp[sp->kidx].kvec[2] * (std::complex<double>)gz[idx]);
+                kdr[idx] = -I_t * (kptr->kvec[0] * (std::complex<double>)gx[idx] +
+                                               kptr->kvec[1] * (std::complex<double>)gy[idx] +
+                                               kptr->kvec[2] * (std::complex<double>)gz[idx]);
             }
 
             delete [] gz;
@@ -289,10 +289,10 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
         if(potential_acceleration) {
             /* Generate 2 * V * psi */
-            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, nvtot_psi, (void *)kdr, ct.kp[sp->kidx].kmag, dimx, dimy, dimz);
+            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, nvtot_psi, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
         }
         else {
-            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, (void *)kdr, ct.kp[sp->kidx].kmag, dimx, dimy, dimz);
+            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
         }
 
         /* B operating on 2*V*psi stored in work1 */

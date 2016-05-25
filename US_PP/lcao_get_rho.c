@@ -132,7 +132,7 @@ void lcao_get_rho (double * arho_f)
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         t2 += arho_f[idx];
 
-    t2 = get_vel_f() *  real_sum_all (t2, pct.img_comm);
+    t2 = get_vel_f() *  real_sum_all (t2, pct.grid_comm);
 
     t1 = ct.nel / t2;
     if (pct.imgpe == 0)

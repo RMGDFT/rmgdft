@@ -76,11 +76,10 @@ void GetPhase (ION * iptr, std::complex<double> *rtptr)
     pbasis = dimx * dimy * dimz;
 
 
-    int kpt_local = 0;
-    for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+    for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
-        kpt_local = kpt/pct.pe_kpoint;
+        int kpt1 = kpt + pct.kstart * ct.num_kpts_pe;
         for (ix = 0; ix < dimx; ix++)
         {
 
@@ -98,12 +97,12 @@ void GetPhase (ION * iptr, std::complex<double> *rtptr)
                     ax[1] = yc ;
                     ax[2] = zc ;
                     to_cartesian (ax, bx);
-                    kdr = ct.kp[kpt].kvec[0] * bx[0] +
-                        ct.kp[kpt].kvec[1] * bx[1] + ct.kp[kpt].kvec[2] * bx[2];
+                    kdr = ct.kp[kpt1].kvec[0] * bx[0] +
+                        ct.kp[kpt1].kvec[1] * bx[1] + ct.kp[kpt1].kvec[2] * bx[2];
 
                     idx = ix * dimy * dimz + iy * dimz + iz;
 
-                    rtptr[idx + kpt_local * pbasis] = exp(std::complex<double>(0.0, kdr));
+                    rtptr[idx + kpt * pbasis] = exp(std::complex<double>(0.0, kdr));
 
 
                 }               /* end for */
