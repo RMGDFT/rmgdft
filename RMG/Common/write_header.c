@@ -392,13 +392,6 @@ void write_header (void)
         printf ("        lrcut           = %12.6f\n", sp->lrcut);
         printf ("        local radius    = %12.6f\n", sp->lradius);
         printf ("    non-local radius    = %12.6f\n", sp->nlradius);
-//	for (j = 0; j < sp->num_potentials; j++)
-//	{
-//	    if (sp->lval[j] != sp->local)
-//	    {
-//		printf ("        nlrcut  state %d = %12.6f\n", j, sp->nlrcut[sp->lval[j]]);
-//	    }
-//	}
 	printf ("        rwidth          = %12.6f\n", sp->rwidth);
 	printf ("        gwidth          = %12.6f\n", sp->gwidth);
 

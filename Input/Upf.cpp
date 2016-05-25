@@ -481,9 +481,6 @@ sp->rwidth = 15.0;
     sp->acut = 7.0;
     sp->agwidth = 10.0;
     sp->arwidth = 25.0;
-    for(int ip = 0;ip < sp->nbeta;ip++) {
-        sp->nlrcut[sp->llbeta[ip]] = 4.3;
-    }
 
     // Leftover initializations
     sp->mill_radius = 9.0;

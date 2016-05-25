@@ -297,7 +297,6 @@ void write_header(void)
         printf("\n        L POTENTIALS    = %d", sp->num_potentials);
         printf("\n        LOCAL           = %d", sp->local);
         printf("\n        LRCUT           = %12.6f", sp->lrcut);
-        printf("\n        NLRCUT          = %12.6f", sp->nlrcut[0]);
         printf("\n        RWIDTH          = %12.6f", sp->rwidth);
         printf("\n        GWIDTH          = %12.6f", sp->gwidth);
 
