@@ -77,7 +77,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,
              double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
-template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_ext,
+template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_in, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV);
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
@@ -204,7 +204,7 @@ void ReadTFAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std
 
 
 template <typename OrbitalType> 
-    void Force (double * rho, double * rho_oppo, double * rhoc, double * vh,
+    void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, double *vh_in,
         double * vxc, double * vnuc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> 
     void Nlforce (double * , Kpoint<OrbitalType> **Kptr, double *force);
@@ -254,6 +254,7 @@ void output_force(double *force, char *desc);
 int Radius2grid (double radius, double mingrid_spacing);
 void Lforce (double * rho, double * vh, double *force);
 void Nlccforce (double * rho, double * vxc, double *force_nlcc);
+void CorrectForces (double * rho, double * vh, double *vh_in, double *force);
 
 void FindFftwPhaseLocalpp (int nldim, double * nlcdrs, std::complex<double> *phase_fft, int level);
 void InitLocalForward();

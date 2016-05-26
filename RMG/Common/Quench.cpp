@@ -56,6 +56,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     bool CONVERGED;
     std::vector<double> RMSdV;
 
+    int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
+    double *vh_in = new double[FP0_BASIS];
+
     int numacc = 1, ic;
     /*int ist, ik;
        double KE; */
@@ -74,7 +77,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         /* perform a single self-consistent step */
         step_time = my_crtc ();
-        CONVERGED = Scf (vxc, vh, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+        CONVERGED = Scf (vxc, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
         step_time = my_crtc () - step_time;
 
 
@@ -199,12 +202,13 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
 //    if (CONVERGED || (ct.forceflag != MD_QUENCH))
-	Force (rho, rho_oppo, rhoc, vh, vxc, vnuc, Kptr);
+	Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vnuc, Kptr);
 
     /* output the forces */
     if (pct.imgpe == 0)
 	write_force ();
 
+    delete [] vh_in;
     return CONVERGED;
 
 

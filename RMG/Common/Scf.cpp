@@ -53,14 +53,14 @@
 
 static int firststep = true;
 
-template bool Scf<double> (double *, double *, double *,
+template bool Scf<double> (double *, double *, double *, double *,
           double *, double *, double *, double *, double *, int ,
           int , Kpoint<double> **, std::vector<double> &);
-template bool Scf<std::complex<double> > (double *, double *, double *,
+template bool Scf<std::complex<double> > (double *, double *, double *, double *,
           double *, double *, double *, double *, double *, int ,
           int , Kpoint<std::complex<double>> **, std::vector<double> &);
 
-template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_ext,
+template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_in, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
 {
@@ -123,6 +123,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     double hartree_residual = VhDriver(rho, rhoc, vh, vh_ext, rms_target);
     delete(RT1);
 
+    // Save input hartree potential
+    for (int idx = 0; idx < FP0_BASIS; idx++) vh_in[idx] = vh[idx];
+ 
     // Make sure the hartree and vxc potentials are bandwidth limited on the fine grid
     //FftFilter(vh, *fine_pwaves, 1.0, LOW_PASS);
     //FftFilter(vxc, *fine_pwaves, 1.0, LOW_PASS);
