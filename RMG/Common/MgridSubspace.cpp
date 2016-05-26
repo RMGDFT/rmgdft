@@ -57,7 +57,7 @@ template void MgridSubspace<std::complex<double> > (Kpoint<std::complex<double>>
 
 template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, double *vtot_psi)
 {
-    RmgTimer RT0("MgridSubspace"), *RT1;
+    RmgTimer RT0("3-MgridSubspace"), *RT1;
     BaseThread *T = BaseThread::getBaseThread(0);
 
     double mean_occ_res = DBL_MAX;
@@ -74,19 +74,20 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
 
         // Update betaxpsi        
-        RT1 = new RmgTimer("Scf steps: Beta x psi");
+        RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
         kptr->mix_betaxpsi(0);
 
         /* Update the wavefunctions */
-        RT1 = new RmgTimer("Scf steps: Mg_eig");
         int istop = kptr->nstates / T->get_threads_per_node();
         istop = istop * T->get_threads_per_node();
 
         // Apply the non-local operators to a block of orbitals
+        RT1 = new RmgTimer("3-MgridSubspace: AppNls");
         AppNls(kptr, kptr->oldsint_local, kptr->Kstates[0].psi, kptr->nv, kptr->ns, kptr->Bns,
                0, std::min(ct.non_local_block_size, kptr->nstates));
+        delete(RT1);
         int first_nls = 0;
 
         for(int st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
@@ -95,11 +96,14 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
           // Make sure the non-local operators are applied for the next block if needed
           int check = first_nls + T->get_threads_per_node();
           if(check > ct.non_local_block_size) {
+              RT1 = new RmgTimer("3-MgridSubspace: AppNls");
               AppNls(kptr, kptr->oldsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
                      st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
               first_nls = 0;
+              delete(RT1);
           }
         
+          RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
           for(int ist = 0;ist < T->get_threads_per_node();ist++) {
               thread_control[ist].job = HYBRID_EIG;
               thread_control[ist].vtot = vtot_psi;
@@ -116,10 +120,12 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
           // Increment index into non-local block
           first_nls += T->get_threads_per_node();
+          delete RT1;
 
         }
 
         // Process any remaining states in serial fashion
+        RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
         for(int st1 = istop;st1 < kptr->nstates;st1++) {
             if(ct.is_gamma) {
                 if(ct.rms > ct.preconditioner_thr)
@@ -189,7 +195,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
      * but if we are using potential acceleration and not well converged yet
      * it is counterproductive to do so */
     if(!potential_acceleration || (potential_acceleration && (ct.rms <  5.0e-6))) {
-        RT1 = new RmgTimer("Scf steps: Beta x psi");
+        RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
 
         delete(RT1);
@@ -207,8 +213,10 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     /* do diagonalizations if requested, if not orthogonalize */
     if (diag_this_step) {
 
+        RT1 = new RmgTimer("3-MgridSubspace: Diagonlization");
         Subdiag (kptr, vtot_psi, ct.subdiag_driver);
-        RT1 = new RmgTimer("Scf steps: Beta x psi");
+        delete(RT1);
+        RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
         kptr->mix_betaxpsi(0);
@@ -218,12 +226,12 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     }
     else {
 
-        RT1 = new RmgTimer("Scf steps: Orthogonalization");
+        RT1 = new RmgTimer("3-MgridSubspace: Orthogonalization");
         kptr->orthogonalize(kptr->orbital_storage);
         delete(RT1);
 
         // wavefunctions have changed, projectors have to be recalculated */
-        RT1 = new RmgTimer("Scf steps: Beta x psi");
+        RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
         kptr->mix_betaxpsi(1);

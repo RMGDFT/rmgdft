@@ -65,7 +65,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
           int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
 {
 
-    RmgTimer RT0("Scf steps"), *RT1;
+    RmgTimer RT0("2-Scf steps"), *RT1;
+    RmgTimer RTt("1-TOTAL: run: Scf steps");
     int nspin = (spin_flag + 1);
     bool CONVERGED = false;
     double t3;
@@ -104,7 +105,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
 
     /* Evaluate XC energy and potential */
-    RT1 = new RmgTimer("Scf steps: exchange/correlation");
+    RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
     double vtxc;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     F->v_xc(rho, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
@@ -118,7 +119,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     if (Verify("charge_mixing_type","Linear", Kptr[0]->ControlMap))
         rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
 
-    RT1 = new RmgTimer("Scf steps: Hartree");
+    RT1 = new RmgTimer("2-Scf steps: Hartree");
     double hartree_residual = VhDriver(rho, rhoc, vh, vh_ext, rms_target);
     delete(RT1);
 
@@ -172,13 +173,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
         if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || ((ct.scf_steps < 4) && (ct.runflag != RESTART))) {
-            RmgTimer *RT1 = new RmgTimer("Scf steps: MgridSubspace");
+            RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
             MgridSubspace(Kptr[kpt], vtot_psi);
             delete RT1;
         }
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
             int notconv;
-            RmgTimer *RT1 = new RmgTimer("Scf steps: Davidson");
+            RmgTimer *RT1 = new RmgTimer("2-Scf steps: Davidson");
             Davidson(Kptr[kpt], vtot_psi, notconv);
             delete RT1;
         }
@@ -209,7 +210,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
         firststep = false;
 
     /* Generate new density */
-    RT1 = new RmgTimer("Scf steps: GetNewRho");
+    RT1 = new RmgTimer("2-Scf steps: GetNewRho");
     GetNewRho(Kptr, new_rho);
     delete(RT1);
 
@@ -218,7 +219,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(ratio) * Rmg_G->get_NY_GRID(ratio) * Rmg_G->get_NZ_GRID(ratio)));
     rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
     double *vh_out = new double[FP0_BASIS];
-    RT1 = new RmgTimer("Scf steps: Hartree");
+    RT1 = new RmgTimer("2-Scf steps: Hartree");
     for(int i = 0;i < FP0_BASIS;i++) vh_out[i] = vh[i];
     VhDriver(new_rho, rhoc, vh_out, vh_ext, rms_target);
     delete RT1;
@@ -242,7 +243,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
     }
 
     /*Takes care of mixing and checks whether the charge density is negative*/
-    RT1 = new RmgTimer("Scf steps: MixRho");
+    RT1 = new RmgTimer("2-Scf steps: MixRho");
     MixRho(new_rho, rho, rhocore, vh, vh_out, rhoc, Kptr[0]->ControlMap, false);
     delete [] vh_out; 
     delete RT1;

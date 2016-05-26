@@ -116,7 +116,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
                 for(int i = 0;i < num_states;i++) eigvectors[i + i*num_states] = 1.0;
 
                 // Inverse of B should be in eigvectors after this call
-                RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
+                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
                 magma_dgesv (num_states, num_states, (double *)Bij, num_states, ipiv, (double *)eigvectors, num_states, &info);
                 delete(RT1);
 
@@ -131,7 +131,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
                 for(int i = 0;i < num_states;i++) eigvectors[i + i*num_states] = One;
 
                 // Inverse of B should be in eigvectors after this call
-                RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
+                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
                 magma_zgesv (num_states, num_states, (magmaDoubleComplex *)Bij, num_states, ipiv, (magmaDoubleComplex *)eigvectors, num_states, &info);
                 delete(RT1);
 
@@ -149,7 +149,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
             KpointType alpha(1.0);
             KpointType beta(0.0);;
 
-            RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
+            RmgTimer *RT1 = new RmgTimer("4-Diagonalization: matrix setup");
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
                             eigvectors, num_states, Aij, num_states, beta, Bij,
                             num_states, NULLptr, NULLptr, NULLptr, false, false, false, false);
@@ -168,7 +168,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
         }
 
-        RmgTimer *RT1 = new RmgTimer("Diagonalization: magma");
+        RmgTimer *RT1 = new RmgTimer("4-Diagonalization: magma");
 
         int *ifail = new int[num_states];
         int liwork = 6 * num_states + 4;

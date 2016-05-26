@@ -122,7 +122,7 @@ int main (int argc, char **argv)
      _set_fmode( _O_BINARY);
 #endif
 
-    RmgTimer *RT = new RmgTimer("Main");
+    RmgTimer *RT = new RmgTimer("1-TOTAL");
     char *tptr;
 
     /* Define a default output stream, gets redefined to log file later */
@@ -156,12 +156,12 @@ int main (int argc, char **argv)
 
     try {
 
-        RmgTimer *RT1 =  new RmgTimer("Main: init");
+        RmgTimer *RT1 =  new RmgTimer("1-TOTAL: Init");
         initialize (argc, argv);
         delete(RT1);
 
 
-        RmgTimer *RT2 = new RmgTimer("Main: run");
+        RmgTimer *RT2 = new RmgTimer("1-TOTAL: run");
         if(ct.is_gamma)
             run<double> ((Kpoint<double> **)Kptr_g);
         else
@@ -207,7 +207,8 @@ void initialize(int argc, char **argv)
 
     /* start the benchmark clock */
     ct.time0 = my_crtc ();
-    RmgTimer *RT = new RmgTimer("Pre-init");
+    RmgTimer *RT0 = new RmgTimer("2-Init");
+    RmgTimer *RT = new RmgTimer("2-Init: KpointClass");
 
 
     /* Initialize all I/O including MPI group comms */
@@ -330,6 +331,7 @@ void initialize(int argc, char **argv)
     /* MPI_Barrier(MPI_COMM_WORLD); */
     MPI_Barrier(pct.img_comm);
 
+    delete(RT0);
 
 }
 

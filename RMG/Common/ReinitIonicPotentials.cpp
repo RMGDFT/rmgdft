@@ -35,18 +35,18 @@ template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * rhocore, double * rhoc)
 {
     RmgTimer *RT1;
-    RmgTimer RT0("ReinitIonicPotentials");
+    RmgTimer RT0("3-ReinitIonicPotentials");
     int pbasis = Kptr[0]->pbasis;
 
     /* Update items that change when the ionic coordinates change */
-    RT1= new RmgTimer("ReinitIonicPotentials: init_nuc");
+    RT1= new RmgTimer("3-ReinitIonicPotentials: init_nuc");
     init_nuc (vnuc, rhoc, rhocore);
 //    InitLocalBackward(vnuc, rhoc, rhocore);
     delete RT1;
-    RT1= new RmgTimer("ReinitIonicPotentials: get_QI");
+    RT1= new RmgTimer("3-ReinitIonicPotentials: get_QI");
     get_QI ();
     delete RT1;
-    RT1= new RmgTimer("ReinitIonicPotentials: GetNlop");
+    RT1= new RmgTimer("3-ReinitIonicPotentials: GetNlop");
     GetNlop(Kptr);
     delete RT1;
 
@@ -99,11 +99,11 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
 
     /*Other things that need to be recalculated when ionic positions change */
-    RT1= new RmgTimer("ReinitIonicPotentials: GetWeight");
+    RT1= new RmgTimer("3-ReinitIonicPotentials: GetWeight");
     GetWeight (Kptr);
     delete RT1;
 
-    RT1= new RmgTimer("ReinitIonicPotentials: get_qqq");
+    RT1= new RmgTimer("3-ReinitIonicPotentials: get_qqq");
     get_qqq ();
     delete RT1;
 

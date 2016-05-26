@@ -66,7 +66,8 @@ template void Force<std::complex<double> > (double * rho, double * rho_oppo, dou
 template <typename OrbitalType> void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, 
         double * vxc, double * vnuc, Kpoint<OrbitalType> **Kptr)
 {
-    RmgTimer RT0("Force");
+    RmgTimer RT0("2-Force");
+    RmgTimer RTt("1-TOTAL: run: Force");
     int ion, idx, size1;
     double *vtott, *rho_tot;
     int Zi;
@@ -99,7 +100,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
 
     /* Get the ion-ion component and store. */
-    RmgTimer *RT1 = new RmgTimer("Force: ion-ion");
+    RmgTimer *RT1 = new RmgTimer("2-Force: ion-ion");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
     iiforce (force_tmp);
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i] * fac_spin;
@@ -110,7 +111,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 #endif
 
     /* Add in the local */
-    RmgTimer *RT2 = new RmgTimer("Force: local");
+    RmgTimer *RT2 = new RmgTimer("2-Force: local");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
     if (ct.spin_flag)
     {
@@ -133,7 +134,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
 
     /* Add in the non-local stuff */
-    RmgTimer *RT3 = new RmgTimer("Force: non-local");
+    RmgTimer *RT3 = new RmgTimer("2-Force: non-local");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
     Nlforce (vtott, Kptr, force_tmp);
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
@@ -147,7 +148,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
 
     /* The non-linear core correction part if any */
-    RmgTimer *RT4 = new RmgTimer("Force: 1core correction");
+    RmgTimer *RT4 = new RmgTimer("2-Force: core correction");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
     Nlccforce (rho, vxc, force_tmp);
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i] * fac_spin;
@@ -172,7 +173,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
 
     if (!ct.is_gamma) {
-        RmgTimer *RT5 = new RmgTimer("Force: symmetrization");
+        RmgTimer *RT5 = new RmgTimer("2-Force: symmetrization");
         symforce ();
         delete RT5;
     }

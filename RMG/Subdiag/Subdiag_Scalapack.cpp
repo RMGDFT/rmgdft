@@ -124,7 +124,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         }
 
         // Copy matrices to dist arrays
-        RT1 = new RmgTimer("Diagonalization: distribute matrices.");
+        RT1 = new RmgTimer("4-Diagonalization: distribute matrices.");
         MainSp->CopySquareMatrixToDistArray(Aij, distAij, num_states, desca);
         MainSp->CopySquareMatrixToDistArray(Sij, distSij, num_states, desca);
         MainSp->CopySquareMatrixToDistArray(eigvectors, distBij, num_states, desca);
@@ -140,7 +140,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
         if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
-            RT1 = new RmgTimer("Diagonalization: Invert Bij");
+            RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
             // Get matrix that is inverse to B
             {
                 int info=0;
@@ -163,7 +163,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             delete(RT1);
 
 
-            RT1 = new RmgTimer("Diagonalization: matrix setup");
+            RT1 = new RmgTimer("4-Diagonalization: matrix setup");
             /*Multiply inverse of B and and A */
             {
                 char *trans = "n";
@@ -210,7 +210,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Bij[idx];
         // Broadcast results if required
         if(root_npes != scalapack_npes) { 
-            RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
+            RT1 = new RmgTimer("4-Diagonalization: MPI_Bcast");
             MainSp->BcastRoot(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
             MainSp->BcastRoot(eigs, num_states, MPI_DOUBLE);
             delete(RT1);
@@ -223,7 +223,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
             /****************** Find Matrix of Eigenvectors *****************************/
             /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
-            RT1 = new RmgTimer("Diagonalization: PDSYGVX/PZHEGVX");
+            RT1 = new RmgTimer("4-Diagonalization: PDSYGVX/PZHEGVX");
             {
                 char *range = "a";
                 char *uplo = "l", *jobz = "v";
@@ -328,7 +328,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         }
 
         // Finally send eigenvalues and vectors to everyone 
-        RT1 = new RmgTimer("Diagonalization: MPI_Bcast");
+        RT1 = new RmgTimer("4-Diagonalization: MPI_Bcast");
         MainSp->BcastRoot(eigvectors, factor * num_states * num_states, MPI_DOUBLE);
         MainSp->BcastRoot(eigs, num_states, MPI_DOUBLE);
         delete(RT1);

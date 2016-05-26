@@ -286,7 +286,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     if (ct.runflag == LCAO_START || (ct.forceflag == BAND_STRUCTURE))
     {
-        RmgTimer *RT2 = new RmgTimer("Init: LcaoGetPsi");
+        RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++){
             LcaoGetPsi(Kptr[kpt]->Kstates);
         }
@@ -295,8 +295,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     if (ct.runflag == RANDOM_START)
     {
+        RmgTimer *RT2 = new RmgTimer("2-Init: RandomStart");
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
             Kptr[kpt]->random_init();
+        delete(RT2);
     }
 
 
@@ -314,13 +316,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     //Dprintf ("Initialize the radial potential stuff");
-    RmgTimer *RT1 = new RmgTimer("Init: radial potentials");
+    RmgTimer *RT1 = new RmgTimer("2-Init: radial potentials");
     InitPseudo (Kptr[0]->ControlMap);
     delete(RT1);
 
     /* Initialize symmetry stuff */
     if(!ct.is_gamma)
+    {
+        RmgTimer *RT1 = new RmgTimer("2-Init: symmetry");
         init_sym ();
+        delete(RT1);
+    }
 
     //Dprintf ("Allocate memory for arrays related to nonlocal PP");
     init_alloc_nonloc_mem ();
@@ -344,7 +350,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     /*Do forward transform for each species and store results on the coarse grid */
-    RT1 = new RmgTimer("Init: weights");
+    RT1 = new RmgTimer("2-Init: weights");
     init_weight ();
     //InitLocalForward();  
     delete(RT1);
@@ -354,12 +360,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     /* Initialize the qfunction stuff */
-    RT1 = new RmgTimer("Init: qfunct");
+    RT1 = new RmgTimer("2-Init: qfunct");
     InitQfunct(Kptr[0]->ControlMap);
     delete(RT1);
 
     /* Update items that change when the ionic coordinates change */
-    RT1 = new RmgTimer("Init: ionic potentials");
+    RT1 = new RmgTimer("2-Init: ReinitIonicPotentials");
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
     delete(RT1);
 
@@ -367,7 +373,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Normalize orbitals if not an initial run
     if (ct.runflag != RESTART) /* Initial run */
     {
-        RmgTimer *RT2 = new RmgTimer("Init: normalization");
+        RmgTimer *RT2 = new RmgTimer("2-Init: normalization");
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
             for (state = 0; state < ct.num_states; state++)
@@ -413,7 +419,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     if (ct.runflag == LCAO_START && (ct.forceflag != BAND_STRUCTURE)) {
-        RT1 = new RmgTimer("Init: LcaoGetRho");
+        RT1 = new RmgTimer("2-Init: LcaoGetRho");
         lcao_get_rho(rho);
         delete RT1;
     }
@@ -432,13 +438,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         //get_vxc (rho, rho_oppo, rhocore, vxc);
         double etxc, vtxc;
-        RT1 = new RmgTimer("Init: exchange/correlation");
+        RT1 = new RmgTimer("2-Init: exchange/correlation");
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
         delete F;
         delete RT1;
 
-        RmgTimer *RT1 = new RmgTimer("Init: hartree");
+        RmgTimer *RT1 = new RmgTimer("2-Init: hartree");
         double rms_target = 1.0e-10;
         VhDriver(rho, rhoc, vh, ct.vh_ext, rms_target);
         delete RT1;
@@ -446,7 +452,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     // Generate initial Betaxpsi
-    RmgTimer *RT3 = new RmgTimer("Init: betaxpsi");
+    RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
     for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
@@ -478,18 +484,20 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             {
 
 
-                RmgTimer *RT2 = new RmgTimer("Init: subdiag");
+                RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
                 Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
                 delete RT2;
-                RmgTimer *RT3 = new RmgTimer("Init: betaxpsi");
+                RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
                 Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
                 Kptr[kpt]->mix_betaxpsi(0);
                 delete RT3;
             }
             OutputEigenvalues(Kptr, 0, -1);
             // Get new density 
+            RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
             GetNewRho(Kptr, new_rho);
             MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
+            delete RT2;
             delete [] new_rho;
 
             /*Release vtot memory */
@@ -501,10 +509,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         else
         {
 
+            RmgTimer *RT2 = new RmgTimer("2-Init: orthogonal");
             for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
             {
                 Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
             }
+            delete RT2;
 
         }
 
@@ -524,21 +534,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
             Kptr[kpt]->dvh = new double[ Kptr[kpt]->ndvh * P0_BASIS ];
         }
-    }
-
-    if (Verify ("start_mode","LCAO Start", Kptr[0]->ControlMap) && (ct.num_states != ct.init_states)) {
-
-#if SCALAPACK_LIBS
-        if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {
-            // In case matrix sizes changed
-            //        if (pct.scalapack_pe) {
-            //            sl_exit(pct.ictxt, 0);
-            //        }
-            //        sl_init (&pct.ictxt, ct.num_states);
-            //        set_desca (pct.desca, &pct.ictxt, ct.num_states);
-        }
-#endif
-
     }
 
 }                               /* end init */

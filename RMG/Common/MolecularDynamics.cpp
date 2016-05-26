@@ -230,7 +230,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         delete [] arho;
 
         /* Update items that change when the ionic coordinates change */
+        RmgTimer *RT1 = new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
         ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
+        delete RT1;
 
         // Reset mixing
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);

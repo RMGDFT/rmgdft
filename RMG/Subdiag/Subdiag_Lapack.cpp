@@ -105,7 +105,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
             if(ct.is_gamma) {
 
                 // Inverse of B should be in Cij
-                RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
+                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
                 dgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
                 delete(RT1);
 
@@ -113,7 +113,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
             else {
 
                 // Inverse of B should be in Cij
-                RmgTimer *RT1 = new RmgTimer("Diagonalization: Invert Bij");
+                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
                 zgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
                 delete(RT1);
 
@@ -129,7 +129,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
             KpointType alpha(1.0);
             KpointType beta(0.0);;
 
-            RmgTimer *RT1 = new RmgTimer("Diagonalization: matrix setup");
+            RmgTimer *RT1 = new RmgTimer("4-Diagonalization: matrix setup");
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
                             Cij, num_states, Aij, num_states, beta, Bij,
                             num_states, NULLptr, NULLptr, NULLptr,
@@ -151,7 +151,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         }
 
 
-        RmgTimer *RT1 = new RmgTimer("Diagonalization: dsygvx/zhegvx/folded");
+        RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
         int *ifail = new int[num_states];
         int lwork = 2 * num_states * num_states + 6 * num_states + 2;
         int liwork = 6*num_states;

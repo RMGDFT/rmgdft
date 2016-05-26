@@ -129,7 +129,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     par_omega = par_gamma + 3 * size;
 
 
-    RT1 = new RmgTimer("Force: non-local: betaxpsi");
+    RT1 = new RmgTimer("2-Force: non-local: betaxpsi");
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
@@ -173,7 +173,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     delete RT1;
 
 
-    RT1 = new RmgTimer("Force: non-local: veff grad");
+    RT1 = new RmgTimer("2-Force: non-local: veff grad");
     CPP_app_grad_driver (&Rmg_L, Rmg_T, veff, (double *)gx, (double *)gy, (double *)gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid, ct.kohn_sham_fd_order);
     delete RT1;
 
@@ -187,10 +187,10 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
         nh = ct.sp[iptr->species].nh;
 
-        RT1 = new RmgTimer("Force: non-local: get gamma");
+        RT1 = new RmgTimer("2-Force: non-local: get gamma");
         GetGamma (gamma, ion, nh, Kptr);
         delete RT1;
-        RT1 = new RmgTimer("Force: non-local: nlforce_par_Q");
+        RT1 = new RmgTimer("2-Force: non-local: nlforce_par_Q");
         nlforce_par_Q ((double *)gx, (double *)gy, (double *)gz, gamma, gion, iptr, nh, &qforce[3 * gion]);
         delete RT1;
 
@@ -237,14 +237,14 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
         nh = ct.sp[iptr->species].nh;
 
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
-        RT1 = new RmgTimer("Force: non-local: partial gamma");
+        RT1 = new RmgTimer("2-Force: non-local: partial gamma");
         PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr);
         delete RT1;
-        RT1 = new RmgTimer("Force: non-local: nlforce_par_gamma");
+        RT1 = new RmgTimer("2-Force: non-local: nlforce_par_gamma");
         nlforce_par_gamma (par_gamma, gion, nh, &tmp_force_gamma[3*gion]);
         delete RT1;
 
-        RT1 = new RmgTimer("Force: non-local: nlforce_par_omega");
+        RT1 = new RmgTimer("2-Force: non-local: nlforce_par_omega");
         nlforce_par_omega (par_omega, gion, nh, &tmp_force_omega[3*gion]);
         delete RT1;
 

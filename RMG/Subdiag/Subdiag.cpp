@@ -61,7 +61,7 @@ void *GMatrix2;
 template <typename KpointType>
 void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 {
-    RmgTimer RT0("Diagonalization");
+    RmgTimer RT0("4-Diagonalization");
     //rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
 
     BaseGrid *G = kptr->G;
@@ -148,7 +148,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
 
     // Apply operators on each wavefunction
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: apply operators");
+    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: apply operators");
 
     // Apply Nls
     AppNls(kptr, kptr->newsint_local, kptr->Kstates[0].psi, kptr->nv, kptr->ns, kptr->Bns,
@@ -205,7 +205,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
          tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
     // Compute A matrix
-    RT1 = new RmgTimer("Diagonalization: matrix setup/reduce");
+    RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
     KpointType alpha(1.0);
     KpointType beta(0.0);
     RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
@@ -269,7 +269,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix1 will hold the eigenvectors.
     // The eigenvectors may be stored in row-major or column-major format depending on the type of diagonaliztion method
     // used. This is handled during the rotation of the orbitals by trans_b which is set by the driver routine.
-    RT1 = new RmgTimer("Diagonalization: Eigensolver");
+    RT1 = new RmgTimer("4-Diagonalization: Eigensolver");
     char *trans_b = "n";
     switch(subdiag_driver) {
 
@@ -302,7 +302,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     }
 
     // Update the orbitals
-    RT1 = new RmgTimer("Diagonalization: Update orbitals");
+    RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
 
     RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
             kptr->orbital_storage, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 

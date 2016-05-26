@@ -101,7 +101,9 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         ct.md_steps++;
 
         /* Update items that change when the ionic coordinates change */
+        RmgTimer *RT0=new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
         ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
+        delete RT0;
 
         /* quench the electrons and calculate forces */
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
