@@ -94,6 +94,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         }
         sp->nlradius = 0.5 * ct.hmingrid * (double)(sp->nldim-1);
+        sp->nlradius -= 0.5 * ct.hmingrid / (double)ct.nxfgrid;
+
         if(reduced) rmg_printf("Warning: diameter of non-local projectors exceeds cell size. Reducing. New radius = %12.6f\n", sp->nlradius);
         //printf("NLRADIUS  =  %20.12f   NLDIM = %d  NLFDIM = %d\n",sp->nlradius, sp->nldim, sp->nlfdim);
 
@@ -104,10 +106,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         if (ct.max_nlfpoints < (sp->nlfdim * sp->nlfdim * sp->nlfdim))
             ct.max_nlfpoints = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
-
-        sp->ldim = Radius2grid (sp->lradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
-
+        sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
         sp->ldim = sp->ldim/2 * 2 +1;
+        sp->lradius = 0.5 * ct.hmingrid * (double)(sp->ldim-1) / (double)Rmg_G->default_FG_RATIO;
+        sp->lradius -= 0.5 * ct.hmingrid / (double)Rmg_G->default_FG_RATIO;
         sp->ldim_fine = sp->ldim *ct.nxfgrid/Rmg_G->default_FG_RATIO;
         if(ct.nxfgrid %Rmg_G->default_FG_RATIO != 0)
         {
@@ -139,10 +141,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
-        int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(sp->lradius / ct.hmingrid);
+//sp->lradius=5.937500000000;
         double parm = ct.rhocparm / ct.FG_RATIO;
         A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, parm, sp->localig,
-                sp->rab, 0, sp->gwidth, 0.6*sp->lradius, sp->rwidth, iradius);
+                sp->rab, 0, sp->gwidth, 0.6*sp->lradius, sp->rwidth, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)
@@ -158,7 +160,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts
         A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->aradius, ct.cparm, sp->arho_lig,
-                sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, iradius);
+                sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, ct.hmingrid);
 
 
         /*Open file for writing beta function*/
@@ -180,9 +182,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             // Filtering for wavefunction grid
-            int iradius = (int)std::rint(sp->nlradius / ct.hmingrid);
+//sp->nlradius=5.937500000000;
             A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
-                    sp->rab, sp->llbeta[ip], sp->gwidth, 0.6*sp->nlradius, sp->rwidth, iradius);
+                    sp->rab, sp->llbeta[ip], sp->gwidth, 0.6*sp->nlradius, sp->rwidth, ct.hmingrid);
 
             /* output filtered non-local projector to a file  if requested */
             if (pct.gridpe == 0 && write_flag)
@@ -225,11 +227,11 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             int nlccdim = Radius2grid (nlccradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
             nlccdim = nlccdim/2*2 + 1;
             nlccradius = 0.5 * ct.hmingrid * (double)(nlccdim-1) / (double)Rmg_G->default_FG_RATIO;
+            nlccradius -= 0.5 * ct.hmingrid / (double)Rmg_G->default_FG_RATIO;
             double nlcccut = 0.66 * nlccradius;
 
-            int iradius = Rmg_G->default_FG_RATIO * (int)std::rint(nlccradius / ct.hmingrid);
             A->FilterPotential(work, sp->r, sp->rg_points, nlccradius, ct.rhocparm, &sp->rhocorelig[0],
-                           sp->rab, 0, sp->gwidth, nlcccut, sp->rwidth, iradius);
+                           sp->rab, 0, sp->gwidth, nlcccut, sp->rwidth, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
              * but I am not sure if this is the right solution, it may be better to fix charge density

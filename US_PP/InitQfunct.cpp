@@ -132,7 +132,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                     }
 
                     A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
-                                        sp->rab, ll, sp->gwidth, sp->qcut, 40.0, sp->qdim/2);
+                                        sp->rab, ll, sp->gwidth, sp->qcut, 40.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
 
 
                     /*Write final filtered Q function if requested*/

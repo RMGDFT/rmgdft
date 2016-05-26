@@ -255,7 +255,7 @@ double Atomic::Gcutoff (double g1, double gcut, double width)
 // the pseudopotential log grid and then uses the coefficients of the expansion to 
 // regenerate a filtered version of f on our internal log grid. The filtering is based
 // on the number of zeros in each spherical bessel function.
-void Atomic::BesselToLogGrid (
+double Atomic::BesselToLogGrid (
                    double cparm,        // IN:  filtering parameter
                    double * f,          // IN:  function to be filtered defined on pseudopotential grid
                    double * r,          // IN:  pseudopotential grid dimensioned r[rg_points], logarithmic
@@ -264,13 +264,13 @@ void Atomic::BesselToLogGrid (
                    int rg_points,       // IN:  number of points in pseudopotential radial grid
                    int lval,            // IN:  momentum l (0=s, 1=p, 2=d)
                    double rcut,         // IN:  f is defined on [0,rcut] with f(r>=rcut) = 0.0
-                   int iradius)         // IN:  radius in grid points where potential is non-zero
+                   double hmin)         // IN:  target 3D grid spacing
+
 {
 
 
     // get minimum grid spacing then find the largest root of the Bessel function such that
     // the normalized distance between any two roots is larger than the minimum grid spacing.
-    double hmin = rcut / (double)iradius;
     int N = NUM_BESSEL_ROOTS;
     for(int i = 0;i < NUM_BESSEL_ROOTS;i++) {
         for(int j = 0;j < i;j++) {
@@ -337,6 +337,8 @@ Bessel1:
     delete [] bcof;
     delete [] work1;
 
+    return rcut;
+
 } // end BesselToLogGrid
 
 
@@ -352,10 +354,11 @@ void Atomic::FilterPotential (
     double gwidth,           // IN:  gaussian parameter controlling speed of g-space damping
     double rcut,             // IN:  filtered potential is damped in real space starting here
     double rwidth,           // IN:  gaussian parameter controlling speed of real space damping
-    int iradius)             // IN:  radius in grid points where potential is non-zero
+    double hmin)             // IN:  target 3D grid spacing
 {
 
-    BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, iradius);
+    // rmax is updated in BesselToLogGrid
+    double nrmax = BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, hmin);
 
     /* Transform to g-space and filter it */
     //RftToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, gwidth);
@@ -368,15 +371,19 @@ void Atomic::FilterPotential (
     {
         double rdist = r_filtered[idx];
 
+#if 1
         if (rdist > rcut)
         {
-            double t1 = (rdist - rcut) / rcut;
-            double exp_fac = exp (-rwidth * t1 * t1);
-            potential_lgrid[idx] *= exp_fac;
+//            double t1 = (rdist - rcut) / rcut;
+//            double exp_fac = exp (-rwidth * t1 * t1) + 1.0e-5;
+//            potential_lgrid[idx] *= exp_fac;
+              double t1 = (rdist - rcut) / (nrmax - rcut);
+              if(t1 > 1.0) t1 = 1.0;
+              potential_lgrid[idx] = (1.0 - t1)*potential_lgrid[idx];
         }               /* end if */
 
+#endif
     }
-
 } 
 
 
