@@ -114,6 +114,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.localpp = NULL;
     pct.localrhoc = NULL;
     pct.localrhonlcc = NULL;
+    pct.localatomicrho = NULL;
 
 
 

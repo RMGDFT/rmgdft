@@ -149,6 +149,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     }
 
     pct.localpp = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
+    pct.localatomicrho = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
     pct.localrhoc = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
     pct.localrhonlcc = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
     for(idx = 0; idx < pct.num_loc_ions *FP0_BASIS; idx++)
@@ -156,6 +157,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         pct.localpp[idx] = 0.0;
         pct.localrhoc[idx] = 0.0;
         pct.localrhonlcc[idx] = 0.0;
+        pct.localatomicrho[idx] = 0.0;
     }
 
 
@@ -221,6 +223,9 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                                 t1= AtomicInterpolateInline (&sp->localig[0], r);
                                 vnuc_f[idx] += t1;
                                 pct.localpp[ion1 * FP0_BASIS + idx] += t1;
+
+                                t1= AtomicInterpolateInline (&sp->arho_lig[0], r);
+                                pct.localatomicrho[ion1 * FP0_BASIS + idx] += t1;
 
                                 t1= Zv * exp (-r * r / rc2) * rcnorm;
                                 rhoc_f[idx] += t1;
