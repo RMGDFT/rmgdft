@@ -245,7 +245,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     }
 
-    if(CONVERGED) {
+    if(CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1))) {
         // Evaluate XC energy and potential from the output density
         // for the force correction
         RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
