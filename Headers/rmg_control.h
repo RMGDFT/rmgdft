@@ -749,6 +749,9 @@ typedef struct
     // Flag to use fine grid for vdf-df
     bool use_vdwdf_finegrid;
 
+    // Flag indicating whether or not to localize the non-local projectors
+    bool localize_projectors;
+
 } CONTROL;
 
 

@@ -70,6 +70,7 @@ void init_weight (void)
 
 
         size = sp->nldim * sp->nldim * sp->nldim;
+        if(!ct.localize_projectors) size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
         /*This array will store forward fourier transform on the coarse grid for all betas */
         bool use_shared = false;
@@ -89,12 +90,23 @@ void init_weight (void)
 
 
         /*This is something we need to do only once per species, so do not use wisdom */
-        in = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-        out = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        if(ct.localize_projectors) {
+            in = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+            out = (double complex *)fftw_malloc(sizeof(double complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        }
+        else {
+            in = (double complex *)fftw_malloc(sizeof(double complex) * ct.nxfgrid * ct.nxfgrid * ct.nxfgrid * get_NX_GRID() *  get_NY_GRID() * get_NZ_GRID());
+            out = (double complex *)fftw_malloc(sizeof(double complex) * ct.nxfgrid * ct.nxfgrid * ct.nxfgrid * get_NX_GRID() *  get_NY_GRID() * get_NZ_GRID());
+        }
 
         if(!in || !out)
             error_handler ("can't allocate memory\n");
-        p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        if(ct.localize_projectors) {
+            p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        }
+        else {
+            p1 = fftw_plan_dft_3d (get_NX_GRID()*ct.nxfgrid, get_NY_GRID()*ct.nxfgrid, get_NZ_GRID()*ct.nxfgrid, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        }
         
         prjcount = 0;
         /* Loop over radial projectors */

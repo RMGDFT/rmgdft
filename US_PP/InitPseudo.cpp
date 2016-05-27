@@ -106,6 +106,11 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         if (ct.max_nlfpoints < (sp->nlfdim * sp->nlfdim * sp->nlfdim))
             ct.max_nlfpoints = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
+        if(!ct.localize_projectors) {
+            ct.max_nlpoints = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+            ct.max_nlfpoints = ct.max_nlpoints * ct.nxfgrid * ct.nxfgrid * ct.nxfgrid;
+        }
+
         sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
         sp->ldim = sp->ldim/2 * 2 +1;
         sp->lradius = 0.5 * ct.hmingrid * (double)(sp->ldim-1) / (double)Rmg_G->default_FG_RATIO;

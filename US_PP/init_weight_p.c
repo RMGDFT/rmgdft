@@ -17,17 +17,36 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1, bo
 
     if(use_shared && (pct.local_rank > 2)) return;
 
-    int idx, ix, iy, iz, size, coarse_size, ibegin, iend;
+    int idx, ix, iy, iz, size, coarse_size;
     double r, ax[3], bx[3], xc, yc, zc, cc, t1;
-    double hxx, hyy, hzz;
     double complex *weptr1, *weptr2, *weptr3, *gwptr;
     double complex *r1, *r2, *r3;
     int ixx, iyy, izz;
 
+    double hxx = get_hxgrid() / (double) ct.nxfgrid;
+    double hyy = get_hygrid() / (double) ct.nyfgrid;
+    double hzz = get_hzgrid() / (double) ct.nzfgrid;
+    double xoff = 0.0;
+    double yoff = 0.0;
+    double zoff = 0.0;
+
+    int nlfxdim = sp->nlfdim;
+    int nlfydim = sp->nlfdim;
+    int nlfzdim = sp->nlfdim;
+    if(!ct.localize_projectors) {
+        nlfxdim = ct.nxfgrid * get_NX_GRID();
+        nlfydim = ct.nxfgrid * get_NY_GRID();
+        nlfzdim = ct.nxfgrid * get_NZ_GRID();
+        xoff = 0.5 * hxx;
+        yoff = 0.5 * hyy;
+        zoff = 0.5 * hzz;
+    }
+
+    /* nlxdim * nlydim * nlzdim is size of the non-local box in the double grid */
+    size = nlfxdim * nlfydim * nlfzdim;
 
     /*Number of grid points in th enon-local box in coarse and double grids */
     coarse_size = sp->nldim * sp->nldim * sp->nldim;
-    size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
 
     weptr1 = (double complex *)fftw_malloc(sizeof(double complex) * size);
     weptr2 = (double complex *)fftw_malloc(sizeof(double complex) * size);
@@ -37,40 +56,39 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1, bo
     if ((weptr1 == NULL) || (weptr2 == NULL) || (weptr3 == NULL) || (gwptr == NULL))
         error_handler ("can't allocate memory\n");
 
-    hxx = get_hxgrid() / (double) ct.nxfgrid;
-    hyy = get_hygrid() / (double) ct.nyfgrid;
-    hzz = get_hzgrid() / (double) ct.nzfgrid;
-
     r1 = rtptr;
     r2 = r1 + coarse_size;
     r3 = r2 + coarse_size;
 
     cc = sqrt (3.0 / (4.0 * PI));
 
-    ibegin = -sp->nlfdim/2;
-    iend = ibegin + sp->nlfdim;
+    int ixbegin = -nlfxdim/2;
+    int ixend = ixbegin + nlfxdim;
+    int iybegin = -nlfydim/2;
+    int iyend = iybegin + nlfydim;
+    int izbegin = -nlfzdim/2;
+    int izend = izbegin + nlfzdim;
 
-    for (ix = ibegin; ix < iend; ix++)
+    for (ix = ixbegin; ix < ixend; ix++)
     {
         ixx = ix;
-        if (ixx < 0) ixx = ix + sp->nlfdim;
+        if (ixx < 0) ixx = ix + nlfxdim;
+        xc = (double) ix *hxx + xoff;
 
-        xc = (double) ix *hxx;
-
-        for (iy = ibegin; iy < iend; iy++)
+        for (iy = iybegin; iy < iyend; iy++)
         {
             iyy = iy;
-            if (iyy < 0) iyy = iy + sp->nlfdim;
+            if (iyy < 0) iyy = iy + nlfydim;
+            yc = (double) iy *hyy + yoff;
 
-            yc = (double) iy *hyy;
-
-            for (iz = ibegin; iz < iend; iz++)
+            for (iz = izbegin; iz < izend; iz++)
             {
-                izz = iz;
-                if (izz < 0) izz = iz + sp->nlfdim;
-                idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
 
-                zc = (double) iz *hzz;
+                izz = iz;
+                if (izz < 0) izz = iz + nlfzdim;
+                zc = (double) iz *hzz + zoff;
+
+                idx = ixx *sp->nlfdim * sp->nlfdim + iyy * sp->nlfdim + izz;
 
                 ax[0] = xc;
                 ax[1] = yc;
@@ -119,7 +137,7 @@ void init_weight_p (SPECIES * sp, fftw_complex * rtptr, int ip, fftw_plan p1, bo
     }
     else {
 
-        int broot[3], jdx;
+        int broot[3];
         int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
         int istop = 3;
         if(npes < istop) istop = npes;
