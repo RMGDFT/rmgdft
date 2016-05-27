@@ -141,10 +141,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
-//sp->lradius=5.937500000000;
         double parm = ct.rhocparm / ct.FG_RATIO;
         A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, parm, sp->localig,
-                sp->rab, 0, sp->gwidth, 0.6*sp->lradius, sp->rwidth, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
+                sp->rab, 0, sp->gwidth, 0.66*sp->lradius, sp->rwidth, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
 
         /*Write local projector into a file if requested*/
         if ((pct.gridpe == 0) && write_flag)
@@ -160,7 +159,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts and force correction routines
         A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, ct.rhocparm, sp->arho_lig,
-                sp->rab, 0, sp->agwidth, sp->aradius, sp->arwidth, ct.hmingrid);
+                sp->rab, 0, sp->gwidth, 0.66*sp->lradius, sp->rwidth, ct.hmingrid);
 
 
         /*Open file for writing beta function*/
@@ -182,9 +181,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             // Filtering for wavefunction grid
-//sp->nlradius=5.937500000000;
             A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
-                    sp->rab, sp->llbeta[ip], sp->gwidth, 0.6*sp->nlradius, sp->rwidth, ct.hmingrid);
+                    sp->rab, sp->llbeta[ip], sp->gwidth, 0.66*sp->nlradius, sp->rwidth, ct.hmingrid);
 
             /* output filtered non-local projector to a file  if requested */
             if (pct.gridpe == 0 && write_flag)
