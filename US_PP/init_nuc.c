@@ -160,6 +160,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         pct.localatomicrho[idx] = 0.0;
     }
 
+    int tem_count = 0;
 
     int ion1;
     for (ion1 = 0; ion1 < pct.num_loc_ions; ion1++)
@@ -214,6 +215,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                             if(izz >= klow && izz < khi)
                             {
 
+    tem_count++;
                                 idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
                                 x[0] = ix * hxxgrid - iptr->xtal[0];
                                 x[1] = iy * hyygrid - iptr->xtal[1];
@@ -272,6 +274,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     }
 
 
+    dprintf("\n tem_count %d %d", pct.gridpe, tem_count);
     /* Wait until everyone gets here */
     /*my_barrier(); */
 

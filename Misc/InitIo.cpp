@@ -162,13 +162,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     InitHybridModel(ct.THREADS_PER_NODE, NPES, pct.gridpe, pct.grid_comm);
 
     /* if logname exists, increment until unique filename found */
-    if (pct.imgpe == 0)
-    {
         int name_incr;
         name_incr = FilenameIncrement(ct.shortname);
         snprintf (ct.basename, MAX_PATH, "%s.%02d", ct.shortname, name_incr);
         snprintf (ct.logname, MAX_PATH, "%s.%02d.log", ct.shortname, name_incr);
 
+    if (pct.imgpe == 0)
+    {
         /* open and save logfile handle, printf is stdout before here */
         ct.logfile = fopen(ct.logname, "w");
     }

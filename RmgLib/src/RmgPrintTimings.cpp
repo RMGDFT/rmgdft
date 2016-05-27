@@ -12,7 +12,7 @@
 #include "RmgTimer.h"
 
 
-void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
+void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps, int num_ions_thispe) {
 
     int tid;
     size_t i, count, count1;
@@ -23,6 +23,14 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
     std::ofstream logfile;
 
 
+    struct{float num_ions; int rank;} ions_and_rank, max_rank, min_rank;
+    ions_and_rank.num_ions = num_ions_thispe;
+    ions_and_rank.rank = G->get_rank();
+
+    MPI_Allreduce(&ions_and_rank, &max_rank, 1, MPI_FLOAT_INT, MPI_MAXLOC, G->comm);
+    MPI_Allreduce(&ions_and_rank, &min_rank, 1, MPI_FLOAT_INT, MPI_MINLOC, G->comm);
+
+    
     // Have to do some manipulations to compute thread min/max/average and get things properly sorted
     std::map <std::string, double> tmain;
     std::map <std::string, double> tmain_min;
@@ -35,31 +43,11 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
     // Reset main thread (tid=0) into an ordered map
 
 
-    int num_timings, num_timings_max, num_timings_min;
-    num_timings = RT.timings[0].size();
-    MPI_Allreduce(&num_timings, &num_timings_min, 1, MPI_INT, MPI_MIN, G->comm);
-    MPI_Allreduce(&num_timings, &num_timings_max, 1, MPI_INT, MPI_MAX, G->comm);
-
     for(auto it = RT.timings[0].cbegin(); it != RT.timings[0].cend(); ++it) {
         tmain[it->first] = it->second;
-        tmain_min[it->first] = it->second;
-        tmain_max[it->first] = it->second;
     }
 
 
-    if(num_timings_min == num_timings_max)
-    {
-
-        for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
-            MPI_Allreduce(&tmain[it->first], &tmain_min[it->first], 1, MPI_DOUBLE, MPI_MIN, G->comm);
-            MPI_Allreduce(&tmain[it->first], &tmain_max[it->first], 1, MPI_DOUBLE, MPI_MAX, G->comm);
-        }
-    }
-    else
-    {
-        std::cout<< "at "<< G->get_rank()<<" num_timings=  " << num_timings <<std::endl;
-    }
-        
 
     size_t maxlen = 0;
     for(auto it = RT.timings[1].cbegin(); it != RT.timings[1].cend(); ++it) {
@@ -78,19 +66,15 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
         }
     }
 
-    if(G->get_rank() == 0) {
+    if(G->get_rank() == max_rank.rank) {
 
         logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 
         logfile << std::endl << std::endl;
         logfile << std::fixed << std::setprecision(2);
-        logfile << "------------------------- TIMING INFORMATION FOR MAIN  ----------------------------" << std::endl;
-        logfile << "                                                 Total time            Per SCF/step" << std::endl;
-        logfile << "                                                 min      max          min      max" << std::endl;
+        logfile << "--------TIMING INFORMATION FOR Processor owned the most atoms----------------" << std::endl;
+        logfile << "                                        Total time               Per SCF/step" << std::endl;
         count1 = 0;
-        //auto t1 = tmain_min.cbegin();
-        auto t1 = tmain.cbegin();
-        auto t2 = tmain_max.cbegin();
         for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
             count = std::count(it->first.begin(), it->first.end(), ':');  
 
@@ -103,12 +87,9 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
             if(count == 0) logfile << std::endl;
 
             for(i = 0; i < count; i++) logfile << "  ";
-            logfile << std::setw(41-count*2) << std::left << it->first << std::setw(10) << std::right  
-                << t1->second << std::setw(10) << std::right << t2->second<< std::setw(10) << std::right  
-                << t1->second/(double)steps << std::setw(10) << std::right << t2->second/(double)steps<< std::endl;
+            logfile << std::setw(41-count*2) << std::left << it->first << std::setw(15) << std::right  
+                << it->second << std::setw(20) << std::right << it->second/(double)steps << std::endl;
 
-            t1++;
-            t2++;
             count1 = count;
         }
 
@@ -148,33 +129,68 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps) {
 
     }
 
-#if 0 
-//  can be used to print out timing for each proce to look at the load balance.
-    for(int rank = 0; rank < 8; rank++)
-    {
-        MPI_Barrier(MPI_COMM_WORLD);
-        if(G->get_rank() == rank) {
-            std::cout<< "rank = " << rank <<std::endl;
-            for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
-                count = std::count(it->first.begin(), it->first.end(), ':');  
+    MPI_Barrier(G->comm);
+    if(G->get_rank() == min_rank.rank) {
 
-                if(count1 < count) {
-                    for(i = 0; i < count1; i++) logfile << "  ";
-                    for(i = 2 * count1; i < 77; i++) logfile <<"-";
-                    logfile <<  std::endl;
-                }
+        logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 
-                if(count == 0) logfile << std::endl;
+        logfile << std::endl << std::endl;
+        logfile << std::fixed << std::setprecision(2);
+        logfile << "--------TIMING INFORMATION FOR Processor owned the least atoms----------------" << std::endl;
+        logfile << "                                        Total time               Per SCF/step" << std::endl;
+        count1 = 0;
+        for(auto it = tmain.cbegin(); it != tmain.cend(); ++it) {
+            count = std::count(it->first.begin(), it->first.end(), ':');  
 
-                for(i = 0; i < count; i++) logfile << "  ";
-                std::cout << std::setw(41-count*2) << std::left << it->first << std::setw(10) << std::right  
-                    << it->second << std::endl;
-
-                count1 = count;
+            if(count1 < count) {
+                for(i = 0; i < count1; i++) logfile << "  ";
+                for(i = 2 * count1; i < 77; i++) logfile <<"-";
+                logfile <<  std::endl;
             }
 
+            if(count == 0) logfile << std::endl;
 
+            for(i = 0; i < count; i++) logfile << "  ";
+            logfile << std::setw(41-count*2) << std::left << it->first << std::setw(15) << std::right  
+                << it->second << std::setw(20) << std::right << it->second/(double)steps << std::endl;
+
+            count1 = count;
         }
+
+        logfile << std::endl << std::endl;
+        logfile << "------------------------- TIMING INFORMATION FOR THREADS  -------------------" << std::endl << std::endl;
+        logfile << "                                           Min            Max            Avg";
+
+        auto it1 = tmin.cbegin();
+        auto it2 = tmax.cbegin();
+        auto it3 = tavg.cbegin();
+        while(it1 != tmin.cend()) {
+            std::size_t found = it1->first.find_first_of(":");
+            if(found != std::string::npos) {
+                logfile << "  ";
+                logfile << std::setw(maxlen) << std::left << it1->first
+                    << std::setw(16) << std::right << it1->second
+                    << std::setw(15) << std::right << it2->second
+                    << std::setw(15) << std::right
+                    << it3->second/T->get_threads_per_node() << std::endl;
+            }
+            else {
+                logfile << std::endl;
+                logfile << std::setw(maxlen) << std::left << it1->first
+                    << std::setw(18) << std::right << it1->second
+                    << std::setw(15) << std::right << it2->second
+                    << std::setw(15) << std::right << it3->second/T->get_threads_per_node()
+                    << std::endl
+                    << "-----------------------------------------------------------------------------"
+                    << std::endl;
+            }
+            it1++;
+            it2++;
+            it3++;
+        }
+
+        logfile.close();
+
     }
-#endif
+
 }
