@@ -54,13 +54,13 @@
 static int firststep = true;
 
 template bool Scf<double> (double *, double *, double *, double *,
-          double *, double *, double *, double *, double *, int ,
+          double *, double *, double *, double *, double *, double *, int ,
           int , Kpoint<double> **, std::vector<double> &);
 template bool Scf<std::complex<double> > (double *, double *, double *, double *,
-          double *, double *, double *, double *, double *, int ,
+          double *, double *, double *, double *, double *, double *, int ,
           int , Kpoint<std::complex<double>> **, std::vector<double> &);
 
-template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_in, double *vh_ext,
+template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double * vh, double *vh_in, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV)
 {
@@ -245,10 +245,22 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     }
 
+    if(CONVERGED) {
+        // Evaluate XC energy and potential from the output density
+        // for the force correction
+        RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
+        double vtxc, XCtmp;
+        for(int i = 0;i < FP0_BASIS;i++) vxc_in[i] = vxc[i];
+        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+        F->v_xc(new_rho, rhocore, XCtmp, vtxc, vxc, ct.spin_flag );
+        delete F;
+        delete RT1;
+    }
+
+
     /*Takes care of mixing and checks whether the charge density is negative*/
     RT1 = new RmgTimer("2-Scf steps: MixRho");
     MixRho(new_rho, rho, rhocore, vh, vh_out, rhoc, Kptr[0]->ControlMap, false);
-    delete [] vh_out; 
     delete RT1;
 
     if (spin_flag)
@@ -285,6 +297,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double * vh, double *vh_
 
     }
 
+    for(int i = 0;i < FP0_BASIS;i++) vh[i] = vh_out[i];
+    delete [] vh_out; 
     return CONVERGED;
 }                               /* end scf */
 

@@ -41,7 +41,7 @@
 // Scf correction for forces as described by Chan, Bohnen and Ho
 // PRB v47, #8
 
-void CorrectForces (double * rho, double * vh, double *vh_in, double *force)
+void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, double *force)
 {
 
 
@@ -54,22 +54,15 @@ void CorrectForces (double * rho, double * vh, double *vh_in, double *force)
     double *dvh = new double[FP0_BASIS];
 
     int ithree = 3;
-    double alpha = -get_vel_f(), zero = 0.0, mone = -1.0;
+    double alpha = get_vel_f(), zero = 0.0, mone = -1.0;
 
-    for(int ix = 0;ix < FP0_BASIS;ix++) dvh[ix] = vh_in[ix] - vh[ix];
+    for(int ix = 0;ix < FP0_BASIS;ix++) dvh[ix] = vh_in[ix] + vxc_in[ix]  - vh[ix] - vxc[ix];
 
     ApplyGradient (dvh, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
 
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
             pct.localatomicrho, &FP0_BASIS, &zero, force_tmp, &ithree); 
-
-#if 0
-    ApplyGradient (rho, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
-
-    dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
-           pct.localpp, &FP0_BASIS, &mone, force_tmp, &ithree); 
-#endif
 
     for(int ion1 = 0; ion1 <pct.num_loc_ions; ion1++)
     {

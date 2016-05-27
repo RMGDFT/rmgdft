@@ -57,14 +57,14 @@
 #define VERBOSE 1
 
 
-template void Force<double> (double * rho, double * rho_oppo, double * rhoc, double * vh, double *vh_in,
-        double * vxc, double * vnuc, Kpoint<double> **Kptr);
+template void Force<double> (double * rho, double * rho_oppo, double * rhoc, double * vh, double*vh_in,
+        double * vxc, double *vxc_in, double * vnuc, Kpoint<double> **Kptr);
 template void Force<std::complex<double> > (double * rho, double * rho_oppo, double * rhoc, double * vh, double *vh_in, 
-        double * vxc, double * vnuc, Kpoint<std::complex<double>> **Kptr);
+        double * vxc, double *vxc_in, double * vnuc, Kpoint<std::complex<double>> **Kptr);
 
 
 template <typename OrbitalType> void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, double *vh_in,
-        double * vxc, double * vnuc, Kpoint<OrbitalType> **Kptr)
+        double * vxc, double *vxc_in, double * vnuc, Kpoint<OrbitalType> **Kptr)
 {
     RmgTimer RT0("2-Force");
     RmgTimer RTt("1-TOTAL: run: Force");
@@ -160,14 +160,13 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
     RmgTimer *RT5 = new RmgTimer("2-Force: corrections");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
-    CorrectForces (rho, vh, vh_in, force_tmp);
+    CorrectForces (vh, vh_in, vxc, vxc_in, force_tmp);
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
     delete RT5;
 
 #if VERBOSE
     output_force(force_tmp, "Correction force:");
 #endif
-
 
     size1 = 3 * ct.num_ions;
     global_sums (force_sum, &size1, pct.img_comm);
