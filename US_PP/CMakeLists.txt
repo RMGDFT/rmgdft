@@ -1,4 +1,6 @@
 add_library (US_PP
+InitWeight.cpp
+InitWeightOne.cpp
 InitLocalForward.cpp
 InitLocalBackward.cpp
 #PackFine2Rhogrid.cpp

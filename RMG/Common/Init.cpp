@@ -352,8 +352,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /*Do forward transform for each species and store results on the coarse grid */
     RT1 = new RmgTimer("2-Init: weights");
-    init_weight ();
-    //InitLocalForward();  
+    InitWeight ();
+    //init_weight ();
+   // InitLocalForward();  
     delete(RT1);
 
     rmg_printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);

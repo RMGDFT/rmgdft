@@ -261,6 +261,9 @@ void InitLocalForward();
 void InitLocalBackward(double *, double *, double *);
 void GetPhase (ION *, std::complex<double> *);
 void PrintSums(double *, int, char*);
+void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, fftw_plan p1);
+void InitWeight(void);
+
 
 
 

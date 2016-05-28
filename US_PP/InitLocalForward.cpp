@@ -76,7 +76,7 @@ void InitLocalForward ()
 
         if(!in || !out)
         {
-            printf("\n Could not get memory for in and put in InitLocalForward");
+            printf("\n Could not get memory for in and put in InitLocalForward size = %d", size);
             fflush(NULL);
             exit(0);
         }
