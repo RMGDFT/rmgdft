@@ -38,9 +38,9 @@ static double harmonic_func_36(double r, double *b);
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, fftw_plan p1)
 {
 
-    int idx, ix, iy, iz, size, ibegin, iend;
-    double r, ax[3], xc, yc, zc, bx[3];
-    double t1, hxx, hyy, hzz;
+    int idx, size;
+    double r, ax[3], bx[3];
+    double t1;
     std::complex<double> *weptr, *gwptr;
     double (*func) (double, double *) = NULL;
 
@@ -80,42 +80,59 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
 
     // define functions to distiguish s, px, py, pz, ....
 
+    double hxx = get_hxgrid() / (double) ct.nxfgrid;
+    double hyy = get_hygrid() / (double) ct.nyfgrid;
+    double hzz = get_hzgrid() / (double) ct.nzfgrid;
 
+    double xoff = 0.0;
+    double yoff = 0.0;
+    double zoff = 0.0;
+
+    int nlfxdim = sp->nlfdim;
+    int nlfydim = sp->nlfdim;
+    int nlfzdim = sp->nlfdim;
+    if(!ct.localize_projectors) {
+        nlfxdim = ct.nxfgrid * get_NX_GRID();
+        nlfydim = ct.nxfgrid * get_NY_GRID();
+        nlfzdim = ct.nxfgrid * get_NZ_GRID();
+        xoff = 0.5 * hxx;
+        yoff = 0.5 * hyy;
+        zoff = 0.5 * hzz;
+    }
 
     /* nlfdim is size of the non-local box in the double grid */
-    size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
+    size = nlfxdim * nlfydim * nlfzdim;
 
     weptr = new std::complex<double>[size];
     gwptr = new std::complex<double>[size];
 
-    hxx = get_hxgrid() / (double) ct.nxfgrid;
-    hyy = get_hygrid() / (double) ct.nyfgrid;
-    hzz = get_hzgrid() / (double) ct.nzfgrid;
-
     /*We assume that ion is in the center of non-local box */
     //    ibegin = -(sp->nldim / 2) * ct.nxfgrid;
+    int ixbegin = -nlfxdim/2;
+    int ixend = ixbegin + nlfxdim;
+    int iybegin = -nlfydim/2;
+    int iyend = iybegin + nlfydim;
+    int izbegin = -nlfzdim/2;
+    int izend = izbegin + nlfzdim;
 
-    ibegin = -sp->nlfdim/2;
-    iend = ibegin + sp->nlfdim;
-    int ixx, iyy, izz;
-    for (ix = ibegin; ix < iend; ix++)
+    for (int ix = ixbegin; ix < ixend; ix++)
     {
-        ixx = ix;
-        if (ixx < 0) ixx = ix + sp->nlfdim;
-        xc = (double) ix *hxx;
+        int ixx = ix;
+        if (ixx < 0) ixx = ix + nlfxdim;
+        double xc = (double) ix *hxx + xoff;
 
-        for (iy = ibegin; iy < iend; iy++)
+        for (int iy = iybegin; iy < iyend; iy++)
         {
-            iyy = iy;
-            if (iyy < 0) iyy = iy + sp->nlfdim;
-            yc = (double) iy *hyy;
+            int iyy = iy;
+            if (iyy < 0) iyy = iy + nlfydim;
+            double yc = (double) iy *hyy + yoff;
 
-            for (iz = ibegin; iz < iend; iz++)
+            for (int iz = izbegin; iz < izend; iz++)
             {
 
-                izz = iz;
-                if (izz < 0) izz = iz + sp->nlfdim;
-                zc = (double) iz *hzz;
+                int izz = iz;
+                if (izz < 0) izz = iz + nlfzdim;
+                double zc = (double) iz *hzz + zoff;
 
                 ax[0] = xc;
                 ax[1] = yc;
