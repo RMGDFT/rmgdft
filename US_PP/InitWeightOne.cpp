@@ -61,15 +61,15 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
             if(m == 3) func = harmonic_func_23;
             if(m == 4) func = harmonic_func_24;
             break;
-//        case F_STATE:
-//            if(m == 0) func = harmonic_func_30;
-//            if(m == 1) func = harmonic_func_31;
-//            if(m == 2) func = harmonic_func_32;
-//            if(m == 3) func = harmonic_func_33;
-//            if(m == 4) func = harmonic_func_34;
-//            if(m == 5) func = harmonic_func_35;
-//            if(m == 6) func = harmonic_func_36;
-//            break;
+        case F_STATE:
+            if(m == 0) func = harmonic_func_30;
+            if(m == 1) func = harmonic_func_31;
+            if(m == 2) func = harmonic_func_32;
+            if(m == 3) func = harmonic_func_33;
+            if(m == 4) func = harmonic_func_34;
+            if(m == 5) func = harmonic_func_35;
+            if(m == 6) func = harmonic_func_36;
+            break;
         default:
             printf("\n projecotr with ip = %d not programed \n", ip);
             exit(0);
@@ -209,4 +209,51 @@ static double harmonic_func_24(double r, double *b)
     return sqrt(5.0/(4.0 * PI))* (3.0 * b[2] * b[2] - r*r)/(2.0*r*r);
 }
 
+static double harmonic_func_30(double r, double *bx)
+{
+    double c0 = sqrt (35.0 / (2.0 * PI)) / 4.0;
+    double rsq1 = r * r * r + 1.0e-20;
+    return  c0 * (bx[1] * (3.0*bx[0]*bx[0] - bx[1]*bx[1])) / rsq1;
+}
 
+static double harmonic_func_31(double r, double *bx)
+{
+    double c1 = sqrt(105.0 / PI);
+    double rsq1 = r * r * r + 1.0e-20;
+    return  c1 * (bx[0] * bx[1] * bx[2]) / (2.0*rsq1);
+}
+
+static double harmonic_func_32(double r, double *bx)
+{
+    double c2 = sqrt(21.0 / (2.0 * PI)) / 4.0;
+    double rsq1 = r * r * r + 1.0e-20;
+    return  c2 * (bx[1] * (4.0*bx[2]*bx[2] - bx[0]*bx[0] - bx[1]*bx[1])) / rsq1;
+}
+
+static double harmonic_func_33(double r, double *bx)
+{
+    double c3 = sqrt(7.0 / PI) / 4.0;
+    double rsq1 = r * r * r + 1.0e-20;
+    return  c3 * (bx[2] * (2.0*bx[2]*bx[2] - 3.0*bx[0]*bx[0] - 3.0*bx[1]*bx[1])) / rsq1;
+}
+
+static double harmonic_func_34(double r, double *bx)
+{
+    double c2 = sqrt(21.0 / (2.0 * PI)) / 4.0;
+    double rsq1 = r * r * r + 1.0e-20;
+    return  c2 * (bx[0] * (4.0*bx[2]*bx[2] - bx[0]*bx[0] - bx[1]*bx[1])) / rsq1;
+}
+
+static double harmonic_func_35(double r, double *bx)
+{
+    double c1 = sqrt(105.0 / PI);
+    double rsq1 = r * r * r + 1.0e-20;
+    return  c1 * (bx[2] * (bx[0]*bx[0] - bx[1]*bx[1])) / (4.0*rsq1);
+}
+
+static double harmonic_func_36(double r, double *bx)
+{
+    double c0 = sqrt (35.0 / (2.0 * PI)) / 4.0;
+    double rsq1 = r * r * r + 1.0e-20;
+    return  c0 * (bx[0] * (bx[0]*bx[0] - 3.0*bx[1]*bx[1])) / rsq1;
+}
