@@ -73,6 +73,12 @@ void GetPhase (ION * iptr, std::complex<double> *rtptr)
     dimx = sp->nldim;
     dimy = sp->nldim;
     dimz = sp->nldim;
+    if(!ct.localize_projectors) {
+        dimx = get_NX_GRID();
+        dimy = get_NY_GRID();
+        dimz = get_NZ_GRID();
+    }
+
     pbasis = dimx * dimy * dimz;
 
 
