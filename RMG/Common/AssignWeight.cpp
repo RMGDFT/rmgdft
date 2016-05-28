@@ -45,13 +45,22 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     TradeImages *T = kptr->T;
     ION *iptr = &ct.ions[ion];
 
+    int nlxdim = sp->nldim;
+    int nlydim = sp->nldim;
+    int nlzdim = sp->nldim;
+    if(!ct.localize_projectors) {
+        nlxdim = get_NX_GRID();
+        nlydim = get_NY_GRID();
+        nlzdim = get_NZ_GRID();
+    }
+
     // These are probably not right for anything but simple cubic grids
     double wx = iptr->nlcrds[0] / ct.hmaxgrid;
     double wy = iptr->nlcrds[1] / ct.hmaxgrid;
     double wz = iptr->nlcrds[2] / ct.hmaxgrid;
 
     int pbasis = kptr->pbasis;
-    int nldim = sp->nldim;
+//    int nldim = sp->nldim;
     KpointType ZERO_t(0.0);
 
     std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
@@ -70,20 +79,20 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 
 
-    KpointType *tem_array = new KpointType[nldim * nldim * nldim]();
-    KpointType *Btem_array = new KpointType[nldim * nldim * nldim]();
+    KpointType *tem_array = new KpointType[nlxdim * nlydim * nlzdim]();
+    KpointType *Btem_array = new KpointType[nlxdim * nlydim * nlzdim]();
     std::complex<double> *tem_array_C = (std::complex<double> *)tem_array;
     std::complex<double> *Btem_array_C = (std::complex<double> *)Btem_array;
     double *Btem_array_R = (double *)Btem_array;
 
 
-    for(int ix = 0; ix < nldim * nldim * nldim; ix++) {
+    for(int ix = 0; ix < nlxdim * nlydim * nlzdim; ix++) {
         tem_array[ix] = std::real(nbeptr[ix]);
     }
 
     std::complex<double> *phaseptr = (std::complex<double> *)pct.phaseptr[ion];
     int kpt_local = kptr->kidx ;
-    phaseptr += kpt_local *nldim * nldim * nldim;
+    phaseptr += kpt_local * nlxdim * nlydim * nlzdim;
 
 
     int *pidx = pct.nlindex[ion];
@@ -93,15 +102,15 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
 
     // Apply phase factor
-    for (int ix = 0; ix < sp->nldim; ix++)
+    for (int ix = 0; ix < nlxdim; ix++)
     {
 
-        for (int iy = 0; iy < sp->nldim; iy++)
+        for (int iy = 0; iy < nlydim; iy++)
         {
 
-            for (int iz = 0; iz < sp->nldim; iz++)
+            for (int iz = 0; iz < nlzdim; iz++)
             {
-                int idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
+                int idx1 = ix * nlydim * nlzdim + iy * nlzdim + iz;
                 if(!ct.is_gamma) {
                     tem_array_C[idx1] = std::real(nbeptr[idx1]) * conj(phaseptr[idx1]);
                 }
@@ -124,31 +133,32 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
 
     // Apply B operator then map weights back
-    AppCirDriverBeta (L, T, tem_array, Btem_array, nldim, nldim, nldim, ct.kohn_sham_fd_order);
+    AppCirDriverBeta (L, T, tem_array, Btem_array, nlxdim, nlydim, nlzdim, ct.kohn_sham_fd_order);
 
     idx = 0;
     docount = 0;
-    for (int ix = 0; ix < sp->nldim; ix++)
+    for (int ix = 0; ix < nlxdim; ix++)
     {
 
         double w1=1.0;
         if(ix==0) w1 = 0.5*(0.5 + wx);
-        if(ix==sp->nldim-1) w1 = 0.5*(0.5 - wx);
-        for (int iy = 0; iy < sp->nldim; iy++)
+        if(ix==nlxdim-1) w1 = 0.5*(0.5 - wx);
+        for (int iy = 0; iy < nlydim; iy++)
         {
             double w2=1.0;
             if(iy==0) w2 = 0.5*(0.5 + wy);
-            if(iy==sp->nldim-1) w2 = 0.5*(0.5 - wy);
+            if(iy==nlydim-1) w2 = 0.5*(0.5 - wy);
 
-            for (int iz = 0; iz < sp->nldim; iz++)
+            for (int iz = 0; iz < nlzdim; iz++)
             {
                 double w3 = 1.0;
                 if(iz==0) w3 = 0.5*(0.5 + wz);
-                if(iz==sp->nldim-1) w3 = 0.5*(0.5 - wz);
+                if(iz==nlzdim-1) w3 = 0.5*(0.5 - wz);
 
+                if(!ct.localize_projectors) w1 = w2 = w3 = 1.0;
                 if (dvec[idx])
                 {
-                    int idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
+                    int idx1 = ix * nlydim * nlzdim + iy * nlzdim + iz;
                     rtptr[pidx[docount]] = std::real(nbeptr[idx1]);
                     if(ct.is_gamma) {
                         Nlweight_R[pidx[docount]] = std::real(nbeptr[idx1]);

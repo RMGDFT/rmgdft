@@ -10,8 +10,8 @@ extern "C" void init_qfunct(void)
     InitQfunct(ControlMap);
 }
 
-extern "C" void find_phase (int nldim, double * nlcdrs, double ** phase_sin, double ** phase_cos)
+extern "C" void find_phase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double ** phase_sin, double ** phase_cos)
 {
-    FindPhase(nldim, nlcdrs, *phase_sin, *phase_cos);
+    FindPhase(nlxdim, nlydim, nlzdim, nlcdrs, *phase_sin, *phase_cos);
 }
 

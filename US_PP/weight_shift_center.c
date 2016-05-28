@@ -16,28 +16,37 @@ void weight_shift_center(SPECIES * sp, fftw_complex * weptr)
     int ixx, iyy, izz;
     fftw_complex *tem_weptr;
 
-    idx = sp->nldim * sp->nldim * sp->nldim;
+    int nlxdim = sp->nldim;
+    int nlydim = sp->nldim;
+    int nlzdim = sp->nldim;
+    if(!ct.localize_projectors) {
+        nlxdim = get_NX_GRID();
+        nlydim = get_NY_GRID();
+        nlzdim = get_NZ_GRID();
+    }
+
+    idx = nlxdim * nlydim * nlzdim;
     my_malloc(tem_weptr, idx, fftw_complex);
     
     for(ix = 0; ix < idx; ix++) tem_weptr[ix] = weptr[ix];
 
-    for (ix = 0; ix < sp->nldim; ix++)
+    for (ix = 0; ix < nlxdim; ix++)
     {
-        ixx = ix + sp->nldim/2;
-        if(ixx >=sp->nldim) ixx = ixx - sp->nldim;
+        ixx = ix + nlxdim/2;
+        if(ixx >= nlxdim) ixx = ixx - nlxdim;
 
-        for (iy = 0; iy < sp->nldim; iy++)
+        for (iy = 0; iy < nlydim; iy++)
         {
-            iyy = iy + sp->nldim/2;
-            if(iyy >=sp->nldim) iyy = iyy-  sp->nldim;
+            iyy = iy + nlydim/2;
+            if(iyy >= nlydim) iyy = iyy - nlydim;
 
-            for (iz = 0; iz < sp->nldim; iz++)
+            for (iz = 0; iz < nlzdim; iz++)
             {
-                izz = iz + sp->nldim/2;
-                if(izz >=sp->nldim) izz = izz- sp->nldim;
+                izz = iz + nlzdim/2;
+                if(izz >= nlzdim) izz = izz - nlzdim;
 
-                idx = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
-                idx1 = ixx * sp->nldim * sp->nldim + iyy * sp->nldim + izz;
+                idx = ix * nlydim * nlzdim + iy * nlzdim + iz;
+                idx1 = ixx * nlydim * nlzdim + iyy * nlzdim + izz;
                 weptr[idx1] = tem_weptr[idx];
 
             }                   /* end for */

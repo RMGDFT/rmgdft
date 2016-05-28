@@ -99,23 +99,31 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             /* Get species type */
             sp = &ct.sp[iptr->species];
 
-            in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nldim * sp->nldim * sp->nldim);
-            out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * sp->nldim * sp->nldim * sp->nldim);
+            int nlxdim = sp->nldim;
+            int nlydim = sp->nldim;
+            int nlzdim = sp->nldim;
+            if(!ct.localize_projectors) {
+                nlxdim = get_NX_GRID();
+                nlydim = get_NY_GRID();
+                nlzdim = get_NZ_GRID();
+            }
+
+            in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
+            out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
 
 
             /*Number of grid points on which fourier transform is done (in the corse grid) */
-            coarse_size = sp->nldim * sp->nldim * sp->nldim;
-
+            coarse_size = nlxdim * nlydim * nlzdim;
 
 
             //fftw_import_wisdom_from_string (sp->backward_wisdom);
-            p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), FFTW_BACKWARD,
+            p2 = fftw_plan_dft_3d (nlxdim, nlydim, nlzdim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), FFTW_BACKWARD,
                     FFTW_ESTIMATE);
             //fftw_forget_wisdom ();
 
 
             /*Calculate the phase factor */
-            FindPhase (sp->nldim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
+            FindPhase (nlxdim, nlydim, nlzdim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
 
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)sp->forward_beta;

@@ -110,6 +110,17 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                          get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
                          &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
 
+        int nlxdim = sp->nldim;
+        int nlydim = sp->nldim;
+        int nlzdim = sp->nldim;
+        if(!ct.localize_projectors) {
+            map = true;
+            nlxdim = get_NX_GRID();
+            nlydim = get_NY_GRID();
+            nlzdim = get_NZ_GRID();
+            iptr->nlxcstart = iptr->nlycstart = iptr->nlzcstart = 0.0;
+        }
+
         /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
         /*xtal vector between ion and left bottom corner of the box */
         vect[0] = iptr->xtal[0] - iptr->nlxcstart;
@@ -117,13 +128,13 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         vect[2] = iptr->xtal[2] - iptr->nlzcstart;
 
         /*Substract vector between left bottom corner of the box and center of the box */
-        vect[0] -= (sp->nldim / 2) / (double) get_NX_GRID();
-        vect[1] -= (sp->nldim / 2) / (double) get_NY_GRID();
-        vect[2] -= (sp->nldim / 2) / (double) get_NZ_GRID();
+        vect[0] -= (nlxdim / 2) / (double) get_NX_GRID();
+        vect[1] -= (nlydim / 2) / (double) get_NY_GRID();
+        vect[2] -= (nlzdim / 2) / (double) get_NZ_GRID();
 
         /*The vector we are looking for should be */
         to_cartesian (vect, iptr->nlcrds);
-
+//printf("FFFFff  %f  %f  %f\n",iptr->nlcrds[0],iptr->nlcrds[1],iptr->nlcrds[2]);
 
         /* If there is a mapping for this ion then we have to generate */
         /* the projector.                                              */
@@ -137,11 +148,11 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
             /* Generate index arrays */
             icount = idx = 0;
-            for (ix = 0; ix < sp->nldim; ix++)
+            for (ix = 0; ix < nlxdim; ix++)
             {
-                for (iy = 0; iy < sp->nldim; iy++)
+                for (iy = 0; iy < nlydim; iy++)
                 {
-                    for (iz = 0; iz < sp->nldim; iz++)
+                    for (iz = 0; iz < nlzdim; iz++)
                     {
                         dvec[idx] = FALSE;
                         if ((((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
@@ -153,7 +164,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                                 (ix - icenter) * (ix - icenter) +
                                 (iy - icenter) * (iy - icenter) + (iz - icenter) * (iz - icenter);
 
-                            if (icut >= itmp)
+                            if (icut >= itmp || !ct.localize_projectors)
                             {
 
                                 pvec[icount] =
@@ -208,7 +219,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
             /* Allocate memory for the phase array */
             if ((icount * prj_per_ion)) {
-                itmp = sp->nldim * sp->nldim * sp->nldim;
+                itmp = nlxdim * nlydim * nlzdim;
                 pct.phaseptr[ion] = new double[2*itmp * ct.num_kpts_pe + 128]();
             }
             else {
@@ -402,6 +413,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 		/* Determine if ion has overlap with a given PE becasue of beta functions */
 		map = test_overlap (pe, iptr, Aix, Aiy, Aiz, sp->nldim,
 			get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_NX_GRID(), get_NY_GRID(), get_NZ_GRID());
+                if(!ct.localize_projectors) map = true;
 
 		/* Determine if ion has overlap with a given PE becasue of Q function */
                 if(ct.norm_conserving_pp) {

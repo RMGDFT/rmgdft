@@ -31,14 +31,14 @@
 
 
 /*This calculates the phase factor that will be used when calculating the backwards fourier transform*/
-void FindPhase (int nldim, double * nlcdrs, double* &phase_sin, double* &phase_cos)
+void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double* &phase_sin, double* &phase_cos)
 {
 
     int i1, j1, k1;
 
     // Allocate here, must be released by a higher level routine
-    if(!phase_sin) phase_sin = new double[nldim * nldim * nldim];
-    if(!phase_cos) phase_cos = new double[nldim * nldim * nldim];
+    if(!phase_sin) phase_sin = new double[nlxdim * nlydim * nlzdim];
+    if(!phase_cos) phase_cos = new double[nlxdim * nlydim * nlzdim];
 
 
     /*Reciprocal grid spacings in x, y and z directions */
@@ -46,38 +46,36 @@ void FindPhase (int nldim, double * nlcdrs, double* &phase_sin, double* &phase_c
     double rgs_y = 1.0 / (Rmg_G->get_hygrid(1) * Rmg_L.get_yside());
     double rgs_z = 1.0 / (Rmg_G->get_hzgrid(1) * Rmg_L.get_zside());
 
-    int nldim_sq = nldim * nldim;
-
-
-    for (int i = -nldim / 2; i <= nldim / 2; i++)
+    for (int i = -nlxdim / 2; i <= nlxdim / 2; i++)
     {
-        for (int j = -nldim / 2; j <= nldim / 2; j++)
+        for (int j = -nlydim / 2; j <= nlydim / 2; j++)
         {
-            for (int k = -nldim / 2; k <= nldim / 2; k++)
+            for (int k = -nlzdim / 2; k <= nlzdim / 2; k++)
             {
 
                 if (i < 0)
-                    i1 = i + nldim;
+                    i1 = i + nlxdim;
                 else
                     i1 = i;
 
                 if (j < 0)
-                    j1 = j + nldim;
+                    j1 = j + nlydim;
                 else
                     j1 = j;
 
                 if (k < 0)
-                    k1 = k + nldim;
+                    k1 = k + nlzdim;
                 else
                     k1 = k;
 
 
                 /* Phase factor */
-                double theta = 2.0 * PI / nldim *
-                    (((nlcdrs[0] * (double) i) * rgs_x)
-                     + ((nlcdrs[1] * (double) j) * rgs_y) + ((nlcdrs[2] * (double) k) * rgs_z));
+                double theta = 2.0 * PI *
+                    (((nlcdrs[0] * (double) i) * rgs_x / (double)nlxdim) +
+                     ((nlcdrs[1] * (double) j) * rgs_y / (double)nlydim) + 
+                     ((nlcdrs[2] * (double) k) * rgs_z / (double)nlzdim));
 
-                int idx1 = i1 * nldim_sq + j1 * nldim + k1;
+                int idx1 = i1 * nlydim * nlzdim + j1 * nlzdim + k1;
 
                 phase_sin[idx1] = sin (theta);
                 phase_cos[idx1] = cos (theta);
