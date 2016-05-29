@@ -40,17 +40,27 @@ void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double* &ph
     if(!phase_sin) phase_sin = new double[nlxdim * nlydim * nlzdim];
     if(!phase_cos) phase_cos = new double[nlxdim * nlydim * nlzdim];
 
+    // If we are running with localized projectors then nxldim,nlydim and nlzdim
+    // are odd numbers so the loop from (-nlxdim / 2) to (nlxdim / 2) is correct but
+    // if running with non-localized projectors then they are odd and we need to adjust
+    // the loop.
+    int ixadj = 1;
+    int iyadj = 1;
+    int izadj = 1;
+    if(nlxdim % 2) ixadj = 0;
+    if(nlydim % 2) iyadj = 0;
+    if(nlzdim % 2) izadj = 0;
 
     /*Reciprocal grid spacings in x, y and z directions */
     double rgs_x = 1.0 / (Rmg_G->get_hxgrid(1) * Rmg_L.get_xside());
     double rgs_y = 1.0 / (Rmg_G->get_hygrid(1) * Rmg_L.get_yside());
     double rgs_z = 1.0 / (Rmg_G->get_hzgrid(1) * Rmg_L.get_zside());
 
-    for (int i = -nlxdim / 2; i <= nlxdim / 2; i++)
+    for (int i = -nlxdim / 2; i <= nlxdim / 2 - ixadj; i++)
     {
-        for (int j = -nlydim / 2; j <= nlydim / 2; j++)
+        for (int j = -nlydim / 2; j <= nlydim / 2 - iyadj; j++)
         {
-            for (int k = -nlzdim / 2; k <= nlzdim / 2; k++)
+            for (int k = -nlzdim / 2; k <= nlzdim / 2 - izadj; k++)
             {
 
                 if (i < 0)
