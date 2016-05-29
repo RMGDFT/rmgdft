@@ -146,6 +146,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         free(pct.localpp);
         free(pct.localrhoc);
         free(pct.localrhonlcc);
+        free(pct.localatomicrho);
     }
 
     pct.localpp = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
