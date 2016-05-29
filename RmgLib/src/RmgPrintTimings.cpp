@@ -66,6 +66,7 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps, int num_ions_t
         }
     }
 
+    MPI_Barrier(G->comm);
     if(G->get_rank() == max_rank.rank) {
 
         logfile.open(outfile, std::ofstream::out | std::ofstream::app);

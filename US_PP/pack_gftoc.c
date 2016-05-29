@@ -32,13 +32,13 @@ void pack_gftoc (SPECIES * sp, double complex * gwptr, double complex * gbptr)
     size = nlfxdim * nlfydim * nlfzdim;
     int icut = (sp->nldim / 2) * (sp->nldim / 2);
 
-    for (i = -nlxdim / 2; i <= nlxdim / 2; i++)
+    for (i = -(nlxdim-1) / 2; i <= (nlxdim-1) / 2; i++)
     {
         int isq = i * i;
-        for (j = -nlydim / 2; j <= nlydim / 2; j++)
+        for (j = -(nlydim-1) / 2; j <= (nlydim-1) / 2; j++)
         {
             int jsq = j * j;
-            for (k = -nlzdim / 2; k <= nlzdim / 2; k++)
+            for (k = -(nlzdim-1) / 2; k <= (nlzdim-1) / 2; k++)
             {
                 int ksq = k * k;
                 if (i < 0)

@@ -162,13 +162,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     InitHybridModel(ct.THREADS_PER_NODE, NPES, pct.gridpe, pct.grid_comm);
 
     /* if logname exists, increment until unique filename found */
+    if (pct.imgpe == 0)
+    {
         int name_incr;
         name_incr = FilenameIncrement(ct.shortname);
         snprintf (ct.basename, MAX_PATH, "%s.%02d", ct.shortname, name_incr);
         snprintf (ct.logname, MAX_PATH, "%s.%02d.log", ct.shortname, name_incr);
 
-    if (pct.imgpe == 0)
-    {
         /* open and save logfile handle, printf is stdout before here */
         ct.logfile = fopen(ct.logname, "w");
     }
@@ -180,6 +180,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
     }
 
+    MPI_Bcast(ct.logname, 1, MPI_CHAR, 0, pct.img_comm);
     MPI_Comm_size (pct.img_comm, &status);
     printf ("\nRMG run started at GMT %s", asctime (gmtime (&timer)));
     printf ("\nRMG running with %d images and %d images per node.\n", pct.images, ct.images_per_node);

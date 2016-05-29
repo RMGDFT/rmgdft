@@ -94,8 +94,10 @@ C    14.7907    11.5939     6.6672    1
 input_wave_function_file = "Waves/wave.out"
 output_wave_function_file = "Waves/wave1.out"
 write_pseudopotential_plots = "true"
-max_scf_steps = "1"
+max_scf_steps = "100"
 fine_grid_non_local_pp = "4"
+#localize_projectors = "false"
+localize_projectors = "true"
 
 force_derivate_type="wavefunction"
 #force_derivate_type="projector"
