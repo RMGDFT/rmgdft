@@ -65,6 +65,7 @@ void InitWeight (void)
         }
 
         size = sp->nldim * sp->nldim * sp->nldim;
+        if(!ct.localize_projectors) size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
         sp->num_projectors = prjcount;
         sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * size);
         if (sp->forward_beta == NULL)
@@ -81,16 +82,29 @@ void InitWeight (void)
         sp = &ct.sp[proj.species];
  
         size = sp->nldim * sp->nldim * sp->nldim;
+        if(!ct.localize_projectors) size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
-
+        
         /*This is something we need to do only once per species, so do not use wisdom */
-        in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-        out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        if(ct.localize_projectors) {
+            in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+            out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
+        }
+        else {
+            in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * ct.nxfgrid * ct.nxfgrid * ct.nxfgrid * get_NX_GRID() *  get_NY_GRID() * get_NZ_GRID());
+            out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * ct.nxfgrid * ct.nxfgrid * ct.nxfgrid * get_NX_GRID() *  get_NY_GRID() * get_NZ_GRID());
+        }
+
 
         if(!in || !out)
             throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
-        p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        if(ct.localize_projectors) {
+            p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        }
+        else {
+            p1 = fftw_plan_dft_3d (get_NX_GRID()*ct.nxfgrid, get_NY_GRID()*ct.nxfgrid, get_NZ_GRID()*ct.nxfgrid, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        }
 
         InitWeightOne(sp, &sp->forward_beta[proj.proj_index * size], proj.ip, proj.l, proj.m, p1);
 
@@ -107,6 +121,7 @@ void InitWeight (void)
         sp = &ct.sp[proj.species];
         root = iproj % pct.grid_npes;
         size = sp->nldim * sp->nldim * sp->nldim;
+        if(!ct.localize_projectors) size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
         MPI_Bcast(&sp->forward_beta[proj.proj_index * size], 2*size, MPI_DOUBLE, root, pct.grid_comm);
     }

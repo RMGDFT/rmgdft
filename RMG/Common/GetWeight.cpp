@@ -55,6 +55,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
     /*maximum of nldim^3 for any species */
     max_size = ct.max_nldim * ct.max_nldim * ct.max_nldim;
+    if(!ct.localize_projectors) max_size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
 
     /*Get memory to store the phase factor applied to the forward Fourier transform 
@@ -147,9 +148,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
                 fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(gbptr), reinterpret_cast<fftw_complex*>(beptr));
                 /*This takes and stores the part of beta that is useful for this PE */
                 AssignWeight (Kptr[kpt], sp, ion, reinterpret_cast<fftw_complex*>(beptr), rtptr, Bweight, Nlweight);
-
-                /*Calculate derivative of beta */
-
 
 
                 /*Advance the temp pointers */

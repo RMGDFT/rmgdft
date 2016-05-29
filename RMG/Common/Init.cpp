@@ -343,6 +343,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             ct.max_nldim = sp->nldim;
     }
 
+
     time2 = my_crtc ();
 
     rmg_printf ("\n\n init: Starting FFTW initialization ...");

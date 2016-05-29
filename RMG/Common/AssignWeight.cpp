@@ -60,7 +60,6 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     double wz = iptr->nlcrds[2] / ct.hmaxgrid;
 
     int pbasis = kptr->pbasis;
-//    int nldim = sp->nldim;
     KpointType ZERO_t(0.0);
 
     std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;

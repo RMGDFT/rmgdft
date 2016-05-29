@@ -134,7 +134,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
         /*The vector we are looking for should be */
         to_cartesian (vect, iptr->nlcrds);
-//printf("FFFFff  %f  %f  %f\n",iptr->nlcrds[0],iptr->nlcrds[1],iptr->nlcrds[2]);
+//printf("FFFFff  %f  %f  %f\n",iptr->nlxcstart,iptr->nlycstart,iptr->nlzcstart);
 
         /* If there is a mapping for this ion then we have to generate */
         /* the projector.                                              */
@@ -155,39 +155,54 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                     for (iz = 0; iz < nlzdim; iz++)
                     {
                         dvec[idx] = FALSE;
-                        if ((((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
-                             ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
-                             ((Aiz[iz] >= klow) && (Aiz[iz] <= khi))))
-                        {
-                            /* Cut it off if required */
-                            itmp =
-                                (ix - icenter) * (ix - icenter) +
-                                (iy - icenter) * (iy - icenter) + (iz - icenter) * (iz - icenter);
+                        if(ct.localize_projectors) {
 
-                            if (icut >= itmp || !ct.localize_projectors)
+                            if ((((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
+                                 ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
+                                 ((Aiz[iz] >= klow) && (Aiz[iz] <= khi))))
                             {
+                                /* Cut it off if required */
+                                itmp =
+                                    (ix - icenter) * (ix - icenter) +
+                                    (iy - icenter) * (iy - icenter) + (iz - icenter) * (iz - icenter);
 
-                                pvec[icount] =
-                                    get_PY0_GRID() * get_PZ0_GRID() * ((Aix[ix]-get_PX_OFFSET()) % get_PX0_GRID()) +
-                                    get_PZ0_GRID() * ((Aiy[iy]-get_PY_OFFSET()) % get_PY0_GRID()) + 
-                                    ((Aiz[iz]-get_PZ_OFFSET()) % get_PZ0_GRID());
+                                if (icut >= itmp)
+                                {
 
-                                dvec[idx] = TRUE;
+                                    pvec[icount] =
+                                        get_PY0_GRID() * get_PZ0_GRID() * ((Aix[ix]-get_PX_OFFSET()) % get_PX0_GRID()) +
+                                        get_PZ0_GRID() * ((Aiy[iy]-get_PY_OFFSET()) % get_PY0_GRID()) + 
+                                        ((Aiz[iz]-get_PZ_OFFSET()) % get_PZ0_GRID());
 
-                                icount++;
+                                    dvec[idx] = TRUE;
+
+                                    icount++;
+
+                                }
 
                             }
+                        }
+                        else {
+                            if ((((ix >= ilow) && (ix <= ihi)) &&
+                                 ((iy >= jlow) && (iy <= jhi)) &&
+                                 ((iz >= klow) && (iz <= khi)))) {
+                                    pvec[icount] =
+                                        get_PY0_GRID() * get_PZ0_GRID() * ((ix-get_PX_OFFSET()) % get_PX0_GRID()) +
+                                        get_PZ0_GRID() * ((iy-get_PY_OFFSET()) % get_PY0_GRID()) + 
+                                        ((iz-get_PZ_OFFSET()) % get_PZ0_GRID());
 
+                                    dvec[idx] = TRUE;
+
+                                    icount++;
+                            } 
                         }
                         idx++;
                     }
                 }
             }
 
-
             /* Save number of points */
             pct.idxptrlen[ion] = icount;
-
 
             /* Now we have to allocate memory for the index array */
             if (icount)
