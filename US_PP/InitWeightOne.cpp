@@ -95,9 +95,11 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
         nlfxdim = ct.nxfgrid * get_NX_GRID();
         nlfydim = ct.nxfgrid * get_NY_GRID();
         nlfzdim = ct.nxfgrid * get_NZ_GRID();
-        xoff = 0.5 * hxx;
-        yoff = 0.5 * hyy;
-        zoff = 0.5 * hzz;
+
+        // Might need to change some stuff elsewhere for this to make sense
+        //xoff = 0.5 * hxx;
+        //yoff = 0.5 * hyy;
+        //zoff = 0.5 * hzz;
     }
 
     /* nlfdim is size of the non-local box in the double grid */
