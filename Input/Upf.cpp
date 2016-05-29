@@ -472,7 +472,7 @@ void LoadUpf(SPECIES *sp)
     // We need to find a consistent way of automatically setting these.
     sp->rc = fabs(2.0 * sp->zvalence / sqrt(PI) / sp->vloc0[0]);
     //sp->rc = 1.0;
-    sp->lradius = 10.0;
+    sp->lradius = 6.5;
     sp->lrcut = 4.5;
 //sp->lrcut = 3.5;
     sp->gwidth = 8.0;

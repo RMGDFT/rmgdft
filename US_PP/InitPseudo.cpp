@@ -224,7 +224,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            double nlccradius = 2.0 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
+            double nlccradius = 3.0 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
 
             // Make adjustments so radii terminates on a grid point
             int nlccdim = Radius2grid (nlccradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
