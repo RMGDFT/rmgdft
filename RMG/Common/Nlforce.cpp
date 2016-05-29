@@ -53,19 +53,14 @@ template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<dou
 
 template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType> **Kptr, double *force_nl)
 {
-    int ion, isp, index, gion, nion;
+    int ion, isp, gion, nion;
     int nh, size;
     double *gamma, *par_gamma, *par_omega;
-    SPECIES *sp;
     ION *iptr;
     int num_ions;
-    fftw_plan p2;
-    std::complex<double> *in, *out;
     double  *qforce;
     double *tmp_force_gamma, *tmp_force_omega;
-    int fpt0;
 
-    OrbitalType *gx, *gy, *gz;
     OrbitalType *psi, *psi_x, *psi_y, *psi_z;
     double hxxgrid, hyygrid, hzzgrid;
     double hxgrid, hygrid, hzgrid;
@@ -74,11 +69,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     int PX0_GRID, PY0_GRID, PZ0_GRID, P0_BASIS;
     int num_occupied;
     std::complex<double> I_t(0.0, 1.0);
-    std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
-    psi_C = (std::complex<double> *) psi;
-    psi_xC = (std::complex<double> *) psi_x;
-    psi_yC = (std::complex<double> *) psi_y;
-    psi_zC = (std::complex<double> *) psi_z;
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
@@ -94,16 +84,10 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     PY0_GRID = get_PY0_GRID();
     PZ0_GRID = get_PZ0_GRID();
     FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
+    P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
 
 
-
-    gx = new OrbitalType[FP0_BASIS];
-    gy = new OrbitalType[FP0_BASIS];
-    gz = new OrbitalType[FP0_BASIS];
     RmgTimer *RT1;
-
-    fpt0 = ct.fpt[0];
-
 
     num_ions = ct.num_ions;
 
@@ -146,6 +130,11 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
             CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
             if(!ct.is_gamma)
             {
+                std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
+                psi_C = (std::complex<double> *) psi;
+                psi_xC = (std::complex<double> *) psi_x;
+                psi_yC = (std::complex<double> *) psi_y;
+                psi_zC = (std::complex<double> *) psi_z;
                 for(int i = 0; i < P0_BASIS; i++) 
                 {
                     psi_xC[i] += I_t *  Kptr[kpt]->kvec[0] * psi_C[i];
@@ -174,6 +163,10 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
     RT1 = new RmgTimer("2-Force: non-local: veff grad");
+    OrbitalType *gx = new OrbitalType[FP0_BASIS];
+    OrbitalType *gy = new OrbitalType[FP0_BASIS];
+    OrbitalType *gz = new OrbitalType[FP0_BASIS];
+
     CPP_app_grad_driver (&Rmg_L, Rmg_T, veff, (double *)gx, (double *)gy, (double *)gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid, ct.kohn_sham_fd_order);
     delete RT1;
 
@@ -196,9 +189,9 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     }                           /*end for(ion=0; ion<ions_max; ion++) */
 
-    delete [] gx;
-    delete [] gy;
     delete [] gz;
+    delete [] gy;
+    delete [] gx;
 
 
     for(int i = 0; i < ct.num_ions * 3; i++) 
@@ -269,8 +262,8 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     delete[] par_gamma;
     delete[] gamma;
-    delete[] tmp_force_gamma;
     delete[] tmp_force_omega;
+    delete[] tmp_force_gamma;
     delete[] qforce;
 
 
