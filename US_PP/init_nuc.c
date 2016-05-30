@@ -141,13 +141,10 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         pct.num_loc_ions ++;
     }
 
-    if(pct.localpp != NULL) 
-    {
-        free(pct.localpp);
-        free(pct.localrhoc);
-        free(pct.localrhonlcc);
-        free(pct.localatomicrho);
-    }
+    if(pct.localpp != NULL) {free(pct.localpp); pct.localpp = NULL;}
+    if(pct.localrhoc != NULL) {free(pct.localrhoc); pct.localrhoc = NULL;}
+    if(pct.localrhonlcc != NULL) {free(pct.localrhonlcc); pct.localrhonlcc = NULL;}
+    if(pct.localatomicrho != NULL) {free(pct.localatomicrho); pct.localatomicrho = NULL;}
 
     pct.localpp = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
     pct.localatomicrho = (double *) malloc(pct.num_loc_ions * FP0_BASIS * sizeof(double) + 1024);
