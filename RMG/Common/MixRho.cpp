@@ -89,10 +89,6 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
             pulay_step = pulay_step % ct.charge_pulay_refresh;
         if(reset) {
             pulay_step = 0;
-            if(rhohist) my_free(rhohist);
-            if(residhist) my_free(residhist);
-            rhohist = NULL;
-            residhist = NULL;
             return;
         }
 
