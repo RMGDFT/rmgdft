@@ -198,18 +198,19 @@ static double harmonic_func_21(double r, double *b)
 
 static double harmonic_func_22(double r, double *b)
 {
-    return sqrt(15.0/(4.0 * PI)) * b[1] * b[2]/(r*r);
+    return sqrt(5.0/(4.0 * PI))* (3.0 * b[2] * b[2] - r*r)/(2.0*r*r);
 }
 
 static double harmonic_func_23(double r, double *b)
 {
-    return sqrt(15.0/(4.0 * PI))* (b[0] * b[0] - b[1]*b[1])/(2.0*r*r);
+    return sqrt(15.0/(4.0 * PI)) * b[1] * b[2]/(r*r);
 }
 
 static double harmonic_func_24(double r, double *b)
 {
-    return sqrt(5.0/(4.0 * PI))* (3.0 * b[2] * b[2] - r*r)/(2.0*r*r);
+    return sqrt(15.0/(4.0 * PI))* (b[0] * b[0] - b[1]*b[1])/(2.0*r*r);
 }
+
 
 static double harmonic_func_30(double r, double *bx)
 {
