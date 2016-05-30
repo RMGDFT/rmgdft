@@ -67,7 +67,6 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
-#include "macros.h"
 #include "GlobalSums.h"
 #include "RmgException.h"
 #include "InputKey.h"
@@ -180,11 +179,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
     }
 
-    MPI_Bcast(ct.logname, 1, MPI_CHAR, 0, pct.img_comm);
+    MPI_Bcast(ct.logname, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
     MPI_Comm_size (pct.img_comm, &status);
-    printf ("\nRMG run started at GMT %s", asctime (gmtime (&timer)));
-    printf ("\nRMG running with %d images and %d images per node.\n", pct.images, ct.images_per_node);
-    printf ("\nRMG running in message passing mode with %d procs for this image.", status);
+    rmg_printf ("\nRMG run started at GMT %s", asctime (gmtime (&timer)));
+    rmg_printf ("\nRMG running with %d images and %d images per node.\n", pct.images, ct.images_per_node);
+    rmg_printf ("\nRMG running in message passing mode with %d procs for this image.", status);
 
     /* Read in our pseudopotential information */
     ReadPseudo(ct.num_species, ct, ControlMap);
@@ -202,13 +201,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // we will find the device with the largest memory and use all devices that have just as
     // much memory
     std::vector<size_t> device_mem;
-    printf("\n");
+    rmg_printf("\n");
     for(int idevice = 0; idevice < ct.num_gpu_devices; idevice++ ) {
         cuDeviceGet( &dev, idevice );
         cuDeviceGetName( name, sizeof(name), dev );
         cuDeviceTotalMem( &deviceMem, dev );
         cuDeviceGetAttribute( &clock, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
-        printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
+        rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
     }
 
@@ -258,12 +257,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // This is placed down here since the IO is not setup yet when provided is obtained above.
     if(provided < ct.mpi_threadlevel) {
 
-        printf("Thread support requested = %d but only %d provided. Terminating.\n", ct.mpi_threadlevel, provided);
+        rmg_printf("Thread support requested = %d but only %d provided. Terminating.\n", ct.mpi_threadlevel, provided);
         MPI_Finalize();
         exit(0);
 
     }
-    printf("Running with thread level = %d\n", provided);
+    rmg_printf("Running with thread level = %d\n", provided);
     fflush(NULL);
 
     // Allocate storage for trade_images and global sums routines
