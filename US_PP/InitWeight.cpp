@@ -21,6 +21,7 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "RmgException.h"
+#include "RmgShm.h"
 
 
 /*This sets loop over species does forward fourier transofrm, finds and stores whatever is needed so that
@@ -67,7 +68,19 @@ void InitWeight (void)
         size = sp->nldim * sp->nldim * sp->nldim;
         if(!ct.localize_projectors) size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
         sp->num_projectors = prjcount;
-        sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * size);
+
+        /*This array will store forward fourier transform on the coarse grid for all betas */
+        bool use_shared = false;
+        if(pct.procs_per_host > 1) {
+            char sname[256];
+            snprintf(sname, sizeof(sname), "RMG_ForwardBeta_%s", sp->atomic_symbol);
+            sp->forward_beta = (fftw_complex *)AllocSharedMemorySegment(sname, sizeof(fftw_complex) * sp->num_projectors * size);
+            if(sp->forward_beta) use_shared = true;
+        }
+        if(!sp->forward_beta) {
+            sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * size);
+        }
+
         if (sp->forward_beta == NULL)
             throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
