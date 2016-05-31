@@ -84,10 +84,6 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
     double hyy = get_hygrid() / (double) ct.nyfgrid;
     double hzz = get_hzgrid() / (double) ct.nzfgrid;
 
-    double xoff = 0.0;
-    double yoff = 0.0;
-    double zoff = 0.0;
-
     int nlfxdim = sp->nlfdim;
     int nlfydim = sp->nlfdim;
     int nlfzdim = sp->nlfdim;
@@ -95,11 +91,6 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
         nlfxdim = ct.nxfgrid * get_NX_GRID();
         nlfydim = ct.nxfgrid * get_NY_GRID();
         nlfzdim = ct.nxfgrid * get_NZ_GRID();
-
-        // Might need to change some stuff elsewhere for this to make sense
-        //xoff = 0.5 * hxx;
-        //yoff = 0.5 * hyy;
-        //zoff = 0.5 * hzz;
     }
 
     /* nlfdim is size of the non-local box in the double grid */
@@ -121,20 +112,20 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
     {
         int ixx = ix;
         if (ixx < 0) ixx = ix + nlfxdim;
-        double xc = (double) ix *hxx + xoff;
+        double xc = (double) ix *hxx;
 
         for (int iy = iybegin; iy < iyend; iy++)
         {
             int iyy = iy;
             if (iyy < 0) iyy = iy + nlfydim;
-            double yc = (double) iy *hyy + yoff;
+            double yc = (double) iy *hyy;
 
             for (int iz = izbegin; iz < izend; iz++)
             {
 
                 int izz = iz;
                 if (izz < 0) izz = iz + nlfzdim;
-                double zc = (double) iz *hzz + zoff;
+                double zc = (double) iz *hzz;
 
                 ax[0] = xc;
                 ax[1] = yc;

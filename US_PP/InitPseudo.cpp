@@ -74,6 +74,11 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Might need to adjust this depending on filtering changes. Also assumes that all beta have roughly the same range
         sp->nlradius = 4.5 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points);
 
+        // If projectors will span the full wavefunction grid then use a larger value for the nlradius
+        if(!ct.localize_projectors) {
+            sp->nlradius *= 3.0;
+        }
+
         /*Get nldim */
         bool done = false;
         bool reduced = false;
@@ -224,7 +229,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            double nlccradius = 3.0 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
+            double nlccradius = 3.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
 
             // Make adjustments so radii terminates on a grid point
             int nlccdim = Radius2grid (nlccradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
