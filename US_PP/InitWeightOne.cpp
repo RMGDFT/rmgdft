@@ -83,6 +83,9 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
     double hxx = get_hxgrid() / (double) ct.nxfgrid;
     double hyy = get_hygrid() / (double) ct.nyfgrid;
     double hzz = get_hzgrid() / (double) ct.nzfgrid;
+    double xside = get_xside();
+    double yside = get_yside();
+    double zside = get_zside();
 
     int nlfxdim = sp->nlfdim;
     int nlfydim = sp->nlfdim;
@@ -93,38 +96,60 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
         nlfzdim = ct.nxfgrid * get_NZ_GRID();
     }
 
-    /* nlfdim is size of the non-local box in the double grid */
+    /* nl[xyz]fdim is the size of the non-local box in the high density grid */
     size = nlfxdim * nlfydim * nlfzdim;
 
     weptr = new std::complex<double>[size];
     gwptr = new std::complex<double>[size];
 
-    /*We assume that ion is in the center of non-local box */
-    //    ibegin = -(sp->nldim / 2) * ct.nxfgrid;
+
+    // Next we get the radius of the projectors in terms of grid points
+    int dimx = 0;
+    int dimy = 0;
+    int dimz = 0;
+    if(!ct.localize_projectors) {
+        dimx = sp->nlradius / (hxx*xside);
+        dimx = 2*(dimx/2);
+        dimy = sp->nlradius / (hyy*yside);
+        dimy = 2*(dimy/2);
+        dimz = sp->nlradius / (hzz*zside);
+        dimz = 2*(dimz/2);
+    }
+
+    // We assume that ion is in the center of non-local box for the localized
+    // projector case. For the non-localized case it does not matter as long as
+    // usage is consistent here and in GetPhase.cpp
     int ixbegin = -nlfxdim/2;
     int ixend = ixbegin + nlfxdim;
     int iybegin = -nlfydim/2;
     int iyend = iybegin + nlfydim;
     int izbegin = -nlfzdim/2;
     int izend = izbegin + nlfzdim;
+    if(!ct.localize_projectors) {
+        ixbegin = -dimx/2;
+        ixend = ixbegin + dimx;
+        iybegin = -dimy/2;
+        iyend = iybegin + dimy;
+        izbegin = -dimz/2;
+        izend = izbegin + dimz;
+    }
+
 
     for (int ix = ixbegin; ix < ixend; ix++)
     {
-        int ixx = ix;
-        if (ixx < 0) ixx = ix + nlfxdim;
+        int ixx = (ix + 20 * nlfxdim) % nlfxdim;
+
         double xc = (double) ix *hxx;
 
         for (int iy = iybegin; iy < iyend; iy++)
         {
-            int iyy = iy;
-            if (iyy < 0) iyy = iy + nlfydim;
+            int iyy = (iy + 20 * nlfydim) % nlfydim;
             double yc = (double) iy *hyy;
 
             for (int iz = izbegin; iz < izend; iz++)
             {
 
-                int izz = iz;
-                if (izz < 0) izz = iz + nlfzdim;
+                int izz = (iz + 20 * nlfzdim) % nlfzdim;
                 double zc = (double) iz *hzz;
 
                 ax[0] = xc;
@@ -139,8 +164,8 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
                 idx = ixx * nlfydim * nlfzdim + iyy * nlfzdim + izz;
                 weptr[idx] = func(r, bx) * t1;
 
-                if((ix*2 + nlfxdim) == 0 || (iy*2 + nlfydim) == 0 || (iz*2 + nlfzdim) == 0 ) 
-                    weptr[idx] = 0.0;
+                //if((ix*2 + nlfxdim) == 0 || (iy*2 + nlfydim) == 0 || (iz*2 + nlfzdim) == 0 ) 
+                //    weptr[idx] = 0.0;
 
             }                   /* end for */
 

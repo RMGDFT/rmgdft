@@ -16,11 +16,7 @@ lcao_get_rho.c
 init_nuc.c
 init_efield.c
 weight_shift_center.c
-init_weight_p.c
 ylmr2.c
-init_weight_s.c
-init_weight_d.c
-init_weight_f.c
 linint.c
 aainit.c
 get_QnmL.c

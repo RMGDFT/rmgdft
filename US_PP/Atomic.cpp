@@ -375,7 +375,7 @@ void Atomic::FilterPotential (
         if (rdist > rcut)
         {
 //            double t1 = (rdist - rcut) / rcut;
-//            double exp_fac = exp (-rwidth * t1 * t1) + 1.0e-5;
+//            double exp_fac = exp (-rwidth * t1 * t1);
 //            potential_lgrid[idx] *= exp_fac;
               double t1 = (rdist - rcut) / (nrmax - rcut);
               if(t1 > 1.0) t1 = 1.0;

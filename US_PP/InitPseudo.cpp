@@ -74,11 +74,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Might need to adjust this depending on filtering changes. Also assumes that all beta have roughly the same range
         sp->nlradius = 4.5 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points);
 
-        // If projectors will span the full wavefunction grid then use a larger value for the nlradius
-        if(!ct.localize_projectors) {
-            sp->nlradius *= 3.0;
-        }
-
         /*Get nldim */
         bool done = false;
         bool reduced = false;
@@ -100,9 +95,12 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         }
         sp->nlradius = 0.5 * ct.hmingrid * (double)(sp->nldim-1);
         sp->nlradius -= 0.5 * ct.hmingrid / (double)ct.nxfgrid;
+        if(reduced && ct.localize_projectors) rmg_printf("Warning: diameter of non-local projectors exceeds cell size. Reducing. New radius = %12.6f\n", sp->nlradius);
 
-        if(reduced) rmg_printf("Warning: diameter of non-local projectors exceeds cell size. Reducing. New radius = %12.6f\n", sp->nlradius);
-        //printf("NLRADIUS  =  %20.12f   NLDIM = %d  NLFDIM = %d\n",sp->nlradius, sp->nldim, sp->nlfdim);
+        // If projectors will span the full wavefunction grid then use a larger value for the nlradius for all remaining operations
+        if(!ct.localize_projectors) {
+            sp->nlradius = 3.0*sp->nlradius;
+        }
 
         /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
         if (ct.max_nlpoints < (sp->nldim * sp->nldim * sp->nldim))
