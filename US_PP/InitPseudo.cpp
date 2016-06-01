@@ -99,7 +99,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // If projectors will span the full wavefunction grid then use a larger value for the nlradius for all remaining operations
         if(!ct.localize_projectors) {
-            sp->nlradius = 3.0*sp->nlradius;
+            sp->nlradius = 20.0;
         }
 
         /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
