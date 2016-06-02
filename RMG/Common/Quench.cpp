@@ -174,37 +174,26 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
 
     /*When running MD, force pointers need to be rotated before calculating new forces */
-    if ((ct.forceflag == MD_CVE) || (ct.forceflag == MD_CVT) || (ct.forceflag == MD_CPT))
-    {
-
-	/* rotate the force pointers */
-	switch (ct.mdorder)
-	{
-	    case ORDER_2:
-		numacc = 1;
-		break;
-	    case ORDER_3:
-		numacc = 2;
-		break;
-	    case ORDER_5:
-		numacc = 4;
-		break;
-	}
-	for (ic = (numacc - 1); ic > 0; ic--)
-	{
-	    ct.fpt[ic] = ct.fpt[ic - 1];
-	}
-	ct.fpt[0] = ct.fpt[numacc - 1] + 1;
-	if (ct.fpt[0] > (numacc - 1) || numacc == 1)
-	    ct.fpt[0] = 0;
+    ct.fpt[0] = 0;
+    ct.fpt[1] = 1;
+    ct.fpt[2] = 2;
+    ct.fpt[3] = 3;
+    for(int ion=0;ion < ct.num_ions;ion++){
+        ION *iptr = &ct.ions[ion];
+        for(int i = 3;i > 0;i--) {
+            iptr->force[i][0] =iptr->force[i-1][0];
+            iptr->force[i][1] =iptr->force[i-1][1];
+            iptr->force[i][2] =iptr->force[i-1][2];
+        }
 
     }
+
+    Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
 
 
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
 //    if (CONVERGED || (ct.forceflag != MD_QUENCH))
-    Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
 
 
     /* output the forces */
