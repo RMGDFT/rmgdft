@@ -24,6 +24,10 @@
 #include "packfuncs.h"
 
 /// C interface function
+extern "C" void initcg(int lmax, double a[][9][9], int lp[][9], int lpx[][9][9])
+{
+    InitClebschGordan(lmax, a, lp, lpx);
+}
 extern "C" int get_PE_X(void)
 {
   return Rmg_G->get_PE_X();

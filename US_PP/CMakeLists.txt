@@ -1,4 +1,7 @@
 add_library (US_PP
+InitClebschGordan.cpp
+Ylm.cpp
+CubicHarmonic.cpp
 InitWeight.cpp
 InitWeightOne.cpp
 InitLocalForward.cpp

@@ -263,10 +263,9 @@ void GetPhase (ION *, std::complex<double> *);
 void PrintSums(double *, int, char*);
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, fftw_plan p1);
 void InitWeight(void);
-
-
-
-
+double CubicHarmonic(int L, int M, double *r);
+double Ylm(int L, int M, double *r);
+void InitClebschGordan (int lmax, double ap[][9][9], int lpx[][9], int lpl[][9][9]);
 
 #endif
 #endif

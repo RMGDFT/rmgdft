@@ -12,12 +12,15 @@
 #include "params.h"
 #include "math.h"
 #include "AtomicInterpolate.h"
+#include "transition.h"
+
 extern double Atomic_inv_a;
 extern double Atomic_inv_b;
 
 /* Sets Qnm function (part of ultrasfot pseudpotential*/
 
 
+//void InitClebschGordan(int, int *[9][9], int*[9], int*[9][9]);
 void get_QI (void)
 {
     int idx, idx1, i, j,ion, size;
@@ -43,9 +46,10 @@ void get_QI (void)
     if(ct.norm_conserving_pp) return;
 
     /* Initialize some coefficients (not sure what exactly)*/
-    aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,
-            lpl);
+//    aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,
+ //           lpl);
 
+    initcg(ct.max_l, ap, lpx, lpl);
 
     alloc = ct.max_Qpoints;
     my_malloc (pvec, 2 * alloc, int);

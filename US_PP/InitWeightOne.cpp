@@ -19,22 +19,6 @@
 #include "transition.h"
 #include "AtomicInterpolate.h"
 
-static double harmonic_func_00(double r, double *b);
-static double harmonic_func_10(double r, double *b);
-static double harmonic_func_11(double r, double *b);
-static double harmonic_func_12(double r, double *b);
-static double harmonic_func_20(double r, double *b);
-static double harmonic_func_21(double r, double *b);
-static double harmonic_func_22(double r, double *b);
-static double harmonic_func_23(double r, double *b);
-static double harmonic_func_24(double r, double *b);
-static double harmonic_func_30(double r, double *b);
-static double harmonic_func_31(double r, double *b);
-static double harmonic_func_32(double r, double *b);
-static double harmonic_func_33(double r, double *b);
-static double harmonic_func_34(double r, double *b);
-static double harmonic_func_35(double r, double *b);
-static double harmonic_func_36(double r, double *b);
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, fftw_plan p1)
 {
 
@@ -42,41 +26,6 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
     double r, ax[3], bx[3];
     double t1;
     std::complex<double> *weptr, *gwptr;
-    double (*func) (double, double *) = NULL;
-
-    switch(l)
-    {
-        case S_STATE: 
-            func = harmonic_func_00;
-            break;
-        case P_STATE:
-            if(m == 0) func = harmonic_func_10;
-            if(m == 1) func = harmonic_func_12;
-            if(m == 2) func = harmonic_func_11;
-            break;
-        case D_STATE:
-            if(m == 0) func = harmonic_func_20;
-            if(m == 1) func = harmonic_func_21;
-            if(m == 2) func = harmonic_func_22;
-            if(m == 3) func = harmonic_func_23;
-            if(m == 4) func = harmonic_func_24;
-            break;
-        case F_STATE:
-            if(m == 0) func = harmonic_func_30;
-            if(m == 1) func = harmonic_func_31;
-            if(m == 2) func = harmonic_func_32;
-            if(m == 3) func = harmonic_func_33;
-            if(m == 4) func = harmonic_func_34;
-            if(m == 5) func = harmonic_func_35;
-            if(m == 6) func = harmonic_func_36;
-            break;
-        default:
-            printf("\n projecotr with ip = %d not programed \n", ip);
-            exit(0);
-    }
-
-
-
 
     // define functions to distiguish s, px, py, pz, ....
 
@@ -162,7 +111,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
 
                 t1 = AtomicInterpolateInline(&sp->betalig[ip][0], r);
                 idx = ixx * nlfydim * nlfzdim + iyy * nlfzdim + izz;
-                weptr[idx] = func(r, bx) * t1;
+                weptr[idx] = Ylm(l, m, bx) * t1;
 
                 //if((ix*2 + nlfxdim) == 0 || (iy*2 + nlfydim) == 0 || (iz*2 + nlfzdim) == 0 ) 
                 //    weptr[idx] = 0.0;
@@ -170,6 +119,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
             }                   /* end for */
 
         }                       /* end for */
+
 
     }                           /* end for */
 
@@ -181,98 +131,3 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
     delete []weptr;
 }
 
-static double harmonic_func_00(double r, double *b)
-{
-    return sqrt(1.0/(4.0 * PI));
-}
-
-static double harmonic_func_10(double r, double *b)
-{
-    return sqrt(3.0/(4.0 * PI)) * b[0]/r;
-}
-
-
-static double harmonic_func_11(double r, double *b)
-{
-    return sqrt(3.0/(4.0 * PI)) * b[1]/r;
-}
-
-static double harmonic_func_12(double r, double *b)
-{
-    return sqrt(3.0/(4.0 * PI)) * b[2]/r;
-}
-
-static double harmonic_func_20(double r, double *b)
-{
-    return sqrt(15.0/(4.0 * PI)) * b[0] * b[1]/(r*r);
-}
-
-static double harmonic_func_21(double r, double *b)
-{
-    return sqrt(15.0/(4.0 * PI)) * b[0] * b[2]/(r*r);
-}
-
-static double harmonic_func_22(double r, double *b)
-{
-    return sqrt(5.0/(4.0 * PI))* (3.0 * b[2] * b[2] - r*r)/(2.0*r*r);
-}
-
-static double harmonic_func_23(double r, double *b)
-{
-    return sqrt(15.0/(4.0 * PI)) * b[1] * b[2]/(r*r);
-}
-
-static double harmonic_func_24(double r, double *b)
-{
-    return sqrt(15.0/(4.0 * PI))* (b[0] * b[0] - b[1]*b[1])/(2.0*r*r);
-}
-
-
-static double harmonic_func_30(double r, double *bx)
-{
-    double c0 = sqrt (35.0 / (2.0 * PI)) / 4.0;
-    double rsq1 = r * r * r + 1.0e-20;
-    return  c0 * (bx[1] * (3.0*bx[0]*bx[0] - bx[1]*bx[1])) / rsq1;
-}
-
-static double harmonic_func_31(double r, double *bx)
-{
-    double c1 = sqrt(105.0 / PI);
-    double rsq1 = r * r * r + 1.0e-20;
-    return  c1 * (bx[0] * bx[1] * bx[2]) / (2.0*rsq1);
-}
-
-static double harmonic_func_32(double r, double *bx)
-{
-    double c2 = sqrt(21.0 / (2.0 * PI)) / 4.0;
-    double rsq1 = r * r * r + 1.0e-20;
-    return  c2 * (bx[1] * (4.0*bx[2]*bx[2] - bx[0]*bx[0] - bx[1]*bx[1])) / rsq1;
-}
-
-static double harmonic_func_33(double r, double *bx)
-{
-    double c3 = sqrt(7.0 / PI) / 4.0;
-    double rsq1 = r * r * r + 1.0e-20;
-    return  c3 * (bx[2] * (2.0*bx[2]*bx[2] - 3.0*bx[0]*bx[0] - 3.0*bx[1]*bx[1])) / rsq1;
-}
-
-static double harmonic_func_34(double r, double *bx)
-{
-    double c2 = sqrt(21.0 / (2.0 * PI)) / 4.0;
-    double rsq1 = r * r * r + 1.0e-20;
-    return  c2 * (bx[0] * (4.0*bx[2]*bx[2] - bx[0]*bx[0] - bx[1]*bx[1])) / rsq1;
-}
-
-static double harmonic_func_35(double r, double *bx)
-{
-    double c1 = sqrt(105.0 / PI);
-    double rsq1 = r * r * r + 1.0e-20;
-    return  c1 * (bx[2] * (bx[0]*bx[0] - bx[1]*bx[1])) / (4.0*rsq1);
-}
-
-static double harmonic_func_36(double r, double *bx)
-{
-    double c0 = sqrt (35.0 / (2.0 * PI)) / 4.0;
-    double rsq1 = r * r * r + 1.0e-20;
-    return  c0 * (bx[0] * (bx[0]*bx[0] - 3.0*bx[1]*bx[1])) / rsq1;
-}
