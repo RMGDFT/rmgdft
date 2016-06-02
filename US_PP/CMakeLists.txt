@@ -21,7 +21,6 @@ init_efield.c
 weight_shift_center.c
 ylmr2.c
 linint.c
-aainit.c
 get_QnmL.c
 radiff.c
 init_weight.c

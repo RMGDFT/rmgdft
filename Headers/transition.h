@@ -265,7 +265,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
 void InitWeight(void);
 double CubicHarmonic(int L, int M, double *r);
 double Ylm(int L, int M, double *r);
-void InitClebschGordan (int lmax, double ap[][9][9], int lpx[][9], int lpl[][9][9]);
+void InitClebschGordan (int lmax, double *ap, int *lpx, int *lpl);
 void GetQI(void);
 
 #endif

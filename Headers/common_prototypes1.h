@@ -321,8 +321,6 @@ void cholesky (double *a, int n);
 
 
 /*the function for softpseudopotential*/
-void aainit (int lli, int mix, int lx, int mx, int nlx, double ap[][9][9],
-             int lpx[][9], int lpl[][9][9]);
 double app_cil1 (double *a, double *b, int dimx, int dimy, int dimz,
                double gridhx, double gridhy, double gridhz);
 double app_cil1_bcc (double *a, double *b, int dimx, int dimy, int dimz,
@@ -353,10 +351,6 @@ void init_qfunct (void);
 void mg_eig_state (STATE *sp, int tid, double *vtot_psi);
 void mg_eig_state_f (STATE *sp, int tid, double *vtot_psi);
 void ortho (STATE *states, int kpt);
-//double qval (int ih, int jh, int, double, double, double, double *, int *nhtol,
-double qval (int ih, int jh, double *qrad, int *nhtol,
-           int *nhtom, int *indv, double *ylm, double ap[][9][9], int lpx[][9],
-           int lpl[][9][9], SPECIES *sp);
 void reinit_ionic_pp (STATE * states, double * vnuc, double * rhocore, double * rhoc);
 void init_pestr(void);
 void read_init(char *meta);
@@ -398,11 +392,6 @@ void partial_betaxpsi (int ion, fftw_plan p2, double *newsintR_x,
                        double *newsintI_x, double *newsintI_y,
                        double *newsintI_z, ION *iptr);
 void partial_QI (int ion, double *QI_R, ION *iptr);
-void qval_R (int ih, int jh, double r, double *x, double *qlig, double *drqlig,
-             int *nhtol, int *nhtom, int *indv, double *ylm,
-             double *ylm_x, double *ylm_y, double *ylm_z, double ap[][9][9],
-             int lpx[][9], int lpl[][9][9], double *Q_x, double *Q_y,
-             double *Q_z, SPECIES *sp);
 void ylmr2_x (double *r, double *ylm_x);
 void ylmr2_y (double *r, double *ylm_y);
 void ylmr2_z (double *r, double *ylm_z);

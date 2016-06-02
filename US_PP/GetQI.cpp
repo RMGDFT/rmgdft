@@ -27,22 +27,23 @@ extern double Atomic_inv_b;
 
 /* Sets Qnm function (part of ultrasfot pseudpotential*/
 
+static inline double qval_inline (int lmax, int ih, int jh, int ic, double d0, double d1, double dm,  
+        double * ptpr, int *nh_l2m,
+        int *indv, double * ylm, double *ap, int *lpx, int *lpl, SPECIES * sp);
 
 //void InitClebschGordan(int, int *[9][9], int*[9], int*[9][9]);
 void GetQI (void)
 {
     int idx, idx1, i, j,ion, size;
     int ix, iy, iz, species, num;
-    int lpx[9][9], lpl[9][9][9];
-    //int *lpx, *lpl;
-    //double *ap, *ylm;
+    int *lpx, *lpl;
+    double *ap, *ylm;
     int nh;
     int ilow, jlow, klow, ihi, jhi, khi, map, icount;
     int *Aix, *Aiy, *Aiz;
     int icut, itmp, icenter, alloc;
     int *pvec, *ivec, *dvec;
-    double x[3], cx[3], r, ap[25][9][9], ylm[25];
-//    double x[3], cx[3], r;
+    double x[3], cx[3], r;
     double xc, yc, zc;
     double hxxgrid, hyygrid, hzzgrid;
     ION *iptr;
@@ -56,19 +57,17 @@ void GetQI (void)
     // If norm conserving pp just return
     if(ct.norm_conserving_pp) return;
 
-    /* Initialize some coefficients (not sure what exactly)*/
-//    aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,
- //           lpl);
-
     int num_lm = (ct.max_l + 1) * (ct.max_l+1);
     int num_LM2 = (2*ct.max_l + 1) * (2*ct.max_l+1);
-    
- //   lpx = new int[num_lm * num_lm];
- //   lpl = new int[num_lm * num_lm  * num_lm];
- //   ap = new double[num_LM2 * num_lm * num_lm];
- //   ylm = new double[num_LM2];
+
+    lpx = new int[num_lm * num_lm];
+    lpl = new int[num_lm * num_lm  * num_LM2];
+    ap = new double[num_LM2 * num_lm * num_lm];
+    ylm = new double[num_LM2];
+    //ylm = new double[25];
 
     InitClebschGordan(ct.max_l, ap, lpx, lpl);
+
 
     alloc = ct.max_Qpoints;
     pvec = new int[2 * alloc];
@@ -211,7 +210,11 @@ void GetQI (void)
 
                             r = metric (x);
                             to_cartesian (x, cx);
-                            ylmr2 (cx, ylm);
+                            for(int l = 0; l <= 2*ct.max_l; l++)
+                            for(int m = 0; m < 2*l + 1; m++)
+                                ylm[l*l+m] = Ylm(l, m, cx);
+                    
+                            //ylmr2 (cx, ylm);
 
                             if((r < LOGGRID_START)) {
                                 r = LOGGRID_START;
@@ -236,7 +239,7 @@ void GetQI (void)
                                 {
 
                                     idx1 = num * pct.Qidxptrlen[ion] + icount;
-                                    QI_tpr[idx1] = qval_inline (i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m,
+                                    QI_tpr[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m,
                                             sp->indv, ylm, ap, lpx, lpl, sp);
 
                                     num++;
@@ -266,11 +269,55 @@ void GetQI (void)
     delete [](Aiy);
     delete [](Aix);
     delete [](pvec);
-    //delete []lpx;
-    //delete []lpl;
-    //delete []ap;
-    //delete []ylm
+    delete []lpx;
+    delete []lpl;
+    delete []ap;
+    delete []ylm;
 
 
 }
 
+static inline double qval_inline (int lmax, int ih, int jh, int ic, double d0, double d1, double dm,  
+        double * ptpr, int *nh_l2m,
+        int *indv, double * ylm, double *ap, int *lpx, int *lpl, SPECIES * sp)
+{
+    int ivl, jvl;
+    int nb, mb, nmb, lm, lp, l;
+    double qrad, sum, *ptpr1, *ptpr2;
+
+
+
+    nb = indv[ih];
+    mb = indv[jh];
+    if (nb < mb)
+        nmb = mb * (mb + 1) / 2 + nb;
+    else
+        nmb = nb * (nb + 1) / 2 + mb;
+
+    int num_lm = (lmax +1 ) * (lmax +1);
+    int num_LM2 = (2*lmax+1) *(2*lmax +1);
+
+    ptpr2 = ptpr + (nmb * sp->nlc ) * MAX_LOGGRID;
+    ivl = nh_l2m[ih];
+    jvl = nh_l2m[jh];
+
+    sum = 0;
+
+    for (lm = 0; lm < lpx[ivl*num_lm + jvl]; lm++)
+    {
+        lp = lpl[(ivl*num_lm + jvl) * num_LM2 + lm];
+        if(lp == 0)
+            l = 0;
+        else if (lp < 4)
+            l = 1;
+        else if (lp < 9)
+            l = 2;
+        else 
+            l = (int)sqrt(lp + 0.1);
+
+        ptpr1 = ptpr + (nmb * sp->nlc + l) * MAX_LOGGRID;
+        qrad = AtomicInterpolateInline_1 (ptpr1, ic, d0, d1, dm);
+        sum += qrad * ap[lp*num_lm * num_lm + ivl * num_lm + jvl] * ylm[lp];
+    }
+    return (sum);
+}
