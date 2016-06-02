@@ -266,6 +266,7 @@ void InitWeight(void);
 double CubicHarmonic(int L, int M, double *r);
 double Ylm(int L, int M, double *r);
 void InitClebschGordan (int lmax, double ap[][9][9], int lpx[][9], int lpl[][9][9]);
+void GetQI(void);
 
 #endif
 #endif

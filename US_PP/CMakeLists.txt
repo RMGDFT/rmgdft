@@ -26,7 +26,7 @@ get_QnmL.c
 radiff.c
 init_weight.c
 ylm.c
-get_QI.c
+GetQI.cpp
 get_qqq.c
 radint1.c
 get_ddd.c

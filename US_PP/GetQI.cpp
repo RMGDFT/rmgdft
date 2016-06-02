@@ -7,12 +7,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "grid.h"
-#include "main.h"
-#include "common_prototypes.h"
+
+#include "make_conf.h"
+#include "const.h"
 #include "params.h"
-#include "math.h"
+#include "grid.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+//#include <complex>
+//#include "Kpoint.h"
+#include "common_prototypes.h"
+#include "common_prototypes1.h"
 #include "AtomicInterpolate.h"
 #include "transition.h"
+
 
 extern double Atomic_inv_a;
 extern double Atomic_inv_b;
@@ -21,17 +29,20 @@ extern double Atomic_inv_b;
 
 
 //void InitClebschGordan(int, int *[9][9], int*[9], int*[9][9]);
-void get_QI (void)
+void GetQI (void)
 {
     int idx, idx1, i, j,ion, size;
     int ix, iy, iz, species, num;
     int lpx[9][9], lpl[9][9][9];
+    //int *lpx, *lpl;
+    //double *ap, *ylm;
     int nh;
     int ilow, jlow, klow, ihi, jhi, khi, map, icount;
     int *Aix, *Aiy, *Aiz;
     int icut, itmp, icenter, alloc;
     int *pvec, *ivec, *dvec;
     double x[3], cx[3], r, ap[25][9][9], ylm[25];
+//    double x[3], cx[3], r;
     double xc, yc, zc;
     double hxxgrid, hyygrid, hzzgrid;
     ION *iptr;
@@ -49,26 +60,34 @@ void get_QI (void)
 //    aainit (ct.max_l + 1, 2 * ct.max_l + 1, 2 * ct.max_l + 1, 4 * ct.max_l + 1, (ct.max_l + 1) * (ct.max_l + 1), ap, lpx,
  //           lpl);
 
-    initcg(ct.max_l, ap, lpx, lpl);
+    int num_lm = (ct.max_l + 1) * (ct.max_l+1);
+    int num_LM2 = (2*ct.max_l + 1) * (2*ct.max_l+1);
+    
+ //   lpx = new int[num_lm * num_lm];
+ //   lpl = new int[num_lm * num_lm  * num_lm];
+ //   ap = new double[num_LM2 * num_lm * num_lm];
+ //   ylm = new double[num_LM2];
+
+    InitClebschGordan(ct.max_l, ap, lpx, lpl);
 
     alloc = ct.max_Qpoints;
-    my_malloc (pvec, 2 * alloc, int);
+    pvec = new int[2 * alloc];
     dvec = pvec + alloc;
 
-    my_malloc (Aix, get_FNX_GRID(), int);
-    my_malloc (Aiy, get_FNY_GRID(), int);
-    my_malloc (Aiz, get_FNZ_GRID(), int);
+    Aix = new int[get_FNX_GRID()];
+    Aiy = new int[get_FNY_GRID()];
+    Aiz = new int[get_FNZ_GRID()];
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
         /*Release memory first */
         if (pct.Qdvec[ion])
-            my_free (pct.Qdvec[ion]);
+            delete [](pct.Qdvec[ion]);
         if (pct.Qindex[ion])
-            my_free (pct.Qindex[ion]);
+            delete [](pct.Qindex[ion]);
         if (pct.augfunc[ion])
-            my_free (pct.augfunc[ion]);
+            delete [](pct.augfunc[ion]);
 
         /*Let those empty pointers point to NULL */
         pct.Qdvec[ion] = NULL;
@@ -77,7 +96,7 @@ void get_QI (void)
 
         /*Initialize this */
         pct.Qidxptrlen[ion] = 0;
-        
+
         for (idx = 0; idx < alloc; idx++)
         {
             pvec[idx] = 0;
@@ -97,9 +116,9 @@ void get_QI (void)
         icut = (icenter + 1) * (icenter + 1);
 
         map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->qdim, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
-                         get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(),
-                         &iptr->Qxcstart, &iptr->Qycstart, &iptr->Qzcstart);
+                sp->qdim, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(),
+                get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID(),
+                &iptr->Qxcstart, &iptr->Qycstart, &iptr->Qzcstart);
 
         if (map)
         {
@@ -114,8 +133,8 @@ void get_QI (void)
                     {
                         dvec[idx] = FALSE;
                         if ((((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
-                             ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
-                             ((Aiz[iz] >= klow) && (Aiz[iz] <= khi))))
+                                    ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
+                                    ((Aiz[iz] >= klow) && (Aiz[iz] <= khi))))
                         {
 
                             /* Cut it off if required */
@@ -126,9 +145,9 @@ void get_QI (void)
                             if (icut >= itmp)
                             {
                                 pvec[icount] =
-                                                get_FPY0_GRID() * get_FPZ0_GRID() * ((Aix[ix]-get_FPX_OFFSET()) % get_FPX0_GRID()) +
-                                                get_FPZ0_GRID() * ((Aiy[iy]-get_FPY_OFFSET()) % get_FPY0_GRID()) +
-                                                ((Aiz[iz]-get_FPZ_OFFSET()) % get_FPZ0_GRID());
+                                    get_FPY0_GRID() * get_FPZ0_GRID() * ((Aix[ix]-get_FPX_OFFSET()) % get_FPX0_GRID()) +
+                                    get_FPZ0_GRID() * ((Aiy[iy]-get_FPY_OFFSET()) % get_FPY0_GRID()) +
+                                    ((Aiz[iz]-get_FPZ_OFFSET()) % get_FPZ0_GRID());
 
 
                                 dvec[idx] = TRUE;
@@ -148,15 +167,14 @@ void get_QI (void)
             pct.Qidxptrlen[ion] = icount;
 
 
-            my_calloc (pct.Qdvec[ion], idx, int);
+            pct.Qdvec[ion] = new int[idx];
 
             ivec = pct.Qdvec[ion];
             for (idx1 = 0; idx1 < idx; idx1++)
                 ivec[idx1] = (int) dvec[idx1];
 
 
-
-            my_calloc (pct.Qindex[ion], icount + 128, int);
+            pct.Qindex[ion] = new int[icount + 128];
 
             ivec = pct.Qindex[ion];
             for (idx1 = 0; idx1 < icount; idx1++)
@@ -164,7 +182,7 @@ void get_QI (void)
 
 
             size = nh * (nh + 1) / 2;
-            my_calloc (pct.augfunc[ion], size * icount + 128, double);
+            pct.augfunc[ion] = new double[ size * icount + 128];
 
 
             QI_tpr = pct.augfunc[ion];
@@ -243,11 +261,16 @@ void get_QI (void)
 
     }                           /*end for ion */
 
-    my_free (Aiz);
-    my_free (Aiy);
-    my_free (Aix);
-    my_free (pvec);
+
+    delete [](Aiz);
+    delete [](Aiy);
+    delete [](Aix);
+    delete [](pvec);
+    //delete []lpx;
+    //delete []lpl;
+    //delete []ap;
+    //delete []ylm
+
 
 }
-
 
