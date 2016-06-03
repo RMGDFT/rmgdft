@@ -106,7 +106,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         double min_side = Rmg_L.get_xside();
         min_side = std::min(min_side, Rmg_L.get_yside());
         min_side = std::min(min_side, Rmg_L.get_zside());
-        sp->nlradius = std::min(min_side, sp->nlradius);
+        //sp->nlradius = std::min(min_side, sp->nlradius);
         sp->lradius = std::min(min_side, sp->lradius);
 
 
