@@ -218,7 +218,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
                                 r = metric (x);
 
-                                t1= AtomicInterpolateInline (&sp->localig[0], r);
+                                if(r > sp->lradius) continue;
                                 vnuc_f[idx] += t1;
                                 pct.localpp[ion1 * FP0_BASIS + idx] += t1;
 
@@ -248,6 +248,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
 
         }
     }
+
 
     /* Check compensating charges */
     ct.crho = 0.0;
