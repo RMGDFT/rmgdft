@@ -41,6 +41,7 @@ private:
     Lattice *L;
     TradeImages *T;
     int level_flag;
+    static int level_warning;
 
 public:
     Mgrid(Lattice *lptr, TradeImages *tptr);

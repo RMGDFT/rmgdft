@@ -81,6 +81,7 @@ template void Mgrid::solv_pois (float *, float *, float *, int, int, int, double
 
 //template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
+int Mgrid::level_warning;
 
 Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
 {
@@ -91,8 +92,9 @@ Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
 
 Mgrid::~Mgrid(void)
 {
-    if(level_flag)
+    if(level_flag && !Mgrid::level_warning)
         std::cout << "Warning: too many multigrid levels were requested " << level_flag << " times.\n";
+    Mgrid::level_warning = true;   // Only want to print one warning
 }
 
 
