@@ -219,6 +219,7 @@ void init_nuc (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                                 r = metric (x);
 
                                 if(r > sp->lradius) continue;
+                                t1= AtomicInterpolateInline (&sp->localig[0], r);
                                 vnuc_f[idx] += t1;
                                 pct.localpp[ion1 * FP0_BASIS + idx] += t1;
 
