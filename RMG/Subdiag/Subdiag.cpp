@@ -80,7 +80,11 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     BaseThread *T = BaseThread::getBaseThread(0);
 
-    static KpointType *tmp_arrayT;
+    // State array is 4 * the number of states in length but memory above
+    // the first set of nstates is unused in this routine so we can use it
+    // as temporary space.
+    KpointType *tmp_arrayT = kptr->Kstates[kptr->nstates].psi;
+
     static KpointType *global_matrix1;
     static KpointType *global_matrix2;
 
@@ -119,13 +123,12 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
 
     // First time through allocate pinned memory for buffers
-    if(!tmp_arrayT) {
+    if(!global_matrix1) {
 
-        int retval1 = MPI_Alloc_mem(pbasis * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &tmp_arrayT);
-        int retval2 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
-        int retval3 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix2);
+        int retval1 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
+        int retval2 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix2);
 
-        if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS)) {
+        if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS)) {
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
         }
 
@@ -133,7 +136,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
         GMatrix2 = (void *)global_matrix2;
 
         #if GPU_ENABLED
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, pbasis * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix2, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Aij, ct.max_states * ct.max_states * sizeof(KpointType)), "Error allocating memory.\n");
