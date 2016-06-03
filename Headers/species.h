@@ -194,7 +194,6 @@ typedef struct
 
 
     /* Pseudopotential filtering parameters */
-    double lrcut;                 /* Real space local cutoff */
     double qcut;                  /* Real space local cutoff for qfunctions */
     double rwidth;                /* Real-space width parameter */
     double gwidth;                /* G-space width parameter */

@@ -389,7 +389,6 @@ void write_header (void)
         printf ("        Core rc         = %12.6f\n", sp->rc);
         //printf ("        L potentials    = %d\n", sp->num_potentials);
         printf ("        L local         = %d\n", sp->local);
-        printf ("        lrcut           = %12.6f\n", sp->lrcut);
         printf ("        local radius    = %12.6f\n", sp->lradius);
         printf ("    non-local radius    = %12.6f\n", sp->nlradius);
 	printf ("        rwidth          = %12.6f\n", sp->rwidth);
