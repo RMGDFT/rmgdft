@@ -83,6 +83,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
         izend = izbegin + dimz;
     }
 
+    for(idx = 0; idx < nlfxdim * nlfydim * nlfzdim; idx++) weptr[idx] = 0.0;
 
     for (int ix = ixbegin; ix < ixend; ix++)
     {
@@ -111,7 +112,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
 
                 t1 = AtomicInterpolateInline(&sp->betalig[ip][0], r);
                 idx = ixx * nlfydim * nlfzdim + iyy * nlfzdim + izz;
-                weptr[idx] = Ylm(l, m, bx) * t1;
+                weptr[idx] += Ylm(l, m, bx) * t1;
 
                 //if((ix*2 + nlfxdim) == 0 || (iy*2 + nlfydim) == 0 || (iz*2 + nlfzdim) == 0 ) 
                 //    weptr[idx] = 0.0;
