@@ -163,7 +163,8 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             fftw_free(out);
             fftw_free(in);
 
-
+            if( iptr->fftw_phase_sin ) delete [] iptr->fftw_phase_sin;
+            if( iptr->fftw_phase_cos ) delete [] iptr->fftw_phase_cos;
 
         }                           /* end for */
 
