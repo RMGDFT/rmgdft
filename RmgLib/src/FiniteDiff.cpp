@@ -87,6 +87,11 @@ template double FiniteDiff::app10_del2<double>(double *, double *, int, int, int
 template double FiniteDiff::app10_del2<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
 template double FiniteDiff::app10_del2<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
 
+template double FiniteDiff::app12_del2<float>(float *, float *, int, int, int, double, double, double);
+template double FiniteDiff::app12_del2<double>(double *, double *, int, int, int, double, double, double);
+template double FiniteDiff::app12_del2<std::complex <float> >(std::complex<float> *, std::complex<float> *, int, int, int, double, double, double);
+template double FiniteDiff::app12_del2<std::complex <double> >(std::complex<double> *, std::complex<double> *, int, int, int, double, double, double);
+
 template void FiniteDiff::app_gradient_fourth<float> (float *, float *, float *, float *, int, int, int, double, double, double);
 template void FiniteDiff::app_gradient_fourth<double> (double *, double *, double *, double *, int, int, int, double, double, double);
 template void FiniteDiff::app_gradient_fourth<std::complex<double> > (std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, std::complex<double>  *, int, int, int, double , double , double );
@@ -1411,6 +1416,115 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 
 
 template <typename RmgType>
+double FiniteDiff::app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+               double gridhx, double gridhy, double gridhz)
+{
+
+    int ibrav = L->get_ibrav_type();
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+        rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+    }
+
+    int iz, ix, iy;
+    int ixs, iys, ix1, iy1;
+
+    ixs = (dimy + 12) * (dimz + 12);
+    iys = (dimz + 12);
+    ix1 = dimy * dimz;
+    iy1 = dimz;
+
+    double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
+    double th2 (-2.982777777777779971 / (h2));
+    RmgType t1x (12.0 / ( 7.0 * h2));
+    RmgType t2x (-0.267857142857142849 / (h2));
+    RmgType t3x (0.052910052910052872 / (h2));
+    RmgType t4x (-0.008928571428571425 / (h2));
+    RmgType t5x (0.001038961038961037 / (h2));
+    RmgType t6x (-0.000060125060125060 / (h2));
+
+    h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
+    th2 -= (2.982777777777779971 / (h2));
+    RmgType t1y (12.0 / ( 7.0 * h2));
+    RmgType t2y (-0.267857142857142849 / (h2));
+    RmgType t3y (0.052910052910052872 / (h2));
+    RmgType t4y (-0.008928571428571425 / (h2));
+    RmgType t5y (0.001038961038961037 / (h2));
+    RmgType t6y (-0.000060125060125060 / (h2));
+
+    h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
+    th2 -= (2.982777777777779971 / (h2));
+    RmgType t1z (12.0 / ( 7.0 * h2));
+    RmgType t2z (-0.267857142857142849 / (h2));
+    RmgType t3z (0.052910052910052872 / (h2));
+    RmgType t4z (-0.008928571428571425 / (h2));
+    RmgType t5z (0.001038961038961037 / (h2));
+    RmgType t6z (-0.000060125060125060 / (h2));
+    RmgType t0 (th2);
+
+
+
+    for (ix = 6; ix < dimx + 6; ix++)
+    {
+
+        for (iy = 6; iy < dimy + 6; iy++)
+        {
+
+            for (iz = 6; iz < dimz + 6; iz++)
+            {
+
+                b[(ix - 6) * ix1 + (iy - 6) * iy1 + iz - 6] =
+                    t0 * a[ix * ixs + iy * iys + iz] +
+                    t1x * a[(ix - 1) * ixs + iy * iys + iz] +
+                    t1x * a[(ix + 1) * ixs + iy * iys + iz] +
+                    t2x * a[(ix - 2) * ixs + iy * iys + iz] +
+                    t2x * a[(ix + 2) * ixs + iy * iys + iz] +
+                    t3x * a[(ix - 3) * ixs + iy * iys + iz] +
+                    t3x * a[(ix + 3) * ixs + iy * iys + iz] +
+                    t4x * a[(ix - 4) * ixs + iy * iys + iz] +
+                    t4x * a[(ix + 4) * ixs + iy * iys + iz] +
+                    t5x * a[(ix - 5) * ixs + iy * iys + iz] +
+                    t5x * a[(ix + 5) * ixs + iy * iys + iz] +
+                    t6x * a[(ix - 6) * ixs + iy * iys + iz] +
+                    t6x * a[(ix + 6) * ixs + iy * iys + iz] +
+
+                    t1y * a[ix * ixs + (iy - 1) * iys + iz] +
+                    t1y * a[ix * ixs + (iy + 1) * iys + iz] +
+                    t2y * a[ix * ixs + (iy - 2) * iys + iz] +
+                    t2y * a[ix * ixs + (iy + 2) * iys + iz] +
+                    t3y * a[ix * ixs + (iy - 3) * iys + iz] +
+                    t3y * a[ix * ixs + (iy + 3) * iys + iz] +
+                    t4y * a[ix * ixs + (iy - 4) * iys + iz] +
+                    t4y * a[ix * ixs + (iy + 4) * iys + iz] +
+                    t5y * a[ix * ixs + (iy - 5) * iys + iz] +
+                    t5y * a[ix * ixs + (iy + 5) * iys + iz] +
+                    t6y * a[ix * ixs + (iy - 6) * iys + iz] +
+                    t6y * a[ix * ixs + (iy + 6) * iys + iz] +
+
+                    t1z * a[ix * ixs + iy * iys + iz - 1] +
+                    t1z * a[ix * ixs + iy * iys + iz + 1] +
+                    t2z * a[ix * ixs + iy * iys + iz - 2] +
+                    t2z * a[ix * ixs + iy * iys + iz + 2] +
+                    t3z * a[ix * ixs + iy * iys + iz - 3] +
+                    t3z * a[ix * ixs + iy * iys + iz + 3] +
+                    t4z * a[ix * ixs + iy * iys + iz - 4] +
+                    t4z * a[ix * ixs + iy * iys + iz + 4] +
+                    t5z * a[ix * ixs + iy * iys + iz - 5] +
+                    t5z * a[ix * ixs + iy * iys + iz + 5] +
+                    t6z * a[ix * ixs + iy * iys + iz - 6] +
+                    t6z * a[ix * ixs + iy * iys + iz + 6];
+
+            }                   /* end for */
+        }                       /* end for */
+    }                           /* end for */
+
+    /* Return the diagonal component of the operator */
+    return (double)std::real(t0);
+
+
+}                               /* end app12_del2 */
+
+
+template <typename RmgType>
 double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
 {
 
@@ -2262,7 +2376,7 @@ void FiniteDiff::app_gradient_twelfth (RmgType * rptr, RmgType * wxr, RmgType *w
                     {
 
                         wxr[(ix - 6) * ix1 + (iy - 6) * iy1 + iz - 6] =
-                            -t5x * rptr[(ix - 6) * ixs + iy * iys + iz] +
+                            -t6x * rptr[(ix - 6) * ixs + iy * iys + iz] +
                             -t5x * rptr[(ix - 5) * ixs + iy * iys + iz] +
                             -t4x * rptr[(ix - 4) * ixs + iy * iys + iz] +
                             -t3x * rptr[(ix - 3) * ixs + iy * iys + iz] +

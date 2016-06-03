@@ -104,6 +104,14 @@ void AppCirDriverBeta (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int
         for(int ix=0;ix < dimx*dimy*dimz;ix++) b[ix] = a[ix];
 
     }
+    else if(order == APP_CI_TWELVE) {
+
+        if(ct.discretization != CENTRAL_DISCRETIZATION)
+            rmg_error_handler(__FILE__, __LINE__, "Twelfth order kohn-sham finite differencing is only supported for central fd operators.");
+
+        for(int ix=0;ix < dimx*dimy*dimz;ix++) b[ix] = a[ix];
+
+    }
     else {
         rmg_error_handler (__FILE__, __LINE__, "APP_CIR order not programmed yet in AppCirDriverBeta.\n");
     }

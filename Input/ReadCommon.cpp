@@ -485,10 +485,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner.\n",
                      "kohn_sham_mucycles must lie in the range (1,3). Resetting to the default value of 1.\n");
 
-    If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 4, 10, 8,
+    If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 4, 12, 8,
                      CHECK_AND_FIX, OPTIONAL,
                      "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
-                     "kohn_sham_fd_order must lie in the range (4,10). Resetting to the default value of 8.\n");
+                     "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8.\n");
 
     If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.5, 1.2, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
