@@ -59,7 +59,7 @@ void ReadForces(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputK
 
     boost::algorithm::split( Forces, ForceArray, boost::is_any_of(line_delims), boost::token_compress_on );
 
-    if(Forces.size() != lc.num_ions) {
+    if(Forces.size() != 4 * lc.num_ions) {
 
         throw RmgFatalException() << "Ionic forces must be present for " << lc.num_ions << " ions but only " << Forces.size() << " found! Terminating.\n";
 
@@ -68,6 +68,7 @@ void ReadForces(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputK
 
     std::vector<std::string>::iterator it, it1;
     int nions = 0;
+    int fpt = 0;   // We save the last 4 sets of forces in the restart file so have to read back that many too
     for (it = Forces.begin(); it != Forces.end(); ++it) {
 
         std::string Force = *it;
@@ -83,22 +84,27 @@ void ReadForces(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputK
 
         std::string xforce = *it1;
         boost::trim(xforce);
-        lc.ions[nions].force[0][0] = std::atof(xforce.c_str());
+        lc.ions[nions].force[fpt][0] = std::atof(xforce.c_str());
 
         it1++;
         std::string yforce = *it1;
         boost::trim(yforce);
-        lc.ions[nions].force[0][1] = std::atof(yforce.c_str());
+        lc.ions[nions].force[fpt][1] = std::atof(yforce.c_str());
 
         it1++;
         std::string zforce = *it1;
         boost::trim(zforce);
-        lc.ions[nions].force[0][2] = std::atof(zforce.c_str());
+        lc.ions[nions].force[fpt][2] = std::atof(zforce.c_str());
         nions++;
+        // Check if we have read forces for all ions. If yes reset nions
+        if(nions == lc.num_ions) {
+            nions = 0;
+            fpt++;
+        }
 
     }
 
-    if(nions > lc.num_ions)
+    if(nions > 4*lc.num_ions)
         throw RmgFatalException() << "Inconsistency in number of ions: " << lc.num_ions << " was specified initially but " << nions << " were found.\n";
 
 }
