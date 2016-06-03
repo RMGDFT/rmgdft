@@ -72,7 +72,12 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
     double *celldm = Rmg_L.celldm;
     static double grid_spacing;
 
-    InputKey *ik = InputMap["wavefunction_grid"];
+    InputKey *ik;
+    ik = InputMap["grid_spacing"];
+    grid_spacing = ik->Readdoubleval[0];
+
+    ik->Readdoubleval = &grid_spacing;
+    ik = InputMap["wavefunction_grid"];
     WavefunctionGrid = ik->Vint;
 
     int NX_GRID = WavefunctionGrid.vals.at(0);
@@ -131,6 +136,7 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
 
 
     // Set grid object up
+printf("\n aaa  %d %d %d", NX_GRID, NY_GRID, NZ_GRID);
     Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, lc.FG_RATIO);
 
     int FNX_GRID = NX_GRID * lc.FG_RATIO;
