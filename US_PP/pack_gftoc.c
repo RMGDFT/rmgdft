@@ -21,6 +21,10 @@ void pack_gftoc (SPECIES * sp, double complex * gwptr, double complex * gbptr)
     int nlydim = sp->nldim;
     int nlzdim = sp->nldim;
     int icut = (sp->nldim / 2) * (sp->nldim / 2);
+    int ixstart = -(nlxdim -1)/2;
+    int iystart = -(nlydim -1)/2;
+    int izstart = -(nlzdim -1)/2;
+
     if(!ct.localize_projectors) {
         nlfxdim = ct.nxfgrid * get_NX_GRID();
         nlfydim = ct.nxfgrid * get_NY_GRID();
@@ -32,17 +36,22 @@ void pack_gftoc (SPECIES * sp, double complex * gwptr, double complex * gbptr)
         if(nlydim < mindim) mindim = nlydim;
         if(nlzdim < mindim) mindim = nlzdim;
         icut = (mindim / 2 - 1) * (mindim / 2 - 1);
+
+        ixstart = -nlxdim/2;
+        iystart = -nlydim/2;
+        izstart = -nlzdim/2;
+    
     }
 
     size = nlfxdim * nlfydim * nlfzdim;
 
-    for (i = -(nlxdim-1) / 2; i <= (nlxdim-1) / 2; i++)
+    for (i = ixstart; i <= (nlxdim-1) / 2; i++)
     {
         int isq = i * i;
-        for (j = -(nlydim-1) / 2; j <= (nlydim-1) / 2; j++)
+        for (j = iystart; j <= (nlydim-1) / 2; j++)
         {
             int jsq = j * j;
-            for (k = -(nlzdim-1) / 2; k <= (nlzdim-1) / 2; k++)
+            for (k = izstart; k <= (nlzdim-1) / 2; k++)
             {
                 int ksq = k * k;
                 if (i < 0)
