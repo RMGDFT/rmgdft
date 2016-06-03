@@ -36,6 +36,7 @@
 #include "Functional.h"
 #include "FiniteDiff.h"
 #include "RmgException.h"
+#include "RmgTimer.h"
 #include "FiniteDiff.h"
 #include "xc.h"
 #include "RmgSumAll.h"
@@ -84,6 +85,7 @@ Functional::Functional (
             TradeImages &T,
             bool gamma_flag)
 {
+    RmgTimer RT0("Functional");
     this->Grid = &G;
     this->T = &T;
     this->L = &L;
@@ -171,6 +173,8 @@ bool Functional::dft_is_nonlocc(void)
 void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
 {
 
+   RmgTimer RT0("Functional");
+   RmgTimer RT1("Functional: vxc");
    double vx[2]{0.0,0.0}, vc[2]{0.0,0.0}, rhoneg[2]{0.0,0.0};
    double ex=0.0, ec=0.0;
 
@@ -180,6 +184,7 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
 
    // First get the local exchange and correlation
+   RmgTimer *RT2 = new RmgTimer("Functional: vxc local");
    if(!spinflag) {
 
        // spin unpolarized  
@@ -200,20 +205,24 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
        } 
        
-       
    } 
+   delete RT2;
 
    vtxc = vtxc * L->omega / (double)this->N;
    etxc = etxc * L->omega / (double)this->N;
 
    // Next add in any gradient corrections
+   RmgTimer *RT3 = new RmgTimer("Functional: vxc grad");
    this->gradcorr(rho, rho_core, etxc, vtxc, v );
+   delete RT3;
 
    // And finally any non-local corrections
+   RmgTimer *RT4 = new RmgTimer("Functional: vxc nonlocal");
    if(this->dft_is_nonlocc()) {
        this->nlc(rho, rho_core, etxc, vtxc, v, spinflag);
        //__funct_MOD_nlc( rho, rho_core, &nspin, &etxc, &vtxc, v );
    }
+   delete RT4;
 
    vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
@@ -268,16 +277,21 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     for(int ix=0;ix < this->pbasis;ix++) rhoout[ix] = rho[ix] + rho_core[ix];
 
     // calculate the gradient of rho + rho_core
+    RmgTimer *RT2 = new RmgTimer("Functional: apply gradient");
     ApplyGradient (rhoout, gx, gy, gz, APP_CI_EIGHT, "Fine");
+    delete RT2;
     //FftGradientFine(rhoout, gx, gy, gz);
 
 
     // and the Laplacian
+    RmgTimer *RT3 = new RmgTimer("Functional: apply laplacian");
     ApplyLaplacian (rhoout, d2rho, APP_CI_EIGHT, "Fine");
+    delete RT3;
     //FftLaplacianFine(rhoout, d2rho);
 
 
 
+    RmgTimer *RT4 = new RmgTimer("Functional: libxc");
     for(int k=0;k < this->pbasis;k++) {
 
         double arho = fabs(rhoout[k]);
@@ -305,6 +319,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
             }
         }
     }
+    delete RT4;
 
     for(int ix=0;ix < this->pbasis;ix++) rhoout[ix] = rhoout[ix] - rho_core[ix];
 
@@ -313,7 +328,9 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     // ... \sum_alpha (D / D r_alpha) ( D(rho*Exc)/D(grad_alpha rho) )
     // 
 
+    RmgTimer *RT5 = new RmgTimer("Functional: apply gradient");
     ApplyGradient (vxc2, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
+    delete RT5;
     //FftGradient(vxc2, h, &h[this->pbasis], &h[2*this->pbasis], pwaves);
 
 
