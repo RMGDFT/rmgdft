@@ -285,7 +285,7 @@ double Atomic::BesselToLogGrid (
 Bessel1:
     //rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1])) + hmin/ratio;
     if(ct.localize_projectors)rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1]));
-    if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f  hmin = %12.6f\n",N, rcut, hmin);
+    //if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f  hmin = %12.6f\n",N, rcut, hmin);
 
     // Normalization coefficient
     double JNorm = 2.0 / (rcut*rcut*rcut);

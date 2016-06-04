@@ -54,7 +54,7 @@
 /*Set this to 1 to have forces written out part by part*/
 /* If you want this , you should also make sure that VERBOSE flag is enabled in
  * nlforce.c*/
-#define VERBOSE 1
+#define VERBOSE 0
 
 
 template void Force<double> (double * rho, double * rho_oppo, double * rhoc, double * vh, double*vh_in,
