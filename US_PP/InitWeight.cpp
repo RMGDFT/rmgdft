@@ -33,7 +33,6 @@ void InitWeight (void)
     SPECIES *sp;
     fftw_plan p1;
     fftw_complex *in, *out;
-    int maxl = 0;
 
     typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     PROJ_INFO proj;
@@ -70,12 +69,10 @@ void InitWeight (void)
         sp->num_projectors = prjcount;
 
         /*This array will store forward fourier transform on the coarse grid for all betas */
-        bool use_shared = false;
         if(pct.procs_per_host > 1) {
             char sname[256];
             snprintf(sname, sizeof(sname), "RMG_ForwardBeta_%s", sp->atomic_symbol);
             sp->forward_beta = (fftw_complex *)AllocSharedMemorySegment(sname, sizeof(fftw_complex) * sp->num_projectors * size);
-            if(sp->forward_beta) use_shared = true;
         }
         if(!sp->forward_beta) {
             sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * size);

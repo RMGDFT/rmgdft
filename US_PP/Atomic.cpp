@@ -440,7 +440,7 @@ double Atomic::GetRange(double *f, double *r, double *rab, int rg_points)
     int i;
 
     /* Simpson's rule weights */
-    double w0 = 1.0 / 3.0;
+    //double w0 = 1.0 / 3.0;
     double w1 = 4.0 / 3.0;
     double w2 = 2.0 / 3.0;
     double *f2 = new double[rg_points];

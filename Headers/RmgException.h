@@ -58,6 +58,7 @@ public:
     RmgFatalException( const RmgFatalException &that )
     {
         What += that.ss.str();
+        printf("%s",What.c_str());
         std::raise(SIGTERM);
     }
 

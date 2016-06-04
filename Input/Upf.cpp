@@ -285,6 +285,9 @@ void LoadUpf(SPECIES *sp)
         }
 
     }
+    else {
+       throw RmgFatalException() << "RMG requires pseudopotentials with pseudo atomic wfs. Terminating.\n";  
+    }
 
     // Number of projectors
     sp->nbeta = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.number_of_proj");
