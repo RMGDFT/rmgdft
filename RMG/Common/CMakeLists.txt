@@ -69,7 +69,6 @@ nlforce_par_omega.c
 real_min_all.c
 neb_relax.c
 app_smooth.cpp
-moldyn.c
 xbsmovie.c
 init_gpu.c
 write_zstates.c
