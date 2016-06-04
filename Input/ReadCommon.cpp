@@ -215,7 +215,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("poisson_solver", NULL, &lc.poisson_solver, "pfft",
                      CHECK_AND_FIX, OPTIONAL, poisson_solver,
                      "poisson solver.\n", 
-                     "poisson_solver must be multigrid or pfft. Resetting to multigrid.\n");
+                     "poisson_solver must be multigrid or pfft. Resetting to pfft.\n");
 
 
     If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
@@ -238,7 +238,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Mass to use for structural relaxation, either atomic masses, or use the mass of carbon for all atoms.\n", 
                      "relax_mass must be either \"Atomic\" or \"Equal\". Terminating.\n");
 
-    If.RegisterInputKey("md_integration_order", NULL, &lc.mdorder, "2nd Velocity Verlet",
+    If.RegisterInputKey("md_integration_order", NULL, &lc.mdorder, "5th Beeman-Velocity Verlet",
                      CHECK_AND_TERMINATE, OPTIONAL, md_integration_order,
                      "Integration order for molecular dynamics.\n", 
                      "md_integration_order must be either \"2nd Velocity Verlet\", \"3rd Beeman-Velocity Verlet\" or \"5th Beeman-Velocity Verlet\". Terminating.\n");
