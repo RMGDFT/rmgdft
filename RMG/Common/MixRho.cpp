@@ -57,8 +57,6 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     RmgTimer RT0("Mix rho");
     double t1, nspin = (ct.spin_flag + 1.0);
     int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-    int ratio = Rmg_G->default_FG_RATIO;
-    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(ratio) * Rmg_G->get_NY_GRID(ratio) * Rmg_G->get_NZ_GRID(ratio)));
 
     int length_x = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     int length_y = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
@@ -180,8 +178,8 @@ void mix_johnson(double *xm, double *fm, int NDIM, int ittot)
     if(!aij) aij = new double[maxiter*maxiter];
     if(!aij2) aij2 = new double[maxiter*maxiter];
 
-    double fnorm, aaa, fnorm2, tem;
-    int  iter, k1, i, j, idx;
+    double fnorm, aaa, tem;
+    int  iter, i, j, idx;
 
 
     iter = ittot % maxiter;

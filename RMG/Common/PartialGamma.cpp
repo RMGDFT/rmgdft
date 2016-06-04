@@ -52,7 +52,7 @@ template <typename OrbitalType> void PartialGamma (
                     int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
                     Kpoint<OrbitalType> **Kptr)
 {
-    int i, j, idx, kidx, istate, size, index;
+    int i, j, idx, kidx, istate, size;
     double *gamma_x, *gamma_y, *gamma_z;
     double *omega_x, *omega_y, *omega_z;
     double t1;

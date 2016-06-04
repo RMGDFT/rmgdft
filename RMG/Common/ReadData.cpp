@@ -43,9 +43,6 @@
 #include "transition.h"
 
 
-/* To save disk space 'floats' are written instead of 'doubles'. */
-/* The following routine accepts a buffer of doubles (doubles) but writes floats */
-static void read_float (int fhand, double * rp, int count);
 static void read_double (int fhand, double * rp, int count);
 static void read_int (int fhand, int *ip, int count);
 
@@ -61,7 +58,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     int grid[3];
     int fine[3];
     int pe[3];
-    int npe;
     int grid_size;
     int fgrid_size;
     int gamma;
@@ -111,7 +107,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     if (pe[2] != get_PE_Z())
 	rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
 
-    npe = (pe[0] * pe[1] * pe[2]);
     grid_size = Kptr[0]->pbasis;
 
     /* read fine grid info */
@@ -363,10 +358,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 }                               /* end read_data */
 
 
-
-/* To save disk space 'floats' are written instead of 'doubles'. */
-/* The following routine accepts a buffer of doubles (doubles) but writes floats */
-
 static void read_double (int fhand, double * rp, int count)
 {
 
@@ -376,23 +367,6 @@ static void read_double (int fhand, double * rp, int count)
         rmg_error_handler (__FILE__, __LINE__,"error reading");
 
 }
-static void read_float (int fhand, double * rp, int count)
-{
-
-    int i;
-    float *buf = new float[count];
-    ssize_t wanted = sizeof (float) * (ssize_t)count;
-
-    ssize_t size = read (fhand, buf, wanted);
-    if(size != wanted)
-        rmg_error_handler (__FILE__, __LINE__,"error reading");
-
-    for (i = 0; i < count; i++)
-        rp[i] = (double) buf[i];  /* floats take only 4 bytes instead of 8 bytes for double */
-
-    delete [] buf;
-}
-
 
 static void read_int (int fhand, int *ip, int count)
 {

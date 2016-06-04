@@ -43,9 +43,6 @@
 static size_t totalsize;
 
 
-/* To save disk space 'floats' may be written instead of 'doubles'. Default is doubles. */
-/* The following routine accepts a buffer of doubles (doubles) but writes floats */
-static void write_float (int fh, double * rp, int count);
 static void write_double (int fh, double * rp, int count);
 static void write_int (int fh, int *ip, int count);
 
@@ -175,10 +172,6 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
 
 
 
-
-/* To save disk space 'floats' are written instead of 'doubles'. */
-/* The following routine accepts a buffer of doubles (doubles) but writes floats */
-
 static void write_double (int fh, double * rp, int count)
 {
     int size;
@@ -187,22 +180,6 @@ static void write_double (int fh, double * rp, int count)
     if (size != write (fh, rp, size))
         rmg_error_handler (__FILE__,__LINE__,"error writing");
 
-    totalsize += size;
-}
-static void write_float (int fh, double * rp, int count)
-{
-    float *buf = new float[count];
-    int i, size;
-    
-
-    for (i = 0; i < count; i++)
-        buf[i] = (float) rp[i]; /* 'float' uses only 4 bytes instead of 8 bytes for 'double' */
-
-    size = count * sizeof (float);
-    if (size != write (fh, buf, size))
-        rmg_error_handler (__FILE__, __LINE__, "error writing");
-
-    delete [] buf;
     totalsize += size;
 }
 

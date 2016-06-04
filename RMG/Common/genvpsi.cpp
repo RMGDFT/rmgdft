@@ -37,8 +37,6 @@ void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, void * kdp,
     int ix, iy, iz;
     int incx, incy;
 
-    double *kd = (double *)kdp;
-
     incy = dimz;
     incx = (dimy) * (dimz);
 
@@ -70,8 +68,6 @@ void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, void * kdp,
 
     int ix, iy, iz;
     int incx, incy;
-
-    double *kd = (double *)kdp;
 
     incy = dimz;
     incx = (dimy) * (dimz);

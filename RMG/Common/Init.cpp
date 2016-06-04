@@ -63,13 +63,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 {
 
     RmgTimer RT0("Init");
-    int kpt, kpt1, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
+    int kpt, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
     int species;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
     SPECIES *sp;
     OrbitalType *rptr = NULL, *nv, *ns, *Bns = NULL;
-    double *vtot, *rho_tot;
+    double *vtot;
     double time2, fac;
 
     nv = (OrbitalType *)pct.nv;
