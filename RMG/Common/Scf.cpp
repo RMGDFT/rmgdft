@@ -156,7 +156,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     {
         //rmg_printf("scf check: <rho dv>   = %8.2e\n", t[0]);
         RMSdV.emplace_back(t[1]);
-        rmg_printf("hartree residual      = %8.2e\n", hartree_residual);
+        if(ct.poisson_solver == MULTIGRID_SOLVER) 
+            rmg_printf("hartree residual      = %8.2e\n", hartree_residual);
         rmg_printf("average potential <V> = %8.2e\n", t[2]);
     }
 

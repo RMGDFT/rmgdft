@@ -80,7 +80,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     int state, kpt, idx, i, j, nspin = (ct.spin_flag + 1), FP0_BASIS;
     double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
     double vel, loc_sum;
-    double *exc, *nrho, *nrho_oppo;
+    double *exc, *nrho, *nrho_oppo=NULL;
     ION *iptr1, *iptr2;
     Kpoint<KpointType> *kptr;
 
@@ -236,12 +236,12 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     char *eunits = ct.energy_output_string[ct.energy_output_units];
-    rmg_printf ("@@ EIGENVALUE SUM     = %15.8f %s\n", efactor*eigsum, eunits);
-    rmg_printf ("@@ ION_ION            = %15.8f %s\n", efactor*ct.II, eunits);
-    rmg_printf ("@@ ELECTROSTATIC      = %15.8f %s\n", -efactor*ct.ES, eunits);
-    rmg_printf ("@@ VXC                = %15.8f %s\n",  efactor*xcstate, eunits);
-    rmg_printf ("@@ EXC                = %15.8f %s\n", efactor*ct.XC, eunits);
-    rmg_printf ("@@ TOTAL ENERGY       = %15.8f %s\n", efactor*ct.TOTAL, eunits);
+    rmg_printf ("@@ EIGENVALUE SUM     = %15.6f %s\n", efactor*eigsum, eunits);
+    rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
+    rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", -efactor*ct.ES, eunits);
+    rmg_printf ("@@ VXC                = %15.6f %s\n",  efactor*xcstate, eunits);
+    rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
+    rmg_printf ("@@ TOTAL ENERGY       = %15.6f %s\n", efactor*ct.TOTAL, eunits);
     if(ct.scf_steps != 0) {
         rmg_printf ("@@ estimated error    =       %9.2e %s\n", efactor*ct.scf_accuracy, eunits);
     }

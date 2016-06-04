@@ -113,7 +113,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         elapsed_time = my_crtc() - start_time;
         if (pct.imgpe == 0) {
-            rmg_printf ("quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]\n\n\n",
+            rmg_printf (" quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]\n\n\n",
                     ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
         }
 
