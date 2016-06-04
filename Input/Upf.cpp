@@ -73,7 +73,7 @@ void LoadUpf(SPECIES *sp)
 
     int ibegin=0, iend=0;
     ptree upf_tree;
-    char *pp_buffer;
+    char *pp_buffer = NULL;
     int pp_buffer_len;
     int max_nlprojectors = 0;
     int l_max;
@@ -485,6 +485,7 @@ sp->rwidth = 15.0;
 
     // Finally adjust sp->rg_points to skip the high end
     sp->rg_points = iend - ibegin + 1;
+    if(pp_buffer) delete [] pp_buffer;
 }
 
 // C binding
