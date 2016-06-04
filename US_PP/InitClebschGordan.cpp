@@ -17,12 +17,6 @@ void InitClebschGordan (int lmax, double *ap, int *lpx, int *lpl)
     // we follow the method in pwscf 
     //  Y_lmi(r) * Y_lmj(r) = Sum_LM ap[LM][lmi][lmj] *Y_LM(r)
   
-    if(lmax > 2) 
-    {
-        printf("\n lamx >2 not programed");
-        exit(0);
-    }
-
 
     // total number of harmonic for LM 
     int tot_LM = (2 * lmax +1) *(2 * lmax +1);

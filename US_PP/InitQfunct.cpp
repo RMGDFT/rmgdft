@@ -109,7 +109,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                 jl = sp->llbeta[j];
                 idx = j * (j + 1) / 2 + i;
                 qnm_tpr = sp->qnm + idx * MAX_RGRID;
-                for (ll = fabs (il - jl); ll <= il + jl; ll = ll + 2)
+                for (ll = abs (il - jl); ll <= il + jl; ll = ll + 2)
                 {
                     for (k = 0; k < MAX_RGRID; k++)
                         work[k] = 0.0;
@@ -117,7 +117,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                     for (k = 0; k < sp->rg_points; k++)
                     {
                         if (sp->r[k] >= sp->rinner[ll])
-                            work[k] = qnm_tpr[k];
+                            work[k] = qnm_tpr[k]/sp->r[k]/sp->r[k];
                         else
                             work[k] = get_QnmL (idx, ll, sp->r[k], sp);
                     }
