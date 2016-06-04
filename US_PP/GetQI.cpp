@@ -168,6 +168,7 @@ void GetQI (void)
 
             pct.Qdvec[ion] = new int[idx];
 
+printf("QQQ  %d\n",idx);
             ivec = pct.Qdvec[ion];
             for (idx1 = 0; idx1 < idx; idx1++)
                 ivec[idx1] = (int) dvec[idx1];
@@ -261,6 +262,10 @@ void GetQI (void)
             }                   /* end for ix */
 
         }                       /*end if map */
+
+        // No longer needed so release it
+        if (pct.Qdvec[ion]) delete [] pct.Qdvec[ion];
+        pct.Qdvec[ion] = NULL;
 
     }                           /*end for ion */
 
