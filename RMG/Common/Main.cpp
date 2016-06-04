@@ -363,7 +363,11 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
         case MD_CVE:               /* molecular dynamics */
         case MD_CVT:
         case MD_CPT:
-            Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            ct.fpt[0] = 0;  // Eventually fix all references to fpt in the code and this will not be needed
+            ct.fpt[1] = 1;
+            ct.fpt[2] = 2;
+            ct.fpt[3] = 3;
+            if(ct.runflag != RESTART) Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
             MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
             break;
 
@@ -375,6 +379,8 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
 
     }
+
+    WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
     if(!ct.is_gamma)
         OutputBandPlot(Kptr);

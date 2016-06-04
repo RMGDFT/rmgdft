@@ -50,7 +50,6 @@ void velup2 (void);
 
 void rms_disp (double *, double *);
 
-int stepcount = 0;
 
 template void MolecularDynamics<double>(Kpoint<double> **, double *, double *, double *, double *, double *, double *, double *);
 template void MolecularDynamics<std::complex<double> >(Kpoint<std::complex<double>> **, double *, double *, double *, double *, double *, double *, double *);
@@ -135,7 +134,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     ct.nose.N = N;
 
     /* check to see if random velocities are needed */
-    if (ct.nose.randomvel)
+    if (ct.nose.randomvel && (ct.runflag != RESTART))
     {
         if (pct.gridpe == 0)
         {
@@ -287,13 +286,15 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
 
         /*write data to output file */
-        if (ct.checkpoint)
+        if (ct.checkpoint) 
+        {
             if ( ct.md_steps % ct.checkpoint == 0 )
             {
                 WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
-                if (pct.gridpe == 0)
-                    rmg_printf ("\n Writing data to output file ...\n");
+                if (pct.gridpe == 0) rmg_printf ("\n Writing data to output file ...\n");
             }
+        }
+
 
         if (pct.gridpe == 0)
         {
@@ -325,8 +326,6 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
                 throw RmgFatalException() << "Undefined output type" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
             }                   /* end of switch */
-
-            stepcount++;
 
 
             rmg_printf ("\n Total number of SCF steps so far %d", ct.total_scf_steps);

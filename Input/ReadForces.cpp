@@ -104,7 +104,7 @@ void ReadForces(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputK
 
     }
 
-    if(nions > 4*lc.num_ions)
+    if(nions > lc.num_ions)
         throw RmgFatalException() << "Inconsistency in number of ions: " << lc.num_ions << " was specified initially but " << nions << " were found.\n";
 
 }

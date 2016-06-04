@@ -61,7 +61,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     double *vh_in = new double[FP0_BASIS];
     double *vxc_in = new double[FP0_BASIS];
 
-    int numacc = 1, ic;
     /*int ist, ik;
        double KE; */
 
@@ -178,6 +177,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     ct.fpt[1] = 1;
     ct.fpt[2] = 2;
     ct.fpt[3] = 3;
+
     for(int ion=0;ion < ct.num_ions;ion++){
         ION *iptr = &ct.ions[ion];
         for(int i = 3;i > 0;i--) {
@@ -187,9 +187,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         }
 
     }
-
     Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
-
 
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
