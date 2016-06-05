@@ -98,6 +98,9 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
             if(!nstr.compare("SLAPZ")) {
                 short_names.push_back("PZ");
             }
+            else if(!nstr.compare("SLAPZNOGXNOGC")) {
+                short_names.push_back("PZ");
+            }
             else if(!nstr.compare("SLAPWPBXPBC")) {
                 short_names.push_back("PBE");
             }
