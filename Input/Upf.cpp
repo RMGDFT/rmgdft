@@ -78,8 +78,8 @@ void LoadUpf(SPECIES *sp)
     int max_nlprojectors = 0;
     int l_max;
     std::stringstream ss; 
-    double  ddd0[6][6];  // Used to read in the PP_DIJ
-    double qqq[6][6];    // Used to read in the norms of the augmentation functions (PP_Q)
+    double  ddd0[MAX_NL][MAX_NL];  // Used to read in the PP_DIJ
+    double qqq[MAX_NL][MAX_NL];    // Used to read in the norms of the augmentation functions (PP_Q)
 
     std::string Msg;
     if(!std::strcmp(sp->pseudo_filename, "./@Internal") || !strlen(sp->pseudo_filename)) {
@@ -489,6 +489,7 @@ sp->rwidth = 15.0;
     // Finally adjust sp->rg_points to skip the high end
     sp->rg_points = iend - ibegin + 1;
     if(pp_buffer) delete [] pp_buffer;
+
 }
 
 // C binding
