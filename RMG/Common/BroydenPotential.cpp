@@ -58,7 +58,6 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
    static int iter;
    double betamix[MAX_BROYDEN_ITER][MAX_BROYDEN_ITER];
    int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-   int ratio = Rmg_G->default_FG_RATIO;
    int ld_betamix = MAX_BROYDEN_ITER;
 
    // Check if this is a reset request
@@ -90,7 +89,7 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
 
 
    // Check if it's time to remove old entries
-   if(df.size() == max_iter) {
+   if(df.size() == (size_t)max_iter) {
        delete [] df[0];
        delete [] dv[0];
        delete [] dvh[0];

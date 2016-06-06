@@ -47,10 +47,7 @@ template void WriteBGW (char *, double *, double *, double *, double *, Kpoint<s
 template <typename KpointType>
 void WriteBGW (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
 {
-    char newname[MAX_PATH + 20];
-    int amode;
     FILE *fhandle;
-    int fhand;
     int ia, ion;
     double time0, write_time;
     SPECIES *sp;

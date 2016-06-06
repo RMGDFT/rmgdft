@@ -52,7 +52,7 @@
 void GetPhase (ION * iptr, std::complex<double> *rtptr)
 {
 
-    int kpt, idx, ix, iy, iz, docount;
+    int kpt, idx, ix, iy, iz;
     int dimx, dimy, dimz, pbasis;
     double ax[3], bx[3], xc, yc, zc;
     double kdr;

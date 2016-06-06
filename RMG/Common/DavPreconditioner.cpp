@@ -75,15 +75,9 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType
     double Zfac = 2.0 * ct.max_zvalence;
     double tstep = 0.8;
 
-    int ixoff, iyoff, izoff;
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
-    int dx2 = MG.MG_SIZE (dimx, 0, G->get_NX_GRID(1), G->get_PX_OFFSET(1), G->get_PX0_GRID(1), &ixoff, ct.boundaryflag);
-    int dy2 = MG.MG_SIZE (dimy, 0, G->get_NY_GRID(1), G->get_PY_OFFSET(1), G->get_PY0_GRID(1), &iyoff, ct.boundaryflag);
-    int dz2 = MG.MG_SIZE (dimz, 0, G->get_NZ_GRID(1), G->get_PZ_OFFSET(1), G->get_PZ0_GRID(1), &izoff, ct.boundaryflag);
-
-
     int pbasis = kptr->pbasis;
 
     double hxgrid = G->get_hxgrid(1);

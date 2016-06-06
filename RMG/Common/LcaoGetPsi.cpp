@@ -43,7 +43,6 @@ void LcaoGetPsi (State<StateType> * states)
 
     SPECIES *sp;
     ION *iptr;
-    StateType *psi;
     long idum;
     double coeff;
 
@@ -107,7 +106,6 @@ void LcaoGetPsi (State<StateType> * states)
     {
         coeff = 1.0;
         st = 0;
-        psi = states[st].psi;
         for (ion = 0; ion < ct.num_ions; ion++)
         {
             /* Generate ion pointer */
