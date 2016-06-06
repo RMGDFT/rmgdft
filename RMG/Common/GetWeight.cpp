@@ -31,31 +31,31 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
+#include "RmgParallelFft.h"
 
+// Used to generate projectors that span the full space
 template void GetWeight<double> (Kpoint<double> **Kptr);
 template void GetWeight<std::complex<double> >(Kpoint<std::complex<double>> **Kptr);
 template <typename KpointType>
 void GetWeight (Kpoint<KpointType> **Kptr)
 {
 
-    int ion, ion1, ip, coarse_size, max_size, idx, P0_BASIS;
+    int ion, ip, max_size, idx;
     double *rtptr;
     KpointType *Bweight, *Nlweight;
+    KpointType ZERO_t(0.0);
     std::complex<double> I_t(0.0, 1.0);
+    int pbasis = Kptr[0]->pbasis;
 
     SPECIES *sp;
     ION *iptr;
-    fftw_plan p2;
+
     /*Pointer to the result of forward transform on the coarse grid */
     std::complex<double> *fptr;
     std::complex<double> *beptr, *gbptr;
-    std::complex<double> *in, *out;
-
-    P0_BASIS = get_P0_BASIS();
 
     /*maximum of nldim^3 for any species */
-    max_size = ct.max_nldim * ct.max_nldim * ct.max_nldim;
-    if(!ct.localize_projectors) max_size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+    max_size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
 
     /*Get memory to store the phase factor applied to the forward Fourier transform 
@@ -69,16 +69,10 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
     // Release memory allocated for fftw_phase_sin and fftw_phase_cos prior to 
     // reallocation (if needed) in find_phase
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        iptr = &ct.ions[ion];
-        if( iptr->fftw_phase_sin ) delete [] iptr->fftw_phase_sin;
-        if( iptr->fftw_phase_cos ) delete [] iptr->fftw_phase_cos;
-        iptr->fftw_phase_sin = NULL;
-        iptr->fftw_phase_cos = NULL;
-    }
+    double *fftw_phase_sin = new double[pbasis];
+    double *fftw_phase_cos = new double[pbasis];
 
-    for(idx = 0; idx < pct.num_tot_proj * P0_BASIS; idx++)
+    for(idx = 0; idx < pct.num_tot_proj * pbasis; idx++)
     {
         pct.weight[idx] = 0.0;
         pct.Bweight[idx] = 0.0;
@@ -87,12 +81,11 @@ void GetWeight (Kpoint<KpointType> **Kptr)
     for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
         /* Loop over ions */
-        for (ion1 = 0; ion1 < pct.num_nonloc_ions; ion1++)
+        for (ion = 0; ion < ct.num_ions; ion++)
         {
-            rtptr = &pct.weight[ion1 * ct.max_nl * P0_BASIS];
-            Bweight = &Kptr[kpt]->nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
-            Nlweight = &Kptr[kpt]->nl_weight[ion1 * ct.max_nl * P0_BASIS];
-            ion = pct.nonloc_ions_list[ion1];
+            rtptr = &pct.weight[ion * ct.max_nl * pbasis];
+            Bweight = &Kptr[kpt]->nl_Bweight[ion * ct.max_nl * pbasis];
+            Nlweight = &Kptr[kpt]->nl_weight[ion * ct.max_nl * pbasis];
             /* Generate ion pointer */
             iptr = &ct.ions[ion];
 
@@ -100,31 +93,12 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             /* Get species type */
             sp = &ct.sp[iptr->species];
 
-            int nlxdim = sp->nldim;
-            int nlydim = sp->nldim;
-            int nlzdim = sp->nldim;
-            if(!ct.localize_projectors) {
-                nlxdim = get_NX_GRID();
-                nlydim = get_NY_GRID();
-                nlzdim = get_NZ_GRID();
-            }
-
-            in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
-            out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
-
-
-            /*Number of grid points on which fourier transform is done (in the corse grid) */
-            coarse_size = nlxdim * nlydim * nlzdim;
-
-
-            //fftw_import_wisdom_from_string (sp->backward_wisdom);
-            p2 = fftw_plan_dft_3d (nlxdim, nlydim, nlzdim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), FFTW_BACKWARD,
-                    FFTW_ESTIMATE);
-            //fftw_forget_wisdom ();
-
+            int nlxdim = get_NX_GRID();
+            int nlydim = get_NY_GRID();
+            int nlzdim = get_NZ_GRID();
 
             /*Calculate the phase factor */
-            FindPhase (nlxdim, nlydim, nlzdim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
+            FindPhase (nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase_sin, fftw_phase_cos);
 
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)sp->forward_beta;
@@ -136,42 +110,93 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
 
                 /*Apply the phase factor */
-                for (idx = 0; idx < coarse_size; idx++)
+                for (idx = 0; idx < pbasis; idx++)
                 {
                     gbptr[idx] =
-                        (std::real(fptr[idx]) * iptr->fftw_phase_cos[idx] + std::imag(fptr[idx]) * iptr->fftw_phase_sin[idx]) +
-                        (std::imag(fptr[idx]) * iptr->fftw_phase_cos[idx] * I_t - std::real(fptr[idx]) * iptr->fftw_phase_sin[idx] * I_t);
+                        (std::real(fptr[idx]) * fftw_phase_cos[idx] + std::imag(fptr[idx]) * fftw_phase_sin[idx]) +
+                        (std::imag(fptr[idx]) * fftw_phase_cos[idx] * I_t - std::real(fptr[idx]) * fftw_phase_sin[idx] * I_t);
                 }
 
 
                 /*Do the backwards transform */
-                fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(gbptr), reinterpret_cast<fftw_complex*>(beptr));
-                /*This takes and stores the part of beta that is useful for this PE */
-                AssignWeight (Kptr[kpt], sp, ion, reinterpret_cast<fftw_complex*>(beptr), rtptr, Bweight, Nlweight);
+                PfftInverse(gbptr, beptr, *coarse_pwaves);
+
+                std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
+                std::complex<double> *Bweight_C = (std::complex<double> *)Bweight;
+
+                double *Nlweight_R = (double *)Nlweight;
+                double *Bweight_R = (double *)Bweight;
+
+                //weight_shift_center(sp, (fftw_complex *)beptr);
+
+                for(int idx = 0; idx < pbasis; idx++) rtptr[idx] = 0.0;
+                for(int idx = 0; idx < pbasis; idx++) Bweight[idx] = ZERO_t;
+                for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
+
+                std::complex<double> *nbeptr = (std::complex<double> *)beptr;
+
+                KpointType *tem_array = new KpointType[pbasis]();
+                KpointType *Btem_array = new KpointType[pbasis]();
+                std::complex<double> *tem_array_C = (std::complex<double> *)tem_array;
+                std::complex<double> *Btem_array_C = (std::complex<double> *)Btem_array;
+                double *Btem_array_R = (double *)Btem_array;
+
+
+                for(int ix = 0; ix <pbasis; ix++) {
+                    tem_array[ix] = std::real(nbeptr[ix]);
+                }
+
+                std::complex<double> *phaseptr = (std::complex<double> *)pct.phaseptr[ion];
+                int kpt_local = Kptr[kpt]->kidx ;
+                phaseptr += kpt_local * nlxdim * nlydim * nlzdim;
+
+
+                // Apply phase factor for non-gamma
+// FIX: have to fix this up for non-gamma
+                if(!ct.is_gamma) {
+                    for (int idx = 0; idx < pbasis; idx++)
+                        tem_array_C[idx] = std::real(nbeptr[idx]) * conj(phaseptr[idx]);
+                }
+
+                // Apply B operator then map weights back
+//                AppCirDriverBeta (Kptr[kpt]->L, Kptr[kpt]->T, tem_array, Btem_array, nlxdim, nlydim, nlzdim, ct.kohn_sham_fd_order);
+// FIX: Only works for central operator right now. Have to fix AppCirDriverBeta for Mehrstellen
+for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
+
+                for (int idx = 0; idx < pbasis; idx++)
+                {
+                    rtptr[idx] = std::real(nbeptr[idx]);
+                    if(ct.is_gamma) {
+                        Nlweight_R[idx] = std::real(nbeptr[idx]);
+                        Bweight_R[idx] = Btem_array_R[idx];
+
+                    }
+                    else {
+                        Nlweight_C[idx] = std::real(nbeptr[idx]) * conj(phaseptr[idx]);
+                        Bweight_C[idx] = Btem_array_C[idx];
+                    }
+
+                }
+
+
+                delete [] Btem_array;
+                delete [] tem_array;
 
 
                 /*Advance the temp pointers */
-                fptr += coarse_size;
-                rtptr += P0_BASIS;
-                Bweight += P0_BASIS;
-                Nlweight += P0_BASIS;
+                fptr += pbasis;
+                rtptr += pbasis;
+                Bweight += pbasis;
+                Nlweight += pbasis;
 
             }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
-
-
-            fftw_destroy_plan (p2);
-            fftw_free(out);
-            fftw_free(in);
-
-            if( iptr->fftw_phase_sin ) delete [] iptr->fftw_phase_sin;
-            if( iptr->fftw_phase_cos ) delete [] iptr->fftw_phase_cos;
-            iptr->fftw_phase_sin = NULL;
-            iptr->fftw_phase_cos = NULL;
 
         }                           /* end for */
 
     } // end for(kpt)
 
+    delete [] fftw_phase_cos;
+    delete [] fftw_phase_sin;
     fftw_free (beptr);
 
 

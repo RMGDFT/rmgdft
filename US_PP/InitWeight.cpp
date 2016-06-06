@@ -136,4 +136,48 @@ void InitWeight (void)
         MPI_Bcast(&sp->forward_beta[proj.proj_index * size], 2*size, MPI_DOUBLE, root, pct.grid_comm);
     }
         
-}                               /* end get_weight */
+
+    // Next if using non-localized projectors we need to remap the global forward beta into domain-decomposed
+    // forward beta
+    if(ct.localize_projectors) return;
+
+
+    int ilo = get_PX_OFFSET();
+    int jlo = get_PY_OFFSET();
+    int klo = get_PZ_OFFSET();
+    int ihi = ilo + get_PX0_GRID();
+    int jhi = jlo + get_PY0_GRID();
+    int khi = klo + get_PZ0_GRID();
+    int dimx = get_NX_GRID();
+    int dimy = get_NY_GRID();
+    int dimz = get_NZ_GRID();
+    size = dimx * dimy * dimz;
+    int dist_size = get_PX0_GRID() *  get_PY0_GRID() * get_PZ0_GRID();
+
+    for (isp = 0; isp < ct.num_species; isp++)
+    {
+        /* Get species type */
+        sp = &ct.sp[isp];
+        std::complex<double> *saved_beta = (std::complex<double> *)sp->forward_beta;
+        sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * dist_size * sp->num_projectors);
+        std::complex<double> *fptr = (std::complex<double> *)sp->forward_beta;
+
+        for(int iproj = 0;iproj < sp->num_projectors;iproj++) 
+        {
+            for(int i = 0;i < dimx;i++) {
+                for(int j = 0;j < dimy;j++) {
+                    for(int k = 0;k < dimz;k++) {
+                        bool map = (i >= ilo) && (i < ihi) && (j >= jlo) && (j < jhi) && (k >= klo) && (k < khi);
+                        if(map) {
+                           int idx1 = (i - ilo) * (jhi - jlo) * (khi - klo) + (j - jlo) * (khi - klo) + (k - klo);
+                           int idx2 = i * dimy * dimz + j * dimz + k;
+                           fptr[iproj * dist_size + idx1] = saved_beta[iproj * size + idx2]; 
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+}                               /* end InitWeight */

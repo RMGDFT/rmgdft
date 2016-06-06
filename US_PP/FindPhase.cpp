@@ -36,7 +36,7 @@ void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double* &ph
 
     int i1, j1, k1;
 
-    // Allocate here, must be released by a higher level routine
+    // If not NULL allocate here, must be released by a higher level routine
     if(!phase_sin) phase_sin = new double[nlxdim * nlydim * nlzdim];
     if(!phase_cos) phase_cos = new double[nlxdim * nlydim * nlzdim];
 
@@ -55,6 +55,21 @@ void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double* &ph
     double rgs_x = 1.0 / (Rmg_G->get_hxgrid(1) * Rmg_L.get_xside());
     double rgs_y = 1.0 / (Rmg_G->get_hygrid(1) * Rmg_L.get_yside());
     double rgs_z = 1.0 / (Rmg_G->get_hzgrid(1) * Rmg_L.get_zside());
+
+    int ilo = 0;
+    int jlo = 0;
+    int klo = 0;
+    int ihi = nlxdim;
+    int jhi = nlydim;
+    int khi = nlzdim;
+    if(!ct.localize_projectors) {
+        ilo = get_PX_OFFSET();
+        jlo = get_PY_OFFSET();
+        klo = get_PZ_OFFSET();
+        ihi = ilo + get_PX0_GRID();
+        jhi = jlo + get_PY0_GRID();
+        khi = klo + get_PZ0_GRID();
+    } 
 
     for (int i = -nlxdim / 2; i <= nlxdim / 2 - ixadj; i++)
     {
@@ -79,16 +94,21 @@ void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double* &ph
                     k1 = k;
 
 
-                /* Phase factor */
-                double theta = 2.0 * PI *
-                    (((nlcdrs[0] * (double) i) * rgs_x / (double)nlxdim) +
-                     ((nlcdrs[1] * (double) j) * rgs_y / (double)nlydim) + 
-                     ((nlcdrs[2] * (double) k) * rgs_z / (double)nlzdim));
+                bool map = (i1 >= ilo) && (i1 < ihi) && (j1 >= jlo) && (j1 < jhi) && (k1 >= klo) && (k1 < khi);
+                if(map) 
+                {
+                    /* Phase factor */
+                    double theta = 2.0 * PI *
+                        (((nlcdrs[0] * (double) i) * rgs_x / (double)nlxdim) +
+                         ((nlcdrs[1] * (double) j) * rgs_y / (double)nlydim) + 
+                         ((nlcdrs[2] * (double) k) * rgs_z / (double)nlzdim));
 
-                int idx1 = i1 * nlydim * nlzdim + j1 * nlzdim + k1;
+                    int idx1 = (i1 - ilo) * (jhi - jlo) * (khi - klo) + (j1 - jlo) * (khi - klo) + (k1 - klo);
 
-                phase_sin[idx1] = sin (theta);
-                phase_cos[idx1] = cos (theta);
+                    phase_sin[idx1] = sin (theta);
+                    phase_cos[idx1] = cos (theta);
+                }
+
             }
         }
     }

@@ -100,7 +100,12 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     /*Other things that need to be recalculated when ionic positions change */
     RT1= new RmgTimer("3-ReinitIonicPotentials: GetWeight");
-    GetWeight (Kptr);
+    if(ct.localize_projectors) {
+        GetWeightLocal (Kptr);
+    }
+    else {
+        GetWeight (Kptr);
+    }
     delete RT1;
 
     RT1= new RmgTimer("3-ReinitIonicPotentials: get_qqq");

@@ -21,6 +21,7 @@ OutputBandPlot.cpp
 AppCirDriverBeta.cpp
 AssignWeight.cpp
 GetWeight.cpp
+GetWeightLocal.cpp
 GetNlop.cpp
 ReinitIonicPotentials.cpp
 transition_rmg.cpp

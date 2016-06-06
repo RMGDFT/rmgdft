@@ -141,9 +141,8 @@ template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
 void GetWeight (Kpoint<KpointType> **Kptr);
-
 template <typename KpointType>
-void GetDerweight (Kpoint<KpointType> **Kptr);
+void GetWeightLocal (Kpoint<KpointType> **Kptr);
 
 template <typename KpointType>
 void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, KpointType *Bweight, KpointType *Nlweight);
