@@ -58,11 +58,11 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
     int dimz = 0;
     if(!ct.localize_projectors) {
         dimx = sp->nlradius / (hxx*xside);
-        dimx = 2*(dimx/2);
+        dimx = 4*(dimx/2);
         dimy = sp->nlradius / (hyy*yside);
-        dimy = 2*(dimy/2);
+        dimy = 4*(dimy/2);
         dimz = sp->nlradius / (hzz*zside);
-        dimz = 2*(dimz/2);
+        dimz = 4*(dimz/2);
     }
 
     // We assume that ion is in the center of non-local box for the localized
@@ -107,6 +107,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
                 ax[2] = zc;
 
                 r = metric (ax);
+                if(r > sp->nlradius) continue;
                 to_cartesian (ax, bx);
                 r += 1.0e-10;
 
