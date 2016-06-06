@@ -73,7 +73,6 @@ app_smooth.cpp
 xbsmovie.c
 init_gpu.c
 write_zstates.c
-betaxpsi1.c
 symmetry.c
 lbfgs.c
 nlforce_par_Q.c
