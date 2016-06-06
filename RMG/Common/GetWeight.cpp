@@ -32,10 +32,7 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
-#include "remap_3d.h"
 
-struct remap_plan_3d *fwd_remap_to_one;
-struct remap_plan_3d *inv_remap_to_one;
 
 // Used to generate projectors that span the full space
 template void GetWeight<double> (Kpoint<double> **Kptr);
@@ -50,53 +47,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
     KpointType ZERO_t(0.0);
     std::complex<double> I_t(0.0, 1.0);
     int pbasis = Kptr[0]->pbasis;
-
-    if(!fwd_remap_to_one) {
-        int np[3];
-        ptrdiff_t grid[3];
-        ptrdiff_t xstart, xend;
-        ptrdiff_t ystart, yend;
-        ptrdiff_t zstart, zend;
-
-        int pxoffset, pyoffset, pzoffset;
-        grid[0] = Rmg_G->get_NX_GRID(1);
-        grid[1] = Rmg_G->get_NY_GRID(1);
-        grid[2] = Rmg_G->get_NZ_GRID(1);
-        np[0] = Rmg_G->get_PE_X();
-        np[1] = Rmg_G->get_PE_Y();
-        np[2] = Rmg_G->get_PE_Z();
-        Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);
-
-        Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);
-        // We only treat the double precision complex case
-        xstart = ystart = zstart = 0;
-        xend = yend = zend = -1;
-        if(pct.gridpe == 0) {
-            xend = get_NX_GRID() - 1;
-            yend = get_NY_GRID() - 1;
-            zend = get_NZ_GRID() - 1;
-        }
-        fwd_remap_to_one = remap_3d_create_plan(
-                           pct.grid_comm,
-                           pzoffset, pzoffset + get_PZ0_GRID() - 1,
-                           pyoffset, pyoffset + get_PY0_GRID() - 1,
-                           pxoffset, pxoffset + get_PX0_GRID() - 1,
-                           zstart, zend,
-                           ystart, yend,
-                           xstart, xend,
-                           sizeof(std::complex<double>)/sizeof(double), 0, 1, 2);
-
-        inv_remap_to_one = remap_3d_create_plan(
-                           pct.grid_comm,
-                           zstart, zend,
-                           ystart, yend,
-                           xstart, xend,
-                           pzoffset, pzoffset + get_PZ0_GRID() - 1,
-                           pyoffset, pyoffset + get_PY0_GRID() - 1,
-                           pxoffset, pxoffset + get_PX0_GRID() - 1,
-                           sizeof(std::complex<double>)/sizeof(double), 0, 1, 2);
-
-    }
 
     SPECIES *sp;
     ION *iptr;
@@ -177,11 +127,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
                 double *Nlweight_R = (double *)Nlweight;
                 double *Bweight_R = (double *)Bweight;
-
-//                remap_3d((double *)beptr, (double *)beptr, NULL, fwd_remap_to_one);
-//                if(pct.gridpe== 0)
-//                weight_shift_center(sp, (fftw_complex *)beptr);
-//                remap_3d((double *)beptr, (double *)beptr, NULL, inv_remap_to_one);
 
                 for(int idx = 0; idx < pbasis; idx++) rtptr[idx] = 0.0;
                 for(int idx = 0; idx < pbasis; idx++) Bweight[idx] = ZERO_t;
