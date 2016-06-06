@@ -21,9 +21,9 @@ void pack_gftoc (SPECIES * sp, double complex * gwptr, double complex * gbptr)
     int nlydim = sp->nldim;
     int nlzdim = sp->nldim;
     int icut = (sp->nldim / 2) * (sp->nldim / 2);
-    int ixstart = -(nlxdim -1)/2;
-    int iystart = -(nlydim -1)/2;
-    int izstart = -(nlzdim -1)/2;
+    int ixstart = -(nlxdim )/2;
+    int iystart = -(nlydim )/2;
+    int izstart = -(nlzdim )/2;
 
     if(!ct.localize_projectors) {
         nlfxdim = ct.nxfgrid * get_NX_GRID();
@@ -43,55 +43,33 @@ void pack_gftoc (SPECIES * sp, double complex * gwptr, double complex * gbptr)
     
     }
 
+    for(idx1 = 0; idx1 < nlxdim * nlydim *nlzdim; idx1++) gbptr[idx1] = 0.0 + 0.0I;
     size = nlfxdim * nlfydim * nlfzdim;
 
-    for (i = ixstart; i <= (nlxdim-1) / 2; i++)
+    for (i = -nlxdim/2; i < nlxdim/ 2; i++)
     {
         int isq = i * i;
-        for (j = iystart; j <= (nlydim-1) / 2; j++)
+        i1 = (i + nlxdim) %nlxdim;
+        i2 = (i + nlfxdim) %nlfxdim;
+        for (j = iystart; j < (nlydim) / 2; j++)
         {
             int jsq = j * j;
-            for (k = izstart; k <= (nlzdim-1) / 2; k++)
+            j1 = (j + nlydim) %nlydim;
+            j2 = (j + nlfydim) %nlfydim;
+            for (k = izstart; k < (nlzdim) / 2; k++)
             {
                 int ksq = k * k;
-                if (i < 0)
-                {
-                    i1 = i + nlxdim;
-                    i2 = i + nlfxdim;
-                }
-                else
-                {
-                    i1 = i;
-                    i2 = i;
-                }
-                if (j < 0)
-                {
-                    j1 = j + nlydim;
-                    j2 = j + nlfydim;
-                }
-                else
-                {
-                    j1 = j;
-                    j2 = j;
-                }
-                if (k < 0)
-                {
-                    k1 = k + nlzdim;
-                    k2 = k + nlfzdim;
-                }
-                else
-                {
-                    k1 = k;
-                    k2 = k;
-                }
+                k1 = (k + nlzdim) %nlzdim;
+                k2 = (k + nlfzdim) %nlfzdim;
+
+
                 idx1 = i1 * nlydim * nlzdim + j1 * nlzdim + k1;
                 idx2 = i2 * nlfydim * nlfzdim + j2 * nlfzdim + k2;
-                
-                if(icut > (isq + jsq + ksq)) {
-                    gbptr[idx1] =  gwptr[idx2] / (double) size;
-                }
-                else {
-                    gbptr[idx1] = 0.0 + 0.0I;
+
+                //if(icut >= (isq + jsq + ksq)) {
+                {
+                    //gbptr[idx1] =  wx*wy*wz*gwptr[idx2] / (double) size;
+                    gbptr[idx1] +=  gwptr[idx2] / (double) size;
                 }
             }
         }

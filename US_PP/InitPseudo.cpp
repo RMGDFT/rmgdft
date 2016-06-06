@@ -81,7 +81,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         while(!done) {
 
             sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
-            sp->nldim = sp->nldim/2*2 + 1;
+            sp->nldim = sp->nldim/4*4;
             sp->nlfdim = ct.nxfgrid * sp->nldim;
 
             if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID())) {
@@ -93,7 +93,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
         }
-        sp->nlradius = 0.5 * ct.hmingrid * (double)(sp->nldim-1);
+        sp->nlradius = 0.5 * ct.hmingrid * (double)(sp->nldim);
         sp->nlradius -= 0.5 * ct.hmingrid / (double)ct.nxfgrid;
         if(reduced && ct.localize_projectors) rmg_printf("Warning: diameter of non-local projectors exceeds cell size. Reducing. New radius = %12.6f\n", sp->nlradius);
 

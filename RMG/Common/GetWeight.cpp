@@ -178,10 +178,10 @@ void GetWeight (Kpoint<KpointType> **Kptr)
                 double *Nlweight_R = (double *)Nlweight;
                 double *Bweight_R = (double *)Bweight;
 
-                remap_3d((double *)beptr, (double *)beptr, NULL, fwd_remap_to_one);
-                if(pct.gridpe== 0)
-                weight_shift_center(sp, (fftw_complex *)beptr);
-                remap_3d((double *)beptr, (double *)beptr, NULL, inv_remap_to_one);
+//                remap_3d((double *)beptr, (double *)beptr, NULL, fwd_remap_to_one);
+//                if(pct.gridpe== 0)
+//                weight_shift_center(sp, (fftw_complex *)beptr);
+//                remap_3d((double *)beptr, (double *)beptr, NULL, inv_remap_to_one);
 
                 for(int idx = 0; idx < pbasis; idx++) rtptr[idx] = 0.0;
                 for(int idx = 0; idx < pbasis; idx++) Bweight[idx] = ZERO_t;
