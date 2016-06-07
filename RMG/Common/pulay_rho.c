@@ -44,7 +44,7 @@
 #include "main.h"
 #include "common_prototypes.h"
 
-#define 	MAX_STEPS 	500
+#define 	MAX_STEPS 	160
 
 double special_dot_product(double *a, double *b, double *b_trade, double weight, int length_x, int length_y, int length_z);
 
