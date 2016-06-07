@@ -31,11 +31,9 @@
 
 void fire (double *step, double step_max, double f_inc, double f_dec, int n_min, int *n_count )
 {
-    int ion, fpt, which = -1, count = 0;
+    int ion, fpt;
     ION *iptr;
     double  magf = 0.0, magv = 0.0, dotfv, p=0.0, unitf[3], eff_mass = 6.0 * mu_me;
-    double max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
-    double move_x, move_y, move_z, move_sq, move;
 
     /*Fire parameters*/
     double alpha_start = 0.1;

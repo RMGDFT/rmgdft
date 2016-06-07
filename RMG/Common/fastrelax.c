@@ -31,11 +31,9 @@
 
 void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_min, int *n_count)
 {
-    int ion, fpt, which = 0, count = 0;
+    int ion, fpt;
     ION *iptr;
-    double mass, magf, dotfv, force[3];
-    double max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
-    double move_x, move_y, move_z, move_sq, move, p = 0.0;
+    double mass, magf, dotfv, force[3], p = 0.0;
     bool set = true;
 
 

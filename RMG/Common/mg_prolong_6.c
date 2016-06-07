@@ -35,17 +35,15 @@ void mg_prolong_6 (double * full, double * half, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
-    int incz, incy, incx, incz2, incy2, incx2, incx3;
-    double scale,  a1, a2, a3, a4, a5;
+    int incy, incx, incy2, incx2, incx3;
+    double a1, a2, a3, a4, a5;
     double * fulla;
     double * fullb;
 
 
-    incz = 1;
     incy = dimz / 2 + 10;
     incx = (dimz / 2 + 10) * (dimy / 2 + 10);
 
-    incz2 = 1;
     incy2 = dimz;
     incx2 = dimz  * dimy;
  

@@ -42,7 +42,6 @@ int claim_ion (double *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, in
 {
 
     int  pe;
-    int ii, jj, kk, ilow, ihi, klow, khi, jlow, jhi;
     int igridx, igridy, igridz;
     int xnode, ynode, znode;
     double t1, t2;

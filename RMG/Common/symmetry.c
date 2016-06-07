@@ -28,7 +28,7 @@
 
 
 static int *s;
-static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
+//static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
 static int *sym_atom;  //  atom B = sym(atom A)
 static int *ftau;
 static int nsym;
@@ -56,14 +56,17 @@ void  symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx, int 
 void init_sym (void)
 {
     int nr1, nr2, nr3;
-    int ion, kpt, wflag;
-    int ibrav = get_ibrav_type();
-    double a0[3], a1[3], a2[3], omega;
+    int ion, kpt;
     double frac1, frac2, frac3, intpart, symprec = 1.0e-5;
     double *tau, *translation;
     double xtal[3];
     double ndim[3];
     int *ityp, *sa;
+    //double omega = get_omega();
+    //int ibrav = get_ibrav_type();
+    /* Only have PE zero output symmetry information */
+    //int wflag = pct.gridpe;
+
 
 
     double lattice[9];
@@ -80,16 +83,6 @@ void init_sym (void)
     lattice[2*3+1] = get_a2(1);
     lattice[2*3+2] = get_a2(2);
 
-    a0[0] = get_a0(0);
-    a0[1] = get_a0(1);
-    a0[2] = get_a0(2);
-    a1[0] = get_a1(0);
-    a1[1] = get_a1(1);
-    a1[2] = get_a1(2);
-    a2[0] = get_a2(0);
-    a2[1] = get_a2(1);
-    a2[2] = get_a2(2);
-    omega = get_omega();
 
     /* This function uses MAX_IONS as a limit for array sizes.
      * It is, of course, possible to allocate these arrays dynamically,
@@ -105,9 +98,6 @@ void init_sym (void)
     ndim[0] = nr1;
     ndim[1] = nr2;
     ndim[2] = nr3;
-
-    /* Only have PE zero output symmetry information */
-    wflag = pct.gridpe;
 
 
     my_malloc (tau, 3 * ct.num_ions, double);
@@ -258,7 +248,6 @@ void symmetrize_rho (double * rho)
     int FPX0_GRID = get_FPX0_GRID();
     int FPY0_GRID = get_FPY0_GRID();
     int FPZ0_GRID = get_FPZ0_GRID();
-    int FP0_BASIS = get_FP0_BASIS();
     int FNX_GRID = get_FNX_GRID();
     int FNY_GRID = get_FNY_GRID();
     int FNZ_GRID = get_FNZ_GRID();
@@ -378,7 +367,7 @@ void  symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx, int 
 
 
     // rotate ijk by symmetry, and then translation
-    int i, j, k, ipoint[3], opoint[3] ; 
+    int i, j, ipoint[3], opoint[3] ; 
 
     ipoint[0] = ix;
     ipoint[1] = iy;

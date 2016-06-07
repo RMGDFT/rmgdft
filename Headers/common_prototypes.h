@@ -195,6 +195,7 @@ void trade_images1_central_async (double * f, int dimx, int dimy, int dimz);
 void trade_imagesx_central_async_f (float * f, float * w, int dimx, int dimy, int dimz, int images);
 void trade_imagesx_central_async (double * f, double * w, int dimx, int dimy, int dimz, int images);
 double AtomicInterpolate(double *f, double r);
+void lbfgs (double *posion, double *force, int num_ions, int num_images);
 
 
 

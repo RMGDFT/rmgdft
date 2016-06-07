@@ -32,14 +32,11 @@ void rmg_lbfgs (void)
 {
     int ion, fpt;
     ION *iptr;
-    double step, mass, magf, dotfv;
-
     double *position, *force;
 
     my_malloc(position, 3*ct.num_ions, double);
     my_malloc(force, 3*ct.num_ions, double);
     fpt = ct.fpt[0];
-    step = ct.iondt;
 
     /* Loop over ions */
     for (ion = 0; ion < ct.num_ions; ion++)

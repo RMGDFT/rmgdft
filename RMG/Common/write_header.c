@@ -28,6 +28,7 @@
 #include "common_prototypes.h"
 #include "main.h"
 #include "Functional.h"
+#include "input.h"
 #if !(_WIN32 || _WIN64)
 #include "svnrev.h"
 #endif
@@ -58,7 +59,7 @@ char *lattice_type[] = {
 void write_header (void)
 {
 
-    int kpt, idx, j;
+    int kpt, idx;
     time_t tt;
     double t1;
     double crho_fract;
