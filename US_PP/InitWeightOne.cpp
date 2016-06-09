@@ -27,6 +27,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     double r, ax[3], bx[3];
     double t1;
     std::complex<double> *weptr, *gwptr;
+    int xdim, ydim, zdim;
 
     // define functions to distiguish s, px, py, pz, ....
 
@@ -36,15 +37,6 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     double xside = get_xside();
     double yside = get_yside();
     double zside = get_zside();
-
-    int xdim = sp->nlfdim;
-    int ydim = sp->nlfdim;
-    int zdim = sp->nlfdim;
-    if(!ct.localize_projectors) {
-        xdim = ct.nxfgrid * get_NX_GRID();
-        ydim = ct.nxfgrid * get_NY_GRID();
-        zdim = ct.nxfgrid * get_NZ_GRID();
-    }
 
     /* nl[xyz]fdim is the size of the non-local box in the high density grid */
     size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
@@ -62,15 +54,12 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 
     for (int ix = 1; ix < sp->nlfdim; ix++)
     {
-        int ixx = (ix-sp->nlfdim/2 + xdim/2) % xdim;
         double xc = (double) (ix-sp->nlfdim/2) *hxx;
         for (int iy = 1; iy < sp->nlfdim; iy++)
         {
-            int iyy = (iy - sp->nlfdim/2 + ydim/2) % ydim;
             double yc = (double) (iy-sp->nlfdim/2) *hyy;
             for (int iz = 1; iz < sp->nlfdim; iz++)
             {
-                int izz = (iz - sp->nlfdim/2 + zdim/2) % zdim;
                 double zc = (double) (iz-sp->nlfdim/2) *hzz;
 
 
@@ -99,18 +88,38 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 
     fftw_execute_dft (p1_fine, reinterpret_cast<fftw_complex*>(weptr), reinterpret_cast<fftw_complex*>(gwptr));
 
-    pack_gftoc (sp, reinterpret_cast<fftw_complex*>(gwptr), reinterpret_cast<fftw_complex*>(weptr));
+    PackGftoc (sp->nlfdim, sp->nlfdim, sp->nlfdim, sp->nldim, sp->nldim, sp->nldim, gwptr, weptr);
 
+//    for(int ix = 0; ix < sp->nldim; ix++) printf("\n aaa %d %e %e", ix, weptr[ix]);
 
     fftw_execute_dft (p2_backward, reinterpret_cast<fftw_complex*>(weptr), reinterpret_cast<fftw_complex*>(gwptr));
 
-    size = sp->nldim * sp->nldim * sp->nldim;
-    for (int ix = 0; ix < sp->nldim; ix++)
-    for (int iy = 0; iy < sp->nldim; iy++)
-    for (int iz = 0; iz < sp->nldim; iz++)
-        gwptr[ix * sp->nldim * sp->nldim + iy * sp->nldim + iz] *= phaseptr[ix*sp->nldim *sp->nldim + iy *sp->nldim + iz]/double(size);
+    xdim = std::min(sp->nldim, get_NX_GRID());
+    ydim = std::min(sp->nldim, get_NY_GRID());
+    zdim = std::min(sp->nldim, get_NZ_GRID());
+    size = xdim * ydim * zdim;
 
-    fftw_execute_dft (p2_forward, reinterpret_cast<fftw_complex*>(gwptr), rtptr);
+    for(idx = 0; idx < size; idx++) weptr[idx] = 0.0;
+    for (int ix = 0; ix < sp->nldim; ix++)
+    {
+        int ixx = (ix-sp->nldim/2 + xdim/2) % xdim;
+
+        for (int iy = 0; iy < sp->nldim; iy++)
+        {
+            int iyy = (iy-sp->nldim/2 + ydim/2) % ydim;
+            for (int iz = 0; iz < sp->nldim; iz++)
+            {
+                int izz = (iz-sp->nldim/2 + zdim/2) % zdim;
+                idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
+                idx = ixx * ydim * zdim + iyy * zdim + izz;
+                weptr[idx] += gwptr[idx1] * phaseptr[idx1]/double(size);
+            }
+        }
+    }
+
+ //   for(int ix = 0; ix < sp->nldim; ix++) printf("\n bbb %d %e %e", ix, weptr[ix]);
+
+    fftw_execute_dft (p2_forward, reinterpret_cast<fftw_complex*>(weptr), rtptr);
 
 
     delete []gwptr;

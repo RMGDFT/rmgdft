@@ -124,7 +124,7 @@ void InitWeight (void)
         ydim = std::min(sp->nldim, get_NY_GRID());
         zdim = std::min(sp->nldim, get_NZ_GRID());
         size = xdim * ydim * zdim;
-        p2_forward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        p2_forward = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_FORWARD, FFTW_MEASURE);
         p2_backward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_BACKWARD, FFTW_MEASURE);
 
 

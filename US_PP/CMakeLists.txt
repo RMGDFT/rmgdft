@@ -1,4 +1,5 @@
 add_library (US_PP
+PackGftoc.cpp
 GetPhaseSpecies.cpp
 InitClebschGordan.cpp
 Ylm.cpp

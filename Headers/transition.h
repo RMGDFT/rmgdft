@@ -268,6 +268,7 @@ double Ylm(int L, int M, double *r);
 void InitClebschGordan (int lmax, double *ap, int *lpx, int *lpl);
 void GetQI(void);
 void GetPhaseSpecies(SPECIES *sp, std::complex<double> *phaseptr);
+void PackGftoc(int, int, int, int, int, int, std::complex<double> *, std::complex<double> *);
 
 #endif
 #endif
