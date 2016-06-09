@@ -30,8 +30,6 @@ void PackGftoc (int nlfxdim, int nlfydim, int nlfzdim, int nlxdim, int nlydim, i
         exit(0);
     }
         
-        printf("\n WARNING:  PackGftoc assum even numbers %d %d %d\n", nlxdim, nlydim, nlzdim);
-
     for(idx1 = 0; idx1 < nlxdim * nlydim *nlzdim; idx1++) gbptr[idx1] = 0.0;
     size = nlfxdim * nlfydim * nlfzdim;
 

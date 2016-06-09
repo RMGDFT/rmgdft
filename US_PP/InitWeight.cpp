@@ -117,15 +117,16 @@ void InitWeight (void)
 
         size = sp->nldim * sp->nldim * sp->nldim;
 // p1_fine, plan for non-local fine grid
-        p1_fine = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
         // if sp->nldim > get_NX_GRID, folding of neighbor cells are needed. 
         xdim = std::min(sp->nldim, get_NX_GRID());
         ydim = std::min(sp->nldim, get_NY_GRID());
         zdim = std::min(sp->nldim, get_NZ_GRID());
         size = xdim * ydim * zdim;
-        p2_forward = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_FORWARD, FFTW_MEASURE);
-        p2_backward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_BACKWARD, FFTW_MEASURE);
+
+        p1_fine = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        p2_backward = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_BACKWARD, FFTW_MEASURE);
+        p2_forward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
@@ -135,9 +136,9 @@ void InitWeight (void)
             InitWeightOne(sp, betaptr, phaseptr, proj.ip, proj.l, proj.m, p0_fine, p1_fine, p2_forward, p2_backward);
         }
 
-        fftw_destroy_plan (p1_fine);
         fftw_destroy_plan (p2_forward);
         fftw_destroy_plan (p2_backward);
+        fftw_destroy_plan (p1_fine);
 
     }                           /* end for */
 
@@ -171,7 +172,6 @@ void InitWeight (void)
     // Next if using non-localized projectors we need to remap the global forward beta into domain-decomposed
     // forward beta
     if(ct.localize_projectors) return;
-
 
     int ilo = get_PX_OFFSET();
     int jlo = get_PY_OFFSET();

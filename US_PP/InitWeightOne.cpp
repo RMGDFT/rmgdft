@@ -18,6 +18,8 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "AtomicInterpolate.h"
+#include "RmgException.h"
+
 
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, 
         fftw_plan p0_fine, fftw_plan p1_fine, fftw_plan p2_forward, fftw_plan p2_backward)
@@ -29,7 +31,6 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     std::complex<double> *weptr, *gwptr;
     int xdim, ydim, zdim;
 
-    // define functions to distiguish s, px, py, pz, ....
 
     double hxx = get_hxgrid() / (double) ct.nxfgrid;
     double hyy = get_hygrid() / (double) ct.nyfgrid;
@@ -46,12 +47,18 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 
 
 
+    if(!weptr || !gwptr)
+        throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
+
+
+
     // We assume that ion is in the center of non-local box for the localized
     // projector case. For the non-localized case it does not matter as long as
     // usage is consistent here and in GetPhase.cpp
 
     for(idx = 0; idx < size; idx++) weptr[idx] = 0.0;
 
+    RmgTimer *RT0 = new RmgTimer("weight cal");
     for (int ix = 1; ix < sp->nlfdim; ix++)
     {
         double xc = (double) (ix-sp->nlfdim/2) *hxx;
@@ -76,9 +83,6 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
                 idx1 = ix * sp->nlfdim * sp->nlfdim + iy * sp->nlfdim + iz;
                 weptr[idx1] += Ylm(l, m, bx) * t1 ;
 
-                //if((ix*2 + nlfxdim) == 0 || (iy*2 + nlfydim) == 0 || (iz*2 + nlfzdim) == 0 ) 
-                //    weptr[idx] = 0.0;
-
             }                   /* end for */
 
         }                       /* end for */
@@ -86,14 +90,20 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 
     }                           /* end for */
 
+    delete RT0;
+    RmgTimer *RT = new RmgTimer("weight fft_fine");
     fftw_execute_dft (p1_fine, reinterpret_cast<fftw_complex*>(weptr), reinterpret_cast<fftw_complex*>(gwptr));
+    delete RT;
 
     PackGftoc (sp->nlfdim, sp->nlfdim, sp->nlfdim, sp->nldim, sp->nldim, sp->nldim, gwptr, weptr);
 
 //    for(int ix = 0; ix < sp->nldim; ix++) printf("\n aaa %d %e %e", ix, weptr[ix]);
 
+    RmgTimer *RT1 = new RmgTimer("weight fft_nldim");
     fftw_execute_dft (p2_backward, reinterpret_cast<fftw_complex*>(weptr), reinterpret_cast<fftw_complex*>(gwptr));
+    delete RT1;
 
+    RmgTimer *RT2 = new RmgTimer("weight fold");
     xdim = std::min(sp->nldim, get_NX_GRID());
     ydim = std::min(sp->nldim, get_NY_GRID());
     zdim = std::min(sp->nldim, get_NZ_GRID());
@@ -102,14 +112,14 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     for(idx = 0; idx < size; idx++) weptr[idx] = 0.0;
     for (int ix = 0; ix < sp->nldim; ix++)
     {
-        int ixx = (ix-sp->nldim/2 + xdim/2) % xdim;
+        int ixx = (ix-sp->nldim/2 + xdim/2 + 20 * xdim) % xdim;
 
         for (int iy = 0; iy < sp->nldim; iy++)
         {
-            int iyy = (iy-sp->nldim/2 + ydim/2) % ydim;
+            int iyy = (iy-sp->nldim/2 + ydim/2 + 20 * ydim) % ydim;
             for (int iz = 0; iz < sp->nldim; iz++)
             {
-                int izz = (iz-sp->nldim/2 + zdim/2) % zdim;
+                int izz = (iz-sp->nldim/2 + zdim/2 + 20 * zdim) % zdim;
                 idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
                 idx = ixx * ydim * zdim + iyy * zdim + izz;
                 weptr[idx] += gwptr[idx1] * phaseptr[idx1]/double(size);
@@ -117,15 +127,13 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
         }
     }
 
- //   for(int ix = 0; ix < sp->nldim; ix++) printf("\n bbb %d %e %e", ix, weptr[ix]);
 
-    fftw_execute_dft (p2_forward, reinterpret_cast<fftw_complex*>(weptr), rtptr);
-
+    delete RT2;
+    RmgTimer *RT3 = new RmgTimer("weight fft_forward");
+   fftw_execute_dft (p2_forward, reinterpret_cast<fftw_complex*>(weptr), rtptr);
+    delete RT3;
 
     delete []gwptr;
     delete []weptr;
 }
-
-
-
 
