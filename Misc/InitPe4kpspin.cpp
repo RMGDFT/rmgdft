@@ -51,7 +51,7 @@ void InitPe4kpspin()
     int npes;
     npes = pct.image_npes[pct.thisimg]/nspin;
 
-    if(pct.pe_kpoint <1 || pct.pe_kpoint > npes)
+    if(pct.pe_kpoint <1 || pct.pe_kpoint > npes || ct.num_kpts%pct.pe_kpoint !=0)
     {
         pct.pe_kpoint = 1;
 
