@@ -145,10 +145,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
                     tem_array[ix] = std::real(nbeptr[ix]);
                 }
 
-                std::complex<double> *phaseptr = (std::complex<double> *)pct.phaseptr[ion];
-                int kpt_local = Kptr[kpt]->kidx ;
-                phaseptr += kpt_local * nlxdim * nlydim * nlzdim;
-
 
                 // Apply phase factor for non-gamma
 // FIX: have to fix this up for non-gamma

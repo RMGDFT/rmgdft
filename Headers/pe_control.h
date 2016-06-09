@@ -107,7 +107,6 @@ typedef struct
     int *lptrlen;
 
     /** Phase shifts for the non-local operators */
-    double **phaseptr;
 
     /** Points to start of storage for theaugument function*/
     double **augfunc;

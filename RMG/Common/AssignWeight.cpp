@@ -88,10 +88,6 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
         tem_array[ix] = std::real(nbeptr[ix]);
     }
 
-    std::complex<double> *phaseptr = (std::complex<double> *)pct.phaseptr[ion];
-    int kpt_local = kptr->kidx ;
-    phaseptr += kpt_local * nlxdim * nlydim * nlzdim;
-
 
     int *pidx = pct.nlindex[ion];
     int *dvec = pct.idxflag[ion];

@@ -130,7 +130,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 
     delete RT2;
     RmgTimer *RT3 = new RmgTimer("weight fft_forward");
-   fftw_execute_dft (p2_forward, reinterpret_cast<fftw_complex*>(weptr), rtptr);
+    fftw_execute_dft (p2_forward, reinterpret_cast<fftw_complex*>(weptr), rtptr);
     delete RT3;
 
     delete []gwptr;

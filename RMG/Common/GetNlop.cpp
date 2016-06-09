@@ -69,8 +69,8 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     /* Grab some memory for temporary storage */
     alloc = ct.max_nlpoints;
     
-    if (alloc <get_P0_BASIS())
-        alloc =get_P0_BASIS();
+    if (alloc <get_NX_GRID() * get_NY_GRID() * get_NZ_GRID())
+        alloc =get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
     pvec = new int[2*alloc];
     dvec = pvec + alloc;
 
