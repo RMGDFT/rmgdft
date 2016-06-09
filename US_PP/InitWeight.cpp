@@ -32,10 +32,10 @@ void InitWeight (void)
 
     int ip, prjcount, isp, size, tot_proj;
     SPECIES *sp;
-    fftw_plan p1, p2, p3;
+    fftw_plan p0_fine, p1_fine, p2_forward, p2_backward;
     fftw_complex *in, *out, *betaptr;
     std::complex<double> *phaseptr;
-    int xdimfine, ydimfine, zdimfine;
+    int xdim, ydim, zdim, nlfdim_max;
 
     typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     PROJ_INFO proj;
@@ -43,12 +43,14 @@ void InitWeight (void)
 
     // get tot number of projectors and their information
 
+    nlfdim_max = 0;
     tot_proj = 0;
     for (isp = 0; isp < ct.num_species; isp++)
     {
         /* Get species type */
         sp = &ct.sp[isp];
 
+        nlfdim_max = std::max(nlfdim_max, sp->nlfdim);
         size = sp->nldim * sp->nldim * sp->nldim;
         sp->phase = new fftw_complex[size * ct.num_kpts_pe];
         phaseptr = (std::complex<double> *)sp->phase;
@@ -92,47 +94,56 @@ void InitWeight (void)
         tot_proj += prjcount;
     }
 
+    xdim = std::max(nlfdim_max, get_NX_GRID() * ct.nxfgrid);
+    ydim = std::max(nlfdim_max, get_NY_GRID() * ct.nxfgrid);
+    zdim = std::max(nlfdim_max, get_NZ_GRID() * ct.nxfgrid);
+    in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdim * ydim * zdim);
+    out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdim * ydim * zdim);
+
+    if(!in || !out)
+        throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
+
+    xdim = get_NX_GRID() * ct.nxfgrid;
+    ydim = get_NY_GRID() * ct.nxfgrid;
+    zdim = get_NZ_GRID() * ct.nxfgrid;
+//  p0_fine plan is for whole space grid, used for folding at gamma point calculations. 
+    p0_fine = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
     for(int iproj = pct.gridpe; iproj < tot_proj; iproj+=pct.grid_npes)
     {
         proj = proj_iter[iproj];
 
         sp = &ct.sp[proj.species];
- 
+
         size = sp->nldim * sp->nldim * sp->nldim;
-        xdimfine = sp->nlfdim;
-        ydimfine = sp->nlfdim;
-        zdimfine = sp->nlfdim;
+// p1_fine, plan for non-local fine grid
+        p1_fine = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
-        if(!ct.localize_projectors){
-            size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-            xdimfine = get_NX_GRID() * ct.nxfgrid;
-            ydimfine = get_NY_GRID() * ct.nxfgrid;
-            zdimfine = get_NZ_GRID() * ct.nxfgrid;
-        }
+        // if sp->nldim > get_NX_GRID, folding of neighbor cells are needed. 
+        xdim = std::min(sp->nldim, get_NX_GRID());
+        ydim = std::min(sp->nldim, get_NY_GRID());
+        zdim = std::min(sp->nldim, get_NZ_GRID());
+        size = xdim * ydim * zdim;
+        p2_forward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        p2_backward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_BACKWARD, FFTW_MEASURE);
 
-        
-        /*This is something we need to do only once per species, so do not use wisdom */
-        in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdimfine * ydimfine * zdimfine);
-        out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdimfine * ydimfine * zdimfine);
-
-        if(!in || !out)
-            throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
-
-        p1 = fftw_plan_dft_3d (xdimfine, ydimfine, zdimfine, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
             phaseptr = (std::complex<double> *) &sp->phase[kpt * sp->nldim * sp->nldim * sp->nldim];
             betaptr = &sp->forward_beta[kpt *sp->num_projectors *size + proj.proj_index * size];
-            InitWeightOne(sp, betaptr, phaseptr, proj.ip, proj.l, proj.m, p1);
+            InitWeightOne(sp, betaptr, phaseptr, proj.ip, proj.l, proj.m, p0_fine, p1_fine, p2_forward, p2_backward);
         }
 
-        fftw_destroy_plan (p1);
-        fftw_free(out);
-        fftw_free(in);
+        fftw_destroy_plan (p1_fine);
+        fftw_destroy_plan (p2_forward);
+        fftw_destroy_plan (p2_backward);
 
     }                           /* end for */
+
+    fftw_destroy_plan (p0_fine);
+    fftw_free(out);
+    fftw_free(in);
 
     int root;
     for(int iproj = 0; iproj < tot_proj; iproj++)
