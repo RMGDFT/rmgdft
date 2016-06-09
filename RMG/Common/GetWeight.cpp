@@ -154,7 +154,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 // FIX: have to fix this up for non-gamma
                 if(!ct.is_gamma) {
                     for (int idx = 0; idx < pbasis; idx++)
-                        tem_array_C[idx] = std::real(nbeptr[idx]) * conj(phaseptr[idx]);
+                        tem_array_C[idx] = nbeptr[idx];
                 }
 
                 // Apply B operator then map weights back
@@ -171,7 +171,7 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
 
                     }
                     else {
-                        Nlweight_C[idx] = std::real(nbeptr[idx]) * conj(phaseptr[idx]);
+                        Nlweight_C[idx] = nbeptr[idx];
                         Bweight_C[idx] = Btem_array_C[idx];
                     }
 

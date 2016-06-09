@@ -122,7 +122,7 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
             FindPhase (nlxdim, nlydim, nlzdim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
 
             /*Temporary pointer to the already calculated forward transform */
-            fptr = (std::complex<double> *)sp->forward_beta;
+            fptr = (std::complex<double> *)&sp->forward_beta[kpt*sp->num_projectors * coarse_size];
 
 
             /* Loop over radial projectors */

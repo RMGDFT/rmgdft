@@ -110,7 +110,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
             {
                 int idx1 = ix * nlydim * nlzdim + iy * nlzdim + iz;
                 if(!ct.is_gamma) {
-                    tem_array_C[idx1] = std::real(nbeptr[idx1]) * conj(phaseptr[idx1]);
+                    tem_array_C[idx1] = nbeptr[idx1];
                 }
 
                 if (dvec[idx])
@@ -166,7 +166,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
                     }
                     else {
-                        Nlweight_C[pidx[docount]] = std::real(nbeptr[idx1]) * conj(phaseptr[idx1]);
+                        Nlweight_C[pidx[docount]] = nbeptr[idx1];
                         Bweight_C[pidx[docount]] = Btem_array_C[idx1];
                         Nlweight_C[pidx[docount]] *= w1*w2*w3;
                         Bweight_C[pidx[docount]] *= w1*w2*w3;

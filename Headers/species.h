@@ -212,19 +212,13 @@ typedef struct
     /*Total number (of what exactly ???) */
     int num_projectors;
 
+    fftw_complex *phase;
 
     /*This will store results of forward fourier transform on the coarse grid */
     fftw_complex *forward_beta;
     fftw_complex *forward_vnuc;
     fftw_complex *forward_rhoc;
     fftw_complex *forward_rhocore;
-
-#if !FDIFF_BETA
-    /*This will store results of forward fourier transform for derivatives of beta on the coarse grid */
-    fftw_complex *forward_derbeta_x;
-    fftw_complex *forward_derbeta_y;
-    fftw_complex *forward_derbeta_z;
-#endif
 
     /*Backwards wisdom for fftw */
     char *backward_wisdom;

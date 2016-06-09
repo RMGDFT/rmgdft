@@ -35,7 +35,7 @@ void pack_gftoc (SPECIES * sp, double complex * gwptr, double complex * gbptr)
         int mindim = nlxdim;
         if(nlydim < mindim) mindim = nlydim;
         if(nlzdim < mindim) mindim = nlzdim;
-        icut = (mindim / 2 - 1) * (mindim / 2 - 1);
+        icut = (mindim / 2) * (mindim / 2);
 
         ixstart = -nlxdim/2;
         iystart = -nlydim/2;
@@ -66,9 +66,7 @@ void pack_gftoc (SPECIES * sp, double complex * gwptr, double complex * gbptr)
                 idx1 = i1 * nlydim * nlzdim + j1 * nlzdim + k1;
                 idx2 = i2 * nlfydim * nlfzdim + j2 * nlfzdim + k2;
 
-                //if(icut >= (isq + jsq + ksq)) {
-                {
-                    //gbptr[idx1] =  wx*wy*wz*gwptr[idx2] / (double) size;
+                if(icut >= (isq + jsq + ksq)) {
                     gbptr[idx1] +=  gwptr[idx2] / (double) size;
                 }
             }

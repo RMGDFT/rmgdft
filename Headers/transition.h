@@ -260,12 +260,13 @@ void InitLocalForward();
 void InitLocalBackward(double *, double *, double *);
 void GetPhase (ION *, std::complex<double> *);
 void PrintSums(double *, int, char*);
-void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, fftw_plan p1);
+void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, fftw_plan p1);
 void InitWeight(void);
 double CubicHarmonic(int L, int M, double *r);
 double Ylm(int L, int M, double *r);
 void InitClebschGordan (int lmax, double *ap, int *lpx, int *lpl);
 void GetQI(void);
+void GetPhaseSpecies(SPECIES *sp, std::complex<double> *phaseptr);
 
 #endif
 #endif

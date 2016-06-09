@@ -10,12 +10,13 @@
 #include <fstream>
 #include <sstream>
 
+#include <complex>
+
 #include "make_conf.h"
 #include "const.h"
 #include "grid.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include <complex>
 #include "Kpoint.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -31,8 +32,10 @@ void InitWeight (void)
 
     int ip, prjcount, isp, size, tot_proj;
     SPECIES *sp;
-    fftw_plan p1;
-    fftw_complex *in, *out;
+    fftw_plan p1, p2, p3;
+    fftw_complex *in, *out, *betaptr;
+    std::complex<double> *phaseptr;
+    int xdimfine, ydimfine, zdimfine;
 
     typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     PROJ_INFO proj;
@@ -46,7 +49,10 @@ void InitWeight (void)
         /* Get species type */
         sp = &ct.sp[isp];
 
-
+        size = sp->nldim * sp->nldim * sp->nldim;
+        sp->phase = new fftw_complex[size * ct.num_kpts_pe];
+        phaseptr = (std::complex<double> *)sp->phase;
+        GetPhaseSpecies(sp, phaseptr);
         /*Loop over all betas to calculate num of projectors for given species */
         prjcount = 0;
         for (ip = 0; ip < sp->nbeta; ip++)
@@ -69,14 +75,16 @@ void InitWeight (void)
         sp->num_projectors = prjcount;
 
         /*This array will store forward fourier transform on the coarse grid for all betas */
+/*
         if(pct.procs_per_host > 1) {
             char sname[256];
             snprintf(sname, sizeof(sname), "RMG_ForwardBeta_%s", sp->atomic_symbol);
-            sp->forward_beta = (fftw_complex *)AllocSharedMemorySegment(sname, sizeof(fftw_complex) * sp->num_projectors * size);
+            sp->forward_beta = (fftw_complex *)AllocSharedMemorySegment(sname, sizeof(fftw_complex) * sp->num_projectors * size * ct.num_kpts_pe);
         }
         if(!sp->forward_beta) {
-            sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * size);
         }
+*/
+        sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * size * ct.num_kpts_pe);
 
         if (sp->forward_beta == NULL)
             throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
@@ -92,31 +100,33 @@ void InitWeight (void)
         sp = &ct.sp[proj.species];
  
         size = sp->nldim * sp->nldim * sp->nldim;
-        if(!ct.localize_projectors) size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+        xdimfine = sp->nlfdim;
+        ydimfine = sp->nlfdim;
+        zdimfine = sp->nlfdim;
+
+        if(!ct.localize_projectors){
+            size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+            xdimfine = get_NX_GRID() * ct.nxfgrid;
+            ydimfine = get_NY_GRID() * ct.nxfgrid;
+            zdimfine = get_NZ_GRID() * ct.nxfgrid;
+        }
 
         
         /*This is something we need to do only once per species, so do not use wisdom */
-        if(ct.localize_projectors) {
-            in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-            out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->nlfdim * sp->nlfdim * sp->nlfdim);
-        }
-        else {
-            in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * ct.nxfgrid * ct.nxfgrid * ct.nxfgrid * get_NX_GRID() *  get_NY_GRID() * get_NZ_GRID());
-            out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * ct.nxfgrid * ct.nxfgrid * ct.nxfgrid * get_NX_GRID() *  get_NY_GRID() * get_NZ_GRID());
-        }
-
+        in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdimfine * ydimfine * zdimfine);
+        out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdimfine * ydimfine * zdimfine);
 
         if(!in || !out)
             throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
-        if(ct.localize_projectors) {
-            p1 = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
-        }
-        else {
-            p1 = fftw_plan_dft_3d (get_NX_GRID()*ct.nxfgrid, get_NY_GRID()*ct.nxfgrid, get_NZ_GRID()*ct.nxfgrid, in, out, FFTW_FORWARD, FFTW_MEASURE);
-        }
+        p1 = fftw_plan_dft_3d (xdimfine, ydimfine, zdimfine, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
-        InitWeightOne(sp, &sp->forward_beta[proj.proj_index * size], proj.ip, proj.l, proj.m, p1);
+        for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
+        {
+            phaseptr = (std::complex<double> *) &sp->phase[kpt * sp->nldim * sp->nldim * sp->nldim];
+            betaptr = &sp->forward_beta[kpt *sp->num_projectors *size + proj.proj_index * size];
+            InitWeightOne(sp, betaptr, phaseptr, proj.ip, proj.l, proj.m, p1);
+        }
 
         fftw_destroy_plan (p1);
         fftw_free(out);
@@ -133,9 +143,19 @@ void InitWeight (void)
         size = sp->nldim * sp->nldim * sp->nldim;
         if(!ct.localize_projectors) size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
-        MPI_Bcast(&sp->forward_beta[proj.proj_index * size], 2*size, MPI_DOUBLE, root, pct.grid_comm);
+        for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
+        {
+            betaptr = &sp->forward_beta[kpt *sp->num_projectors *size + proj.proj_index * size];
+            MPI_Bcast(betaptr, 2*size, MPI_DOUBLE, root, pct.grid_comm);
+        }
     }
-        
+
+    for (isp = 0; isp < ct.num_species; isp++)
+    {
+        sp = &ct.sp[isp];
+        //        delete sp->phase;
+    }
+
 
     // Next if using non-localized projectors we need to remap the global forward beta into domain-decomposed
     // forward beta
@@ -169,9 +189,9 @@ void InitWeight (void)
                     for(int k = 0;k < dimz;k++) {
                         bool map = (i >= ilo) && (i < ihi) && (j >= jlo) && (j < jhi) && (k >= klo) && (k < khi);
                         if(map) {
-                           int idx1 = (i - ilo) * (jhi - jlo) * (khi - klo) + (j - jlo) * (khi - klo) + (k - klo);
-                           int idx2 = i * dimy * dimz + j * dimz + k;
-                           fptr[iproj * dist_size + idx1] = saved_beta[iproj * size + idx2]; 
+                            int idx1 = (i - ilo) * (jhi - jlo) * (khi - klo) + (j - jlo) * (khi - klo) + (k - klo);
+                            int idx2 = i * dimy * dimz + j * dimz + k;
+                            fptr[iproj * dist_size + idx1] = saved_beta[iproj * size + idx2]; 
                         }
                     }
                 }

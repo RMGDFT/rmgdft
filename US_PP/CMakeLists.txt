@@ -1,4 +1,5 @@
 add_library (US_PP
+GetPhaseSpecies.cpp
 InitClebschGordan.cpp
 Ylm.cpp
 CubicHarmonic.cpp

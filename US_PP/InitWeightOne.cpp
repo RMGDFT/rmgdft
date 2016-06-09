@@ -19,13 +19,19 @@
 #include "transition.h"
 #include "AtomicInterpolate.h"
 
-void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, fftw_plan p1)
+void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, fftw_plan p1)
 {
 
-    int idx, size;
+    int idx, idx1, size;
     double r, ax[3], bx[3];
     double t1;
     std::complex<double> *weptr, *gwptr;
+    fftw_plan p2, p3;
+    fftw_complex *in, *out;
+    fftw_complex *in1, *out1;
+
+        in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->nldim * sp->nldim * sp->nldim);
+        out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->nldim * sp->nldim * sp->nldim);
 
     // define functions to distiguish s, px, py, pz, ....
 
@@ -84,7 +90,9 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
 
                 t1 = AtomicInterpolateInline(&sp->betalig[ip][0], r);
                 idx = ixx * ydim * zdim + iyy * zdim + izz;
-                weptr[idx] += Ylm(l, m, bx) * t1;
+                idx1 = ix * sp->nlfdim * sp->nlfdim + iy * sp->nlfdim + iz;
+                //weptr[idx] += Ylm(l, m, bx) * t1 * phaseptr[idx1];
+                weptr[idx1] += Ylm(l, m, bx) * t1 ;
 
                 //if((ix*2 + nlfxdim) == 0 || (iy*2 + nlfydim) == 0 || (iz*2 + nlfzdim) == 0 ) 
                 //    weptr[idx] = 0.0;
@@ -98,9 +106,31 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, int ip, int l, int m, ff
 
     fftw_execute_dft (p1, reinterpret_cast<fftw_complex*>(weptr), reinterpret_cast<fftw_complex*>(gwptr));
 
-    pack_gftoc (sp, reinterpret_cast<fftw_complex*>(gwptr), reinterpret_cast<fftw_complex*>(rtptr));
+    pack_gftoc (sp, reinterpret_cast<fftw_complex*>(gwptr), reinterpret_cast<fftw_complex*>(weptr));
+
+    p2 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+    p3 = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_BACKWARD, FFTW_MEASURE);
+
+
+    fftw_execute_dft (p3, reinterpret_cast<fftw_complex*>(weptr), reinterpret_cast<fftw_complex*>(gwptr));
+
+    size = sp->nldim * sp->nldim * sp->nldim;
+    for (int ix = 0; ix < sp->nldim; ix++)
+    for (int iy = 0; iy < sp->nldim; iy++)
+    for (int iz = 0; iz < sp->nldim; iz++)
+        gwptr[ix * sp->nldim * sp->nldim + iy * sp->nldim + iz] *= phaseptr[ix*sp->nldim *sp->nldim + iy *sp->nldim + iz]/double(size);
+
+    fftw_execute_dft (p2, reinterpret_cast<fftw_complex*>(gwptr), rtptr);
+
 
     delete []gwptr;
     delete []weptr;
+    fftw_free(in);
+    fftw_free(out);
+    fftw_destroy_plan(p2);
+    fftw_destroy_plan(p3);
 }
+
+
+
 
