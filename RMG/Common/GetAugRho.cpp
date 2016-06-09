@@ -51,15 +51,15 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
     int max_product = (ct.max_nl + 1) * ct.max_nl / 2;
     double *qtpr;
 
-    double *product = new double[max_product];
-    KpointType *sint = new KpointType[2 * ct.max_nl];
-
     int pbasis = Kpts[0]->G->get_P0_BASIS(Kpts[0]->G->default_FG_RATIO);
     for(int idx = 0;idx < pbasis;idx++)
         augrho[idx] = 0.0;
 
 
     if(!ct.norm_conserving_pp) {
+
+        double *product = new double[max_product];
+        KpointType *sint = new KpointType[2 * ct.max_nl];
 
         for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
         {
@@ -135,13 +135,12 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
         }                           /*end for ion */
 
+        GlobalSums(augrho, pbasis, pct.kpsub_comm);
+        symmetrize_rho (augrho);
+
+        delete [] sint;
+        delete [] product;
+
     }
 
-    GlobalSums(augrho, pbasis, pct.kpsub_comm);
-    symmetrize_rho (augrho);
-
-
-
-    delete [] sint;
-    delete [] product;
 }
