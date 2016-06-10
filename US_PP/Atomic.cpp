@@ -537,8 +537,8 @@ void Atomic::RLogGridToGLogGrid (
                    double cparm,        // IN:  filtering parameter
                    double * f,          // IN:  function to be filtered defined on pseudopotential grid
                    double * r,          // IN:  pseudopotential grid dimensioned r[rg_points], logarithmic
-                   double * f_g,        // OUT: on radial g grid
                    double *rab,         // IN:  radial volume element from the pseudopotential file
+                   double * f_g,        // OUT: on radial g grid
                    int rg_points,       // IN:  number of points in pseudopotential radial grid
                    int lval,
                    double width)        // IN:  width of gaussian cutoff in g-space
