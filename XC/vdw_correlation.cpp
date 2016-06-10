@@ -208,14 +208,14 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
                                        (double (*)[2])thetas,
                                        pct.pfft_comm, 
                                        PFFT_FORWARD, 
-                                       PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+                                       PFFT_TRANSPOSED_NONE|PFFT_MEASURE);
 
   this->plan_back = pfft_plan_dft_3d(this->densgrid, 
                                      (pfft_complex *)thetas, 
                                      (pfft_complex *)thetas,
                                      pct.pfft_comm, 
                                      PFFT_BACKWARD, 
-                                     PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+                                     PFFT_TRANSPOSED_NONE|PFFT_MEASURE);
   if(use_coarsegrid) {
 
       this->plan_forward_calc = pfft_plan_dft_3d(this->coarsegrid,
@@ -223,14 +223,14 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
                                                 (double (*)[2])thetas,
                                                 pct.pfft_comm,
                                                 PFFT_FORWARD,
-                                                PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+                                                PFFT_TRANSPOSED_NONE|PFFT_MEASURE);
 
       this->plan_back_calc = pfft_plan_dft_3d(this->coarsegrid, 
                                              (pfft_complex *)thetas, 
                                              (pfft_complex *)thetas,
                                              pct.pfft_comm, 
                                              PFFT_BACKWARD, 
-                                             PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
+                                             PFFT_TRANSPOSED_NONE|PFFT_MEASURE);
 
   }
   else {
