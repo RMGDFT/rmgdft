@@ -116,6 +116,12 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             nlydim = get_NY_GRID();
             nlzdim = get_NZ_GRID();
             iptr->nlxcstart = iptr->nlycstart = iptr->nlzcstart = 0.0;
+            ilow = get_PX_OFFSET();
+            ihi = ilow + get_PX0_GRID() -1;
+            jlow = get_PY_OFFSET();
+            jhi = jlow + get_PY0_GRID() -1;
+            klow = get_PZ_OFFSET();
+            khi = klow + get_PZ0_GRID() -1;
         }
         else
             map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,

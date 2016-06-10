@@ -189,20 +189,25 @@ void InitWeight (void)
     {
         /* Get species type */
         sp = &ct.sp[isp];
-        std::complex<double> *saved_beta = (std::complex<double> *)sp->forward_beta;
-        sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * dist_size * sp->num_projectors);
-        std::complex<double> *fptr = (std::complex<double> *)sp->forward_beta;
 
-        for(int iproj = 0;iproj < sp->num_projectors;iproj++) 
-        {
-            for(int i = 0;i < dimx;i++) {
-                for(int j = 0;j < dimy;j++) {
-                    for(int k = 0;k < dimz;k++) {
-                        bool map = (i >= ilo) && (i < ihi) && (j >= jlo) && (j < jhi) && (k >= klo) && (k < khi);
-                        if(map) {
-                            int idx1 = (i - ilo) * (jhi - jlo) * (khi - klo) + (j - jlo) * (khi - klo) + (k - klo);
-                            int idx2 = i * dimy * dimz + j * dimz + k;
-                            fptr[iproj * dist_size + idx1] = saved_beta[iproj * size + idx2]; 
+        std::complex<double> *saved_beta_all = (std::complex<double> *)sp->forward_beta;
+        sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * dist_size * sp->num_projectors * ct.num_kpts_pe);
+
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++){
+            std::complex<double> *fptr = (std::complex<double> *)&sp->forward_beta[kpt * sp->num_projectors * dist_size];
+            std::complex<double> *saved_beta = &saved_beta_all[kpt * sp->num_projectors * size];
+
+            for(int iproj = 0;iproj < sp->num_projectors;iproj++) 
+            {
+                for(int i = 0;i < dimx;i++) {
+                    for(int j = 0;j < dimy;j++) {
+                        for(int k = 0;k < dimz;k++) {
+                            bool map = (i >= ilo) && (i < ihi) && (j >= jlo) && (j < jhi) && (k >= klo) && (k < khi);
+                            if(map) {
+                                int idx1 = (i - ilo) * (jhi - jlo) * (khi - klo) + (j - jlo) * (khi - klo) + (k - klo);
+                                int idx2 = i * dimy * dimz + j * dimz + k;
+                                fptr[iproj * dist_size + idx1] = saved_beta[iproj * size + idx2]; 
+                            }
                         }
                     }
                 }
