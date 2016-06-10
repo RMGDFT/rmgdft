@@ -55,6 +55,7 @@ public:
     Atomic (void);
     ~Atomic (void);
     void RftToLogGrid (double cparm, double * f, double * r, double * ffil, double *rab, int rg_points, int lval, double width);
+    void RLogGridToGLogGrid (double cparm, double * f, double * r, double *rab, double * ffil, double *gvec, int rg_points, int lval, double width);
     double BesselToLogGrid (double cparm, double * f, double * r, double * ffil, double *rab, int rg_points, int lval, double rcut, double hmin);
     void FilterPotential (double *potential, double *r, int rg_points, double rmax,
                               double parm, double* potential_lgrid, double *rab,
