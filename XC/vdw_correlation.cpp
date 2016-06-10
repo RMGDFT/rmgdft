@@ -163,7 +163,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->coarsegrid[2] = G.get_NZ_GRID(1);
   this->N_c = this->coarsegrid[0] * this->coarsegrid[1] * this->coarsegrid[2];
 
-
   // How many terms to include in the sum of SOLER equation 5.
   this->m_cut = 12;
 
@@ -333,12 +332,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
       kernel_file.close();
 
-      // Use the global plane wave objects
-      this->plane_waves = fine_pwaves;
-      if(use_coarsegrid) {
-          this->plane_waves_c = coarse_pwaves;
-      }
-
       // Allocate memory for the second derivatives used in the spline interpolation and initialize the values
       this->d2y_dx2 = new double[Nqs*Nqs]();
       double *y = new double[Nqs];
@@ -380,18 +373,19 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       this->info();
   }
 
+  // Use the global plane wave objects
   if(use_coarsegrid) {
-      planewaves_calc = this->plane_waves_c;
+      planewaves_calc = coarse_pwaves;
   }
   else {
-      planewaves_calc = this->plane_waves;
+      planewaves_calc = fine_pwaves;
   }
 
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
   // Filter out higher frequencies here to improve stability
-  FftFilter(total_rho, *this->plane_waves, filter_ratio, LOW_PASS);
+  FftFilter(total_rho, *planewaves_calc, filter_ratio, LOW_PASS);
   CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
   //FftGradientFine(total_rho, gx, gy, gz);
 
