@@ -15,7 +15,7 @@ void PackGftoc (int nlfxdim, int nlfydim, int nlfzdim, int nlxdim, int nlydim, i
     int idx1, idx2, i, j, k, size;
     int i1, i2, j1, j2, k1, k2;
 
-    int icut = (nlxdim / 2) * (nlxdim / 2);
+    int icut = (nlxdim / 2 - 1) * (nlxdim / 2 - 1);
     
     if(nlxdim != nlydim || nlxdim != nlzdim || nlydim != nlzdim)
     {
@@ -53,7 +53,7 @@ void PackGftoc (int nlfxdim, int nlfydim, int nlfzdim, int nlxdim, int nlydim, i
                 idx1 = i1 * nlydim * nlzdim + j1 * nlzdim + k1;
                 idx2 = i2 * nlfydim * nlfzdim + j2 * nlfzdim + k2;
 
-                if(icut >= (isq + jsq + ksq)) {
+                if(icut > (isq + jsq + ksq)) {
                     gbptr[idx1] +=  gwptr[idx2] / (double) size;
                 }
             }
