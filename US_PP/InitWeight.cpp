@@ -124,10 +124,18 @@ void InitWeight (void)
 // p1_fine, plan for non-local fine grid
 
         // if sp->nldim > get_NX_GRID, folding of neighbor cells are needed. 
-        xdim = std::min(sp->nldim, get_NX_GRID());
-        ydim = std::min(sp->nldim, get_NY_GRID());
-        zdim = std::min(sp->nldim, get_NZ_GRID());
+        xdim = sp->nldim;
+        ydim = sp->nldim;
+        zdim = sp->nldim;
         size = xdim * ydim * zdim;
+
+        if(!ct.localize_projectors) {
+            xdim = get_NX_GRID();
+            ydim = get_NY_GRID();
+            zdim = get_NZ_GRID();
+            size = xdim * ydim * zdim;
+        }
+
 
         p1_fine = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
         p2_backward = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
@@ -225,6 +233,6 @@ void InitWeight (void)
 
     }
     delete RT5;
-    
+
 
 }                               /* end InitWeight */
