@@ -41,10 +41,14 @@ void InitWeight (void)
     PROJ_INFO proj;
     std::vector<PROJ_INFO> proj_iter;
 
+    
+    RmgTimer RT0("Weight");
     // get tot number of projectors and their information
 
     nlfdim_max = 0;
     tot_proj = 0;
+    
+    RmgTimer *RT1= new RmgTimer("Weight: phase and set");
     for (isp = 0; isp < ct.num_species; isp++)
     {
         /* Get species type */
@@ -94,6 +98,8 @@ void InitWeight (void)
         tot_proj += prjcount;
     }
 
+    delete RT1;
+
     xdim = std::max(nlfdim_max, get_NX_GRID() * ct.nxfgrid);
     ydim = std::max(nlfdim_max, get_NY_GRID() * ct.nxfgrid);
     zdim = std::max(nlfdim_max, get_NZ_GRID() * ct.nxfgrid);
@@ -106,9 +112,8 @@ void InitWeight (void)
     xdim = get_NX_GRID() * ct.nxfgrid;
     ydim = get_NY_GRID() * ct.nxfgrid;
     zdim = get_NZ_GRID() * ct.nxfgrid;
-//  p0_fine plan is for whole space grid, used for folding at gamma point calculations. 
-    p0_fine = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
 
+    RmgTimer *RT3= new RmgTimer("Weight: proj cal");
     for(int iproj = pct.gridpe; iproj < tot_proj; iproj+=pct.grid_npes)
     {
         proj = proj_iter[iproj];
@@ -124,9 +129,9 @@ void InitWeight (void)
         zdim = std::min(sp->nldim, get_NZ_GRID());
         size = xdim * ydim * zdim;
 
-        p1_fine = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
-        p2_backward = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_BACKWARD, FFTW_MEASURE);
-        p2_forward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_FORWARD, FFTW_MEASURE);
+        p1_fine = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+        p2_backward = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+        p2_forward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
 
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
@@ -145,6 +150,8 @@ void InitWeight (void)
     fftw_destroy_plan (p0_fine);
     fftw_free(out);
     fftw_free(in);
+    delete RT3;
+    RmgTimer *RT4= new RmgTimer("Weight: bcast");
 
     int root;
     for(int iproj = 0; iproj < tot_proj; iproj++)
@@ -169,6 +176,8 @@ void InitWeight (void)
     }
 
 
+    delete RT4;
+    RmgTimer *RT5= new RmgTimer("Weight: distr");
     // Next if using non-localized projectors we need to remap the global forward beta into domain-decomposed
     // forward beta
     if(ct.localize_projectors) return;
@@ -215,5 +224,7 @@ void InitWeight (void)
         }
 
     }
+    delete RT5;
+    
 
 }                               /* end InitWeight */
