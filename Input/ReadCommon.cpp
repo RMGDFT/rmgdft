@@ -374,7 +374,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 10, INT_MAX, 10, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "The number of unoccupied orbitals.\n", 
-                     "unoccupied_states_per_kpoint must be greater than 0. Terminating.\n");
+                     "unoccupied_states_per_kpoint must be at least 10. Fixing.\n");
 
     If.RegisterInputKey("extra_random_lcao_states", &lc.extra_random_lcao_states, 0, INT_MAX, 0, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
