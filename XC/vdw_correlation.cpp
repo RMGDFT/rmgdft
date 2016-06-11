@@ -384,17 +384,16 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
-  // Filter out higher frequencies here to improve stability
-  FftFilter(total_rho, *planewaves_calc, filter_ratio, LOW_PASS);
+  //FftFilter(total_rho, *planewaves_calc, filter_ratio, LOW_PASS);
   CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
   //FftGradientFine(total_rho, gx, gy, gz);
 
   // Have to generate half density versions of gradient and rho if use_coarsegrid is true.
   if(use_coarsegrid) {
-      get_vtot_psi (calc_rho, total_rho, G.default_FG_RATIO);
-      get_vtot_psi (calc_gx, gx, G.default_FG_RATIO);
-      get_vtot_psi (calc_gy, gy, G.default_FG_RATIO);
-      get_vtot_psi (calc_gz, gz, G.default_FG_RATIO);
+      GetVtotPsi (calc_rho, total_rho, G.default_FG_RATIO);
+      GetVtotPsi (calc_gx, gx, G.default_FG_RATIO);
+      GetVtotPsi (calc_gy, gy, G.default_FG_RATIO);
+      GetVtotPsi (calc_gz, gz, G.default_FG_RATIO);
   }
   else {
       calc_rho = total_rho;
