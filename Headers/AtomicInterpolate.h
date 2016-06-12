@@ -28,6 +28,8 @@
 
 extern double Atomic_inv_a;
 extern double Atomic_inv_b;
+extern double GlogGrid_inv_a;
+extern double GlogGrid_inv_b;
 
 // Interpolates function f that is defined on the shared logarithmic grid
 static inline double AtomicInterpolateInline(double *f, double r)
@@ -43,6 +45,38 @@ static inline double AtomicInterpolateInline(double *f, double r)
     }
 
     d0 = (log (r*Atomic_inv_a) * Atomic_inv_b);
+    ic = (int)d0;
+    ic = (ic > 0) ? ic : 1;
+
+    /* cubic interpolation using forward differences */
+    d0 -= (double) (ic);
+    d1 = (d0 - 1.0) * 0.5;
+    dm = (d0 - 2.0) / 3.0;
+
+    f0 = f[ic];
+    g0 = f[ic] - f[ic - 1];
+    g1 = f[ic + 1] - f[ic];
+    g2 = f[ic + 2] - f[ic + 1];
+    h1 = g1 - g0;
+    h2 = g2 - g1;
+    i2 = h2 - h1;
+
+    return f0 + d0 * (g1 + d1 * (h2 + dm * i2));
+
+}
+
+static inline double AtomicInterpolateInline_Ggrid(double *f, double g)
+{
+    double d0, d1, dm;
+    double f0, g0, g1, g2, h1, h2, i2;
+    int ic;
+//   first Gvec = 0, then start log grid.
+
+    if((g < LOGGRID_START)) {
+        return f[0];
+    }
+
+    d0 = (log (g*GlogGrid_inv_a) * GlogGrid_inv_b);
     ic = (int)d0;
     ic = (ic > 0) ? ic : 1;
 

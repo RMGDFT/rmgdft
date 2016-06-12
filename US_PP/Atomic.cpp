@@ -44,6 +44,8 @@ double Atomic::a;
 double Atomic_inv_a;
 double Atomic::b;
 double Atomic_inv_b;
+double GlogGrid_inv_a;
+double GlogGrid_inv_b;
 
 using boost::math::policies::policy;
 using boost::math::policies::promote_double;
@@ -558,14 +560,13 @@ void Atomic::RLogGridToGLogGrid (
         alloc = MAX_RGRID;
 
     double *work1 = new double[alloc]();
-    double *gcof = new double[alloc]();
     double *gvec = new double[alloc]();
 
     int gnum = RADIAL_GVECS;
 
     /* G-vectors are defined on a log grid with the smallest value set */
     /* by the largest real-space value of r.                           */
-    gvec[0] = PI / (r[rg_points - 1]);
+    gvec[0] = LOGGRID_START;
 
     /* The smallest g-vector that we generate is defined by the global */
     /* grid spacing.                                                  */
@@ -586,11 +587,14 @@ void Atomic::RLogGridToGLogGrid (
 
     }                           /* end for */
 
+    GlogGrid_inv_b = log((gvec[2] - gvec[1]) / (gvec[1] - gvec[0]));
+    GlogGrid_inv_b = 1.0 / GlogGrid_inv_b;
+    GlogGrid_inv_a = 1.0 / gvec[0];
 
-    istep = gnum / npes;
     double alpha = (double)lval + 0.5;
 
-    for (int ift = istep * pct.gridpe; ift < istep * pct.gridpe + istep; ift++)
+    for(int ift = 0; ift< gnum; ift++) f_g[ift] = 0.0;
+    for (int ift =  pct.gridpe; ift < gnum; ift+=pct.grid_npes)
     {
         for (int idx = 0; idx < rg_points; idx++)
         {
@@ -599,29 +603,17 @@ void Atomic::RLogGridToGLogGrid (
             work1[idx] = f[idx] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
 
         }                   /* end for */
-        gcof[ift] = radint1 (work1, r, rab, rg_points);
+        f_g[ift] = 4.0 * PI * radint1 (work1, r, rab, rg_points);
     }
-    istep = npes * istep;
-    GlobalSums (gcof, istep, pct.grid_comm);
-
-    for (int ift = istep; ift < gnum; ift++)
-    {
-        for (int idx = 0; idx < rg_points; idx++)
-        {
-
-            double jarg = r[idx] * gvec[ift];
-            work1[idx] = f[idx] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
-
-        }                   /* end for */
-        gcof[ift] = radint1 (work1, r, rab, rg_points);
-    }
+    GlobalSums (f_g, gnum, pct.grid_comm);
 
 
     /* Fourier Filter the transform and store in work2 */
     for (int idx = 0; idx < gnum; idx++)
     {
 
-        f_g[idx] = gcof[idx] * Gcutoff (gvec[idx], gcut, width);
+    //    printf("\n %e %e adad", gvec[idx], f_g[idx]);
+        // f_g[idx] = gcof[idx] * Gcutoff (gvec[idx], gcut, width);
 
     }                           /* end for */
 
@@ -629,7 +621,6 @@ void Atomic::RLogGridToGLogGrid (
 
     /* Release memory */
     delete [] gvec;
-    delete [] gcof;
     delete [] work1;
 
 } // end RftToLogGrid

@@ -32,10 +32,10 @@ void InitWeight (void)
 
     int ip, prjcount, isp, size, tot_proj;
     SPECIES *sp;
-    fftw_plan p0_fine, p1_fine, p2_forward, p2_backward;
+    fftw_plan p2_forward, p2_backward;
     fftw_complex *in, *out, *betaptr;
     std::complex<double> *phaseptr;
-    int xdim, ydim, zdim, nlfdim_max;
+    int xdim, ydim, zdim, nldim_max;
 
     typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     PROJ_INFO proj;
@@ -45,7 +45,7 @@ void InitWeight (void)
     RmgTimer RT0("Weight");
     // get tot number of projectors and their information
 
-    nlfdim_max = 0;
+    nldim_max = 0;
     tot_proj = 0;
     
     RmgTimer *RT1= new RmgTimer("Weight: phase and set");
@@ -54,7 +54,7 @@ void InitWeight (void)
         /* Get species type */
         sp = &ct.sp[isp];
 
-        nlfdim_max = std::max(nlfdim_max, sp->nlfdim);
+        nldim_max = std::max(nldim_max, sp->nldim);
         size = sp->nldim * sp->nldim * sp->nldim;
         sp->phase = new fftw_complex[size * ct.num_kpts_pe];
         phaseptr = (std::complex<double> *)sp->phase;
@@ -100,18 +100,15 @@ void InitWeight (void)
 
     delete RT1;
 
-    xdim = std::max(nlfdim_max, get_NX_GRID() * ct.nxfgrid);
-    ydim = std::max(nlfdim_max, get_NY_GRID() * ct.nxfgrid);
-    zdim = std::max(nlfdim_max, get_NZ_GRID() * ct.nxfgrid);
+    xdim = std::max(nldim_max, get_NX_GRID() );
+    ydim = std::max(nldim_max, get_NY_GRID() );
+    zdim = std::max(nldim_max, get_NZ_GRID() );
     in = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdim * ydim * zdim);
     out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * xdim * ydim * zdim);
 
     if(!in || !out)
         throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
-    xdim = get_NX_GRID() * ct.nxfgrid;
-    ydim = get_NY_GRID() * ct.nxfgrid;
-    zdim = get_NZ_GRID() * ct.nxfgrid;
 
     RmgTimer *RT3= new RmgTimer("Weight: proj cal");
     for(int iproj = pct.gridpe; iproj < tot_proj; iproj+=pct.grid_npes)
@@ -137,7 +134,6 @@ void InitWeight (void)
         }
 
 
-        p1_fine = fftw_plan_dft_3d (sp->nlfdim, sp->nlfdim, sp->nlfdim, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
         p2_backward = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
         p2_forward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
 
@@ -146,16 +142,14 @@ void InitWeight (void)
         {
             phaseptr = (std::complex<double> *) &sp->phase[kpt * sp->nldim * sp->nldim * sp->nldim];
             betaptr = &sp->forward_beta[kpt *sp->num_projectors *size + proj.proj_index * size];
-            InitWeightOne(sp, betaptr, phaseptr, proj.ip, proj.l, proj.m, p0_fine, p1_fine, p2_forward, p2_backward);
+            InitWeightOne(sp, betaptr, phaseptr, proj.ip, proj.l, proj.m, p2_forward, p2_backward);
         }
 
         fftw_destroy_plan (p2_forward);
         fftw_destroy_plan (p2_backward);
-        fftw_destroy_plan (p1_fine);
 
     }                           /* end for */
 
-    fftw_destroy_plan (p0_fine);
     fftw_free(out);
     fftw_free(in);
     delete RT3;

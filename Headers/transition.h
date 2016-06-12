@@ -261,7 +261,7 @@ void InitLocalBackward(double *, double *, double *);
 void GetPhase (ION *, std::complex<double> *);
 void PrintSums(double *, int, char*);
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, 
-        fftw_plan p1, fftw_plan p2, fftw_plan p3, fftw_plan p4);
+        fftw_plan p1, fftw_plan p2);
 void InitWeight(void);
 double CubicHarmonic(int L, int M, double *r);
 double Ylm(int L, int M, double *r);

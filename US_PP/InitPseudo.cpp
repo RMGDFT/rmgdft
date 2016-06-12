@@ -191,9 +191,12 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
+            sp->beta_g[ip] = new double[RADIAL_GVECS];
             // Filtering for wavefunction grid
             A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
                     sp->rab, sp->llbeta[ip], sp->gwidth, 0.66*sp->nlradius, sp->rwidth, ct.hmingrid);
+            A->RLogGridToGLogGrid(ct.betacparm, &sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
+                    sp->rg_points, sp->llbeta[ip], sp->gwidth);
 
             /* output filtered non-local projector to a file  if requested */
             if (pct.gridpe == 0 && write_flag)

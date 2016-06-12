@@ -22,7 +22,7 @@
 
 
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, 
-        fftw_plan p0_fine, fftw_plan p1_fine, fftw_plan p2_forward, fftw_plan p2_backward)
+     fftw_plan p2_forward, fftw_plan p2_backward)
 {
 
     int idx, idx1, size;
@@ -40,73 +40,86 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     double zside = get_zside();
 
     /* nl[xyz]fdim is the size of the non-local box in the high density grid */
-    size = sp->nlfdim * sp->nlfdim * sp->nlfdim;
+    size = sp->nldim * sp->nldim * sp->nldim;
+
+    size = std::max(size, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID());
 
     weptr = new std::complex<double>[size];
     gwptr = new std::complex<double>[size];
-
 
 
     if(!weptr || !gwptr)
         throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
 
+    hxx = get_hxgrid() * get_xside();
+    hyy = get_hygrid() * get_yside();
+    hzz = get_hzgrid() * get_zside();
 
-    // We assume that ion is in the center of non-local box for the localized
-    // projector case. For the non-localized case it does not matter as long as
-    // usage is consistent here and in GetPhase.cpp
+    int ixx, iyy, izz;
+    double gval, gcut;
 
-    for(idx = 0; idx < size; idx++) weptr[idx] = 0.0;
+    xdim = sp->nldim;
+    ydim = sp->nldim;
+    zdim = sp->nldim;
 
-    RmgTimer *RT0 = new RmgTimer("weight cal");
-    for (int ix = 1; ix < sp->nlfdim; ix++)
+    gcut = (xdim/2-1) * 2.0 * PI/(hxx * xdim);
+    printf("\n gcut need to be taken care later in InitWeightOne.cpp ");
+
+    double vol = hxx * hyy * hzz * xdim * ydim * zdim;
+
+    std::complex<double> I_t(0.0, 1.0);
+    std::complex<double> IL = std::pow(-I_t, l);
+    
+    for(idx = 0; idx < xdim * ydim * zdim; idx++) weptr[idx] = 0.0;
+    for (int ix = -xdim/2; ix < xdim/2; ix++)
     {
-        double xc = (double) (ix-sp->nlfdim/2) *hxx;
-        for (int iy = 1; iy < sp->nlfdim; iy++)
+        ax[0] = ix *2.0 * PI/(hxx*xdim);
+        ixx = (ix + xdim)%xdim;
+        for (int iy = -ydim/2; iy < ydim/2; iy++)
         {
-            double yc = (double) (iy-sp->nlfdim/2) *hyy;
-            for (int iz = 1; iz < sp->nlfdim; iz++)
+            ax[1] = iy *2.0 * PI/(hyy*ydim);
+            iyy = (iy + ydim)%ydim;
+            for (int iz = -zdim/2; iz < zdim/2; iz++)
             {
-                double zc = (double) (iz-sp->nlfdim/2) *hzz;
+                ax[2] = 2.0 * PI/(hzz*zdim) * iz;
+                izz = (iz + zdim)%zdim;
+
+                gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
+                if(gval > gcut) continue;
+                t1 = AtomicInterpolateInline_Ggrid(&sp->beta_g[ip][0], gval);
+
+                idx1 = ixx * ydim * zdim + iyy * zdim + izz;
+                weptr[idx1] += IL * Ylm(l, m, ax) * t1/vol ;
+            }
+        }
+    }
+
+// shift atom to the center instead of corner
+    for(int ix = 0; ix < xdim; ix++)
+    for(int iy = 0; iy < ydim; iy++)
+    for(int iz = 0; iz < zdim; iz++)
+    {
+        idx = ix * ydim * zdim + iy * zdim + iz;
+        if( (ix + iy + iz) %2 ) weptr[idx] *=-1.0;
+    }
 
 
-                ax[0] = xc;
-                ax[1] = yc;
-                ax[2] = zc;
 
-                r = metric (ax);
-                if(r > sp->nlradius) continue;
-                to_cartesian (ax, bx);
-                r += 1.0e-10;
-
-                t1 = AtomicInterpolateInline(&sp->betalig[ip][0], r);
-                idx1 = ix * sp->nlfdim * sp->nlfdim + iy * sp->nlfdim + iz;
-                weptr[idx1] += Ylm(l, m, bx) * t1 ;
-
-            }                   /* end for */
-
-        }                       /* end for */
-
-
-    }                           /* end for */
-
-    delete RT0;
-    RmgTimer *RT = new RmgTimer("weight fft_fine");
-    fftw_execute_dft (p1_fine, reinterpret_cast<fftw_complex*>(weptr), reinterpret_cast<fftw_complex*>(gwptr));
-    delete RT;
-
-    PackGftoc (sp->nlfdim, sp->nlfdim, sp->nlfdim, sp->nldim, sp->nldim, sp->nldim, gwptr, weptr);
-
-//    for(int ix = 0; ix < sp->nldim; ix++) printf("\n aaa %d %e %e", ix, weptr[ix]);
+    //    for(int ix = 0; ix < sp->nldim; ix++) printf("\n aaa %d %e %e", ix, weptr[ix]);
 
     RmgTimer *RT1 = new RmgTimer("weight fft_nldim");
     fftw_execute_dft (p2_backward, reinterpret_cast<fftw_complex*>(weptr), reinterpret_cast<fftw_complex*>(gwptr));
     delete RT1;
 
     RmgTimer *RT2 = new RmgTimer("weight fold");
-    xdim = std::min(sp->nldim, get_NX_GRID());
-    ydim = std::min(sp->nldim, get_NY_GRID());
-    zdim = std::min(sp->nldim, get_NZ_GRID());
+    if(!ct.localize_projectors)
+    {
+        xdim = get_NX_GRID();
+        ydim = get_NY_GRID();
+        zdim = get_NZ_GRID();
+    }
+
     size = xdim * ydim * zdim;
 
     for(idx = 0; idx < size; idx++) weptr[idx] = 0.0;
@@ -132,6 +145,8 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     RmgTimer *RT3 = new RmgTimer("weight fft_forward");
     fftw_execute_dft (p2_forward, reinterpret_cast<fftw_complex*>(weptr), rtptr);
     delete RT3;
+
+    // shift atom to the center instead of corner
 
     delete []gwptr;
     delete []weptr;
