@@ -81,7 +81,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         while(!done) {
 
             sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
-            sp->nldim = sp->nldim/4*4;
+            sp->nldim = sp->nldim/2*2 + 1;
             sp->nlfdim = ct.nxfgrid * sp->nldim;
 
             if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID())) {
@@ -101,7 +101,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         if(!ct.localize_projectors) {
             sp->nlradius = 10.0;
             sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
-            sp->nldim = sp->nldim/4*4;
+            sp->nldim = sp->nldim/2*2 +1;
             sp->nlfdim = ct.nxfgrid * sp->nldim;
         }
 
@@ -193,21 +193,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
             sp->beta_g[ip] = new double[RADIAL_GVECS];
             // Filtering for wavefunction grid
-            A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
-                    sp->rab, sp->llbeta[ip], sp->gwidth, 0.66*sp->nlradius, sp->rwidth, ct.hmingrid);
+   //         A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
+   //                 sp->rab, sp->llbeta[ip], sp->gwidth, 0.66*sp->nlradius, sp->rwidth, ct.hmingrid);
             A->RLogGridToGLogGrid(ct.betacparm, &sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
                     sp->rg_points, sp->llbeta[ip], sp->gwidth);
-
-            /* output filtered non-local projector to a file  if requested */
-            if (pct.gridpe == 0 && write_flag)
-            {
-                for (int idx = 0; idx < MAX_LOGGRID; idx++)
-                {
-                    {
-                        fprintf (psp, "%e  %e\n", rgrid[idx], sp->betalig[ip][idx]);
-                    }
-                }                   /* end for */
-            }
 
             /* output xmgr data separator */
             if (pct.gridpe == 0 && write_flag)

@@ -135,8 +135,8 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     {
 
         double w1=1.0;
-        if(ix==0) w1 = 0.5*(0.5 + wx);
-        if(ix==nlxdim-1) w1 = 0.5*(0.5 - wx);
+        if(ix==0) w1 = 0.5*(0.5 - wx);
+        if(ix==nlxdim-1) w1 = 0.5*(0.5 + wx);
         for (int iy = 0; iy < nlydim; iy++)
         {
             double w2=1.0;
@@ -175,6 +175,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
             }
         }
     }
+
     if (docount != pct.idxptrlen[ion])
     {
         rmg_printf ("docount = %d != %d = pct.idxptrlen[ion = %d]\n", docount, pct.idxptrlen[ion], ion);

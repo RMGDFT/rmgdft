@@ -63,24 +63,31 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     ydim = sp->nldim;
     zdim = sp->nldim;
 
-    gcut = (xdim/2-1) * 2.0 * PI/(hxx * xdim);
+    gcut = (xdim/2) * 2.0 * PI/(hxx * xdim) + 1.0e-6;
     printf("\n gcut need to be taken care later in InitWeightOne.cpp ");
 
     double vol = hxx * hyy * hzz * xdim * ydim * zdim;
 
     std::complex<double> I_t(0.0, 1.0);
     std::complex<double> IL = std::pow(-I_t, l);
+
+//  shift the atom to center with a phase 2pi *(xdim/2)/xdim
+
+    std::complex<double> phase;
     
+    phase = 2.0 * PI * ((xdim+1)/2)/xdim * I_t;
+    phase = std::exp(phase);
+
     for(idx = 0; idx < xdim * ydim * zdim; idx++) weptr[idx] = 0.0;
-    for (int ix = -xdim/2; ix < xdim/2; ix++)
+    for (int ix = -xdim/2; ix < xdim/2+1; ix++)
     {
         ax[0] = ix *2.0 * PI/(hxx*xdim);
         ixx = (ix + xdim)%xdim;
-        for (int iy = -ydim/2; iy < ydim/2; iy++)
+        for (int iy = -ydim/2; iy < ydim/2+1; iy++)
         {
             ax[1] = iy *2.0 * PI/(hyy*ydim);
             iyy = (iy + ydim)%ydim;
-            for (int iz = -zdim/2; iz < zdim/2; iz++)
+            for (int iz = -zdim/2; iz < zdim/2+1; iz++)
             {
                 ax[2] = 2.0 * PI/(hzz*zdim) * iz;
                 izz = (iz + zdim)%zdim;
@@ -90,7 +97,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
                 t1 = AtomicInterpolateInline_Ggrid(&sp->beta_g[ip][0], gval);
 
                 idx1 = ixx * ydim * zdim + iyy * zdim + izz;
-                weptr[idx1] += IL * Ylm(l, m, ax) * t1/vol ;
+                weptr[idx1] += IL * Ylm(l, m, ax) * t1/vol;
             }
         }
     }
@@ -101,7 +108,8 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     for(int iz = 0; iz < zdim; iz++)
     {
         idx = ix * ydim * zdim + iy * zdim + iz;
-        if( (ix + iy + iz) %2 ) weptr[idx] *=-1.0;
+        weptr[idx] *= std::pow(phase, ix+iy+iz);
+//        if( (ix + iy + iz) %2 ) weptr[idx] *=-1.0;
     }
 
 

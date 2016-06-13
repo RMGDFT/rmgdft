@@ -151,10 +151,12 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     // Apply operators on each wavefunction
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: apply operators");
+    RmgTimer *RT2 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 
     // Apply Nls
     AppNls(kptr, kptr->newsint_local, kptr->Kstates[0].psi, kptr->nv, kptr->ns, kptr->Bns,
            0, std::min(ct.non_local_block_size, kptr->nstates));
+    delete RT2;
     int first_nls = 0;
 
     // Each thread applies the operator to one wavefunction
@@ -168,9 +170,12 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
         // Make sure the non-local operators are applied for the next block if needed
          int check = first_nls + T->get_threads_per_node();
          if(check > ct.non_local_block_size) {
+             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
+
              AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
                     st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
              first_nls = 0;
+             delete RT3;
          }
 
         for(int ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
