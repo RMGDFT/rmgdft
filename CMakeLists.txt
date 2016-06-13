@@ -36,6 +36,8 @@ set (RMG_MAGMA_LIBS 0)
 set (USE_SCALAPACK_LIBS 1)
 set (USE_ELEMENTAL_LIBS 0)
 set (USE_LIBXC 0)
+set (USE_OPENBABEL_LIBS 1)
+set (USE_SVN 0)
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
@@ -250,7 +252,6 @@ endif(CRAY_XK)
 
 
 # Look for openbabel
-set (USE_OPENBABEL_LIBS 1)
 find_package(OPENBABEL)
 include("PlatformChecks/CheckOpenbabel.inc")
 
@@ -647,7 +648,6 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     string(REPLACE "\n" "" BuildDate ${foo5})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-set(USE_SVN 1)
 include(FindSubversion)
 if(Subversion_FOUND AND USE_SVN)
     execute_process (
@@ -697,8 +697,8 @@ SET(CPACK_INPUT_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
 SET(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
 set(CPACK_GENERATOR "RPM")
 
-set(CPACK_PACKAGE_VERSION_MAJOR "1")
-set(CPACK_PACKAGE_VERSION_MINOR "3")
+set(CPACK_PACKAGE_VERSION_MAJOR "2")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 set(CPACK_PACKAGE_NAME "rmg")

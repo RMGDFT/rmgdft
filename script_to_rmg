@@ -8,7 +8,8 @@ sed -n '/NEGF/!p' temp >temp1
 sed -n '/TestLib/!p' temp1 >temp
 sed -n '/ON\//!p' temp >temp1
 sed -n '/rmg-tddft/!p' temp1 > temp
-sed 's/Use_svn 1/Use_svn 0/g' temp > ../rmg-release/CMakeLists.txt 
+sed -n '/on-tddft/!p' temp > temp1
+sed 's/Use_svn 1/Use_svn 0/g' temp1 > ../rmg-release/CMakeLists.txt 
 rm temp temp1
 cp -r cmake ../rmg-release
 cp -r Finite_diff ../rmg-release
@@ -17,6 +18,7 @@ cp -r Headers ../rmg-release
 cp -r Input ../rmg-release
 cp -r InternalPseudo ../rmg-release
 cp -r lib ../rmg-release
+cp -r XC ../rmg-release
 cp make_conf.h.in ../rmg-release
 cp -r MG ../rmg-release
 cp -r Misc ../rmg-release
