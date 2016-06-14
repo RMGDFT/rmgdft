@@ -41,7 +41,7 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     double sum = 0.0;
     for(int i = 0;i < FP0_BASIS;i++) sum += rho_tot[i];
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] -= sum;
+    for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] -= sum / (double)FP0_BASIS;
 
 
     if(ct.poisson_solver == POISSON_PFFT_SOLVER)
