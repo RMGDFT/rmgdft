@@ -66,6 +66,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
   int dimz_f = G.get_PZ0_GRID(ratio); 
   double scale = 1.0 / (double)(n[0]*n[1]*n[2]);
   double dratio = (double)ratio;
+    double rootrho;
 
   // Array strides
   int incx_c = dimy_c * dimz_c;
@@ -84,7 +85,8 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
 
 
   // Get the forward transform
-  for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(coarse[ix], 0.0);
+  for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(sqrt(coarse[ix]), 0.0);
+
   PfftForward(base_coarse, base_coarse, *coarse_pwaves);
 
 
@@ -130,8 +132,9 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
               for(int ixx = 0;ixx < dimx_c;ixx++) {
                   for(int iyy = 0;iyy < dimy_c;iyy++) {
                       for(int izz = 0;izz < dimz_c;izz++) {
+                          rootrho =  std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
                           fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
-                             scale * (std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]));
+                             scale * scale * rootrho * rootrho;
 
                       }
                   }
