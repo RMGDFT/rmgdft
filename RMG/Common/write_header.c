@@ -271,7 +271,7 @@ void write_header (void)
     {
         printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         printf ("    BACKGROUND CHARGE NOT ZERO!!!\n");
-        printf ("    background charge  = %12.6f\n", ct.background_charge);
+        printf ("    background charge  = %12.6e\n", ct.background_charge);
         printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
 

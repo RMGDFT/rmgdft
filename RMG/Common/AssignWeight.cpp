@@ -59,6 +59,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     double wy = iptr->nlcrds[1] / ct.hmaxgrid;
     double wz = iptr->nlcrds[2] / ct.hmaxgrid;
 
+
     int pbasis = kptr->pbasis;
     KpointType ZERO_t(0.0);
 
@@ -140,14 +141,14 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
         for (int iy = 0; iy < nlydim; iy++)
         {
             double w2=1.0;
-            if(iy==0) w2 = 0.5*(0.5 + wy);
-            if(iy==nlydim-1) w2 = 0.5*(0.5 - wy);
+            if(iy==0) w2 = 0.5*(0.5 - wy);
+            if(iy==nlydim-1) w2 = 0.5*(0.5 + wy);
 
             for (int iz = 0; iz < nlzdim; iz++)
             {
                 double w3 = 1.0;
-                if(iz==0) w3 = 0.5*(0.5 + wz);
-                if(iz==nlzdim-1) w3 = 0.5*(0.5 - wz);
+                if(iz==0) w3 = 0.5*(0.5 - wz);
+                if(iz==nlzdim-1) w3 = 0.5*(0.5 + wz);
 
                 if(!ct.localize_projectors) w1 = w2 = w3 = 1.0;
                 if (dvec[idx])
