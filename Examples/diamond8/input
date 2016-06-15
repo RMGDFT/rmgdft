@@ -94,4 +94,5 @@ potential_acceleration_constant_step="1.0"
 potential_acceleration_poisson_step="0.0"
 
 kohn_sham_mucycles = "3"
-
+#localize_projectors = "true"
+localize_projectors = "false"

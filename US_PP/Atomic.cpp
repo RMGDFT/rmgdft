@@ -31,6 +31,7 @@
 #include "BesselRoots.h"
 #include <boost/math/special_functions/math_fwd.hpp>
 #include <boost/math/special_functions/bessel.hpp>
+#include "blas.h"
 
 
 
@@ -536,14 +537,55 @@ void Atomic::PackFine2Rhogrid (std::complex<double> *gwptr, int ngrid_fine, std:
 
 
 void Atomic::RLogGridToGLogGrid (
-                   double cparm,        // IN:  filtering parameter
                    double * f,          // IN:  function to be filtered defined on pseudopotential grid
                    double * r,          // IN:  pseudopotential grid dimensioned r[rg_points], logarithmic
                    double *rab,         // IN:  radial volume element from the pseudopotential file
                    double * f_g,        // OUT: on radial g grid
                    int rg_points,       // IN:  number of points in pseudopotential radial grid
                    int lval,
-                   double width)        // IN:  width of gaussian cutoff in g-space
+                   double *bessel_rg)       
+{
+
+
+
+    double *work1 = new double[rg_points]();
+
+    int gnum = RADIAL_GVECS;
+
+
+    for(int ift = 0; ift< gnum; ift++) f_g[ift] = 0.0;
+
+    double *bessel_rg_l = &bessel_rg[lval * RADIAL_GVECS * rg_points ] ;
+    for (int ift =  0; ift < gnum; ift++)
+    {
+        for(int idx = 0; idx < rg_points; idx++)
+            work1[idx] = f[idx] * bessel_rg_l[ift * rg_points + idx];
+        f_g[ift] = 4.0 * PI * radint1 (work1, r, rab, rg_points);
+    
+    }
+
+
+    /* Fourier Filter the transform and store in work2 */
+    for (int idx = 0; idx < gnum; idx++)
+    {
+
+    //    printf("\n %e %e adad", gvec[idx], f_g[idx]);
+        // f_g[idx] = gcof[idx] * Gcutoff (gvec[idx], gcut, width);
+
+    }                           /* end for */
+
+
+
+    /* Release memory */
+    delete [] work1;
+
+} // end RftToLogGrid
+
+void Atomic::InitBessel(
+                   double * r,       // IN:  pseudopotential grid dimensioned r[rg_points], logarithmic
+                   int rg_points,    // IN:  number of points in pseudopotential radial grid
+                   int lmax,
+                   double *bessel_rg)   // Bessel_rg store lmax * RADIAL_GVECS * rg_points
 {
 
 
@@ -559,18 +601,13 @@ void Atomic::RLogGridToGLogGrid (
     if (alloc < MAX_RGRID)
         alloc = MAX_RGRID;
 
-    double *work1 = new double[alloc]();
-    double *gvec = new double[alloc]();
+    double *gvec = new double[RADIAL_GVECS]();
 
     int gnum = RADIAL_GVECS;
 
     /* G-vectors are defined on a log grid with the smallest value set */
     /* by the largest real-space value of r.                           */
     gvec[0] = LOGGRID_START;
-
-    /* The smallest g-vector that we generate is defined by the global */
-    /* grid spacing.                                                  */
-    double gcut = PI / (cparm * ct.hmaxgrid);
 
     // The largest g-vector we use corresponds to an energy cutoff of 5483 Rydbergs.
     double gmax = PI / 0.03;
@@ -582,45 +619,36 @@ void Atomic::RLogGridToGLogGrid (
     /* Generate g-vectors */
     for (int idx = 1; idx < gnum; idx++)
     {
-
-        gvec[idx] = gvec[0] * pow (t1, (double) idx);
-
+        gvec[idx] = gvec[idx-1] * t1;
     }                           /* end for */
 
     GlogGrid_inv_b = log((gvec[2] - gvec[1]) / (gvec[1] - gvec[0]));
     GlogGrid_inv_b = 1.0 / GlogGrid_inv_b;
     GlogGrid_inv_a = 1.0 / gvec[0];
 
-    double alpha = (double)lval + 0.5;
+    double alpha ;
 
-    for(int ift = 0; ift< gnum; ift++) f_g[ift] = 0.0;
-    for (int ift =  pct.gridpe; ift < gnum; ift+=pct.grid_npes)
+    for(int idx = 0; idx < (lmax+1) * gnum * rg_points; idx++) bessel_rg[idx] = 0.0;
+    for(int lval = 0; lval <= lmax; lval++)
     {
-        for (int idx = 0; idx < rg_points; idx++)
+        alpha = (double)lval + 0.5;
+        for (int ift = pct.gridpe; ift < gnum; ift+=pct.grid_npes)
         {
+            int idx1 = lval * gnum * rg_points + ift * rg_points;
+            for (int idx = 0; idx < rg_points; idx++)
+            {
 
-            double jarg = r[idx] * gvec[ift];
-            work1[idx] = f[idx] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
+                double jarg = r[idx] * gvec[ift];
+                bessel_rg[idx1 + idx] = sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
 
-        }                   /* end for */
-        f_g[ift] = 4.0 * PI * radint1 (work1, r, rab, rg_points);
+            }                   /* end for */
+        }
     }
-    GlobalSums (f_g, gnum, pct.grid_comm);
 
-
-    /* Fourier Filter the transform and store in work2 */
-    for (int idx = 0; idx < gnum; idx++)
-    {
-
-    //    printf("\n %e %e adad", gvec[idx], f_g[idx]);
-        // f_g[idx] = gcof[idx] * Gcutoff (gvec[idx], gcut, width);
-
-    }                           /* end for */
-
-
+    int size = (lmax+1) * gnum * rg_points; 
+    GlobalSums (bessel_rg, size, pct.grid_comm); 
 
     /* Release memory */
     delete [] gvec;
-    delete [] work1;
 
-} // end RftToLogGrid
+} 

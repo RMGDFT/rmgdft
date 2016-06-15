@@ -99,7 +99,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // If projectors will span the full wavefunction grid then use a larger value for the nlradius for all remaining operations
         if(!ct.localize_projectors) {
-            sp->nlradius = 10.0;
+            sp->nlradius = 7.0;
             sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
             sp->nldim = sp->nldim/2*2 +1;
             sp->nlfdim = ct.nxfgrid * sp->nldim;
@@ -186,6 +186,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         }
 
         /* Write raw beta function into file if requested*/
+        double *bessel_rg = new double[(ct.max_l+1) * RADIAL_GVECS * sp->rg_points];
+            RmgTimer *RT1 = new RmgTimer("radial beta");
+        A->InitBessel(sp->r, sp->rg_points, ct.max_l, bessel_rg);
+            delete RT1;
         for (ip = 0; ip < sp->nbeta; ip++)
         {
 
@@ -196,12 +200,13 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             sp->beta_g[ip] = new double[RADIAL_GVECS];
-            A->RLogGridToGLogGrid(ct.betacparm, &sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
-                    sp->rg_points, sp->llbeta[ip], sp->gwidth);
+            A->RLogGridToGLogGrid(&sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
+                    sp->rg_points, sp->llbeta[ip], bessel_rg);
 
 
         }                       /* end for ip */
 
+        delete [] bessel_rg;
         /* Now take care of the core charge if nlcc is being used */
         if (sp->nlccflag)
         {
