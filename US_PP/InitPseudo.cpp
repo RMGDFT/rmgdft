@@ -169,8 +169,12 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts and force correction routines
-        A->FilterPotential(sp->atomic_rho, sp->r, sp->rg_points, sp->lradius, ct.rhocparm, sp->arho_lig,
+        
+        for (int idx = 0; idx < sp->rg_points; idx++)work[idx] = sqrt(sp->atomic_rho[idx]);
+        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.rhocparm, sp->arho_lig,
                 sp->rab, 0, sp->gwidth, 0.66*sp->lradius, sp->rwidth, ct.hmingrid);
+        for (int idx = 0; idx < MAX_LOGGRID; idx++)
+            sp->arho_lig[idx] *= sp->arho_lig[idx];
 
 
         /*Open file for writing beta function*/
@@ -192,17 +196,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             sp->beta_g[ip] = new double[RADIAL_GVECS];
-            // Filtering for wavefunction grid
-   //         A->FilterPotential(&sp->beta[ip][0], sp->r, sp->rg_points, sp->nlradius, ct.betacparm, &sp->betalig[ip][0],
-   //                 sp->rab, sp->llbeta[ip], sp->gwidth, 0.66*sp->nlradius, sp->rwidth, ct.hmingrid);
             A->RLogGridToGLogGrid(ct.betacparm, &sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
                     sp->rg_points, sp->llbeta[ip], sp->gwidth);
 
-            /* output xmgr data separator */
-            if (pct.gridpe == 0 && write_flag)
-            {
-                fprintf (psp, "\n&&\n");
-            }
 
         }                       /* end for ip */
 
@@ -232,7 +228,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             double nlcccut = 0.66 * nlccradius;
 
             A->FilterPotential(work, sp->r, sp->rg_points, nlccradius, ct.rhocparm, &sp->rhocorelig[0],
-                           sp->rab, 0, sp->gwidth, nlcccut, sp->rwidth, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
+                    sp->rab, 0, sp->gwidth, nlcccut, sp->rwidth, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
 
             /*Oscilations at the tail end of filtered function may cause rhocore to be negative
              * but I am not sure if this is the right solution, it may be better to fix charge density
