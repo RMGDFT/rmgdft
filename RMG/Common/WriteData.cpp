@@ -114,7 +114,18 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     /* write Vxc */
     write_double (fhand, vxc, fgrid_size);
 
+    /* write wavefunctions */
+    {
+        int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
 
+        for (ik = 0; ik < ct.num_kpts_pe; ik++)
+        {
+            for (is = 0; is < ns; is++)
+            {
+                write_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+            }
+        }
+    }
 
 
     /* write the state occupations, in spin-polarized calculation, 
@@ -137,21 +148,6 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
 		write_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
 	    }
 
-    }
-
-
-
-    /* write wavefunctions */
-    {
-        int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
-
-        for (ik = 0; ik < ct.num_kpts_pe; ik++)
-        {
-            for (is = 0; is < ns; is++)
-            {
-                write_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
-            }
-        }
     }
 
 

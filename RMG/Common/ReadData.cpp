@@ -162,7 +162,27 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     read_double (fhand, vxc, fgrid_size);
     rmg_printf ("read_data: read 'vxc'\n");
 
-    if(ct.forceflag == BAND_STRUCTURE) return;
+    /* read wavefunctions */
+    {
+        int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
+
+        for (ik = 0; ik < ct.num_kpts_pe; ik++)
+        {
+            for (is = 0; is < ns; is++)
+            {
+
+                read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+
+            }
+
+            // for band structure calculation, just read wave functions for first kpoints
+            if(ct.forceflag == BAND_STRUCTURE) return;
+        }
+
+        rmg_printf ("read_data: read 'wfns'\n");
+
+    }
+
         
 
     /* read state occupations */
@@ -231,24 +251,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     }      /* end of read eigenvalues */
 
 
-
-    /* read wavefunctions */
-    {
-        int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
-
-        for (ik = 0; ik < ct.num_kpts_pe; ik++)
-        {
-            for (is = 0; is < ns; is++)
-            {
-
-                read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
-
-            }
-        }
-
-        rmg_printf ("read_data: read 'wfns'\n");
-
-    }
 
 
     // If we have added unoccupied orbitals initialize them to a random state
