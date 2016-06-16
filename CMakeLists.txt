@@ -147,18 +147,6 @@ if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
     message( SEND_ERROR "RMG requires a 64 bit architechture." )
 endif (NOT CMAKE_SIZEOF_VOID_P MATCHES 8)
 
-# Require pthreads on UNIX
-if (${UNIX})
-    set (CMAKE_THREAD_PREFER_PTHREAD)
-    find_package(Threads REQUIRED)
-    if(CMAKE_USE_PTHREADS_INIT)
-        target_link_libraries (${rmg} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
-        target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
-    endif(CMAKE_USE_PTHREADS_INIT)
-    target_link_libraries (rmg-on ${RTLIB})
-endif(${UNIX})
-
-
 
 
 # Search for an MPI implementation
@@ -188,6 +176,19 @@ if(MPI_C_FOUND)
 else(MPI_C_FOUND)
     CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
 endif (MPI_C_FOUND)
+
+
+# Require pthreads on UNIX
+if (${UNIX})
+    set (CMAKE_THREAD_PREFER_PTHREAD)
+    find_package(Threads REQUIRED)
+    if(CMAKE_USE_PTHREADS_INIT)
+        target_link_libraries (${rmg} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
+        target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
+    endif(CMAKE_USE_PTHREADS_INIT)
+    target_link_libraries (rmg-on ${RTLIB})
+endif(${UNIX})
+
 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -426,6 +427,7 @@ endif(NOT RMG_MATH_LIBS)
 if(RMG_PFFT_LIBS)
 find_package(PFFT)
     if(NOT PFFT_FOUND)
+        set($ENV{MPICC} ${MPI_C_COMPILER})
         execute_process(
         COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/pfft-master.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
         execute_process(
@@ -434,6 +436,7 @@ find_package(PFFT)
             WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/pfft-master)
         execute_process(COMMAND
         ${PROJECT_SOURCE_DIR}/lib/pfft-master/configure
+        --host=x86_64
         --prefix=${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64
         --libdir=${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64/lib
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
