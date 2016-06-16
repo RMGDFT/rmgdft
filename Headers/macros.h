@@ -7,6 +7,7 @@
 
 #if !(defined(_WIN32) || defined(_WIN64))
     #include <unistd.h>
+    #include <string.h>
 #else
     #ifndef NOMINMAX
       #define NOMINMAX
@@ -104,7 +105,7 @@
 
 #define progress_tag() printf("[ %3d %3d %4d %8.0f ] %s: ", \
                               ct.md_steps, ct.scf_steps, ct.total_scf_steps, \
-                              my_crtc() - ct.time0, __FILE__ )
+                              my_crtc() - ct.time0, (strrchr(__FILE__, '/')+1))
 
 
 #define my_fopen(_fhandle_, _filename_, _mode_) do {\
