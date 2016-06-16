@@ -117,9 +117,6 @@ void InitWeight (void)
 
         sp = &ct.sp[proj.species];
 
-        size = sp->nldim * sp->nldim * sp->nldim;
-// p1_fine, plan for non-local fine grid
-
         // if sp->nldim > get_NX_GRID, folding of neighbor cells are needed. 
         xdim = sp->nldim;
         ydim = sp->nldim;

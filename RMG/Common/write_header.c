@@ -90,7 +90,7 @@ void write_header (void)
 
     /*printf (" Code %s\n\n", QMD_VERSION); */
 #if !(_WIN32 || _WIN64)
-    printf ("\n    Code Revision %d, Last change on %s", SVN_REV, SVN_REVDATE);
+    printf ("\n    Code Revision %s, Last change on %s", SVN_REV, SVN_REVDATE);
     printf ("\n    Build Date:%s", BUILD_DATE);
 #endif
     printf ("\n    %s", ct.description);

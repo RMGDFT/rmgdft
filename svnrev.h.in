@@ -6,7 +6,7 @@
 #ifndef SVNREV_H
 #define SVNREV_H
 
-#define SVN_REV     ${CodeRevision}
+#define SVN_REV     "${CodeRevision}"
 #define SVN_REVDATE "${LastChangeDate}"
 #define BUILD_DATE "${BuildDate}"
 
