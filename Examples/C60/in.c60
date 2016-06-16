@@ -1,32 +1,42 @@
 # Description of run.
-description="C60 example using Pulay charge density mixing."
+description="C60 example using Davidson diagonalization"
 
 # Wavefunction grid
 wavefunction_grid="48 48 48"
 
 # number of unoccupied states
-unoccupied_states_per_kpoint="60"
+unoccupied_states_per_kpoint="18"
 
-bravais_lattice_type= "Cubic Primitive"
+# Units for bravais_lattice_type and atoms
+#crds_units=
+#"Bohr"
+#"Angstrom"
+
+bravais_lattice_type="Cubic Primitive"
 
 # Lattice constants 
 a_length="18.0"
 b_length="18.0"
 c_length="18.0"
+alpha="0.0"
+beta="0.0"
+gamma="0.0"
 
-charge_mixing_type = "Pulay"
 start_mode="LCAO Start"
-#start_mode="Restart From File"
-kohn_sham_mucycles="2"
 calculation_mode="Quench Electrons"
-rms_convergence_criterion = "1.0e-06"
+kohn_sham_solver="davidson"
 subdiag_driver="scalapack"
-non_local_block_size="200"
+charge_mixing_type = "Broyden"
+potential_acceleration_constant_step="1.0"
+
+# Criterion used to judge SCF convergency 
+energy_convergence_criterion="1.0e-9"
+atomic_coordinate_type="Absolute"
 
 # List  atomic symbol, coordinates, and movable flag (1 == movable) 
 # symbol and coordinates are required, moveable is optional, default is 1
 atoms = "
-C    15.3293    12.9600    19.2070    1 
+C    15.3293    12.9600    19.2070   1 
 C    17.5363    12.9600    17.7857    1
 C    13.7313    15.1732    19.2251    1
 C    14.4083    17.2893    17.8251    1

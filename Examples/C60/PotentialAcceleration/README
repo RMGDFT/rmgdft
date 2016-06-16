@@ -1,5 +1,0 @@
-Example calculation for a C60 molecule using potential acceleration. This example
-was generated on a Xeon workstation running Opensuse 13.1 using the following
-command.
-
-mpirun -np 6 ./rmg in.c60potential_acc
