@@ -54,7 +54,7 @@ void write_force (void)
 //        printf ("  CONSTRAINTS ON FORCES HAVE BEEN IMPOSED:\n\n");
 //    }
     printf
-        ("@ION Ion Species           X           Y           Z          FX          FY          FZ movable\n");
+        ("@ION  Ion  Species      X           Y           Z          FX          FY          FZ       Movable\n");
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -80,9 +80,6 @@ void write_force (void)
             avfy += fabs (fp[1]);
             avfz += fabs (fp[2]);
 
-            sumx += fp[0];
-            sumy += fp[1];
-            sumz += fp[2];
 
             if (fabs (fp[0]) > maxfx)
             {
@@ -115,6 +112,10 @@ void write_force (void)
 
             avf += f2;
         }
+            
+	sumx += fp[0];
+	sumy += fp[1];
+	sumz += fp[2];
     }
 
 
