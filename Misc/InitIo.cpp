@@ -129,7 +129,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     ReadCommon(argc, argv, ct.cfile, ct, pct, ControlMap);
 
 
-    if(Verify("start_mode", "Restart From File", ControlMap)) {
+    if(Verify("start_mode", "Restart From File", ControlMap) 
+            || Verify("calculation_mode", "Band Structure Only", ControlMap) ) {
         std::string dynfile(ct.infile);
         dynfile = dynfile + ".restart";
         ReadDynamics((char *)dynfile.c_str(), ct, ControlMap);
@@ -143,7 +144,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         ReadDynamics(ct.cfile, ct, ControlMap);
     }
 
-    if((ct.kpoint_mesh[0] < 1) | (ct.kpoint_mesh[1] < 1) | (ct.kpoint_mesh[2] < 1) ) 
+    if((ct.kpoint_mesh[0] < 1) || (ct.kpoint_mesh[1] < 1) || (ct.kpoint_mesh[2] < 1) ) 
     {
         ReadKpoints(ct.cfile, ct, ControlMap);
     }
@@ -242,10 +243,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     cublasXtSetBlockDim(ct.cublasXt_handle, RMG_CUBLASXT_BLOCKSIZE);
     void *fptr;
     fptr = (void *)&dgemm_;
-//    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, fptr);
+    //    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, fptr);
     fptr = (void *)&zgemm_;
-//    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_COMPLEX, fptr);
-//    cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 0.5);
+    //    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_COMPLEX, fptr);
+    //    cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 0.5);
 
 #if MAGMA_LIBS
     magma_init();

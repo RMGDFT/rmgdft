@@ -373,7 +373,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
         case BAND_STRUCTURE:
             BandStructure (Kptr, vxc, vh, vnuc);
-            break;
+            return;
         default:
             rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
 

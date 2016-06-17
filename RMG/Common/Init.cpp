@@ -180,6 +180,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
 
 
+    int kpt_storage = ct.num_kpts_pe;
+    if(ct.forceflag == BAND_STRUCTURE) kpt_storage = 1;
 
     /* Set state pointers and initialize state data */
 #if GPU_ENABLED
@@ -213,7 +215,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here
-    custat = cudaMallocHost((void **)&rptr, (ct.num_kpts_pe * ct.max_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+    
+    custat = cudaMallocHost((void **)&rptr, (kpt_storage * ct.max_states * P0_BASIS + 1024) * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     custat = cudaMallocHost((void **)&nv, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
@@ -226,7 +229,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
-    rptr = new OrbitalType[ct.num_kpts_pe * ct.max_states * P0_BASIS + 1024];
+    rptr = new OrbitalType[kpt_storage * ct.max_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
     ns = new OrbitalType[ct.max_states * P0_BASIS]();
     if(!ct.norm_conserving_pp) {
@@ -238,10 +241,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.ns = (double *)ns;
 
 
+    OrbitalType *rptr_k;
+    rptr_k = rptr;
     for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
-        Kptr[kpt]->set_pool(rptr);
+    // for band structure calculation only one k point storage is initilized.
+        if(ct.forceflag == BAND_STRUCTURE) rptr_k = rptr;
+        Kptr[kpt]->set_pool(rptr_k);
         Kptr[kpt]->nv = nv;
         Kptr[kpt]->ns = ns;
 
@@ -250,13 +257,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         for (st1 = 0; st1 < ct.max_states; st1++)
         {
             Kptr[kpt]->Kstates[st1].kidx = kpt;
-            Kptr[kpt]->Kstates[st1].psi = rptr;
+            Kptr[kpt]->Kstates[st1].psi = rptr_k;
             Kptr[kpt]->Kstates[st1].vxc = vxc;
             Kptr[kpt]->Kstates[st1].vh = vh;
             Kptr[kpt]->Kstates[st1].vnuc = vnuc;
             Kptr[kpt]->Kstates[st1].pbasis = P0_BASIS;
             Kptr[kpt]->Kstates[st1].istate = st1;
-            rptr +=P0_BASIS;
+            rptr_k +=P0_BASIS;
         }
     }
 
@@ -285,7 +292,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /* Set initial states to random start */
 
-    if (ct.runflag == LCAO_START || (ct.forceflag == BAND_STRUCTURE))
+    if (ct.runflag == LCAO_START && (ct.forceflag != BAND_STRUCTURE))
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++){
@@ -372,6 +379,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
     delete(RT1);
 
+    if (ct.forceflag == BAND_STRUCTURE) return;
 
     // Normalize orbitals if not an initial run
     if (ct.runflag != RESTART) /* Initial run */
@@ -437,7 +445,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     //Dprintf ("Condition of run flag is %d", ct.runflag);
     /*If not a restart, get vxc and vh, for restart these quantities should read from the restart file*/
-    if (ct.runflag != RESTART)
+    if (ct.runflag != RESTART )
     {
         //get_vxc (rho, rho_oppo, rhocore, vxc);
         double etxc, vtxc;
@@ -464,64 +472,50 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     delete RT3;
 
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
-    if(ct.runflag != RESTART) {
+    if(ct.runflag != RESTART ){
 
-        if (ct.initdiag)
-        {
-            /*dnmI has to be stup before calling subdiag */
-            vtot = new double[FP0_BASIS];
-            double *vtot_psi = new double[P0_BASIS];
+        /*dnmI has to be stup before calling subdiag */
+        vtot = new double[FP0_BASIS];
+        double *vtot_psi = new double[P0_BASIS];
 
-            for (idx = 0; idx < FP0_BASIS; idx++)
-                vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+        for (idx = 0; idx < FP0_BASIS; idx++)
+            vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
-            /*Generate the Dnm_I */
-            get_ddd (vtot);
+        /*Generate the Dnm_I */
+        get_ddd (vtot);
 
-            // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
-            GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+        // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
+        GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
-            /*Now we can do subspace diagonalization */
-            double *new_rho=new double[FP0_BASIS];
-            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
-            {
-
-
-                RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
-                Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
-                delete RT2;
-                RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
-                Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
-                Kptr[kpt]->mix_betaxpsi(0);
-                delete RT3;
-            }
-            OutputEigenvalues(Kptr, 0, -1);
-            // Get new density 
-            RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
-            GetNewRho(Kptr, new_rho);
-            MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
-            delete RT2;
-            delete [] new_rho;
-
-            /*Release vtot memory */
-            delete [] vtot_psi;
-            delete [] vtot;
-
-
-        }                           /*end if(ct.initdiag) */
-        else
+        /*Now we can do subspace diagonalization */
+        double *new_rho=new double[FP0_BASIS];
+        for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
 
-            RmgTimer *RT2 = new RmgTimer("2-Init: orthogonal");
-            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
-            {
-                Kptr[kpt]->orthogonalize(Kptr[kpt]->orbital_storage);
-            }
-            delete RT2;
 
+            RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
+            Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
+            delete RT2;
+            RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
+            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
+            Kptr[kpt]->mix_betaxpsi(0);
+            delete RT3;
         }
+        OutputEigenvalues(Kptr, 0, -1);
+        // Get new density 
+        RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
+        GetNewRho(Kptr, new_rho);
+        MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
+        delete RT2;
+        delete [] new_rho;
+
+        /*Release vtot memory */
+        delete [] vtot_psi;
+        delete [] vtot;
+
 
     }
+
 
 
     ct.num_states = ct.run_states;
