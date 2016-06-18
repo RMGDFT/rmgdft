@@ -140,6 +140,8 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
     delete RT3;
 
+    size1 = 3 * ct.num_ions;
+    global_sums (force_tmp, &size1, pct.kpsub_comm);
 
 #if VERBOSE
     output_force(force_tmp, "Non-Local force:");
@@ -169,7 +171,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 #endif
 
     size1 = 3 * ct.num_ions;
-    global_sums (force_sum, &size1, pct.img_comm);
+    global_sums (force_sum, &size1, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
