@@ -37,6 +37,7 @@ extern "C" {
 #endif
 
 /* Function prototypes */
+void get_dipole (double * rho);
 void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
 void app_smooth (double *f, double *work, int dimx, int dimy, int dimz);

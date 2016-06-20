@@ -88,6 +88,7 @@ PartialGamma.cpp
 fire.c
 mg_prolong_6.c
 partial_beta_fdiff.c
+get_dipole.c
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")
