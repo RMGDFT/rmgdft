@@ -268,7 +268,7 @@ void initialize(int argc, char **argv)
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
-        int kpt1 = kpt + ct.num_kpts_pe* pct.kstart;
+        int kpt1 = kpt + pct.kstart;
         if(ct.is_gamma) {
 
             // Gamma point
@@ -307,12 +307,6 @@ void initialize(int argc, char **argv)
         /* Write header to stdout */
         write_header (); 
 
-    }
-
-
-    /* Write state occupations to stdout */
-    if(pct.kstart == 0)
-    {
         if(ct.is_gamma) {
             Kptr_g[0]->write_occ(); 
         }

@@ -76,11 +76,11 @@ void get_opposite_eigvals (STATE * states)
 
     /*Prepare the sending buffer of eigenvalues */
     st = 0;
-    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         for (st1 = 0; st1 < ct.num_states; st1++)
         {	
-            eigval_sd[st] = ct.kp[kpt].kstate[st1].eig[0];
+            eigval_sd[st] = ct.kp[pct.kstart + kpt].kstate[st1].eig[0];
             st += 1;
         }	
     }
@@ -93,11 +93,11 @@ void get_opposite_eigvals (STATE * states)
 
     /* Unpack the received eigenvalue to state structure */
     st = 0;
-    for (kpt =pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         for (st1 = 0; st1 < ct.num_states; st1++)
         {	
-            ct.kp[kpt].kstate[st1].eig[1] = eigval_rv[st];
+            ct.kp[pct.kstart + kpt].kstate[st1].eig[1] = eigval_rv[st];
             st += 1;
 
         }	

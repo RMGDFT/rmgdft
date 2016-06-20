@@ -85,7 +85,7 @@ void GetPhase (ION * iptr, std::complex<double> *rtptr)
     for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
-        int kpt1 = kpt + pct.kstart * ct.num_kpts_pe;
+        int kpt1 = kpt + pct.kstart;
         for (ix = 0; ix < dimx; ix++)
         {
 

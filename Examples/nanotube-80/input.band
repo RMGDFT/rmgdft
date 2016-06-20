@@ -6,7 +6,7 @@ wavefunction_grid="88 88 24"
 
 #initial_diagonalization = "false"
 subdiag_driver = "lapack"
-kohn_sham_mg_levels = "2"
+kohn_sham_mg_levels = "3"
 kohn_sham_time_step = "0.66000000"
 potential_grid_refinement="2"
 fine_grid_non_local_pp = "4"
@@ -122,7 +122,7 @@ calculation_mode=
 #"Quench Electrons"
 "Band Structure Only"
 
-kpoint_distribution = "1"
+kpoint_distribution = "2"
 
 
 exchange_correlation_type=

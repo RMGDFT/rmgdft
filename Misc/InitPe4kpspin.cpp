@@ -51,7 +51,7 @@ void InitPe4kpspin()
     int npes;
     npes = pct.image_npes[pct.thisimg]/nspin;
 
-    if(pct.pe_kpoint <1 || pct.pe_kpoint > npes || ct.num_kpts%pct.pe_kpoint !=0)
+    if(pct.pe_kpoint <1 || pct.pe_kpoint > npes )
     {
         pct.pe_kpoint = 1;
 
@@ -63,9 +63,15 @@ void InitPe4kpspin()
             kpt_factors.pop_back();
         }
     }
+
+    if(npes % pct.pe_kpoint != 0) 
+    {
+        printf("\n npes %d for k-parallelization needs to be divisible by pe_kpoint %d", npes, pct.pe_kpoint);
+        exit(0);
+
+    }
     //pct.pe_kpoint = std::min(2, npes);
     //pct.pe_kpoint = 2;
-    ct.num_kpts_pe = ct.num_kpts / pct.pe_kpoint;
     // set up communicator for spin
     int ndims = 3;
 
@@ -92,10 +98,28 @@ void InitPe4kpspin()
 
     MPI_Barrier(MPI_COMM_WORLD);
     /* set gridpe rank value to local grid rank value */
+    int kpsub_rank;
     MPI_Comm_rank (pct.grid_comm, &pct.gridpe);
-    MPI_Comm_rank (pct.kpsub_comm, &pct.kstart);
+    MPI_Comm_rank (pct.kpsub_comm, &kpsub_rank);
     MPI_Comm_size (pct.grid_comm, &NPES);
     MPI_Comm_size (pct.grid_comm, &pct.grid_npes);
+
+    ct.num_kpts_pe = ct.num_kpts / pct.pe_kpoint;
+    pct.kstart = ct.num_kpts_pe * kpsub_rank;
+
+    int kpt_mode = ct.num_kpts % pct.pe_kpoint;
+    if( kpt_mode > 0) 
+    {
+        if(kpsub_rank < kpt_mode) 
+        {
+            ct.num_kpts_pe++;
+            pct.kstart = ct.num_kpts_pe * kpsub_rank;
+        }
+        else
+        {
+            pct.kstart = ct.num_kpts_pe * kpsub_rank + kpt_mode;
+        }
+    }
 
     // Set up grids and neighbors
     //set_rank(pct.gridpe);

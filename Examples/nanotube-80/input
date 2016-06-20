@@ -2,7 +2,7 @@ description="Carbon Nanotube"
 
 #processor_grid="4 2 1"
 
-wavefunction_grid="88 88 24"
+wavefunction_grid="72 72 20"
 
 subdiag_driver = "lapack"
 kohn_sham_mg_levels = "2"
@@ -22,10 +22,10 @@ system_charge="0"
 occupation_electron_temperature_eV="0.025"
 occupation_number_mixing="1.00"
 
-kpoint_mesh="1 1 8"
+kpoint_mesh="1 1 4"
 kpoint_is_shift="0 0 0"
 
-kpoint_distribution="1"
+kpoint_distribution="2"
 
 length_units=
 "Bohr"
@@ -35,8 +35,8 @@ bravais_lattice_type=
 "Orthorhombic Primitive"
 
 # Lattice constants 
-a_length="29.47436059"
-b_length="29.47436059"
+a_length="28.93846312"
+b_length="28.93846312"
 c_length="8.038461979"
 
 atomic_coordinate_type=
@@ -109,7 +109,7 @@ charge_mixing_type=
 charge_pulay_order="5"
 charge_pulay_scale="0.2"
 
-max_scf_steps="50"
+max_scf_steps="100"
 
 
 #freeze_occupied="true"
