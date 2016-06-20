@@ -70,15 +70,10 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     /* Make the new output file name */
     rmg_printf("\nspin flag =%d\n", ct.spin_flag);
-    if (ct.spin_flag)
-    {
-	if (pct.spinpe == 0)
-	    sprintf(newname, "%s.up%d", name, pct.gridpe);
-	else          /* if (pct.spinpe == 1)  */  
-	    sprintf(newname, "%s.dw%d", name, pct.gridpe);
-    }
-    else
-        sprintf (newname, "%s_%d_%d", name, pct.kstart, pct.gridpe);
+    
+    int kstart = pct.kstart;
+    if (ct.forceflag == BAND_STRUCTURE) kstart = 0;
+    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, kstart, pct.gridpe);
 
 
     int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
@@ -92,31 +87,31 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     /* read grid info */
     read_int (fhand, grid, 3);
     if (grid[0] != get_NX_GRID())
-	rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
     if (grid[1] != get_NY_GRID())
-	rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
     if (grid[2] != get_NZ_GRID())
-	rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
     if (pe[0] != get_PE_X())
-	rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
     if (pe[1] != get_PE_Y())
-	rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
     if (pe[2] != get_PE_Z())
-	rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
 
     grid_size = Kptr[0]->pbasis;
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
     if (fine[0] != get_FPX0_GRID() / get_PX0_GRID())
-	rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
     if (fine[1] != get_FPY0_GRID() / get_PY0_GRID())
-	rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
     if (fine[2] != get_FPZ0_GRID() / get_PZ0_GRID())
-	rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
@@ -130,20 +125,20 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
     if (gamma != ct.is_gamma)
-	rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
+        rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
 
 
     read_int (fhand, &nk, 1);
-    if (nk != ct.num_kpts && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
-	rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
+    if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
+        rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
 
     rmg_printf ("read_data: gamma = %d\n", gamma);
-    rmg_printf ("read_data: nk = %d\n", ct.num_kpts); 
+    rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe); 
 
     /* read number of states */  
     read_int (fhand, &ns, 1);
     if (ns > ct.num_states) {
-	rmg_printf ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
+        rmg_printf ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
         rmg_error_handler (__FILE__, __LINE__,"Terminating.");
     }
 
@@ -183,7 +178,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     }
 
-        
+
 
     /* read state occupations */
     {

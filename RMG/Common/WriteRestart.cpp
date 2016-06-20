@@ -143,6 +143,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
 	fprintf(fhandle,"\nionic_time_step = \"%.12g\"", ct.iondt);
 	fprintf(fhandle,"\ndynamic_time_counter = \"%d\"", ct.relax_steps_counter);
+	fprintf(fhandle,"\nkpoint_distribution = \"%d\"", pct.pe_kpoint);
 //	fprintf(fhandle,"\n");
 
 
@@ -154,16 +155,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     /* All processors should wait until 0 is done to make sure that directories are created*/
     MPI_Barrier(pct.img_comm);
 
-    if (ct.spin_flag)
-    {   
-	if (pct.spinpe==0)
-	    sprintf (newname, "%s.up%d", name, pct.gridpe);
-	else if(pct.spinpe==1) 
-	    sprintf (newname, "%s.dw%d", name, pct.gridpe);
-
-    }
-    else
-	    sprintf (newname, "%s_%d_%d", name, pct.kstart, pct.gridpe);
+    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, pct.kstart, pct.gridpe);
 
     amode = S_IREAD | S_IWRITE;
     fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);

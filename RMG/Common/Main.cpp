@@ -367,6 +367,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
         case BAND_STRUCTURE:
             BandStructure (Kptr, vxc, vh, vnuc);
+            OutputBandPlot(Kptr);
             return;
         default:
             rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
@@ -376,8 +377,6 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
     WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
-    if(!ct.is_gamma)
-        OutputBandPlot(Kptr);
 
     if(Verify ("output_rho_xsf", true, Kptr[0]->ControlMap))
         Output_rho_xsf(rho, pct.grid_comm);

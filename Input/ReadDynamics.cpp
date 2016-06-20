@@ -46,9 +46,21 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     std::string string_tem;
 
+    std::unordered_map<std::string, InputKey *> NewMap;
+
+    RmgInputFile If(cfile, NewMap, pct.img_comm);
+
+    If.RegisterInputKey("kpoint_distribution", &pct.pe_kpoint, -INT_MAX, INT_MAX, -1,
+            CHECK_AND_FIX, OPTIONAL,
+            "",
+            "");
+
+    If.LoadInputKeys();
+
+
     // Read atoms
     ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
-    
+
     ReadTFAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
 
     // Forces and velocities (if present)
@@ -114,7 +126,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                 boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
                 for(int isp = 0;isp < lc.num_species;isp++) {
                     if(!std::strcmp(fields[0].c_str(), lc.sp[isp].atomic_symbol)) {
-                        
+
                         string_tem = std::string(pct.image_path[pct.thisimg]) + fields[1];  
                         std::strncpy(lc.sp[isp].pseudo_filename, string_tem.c_str(), sizeof(lc.sp[isp].pseudo_filename));
 
@@ -124,7 +136,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
             }
 
         }
- 
+
     }
     catch (const std::out_of_range& oor) {
         // no pseudpopotential tag which means only use internals
@@ -148,10 +160,11 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                 lc.ions[ion].species = species;
             }
             ion++;
-            
+
         }
         species++;
 
     }
 
 }
+

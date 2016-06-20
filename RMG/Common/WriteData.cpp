@@ -97,7 +97,7 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
 
     /* write wavefunction info */
     gamma = ct.is_gamma;
-    nk = ct.num_kpts;
+    nk = ct.num_kpts_pe;
     write_int (fhand, &gamma, 1);
     write_int (fhand, &nk, 1); 
 
