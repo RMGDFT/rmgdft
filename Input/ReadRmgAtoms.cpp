@@ -99,10 +99,17 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
                      "Flag indicated whether or not atomic coordinates are absolute or cell relative.\n",
                      "atomic_coordinate_type must be either \"Absolute\" or \"Cell Relative\". Terminating.\n");
     
+
+    If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
+                     CHECK_AND_FIX, OPTIONAL, crds_units,
+                     "Units for the atomic coordinates.\n",
+                     "Coordinates must be specified in either Bohr or Angstrom.\n");
+
     
     If.LoadInputKeys();
 
     InputMap["atomic_coordinate_type"]->Readstr = NewMap["atomic_coordinate_type"]->Readstr; 
+    InputMap["crds_units"]->Readstr = NewMap["crds_units"]->Readstr; 
 
     // Process atoms
     boost::trim(AtomArray);
