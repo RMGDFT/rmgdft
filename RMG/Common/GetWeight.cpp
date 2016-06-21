@@ -103,7 +103,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
             /*Temporary pointer to the already calculated forward transform */
             int size = nlxdim * nlydim * nlzdim;
-            fptr = (std::complex<double> *)&sp->forward_beta[kpt * sp->num_projectors * size];
+            fptr = (std::complex<double> *)&sp->forward_beta[kpt * sp->num_projectors * pbasis];
 
 
             /* Loop over radial projectors */

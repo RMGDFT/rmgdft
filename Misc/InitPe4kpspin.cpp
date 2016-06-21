@@ -64,6 +64,8 @@ void InitPe4kpspin()
         }
     }
 
+    npes = pct.image_npes[pct.thisimg]/nspin;
+
     if(npes % pct.pe_kpoint != 0) 
     {
         printf("\n npes %d for k-parallelization needs to be divisible by pe_kpoint %d", npes, pct.pe_kpoint);

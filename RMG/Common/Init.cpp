@@ -155,9 +155,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         if (pct.imgpe == 0)
         {
-            printf ("hxgrid = %7.5f\n", Rmg_G->get_hxgrid(1));
-            printf ("hygrid = %7.5f\n", Rmg_G->get_hygrid(1));
-            printf ("hzgrid = %7.5f\n", Rmg_G->get_hzgrid(1));
+            printf ("hxgrid = %7.5f\n", Rmg_G->get_hxgrid(1) * Rmg_L.get_xside());
+            printf ("hygrid = %7.5f\n", Rmg_G->get_hygrid(1) * Rmg_L.get_yside());
+            printf ("hzgrid = %7.5f\n", Rmg_G->get_hzgrid(1) * Rmg_L.get_zside());
         }
         rmg_error_handler (__FILE__, __LINE__, "Anisotropy too large");
     }
