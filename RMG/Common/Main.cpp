@@ -411,7 +411,7 @@ void report ()
     /* Write timing information */
     //    write_timings ();
     if(pct.imgpe == 0) fclose(ct.logfile);
-    RmgPrintTimings(Rmg_G, ct.logname, ct.scf_steps, pct.num_owned_ions);
+    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe);
 
 
 

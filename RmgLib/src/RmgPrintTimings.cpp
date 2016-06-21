@@ -12,7 +12,7 @@
 #include "RmgTimer.h"
 
 
-void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps, int num_ions_thispe) {
+void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_thispe) {
 
     int tid;
     size_t i, count, count1;
@@ -23,12 +23,15 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps, int num_ions_t
     std::ofstream logfile;
 
 
+    int my_rank;
+    MPI_Comm_rank (comm, &my_rank);
+
     struct{float num_ions; int rank;} ions_and_rank, max_rank, min_rank;
     ions_and_rank.num_ions = num_ions_thispe;
-    ions_and_rank.rank = G->get_rank();
+    ions_and_rank.rank = my_rank;
 
-    MPI_Allreduce(&ions_and_rank, &max_rank, 1, MPI_FLOAT_INT, MPI_MAXLOC, G->comm);
-    MPI_Allreduce(&ions_and_rank, &min_rank, 1, MPI_FLOAT_INT, MPI_MINLOC, G->comm);
+    MPI_Allreduce(&ions_and_rank, &max_rank, 1, MPI_FLOAT_INT, MPI_MAXLOC, comm);
+    MPI_Allreduce(&ions_and_rank, &min_rank, 1, MPI_FLOAT_INT, MPI_MINLOC, comm);
 
     
     // Have to do some manipulations to compute thread min/max/average and get things properly sorted
@@ -66,8 +69,8 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps, int num_ions_t
         }
     }
 
-    MPI_Barrier(G->comm);
-    if(G->get_rank() == max_rank.rank) {
+    MPI_Barrier(comm);
+    if(my_rank == max_rank.rank) {
 
         logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 
@@ -130,8 +133,8 @@ void RmgPrintTimings(BaseGrid *G, const char *outfile, int steps, int num_ions_t
 
     }
 
-    MPI_Barrier(G->comm);
-    if(G->get_rank() == min_rank.rank) {
+    MPI_Barrier(comm);
+    if(my_rank == min_rank.rank) {
 
         logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 
