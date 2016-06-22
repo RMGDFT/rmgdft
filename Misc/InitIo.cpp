@@ -144,7 +144,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         ReadDynamics(ct.cfile, ct, ControlMap);
     }
 
-    if((ct.kpoint_mesh[0] < 1) || (ct.kpoint_mesh[1] < 1) || (ct.kpoint_mesh[2] < 1) ) 
+    if(ct.forceflag == BAND_STRUCTURE)
+    {
+        ReadKpointsBandstructure(ct.cfile, ct, ControlMap);
+    }
+    else if((ct.kpoint_mesh[0] < 1) || (ct.kpoint_mesh[1] < 1) || (ct.kpoint_mesh[2] < 1) ) 
     {
         ReadKpoints(ct.cfile, ct, ControlMap);
     }

@@ -95,15 +95,110 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
         for(int ispin = 0; ispin < nspin; ispin++)
         {
-            snprintf(filename, MAX_PATH, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.xmgr");
+            snprintf(filename, MAX_PATH, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.dat");
             bs_f = fopen (filename, "w");
             if(!bs_f) {
                 rmg_printf("Unable to write band plot data.\n");
                 return;
             }
 
+            double eig_max = -1000.0;
+            double eig_min = 1000.0;
             for (int is = 0; is < ct.num_states; is++)
             {
+                for(int ik = 0; ik < ct.num_kpts; ik++)
+                {
+                    int idx = ispin * ct.num_kpts * ct.num_states + is * ct.num_kpts + ik;
+
+                    fprintf (bs_f, "\n %f  %16.8f ", x[ik], eig_all[idx]);
+                    eig_max = std::max(eig_max, eig_all[idx]);
+                    eig_min = std::min(eig_min, eig_all[idx]);
+
+
+                }
+
+                fprintf (bs_f, "\n &&");
+            }
+
+            fclose (bs_f);
+
+
+            eig_min -= 1.0;
+
+            snprintf(filename, MAX_PATH, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.xmgr");
+            bs_f = fopen (filename, "w");
+            if(!bs_f) {
+                rmg_printf("Unable to write band plot data.\n");
+                return;
+            }
+            fprintf (bs_f, "@version 50123\n");
+            fprintf (bs_f, "@g0 on\n");
+            fprintf (bs_f, "@with g0\n");
+            fprintf (bs_f, "@    world  %f, %f, %f, %f\n", x[0], eig_min, x[ct.num_kpts-1], eig_max);
+            fprintf (bs_f, "@    xaxis  on\n");
+            fprintf (bs_f, "@    xaxis  tick spec type both\n");
+
+            int num_tick = 0;
+            char *line_object;
+            for(int ik = 0; ik < ct.num_kpts; ik++)
+            {
+                if(strlen(ct.kp[ik].symbol))
+                {
+                    fprintf (bs_f, "@    xaxis  tick major %d, %f\n", num_tick, x[ik]);
+                    fprintf (bs_f, "@    xaxis  ticklabel %d, \"%s\"\n", num_tick, ct.kp[ik].symbol);
+                    num_tick++;
+                }
+            }
+            fprintf (bs_f, "@    xaxis  tick spec %d\n", num_tick);
+            fprintf (bs_f, "@    xaxis  ticklabel char size 1.75\n");
+
+            fprintf(bs_f, "@    yaxis  on\n");
+            fprintf(bs_f, "@    yaxis  label \"E(eV)\"\n");
+            fprintf(bs_f, "@    yaxis  label char size 2.000000\n");
+            fprintf(bs_f, "@    yaxis  tick on\n");
+            fprintf(bs_f, "@    yaxis  tick major 5\n");
+            fprintf(bs_f, "@    yaxis  tick minor ticks 1\n");
+            fprintf(bs_f, "@    yaxis  tick major linewidth 2.0\n");
+            fprintf(bs_f, "@    yaxis  tick minor linewidth 1.5\n");
+            fprintf(bs_f, "@    yaxis  ticklabel char size 1.750000\n");
+            fprintf(bs_f, "@    frame type 0\n");
+            fprintf(bs_f, "@    frame linestyle 1\n");
+            fprintf(bs_f, "@    frame linewidth 2.0\n");
+            fprintf(bs_f, "@    frame color 1\n");
+            fprintf(bs_f, "@    frame background color 0\n");
+
+            for(int ik = 1; ik < ct.num_kpts-1; ik++)
+            {
+                if(strlen(ct.kp[ik].symbol))
+                {
+                    fprintf(bs_f, "@with line\n");
+                    fprintf(bs_f, "@    line on\n");
+                    fprintf(bs_f, "@    line loctype world\n");
+                    fprintf(bs_f, "@    line g0\n");
+                    fprintf(bs_f, "@    line %f, %f, %f, %f\n", x[ik], eig_min, x[ik], eig_max);
+                    fprintf(bs_f, "@    line linewidth 1.0\n");
+                    fprintf(bs_f, "@    line linstype 1\n");
+                    fprintf(bs_f, "@    line color 1\n");
+                    fprintf(bs_f, "@line def\n");
+                }
+            }
+
+            for (int is = 0; is < ct.num_states; is++)
+            {
+                fprintf(bs_f, "@    s%d hidden false\n", is);
+                fprintf(bs_f, "@    s%d type xy\n", is);
+                fprintf(bs_f, "@    s%d line type 1\n", is);
+                fprintf(bs_f, "@    s%d line linestyle 1\n", is);
+                fprintf(bs_f, "@    s%d line linewidth 2.0\n", is);
+                fprintf(bs_f, "@    s%d line color 1\n", is);
+            }
+
+
+            for (int is = 0; is < ct.num_states; is++)
+            {
+                fprintf(bs_f, "@target G0.S%d\n", is);
+                fprintf(bs_f, "@type xy\n");
+
                 for(int ik = 0; ik < ct.num_kpts; ik++)
                 {
                     int idx = ispin * ct.num_kpts * ct.num_states + is * ct.num_kpts + ik;
@@ -117,16 +212,12 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
             fclose (bs_f);
 
-#if PLPLOT_LIBS 
-            snprintf(pngfile, MAX_PATH, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.png");
-            double *y = &eig_all[ispin * ct.num_kpts * ct.num_states];
-            MultiLinePlot(pngfile, "", "E(eV)", "Band Strucutre", x, y, ct.num_kpts_pe, ct.num_states);
-#endif
         }
 
 
     }
 
 }
+
 
 

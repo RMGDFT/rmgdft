@@ -495,7 +495,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Time step to use in the kohn-sham multigrid solver on the coarse levels.\n",
                      "kohn_sham_coarse_time_step must lie in the range (0.5,1.2). Resetting to the default value of 1.0.\n");
 
-    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.4, 2.0, 0.66,
+    If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.1, 2.0, 0.66,
                      CHECK_AND_FIX, OPTIONAL,
                      "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner.\n",
                      "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 0.66.\n");

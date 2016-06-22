@@ -45,6 +45,7 @@
 #include "Kpoint.h"
 #include "Subdiag.h"
 #include "../Headers/prototypes.h"
+#include "Solvers.h"
 
 template void BandStructure(Kpoint<double> **, double *vh, double *vxc, double *vnuc);
 template void BandStructure(Kpoint<std::complex<double> > **, double *vh, double *vxc, double *vnuc);
@@ -60,11 +61,10 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     int idx, istop, st1, ist;
 
     bool CONVERGED;
-    BaseThread *T = BaseThread::getBaseThread(0);
-
 
     
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
+
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     vtot = new  double[FP0_BASIS];
@@ -76,75 +76,25 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     get_ddd (vtot);
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
+
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
-        int pbasis = Kptr[kpt]->pbasis;
+
 
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
         {
+            
+            MgridSubspace(Kptr[kpt], vtot_psi);
 
-            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
-            Kptr[kpt]->mix_betaxpsi(0);
-            Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
-            for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
-                Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
-                Kptr[kpt]->mix_betaxpsi(0);
-
-                /* Update the wavefunctions */
-                istop = Kptr[kpt]->nstates / T->get_threads_per_node();
-                istop = istop * T->get_threads_per_node();
-
-                // Apply the non-local operators to a block of orbitals
-                AppNls(Kptr[kpt], Kptr[kpt]->newsint_local, Kptr[kpt]->Kstates[0].psi, Kptr[kpt]->nv, Kptr[kpt]->ns, Kptr[kpt]->Bns,
-                       0, std::min(ct.non_local_block_size, Kptr[kpt]->nstates));
-                int first_nls = 0;
-
-                for(st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
-                    SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
-
-                    // Make sure the non-local operators are applied for the next block if needed
-                    int check = first_nls + T->get_threads_per_node();
-                    if(check > ct.non_local_block_size) {
-                        AppNls(Kptr[kpt], Kptr[kpt]->oldsint_local, Kptr[kpt]->Kstates[st1].psi, Kptr[kpt]->nv, &Kptr[kpt]->ns[st1 * pbasis], Kptr[kpt]->Bns,
-                               st1, std::min(ct.non_local_block_size, Kptr[kpt]->nstates - st1));
-                        first_nls = 0;
-                    }
-
-                    for(ist = 0;ist < T->get_threads_per_node();ist++) {
-                        thread_control[ist].job = HYBRID_EIG;
-                        thread_control[ist].vtot = vtot_psi;
-                        thread_control[ist].vcycle = vcycle;
-                        thread_control[ist].sp = &Kptr[kpt]->Kstates[st1 + ist];
-                        thread_control[ist].p3 = (void *)Kptr[kpt];
-                        thread_control[ist].nv = (void *)&Kptr[kpt]->nv[(st1 + ist) * pbasis];
-                        thread_control[ist].ns = (void *)&Kptr[kpt]->ns[(st1 + ist) * pbasis];
-                        T->set_pptr(ist, &thread_control[ist]);
-                    }
-
-                    // Thread tasks are set up so run them
-                    T->run_thread_tasks(T->get_threads_per_node());
-
-
-                    // Increment index into non-local block
-                    first_nls += T->get_threads_per_node();
-
-                }
-
-                // Process any remaining states in serial fashion
-                for(st1 = istop;st1 < Kptr[kpt]->nstates;st1++) {
-                    MgEigState<std::complex<double>, std::complex<double> > ((Kpoint<std::complex<double>> *)Kptr[kpt], (State<std::complex<double> > *)&Kptr[kpt]->Kstates[st1], vtot_psi,
-                            (std::complex<double> *)&Kptr[kpt]->nv[st1 * pbasis], (std::complex<double> *)&Kptr[kpt]->ns[st1 * pbasis], vcycle);
-
-                }
-
-            }  // end for vcycle
 
             max_res = Kptr[kpt]->Kstates[0].res;
             for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
                 if( max_res < Kptr[kpt]->Kstates[istate].res) 
                     max_res = Kptr[kpt]->Kstates[istate].res;
+   //         for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
+   //           rmg_printf("\n kpt = %d scf =%d state=%d res = %e", kpt, ct.scf_steps, istate, Kptr[kpt]->Kstates[istate].res);
              rmg_printf("\n kpt= %d  scf = %d  max_res = %e", kpt, ct.scf_steps, max_res);
 
             if (max_res <ct.gw_threshold) 

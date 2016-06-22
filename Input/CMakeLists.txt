@@ -8,6 +8,7 @@ ReadInit.cpp
 ReadRmgAtoms.cpp
 ReadDynamics.cpp
 ReadKpoints.cpp
+ReadKpointsBandstructure.cpp
 Verify.cpp
 InputKey.cpp
 CheckValue.cpp

@@ -226,6 +226,7 @@ template <typename OrbitalType> void AssignDerweight (Kpoint<OrbitalType> *kptr,
         
 
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
+void ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 void ReadOrbitals(char *cfile, STATE  *states, ION *ions,  MPI_Comm comm, unsigned int *);
 void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 template <typename KpointType>

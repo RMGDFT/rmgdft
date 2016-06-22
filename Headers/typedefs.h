@@ -239,6 +239,8 @@ typedef struct
 
     /** The magnitude of the k-vector */
     double kmag;
+    
+    char symbol[10];
 
     /* The orbital structure for this k-point */
     STATE *kstate;
