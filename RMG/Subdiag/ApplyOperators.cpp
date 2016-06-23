@@ -65,13 +65,18 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
 
     // Apply A operator to psi
+    RmgTimer *RT1 = new RmgTimer("ApplyOper: A");
     ApplyAOperator (psi, a_psi, "Coarse");
+    delete RT1;
 
+    RmgTimer *RT2 = new RmgTimer("ApplyOper: B");
 
     // Apply B operator to psi
     ApplyBOperator (psi, b_psi, "Coarse");
 
+    delete RT2;
 
+    RmgTimer *RT3 = new RmgTimer("ApplyOper: grad");
     // if complex orbitals apply gradient to orbital and compute dot products
     std::complex<double> *kdr = new std::complex<double>[pbasis]();
 
@@ -97,6 +102,9 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
     }
 
+    delete RT3;
+
+    RmgTimer *RT4 = new RmgTimer("ApplyOper: genv");
     // Generate 2*V*psi
     KpointType *sg_twovpsi_t = new KpointType[sbasis];
     if(potential_acceleration) {
@@ -107,6 +115,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
         CPP_genvpsi (psi, sg_twovpsi_t, vtot, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
     }
 
+    delete RT4;
     // B operating on 2*V*psi stored in work
     KpointType *work_t = new KpointType[sbasis];
     ApplyBOperator (sg_twovpsi_t, work_t, "Coarse");

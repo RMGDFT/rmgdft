@@ -1277,32 +1277,32 @@ double FiniteDiff::app8_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
 
                 b[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
                     t0 * a[ix * ixs + iy * iys + iz] +
-                    t1x * a[(ix - 1) * ixs + iy * iys + iz] +
-                    t1x * a[(ix + 1) * ixs + iy * iys + iz] +
-                    t2x * a[(ix - 2) * ixs + iy * iys + iz] +
-                    t2x * a[(ix + 2) * ixs + iy * iys + iz] +
-                    t3x * a[(ix - 3) * ixs + iy * iys + iz] +
-                    t3x * a[(ix + 3) * ixs + iy * iys + iz] +
-                    t4x * a[(ix - 4) * ixs + iy * iys + iz] +
-                    t4x * a[(ix + 4) * ixs + iy * iys + iz] +
+                    t1x * ( a[(ix - 1) * ixs + iy * iys + iz] +
+                            a[(ix + 1) * ixs + iy * iys + iz]) +
+                    t2x * ( a[(ix - 2) * ixs + iy * iys + iz] +
+                            a[(ix + 2) * ixs + iy * iys + iz]) +
+                    t3x * ( a[(ix - 3) * ixs + iy * iys + iz] +
+                            a[(ix + 3) * ixs + iy * iys + iz]) +
+                    t4x * ( a[(ix - 4) * ixs + iy * iys + iz] +
+                            a[(ix + 4) * ixs + iy * iys + iz]) +
 
-                    t1y * a[ix * ixs + (iy - 1) * iys + iz] +
-                    t1y * a[ix * ixs + (iy + 1) * iys + iz] +
-                    t2y * a[ix * ixs + (iy - 2) * iys + iz] +
-                    t2y * a[ix * ixs + (iy + 2) * iys + iz] +
-                    t3y * a[ix * ixs + (iy - 3) * iys + iz] +
-                    t3y * a[ix * ixs + (iy + 3) * iys + iz] +
-                    t4y * a[ix * ixs + (iy - 4) * iys + iz] +
-                    t4y * a[ix * ixs + (iy + 4) * iys + iz] +
+                    t1y * ( a[ix * ixs + (iy - 1) * iys + iz] +
+                            a[ix * ixs + (iy + 1) * iys + iz]) +
+                    t2y * ( a[ix * ixs + (iy - 2) * iys + iz] +
+                            a[ix * ixs + (iy + 2) * iys + iz]) +
+                    t3y * ( a[ix * ixs + (iy - 3) * iys + iz] +
+                            a[ix * ixs + (iy + 3) * iys + iz]) +
+                    t4y * ( a[ix * ixs + (iy - 4) * iys + iz] +
+                            a[ix * ixs + (iy + 4) * iys + iz]) +
 
-                    t1z * a[ix * ixs + iy * iys + iz - 1] +
-                    t1z * a[ix * ixs + iy * iys + iz + 1] +
-                    t2z * a[ix * ixs + iy * iys + iz - 2] +
-                    t2z * a[ix * ixs + iy * iys + iz + 2] +
-                    t3z * a[ix * ixs + iy * iys + iz - 3] +
-                    t3z * a[ix * ixs + iy * iys + iz + 3] +
-                    t4z * a[ix * ixs + iy * iys + iz - 4] +
-                    t4z * a[ix * ixs + iy * iys + iz + 4];
+                    t1z * ( a[ix * ixs + iy * iys + iz - 1] +
+                            a[ix * ixs + iy * iys + iz + 1]) +
+                    t2z * ( a[ix * ixs + iy * iys + iz - 2] +
+                            a[ix * ixs + iy * iys + iz + 2]) +
+                    t3z * ( a[ix * ixs + iy * iys + iz - 3] +
+                            a[ix * ixs + iy * iys + iz + 3]) +
+                    t4z * ( a[ix * ixs + iy * iys + iz - 4] +
+                            a[ix * ixs + iy * iys + iz + 4]);
 
             }                   /* end for */
         }                       /* end for */
@@ -1315,9 +1315,9 @@ double FiniteDiff::app8_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
 }                               /* end app8_del2 */
 
 
-template <typename RmgType>
+    template <typename RmgType>
 double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
-               double gridhx, double gridhy, double gridhz)
+        double gridhx, double gridhy, double gridhz)
 {
 
     int ibrav = L->get_ibrav_type();
@@ -1415,9 +1415,9 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 }                               /* end app10_del2 */
 
 
-template <typename RmgType>
+    template <typename RmgType>
 double FiniteDiff::app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
-               double gridhx, double gridhy, double gridhz)
+        double gridhx, double gridhy, double gridhz)
 {
 
     int ibrav = L->get_ibrav_type();
@@ -1524,7 +1524,7 @@ double FiniteDiff::app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 }                               /* end app12_del2 */
 
 
-template <typename RmgType>
+    template <typename RmgType>
 double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
 {
 
@@ -1715,26 +1715,26 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
                         b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
                             cc * rptr[ixs + iys + iz] +
                             a3 * (rptr[ixps + iys + iz - 1] +
-                                  rptr[ixps + iyms + iz - 1] +
-                                  rptr[ixs + iyms + iz - 1] +
-                                  rptr[ixms + iys + iz - 1] +
-                                  rptr[ixms + iyps + iz - 1] +
-                                  rptr[ixs + iyps + iz - 1] +
-                                  rptr[ixps + iys + iz + 1] +
-                                  rptr[ixps + iyms + iz + 1] +
-                                  rptr[ixs + iyms + iz + 1] +
-                                  rptr[ixms + iys + iz + 1] +
-                                  rptr[ixms + iyps + iz + 1] + 
-                                  rptr[ixs + iyps + iz + 1]);
+                                    rptr[ixps + iyms + iz - 1] +
+                                    rptr[ixs + iyms + iz - 1] +
+                                    rptr[ixms + iys + iz - 1] +
+                                    rptr[ixms + iyps + iz - 1] +
+                                    rptr[ixs + iyps + iz - 1] +
+                                    rptr[ixps + iys + iz + 1] +
+                                    rptr[ixps + iyms + iz + 1] +
+                                    rptr[ixs + iyms + iz + 1] +
+                                    rptr[ixms + iys + iz + 1] +
+                                    rptr[ixms + iyps + iz + 1] + 
+                                    rptr[ixs + iyps + iz + 1]);
 
 
                         b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
                             a2 * (rptr[ixps + iys + iz] +
-                                  rptr[ixps + iyms + iz] +
-                                  rptr[ixs + iyms + iz] +
-                                  rptr[ixms + iys + iz] + 
-                                  rptr[ixms + iyps + iz] + 
-                                  rptr[ixs + iyps + iz]);
+                                    rptr[ixps + iyms + iz] +
+                                    rptr[ixs + iyms + iz] +
+                                    rptr[ixms + iys + iz] + 
+                                    rptr[ixms + iyps + iz] + 
+                                    rptr[ixs + iyps + iz]);
 
                         b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
                             a1 * (rptr[ixs + iys + iz - 1] + rptr[ixs + iys + iz + 1]);
@@ -1799,7 +1799,7 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
             break;
 
         default:
-                rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
+            rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
 
     } // end switch
 
@@ -1808,7 +1808,7 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
 }                               /* end app_cil */
 
 
-template <typename RmgType>
+    template <typename RmgType>
 void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz)
 {
 
@@ -1877,15 +1877,15 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
                     for(int iz = 1;iz < dimz + 1;iz++) {
 
                         b[(ix - 1)*incxr + (iy - 1)*incyr + (iz - 1)] =
-                           Bch * rptr[ixs + iys + iz] +
-                           Bz * rptr[ixs + iys + iz - 1] +
-                           Bz * rptr[ixs + iys + iz + 1] +
-                           Bfh * rptr[ixps + iys + iz] +
-                           Bfh * rptr[ixps + iyms + iz] +
-                           Bfh * rptr[ixs + iyms + iz] +
-                           Bfh * rptr[ixms + iys + iz] +
-                           Bfh * rptr[ixms + iyps + iz] +
-                           Bfh * rptr[ixs + iyps + iz];
+                            Bch * rptr[ixs + iys + iz] +
+                            Bz * rptr[ixs + iys + iz - 1] +
+                            Bz * rptr[ixs + iys + iz + 1] +
+                            Bfh * rptr[ixps + iys + iz] +
+                            Bfh * rptr[ixps + iyms + iz] +
+                            Bfh * rptr[ixs + iyms + iz] +
+                            Bfh * rptr[ixms + iys + iz] +
+                            Bfh * rptr[ixms + iyps + iz] +
+                            Bfh * rptr[ixs + iyps + iz];
 
                     } /* end for */
 
@@ -1912,17 +1912,17 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
                         b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
                             Bc * rptr[ixs + iys + iz] +
                             Bf * (rptr[ixms + iys + iz] +
-                                  rptr[ixms + iys + iz + 1] +
-                                  rptr[ixms + iyps + iz] +
-                                  rptr[ixs + iyms + iz] +
-                                  rptr[ixs + iyms + iz + 1] +
-                                  rptr[ixs + iys + iz - 1] +
-                                  rptr[ixs + iys + iz + 1] +
-                                  rptr[ixs + iyps + iz - 1] +
-                                  rptr[ixs + iyps + iz] +
-                                  rptr[ixps + iyms + iz] + 
-                                  rptr[ixps + iys + iz - 1] + 
-                                  rptr[ixps + iys + iz]);
+                                    rptr[ixms + iys + iz + 1] +
+                                    rptr[ixms + iyps + iz] +
+                                    rptr[ixs + iyms + iz] +
+                                    rptr[ixs + iyms + iz + 1] +
+                                    rptr[ixs + iys + iz - 1] +
+                                    rptr[ixs + iys + iz + 1] +
+                                    rptr[ixs + iyps + iz - 1] +
+                                    rptr[ixs + iyps + iz] +
+                                    rptr[ixps + iyms + iz] + 
+                                    rptr[ixps + iys + iz - 1] + 
+                                    rptr[ixps + iys + iz]);
 
 
                     }                   /* end for */
@@ -1941,9 +1941,9 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
 }
 
 
-template <typename RmgType>
+    template <typename RmgType>
 void FiniteDiff::app_gradient_fourth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
-                               double gridhx, double gridhy, double gridhz)
+        double gridhx, double gridhy, double gridhz)
 {
 
     int ixs = (dimy + 4) * (dimz + 4);
@@ -2028,7 +2028,7 @@ void FiniteDiff::app_gradient_fourth (RmgType * rptr, RmgType * wxr, RmgType *wy
                     for (int iz = 2; iz < dimz + 2; iz++)
                     {
 
-                       wxr[(ix - 2) * ix1 + (iy - 2) * iy1 + iz - 2] =
+                        wxr[(ix - 2) * ix1 + (iy - 2) * iy1 + iz - 2] =
                             h2x * rptr[(ix - 2) * ixs + iy * iys + iz] +
                             -h1x * rptr[(ix - 1) * ixs + iy * iys + iz] +
                             h1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
@@ -2063,9 +2063,9 @@ void FiniteDiff::app_gradient_fourth (RmgType * rptr, RmgType * wxr, RmgType *wy
 }
 
 
-template <typename RmgType>
+    template <typename RmgType>
 void FiniteDiff::app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
-                               double gridhx, double gridhy, double gridhz)
+        double gridhx, double gridhy, double gridhz)
 {
 
     int ixs = (dimy + 6) * (dimz + 6);
@@ -2106,25 +2106,25 @@ void FiniteDiff::app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr
                             -t3x * rptr[(ix - 3) * ixs + iy * iys + iz] +
                             -t2x * rptr[(ix - 2) * ixs + iy * iys + iz] +
                             -t1x * rptr[(ix - 1) * ixs + iy * iys + iz] +
-                             t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
-                             t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
-                             t3x * rptr[(ix + 3) * ixs + iy * iys + iz];
+                            t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
+                            t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
+                            t3x * rptr[(ix + 3) * ixs + iy * iys + iz];
 
                         wyr[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
                             -t3y * rptr[ix * ixs + (iy - 3) * iys + iz] +
                             -t2y * rptr[ix * ixs + (iy - 2) * iys + iz] +
                             -t1y * rptr[ix * ixs + (iy - 1) * iys + iz] +
-                             t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
-                             t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
-                             t3y * rptr[ix * ixs + (iy + 3) * iys + iz];
+                            t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
+                            t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
+                            t3y * rptr[ix * ixs + (iy + 3) * iys + iz];
 
                         wzr[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
                             -t3z * rptr[ix * ixs + iy * iys + iz - 3] +
                             -t2z * rptr[ix * ixs + iy * iys + iz - 2] +
                             -t1z * rptr[ix * ixs + iy * iys + iz - 1] +
-                             t1z * rptr[ix * ixs + iy * iys + iz + 1] +
-                             t2z * rptr[ix * ixs + iy * iys + iz + 2] +
-                             t3z * rptr[ix * ixs + iy * iys + iz + 3];
+                            t1z * rptr[ix * ixs + iy * iys + iz + 1] +
+                            t2z * rptr[ix * ixs + iy * iys + iz + 2] +
+                            t3z * rptr[ix * ixs + iy * iys + iz + 3];
 
                     }               /* end for */
                 }                   /* end for */
@@ -2138,9 +2138,9 @@ void FiniteDiff::app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr
     }                           /* end switch */
 }
 
-template <typename RmgType>
+    template <typename RmgType>
 void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
-                               double gridhx, double gridhy, double gridhz)
+        double gridhx, double gridhy, double gridhz)
 {
 
     int ixs = (dimy + 8) * (dimz + 8);
@@ -2182,35 +2182,34 @@ void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wy
                     {
 
                         wxr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
-                            -t4x * rptr[(ix - 4) * ixs + iy * iys + iz] +
-                            -t3x * rptr[(ix - 3) * ixs + iy * iys + iz] +
-                            -t2x * rptr[(ix - 2) * ixs + iy * iys + iz] +
-                            -t1x * rptr[(ix - 1) * ixs + iy * iys + iz] +
-                             t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
-                             t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
-                             t3x * rptr[(ix + 3) * ixs + iy * iys + iz] +
-                             t4x * rptr[(ix + 4) * ixs + iy * iys + iz];
+                            t4x * ( rptr[(ix + 4) * ixs + iy * iys + iz] -
+                                    rptr[(ix - 4) * ixs + iy * iys + iz]) +
+                            t3x * ( rptr[(ix + 3) * ixs + iy * iys + iz] -
+                                    rptr[(ix - 3) * ixs + iy * iys + iz]) +
+                            t2x * ( rptr[(ix + 2) * ixs + iy * iys + iz] -
+                                    rptr[(ix - 2) * ixs + iy * iys + iz]) +
+                            t1x * ( rptr[(ix + 1) * ixs + iy * iys + iz] -
+                                    rptr[(ix - 1) * ixs + iy * iys + iz]);
 
                         wyr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
-                            -t4y * rptr[ix * ixs + (iy - 4) * iys + iz] +
-                            -t3y * rptr[ix * ixs + (iy - 3) * iys + iz] +
-                            -t2y * rptr[ix * ixs + (iy - 2) * iys + iz] +
-                            -t1y * rptr[ix * ixs + (iy - 1) * iys + iz] +
-                             t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
-                             t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
-                             t3y * rptr[ix * ixs + (iy + 3) * iys + iz] +
-                             t4y * rptr[ix * ixs + (iy + 4) * iys + iz];
+                            t4y * ( rptr[ix * ixs + (iy + 4)* iys + iz] -
+                                    rptr[ix * ixs + (iy - 4)* iys + iz]) +
+                            t3y * ( rptr[ix * ixs + (iy + 3)* iys + iz] -
+                                    rptr[ix * ixs + (iy - 3)* iys + iz]) +
+                            t2y * ( rptr[ix * ixs + (iy + 2)* iys + iz] -
+                                    rptr[ix * ixs + (iy - 2)* iys + iz]) +
+                            t1y * ( rptr[ix * ixs + (iy + 1)* iys + iz] -
+                                    rptr[ix * ixs + (iy - 1)* iys + iz]);
 
-                        wzr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
-                            -t4z * rptr[ix * ixs + iy * iys + iz - 4] +
-                            -t3z * rptr[ix * ixs + iy * iys + iz - 3] +
-                            -t2z * rptr[ix * ixs + iy * iys + iz - 2] +
-                            -t1z * rptr[ix * ixs + iy * iys + iz - 1] +
-                             t1z * rptr[ix * ixs + iy * iys + iz + 1] +
-                             t2z * rptr[ix * ixs + iy * iys + iz + 2] +
-                             t3z * rptr[ix * ixs + iy * iys + iz + 3] +
-                             t4z * rptr[ix * ixs + iy * iys + iz + 4];
-
+                            wzr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
+                            t4z * ( rptr[ix * ixs + iy * iys + iz+ 4] -
+                                    rptr[ix * ixs + iy * iys + iz- 4]) +
+                            t3z * ( rptr[ix * ixs + iy * iys + iz+ 3] -
+                                    rptr[ix * ixs + iy * iys + iz- 3]) +
+                            t2z * ( rptr[ix * ixs + iy * iys + iz+ 2] -
+                                    rptr[ix * ixs + iy * iys + iz- 2]) +
+                            t1z * ( rptr[ix * ixs + iy * iys + iz+ 1] -
+                                    rptr[ix * ixs + iy * iys + iz- 1]);
 
                     }               /* end for */
                 }                   /* end for */
@@ -2227,9 +2226,9 @@ void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wy
 }
 
 
-template <typename RmgType>
+    template <typename RmgType>
 void FiniteDiff::app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
-                               double gridhx, double gridhy, double gridhz)
+        double gridhx, double gridhy, double gridhz)
 {
 
     int ixs = (dimy + 10) * (dimz + 10);
@@ -2279,11 +2278,11 @@ void FiniteDiff::app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr
                             -t3x * rptr[(ix - 3) * ixs + iy * iys + iz] +
                             -t2x * rptr[(ix - 2) * ixs + iy * iys + iz] +
                             -t1x * rptr[(ix - 1) * ixs + iy * iys + iz] +
-                             t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
-                             t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
-                             t3x * rptr[(ix + 3) * ixs + iy * iys + iz] +
-                             t4x * rptr[(ix + 4) * ixs + iy * iys + iz] +
-                             t5x * rptr[(ix + 5) * ixs + iy * iys + iz];
+                            t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
+                            t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
+                            t3x * rptr[(ix + 3) * ixs + iy * iys + iz] +
+                            t4x * rptr[(ix + 4) * ixs + iy * iys + iz] +
+                            t5x * rptr[(ix + 5) * ixs + iy * iys + iz];
 
                         wyr[(ix - 5) * ix1 + (iy - 5) * iy1 + iz - 5] =
                             -t5y * rptr[ix * ixs + (iy - 5) * iys + iz] +
@@ -2291,11 +2290,11 @@ void FiniteDiff::app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr
                             -t3y * rptr[ix * ixs + (iy - 3) * iys + iz] +
                             -t2y * rptr[ix * ixs + (iy - 2) * iys + iz] +
                             -t1y * rptr[ix * ixs + (iy - 1) * iys + iz] +
-                             t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
-                             t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
-                             t3y * rptr[ix * ixs + (iy + 3) * iys + iz] +
-                             t4y * rptr[ix * ixs + (iy + 4) * iys + iz] +
-                             t5y * rptr[ix * ixs + (iy + 5) * iys + iz];
+                            t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
+                            t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
+                            t3y * rptr[ix * ixs + (iy + 3) * iys + iz] +
+                            t4y * rptr[ix * ixs + (iy + 4) * iys + iz] +
+                            t5y * rptr[ix * ixs + (iy + 5) * iys + iz];
 
                         wzr[(ix - 5) * ix1 + (iy - 5) * iy1 + iz - 5] =
                             -t5z * rptr[ix * ixs + iy * iys + iz - 5] +
@@ -2303,11 +2302,11 @@ void FiniteDiff::app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr
                             -t3z * rptr[ix * ixs + iy * iys + iz - 3] +
                             -t2z * rptr[ix * ixs + iy * iys + iz - 2] +
                             -t1z * rptr[ix * ixs + iy * iys + iz - 1] +
-                             t1z * rptr[ix * ixs + iy * iys + iz + 1] +
-                             t2z * rptr[ix * ixs + iy * iys + iz + 2] +
-                             t3z * rptr[ix * ixs + iy * iys + iz + 3] +
-                             t4z * rptr[ix * ixs + iy * iys + iz + 4] +
-                             t5z * rptr[ix * ixs + iy * iys + iz + 5];
+                            t1z * rptr[ix * ixs + iy * iys + iz + 1] +
+                            t2z * rptr[ix * ixs + iy * iys + iz + 2] +
+                            t3z * rptr[ix * ixs + iy * iys + iz + 3] +
+                            t4z * rptr[ix * ixs + iy * iys + iz + 4] +
+                            t5z * rptr[ix * ixs + iy * iys + iz + 5];
 
 
                     }               /* end for */
@@ -2326,9 +2325,9 @@ void FiniteDiff::app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr
 
 
 
-template <typename RmgType>
+    template <typename RmgType>
 void FiniteDiff::app_gradient_twelfth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
-                               double gridhx, double gridhy, double gridhz)
+        double gridhx, double gridhy, double gridhz)
 {
 
     int ixs = (dimy + 12) * (dimz + 12);
@@ -2382,12 +2381,12 @@ void FiniteDiff::app_gradient_twelfth (RmgType * rptr, RmgType * wxr, RmgType *w
                             -t3x * rptr[(ix - 3) * ixs + iy * iys + iz] +
                             -t2x * rptr[(ix - 2) * ixs + iy * iys + iz] +
                             -t1x * rptr[(ix - 1) * ixs + iy * iys + iz] +
-                             t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
-                             t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
-                             t3x * rptr[(ix + 3) * ixs + iy * iys + iz] +
-                             t4x * rptr[(ix + 4) * ixs + iy * iys + iz] +
-                             t5x * rptr[(ix + 5) * ixs + iy * iys + iz] +
-                             t6x * rptr[(ix + 6) * ixs + iy * iys + iz];
+                            t1x * rptr[(ix + 1) * ixs + iy * iys + iz] +
+                            t2x * rptr[(ix + 2) * ixs + iy * iys + iz] +
+                            t3x * rptr[(ix + 3) * ixs + iy * iys + iz] +
+                            t4x * rptr[(ix + 4) * ixs + iy * iys + iz] +
+                            t5x * rptr[(ix + 5) * ixs + iy * iys + iz] +
+                            t6x * rptr[(ix + 6) * ixs + iy * iys + iz];
 
                         wyr[(ix - 6) * ix1 + (iy - 6) * iy1 + iz - 6] =
                             -t6y * rptr[ix * ixs + (iy - 6) * iys + iz] +
@@ -2396,12 +2395,12 @@ void FiniteDiff::app_gradient_twelfth (RmgType * rptr, RmgType * wxr, RmgType *w
                             -t3y * rptr[ix * ixs + (iy - 3) * iys + iz] +
                             -t2y * rptr[ix * ixs + (iy - 2) * iys + iz] +
                             -t1y * rptr[ix * ixs + (iy - 1) * iys + iz] +
-                             t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
-                             t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
-                             t3y * rptr[ix * ixs + (iy + 3) * iys + iz] +
-                             t4y * rptr[ix * ixs + (iy + 4) * iys + iz] +
-                             t5y * rptr[ix * ixs + (iy + 5) * iys + iz] +
-                             t6y * rptr[ix * ixs + (iy + 6) * iys + iz];
+                            t1y * rptr[ix * ixs + (iy + 1) * iys + iz] +
+                            t2y * rptr[ix * ixs + (iy + 2) * iys + iz] +
+                            t3y * rptr[ix * ixs + (iy + 3) * iys + iz] +
+                            t4y * rptr[ix * ixs + (iy + 4) * iys + iz] +
+                            t5y * rptr[ix * ixs + (iy + 5) * iys + iz] +
+                            t6y * rptr[ix * ixs + (iy + 6) * iys + iz];
 
                         wzr[(ix - 6) * ix1 + (iy - 6) * iy1 + iz - 6] =
                             -t6z * rptr[ix * ixs + iy * iys + iz - 6] +
@@ -2410,12 +2409,12 @@ void FiniteDiff::app_gradient_twelfth (RmgType * rptr, RmgType * wxr, RmgType *w
                             -t3z * rptr[ix * ixs + iy * iys + iz - 3] +
                             -t2z * rptr[ix * ixs + iy * iys + iz - 2] +
                             -t1z * rptr[ix * ixs + iy * iys + iz - 1] +
-                             t1z * rptr[ix * ixs + iy * iys + iz + 1] +
-                             t2z * rptr[ix * ixs + iy * iys + iz + 2] +
-                             t3z * rptr[ix * ixs + iy * iys + iz + 3] +
-                             t4z * rptr[ix * ixs + iy * iys + iz + 4] +
-                             t5z * rptr[ix * ixs + iy * iys + iz + 5] +
-                             t6z * rptr[ix * ixs + iy * iys + iz + 6];
+                            t1z * rptr[ix * ixs + iy * iys + iz + 1] +
+                            t2z * rptr[ix * ixs + iy * iys + iz + 2] +
+                            t3z * rptr[ix * ixs + iy * iys + iz + 3] +
+                            t4z * rptr[ix * ixs + iy * iys + iz + 4] +
+                            t5z * rptr[ix * ixs + iy * iys + iz + 5] +
+                            t6z * rptr[ix * ixs + iy * iys + iz + 6];
 
 
                     }               /* end for */
@@ -2437,7 +2436,7 @@ void FiniteDiff::app_gradient_twelfth (RmgType * rptr, RmgType * wxr, RmgType *w
 
 
 // Openmp version. Very simple with no cache optimizations as of yet.
-template <typename RmgType>
+    template <typename RmgType>
 double FiniteDiff::app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)
 {
 
@@ -2499,50 +2498,50 @@ double FiniteDiff::app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dim
 
             int ix, iy, iz;
 #pragma omp parallel private(ix,iy,iz,ixs,ixms,ixps,iys,iyms,iyps)
-{
-#pragma omp for schedule(static, 2) nowait
-            for (ix = 1; ix <= dimx; ix++)
             {
-                ixs = ix * incx;
-                ixms = (ix - 1) * incx;
-                ixps = (ix + 1) * incx;
-                for (iy = 1; iy <= dimy; iy++)
+#pragma omp for schedule(static, 2) nowait
+                for (ix = 1; ix <= dimx; ix++)
                 {
-                    iys = iy * incy;
-                    iyms = (iy - 1) * incy;
-                    iyps = (iy + 1) * incy;
-
-                    for (iz = 1; iz <= dimz; iz++)
+                    ixs = ix * incx;
+                    ixms = (ix - 1) * incx;
+                    ixps = (ix + 1) * incx;
+                    for (iy = 1; iy <= dimy; iy++)
                     {
+                        iys = iy * incy;
+                        iyms = (iy - 1) * incy;
+                        iyps = (iy + 1) * incy;
 
-                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                            cc * rptr[ixs + iys + iz] +
-                            fcx * rptr[ixms + iys + iz] +
-                            fcx * rptr[ixps + iys + iz] +
-                            fcy * rptr[ixs + iyms + iz] +
-                            fcy * rptr[ixs + iyps + iz] +
-                            fcz * rptr[ixs + iys + (iz - 1)] + fcz * rptr[ixs + iys + (iz + 1)];
+                        for (iz = 1; iz <= dimz; iz++)
+                        {
 
-                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                            ecxz * rptr[ixms + iys + iz - 1] +
-                            ecxz * rptr[ixps + iys + iz - 1] +
-                            ecyz * rptr[ixs + iyms + iz - 1] +
-                            ecyz * rptr[ixs + iyps + iz - 1] +
-                            ecxy * rptr[ixms + iyms + iz] +
-                            ecxy * rptr[ixms + iyps + iz] +
-                            ecxy * rptr[ixps + iyms + iz] +
-                            ecxy * rptr[ixps + iyps + iz] +
-                            ecxz * rptr[ixms + iys + iz + 1] +
-                            ecxz * rptr[ixps + iys + iz + 1] +
-                            ecyz * rptr[ixs + iyms + iz + 1] + ecyz * rptr[ixs + iyps + iz + 1];
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                                cc * rptr[ixs + iys + iz] +
+                                fcx * rptr[ixms + iys + iz] +
+                                fcx * rptr[ixps + iys + iz] +
+                                fcy * rptr[ixs + iyms + iz] +
+                                fcy * rptr[ixs + iyps + iz] +
+                                fcz * rptr[ixs + iys + (iz - 1)] + fcz * rptr[ixs + iys + (iz + 1)];
+
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                                ecxz * rptr[ixms + iys + iz - 1] +
+                                ecxz * rptr[ixps + iys + iz - 1] +
+                                ecyz * rptr[ixs + iyms + iz - 1] +
+                                ecyz * rptr[ixs + iyps + iz - 1] +
+                                ecxy * rptr[ixms + iyms + iz] +
+                                ecxy * rptr[ixms + iyps + iz] +
+                                ecxy * rptr[ixps + iyms + iz] +
+                                ecxy * rptr[ixps + iyps + iz] +
+                                ecxz * rptr[ixms + iys + iz + 1] +
+                                ecxz * rptr[ixps + iys + iz + 1] +
+                                ecyz * rptr[ixs + iyms + iz + 1] + ecyz * rptr[ixs + iyps + iz + 1];
 
 
-                    }           /* end for */
+                        }           /* end for */
 
-                }               /* end for */
+                    }               /* end for */
 
-            }                   /* end for */
-}
+                }                   /* end for */
+            }
             break;
 
         case HEXAGONAL:
@@ -2557,56 +2556,56 @@ double FiniteDiff::app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dim
             a3 = TWO_t * a3;
 
 #pragma omp parallel private(ix,iy,iz,ixs,ixms,ixps,iys,iyms,iyps)
-{
+            {
 #pragma omp for schedule(static, 2) nowait
 
-            for (ix = 1; ix <= dimx; ix++)
-            {
-                ixs = ix * incx;
-                ixms = (ix - 1) * incx;
-                ixps = (ix + 1) * incx;
-                for (iy = 1; iy <= dimy; iy++)
+                for (ix = 1; ix <= dimx; ix++)
                 {
-                    iys = iy * incy;
-                    iyms = (iy - 1) * incy;
-                    iyps = (iy + 1) * incy;
-
-                    for (iz = 1; iz <= dimz; iz++)
+                    ixs = ix * incx;
+                    ixms = (ix - 1) * incx;
+                    ixps = (ix + 1) * incx;
+                    for (iy = 1; iy <= dimy; iy++)
                     {
+                        iys = iy * incy;
+                        iyms = (iy - 1) * incy;
+                        iyps = (iy + 1) * incy;
 
-                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                            cc * rptr[ixs + iys + iz] +
-                            a3 * (rptr[ixps + iys + iz - 1] +
-                                  rptr[ixps + iyms + iz - 1] +
-                                  rptr[ixs + iyms + iz - 1] +
-                                  rptr[ixms + iys + iz - 1] +
-                                  rptr[ixms + iyps + iz - 1] +
-                                  rptr[ixs + iyps + iz - 1] +
-                                  rptr[ixps + iys + iz + 1] +
-                                  rptr[ixps + iyms + iz + 1] +
-                                  rptr[ixs + iyms + iz + 1] +
-                                  rptr[ixms + iys + iz + 1] +
-                                  rptr[ixms + iyps + iz + 1] + 
-                                  rptr[ixs + iyps + iz + 1]);
+                        for (iz = 1; iz <= dimz; iz++)
+                        {
+
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                                cc * rptr[ixs + iys + iz] +
+                                a3 * (rptr[ixps + iys + iz - 1] +
+                                        rptr[ixps + iyms + iz - 1] +
+                                        rptr[ixs + iyms + iz - 1] +
+                                        rptr[ixms + iys + iz - 1] +
+                                        rptr[ixms + iyps + iz - 1] +
+                                        rptr[ixs + iyps + iz - 1] +
+                                        rptr[ixps + iys + iz + 1] +
+                                        rptr[ixps + iyms + iz + 1] +
+                                        rptr[ixs + iyms + iz + 1] +
+                                        rptr[ixms + iys + iz + 1] +
+                                        rptr[ixms + iyps + iz + 1] + 
+                                        rptr[ixs + iyps + iz + 1]);
 
 
-                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                            a2 * (rptr[ixps + iys + iz] +
-                                  rptr[ixps + iyms + iz] +
-                                  rptr[ixs + iyms + iz] +
-                                  rptr[ixms + iys + iz] + 
-                                  rptr[ixms + iyps + iz] + 
-                                  rptr[ixs + iyps + iz]);
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                                a2 * (rptr[ixps + iys + iz] +
+                                        rptr[ixps + iyms + iz] +
+                                        rptr[ixs + iyms + iz] +
+                                        rptr[ixms + iys + iz] + 
+                                        rptr[ixms + iyps + iz] + 
+                                        rptr[ixs + iyps + iz]);
 
-                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                            a1 * (rptr[ixs + iys + iz - 1] + rptr[ixs + iys + iz + 1]);
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                                a1 * (rptr[ixs + iys + iz - 1] + rptr[ixs + iys + iz + 1]);
 
-                    }               /* end for */
+                        }               /* end for */
 
-                }                   /* end for */
+                    }                   /* end for */
 
-            }                       /* end for */
-}
+                }                       /* end for */
+            }
             break;
 
         case CUBIC_FC:
@@ -2616,57 +2615,57 @@ double FiniteDiff::app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dim
             a2 = (ONE_t / EIGHTTEEN_t) * ihx;
 
 #pragma omp parallel private(ix,iy,iz,ixs,ixms,ixps,iys,iyms,iyps)
-{
+            {
 #pragma omp for schedule(static, 2) nowait
 
-            for (ix = 1; ix <= dimx; ix++)
-            {
-                ixs = ix * incx;
-                ixms = (ix - 1) * incx;
-                ixps = (ix + 1) * incx;
-                for (iy = 1; iy <= dimy; iy++)
+                for (ix = 1; ix <= dimx; ix++)
                 {
-                    iys = iy * incy;
-                    iyms = (iy - 1) * incy;
-                    iyps = (iy + 1) * incy;
-
-                    for (iz = 1; iz <= dimz; iz++)
+                    ixs = ix * incx;
+                    ixms = (ix - 1) * incx;
+                    ixps = (ix + 1) * incx;
+                    for (iy = 1; iy <= dimy; iy++)
                     {
+                        iys = iy * incy;
+                        iyms = (iy - 1) * incy;
+                        iyps = (iy + 1) * incy;
 
-                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
-                            cc * rptr[ix * incx + iys + iz] +
-                            a1 * rptr[ixms + iys + iz] +
-                            a1 * rptr[ixms + iys + iz + 1] +
-                            a1 * rptr[ixms + iyps + iz] +
-                            a1 * rptr[ixs + iyms + iz] +
-                            a1 * rptr[ixs + iyms + iz + 1] +
-                            a1 * rptr[ixs + iys + iz - 1] +
-                            a1 * rptr[ixs + iys + iz + 1] +
-                            a1 * rptr[ixs + iyps + iz - 1] +
-                            a1 * rptr[ixs + iyps + iz] +
-                            a1 * rptr[ixps + iyms + iz] +
-                            a1 * rptr[ixps + iys + iz - 1] + 
-                            a1 * rptr[ixps + iys + iz];
+                        for (iz = 1; iz <= dimz; iz++)
+                        {
+
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] =
+                                cc * rptr[ix * incx + iys + iz] +
+                                a1 * rptr[ixms + iys + iz] +
+                                a1 * rptr[ixms + iys + iz + 1] +
+                                a1 * rptr[ixms + iyps + iz] +
+                                a1 * rptr[ixs + iyms + iz] +
+                                a1 * rptr[ixs + iyms + iz + 1] +
+                                a1 * rptr[ixs + iys + iz - 1] +
+                                a1 * rptr[ixs + iys + iz + 1] +
+                                a1 * rptr[ixs + iyps + iz - 1] +
+                                a1 * rptr[ixs + iyps + iz] +
+                                a1 * rptr[ixps + iyms + iz] +
+                                a1 * rptr[ixps + iys + iz - 1] + 
+                                a1 * rptr[ixps + iys + iz];
 
 
-                        b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
-                            a2 * rptr[ixms + iyms + iz + 1] +
-                            a2 * rptr[ixms + iyps + iz - 1] +
-                            a2 * rptr[ixms + iyps + iz + 1] +
-                            a2 * rptr[ixps + iyms + iz - 1] +
-                            a2 * rptr[ixps + iyms + iz + 1] + 
-                            a2 * rptr[ixps + iyps + iz - 1];
+                            b[(ix - 1) * incxr + (iy - 1) * incyr + (iz - 1)] +=
+                                a2 * rptr[ixms + iyms + iz + 1] +
+                                a2 * rptr[ixms + iyps + iz - 1] +
+                                a2 * rptr[ixms + iyps + iz + 1] +
+                                a2 * rptr[ixps + iyms + iz - 1] +
+                                a2 * rptr[ixps + iyms + iz + 1] + 
+                                a2 * rptr[ixps + iyps + iz - 1];
 
-                    }               /* end for */
+                        }               /* end for */
 
-                }                   /* end for */
+                    }                   /* end for */
 
-            }                       /* end for */
-}
+                }                       /* end for */
+            }
             break;
 
         default:
-                rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
+            rmg_error_handler (__FILE__, __LINE__, "Grid symmetry not programmed yet in app_cil_fourth.\n");
 
     } // end switch
 
