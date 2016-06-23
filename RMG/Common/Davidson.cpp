@@ -179,7 +179,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 #endif
     delete RT1;
 
-    GeneralDiag((double *)hr, (double *)sr, eigs, (double *)vr, nstates, nstates, ct.max_states, ct.subdiag_driver);
+    GeneralDiag(hr, sr, eigs, vr, nstates, nstates, ct.max_states, ct.subdiag_driver);
     for(int st=0;st < nstates;st++)kptr->Kstates[st].feig[0] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st+nbase] = eigs[st];
@@ -295,7 +295,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         }
 
         RT1 = new RmgTimer("Davidson: diagonalization");
-        int info = GeneralDiag((double *)hr, (double *)sr, eigsw, (double *)vr, nbase, nstates, ct.max_states, ct.subdiag_driver);
+        int info = GeneralDiag(hr, sr, eigsw, vr, nbase, nstates, ct.max_states, ct.subdiag_driver);
         delete RT1;
         if(info) {
             throw RmgFatalException() << "Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";

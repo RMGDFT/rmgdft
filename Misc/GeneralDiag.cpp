@@ -71,9 +71,11 @@ extern void *GMatrix2;
 //
 // 
 
+template int GeneralDiag<double>(double *A, double *B, double *eigs, double *V, int N, int M, int ld, int subdiag_driver);
+template int GeneralDiag<std::complex<double>>(std::complex<double> *A, std::complex<double> *B, double *eigs, std::complex<double> *V, int N, int M, int ld, int subdiag_driver);
 
-
-int GeneralDiag(double *A, double *B, double *eigs, double *V, int N, int M, int ld, int subdiag_driver)
+template <typename KpointType>
+int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld, int subdiag_driver)
 {
 
     int info = 0;
@@ -82,10 +84,16 @@ int GeneralDiag(double *A, double *B, double *eigs, double *V, int N, int M, int
             info = GeneralDiagLapack(A, B, eigs, V, N, M, ld);
             break;
         case SUBDIAG_SCALAPACK:
-            info = GeneralDiagScaLapack(A, B, eigs, V, N, M, ld);
+            if(!ct.is_gamma) {
+                info = GeneralDiagLapack(A, B, eigs, V, N, M, ld);
+            }
+
+            else {
+                info = GeneralDiagScaLapack((double *)A, (double *)B, eigs, (double *)V, N, M, ld);
+            }
             break;
         case SUBDIAG_MAGMA:
-//          info = GeneralDiagMagma(A, B, eigs, V, N, M, ld);
+            //          info = GeneralDiagMagma(A, B, eigs, V, N, M, ld);
             break;
         default:
             throw RmgFatalException() << "Invalid diagonalization driver type in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -95,75 +103,96 @@ int GeneralDiag(double *A, double *B, double *eigs, double *V, int N, int M, int
     return info;
 }
 
-int GeneralDiagLapack(double *A, double *B, double *eigs, double *V, int N, int M, int ld)
+template int GeneralDiagLapack<double>(double *A, double *B, double *eigs, double *V, int N, int M, int ld);
+template int GeneralDiagLapack<std::complex<double>>(std::complex<double> *A, std::complex<double> *B, double *eigs, std::complex<double> *V,
+int N, int M, int ld);
+
+template <typename KpointType>
+int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld)
 {
-        int info = 0;
-        bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+    int info = 0;
+    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
-        if(pct.is_local_master) {
+    if(pct.is_local_master) {
 
-            // Increase the resources available to this proc since the others on the local node
-            // will be idle
-            int nthreads = ct.THREADS_PER_NODE;
-            if(pct.procs_per_host > 1) nthreads = pct.ncpus;
-            omp_set_num_threads(nthreads);
+        // Increase the resources available to this proc since the others on the local node
+        // will be idle
+        int nthreads = ct.THREADS_PER_NODE;
+        if(pct.procs_per_host > 1) nthreads = pct.ncpus;
+        omp_set_num_threads(nthreads);
 
 
+        {
+            int *ifail = new int[N];
+            int lwork = 6 * N * N + 6 * N + 2;
+            int liwork = 6*N;
+            int eigs_found;
+            double *work2 = new double[2*lwork];
+            int *iwork = new int[liwork];
+            double vx = 0.0;
+            double tol = 1.0e-15;
+            int itype = 1, ione = 1;
+
+            KpointType *Asave = new KpointType[N*ld];
+            KpointType *Bsave = new KpointType[N*ld];
+            for(int i = 0;i < N*ld;i++) Asave[i] = A[i];
+            for(int i = 0;i < N*ld;i++) Bsave[i] = B[i];
+
+            if(N < M) throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
+
+            if(ct.is_gamma)
             {
-                int *ifail = new int[N];
-                int lwork = 6 * N * N + 6 * N + 2;
-                int liwork = 6*N;
-                int eigs_found;
-                double *work2 = new double[2*lwork];
-                int *iwork = new int[liwork];
-                double vx = 0.0;
-                double tol = 1.0e-15;
-                int itype = 1, ione = 1;
-
-                double *Asave = new double[N*ld];
-                double *Bsave = new double[N*ld];
-                for(int i = 0;i < N*ld;i++) Asave[i] = A[i];
-                for(int i = 0;i < N*ld;i++) Bsave[i] = B[i];
-
                 if(M == N) {
-                    dsygvd_(&itype, "V", "L", &N, A, &ld, B, &ld, eigs, work2, &lwork, iwork, &liwork, &info);
+                    dsygvd_(&itype, "V", "L", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, iwork, &liwork, &info);
                     for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
                 }
                 else if(N > M) {
-                    dsygvx (&itype, "V", "I", "L", &N, A, &ld, B, &ld,
-                                        &vx, &vx, &ione, &M,  &tol, &eigs_found, eigs, V, &ld, work2,
-                                        &lwork, iwork, ifail, &info);
+                    dsygvx (&itype, "V", "I", "L", &N, (double *)A, &ld, (double *)B, &ld,
+                            &vx, &vx, &ione, &M,  &tol, &eigs_found, eigs, (double *)V, &ld, work2,
+                            &lwork, iwork, ifail, &info);
                 }
-                else {
-                    throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
+            }
+            else
+            {
+                if(M == N) {
+                    zhegvd_(&itype, "V", "L", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
+                    for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
                 }
-
-
-                for(int i=0;i < N*ld;i++) A[i] = Asave[i];
-                for(int i=0;i < N*ld;i++) B[i] = Bsave[i];
-                delete [] Bsave;
-                delete [] Asave;
-                delete [] iwork;
-                delete [] work2;
-                delete [] ifail;
+                else if(N > M) {
+                    zhegvx (&itype, "V", "I", "L", &N, (double *)A, &ld, (double *)B, &ld,
+                            &vx, &vx, &ione, &M,  &tol, &eigs_found, eigs, (double *)V, &ld, work2,
+                            &lwork, &work2[lwork], iwork, ifail, &info);
+    printf("\n %d infooo ", info);
+                }
 
             }
 
-            // Reset omp_num_threads
-            omp_set_num_threads(ct.THREADS_PER_NODE);
 
-        } // end if pct.is_local_master
+            for(int i=0;i < N*ld;i++) A[i] = Asave[i];
+            for(int i=0;i < N*ld;i++) B[i] = Bsave[i];
+            delete [] Bsave;
+            delete [] Asave;
+            delete [] iwork;
+            delete [] work2;
+            delete [] ifail;
 
-
-        // If only one proc on this host participated broadcast results to the rest
-        if(pct.procs_per_host > 1) {
-            int factor = 2;
-            if(ct.is_gamma) factor = 1;
-            MPI_Bcast(V, factor * M*ld, MPI_DOUBLE, 0, pct.local_comm);
-            MPI_Bcast(eigs, M, MPI_DOUBLE, 0, pct.local_comm);
-            MPI_Bcast(&info, 1, MPI_INT, 0, pct.local_comm);
         }
-        return info;
+
+        // Reset omp_num_threads
+        omp_set_num_threads(ct.THREADS_PER_NODE);
+
+    } // end if pct.is_local_master
+
+
+    // If only one proc on this host participated broadcast results to the rest
+    if(pct.procs_per_host > 1) {
+        int factor = 2;
+        if(ct.is_gamma) factor = 1;
+        MPI_Bcast(V, factor * M*ld, MPI_DOUBLE, 0, pct.local_comm);
+        MPI_Bcast(eigs, M, MPI_DOUBLE, 0, pct.local_comm);
+        MPI_Bcast(&info, 1, MPI_INT, 0, pct.local_comm);
+    }
+    return info;
 }
 
 
