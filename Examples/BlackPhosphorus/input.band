@@ -27,8 +27,8 @@ kpoint_mesh="-4 2 4"
 kpoint_is_shift="0 0 0"
 kpoints_bandstructure="
 0.5   0.0   0.0   0    X
-0.0   0.0   0.0  20   \xG
-0.0   0.0   0.5  20   Z
+0.0   0.0   0.0  100   \xG
+0.0   0.0   0.5  100  Z
 "
 
 #kpoint_distribution="1"
