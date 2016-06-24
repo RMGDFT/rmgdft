@@ -261,6 +261,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         delete(RT1);
 
         // if complex orbitals apply gradient to psi and compute dot products
+        RT1 = new RmgTimer("Mg_eig: apply grad");
         if(typeid(OrbitalType) == typeid(std::complex<double>)) {
 
             CalcType *gx = new CalcType[pbasis];
@@ -281,6 +282,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             delete [] gy;
             delete [] gx;
         }
+
+        delete RT1;
 
         // Copy saved application to ns to res
         for(int idx=0;idx < pbasis;idx++) {
@@ -394,7 +397,9 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
                         G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                         G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
             delete(RT1);
+            RT1 = new RmgTimer("Mg_eig: mg_prolong");
             MG.mg_prolong (sg_twovpsi_t, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+            delete(RT1);
 
             /* The correction is in a smoothing grid so we use this
              * routine to update the orbital which is stored in a physical grid.

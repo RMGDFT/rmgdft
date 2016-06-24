@@ -76,28 +76,31 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     get_ddd (vtot);
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
+    //LcaoGetPsi(&Kptr[0]->Kstates[ct.num_states]);
 
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
+     //        Kptr[kpt]->nstates = 2 * ct.num_states;
 
 
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
         {
-            
+            RmgTimer *RT = new RmgTimer("MgridSub in band");
             MgridSubspace(Kptr[kpt], vtot_psi);
+            delete RT;
 
 
             max_res = Kptr[kpt]->Kstates[0].res;
-            for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
+            for(int istate = 0; istate < ct.num_states; istate++)
                 if( max_res < Kptr[kpt]->Kstates[istate].res) 
                     max_res = Kptr[kpt]->Kstates[istate].res;
    //         for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
    //           rmg_printf("\n kpt = %d scf =%d state=%d res = %e", kpt, ct.scf_steps, istate, Kptr[kpt]->Kstates[istate].res);
              rmg_printf("\n kpt= %d  scf = %d  max_res = %e", kpt, ct.scf_steps, max_res);
 
-            if (max_res <ct.gw_threshold) 
+            if (max_res <1.0e-3)
             {
                 rmg_printf("\n BAND STRUCTURE: Converged with max_res %10.5e", max_res);
                 CONVERGED = true;

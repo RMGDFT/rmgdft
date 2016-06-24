@@ -177,7 +177,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
                     fprintf(bs_f, "@    line g0\n");
                     fprintf(bs_f, "@    line %f, %f, %f, %f\n", x[ik], eig_min, x[ik], eig_max);
                     fprintf(bs_f, "@    line linewidth 1.0\n");
-                    fprintf(bs_f, "@    line line type 1\n");
+                    fprintf(bs_f, "@    line linestyle 1\n");
                     fprintf(bs_f, "@    line color 1\n");
                     fprintf(bs_f, "@line def\n");
                 }
