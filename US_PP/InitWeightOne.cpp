@@ -64,7 +64,6 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     zdim = sp->nldim;
 
     gcut = (xdim/2) * 2.0 * PI/(hxx * xdim) + 1.0e-6;
-    printf("\n gcut need to be taken care later in InitWeightOne.cpp ");
 
     double vol = hxx * hyy * hzz * xdim * ydim * zdim;
 
