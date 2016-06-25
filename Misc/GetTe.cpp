@@ -241,7 +241,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", -efactor*ct.ES, eunits);
     rmg_printf ("@@ VXC                = %15.6f %s\n",  efactor*xcstate, eunits);
     rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-    rmg_printf ("@@ TOTAL ENERGY       = %30.15f %s\n", efactor*ct.TOTAL, eunits);
+    rmg_printf ("@@ TOTAL ENERGY       = %15.6f %s\n", efactor*ct.TOTAL, eunits);
     if(ct.scf_steps != 0) {
         rmg_printf ("@@ estimated error    =       %9.2e %s\n", efactor*ct.scf_accuracy, eunits);
     }
