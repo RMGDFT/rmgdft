@@ -61,13 +61,16 @@ void init_efield (double * vnuc)
     ct.z_field_0 = ct.z_field_0 / norm_field_0;
     if (pct.gridpe == 0)
     {
-        printf ("\n EXTERNAL ELECTRIC FIELD INITIALIZATION ");
-        printf ("\n ====================================== \n");
-        printf ("\n E_field = %16.8f", ct.e_field);
-        printf ("\n Electric Field Direction: (%12.8f, %12.8f, %12.8f)",
-                ct.x_field_0, ct.y_field_0, ct.z_field_0);
-        printf ("\n Potential Slope: %16.8f Hartree/a.u", ct.e_field);
-        printf ("\n Potential Slope: %16.8f eV/A\n", ct.e_field * Ha_eV / a0_A);
+	if (ct.e_field > 1e-12) 
+	{
+	    printf ("\n EXTERNAL ELECTRIC FIELD INITIALIZATION ");
+	    printf ("\n ====================================== \n");
+	    printf ("\n E_field = %16.8f", ct.e_field);
+	    printf ("\n Electric Field Direction: (%12.8f, %12.8f, %12.8f)",
+		    ct.x_field_0, ct.y_field_0, ct.z_field_0);
+	    printf ("\n Potential Slope: %16.8f Hartree/a.u", ct.e_field);
+	    printf ("\n Potential Slope: %16.8f eV/A\n", ct.e_field * Ha_eV / a0_A);
+	}
     }
     /* find the cartesian coordinate of the corner */
     pe2xyz (pct.gridpe, &ix, &iy, &iz);
