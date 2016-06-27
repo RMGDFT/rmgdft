@@ -1,0 +1,1749 @@
+
+RMG started at GMT Mon Jun 27 17:22:40 2016
+Running with 1 images and 1 images per node.
+MPI mode with 8 procs for this image. Thread level = 2
+
+USING COMPLEX ORBITALS
+Using 32 atomic orbitals for initial wavefunctions.
+
+ sym operation after considering real space grid # 0
+        1    0    0
+        0    1    0
+        0    0    1  with translation of (0 0 0) grids 
+ sym operation after considering real space grid # 1
+        0    0    1
+        0    1    0
+       -1    0    0  with translation of (24 8 0) grids 
+ sym operation after considering real space grid # 2
+       -1    0    0
+        0    1    0
+        0    0   -1  with translation of (8 0 8) grids 
+ sym operation after considering real space grid # 3
+        0    0   -1
+        0    1    0
+        1    0    0  with translation of (0 24 8) grids 
+ sym operation after considering real space grid # 4
+        1    0    0
+        0   -1    0
+        0    0   -1  with translation of (16 24 8) grids 
+ sym operation after considering real space grid # 5
+        0    0    1
+        0   -1    0
+        1    0    0  with translation of (8 16 8) grids 
+ sym operation after considering real space grid # 6
+       -1    0    0
+        0   -1    0
+        0    0    1  with translation of (24 24 0) grids 
+ sym operation after considering real space grid # 7
+        0    0   -1
+        0   -1    0
+       -1    0    0  with translation of (16 0 0) grids 
+ sym operation after considering real space grid # 8
+        0    1    0
+        0    0   -1
+       -1    0    0  with translation of (16 24 8) grids 
+ sym operation after considering real space grid # 9
+        0    1    0
+        1    0    0
+        0    0   -1  with translation of (8 24 0) grids 
+ sym operation after considering real space grid # 10
+        0    1    0
+        0    0    1
+        1    0    0  with translation of (0 0 0) grids 
+ sym operation after considering real space grid # 11
+        0    1    0
+       -1    0    0
+        0    0    1  with translation of (24 0 8) grids 
+ sym operation after considering real space grid # 12
+        0   -1    0
+        0    0    1
+       -1    0    0  with translation of (8 0 8) grids 
+ sym operation after considering real space grid # 13
+        0   -1    0
+       -1    0    0
+        0    0   -1  with translation of (16 0 0) grids 
+ sym operation after considering real space grid # 14
+        0   -1    0
+        0    0   -1
+        1    0    0  with translation of (24 24 0) grids 
+ sym operation after considering real space grid # 15
+        0   -1    0
+        1    0    0
+        0    0    1  with translation of (0 24 8) grids 
+ sym operation after considering real space grid # 16
+        0    0   -1
+        1    0    0
+        0   -1    0  with translation of (24 0 24) grids 
+ sym operation after considering real space grid # 17
+        1    0    0
+        0    0    1
+        0   -1    0  with translation of (8 24 0) grids 
+ sym operation after considering real space grid # 18
+        0    0    1
+       -1    0    0
+        0   -1    0  with translation of (0 8 8) grids 
+ sym operation after considering real space grid # 19
+       -1    0    0
+        0    0   -1
+        0   -1    0  with translation of (0 16 0) grids 
+ sym operation after considering real space grid # 20
+        0    0    1
+        1    0    0
+        0    1    0  with translation of (0 0 0) grids 
+ sym operation after considering real space grid # 21
+       -1    0    0
+        0    0    1
+        0    1    0  with translation of (0 24 8) grids 
+ sym operation after considering real space grid # 22
+        0    0   -1
+       -1    0    0
+        0    1    0  with translation of (24 24 0) grids 
+ sym operation after considering real space grid # 23
+        1    0    0
+        0    0   -1
+        0    1    0  with translation of (24 0 8) grids 
+ sym operation after considering real space grid # 24
+       -1    0    0
+        0   -1    0
+        0    0   -1  with translation of (0 16 0) grids 
+ sym operation after considering real space grid # 25
+        0    0   -1
+        0   -1    0
+        1    0    0  with translation of (24 24 0) grids 
+ sym operation after considering real space grid # 26
+        1    0    0
+        0   -1    0
+        0    0    1  with translation of (8 16 8) grids 
+ sym operation after considering real space grid # 27
+        0    0    1
+        0   -1    0
+       -1    0    0  with translation of (16 24 8) grids 
+ sym operation after considering real space grid # 28
+       -1    0    0
+        0    1    0
+        0    0    1  with translation of (0 24 8) grids 
+ sym operation after considering real space grid # 29
+        0    0   -1
+        0    1    0
+       -1    0    0  with translation of (8 0 8) grids 
+ sym operation after considering real space grid # 30
+        1    0    0
+        0    1    0
+        0    0   -1  with translation of (24 8 0) grids 
+ sym operation after considering real space grid # 31
+        0    0    1
+        0    1    0
+        1    0    0  with translation of (0 0 0) grids 
+ sym operation after considering real space grid # 32
+        0   -1    0
+        0    0    1
+        1    0    0  with translation of (0 24 8) grids 
+ sym operation after considering real space grid # 33
+        0   -1    0
+       -1    0    0
+        0    0    1  with translation of (24 24 0) grids 
+ sym operation after considering real space grid # 34
+        0   -1    0
+        0    0   -1
+       -1    0    0  with translation of (16 0 0) grids 
+ sym operation after considering real space grid # 35
+        0   -1    0
+        1    0    0
+        0    0   -1  with translation of (8 0 8) grids 
+ sym operation after considering real space grid # 36
+        0    1    0
+        0    0   -1
+        1    0    0  with translation of (8 16 8) grids 
+ sym operation after considering real space grid # 37
+        0    1    0
+        1    0    0
+        0    0    1  with translation of (0 0 0) grids 
+ sym operation after considering real space grid # 38
+        0    1    0
+        0    0    1
+       -1    0    0  with translation of (8 24 0) grids 
+ sym operation after considering real space grid # 39
+        0    1    0
+       -1    0    0
+        0    0   -1  with translation of (16 24 8) grids 
+ sym operation after considering real space grid # 40
+        0    0    1
+       -1    0    0
+        0    1    0  with translation of (24 0 8) grids 
+ sym operation after considering real space grid # 41
+       -1    0    0
+        0    0   -1
+        0    1    0  with translation of (24 24 0) grids 
+ sym operation after considering real space grid # 42
+        0    0   -1
+        1    0    0
+        0    1    0  with translation of (0 24 8) grids 
+ sym operation after considering real space grid # 43
+        1    0    0
+        0    0    1
+        0    1    0  with translation of (0 0 0) grids 
+ sym operation after considering real space grid # 44
+        0    0   -1
+       -1    0    0
+        0   -1    0  with translation of (0 16 0) grids 
+ sym operation after considering real space grid # 45
+        1    0    0
+        0    0   -1
+        0   -1    0  with translation of (0 8 8) grids 
+ sym operation after considering real space grid # 46
+        0    0    1
+        1    0    0
+        0   -1    0  with translation of (24 8 0) grids 
+ sym operation after considering real space grid # 47
+       -1    0    0
+        0    0    1
+        0   -1    0  with translation of (24 0 24) grids 
+ sym operation after considering real space grid # 48
+        1    0    0
+        0    1    0
+        0    0    1  with translation of (16 16 0) grids 
+ sym operation after considering real space grid # 49
+        0    0    1
+        0    1    0
+       -1    0    0  with translation of (8 24 0) grids 
+ sym operation after considering real space grid # 50
+       -1    0    0
+        0    1    0
+        0    0   -1  with translation of (24 16 8) grids 
+ sym operation after considering real space grid # 51
+        0    0   -1
+        0    1    0
+        1    0    0  with translation of (16 8 8) grids 
+ sym operation after considering real space grid # 52
+        1    0    0
+        0   -1    0
+        0    0   -1  with translation of (0 8 8) grids 
+ sym operation after considering real space grid # 53
+        0    0    1
+        0   -1    0
+        1    0    0  with translation of (24 0 8) grids 
+ sym operation after considering real space grid # 54
+       -1    0    0
+        0   -1    0
+        0    0    1  with translation of (8 8 0) grids 
+ sym operation after considering real space grid # 55
+        0    0   -1
+        0   -1    0
+       -1    0    0  with translation of (0 16 0) grids 
+ sym operation after considering real space grid # 56
+        0    1    0
+        0    0   -1
+       -1    0    0  with translation of (0 8 8) grids 
+ sym operation after considering real space grid # 57
+        0    1    0
+        1    0    0
+        0    0   -1  with translation of (24 8 0) grids 
+ sym operation after considering real space grid # 58
+        0    1    0
+        0    0    1
+        1    0    0  with translation of (16 16 0) grids 
+ sym operation after considering real space grid # 59
+        0    1    0
+       -1    0    0
+        0    0    1  with translation of (8 16 8) grids 
+ sym operation after considering real space grid # 60
+        0   -1    0
+        0    0    1
+       -1    0    0  with translation of (24 16 8) grids 
+ sym operation after considering real space grid # 61
+        0   -1    0
+       -1    0    0
+        0    0   -1  with translation of (0 16 0) grids 
+ sym operation after considering real space grid # 62
+        0   -1    0
+        0    0   -1
+        1    0    0  with translation of (8 8 0) grids 
+ sym operation after considering real space grid # 63
+        0   -1    0
+        1    0    0
+        0    0    1  with translation of (16 8 8) grids 
+ sym operation after considering real space grid # 64
+        0    0   -1
+        1    0    0
+        0   -1    0  with translation of (8 16 24) grids 
+ sym operation after considering real space grid # 65
+        1    0    0
+        0    0    1
+        0   -1    0  with translation of (24 8 0) grids 
+ sym operation after considering real space grid # 66
+        0    0    1
+       -1    0    0
+        0   -1    0  with translation of (16 24 8) grids 
+ sym operation after considering real space grid # 67
+       -1    0    0
+        0    0   -1
+        0   -1    0  with translation of (16 0 0) grids 
+ sym operation after considering real space grid # 68
+        0    0    1
+        1    0    0
+        0    1    0  with translation of (16 16 0) grids 
+ sym operation after considering real space grid # 69
+       -1    0    0
+        0    0    1
+        0    1    0  with translation of (16 8 8) grids 
+ sym operation after considering real space grid # 70
+        0    0   -1
+       -1    0    0
+        0    1    0  with translation of (8 8 0) grids 
+ sym operation after considering real space grid # 71
+        1    0    0
+        0    0   -1
+        0    1    0  with translation of (8 16 8) grids 
+ sym operation after considering real space grid # 72
+       -1    0    0
+        0   -1    0
+        0    0   -1  with translation of (16 0 0) grids 
+ sym operation after considering real space grid # 73
+        0    0   -1
+        0   -1    0
+        1    0    0  with translation of (8 8 0) grids 
+ sym operation after considering real space grid # 74
+        1    0    0
+        0   -1    0
+        0    0    1  with translation of (24 0 8) grids 
+ sym operation after considering real space grid # 75
+        0    0    1
+        0   -1    0
+       -1    0    0  with translation of (0 8 8) grids 
+ sym operation after considering real space grid # 76
+       -1    0    0
+        0    1    0
+        0    0    1  with translation of (16 8 8) grids 
+ sym operation after considering real space grid # 77
+        0    0   -1
+        0    1    0
+       -1    0    0  with translation of (24 16 8) grids 
+ sym operation after considering real space grid # 78
+        1    0    0
+        0    1    0
+        0    0   -1  with translation of (8 24 0) grids 
+ sym operation after considering real space grid # 79
+        0    0    1
+        0    1    0
+        1    0    0  with translation of (16 16 0) grids 
+ sym operation after considering real space grid # 80
+        0   -1    0
+        0    0    1
+        1    0    0  with translation of (16 8 8) grids 
+ sym operation after considering real space grid # 81
+        0   -1    0
+       -1    0    0
+        0    0    1  with translation of (8 8 0) grids 
+ sym operation after considering real space grid # 82
+        0   -1    0
+        0    0   -1
+       -1    0    0  with translation of (0 16 0) grids 
+ sym operation after considering real space grid # 83
+        0   -1    0
+        1    0    0
+        0    0   -1  with translation of (24 16 8) grids 
+ sym operation after considering real space grid # 84
+        0    1    0
+        0    0   -1
+        1    0    0  with translation of (24 0 8) grids 
+ sym operation after considering real space grid # 85
+        0    1    0
+        1    0    0
+        0    0    1  with translation of (16 16 0) grids 
+ sym operation after considering real space grid # 86
+        0    1    0
+        0    0    1
+       -1    0    0  with translation of (24 8 0) grids 
+ sym operation after considering real space grid # 87
+        0    1    0
+       -1    0    0
+        0    0   -1  with translation of (0 8 8) grids 
+ sym operation after considering real space grid # 88
+        0    0    1
+       -1    0    0
+        0    1    0  with translation of (8 16 8) grids 
+ sym operation after considering real space grid # 89
+       -1    0    0
+        0    0   -1
+        0    1    0  with translation of (8 8 0) grids 
+ sym operation after considering real space grid # 90
+        0    0   -1
+        1    0    0
+        0    1    0  with translation of (16 8 8) grids 
+ sym operation after considering real space grid # 91
+        1    0    0
+        0    0    1
+        0    1    0  with translation of (16 16 0) grids 
+ sym operation after considering real space grid # 92
+        0    0   -1
+       -1    0    0
+        0   -1    0  with translation of (16 0 0) grids 
+ sym operation after considering real space grid # 93
+        1    0    0
+        0    0   -1
+        0   -1    0  with translation of (16 24 8) grids 
+ sym operation after considering real space grid # 94
+        0    0    1
+        1    0    0
+        0   -1    0  with translation of (8 24 0) grids 
+ sym operation after considering real space grid # 95
+       -1    0    0
+        0    0    1
+        0   -1    0  with translation of (8 16 24) grids 
+ sym operation after considering real space grid # 96
+        1    0    0
+        0    1    0
+        0    0    1  with translation of (16 0 16) grids 
+ sym operation after considering real space grid # 97
+        0    0    1
+        0    1    0
+       -1    0    0  with translation of (8 8 16) grids 
+ sym operation after considering real space grid # 98
+       -1    0    0
+        0    1    0
+        0    0   -1  with translation of (24 0 24) grids 
+ sym operation after considering real space grid # 99
+        0    0   -1
+        0    1    0
+        1    0    0  with translation of (16 24 24) grids 
+ sym operation after considering real space grid # 100
+        1    0    0
+        0   -1    0
+        0    0   -1  with translation of (0 24 24) grids 
+ sym operation after considering real space grid # 101
+        0    0    1
+        0   -1    0
+        1    0    0  with translation of (24 16 24) grids 
+ sym operation after considering real space grid # 102
+       -1    0    0
+        0   -1    0
+        0    0    1  with translation of (8 24 16) grids 
+ sym operation after considering real space grid # 103
+        0    0   -1
+        0   -1    0
+       -1    0    0  with translation of (0 0 16) grids 
+ sym operation after considering real space grid # 104
+        0    1    0
+        0    0   -1
+       -1    0    0  with translation of (0 24 24) grids 
+ sym operation after considering real space grid # 105
+        0    1    0
+        1    0    0
+        0    0   -1  with translation of (24 24 16) grids 
+ sym operation after considering real space grid # 106
+        0    1    0
+        0    0    1
+        1    0    0  with translation of (16 0 16) grids 
+ sym operation after considering real space grid # 107
+        0    1    0
+       -1    0    0
+        0    0    1  with translation of (8 0 24) grids 
+ sym operation after considering real space grid # 108
+        0   -1    0
+        0    0    1
+       -1    0    0  with translation of (24 0 24) grids 
+ sym operation after considering real space grid # 109
+        0   -1    0
+       -1    0    0
+        0    0   -1  with translation of (0 0 16) grids 
+ sym operation after considering real space grid # 110
+        0   -1    0
+        0    0   -1
+        1    0    0  with translation of (8 24 16) grids 
+ sym operation after considering real space grid # 111
+        0   -1    0
+        1    0    0
+        0    0    1  with translation of (16 24 24) grids 
+ sym operation after considering real space grid # 112
+        0    0   -1
+        1    0    0
+        0   -1    0  with translation of (8 0 8) grids 
+ sym operation after considering real space grid # 113
+        1    0    0
+        0    0    1
+        0   -1    0  with translation of (24 24 16) grids 
+ sym operation after considering real space grid # 114
+        0    0    1
+       -1    0    0
+        0   -1    0  with translation of (16 8 24) grids 
+ sym operation after considering real space grid # 115
+       -1    0    0
+        0    0   -1
+        0   -1    0  with translation of (16 16 16) grids 
+ sym operation after considering real space grid # 116
+        0    0    1
+        1    0    0
+        0    1    0  with translation of (16 0 16) grids 
+ sym operation after considering real space grid # 117
+       -1    0    0
+        0    0    1
+        0    1    0  with translation of (16 24 24) grids 
+ sym operation after considering real space grid # 118
+        0    0   -1
+       -1    0    0
+        0    1    0  with translation of (8 24 16) grids 
+ sym operation after considering real space grid # 119
+        1    0    0
+        0    0   -1
+        0    1    0  with translation of (8 0 24) grids 
+ sym operation after considering real space grid # 120
+       -1    0    0
+        0   -1    0
+        0    0   -1  with translation of (16 16 16) grids 
+ sym operation after considering real space grid # 121
+        0    0   -1
+        0   -1    0
+        1    0    0  with translation of (8 24 16) grids 
+ sym operation after considering real space grid # 122
+        1    0    0
+        0   -1    0
+        0    0    1  with translation of (24 16 24) grids 
+ sym operation after considering real space grid # 123
+        0    0    1
+        0   -1    0
+       -1    0    0  with translation of (0 24 24) grids 
+ sym operation after considering real space grid # 124
+       -1    0    0
+        0    1    0
+        0    0    1  with translation of (16 24 24) grids 
+ sym operation after considering real space grid # 125
+        0    0   -1
+        0    1    0
+       -1    0    0  with translation of (24 0 24) grids 
+ sym operation after considering real space grid # 126
+        1    0    0
+        0    1    0
+        0    0   -1  with translation of (8 8 16) grids 
+ sym operation after considering real space grid # 127
+        0    0    1
+        0    1    0
+        1    0    0  with translation of (16 0 16) grids 
+ sym operation after considering real space grid # 128
+        0   -1    0
+        0    0    1
+        1    0    0  with translation of (16 24 24) grids 
+ sym operation after considering real space grid # 129
+        0   -1    0
+       -1    0    0
+        0    0    1  with translation of (8 24 16) grids 
+ sym operation after considering real space grid # 130
+        0   -1    0
+        0    0   -1
+       -1    0    0  with translation of (0 0 16) grids 
+ sym operation after considering real space grid # 131
+        0   -1    0
+        1    0    0
+        0    0   -1  with translation of (24 0 24) grids 
+ sym operation after considering real space grid # 132
+        0    1    0
+        0    0   -1
+        1    0    0  with translation of (24 16 24) grids 
+ sym operation after considering real space grid # 133
+        0    1    0
+        1    0    0
+        0    0    1  with translation of (16 0 16) grids 
+ sym operation after considering real space grid # 134
+        0    1    0
+        0    0    1
+       -1    0    0  with translation of (24 24 16) grids 
+ sym operation after considering real space grid # 135
+        0    1    0
+       -1    0    0
+        0    0   -1  with translation of (0 24 24) grids 
+ sym operation after considering real space grid # 136
+        0    0    1
+       -1    0    0
+        0    1    0  with translation of (8 0 24) grids 
+ sym operation after considering real space grid # 137
+       -1    0    0
+        0    0   -1
+        0    1    0  with translation of (8 24 16) grids 
+ sym operation after considering real space grid # 138
+        0    0   -1
+        1    0    0
+        0    1    0  with translation of (16 24 24) grids 
+ sym operation after considering real space grid # 139
+        1    0    0
+        0    0    1
+        0    1    0  with translation of (16 0 16) grids 
+ sym operation after considering real space grid # 140
+        0    0   -1
+       -1    0    0
+        0   -1    0  with translation of (16 16 16) grids 
+ sym operation after considering real space grid # 141
+        1    0    0
+        0    0   -1
+        0   -1    0  with translation of (16 8 24) grids 
+ sym operation after considering real space grid # 142
+        0    0    1
+        1    0    0
+        0   -1    0  with translation of (8 8 16) grids 
+ sym operation after considering real space grid # 143
+       -1    0    0
+        0    0    1
+        0   -1    0  with translation of (8 0 8) grids 
+ sym operation after considering real space grid # 144
+        1    0    0
+        0    1    0
+        0    0    1  with translation of (0 16 16) grids 
+ sym operation after considering real space grid # 145
+        0    0    1
+        0    1    0
+       -1    0    0  with translation of (24 24 16) grids 
+ sym operation after considering real space grid # 146
+       -1    0    0
+        0    1    0
+        0    0   -1  with translation of (8 16 24) grids 
+ sym operation after considering real space grid # 147
+        0    0   -1
+        0    1    0
+        1    0    0  with translation of (0 8 24) grids 
+ sym operation after considering real space grid # 148
+        1    0    0
+        0   -1    0
+        0    0   -1  with translation of (16 8 24) grids 
+ sym operation after considering real space grid # 149
+        0    0    1
+        0   -1    0
+        1    0    0  with translation of (8 0 24) grids 
+ sym operation after considering real space grid # 150
+       -1    0    0
+        0   -1    0
+        0    0    1  with translation of (24 8 16) grids 
+ sym operation after considering real space grid # 151
+        0    0   -1
+        0   -1    0
+       -1    0    0  with translation of (16 16 16) grids 
+ sym operation after considering real space grid # 152
+        0    1    0
+        0    0   -1
+       -1    0    0  with translation of (16 8 24) grids 
+ sym operation after considering real space grid # 153
+        0    1    0
+        1    0    0
+        0    0   -1  with translation of (8 8 16) grids 
+ sym operation after considering real space grid # 154
+        0    1    0
+        0    0    1
+        1    0    0  with translation of (0 16 16) grids 
+ sym operation after considering real space grid # 155
+        0    1    0
+       -1    0    0
+        0    0    1  with translation of (24 16 24) grids 
+ sym operation after considering real space grid # 156
+        0   -1    0
+        0    0    1
+       -1    0    0  with translation of (8 16 24) grids 
+ sym operation after considering real space grid # 157
+        0   -1    0
+       -1    0    0
+        0    0   -1  with translation of (16 16 16) grids 
+ sym operation after considering real space grid # 158
+        0   -1    0
+        0    0   -1
+        1    0    0  with translation of (24 8 16) grids 
+ sym operation after considering real space grid # 159
+        0   -1    0
+        1    0    0
+        0    0    1  with translation of (0 8 24) grids 
+ sym operation after considering real space grid # 160
+        0    0   -1
+        1    0    0
+        0   -1    0  with translation of (24 16 8) grids 
+ sym operation after considering real space grid # 161
+        1    0    0
+        0    0    1
+        0   -1    0  with translation of (8 8 16) grids 
+ sym operation after considering real space grid # 162
+        0    0    1
+       -1    0    0
+        0   -1    0  with translation of (0 24 24) grids 
+ sym operation after considering real space grid # 163
+       -1    0    0
+        0    0   -1
+        0   -1    0  with translation of (0 0 16) grids 
+ sym operation after considering real space grid # 164
+        0    0    1
+        1    0    0
+        0    1    0  with translation of (0 16 16) grids 
+ sym operation after considering real space grid # 165
+       -1    0    0
+        0    0    1
+        0    1    0  with translation of (0 8 24) grids 
+ sym operation after considering real space grid # 166
+        0    0   -1
+       -1    0    0
+        0    1    0  with translation of (24 8 16) grids 
+ sym operation after considering real space grid # 167
+        1    0    0
+        0    0   -1
+        0    1    0  with translation of (24 16 24) grids 
+ sym operation after considering real space grid # 168
+       -1    0    0
+        0   -1    0
+        0    0   -1  with translation of (0 0 16) grids 
+ sym operation after considering real space grid # 169
+        0    0   -1
+        0   -1    0
+        1    0    0  with translation of (24 8 16) grids 
+ sym operation after considering real space grid # 170
+        1    0    0
+        0   -1    0
+        0    0    1  with translation of (8 0 24) grids 
+ sym operation after considering real space grid # 171
+        0    0    1
+        0   -1    0
+       -1    0    0  with translation of (16 8 24) grids 
+ sym operation after considering real space grid # 172
+       -1    0    0
+        0    1    0
+        0    0    1  with translation of (0 8 24) grids 
+ sym operation after considering real space grid # 173
+        0    0   -1
+        0    1    0
+       -1    0    0  with translation of (8 16 24) grids 
+ sym operation after considering real space grid # 174
+        1    0    0
+        0    1    0
+        0    0   -1  with translation of (24 24 16) grids 
+ sym operation after considering real space grid # 175
+        0    0    1
+        0    1    0
+        1    0    0  with translation of (0 16 16) grids 
+ sym operation after considering real space grid # 176
+        0   -1    0
+        0    0    1
+        1    0    0  with translation of (0 8 24) grids 
+ sym operation after considering real space grid # 177
+        0   -1    0
+       -1    0    0
+        0    0    1  with translation of (24 8 16) grids 
+ sym operation after considering real space grid # 178
+        0   -1    0
+        0    0   -1
+       -1    0    0  with translation of (16 16 16) grids 
+ sym operation after considering real space grid # 179
+        0   -1    0
+        1    0    0
+        0    0   -1  with translation of (8 16 24) grids 
+ sym operation after considering real space grid # 180
+        0    1    0
+        0    0   -1
+        1    0    0  with translation of (8 0 24) grids 
+ sym operation after considering real space grid # 181
+        0    1    0
+        1    0    0
+        0    0    1  with translation of (0 16 16) grids 
+ sym operation after considering real space grid # 182
+        0    1    0
+        0    0    1
+       -1    0    0  with translation of (8 8 16) grids 
+ sym operation after considering real space grid # 183
+        0    1    0
+       -1    0    0
+        0    0   -1  with translation of (16 8 24) grids 
+ sym operation after considering real space grid # 184
+        0    0    1
+       -1    0    0
+        0    1    0  with translation of (24 16 24) grids 
+ sym operation after considering real space grid # 185
+       -1    0    0
+        0    0   -1
+        0    1    0  with translation of (24 8 16) grids 
+ sym operation after considering real space grid # 186
+        0    0   -1
+        1    0    0
+        0    1    0  with translation of (0 8 24) grids 
+ sym operation after considering real space grid # 187
+        1    0    0
+        0    0    1
+        0    1    0  with translation of (0 16 16) grids 
+ sym operation after considering real space grid # 188
+        0    0   -1
+       -1    0    0
+        0   -1    0  with translation of (0 0 16) grids 
+ sym operation after considering real space grid # 189
+        1    0    0
+        0    0   -1
+        0   -1    0  with translation of (0 24 24) grids 
+ sym operation after considering real space grid # 190
+        0    0    1
+        1    0    0
+        0   -1    0  with translation of (24 24 16) grids 
+ sym operation after considering real space grid # 191
+       -1    0    0
+        0    0    1
+        0   -1    0  with translation of (24 16 8) grids 
+
+ init: Starting FFTW initialization ... finished in 0.1 s
+Compensating charge is 3.20000000e+01
+
+Normalization constant for initial atomic charge is 1.003182
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  -1   0]   -11.9140 [2.000]    -3.4920 [2.000]    -3.4920 [2.000]    -3.4920 [2.000]    -3.4920 [2.000]
+[kpt   0  -1   1]    -3.4920 [2.000]    -3.4920 [2.000]     2.7950 [2.000]     2.7950 [2.000]     2.7950 [2.000]
+[kpt   0  -1   2]     2.7950 [2.000]     2.7950 [2.000]     2.7950 [2.000]     9.0210 [2.000]     9.0210 [2.000]
+[kpt   0  -1   3]     9.0210 [2.000]    15.3909 [0.000]    15.3909 [0.000]    15.3909 [0.000]    17.3971 [0.000]
+[kpt   0  -1   4]    17.3971 [0.000]    17.3971 [0.000]    17.3971 [0.000]    17.3971 [0.000]    17.3971 [0.000]
+[kpt   0  -1   5]    22.8392 [0.000]    25.8551 [0.000]    25.8551 [0.000]    25.8551 [0.000]    25.8551 [0.000]
+[kpt   0  -1   6]    25.8551 [0.000]    25.8551 [0.000]
+
+
+Charge normalization constant: 1.000001
+Charge density mixing: Linear with a constant of 0.72 
+
+
+    RMG Code Revision release 1.1, Last change on Unknown
+    Build Date:Mon Jun 27 13:19:46 EDT 2016
+    8 atom diamond cell
+    Run started at Mon Jun 27 13:22:42 2016
+
+
+    Files used
+       Control input file       input
+       Data input file          Waves/wave.out
+       Data output file         Waves/wave.out
+
+
+    Boundary conditions: Periodic
+    Maximum number of MD steps = 100
+    Maximum number of SCF steps = 50
+    Checkpoint every 5 steps
+    RMS criterion 5.000000e-08
+
+    Initial run
+    Initial subspace diagonalization
+
+    Subspace diagonalization using lapack driver
+
+    Grid discretization:
+        Hx  =     0.420000 a0
+        Hy  =     0.420000 a0
+        Hz  =     0.420000 a0
+        NX  = 16
+        NY  = 16
+        NZ  = 16
+
+    Bravais lattice type is Cubic_primitive
+    Cell volume      =   303.464448 a0^3
+    Grid anisotropy  =     1.000000
+
+    Processor topology:  total PE's = 2
+       PE_X  = 2
+       PE_Y  = 1
+       PE_Z  = 1
+
+    Using hybrid MPI/threads model with 12 threads per PE
+
+    Fine grid (for charge density):
+       FG / CG  = 2
+    Interpolation type:
+       FFT interpolation
+    Double grid (for non-local projectors):
+       nxfgrid / CG_NX  = 4
+       nyfgrid / CG_NY  = 4
+       nzfgrid / CG_NZ  = 4
+
+    Energy cutoff  parameter      0.800000      0.800000      2.400000
+    Equivalent energy cutoff     27.975069 Ry
+
+    Basis vectors:
+       A1  =        6.720000         0.000000         0.000000 a0
+       A2  =        0.000000         6.720000         0.000000 a0
+       A3  =        0.000000         0.000000         6.720000 a0
+
+    This is NOT a spin polarized calculation 
+    Number of states   = 32
+    Number of species  = 1
+    Number of ions     = 8
+    Density mixing     =     0.720000
+    Projector mixing   =     0.500000
+    Comp charge        =    32.000000000
+    XC using pbe
+
+    Poisson global step        =     0.600000
+    Poisson pre                = 3
+    Poisson post               = 3
+    Poisson multigrid levels   = 3
+
+    Psi global step            =     0.660000
+    Psi pre                    = 2
+    Psi post                   = 2
+    Psi multigrid levels       = 3
+
+    Brillouin Zone sampling at K-points with weight:
+        0.000000       0.000000       0.000000       0.125000
+        0.500000       0.000000       0.000000       0.375000
+        0.500000       0.500000       0.000000       0.375000
+        0.500000       0.500000       0.500000       0.125000
+
+    Quenching electrons only. Ions are not allowed to move.
+
+    Atomic Species Information:
+      Maximum number of non-local projectors = 8
+
+      Species 1 'C'
+      
+        Atomic symbol   = C
+        Atomic number   = 6
+        Atomic mass     =    12.000000 mu
+        Zvalence        =     4.000000
+        Core rc         =     0.618128
+        L local         = 0
+        local radius    =     8.295000
+    non-local radius    =     7.000000
+        rwidth          =    15.000000
+        gwidth          =     8.000000
+ LCAO Parameters:             
+        aradius         =     9.000000
+        acut            =     7.000000
+        agwidth         =    10.000000
+        arwidth         =    25.000000
+
+
+    Generated by new atomic code, or converted to UPF format
+    Author: 
+    Generation date: 
+    Pseudopotential type: US
+    Element: C
+    Functional: SLA  PW   PBE  PBE
+
+    Suggested minimum cutoff for wavefunctions:   0. Ry
+    Suggested minimum cutoff for charge density:   0. Ry
+    The Pseudo was generated with a Non-Relativistic Calculation
+    L component and cutoff radius for Local Potential:  0   0.0000
+
+    Valence configuration: 
+    nl pn  l   occ       Rcut    Rcut US       E pseu
+    2S  0  0  2.00      0.000      1.300     0.000000
+    2P  0  1  2.00      0.000      1.300     0.000000
+
+    Generation configuration: not available.
+  
+
+
+
+  INITIAL IONIC POSITIONS AND DISPLACEMENTS:
+
+Species   X           Y           Z           dX          dY          dZ
+  1       0.8400      0.8400      0.8400      0.0000      0.0000      0.0000
+  1       0.8400      4.2000      4.2000      0.0000      0.0000      0.0000
+  1       4.2000      0.8400      4.2000      0.0000      0.0000      0.0000
+  1       4.2000      4.2000      0.8400      0.0000      0.0000      0.0000
+  1       2.5200      2.5200      2.5200      0.0000      0.0000      0.0000
+  1       2.5200      5.8800      5.8800      0.0000      0.0000      0.0000
+  1       5.8800      2.5200      5.8800      0.0000      0.0000      0.0000
+  1       5.8800      5.8800      2.5200      0.0000      0.0000      0.0000
+
+
+  STATE OCCUPATIONS :
+    2.00    2.00    2.00    2.00    2.00    2.00    2.00    2.00    2.00    2.00
+    2.00    2.00    2.00    2.00    2.00    2.00    0.00    0.00    0.00    0.00
+    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+    0.00    0.00
+
+
+FERMI ENERGY =     11.28382513 eV
+@@ EIGENVALUE SUM     =        1.008313 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       32.020985 Ha
+@@ VXC                =      -18.484230 Ha
+@@ EXC                =      -14.585017 Ha
+@@ TOTAL ENERGY       =      -45.682940 Ha
+@@ estimated error    =   ****************
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   0   0]   -11.8056 [2.000]    -3.0918 [2.000]    -3.0917 [2.000]    -3.0917 [2.000]    -3.0914 [2.000]
+[kpt   0   0   1]    -3.0913 [2.000]    -3.0911 [2.000]     3.3507 [2.000]     3.3507 [2.000]     3.3508 [2.000]
+[kpt   0   0   2]     3.3508 [2.000]     3.3509 [2.000]     3.3509 [2.000]     9.6241 [2.000]     9.6241 [2.000]
+[kpt   0   0   3]     9.6253 [2.000]    15.0892 [0.000]    15.0947 [0.000]    15.0970 [0.000]    15.1117 [0.000]
+[kpt   0   0   4]    15.1435 [0.000]    15.1748 [0.000]    15.3761 [0.000]    15.3768 [0.000]    15.3861 [0.000]
+[kpt   0   0   5]    23.3425 [0.000]    26.5566 [0.000]    26.5569 [0.000]    26.5574 [0.000]    26.5579 [0.000]
+[kpt   0   0   6]    26.5579 [0.000]    26.5582 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   0/50  step time:   1.08  scf time:     1.08 secs  RMS[dV]: 5.06e-02 ]
+
+
+average potential <V> = -3.89e-14
+
+FERMI ENERGY =     12.80046894 eV
+@@ EIGENVALUE SUM     =        1.214432 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.623753 Ha
+@@ VXC                =      -18.666390 Ha
+@@ EXC                =      -14.729836 Ha
+@@ TOTAL ENERGY       =      -42.775959 Ha
+@@ estimated error    =        3.29e-02 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   1   0]   -11.5586 [2.000]    -2.7911 [2.000]    -2.7911 [2.000]    -2.7910 [2.000]    -2.7910 [2.000]
+[kpt   0   1   1]    -2.7910 [2.000]    -2.7910 [2.000]     3.6705 [2.000]     3.6706 [2.000]     3.6706 [2.000]
+[kpt   0   1   2]     3.6706 [2.000]     3.6706 [2.000]     3.6706 [2.000]    10.0164 [2.000]    10.0166 [2.000]
+[kpt   0   1   3]    10.0170 [2.000]    14.8995 [0.000]    14.9019 [0.000]    14.9020 [0.000]    14.9101 [0.000]
+[kpt   0   1   4]    14.9194 [0.000]    14.9312 [0.000]    15.6484 [0.000]    15.6484 [0.000]    15.6489 [0.000]
+[kpt   0   1   5]    23.6881 [0.000]    26.9705 [0.000]    26.9705 [0.000]    26.9706 [0.000]    26.9707 [0.000]
+[kpt   0   1   6]    26.9707 [0.000]    26.9708 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   1/50  step time:   0.99  scf time:     2.07 secs  RMS[dV]: 4.32e-02 ]
+
+
+average potential <V> = 1.67e-13
+
+FERMI ENERGY =     12.62961077 eV
+@@ EIGENVALUE SUM     =        1.318571 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.496345 Ha
+@@ VXC                =      -18.728337 Ha
+@@ EXC                =      -14.778788 Ha
+@@ TOTAL ENERGY       =      -45.684393 Ha
+@@ estimated error    =        4.09e-03 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   2   0]   -11.4782 [2.000]    -2.6963 [2.000]    -2.6963 [2.000]    -2.6963 [2.000]    -2.6963 [2.000]
+[kpt   0   2   1]    -2.6963 [2.000]    -2.6963 [2.000]     3.7689 [2.000]     3.7689 [2.000]     3.7689 [2.000]
+[kpt   0   2   2]     3.7689 [2.000]     3.7689 [2.000]     3.7689 [2.000]    10.1372 [2.000]    10.1372 [2.000]
+[kpt   0   2   3]    10.1373 [2.000]    14.9102 [0.000]    14.9108 [0.000]    14.9108 [0.000]    14.9133 [0.000]
+[kpt   0   2   4]    14.9153 [0.000]    14.9183 [0.000]    15.7370 [0.000]    15.7370 [0.000]    15.7371 [0.000]
+[kpt   0   2   5]    23.7965 [0.000]    27.0942 [0.000]    27.0942 [0.000]    27.0943 [0.000]    27.0943 [0.000]
+[kpt   0   2   6]    27.0943 [0.000]    27.0943 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   2/50  step time:   1.01  scf time:     3.07 secs  RMS[dV]: 1.58e-02 ]
+
+
+average potential <V> = 3.00e-14
+
+FERMI ENERGY =     12.63873750 eV
+@@ EIGENVALUE SUM     =        1.330032 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.482050 Ha
+@@ VXC                =      -18.736259 Ha
+@@ EXC                =      -14.784662 Ha
+@@ TOTAL ENERGY       =      -45.836801 Ha
+@@ estimated error    =        2.77e-04 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   3   0]   -11.4674 [2.000]    -2.6856 [2.000]    -2.6856 [2.000]    -2.6856 [2.000]    -2.6856 [2.000]
+[kpt   0   3   1]    -2.6856 [2.000]    -2.6855 [2.000]     3.7785 [2.000]     3.7785 [2.000]     3.7785 [2.000]
+[kpt   0   3   2]     3.7785 [2.000]     3.7785 [2.000]     3.7785 [2.000]    10.1480 [2.000]    10.1480 [2.000]
+[kpt   0   3   3]    10.1480 [2.000]    14.9132 [0.000]    14.9133 [0.000]    14.9133 [0.000]    14.9139 [0.000]
+[kpt   0   3   4]    14.9143 [0.000]    14.9150 [0.000]    15.7448 [0.000]    15.7448 [0.000]    15.7448 [0.000]
+[kpt   0   3   5]    23.8060 [0.000]    27.1024 [0.000]    27.1024 [0.000]    27.1024 [0.000]    27.1024 [0.000]
+[kpt   0   3   6]    27.1024 [0.000]    27.1024 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   3/50  step time:   0.97  scf time:     4.04 secs  RMS[dV]: 3.93e-03 ]
+
+
+average potential <V> = 3.00e-14
+
+FERMI ENERGY =     12.63428038 eV
+@@ EIGENVALUE SUM     =        1.326536 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.485535 Ha
+@@ VXC                =      -18.735002 Ha
+@@ EXC                =      -14.783459 Ha
+@@ TOTAL ENERGY       =      -45.847048 Ha
+@@ estimated error    =        2.57e-05 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   4   0]   -11.4686 [2.000]    -2.6880 [2.000]    -2.6880 [2.000]    -2.6880 [2.000]    -2.6880 [2.000]
+[kpt   0   4   1]    -2.6880 [2.000]    -2.6880 [2.000]     3.7751 [2.000]     3.7751 [2.000]     3.7751 [2.000]
+[kpt   0   4   2]     3.7751 [2.000]     3.7751 [2.000]     3.7751 [2.000]    10.1433 [2.000]    10.1433 [2.000]
+[kpt   0   4   3]    10.1433 [2.000]    14.9125 [0.000]    14.9125 [0.000]    14.9125 [0.000]    14.9126 [0.000]
+[kpt   0   4   4]    14.9127 [0.000]    14.9129 [0.000]    15.7411 [0.000]    15.7411 [0.000]    15.7411 [0.000]
+[kpt   0   4   5]    23.8017 [0.000]    27.0960 [0.000]    27.0960 [0.000]    27.0960 [0.000]    27.0960 [0.000]
+[kpt   0   4   6]    27.0960 [0.000]    27.0960 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   4/50  step time:   0.91  scf time:     4.95 secs  RMS[dV]: 1.07e-03 ]
+
+
+average potential <V> = -7.13e-16
+
+FERMI ENERGY =     12.63252815 eV
+@@ EIGENVALUE SUM     =        1.325051 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.487085 Ha
+@@ VXC                =      -18.734380 Ha
+@@ EXC                =      -14.782910 Ha
+@@ TOTAL ENERGY       =      -45.847776 Ha
+@@ estimated error    =        2.12e-06 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   5   0]   -11.4693 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]
+[kpt   0   5   1]    -2.6891 [2.000]    -2.6891 [2.000]     3.7737 [2.000]     3.7737 [2.000]     3.7737 [2.000]
+[kpt   0   5   2]     3.7737 [2.000]     3.7737 [2.000]     3.7737 [2.000]    10.1414 [2.000]    10.1414 [2.000]
+[kpt   0   5   3]    10.1414 [2.000]    14.9124 [0.000]    14.9124 [0.000]    14.9124 [0.000]    14.9124 [0.000]
+[kpt   0   5   4]    14.9124 [0.000]    14.9124 [0.000]    15.7397 [0.000]    15.7397 [0.000]    15.7397 [0.000]
+[kpt   0   5   5]    23.7999 [0.000]    27.0936 [0.000]    27.0936 [0.000]    27.0936 [0.000]    27.0936 [0.000]
+[kpt   0   5   6]    27.0936 [0.000]    27.0936 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   5/50  step time:   0.93  scf time:     5.88 secs  RMS[dV]: 3.34e-04 ]
+
+
+average potential <V> = -1.15e-14
+
+FERMI ENERGY =     12.63234958 eV
+@@ EIGENVALUE SUM     =        1.324934 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.487197 Ha
+@@ VXC                =      -18.734357 Ha
+@@ EXC                =      -14.782883 Ha
+@@ TOTAL ENERGY       =      -45.847839 Ha
+@@ estimated error    =        1.13e-07 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   6   0]   -11.4692 [2.000]    -2.6892 [2.000]    -2.6892 [2.000]    -2.6892 [2.000]    -2.6892 [2.000]
+[kpt   0   6   1]    -2.6892 [2.000]    -2.6892 [2.000]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]
+[kpt   0   6   2]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]    10.1412 [2.000]    10.1412 [2.000]
+[kpt   0   6   3]    10.1412 [2.000]    14.9125 [0.000]    14.9126 [0.000]    14.9126 [0.000]    14.9126 [0.000]
+[kpt   0   6   4]    14.9126 [0.000]    14.9126 [0.000]    15.7395 [0.000]    15.7395 [0.000]    15.7395 [0.000]
+[kpt   0   6   5]    23.7997 [0.000]    27.0933 [0.000]    27.0933 [0.000]    27.0933 [0.000]    27.0933 [0.000]
+[kpt   0   6   6]    27.0933 [0.000]    27.0933 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   6/50  step time:   0.96  scf time:     6.84 secs  RMS[dV]: 1.09e-04 ]
+
+
+average potential <V> = 1.40e-14
+
+FERMI ENERGY =     12.63241011 eV
+@@ EIGENVALUE SUM     =        1.325008 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.487112 Ha
+@@ VXC                =      -18.734407 Ha
+@@ EXC                =      -14.782922 Ha
+@@ TOTAL ENERGY       =      -45.847847 Ha
+@@ estimated error    =        7.48e-09 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   7   0]   -11.4692 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]
+[kpt   0   7   1]    -2.6891 [2.000]    -2.6891 [2.000]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]
+[kpt   0   7   2]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]    10.1413 [2.000]    10.1413 [2.000]
+[kpt   0   7   3]    10.1413 [2.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]
+[kpt   0   7   4]    14.9127 [0.000]    14.9127 [0.000]    15.7395 [0.000]    15.7395 [0.000]    15.7395 [0.000]
+[kpt   0   7   5]    23.7997 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]
+[kpt   0   7   6]    27.0934 [0.000]    27.0934 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   7/50  step time:   0.94  scf time:     7.78 secs  RMS[dV]: 4.05e-05 ]
+
+
+average potential <V> = 8.17e-14
+
+FERMI ENERGY =     12.63243445 eV
+@@ EIGENVALUE SUM     =        1.325037 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.487080 Ha
+@@ VXC                =      -18.734425 Ha
+@@ EXC                =      -14.782937 Ha
+@@ TOTAL ENERGY       =      -45.847847 Ha
+@@ estimated error    =        6.12e-10 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   8   0]   -11.4691 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]
+[kpt   0   8   1]    -2.6891 [2.000]    -2.6891 [2.000]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]
+[kpt   0   8   2]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]    10.1413 [2.000]    10.1413 [2.000]
+[kpt   0   8   3]    10.1413 [2.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]
+[kpt   0   8   4]    14.9127 [0.000]    14.9127 [0.000]    15.7395 [0.000]    15.7395 [0.000]    15.7395 [0.000]
+[kpt   0   8   5]    23.7998 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]
+[kpt   0   8   6]    27.0934 [0.000]    27.0934 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   8/50  step time:   1.00  scf time:     8.78 secs  RMS[dV]: 1.45e-05 ]
+
+
+average potential <V> = 4.22e-14
+
+FERMI ENERGY =     12.63243553 eV
+@@ EIGENVALUE SUM     =        1.325040 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.487076 Ha
+@@ VXC                =      -18.734427 Ha
+@@ EXC                =      -14.782939 Ha
+@@ TOTAL ENERGY       =      -45.847847 Ha
+@@ estimated error    =        5.53e-11 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   9   0]   -11.4691 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]
+[kpt   0   9   1]    -2.6891 [2.000]    -2.6891 [2.000]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]
+[kpt   0   9   2]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]    10.1413 [2.000]    10.1413 [2.000]
+[kpt   0   9   3]    10.1413 [2.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]
+[kpt   0   9   4]    14.9127 [0.000]    14.9127 [0.000]    15.7395 [0.000]    15.7395 [0.000]    15.7395 [0.000]
+[kpt   0   9   5]    23.7998 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]
+[kpt   0   9   6]    27.0934 [0.000]    27.0934 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:   9/50  step time:   0.99  scf time:     9.77 secs  RMS[dV]: 5.04e-06 ]
+
+
+average potential <V> = 5.73e-14
+
+FERMI ENERGY =     12.63243358 eV
+@@ EIGENVALUE SUM     =        1.325039 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.487078 Ha
+@@ VXC                =      -18.734427 Ha
+@@ EXC                =      -14.782939 Ha
+@@ TOTAL ENERGY       =      -45.847848 Ha
+@@ estimated error    =        7.79e-12 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  10   0]   -11.4691 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]
+[kpt   0  10   1]    -2.6891 [2.000]    -2.6891 [2.000]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]
+[kpt   0  10   2]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]    10.1413 [2.000]    10.1413 [2.000]
+[kpt   0  10   3]    10.1413 [2.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]
+[kpt   0  10   4]    14.9127 [0.000]    14.9127 [0.000]    15.7395 [0.000]    15.7395 [0.000]    15.7395 [0.000]
+[kpt   0  10   5]    23.7998 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]
+[kpt   0  10   6]    27.0934 [0.000]    27.0934 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:  10/50  step time:   0.87  scf time:    10.64 secs  RMS[dV]: 1.82e-06 ]
+
+
+average potential <V> = -9.28e-14
+
+FERMI ENERGY =     12.63243269 eV
+@@ EIGENVALUE SUM     =        1.325038 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.487078 Ha
+@@ VXC                =      -18.734427 Ha
+@@ EXC                =      -14.782939 Ha
+@@ TOTAL ENERGY       =      -45.847848 Ha
+@@ estimated error    =        1.13e-12 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  11   0]   -11.4691 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]
+[kpt   0  11   1]    -2.6891 [2.000]    -2.6891 [2.000]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]
+[kpt   0  11   2]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]    10.1413 [2.000]    10.1413 [2.000]
+[kpt   0  11   3]    10.1413 [2.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]
+[kpt   0  11   4]    14.9127 [0.000]    14.9127 [0.000]    15.7395 [0.000]    15.7395 [0.000]    15.7395 [0.000]
+[kpt   0  11   5]    23.7997 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]
+[kpt   0  11   6]    27.0934 [0.000]    27.0934 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:  11/50  step time:   0.90  scf time:    11.54 secs  RMS[dV]: 6.84e-07 ]
+
+
+average potential <V> = -3.22e-14
+
+FERMI ENERGY =     12.63243243 eV
+@@ EIGENVALUE SUM     =        1.325038 Ha
+@@ ION_ION            =      -82.611452 Ha
+@@ ELECTROSTATIC      =       31.487078 Ha
+@@ VXC                =      -18.734427 Ha
+@@ EXC                =      -14.782939 Ha
+@@ TOTAL ENERGY       =      -45.847848 Ha
+@@ estimated error    =        1.56e-13 Ha
+Charge normalization constant: 1.000000
+Charge density mixing: Linear with a constant of 0.72 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  12   0]   -11.4691 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]
+[kpt   0  12   1]    -2.6891 [2.000]    -2.6891 [2.000]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]
+[kpt   0  12   2]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]    10.1413 [2.000]    10.1413 [2.000]
+[kpt   0  12   3]    10.1413 [2.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]
+[kpt   0  12   4]    14.9127 [0.000]    14.9127 [0.000]    15.7395 [0.000]    15.7395 [0.000]    15.7395 [0.000]
+[kpt   0  12   5]    23.7997 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]
+[kpt   0  12   6]    27.0934 [0.000]    27.0934 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+ quench: [md:   0/100  scf:  12/50  step time:   0.90  scf time:    12.44 secs  RMS[dV]: 2.61e-07 ]
+
+
+
+potential convergence has been achieved. stopping ...
+
+[   0  13   13       14 ] Quench.cpp: final total energy =    -45.8478475 Ha
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  13   0]   -11.4691 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]    -2.6891 [2.000]
+[kpt   0  13   1]    -2.6891 [2.000]    -2.6891 [2.000]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]
+[kpt   0  13   2]     3.7736 [2.000]     3.7736 [2.000]     3.7736 [2.000]    10.1413 [2.000]    10.1413 [2.000]
+[kpt   0  13   3]    10.1413 [2.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]    14.9127 [0.000]
+[kpt   0  13   4]    14.9127 [0.000]    14.9127 [0.000]    15.7395 [0.000]    15.7395 [0.000]    15.7395 [0.000]
+[kpt   0  13   5]    23.7997 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]    27.0934 [0.000]
+[kpt   0  13   6]    27.0934 [0.000]    27.0934 [0.000]
+
+
+
+Total charge in supercell =      32.00000000
+
+
+
+  IONIC POSITIONS [a0] AND FORCES [Ha/a0]:
+
+@ION  Ion  Species      X           Y           Z          FX          FY          FZ       Movable
+@ION   1    C  1   0.8400000   0.8400000   0.8400000  -0.0000000  -0.0000000   0.0000000       1
+@ION   2    C  1   0.8400000   4.2000000   4.2000000   0.0000000   0.0000000   0.0000000       1
+@ION   3    C  1   4.2000000   0.8400000   4.2000000   0.0000000  -0.0000000   0.0000000       1
+@ION   4    C  1   4.2000000   4.2000000   0.8400000  -0.0000000   0.0000000  -0.0000000       1
+@ION   5    C  1   2.5200000   2.5200000   2.5200000   0.0000000   0.0000000   0.0000000       1
+@ION   6    C  1   2.5200000   5.8800000   5.8800000   0.0000000   0.0000000  -0.0000000       1
+@ION   7    C  1   5.8800000   2.5200000   5.8800000   0.0000000  -0.0000000   0.0000000       1
+@ION   8    C  1   5.8800000   5.8800000   2.5200000   0.0000000   0.0000000  -0.0000000       1
+
+ mean FX      =   0.00000000 Ha/a0
+ mean FY      =   0.00000000 Ha/a0
+ mean FZ      =   0.00000000 Ha/a0
+
+ max FX       =   0.00000000 Ha/a0   (ion 7)
+ max FY       =   0.00000000 Ha/a0   (ion 1)
+ max FZ       =   0.00000000 Ha/a0   (ion 8)
+ max F[x,y,z] =   0.00000000 Ha/a0
+ max |F|      =   0.00000000 Ha/a0   (ion 8)
+
+ sum FX       =   0.00000000 Ha/a0
+ sum FY       =  -0.00000000 Ha/a0
+ sum FZ       =  -0.00000000 Ha/a0
+ Average      =   0.00000000 Ha/a0
+ sqrt < F^2 > =   0.00000000 Ha/a0
+
+
+ write_data: Opening output file 'Waves/wave.out.restart' failed
+  Trying to create subdirectory in case it does not exist
+
+ Creating directory Waves succesfull
+
+
+
+--------TIMING INFORMATION FOR Processor owned the most atoms----------------
+                                        Total time               Per SCF/step
+
+1-TOTAL                                            14.07                1.08
+-----------------------------------------------------------------------------
+  1-TOTAL: Init                                     1.60                0.12
+  1-TOTAL: run                                     12.47                0.96
+  ---------------------------------------------------------------------------
+    1-TOTAL: run: Force                             0.02                0.00
+    1-TOTAL: run: Scf steps                        12.44                0.96
+
+2-Force                                             0.02                0.00
+-----------------------------------------------------------------------------
+  2-Force: core correction                          0.00                0.00
+  2-Force: corrections                              0.00                0.00
+  2-Force: ion-ion                                  0.00                0.00
+  2-Force: local                                    0.00                0.00
+  2-Force: non-local                                0.01                0.00
+  ---------------------------------------------------------------------------
+    2-Force: non-local: betaxpsi                    0.01                0.00
+    2-Force: non-local: get gamma                   0.00                0.00
+    2-Force: non-local: nlforce_par_Q               0.00                0.00
+    2-Force: non-local: nlforce_par_gamma           0.00                0.00
+    2-Force: non-local: nlforce_par_omega           0.00                0.00
+    2-Force: non-local: partial gamma               0.00                0.00
+    2-Force: non-local: veff grad                   0.00                0.00
+  2-Force: symmetrization                           0.00                0.00
+
+2-Init                                              1.60                0.12
+-----------------------------------------------------------------------------
+  2-Init: GetNewRho                                 0.09                0.01
+  2-Init: KpointClass                               0.17                0.01
+  2-Init: LcaoGetPsi                                0.16                0.01
+  2-Init: LcaoGetRho                                0.00                0.00
+  2-Init: ReinitIonicPotentials                     0.37                0.03
+  2-Init: betaxpsi                                  0.01                0.00
+  2-Init: exchange/correlation                      0.01                0.00
+  2-Init: hartree                                   0.00                0.00
+  2-Init: normalization                             0.00                0.00
+  2-Init: qfunct                                    0.25                0.02
+  2-Init: radial potentials                         0.35                0.03
+  2-Init: subdiag                                   0.03                0.00
+  2-Init: symmetry                                  0.02                0.00
+  2-Init: weights                                   0.08                0.01
+
+2-Scf steps                                        12.44                0.96
+-----------------------------------------------------------------------------
+  2-Scf steps: GetNewRho                            1.41                0.11
+  2-Scf steps: Hartree                              0.10                0.01
+  2-Scf steps: MgridSubspace                        9.96                0.77
+  2-Scf steps: MixRho                               0.00                0.00
+  2-Scf steps: exchange/correlation                 0.16                0.01
+
+3-MgridSubspace                                     9.96                0.77
+-----------------------------------------------------------------------------
+  3-MgridSubspace: AppNls                           0.44                0.03
+  3-MgridSubspace: Beta x psi                       0.22                0.02
+  3-MgridSubspace: Diagonlization                   0.38                0.03
+  3-MgridSubspace: Mg_eig                           8.91                0.69
+
+3-ReinitIonicPotentials                             0.37                0.03
+-----------------------------------------------------------------------------
+  3-ReinitIonicPotentials: GetNlop                  0.00                0.00
+  3-ReinitIonicPotentials: GetWeight                0.02                0.00
+  3-ReinitIonicPotentials: get_QI                   0.08                0.01
+  3-ReinitIonicPotentials: get_qqq                  0.00                0.00
+  3-ReinitIonicPotentials: init_nuc                 0.26                0.02
+
+4-Diagonalization                                   0.41                0.03
+-----------------------------------------------------------------------------
+  4-Diagonalization: Eigensolver                    0.02                0.00
+  4-Diagonalization: Invert Bij                     0.00                0.00
+  4-Diagonalization: Update orbitals                0.02                0.00
+  4-Diagonalization: apply operators                0.30                0.02
+  ---------------------------------------------------------------------------
+    4-Diagonalization: apply operators: AppNls           0.12                0.01
+  4-Diagonalization: dsygvx/zhegvx/folded           0.01                0.00
+  4-Diagonalization: matrix setup                   0.00                0.00
+  4-Diagonalization: matrix setup/reduce            0.07                0.01
+
+App_del2                                            0.58                0.04
+-----------------------------------------------------------------------------
+  App_del2: trade images                            0.24                0.02
+
+App_gradient                                        0.48                0.04
+-----------------------------------------------------------------------------
+  App_gradient: computation                         0.27                0.02
+  App_gradient: trade images                        0.19                0.01
+
+Functional                                          0.18                0.01
+-----------------------------------------------------------------------------
+  Functional: apply gradient                        0.02                0.00
+  Functional: apply laplacian                       0.00                0.00
+  Functional: libxc                                 0.11                0.01
+  Functional: vxc                                   0.18                0.01
+  Functional: vxc grad                              0.13                0.01
+  Functional: vxc local                             0.04                0.00
+  Functional: vxc nonlocal                          0.00                0.00
+
+GlobalSums                                          0.26                0.02
+
+Init                                                1.43                0.11
+
+Mg_eig                                              1.55                0.12
+-----------------------------------------------------------------------------
+  Mg_eig: apply A operator                          0.54                0.04
+  Mg_eig: apply B operator                          0.01                0.00
+  Mg_eig: apply grad                                0.47                0.04
+  Mg_eig: mg_prolong                                0.01                0.00
+  Mg_eig: mgrid_solv                                0.32                0.02
+
+Mgrid_solv                                          0.60                0.05
+-----------------------------------------------------------------------------
+  Mgrid_solv: level 1                               0.31                0.02
+  Mgrid_solv: level 2                               0.18                0.01
+  Mgrid_solv: level 3                               0.10                0.01
+
+Mix rho                                             0.00                0.00
+-----------------------------------------------------------------------------
+  Mix rho: Linear                                   0.00                0.00
+
+Trade images                                        0.56                0.04
+-----------------------------------------------------------------------------
+  Trade images: trade_images                        0.23                0.02
+  Trade images: trade_imagesx                       0.40                0.03
+
+VhPfft                                              0.10                0.01
+
+Weight                                              0.08                0.01
+-----------------------------------------------------------------------------
+  Weight: bcast                                     0.00                0.00
+  Weight: distr                                     0.00                0.00
+  Weight: phase and set                             0.00                0.00
+  Weight: proj cal                                  0.07                0.01
+
+radial beta                                         0.19                0.01
+
+weight fft_forward                                  0.00                0.00
+
+weight fft_nldim                                    0.00                0.00
+
+weight fold                                         0.00                0.00
+
+
+------------------------- TIMING INFORMATION FOR THREADS  -------------------
+
+                                           Min            Max            Avg
+App_del2                                   1.09           1.11           1.10
+-----------------------------------------------------------------------------
+  App_del2: trade images                   0.98           1.00           0.99
+
+App_gradient                               1.04           1.07           1.06
+-----------------------------------------------------------------------------
+  App_gradient: computation                0.08           0.10           0.09
+  App_gradient: trade images               0.90           0.95           0.94
+
+GlobalSums                                 0.08           0.09           0.09
+-----------------------------------------------------------------------------
+
+Mg_eig                                     7.29           7.31           7.30
+-----------------------------------------------------------------------------
+  Mg_eig: apply A operator                 1.04           1.07           1.05
+  Mg_eig: apply B operator                 0.00           0.00           0.00
+  Mg_eig: apply grad                       1.04           1.07           1.06
+  Mg_eig: mg_prolong                       0.00           0.00           0.00
+  Mg_eig: mgrid_solv                       4.89           4.90           4.90
+
+Mgrid_solv                                10.19          10.21          10.20
+-----------------------------------------------------------------------------
+  Mgrid_solv: level 1                      4.89           4.90           4.90
+  Mgrid_solv: level 2                      3.35           3.36           3.36
+  Mgrid_solv: level 3                      1.94           1.95           1.94
+
+Trade images                               6.67           6.75           6.73
+-----------------------------------------------------------------------------
+  Trade images: trade_images               4.86           4.87           4.86
+  Trade images: trade_imagesx              1.85           1.93           1.91
+
+
+--------TIMING INFORMATION FOR Processor owned the least atoms----------------
+                                        Total time               Per SCF/step
+
+1-TOTAL                                            14.07                1.08
+-----------------------------------------------------------------------------
+  1-TOTAL: Init                                     1.60                0.12
+  1-TOTAL: run                                     12.47                0.96
+  ---------------------------------------------------------------------------
+    1-TOTAL: run: Force                             0.02                0.00
+    1-TOTAL: run: Scf steps                        12.44                0.96
+
+2-Force                                             0.02                0.00
+-----------------------------------------------------------------------------
+  2-Force: core correction                          0.00                0.00
+  2-Force: corrections                              0.00                0.00
+  2-Force: ion-ion                                  0.00                0.00
+  2-Force: local                                    0.00                0.00
+  2-Force: non-local                                0.01                0.00
+  ---------------------------------------------------------------------------
+    2-Force: non-local: betaxpsi                    0.01                0.00
+    2-Force: non-local: get gamma                   0.00                0.00
+    2-Force: non-local: nlforce_par_Q               0.00                0.00
+    2-Force: non-local: nlforce_par_gamma           0.00                0.00
+    2-Force: non-local: nlforce_par_omega           0.00                0.00
+    2-Force: non-local: partial gamma               0.00                0.00
+    2-Force: non-local: veff grad                   0.00                0.00
+  2-Force: symmetrization                           0.00                0.00
+
+2-Init                                              1.60                0.12
+-----------------------------------------------------------------------------
+  2-Init: GetNewRho                                 0.09                0.01
+  2-Init: KpointClass                               0.17                0.01
+  2-Init: LcaoGetPsi                                0.16                0.01
+  2-Init: LcaoGetRho                                0.00                0.00
+  2-Init: ReinitIonicPotentials                     0.37                0.03
+  2-Init: betaxpsi                                  0.01                0.00
+  2-Init: exchange/correlation                      0.01                0.00
+  2-Init: hartree                                   0.00                0.00
+  2-Init: normalization                             0.00                0.00
+  2-Init: qfunct                                    0.25                0.02
+  2-Init: radial potentials                         0.35                0.03
+  2-Init: subdiag                                   0.03                0.00
+  2-Init: symmetry                                  0.02                0.00
+  2-Init: weights                                   0.08                0.01
+
+2-Scf steps                                        12.44                0.96
+-----------------------------------------------------------------------------
+  2-Scf steps: GetNewRho                            1.41                0.11
+  2-Scf steps: Hartree                              0.10                0.01
+  2-Scf steps: MgridSubspace                        9.96                0.77
+  2-Scf steps: MixRho                               0.00                0.00
+  2-Scf steps: exchange/correlation                 0.16                0.01
+
+3-MgridSubspace                                     9.96                0.77
+-----------------------------------------------------------------------------
+  3-MgridSubspace: AppNls                           0.44                0.03
+  3-MgridSubspace: Beta x psi                       0.22                0.02
+  3-MgridSubspace: Diagonlization                   0.38                0.03
+  3-MgridSubspace: Mg_eig                           8.91                0.69
+
+3-ReinitIonicPotentials                             0.37                0.03
+-----------------------------------------------------------------------------
+  3-ReinitIonicPotentials: GetNlop                  0.00                0.00
+  3-ReinitIonicPotentials: GetWeight                0.02                0.00
+  3-ReinitIonicPotentials: get_QI                   0.08                0.01
+  3-ReinitIonicPotentials: get_qqq                  0.00                0.00
+  3-ReinitIonicPotentials: init_nuc                 0.26                0.02
+
+4-Diagonalization                                   0.41                0.03
+-----------------------------------------------------------------------------
+  4-Diagonalization: Eigensolver                    0.02                0.00
+  4-Diagonalization: Invert Bij                     0.00                0.00
+  4-Diagonalization: Update orbitals                0.02                0.00
+  4-Diagonalization: apply operators                0.30                0.02
+  ---------------------------------------------------------------------------
+    4-Diagonalization: apply operators: AppNls           0.12                0.01
+  4-Diagonalization: dsygvx/zhegvx/folded           0.01                0.00
+  4-Diagonalization: matrix setup                   0.00                0.00
+  4-Diagonalization: matrix setup/reduce            0.07                0.01
+
+App_del2                                            0.58                0.04
+-----------------------------------------------------------------------------
+  App_del2: trade images                            0.24                0.02
+
+App_gradient                                        0.48                0.04
+-----------------------------------------------------------------------------
+  App_gradient: computation                         0.27                0.02
+  App_gradient: trade images                        0.19                0.01
+
+Functional                                          0.18                0.01
+-----------------------------------------------------------------------------
+  Functional: apply gradient                        0.02                0.00
+  Functional: apply laplacian                       0.00                0.00
+  Functional: libxc                                 0.11                0.01
+  Functional: vxc                                   0.18                0.01
+  Functional: vxc grad                              0.13                0.01
+  Functional: vxc local                             0.04                0.00
+  Functional: vxc nonlocal                          0.00                0.00
+
+GlobalSums                                          0.26                0.02
+
+Init                                                1.43                0.11
+
+Mg_eig                                              1.55                0.12
+-----------------------------------------------------------------------------
+  Mg_eig: apply A operator                          0.54                0.04
+  Mg_eig: apply B operator                          0.01                0.00
+  Mg_eig: apply grad                                0.47                0.04
+  Mg_eig: mg_prolong                                0.01                0.00
+  Mg_eig: mgrid_solv                                0.32                0.02
+
+Mgrid_solv                                          0.60                0.05
+-----------------------------------------------------------------------------
+  Mgrid_solv: level 1                               0.31                0.02
+  Mgrid_solv: level 2                               0.18                0.01
+  Mgrid_solv: level 3                               0.10                0.01
+
+Mix rho                                             0.00                0.00
+-----------------------------------------------------------------------------
+  Mix rho: Linear                                   0.00                0.00
+
+Trade images                                        0.56                0.04
+-----------------------------------------------------------------------------
+  Trade images: trade_images                        0.23                0.02
+  Trade images: trade_imagesx                       0.40                0.03
+
+VhPfft                                              0.10                0.01
+
+Weight                                              0.08                0.01
+-----------------------------------------------------------------------------
+  Weight: bcast                                     0.00                0.00
+  Weight: distr                                     0.00                0.00
+  Weight: phase and set                             0.00                0.00
+  Weight: proj cal                                  0.07                0.01
+
+radial beta                                         0.19                0.01
+
+weight fft_forward                                  0.00                0.00
+
+weight fft_nldim                                    0.00                0.00
+
+weight fold                                         0.00                0.00
+
+
+------------------------- TIMING INFORMATION FOR THREADS  -------------------
+
+                                           Min            Max            Avg
+App_del2                                   1.09           1.11           1.10
+-----------------------------------------------------------------------------
+  App_del2: trade images                   0.98           1.00           0.99
+
+App_gradient                               1.04           1.07           1.06
+-----------------------------------------------------------------------------
+  App_gradient: computation                0.08           0.10           0.09
+  App_gradient: trade images               0.90           0.95           0.94
+
+GlobalSums                                 0.08           0.09           0.09
+-----------------------------------------------------------------------------
+
+Mg_eig                                     7.29           7.31           7.30
+-----------------------------------------------------------------------------
+  Mg_eig: apply A operator                 1.04           1.07           1.05
+  Mg_eig: apply B operator                 0.00           0.00           0.00
+  Mg_eig: apply grad                       1.04           1.07           1.06
+  Mg_eig: mg_prolong                       0.00           0.00           0.00
+  Mg_eig: mgrid_solv                       4.89           4.90           4.90
+
+Mgrid_solv                                10.19          10.21          10.20
+-----------------------------------------------------------------------------
+  Mgrid_solv: level 1                      4.89           4.90           4.90
+  Mgrid_solv: level 2                      3.35           3.36           3.36
+  Mgrid_solv: level 3                      1.94           1.95           1.94
+
+Trade images                               6.67           6.75           6.73
+-----------------------------------------------------------------------------
+  Trade images: trade_images               4.86           4.87           4.86
+  Trade images: trade_imagesx              1.85           1.93           1.91
