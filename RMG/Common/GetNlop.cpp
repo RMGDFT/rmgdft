@@ -335,14 +335,18 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     if (int_sum_all (pct.num_owned_ions, pct.grid_comm) != ct.num_ions)
         rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
 
-    rmg_printf ("\n PE %d: Number of nonlocal ions is %d", pct.gridpe, pct.num_nonloc_ions);
+  
+    if (ct.verbose)
+    {
+	rmg_printf ("\n PE %d: Number of nonlocal ions is %d", pct.gridpe, pct.num_nonloc_ions);
 
-    for (i = 0; i < pct.num_nonloc_ions; i++)
-        rmg_printf (" %d", pct.nonloc_ions_list[i]);
+	for (i = 0; i < pct.num_nonloc_ions; i++)
+	    rmg_printf (" %d", pct.nonloc_ions_list[i]);
 
-    rmg_printf ("\n PE %d: Number of claimed ions is %d", pct.gridpe, pct.num_owned_ions);
-    for (i = 0; i < pct.num_owned_ions; i++)
-        rmg_printf (" %d", pct.owned_ions_list[i]);
+	rmg_printf ("\n PE %d: Number of claimed ions is %d", pct.gridpe, pct.num_owned_ions);
+	for (i = 0; i < pct.num_owned_ions; i++)
+	    rmg_printf (" %d", pct.owned_ions_list[i]);
+    }
 
     
     

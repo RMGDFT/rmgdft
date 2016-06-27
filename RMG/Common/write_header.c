@@ -70,27 +70,12 @@ void write_header (void)
 
 
     printf ("\n");
-    printf (" Real-space finite difference molecular dynamics\n\n");
-    switch (ct.boundaryflag)
-    {
-
-    case PERIODIC:
-        printf (" Using periodic boundary conditions\n");
-        break;
-
-    case CLUSTER:
-        printf (" Using cluster boundary conditions\n");
-        break;
-
-    case SURFACE:
-        printf (" Using surface boundary conditions\n");
-        break;
-
-    }                           /* end switch */
+    /*printf (" Real-space finite difference molecular dynamics\n\n");*/
+        
 
     /*printf (" Code %s\n\n", QMD_VERSION); */
 #if !(_WIN32 || _WIN64)
-    printf ("\n    Code Revision %s, Last change on %s", SVN_REV, SVN_REVDATE);
+    printf ("\n    RMG Code Revision %s, Last change on %s", SVN_REV, SVN_REVDATE);
     printf ("\n    Build Date:%s", BUILD_DATE);
 #endif
     printf ("\n    %s", ct.description);
@@ -103,15 +88,33 @@ void write_header (void)
     printf ("       Data output file         %s\n", ct.outfile);
     /*  printf("       Pseudopotential file     %s\n", ct.pspfile); */
 
-    printf ("\n#######Control input file parameters#####\n\n");
-    printf ("\n\n#######End input file parameters#########\n");
+    /*printf ("\n#######Control input file parameters#####\n\n");
+    printf ("\n\n#######End input file parameters#########\n");*/
 
     printf ("\n\n");
+    printf ("    Boundary conditions: ");
+    switch (ct.boundaryflag)
+    {
 
-    printf ("    Maximum number of md steps = %d\n", ct.max_md_steps);
-    printf ("    Maximum number of scf steps = %d\n", ct.max_scf_steps);
+    case PERIODIC:
+        printf ("Periodic\n");
+        break;
+
+    case CLUSTER:
+        printf ("Cluster\n");
+        break;
+
+    case SURFACE:
+        printf ("Surface\n");
+        break;
+
+    }                           /* end switch */
+
+    printf ("    Maximum number of MD steps = %d\n", ct.max_md_steps);
+    printf ("    Maximum number of SCF steps = %d\n", ct.max_scf_steps);
     printf ("    Checkpoint every %d steps\n", ct.checkpoint);
-    printf ("    RMS criterion %14.10f\n", ct.thr_rms);
+    //printf ("    RMS criterion %14.10f\n", ct.thr_rms);
+    printf ("    RMS criterion %e\n", ct.thr_rms);
 
     printf ("\n");
     if (ct.runflag == 1)
@@ -173,7 +176,7 @@ void write_header (void)
     printf ("       PE_Z  = %d\n", get_PE_Z());
 
     printf ("\n");
-    printf ("    Using hybrid model with %d threads per PE\n", ct.THREADS_PER_NODE);
+    printf ("    Using hybrid MPI/threads model with %d threads per PE\n", ct.THREADS_PER_NODE);
 
     printf ("\n");
     printf ("    Fine grid (for charge density):\n");
@@ -211,7 +214,7 @@ void write_header (void)
     t1 = pow (get_vel(), 0.333333333333);
     t1 = PI / (t1 * get_anisotropy());
     t1 = t1 * t1 / 2.0;
-    printf ("       Equivalent energy cutoff  %12.6f Ry\n", t1);
+    printf ("    Equivalent energy cutoff  %12.6f Ry\n", t1);
 
     printf ("\n");
     printf ("    Basis vectors:\n");

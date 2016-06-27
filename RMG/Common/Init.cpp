@@ -365,7 +365,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
    // InitLocalForward();  
     delete(RT1);
 
-    rmg_printf ("\n init: FFTW initialization finished, it took %.1f s", my_crtc () - time2);
+    rmg_printf (" finished in %.1f s", my_crtc () - time2);
     fflush (NULL);
 
 

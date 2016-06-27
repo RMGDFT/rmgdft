@@ -692,6 +692,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("initial_diagonalization", &lc.initdiag, true, 
                         "Perform initial subspace diagonalization.");
+    
+    If.RegisterInputKey("verbose", &lc.verbose, false,
+                        "Flag for writing out extra information\n");
 
     If.RegisterInputKey("folded_spectrum", &lc.use_folded_spectrum, false, 
                          "Use folded spectrum.");

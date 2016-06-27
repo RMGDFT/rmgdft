@@ -36,7 +36,7 @@ void lcao_get_rho (double * arho_f)
 
     t1 = ct.nel / t2;
     if (pct.imgpe == 0)
-        printf ("\n get_arho: Aggregate initial atomic charge is %f, normalization constant is %f", t2, t1);
+        printf ("\nNormalization constant for initial atomic charge is %f", t1);
 
     for(idx = 0;idx < FP0_BASIS;idx++) arho_f[idx] *= t1;
 

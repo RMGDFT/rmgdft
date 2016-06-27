@@ -183,6 +183,9 @@ typedef struct
 
     /** Sorting flag for wavefunctions. Read from input file. 0=no sort, 1=sort */
     bool sortflag;
+    
+    /** Flag for verbose output. Read from input file. 0=short output, 1=verbose */
+    bool verbose;
 
     /** Number of states. May switch between init_states and run_states */
     int num_states;
