@@ -1,5 +1,5 @@
 
-RMG started at GMT Mon Jun 27 03:10:17 2016
+RMG started at GMT Mon Jun 27 17:28:22 2016
 Running with 1 images and 1 images per node.
 MPI mode with 12 procs for this image. Thread level = 2
 
@@ -8,7 +8,7 @@ Using 240 atomic orbitals for initial wavefunctions.
 
  Scalapack processor distribution is nprow:4 and npcol:3, total processors 12
 
- init: Starting FFTW initialization ... finished in 0.1 s
+ init: Starting FFTW initialization ... finished in 0.0 s
 Compensating charge is 2.40000000e+02
 
 Normalization constant for initial atomic charge is 1.003523
@@ -71,9 +71,9 @@ Charge density mixing: Linear with a constant of 0.50
 
 
     RMG Code Revision release 1.1, Last change on Unknown
-    Build Date:Fri Jun 24 17:49:06 EDT 2016
+    Build Date:Mon Jun 27 13:19:46 EDT 2016
     C60 example using Davidson diagonalization
-    Run started at Sun Jun 26 23:10:23 2016
+    Run started at Mon Jun 27 13:28:26 2016
 
 
     Files used
@@ -323,10 +323,10 @@ KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0
 
 
 Total charge in supercell =     240.00000000
- quench: [md:   0/100  scf:   0/500  step time:   2.76  scf time:     2.76 secs  RMS[dV]: 9.60e-03 ]
+ quench: [md:   0/100  scf:   0/500  step time:   2.69  scf time:     2.69 secs  RMS[dV]: 9.60e-03 ]
 
 
-average potential <V> = 8.84e-16
+average potential <V> = 1.60e-15
 @@ EIGENVALUE SUM     =      -81.250119 Ha
 @@ ION_ION            =     -619.580012 Ha
 @@ ELECTROSTATIC      =      328.786154 Ha
@@ -336,10 +336,10 @@ average potential <V> = 8.84e-16
 @@ estimated error    =        1.19e+00 Ha
 Charge normalization constant: 1.000237
 Charge density mixing: Linear with a constant of 0.50 
- quench: [md:   0/100  scf:   1/500  step time:   2.63  scf time:     5.38 secs  RMS[dV]: 4.96e-02 ]
+ quench: [md:   0/100  scf:   1/500  step time:   2.45  scf time:     5.14 secs  RMS[dV]: 4.96e-02 ]
 
 
-average potential <V> = -1.78e-14
+average potential <V> = -1.79e-14
 @@ EIGENVALUE SUM     =      -72.585616 Ha
 @@ ION_ION            =     -619.580012 Ha
 @@ ELECTROSTATIC      =      319.833885 Ha
@@ -349,10 +349,10 @@ average potential <V> = -1.78e-14
 @@ estimated error    =        4.55e-01 Ha
 Charge normalization constant: 1.000158
 Charge density mixing: Linear with a constant of 0.50 
- quench: [md:   0/100  scf:   2/500  step time:   2.52  scf time:     7.90 secs  RMS[dV]: 2.82e-02 ]
+ quench: [md:   0/100  scf:   2/500  step time:   2.77  scf time:     7.91 secs  RMS[dV]: 2.82e-02 ]
 
 
-average potential <V> = -1.09e-14
+average potential <V> = -1.03e-14
 @@ EIGENVALUE SUM     =      -69.370560 Ha
 @@ ION_ION            =     -619.580012 Ha
 @@ ELECTROSTATIC      =      316.469610 Ha
@@ -362,10 +362,10 @@ average potential <V> = -1.09e-14
 @@ estimated error    =        1.03e-01 Ha
 Charge normalization constant: 1.000112
 Charge density mixing: Linear with a constant of 0.50 
- quench: [md:   0/100  scf:   3/500  step time:   2.39  scf time:    10.29 secs  RMS[dV]: 1.23e-02 ]
+ quench: [md:   0/100  scf:   3/500  step time:   2.74  scf time:    10.64 secs  RMS[dV]: 1.23e-02 ]
 
 
-average potential <V> = -1.54e-14
+average potential <V> = -1.44e-14
 Davidson converged in 4 steps
 @@ EIGENVALUE SUM     =      -68.622872 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -376,10 +376,10 @@ Davidson converged in 4 steps
 @@ estimated error    =        1.77e-02 Ha
 Charge normalization constant: 1.000000
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:   4/500  step time:   3.57  scf time:    13.87 secs  RMS[dV]: 5.24e-03 ]
+ quench: [md:   0/100  scf:   4/500  step time:   3.71  scf time:    14.35 secs  RMS[dV]: 5.24e-03 ]
 
 
-average potential <V> = -2.85e-15
+average potential <V> = -1.63e-15
 Davidson converged in 2 steps
 @@ EIGENVALUE SUM     =      -69.035896 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -426,10 +426,10 @@ KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0
 
 
 Total charge in supercell =     240.00000000
- quench: [md:   0/100  scf:   5/500  step time:   2.10  scf time:    15.97 secs  RMS[dV]: 3.05e-03 ]
+ quench: [md:   0/100  scf:   5/500  step time:   2.72  scf time:    17.07 secs  RMS[dV]: 3.05e-03 ]
 
 
-average potential <V> = -3.47e-15
+average potential <V> = -2.14e-15
 Davidson converged in 2 steps
 @@ EIGENVALUE SUM     =      -68.917596 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -440,10 +440,10 @@ Davidson converged in 2 steps
 @@ estimated error    =        8.14e-04 Ha
 Charge normalization constant: 1.000000
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:   6/500  step time:   2.19  scf time:    18.16 secs  RMS[dV]: 1.52e-03 ]
+ quench: [md:   0/100  scf:   6/500  step time:   2.39  scf time:    19.45 secs  RMS[dV]: 1.52e-03 ]
 
 
-average potential <V> = 1.79e-15
+average potential <V> = 2.42e-15
 Davidson converged in 2 steps
 @@ EIGENVALUE SUM     =      -68.953680 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -454,10 +454,10 @@ Davidson converged in 2 steps
 @@ estimated error    =        3.89e-04 Ha
 Charge normalization constant: 1.000000
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:   7/500  step time:   2.07  scf time:    20.23 secs  RMS[dV]: 1.71e-03 ]
+ quench: [md:   0/100  scf:   7/500  step time:   1.92  scf time:    21.37 secs  RMS[dV]: 1.71e-03 ]
 
 
-average potential <V> = -1.72e-14
+average potential <V> = -1.68e-14
 Davidson converged in 2 steps
 @@ EIGENVALUE SUM     =      -68.981796 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -468,10 +468,10 @@ Davidson converged in 2 steps
 @@ estimated error    =        2.25e-04 Ha
 Charge normalization constant: 1.000000
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:   8/500  step time:   1.60  scf time:    21.83 secs  RMS[dV]: 1.78e-03 ]
+ quench: [md:   0/100  scf:   8/500  step time:   1.52  scf time:    22.88 secs  RMS[dV]: 1.78e-03 ]
 
 
-average potential <V> = 4.27e-15
+average potential <V> = 3.74e-15
 Davidson converged in 7 steps
 @@ EIGENVALUE SUM     =      -68.989948 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -482,10 +482,10 @@ Davidson converged in 7 steps
 @@ estimated error    =        7.31e-06 Ha
 Charge normalization constant: 1.000000
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:   9/500  step time:   4.01  scf time:    25.83 secs  RMS[dV]: 2.37e-04 ]
+ quench: [md:   0/100  scf:   9/500  step time:   4.45  scf time:    27.33 secs  RMS[dV]: 2.37e-04 ]
 
 
-average potential <V> = 2.34e-15
+average potential <V> = 2.27e-15
 Davidson incomplete convergence steps = 10
 @@ EIGENVALUE SUM     =      -68.989021 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -532,10 +532,10 @@ KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0
 
 
 Total charge in supercell =     240.00000000
- quench: [md:   0/100  scf:  10/500  step time:   3.09  scf time:    28.92 secs  RMS[dV]: 1.40e-04 ]
+ quench: [md:   0/100  scf:  10/500  step time:   3.48  scf time:    30.81 secs  RMS[dV]: 1.40e-04 ]
 
 
-average potential <V> = -1.07e-15
+average potential <V> = -9.01e-16
 Davidson incomplete convergence steps = 10
 @@ EIGENVALUE SUM     =      -68.987059 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -546,10 +546,10 @@ Davidson incomplete convergence steps = 10
 @@ estimated error    =        2.31e-07 Ha
 Charge normalization constant: 1.000000
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:  11/500  step time:   4.78  scf time:    33.70 secs  RMS[dV]: 4.51e-05 ]
+ quench: [md:   0/100  scf:  11/500  step time:   4.35  scf time:    35.16 secs  RMS[dV]: 4.51e-05 ]
 
 
-average potential <V> = 1.48e-14
+average potential <V> = 1.45e-14
 Davidson converged in 3 steps
 @@ EIGENVALUE SUM     =      -68.987698 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -560,10 +560,10 @@ Davidson converged in 3 steps
 @@ estimated error    =        9.26e-08 Ha
 Charge normalization constant: 1.000000
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:  12/500  step time:   2.58  scf time:    36.28 secs  RMS[dV]: 3.48e-05 ]
+ quench: [md:   0/100  scf:  12/500  step time:   2.44  scf time:    37.60 secs  RMS[dV]: 3.48e-05 ]
 
 
-average potential <V> = 1.45e-14
+average potential <V> = 1.46e-14
 Davidson converged in 3 steps
 @@ EIGENVALUE SUM     =      -68.987941 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -574,10 +574,10 @@ Davidson converged in 3 steps
 @@ estimated error    =        2.52e-08 Ha
 Charge normalization constant: 1.000000
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:  13/500  step time:   2.14  scf time:    38.43 secs  RMS[dV]: 1.81e-05 ]
+ quench: [md:   0/100  scf:  13/500  step time:   2.54  scf time:    40.14 secs  RMS[dV]: 1.81e-05 ]
 
 
-average potential <V> = -9.84e-15
+average potential <V> = -1.00e-14
 Davidson converged in 3 steps
 @@ EIGENVALUE SUM     =      -68.987964 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -588,10 +588,10 @@ Davidson converged in 3 steps
 @@ estimated error    =        3.66e-09 Ha
 Charge normalization constant: 1.000000
 Charge density mixing: Broyden
- quench: [md:   0/100  scf:  14/500  step time:   3.36  scf time:    41.79 secs  RMS[dV]: 5.18e-06 ]
+ quench: [md:   0/100  scf:  14/500  step time:   3.31  scf time:    43.45 secs  RMS[dV]: 5.18e-06 ]
 
 
-average potential <V> = -9.03e-15
+average potential <V> = -8.73e-15
 Davidson converged in 3 steps
 @@ EIGENVALUE SUM     =      -68.987844 Ha
 @@ ION_ION            =     -619.580012 Ha
@@ -638,13 +638,13 @@ KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0
 
 
 Total charge in supercell =     240.00000000
- quench: [md:   0/100  scf:  15/500  step time:   2.33  scf time:    44.12 secs  RMS[dV]: 3.86e-06 ]
+ quench: [md:   0/100  scf:  15/500  step time:   2.60  scf time:    46.05 secs  RMS[dV]: 3.86e-06 ]
 
 
 
 potential convergence has been achieved. stopping ...
 
-[   0  16   16       50 ] Quench.cpp: final total energy =   -343.7892050 Ha
+[   0  16   16       51 ] Quench.cpp: final total energy =   -343.7892050 Ha
 
 
 KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
@@ -765,25 +765,31 @@ Total charge in supercell =     240.00000000
  sqrt < F^2 > =   0.00698109 Ha/a0
 
 
+ write_data: Opening output file 'Waves/wave.out.restart' failed
+  Trying to create subdirectory in case it does not exist
+
+ Creating directory Waves succesfull
+
+
 
 --------TIMING INFORMATION FOR Processor owned the most atoms----------------
                                         Total time               Per SCF/step
 
-1-TOTAL                                            50.47                3.15
+1-TOTAL                                            51.25                3.20
 -----------------------------------------------------------------------------
-  1-TOTAL: Init                                     5.94                0.37
-  1-TOTAL: run                                     44.53                2.78
+  1-TOTAL: Init                                     4.83                0.30
+  1-TOTAL: run                                     46.43                2.90
   ---------------------------------------------------------------------------
     1-TOTAL: run: Force                             0.29                0.02
-    1-TOTAL: run: Scf steps                        44.12                2.76
+    1-TOTAL: run: Scf steps                        46.05                2.88
 
 2-Force                                             0.29                0.02
 -----------------------------------------------------------------------------
   2-Force: core correction                          0.01                0.00
-  2-Force: corrections                              0.01                0.00
+  2-Force: corrections                              0.02                0.00
   2-Force: ion-ion                                  0.00                0.00
   2-Force: local                                    0.02                0.00
-  2-Force: non-local                                0.24                0.02
+  2-Force: non-local                                0.24                0.01
   ---------------------------------------------------------------------------
     2-Force: non-local: betaxpsi                    0.22                0.01
     2-Force: non-local: get gamma                   0.00                0.00
@@ -793,103 +799,103 @@ Total charge in supercell =     240.00000000
     2-Force: non-local: partial gamma               0.00                0.00
     2-Force: non-local: veff grad                   0.00                0.00
 
-2-Init                                              5.94                0.37
+2-Init                                              4.83                0.30
 -----------------------------------------------------------------------------
   2-Init: GetNewRho                                 0.05                0.00
-  2-Init: KpointClass                               0.18                0.01
-  2-Init: LcaoGetPsi                                0.35                0.02
+  2-Init: KpointClass                               0.17                0.01
+  2-Init: LcaoGetPsi                                0.34                0.02
   2-Init: LcaoGetRho                                0.01                0.00
-  2-Init: ReinitIonicPotentials                     2.54                0.16
-  2-Init: betaxpsi                                  0.46                0.03
-  2-Init: exchange/correlation                      0.08                0.00
-  2-Init: hartree                                   0.04                0.00
-  2-Init: normalization                             0.02                0.00
-  2-Init: qfunct                                    0.39                0.02
-  2-Init: radial potentials                         0.31                0.02
-  2-Init: subdiag                                   1.29                0.08
-  2-Init: weights                                   0.05                0.00
+  2-Init: ReinitIonicPotentials                     1.93                0.12
+  2-Init: betaxpsi                                  0.41                0.03
+  2-Init: exchange/correlation                      0.06                0.00
+  2-Init: hartree                                   0.03                0.00
+  2-Init: normalization                             0.03                0.00
+  2-Init: qfunct                                    0.28                0.02
+  2-Init: radial potentials                         0.26                0.02
+  2-Init: subdiag                                   0.99                0.06
+  2-Init: weights                                   0.04                0.00
 
-2-Scf steps                                        44.12                2.76
+2-Scf steps                                        46.05                2.88
 -----------------------------------------------------------------------------
-  2-Scf steps: Davidson                            30.87                1.93
-  2-Scf steps: GetNewRho                            0.73                0.05
-  2-Scf steps: Hartree                              1.04                0.07
-  2-Scf steps: MgridSubspace                        9.26                0.58
-  2-Scf steps: MixRho                               0.09                0.01
-  2-Scf steps: exchange/correlation                 1.05                0.07
+  2-Scf steps: Davidson                            32.22                2.01
+  2-Scf steps: GetNewRho                            0.79                0.05
+  2-Scf steps: Hartree                              1.13                0.07
+  2-Scf steps: MgridSubspace                        9.59                0.60
+  2-Scf steps: MixRho                               0.10                0.01
+  2-Scf steps: exchange/correlation                 1.11                0.07
 
-3-MgridSubspace                                     9.26                0.58
+3-MgridSubspace                                     9.59                0.60
 -----------------------------------------------------------------------------
-  3-MgridSubspace: AppNls                           1.19                0.07
-  3-MgridSubspace: Beta x psi                       0.99                0.06
-  3-MgridSubspace: Diagonlization                   2.50                0.16
-  3-MgridSubspace: Mg_eig                           4.58                0.29
+  3-MgridSubspace: AppNls                           1.24                0.08
+  3-MgridSubspace: Beta x psi                       1.00                0.06
+  3-MgridSubspace: Diagonlization                   2.69                0.17
+  3-MgridSubspace: Mg_eig                           4.64                0.29
 
-3-ReinitIonicPotentials                             2.54                0.16
+3-ReinitIonicPotentials                             1.93                0.12
 -----------------------------------------------------------------------------
-  3-ReinitIonicPotentials: GetNlop                  0.06                0.00
-  3-ReinitIonicPotentials: GetWeight                1.22                0.08
-  3-ReinitIonicPotentials: get_QI                   0.43                0.03
-  3-ReinitIonicPotentials: get_qqq                  0.05                0.00
-  3-ReinitIonicPotentials: init_nuc                 0.78                0.05
+  3-ReinitIonicPotentials: GetNlop                  0.10                0.01
+  3-ReinitIonicPotentials: GetWeight                0.80                0.05
+  3-ReinitIonicPotentials: get_QI                   0.25                0.02
+  3-ReinitIonicPotentials: get_qqq                  0.07                0.00
+  3-ReinitIonicPotentials: init_nuc                 0.72                0.05
 
-4-Diagonalization                                   3.79                0.24
+4-Diagonalization                                   3.68                0.23
 -----------------------------------------------------------------------------
-  4-Diagonalization: Eigensolver                    0.13                0.01
+  4-Diagonalization: Eigensolver                    0.14                0.01
   4-Diagonalization: Invert Bij                     0.02                0.00
   4-Diagonalization: MPI_Bcast                      0.00                0.00
-  4-Diagonalization: PDSYGVX/PZHEGVX                0.09                0.01
-  4-Diagonalization: Update orbitals                0.27                0.02
-  4-Diagonalization: apply operators                2.58                0.16
+  4-Diagonalization: PDSYGVX/PZHEGVX                0.10                0.01
+  4-Diagonalization: Update orbitals                0.24                0.01
+  4-Diagonalization: apply operators                2.45                0.15
   ---------------------------------------------------------------------------
-    4-Diagonalization: apply operators: AppNls           1.51                0.09
+    4-Diagonalization: apply operators: AppNls           1.58                0.10
   4-Diagonalization: distribute matrices.           0.00                0.00
   4-Diagonalization: matrix setup                   0.00                0.00
-  4-Diagonalization: matrix setup/reduce            0.81                0.05
+  4-Diagonalization: matrix setup/reduce            0.86                0.05
 
-App_cir                                             0.04                0.00
+App_cir                                             0.03                0.00
 
-App_del2                                            1.31                0.08
+App_del2                                            1.50                0.09
 -----------------------------------------------------------------------------
-  App_del2: trade images                            1.28                0.08
+  App_del2: trade images                            1.47                0.09
 
-App_gradient                                        0.15                0.01
+App_gradient                                        0.22                0.01
 -----------------------------------------------------------------------------
   App_gradient: computation                         0.06                0.00
-  App_gradient: trade images                        0.09                0.01
+  App_gradient: trade images                        0.16                0.01
 
-Davidson                                           30.87                1.93
+Davidson                                           32.22                2.01
 -----------------------------------------------------------------------------
-  Davidson: Betaxpsi                                4.92                0.31
-  Davidson: apply hamiltonian                       9.69                0.61
-  Davidson: appnls                                  6.02                0.38
-  Davidson: diagonalization                         2.68                0.17
-  Davidson: generate residuals                      1.96                0.12
-  Davidson: matrix setup/reduce                     4.50                0.28
-  Davidson: normalization                           0.11                0.01
-  Davidson: precondition                            5.41                0.34
-  Davidson: refresh h_psi and s_psi                 0.37                0.02
+  Davidson: Betaxpsi                                5.88                0.37
+  Davidson: apply hamiltonian                       9.99                0.62
+  Davidson: appnls                                  6.11                0.38
+  Davidson: diagonalization                         2.72                0.17
+  Davidson: generate residuals                      1.91                0.12
+  Davidson: matrix setup/reduce                     4.66                0.29
+  Davidson: normalization                           0.12                0.01
+  Davidson: precondition                            5.50                0.34
+  Davidson: refresh h_psi and s_psi                 0.24                0.02
   Davidson: reset hr,sr,vr                          0.00                0.00
-  Davidson: rotate orbitals                         0.79                0.05
+  Davidson: rotate orbitals                         0.81                0.05
 
-Functional                                          1.13                0.07
+Functional                                          1.17                0.07
 -----------------------------------------------------------------------------
-  Functional: apply gradient                        0.11                0.01
-  Functional: apply laplacian                       0.06                0.00
-  Functional: libxc                                 0.62                0.04
-  Functional: vxc                                   1.13                0.07
-  Functional: vxc grad                              0.81                0.05
+  Functional: apply gradient                        0.17                0.01
+  Functional: apply laplacian                       0.05                0.00
+  Functional: libxc                                 0.61                0.04
+  Functional: vxc                                   1.17                0.07
+  Functional: vxc grad                              0.87                0.05
   Functional: vxc local                             0.25                0.02
   Functional: vxc nonlocal                          0.00                0.00
 
-GlobalSums                                          0.15                0.01
+GlobalSums                                          0.14                0.01
 
-Init                                                5.76                0.36
+Init                                                4.66                0.29
 
-Mgrid_solv                                         11.35                0.71
+Mgrid_solv                                         11.38                0.71
 -----------------------------------------------------------------------------
-  Mgrid_solv: level 0                               4.59                0.29
-  Mgrid_solv: level 1                               2.91                0.18
+  Mgrid_solv: level 0                               4.61                0.29
+  Mgrid_solv: level 1                               2.92                0.18
   Mgrid_solv: level 2                               2.25                0.14
   Mgrid_solv: level 3                               1.50                0.09
 
@@ -898,62 +904,62 @@ Mix rho                                             0.10                0.01
   Mix rho: Broyden                                  0.08                0.01
   Mix rho: Linear                                   0.00                0.00
 
-Trade images                                        3.94                0.25
+Trade images                                        4.06                0.25
 -----------------------------------------------------------------------------
-  Trade images: trade_images                        3.30                0.21
-  Trade images: trade_imagesx                       1.37                0.09
+  Trade images: trade_images                        3.22                0.20
+  Trade images: trade_imagesx                       1.63                0.10
 
-VhPfft                                              1.05                0.07
+VhPfft                                              1.13                0.07
 
-Weight                                              0.05                0.00
+Weight                                              0.04                0.00
 -----------------------------------------------------------------------------
-  Weight: bcast                                     0.05                0.00
+  Weight: bcast                                     0.04                0.00
   Weight: phase and set                             0.00                0.00
   Weight: proj cal                                  0.00                0.00
 
-radial beta                                         0.09                0.01
+radial beta                                         0.07                0.00
 
 
 ------------------------- TIMING INFORMATION FOR THREADS  -------------------
 
                                            Min            Max            Avg
-App_del2                                   4.01           4.03           4.02
+App_del2                                   3.90           3.94           3.92
 -----------------------------------------------------------------------------
-  App_del2: trade images                   3.12           3.18           3.15
+  App_del2: trade images                   3.04           3.11           3.07
 
-GlobalSums                                 0.16           0.18           0.17
+GlobalSums                                 0.21           0.22           0.21
 -----------------------------------------------------------------------------
 
-Mg_eig                                     4.52           4.55           4.54
+Mg_eig                                     4.58           4.62           4.60
 -----------------------------------------------------------------------------
-  Mg_eig: apply A operator                 0.88           0.92           0.90
-  Mg_eig: apply B operator                 0.03           0.03           0.03
+  Mg_eig: apply A operator                 0.94           0.99           0.96
+  Mg_eig: apply B operator                 0.02           0.03           0.03
   Mg_eig: apply grad                       0.00           0.00           0.00
   Mg_eig: mg_prolong                       0.01           0.01           0.01
-  Mg_eig: mgrid_solv                       3.00           3.01           3.01
+  Mg_eig: mgrid_solv                       2.97           2.98           2.97
 
-Mgrid_solv                                 6.37           6.40           6.39
+Mgrid_solv                                 6.30           6.33           6.31
 -----------------------------------------------------------------------------
-  Mgrid_solv: level 1                      2.98           3.00           2.99
-  Mgrid_solv: level 2                      2.12           2.13           2.12
-  Mgrid_solv: level 3                      1.26           1.26           1.26
+  Mgrid_solv: level 1                      2.95           2.96           2.96
+  Mgrid_solv: level 2                      2.09           2.11           2.10
+  Mgrid_solv: level 3                      1.24           1.24           1.24
 
-Trade images                               5.62           5.72           5.67
+Trade images                               5.50           5.61           5.56
 -----------------------------------------------------------------------------
-  Trade images: trade_images               2.79           2.81           2.80
-  Trade images: trade_imagesx              3.08           3.15           3.12
+  Trade images: trade_images               2.75           2.77           2.76
+  Trade images: trade_imagesx              3.00           3.08           3.04
 
 
 --------TIMING INFORMATION FOR Processor owned the least atoms----------------
                                         Total time               Per SCF/step
 
-1-TOTAL                                            50.51                3.16
+1-TOTAL                                            51.32                3.21
 -----------------------------------------------------------------------------
-  1-TOTAL: Init                                     5.95                0.37
-  1-TOTAL: run                                     44.57                2.79
+  1-TOTAL: Init                                     4.85                0.30
+  1-TOTAL: run                                     46.47                2.90
   ---------------------------------------------------------------------------
     1-TOTAL: run: Force                             0.29                0.02
-    1-TOTAL: run: Scf steps                        44.12                2.76
+    1-TOTAL: run: Scf steps                        46.05                2.88
 
 2-Force                                             0.29                0.02
 -----------------------------------------------------------------------------
@@ -963,130 +969,130 @@ Trade images                               5.62           5.72           5.67
   2-Force: local                                    0.02                0.00
   2-Force: non-local                                0.23                0.01
   ---------------------------------------------------------------------------
-    2-Force: non-local: betaxpsi                    0.23                0.01
+    2-Force: non-local: betaxpsi                    0.22                0.01
     2-Force: non-local: get gamma                   0.00                0.00
     2-Force: non-local: nlforce_par_Q               0.00                0.00
     2-Force: non-local: veff grad                   0.00                0.00
 
-2-Init                                              5.95                0.37
+2-Init                                              4.85                0.30
 -----------------------------------------------------------------------------
   2-Init: GetNewRho                                 0.05                0.00
   2-Init: KpointClass                               0.19                0.01
-  2-Init: LcaoGetPsi                                0.33                0.02
+  2-Init: LcaoGetPsi                                0.34                0.02
   2-Init: LcaoGetRho                                0.01                0.00
-  2-Init: ReinitIonicPotentials                     2.64                0.17
-  2-Init: betaxpsi                                  0.45                0.03
-  2-Init: exchange/correlation                      0.08                0.00
-  2-Init: hartree                                   0.04                0.00
-  2-Init: normalization                             0.02                0.00
+  2-Init: ReinitIonicPotentials                     1.93                0.12
+  2-Init: betaxpsi                                  0.40                0.03
+  2-Init: exchange/correlation                      0.06                0.00
+  2-Init: hartree                                   0.03                0.00
+  2-Init: normalization                             0.03                0.00
   2-Init: qfunct                                    0.29                0.02
-  2-Init: radial potentials                         0.31                0.02
-  2-Init: subdiag                                   1.29                0.08
-  2-Init: weights                                   0.09                0.01
+  2-Init: radial potentials                         0.29                0.02
+  2-Init: subdiag                                   0.99                0.06
+  2-Init: weights                                   0.03                0.00
 
-2-Scf steps                                        44.12                2.76
+2-Scf steps                                        46.05                2.88
 -----------------------------------------------------------------------------
-  2-Scf steps: Davidson                            30.86                1.93
-  2-Scf steps: GetNewRho                            0.73                0.05
-  2-Scf steps: Hartree                              1.04                0.06
-  2-Scf steps: MgridSubspace                        9.26                0.58
-  2-Scf steps: MixRho                               0.09                0.01
-  2-Scf steps: exchange/correlation                 1.04                0.06
+  2-Scf steps: Davidson                            32.22                2.01
+  2-Scf steps: GetNewRho                            0.79                0.05
+  2-Scf steps: Hartree                              1.16                0.07
+  2-Scf steps: MgridSubspace                        9.59                0.60
+  2-Scf steps: MixRho                               0.10                0.01
+  2-Scf steps: exchange/correlation                 1.11                0.07
 
-3-MgridSubspace                                     9.26                0.58
+3-MgridSubspace                                     9.59                0.60
 -----------------------------------------------------------------------------
   3-MgridSubspace: AppNls                           1.03                0.06
-  3-MgridSubspace: Beta x psi                       1.00                0.06
-  3-MgridSubspace: Diagonlization                   2.49                0.16
-  3-MgridSubspace: Mg_eig                           4.73                0.30
+  3-MgridSubspace: Beta x psi                       1.02                0.06
+  3-MgridSubspace: Diagonlization                   2.67                0.17
+  3-MgridSubspace: Mg_eig                           4.86                0.30
 
-3-ReinitIonicPotentials                             2.64                0.17
+3-ReinitIonicPotentials                             1.93                0.12
 -----------------------------------------------------------------------------
-  3-ReinitIonicPotentials: GetNlop                  0.47                0.03
-  3-ReinitIonicPotentials: GetWeight                0.77                0.05
+  3-ReinitIonicPotentials: GetNlop                  0.34                0.02
+  3-ReinitIonicPotentials: GetWeight                0.76                0.05
   3-ReinitIonicPotentials: get_QI                   0.01                0.00
-  3-ReinitIonicPotentials: get_qqq                  0.50                0.03
-  3-ReinitIonicPotentials: init_nuc                 0.89                0.06
+  3-ReinitIonicPotentials: get_qqq                  0.10                0.01
+  3-ReinitIonicPotentials: init_nuc                 0.72                0.04
 
-4-Diagonalization                                   3.78                0.24
+4-Diagonalization                                   3.66                0.23
 -----------------------------------------------------------------------------
-  4-Diagonalization: Eigensolver                    0.13                0.01
+  4-Diagonalization: Eigensolver                    0.14                0.01
   4-Diagonalization: Invert Bij                     0.02                0.00
   4-Diagonalization: MPI_Bcast                      0.00                0.00
-  4-Diagonalization: PDSYGVX/PZHEGVX                0.09                0.01
-  4-Diagonalization: Update orbitals                0.25                0.02
-  4-Diagonalization: apply operators                2.59                0.16
+  4-Diagonalization: PDSYGVX/PZHEGVX                0.10                0.01
+  4-Diagonalization: Update orbitals                0.22                0.01
+  4-Diagonalization: apply operators                2.46                0.15
   ---------------------------------------------------------------------------
-    4-Diagonalization: apply operators: AppNls           1.56                0.10
+    4-Diagonalization: apply operators: AppNls           1.88                0.12
   4-Diagonalization: distribute matrices.           0.00                0.00
   4-Diagonalization: matrix setup                   0.00                0.00
-  4-Diagonalization: matrix setup/reduce            0.81                0.05
+  4-Diagonalization: matrix setup/reduce            0.85                0.05
 
 App_cir                                             0.03                0.00
 
-App_del2                                            1.61                0.10
+App_del2                                            1.58                0.10
 -----------------------------------------------------------------------------
-  App_del2: trade images                            1.59                0.10
+  App_del2: trade images                            1.54                0.10
 
-App_gradient                                        0.23                0.01
+App_gradient                                        0.26                0.02
 -----------------------------------------------------------------------------
-  App_gradient: computation                         0.05                0.00
-  App_gradient: trade images                        0.18                0.01
+  App_gradient: computation                         0.06                0.00
+  App_gradient: trade images                        0.20                0.01
 
-Davidson                                           30.86                1.93
+Davidson                                           32.22                2.01
 -----------------------------------------------------------------------------
-  Davidson: Betaxpsi                                5.04                0.31
-  Davidson: apply hamiltonian                       9.78                0.61
-  Davidson: appnls                                  5.32                0.33
-  Davidson: diagonalization                         2.69                0.17
-  Davidson: generate residuals                      1.90                0.12
-  Davidson: matrix setup/reduce                     4.43                0.28
+  Davidson: Betaxpsi                                5.75                0.36
+  Davidson: apply hamiltonian                      10.07                0.63
+  Davidson: appnls                                  5.71                0.36
+  Davidson: diagonalization                         2.71                0.17
+  Davidson: generate residuals                      1.83                0.11
+  Davidson: matrix setup/reduce                     4.59                0.29
   Davidson: normalization                           0.12                0.01
-  Davidson: precondition                            5.49                0.34
-  Davidson: refresh h_psi and s_psi                 0.25                0.02
+  Davidson: precondition                            5.59                0.35
+  Davidson: refresh h_psi and s_psi                 0.36                0.02
   Davidson: reset hr,sr,vr                          0.00                0.00
-  Davidson: rotate orbitals                         0.77                0.05
+  Davidson: rotate orbitals                         0.82                0.05
 
-Functional                                          1.11                0.07
+Functional                                          1.17                0.07
 -----------------------------------------------------------------------------
-  Functional: apply gradient                        0.17                0.01
-  Functional: apply laplacian                       0.06                0.00
-  Functional: libxc                                 0.57                0.04
-  Functional: vxc                                   1.11                0.07
-  Functional: vxc grad                              0.84                0.05
-  Functional: vxc local                             0.23                0.01
+  Functional: apply gradient                        0.20                0.01
+  Functional: apply laplacian                       0.05                0.00
+  Functional: libxc                                 0.60                0.04
+  Functional: vxc                                   1.17                0.07
+  Functional: vxc grad                              0.89                0.06
+  Functional: vxc local                             0.24                0.02
   Functional: vxc nonlocal                          0.00                0.00
 
-GlobalSums                                          0.64                0.04
+GlobalSums                                          0.54                0.03
 
-Init                                                5.76                0.36
+Init                                                4.66                0.29
 
-Mgrid_solv                                         11.36                0.71
+Mgrid_solv                                         11.38                0.71
 -----------------------------------------------------------------------------
-  Mgrid_solv: level 0                               4.60                0.29
+  Mgrid_solv: level 0                               4.62                0.29
   Mgrid_solv: level 1                               2.91                0.18
-  Mgrid_solv: level 2                               2.25                0.14
+  Mgrid_solv: level 2                               2.24                0.14
   Mgrid_solv: level 3                               1.50                0.09
 
 Mix rho                                             0.10                0.01
 -----------------------------------------------------------------------------
-  Mix rho: Broyden                                  0.08                0.01
+  Mix rho: Broyden                                  0.09                0.01
   Mix rho: Linear                                   0.00                0.00
 
-Trade images                                        4.25                0.27
+Trade images                                        4.20                0.26
 -----------------------------------------------------------------------------
   Trade images: trade_images                        3.26                0.20
-  Trade images: trade_imagesx                       1.77                0.11
+  Trade images: trade_imagesx                       1.75                0.11
 
-VhPfft                                              1.05                0.07
+VhPfft                                              1.15                0.07
 
-Weight                                              0.09                0.01
+Weight                                              0.03                0.00
 -----------------------------------------------------------------------------
-  Weight: bcast                                     0.06                0.00
+  Weight: bcast                                     0.01                0.00
   Weight: phase and set                             0.00                0.00
   Weight: proj cal                                  0.02                0.00
 
-radial beta                                         0.14                0.01
+radial beta                                         0.09                0.01
 
 weight fft_forward                                  0.00                0.00
 
@@ -1098,28 +1104,28 @@ weight fold                                         0.00                0.00
 ------------------------- TIMING INFORMATION FOR THREADS  -------------------
 
                                            Min            Max            Avg
-App_del2                                   4.54           4.54           4.54
+App_del2                                   4.16           4.19           4.17
 -----------------------------------------------------------------------------
-  App_del2: trade images                   3.64           3.67           3.66
+  App_del2: trade images                   3.29           3.31           3.30
 
-GlobalSums                                 0.15           0.20           0.18
+GlobalSums                                 0.19           0.23           0.21
 -----------------------------------------------------------------------------
 
-Mg_eig                                     4.71           4.71           4.71
+Mg_eig                                     4.84           4.84           4.84
 -----------------------------------------------------------------------------
-  Mg_eig: apply A operator                 1.01           1.03           1.02
+  Mg_eig: apply A operator                 1.14           1.16           1.15
   Mg_eig: apply B operator                 0.03           0.03           0.03
   Mg_eig: apply grad                       0.00           0.00           0.00
-  Mg_eig: mg_prolong                       0.02           0.02           0.02
-  Mg_eig: mgrid_solv                       3.00           3.01           3.00
+  Mg_eig: mg_prolong                       0.01           0.01           0.01
+  Mg_eig: mgrid_solv                       2.97           2.98           2.97
 
-Mgrid_solv                                 6.37           6.41           6.39
+Mgrid_solv                                 6.31           6.34           6.32
 -----------------------------------------------------------------------------
-  Mgrid_solv: level 1                      2.98           2.99           2.99
-  Mgrid_solv: level 2                      2.12           2.13           2.13
-  Mgrid_solv: level 3                      1.26           1.26           1.26
+  Mgrid_solv: level 1                      2.95           2.96           2.95
+  Mgrid_solv: level 2                      2.10           2.11           2.10
+  Mgrid_solv: level 3                      1.24           1.24           1.24
 
-Trade images                               6.13           6.20           6.16
+Trade images                               5.73           5.80           5.77
 -----------------------------------------------------------------------------
-  Trade images: trade_images               2.78           2.79           2.79
-  Trade images: trade_imagesx              3.60           3.64           3.62
+  Trade images: trade_images               2.74           2.76           2.75
+  Trade images: trade_imagesx              3.25           3.28           3.27
