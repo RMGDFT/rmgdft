@@ -197,8 +197,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Bravais Lattice Type.\n", 
                      "bravais_lattice_type not found.\n");
 
-    If.RegisterInputKey("start_mode", NULL, &lc.runflag, "",
-                     CHECK_AND_TERMINATE, REQUIRED, start_mode,
+    If.RegisterInputKey("start_mode", NULL, &lc.runflag, "LCAO Start",
+                     CHECK_AND_TERMINATE, OPTIONAL, start_mode,
                      "Type of run. Choices are \"Random Start\", \"Restart From File\", or \"LCAO Start\".\n", 
                      "start_mode must be one of  \"Random Start\", \"Restart From File\", or \"LCAO Start\". Terminating.\n");
 
@@ -254,7 +254,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "atomic_coordinate_type must be either \"Absolute\" or \"Cell Relative\". Terminating.\n");
 
     If.RegisterInputKey("calculation_mode", NULL, &lc.forceflag, "Quench Electrons",
-                     CHECK_AND_TERMINATE, REQUIRED, calculation_mode,
+                     CHECK_AND_TERMINATE, OPTIONAL, calculation_mode,
                      "Type of calculation to perform.\n", 
                      "calculation_mode not available.\n");
 
