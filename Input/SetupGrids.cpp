@@ -1,3 +1,4 @@
+void fix_anisotropy(int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm);
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -24,6 +25,76 @@
 #include "InputOpts.h"
 #include "grid.h"
 
+/*Check and fix anisotropy*/
+void fix_anisotropy(int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm)
+{
+    int counter = 0;
+    double anisotropy = 100.0;
+    int MAX_TRIES = 20;
+
+    double spacing_x, spacing_y, spacing_z, min_spacing, max_spacing, cellx, celly, cellz;
+    int *gmax_p;
+
+    /*celldm in x and y direction is relative to x*/
+    cellx = celldm[0];
+    celly = celldm[1] * celldm[0];
+    cellz = celldm[2] * celldm[0];
+
+
+    while (anisotropy > 1.1) 
+    {
+	/*Check anisotropy*/
+	spacing_x = cellx / NX_GRID;
+
+	min_spacing = spacing_x;
+	max_spacing = spacing_x;
+	gmax_p = &NX_GRID;
+
+
+	spacing_y = celly / NY_GRID;
+
+	if (spacing_y < min_spacing) min_spacing = spacing_y;
+	if (spacing_y > max_spacing) 
+	{
+	    max_spacing = spacing_y;
+	    gmax_p = &NY_GRID;
+	}
+
+
+	spacing_z = cellz / NZ_GRID;
+
+	if (spacing_z < min_spacing) min_spacing = spacing_z;
+	if (spacing_z > max_spacing) 
+	{
+	    max_spacing = spacing_z;
+	    gmax_p = &NZ_GRID;
+	}
+
+	/*If anisotropy is too large, increase number of grid points in the direction with maximum spacing */
+	anisotropy = max_spacing / min_spacing;
+	
+	if (  (pct.imgpe == 0) && (ct.verbose ==1))
+	    printf ("\n fix_anisotropy: %d cycles, %f anisotropy, x y z spacings: %.3f %.3f %.3f grids: %d %d %d celldm: %f %f %f ", counter, anisotropy, spacing_x, spacing_y, spacing_z, NX_GRID, NY_GRID, NZ_GRID,  celldm[0], celldm[1],  celldm[2] );
+	
+	if ( anisotropy > 1.1 ) 
+	    *gmax_p += 4;
+
+	counter ++;
+        
+	if (counter > MAX_TRIES)
+	    rmg_error_handler (__FILE__, __LINE__, "Could not automatically determine number of grids, please set up wavefunction_grid option in input file.");
+    }
+
+    
+    if (counter > 1)
+    {
+        if (pct.imgpe == 0)
+	{
+	    printf ("\n Automatically adjusting grid to achieve acceptable anisotropy: %d cycles, x y z spacings %.3f %.3f %.3f", counter, spacing_x, spacing_y, spacing_z);
+	}
+    }
+
+}
 
 
 // Sets up both processor grid and wavefunction grid at the same time
@@ -58,6 +129,8 @@ void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *cell
         NX_GRID = (ix <= 2) ? NX_GRID - ix: NX_GRID + 4 - ix;
         NY_GRID = (iy <= 2) ? NY_GRID - iy: NY_GRID + 4 - iy;
         NZ_GRID = (iz <= 2) ? NZ_GRID - iz: NZ_GRID + 4 - iz;
+	
+	fix_anisotropy(NX_GRID, NY_GRID, NZ_GRID, celldm);
 
         // Find all of the prime factors of each
         std::vector<int> n_factors[3] = {{1},{1},{1}};
@@ -197,6 +270,8 @@ void SetupWavefunctionGrid(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, d
     NX_GRID = (ix <= 2) ? NX_GRID - ix: NX_GRID + 4 - ix;
     NY_GRID = (iy <= 2) ? NY_GRID - iy: NY_GRID + 4 - iy;
     NZ_GRID = (iz <= 2) ? NZ_GRID - iz: NZ_GRID + 4 - iz;
+	
+    fix_anisotropy(NX_GRID, NY_GRID, NZ_GRID, celldm);
 
 }
 
