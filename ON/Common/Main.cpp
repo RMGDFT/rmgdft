@@ -298,7 +298,8 @@ int main(int argc, char **argv)
 
 
     if(pct.imgpe == 0) fclose(ct.logfile);
-    RmgPrintTimings(Rmg_G, ct.logname, ct.scf_steps);
+    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe);
+
 
 
     MPI_Finalize();

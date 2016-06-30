@@ -2,7 +2,7 @@ description="Black Phosphorus"
 
 #processor_grid="4 2 1"
 
-wavefunction_grid="20 64 28"
+#wavefunction_grid="20 64 28"
 
 subdiag_driver = "lapack"
 kohn_sham_mg_levels = "2"

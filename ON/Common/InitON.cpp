@@ -162,7 +162,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     init_nl_xyz();
     get_ion_orbit_overlap_nl(states);
 
-    get_nlop();
+    GetNlop_on();
 
     my_barrier();
     delete(RT2);
@@ -182,7 +182,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     RmgTimer *RT5 = new RmgTimer("1-TOTAL: init: init_QI");
 
     fflush(NULL);
-    get_QI();
+    GetQI();
     delete(RT5);
     RmgTimer *RT6 = new RmgTimer("1-TOTAL: init: init_qqq");
 

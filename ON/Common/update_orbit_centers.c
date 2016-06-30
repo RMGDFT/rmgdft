@@ -150,7 +150,8 @@ void update_orbit_centers(STATE * states)
 
     /* Initialize Non-local operators */
     get_ion_orbit_overlap_nl(states);
-    get_nlop();
+ //   get_nlop();
+    exit(0);
     init_nonlocal_comm();
 
     my_free(new_centers);

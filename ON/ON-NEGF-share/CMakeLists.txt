@@ -28,7 +28,7 @@ get_all_kbpsi.c
 get_all_partial_kbpsi.c
 get_Hvnlij.c
 get_ion_orbit_overlap_nl.c
-get_nlop.c
+GetNlop_on.cpp
 get_orbit_overlap_region.c
 get_start.c
 global_sums_int.c

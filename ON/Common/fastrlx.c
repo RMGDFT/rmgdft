@@ -181,12 +181,13 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
             /* Initialize Non-local operators */
             init_nl_xyz();
             get_ion_orbit_overlap_nl(states);
-            get_nlop();
+            //get_nlop();
+            exit(0);
             init_nonlocal_comm();
 
             /* Initialize qfuction in Cartesin coordinates */
             init_qfunct();
-            get_QI();
+            //GetQI();
 
             /* Get the qqq */
             get_qqq();

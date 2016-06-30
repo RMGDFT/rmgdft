@@ -19,6 +19,7 @@ double gaussintegral(double, int);
 void DipoleCorrection(double *rho, double *rhoc, double *vcorr, double *vhx, double *vhy, double *vhz);
 void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, double *r0);
 void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc);
+void GetNlop_on(void);
 
 
 #ifdef __cplusplus

@@ -10,13 +10,13 @@
 #include "main.h"
 #include "prototypes_on.h"
 
-void weight_shift(SPECIES *sp, fftw_complex *weptr);
+//void weight_shift(SPECIES *sp, fftw_complex *weptr);
 void assign_weight_on(SPECIES * sp, fftw_complex * weptr, double * rtptr)
 {
 
     int idx, ix, iy, iz;
 
-    weight_shift_center(sp, weptr);
+//    weight_shift_center(sp, weptr);
     idx = 0;
     for (ix = 0; ix < sp->nldim; ix++)
     {

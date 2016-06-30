@@ -25,7 +25,7 @@ ylmr2.c
 linint.c
 get_QnmL.c
 radiff.c
-init_weight.c
+#init_weight.c
 ylm.c
 GetQI.cpp
 get_qqq.c
