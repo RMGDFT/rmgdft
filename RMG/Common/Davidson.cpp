@@ -114,17 +114,21 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     double *eigsw = new double[ct.max_states];
     bool *converged = new bool[ct.max_states]();
 
-    OrbitalType *hr = new OrbitalType[ct.max_states * ct.max_states]();
-    OrbitalType *sr = new OrbitalType[ct.max_states * ct.max_states]();
-    OrbitalType *vr = new OrbitalType[ct.max_states * ct.max_states]();
-    for(int idx = 0;idx < nstates;idx++) vr[idx*ct.max_states + idx] = OrbitalType(1.0);
 
 #if GPU_ENABLED
     cublasStatus_t custat;
     OrbitalType *h_psi = (OrbitalType *)GpuMallocHost(pbasis * ct.max_states * sizeof(OrbitalType));
+    OrbitalType *hr = (OrbitalType *)GpuMallocHost(ct.max_states * ct.max_states * sizeof(OrbitalType));
+    OrbitalType *sr = (OrbitalType *)GpuMallocHost(ct.max_states * ct.max_states * sizeof(OrbitalType));
+    OrbitalType *vr = (OrbitalType *)GpuMallocHost(ct.max_states * ct.max_states * sizeof(OrbitalType));
 #else
     OrbitalType *h_psi = new OrbitalType[pbasis * ct.max_states];
+    OrbitalType *hr = new OrbitalType[ct.max_states * ct.max_states]();
+    OrbitalType *sr = new OrbitalType[ct.max_states * ct.max_states]();
+    OrbitalType *vr = new OrbitalType[ct.max_states * ct.max_states]();
 #endif
+
+    for(int idx = 0;idx < nstates;idx++) vr[idx*ct.max_states + idx] = OrbitalType(1.0);
 
     // short version
     OrbitalType *psi = kptr->orbital_storage;
@@ -369,11 +373,19 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
             // Rotate orbitals
             RT1 = new RmgTimer("Davidson: rotate orbitals");
+#if GPU_ENABLED
+            OrbitalType *npsi = (OrbitalType *)GpuMallocHost(nstates*pbasis*sizeof(OrbitalType));
+#else
             OrbitalType *npsi = new OrbitalType[nstates*pbasis];
+#endif
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, npsi, pbasis, 
                 NULLptr, NULLptr, NULLptr, false, false, false, false);
             for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = npsi[idx];
+#if GPU_ENABLED
+            GpuFreeHost(npsi);
+#else
             delete [] npsi;
+#endif
             delete RT1;
 
             if(notconv == 0) {
@@ -423,14 +435,17 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
 
 #if GPU_ENABLED
+    GpuFreeHost(vr);
+    GpuFreeHost(sr);
+    GpuFreeHost(hr);
     GpuFreeHost(h_psi);
 #else
-    delete [] h_psi;
-#endif
-
     delete [] vr;
     delete [] sr;
     delete [] hr;
+    delete [] h_psi;
+#endif
+
     delete [] converged;
     delete [] eigsw;
     delete [] eigs;

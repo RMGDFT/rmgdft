@@ -43,7 +43,7 @@
 #if GPU_ENABLED
 #if MAGMA_LIBS
 #include <magma.h>
-#include <magmablas.h>
+//#include <magmablas.h>
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>

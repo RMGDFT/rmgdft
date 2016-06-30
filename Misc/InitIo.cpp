@@ -76,7 +76,7 @@
 #if GPU_ENABLED
     #if MAGMA_LIBS
         #include <magma.h>
-        #include <magmablas.h>
+        //#include <magmablas.h>
     #endif
 
     #include <cuda.h>
