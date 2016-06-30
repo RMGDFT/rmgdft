@@ -1,4 +1,6 @@
+if(USE_LIBXC)
 add_dependencies(${rmg} libxc)
+endif(USE_LIBXC)
 target_link_libraries(${rmg} ${LIBXC_LIBRARIES})
 add_dependencies(${rmg} libspg)
 target_link_libraries( ${rmg} ${LIBSPG_LIBRARIES})
