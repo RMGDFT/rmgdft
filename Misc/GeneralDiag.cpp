@@ -51,6 +51,9 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
+#if MAGMA_LIBS
+    #include <magma.h>
+#endif
 #endif
 
 
@@ -92,9 +95,11 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
                 info = GeneralDiagScaLapack((double *)A, (double *)B, eigs, (double *)V, N, M, ld);
             }
             break;
+#if MAGMA_LIBS
         case SUBDIAG_MAGMA:
-            //          info = GeneralDiagMagma(A, B, eigs, V, N, M, ld);
+                info = GeneralDiagMagma(A, B, eigs, V, N, M, ld);
             break;
+#endif
         default:
             throw RmgFatalException() << "Invalid diagonalization driver type in " << __FILE__ << " at line " << __LINE__ << "\n";
 
@@ -315,3 +320,71 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
 #endif
 
 }
+
+
+#if MAGMA_LIBS
+template int GeneralDiagMagma<double>(double *A, double *B, double *eigs, double *V, int N, int M, int ld);
+template int GeneralDiagMagma<std::complex<double>>(std::complex<double> *A, std::complex<double> *B, double *eigs, std::complex<double> *V,
+int N, int M, int ld);
+
+
+template <typename KpointType>
+int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld)
+{
+
+    int info = 0;
+    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+
+    if(N < M) throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
+    if(pct.is_local_master) {
+
+        int *ifail = new int[N];
+        int liwork = 6*N;
+        int *iwork = new int[liwork];
+        int eigs_found;
+        double vx = 0.0;
+        double tol = 1.0e-15;
+
+        KpointType *Asave = new KpointType[N*ld];
+        KpointType *Bsave = new KpointType[N*ld];
+        for(int i = 0;i < N*ld;i++) Asave[i] = A[i];
+        for(int i = 0;i < N*ld;i++) Bsave[i] = B[i];
+
+        int itype = 1, ione = 1;
+        int lwork = 3 * N * N + 6 * N;
+        //int lwork = 6 * N * N + 6 * N + 2;
+        double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
+
+        if(M == N) {
+            magma_dsygvd(itype, MagmaVec, MagmaLower, N, (double *)A, ld, (double *)B, ld, eigs, work, lwork, iwork, liwork, &info);
+            for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
+        }
+        else if(N > M) {
+            magma_dsygvdx (itype, MagmaVec, MagmaRangeI, MagmaLower, N, (double *)A, ld, (double *)B, ld,
+                    vx, vx, ione, M,  &eigs_found, eigs, work, lwork, iwork, liwork, &info);
+            for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
+        }
+
+
+        GpuFreeHost(work);
+
+        for(int i=0;i < N*ld;i++) A[i] = Asave[i];
+        for(int i=0;i < N*ld;i++) B[i] = Bsave[i];
+        delete [] Bsave;
+        delete [] Asave;
+        delete [] iwork;
+        delete [] ifail;
+
+    } // end if pct.is_local_master
+
+    // If only one proc on this host participated broadcast results to the rest
+    if(pct.procs_per_host > 1) {
+        int factor = 2;
+        if(ct.is_gamma) factor = 1;
+        MPI_Bcast(V, factor * M*ld, MPI_DOUBLE, 0, pct.local_comm);
+        MPI_Bcast(eigs, M, MPI_DOUBLE, 0, pct.local_comm);
+        MPI_Bcast(&info, 1, MPI_INT, 0, pct.local_comm);
+    }
+    return info;
+}
+#endif
