@@ -116,6 +116,9 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
             else if(!nstr.compare("SLAPWGGXGGC")) {
                 short_names.push_back("PW91");
             }
+            else if(!nstr.compare("LDA")) {
+                short_names.push_back("PZ");
+            }
             else {
                 throw RmgFatalException() << "Unknown XC type in " << __FILE__ << " at line " << __LINE__ << ". Terminating.\n";
             }
