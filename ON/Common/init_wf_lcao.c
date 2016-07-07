@@ -154,9 +154,6 @@ static void atomic_wave_to_orbital(STATE *st, SPECIES *sp, int ip, int l, int m)
     c = (sp->r[0] * exp(b) - sp->r[1])/(1.0 -exp(b) );
     a = sp->r[0] + c;
 
-    for(ix = 0; ix < sp->rg_points; ix++)printf("\n %f %f  rrrr", sp->r[ix], sp->atomic_wave[ip][ix]);
-    printf("\n &&  rrrr");
-
 
     for(ix = 0; ix < ixx; ix++ )
     {

@@ -13,6 +13,7 @@
 #include "RmgTimer.h"
 #include "transition.h"
 #include "blas.h"
+#include "Functional.h"
 
 
 #include "prototypes_on.h"
@@ -34,8 +35,8 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     dcopy(&nfp0, vxc, &ione, vxc_old, &ione);
     dcopy(&nfp0, vh, &ione, vh_old, &ione);
 
-    /* Generate exchange-correlation potential */
-    get_vxc(rho, rho_oppo, rhocore, vxc);
+
+//    get_vxc(rho, rho_oppo, rhocore, vxc);
 
     pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
 
@@ -52,6 +53,13 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
         for (idx = 0; idx < nfp0; idx++) 
             rho_tot[idx] = rho[idx] ;
     }
+
+    /* Generate exchange-correlation potential */
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    double vtxc;
+    F->v_xc(rho_tot, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
+    delete F;
+
 
     double rms_target = ct.rms/ct.hartree_rms_ratio;
     VhDriver(rho_tot, rhoc, vh, ct.vh_ext, rms_target);
@@ -70,4 +78,5 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     get_vtot_psi(vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
 }
+
 

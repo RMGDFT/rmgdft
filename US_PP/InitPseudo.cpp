@@ -121,14 +121,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         sp->ldim = sp->ldim/2 * 2 +1;
         sp->lradius = 0.5 * ct.hmingrid * (double)(sp->ldim-1) / (double)Rmg_G->default_FG_RATIO;
         sp->lradius -= 0.5 * ct.hmingrid / (double)Rmg_G->default_FG_RATIO;
-        sp->ldim_fine = sp->ldim *ct.nxfgrid/Rmg_G->default_FG_RATIO;
-        if(ct.nxfgrid %Rmg_G->default_FG_RATIO != 0)
-        {
-            sp->ldim_fine = sp->ldim *2;
-            printf("\n WARNING::   FG_RATIO %d is not a factor of ct.nxfgrid %d\n",
-                    Rmg_G->default_FG_RATIO , ct.nxfgrid);
-            fflush(NULL);
-        }
+        sp->ldim_fine = sp->ldim ;
 
 
 

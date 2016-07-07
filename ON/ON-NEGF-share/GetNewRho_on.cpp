@@ -22,6 +22,10 @@
 
 #include "my_scalapack.h"
 #include "blas.h"
+#include "RmgParallelFft.h"
+#include "BaseGrid.h"
+
+
 
 extern "C" void GetNewRho_on_c(STATE * states, double *rho, double *rho_matrix)
 {
@@ -114,7 +118,23 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
     delete(RT3);
 
     RmgTimer *RT4 = new RmgTimer("3-get_new_rho: interpolation");
-    mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
+    /* Interpolate onto fine grid, result will be stored in rho*/
+    switch (ct.interp_flag)
+    {
+        case PROLONG_INTERPOLATION:
+            mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
+            break;
+        case FFT_INTERPOLATION:
+            //FftFilter(work, *coarse_pwaves, ct.cparm, LOW_PASS);  // limit to G-vectors within the inscribed sphere
+            FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO);
+            break;
+        default:
+            //Dprintf ("charge interpolation is set to %d", ct.interp_flag);
+            printf("\n ct.interp_flag = %d", ct.interp_flag);
+            rmg_error_handler (__FILE__, __LINE__, "ct.interp_flag is set to an invalid value.");
+
+
+    }
 
     delete [] rho_temp;
 
@@ -135,3 +155,5 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 
 
 }
+
+

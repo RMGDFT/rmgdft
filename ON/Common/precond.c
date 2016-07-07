@@ -16,6 +16,7 @@ void precond(double *x)
     int idx;
     int istate;
 
+    int nx = ct.max_orbit_nx;
 
     my_malloc_init( work1, 4 * ct.max_orbit_size, double );
     my_malloc_init( work2, 4 * ct.max_orbit_size, double );
@@ -38,9 +39,10 @@ void precond(double *x)
         precond_mg(sp, work1, work2, istate);
         app_mask(istate, work1, 0);
 
+
         for (idx = 0; idx < states[istate].size; idx++)
         {
-            sp[idx] = work1[idx];
+            sp[idx] = 0.5 * work1[idx];
         }
 
     }

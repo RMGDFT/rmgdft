@@ -60,7 +60,7 @@ extern "C" int __funct_MOD_get_inlc(void);
 bool Functional::dft_set=false;
 std::string Functional::saved_dft_name;
 
-#define SMALL_CHARGE 1.0e-10
+double SMALL_CHARGE=1.0e-10;
 
 // Utility function to convert a c-string to a fixed length fortran string
 void CstrToFortran(char* fstring, std::size_t flen, const char* cstring)
@@ -198,13 +198,23 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
                v[ix] = vx[0] + vc[0];
                etxc = etxc + ( ex + ec ) * trho;
                vtxc = vtxc + v[ix] * rho[ix];
- 
+
+           }
+
+           else {
+            double rhotem = SMALL_CHARGE * (1.0 + SMALL_CHARGE);
+               __funct_MOD_xc( &rhotem, &ex, &ec, &vx[0], &vc[0] );
+               double frac = std::cbrt(atrho/SMALL_CHARGE);
+               v[ix] = (vx[0] + vc[0]) * frac;
+               etxc = etxc + ( ex + ec ) * trho * frac;
+               vtxc = vtxc + v[ix] * rho[ix];
+                
            }
 
            if(rho[ix] < 0.0) rhoneg[0] = rhoneg[0] - rho[ix];
 
        } 
-       
+
    } 
    delete RT2;
 
@@ -247,7 +257,7 @@ void Functional::nlc(double *rho, double *rho_core, double &etxc, double &vtxc, 
         throw RmgFatalException() << "Non-local correlation correction type not programmed" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
     }
-    
+
 }
 
 // Applies any gradient corrections
@@ -315,7 +325,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                 // 
                 vtxcgc = vtxcgc+( v1x + v1c ) * ( rhoout[k] - rho_core[k] );
                 etxcgc = etxcgc+( sx + sc ) * segno;
-             
+
             }
         }
     }
@@ -337,8 +347,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     for(int ix=0;ix < this->pbasis;ix++) {
 
         v[ix] -= ( h[ix] * gx[ix] +
-                      h[ix+this->pbasis] * gy[ix] + 
-                      h[ix+2*this->pbasis] * gz[ix] ) ;
+                h[ix+this->pbasis] * gy[ix] + 
+                h[ix+2*this->pbasis] * gz[ix] ) ;
         v[ix] -= vxc2[ix] * d2rho[ix];
 
     }

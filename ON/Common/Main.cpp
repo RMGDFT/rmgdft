@@ -253,17 +253,7 @@ int main(int argc, char **argv)
 
         /* Save data to output file */
         RmgTimer *RTw = new RmgTimer("1-TOTAL: write");
-        write_rho_x(vh, "vh_xxx");
-        write_rho_y(vh, "vh_yyy");
 
-        write_rho_z(vh, "vh_zzz");
-        write_rho_z(vxc, "vxc_zzz");
-        write_rho_z(vnuc, "vnuc_zzz");
-        write_rho_z(vh_corr, "vh_corr_zzz");
-        write_rho_z(rho, "rho_zzz");
-
-        write_rho_x(vh_corr, "vh_xxx");
-        write_rho_y(vh_corr, "vh_yyy");
         write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]); 
 
         /* Save state information to file */

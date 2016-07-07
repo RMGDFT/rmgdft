@@ -146,7 +146,7 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
 
 
     /* Evaluate XC energy and potential */
-    get_vxc_exc(nrho, nrho_oppo, vxc, exc, ct.xctype);
+    //get_vxc_exc(nrho, nrho_oppo, vxc, exc, ct.xctype);
 
 
     esum[1] = 0.0;
@@ -154,17 +154,17 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
 
     if (ct.spin_flag)
     {
-	mag = 0.0;    
-    	for (idx = 0; idx < FP0_BASIS; idx++)
-	{
-        	esum[1] += (rho[idx] + rho_oppo[idx] + rhocore[idx]) * (exc[idx]);
-		mag += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
+        mag = 0.0;    
+        for (idx = 0; idx < FP0_BASIS; idx++)
+        {
+            esum[1] += (rho[idx] + rho_oppo[idx] + rhocore[idx]) * (exc[idx]);
+            mag += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
         }
     }
     else
     {
-    	for (idx = 0; idx < FP0_BASIS; idx++)
-        	esum[1] += (rhocore[idx] + rho[idx]) * exc[idx];
+        for (idx = 0; idx < FP0_BASIS; idx++)
+            esum[1] += (rhocore[idx] + rho[idx]) * exc[idx];
     }
 
 
@@ -176,19 +176,19 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     /*Sum emergies over all processors */
     if (ct.spin_flag)
     {
-    	global_sums (esum, &two, pct.grid_comm);
-    	global_sums (&esum[2], &one, pct.img_comm);  
-    	global_sums (&mag, &one, pct.grid_comm); 
+        global_sums (esum, &two, pct.grid_comm);
+        global_sums (&esum[2], &one, pct.img_comm);  
+        global_sums (&mag, &one, pct.grid_comm); 
     }
     else
-    	global_sums (esum, &three, pct.grid_comm);
+        global_sums (esum, &three, pct.grid_comm);
 
 
     /*Electrostatic E */
     ct.ES = 0.5 * vel * esum[0];
 
     /* XC E */
-    ct.XC = vel * esum[1];
+    //ct.XC = vel * esum[1];
 
 
     /*XC potential energy */
@@ -201,8 +201,8 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
         ct.II = 0.0;
         for (i = 0; i < ct.num_ions; i++)
             ct.II -= (ct.sp[ct.ions[i].species].zvalence *
-                      ct.sp[ct.ions[i].species].zvalence /
-                      ct.sp[ct.ions[i].species].rc) / sqrt (2.0 * PI);
+                    ct.sp[ct.ions[i].species].zvalence /
+                    ct.sp[ct.ions[i].species].rc) / sqrt (2.0 * PI);
 
 
         for (i = 0; i < ct.num_ions; i++)
@@ -211,7 +211,7 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
             iptr1 = &ct.ions[i];
             loc_sum = 0.0;
 
-    #pragma omp parallel for private(iptr2, r, t1) reduction(+:loc_sum) schedule(static,1)
+#pragma omp parallel for private(iptr2, r, t1) reduction(+:loc_sum) schedule(static,1)
             for (j = i + 1; j < ct.num_ions; j++)
             {
 
@@ -220,10 +220,10 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
                 r = minimage (iptr1, iptr2, xtal_r);
 
                 t1 = sqrt (ct.sp[iptr1->species].rc * ct.sp[iptr1->species].rc +
-                           ct.sp[iptr2->species].rc * ct.sp[iptr2->species].rc);
+                        ct.sp[iptr2->species].rc * ct.sp[iptr2->species].rc);
 
                 loc_sum += (ct.sp[iptr1->species].zvalence *
-                          ct.sp[iptr2->species].zvalence * erfc (r / t1) / r);
+                        ct.sp[iptr2->species].zvalence * erfc (r / t1) / r);
             }
             ct.II += loc_sum;
         }
@@ -234,32 +234,32 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
 
     /* Sum them all up */
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II;
-   
-    
+
+
     /* Print contributions to total energies into output file */
     printf ("\n\n");
-//    progress_tag ();
+    //    progress_tag ();
     printf ("@@ EIGENVALUE SUM     = %16.9f Ha\n", eigsum);
-//    progress_tag ();
+    //    progress_tag ();
     printf ("@@ ION_ION            = %16.9f Ha\n", ct.II);
-//    progress_tag ();
+    //    progress_tag ();
     printf ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
-//    progress_tag ();
+    //    progress_tag ();
     printf ("@@ VXC                 = %16.9f Ha\n",  xcstate);
     printf ("@@ EXC                 = %16.9f Ha\n", ct.XC );
-//    progress_tag ();
+    //    progress_tag ();
     printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
-        
+
     if (ct.spin_flag)
     {
-	/* Print the total magetization and absolute magnetization into output file */
-	progress_tag ();
-       	printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
-       	progress_tag ();
-       	printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", fabs(mag) );
+        /* Print the total magetization and absolute magnetization into output file */
+        progress_tag ();
+        printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
+        progress_tag ();
+        printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", fabs(mag) );
     }
 
-   
+
 
     /* Release our memory */
     my_free (exc);

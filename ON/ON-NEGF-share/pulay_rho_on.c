@@ -241,7 +241,6 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
                 printf ("   pulay_b[%d]: %10.6f  \n", i, b[i]);
         }
 
-
         if (step <= (NsavedSteps - 2))
         {
             x1 = x + (size - 1) * N;

@@ -43,6 +43,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     int flag;
     int steps;
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    int px0_grid = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     double *rho_pre;
 
     rho_pre = new double[nfp0];
@@ -207,15 +208,22 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
 //    idx = idamax(&nfp0, rho_old, &ione);
 //    dvh_max = fabs(rho_old[idx]);
 
+    dvxc_max = 0.0;
+    int idx_max = -100;
+
     for (idx = 0; idx < nfp0; idx++)
+    {
         rho_old[idx] = fabs(vxc[idx] - vxc_old[idx]);
-    dvxc_max = *std::max_element(rho_old, rho_old+nfp0);
+        if(rho_old[idx] > dvxc_max ) {
+            dvxc_max = rho_old[idx];
+            idx_max = idx;
+        }
+    }
+    //dvxc_max = *std::max_element(rho_old, rho_old+nfp0);
 //    idx = idamax(&nfp0, rho_old, &ione);
 //    dvxc_max = fabs(rho_old[idx]);
 
     
-
-
     drho_max = RmgMaxAll<double>(drho_max, pct.grid_comm); 
     dvh_max = RmgMaxAll<double>(dvh_max, pct.grid_comm); 
     dvxc_max = RmgMaxAll<double>(dvxc_max, pct.grid_comm); 
