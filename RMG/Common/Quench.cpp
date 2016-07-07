@@ -55,7 +55,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 {
 
     bool CONVERGED;
-    std::vector<double> RMSdV;
+    static std::vector<double> RMSdV;
 
     int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
     double *vh_in = new double[FP0_BASIS];
@@ -152,7 +152,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         std::string ConvergenceFile(ct.basename);
         ConvergenceFile = ConvergenceFile + ".rmsdv.xmgr";
         mode_t mode = O_CREAT |O_TRUNC |O_RDWR;
-        if(ct.md_steps > 0) mode = O_RDWR | O_APPEND;
+      //  if(ct.md_steps > 0) mode = O_RDWR | O_APPEND;
 
         int fhand = open(ConvergenceFile.c_str(), mode, S_IREAD | S_IWRITE);
         if (fhand < 0)
@@ -167,6 +167,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             write(fhand, tbuf, strlen(tbuf));
             idx++;
         }
+
+        snprintf(tbuf, sizeof(tbuf), "&\n");
 
     }
         
