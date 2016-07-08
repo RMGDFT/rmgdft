@@ -17,7 +17,7 @@ HINTS "/usr/local/include"
 
 find_library (PFFT_LIBRARIES NAMES pfft)
 if(NOT PFFT_LIBRARIES)
-    find_library (PFFT_LIBRARIES NAMES pfft
+    find_library (PFFT_LIBRARIES NAMES libpfft.a
                   HINTS "${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64/lib/"
                         "/usr/local/lib64/"
 )

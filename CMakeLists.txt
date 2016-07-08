@@ -30,9 +30,9 @@ INCLUDE (CMakeForceCompiler)
 
 
 # User editable options
-set (RMG_GPU_ENABLED 1)
+set (RMG_GPU_ENABLED 0)
 set (RMG_PFFT_LIBS 1) 
-set (RMG_MAGMA_LIBS 1) 
+set (RMG_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
 set (USE_ELEMENTAL_LIBS 0)
 set (USE_LIBXC 0)
@@ -427,13 +427,14 @@ endif(NOT RMG_MATH_LIBS)
 if(RMG_PFFT_LIBS)
 find_package(PFFT)
     if(NOT PFFT_FOUND)
-        set($ENV{MPICC} ${MPI_C_COMPILER})
         execute_process(
         COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/pfft-master.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
         execute_process(
         COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
         execute_process(COMMAND bootstrap.sh 
             WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/pfft-master)
+        set(ENV{MPICC} "${MPI_C_COMPILER}")
+        set(ENV{CC} "${MPI_C_COMPILER}")
         execute_process(COMMAND
         ${PROJECT_SOURCE_DIR}/lib/pfft-master/configure
         --host=x86_64
@@ -441,12 +442,13 @@ find_package(PFFT)
         --libdir=${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64/lib
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
 
-        execute_process(COMMAND make  -j 16
+        execute_process(COMMAND make  -j 4
             WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/pfft-master)
         execute_process(COMMAND make install
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
     endif(NOT PFFT_FOUND)
-
+endif(RMG_PFFT_LIBS)
+if(RMG_PFFT_LIBS)
     find_package(PFFT REQUIRED)
     include_directories(${PFFT_INCLUDES})
     add_definitions(-DUSE_PFFT)
@@ -507,9 +509,9 @@ if(NOT LIBXC_FOUND)
     execute_process(COMMAND make install
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
 endif(NOT LIBXC_FOUND)
-
 find_package(LIBXC REQUIRED)
 include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/")
+
 
 
 find_package(LIBSPG)

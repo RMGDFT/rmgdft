@@ -18,11 +18,26 @@ HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib64"
 "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib"
 )
 
+if(NOT LIBXC_LIBRARIES)
+    find_library (LIBXC_LIBRARIES NAMES libxc.a
+HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib64"
+"${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib"
+)
+endif(NOT LIBXC_LIBRARIES)
+
+
 find_library (LIBXC_LIBRARIES_F90
 NAMES xcf90
 HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib64"
 "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib"
 )
+
+if(NOT LIBXC_LIBRARIES_F90)
+    find_library (LIBXC_LIBRARIES_F90 NAMES libxcf90.a
+HINTS "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib64"
+"${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib"
+)
+endif(NOT LIBXC_LIBRARIES_F90)
 
 # handle the QUIETLY and REQUIRED arguments and set LIBXC_FOUND to TRUE if
 # all listed variables are TRUE

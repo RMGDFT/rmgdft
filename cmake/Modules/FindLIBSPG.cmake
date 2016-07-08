@@ -13,6 +13,12 @@ find_library (LIBSPG_LIBRARIES
 NAMES symspg
 HINTS "${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64/")
 
+if(NOT LIBSPG_LIBRARIES)
+    find_library (LIBSPG_LIBRARIES NAMES libsymspg.a
+HINTS "${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64/")
+endif(NOT LIBSPG_LIBRARIES)
+
+
 # handle the QUIETLY and REQUIRED arguments and set LIBSPG_FOUND to TRUE if
 # all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
