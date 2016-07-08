@@ -131,21 +131,21 @@ void write_header (void)
     printf ("\n    Subspace diagonalization driver:");
     switch(ct.subdiag_driver) {
         case SUBDIAG_SCALAPACK:
-            printf ("ScaLapack driver\n");
+            printf ("ScaLapack driver");
             break;
         case SUBDIAG_LAPACK:
-            printf ("Lapack\n");
+            printf ("Lapack");
             break;
         case SUBDIAG_MAGMA:
 #if MAGMA_LIBS
-            printf ("MAGMA\n");
+            printf ("MAGMA");
 #else
-            printf ("LAPACK (MAGMA specified, but RMG was not built with MAGMA support)\n"); 
+            printf ("LAPACK (MAGMA specified, but RMG was not built with MAGMA support)"); 
             ct.subdiag_driver = SUBDIAG_LAPACK;
 #endif
             break;
         default:
-            printf ("Unknown diagonalization method\n");
+            printf ("Unknown diagonalization method");
     }
     
     printf ("\n    Hartree Solver:");
