@@ -128,24 +128,36 @@ void write_header (void)
     if (ct.initdiag)
         printf ("    Initial subspace diagonalization\n");
 
-    printf ("\n");
+    printf ("\n    Subspace diagonalization driver:");
     switch(ct.subdiag_driver) {
         case SUBDIAG_SCALAPACK:
-            printf ("    Subspace diagonalization using scalapack driver\n");
+            printf ("ScaLapack driver\n");
             break;
         case SUBDIAG_LAPACK:
-            printf ("    Subspace diagonalization using lapack driver\n");
+            printf ("Lapack\n");
             break;
         case SUBDIAG_MAGMA:
 #if MAGMA_LIBS
-            printf ("    Subspace diagonalization using magma driver\n");
+            printf ("MAGMA\n");
 #else
-            printf ("     This version of RMG was not built with MAGMA support. LAPACK will be used for diagonalization instead.\n");
+            printf ("LAPACK (MAGMA specified, but RMG was not built with MAGMA support)\n"); 
             ct.subdiag_driver = SUBDIAG_LAPACK;
 #endif
             break;
         default:
-            printf ("    Unknown diagonalization method\n");
+            printf ("Unknown diagonalization method\n");
+    }
+    
+    printf ("\n    Hartree Solver:");
+    switch(ct.poisson_solver) {
+        case POISSON_PFFT_SOLVER:
+            printf ("PFFT\n");
+            break;
+	case MULTIGRID_SOLVER:
+	    printf ("Multigrid\n");
+	    break;
+        default:
+            printf ("Unknown diagonalization method\n");
     }
 
     if(ct.use_folded_spectrum) {
