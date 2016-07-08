@@ -37,7 +37,7 @@ set (USE_SCALAPACK_LIBS 1)
 set (USE_ELEMENTAL_LIBS 0)
 set (USE_LIBXC 0)
 set (USE_OPENBABEL_LIBS 1)
-set (USE_SVN 0)
+set (USE_SVN 1)
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
@@ -117,6 +117,9 @@ if (CRAY_XK)
    set(USE_SCALAPACK_LIBS 1)
    # External packages (e.g. PFFT) need this
    set($ENV{MPICC} "${CMAKE_C_COMPILER}")
+else (CRAY_XK)
+   set(ENV{MPICC} "${MPI_C_COMPILER}")
+   set(ENV{CC} "${MPI_C_COMPILER}")
 endif(CRAY_XK)
 
 
@@ -433,8 +436,6 @@ find_package(PFFT)
         COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
         execute_process(COMMAND bootstrap.sh 
             WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/pfft-master)
-        set(ENV{MPICC} "${MPI_C_COMPILER}")
-        set(ENV{CC} "${MPI_C_COMPILER}")
         execute_process(COMMAND
         ${PROJECT_SOURCE_DIR}/lib/pfft-master/configure
         --host=x86_64
