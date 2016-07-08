@@ -212,6 +212,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         3 * ct.max_states * std::max(ct.max_states, P0_BASIS) * sizeof(OrbitalType) +
         n_win * n_win * sizeof(OrbitalType);
 
+    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
+        gpu_hostbufsize += ct.max_states * std::max(ct.max_states, P0_BASIS) * sizeof(OrbitalType);
+    }
+
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here
