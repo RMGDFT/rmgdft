@@ -116,8 +116,9 @@ void ReadTFAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std
 
 
     lc.num_tfions = Atoms.size();
-    //throw RmgFatalException() << "2Found" << lc.num_tfions << " TF ions \n";
-    lc.tf_ions = new TF_ION[lc.num_ions]();
+    printf("\n Found %d TF ions", lc.num_tfions);
+    ///throw RmgFatalException() << "Found" << lc.num_tfions << " TF ions \n";
+    lc.tf_ions = new TF_ION[lc.num_tfions]();
 
     std::vector<std::string>::iterator it, it1;
     for (it = Atoms.begin(); it != Atoms.end(); ++it) {
@@ -125,18 +126,29 @@ void ReadTFAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std
         if(nions > lc.num_tfions)
             throw RmgFatalException() << "Inconsistency in number of TF ions: " << lc.num_tfions << " was specified initially but " << nions << " were found.\n";
 
-        std::string Atom = *it;
+        
+	std::string Atom = *it;
         boost::trim(Atom);
 
         std::vector<std::string> AtomComponents;
         boost::algorithm::split( AtomComponents, Atom, boost::is_any_of(whitespace_delims), boost::token_compress_on );
 
         size_t ncomp = AtomComponents.size();
-        if((ncomp < 7) || (ncomp > 7)) throw RmgFatalException() << "Synax error in tf_ions, 7 arguments are needed on each line \n";
+        if((ncomp < 8) || (ncomp > 8)) throw RmgFatalException() << "Syntax error in tf_ions, 8 arguments are needed on each line, but" << ncomp << "were found \n";
 
-        // First field should be an atomic symbol
-        it1 = AtomComponents.begin();
+
         
+	// First field should be an atomic symbol
+        it1 = AtomComponents.begin();
+        std::string sp = *it1;
+        boost::trim(sp);
+        
+	// Valid atomic symbol? GetAtomicMass will throw a fatal exception if the symbol is not valid.
+        GetAtomicMass(sp);
+        
+        
+	//Process coordinates and other data on the line
+        it1++;
 	std::string xstr = *it1;
         boost::trim(xstr);
 	lc.tf_ions[nions].crds[0] = std::atof(xstr.c_str());
@@ -179,6 +191,8 @@ void ReadTFAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std
     }
 
     if(nions > lc.num_tfions)
-        throw RmgFatalException() << "Inconsistency in number of ions: " << lc.num_ions << " was specified initially but " << nions << " were found.\n";
+        throw RmgFatalException() << "Inconsistency in number of ions: " << lc.num_tfions << " was specified initially but " << nions << " were found.\n";
+
+    //printf("\n tf_atoms read OK. Number is %d", lc.num_tfions);
 
 }
