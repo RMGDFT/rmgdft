@@ -128,10 +128,10 @@ void write_header (void)
     if (ct.initdiag)
         printf ("    Initial subspace diagonalization\n");
 
-    printf ("\n    Subspace diagonalization driver:");
+    printf ("\n    Subspace diagonalization driver: ");
     switch(ct.subdiag_driver) {
         case SUBDIAG_SCALAPACK:
-            printf ("ScaLapack driver");
+            printf ("ScaLapack");
             break;
         case SUBDIAG_LAPACK:
             printf ("Lapack");
@@ -148,7 +148,7 @@ void write_header (void)
             printf ("Unknown diagonalization method");
     }
     
-    printf ("\n    Hartree Solver:");
+    printf ("\n    Hartree Solver: ");
     switch(ct.poisson_solver) {
         case POISSON_PFFT_SOLVER:
             printf ("PFFT\n");
