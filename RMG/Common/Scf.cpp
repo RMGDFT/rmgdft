@@ -83,6 +83,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     /* to hold the send data and receive data of eigenvalues */
     double *rho_tot=NULL;   
+
+    double *rho_tf = NULL;
+    double *rho_save = NULL; 
     
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
@@ -119,13 +122,48 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     if (Verify("charge_mixing_type","Linear", Kptr[0]->ControlMap))
         rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
 
+    /*Simplified solvent model, experimental */
+    if (ct.num_tfions > 0)
+    {
+	rho_tf = new double[FP0_BASIS];
+	rho_save = new double[FP0_BASIS];
+
+	get_dipole (rho);
+	rmg_printf("Calling get_tf_rho\n");
+	get_tf_rho(rho_tf);
+	rmg_printf("get_tf_rho Done\n");
+
+	for (int idx = 0; idx < FP0_BASIS; idx++)
+	{
+	    /*Save original rho, copy it into rho_save*/
+	    rho_save[idx] = rho[idx];
+
+	    /*Add rho_tf to rho*/
+	    rho[idx] += rho_tf[idx];
+
+	    /*Check that rho_tf chargeis indeed 0, can be removed if it works well*/
+	    t[0] += rho_tf[idx];
+	}                           /* idx */
+    }
+
+
     RT1 = new RmgTimer("2-Scf steps: Hartree");
     double hartree_residual = VhDriver(rho, rhoc, vh, vh_ext, rms_target);
     delete(RT1);
 
+    /*Simplified solvent model, experimental */
+    if (ct.num_tfions > 0)
+    {
+	for (int idx = 0; idx < FP0_BASIS; idx++)
+	{ 
+	    rho[idx] = rho_save[idx];
+	}
+    }
+
+
     // Save input hartree potential
     for (int idx = 0; idx < FP0_BASIS; idx++) vh_in[idx] = vh[idx];
- 
+
     // Make sure the hartree and vxc potentials are bandwidth limited on the fine grid
     //FftFilter(vh, *fine_pwaves, 1.0, LOW_PASS);
     //FftFilter(vxc, *fine_pwaves, 1.0, LOW_PASS);
@@ -135,35 +173,35 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     for (int idx = 0; idx < FP0_BASIS; idx++)
     {
-        t3 = -vtot[idx];
-        vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
-        t3 += vtot[idx];
-        t[0] += rho[idx] * t3;
-        t[1] += t3 * t3;
-        t[2] += vh[idx];
+	t3 = -vtot[idx];
+	vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+	t3 += vtot[idx];
+	t[0] += rho[idx] * t3;
+	t[1] += t3 * t3;
+	t[2] += vh[idx];
     }                           /* idx */
 
     GlobalSums (t, 3, pct.img_comm);
     t[0] *= get_vel_f();
-    
+
     /* get the averaged value over each spin and each fine grid */
     t[1] = sqrt (t[1] / ((double) (nspin * ct.psi_fnbasis)));  
     t[2] /= ((double) (nspin * ct.psi_fnbasis));   
-    
+
     ct.rms = t[1];
 
     if (!firststep)
     {
-        //rmg_printf("scf check: <rho dv>   = %8.2e\n", t[0]);
-        RMSdV.emplace_back(t[1]);
-        if(ct.poisson_solver == MULTIGRID_SOLVER) 
-            rmg_printf("hartree residual      = %8.2e\n", hartree_residual);
-        rmg_printf("average potential <V> = %8.2e\n", t[2]);
+	//rmg_printf("scf check: <rho dv>   = %8.2e\n", t[0]);
+	RMSdV.emplace_back(t[1]);
+	if(ct.poisson_solver == MULTIGRID_SOLVER) 
+	    rmg_printf("hartree residual      = %8.2e\n", hartree_residual);
+	rmg_printf("average potential <V> = %8.2e\n", t[2]);
     }
 
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
-        if (!firststep && t[1] < ct.thr_rms) CONVERGED = true;
+	if (!firststep && t[1] < ct.thr_rms) CONVERGED = true;
 
     }
 
@@ -176,24 +214,24 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
-        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || (ct.scf_steps < 4)) {
-            RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
-            MgridSubspace(Kptr[kpt], vtot_psi);
-            delete RT1;
-        }
-        else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
-            int notconv;
-            RmgTimer *RT1 = new RmgTimer("2-Scf steps: Davidson");
-            if(ct.is_gamma) Davidson(Kptr[kpt], vtot_psi, notconv);
-            else MgridSubspace(Kptr[kpt], vtot_psi);
-            delete RT1;
-        }
+	if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || (ct.scf_steps < 4)) {
+	    RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
+	    MgridSubspace(Kptr[kpt], vtot_psi);
+	    delete RT1;
+	}
+	else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
+	    int notconv;
+	    RmgTimer *RT1 = new RmgTimer("2-Scf steps: Davidson");
+	    if(ct.is_gamma) Davidson(Kptr[kpt], vtot_psi, notconv);
+	    else MgridSubspace(Kptr[kpt], vtot_psi);
+	    delete RT1;
+	}
 
     } // end loop over kpoints
 
 
     if (spin_flag)
-        GetOppositeEigvals (Kptr);
+	GetOppositeEigvals (Kptr);
 
 
     /* Take care of occupation filling */
@@ -202,9 +240,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     if (ct.occ_flag == 1 )
     {
-        rmg_printf ("\n");
-        //progress_tag ();
-        rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
+	rmg_printf ("\n");
+	//progress_tag ();
+	rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
     }
 
     // Calculate total energy 
@@ -212,7 +250,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
 
     if (firststep)
-        firststep = false;
+	firststep = false;
 
     /* Generate new density */
     RT1 = new RmgTimer("2-Scf steps: GetNewRho");
@@ -222,12 +260,43 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     // Get Hartree potential for the output density
     int ratio = Rmg_G->default_FG_RATIO;
     double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(ratio) * Rmg_G->get_NY_GRID(ratio) * Rmg_G->get_NZ_GRID(ratio)));
+    
+    /*Simplified solvent model, experimental */
+    if (ct.num_tfions > 0)
+    {
+
+	for (int idx = 0; idx < FP0_BASIS; idx++)
+	{
+	    /*Save original rho, copy it into rho_save*/
+	    rho_save[idx] = new_rho[idx];
+
+	    /*Add rho_tf to rho*/
+	    new_rho[idx] += rho_tf[idx];
+
+	}                           /* idx */
+
+    }
+
     rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
     double *vh_out = new double[FP0_BASIS];
     RT1 = new RmgTimer("2-Scf steps: Hartree");
     for(int i = 0;i < FP0_BASIS;i++) vh_out[i] = vh[i];
     VhDriver(new_rho, rhoc, vh_out, vh_ext, rms_target);
     delete RT1;
+
+    /*Simplified solvent model, experimental */
+    if (ct.num_tfions > 0)
+    {
+	for (int idx = 0; idx < FP0_BASIS; idx++)
+	{ 
+	    new_rho[idx] = rho_save[idx];
+	}
+
+	/*GlobalSums (t, 1, pct.img_comm);
+	t[0] *= get_vel_f();
+	rmg_printf("\n vh_out sum (using new_rho) is %.8e\n", t[0]);*/
+    }
+
 
     // Compute convergence measure (2nd order variational term)
     double sum = 0.0;
@@ -239,24 +308,24 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     // Compute variational energy correction term if any
     sum = EnergyCorrection(Kptr, rho, new_rho, vh, vh_out);
     ct.scf_correction = sum;
-    
+
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
-        if (!firststep && fabs(ct.scf_accuracy) < ct.thr_energy) CONVERGED = true;
+	if (!firststep && fabs(ct.scf_accuracy) < ct.thr_energy) CONVERGED = true;
 
     }
 
     if(CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1))) {
-        // Evaluate XC energy and potential from the output density
-        // for the force correction
-        RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
-        double vtxc, XCtmp;
-        for(int i = 0;i < FP0_BASIS;i++) vxc_in[i] = vxc[i];
-        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(new_rho, rhocore, XCtmp, vtxc, vxc, ct.spin_flag );
-        delete F;
-        delete RT1;
+	// Evaluate XC energy and potential from the output density
+	// for the force correction
+	RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
+	double vtxc, XCtmp;
+	for(int i = 0;i < FP0_BASIS;i++) vxc_in[i] = vxc[i];
+	Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+	F->v_xc(new_rho, rhocore, XCtmp, vtxc, vxc, ct.spin_flag );
+	delete F;
+	delete RT1;
     }
 
 
@@ -267,7 +336,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     if (spin_flag)
 	get_rho_oppo (rho,  rho_oppo);
-    
+
 
 
     /* Make sure we see output, e.g. so we can shut down errant runs */
@@ -281,21 +350,27 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     delete [] vtot;
     delete [] vtot_psi;
 
+    if (ct.num_tfions > 0)
+    {
+	delete [] rho_tf;
+	delete [] rho_save;
+    }
+
     if (spin_flag)
     {
-    	delete [] rho_tot;
+	delete [] rho_tot;
     }
 
 
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
-        if(!firststep && (max_unocc_res < ct.gw_threshold)) {
-            rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
-            rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
-//            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
+	if(!firststep && (max_unocc_res < ct.gw_threshold)) {
+	    rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
+	    rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
+	    //            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
 
-            CONVERGED = true;
-        }
+	    CONVERGED = true;
+	}
 
     }
 
