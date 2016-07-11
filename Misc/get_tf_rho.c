@@ -27,7 +27,7 @@ void get_tf_rho (double * tf_rho)
     int FNX_GRID, FNY_GRID, FNZ_GRID;
     int tf_num_ions;
 
-    double r, t1, t2, t3;
+    double r, t1;
     double x[3];
     double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
@@ -167,15 +167,10 @@ void get_tf_rho (double * tf_rho)
 #if 1
     /* Set net TF charge to 0 */
     t1 = 0.0;
-    t2 = 0.0;
-    t3 = 0.0;
     for (idx = 0; idx < FP0_BASIS; idx++)
     {
 	t1 += tf_rho[idx];
     }
-
-
-    printf("\n t1 t2 t3: %f %f %f", t1, t2, t3);
 
 
     t1 = real_sum_all (t1, pct.grid_comm);  /* sum over pct.grid_comm  */
