@@ -4,7 +4,7 @@
 
 #include "const.h"
 #include "common_prototypes.h"
-#include "common_prototypes.h"
+#include "main.h"
 #include "rmg_alloc.h"
 #include <float.h>
 #include <math.h>

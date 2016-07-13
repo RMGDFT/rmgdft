@@ -176,6 +176,8 @@ void gcxcblyp_spin (double rho_up, double rho_dw,
   double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
   double *vxc2_updw, double *vxc2_dwup);
 
+void mgga_libxc (double * rho, double * tau, double * vxc, double * exc, int mode);
+void get_mgga_exc_vxc (double * rho, double * rho_oppo, double * tau, double * vxc, double * exc);
 
 
 void gram (KPOINT *kpoint, double h, int numst, int maxst, int numpt,
@@ -462,6 +464,7 @@ void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
 void get_tf_rho (double * tf_rho);
 void get_dipole (double * rho);
+void set_pbc(double *position, int num_ions, int num_images);
 
 void allocate_states();
 #if __cplusplus

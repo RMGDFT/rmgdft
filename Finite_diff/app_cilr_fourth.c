@@ -3,10 +3,12 @@
 ******************************************************************************/
 
 #include "const.h"
+#include "main.h"
 #include "common_prototypes.h"
 #include "rmg_alloc.h"
 
 
+#include "BaseThread.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
