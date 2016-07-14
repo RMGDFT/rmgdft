@@ -692,11 +692,10 @@ if(USE_LINUX_MKL_LIBS)
 endif(USE_LINUX_MKL_LIBS)
 
 install(TARGETS ${rmg} 
-DESTINATION rmg
-RUNTIME DESTINATION rmg/bin)
+DESTINATION bin)
 
 install(FILES RmgLib/libRmgLibShared.so RmgLib/libRmgLib.a
-DESTINATION rmg/lib)
+DESTINATION lib)
 
 # Packaging section next
 SET(cpack_input_file "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
