@@ -15,13 +15,10 @@ HINTS "/usr/local/include"
       "${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64/include")
 
 
-find_library (PFFT_LIBRARIES NAMES pfft)
-if(NOT PFFT_LIBRARIES)
-    find_library (PFFT_LIBRARIES NAMES libpfft.a
+find_library (PFFT_LIBRARIES NAMES libpfft.a
                   HINTS "${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64/lib/"
                         "/usr/local/lib64/"
 )
-endif(NOT PFFT_LIBRARIES)
 
 # handle the QUIETLY and REQUIRED arguments and set PFFT_FOUND to TRUE if
 # all listed variables are TRUE

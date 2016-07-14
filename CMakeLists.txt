@@ -697,7 +697,7 @@ DESTINATION bin)
 install(FILES RmgLib/libRmgLibShared.so RmgLib/libRmgLib.a
 DESTINATION lib)
 
-install(DIRECTORY Examples/ DESTINATION /usr/share/rmg)
+install(DIRECTORY Examples DESTINATION share/rmg)
 
 # Packaging section next
 SET(cpack_input_file "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
