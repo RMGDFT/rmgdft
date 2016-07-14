@@ -12,7 +12,9 @@
 
 char cnpy::BigEndianTest() {
     unsigned char x[] = {1,0};
-    short y = *(short*) x;
+    short y;
+    std::memcpy(&y, x, sizeof(short ));
+    //short y = *(short*) x;
     return y == 1 ? '<' : '>';
 }
 
