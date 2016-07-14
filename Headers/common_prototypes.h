@@ -71,11 +71,6 @@ double app2_del2_f (float *a, float *b, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
 void init_global_sums(void);
 
-double app_cilr_sixth (double * psi, double *a_psi, double *b_psi, double *vtot_eig_s, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz);
-double app_cilr_fourth (double * psi, double *a_psi, double *b_psi, double *vtot_eig_s, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz);
-
 void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
 void app_cir_driver (double *a, double *b, int dimx, int dimy, int dimz, int order);
