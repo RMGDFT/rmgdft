@@ -19,6 +19,9 @@
 
 void nlforce (double * veff)
 {
+    printf("\n need more work for force in NEGF");
+    return;
+#if 0
     int ion, i, isp, count;
     int nh, size, n2, idx;
     double *rho_nm, *QnmI_R, *forces_tem;
@@ -111,6 +114,7 @@ void nlforce (double * veff)
     }
     my_free (rho_nm);
     my_free (forces_tem);
+#endif
 
 
 }

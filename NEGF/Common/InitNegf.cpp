@@ -61,6 +61,11 @@
 
 #include "pmo.h"
 
+#include "RmgException.h"
+#include "RmgParallelFft.h"
+#include "pfft.h"
+
+
 
 void is_state_overlap (STATE *, char *);
 
@@ -287,16 +292,43 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     init_nl_xyz ();
     get_ion_orbit_overlap_nl (states);
 
-    get_nlop ();
+    GetNlop_on ();
     init_nonlocal_comm ();
     InitNonlocalComm ();
 
     /* Initialize qfuction in Cartesin coordinates */
-    get_QI ();
+    GetQI ();
 
     /* Get the qqq */
     get_qqq ();
     delete(RT5);
+
+
+#if USE_PFFT
+    int np[3];
+    ptrdiff_t densgrid[3];
+    np[0] = Rmg_G->get_PE_X();
+    np[1] = Rmg_G->get_PE_Y();
+    np[2] = Rmg_G->get_PE_Z();
+    densgrid[0] =  Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
+    densgrid[1] =  Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
+    densgrid[2] =  Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
+    pfft_init();
+    if( pfft_create_procmesh(3, pct.grid_comm, np, &pct.pfft_comm) ) {
+        RmgFatalException() << "Problem initializing PFFT in " << __FILE__ << " at line " << __LINE__ << ".\n";
+    }
+    // check array sizes
+    ptrdiff_t local_ni[3], local_i_start[3];
+    ptrdiff_t local_no[3], local_o_start[3];
+    int alloc_local = pfft_local_size_dft_3d(densgrid, pct.pfft_comm, PFFT_TRANSPOSED_NONE,
+    local_ni, local_i_start, local_no, local_o_start);
+    if(alloc_local >  ct.psi_fnbasis)
+        RmgFatalException() << "Problem initializing PFFT in " << __FILE__ << " at line " << __LINE__ << ".\n";
+
+    // Initialize some commonly used plans
+    FftInitPlans();
+
+#endif
 
 
 

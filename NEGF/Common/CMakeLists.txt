@@ -44,7 +44,7 @@ init_pe_on.c
 InitNegf.cpp
 #init_state_distribute.c
 interpolation_orbit.c
-ion_partial_Hij_and_Sij.c
+#ion_partial_Hij_and_Sij.c
 is_vloc_state_overlap.c
 kpoints.c
 lead_bandstructure.c
@@ -62,12 +62,12 @@ min_distance_index.c
 modify_rho.c
 multi_GHG_munu.c
 nlforce.c
-nlforce_par_D.c
-nlforce_par_Q.c
-nlforce_partial_H_part2.c
+#nlforce_par_D.c
+#nlforce_par_Q.c
+#nlforce_partial_H_part2.c
 ortho_norm_local.c
-partial_vloc.c
-partial_vlocpsi.c
+#partial_vloc.c
+#partial_vlocpsi.c
 plane_average_rho.c
 pmo_init.c
 pmo_trace.c
