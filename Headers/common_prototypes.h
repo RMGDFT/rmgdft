@@ -191,6 +191,8 @@ void trade_imagesx_central_async_f (float * f, float * w, int dimx, int dimy, in
 void trade_imagesx_central_async (double * f, double * w, int dimx, int dimy, int dimz, int images);
 double AtomicInterpolate(double *f, double r);
 void lbfgs (double *posion, double *force, int num_ions, int num_images);
+void vdd(double * rho);
+double minvoroimage (ION * ip1, double gridcoor[3]);
 
 
 
