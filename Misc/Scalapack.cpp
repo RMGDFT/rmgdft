@@ -429,7 +429,7 @@ void Scalapack::CopyDistArrayToSquareMatrix(double *A, double *A_dist, int n, in
 void Scalapack::CopyDistArrayToSquareMatrix(std::complex<double> *A, std::complex<double> *A_dist, int n, int *desca)
 {
     if(this->participates) {
-        matgather((double *)A, (double *)A_dist, n, desca, true);
+        matgather((double *)A, (double *)A_dist, n, desca, false);
     }
 }
 

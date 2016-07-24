@@ -207,6 +207,8 @@ void pdtrsm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, d
              double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
 void pztrmm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
              double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
+void pztrsm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
+             double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
 
 
 }

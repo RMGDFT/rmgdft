@@ -76,7 +76,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     int ione=1;
     int num_states = kptr->nstates;
     int factor = 1;
-    if(!ct.is_gamma) factor=1;
+    if(!ct.is_gamma) factor=2;
 
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
     if(!MainSp) {
@@ -272,7 +272,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                 else {
 
                     int ibtype = 1;izero = 0;
-                    double scale=1.0, rone = 1.0;
+                    double scale=1.0, rone[2] = {1.0, 0.0};
 
                     pzpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
 
@@ -281,22 +281,22 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
                     // Get workspace required
                     int lwork = -1, liwork=-1, lrwork=-1;
-                    double lwork_tmp, lrwork_tmp;
+                    double lwork_tmp[2], lrwork_tmp;
                     int liwork_tmp;
                     pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
-                                eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
-                    lwork = 4*(int)lwork_tmp;
+                                eigs, (double *)distAij, &ione, &ione, desca, lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
+                    lwork = (int)lwork_tmp[0]+1;
                     liwork = 16*num_states;
-                    lrwork = (int)lrwork_tmp;
+                    lrwork = 2*(int)lrwork_tmp;
                     double *rwork = new double[lrwork];
-                    double *nwork = new double[lwork];
+                    double *nwork = new double[lwork*2];
                     int *iwork = new int[liwork];
 
                     // and now solve it
                     pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                                 eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
 
-                    pztrmm_("Left", uplo, "T", "C", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
+                    pztrsm_("Left", uplo, "C", "N", &num_states, &num_states, rone, (double *)distSij, &ione, &ione, desca,
                                 (double *)distAij, &ione, &ione, desca);
 
                     delete [] iwork;
@@ -322,7 +322,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             // Gather distributed results from distAij into eigvectors
             //MainSp->GatherMatrix(eigvectors, distAij);
             MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
-            MainSp->Allreduce(MPI_IN_PLACE, eigvectors, num_states*num_states, MPI_DOUBLE, MPI_SUM);
+            MainSp->Allreduce(MPI_IN_PLACE, eigvectors, factor *num_states*num_states, MPI_DOUBLE, MPI_SUM);
 
 
         }
