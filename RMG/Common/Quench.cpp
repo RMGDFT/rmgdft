@@ -196,6 +196,12 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 //    if (CONVERGED || (ct.forceflag != MD_QUENCH))
 
 
+    if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
+    {
+	Vdd(rho);
+    }
+
+
     /* output the forces */
     if (pct.imgpe == 0)
 	write_force ();

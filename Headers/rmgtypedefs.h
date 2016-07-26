@@ -182,6 +182,8 @@ typedef struct
     int orbital_start_index;
     int num_orbitals;
 
+    double partial_charge;
+
 
 } ION;
 

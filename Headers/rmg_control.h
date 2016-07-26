@@ -315,6 +315,9 @@ typedef struct
     /* For Davidson diagonalization. Factor to multipy desired tolerance for unoccupied states by. */
     double unoccupied_tol_factor;
 
+    /* Type of charge analysis*/
+    int charge_analysis_type;
+
     /* Projector mixing parameter */
     double prjmix;
 

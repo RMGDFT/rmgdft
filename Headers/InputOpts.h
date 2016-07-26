@@ -38,6 +38,10 @@ static std::unordered_map<std::string, int> charge_mixing_type = {
         {"Pulay", 1},
         {"Broyden", 2}};
 
+static std::unordered_map<std::string, int> charge_analysis = {
+        {"Voronoi", 0},
+        {"None", 1}};
+
 static std::unordered_map<std::string, int> vdwdf_grid_type = {
         {"Coarse", 0},
         {"Fine", 1}};

@@ -227,6 +227,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
                      "Type of charge density mixing to use. Linear and Pulay are the available options.\n", 
                      "charge_mixing_type must be either \"Linear\" or \"Pulay\". Terminating.\n");
+    
+    If.RegisterInputKey("charge_analysis", NULL, &lc.charge_analysis_type, "None",
+                     CHECK_AND_TERMINATE, OPTIONAL, charge_analysis,
+                     "Type of charge nalysis to use. Only Voronoi deformation density is currently available.\n", 
+                     "charge_analysis must be either \"Voronoi\" or \"None\". Terminating.\n");
 
     If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Coarse",
                      CHECK_AND_TERMINATE, OPTIONAL, vdwdf_grid_type,
