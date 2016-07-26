@@ -198,8 +198,11 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
     {
+	double timex = my_crtc ();
 	Vdd(rho);
+	rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
     }
+
 
 
     /* output the forces */

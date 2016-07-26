@@ -47,14 +47,40 @@ void write_force (void)
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     char *eunits = ct.energy_output_string[ct.energy_output_units];
 
-    printf ("\n\n\n  IONIC POSITIONS [a0] AND FORCES [%s/a0]:\n\n", eunits);
+    printf ("\n\n\n  IONIC POSITIONS [a0] AND FORCES [%s/a0]", eunits);
+    printf     ("\n  Charge analysis using: "); 
+    
+    switch (ct.charge_analysis_type)
+    {
+	case CHARGE_ANALYSIS_NONE:
+	    printf("No charge analysis performed");
+	    break;
+	
+	case CHARGE_ANALYSIS_VORONOI:
+	    printf("Voronoi Deformation Density");
+	    break;
+
+	default :
+	    printf("Invalid Charge Analysis\n" );
+    }
+
+    printf("\n\n");
 
 //    if (verify ("atom_constraints", NULL))
 //    {
 //        printf ("  CONSTRAINTS ON FORCES HAVE BEEN IMPOSED:\n\n");
 //    }
+//
+
+    /*If no charge analysis has been performed set partial charges to 0*/
+    if (ct.charge_analysis_type == CHARGE_ANALYSIS_NONE)
+    {
+	for (ion = 0; ion < ct.num_ions; ion++)
+	    ct.ions[ion].partial_charge = 0.0;
+    }
+
     printf
-        ("@ION  Ion  Species      X           Y           Z          FX          FY          FZ       Movable\n");
+        ("@ION  Ion  Species   Charge        X           Y            Z           FX          FY          FZ       Movable\n");
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -65,10 +91,10 @@ void write_force (void)
         fp = iptr->force[ct.fpt[0]];
         sp = &ct.sp[iptr->species];
 
-        printf ("@ION %3d   %2s %2d  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f %7d\n",
+        printf ("@ION %3d     %2s     %6.3f     %10.7f  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f %7d\n",
                 ion + 1,
                 sp->atomic_symbol,
-                iptr->species + 1,
+                 iptr->partial_charge,
                 iptr->crds[0], iptr->crds[1], iptr->crds[2], efactor*fp[0], efactor*fp[1], efactor*fp[2], iptr->movable);
 
         if (iptr->movable)

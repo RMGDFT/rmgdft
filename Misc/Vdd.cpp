@@ -301,22 +301,25 @@ void Vdd(double * rho)
 
     
 
+#if 0
 	rmg_printf ("\n\n  VORONOI DEFORMATION DENSITY PARTIAL CHARGES \n\n");
 	rmg_printf("      Ion  Species     VDD Charge\n");
+#endif
     
 	check = 0.0;
 	for (i = 0; i < ct.num_ions; i++)
 	{
 
 	    iptr = &ct.ions[i];
-	    sp = &ct.sp[iptr->species];
+	    //sp = &ct.sp[iptr->species];
+	    iptr->partial_charge *= vel;
 
-	    rmg_printf("     %3d     %2s          %6.3f\n", i + 1, sp->atomic_symbol, vel*iptr->partial_charge); 
+	    //rmg_printf("     %3d     %2s          %6.3f\n", i + 1, sp->atomic_symbol, iptr->partial_charge); 
 	    
-	    check +=  vel*iptr->partial_charge;
+	    check +=  iptr->partial_charge;
 	}
 	    
-	rmg_printf("\n Summation of partial charges is %e (report if substantially different from 0)", check);
+	rmg_printf("\n\nVDD: Summation of partial charges is %e (report if substantially different from 0)", check);
 
 
     }
