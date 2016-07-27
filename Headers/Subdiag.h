@@ -55,8 +55,8 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 template <typename KpointType>
 char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>
-int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb,
-                double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C, int driver);
+int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb,
+                double *eigs, double *work, int lwork, int *iwork, int liwork, int driver);
 template <typename KpointType>
 int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, KpointType *Adist, int lda, KpointType *B, int ldb,
                 double *eigs, KpointType *C, Scalapack *MainSp, int driver, int blocksize);

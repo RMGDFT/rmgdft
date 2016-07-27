@@ -63,18 +63,17 @@ static int FS_RANK;
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
 // be straightforward enough to finish.
-template int FoldedSpectrum<double> (Kpoint<double> *, int, double *, int, double *, int, double *, double *, int, int *, int, double *, int);
+template int FoldedSpectrum<double> (BaseGrid *, int, double *, int, double *, int, double *, double *, int, int *, int, int);
 
 template <typename KpointType>
-int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, KpointType *B, int ldb, 
-		double *eigs, double *work, int lwork, int *iwork, int liwork, KpointType *C, int driver)
+int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb, 
+		double *eigs, double *work, int lwork, int *iwork, int liwork, int driver)
 {
 
     RmgTimer RT0("Diagonalization: fs:");
     RmgTimer *RT1;
 
     KpointType ONE_t(1.0);
-    BaseGrid *Grid = kptr->G;
     char *cuplo = "l", *jobz="V";
     int info=0;
 

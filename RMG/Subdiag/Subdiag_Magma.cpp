@@ -183,7 +183,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
                 int lwork = num_states * num_states / 3 + num_states;
                 double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));        
-                FoldedSpectrum<double> ((Kpoint<double> *)kptr, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, (double *)Sij, SUBDIAG_MAGMA);
+                FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, SUBDIAG_MAGMA);
                 GpuFreeHost(work);
 
             }
