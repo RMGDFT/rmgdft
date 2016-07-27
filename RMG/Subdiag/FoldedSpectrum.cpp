@@ -54,11 +54,6 @@
 
 
 
-// Array storage for folded spectrum diagonalization communications
-static int *fs_eigstart = NULL;
-static int *fs_eigstop = NULL;
-static int *fs_eigcounts = NULL;
-
 // Communicator for PE's participating in folded spectrum operations
 MPI_Comm fs_comm;
 
@@ -78,26 +73,18 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
     RmgTimer RT0("Diagonalization: fs:");
     RmgTimer *RT1;
 
-    KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
-
     BaseGrid *Grid = kptr->G;
-    Lattice *L = kptr->L;
-
-
-    char *trans_t="t", *trans_n="n";
-    char *cuplo = "l", *side="l", *diag="n", *jobz="V";
-
-    int ione=1, itype=1, info=0;
-    double rone = 1.0;
+    char *cuplo = "l", *jobz="V";
+    int info=0;
 
     // For mpi routines. Transfer twice as much data for complex orbitals
     int factor = 2;
     if(ct.is_gamma) factor = 1;
 
 
-    // Allocate some memory for our communication book keeping arrays
-    if(!fs_eigstart) {
+    // Initialize some bookkeeping stuff
+    if(!FS_NPES) {
 
         FS_NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
         fs_comm = pct.grid_comm;
@@ -111,10 +98,12 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
 
         MPI_Comm_rank(fs_comm, &FS_RANK);
 
-        fs_eigstart = new int[FS_NPES];
-        fs_eigstop = new int[FS_NPES];
-        fs_eigcounts = new int[FS_NPES];
     }
+
+    // Array storage for folded spectrum diagonalization communications
+    int *fs_eigstart = new int[FS_NPES];
+    int *fs_eigstop = new int[FS_NPES];
+    int *fs_eigcounts = new int[FS_NPES];
 
     // Set up partition indices and bookeeping arrays
     int eig_start, eig_stop, eig_step;
@@ -137,7 +126,6 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
 
 
     RT1 = new RmgTimer("Diagonalization: fs: folded");
-    KpointType *NULLptr = NULL;
 
     //  Transform problem to standard eigenvalue problem
     RmgTimer *RT2 = new RmgTimer("Diagonalization: fs: transform");
@@ -282,6 +270,10 @@ int FoldedSpectrum(Kpoint<KpointType> *kptr, int n, KpointType *A, int lda, Kpoi
 
     delete [] tarr;
     delete [] Vdiag;
+
+    delete [] fs_eigcounts;
+    delete [] fs_eigstop;
+    delete [] fs_eigstart;
 
     return 0;
 } 
