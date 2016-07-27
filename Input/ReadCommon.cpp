@@ -232,6 +232,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_TERMINATE, OPTIONAL, charge_analysis,
                      "Type of charge nalysis to use. Only Voronoi deformation density is currently available.\n", 
                      "charge_analysis must be either \"Voronoi\" or \"None\". Terminating.\n");
+    
+    If.RegisterInputKey("charge_analysis_period", &lc.charge_analysis_period, 0, 500, 0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "How often to  perform and write out charge analysis.",
+                     "charge_analysis_write_period must lie in the range (1,500). Resetting to the default value of 0.\n");
 
     If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Coarse",
                      CHECK_AND_TERMINATE, OPTIONAL, vdwdf_grid_type,

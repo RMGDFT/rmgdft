@@ -74,6 +74,7 @@ remap_3d.c
 factor.c
 get_tf_rho.c
 Vdd.cpp
+WriteChargeAnalysis.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories(${MAGMA_INCLUDES})

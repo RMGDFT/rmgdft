@@ -192,6 +192,7 @@ void trade_imagesx_central_async (double * f, double * w, int dimx, int dimy, in
 double AtomicInterpolate(double *f, double r);
 void lbfgs (double *posion, double *force, int num_ions, int num_images);
 void Vdd(double * rho);
+void WriteChargeAnalysis(void);
 
 
 

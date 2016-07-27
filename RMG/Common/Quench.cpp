@@ -94,6 +94,22 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 		}
 	    }
 	}
+	
+	
+	/*Perform charge analysis if requested*/
+	if (ct.charge_analysis_period)
+	{
+	    if (ct.scf_steps % ct.charge_analysis_period == 0)
+	    {
+		if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
+		{
+		    double timex = my_crtc ();
+		    Vdd(rho);
+		    WriteChargeAnalysis();
+		    rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
+		}
+	    }
+	}
 
 #if PLPLOT_LIBS
         if(pct.imgpe == 0) {

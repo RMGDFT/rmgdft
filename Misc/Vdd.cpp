@@ -33,7 +33,12 @@ void Vdd(double * rho)
     SPECIES *sp;
     double *loc_array_recv, x[3], cartesian[3];
     MPI_Request *recv_request, send_request1, send_request2;
+    double a00, a01, a02;
+    double a10, a11, a12;
+    double a20, a21, a22;
 
+    //double timex = my_crtc ();
+    
     hxgrid = get_hxxgrid(); //The fine grid spacing in x
     hygrid = get_hyygrid(); //The fine grid spacing in y
     hzgrid = get_hzzgrid(); //The fine grid spacing in z
@@ -49,6 +54,19 @@ void Vdd(double * rho)
     FPZ_OFFSET = get_FPZ_OFFSET(); //The processor grid offset from pe 0 of this processor in the z direction
 
     FP0_BASIS = get_FP0_BASIS(); //The number of grid points per processor
+
+    /*Lattice parameters to avoid calling to_cartesian repeatedly*/
+    a00 = Rmg_L.get_a0(0);
+    a01 = Rmg_L.get_a0(1);
+    a02 = Rmg_L.get_a0(2);
+    
+    a10 = Rmg_L.get_a1(0);
+    a11 = Rmg_L.get_a1(1);
+    a12 = Rmg_L.get_a1(2);
+    
+    a20 = Rmg_L.get_a2(0);
+    a21 = Rmg_L.get_a2(1);
+    a22 = Rmg_L.get_a2(2);
 
     /*setup ions, we do it here, so that we avoid extra work when looping over all gridpoints*/
     /*Only loop over local ions, i.e.ions whose local potentials have overlap with current domain*/
@@ -94,8 +112,10 @@ void Vdd(double * rho)
     xtal_z = new double[ion_multiply * num_ions];
     xtal_index = new int [ion_multiply * num_ions];
 
+    //rmg_printf("\n Vdd setup took %f seconds\n", my_crtc () - timex);
     
 
+    //timex = my_crtc ();
     /*Store xtal coordinates of ions (including periodic images) into a local array*/
     count = 0;
     for (ionct = 0; ionct < num_ions; ionct++) //for each ion number
@@ -124,6 +144,8 @@ void Vdd(double * rho)
 	    }
 	}
     }
+		    
+    //rmg_printf("\n Vdd loop 1 took %f seconds\n", my_crtc () - timex);
     
 
 
@@ -152,6 +174,7 @@ void Vdd(double * rho)
     //Go through each each grid point by looping through each cartesian direction
     j = 0; //index for use in all three dimensions
 
+    //timex = my_crtc ();
     for (int ix = 0; ix < dimx; ix++)
     {
 
@@ -175,7 +198,12 @@ void Vdd(double * rho)
 		    x[1] = yc - xtal_y[ionct];
 		    x[2] = zc - xtal_z[ionct];
 
-		    to_cartesian (x, cartesian);
+		    //to_cartesian (x, cartesian);
+		    cartesian[0] = x[0] * a00 + x[1] * a10 + x[2] * a20;  
+		    cartesian[1] = x[0] * a01 + x[1] * a11 + x[2] * a21;  
+		    cartesian[2] = x[0] * a02 + x[1] * a12 + x[2] * a22;  
+
+
 
 		    dist  = cartesian[0] * cartesian[0];
 		    dist += cartesian[1] * cartesian[1];
@@ -219,6 +247,8 @@ void Vdd(double * rho)
 	}
 	xc += hxgrid; //advance to the next gridpoint in the x direction
     }
+		    
+    //rmg_printf("\n Vdd loop 2 took %f seconds\n", my_crtc () - timex);
 
 
     /*Array to store number of voronoi domains on each processor*/
@@ -244,6 +274,8 @@ void Vdd(double * rho)
 
     if(pct.gridpe == 0)
     {
+	 //timex = my_crtc ();
+
 	/*Get total size of receive buffer (not counting local data)*/
 	recv_buff_size = 0;
 	
@@ -297,25 +329,19 @@ void Vdd(double * rho)
 	    ct.ions[ion_index].partial_charge += loc_array_recv[j];
 	    
 	}
+	//rmg_printf("\n Vdd p2p communication took %f seconds\n", my_crtc () - timex);
 
 
     
 
-#if 0
-	rmg_printf ("\n\n  VORONOI DEFORMATION DENSITY PARTIAL CHARGES \n\n");
-	rmg_printf("      Ion  Species     VDD Charge\n");
-#endif
     
 	check = 0.0;
 	for (i = 0; i < ct.num_ions; i++)
 	{
 
 	    iptr = &ct.ions[i];
-	    //sp = &ct.sp[iptr->species];
 	    iptr->partial_charge *= vel;
 
-	    //rmg_printf("     %3d     %2s          %6.3f\n", i + 1, sp->atomic_symbol, iptr->partial_charge); 
-	    
 	    check +=  iptr->partial_charge;
 	}
 	    
@@ -327,6 +353,7 @@ void Vdd(double * rho)
     else
     {
 
+	//timex = my_crtc ();
 	MPI_Isend (rel_index, rel_index_size, MPI_INT,    0, 111, pct.grid_comm, &send_request1);
 	MPI_Isend (loc_array, rel_index_size, MPI_DOUBLE, 0, 111, pct.grid_comm, &send_request2);
 	
@@ -335,6 +362,8 @@ void Vdd(double * rho)
 	MPI_Waitall(1,  &send_request1, MPI_STATUSES_IGNORE);
 	/*Floating point array communication*/
 	MPI_Waitall(1,  &send_request2, MPI_STATUSES_IGNORE);
+		    
+	//printf("\n Vdd communication took %f seconds\n", my_crtc () - timex);
 
     }
 

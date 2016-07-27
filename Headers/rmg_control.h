@@ -317,6 +317,9 @@ typedef struct
 
     /* Type of charge analysis*/
     int charge_analysis_type;
+    
+    /* How often (in terms of SCF steps) to perform and write out charge analysis*/
+    int charge_analysis_period;
 
     /* Projector mixing parameter */
     double prjmix;
