@@ -191,11 +191,8 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         ct.init_states = ct.total_atomic_orbitals + ct.extra_random_lcao_states;
         if(ct.init_states < ct.num_states) {
             ct.init_states = ct.num_states;
-            ct.run_states = ct.num_states;
         }
-        else {
-            ct.run_states = ct.num_states;
-        }
+
         if(!ct.extra_random_lcao_states) {
             rmg_printf("Using %d atomic orbitals for initial wavefunctions.\n", ct.total_atomic_orbitals);
         }
@@ -207,8 +204,9 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     }
     else {
         ct.init_states = ct.num_states;
-        ct.run_states = ct.num_states;
     }
+
+    ct.run_states = ct.num_states;
 
     // Now figure out some buffer sizes
     int alloc_states = ct.run_states;
@@ -218,13 +216,9 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     ct.max_states = alloc_states;
 
 
-    // Set ct.num_states to ct.init_states. After init it is set to ct.run_states
-    ct.num_states = ct.init_states;
-
-
     /* Allocate memory for the states */
     this->Kstates = new State<KpointType>[ct.max_states];
-    this->nstates = ct.num_states;
+    this->nstates = ct.init_states;
 
 //    if (verify ("calculation_mode", "Band Structure Only"))
 //        nk = 1;
@@ -268,7 +262,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 
         for (idx = 0; idx < nspin; idx++)
         {
-                for (is = 0; is < ct.num_states; is++)
+                for (is = 0; is < ct.init_states; is++)
                 {
                         oc = 0.0;
                         if ( ne[idx] >= (3.0 - nspin) )
