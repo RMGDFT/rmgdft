@@ -132,12 +132,14 @@ void init_sym (void)
     //}
     //   check if the real space grid fit the symmetry operations, if not, kick it out
 
-    nsym = 0;
     for(kpt = 0; kpt < nsym_atom; kpt++)
     {
         frac1 = modf(translation[kpt*3 + 0] * nr1, &intpart);
         frac2 = modf(translation[kpt*3 + 1] * nr2, &intpart);
         frac3 = modf(translation[kpt*3 + 2] * nr3, &intpart);
+        if(frac1 > 0.5) frac1 = 1.0-frac1;
+        if(frac2 > 0.5) frac2 = 1.0-frac2;
+        if(frac3 > 0.5) frac3 = 1.0-frac3;
         if(frac1 < symprec && frac2 < symprec &&frac3 < symprec)
         {
 
@@ -146,9 +148,10 @@ void init_sym (void)
                 for(j = 0; j < 3; j++)
                     s[nsym * 9 + i *3 + j] = sa[kpt * 9 + i *3 + j];
 
-            ftau[nsym*3 + 0] = translation[kpt*3 + 0] * nr1;
-            ftau[nsym*3 + 1] = translation[kpt*3 + 1] * nr2;
-            ftau[nsym*3 + 2] = translation[kpt*3 + 2] * nr3;
+            ftau[nsym*3 + 0] = translation[kpt*3 + 0] * nr1 + symprec;
+            ftau[nsym*3 + 1] = translation[kpt*3 + 1] * nr2 + symprec;
+            ftau[nsym*3 + 2] = translation[kpt*3 + 2] * nr3 + symprec;
+
 
             for(i = 0; i < 3; i++)
             {
@@ -168,6 +171,8 @@ void init_sym (void)
         }
     }
 
+    printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
+    printf("\n number of sym operation  after considering real space grid: %d",nsym);
     assert(nsym >0);
     if(nsym == 1) ct.is_use_symmetry = 0;
 
