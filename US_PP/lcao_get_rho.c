@@ -15,7 +15,7 @@ void lcao_get_rho (double * arho_f)
 {
 
     int ion, idx, FP0_BASIS;
-    double t1, t2;
+    double t1, t2, difference;
 
     FP0_BASIS = get_FP0_BASIS();
     
@@ -35,8 +35,14 @@ void lcao_get_rho (double * arho_f)
     t2 = get_vel_f() *  real_sum_all (t2, pct.grid_comm);
 
     t1 = ct.nel / t2;
-    if (pct.imgpe == 0)
-        printf ("\nNormalization constant for initial atomic charge is %f", t1);
+    
+    difference = fabs(t1 - 1.0);
+    
+    if ((ct.verbose == 1) || (difference > 0.05))
+    {
+	if (pct.imgpe == 0)
+	    printf ("\n LCAO initializationNormalization constant for initial atomic charge is %f\n", t1);
+    }
 
     for(idx = 0;idx < FP0_BASIS;idx++) arho_f[idx] *= t1;
 

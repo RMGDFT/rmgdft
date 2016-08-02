@@ -322,8 +322,11 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     ct.crho = ct.crho * get_vel_f();
     ct.crho = real_sum_all (ct.crho, pct.grid_comm);  /* sum over pct.grid_comm  */
 
-    if (pct.imgpe==0)
-        printf("\nCompensating charge is %.8e\n", ct.crho);
+    if (ct.verbose)
+    {
+	if (pct.imgpe==0)
+	    printf("\nCompensating charge is %.8e\n", ct.crho);
+    }
 
     t1 = 0.0;
     for (idx = 0; idx < FP0_BASIS; idx++)

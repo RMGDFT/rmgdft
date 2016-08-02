@@ -258,11 +258,6 @@ void initialize(int argc, char **argv)
     if(!ct.is_gamma) 
     {
         ct.is_use_symmetry = 1;
-        rmg_printf("\nUSING COMPLEX ORBITALS\n");
-    }
-    else
-    {
-        rmg_printf("\nUSING REAL ORBITALS\n");
     }
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
@@ -304,15 +299,12 @@ void initialize(int argc, char **argv)
     if (pct.imgpe == 0)
     {
     
-        /* Write header to stdout */
-        write_header (); 
-
-        if(ct.is_gamma) {
+        /*if(ct.is_gamma) {
             Kptr_g[0]->write_occ(); 
         }
         else {
             Kptr_c[0]->write_occ(); 
-        }
+        }*/
     }
 
 

@@ -129,12 +129,16 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     ct.tcharge = real_sum_all (ct.tcharge, pct.grid_comm);
     ct.tcharge = ct.tcharge * get_vel_f();
 
-    /* Renormalize charge, there could be some discrpancy because of interpolation */
+    /* Renormalize charge, there could be some discrepancy because of interpolation */
     double t1 = ct.nel / ct.tcharge;
-    rmg_printf ("Charge normalization constant: %f\n", t1);
     for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
+    
+    /*Write out normalization constant if needed*/
+    double difference = fabs(t1 - 1.0);
+    if ((ct.verbose == 1) || (difference > 0.01))
+	rmg_printf ("Charge normalization constant: %f\n", t1);
 
-    /*Update ct.tcharge, do not really recalculate it, just mutltiply it by normalization constant */
+    /*Update ct.tcharge, do not really recalculate it, just multiply it by normalization constant */
     ct.tcharge *= t1;
 
 

@@ -193,13 +193,6 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
             ct.init_states = ct.num_states;
         }
 
-        if(!ct.extra_random_lcao_states) {
-            rmg_printf("Using %d atomic orbitals for initial wavefunctions.\n", ct.total_atomic_orbitals);
-        }
-        else {
-            rmg_printf("Using %d atomic orbitals and %d random orbitals for initial wavefunctions.\n", 
-                       ct.total_atomic_orbitals, ct.extra_random_lcao_states);
-        }
 
     }
     else {

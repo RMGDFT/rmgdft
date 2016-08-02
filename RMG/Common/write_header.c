@@ -110,6 +110,11 @@ void write_header (void)
 
     }                           /* end switch */
 
+    if(!ct.is_gamma)
+	printf("\n    USING COMPLEX ORBITALS\n");
+    else
+	printf("\n    USING REAL ORBITALS\n");
+
     printf ("    Maximum number of MD steps = %d\n", ct.max_md_steps);
     printf ("    Maximum number of SCF steps = %d\n", ct.max_scf_steps);
     printf ("    Checkpoint every %d steps\n", ct.checkpoint);
@@ -385,6 +390,15 @@ void write_header (void)
     }
 
 
+    if(!ct.extra_random_lcao_states) 
+    {
+	printf("    Using %d atomic orbitals for initial wavefunctions.\n", ct.total_atomic_orbitals);
+    }
+    else 
+    {
+	printf("    Using %d atomic orbitals and %d random orbitals for initial wavefunctions.\n", 
+		ct.total_atomic_orbitals, ct.extra_random_lcao_states);
+    }
 
     printf ("\n");
     printf ("    Atomic Species Information:\n");

@@ -359,11 +359,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
 
-    time2 = my_crtc ();
+    if (ct.verbose == 1)
+    {
+	time2 = my_crtc ();
 
-    rmg_printf ("\n\n init: Starting FFTW initialization ...");
+	rmg_printf ("\n\n init: Starting FFTW initialization ...");
 
-    fflush (NULL);
+	fflush (NULL);
+    }
 
 
     /*Do forward transform for each species and store results on the coarse grid */
@@ -373,8 +376,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
    // InitLocalForward();  
     delete(RT1);
 
-    rmg_printf (" finished in %.1f s", my_crtc () - time2);
-    fflush (NULL);
+    if (ct.verbose == 1)
+    {
+	rmg_printf (" finished in %.1f s", my_crtc () - time2);
+	fflush (NULL);
+    }
 
 
     /* Initialize the qfunction stuff */
@@ -386,6 +392,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     RT1 = new RmgTimer("2-Init: ReinitIonicPotentials");
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
     delete(RT1);
+    
+    /* Write header, do it here rather than later, otherwise other information is printed first*/
+    if (pct.imgpe == 0)
+    {
+        write_header (); 
+    }
 
     if (ct.forceflag == BAND_STRUCTURE) return;
 
