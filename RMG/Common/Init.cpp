@@ -521,7 +521,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->mix_betaxpsi(0);
             delete RT3;
         }
+
+
+        if (ct.spin_flag)
+            GetOppositeEigvals (Kptr);
+
+
+        /* Take care of occupation filling */
+        ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
         OutputEigenvalues(Kptr, 0, -1);
+
         // Get new density 
         RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
         GetNewRho(Kptr, new_rho);

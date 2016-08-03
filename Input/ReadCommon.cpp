@@ -308,7 +308,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Type of functional for exchange-correlation.\n", 
                      "exchange_correlation_type not supported. Terminating.\n");
 
-    If.RegisterInputKey("occupations_type", NULL, &lc.occ_flag, "Fixed",
+    If.RegisterInputKey("occupations_type", NULL, &lc.occ_flag, "Fermi Dirac",
                      CHECK_AND_TERMINATE, OPTIONAL, occupations_type,
                      "Method used to set the occupations of the electronic orbitals.\n", 
                      "occupations_type not supported. Terminating.\n");
@@ -401,7 +401,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Target electron temperature when not using fixed occupations.\n ",
                      "occupation_electron_temperature_eV must lie in the range (0.0,2.0). Resetting to the default value of 0.04.\n");
 
-    If.RegisterInputKey("occupation_number_mixing", &lc.occ_mix, 0.0, 1.0, 0.3,
+    If.RegisterInputKey("occupation_number_mixing", &lc.occ_mix, 0.0, 1.0, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Mixing parameter for orbital occupations when not using fixed occupations.\n",
                      "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3.\n");
