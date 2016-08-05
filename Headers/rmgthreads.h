@@ -34,15 +34,18 @@ typedef struct
     void *p2;
     void *p3;
     void *p4;
-    int ion;        // Used for threaded beta_xpsi
-    int nion;       // Used for threaded beta_xpsi
+    int ion;          // Used for threaded beta_xpsi
+    int nion;         // Used for threaded beta_xpsi
     double *sintR;    // Used for threaded beta_xpsi
     double *sintI;    // Used for threaded beta_xpsi
     double *weiptr;   // Used for threaded beta_xpsi
     void *nv;         // Non-local operator applied to a specific wavefunction
     void *ns;         // S-operator applied to a specific wavefunction
     void *Bns;        // Bapplied to S-operator applied to a specific wavefunction
-    int kpt;    // Used for threaded beta_xpsi
+    int kpt;          // Used for threaded beta_xpsi
+    double eig;            // Used for Davidson preconditioner
+    double avg_potential;  // Used for Davidson preconditioner
+    double fd_diag;        // Used for Davidson preconditioner
     int istate;
 } SCF_THREAD_CONTROL;
 

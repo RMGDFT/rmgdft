@@ -32,6 +32,7 @@
 #include "RmgTimer.h"
 #include "RmgThread.h"
 #include "GlobalSums.h"
+#include "RmgSumAll.h"
 #include "Kpoint.h"
 #include "RmgGemm.h"
 #include "Mgrid.h"
@@ -56,14 +57,54 @@
 
 
 
-template void DavPreconditioner<double>(Kpoint<double> *, double *, double *, double, double *, double *, int, double);
-template void DavPreconditioner<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *, 
+template void DavPreconditioner<double>(Kpoint<double> *, double *, double, double *, double *, int, double);
+template void DavPreconditioner<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
                                double, double *, double *, int, double);
 
+template void DavPreconditionerOne<double>(Kpoint<double> *, double *, double, double, double *, double);
+template void DavPreconditionerOne<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
+                               double, double, double *, double);
 
 template <typename OrbitalType>
-void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType *res, double fd_diag, double *eigs, 
+void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_diag, double *eigs, 
                         double *vtot, int notconv, double avg_potential)
+{
+
+    BaseThread *T = BaseThread::getBaseThread(0);
+
+    int istop = notconv / T->get_threads_per_node();
+    istop = istop * T->get_threads_per_node();
+
+    for(int st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
+
+          SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
+
+          for(int ist = 0;ist < T->get_threads_per_node();ist++) {
+              thread_control[ist].job = HYBRID_DAV_PRECONDITIONER;
+              thread_control[ist].vtot = vtot;
+              thread_control[ist].p1 = (void *)kptr;
+              thread_control[ist].p2 = (void *)&res[(st1 + ist) * kptr->pbasis];
+              thread_control[ist].avg_potential = avg_potential;
+              thread_control[ist].fd_diag = fd_diag;
+              thread_control[ist].eig = eigs[st1 + ist];
+              T->set_pptr(ist, &thread_control[ist]);
+          }
+
+          // Thread tasks are set up so run them
+          T->run_thread_tasks(T->get_threads_per_node());
+
+    }
+
+    // Process any remaining states in serial fashion
+    for(int st1 = istop;st1 < notconv;st1++) {
+        DavPreconditionerOne (kptr, &res[st1 * kptr->pbasis], fd_diag, eigs[st1], vtot, avg_potential);
+    }
+
+}
+
+template <typename OrbitalType>
+void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_diag, double eig, 
+                        double *vtot, double avg_potential)
 {
     BaseGrid *G = kptr->G;
     TradeImages *T = kptr->T;
@@ -84,41 +125,35 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType
     double hygrid = G->get_hygrid(1);
     double hzgrid = G->get_hzgrid(1);
 
-    OrbitalType *work_t = new OrbitalType[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    OrbitalType *work1_t = new OrbitalType[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    OrbitalType *work2_t = new OrbitalType[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    double *nvtot = new double[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    OrbitalType *work_t = new OrbitalType[12*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    OrbitalType *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    OrbitalType *work2_t = &work_t[8*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    //double *nvtot = new double[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
 
-    for(int idx = 0;idx <pbasis;idx++) nvtot[idx] = -vtot[idx];
+    //for(int idx = 0;idx <pbasis;idx++) nvtot[idx] = -vtot[idx];
 
     // Apply preconditioner
-    for(int st1=0;st1 < notconv;st1++) {
+    double t1 = 0.0;
+    for(int idx = 0;idx <pbasis;idx++) t1 += std::real(res[idx]);
 
-        double t1 = 0.0;
-        for(int idx = 0;idx <pbasis;idx++) t1 += std::real(res[st1*pbasis + idx]);
+    t1 = RmgSumAll(t1, pct.grid_comm) / (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
+    // neutralize cell
+    for(int idx = 0;idx <pbasis;idx++) res[idx] -= OrbitalType(t1);
 
-        t1 = real_sum_all(t1, pct.grid_comm) / (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
-        // neutralize cell
-        for(int idx = 0;idx <pbasis;idx++) res[st1*pbasis + idx] -= OrbitalType(t1);
+    CPP_pack_ptos (work1_t, res, dimx, dimy, dimz);
+    MG.mgrid_solv (work2_t, work1_t, work_t,
+                dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
+                0, G->get_neighbors(), levels, pre, post, 1,
+                tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
+                //tstep, 1.0*Zfac, 0.0, nvtot,
+                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+    CPP_pack_stop (work2_t, res, dimx, dimy, dimz);
 
-        CPP_pack_ptos (work1_t, &res[st1*pbasis], dimx, dimy, dimz);
-        MG.mgrid_solv (work2_t, work1_t, work_t,
-                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                    0, G->get_neighbors(), levels, pre, post, 1,
-                    tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
-                    //tstep, 1.0*Zfac, 0.0, nvtot,
-                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-        CPP_pack_stop (work2_t, &res[st1*pbasis], dimx, dimy, dimz);
+    for(int idx = 0;idx <pbasis;idx++) res[idx] += eig * t1;;
 
-        for(int idx = 0;idx <pbasis;idx++) res[st1*pbasis + idx] += eigs[st1] * t1;;
-
-    }
-
-    delete [] nvtot;
-    delete [] work2_t;
-    delete [] work1_t;
+    //delete [] nvtot;
     delete [] work_t;
 
 }

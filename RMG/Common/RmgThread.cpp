@@ -120,6 +120,14 @@ void *run_threads(void *v) {
                                           (std::complex<double> *)ss->nv);
                } 
                break;
+            case HYBRID_DAV_PRECONDITIONER:
+               if(ct.is_gamma) {
+                   kptr_d = (Kpoint<double> *)ss->p1;
+                   DavPreconditionerOne<double> (kptr_d, (double *)ss->p2, ss->fd_diag, ss->eig, ss->vtot, ss->avg_potential);
+               }
+               else {
+               } 
+               break;
             case HYBRID_BETAX_PSI1_CALCULATE:
 //               betaxpsi1_calculate_one(ss->sp, ss->ion, ss->nion, ss->sintR, ss->sintI, ss->kpt, ss->weiptr);
                break;

@@ -48,8 +48,11 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
 template <typename RmgType>
 void CPP_app_smooth_test (RmgType * f, RmgType *b, int dimx, int dimy, int dimz);
 template <typename OrbitalType>
-void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *psi, OrbitalType *res, 
+void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, 
                         double fd_diag, double *eigs, double *vtot, int notconv, double avg_potential);
+template <typename OrbitalType>
+void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, 
+                        double fd_diag, double eig, double *vtot, double avg_potential);
 
 
 

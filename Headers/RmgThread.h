@@ -34,6 +34,7 @@
 #define GET_VH 7
 
 
+#define HYBRID_DAV_PRECONDITIONER 9
 #define HYBRID_APPLY_HAMILTONIAN 10
 
 #endif
