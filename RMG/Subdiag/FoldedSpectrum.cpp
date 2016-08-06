@@ -74,6 +74,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     RmgTimer *RT1;
 
     KpointType ONE_t(1.0);
+    KpointType ZERO_t(0.0);
     char *cuplo = "l", *jobz="V";
     int info=0;
 

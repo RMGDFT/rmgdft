@@ -74,6 +74,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     int istop = notconv / T->get_threads_per_node();
     istop = istop * T->get_threads_per_node();
+    if(T->get_threads_per_node() < 4) istop = 0;
 
     for(int st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
 
