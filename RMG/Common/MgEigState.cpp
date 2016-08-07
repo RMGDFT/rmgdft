@@ -21,6 +21,7 @@
 */
 
 #include <complex>
+#include <alloca.h>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Mgrid.h"
@@ -181,7 +182,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     TradeImages *T = kptr->T;
 
     double eig, diag, t1, t2, t4;
-    double *work1;
     int eig_pre[8] = { 0, 8, 8, 20, 20, 20, 20, 20 };
     int eig_post[8] = { 0, 2, 2, 2, 2, 2, 2, 2 };
     int potential_acceleration;
@@ -203,20 +203,15 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     /* Grab some memory */
-    CalcType *res2_t = new CalcType[2*sbasis];
-    CalcType *work2_t = new CalcType[4 * sbasis];
-    CalcType *work1_t = new CalcType[4 * sbasis];
-    work1 = new double[4 * sbasis];
+    CalcType *res2_t = (CalcType *)alloca(2*sbasis * sizeof(CalcType));
+    CalcType *work2_t = (CalcType *)alloca(4*sbasis * sizeof(CalcType));
+    CalcType *work1_t = (CalcType *)alloca(4*sbasis * sizeof(CalcType));
+    CalcType *sg_twovpsi_t  = (CalcType *)alloca(2*sbasis * sizeof(CalcType));
 
-    CalcType *sg_psi_t = new CalcType[2 * sbasis];
-    double *res = new double[2*sbasis];
-    CalcType *sg_twovpsi_t = new CalcType[2 * sbasis];
-
-    CalcType *res2 = new CalcType[2 * sbasis];
-    OrbitalType *saved_psi = new OrbitalType[2 * sbasis];
-    double *nvtot_psi = new double[2*sbasis];
-    CalcType *tmp_psi_t = new CalcType[2 * sbasis];
-    CalcType *res_t = new CalcType[2 * sbasis];
+    OrbitalType *saved_psi  = (OrbitalType *)alloca(2*sbasis * sizeof(OrbitalType));
+    double *nvtot_psi = (double *)alloca(2*sbasis * sizeof(double));
+    CalcType *tmp_psi_t  = (CalcType *)alloca(2*sbasis * sizeof(CalcType));
+    CalcType *res_t  = (CalcType *)alloca(2*sbasis * sizeof(CalcType));
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
     std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
@@ -450,20 +445,6 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
 
     /* Release our memory */
     delete [] kdr;
-    delete [] res_t;
-    delete [] tmp_psi_t;
-    delete [] nvtot_psi;
-    delete [] saved_psi;
-    delete [] res2;
-
-    delete [] sg_twovpsi_t;
-    delete [] res;
-    delete [] sg_psi_t;
-
-    delete [] work1;
-    delete [] work1_t;
-    delete [] work2_t;
-    delete [] res2_t;
 
 } // end MgEigState
 
