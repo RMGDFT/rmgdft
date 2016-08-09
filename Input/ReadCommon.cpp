@@ -202,10 +202,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Type of run. Choices are \"Random Start\", \"Restart From File\", or \"LCAO Start\".\n", 
                      "start_mode must be one of  \"Random Start\", \"Restart From File\", or \"LCAO Start\". Terminating.\n");
 
-    If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "scalapack",
+    If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "auto",
                      CHECK_AND_FIX, OPTIONAL, subdiag_driver,
                      "Driver type used for subspace diagonalization of the eigenvectors.\n", 
-                     "subdiag_driver must be lapack, scalapack or magma. Resetting to scalapack.\n");
+                     "subdiag_driver must be lapack, scalapack, magma or auto. Resetting to auto.\n");
 
     If.RegisterInputKey("kohn_sham_solver", NULL, &lc.kohn_sham_solver, "multigrid",
                      CHECK_AND_FIX, OPTIONAL, kohn_sham_solver,

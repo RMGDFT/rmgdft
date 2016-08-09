@@ -392,6 +392,27 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     RT1 = new RmgTimer("2-Init: ReinitIonicPotentials");
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
     delete(RT1);
+
+
+    /*Write out warnings, do it here before header otherwise they are hard to find*/
+    /*if(Verify ("charge_mixing_type","pulay", Kptr[0]->ControlMap) &&	    
+	    (ct.potential_acceleration_constant_step > 0.0))*/
+
+    /*Take care of automatic settings, do it just before write header so that settings can be printed out  */
+    /*Subspace diagonalization: Use magma if GPU-enabled, otherwise switch between lapack and Scalapack according to number of states*/
+    if (ct.subdiag_driver ==  SUBDIAG_AUTO)
+    {
+#if GPU_ENABLED && MAGMA_LIBS
+	ct.subdiag_driver = SUBDIAG_MAGMA;
+#else
+	if (ct.num_states < 128) 
+	    ct.subdiag_driver = SUBDIAG_LAPACK;
+	else
+	    ct.subdiag_driver = SUBDIAG_SCALAPACK;
+    }
+#endif
+
+
     
     /* Write header, do it here rather than later, otherwise other information is printed first*/
     if (pct.imgpe == 0)
