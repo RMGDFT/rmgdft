@@ -229,9 +229,10 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CopyAndConvert(pbasis, ns, work1_t);
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
-    RmgTimer *RT1 = new RmgTimer("Mg_eig: apply B operator");
-    ApplyBOperator<CalcType> (work1_t, res2_t, "Coarse");
-    delete(RT1);
+    {
+        RmgTimer RT1("Mg_eig: apply B operator");
+        ApplyBOperator<CalcType> (work1_t, res2_t, "Coarse");
+    }
 
     // Copy double precision psi into single precison array
     CopyAndConvert(pbasis, tmp_psi, tmp_psi_t);
@@ -251,34 +252,35 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
 
         /* Apply Mehrstellen left hand operators */
-        RT1 = new RmgTimer("Mg_eig: apply A operator");
-        diag = ApplyAOperator<CalcType> (tmp_psi_t, work2_t, "Coarse");
-        delete(RT1);
-
-        // if complex orbitals apply gradient to psi and compute dot products
-        RT1 = new RmgTimer("Mg_eig: apply grad");
-        if(typeid(OrbitalType) == typeid(std::complex<double>)) {
-
-            CalcType *gx = new CalcType[pbasis];
-            CalcType *gy = new CalcType[pbasis];
-            CalcType *gz = new CalcType[pbasis];
-
-            ApplyGradient (tmp_psi_t, gx, gy, gz, APP_CI_EIGHT, "Coarse");
-
-            std::complex<double> I_t(0.0, 1.0);
-            for(int idx = 0;idx < pbasis;idx++) {
-
-                kdr[idx] = -I_t * (kptr->kvec[0] * (std::complex<double>)gx[idx] +
-                                               kptr->kvec[1] * (std::complex<double>)gy[idx] +
-                                               kptr->kvec[2] * (std::complex<double>)gz[idx]);
-            }
-
-            delete [] gz;
-            delete [] gy;
-            delete [] gx;
+        {
+            RmgTimer RT1("Mg_eig: apply A operator");
+            diag = ApplyAOperator<CalcType> (tmp_psi_t, work2_t, "Coarse");
         }
 
-        delete RT1;
+        // if complex orbitals apply gradient to psi and compute dot products
+        {
+            RmgTimer RT1("Mg_eig: apply grad");
+            if(typeid(OrbitalType) == typeid(std::complex<double>)) {
+
+                CalcType *gx = new CalcType[pbasis];
+                CalcType *gy = new CalcType[pbasis];
+                CalcType *gz = new CalcType[pbasis];
+
+                ApplyGradient (tmp_psi_t, gx, gy, gz, APP_CI_EIGHT, "Coarse");
+
+                std::complex<double> I_t(0.0, 1.0);
+                for(int idx = 0;idx < pbasis;idx++) {
+
+                    kdr[idx] = -I_t * (kptr->kvec[0] * (std::complex<double>)gx[idx] +
+                                                   kptr->kvec[1] * (std::complex<double>)gy[idx] +
+                                                   kptr->kvec[2] * (std::complex<double>)gz[idx]);
+                }
+
+                delete [] gz;
+                delete [] gy;
+                delete [] gx;
+            }
+        }
 
         // Copy saved application to ns to res
         for(int idx=0;idx < pbasis;idx++) {
@@ -294,9 +296,10 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         }
 
         /* B operating on 2*V*psi stored in work1 */
-        RT1 = new RmgTimer("Mg_eig: apply B operator");
-        ApplyBOperator<CalcType> (sg_twovpsi_t, work1_t, "Coarse");
-        delete(RT1);
+        {
+            RmgTimer RT1("Mg_eig: apply B operator");
+            ApplyBOperator<CalcType> (sg_twovpsi_t, work1_t, "Coarse");
+        }
 
         // Add in non-local which has already had B applied in AppNls
         for(int idx=0;idx < pbasis;idx++) work1_t[idx] += 2.0 * nv[idx];
@@ -375,26 +378,26 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
 
 
             /* Do multigrid step with solution returned in sg_twovpsi */
-            RT1 = new RmgTimer("Mg_eig: mgrid_solv");
-            int ixoff, iyoff, izoff;
-            int dx2 = MG.MG_SIZE (dimx, 0, G->get_NX_GRID(1), G->get_PX_OFFSET(1), G->get_PX0_GRID(1), &ixoff, ct.boundaryflag);
-            int dy2 = MG.MG_SIZE (dimy, 0, G->get_NY_GRID(1), G->get_PY_OFFSET(1), G->get_PY0_GRID(1), &iyoff, ct.boundaryflag);
-            int dz2 = MG.MG_SIZE (dimz, 0, G->get_NZ_GRID(1), G->get_PZ_OFFSET(1), G->get_PZ0_GRID(1), &izoff, ct.boundaryflag);
-            CalcType *v_mat = &sg_twovpsi_t[sbasis];
-            CalcType *f_mat = &work1_t[sbasis];
-            MG.mg_restrict (work1_t, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+            {
+                RmgTimer RT1("Mg_eig: mgrid_solv");
+                int ixoff, iyoff, izoff;
+                int dx2 = MG.MG_SIZE (dimx, 0, G->get_NX_GRID(1), G->get_PX_OFFSET(1), G->get_PX0_GRID(1), &ixoff, ct.boundaryflag);
+                int dy2 = MG.MG_SIZE (dimy, 0, G->get_NY_GRID(1), G->get_PY_OFFSET(1), G->get_PY0_GRID(1), &iyoff, ct.boundaryflag);
+                int dz2 = MG.MG_SIZE (dimz, 0, G->get_NZ_GRID(1), G->get_PZ_OFFSET(1), G->get_PZ0_GRID(1), &izoff, ct.boundaryflag);
+                CalcType *v_mat = &sg_twovpsi_t[sbasis];
+                CalcType *f_mat = &work1_t[sbasis];
+                MG.mg_restrict (work1_t, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
-            MG.mgrid_solv<CalcType> (v_mat, f_mat, work2_t,
-                        dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                        1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
-                        ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
-                        G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                        G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                        G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-            delete(RT1);
-            RT1 = new RmgTimer("Mg_eig: mg_prolong");
-            MG.mg_prolong (sg_twovpsi_t, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-            delete(RT1);
+                MG.mgrid_solv<CalcType> (v_mat, f_mat, work2_t,
+                            dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
+                            1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
+                            ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
+                            G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                            G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                            G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+            
+                MG.mg_prolong (sg_twovpsi_t, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+            }
 
             /* The correction is in a smoothing grid so we use this
              * routine to update the orbital which is stored in a physical grid.
