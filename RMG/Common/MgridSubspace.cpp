@@ -213,7 +213,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     /* do diagonalizations if requested, if not orthogonalize */
     if (diag_this_step) {
 
-        RT1 = new RmgTimer("3-MgridSubspace: Diagonlization");
+        RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
         Subdiag (kptr, vtot_psi, ct.subdiag_driver);
         delete(RT1);
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
