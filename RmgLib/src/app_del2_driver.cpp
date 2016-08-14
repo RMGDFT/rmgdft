@@ -51,46 +51,46 @@ double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b
     FiniteDiff FD(L);
 
     if(order == APP_CI_SECOND) {
-        RmgTimer RT1("App_del2: trade images");
         sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
         rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 1, CENTRAL_TRADE);
         cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        //free(rptr);
     }
     else if(order == APP_CI_FOURTH) {
-        RmgTimer RT1("App_del2: trade images");
         sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
         rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 2, CENTRAL_TRADE);
         cc = FD.app4_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        //free(rptr);
     }
     else if(order == APP_CI_SIXTH) {
-        RmgTimer RT1("App_del2: trade images");
         sbasis = (dimx + 6) * (dimy + 6) * (dimz + 6);
         rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 3, CENTRAL_TRADE);
         cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        //free(rptr);
     }
     else if(order == APP_CI_EIGHT) {
-        RmgTimer RT1("App_del2: trade images");
         sbasis = (dimx + 8) * (dimy + 8) * (dimz + 8);
         rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 4, CENTRAL_TRADE);
         cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        //free(rptr);
     }
     else if(order == APP_CI_TEN) {
-        RmgTimer RT1("App_del2: trade images");
         sbasis = (dimx + 10) * (dimy + 10) * (dimz + 10);
         rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 5, CENTRAL_TRADE);
         cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        //free(rptr);
     }
     else if(order == APP_CI_TWELVE) {
-        RmgTimer RT1("App_del2: trade images");
         sbasis = (dimx + 12) * (dimy + 12) * (dimz + 12);
         rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 6, CENTRAL_TRADE);
         cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        //free(rptr);
     }
     else {
 

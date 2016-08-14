@@ -81,7 +81,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     // State array is 4 * the number of states in length but memory above
     // the first set of nstates is unused in this routine so we can use it
     // as temporary space.
-    KpointType *tmp_arrayT = kptr->Kstates[kptr->nstates].psi;
+    KpointType *tmp_arrayT = kptr->Kstates[0].psi;
+    tmp_arrayT += num_states * pbasis;
 
     static KpointType *global_matrix1;
     static KpointType *global_matrix2;

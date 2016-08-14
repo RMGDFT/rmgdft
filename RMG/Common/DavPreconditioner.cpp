@@ -75,7 +75,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     int istop = notconv / T->get_threads_per_node();
     istop = istop * T->get_threads_per_node();
-    if(T->get_threads_per_node() < 4) istop = 0;
+//    if(T->get_threads_per_node() < 4) istop = 0;
 
     for(int st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
 
@@ -127,7 +127,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     double hygrid = G->get_hygrid(1);
     double hzgrid = G->get_hzgrid(1);
 
-    OrbitalType *work_t = (OrbitalType *)alloca(12*(dimx + 2)*(dimy + 2)*(dimz + 2) * sizeof(OrbitalType));
+    OrbitalType *work_t = (OrbitalType *)malloc(12*(dimx + 2)*(dimy + 2)*(dimz + 2) * sizeof(OrbitalType));
     OrbitalType *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     OrbitalType *work2_t = &work_t[8*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     //double *nvtot = new double[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
@@ -155,5 +155,5 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     for(int idx = 0;idx <pbasis;idx++) res[idx] += eig * t1;;
 
     //delete [] nvtot;
-
+    free(work_t);
 }

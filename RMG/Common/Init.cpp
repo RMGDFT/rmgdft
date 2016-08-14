@@ -224,7 +224,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     // Wavefunctions are actually stored here
     
-    custat = cudaMallocHost((void **)&rptr, (kpt_storage * ct.max_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+    custat = cudaMallocHost((void **)&rptr, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     custat = cudaMallocHost((void **)&nv, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
@@ -237,7 +237,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
-    rptr = new OrbitalType[kpt_storage * ct.max_states * P0_BASIS + 1024];
+    rptr = new OrbitalType[kpt_storage * ct.alloc_states * P0_BASIS + 1024];
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
     ns = new OrbitalType[ct.max_states * P0_BASIS]();
     if(!ct.norm_conserving_pp) {
@@ -409,8 +409,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 	    ct.subdiag_driver = SUBDIAG_LAPACK;
 	else
 	    ct.subdiag_driver = SUBDIAG_SCALAPACK;
-    }
 #endif
+    }
 
 
     

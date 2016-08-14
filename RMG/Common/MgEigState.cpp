@@ -21,7 +21,6 @@
 */
 
 #include <complex>
-#include <alloca.h>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Mgrid.h"
@@ -203,15 +202,15 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     /* Grab some memory */
-    CalcType *res2_t = (CalcType *)alloca(2*sbasis * sizeof(CalcType));
-    CalcType *work2_t = (CalcType *)alloca(4*sbasis * sizeof(CalcType));
-    CalcType *work1_t = (CalcType *)alloca(4*sbasis * sizeof(CalcType));
-    CalcType *sg_twovpsi_t  = (CalcType *)alloca(2*sbasis * sizeof(CalcType));
+    CalcType *res2_t = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
+    CalcType *work2_t = (CalcType *)malloc(4*sbasis * sizeof(CalcType));
+    CalcType *work1_t = (CalcType *)malloc(4*sbasis * sizeof(CalcType));
+    CalcType *sg_twovpsi_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
 
-    OrbitalType *saved_psi  = (OrbitalType *)alloca(2*sbasis * sizeof(OrbitalType));
-    double *nvtot_psi = (double *)alloca(2*sbasis * sizeof(double));
-    CalcType *tmp_psi_t  = (CalcType *)alloca(2*sbasis * sizeof(CalcType));
-    CalcType *res_t  = (CalcType *)alloca(2*sbasis * sizeof(CalcType));
+    OrbitalType *saved_psi  = (OrbitalType *)malloc(2*sbasis * sizeof(OrbitalType));
+    double *nvtot_psi = (double *)malloc(2*sbasis * sizeof(double));
+    CalcType *tmp_psi_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
+    CalcType *res_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
     std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
@@ -448,6 +447,14 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
 
     /* Release our memory */
     delete [] kdr;
+    free(res_t);
+    free(tmp_psi_t);
+    free(nvtot_psi);
+    free(saved_psi);
+    free(sg_twovpsi_t);
+    free(work1_t);
+    free(work2_t);
+    free(res2_t);
 
 } // end MgEigState
 

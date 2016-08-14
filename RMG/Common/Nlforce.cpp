@@ -117,17 +117,18 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-
+        int pbasis = Kptr[kpt]->pbasis;
         num_occupied = 0;
         for(int st = 0; st < ct.num_states; st++)
         {
             if(Kptr[kpt]->Kstates[st].occupation[0] < 1.0e-10) break;
             num_occupied++;
             psi = Kptr[kpt]->Kstates[st].psi;
-            psi_x = Kptr[kpt]->Kstates[st + ct.num_states].psi;
-            psi_y = Kptr[kpt]->Kstates[st + 2*ct.num_states].psi;
-            psi_z = Kptr[kpt]->Kstates[st + 3*ct.num_states].psi;
+            psi_x = psi + ct.num_states*pbasis;
+            psi_y = psi + 2*ct.num_states*pbasis;
+            psi_z = psi + 3*ct.num_states*pbasis;
             CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+
             if(!ct.is_gamma)
             {
                 std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
@@ -198,7 +199,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     {
         qforce[i] *= get_vel_f();
     }
-
 
 
 

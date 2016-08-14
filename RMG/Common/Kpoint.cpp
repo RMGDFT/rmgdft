@@ -202,16 +202,17 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     ct.run_states = ct.num_states;
 
     // Now figure out some buffer sizes
-    int alloc_states = ct.run_states;
-    if (Verify ("start_mode","LCAO Start", ControlMap)) alloc_states = 2*ct.init_states;
-    if (Verify ("kohn_sham_solver", "davidson", ControlMap)) alloc_states = std::max(alloc_states, 4*ct.run_states);
-    alloc_states = std::max(alloc_states, 4*ct.run_states);
-    ct.max_states = alloc_states;
+    ct.max_states = ct.run_states;
+    if (Verify ("start_mode","LCAO Start", ControlMap)) ct.max_states = std::max(ct.max_states, ct.init_states);
+    if (Verify ("kohn_sham_solver", "davidson", ControlMap)) ct.max_states = std::max(ct.max_states, 4*ct.run_states);
 
-
-    /* Allocate memory for the states */
+    /* Allocate memory for the state structures */
     this->Kstates = new State<KpointType>[ct.max_states];
     this->nstates = ct.init_states;
+
+    // Set the size of the wavefunction array to allocate. This needs to be 4 times
+    // the number of run_states for force calculations right now but will be updated later
+    ct.alloc_states = 4*ct.run_states;
 
 //    if (verify ("calculation_mode", "Band Structure Only"))
 //        nk = 1;

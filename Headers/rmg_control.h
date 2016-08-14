@@ -202,6 +202,9 @@ typedef struct
     /** Maximum number of states, used for davidson */
     int max_states;
 
+    /** Number of states to allocate memory for */
+    int alloc_states;
+
     /** total number of atomic orbitals including the m dependency */
     int total_atomic_orbitals;
 
