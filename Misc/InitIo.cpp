@@ -186,9 +186,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     MPI_Bcast(ct.logname, MAX_PATH, MPI_CHAR, 0, pct.img_comm);
     MPI_Comm_size (pct.img_comm, &status);
-    rmg_printf ("\nRMG started at GMT %s", asctime (gmtime (&timer)));
-    rmg_printf ("Running with %d images and %d images per node.\n", pct.images, ct.images_per_node);
-    rmg_printf ("MPI mode with %d procs for this image. ", status);
+    rmg_printf ("RMG initialization ...");
+    rmg_printf (" %d image(s) total, %d per node.", pct.images, ct.images_per_node);
+    rmg_printf (" %d MPI processes/image. ", status);
 
     /* Read in our pseudopotential information */
     ReadPseudo(ct.num_species, ct, ControlMap);
@@ -267,7 +267,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         exit(0);
 
     }
-    rmg_printf("Thread level = %d\n", provided);
+    rmg_printf("Thread level %d.\n", provided);
     fflush(NULL);
 
     // Allocate storage for trade_images and global sums routines

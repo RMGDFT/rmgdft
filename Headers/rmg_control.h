@@ -402,6 +402,9 @@ typedef struct
     /* Kohn sham solver type */
     int kohn_sham_solver;
 
+    /*Charge Mixing type*/
+    int charge_mixing_type;
+
     /* Diagonalization flag and period */
     bool initdiag;
     int diag;

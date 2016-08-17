@@ -397,6 +397,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /*Write out warnings, do it here before header otherwise they are hard to find*/
     /*if(Verify ("charge_mixing_type","pulay", Kptr[0]->ControlMap) &&	    
 	    (ct.potential_acceleration_constant_step > 0.0))*/
+    
+    /*Switch to lapack if magma specified but not built with gpu support
+     * Write warning as we are overriding user's choice*/
+
+#if !MAGMA_LIBS
+    if (ct.subdiag_driver == SUBDIAG_MAGMA)
+    {
+	rmg_printf("\n WARNING: MAGMA specified as subspace diagonalization driver, but RMG was not built with MAGMA support. Diagonalization driver will be auto selected");
+       ct.subdiag_driver = SUBDIAG_AUTO;
+    }
+#endif    
 
     /*Take care of automatic settings, do it just before write header so that settings can be printed out  */
     /*Subspace diagonalization: Use magma if GPU-enabled, otherwise switch between lapack and Scalapack according to number of states*/
@@ -411,6 +422,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 	    ct.subdiag_driver = SUBDIAG_SCALAPACK;
 #endif
     }
+
 
 
     
