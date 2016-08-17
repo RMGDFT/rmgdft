@@ -41,7 +41,7 @@ void lcao_get_rho (double * arho_f)
     if ((ct.verbose == 1) || (difference > 0.05))
     {
 	if (pct.imgpe == 0)
-	    printf ("\n LCAO initializationNormalization constant for initial atomic charge is %f\n", t1);
+	    printf ("\n LCAO initialization: Normalization constant for initial atomic charge is %f\n", t1);
     }
 
     for(idx = 0;idx < FP0_BASIS;idx++) arho_f[idx] *= t1;
