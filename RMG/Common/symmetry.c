@@ -194,8 +194,8 @@ void init_sym (void)
                     + s[isym *9 + i *3 + 1] * ct.ions[ion].xtal[1]
                     + s[isym *9 + i *3 + 2] * ct.ions[ion].xtal[2] +ftau[isym *3 + i]/ndim[i];
 
-                if(xtal[i] < 0.0) xtal[i]= xtal[i] + 1.0;
-                if(xtal[i] >= 1.0) xtal[i]= xtal[i] - 1.0;
+                if(xtal[i] + symprec  < 0.0) xtal[i]= xtal[i] + 1.0;
+                if(xtal[i] + symprec >= 1.0) xtal[i]= xtal[i] - 1.0;
             }
 
             find_atom = false;
@@ -217,6 +217,11 @@ void init_sym (void)
 
                 if(find_atom) break;
 
+            }
+            if(!find_atom) 
+            {   printf("\n equ atom not find %d %d %d %d %e %e %e \n", ion, ionb,isym, nsym, xtal[0],xtal[1], xtal[2]);
+                fflush(NULL);
+                exit(0);
             }
         }
     }
@@ -339,6 +344,7 @@ void symmetrize_rho (double * rho)
 
 void symforce ()
 {
+
     int ion, isy, i, j, ion1;
 
     double *force;
