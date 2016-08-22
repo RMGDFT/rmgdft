@@ -36,7 +36,7 @@ set (USE_SCALAPACK_LIBS 1)
 set (USE_ELEMENTAL_LIBS 0)
 set (USE_LIBXC 0)
 set (USE_OPENBABEL_LIBS 1)
-set (USE_SVN 0)
+set (USE_SVN 1)
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
