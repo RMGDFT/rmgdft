@@ -474,6 +474,8 @@ void LoadUpf(SPECIES *sp)
     // Stuff not present in the UPF format that RMG requires. 
     // We need to find a consistent way of automatically setting these.
     sp->rc = fabs(2.0 * sp->zvalence / sqrt(PI) / sp->vloc0[0]);
+    sp->rc = std::max(sp->rc, 0.5);
+    sp->rc = std::min(sp->rc, 1.5);
     //sp->rc = 1.0;
     sp->lradius = 8.5;
     sp->gwidth = 8.0;
