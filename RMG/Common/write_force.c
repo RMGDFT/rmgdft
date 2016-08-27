@@ -80,7 +80,7 @@ void write_force (void)
     }
 
     printf
-        ("@ION  Ion  Species   Charge        X           Y            Z           FX          FY          FZ       Movable\n");
+        ("@ION  Ion  Species       X           Y           Z       Charge       FX          FY         FZ     Movable\n");
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -91,11 +91,12 @@ void write_force (void)
         fp = iptr->force[ct.fpt[0]];
         sp = &ct.sp[iptr->species];
 
-        printf ("@ION %3d     %2s     %6.3f     %10.7f  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f %7d\n",
+        printf ("@ION  %3d  %4s     %10.7f  %10.7f  %10.7f   %6.3f  %10.7f  %10.7f  %10.7f  %4d\n",
                 ion + 1,
                 sp->atomic_symbol,
+                iptr->crds[0], iptr->crds[1], iptr->crds[2], 
                  iptr->partial_charge,
-                iptr->crds[0], iptr->crds[1], iptr->crds[2], efactor*fp[0], efactor*fp[1], efactor*fp[2], iptr->movable);
+		 efactor*fp[0], efactor*fp[1], efactor*fp[2], iptr->movable);
 
         if (iptr->movable)
         {
