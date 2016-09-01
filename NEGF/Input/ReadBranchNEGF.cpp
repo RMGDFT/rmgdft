@@ -147,12 +147,12 @@ void ReadBranchNEGF(char *cfile, CONTROL& lc, complex_energy_integral& cei, COMP
     int n, num_st = 0, n_block = 0;
     while( (n = std::strtol(tbuf, &tbuf, 10)) > 0)
     {  
-        ct.block_dim[n_block] = n;
+        lc.block_dim[n_block] = n;
         n_block++;
         num_st += n;
     }
 
-    if((n_block != lc.num_blocks) | (num_st != ct.num_states) )
+    if((n_block != lc.num_blocks) | (num_st != lc.num_states) )
        throw RmgFatalException()<<"block_dim is not right\n"<< BlockDim.c_str()<<"\n";
 
 

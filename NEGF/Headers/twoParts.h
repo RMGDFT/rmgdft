@@ -2,6 +2,10 @@
  **    $Id$    **
 ******************************************************************************/
 
+#ifndef twoParts_H
+#define twoParts_H 1
+
+
 struct BOX {
 
 	int 	x1, x2, y1, y2, z1, z2; 
@@ -18,3 +22,4 @@ typedef	struct	COMPASS	COMPASS;
 
 extern COMPASS 	chargeDensityCompass; 
 extern COMPASS 	potentialCompass; 
+#endif

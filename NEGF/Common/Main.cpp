@@ -171,17 +171,24 @@ int main (int argc, char **argv)
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
 
- 
+
     ct.images_per_node = 1;
     InitIo(argc, argv, ControlMap);
 
     ReadBranchNEGF(ct.cfile, ct, cei, potentialCompass, chargeDensityCompass);
     allocate_states();
 
-    perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
-    for(int i = 0; i < ct.num_ions; i++) perm_ion_index[i] = i;
-    ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
-    get_state_to_proc(states);
+    if(ct.runflag == 110 || ct.runflag == 110)
+    {
+        if(pct.gridpe == 0) printf("\n no need to read orbitals \n");
+    }
+    else
+    {
+        perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
+        for(int i = 0; i < ct.num_ions; i++) perm_ion_index[i] = i;
+        ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
+        get_state_to_proc(states);
+    }
 
     my_barrier ();
 

@@ -1,4 +1,6 @@
 //#include "typedefs.h"
+#include "twoParts.h"
+
 void SetEnergyWeight (std::complex<double> *ene, std::complex<double> *weight, double EF, int *nenergy);
 void SetEnergyWeightNoneq (std::complex<double> *ene, std::complex<double> *weight, double EF1, double EF, int *nenergy);
 void QuenchNegf (STATE * states, STATE * states1,  double * vxc, double * vh, double * vnuc, double * vext,
@@ -16,6 +18,8 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
                 double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
 void Run(STATE *, STATE *, std::unordered_map<std::string, InputKey *>& ControlMap);
 
+void ReadBranchNEGF(char *cfile, CONTROL& lc, complex_energy_integral& cei, COMPASS& potcompass, COMPASS& rhocompass);
+void ReadMatrix2Systems();
 
 extern "C" {
 #endif
@@ -48,6 +52,7 @@ void read_trans (complex_energy_integral * cei);
 void pmo_init();
 void lead_bandstructure();
 void get_cond_frommatrix_kyz();
+void get_cond_frommatrix();
 void allocate_matrix_soft();
 
 

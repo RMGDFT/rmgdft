@@ -192,8 +192,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "You must specify a triplet of coordinate dimensions for kpoint_is_shift.\n");
 
     int ibrav;
-    If.RegisterInputKey("bravais_lattice_type", NULL, &ibrav, "",
-                     CHECK_AND_TERMINATE, REQUIRED, bravais_lattice_type,
+    If.RegisterInputKey("bravais_lattice_type", NULL, &ibrav, "Orthorhombic Primitive",
+                     CHECK_AND_TERMINATE, OPTIONAL, bravais_lattice_type,
                      "Bravais Lattice Type.\n", 
                      "bravais_lattice_type not found.\n");
 
