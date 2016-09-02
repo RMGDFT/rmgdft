@@ -530,7 +530,8 @@ vh_old, vxc_old, ControlMap);
 
     delete(RT);
     if(pct.imgpe == 0) fclose(ct.logfile);
-    RmgPrintTimings(Rmg_G, ct.logname, ct.scf_steps);
+    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions);
+
 
     MPI_Finalize();
 
