@@ -205,10 +205,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	{
 	    CONVERGED = true;
 	    
-	    rmg_printf("\n Convergence citerium reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", t[1], ct.thr_rms);  
+	    rmg_printf("\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", t[1], ct.thr_rms);  
 	    
 	    if (pct.imgpe == 0)
-		fprintf(stdout,"\n Convergence citerium reached: potential RMS (%.2e) is lower than threshold (%.2e)", t[1], ct.thr_rms);  
+		fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)", t[1], ct.thr_rms);  
 	}
 
     }
@@ -324,10 +324,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	{
 	    CONVERGED = true;
 	    
-	    rmg_printf("\n Convergence citerium reached: Energy variation (%.2e) is lower than threshold (%.2e)\n", fabs(ct.scf_accuracy), ct.thr_energy);  
+	    rmg_printf("\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)\n", fabs(ct.scf_accuracy), ct.thr_energy);  
 	    
 	    if (pct.imgpe == 0)
-		fprintf(stdout, "\n Convergence citerium reached: Energy variation (%.2e) is lower than threshold (%.2e)", fabs(ct.scf_accuracy), ct.thr_energy);  
+		fprintf(stdout, "\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)", fabs(ct.scf_accuracy), ct.thr_energy);  
 	}
 
     }
