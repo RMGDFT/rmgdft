@@ -122,9 +122,10 @@ int init_kpoints (int *mesh, int *is_shift)
     }
 
     assert(count == num_kpts);
-    printf("\n num_k %d", count);
+    /*Not necessary and it ends up being the first thing printed to stdout*/
+    /*printf("\n num_k %d", count);
     for(kpt = 0; kpt < num_kpts; kpt++)
-        printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+        printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);*/
 
     my_free(grid_address);
     my_free(tau);

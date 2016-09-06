@@ -72,6 +72,18 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     double *vtot;
     double time2, fac;
 
+
+    if (pct.imgpe == 0)
+    {
+	printf ("\n");
+	printf ("               * * * * * * * * * *\n");
+	printf ("               *    R   M   G    *\n");
+	printf ("               * * * * * * * * * *\n");
+	printf ("\n");
+	printf (" -- A Real Space Multigrid Electronic structure code --\n");
+	printf (" --      More information at www.rmgdft.org          --\n");
+    }
+
     nv = (OrbitalType *)pct.nv;
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
