@@ -126,8 +126,11 @@ void get_dipole (double * rho)
     /*Now we need to convert to debye units */
     if (pct.imgpe==0)
     {
-	printf("\n\n The absolute value of  dipole moment [Debye]: %.3f", DEBYE_CONVERSION * sqrt (px * px + py * py + pz * pz));
-	printf ("\n The AI dipole moment vector is (%f, %f %f) au\n", px, py, pz);
+	printf("\n\n Dipole moment [Debye]: Absolute value: %.3f, vector: (%.3f,%.3f, %.3f)", 
+		DEBYE_CONVERSION * sqrt (px * px + py * py + pz * pz), 
+		DEBYE_CONVERSION *px, 
+		DEBYE_CONVERSION *py, 
+		DEBYE_CONVERSION *pz);
     }
 
 

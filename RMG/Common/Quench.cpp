@@ -219,6 +219,12 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 	rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
     }
 
+    /*Calculate and write dipole moment if requested*/
+    if (ct.dipole_moment)
+	get_dipole(rho);
+
+
+
 
 
     /* output the forces */

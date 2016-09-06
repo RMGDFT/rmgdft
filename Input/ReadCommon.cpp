@@ -237,6 +237,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "How often to  perform and write out charge analysis.",
                      "charge_analysis_write_period must lie in the range (1,500). Resetting to the default value of 0.\n");
+    
+    If.RegisterInputKey("dipole_moment", &lc.dipole_moment, false, 
+                        "Turns on calculation of dipole moment for the entire cell.");
 
     If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Coarse",
                      CHECK_AND_TERMINATE, OPTIONAL, vdwdf_grid_type,

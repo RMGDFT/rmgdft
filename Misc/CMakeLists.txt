@@ -75,6 +75,7 @@ factor.c
 get_tf_rho.c
 Vdd.cpp
 WriteChargeAnalysis.cpp
+get_dipole.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories(${MAGMA_INCLUDES})

@@ -767,6 +767,9 @@ typedef struct
     // Flag indicating whether or not to localize the non-local projectors
     bool localize_projectors;
 
+    // Flag indicating whether or not to calculate dipole moment for the entrire cell. Default is off
+    bool dipole_moment;
+
 } CONTROL;
 
 
