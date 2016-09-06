@@ -345,7 +345,7 @@ CONTAINS
     !
     ! convert to uppercase
     !
-write(*,'(A)')dft_
+!write(*,'(A)')dft_
     len = len_trim(dft_)
     dftout = ' '
     do l = 1, len
