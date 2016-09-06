@@ -64,7 +64,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     if ((!strcmp ("/dev/null", name)) || (!strcmp ("/dev/null/", name)) )
     {
 	if (pct.imgpe == 0)
-	    printf ("write_data: Output file given as /dev/null, no restart data written ...\n");
+	    rmg_printf ("WriteRestart: Output file given as /dev/null, no restart data written ...\n");
 	return;
     }
 
@@ -75,7 +75,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
 	/*This opens restart file, creates a directory if needed */
 	fhandle = open_restart_file (name);
-	printf ("write_data: Restart file %s opened...\n", name);
+	rmg_printf ("WriteRestart: Restart file %s opened...\n", name);
 
 
         // Absolute coordinates in bohr
@@ -169,7 +169,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
     write_time = my_crtc () - time0;
 
-    printf ("write_restart: writing took %.1f seconds \n", write_time);
+    rmg_printf ("WriteRestart: writing took %.1f seconds \n", write_time);
     
 
     /* force change mode of output file */

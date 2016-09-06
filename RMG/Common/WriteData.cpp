@@ -153,13 +153,10 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
 
     write_time = my_crtc () - time0;
     
-    if (pct.imgpe == 0)
-    {
-        printf ("write_data: total size of each of the %d files = %.1f Mb\n", npe,
-                ((double) totalsize) / (1024 * 1024));
-        printf ("write_data: writing took %.1f seconds, writing speed %.3f Mbps \n", write_time,
-                ((double) totalsize) / (1024 * 1024) / write_time);
-    }
+    rmg_printf ("WriteData: total size of each of the %d files = %.1f Mb\n", npe,
+	    ((double) totalsize) / (1024 * 1024));
+    rmg_printf ("WriteData: writing took %.1f seconds, writing speed %.3f Mbps \n", write_time,
+	    ((double) totalsize) / (1024 * 1024) / write_time);
 
 
 
