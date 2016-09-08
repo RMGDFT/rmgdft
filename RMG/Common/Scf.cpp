@@ -128,8 +128,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	rho_tf = new double[FP0_BASIS];
 	rho_save = new double[FP0_BASIS];
 
-	get_dipole (rho);
-	rmg_printf("Calling get_tf_rho\n");
+	//get_dipole (rho);
+	rmg_printf("\nCalling get_tf_rho\n");
 	get_tf_rho(rho_tf);
 	rmg_printf("get_tf_rho Done\n");
 
