@@ -10,4 +10,5 @@ set(CMAKE_FIND_ROOT_PATH
 /sw/xk6/boost/1.57.0/cle5.2_gnu4.8.2
 /home/luw/Downloads/magma-1.6.2/build
 /sw/xk6/magma/1.6.2/sles11.3_gnu4.8.2/
+/opt/cray/fftw/3.3.4.8/x86_64/
 )
