@@ -28,6 +28,7 @@
 #include <math.h>
 #include "init_var.h"
 #include <mpi.h>
+#include "transition.h"
 
 
 /* Writes the hartree potential, the wavefunctions, the */
