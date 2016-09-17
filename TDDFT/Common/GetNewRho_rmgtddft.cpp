@@ -25,6 +25,7 @@
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
 #include "prototypes_tddft.h"
+#include "RmgParallelFft.h"
 
 
 
@@ -77,9 +78,9 @@ void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_mat
             break;
 #if USE_PFFT
         case FFT_INTERPOLATION:
-//            FftInterpolation (*Kpts[0]->G, rho_temp, rho, Rmg_G->default_FG_RATIO);
-            printf("\n Fftint not yet \n");
-            exit(0);
+            FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO);
+     //       printf("\n Fftint not yet \n");
+     //       exit(0);
             break;
 #endif
 

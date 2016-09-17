@@ -352,7 +352,7 @@ vh_old, vxc_old, ControlMap);
         dfi = fopen(filename, "w");
     }
 
-    if(pct.gridpe == 0)fprintf(dfi, "\n  electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
+    if(pct.gridpe == 0)fprintf(dfi, "\n  &&electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
 
     pre_steps = 0;
     tot_steps = 0;
