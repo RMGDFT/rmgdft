@@ -31,7 +31,7 @@
 
 
 /*This calculates the phase factor that will be used when calculating the backwards fourier transform*/
-void FindFftwPhaseLocalpp (int nldim, double *nlcdrs, std::complex<double>* phase_fft, int grid_level)
+void FindFftwPhaseLocalpp (int nlxdim, int nlydim, int nlzdim, double *nlcdrs, std::complex<double>* phase_fft, int grid_level)
 {
 
     // grid_level = 1 for wavefunction grid
@@ -40,42 +40,41 @@ void FindFftwPhaseLocalpp (int nldim, double *nlcdrs, std::complex<double>* phas
     int i1, j1, k1;
 
     /*Reciprocal grid spacings in x, y and z directions */
-    double rgs_x = 1.0 / (Rmg_G->get_hxgrid(grid_level) * Rmg_L.get_xside());
-    double rgs_y = 1.0 / (Rmg_G->get_hygrid(grid_level) * Rmg_L.get_yside());
-    double rgs_z = 1.0 / (Rmg_G->get_hzgrid(grid_level) * Rmg_L.get_zside());
+    double rgs_x = 2.0 * PI / (Rmg_G->get_hxgrid(grid_level) * Rmg_L.get_xside() * nlxdim);
+    double rgs_y = 2.0 * PI / (Rmg_G->get_hygrid(grid_level) * Rmg_L.get_yside() * nlydim);
+    double rgs_z = 2.0 * PI / (Rmg_G->get_hzgrid(grid_level) * Rmg_L.get_zside() * nlzdim);
 
-    int nldim_sq = nldim * nldim;
+    int nldim_sq = nlydim * nlzdim;
 
 
-    for (int i = -nldim / 2; i <= nldim / 2; i++)
+    for (int i = -nlxdim / 2; i <= nlxdim / 2; i++)
     {
-        for (int j = -nldim / 2; j <= nldim / 2; j++)
+        for (int j = -nlzdim / 2; j <= nlydim / 2; j++)
         {
-            for (int k = -nldim / 2; k <= nldim / 2; k++)
+            for (int k = -nlzdim / 2; k <= nlzdim / 2; k++)
             {
 
                 if (i < 0)
-                    i1 = i + nldim;
+                    i1 = i + nlxdim;
                 else
                     i1 = i;
 
                 if (j < 0)
-                    j1 = j + nldim;
+                    j1 = j + nlydim;
                 else
                     j1 = j;
 
                 if (k < 0)
-                    k1 = k + nldim;
+                    k1 = k + nlzdim;
                 else
                     k1 = k;
 
 
                 /* Phase factor */
-                double theta = 2.0 * PI / nldim *
-                    (((nlcdrs[0] * (double) i) * rgs_x)
-                     + ((nlcdrs[1] * (double) j) * rgs_y) + ((nlcdrs[2] * (double) k) * rgs_z));
+                double theta = ((nlcdrs[0] * (double) i) * rgs_x)
+                     + ((nlcdrs[1] * (double) j) * rgs_y) + ((nlcdrs[2] * (double) k) * rgs_z);
 
-                int idx1 = i1 * nldim_sq + j1 * nldim + k1;
+                int idx1 = i1 * nldim_sq + j1 * nlzdim + k1;
 
                 phase_fft[idx1] = exp(std::complex<double>(0.0, theta));
             }

@@ -228,7 +228,7 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         to_cartesian(shift, crds_shift);
 
     RmgTimer *RT = new RmgTimer("phase");
-        FindFftwPhaseLocalpp (sp->ldim, crds_shift, phase_fftw, 2);
+        FindFftwPhaseLocalpp (sp->ldim, sp->ldim, sp->ldim, crds_shift, phase_fftw, 2);
     delete RT;
 
         fptr = (std::complex<double> *) sp->forward_vnuc;

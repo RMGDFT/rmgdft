@@ -61,22 +61,12 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
     /*Get memory to store the phase factor applied to the forward Fourier transform 
      * and to store the backwards transform*/
     beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * 2 * max_size);
+    std::complex<double> *phase_fftw = new std::complex<double>[max_size];
 
     if (beptr == NULL)
         rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
     gbptr = beptr + max_size;
-
-    // Release memory allocated for fftw_phase_sin and fftw_phase_cos prior to 
-    // reallocation (if needed) in find_phase
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        iptr = &ct.ions[ion];
-        if( iptr->fftw_phase_sin ) delete [] iptr->fftw_phase_sin;
-        if( iptr->fftw_phase_cos ) delete [] iptr->fftw_phase_cos;
-        iptr->fftw_phase_sin = NULL;
-        iptr->fftw_phase_cos = NULL;
-    }
 
     for(idx = 0; idx < pct.num_tot_proj * P0_BASIS; idx++)
     {
@@ -119,7 +109,7 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
 
 
             /*Calculate the phase factor */
-            FindPhase (nlxdim, nlydim, nlzdim, iptr->nlcrds, iptr->fftw_phase_sin, iptr->fftw_phase_cos);
+            FindPhase(nlxdim, nlydim, nlzdim, iptr->nlcrds, phase_fftw);
 
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)&sp->forward_beta[kpt*sp->num_projectors * coarse_size];
@@ -133,9 +123,7 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
                 /*Apply the phase factor */
                 for (idx = 0; idx < coarse_size; idx++)
                 {
-                    gbptr[idx] =
-                        (std::real(fptr[idx]) * iptr->fftw_phase_cos[idx] + std::imag(fptr[idx]) * iptr->fftw_phase_sin[idx]) +
-                        (std::imag(fptr[idx]) * iptr->fftw_phase_cos[idx] * I_t - std::real(fptr[idx]) * iptr->fftw_phase_sin[idx] * I_t);
+                    gbptr[idx] =fptr[idx] * std::conj(phase_fftw[idx]);
                 }
 
 
@@ -158,16 +146,13 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
             fftw_free(out);
             fftw_free(in);
 
-            if( iptr->fftw_phase_sin ) delete [] iptr->fftw_phase_sin;
-            if( iptr->fftw_phase_cos ) delete [] iptr->fftw_phase_cos;
-            iptr->fftw_phase_sin = NULL;
-            iptr->fftw_phase_cos = NULL;
 
         }                           /* end for */
 
     } // end for(kpt)
 
     fftw_free (beptr);
+    delete [] phase_fftw;
 
 
 }                               /* end get_weight */

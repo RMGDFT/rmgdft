@@ -160,8 +160,6 @@ typedef struct
     
 
     int first_state_index;
-    double *fftw_phase_sin;
-    double *fftw_phase_cos;
 
     /*Stores PDB information*/
     PDB_INFO pdb;

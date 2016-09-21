@@ -70,8 +70,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
     // Release memory allocated for fftw_phase_sin and fftw_phase_cos prior to 
     // reallocation (if needed) in find_phase
-    double *fftw_phase_sin = new double[pbasis];
-    double *fftw_phase_cos = new double[pbasis];
+    std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
     for(idx = 0; idx < pct.num_tot_proj * pbasis; idx++)
     {
@@ -99,7 +98,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             int nlzdim = get_NZ_GRID();
 
             /*Calculate the phase factor */
-            FindPhase (nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase_sin, fftw_phase_cos);
+            FindPhase (nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase);
 
             /*Temporary pointer to the already calculated forward transform */
             int size = nlxdim * nlydim * nlzdim;
@@ -114,9 +113,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
                 /*Apply the phase factor */
                 for (idx = 0; idx < pbasis; idx++)
                 {
-                    gbptr[idx] =
-                        (std::real(fptr[idx]) * fftw_phase_cos[idx] + std::imag(fptr[idx]) * fftw_phase_sin[idx]) +
-                        (std::imag(fptr[idx]) * fftw_phase_cos[idx] * I_t - std::real(fptr[idx]) * fftw_phase_sin[idx] * I_t);
+                    gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
                 }
 
 
@@ -191,8 +188,7 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
 
     } // end for(kpt)
 
-    delete [] fftw_phase_cos;
-    delete [] fftw_phase_sin;
+    delete [] fftw_phase;
     fftw_free (beptr);
 
 

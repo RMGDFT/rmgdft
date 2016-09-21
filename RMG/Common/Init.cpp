@@ -638,9 +638,6 @@ static void init_alloc_nonloc_mem (void)
 
         ION *iptr = &ct.ions[ion];
 
-        iptr->fftw_phase_sin = NULL;
-        iptr->fftw_phase_cos = NULL;
-
         pct.idxptrlen[ion] = 0;
         pct.Qidxptrlen[ion] = 0;
         pct.lptrlen[ion] = 0;

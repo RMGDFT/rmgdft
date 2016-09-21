@@ -31,14 +31,11 @@
 
 
 /*This calculates the phase factor that will be used when calculating the backwards fourier transform*/
-void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double* &phase_sin, double* &phase_cos)
+void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw)
 {
 
     int i1, j1, k1;
 
-    // If not NULL allocate here, must be released by a higher level routine
-    if(!phase_sin) phase_sin = new double[nlxdim * nlydim * nlzdim];
-    if(!phase_cos) phase_cos = new double[nlxdim * nlydim * nlzdim];
 
     // If we are running with localized projectors then nxldim,nlydim and nlzdim
     // are odd numbers so the loop from (-nlxdim / 2) to (nlxdim / 2) is correct but
@@ -105,8 +102,8 @@ void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double* &ph
 
                     int idx1 = (i1 - ilo) * (jhi - jlo) * (khi - klo) + (j1 - jlo) * (khi - klo) + (k1 - klo);
 
-                    phase_sin[idx1] = sin (theta);
-                    phase_cos[idx1] = cos (theta);
+
+                    phase_fftw[idx1] = exp(std::complex<double>(0.0, theta));
                 }
 
             }

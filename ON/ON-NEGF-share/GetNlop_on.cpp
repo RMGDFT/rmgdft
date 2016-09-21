@@ -49,7 +49,6 @@ void GetNlop_on(void)
     fftw_plan p2;
     int overlap;
     int coarse_size, st1;
-    double *fftw_phase_sin=NULL, *fftw_phase_cos=NULL;
     double vect[3], nlcrds[3];
 
     /*Pointer to the result of forward transform on the coarse grid */
@@ -70,8 +69,9 @@ void GetNlop_on(void)
     beptr = new std::complex<double>[2 * ct.max_nlpoints];
     gbptr = beptr + ct.max_nlpoints;
 
-    
+    std::complex<double> *fftw_phase = new std::complex<double>[ct.max_nlpoints]; 
 
+    
     /*
      * PROJECTOR_SPACE = ct.max_nlpoints * ct.max_nl;
      */
@@ -149,7 +149,7 @@ void GetNlop_on(void)
         coarse_size = sp->nldim *sp->nldim *sp->nldim ;
         
         /*Calculate the phase factor */
-        FindPhase (sp->nldim, sp->nldim, sp->nldim, nlcrds, fftw_phase_sin, fftw_phase_cos);
+        FindPhase (sp->nldim, sp->nldim, sp->nldim, nlcrds, fftw_phase);
 
         /*Temporary pointer to the already calculated forward transform */
         fptr = (std::complex<double> *)sp->forward_beta;
@@ -163,7 +163,7 @@ void GetNlop_on(void)
             /*Apply the phase factor   */
             for (idx = 0; idx < coarse_size; idx++)
             {
-                gbptr[idx] = fptr[idx] * std::complex<double>(fftw_phase_cos[idx], -fftw_phase_sin[idx]);
+                gbptr[idx] = fptr[idx] * std::conj(fftw_phase[idx]);
             }
 
 
@@ -187,8 +187,8 @@ void GetNlop_on(void)
     }                           /* end for ion */
 
     delete [] beptr;
+    delete [] fftw_phase;
 // Must fix this EMIL
-    //my_free(fftw_phase_sin);
 
 #if	DEBUG
     printf("PE: %d leave  get_nlop ...\n", pct.gridpe);
