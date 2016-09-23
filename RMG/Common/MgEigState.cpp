@@ -383,6 +383,13 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
                 int dx2 = MG.MG_SIZE (dimx, 0, G->get_NX_GRID(1), G->get_PX_OFFSET(1), G->get_PX0_GRID(1), &ixoff, ct.boundaryflag);
                 int dy2 = MG.MG_SIZE (dimy, 0, G->get_NY_GRID(1), G->get_PY_OFFSET(1), G->get_PY0_GRID(1), &iyoff, ct.boundaryflag);
                 int dz2 = MG.MG_SIZE (dimz, 0, G->get_NZ_GRID(1), G->get_PZ_OFFSET(1), G->get_PZ0_GRID(1), &izoff, ct.boundaryflag);
+    
+		if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
+		    rmg_error_handler(__FILE__, __LINE__, "Multigrid error: Grid cannot be coarsened. Most likely the current grid is not 
+			    divisable by 2 or 4. It is recommended to use grid that is, at minimum, divisable by 4. The current grid is %d %d %d" , G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1));
+		}
+
+
                 CalcType *v_mat = &sg_twovpsi_t[sbasis];
                 CalcType *f_mat = &work1_t[sbasis];
                 MG.mg_restrict (work1_t, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
