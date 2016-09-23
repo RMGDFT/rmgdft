@@ -396,7 +396,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("system_charge", &lc.background_charge, -DBL_MAX, DBL_MAX, 0.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "number of excess electrons in the system (useful for doped systems)\n",
+                     "Number of excess holes in the system (useful for doped systems). Example: "2" means system is missing two electrons\n",
                      "system_charge must be a real number.\n");
 
     If.RegisterInputKey("occupation_electron_temperature_eV", &lc.occ_width, 0.0, 2.0, 0.04,
