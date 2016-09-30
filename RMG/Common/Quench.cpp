@@ -71,7 +71,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     double elapsed_time;
 
     for (ct.scf_steps = 0, CONVERGED = false;
-         ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
+            ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
     {
 
 
@@ -82,34 +82,34 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         step_time = my_crtc () - step_time;
 
 
-	/* output the eigenvalues with occupations */
-	if (ct.write_eigvals_period)
-	{
-	    if (ct.scf_steps % ct.write_eigvals_period == 0)
-	    {
-		if (pct.imgpe == 0)
-		{
+        /* output the eigenvalues with occupations */
+        if (ct.write_eigvals_period)
+        {
+            if (ct.scf_steps % ct.write_eigvals_period == 0)
+            {
+                if (pct.imgpe == 0)
+                {
                     OutputEigenvalues (Kptr, 0, ct.scf_steps);
-		    rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
-		}
-	    }
-	}
-	
-	
-	/*Perform charge analysis if requested*/
-	if (ct.charge_analysis_period)
-	{
-	    if (ct.scf_steps % ct.charge_analysis_period == 0)
-	    {
-		if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
-		{
-		    double timex = my_crtc ();
-		    Vdd(rho);
-		    WriteChargeAnalysis();
-		    rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
-		}
-	    }
-	}
+                    rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
+                }
+            }
+        }
+
+
+        /*Perform charge analysis if requested*/
+        if (ct.charge_analysis_period)
+        {
+            if (ct.scf_steps % ct.charge_analysis_period == 0)
+            {
+                if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
+                {
+                    double timex = my_crtc ();
+                    Vdd(rho);
+                    WriteChargeAnalysis();
+                    rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
+                }
+            }
+        }
 
 #if PLPLOT_LIBS
         if(pct.imgpe == 0) {
@@ -131,9 +131,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         if (pct.imgpe == 0) {
             rmg_printf (" quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]\n\n\n",
                     ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
-            
-	   /*Also print to stdout*/
-	   fprintf (stdout,"\n quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]",
+
+            /*Also print to stdout*/
+            fprintf (stdout,"\n quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]",
                     ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
         }
 
@@ -143,13 +143,13 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     if (CONVERGED)
     {
-	rmg_printf ("\n");
-	//progress_tag ();
-	rmg_printf ("potential convergence has been achieved. stopping ...\n");
-	    
-	/*Write PDOS if converged*/
-//	if (ct.pdos_flag)
-//	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
+        rmg_printf ("\n");
+        //progress_tag ();
+        rmg_printf ("potential convergence has been achieved. stopping ...\n");
+
+        /*Write PDOS if converged*/
+        //	if (ct.pdos_flag)
+        //	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
     }
 
     rmg_printf ("\n");
@@ -163,7 +163,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     OutputEigenvalues (Kptr, 0, ct.scf_steps);
     rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 
-//    wvfn_residual (Kptr[0]->kstates);
+    //    wvfn_residual (Kptr[0]->kstates);
 
 
     // Output RMSdV for convergence analysis
@@ -172,7 +172,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         std::string ConvergenceFile(ct.basename);
         ConvergenceFile = ConvergenceFile + ".rmsdv.xmgr";
         mode_t mode = O_CREAT |O_TRUNC |O_RDWR;
-      //  if(ct.md_steps > 0) mode = O_RDWR | O_APPEND;
+        //  if(ct.md_steps > 0) mode = O_RDWR | O_APPEND;
 
         int fhand = open(ConvergenceFile.c_str(), mode, S_IREAD | S_IWRITE);
         if (fhand < 0)
@@ -191,7 +191,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         snprintf(tbuf, sizeof(tbuf), "&\n");
 
     }
-        
+
 
 
     /*When running MD, force pointers need to be rotated before calculating new forces */
@@ -213,19 +213,20 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     /* compute the forces */
     /* Do not calculate forces for quenching when we are not converged */
-//    if (CONVERGED || (ct.forceflag != MD_QUENCH))
+    //    if (CONVERGED || (ct.forceflag != MD_QUENCH))
 
+    rmg_printf (" volume and energy per atom = %18.8f  %18.8f eV\n", Rmg_L.get_omega()*a0_A*a0_A*a0_A/ct.num_ions,ct.TOTAL * Ha_eV/ct.num_ions);
 
     if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
     {
-	double timex = my_crtc ();
-	Vdd(rho);
-	rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
+        double timex = my_crtc ();
+        Vdd(rho);
+        rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
     }
 
     /*Calculate and write dipole moment if requested*/
     if (ct.dipole_moment)
-	get_dipole(rho);
+        get_dipole(rho);
 
 
 
@@ -233,7 +234,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     /* output the forces */
     if (pct.imgpe == 0)
-	write_force ();
+        write_force ();
 
     delete [] vxc_in;
     delete [] vh_in;
