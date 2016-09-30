@@ -260,6 +260,9 @@ void write_header(void)
             case PSIPLOT:
                 printf("\n\n    PLOTTING PSI^2 IN DX FORM");
                 break;
+            case TDDFT:
+                printf("\n\n    TDDFT");
+                break;
 
             default:
                 error_handler("UNKNOWN MOLECULAR DYNAMICS METHOD");

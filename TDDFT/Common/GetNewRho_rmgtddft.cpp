@@ -114,6 +114,7 @@ void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_mat
     rmg_printf ("normalization constant-1 for new charge is %f\n", t1-1);
     for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
 
+    delete [] rho_temp;
 
 
 }

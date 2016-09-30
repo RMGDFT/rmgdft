@@ -46,8 +46,6 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
     my_barrier();
 
 
-    sprintf(newname, "%s%s", name, ".pot_rho");
-
     pe2xyz(pct.gridpe, &pex, &pey, &pez);
 
     int sizes[3], subsizes[3], starts[3];
@@ -84,19 +82,38 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
 
     int amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
     MPI_File mpi_fhand ;
+
+    sprintf(newname, "%s%s", name, ".vh");
     MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
-
-
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
-
-    MPI_File_read(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, vh_old, get_FP0_BASIS(),MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, vxc_old, get_FP0_BASIS(),MPI_DOUBLE, &status);
-    MPI_File_read(mpi_fhand, vh_corr, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_read_all(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_close(&mpi_fhand);
+    MPI_Barrier(pct.grid_comm);
+
+    sprintf(newname, "%s%s", name, ".vxc");
+    MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+    disp=0;
+    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
+    MPI_File_read_all(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_close(&mpi_fhand);
+    MPI_Barrier(pct.grid_comm);
+
+    sprintf(newname, "%s%s", name, ".rho");
+    MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+    disp=0;
+    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
+    MPI_File_read_all(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_close(&mpi_fhand);
+    MPI_Barrier(pct.grid_comm);
+
+    sprintf(newname, "%s%s", name, ".vh_corr");
+    MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+    disp=0;
+    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
+    MPI_File_read_all(mpi_fhand, vh_corr, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_close(&mpi_fhand);
+    MPI_Barrier(pct.grid_comm);
 
     my_barrier();
 

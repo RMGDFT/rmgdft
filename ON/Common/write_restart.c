@@ -101,6 +101,8 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old, double
 
 	/* write current ionic forces */
 	fprintf(fhandle,"\nionic_forces = \"");
+    int ic;
+    for (ic = 0; ic < 4; ic++)
 	for (ion = 0; ion < ct.num_ions; ion++)
 	{
 	    iptr = &ct.ions[ion];

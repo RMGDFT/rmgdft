@@ -131,6 +131,8 @@ using namespace El;
 #endif
 using namespace std;
 
+static void dipole_calculation(double *rhooo, double *dipole);
+
 int main(int argc, char **argv)
 {
 
@@ -255,6 +257,10 @@ int main(int argc, char **argv)
         RmgTimer *RTw = new RmgTimer("1-TOTAL: write");
 
         write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]); 
+        double dipole_ion, dipole_ele;
+        dipole_calculation(rhoc, &dipole_ion);
+        dipole_calculation(rho, &dipole_ele);
+        printf("\n duoile    %f %f \n", dipole_ion, dipole_ele);
 
         /* Save state information to file */
         // write_states_info(ct.outfile, &states[0]);
@@ -297,3 +303,45 @@ int main(int argc, char **argv)
     return 0;
 }
 
+
+static void dipole_calculation(double *rhooo, double *dipole)
+{
+
+
+
+    int i, j, k, idx;
+
+    double x, y, z;
+
+    dipole[0] = 0.0;
+    dipole[1] = 0.0;
+    dipole[2] = 0.0;
+
+    for(i = 0; i < get_FPX0_GRID(); i++)
+    {
+        x = (get_FPX_OFFSET() + i)*get_hxxgrid() * get_xside();
+        for(j = 0; j < get_FPY0_GRID(); j++)
+        {
+            y = (get_FPY_OFFSET() + j)*get_hyygrid() * get_yside();
+
+            for(k = 0; k < get_FPZ0_GRID(); k++)
+            {
+                z = (get_FPZ_OFFSET() + k)*get_hzzgrid() * get_zside();
+
+                idx = i * get_FPY0_GRID() * get_FPZ0_GRID() + j*get_FPZ0_GRID() + k;
+                dipole[0] += x * rhooo[idx];
+                dipole[1] += y * rhooo[idx];
+                dipole[2] += z * rhooo[idx];
+            }
+        }
+    }
+
+    dipole[0] *= get_vel_f();
+    dipole[1] *= get_vel_f();
+    dipole[2] *= get_vel_f();
+    
+    idx = 3;
+    global_sums (dipole, &idx, pct.grid_comm);
+
+
+}

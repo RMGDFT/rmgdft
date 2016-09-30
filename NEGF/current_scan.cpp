@@ -41,7 +41,7 @@ int main (int argc, char **argv)
     std::string whitespace_delims = " \n\t\"";
     std::vector<double> ener, cond;
     std::vector<std::string> line_values;
-    double bias = 0.05, temperature = 300.0;
+    double bias = 0.10, temperature = 300.0;
    
     double KT ;
     KT = temperature * Kb;
