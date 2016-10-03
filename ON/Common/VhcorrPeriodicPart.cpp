@@ -35,7 +35,6 @@
 #include "RmgSumAll.h"
 #include "transition.h"
 
-#if USE_PFFT
 
 #include "RmgParallelFft.h"
 
@@ -161,11 +160,3 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
 
 }
 
-#else
-void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, double *r0)
-{
-
-    printf("\n  cannot do VhcorrPeriodicPart if not using Pfft\n");
-    fflush(NULL);
-    exit(0);
-#endif

@@ -41,6 +41,7 @@
 #include <assert.h>
 
 
+#include "blas.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgTimer.h"
@@ -50,9 +51,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 #include "transition.h"
-#if USE_PFFT
-  #include "pfft.h"
-#endif
+#include "pfft.h"
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
@@ -191,7 +190,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     delete(RT6);
     fflush(NULL);
 
-#if USE_PFFT
     int np[3];
     ptrdiff_t densgrid[3];
     np[0] = Rmg_G->get_PE_X();
@@ -215,7 +213,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     // Initialize some commonly used plans
     FftInitPlans();
 
-#endif
 
     if(ct.dipole_corr[0] + ct.dipole_corr[1] + ct.dipole_corr[2] > 0)
     {
@@ -280,6 +277,20 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         case LCAO_START:
         case INIT_FIREBALL:
         case INIT_GAUSSIAN:
+            double tcharge = 0.0;
+            for (idx = 0; idx < get_FP0_BASIS(); idx++)
+                tcharge += rho[idx];
+            ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
+            ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
+
+
+            ct.tcharge *= get_vel_f();
+
+            double t2 = ct.nel / ct.tcharge;
+            int iii = get_FP0_BASIS();
+            int ione = 1;
+            dscal(&iii, &t2, &rho[0], &ione);
+
             get_vxc(rho, rho_oppo, rhocore, vxc);
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 

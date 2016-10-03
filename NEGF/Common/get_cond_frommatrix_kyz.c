@@ -308,6 +308,7 @@ void get_cond_frommatrix_kyz ()
 
 
                     ene = ener1_temp[iene];
+                    ene = ener1_temp[iene] + I * E_imag;
                     matrix_kpoint_center(H_tri, lcr[0].Stri, lcr[0].Htri, ene, kvecy[kp], kvecz[kp]);
 
 
