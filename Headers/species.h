@@ -72,14 +72,14 @@ typedef struct
     int num_atomic_waves;
 
     /*l-numbers for states for which we have atomic orbitals*/
-    int atomic_wave_l[5];
+    int *atomic_wave_l;
 
     /* total number of atomic wave functions including m-dependence */
     int num_atomic_waves_m;
 
-    double atomic_wave_oc[5];
+    double *atomic_wave_oc;
     
-    char atomic_wave_label[5][3];
+    //char *atomic_wave_label[3];
 
     double *atomic_rho;
     
