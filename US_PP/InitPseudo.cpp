@@ -164,11 +164,13 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts and force correction routines
         
-        for (int idx = 0; idx < sp->rg_points; idx++)work[idx] = sqrt(sp->atomic_rho[idx]);
+        for (int idx = 0; idx < sp->rg_points; idx++)
+        if(sp->atomic_rho[idx] < 0.0) work[idx] = 0.0;
+        else work[idx] = sqrt(sp->atomic_rho[idx]);
         A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.rhocparm, sp->arho_lig,
                 sp->rab, 0, sp->gwidth, 0.66*sp->lradius, sp->rwidth, ct.hmingrid);
-        for (int idx = 0; idx < MAX_LOGGRID; idx++)
-            sp->arho_lig[idx] *= sp->arho_lig[idx];
+       for (int idx = 0; idx < MAX_LOGGRID; idx++)
+           sp->arho_lig[idx] *= sp->arho_lig[idx];
 
 
         /*Open file for writing beta function*/
