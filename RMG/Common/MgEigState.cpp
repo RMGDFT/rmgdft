@@ -201,6 +201,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     int pbasis = kptr->pbasis;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
+    double min_eig = kptr->Kstates[0].eig[0];
+
     /* Grab some memory */
     CalcType *res2_t = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
     CalcType *work2_t = (CalcType *)malloc(4*sbasis * sizeof(CalcType));
@@ -409,7 +411,8 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
              * routine to update the orbital which is stored in a physical grid.
              */
 
-            t1 = -1.0;
+            //t1 = -0.3/fabs(min_eig);
+            t1 = -ct.eig_parm.mg_timestep;
             CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, tmp_psi_t, t1, dimx, dimy, dimz);
 
         }

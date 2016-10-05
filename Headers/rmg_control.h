@@ -18,6 +18,9 @@ typedef struct
     int gl_pre;
     int gl_pst;
 
+    /* timestep for multigrid correction */
+    double mg_timestep;
+
     /* timestep for the subiteration */
     double sb_step;
 
