@@ -73,9 +73,10 @@ double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b
     }
     else if(order == APP_CI_EIGHT) {
         sbasis = (dimx + 8) * (dimy + 8) * (dimz + 8);
-        rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
+        rptr = new RmgType [sbasis + 64];
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 4, CENTRAL_TRADE);
         cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        delete [] rptr;
         //free(rptr);
     }
     else if(order == APP_CI_TEN) {

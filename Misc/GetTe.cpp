@@ -195,36 +195,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     if(ii_flag) {
 
         /* Evaluate total ion-ion energy */
-        ct.II = 0.0;
-        for (i = 0; i < ct.num_ions; i++)
-            ct.II -= (ct.sp[ct.ions[i].species].zvalence *
-                      ct.sp[ct.ions[i].species].zvalence /
-                      ct.sp[ct.ions[i].species].rc) / sqrt (2.0 * PI);
-
-
-        for (i = 0; i < ct.num_ions; i++)
-        {
-
-            iptr1 = &ct.ions[i];
-            loc_sum = 0.0;
-
-    #pragma omp parallel for private(iptr2, r, t1) reduction(+:loc_sum) schedule(static,1)
-            for (j = i + 1; j < ct.num_ions; j++)
-            {
-
-                iptr2 = &ct.ions[j];
-
-                r = minimage (iptr1, iptr2, xtal_r);
-
-                t1 = sqrt (ct.sp[iptr1->species].rc * ct.sp[iptr1->species].rc +
-                           ct.sp[iptr2->species].rc * ct.sp[iptr2->species].rc);
-
-                loc_sum += (ct.sp[iptr1->species].zvalence *
-                          ct.sp[iptr2->species].zvalence * erfc (r / t1) / r);
-            }
-            ct.II += loc_sum;
-        }
-
+        ct.II = IonIonEnergy_Ewald();
 
     }
 
