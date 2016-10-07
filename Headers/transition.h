@@ -271,6 +271,7 @@ void GetQI(void);
 void GetPhaseSpecies(SPECIES *sp, std::complex<double> *phaseptr);
 void PackGftoc(int, int, int, int, int, int, std::complex<double> *, std::complex<double> *);
 double IonIonEnergy_Ewald();
+void IIforce(double *);
 
 #endif
 #endif

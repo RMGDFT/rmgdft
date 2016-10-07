@@ -102,7 +102,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     /* Get the ion-ion component and store. */
     RmgTimer *RT1 = new RmgTimer("2-Force: ion-ion");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
-    iiforce (force_tmp);
+    IIforce (force_tmp);
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i] * fac_spin;
     delete RT1;
 

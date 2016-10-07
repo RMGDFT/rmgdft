@@ -3,7 +3,7 @@ CorrectForces.cpp
 Lforce.cpp
 constrain.c
 Force.cpp
-iiforce.c
+IIforce.cpp
 Nlccforce.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")

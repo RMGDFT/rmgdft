@@ -63,7 +63,6 @@ double IonIonEnergy_Ewald ()
     int num_cell_z = int(rcutoff * sqrt(2.0) * sigma/Rmg_L.get_zside()) + 1;
 
 
-    printf("\n num_cell  %d %d %d", num_cell_x, num_cell_y, num_cell_z);
     double ii_real_space = 0.0;
 
     for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
