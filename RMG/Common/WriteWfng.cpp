@@ -42,19 +42,10 @@
 #include "RmgParallelFft.h"
 
 
-template void WriteBGW ( double *, double *, double *, double *, Kpoint<double> **);
-template void WriteBGW ( double *, double *, double *, double *, Kpoint<std::complex<double> > **);
-
-    template <typename KpointType>
-void WriteBGW ( double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
-{
-    WriteWfng(Kptr);
-}
-
-template static void WriteWfng (Kpoint<double> ** Kptr);
-template static void WriteWfng (Kpoint<std::complex<double> > ** Kptr);
+template  void WriteWfng (Kpoint<double> ** Kptr);
+template  void WriteWfng (Kpoint<std::complex<double> > ** Kptr);
 template <typename KpointType>
-static void WriteWfng (Kpoint<KpointType> ** Kptr)
+void WriteWfng (Kpoint<KpointType> ** Kptr)
 {
     int kpt;
     SPECIES *sp;
@@ -161,7 +152,6 @@ static void WriteWfng (Kpoint<KpointType> ** Kptr)
 
                 gmags = gvec[0] * gvec[0] + gvec[1] * gvec[1] + gvec[2] * gvec[2];
 
-                if(pct.gridpe ==0 && iz == 0 && iy ==0 )printf("\n %d %f gvec ", ix, gmags * tpiba2);
                 if(gmags * tpiba2 < ecutrho) 
                 {
                     g_g[num_pw_rho * 3 + 0] = ivec[0];

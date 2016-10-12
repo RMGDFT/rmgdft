@@ -119,6 +119,9 @@ void init_sym (void)
     my_malloc (s, 9 * nsym_atom, int);
     my_malloc (ftau, 3 * nsym_atom, int);
 
+    my_malloc (ct.sym_trans, 3 * nsym_atom, double);
+    my_malloc (ct.sym_rotate, 9 * nsym_atom, int);
+
     nsym_atom = spg_get_symmetry(sa, translation,  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec);
 
 //    for(kpt = 0; kpt < nsym_atom; kpt++)
@@ -146,11 +149,19 @@ void init_sym (void)
             printf("\n sym operation after considering real space grid # %d",nsym);
             for(i = 0; i < 3; i++)
                 for(j = 0; j < 3; j++)
+                {
                     s[nsym * 9 + i *3 + j] = sa[kpt * 9 + i *3 + j];
+                    ct.sym_rotate[nsym * 9 + i *3 + j] = sa[kpt * 9 + i *3 + j];
+                }
 
             ftau[nsym*3 + 0] = translation[kpt*3 + 0] * nr1 + symprec;
             ftau[nsym*3 + 1] = translation[kpt*3 + 1] * nr2 + symprec;
             ftau[nsym*3 + 2] = translation[kpt*3 + 2] * nr3 + symprec;
+
+            ct.sym_trans[nsym*3+0] = translation[kpt*3+0];
+            ct.sym_trans[nsym*3+1] = translation[kpt*3+1];
+            ct.sym_trans[nsym*3+2] = translation[kpt*3+2];
+            
 
 
             for(i = 0; i < 3; i++)
@@ -171,6 +182,7 @@ void init_sym (void)
         }
     }
 
+    ct.nsym = nsym;
     printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
     printf("\n number of sym operation  after considering real space grid: %d",nsym);
     assert(nsym >0);

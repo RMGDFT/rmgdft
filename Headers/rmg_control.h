@@ -607,13 +607,9 @@ typedef struct
 
     
    /* RMG2BGW options */
-   bool wfng_flag;
-   bool rhog_flag;
-   bool vxc_flag;
+   bool rmg2bgw;
+    double ecutrho, ecutwfc;
 
-   char wfng_file[256];
-   char rhog_file[256];
-   char vxc_file[256]; 
    
    int vxc_diag_nmin;
    int vxc_diag_nmax;
@@ -754,7 +750,7 @@ typedef struct
     double simpson_tol;
 
     int is_gamma;
-    int is_use_symmetry;
+    bool is_use_symmetry;
 
     // Maximum number of valence electrons for any atomic species
     double max_zvalence;
@@ -772,6 +768,8 @@ typedef struct
 
     // Flag indicating whether or not to calculate dipole moment for the entrire cell. Default is off
     bool dipole_moment;
+    int nsym, *sym_rotate;
+    double *sym_trans;
 
 } CONTROL;
 

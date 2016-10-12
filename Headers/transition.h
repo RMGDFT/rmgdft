@@ -178,7 +178,10 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 template <typename KpointType>
 void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
-void WriteBGW (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
+void WriteBGW (double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
+template <typename KpointType>
+void WriteWfng (Kpoint<KpointType> ** Kptr);
+void WriteRhog (double * rho, double * rho_oppo);
 template <typename KpointType>
 void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
