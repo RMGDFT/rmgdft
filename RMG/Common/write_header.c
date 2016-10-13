@@ -280,12 +280,12 @@ void write_header (void)
     printf ("    Number of species:                       %d\n", ct.num_species);
     if (ct.spin_flag)
     {
-	printf ("    Number of spin up states:                %d\n", ct.num_states);
-	printf ("    Number of spin down states:              %d\n", ct.num_states);
+	printf ("    Number of spin up states:                %d\n", ct.run_states);
+	printf ("    Number of spin down states:              %d\n", ct.run_states);
     }
     else
     {
-	printf ("    Number of states:                        %d\n", ct.num_states);
+	printf ("    Number of states:                        %d\n", ct.run_states);
     }	
     
     
