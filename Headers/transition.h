@@ -183,6 +183,8 @@ template <typename KpointType>
 void WriteWfng (Kpoint<KpointType> ** Kptr);
 void WriteRhog (double * rho, double * rho_oppo);
 template <typename KpointType>
+void WriteVxcEig (double * vxc, Kpoint<KpointType> ** Kptr);
+template <typename KpointType>
 void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag);

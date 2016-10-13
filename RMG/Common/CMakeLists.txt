@@ -13,6 +13,8 @@ MixRho.cpp
 WriteData.cpp
 WriteBGW.cpp
 WriteWfng.cpp
+WriteRhog.cpp
+WriteVxcEig.cpp
 MixBetaxpsi1.cpp
 WriteRestart.cpp
 LcaoGetAwave.cpp
