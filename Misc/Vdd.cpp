@@ -189,7 +189,7 @@ void Vdd(double * rho)
 		del_vdd = atomic_rho[j] - rho[j]; //voronoi density deformation integral at this gridpoint 
 
 		/*Loop over ions (including periodic images, find distances from current grid point
-		 * and find which ions is the closest*/
+		 * and find which ion is the closest*/
 		distmin = 1000000.0;
 		for (ionct = 0; ionct < ion_multiply * num_ions; ionct++) //for each ion number
 		{
