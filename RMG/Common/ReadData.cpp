@@ -171,82 +171,12 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
             }
 
             // for band structure calculation, just read wave functions for first kpoints
-            if(ct.forceflag == BAND_STRUCTURE) return;
+            if(ct.forceflag == BAND_STRUCTURE) break;
         }
 
         rmg_printf ("read_data: read 'wfns'\n");
 
     }
-
-
-
-    /* read state occupations */
-    {
-        double *occ = new double[nk * ct.num_states]();
-
-        read_double (fhand, occ, (nk * ns));
-
-        rmg_printf ("read_data: read 'occupations'\n"); 
-
-
-        if (ct.forceflag != BAND_STRUCTURE)
-        {
-            double occ_total = 0.0; 
-
-            for (ik = 0; ik < nk; ik++)
-                for (is = 0; is < ct.num_states; is++)
-                {
-                    occ_total += ( Kptr[ik]->Kstates[is].occupation[0] = occ[ik * ns + is] );
-                }
-
-
-
-            /* 
-               since we are using floats on the data file the precision
-               of the occupations is worse than 1e-10 required by the fill() routine
-               therefore we need to 'renormalize' the occupations so
-               that they add up to an integer
-               it's a hack I know, but whatever... not a biggie
-             */
-
-            {
-                double iocc_total = (double) (int) (occ_total + 0.5);
-                double fac = iocc_total / occ_total;
-
-                for (ik = 0; ik < nk; ik++)
-                    for (is = 0; is < ct.num_states; is++)
-                    {
-                        Kptr[ik]->Kstates[is].occupation[0] *= fac;
-                    }
-                /* end of normalization*/
-            }
-
-        }             /* end if */
-
-        delete [] occ;
-
-    }           /* end of read occupations */
-
-
-
-
-    /* read state eigenvalues, not needed really */
-    {
-
-        /* Read eigenvalue in pairwised case, while in polarized case, 
-         * it's the eigenvalue for proceesor's own spin  */ 
-        for (ik = 0; ik < nk; ik++)
-            for (is = 0; is < ns; is++)
-            {
-                read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
-            }
-
-        rmg_printf ("read_data: read 'eigenvalues'\n");
-
-    }      /* end of read eigenvalues */
-
-
-
 
     // If we have added unoccupied orbitals initialize them to a random state
     if(ct.num_states > ns) {
@@ -347,7 +277,78 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
             delete [] tmp_psiR;
         }                           /* end for */
 
+        if(ct.forceflag == BAND_STRUCTURE) return;
     }
+
+
+    /* read state occupations */
+    {
+        double *occ = new double[nk * ct.num_states]();
+
+        read_double (fhand, occ, (nk * ns));
+
+        rmg_printf ("read_data: read 'occupations'\n"); 
+
+
+        if (ct.forceflag != BAND_STRUCTURE)
+        {
+            double occ_total = 0.0; 
+
+            for (ik = 0; ik < nk; ik++)
+                for (is = 0; is < ct.num_states; is++)
+                {
+                    occ_total += ( Kptr[ik]->Kstates[is].occupation[0] = occ[ik * ns + is] );
+                }
+
+
+
+            /* 
+               since we are using floats on the data file the precision
+               of the occupations is worse than 1e-10 required by the fill() routine
+               therefore we need to 'renormalize' the occupations so
+               that they add up to an integer
+               it's a hack I know, but whatever... not a biggie
+               */
+
+            {
+                double iocc_total = (double) (int) (occ_total + 0.5);
+                double fac = iocc_total / occ_total;
+
+                for (ik = 0; ik < nk; ik++)
+                    for (is = 0; is < ct.num_states; is++)
+                    {
+                        Kptr[ik]->Kstates[is].occupation[0] *= fac;
+                    }
+                /* end of normalization*/
+            }
+
+        }             /* end if */
+
+        delete [] occ;
+
+    }           /* end of read occupations */
+
+
+
+
+    /* read state eigenvalues, not needed really */
+    {
+
+        /* Read eigenvalue in pairwised case, while in polarized case, 
+         * it's the eigenvalue for proceesor's own spin  */ 
+        for (ik = 0; ik < nk; ik++)
+            for (is = 0; is < ns; is++)
+            {
+                read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
+            }
+
+        rmg_printf ("read_data: read 'eigenvalues'\n");
+
+    }      /* end of read eigenvalues */
+
+
+
+
 
     close (fhand);
 

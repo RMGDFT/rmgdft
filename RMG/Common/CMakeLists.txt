@@ -11,10 +11,9 @@ MolecularDynamics.cpp
 GetAugRho.cpp
 MixRho.cpp
 WriteData.cpp
-WriteBGW.cpp
-WriteWfng.cpp
-WriteRhog.cpp
-WriteVxcEig.cpp
+WriteBGW_Wfng.cpp
+WriteBGW_Rhog.cpp
+WriteBGW_VxcEig.cpp
 MixBetaxpsi1.cpp
 WriteRestart.cpp
 LcaoGetAwave.cpp

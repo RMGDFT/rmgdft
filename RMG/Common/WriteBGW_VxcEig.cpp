@@ -42,24 +42,23 @@
 #include "RmgParallelFft.h"
 
 
-template  void WriteVxcEig (double *vxc, Kpoint<double> ** Kptr);
-template  void WriteVxcEig (double *vxc, Kpoint<std::complex<double> > ** Kptr);
+template  void WriteBGW_VxcEig (int kpt, double *vxc, Kpoint<double> * Kptr);
+template  void WriteBGW_VxcEig (int kpt, double *vxc, Kpoint<std::complex<double> > * Kptr);
 template <typename KpointType>
-void WriteVxcEig (double *vxc, Kpoint<KpointType> ** Kptr)
+void WriteBGW_VxcEig (int kpt, double *vxc, Kpoint<KpointType> * kptr)
 {
-    int kpt;
     KpointType *psi;
     FILE *fhand;
 
     int nspin = ct.spin_flag +1;
-    int ntot_states = ct.num_states * nspin * ct.num_kpts;
+    int ntot_states = ct.num_states * nspin;
     double *vxc_diag = new double[ntot_states];
     int diag_min =ct.vxc_diag_nmin-1, diag_max = ct.vxc_diag_nmax-1;
     int noffdiag = 0;
     int ispin, istate, idx;
-    
+
     if(diag_max <= diag_min) diag_max = ct.num_states;
- 
+
     int ndiag = diag_max - diag_min;
     int P0_BASIS = get_P0_BASIS();
     double *vxc_psi = new double[P0_BASIS];
@@ -68,42 +67,35 @@ void WriteVxcEig (double *vxc, Kpoint<KpointType> ** Kptr)
     GetVtotPsi(vxc_psi, vxc, Rmg_G->default_FG_RATIO);
     for(int i = 0; i < ntot_states; i++) vxc_diag[i] = 0.0;
 
-    for(kpt = 0; kpt< ct.num_kpts_pe; kpt++)
+    idx = pct.spinpe * ct.num_states;
+
+    for(istate = diag_min; istate < diag_max; istate++)
     {
-        int kpt_global = kpt + pct.kstart;
-        idx = pct.spinpe * ct.num_states * ct.num_kpts + kpt_global * ct.num_states;
+        psi = kptr->Kstates[istate].psi;
 
-        for(istate = diag_min; istate < diag_max; istate++)
-        {
-            psi = Kptr[kpt]->Kstates[istate].psi;
-
-            for(int i = 0; i < P0_BASIS; i++)
-                vxc_diag[idx + istate] += vxc_psi[i] * std::norm(psi[i]);
-        }
+        for(int i = 0; i < P0_BASIS; i++)
+            vxc_diag[idx + istate] += vxc_psi[i] * std::norm(psi[i]);
     }
 
 
-    MPI_Allreduce(MPI_IN_PLACE, vxc_diag, ntot_states, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+    MPI_Allreduce(MPI_IN_PLACE, vxc_diag, ntot_states, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
     for(int i = 0; i <ntot_states; i++) vxc_diag[i] *= get_vel() *Ha_eV;
 
-    if(pct.imgpe == 0)
+    if(pct.gridpe == 0)
     {
-        fhand = fopen("vxc.dat", "w");
-        for(kpt = 0; kpt< ct.num_kpts; kpt++)
-        {
-            fprintf(fhand, "%13.9f %13.9f %13.9f %d %d\n", ct.kp[kpt].kvec[0], ct.kp[kpt].kvec[1], ct.kp[kpt].kvec[2], ndiag, noffdiag);
-            for(ispin = 0; ispin <nspin; ispin++)
-                for(istate = diag_min; istate < diag_max; istate++)
-                {
-                    idx = ispin * ct.num_states * ct.num_kpts + kpt * ct.num_states + istate;
-                    fprintf(fhand, "%8d %8d %15.9f %15.9f\n", ispin+1, istate+1, vxc_diag[idx],0.0);
-                }
+        std::string filename("vxc.dat_kpt");
+        filename = filename + std::to_string(kpt);
 
-        }
+        fhand = fopen((char *)filename.c_str(), "w");
+        fprintf(fhand, "%13.9f %13.9f %13.9f %d %d\n", ct.kp[kpt].kvec[0], ct.kp[kpt].kvec[1], ct.kp[kpt].kvec[2], ndiag, noffdiag);
+        for(ispin = 0; ispin <nspin; ispin++)
+            for(istate = diag_min; istate < diag_max; istate++)
+            {
+                idx = ispin * ct.num_states + istate;
+                fprintf(fhand, "%8d %8d %15.9f %15.9f\n", ispin+1, istate+1, vxc_diag[idx],0.0);
+            }
+
         fclose(fhand);
     }
 }
-
-
-

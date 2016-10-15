@@ -178,12 +178,10 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 template <typename KpointType>
 void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
-void WriteBGW (double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
+void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * Kptr);
+void WriteBGW_Rhog (double * rho, double * rho_oppo);
 template <typename KpointType>
-void WriteWfng (Kpoint<KpointType> ** Kptr);
-void WriteRhog (double * rho, double * rho_oppo);
-template <typename KpointType>
-void WriteVxcEig (double * vxc, Kpoint<KpointType> ** Kptr);
+void WriteBGW_VxcEig (int kpt, double * vxc, Kpoint<KpointType> * Kptr);
 template <typename KpointType>
 void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
@@ -231,7 +229,7 @@ template <typename OrbitalType> void AssignDerweight (Kpoint<OrbitalType> *kptr,
         
 
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
-void ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
+int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 void ReadOrbitals(char *cfile, STATE  *states, ION *ions,  MPI_Comm comm, unsigned int *);
 void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 template <typename KpointType>

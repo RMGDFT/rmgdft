@@ -146,7 +146,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     if(ct.forceflag == BAND_STRUCTURE)
     {
-        ReadKpointsBandstructure(ct.cfile, ct, ControlMap);
+        int special_klines = ReadKpointsBandstructure(ct.cfile, ct, ControlMap);
+        if(special_klines == 0) 
+            ReadKpoints(ct.cfile, ct, ControlMap);
     }
     else if((ct.kpoint_mesh[0] < 1) || (ct.kpoint_mesh[1] < 1) || (ct.kpoint_mesh[2] < 1) ) 
     {

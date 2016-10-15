@@ -54,7 +54,7 @@ kpoints = "
 
 namespace Ri = RmgInput;
 
-void ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
+int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
     std::string KpointArray;
@@ -67,7 +67,7 @@ void ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::
     RmgInputFile If(cfile, NewMap, pct.img_comm);
 
     If.RegisterInputKey("kpoints_bandstructure", &KpointArray, "",
-                     CHECK_AND_FIX, REQUIRED,
+                     CHECK_AND_FIX, OPTIONAL,
                      "kpoints list \n",
                      "");
     
@@ -82,6 +82,7 @@ void ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::
     
     std::vector<std::string>::iterator it, it1;
     int num_lines = Kpoints.size();
+    if(num_lines < 2) return 0;
     nkpts=0;
 
     std::string Kpoint ;
@@ -152,6 +153,7 @@ void ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::
     ct.kp[nkpts].kpt[0] = kx0;
     ct.kp[nkpts].kpt[1] = ky0;
     ct.kp[nkpts].kpt[2] = kz0;
+    return 1;
 
 //    rmg_printf("\n num_k %d", ct.num_kpts);
 //    for(int kpt = 0; kpt < ct.num_kpts; kpt++)

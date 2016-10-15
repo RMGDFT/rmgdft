@@ -154,10 +154,6 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
     /*Write out final data */
     WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
-    /* For RMG2BGW options */
-    if (ct.rmg2bgw)
-    	WriteBGW (vh, rho, rho_oppo, vxc, Kptr);
-
 
 }                               /* end fastrlx */
 

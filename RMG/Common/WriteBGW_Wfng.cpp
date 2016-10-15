@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-*/
+ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -41,13 +41,15 @@
 #include "transition.h"
 #include "RmgParallelFft.h"
 
+//  write wave function in gspace for one kpoitn. filename to wfng.complex_kpt(x)
+//  the file will be read in fortran with unformatted in Berkeley GW
+//  written by Wenchang Lu, NCSU, 2016-10-12
 
-template  void WriteWfng (Kpoint<double> ** Kptr);
-template  void WriteWfng (Kpoint<std::complex<double> > ** Kptr);
-template <typename KpointType>
-void WriteWfng (Kpoint<KpointType> ** Kptr)
+template  void WriteBGW_Wfng (int kpt, Kpoint<double> * kptr);
+template  void WriteBGW_Wfng (int kpt, Kpoint<std::complex<double> > * kptr);
+    template <typename KpointType>
+void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
 {
-    int kpt;
     SPECIES *sp;
     ION *iptr;
     int amode, fhand;
@@ -167,54 +169,49 @@ void WriteWfng (Kpoint<KpointType> ** Kptr)
     int NZ_GRID = Rmg_G->get_NZ_GRID(1);
 
     int NBASIS = NX_GRID * NY_GRID * NZ_GRID;
-    int *gk_g = new int[3* NBASIS * ct.num_kpts];
+    int *gk_g = new int[3* NBASIS];
 
     int num_pw_wfc_max;
-    int *num_pw_wfc = new int[ct.num_kpts];
+    int num_pw_wfc;
 
-    for(int kpt = 0; kpt < ct.num_kpts; kpt++)
-    {
-        num_pw_wfc[kpt] = 0;
-        for(int ix = 0; ix < NX_GRID; ix++)
-            for(int iy = 0; iy < NY_GRID; iy++)
-                for(int iz = 0; iz < NZ_GRID; iz++)
+    num_pw_wfc = 0;
+    for(int ix = 0; ix < NX_GRID; ix++)
+        for(int iy = 0; iy < NY_GRID; iy++)
+            for(int iz = 0; iz < NZ_GRID; iz++)
+            {
+                ivec[0] = ix;
+                ivec[1] = iy;
+                ivec[2] = iz;
+                if(ivec[0] > NX_GRID/2) ivec[0] = ivec[0] - NX_GRID;
+                if(ivec[1] > NY_GRID/2) ivec[1] = ivec[1] - NY_GRID;
+                if(ivec[2] > NZ_GRID/2) ivec[2] = ivec[2] - NZ_GRID;
+
+                gvec[0] = (double)ivec[0] * Rmg_L.b0[0] + (double)ivec[1] * Rmg_L.b1[0] + (double)ivec[2] * Rmg_L.b2[0];
+                gvec[0] *= Rmg_L.celldm[0];
+                gvec[1] = (double)ivec[0] * Rmg_L.b0[1] + (double)ivec[1] * Rmg_L.b1[1] + (double)ivec[2] * Rmg_L.b2[1];
+                gvec[1] *= Rmg_L.celldm[0];
+                gvec[2] = (double)ivec[0] * Rmg_L.b0[2] + (double)ivec[1] * Rmg_L.b1[2] + (double)ivec[2] * Rmg_L.b2[2];
+                gvec[2] *= Rmg_L.celldm[0];
+
+                gvec[0] += ct.kp[kpt].kpt[0];
+                gvec[1] += ct.kp[kpt].kpt[1];
+                gvec[2] += ct.kp[kpt].kpt[2];
+
+                gmags = gvec[0] * gvec[0] + gvec[1] * gvec[1] + gvec[2] * gvec[2];
+                if(gmags * tpiba2 < ecutwfc) 
                 {
-                    ivec[0] = ix;
-                    ivec[1] = iy;
-                    ivec[2] = iz;
-                    if(ivec[0] > NX_GRID/2) ivec[0] = ivec[0] - NX_GRID;
-                    if(ivec[1] > NY_GRID/2) ivec[1] = ivec[1] - NY_GRID;
-                    if(ivec[2] > NZ_GRID/2) ivec[2] = ivec[2] - NZ_GRID;
-
-                    gvec[0] = (double)ivec[0] * Rmg_L.b0[0] + (double)ivec[1] * Rmg_L.b1[0] + (double)ivec[2] * Rmg_L.b2[0];
-                    gvec[0] *= Rmg_L.celldm[0];
-                    gvec[1] = (double)ivec[0] * Rmg_L.b0[1] + (double)ivec[1] * Rmg_L.b1[1] + (double)ivec[2] * Rmg_L.b2[1];
-                    gvec[1] *= Rmg_L.celldm[0];
-                    gvec[2] = (double)ivec[0] * Rmg_L.b0[2] + (double)ivec[1] * Rmg_L.b1[2] + (double)ivec[2] * Rmg_L.b2[2];
-                    gvec[2] *= Rmg_L.celldm[0];
-
-                    gvec[0] += ct.kp[kpt].kpt[0];
-                    gvec[1] += ct.kp[kpt].kpt[1];
-                    gvec[2] += ct.kp[kpt].kpt[2];
-
-                    gmags = gvec[0] * gvec[0] + gvec[1] * gvec[1] + gvec[2] * gvec[2];
-                    if(gmags * tpiba2 < ecutwfc) 
-                    {
-                        gk_g[kpt *NBASIS *3 + num_pw_wfc[kpt] * 3 + 0] = ivec[0];
-                        gk_g[kpt *NBASIS *3 + num_pw_wfc[kpt] * 3 + 1] = ivec[1];
-                        gk_g[kpt *NBASIS *3 + num_pw_wfc[kpt] * 3 + 2] = ivec[2];
-                        num_pw_wfc[kpt]++;
-                    }
+                    gk_g[num_pw_wfc * 3 + 0] = ivec[0];
+                    gk_g[num_pw_wfc * 3 + 1] = ivec[1];
+                    gk_g[num_pw_wfc * 3 + 2] = ivec[2];
+                    num_pw_wfc++;
                 }
+            }
 
 
-    }
 
-    num_pw_wfc_max=0;
-    for(int kpt = 0; kpt < ct.num_kpts; kpt++)
-        num_pw_wfc_max = std::max(num_pw_wfc_max, num_pw_wfc[kpt]);
+    num_pw_wfc_max=num_pw_wfc;
 
-    int nks = ct.num_kpts * ct.num_states;
+    int nks = ct.num_states;
     int ntot_states = nspin * nks;
     double *occs = new double[ntot_states];
     double *eigs= new double[ntot_states];
@@ -229,16 +226,11 @@ void WriteWfng (Kpoint<KpointType> ** Kptr)
 
     // Fill eigs
     for(int ispin = 0; ispin<nspin; ispin++)
-        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
-            for(int st = 0;st < ct.num_states;st++) {
-                int kpt1 = kpt + pct.kstart;
-                eigs[ispin * nks + kpt1*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[ispin];
-                occs[ispin * nks + kpt1*ct.num_states + st] = Kptr[kpt]->Kstates[st].occupation[ispin];
-            }
+        for(int st = 0;st < ct.num_states;st++) {
+            eigs[ispin * nks + st] = kptr->Kstates[st].eig[ispin];
+            occs[ispin * nks + st] = kptr->Kstates[st].occupation[ispin];
         }
 
-    MPI_Allreduce(MPI_IN_PLACE, eigs, ntot_states, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-    MPI_Allreduce(MPI_IN_PLACE, occs, ntot_states, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     MPI_Allreduce(MPI_IN_PLACE, eigs, ntot_states, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     MPI_Allreduce(MPI_IN_PLACE, occs, ntot_states, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
@@ -248,9 +240,9 @@ void WriteWfng (Kpoint<KpointType> ** Kptr)
     //  change the eigvalue unit from Hatree to Rydeberg
     for (int i = 0; i < ntot_states; i++) eigs[i] *= 2.0;
 
-    for (int i = 0; i < ct.num_kpts * nspin; i++) ifmin[i] = 0;
-    for (int i = 0; i < ct.num_kpts * nspin; i++) ifmax[i] = 0;
-    for (int i = 0; i < ct.num_kpts * nspin; i++) 
+    for (int i = 0; i < nspin; i++) ifmin[i] = 0;
+    for (int i = 0; i <  nspin; i++) ifmax[i] = 0;
+    for (int i = 0; i <  nspin; i++) 
         for (int st = 0; st < ct.num_states; st++)
         {
             if(occs[i * ct.num_states + st] > 0.5) 
@@ -260,14 +252,17 @@ void WriteWfng (Kpoint<KpointType> ** Kptr)
             }
         }
 
+    int length;
+    int ione = 1;
 
     /*Only one processor will write restart file*/
-    if (pct.imgpe == 0)
+    if (pct.gridpe == 0)
     {
 
         amode = S_IREAD | S_IWRITE;
-        fhand = open("wfng.complex", O_CREAT | O_TRUNC | O_RDWR, amode);
-        int length;
+        std::string filename("wfng.complex");
+        filename = filename + std::to_string(kpt);
+        fhand = open((char *)filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
         length = 96;
         write(fhand, &length, sizeof(int));
         write(fhand, stitle, sizeof(char) *32);
@@ -284,7 +279,7 @@ void WriteWfng (Kpoint<KpointType> ** Kptr)
         write(fhand, &cell_symmetry, sizeof(int));
         write(fhand, &ct.num_ions, sizeof(int));
         write(fhand, &ecutrho, sizeof(double));
-        write(fhand, &ct.num_kpts, sizeof(int)); // num of kpoint 
+        write(fhand, &ione, sizeof(int)); // num of kpoint 
         write(fhand, &ct.num_states, sizeof(int)); // number of bands
         write(fhand, &num_pw_wfc_max, sizeof(int)); // max num of plane waves for wavefunction of all kpoint
         write(fhand, &ecutwfc, sizeof(double)); 
@@ -350,42 +345,40 @@ void WriteWfng (Kpoint<KpointType> ** Kptr)
 
 
         write(fhand, &length, sizeof(int));
-        length = ct.num_kpts * sizeof(int);
+        length = sizeof(int);
         write(fhand, &length, sizeof(int));
 
-        write(fhand, num_pw_wfc, sizeof(int) * ct.num_kpts);
+        write(fhand, &num_pw_wfc, sizeof(int));
         write(fhand, &length, sizeof(int));
 
-        length = ct.num_kpts * sizeof(double);
+        length = sizeof(double);
         write(fhand, &length, sizeof(int));
-        for(kpt = 0; kpt < ct.num_kpts; kpt++)
-            write(fhand, &ct.kp[kpt].kweight, sizeof(double));
-        write(fhand, &length, sizeof(int));
-
-        length = 3*ct.num_kpts * sizeof(double);
-        write(fhand, &length, sizeof(int));
-        for(kpt = 0; kpt < ct.num_kpts; kpt++)
-            write(fhand, ct.kp[kpt].kpt, sizeof(double)*3);
+        write(fhand, &ct.kp[kpt].kweight, sizeof(double));
         write(fhand, &length, sizeof(int));
 
-        length = ct.num_kpts *nspin* sizeof(int);
+        length = 3* sizeof(double);
         write(fhand, &length, sizeof(int));
-        write(fhand, ifmin, sizeof(int) * ct.num_kpts * nspin);
-        write(fhand, &length, sizeof(int));
-
-        length = ct.num_kpts *nspin* sizeof(int);
-        write(fhand, &length, sizeof(int));
-        write(fhand, ifmax, sizeof(int) * ct.num_kpts * nspin);
+        write(fhand, ct.kp[kpt].kpt, sizeof(double)*3);
         write(fhand, &length, sizeof(int));
 
-        length = ct.num_kpts *nspin *ct.num_states * sizeof(double);
+        length =nspin* sizeof(int);
         write(fhand, &length, sizeof(int));
-        write(fhand, eigs, sizeof(double) * ct.num_states * ct.num_kpts * nspin); 
+        write(fhand, ifmin, sizeof(int) * nspin);
+        write(fhand, &length, sizeof(int));
+
+        length = nspin* sizeof(int);
+        write(fhand, &length, sizeof(int));
+        write(fhand, ifmax, sizeof(int) * nspin);
+        write(fhand, &length, sizeof(int));
+
+        length = nspin *ct.num_states * sizeof(double);
+        write(fhand, &length, sizeof(int));
+        write(fhand, eigs, sizeof(double) * ct.num_states * nspin); 
         write(fhand, &length, sizeof(int));
         // eigs(ispin * nband * ct.num_kpts + kpt * nband + iband)
 
         write(fhand, &length, sizeof(int));
-        write(fhand, occs, sizeof(double) * ct.num_states * ct.num_kpts * nspin); 
+        write(fhand, occs, sizeof(double) * ct.num_states * nspin); 
         write(fhand, &length, sizeof(int));
 
         length = sizeof(int);
@@ -402,9 +395,22 @@ void WriteWfng (Kpoint<KpointType> ** Kptr)
         write(fhand, &length, sizeof(int));
         write(fhand, g_g, sizeof(int) * 3 * num_pw_rho);
         write(fhand, &length, sizeof(int));
+
+        length = sizeof(int);
+        write(fhand, &length, sizeof(int));
+        write(fhand, &nrecord, sizeof(int));
+        write(fhand, &length, sizeof(int));
+
+        write(fhand, &length, sizeof(int));
+        write(fhand, &num_pw_wfc, sizeof(int));
+        write(fhand, &length, sizeof(int));
+
+        length = 3*num_pw_wfc * sizeof(int);
+        write(fhand, &length, sizeof(int));
+        write(fhand, gk_g, sizeof(int)*num_pw_wfc*3);
+        write(fhand, &length, sizeof(int));
     }
 
-    MPI_Barrier(pct.img_comm);
 
     int ix, iy, iz, ii, jj, kk;
     int idx2, idx1, incx, incx1, incy, incy1;
@@ -423,104 +429,83 @@ void WriteWfng (Kpoint<KpointType> ** Kptr)
     int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     std::complex<double> *wfng_dist = new std::complex<double> [P0_BASIS];
     std::complex<double> *wfng_global = new std::complex<double> [NBASIS];
-    for(int kpt = 0; kpt < ct.num_kpts; kpt++)
+
+
+    //  get wfng in gspace for one kpoint
+    for(int istate = 0; istate < ct.num_states; istate++)
     {
-
-        int length = sizeof(int);
-        if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-        if(pct.imgpe == 0) write(fhand, &nrecord, sizeof(int));
-        if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-
-        length = sizeof(int);
-        if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-        if(pct.imgpe == 0) write(fhand, &num_pw_wfc[kpt], sizeof(int));
-        if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-
-        length = 3*num_pw_wfc[kpt] * sizeof(int);
-        if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-        if(pct.imgpe == 0) write(fhand, &gk_g[kpt*NBASIS*3], sizeof(int)*num_pw_wfc[kpt]*3);
-        if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-
-
-        //  get wfng in gspace for one kpoint
-        for(int istate = 0; istate < ct.num_states; istate++)
+        for(int ig=0; ig < num_pw_wfc; ig++) wfng[ig] = 0.0;
+        for(int ig=0; ig < NBASIS; ig++) wfng_global[ig] = 0.0;
+        if(ct.is_gamma)
         {
-            for(int ig=0; ig < num_pw_wfc[kpt]; ig++) wfng[ig] = 0.0;
-            for(int ig=0; ig < NBASIS; ig++) wfng_global[ig] = 0.0;
-            if(kpt >= pct.kstart && kpt < pct.kstart + ct.num_kpts_pe)
-            {
-                int kpt_local = kpt - pct.kstart;
-                if(ct.is_gamma)
+            for(int idx = 0; idx < P0_BASIS; idx++)
+                wfng_dist[idx] = std::complex<double>(std::real(kptr->Kstates[istate].psi[idx]), 0.0);
+
+        }
+        else 
+        {
+            for(int idx = 0; idx < P0_BASIS; idx++)
+                wfng_dist[idx] = std::complex<double>(kptr->Kstates[istate].psi[idx]);
+        }
+
+        PfftForward(wfng_dist, wfng_dist, *coarse_pwaves);
+
+        for (ix = 0; ix < get_PX0_GRID(); ix++)
+            for (iy = 0; iy < get_PY0_GRID(); iy++)
+                for (iz = 0; iz < get_PZ0_GRID(); iz++)
                 {
-                    for(int idx = 0; idx < P0_BASIS; idx++)
-                        wfng_dist[idx] = std::complex<double>(std::real(Kptr[kpt_local]->Kstates[istate].psi[idx]), 0.0);
-
-                }
-                else 
-                {
-                    for(int idx = 0; idx < P0_BASIS; idx++)
-                        wfng_dist[idx] = std::complex<double>(Kptr[kpt_local]->Kstates[istate].psi[idx]);
+                    idx1 = ix * incx + iy * incy + iz;
+                    idx2 = (ix + ii) * incx1 + (iy + jj) * incy1 + iz + kk;
+                    wfng_global[idx2] = wfng_dist[idx1];
                 }
 
-                PfftForward(wfng_dist, wfng_dist, *coarse_pwaves);
 
-                for (ix = 0; ix < get_PX0_GRID(); ix++)
-                    for (iy = 0; iy < get_PY0_GRID(); iy++)
-                        for (iz = 0; iz < get_PZ0_GRID(); iz++)
-                        {
-                            idx1 = ix * incx + iy * incy + iz;
-                            idx2 = (ix + ii) * incx1 + (iy + jj) * incy1 + iz + kk;
-                            wfng_global[idx2] = wfng_dist[idx1];
-                        }
-            }
+        for(int ig = 0; ig < num_pw_wfc; ig++)
+        {
+            ix = gk_g[ig *3 + 0];
+            iy = gk_g[ig *3 + 1];
+            iz = gk_g[ig *3 + 2];
 
-
-            for(int ig = 0; ig < num_pw_wfc[kpt]; ig++)
-            {
-                ix = gk_g[kpt*NBASIS*3 + ig *3 + 0];
-                iy = gk_g[kpt*NBASIS*3 + ig *3 + 1];
-                iz = gk_g[kpt*NBASIS*3 + ig *3 + 2];
-
-                if(ix < 0 ) ix += NX_GRID;
-                if(iy < 0 ) iy += NY_GRID;
-                if(iz < 0 ) iz += NZ_GRID;
-                idx2 = ix * incx1 + iy  * incy1 + iz;
-                wfng[ig] += wfng_global[idx2];
-
-            }
-
-            MPI_Allreduce(MPI_IN_PLACE, wfng, 2*num_pw_wfc[kpt], MPI_DOUBLE, MPI_SUM, pct.img_comm);
-
-            double norm_const = 0.0;
-            for(int ig = 0; ig < num_pw_wfc[kpt]; ig++)
-                norm_const += std::norm(wfng[ig]);
-
-            for(int ig = 0; ig < num_pw_wfc[kpt]; ig++)
-                wfng[ig] /= sqrt(norm_const);
-
-
-
-            length = sizeof(int);
-            if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-            if(pct.imgpe == 0) write(fhand, &nrecord, sizeof(int));
-            if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-
-            if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-            if(pct.imgpe == 0) write(fhand, &num_pw_wfc[kpt], sizeof(int));
-            if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-
-            length = num_pw_wfc[kpt] * sizeof(std::complex<double>);
-            if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
-            if(pct.imgpe == 0) write(fhand, wfng, sizeof(std::complex<double>) * num_pw_wfc[kpt]);
-            if(pct.imgpe == 0) write(fhand, &length, sizeof(int));
+            if(ix < 0 ) ix += NX_GRID;
+            if(iy < 0 ) iy += NY_GRID;
+            if(iz < 0 ) iz += NZ_GRID;
+            idx2 = ix * incx1 + iy  * incy1 + iz;
+            wfng[ig] += wfng_global[idx2];
 
         }
 
+        MPI_Allreduce(MPI_IN_PLACE, wfng, 2*num_pw_wfc, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
-    }      
+        double norm_const = 0.0;
+        for(int ig = 0; ig < num_pw_wfc; ig++)
+            norm_const += std::norm(wfng[ig]);
 
-    if(pct.imgpe == 0) close(fhand);
+        for(int ig = 0; ig < num_pw_wfc; ig++)
+            wfng[ig] /= sqrt(norm_const);
 
+
+        if(pct.gridpe == 0) 
+        {
+
+            length = sizeof(int);
+            write(fhand, &length, sizeof(int));
+            write(fhand, &nrecord, sizeof(int));
+            write(fhand, &length, sizeof(int));
+
+            write(fhand, &length, sizeof(int));
+            write(fhand, &num_pw_wfc, sizeof(int));
+            write(fhand, &length, sizeof(int));
+
+            length = num_pw_wfc * sizeof(std::complex<double>);
+            write(fhand, &length, sizeof(int));
+            write(fhand, wfng, sizeof(std::complex<double>) * num_pw_wfc);
+            write(fhand, &length, sizeof(int));
+
+
+        }
+    }
+
+    if(pct.gridpe == 0) close(fhand);
 }
 
 

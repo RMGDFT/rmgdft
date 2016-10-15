@@ -197,7 +197,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     int kpt_storage = ct.num_kpts_pe;
-    if(ct.forceflag == BAND_STRUCTURE) kpt_storage = 1;
+    if(ct.forceflag == BAND_STRUCTURE && (!ct.rmg2bgw)) kpt_storage = 1;
 
     /* Set state pointers and initialize state data */
 #if GPU_ENABLED
@@ -267,7 +267,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
 
     // for band structure calculation only one k point storage is initilized.
-        if(ct.forceflag == BAND_STRUCTURE) rptr_k = rptr;
+        if(ct.forceflag == BAND_STRUCTURE ) rptr_k = rptr;
         Kptr[kpt]->set_pool(rptr_k);
         Kptr[kpt]->nv = nv;
         Kptr[kpt]->ns = ns;

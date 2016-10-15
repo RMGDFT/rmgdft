@@ -42,13 +42,12 @@
 #include "RmgParallelFft.h"
 
 
-template void WriteBGW ( double *, double *, double *, double *, Kpoint<double> **);
-template void WriteBGW ( double *, double *, double *, double *, Kpoint<std::complex<double> > **);
+template void WriteBGW ( double *, double *, double *, Kpoint<double> **);
+template void WriteBGW ( double *, double *, double *, Kpoint<std::complex<double> > **);
 
     template <typename KpointType>
-void WriteBGW ( double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
+void WriteBGW ( double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
 {
-    WriteWfng(Kptr);
     WriteRhog(rho, rho_oppo);
     WriteVxcEig(vxc, Kptr);
 

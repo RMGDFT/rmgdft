@@ -41,8 +41,11 @@
 #include "transition.h"
 #include "RmgParallelFft.h"
 
+// write rho in G-space to be read in BGW
+// the file is for BGW read in fortran with unformatted 
+// Written By Wenchang Lu, NCSU, 2016-10
 
-void WriteRhog (double *rho, double *rho_oppo)
+void WriteBGW_Rhog (double *rho, double *rho_oppo)
 {
     int amode, fhand;
     ION *iptr;
