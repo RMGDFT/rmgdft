@@ -88,7 +88,7 @@ void WriteBGW_VxcEig (int kpt, double *vxc, Kpoint<KpointType> * kptr)
         filename = filename + std::to_string(kpt);
 
         fhand = fopen((char *)filename.c_str(), "w");
-        fprintf(fhand, "%13.9f %13.9f %13.9f %d %d\n", ct.kp[kpt].kvec[0], ct.kp[kpt].kvec[1], ct.kp[kpt].kvec[2], ndiag, noffdiag);
+        fprintf(fhand, "%13.9f %13.9f %13.9f %d %d\n", ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ndiag, noffdiag);
         for(ispin = 0; ispin <nspin; ispin++)
             for(istate = diag_min; istate < diag_max; istate++)
             {
