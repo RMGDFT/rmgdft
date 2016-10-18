@@ -305,7 +305,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             throw RmgFatalException() << "Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
 
-
         // Check convergence
         int tnotconv = nstates;
         double max_tol = 0.0;

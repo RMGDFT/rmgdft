@@ -230,8 +230,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
 	    int notconv;
 	    RmgTimer *RT1 = new RmgTimer("2-Scf steps: Davidson");
-	    if(ct.is_gamma) Davidson(Kptr[kpt], vtot_psi, notconv);
-	    else MgridSubspace(Kptr[kpt], vtot_psi);
+	    Davidson(Kptr[kpt], vtot_psi, notconv);
 	    delete RT1;
 	}
 

@@ -160,14 +160,15 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             else
             {
                 if(M == N) {
-                    zhegvd_(&itype, "V", "L", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
+                    zhegvd_(&itype, "V", "U", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
                     for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
                 }
                 else if(N > M) {
-                    zhegvx (&itype, "V", "I", "L", &N, (double *)A, &ld, (double *)B, &ld,
+                    zhegvx (&itype, "V", "I", "U", &N, (double *)A, &ld, (double *)B, &ld,
                             &vx, &vx, &ione, &M,  &tol, &eigs_found, eigs, (double *)V, &ld, work2,
                             &lwork, &work2[lwork], iwork, ifail, &info);
-    printf("\n %d infooo ", info);
+
+                    //printf("\n %d infooo ", info);
                 }
 
             }
