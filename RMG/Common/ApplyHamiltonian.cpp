@@ -79,7 +79,11 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *
                                kptr->kvec[2] * (std::complex<double>)gz[idx]);
         }
 
-        for(int idx=0;idx < pbasis;idx++) h_psi[idx] + kdr[idx] + 0.5*kptr->kmag;
+        std::complex<double> *tkdr = (std::complex<double> *)kdr;
+        std::complex<double> *thpsi = (std::complex<double> *)h_psi;
+        std::complex<double> *tpsi = (std::complex<double> *)psi;
+        std::complex<double> tmag(0.5*kptr->kmag, 0.0);
+        for(int idx=0;idx < pbasis;idx++) thpsi[idx] = thpsi[idx]  + tkdr[idx] + tmag * tpsi[idx];
 
         delete [] gz;
         delete [] gy;
