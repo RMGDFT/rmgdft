@@ -193,12 +193,12 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
                 gvec[2] = (double)ivec[0] * Rmg_L.b0[2] + (double)ivec[1] * Rmg_L.b1[2] + (double)ivec[2] * Rmg_L.b2[2];
                 gvec[2] *= Rmg_L.celldm[0];
 
-                gvec[0] += ct.kp[kpt].kpt[0];
-                gvec[1] += ct.kp[kpt].kpt[1];
-                gvec[2] += ct.kp[kpt].kpt[2];
+                gvec[0] = gvec[0] * tpiba + ct.kp[kpt].kvec[0];
+                gvec[1] = gvec[1] * tpiba + ct.kp[kpt].kvec[1];
+                gvec[2] = gvec[2] * tpiba + ct.kp[kpt].kvec[2];
 
                 gmags = gvec[0] * gvec[0] + gvec[1] * gvec[1] + gvec[2] * gvec[2];
-                if(gmags * tpiba2 < ecutwfc) 
+                if(gmags  < ecutwfc) 
                 {
                     gk_g[num_pw_wfc * 3 + 0] = ivec[0];
                     gk_g[num_pw_wfc * 3 + 1] = ivec[1];
