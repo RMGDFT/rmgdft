@@ -260,7 +260,7 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
     {
 
         amode = S_IREAD | S_IWRITE;
-        std::string filename("wfng.complex");
+        std::string filename("wfng.complex_kpt");
         filename = filename + std::to_string(kpt);
         fhand = open((char *)filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
         length = 96;
