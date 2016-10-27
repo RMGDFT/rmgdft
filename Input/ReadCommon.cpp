@@ -408,6 +408,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "Mixing parameter for orbital occupations when not using fixed occupations.\n",
                      "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3.\n");
+    If.RegisterInputKey("MP_order", &lc.mp_order, 0, 5, 2, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "order of Methefessel Paxton occupation\n", 
+                     "0 means simple error function as distribution\n");
 
     If.RegisterInputKey("period_of_diagonalization", &lc.diag, 0, INT_MAX, 1, 
                      CHECK_AND_FIX, OPTIONAL, 

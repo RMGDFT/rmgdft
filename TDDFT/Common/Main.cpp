@@ -387,15 +387,15 @@ vh_old, vxc_old, ControlMap);
 
    //     for(i = 0; i < n2; i++) printf("\n  %d  %d  %e  %e  %e  %e", tot_steps, i, Hmatrix[i], Smatrix[i], Pn0[i], Pn0[n2+i]);
 
-        dgemm("T", "N", &numst, &numst, &numst,  &one, Cmatrix, &numst,
-                Hmatrix, &numst, &zero, Hmatrix_t0, &numst);
-        dgemm("N", "N", &numst, &numst, &numst,  &one, Hmatrix_t0, &numst,
-                Cmatrix, &numst, &zero, Hmatrix, &numst);
 
 
         for(inner_step = 0; inner_step < 1; inner_step++)
         {
 
+            dgemm("T", "N", &numst, &numst, &numst,  &one, Cmatrix, &numst,
+                    Hmatrix, &numst, &zero, Hmatrix_t0, &numst);
+            dgemm("N", "N", &numst, &numst, &numst,  &one, Hmatrix_t0, &numst,
+                    Cmatrix, &numst, &zero, Hmatrix, &numst);
 
             for(i = 0; i < n2; i++) Hmatrix[i] = time_step*Hmatrix[i];
 
@@ -417,19 +417,19 @@ vh_old, vxc_old, ControlMap);
 
             for(i = 0; i < 10; i++)
             {
-            if(pct.gridpe == 0) printf("\n");
-            for(j = 0; j < 10; j++)
-                if(pct.gridpe == 0) printf(" %e ", Pn1[i*numst + j]);
+                if(pct.gridpe == 0) printf("\n");
+                for(j = 0; j < 10; j++)
+                    if(pct.gridpe == 0) printf(" %e ", Pn1[i*numst + j]);
             }
-                
+
 
             if(pct.gridpe == 0) printf("\n Pn1 sum %e", t2);
 
             dgemm("N", "N", &numst, &numst, &numst,  &one, Cmatrix, &numst,
-                Pn1, &numst, &zero, Hmatrix_t0, &numst);
+                    Pn1, &numst, &zero, Hmatrix_t0, &numst);
 
             dgemm("N", "T", &numst, &numst, &numst,  &one, Hmatrix_t0, &numst,
-                Cmatrix, &numst, &zero, Xmatrix, &numst);
+                    Cmatrix, &numst, &zero, Xmatrix, &numst);
 
             MatrixToLocal(states_distribute, Xmatrix, rho_matrix_local);
 
@@ -462,7 +462,7 @@ vh_old, vxc_old, ControlMap);
             RmgTimer *RT4c = new RmgTimer("1-TOTAL: GetHS");
             for (i = 0; i < get_FP0_BASIS(); i++) 
                 vtot[i] = vh[i] +vxc[i] - vh_old[i] - vxc_old[i] +vh_corr[i] - vh_corr_old[i];
-            
+
             get_vtot_psi(vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
             HijUpdateNCpp (states_distribute, vtot_c, rho_matrix_local, Hmatrix);
@@ -477,7 +477,7 @@ vh_old, vxc_old, ControlMap);
             dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
         }
 
-       // for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i]*t2;
+        // for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i]*t2;
         for(i = 0; i < 2*n2; i++) Pn0[i]= Pn1[i];
         dipole_calculation(rho, dipole_ele);
 

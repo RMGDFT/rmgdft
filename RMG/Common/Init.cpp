@@ -573,7 +573,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
         /* Take care of occupation filling */
-        ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
+        ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
         OutputEigenvalues(Kptr, 0, -1);
 
         // Get new density 

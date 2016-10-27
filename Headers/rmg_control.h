@@ -370,6 +370,7 @@ typedef struct
     double occ_width;
 
     double occ_mix;
+    int mp_order;
 
     /** total background smearing charge -- for charged supercells */
     double background_charge;

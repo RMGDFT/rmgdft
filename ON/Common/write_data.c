@@ -63,7 +63,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	time(&tt);
 	timeptr = ctime(&tt);
 
-	if(pct.gridpe == 0) rmg_printf("\n    Write start at %s\n", timeptr);
 	if(pct.gridpe == 0) fflush(NULL);
 
 
@@ -143,7 +142,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	time(&tt);
 	timeptr = ctime(&tt);
 
-	if(pct.gridpe == 0) rmg_printf("\n    Write middle at %s\n", timeptr);
 	if(pct.gridpe == 0) fflush(NULL);
 
 

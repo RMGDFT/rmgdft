@@ -242,7 +242,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
 
     /* Take care of occupation filling */
-    ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag);
+    ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
 
 
     if (ct.occ_flag == 1 )

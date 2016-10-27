@@ -76,7 +76,10 @@ static std::unordered_map<std::string, int> occupations_type = {
         {"Fixed", 0},
         {"Fermi Dirac", 1},
         {"Gaussian", 2},
-        {"Error Function", 3}};
+        {"Error Function", 3},
+        {"Cold Smearing", 4},
+        {"MethfesselPaxton", 5}
+        };
 
 static std::unordered_map<std::string, int> subdiag_driver = {
         {"lapack", 0},

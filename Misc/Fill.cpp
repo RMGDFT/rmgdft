@@ -57,17 +57,17 @@
 #include "GlobalSums.h"
 
 
-static double fd (double mu, double * occ, double *eigs, double width, double nel, int num_st, double *weight);
-static double gs (double mu, double * occ, double *eigs, double width, double nel, int num_st, double *weight);
-static double ef (double mu, double * occ, double *eigs, double width, double nel, int num_st, double *weight);
+static double occ_allstates (double mu, double * occ, double *eigs, double width, double nel, 
+    int num_st, double *weight, int occ_flag, int mp_order);
+static inline double dist_func(double t1, int occ_flag, int mp_order);
 
 
-template double Fill (Kpoint<double> **, double, double, double, int, int);
-template double Fill (Kpoint<std::complex<double> > **, double, double, double, int, int);
+template double Fill (Kpoint<double> **, double, double, double, int, int, int);
+template double Fill (Kpoint<std::complex<double> > **, double, double, double, int, int, int);
 
 
     template <typename KpointType>
-double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag)
+double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag, int mp_order)
 {
 
     const int maxit = 50;
@@ -76,7 +76,6 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     int iter, st, st1, kpt, idx, nks, nspin = (ct.spin_flag + 1);
     State<KpointType> *sp;
     double mu, dmu, mu1, mu2, f, fmid, eig;
-    double (*func) (double, double *, double *, double, double, int, double*) = NULL;
 
     double *occ;
     double eigs[ct.num_states*ct.num_kpts_pe*nspin];
@@ -116,33 +115,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
         return(mu);
     }
 
-    switch (occ_flag % 10)
-    {
-
-        case OCC_NONE:
-            return 0.0;             /* early return */
-
-        case OCC_FD:
-            /* fermi-dirac occupations: f(x) = 2 / (1 + Exp[x/T]) */
-            func = fd;
-            break;
-
-        case OCC_GS:
-            /* Gaussian occupations:
-               f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
-            func = gs;
-            break;
-
-        case OCC_EF:
-            /* error-function occupations: f(x) = erfc(x/(aT)),
-               where a = 4/Sqrt[Pi] */
-            func = ef;
-            break;
-
-        default:
-            rmg_error_handler (__FILE__,__LINE__,"unknown filling procedure");
-
-    }                           /* end switch */
+    if(occ_flag == OCC_NONE ) return 0.0;
 
     occ = new double[nspin * nks];
 
@@ -169,8 +142,8 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     MPI_Allreduce (&mu2_tem, &mu2, 1, MPI_DOUBLE, MPI_MAX, pct.kpsub_comm);
 
 
-    fmid = func (mu2, occ, eigs, width, nel, num_st, weight);
-    f = func (mu1, occ, eigs, width, nel, num_st, weight); 
+    fmid = occ_allstates (mu2, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order);
+    f = occ_allstates (mu1, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order); 
 
     if (f * fmid >= 0.0)
         rmg_error_handler (__FILE__, __LINE__, "root must be bracketed");
@@ -193,7 +166,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 
         dmu *= 0.5;
         mu1 = mu + dmu;
-        fmid = func (mu1, occ, eigs, width, nel, num_st, weight);
+        fmid = occ_allstates (mu1, occ, eigs, width, nel, num_st, weight, occ_flag, mp_order);
 
         if (fmid <= 0.0)
         {
@@ -252,7 +225,8 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 
 
 
-static double fd (double mu, double * occ, double *eigs, double width, double nel, int num_st, double *weight)
+static double occ_allstates (double mu, double * occ, double *eigs, double width, double nel, 
+        int num_st, double *weight, int occ_flag, int mp_order)
 {
     int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
     double t1, t2, sumf, eig, fac = (2.0 - ct.spin_flag);
@@ -274,18 +248,8 @@ static double fd (double mu, double * occ, double *eigs, double width, double ne
                 st = kpt * ct.num_states + st1;
                 eig = eigs[st + idx * nks];
                 t1 = (eig - mu) / width;
-                if (t1 > 0.0)
-                {
-
-                    t2 = exp (-t1);
-                    occ[st + idx * nks] = fac * t2 / (1.0 + t2);
-
-                }
-                else
-                {
-                    t2 = exp (t1);
-                    occ[st + idx * nks] = fac / (1.0 + t2);
-                }                 
+                
+                occ[st + idx * nks ] = fac * dist_func(t1, occ_flag, mp_order);
                 sumf += occ[st + idx * nks] * weight[kpt];
             }
         }                           /* st1 and kpt */
@@ -299,97 +263,80 @@ static double fd (double mu, double * occ, double *eigs, double width, double ne
 }                               /* fd */
 
 
-static double gs (double mu, double * occ, double *eigs, double width, double nel, int num_st, double *weight)
+
+
+static inline double dist_func(double t1, int occ_flag, int mp_order)
 {
-    int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
-    double t1, sumf, eig, fac;
-
-    fac = (2.0 - ct.spin_flag) * 0.5;
-
-    /* Gaussian occupations:
-       f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
-
-    nks = ct.num_kpts_pe * ct.num_states;
-
-    sumf = 0.0; 
-
-    for (idx = 0; idx < nspin; idx++)
+    double t2, oc, An, h0, h1, hexp;
+    switch (occ_flag % 10)
     {
-        st = -1; 
-        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            for (st1 = 0; st1 < ct.num_states; st1++)
+
+        case OCC_FD:
+            if (t1 > 0.0)
             {
-                st = kpt * ct.num_states + st1;
-                eig = eigs[idx * nks + st];
-                t1 = (eig - mu) / (2.0 * width);
-                if (t1 > 0.0)
-                {
-                    occ[st + idx * nks] = fac * exp (-t1 * (1.0 + 0.5 * t1));
-                }
-                else
-                {
-                    t1 = -t1;
-                    occ[st + idx * nks] = fac * ( 2.0 - exp (-t1 * (1.0 + 0.5 * t1)) );
-
-                }                   /* end if */
-                sumf += occ[st + idx * nks] * weight[kpt];
+                t2 = exp (-t1);
+                return t2 / (1.0 + t2);
             }
-        }
-    }	
-
-    sumf = RmgSumAll(sumf, pct.kpsub_comm);
-    return (sumf - nel);
-
-}                               /* gs */
-
-
-static double ef (double mu, double * occ, double *eigs, double width, double nel, int num_st, double *weight)
-{
-    int st, kpt, st1, nks, idx, nspin = (ct.spin_flag + 1);
-    double t1, t2, sumf, eig, fac;
-
-    fac = (2.0 - ct.spin_flag) * 0.5;
-
-    t2 = 4.0 / sqrt (PI);
-    nks = ct.num_kpts_pe * ct.num_states; 
-
-    /* error-function occupations: f(x) = erfc(x/(aT))
-       where a = 4/Sqrt[Pi] */
-
-    sumf = 0.0; 
-
-    for (idx = 0; idx < nspin; idx++)
-    {
-        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            for (st1 = 0; st1 < ct.num_states; st1++)
+            else
             {
-                st = kpt * ct.num_states + st1;
-                eig = eigs[st + idx * nks];
+                t2 = exp (t1);
+                return 1.0 / (1.0 + t2);
+            }                 
+            /* fermi-dirac occupations: f(x) = 2 / (1 + Exp[x/T]) */
+            break;
 
-                t1 = (eig - mu) / (t2 * width);
+        case OCC_GS:
+            /* Gaussian occupations:
+               f(x) = 1 - sign(x) (1 - Exp[-|x|/(8T)(4 +|x|/T)^2]) */
 
-                /* debug: this conditional mayn't be necessary */
-
-                if (t1 > 0.0)
-                {
-                    occ[st + idx * nks] = fac * erfc (t1);
-                }
-                else
-                {
-                    t1 = -t1;       
-                    occ[st + idx * nks] = fac * ( 1.0 + erf (t1) );
-                }                   /* end if */
-
-                sumf += occ[st + idx * nks] * weight[kpt];
+            t1 = 0.5 * t1;
+            if (t1 > 0.0)
+            {
+                return exp (-t1 * (1.0 + 0.5 * t1));
             }
-        }
-    }	    
+            else
+            {
+                t1 = -t1;
+                return ( 2.0 - exp (-t1 * (1.0 + 0.5 * t1)) );
 
-    sumf = RmgSumAll(sumf, pct.kpsub_comm);
-    return (sumf - nel);
+            }                   /* end if */
+            break;
 
-}                               /* ef */
+        case OCC_EF:
+            /* error-function occupations: f(x) = erfc(x/(aT)),
+               where a = 4/Sqrt[Pi] */
 
+            t2 = 4.0 / sqrt (PI);
+            t1 = t1/ t2;
 
+            return erfc (t1);
+
+            break;
+        case OCC_MV:
+            t2 = -t1 -1.0/sqrt(2.0);
+            return 0.5 * erfc(-t2) + 1.0/sqrt(2.0*PI) * exp(-t2*t2);
+            break;
+
+        case OCC_MP:
+            oc = 0.5 * erfc(t1);
+            hexp = exp(-t1*t1);
+            An = 1.0/sqrt(PI);
+            h0 = 1.0;
+            h1 = 2.0 * t1;
+            for(int n = 1; n <= ct.mp_order; n++)
+            {
+                An = -An/(4.0 * n);
+                oc += An * h1 * hexp;
+                h0 = 2.0 * t1 * h1 - 2.0 * (2*n-1) * h0;    // h0 = H_2n(x)
+                h1 = 2.0* t1 * h0 - 2.0 * (2.0*n) * h1; // h1 = H_2n+1(x)
+            }
+            
+            return oc; 
+            break;
+
+        default:
+            rmg_error_handler (__FILE__,__LINE__,"unknown filling procedure");
+
+    }                           /* end switch */
+
+}

@@ -155,6 +155,8 @@
 #define OCC_FD 1
 #define OCC_GS 2
 #define OCC_EF 3
+#define OCC_MV 4
+#define OCC_MP 5
 
 
 /* Crystal lattice types */
