@@ -60,9 +60,22 @@ int init_kpoints (int *mesh, int *is_shift)
     int ion, *ityp;
     double symprec = 1.0e-5;
 
-    double lattice[3][3];
     int kpt;
+    if(mesh[0] == 1 && mesh[1] == 1 && mesh[2] == 1 
+            && is_shift[0] == 0 && is_shift[1] == 0 && is_shift[2] == 0)
+    {
+        num_kpts = 1;
+        my_malloc (ct.kp, num_kpts, KPOINT);
+        ct.num_kpts = num_kpts;
+        ct.kp[0].kpt[ 0 ] = 0.0;
+        ct.kp[0].kpt[ 1 ] = 0.0;
+        ct.kp[0].kpt[ 2 ] = 0.0;
+        ct.kp[0].kweight = 1.0;
+        ct.is_gamma = 1;
+        return ct.num_kpts;
+    }
 
+    double lattice[3][3];
     lattice[0][0] = get_a0(0);
     lattice[0][1] = get_a0(1);
     lattice[0][2] = get_a0(2);
@@ -124,8 +137,8 @@ int init_kpoints (int *mesh, int *is_shift)
     assert(count == num_kpts);
     /*Not necessary and it ends up being the first thing printed to stdout*/
     /*printf("\n num_k %d", count);
-    for(kpt = 0; kpt < num_kpts; kpt++)
-        printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);*/
+      for(kpt = 0; kpt < num_kpts; kpt++)
+      printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);*/
 
     my_free(grid_address);
     my_free(tau);
