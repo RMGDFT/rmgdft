@@ -312,7 +312,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /* Set initial states to random start */
 
-    if ((ct.runflag == LCAO_START) || ((ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE))
+    if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE))
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++){

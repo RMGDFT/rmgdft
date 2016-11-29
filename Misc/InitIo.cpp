@@ -139,6 +139,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         InputKey *Ik = ControlMap["atomic_coordinate_type"];
         static std::string AbsoluteCoords("Absolute");
         Ik->Readstr = AbsoluteCoords;
+        ct.crd_flag = 1;
     }
     else {
         ReadDynamics(ct.cfile, ct, ControlMap);
