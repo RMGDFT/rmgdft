@@ -213,6 +213,7 @@
 #define INIT_GAUSSIAN  4
 #define Start_TDDFT  5
 #define Restart_TDDFT  6
+#define MODIFIED_LCAO_START  7
 
 // 3-d interpolation types
 #define CUBIC_POLYNOMIAL_INTERPOLATION 0

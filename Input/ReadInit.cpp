@@ -76,7 +76,12 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
                      "Image information.\n",
                      "You must provide information for at least 1 image.");
 
+    If.RegisterInputKey("spin_polarization", &lc.spin_polarization, false,
+                         "Spin polarized calculation.");
+
     If.LoadInputKeys();
+
+    if(lc.spin_polarization) lc.spin_flag = true;
 
     int num_image = 0;
     int tot_pe = 0;
@@ -139,6 +144,5 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
 #if (defined(_WIN32) || defined(_WIN64))
     delete [] meta1;
 #endif
-
 }
 

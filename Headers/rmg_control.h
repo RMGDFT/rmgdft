@@ -74,6 +74,9 @@ typedef struct
     /* time at which run started */
     double time0;
     
+    /* Flag indicating if this is a spin polarized calculation */
+    bool spin_polarization;
+
     /* determine if this image is processing spin up or spin down. */
     bool spin_flag;
 
@@ -618,14 +621,8 @@ typedef struct
     
     /** File to read the pseudopotentials from */
     char pspfile[MAX_PATH];
-
-    
-    /*  spin polarize flag, 0 = no spin, 1 = spin polarized */
-    int spin;
-
     
     int freeze_orbital_step;
-
 
     /* override occupations */
     int override_occ;

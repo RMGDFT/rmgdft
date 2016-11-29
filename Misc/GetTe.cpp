@@ -201,8 +201,9 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /* Sum them all up */
+    //ct.scf_correction = 0.0;
+    //printf("TTT %12.8e  %12.8e  %12.8e  %12.8e  %12.8e  %12.8e\n",eigsum,ct.ES,xcstate,ct.XC,ct.II,ct.scf_correction); 
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.scf_correction;
-   
     
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];

@@ -68,6 +68,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     RmgTimer RT0("2-Scf steps"), *RT1;
     RmgTimer RTt("1-TOTAL: run: Scf steps");
     int nspin = (spin_flag + 1);
+
     bool CONVERGED = false;
     double t3;
     double *vtot, *vtot_psi, *new_rho;

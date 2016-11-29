@@ -228,7 +228,7 @@ void initialize(int argc, char **argv)
     rhoc = new double[FP0_BASIS];
     vh = new double[FP0_BASIS];
     vnuc = new double[FP0_BASIS];
-    vxc = new double[FP0_BASIS];
+    vxc = new double[spinfac * FP0_BASIS];
     if (ct.xctype == MGGA_TB09) 
     	tau = new double[FP0_BASIS];
 

@@ -117,7 +117,8 @@ static std::unordered_map<std::string, int> start_mode = {
         {"FIREBALL Start", 3},
         {"Gaussian Start", 4},
         {"Start TDDFT", 5},
-        {"Restart TDDFT", 6}
+        {"Restart TDDFT", 6},
+        {"Modified LCAO Start", 7}
         
         };
 

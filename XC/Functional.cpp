@@ -52,6 +52,8 @@ extern "C" bool __funct_MOD_igcc_is_lyp(void);
 extern "C" bool __funct_MOD_dft_has_finite_size_correction(void);
 extern "C" bool __funct_MOD_dft_is_nonlocc(void);
 extern "C" void __funct_MOD_xc (double *rho, double *ex, double *ec, double *vx, double *vc);
+extern "C" void __funct_MOD_xc_spin (double *rho, double *zeta, double *ex, double *ec, double *vxup, double *vxdw, double *vcup, double *vcdw);
+
 extern "C" void __funct_MOD_nlc (double *rho_valence, double *rho_core, int *nspin, double *ec, double *vx, double *vc);
 extern "C" void __funct_MOD_gcxc (double *rho, double *grho, double *sx, double *sc, 
                                   double *v1x, double *v2x, double *v1c, double *v2c);
@@ -177,6 +179,7 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
    RmgTimer RT1("Functional: vxc");
    double vx[2]{0.0,0.0}, vc[2]{0.0,0.0}, rhoneg[2]{0.0,0.0};
    double ex=0.0, ec=0.0;
+   double *rho_oppo = &rho[this->pbasis];
 
    etxc = 0.0;
    vtxc = 0.0;
@@ -202,7 +205,7 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
            }
 
            else {
-            double rhotem = SMALL_CHARGE * (1.0 + SMALL_CHARGE);
+               double rhotem = SMALL_CHARGE * (1.0 + SMALL_CHARGE);
                __funct_MOD_xc( &rhotem, &ex, &ec, &vx[0], &vc[0] );
                double frac = std::cbrt(atrho/SMALL_CHARGE);
                v[ix] = (vx[0] + vc[0]) * frac;
@@ -216,6 +219,35 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
        } 
 
    } 
+   else {
+
+        // spin polarized
+       for(int ix=0;ix < this->pbasis;ix++) {
+
+           double trho = rho[ix] + rho_oppo[ix] + rho_core[ix];
+           double atrho = fabs(trho);
+           if(atrho > SMALL_CHARGE) {
+
+               double zeta = (rho[ix] - rho_oppo[ix]) / atrho;
+               if( fabs( zeta ) > 1.0 ) {
+                   double tzeta = 1.0;
+                   if(zeta < 0.0) tzeta = -1.0;
+                   zeta = tzeta;
+               }
+               __funct_MOD_xc_spin( &trho, &zeta, &ex, &ec, &vx[0], &vx[1], &vc[0], &vc[1] );
+               v[ix] = vx[0] + vc[0];
+               v[ix + this->pbasis] = vx[1] + vc[1];
+               etxc = etxc + ( ex + ec ) * trho;
+               vtxc = vtxc + v[ix] * rho[ix] + v[ix + this->pbasis] * rho[ix + this->pbasis];
+
+           }
+           else {
+
+           }
+
+       }
+
+   }
    delete RT2;
 
    vtxc = vtxc * L->omega / (double)this->N;

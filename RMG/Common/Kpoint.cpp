@@ -187,16 +187,18 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     // than during the rest of the run so we need to count the number of atomic orbitals
     // here and allocate state structures for the largest possible number of states
     ct.total_atomic_orbitals = CountAtomicOrbitals();
-    if (Verify ("start_mode","LCAO Start", ControlMap)) {
+    if (Verify ("start_mode","LCAO Start", ControlMap) || (ct.forceflag == BAND_STRUCTURE)) {
         ct.init_states = ct.total_atomic_orbitals + ct.extra_random_lcao_states;
         if(ct.init_states < ct.num_states) {
             ct.init_states = ct.num_states;
         }
-
-
     }
     else {
         ct.init_states = ct.num_states;
+    }
+
+    if (Verify ("start_mode", "Modified LCAO Start", ControlMap)) {
+        ct.init_states = ct.num_states + ct.extra_random_lcao_states;
     }
 
     ct.run_states = ct.num_states;
@@ -204,6 +206,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     // Now figure out some buffer sizes
     ct.max_states = ct.run_states;
     if (Verify ("start_mode","LCAO Start", ControlMap)) ct.max_states = std::max(ct.max_states, 2*ct.init_states);
+    if (Verify ("start_mode","Modified LCAO Start", ControlMap)) ct.max_states = std::max(ct.max_states, 2*ct.init_states);
     if (Verify ("kohn_sham_solver", "davidson", ControlMap)) ct.max_states = std::max(ct.max_states, 4*ct.run_states);
 
     /* Allocate memory for the state structures */

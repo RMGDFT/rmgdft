@@ -58,7 +58,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     double max_res;
     int FP0_BASIS, P0_BASIS;
     
-    int idx, istop, st1, ist;
+    int idx;
 
     bool CONVERGED;
 
@@ -75,7 +75,6 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
     get_ddd (vtot);
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
-    LcaoGetPsi(&Kptr[0]->Kstates[ct.num_states]);
 
 
     // Loop over k-points
@@ -87,7 +86,8 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
             exit(0);
         }
 
-        Kptr[kpt]->nstates = 2 * ct.num_states;
+        Kptr[kpt]->nstates = ct.init_states;
+        LcaoGetPsi(&Kptr[kpt]->Kstates[0]);
 
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)

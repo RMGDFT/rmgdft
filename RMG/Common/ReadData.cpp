@@ -124,8 +124,8 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     /* read wavefunction info */
     read_int (fhand, &gamma, 1);
-    if (gamma != ct.is_gamma)
-        rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
+    //if (gamma != ct.is_gamma)
+    //    rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
 
 
     read_int (fhand, &nk, 1);
@@ -133,7 +133,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
         rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
 
     rmg_printf ("read_data: gamma = %d\n", gamma);
-    rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe); 
+    rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
 
     /* read number of states */  
     read_int (fhand, &ns, 1);
@@ -160,13 +160,33 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     /* read wavefunctions */
     {
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
+        double *tbuf = new double[wvfn_size];
+        std::complex<double> *tptr;
 
         for (ik = 0; ik < ct.num_kpts_pe; ik++)
         {
             for (is = 0; is < ns; is++)
             {
 
-                read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+                if(gamma == ct.is_gamma) {
+                    read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+                }
+                else {
+                    // If wavefunctions on disk are complex but current calc is real then throw error
+                    if(ct.is_gamma)
+                         rmg_error_handler (__FILE__, __LINE__,"Can't convert complex wavefunctions to real.");
+
+                    // Wavefunctions on disk are real but current calc is complex so convert them
+                    ssize_t wanted = sizeof (double) * (ssize_t)wvfn_size;
+                    ssize_t size = read (fhand, tbuf, wanted);
+
+                    if(size != wanted)
+                        rmg_error_handler (__FILE__, __LINE__,"error reading");
+
+                    tptr = (std::complex<double> *)&Kptr[ik]->Kstates[is].psi;
+                    for(int ix=0;ix < wvfn_size;ix++) tptr[ix] = std::complex<double>(tbuf[ix], 0.0);
+
+                }
 
             }
 
@@ -176,6 +196,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
         rmg_printf ("read_data: read 'wfns'\n");
 
+        delete [] tbuf;
     }
 
     // If we have added unoccupied orbitals initialize them to a random state
@@ -276,7 +297,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
             delete [] tmp_psiI;
             delete [] tmp_psiR;
         }                           /* end for */
-
         if(ct.forceflag == BAND_STRUCTURE) return;
     }
 
