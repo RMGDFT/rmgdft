@@ -157,6 +157,10 @@ void write_header (void)
 	case LCAO_START:
 	    printf ("LCAO (%d LCAO and %d random orbitals)\n",  ct.total_atomic_orbitals, ct.extra_random_lcao_states);
 	    break;
+
+	case MODIFIED_LCAO_START:
+	    printf ("LCAO (%d MODIFIED LCAO and %d random orbitals)\n",  ct.init_states, ct.extra_random_lcao_states);
+	    break;
 	
 	case INIT_FIREBALL:
 	    printf ("Fireball\n");
