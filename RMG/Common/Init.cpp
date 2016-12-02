@@ -48,6 +48,9 @@
 #include "pfft.h"
 #include "RmgParallelFft.h"
 
+#include "Scalapack.h"
+extern Scalapack *MainSp;
+
 static void init_alloc_nonloc_mem (void);
 
 
@@ -560,7 +563,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
             RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
             Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
+            // Force reinit of MainSp in case initialzation matrices are
+            // not the same size
+            if(MainSp) {
+                if(MainSp->Participates()) delete MainSp;
+                MainSp = NULL;
+            }
             delete RT2;
+
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
             Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
             Kptr[kpt]->mix_betaxpsi(0);
