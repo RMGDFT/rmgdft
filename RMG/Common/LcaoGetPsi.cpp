@@ -28,6 +28,8 @@
 #include "rmg_error.h"
 #include "State.h"
 #include "Kpoint.h"
+#include "RmgGemm.h"
+#include "GpuAlloc.h"
 #include "transition.h"
 
 template void LcaoGetPsi(State<double> *);
@@ -54,7 +56,6 @@ void LcaoGetPsi (State<StateType> * states)
     PZ_OFFSET = get_PZ_OFFSET();
 
 
-    /*The first index is due to k-point*/
     P0_BASIS = get_P0_BASIS();
 
     for (st = 0; st < ct.num_states; st++)
@@ -140,13 +141,15 @@ void LcaoGetPsi (State<StateType> * states)
 
         //StateType *aidum = new StateType[ct.num_states];
         //StateType *apsi = new StateType [P0_BASIS];
+        StateType *npsi = &states[0].psi[P0_BASIS * ct.num_states];      // The array for orbital storage is 4x run_state which should be big enough
+
         long *aidum = new long[ct.num_states];
-        double *apsi = new double [P0_BASIS];
         for(int st = 0;st < ct.num_states;st++) {
             aidum[st] = idum = st + 3314;
         }
 
         coeff = 1.0;
+        int wave_idx = 0;
         for (ion = 0; ion < ct.num_ions; ion++)
         {
             /* Generate ion pointer */
@@ -169,23 +172,45 @@ void LcaoGetPsi (State<StateType> * states)
                 /*Loop over all m values for given l and get wavefunctions */
                 for (m=0; m < 2*l+1; m++)
                 {
-                    for(idx = 0;idx < P0_BASIS;idx++)  apsi[idx] = 0.0;
-                    LcaoGetAwave(apsi, iptr, ip, l, m, coeff);
-                    for(int st = 0;st < ct.num_states;st++) 
-                    {
-                        double tem1 = rand0(&aidum[st]);
-                        for(idx = 0;idx < P0_BASIS;idx++) 
-                        {
-                            states[st].psi[idx] += tem1 * apsi[idx];
-                        }
-
-                    }
+                    for(idx = 0;idx < P0_BASIS;idx++)  npsi[wave_idx * P0_BASIS + idx] = 0.0;
+                    LcaoGetAwave(&npsi[wave_idx * P0_BASIS], iptr, ip, l, m, coeff);
+                    wave_idx++;
                 }
 
             }
         }
 
-        delete [] apsi;
+        // Now generate a random mix
+#if GPU_ENABLED
+        StateType *rmatrix = (StateType *)GpuMallocHost(ct.num_states * P0_BASIS * sizeof(StateType));
+#else
+        StateType *rmatrix = new StateType[ct.num_states * P0_BASIS];
+#endif
+
+        for(int st = 0;st < ct.num_states;st++) {
+            for(idx = 0;idx < P0_BASIS;idx++) {
+                rmatrix[st*P0_BASIS + idx] = rand0(&aidum[st]);
+            }
+        }
+
+        char *trans_t = "t";
+        char *trans_n = "n";
+        StateType alpha(1.0);
+        StateType beta(0.0);
+        StateType *NULLptr = NULL;
+
+    
+        RmgGemm(trans_n, trans_t, P0_BASIS, ct.num_states, state_count, alpha,
+            npsi, P0_BASIS, rmatrix, state_count, beta, states[0].psi, P0_BASIS,
+            NULLptr, NULLptr, NULLptr, false, false, false, true);
+
+#if GPU_ENABLED
+        GpuFreeHost(rmatrix);
+#else
+        delete [] rmatrix;
+#endif
+
+
         delete [] aidum;
 
     }

@@ -170,8 +170,6 @@ template <typename StateType>
 void LcaoGetPsi (State<StateType> * states);
 template <typename StateType>
 void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff);
-template <typename StateType>
-void LcaoGetAwaveBlock (StateType **psi, ION *iptr, int awave_idx, int l, int m, long *coeff);
 void LcaoGetRho (double * arho_f);
 template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, Kpoint<KpointType> ** Kptr , int ii_flag);
