@@ -143,8 +143,8 @@ void LcaoGetPsi (State<StateType> * states)
         //StateType *apsi = new StateType [P0_BASIS];
         StateType *npsi = &states[0].psi[P0_BASIS * ct.num_states];      // The array for orbital storage is 4x run_state which should be big enough
 
-        long *aidum = new long[ct.num_states];
-        for(int st = 0;st < ct.num_states;st++) {
+        long *aidum = new long[state_count];
+        for(int st = 0;st < state_count;st++) {
             aidum[st] = idum = st + 3314;
         }
 
@@ -182,12 +182,12 @@ void LcaoGetPsi (State<StateType> * states)
 
         // Now generate a random mix
 #if GPU_ENABLED
-        StateType *rmatrix = (StateType *)GpuMallocHost(ct.num_states * P0_BASIS * sizeof(StateType));
+        StateType *rmatrix = (StateType *)GpuMallocHost(state_count * P0_BASIS * sizeof(StateType));
 #else
-        StateType *rmatrix = new StateType[ct.num_states * P0_BASIS];
+        StateType *rmatrix = new StateType[state_count * P0_BASIS];
 #endif
 
-        for(int st = 0;st < ct.num_states;st++) {
+        for(int st = 0;st < state_count;st++) {
             for(idx = 0;idx < P0_BASIS;idx++) {
                 rmatrix[st*P0_BASIS + idx] = rand0(&aidum[st]);
             }
