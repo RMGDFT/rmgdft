@@ -93,9 +93,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     /* allocate memory for eigenvalue send array and receive array */
+    rho_tot = new double[FP0_BASIS];
     if (spin_flag)
     {
-    	rho_tot = new double[FP0_BASIS];
+        for (int idx = 0; idx < FP0_BASIS; idx++) rho_tot[idx] = rho[idx] + rho_oppo[idx];
+    }
+    else {
+        for (int idx = 0; idx < FP0_BASIS; idx++) rho_tot[idx] = rho[idx];
     }
 
     new_rho = new double[FP0_BASIS];
@@ -149,7 +153,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
 
     RT1 = new RmgTimer("2-Scf steps: Hartree");
-    double hartree_residual = VhDriver(rho, rhoc, vh, vh_ext, rms_target);
+    double hartree_residual = VhDriver(rho_tot, rhoc, vh, vh_ext, rms_target);
     delete(RT1);
 
     /*Simplified solvent model, experimental */
@@ -372,10 +376,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	delete [] rho_save;
     }
 
-    if (spin_flag)
-    {
-	delete [] rho_tot;
-    }
+    delete [] rho_tot;
 
 
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {

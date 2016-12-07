@@ -51,6 +51,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     int pbasis = Kpts[0]->pbasis;
     int nstates = Kpts[0]->nstates;
     int max_product = (ct.max_nl + 1) * ct.max_nl / 2;
+    double nspin = (ct.spin_flag + 1.0);
 
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
 
@@ -130,7 +131,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     ct.tcharge = ct.tcharge * get_vel_f();
 
     /* Renormalize charge, there could be some discrepancy because of interpolation */
-    double t1 = ct.nel / ct.tcharge;
+    double t1 = ct.nel / ct.tcharge / nspin;
     for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
     
     /*Write out normalization constant if needed*/
@@ -139,7 +140,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 	rmg_printf ("Charge normalization constant: %f\n", t1);
 
     /*Update ct.tcharge, do not really recalculate it, just multiply it by normalization constant */
-    ct.tcharge *= t1;
+    ct.tcharge *= t1 * nspin;
 
 
 

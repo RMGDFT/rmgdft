@@ -57,6 +57,10 @@ extern "C" void __funct_MOD_xc_spin (double *rho, double *zeta, double *ex, doub
 extern "C" void __funct_MOD_nlc (double *rho_valence, double *rho_core, int *nspin, double *ec, double *vx, double *vc);
 extern "C" void __funct_MOD_gcxc (double *rho, double *grho, double *sx, double *sc, 
                                   double *v1x, double *v2x, double *v1c, double *v2c);
+extern "C" void __funct_MOD_gcx_spin(double *rhoup, double *rhodown, double *grhoup, double *grhodown, double *sx,
+                                  double *v1xup, double *v1xdw, double *v2xup, double *v2xdw);
+extern "C" void __funct_MOD_gcc_spin( double *arho, double *zeta, double *grh2, double *sc, double *v1cup, double *v1cdw, double *v2c );
+
 extern "C" int __funct_MOD_get_inlc(void);
 
 bool Functional::dft_set=false;
@@ -255,7 +259,12 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
    // Next add in any gradient corrections
    RmgTimer *RT3 = new RmgTimer("Functional: vxc grad");
-   this->gradcorr(rho, rho_core, etxc, vtxc, v );
+   if(!spinflag) {
+       this->gradcorr(rho, rho_core, etxc, vtxc, v);
+   }
+   else {
+       this->gradcorr_spin(rho, rho_core, etxc, vtxc, v);
+   }
    delete RT3;
 
    // And finally any non-local corrections
@@ -400,6 +409,96 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     delete [] rhoout;
 
 
+}
+
+// Applies gradient corrections for spin case
+void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, double &vtxc, double *v)
+{
+    if(!this->dft_is_gradient()) return;
+
+    double etxcgc = 0.0;
+    double vtxcgc = 0.0;
+    double v1xup, v1xdw, v2xup, v2xdw, sx, sc;
+    double v1cup, v1cdw, v2c, v2cup, v2cdw, v2cud;
+ 
+    double grho2[2];
+    const double epsr=1.0e-10;
+    const double epsg = 1.0e-16;
+    double epsg_guard = sqrt(epsg);
+
+    double *rhoout_up = new double[this->pbasis];
+    double *rhoout_down = new double[this->pbasis];
+    double *grho_up = new double[3*this->pbasis];
+    double *grho_down = new double[3*this->pbasis];
+
+    double *gx_up = grho_up;
+    double *gy_up = gx_up + this->pbasis;
+    double *gz_up = gy_up + this->pbasis;
+    double *gx_down = grho_down;
+    double *gy_down = gx_down + this->pbasis;
+    double *gz_down = gy_down + this->pbasis;
+
+    // Get rho plus rhocore
+    for(int ix=0;ix < this->pbasis;ix++) rhoout_up[ix] = rho[ix] + 0.5*rho_core[ix];
+    for(int ix=0;ix < this->pbasis;ix++) rhoout_down[ix] = rho[ix] + 0.5*rho_core[ix];
+
+
+    // calculate the gradient of rho + rho_core up
+    RmgTimer *RT2 = new RmgTimer("Functional: apply gradient");
+    ApplyGradient (rhoout_up, gx_up, gy_up, gz_up, APP_CI_EIGHT, "Fine");
+    ApplyGradient (rhoout_down, gx_down, gy_down, gz_down, APP_CI_EIGHT, "Fine");
+    delete RT2;
+
+
+    RmgTimer *RT4 = new RmgTimer("Functional: libxc");
+    for(int k=0;k < this->pbasis;k++) {
+        double arho_up = fabs(rhoout_up[k]);
+        double arho_down = fabs(rhoout_down[k]);
+        double arho = arho_up + arho_down;
+
+        grho2[0] = gx_up[k]*gx_up[k] + gy_up[k]*gy_up[k] + gz_up[k]*gz_up[k];
+        grho2[1] = gx_down[k]*gx_down[k] + gy_down[k]*gy_down[k] + gz_down[k]*gz_down[k];
+
+        double pgrho2_up = grho2[0] + epsg_guard;
+        double pgrho2_down = grho2[1] + epsg_guard;
+
+        __funct_MOD_gcx_spin( &arho_up, &arho_down, &pgrho2_up,
+                        &pgrho2_down, &sx, &v1xup, &v1xdw, &v2xup, &v2xdw );
+
+        if(arho > epsr) {
+
+            double zeta = ( rhoout_up[k] - rhoout_down[k]) / arho;
+            double grh2 = (gx_up[k] + gx_down[k]) * (gx_up[k] + gx_down[k]) +
+                          (gy_up[k] + gy_down[k]) * (gy_up[k] + gy_down[k]) +
+                          (gz_up[k] + gz_down[k]) * (gz_up[k] + gz_down[k]);
+            
+            __funct_MOD_gcc_spin( &arho, &zeta, &grh2, &sc, &v1cup, &v1cdw, &v2c );
+            v2cup = v2c;
+            v2cdw = v2c;
+            v2cud = v2c;
+
+        }
+        else {
+           sc    = 0.0;
+           v1cup = 0.0;
+           v1cdw = 0.0;
+           v2c   = 0.0;
+           v2cup = 0.0;
+           v2cdw = 0.0;
+           v2cud = 0.0;
+        }
+
+        // first term of the gradient correction : D(rho*Exc)/D(rho)
+        v[k] = v[k] + ( v1xup + v1cup );
+        v[k + this->pbasis] = v[k + this->pbasis] + ( v1xdw + v1cdw );
+
+    }
+    delete RT4;
+
+    delete [] grho_down;
+    delete [] grho_up;
+    delete [] rhoout_down;
+    delete [] rhoout_up;
 }
 
 

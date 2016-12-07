@@ -60,6 +60,7 @@ private:
 
 
     void gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
+    void gradcorr_spin(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
 
 public:
     Functional (BaseGrid &G, 
