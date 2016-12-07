@@ -182,14 +182,14 @@ void LcaoGetPsi (State<StateType> * states)
 
         // Now generate a random mix
 #if GPU_ENABLED
-        StateType *rmatrix = (StateType *)GpuMallocHost(state_count * P0_BASIS * sizeof(StateType));
+        StateType *rmatrix = (StateType *)GpuMallocHost(state_count * ct.num_states * sizeof(StateType));
 #else
-        StateType *rmatrix = new StateType[state_count * P0_BASIS];
+        StateType *rmatrix = new StateType[state_count * ct.num_states];
 #endif
 
         for(int st = 0;st < state_count;st++) {
-            for(idx = 0;idx < P0_BASIS;idx++) {
-                rmatrix[st*P0_BASIS + idx] = rand0(&aidum[st]);
+            for(idx = 0;idx < ct.num_states;idx++) {
+                rmatrix[idx*state_count + st] = rand0(&aidum[idx]);
             }
         }
 
@@ -200,7 +200,7 @@ void LcaoGetPsi (State<StateType> * states)
         StateType *NULLptr = NULL;
 
     
-        RmgGemm(trans_n, trans_t, P0_BASIS, ct.num_states, state_count, alpha,
+        RmgGemm(trans_n, trans_n, P0_BASIS, ct.num_states, state_count, alpha,
             npsi, P0_BASIS, rmatrix, state_count, beta, states[0].psi, P0_BASIS,
             NULLptr, NULLptr, NULLptr, false, false, false, true);
 
