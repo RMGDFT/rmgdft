@@ -71,7 +71,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     bool CONVERGED = false;
     double t3;
-    double *vtot, *vtot_psi, *new_rho;
+    double *vtot, *vtot_psi, *new_rho, *new_rho_oppo;
     double t[3];                  /* SCF checks and average potential */
     double max_unocc_res = 0.0;
 
@@ -94,15 +94,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     /* allocate memory for eigenvalue send array and receive array */
     rho_tot = new double[FP0_BASIS];
-    if (spin_flag)
-    {
-        for (int idx = 0; idx < FP0_BASIS; idx++) rho_tot[idx] = rho[idx] + rho_oppo[idx];
-    }
-    else {
-        for (int idx = 0; idx < FP0_BASIS; idx++) rho_tot[idx] = rho[idx];
-    }
-
-    new_rho = new double[FP0_BASIS];
+    new_rho = new double[nspin * FP0_BASIS];
+    new_rho_oppo = &new_rho[FP0_BASIS];
     vtot = new double[FP0_BASIS];
     vtot_psi = new double[P0_BASIS];
 
@@ -153,7 +146,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
 
     RT1 = new RmgTimer("2-Scf steps: Hartree");
-    double hartree_residual = VhDriver(rho_tot, rhoc, vh, vh_ext, rms_target);
+    double hartree_residual = VhDriver(rho, rhoc, vh, vh_ext, rms_target);
     delete(RT1);
 
     /*Simplified solvent model, experimental */
@@ -267,6 +260,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     /* Generate new density */
     RT1 = new RmgTimer("2-Scf steps: GetNewRho");
     GetNewRho(Kptr, new_rho);
+    if (spin_flag)
+        get_rho_oppo (new_rho,  new_rho_oppo);
     delete(RT1);
 
     // Get Hartree potential for the output density
@@ -292,7 +287,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
     double *vh_out = new double[FP0_BASIS];
     RT1 = new RmgTimer("2-Scf steps: Hartree");
-    for(int i = 0;i < FP0_BASIS;i++) vh_out[i] = vh[i];
     VhDriver(new_rho, rhoc, vh_out, vh_ext, rms_target);
     delete RT1;
 

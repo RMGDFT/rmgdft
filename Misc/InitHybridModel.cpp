@@ -162,6 +162,7 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     }
 
 
+    if(ct.spin_flag) nthreads /= 2;
     ct.THREADS_PER_NODE = nthreads;
     B = BaseThread::getBaseThread(nthreads);
     B->RegisterThreadFunction(run_threads);

@@ -500,6 +500,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE)) {
         RT1 = new RmgTimer("2-Init: LcaoGetRho");
         lcao_get_rho(rho);
+        if(ct.spin_flag) {
+            for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] *= 0.5;
+            get_rho_oppo (rho,  rho_oppo);
+        }
+
         delete RT1;
     }
 

@@ -430,6 +430,15 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     double *rhoout_down = new double[this->pbasis];
     double *grho_up = new double[3*this->pbasis];
     double *grho_down = new double[3*this->pbasis];
+    double *d2rho_up = new double[this->pbasis];
+    double *d2rho_down = new double[this->pbasis];
+    double *h_up = new double[3*this->pbasis]();
+    double *h_down = new double[3*this->pbasis]();
+    double *vxc2_up = new double[this->pbasis]();
+    double *vxc2_down = new double[this->pbasis]();
+
+
+
 
     double *gx_up = grho_up;
     double *gy_up = gx_up + this->pbasis;
@@ -448,6 +457,12 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     ApplyGradient (rhoout_up, gx_up, gy_up, gz_up, APP_CI_EIGHT, "Fine");
     ApplyGradient (rhoout_down, gx_down, gy_down, gz_down, APP_CI_EIGHT, "Fine");
     delete RT2;
+
+    // and the Laplacian
+    RmgTimer *RT3 = new RmgTimer("Functional: apply laplacian");
+    ApplyLaplacian (rhoout_up, d2rho_up, APP_CI_EIGHT, "Fine");
+    ApplyLaplacian (rhoout_down, d2rho_down, APP_CI_EIGHT, "Fine");
+    delete RT3;
 
 
     RmgTimer *RT4 = new RmgTimer("Functional: libxc");
@@ -492,9 +507,66 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
         v[k] = v[k] + ( v1xup + v1cup );
         v[k + this->pbasis] = v[k + this->pbasis] + ( v1xdw + v1cdw );
 
+        vtxcgc = vtxcgc +
+                 ( v1xup + v1cup ) * ( rhoout_up[k] - 0.5*rho_core[k]);
+        vtxcgc = vtxcgc + 
+                 ( v1xdw + v1cdw ) * ( rhoout_down[k] - 0.5*rho_core[k]);
+        etxcgc = etxcgc + ( sx + sc );
+
+        //  used later for second term of the gradient correction
+        vxc2_up[k] = ( v2xup + v2cup );
+        vxc2_down[k] = ( v2xdw + v2cdw );
+
+
     }
+
+    // Subtract off core charges again
+    for(int ix=0;ix < this->pbasis;ix++) rhoout_up[ix] = rho[ix] - 0.5*rho_core[ix];
+    for(int ix=0;ix < this->pbasis;ix++) rhoout_down[ix] = rho[ix] - 0.5*rho_core[ix];
+
+    // second term of the gradient correction
+    RmgTimer *RT5 = new RmgTimer("Functional: apply gradient");
+    ApplyGradient (vxc2_up, h_up, &h_up[this->pbasis], &h_up[2*this->pbasis], APP_CI_EIGHT, "Fine");
+    ApplyGradient (vxc2_down, h_down, &h_down[this->pbasis], &h_down[2*this->pbasis], APP_CI_EIGHT, "Fine");
+    delete RT5;
+    //FftGradient(vxc2, h, &h[this->pbasis], &h[2*this->pbasis], pwaves);
+
+
+    for(int ix=0;ix < this->pbasis;ix++) {
+
+        v[ix] -= ( h_up[ix] * gx_up[ix] +
+                h_up[ix+this->pbasis] * gy_up[ix] +
+                h_up[ix+2*this->pbasis] * gz_up[ix] ) ;
+        v[ix] -= vxc2_up[ix] * d2rho_up[ix];
+
+    }
+    for(int ix=0;ix < this->pbasis;ix++) {
+
+        v[ix + this->pbasis] -= ( h_down[ix] * gx_down[ix] +
+                h_down[ix+this->pbasis] * gy_down[ix] +
+                h_down[ix+2*this->pbasis] * gz_down[ix] ) ;
+        v[ix + this->pbasis] -= vxc2_down[ix] * d2rho_down[ix];
+
+    }
+
+    //printf("VTXC1 = %18.12f  ETXC1 = %18.12f\n", 
+    //2.0*L->omega*RmgSumAll(vtxcgc, this->T->get_MPI_comm())/(double)this->N,
+    //2.0*L->omega*RmgSumAll(etxcgc, this->T->get_MPI_comm())/(double)this->N);
+
+    vtxc = vtxc + L->omega * vtxcgc / (double)this->N;
+    etxc = etxc + L->omega * etxcgc / (double)this->N;
+
+
+
+
     delete RT4;
 
+    delete [] vxc2_down;
+    delete [] vxc2_up;
+    delete [] h_down;
+    delete [] h_up;
+    delete [] d2rho_up;
+    delete [] d2rho_down;
     delete [] grho_down;
     delete [] grho_up;
     delete [] rhoout_down;
