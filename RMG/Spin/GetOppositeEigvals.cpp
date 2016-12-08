@@ -78,6 +78,35 @@ void GetOppositeEigvals (Kpoint<KpointType> ** Kptr)
         }	
     } 
 
+    /*Prepare the sending buffer for the feig values (used for the scf energy correction term */
+    st = 0;
+    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        for (st1 = 0; st1 < ct.num_states; st1++)
+        {	
+            eigval_sd[st] = Kptr[kpt]->Kstates[st1].feig[0];
+            st += 1;
+        }	
+    }
+
+
+    /*Communicate for spin up and spin down energy eigenvalues*/    
+    MPI_Sendrecv(eigval_sd, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
+            eigval_rv, st, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+
+
+    /* Unpack the received eigenvalue to state structure */
+    st = 0;
+    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        for (st1 = 0; st1 < ct.num_states; st1++)
+        {	
+            Kptr[kpt]->Kstates[st1].feig[1] = eigval_rv[st];
+            st += 1;
+
+        }	
+    } 
+
 
     delete [] eigval_sd;
 }                               /* end scf */
