@@ -419,7 +419,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
     double v1xup, v1xdw, v2xup, v2xdw, sx, sc;
-    double v1cup, v1cdw, v2c, v2cup, v2cdw, v2cud;
+    double v1cup, v1cdw, v2c, v2cup, v2cdw;
  
     double grho2[2];
     const double epsr=1.0e-10;
@@ -436,7 +436,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     double *h_down = new double[3*this->pbasis]();
     double *vxc2_up = new double[this->pbasis]();
     double *vxc2_down = new double[this->pbasis]();
-
+    double *v2cud = new double[this->pbasis]();
 
 
 
@@ -480,9 +480,18 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
         __funct_MOD_gcx_spin( &arho_up, &arho_down, &pgrho2_up,
                         &pgrho2_down, &sx, &v1xup, &v1xdw, &v2xup, &v2xdw );
 
-        if(arho > epsr) {
+         sc    = 0.0;
+         v1cup = 0.0;
+         v1cdw = 0.0;
+         v2c   = 0.0;
+         v2cup = 0.0;
+         v2cdw = 0.0;
+         v2cud[k] = 0.0;
+
+        if(arho_up > epsr) {
 
             double zeta = ( rhoout_up[k] - rhoout_down[k]) / arho;
+zeta = (arho_up - arho_down) / arho;
             double grh2 = (gx_up[k] + gx_down[k]) * (gx_up[k] + gx_down[k]) +
                           (gy_up[k] + gy_down[k]) * (gy_up[k] + gy_down[k]) +
                           (gz_up[k] + gz_down[k]) * (gz_up[k] + gz_down[k]);
@@ -490,33 +499,24 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
             __funct_MOD_gcc_spin( &arho, &zeta, &grh2, &sc, &v1cup, &v1cdw, &v2c );
             v2cup = v2c;
             v2cdw = v2c;
-            v2cud = v2c;
+            v2cud[k] = v2c;
+
+
+            // first term of the gradient correction : D(rho*Exc)/D(rho)
+            v[k] = v[k] + ( v1xup + v1cup );
+            v[k + this->pbasis] = v[k + this->pbasis] + ( v1xdw + v1cdw );
+
+            vtxcgc = vtxcgc +
+                     ( v1xup + v1cup ) * ( rhoout_up[k] - 0.5*rho_core[k]);
+            vtxcgc = vtxcgc + 
+                     ( v1xdw + v1cdw ) * ( rhoout_down[k] - 0.5*rho_core[k]);
+            etxcgc = etxcgc + ( sx + sc );
+
+            //  used later for second term of the gradient correction
+            vxc2_up[k] = ( v2xup + v2cup );
+            vxc2_down[k] = ( v2xdw + v2cdw );
 
         }
-        else {
-           sc    = 0.0;
-           v1cup = 0.0;
-           v1cdw = 0.0;
-           v2c   = 0.0;
-           v2cup = 0.0;
-           v2cdw = 0.0;
-           v2cud = 0.0;
-        }
-
-        // first term of the gradient correction : D(rho*Exc)/D(rho)
-        v[k] = v[k] + ( v1xup + v1cup );
-        v[k + this->pbasis] = v[k + this->pbasis] + ( v1xdw + v1cdw );
-
-        vtxcgc = vtxcgc +
-                 ( v1xup + v1cup ) * ( rhoout_up[k] - 0.5*rho_core[k]);
-        vtxcgc = vtxcgc + 
-                 ( v1xdw + v1cdw ) * ( rhoout_down[k] - 0.5*rho_core[k]);
-        etxcgc = etxcgc + ( sx + sc );
-
-        //  used later for second term of the gradient correction
-        vxc2_up[k] = ( v2xup + v2cup );
-        vxc2_down[k] = ( v2xdw + v2cdw );
-
 
     }
 
@@ -537,6 +537,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
         v[ix] -= ( h_up[ix] * gx_up[ix] +
                 h_up[ix+this->pbasis] * gy_up[ix] +
                 h_up[ix+2*this->pbasis] * gz_up[ix] ) ;
+
         v[ix] -= vxc2_up[ix] * d2rho_up[ix];
 
     }
@@ -545,8 +546,23 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
         v[ix + this->pbasis] -= ( h_down[ix] * gx_down[ix] +
                 h_down[ix+this->pbasis] * gy_down[ix] +
                 h_down[ix+2*this->pbasis] * gz_down[ix] ) ;
+
         v[ix + this->pbasis] -= vxc2_down[ix] * d2rho_down[ix];
 
+    }
+
+    ApplyGradient (v2cud, h_up, &h_up[this->pbasis], &h_up[2*this->pbasis], APP_CI_EIGHT, "Fine");
+    for(int ix=0;ix < this->pbasis;ix++) {
+        v[ix] -= ( h_up[ix] * gx_down[ix] +
+                h_up[ix+this->pbasis] * gy_down[ix] +
+                h_up[ix+2*this->pbasis] * gz_down[ix] ) ;
+        v[ix] -= v2cud[ix] * d2rho_down[ix];
+    }
+    for(int ix=0;ix < this->pbasis;ix++) {
+        v[ix + this->pbasis] -= ( h_up[ix] * gx_up[ix] +
+                h_up[ix+this->pbasis] * gy_up[ix] +
+                h_up[ix+2*this->pbasis] * gz_up[ix] ) ;
+        v[ix + this->pbasis] -= v2cud[ix] * d2rho_up[ix];
     }
 
     //printf("VTXC1 = %18.12f  ETXC1 = %18.12f\n", 
@@ -561,6 +577,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
 
     delete RT4;
 
+    delete [] v2cud;
     delete [] vxc2_down;
     delete [] vxc2_up;
     delete [] h_down;
