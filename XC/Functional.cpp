@@ -59,6 +59,8 @@ extern "C" void __funct_MOD_gcxc (double *rho, double *grho, double *sx, double 
                                   double *v1x, double *v2x, double *v1c, double *v2c);
 extern "C" void __funct_MOD_gcx_spin(double *rhoup, double *rhodown, double *grhoup, double *grhodown, double *sx,
                                   double *v1xup, double *v1xdw, double *v2xup, double *v2xdw);
+extern "C" void __funct_MOD_gcc_spin_more( double *arho_up, double *arho_down,  double *grhoup, double *grhodw, double *grhoud,
+                                  double *sc, double *v1cup, double *v1cdw, double *v2cup, double *v2cdw, double *v2cud );
 extern "C" void __funct_MOD_gcc_spin( double *arho, double *zeta, double *grh2, double *sc, double *v1cup, double *v1cdw, double *v2c );
 
 extern "C" int __funct_MOD_get_inlc(void);
@@ -488,33 +490,47 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
          v2cdw = 0.0;
          v2cud[k] = 0.0;
 
-        if(arho_up > epsr) {
+        if(arho > epsr) {
 
-            double zeta = ( rhoout_up[k] - rhoout_down[k]) / arho;
-zeta = (arho_up - arho_down) / arho;
-            double grh2 = (gx_up[k] + gx_down[k]) * (gx_up[k] + gx_down[k]) +
-                          (gy_up[k] + gy_down[k]) * (gy_up[k] + gy_down[k]) +
-                          (gz_up[k] + gz_down[k]) * (gz_up[k] + gz_down[k]);
-            
-            __funct_MOD_gcc_spin( &arho, &zeta, &grh2, &sc, &v1cup, &v1cdw, &v2c );
-            v2cup = v2c;
-            v2cdw = v2c;
-            v2cud[k] = v2c;
+            if(__funct_MOD_igcc_is_lyp()) {
+
+                double grhoup = gx_up[k]*gx_up[k] + gy_up[k]*gy_up[k] + gz_up[k]*gz_up[k];
+                double grhodw = gx_down[k]*gx_down[k] + gy_down[k]*gy_down[k] + gz_down[k]*gz_down[k];
+                double grhoud = gx_up[k]*gx_down[k] + gy_up[k]*gy_down[k] + gz_up[k]*gz_down[k];
+
+                __funct_MOD_gcc_spin_more( &arho_up, &arho_down, &grhoup, &grhodw, &grhoud,
+                                  &sc, &v1cup, &v1cdw, &v2cup, &v2cdw, &v2cud[k] );
+
+            }
+            else {
+
+                double zeta = ( rhoout_up[k] - rhoout_down[k]) / arho;
+                zeta = (arho_up - arho_down) / arho;
+                double grh2 = (gx_up[k] + gx_down[k]) * (gx_up[k] + gx_down[k]) +
+                              (gy_up[k] + gy_down[k]) * (gy_up[k] + gy_down[k]) +
+                              (gz_up[k] + gz_down[k]) * (gz_up[k] + gz_down[k]);
+                
+                __funct_MOD_gcc_spin( &arho, &zeta, &grh2, &sc, &v1cup, &v1cdw, &v2c );
+                v2cup = v2c;
+                v2cdw = v2c;
+                v2cud[k] = v2c;
 
 
-            // first term of the gradient correction : D(rho*Exc)/D(rho)
-            v[k] = v[k] + ( v1xup + v1cup );
-            v[k + this->pbasis] = v[k + this->pbasis] + ( v1xdw + v1cdw );
+                // first term of the gradient correction : D(rho*Exc)/D(rho)
+                v[k] = v[k] + ( v1xup + v1cup );
+                v[k + this->pbasis] = v[k + this->pbasis] + ( v1xdw + v1cdw );
 
-            vtxcgc = vtxcgc +
-                     ( v1xup + v1cup ) * ( rhoout_up[k] - 0.5*rho_core[k]);
-            vtxcgc = vtxcgc + 
-                     ( v1xdw + v1cdw ) * ( rhoout_down[k] - 0.5*rho_core[k]);
-            etxcgc = etxcgc + ( sx + sc );
+                vtxcgc = vtxcgc +
+                         ( v1xup + v1cup ) * ( rhoout_up[k] - 0.5*rho_core[k]);
+                vtxcgc = vtxcgc + 
+                         ( v1xdw + v1cdw ) * ( rhoout_down[k] - 0.5*rho_core[k]);
+                etxcgc = etxcgc + ( sx + sc );
 
-            //  used later for second term of the gradient correction
-            vxc2_up[k] = ( v2xup + v2cup );
-            vxc2_down[k] = ( v2xdw + v2cdw );
+                //  used later for second term of the gradient correction
+                vxc2_up[k] = ( v2xup + v2cup );
+                vxc2_down[k] = ( v2xdw + v2cdw );
+
+            }
 
         }
 
