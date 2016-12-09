@@ -263,7 +263,7 @@ void LoadUpf(SPECIES *sp)
         sp->atomic_wave = new double *[sp->num_atomic_waves];
         sp->awave_lig = new double *[sp->num_atomic_waves];
         sp->atomic_wave_l = new int [sp->num_atomic_waves];
-        sp->atomic_wave_oc = new double [sp->num_atomic_waves];
+        sp->atomic_wave_oc = new double [sp->num_atomic_waves]();
 
         for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++) {
             // Ugh. UPF format has embedded .s so use / as a separator

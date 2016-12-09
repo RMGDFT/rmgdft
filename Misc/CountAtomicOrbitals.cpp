@@ -41,11 +41,17 @@ int CountAtomicOrbitals(void)
         /* Generate ion pointer */
         ION *iptr = &ct.ions[ion];
 
-
         /* Get species type */
         SPECIES *sp = &ct.sp[iptr->species];
 
-        total_atomic_orbitals += sp->num_atomic_waves_m;
+        for (int ip = 0; ip < sp->num_atomic_waves; ip++) {
+            if(sp->atomic_wave_oc[ip] > 0.0) {
+                int l = sp->atomic_wave_l[ip];
+                for (int m=0; m < 2*l+1; m++) {
+                    total_atomic_orbitals ++;
+                }
+            }
+        }
 
     }
 

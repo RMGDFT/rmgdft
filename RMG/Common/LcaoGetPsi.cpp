@@ -86,22 +86,8 @@ void LcaoGetPsi (State<StateType> * states)
             rmg_error_handler(__FILE__,__LINE__,"Terminating.");
         }
 
-        /*Loop over atomic wavefunctions for given ion*/
-        for (ip = 0; ip < sp->num_atomic_waves; ip++)
-        {
-            l = sp->atomic_wave_l[ip];
-
-            /*Loop over all m values for given l and get wavefunctions */
-            for (m=0; m < 2*l+1; m++)
-            {
-
-                state_count++;
-
-            }
-
-        }
-
     }
+    state_count = CountAtomicOrbitals();
 
     if(state_count <= ct.num_states)
     {
@@ -125,12 +111,15 @@ void LcaoGetPsi (State<StateType> * states)
             for (ip = 0; ip < sp->num_atomic_waves; ip++)
             {
                 l = sp->atomic_wave_l[ip];
+                if(sp->atomic_wave_oc[ip] > 0.0) {
 
-                /*Loop over all m values for given l and get wavefunctions */
-                for (m=0; m < 2*l+1; m++)
-                {
-                    LcaoGetAwave(states[st].psi, iptr, ip, l, m, coeff);
-                    st++;
+                    /*Loop over all m values for given l and get wavefunctions */
+                    for (m=0; m < 2*l+1; m++)
+                    {
+                        LcaoGetAwave(states[st].psi, iptr, ip, l, m, coeff);
+                        st++;
+                    }
+
                 }
             }
 
@@ -168,15 +157,17 @@ void LcaoGetPsi (State<StateType> * states)
             for (ip = 0; ip < sp->num_atomic_waves; ip++)
             {
                 l = sp->atomic_wave_l[ip];
+                if(sp->atomic_wave_oc[ip] > 0.0) {
 
-                /*Loop over all m values for given l and get wavefunctions */
-                for (m=0; m < 2*l+1; m++)
-                {
-                    for(idx = 0;idx < P0_BASIS;idx++)  npsi[wave_idx * P0_BASIS + idx] = 0.0;
-                    LcaoGetAwave(&npsi[wave_idx * P0_BASIS], iptr, ip, l, m, coeff);
-                    wave_idx++;
+                    /*Loop over all m values for given l and get wavefunctions */
+                    for (m=0; m < 2*l+1; m++)
+                    {
+                        for(idx = 0;idx < P0_BASIS;idx++)  npsi[wave_idx * P0_BASIS + idx] = 0.0;
+                        LcaoGetAwave(&npsi[wave_idx * P0_BASIS], iptr, ip, l, m, coeff);
+                        wave_idx++;
+                    }
+
                 }
-
             }
         }
 
@@ -193,7 +184,6 @@ void LcaoGetPsi (State<StateType> * states)
             }
         }
 
-        char *trans_t = "t";
         char *trans_n = "n";
         StateType alpha(1.0);
         StateType beta(0.0);
