@@ -78,7 +78,7 @@ template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, Kpoint<KpointType> **Kptr, int ii_flag)
 {
     int state, kpt, idx, i, j, nspin = (ct.spin_flag + 1), FP0_BASIS;
-    double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
+    double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag, absmag = 0.0;
     double vel, loc_sum;
     double *exc, *nrho, *nrho_oppo=NULL;
     ION *iptr1, *iptr2;
@@ -162,10 +162,12 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     if (ct.spin_flag)
     {
 	mag = 0.0;    
+        absmag = 0.0;
     	for (idx = 0; idx < FP0_BASIS; idx++)
 	{
         	esum[1] += (rho[idx] + rho_oppo[idx] + rhocore[idx]) * (exc[idx]);
 		mag += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
+                absmag += fabs(rho[idx] - rho_oppo[idx]);
         }
     }
 
@@ -181,6 +183,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     	GlobalSums (esum, 2, pct.grid_comm);
     	GlobalSums (&esum[2], 1, pct.img_comm);  
     	GlobalSums (&mag, 1, pct.grid_comm); 
+    	GlobalSums (&absmag, 1, pct.grid_comm); 
     }
     else
     	GlobalSums (esum, 3, pct.grid_comm);
@@ -191,6 +194,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     /*XC potential energy */
     xcstate = vel * esum[2];
     mag *= vel;
+    absmag *= vel;
 
     if(ii_flag) {
 
@@ -225,7 +229,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     {
 	/* Print the total magetization and absolute magnetization into output file */
        	rmg_printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
-       	rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", fabs(mag) );
+       	rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", absmag );
     }
 
    
