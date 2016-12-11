@@ -73,7 +73,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     SPECIES *sp;
     OrbitalType *rptr = NULL, *nv, *ns, *Bns = NULL;
     double *vtot;
-    double time2, fac;
+    double time2=0.0, fac;
 
 
     if (pct.imgpe == 0)
@@ -501,7 +501,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         RT1 = new RmgTimer("2-Init: LcaoGetRho");
         lcao_get_rho(rho);
         if(ct.spin_flag) {
-            for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] *= 0.5;
+            if(pct.spinpe==0){
+                for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] *= ct.nel_up / ct.nel;
+            }
+            else {
+                for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] *= ct.nel_down / ct.nel;
+            }
             get_rho_oppo (rho,  rho_oppo);
         }
 
@@ -650,8 +655,6 @@ static void init_alloc_nonloc_mem (void)
     pct.weight = NULL;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-
-        ION *iptr = &ct.ions[ion];
 
         pct.idxptrlen[ion] = 0;
         pct.Qidxptrlen[ion] = 0;

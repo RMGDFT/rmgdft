@@ -368,6 +368,10 @@ typedef struct
     /* Variable occupation stuff */
     double nel;
 
+    /* spin up and down electronic charge */
+    double nel_up;
+    double nel_down;
+
     int occ_flag;
 
     double occ_width;

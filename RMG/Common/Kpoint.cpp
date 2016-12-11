@@ -144,6 +144,8 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     {
         int n;
         ct.nel = 0;
+        ct.nel_up = 0;
+        ct.nel_down = 0;
 
         for (idx = 0; idx < nspin; idx++)
         {
@@ -157,10 +159,13 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
                         occ[nocc[idx] + MAX_NOCC * idx].n = n;
                         occ[nocc[idx] + MAX_NOCC * idx].occ = strtod (tbuf[idx], &tbuf[idx]);
                         ct.nel += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
+                        if(idx == 0)ct.nel_up += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
+                        if(idx == 1)ct.nel_down += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
                         nocc[idx]++;
                 }
 
                 num_states_spf[idx] = count_states[idx];
+
         }
 
         if ( (nspin == 2) && (num_states_spf[0] != num_states_spf[1]) )
@@ -175,10 +180,12 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     else     /* in case no fixed occupations available, calculate number of states */
     {
         ct.nel = ct.ionic_charge + ct.background_charge;
-        for (idx = 0; idx < nspin; idx++)
-                num_states_spf[idx] = (int) ceil(0.5 * ct.nel) + ct.num_unocc_states;
+        for (idx = 0; idx < nspin; idx++) {
+            num_states_spf[idx] = (int) ceil(0.5 * ct.nel) + ct.num_unocc_states;
+            if(idx == 0) ct.nel_up = 0.5*(ct.nel + 1.0);
+            if(idx == 1) ct.nel_down = 0.5*(ct.nel - 1.0);
+        }
     }
-
 
     /* re-assign the number of states for global variables */
     if(ct.num_states <= 0 ) ct.num_states = num_states_spf[0];
