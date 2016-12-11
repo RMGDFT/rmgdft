@@ -198,7 +198,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     }
 
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
-
 	if (!firststep && t[1] < ct.thr_rms) 
 	{
 	    CONVERGED = true;
@@ -304,12 +303,12 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     }
 
 
-    // Compute convergence measure (2nd order variational term)
+    // Compute convergence measure (2nd order variational term) and average by nspin
     double sum = 0.0;
     for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
     sum = 0.5 * vel * sum;
-    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    ct.scf_accuracy = sum;
+    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+    ct.scf_accuracy = sum / nspin;
 
     // Compute variational energy correction term if any
     sum = EnergyCorrection(Kptr, rho, new_rho, vh, vh_out);
