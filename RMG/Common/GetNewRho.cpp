@@ -132,7 +132,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     /* Renormalize charge, there could be some discrepancy because of interpolation */
     double t1 = ct.nel / ct.tcharge / nspin;
-    for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
+//    for(int i = 0;i < FP0_BASIS;i++) rho[i] *= t1;
     
     /*Write out normalization constant if needed*/
     double difference = fabs(t1 - 1.0);
