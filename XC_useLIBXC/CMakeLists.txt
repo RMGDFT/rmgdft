@@ -1,3 +1,4 @@
+if(USE_LIBXC)
 add_library (XC
 xclda_libxc.c
 xclsda_spin_libxc.c
@@ -19,3 +20,4 @@ mix_tau.c
 #relax_tau.c
 #scf_tau.c
 )
+endif(USE_LIBXC)

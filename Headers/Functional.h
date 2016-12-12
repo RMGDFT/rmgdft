@@ -32,7 +32,10 @@
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "vdW.h"
+
+#if USE_LIBXC
 #include "xc.h"
+#endif
 
 // C interface functions
 extern "C" const char *c_get_dft_name(void);

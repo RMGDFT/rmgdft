@@ -498,6 +498,7 @@ endif(RMG_GPU_ENABLED)
 
 #include_directories(rmg "/usr/local/magma/include")
 
+if(USE_LIBXC)
 find_package(LIBXC)
 if(NOT LIBXC_FOUND)
     execute_process(
@@ -514,7 +515,7 @@ if(NOT LIBXC_FOUND)
 endif(NOT LIBXC_FOUND)
 find_package(LIBXC REQUIRED)
 include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/")
-
+endif(USE_LIBXC)
 
 
 find_package(LIBSPG)
@@ -581,7 +582,9 @@ add_subdirectory (Input)
 add_subdirectory (MG) 
 add_subdirectory (Misc) 
 add_subdirectory (US_PP) 
-add_subdirectory (XC_useLIBXC) 
+if(USE_LIBXC)
+    add_subdirectory (XC_useLIBXC) 
+endif(USE_LIBXC)
 add_subdirectory (XC) 
 add_subdirectory (InternalPseudo) 
 

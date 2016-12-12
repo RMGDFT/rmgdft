@@ -38,10 +38,12 @@
 #include "RmgException.h"
 #include "RmgTimer.h"
 #include "FiniteDiff.h"
-#include "xc.h"
 #include "RmgSumAll.h"
 #include "RmgParallelFft.h"
 #include "transition.h"
+#if USE_LIBXC
+#include "xc.h"
+#endif
 
 extern "C" void __funct_MOD_set_dft_from_name( const char *name, std::size_t len );
 extern "C" char *__funct_MOD_get_dft_name(void);

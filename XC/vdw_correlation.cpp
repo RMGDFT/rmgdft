@@ -76,11 +76,13 @@
 #include "typedefs.h"
 #include "vdW.h"
 #include "RmgException.h"
-#include "xc.h"
 #include "RmgSumAll.h"
 #include "transition.h"
 #include "packfuncs.h"
 #include "RmgParallelFft.h"
+#if USE_LIBXC
+#include "xc.h"
+#endif
 
 // ----------------------------------------------------------------------
 // The next 2 parameters define the q mesh to be used in the vdW_DF code.
