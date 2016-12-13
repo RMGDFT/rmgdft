@@ -54,7 +54,7 @@
 /*Set this to 1 to have forces written out part by part*/
 /* If you want this , you should also make sure that VERBOSE flag is enabled in
  * nlforce.c*/
-#define VERBOSE 0
+#define VERBOSE 1
 
 
 template void Force<double> (double * rho, double * rho_oppo, double * rhoc, double * vh, double*vh_in,
@@ -68,17 +68,16 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 {
     RmgTimer RT0("2-Force");
     RmgTimer RTt("1-TOTAL: run: Force");
-    int ion, idx, size1;
+    int ion, idx;
     double *vtott, *rho_tot;
     int Zi;
 
     double *force_tmp, *force_sum;
-    double fac_spin = 1.0/(1.0 + ct.spin_flag);
+    int size1 = 3 * ct.num_ions;
+    double fac_spin = 1.0/(1.0 + (double)ct.spin_flag);
 
-    force_tmp = new double[3 *ct.num_ions];
-    force_sum = new double[3 *ct.num_ions];
-
-    for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] = 0.0;
+    force_tmp = new double[3 *ct.num_ions]();
+    force_sum = new double[3 *ct.num_ions]();
 
     vtott = new double[get_FP0_BASIS()];
 
@@ -91,26 +90,25 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
         Zi = ct.sp[ct.ions[ion].species].zvalence;
 
-
-        force_sum[ion *3 + 0] = ct.e_field * ct.x_field_0 * Zi * fac_spin;
-        force_sum[ion *3 + 1] = ct.e_field * ct.y_field_0 * Zi * fac_spin;
-        force_sum[ion *3 + 2] = ct.e_field * ct.z_field_0 * Zi * fac_spin;
+        force_sum[ion *3 + 0] = ct.e_field * ct.x_field_0 * Zi;
+        force_sum[ion *3 + 1] = ct.e_field * ct.y_field_0 * Zi;
+        force_sum[ion *3 + 2] = ct.e_field * ct.z_field_0 * Zi;
 
     }
 
 
-    /* Get the ion-ion component and store. */
+    /* Get the ion-ion component and store. No need to sum over spin or kpoint. */
     RmgTimer *RT1 = new RmgTimer("2-Force: ion-ion");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
     IIforce (force_tmp);
-    for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i] * fac_spin;
+    for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
     delete RT1;
 
 #if VERBOSE
     output_force(force_tmp, "Ion-Ion force:");
 #endif
 
-    /* Add in the local */
+    /* Add in the local. No need to sum over spin or kpoint. */
     RmgTimer *RT2 = new RmgTimer("2-Force: local");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
     if (ct.spin_flag)
@@ -133,29 +131,29 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 #endif
 
 
-    /* Add in the non-local stuff */
+    /* Add in the non-local stuff. Needs to be summed over both kpoints and spins. */
     RmgTimer *RT3 = new RmgTimer("2-Force: non-local");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
     Nlforce (vtott, Kptr, force_tmp);
-    for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
-    delete RT3;
-
-    size1 = 3 * ct.num_ions;
     global_sums (force_tmp, &size1, pct.kpsub_comm);
     global_sums (force_tmp, &size1, pct.spin_comm);
+
+    for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
+    delete RT3;
 
 #if VERBOSE
     output_force(force_tmp, "Non-Local force:");
 #endif
 
 
-
-    /* The non-linear core correction part if any */
+    /* The non-linear core correction part if any. Sum over spin since each spin state has separate vxc. */
     RmgTimer *RT4 = new RmgTimer("2-Force: core correction");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
     Nlccforce (rho, vxc, force_tmp);
-    for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i] * fac_spin;
+    global_sums (force_tmp, &size1, pct.spin_comm);
+    for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += fac_spin * force_tmp[i];
     delete RT4;
+
 
 #if VERBOSE
     output_force(force_tmp, "Non-linear core force:");
@@ -171,7 +169,6 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     output_force(force_tmp, "Correction force:");
 #endif
 
-    size1 = 3 * ct.num_ions;
     global_sums (force_sum, &size1, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)
