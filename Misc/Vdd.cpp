@@ -1,5 +1,3 @@
-//kmlively 7/18/2016 1:00pm 
-
 #include <vector>
 #include <cstdlib>
 #include <cmath>
@@ -38,7 +36,7 @@ void Vdd(double * rho)
     double a20, a21, a22;
 
     //double timex = my_crtc ();
-    
+
     hxgrid = get_hxxgrid(); //The fine grid spacing in x
     hygrid = get_hyygrid(); //The fine grid spacing in y
     hzgrid = get_hzzgrid(); //The fine grid spacing in z
@@ -59,11 +57,11 @@ void Vdd(double * rho)
     a00 = Rmg_L.get_a0(0);
     a01 = Rmg_L.get_a0(1);
     a02 = Rmg_L.get_a0(2);
-    
+
     a10 = Rmg_L.get_a1(0);
     a11 = Rmg_L.get_a1(1);
     a12 = Rmg_L.get_a1(2);
-    
+
     a20 = Rmg_L.get_a2(0);
     a21 = Rmg_L.get_a2(1);
     a22 = Rmg_L.get_a2(2);
@@ -71,37 +69,37 @@ void Vdd(double * rho)
     /*setup ions, we do it here, so that we avoid extra work when looping over all gridpoints*/
     /*Only loop over local ions, i.e.ions whose local potentials have overlap with current domain*/
     num_ions = pct.num_loc_ions;
-    
+
 
     /*For non-cluster (periodic) boundary conditions we have to conside periodic images of ions*/
     ion_multiply = 27;
     loopx_min = -1;
     loopx_max = 1;
-    
+
     loopy_min = -1;
     loopy_max = 1;
-    
+
     loopz_min = -1;
     loopz_max = 1;
 
     if (ct.boundaryflag == CLUSTER)
     {
 	ion_multiply = 1;
-	
+
 	loopx_min = 0;
 	loopx_max = 0;
 
 	loopy_min = 0;
 	loopy_max = 0;
-    
+
 	loopz_min = 0;
 	loopz_max = 0;
     }
-    
+
     if (ct.boundaryflag == SURFACE)
     {
 	ion_multiply = 9;
-	
+
 	loopz_min = 0;
 	loopz_max = 0;
     }
@@ -113,7 +111,7 @@ void Vdd(double * rho)
     xtal_index = new int [ion_multiply * num_ions];
 
     //rmg_printf("\n Vdd setup took %f seconds\n", my_crtc () - timex);
-    
+
 
     //timex = my_crtc ();
     /*Store xtal coordinates of ions (including periodic images) into a local array*/
@@ -122,7 +120,7 @@ void Vdd(double * rho)
     {
 	/*Absolute ionic index*/
 	ion_index = pct.loc_ions_list[ionct];
-	
+
 	iptr = &ct.ions[ion_index];
 
 	/*For non-cluster (periodic) boundary conditions we have to conside periodic images of ions*/
@@ -144,9 +142,9 @@ void Vdd(double * rho)
 	    }
 	}
     }
-		    
+
     //rmg_printf("\n Vdd loop 1 took %f seconds\n", my_crtc () - timex);
-    
+
 
 
 
@@ -198,7 +196,10 @@ void Vdd(double * rho)
 		    x[1] = yc - xtal_y[ionct];
 		    x[2] = zc - xtal_z[ionct];
 
+
 		    //to_cartesian (x, cartesian);
+		    //Do not call this function, overhead is too expensive this deep
+		    //in a 4 time nested loop, calculate things explicitly instead
 		    cartesian[0] = x[0] * a00 + x[1] * a10 + x[2] * a20;  
 		    cartesian[1] = x[0] * a01 + x[1] * a11 + x[2] * a21;  
 		    cartesian[2] = x[0] * a02 + x[1] * a12 + x[2] * a22;  
@@ -247,7 +248,7 @@ void Vdd(double * rho)
 	}
 	xc += hxgrid; //advance to the next gridpoint in the x direction
     }
-		    
+
     //rmg_printf("\n Vdd loop 2 took %f seconds\n", my_crtc () - timex);
 
 
@@ -258,27 +259,19 @@ void Vdd(double * rho)
 	rel_index_size_all = NULL;
 
 
+    /*Processor 0 gets sizes of local arrays, i.e. how many atoms does each 
+     * processor handle, store it as an array in rel_index_size */
     MPI_Gather(&rel_index_size, 1, MPI_INT, rel_index_size_all, 1, MPI_INT, 0, pct.grid_comm);
-
-   /* if (pct.gridpe == 0)
-    {
-	printf("\n MPI_Gather succesful, received sizes as follows:");
-
-	for (i = 0; i < pct.grid_npes; i++)
-	    printf("\n From PE %d size %d", i, rel_index_size_all[i]);
-
-    }*/
-
 
 
 
     if(pct.gridpe == 0)
     {
-	 //timex = my_crtc ();
+	//timex = my_crtc ();
 
-	/*Get total size of receive buffer (not counting local data)*/
+	/*Get total size of the receive buffer (not counting local data)*/
 	recv_buff_size = 0;
-	
+
 	for (j=1; j<pct.grid_npes; j++)
 	    recv_buff_size += rel_index_size_all[j];
 
@@ -290,10 +283,13 @@ void Vdd(double * rho)
 
 
 	offset = 0;
-	
+
 	for (j=1; j<pct.grid_npes; j++)
 	{
+	    /*First communication sends indices of ions that a given processor has info about, INT only*/
 	    MPI_Irecv (&rel_index_recv[offset], rel_index_size_all[j], MPI_INT, j, 111, pct.grid_comm, &recv_request[j]);
+	    
+	    /*Second call sends values for each ion*/
 	    MPI_Irecv (&loc_array_recv[offset], rel_index_size_all[j], MPI_DOUBLE, j, 111, pct.grid_comm, &recv_request[j + pct.grid_npes]);
 
 	    offset += rel_index_size_all[j];
@@ -301,40 +297,41 @@ void Vdd(double * rho)
 
 
 
-	
+
 
 	for (i=0; i<ct.num_ions; i++)
 	    ct.ions[i].partial_charge = 0.0;
+
 	
-	/*PE 0 own contribution*/
+	/*PE 0 own contribution, dealing with this separately*/
 	for (i=0; i<rel_index_size; i++)
 	{
 
 	    ion_index = rel_index[i];
-	    
+
 	    ct.ions[ion_index].partial_charge +=  loc_array[i];
 	}
 
-	/*Wait until communication is finished*/
+	/*Wait until communication is finished, these are non-blocking calls*/
 	/*Integer communication*/
 	MPI_Waitall(pct.grid_npes -1,  &recv_request[1], MPI_STATUSES_IGNORE);
 	/*Floating point array communication*/
 	MPI_Waitall(pct.grid_npes -1,  &recv_request[pct.grid_npes + 1], MPI_STATUSES_IGNORE);
-	
+
 	/*Add received data*/
 	for (j=0; j< recv_buff_size; j++)
 	{
 	    ion_index = rel_index_recv[j];
 
 	    ct.ions[ion_index].partial_charge += loc_array_recv[j];
-	    
+
 	}
 	//rmg_printf("\n Vdd p2p communication took %f seconds\n", my_crtc () - timex);
 
 
-    
 
-    
+
+
 	check = 0.0;
 	for (i = 0; i < ct.num_ions; i++)
 	{
@@ -344,7 +341,7 @@ void Vdd(double * rho)
 
 	    check +=  iptr->partial_charge;
 	}
-	    
+
 	rmg_printf("\n\nVDD: Summation of partial charges is %e (report if substantially different from 0)", check);
 
 
@@ -356,13 +353,13 @@ void Vdd(double * rho)
 	//timex = my_crtc ();
 	MPI_Isend (rel_index, rel_index_size, MPI_INT,    0, 111, pct.grid_comm, &send_request1);
 	MPI_Isend (loc_array, rel_index_size, MPI_DOUBLE, 0, 111, pct.grid_comm, &send_request2);
-	
+
 	/*Wait until communication is finished*/
 	/*Integer communication*/
 	MPI_Waitall(1,  &send_request1, MPI_STATUSES_IGNORE);
 	/*Floating point array communication*/
 	MPI_Waitall(1,  &send_request2, MPI_STATUSES_IGNORE);
-		    
+
 	//printf("\n Vdd communication took %f seconds\n", my_crtc () - timex);
 
     }
@@ -375,7 +372,7 @@ void Vdd(double * rho)
     delete [] xtal_y;
     delete [] xtal_z;
     delete [] xtal_index;
-    
+
     if(pct.gridpe == 0)
     {
 	delete [] rel_index_recv;
