@@ -142,6 +142,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
     size1 = 3 * ct.num_ions;
     global_sums (force_tmp, &size1, pct.kpsub_comm);
+    global_sums (force_tmp, &size1, pct.spin_comm);
 
 #if VERBOSE
     output_force(force_tmp, "Non-Local force:");
