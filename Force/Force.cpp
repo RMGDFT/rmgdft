@@ -54,7 +54,7 @@
 /*Set this to 1 to have forces written out part by part*/
 /* If you want this , you should also make sure that VERBOSE flag is enabled in
  * nlforce.c*/
-#define VERBOSE 1
+#define VERBOSE 0
 
 
 template void Force<double> (double * rho, double * rho_oppo, double * rhoc, double * vh, double*vh_in,
@@ -131,11 +131,10 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 #endif
 
 
-    /* Add in the non-local stuff. Needs to be summed over both kpoints and spins. */
+    /* Add in the non-local stuff. Needs to be summed over spins. Already summed over kpoints in lower level routines */
     RmgTimer *RT3 = new RmgTimer("2-Force: non-local");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
     Nlforce (vtott, Kptr, force_tmp);
-    global_sums (force_tmp, &size1, pct.kpsub_comm);
     global_sums (force_tmp, &size1, pct.spin_comm);
 
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
