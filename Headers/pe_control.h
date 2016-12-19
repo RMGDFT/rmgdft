@@ -176,8 +176,6 @@ typedef struct
     double *ns;
     double *Bns;
     int num_tot_proj;
-    double *M_dnm;
-    double *M_qqq;
 
     int instances;
     /** Neighboring processors in three-dimensional space */
