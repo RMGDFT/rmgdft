@@ -99,17 +99,21 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 
     int alloc = pct.num_tot_proj * num_states;
+    int M_cols = 1;
+    if(!ct.norm_conserving_pp) M_cols = pct.num_tot_proj;
+    int alloc1 = pct.num_tot_proj * M_cols;
+
 #if GPU_ENABLED
     KpointType *sint_compack = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc);
     KpointType *nwork = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc);
-    KpointType *M_dnm = (KpointType *)GpuMallocHost(sizeof(KpointType) * pct.num_tot_proj * pct.num_tot_proj);
-    KpointType *M_qqq = (KpointType *)GpuMallocHost(sizeof(KpointType) * pct.num_tot_proj * pct.num_tot_proj);
+    KpointType *M_dnm = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc1);
+    KpointType *M_qqq = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc1);
     for(int i = 0;i < alloc;i++) sint_compack[i] = 0.0;
 #else
     KpointType *sint_compack = new KpointType[alloc]();
     KpointType *nwork = new KpointType[alloc];
-    KpointType *M_dnm = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
-    KpointType *M_qqq = new KpointType [pct.num_tot_proj * pct.num_tot_proj];
+    KpointType *M_dnm = new KpointType [alloc1];
+    KpointType *M_qqq = new KpointType [alloc1];
 #endif
 
     for(int istate = 0; istate < num_states; istate++)
@@ -133,16 +137,14 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         }
     }
 
-    for (int i = 0; i < pct.num_tot_proj * pct.num_tot_proj; i++)
+    for (int i = 0; i < alloc1; i++)
     {
         M_dnm[i] = ZERO_t;
         M_qqq[i] = ZERO_t;
-        pct.M_dnm[i] = 0.0;
-        pct.M_qqq[i] = 0.0;
     }
 
 
-    // set up pct.M_qqq and pct.M_dnm, this can be done outside in the
+    // set up M_qqq and M_dnm, this can be done outside in the
     // init.c or get_ddd get_qqq, we need to check the order
     int proj_index = 0;
     for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
@@ -165,30 +167,36 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             for (int j = 0; j < nh; j++)
             {
 
-                int idx = (proj_index + i) * pct.num_tot_proj + proj_index + j;
-                M_dnm[idx] = (KpointType)dnmI[inh+j];
-                M_qqq[idx] = (KpointType)qqq[inh+j];
-                pct.M_dnm[idx] = std::real(dnmI[inh+j]);
-                pct.M_qqq[idx] = std::real(qqq[inh+j]);
+                if(!ct.norm_conserving_pp) {
+                    int idx = (proj_index + i) * pct.num_tot_proj + proj_index + j;
+                    M_dnm[idx] = (KpointType)dnmI[inh+j];
+                    M_qqq[idx] = (KpointType)qqq[inh+j];
+                }
+                else {
+                    // Diagonal for norm conserving so just save those.
+                    if((proj_index + i) == (proj_index + j)) {
+                        M_dnm[proj_index + j] = (KpointType)dnmI[inh+j];
+                        M_qqq[proj_index + j] = (KpointType)qqq[inh+j];
+                    }
+                }
 
             }
         }
     }
 
-    RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj, 
-            ONE_t, M_dnm,  pct.num_tot_proj, sint_compack, pct.num_tot_proj,
-            ZERO_t,  nwork, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
 
-
-    RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
-            ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
-            ZERO_t,  nv, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
-
-
-    for(int idx = 0;idx < num_states * P0_BASIS;idx++)
-        ns[idx] = psi[idx];
 
     if(!ct.norm_conserving_pp) {
+
+        RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj,
+                    ONE_t, M_dnm,  pct.num_tot_proj, sint_compack, pct.num_tot_proj,
+                    ZERO_t,  nwork, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
+
+        RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj,
+                    ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
+                    ZERO_t,  nv, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
+
+        for(int idx = 0;idx < num_states * P0_BASIS;idx++) ns[idx] = psi[idx];
 
         RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj, 
                 ONE_t, M_qqq,  pct.num_tot_proj, sint_compack, pct.num_tot_proj,
@@ -203,6 +211,22 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                     ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
                     ZERO_t,  Bns, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
         }
+
+    }
+    else 
+    {
+
+        for(int ii = 0;ii < pct.num_tot_proj;ii++) {
+            for(int jj = 0;jj < num_states;jj++) {
+                nwork[jj*pct.num_tot_proj + ii] = M_dnm[ii] * sint_compack[jj*pct.num_tot_proj + ii];
+            }
+        }
+        RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj,
+                    ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
+                    ZERO_t,  nv, P0_BASIS, NULLptr, NULLptr, NULLptr, false, false, false, true);
+
+        for(int idx = 0;idx < num_states * P0_BASIS;idx++) ns[idx] = psi[idx];
+
     }
 
 #if GPU_ENABLED
