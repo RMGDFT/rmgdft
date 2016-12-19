@@ -216,8 +216,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     else 
     {
 
-        for(int ii = 0;ii < pct.num_tot_proj;ii++) {
-            for(int jj = 0;jj < num_states;jj++) {
+        for(int jj = 0;jj < num_states;jj++) {
+            for(int ii = 0;ii < pct.num_tot_proj;ii++) {
                 nwork[jj*pct.num_tot_proj + ii] = M_dnm[ii] * sint_compack[jj*pct.num_tot_proj + ii];
             }
         }
