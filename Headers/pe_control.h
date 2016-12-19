@@ -169,7 +169,6 @@ typedef struct
     double *oldsintI_local;
     double *newsintR_local;
     double *newsintI_local;
-    double *sint_derx, *sint_dery, *sint_derz;
 
     // Holds non-local and S operators acting on psi
     double *nv;
