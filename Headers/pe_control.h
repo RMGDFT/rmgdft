@@ -134,7 +134,7 @@ typedef struct
     int nonloc_pe_num_ions[MAX_NONLOC_PROCS];
     
     
-    /*For ions owned by current PE*/
+    /*For ions owned by current PE */
     /* Number of cores to cummunicate with about owned ions*/
     int num_owned_pe;
     /*List of ranks of cores to comunicate with about owned ions*/
@@ -169,6 +169,7 @@ typedef struct
     double *oldsintI_local;
     double *newsintR_local;
     double *newsintI_local;
+    double *sint_derx, *sint_dery, *sint_derz;
 
     // Holds non-local and S operators acting on psi
     double *nv;

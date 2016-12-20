@@ -142,7 +142,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
         /*The vector we are looking for should be */
         to_cartesian (vect, iptr->nlcrds);
-//printf("FFFFff  %f  %f  %f\n",iptr->nlxcstart,iptr->nlycstart,iptr->nlzcstart);
 
         /* If there is a mapping for this ion then we have to generate */
         /* the projector.                                              */
@@ -237,18 +236,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             }
             else
                 pct.nlindex[ion] = NULL;
-
-
-
-            /* Allocate memory for the phase array */
-       //     if ((icount * prj_per_ion)) {
-       //         itmp = nlxdim * nlydim * nlzdim;
-       //         pct.ehaseptr[ion] = new double[2*itmp * ct.num_kpts_pe + 128]();
-       //     }
-       //     else {
-       //         pct.phaseptr[ion] = NULL;
-       //     }
-       //     GetPhase (iptr, (std::complex<double> *)pct.phaseptr[ion]);
 
         }                       /* end if (map) */
 
@@ -351,17 +338,29 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     if(ct.is_gamma) factor = 1; 
     pct.newsintR_local = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
     pct.oldsintR_local = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
+    pct.sint_derx = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
+    pct.sint_dery = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
+    pct.sint_derz = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.num_states * ct.max_nl]();
 
     KpointType *tsintnew_ptr = (KpointType *)pct.newsintR_local;
     KpointType *tsintold_ptr = (KpointType *)pct.oldsintR_local;
+    KpointType *sint_derx_ptr = (KpointType *)pct.sint_derx;
+    KpointType *sint_dery_ptr = (KpointType *)pct.sint_dery;
+    KpointType *sint_derz_ptr = (KpointType *)pct.sint_derz;
 
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++){
         Kptr[kpt]->sint_size = pct.num_nonloc_ions * ct.max_states * ct.max_nl;
         Kptr[kpt]->newsint_local = tsintnew_ptr;
         Kptr[kpt]->oldsint_local = tsintold_ptr;
+        Kptr[kpt]->sint_derx = sint_derx_ptr;
+        Kptr[kpt]->sint_dery = sint_dery_ptr;
+        Kptr[kpt]->sint_derz = sint_derz_ptr;
 
         tsintnew_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
         tsintold_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
+        sint_derx_ptr += pct.num_nonloc_ions * ct.num_states * ct.max_nl;
+        sint_dery_ptr += pct.num_nonloc_ions * ct.num_states * ct.max_nl;
+        sint_derz_ptr += pct.num_nonloc_ions * ct.num_states * ct.max_nl;
     }
     
 
@@ -580,10 +579,6 @@ static void reset_pct_arrays (int num_ions)
             pct.nlindex[ion] = NULL;
         }
 
-        //       if (pct.phaseptr[ion]) {
-        //           delete [] pct.phaseptr[ion];
-        //           pct.phaseptr[ion] = NULL;
-        //       }
     }
 
 

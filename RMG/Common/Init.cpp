@@ -126,6 +126,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Allocate storage for non-local projectors */
     pct.newsintR_local = NULL;
     pct.oldsintR_local = NULL;
+    pct.sint_derx = NULL;
+    pct.sint_dery = NULL;
+    pct.sint_derz = NULL;
 
     pct.localpp = NULL;
     pct.localrhoc = NULL;
@@ -462,7 +465,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     //mix_betaxpsi(0);
 
-    //Dprintf ("Set the initial density to be equal to the compensating charges");
 
     /*For random start, use charge density equal to compensating charge */
     if (ct.runflag == RANDOM_START)
