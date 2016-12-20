@@ -78,8 +78,8 @@ void init_parameter(STATE * states)
         if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
 
         ct.kp[kpt].kstate = &states[kpt * ct.num_states];
-        ct.kp[kpt + ct.spin * ct.num_states].kstate =
-            &states[kpt * ct.num_states + ct.spin * ct.num_kpts * ct.num_states];
+        ct.kp[kpt + (int)ct.spin_polarization * ct.num_states].kstate =
+            &states[kpt * ct.num_states + (int)ct.spin_polarization * ct.num_kpts * ct.num_states];
         ct.kp[kpt].kidx = kpt;
 
     }                           /* end for */
@@ -132,7 +132,7 @@ void init_parameter(STATE * states)
      
     part_occ = ct.nel - full_occ *2.0;
 
-    for (ispin = 0; ispin <= ct.spin; ispin++)
+    for (ispin = 0; ispin <= (int)ct.spin_polarization; ispin++)
     {
         for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
         {
