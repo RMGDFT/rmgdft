@@ -43,6 +43,7 @@ void nose_velup1 (void);
 void nose_posup (void);
 void nose_velup2 (void);
 void nose_energy (double *, double *);
+void center_of_mass_velocity(double &vx, double &vy, double &vz);
 
 void velup1 (void);
 //void posup (void);
@@ -284,6 +285,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         /* get the total T of the system */
         iontemp = ct.ionke * 2.0 / (3.0 * (double) N * kB);
 
+        // get center of mass velocities
+        double vx, vy, vz;
+        center_of_mass_velocity(vx, vy, vz);
 
         /*write data to output file */
         if (ct.checkpoint) 
@@ -304,6 +308,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
             case MD_CVE:
                 rmg_printf ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
                         ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
+                rmg_printf("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
                 break;
             case MD_CVT:
                 if (ct.tcontrol == T_NOSE_CHAIN)
@@ -1006,4 +1011,24 @@ void nose_energy (double * nosekin, double * nosepot)
 
 }                               /* end of nose_energy */
 
-/******/
+
+void center_of_mass_velocity(double &vx, double &vy, double &vz)
+{
+    double px = 0.0, py = 0.0, pz = 0.0;
+    double total_mass = 0.0;
+    for (int ion = 0; ion < ct.num_ions; ion++) {
+
+        ION *iptr = &ct.ions[ion];
+        double mass = ct.sp[iptr->species].atomic_mass * mu_me;
+        px += mass * iptr->velocity[0];
+        py += mass * iptr->velocity[1];
+        pz += mass * iptr->velocity[1];
+        total_mass += mass;
+
+    }
+    
+    vx = px / total_mass;
+    vy = py / total_mass;
+    vz = pz / total_mass;
+
+}
