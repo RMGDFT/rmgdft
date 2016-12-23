@@ -43,14 +43,15 @@
  * nlforce.c*/
 
 template void PartialGamma<double> ( int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
-                     Kpoint<double> **Kptr);
+                     Kpoint<double> **Kptr, int state_start, int state_end, double * sint_derx, double * sint_dery, double * sint_derz );
 template void PartialGamma<std::complex<double>> ( int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
-                    Kpoint<std::complex<double>> **Kptr);
+                    Kpoint<std::complex<double>> **Kptr, int state_start, int state_end, std::complex<double> *sint_derx,
+                    std::complex<double> *sint_dery, std::complex<double> *sint_derz);
 
 
 template <typename OrbitalType> void PartialGamma (
-                    int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
-                    Kpoint<OrbitalType> **Kptr)
+        int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
+        Kpoint<OrbitalType> **Kptr, int state_start, int state_end, OrbitalType *sint_derx, OrbitalType *sint_dery, OrbitalType *sint_derz)
 {
     int i, j, idx, kidx, istate, size;
     double *gamma_x, *gamma_y, *gamma_z;
@@ -70,21 +71,12 @@ template <typename OrbitalType> void PartialGamma (
     omega_y = omega_x + size;
     omega_z = omega_y + size;
 
-    for (idx = 0; idx < size; idx++)
-    {
-        gamma_x[idx] = 0.0;
-        gamma_y[idx] = 0.0;
-        gamma_z[idx] = 0.0;
-        omega_x[idx] = 0.0;
-        omega_y[idx] = 0.0;
-        omega_z[idx] = 0.0;
-    }
-
 
     for (kidx = 0; kidx < ct.num_kpts_pe; kidx++)
     {
-        for (istate = 0; istate < ct.num_states; istate++)
+        for (istate = state_start; istate < state_end; istate++)
         {
+            int istate_local = istate - state_start;
             t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kweight;
 
 
@@ -99,9 +91,9 @@ template <typename OrbitalType> void PartialGamma (
                     betaxpsiM = Kptr[kidx]->newsint_local[ istate * pct.num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + j];
 
-                    betaxpsiN_der = Kptr[kidx]->sint_derx[ istate * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiN_der = sint_derx[ istate_local * pct.num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + i];
-                    betaxpsiM_der = Kptr[kidx]->sint_derx[ istate * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiM_der = sint_derx[ istate_local * pct.num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + j];
 
 
@@ -110,9 +102,9 @@ template <typename OrbitalType> void PartialGamma (
                     gamma_x[idx] += t1 * beta_pbeta;
                     omega_x[idx] += t1 * Kptr[kidx]->Kstates[istate].eig[0] * beta_pbeta;
 
-                    betaxpsiN_der = Kptr[kidx]->sint_dery[ istate * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiN_der = sint_dery[ istate_local * pct.num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + i];
-                    betaxpsiM_der = Kptr[kidx]->sint_dery[ istate * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiM_der = sint_dery[ istate_local * pct.num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + j];
 
 
@@ -121,9 +113,9 @@ template <typename OrbitalType> void PartialGamma (
                     gamma_y[idx] += t1 * beta_pbeta;
                     omega_y[idx] += t1 * Kptr[kidx]->Kstates[istate].eig[0] * beta_pbeta;
 
-                    betaxpsiN_der = Kptr[kidx]->sint_derz[ istate * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiN_der = sint_derz[ istate_local * pct.num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + i];
-                    betaxpsiM_der = Kptr[kidx]->sint_derz[ istate * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiM_der = sint_derz[ istate_local * pct.num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + j];
 
 
@@ -139,6 +131,4 @@ template <typename OrbitalType> void PartialGamma (
         }                       /*end for istate */
     }                           /*end for kidx */
 
-    GlobalSums(par_gammaR, 3*size, pct.kpsub_comm);
-    GlobalSums(par_omegaR, 3*size, pct.kpsub_comm);
 }

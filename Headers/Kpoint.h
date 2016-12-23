@@ -100,9 +100,6 @@ public:
     // Pointer to sint arrays (Betaxpsi)
     KpointType *newsint_local;
     KpointType *oldsint_local;
-    KpointType *sint_derx;
-    KpointType *sint_dery;
-    KpointType *sint_derz;
 
     // Size of the sint arrays
     int sint_size;

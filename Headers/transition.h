@@ -219,7 +219,9 @@ template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh 
 
 template <typename OrbitalType> void PartialGamma (
                     int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
-                    Kpoint<OrbitalType> **Kptr);
+                    Kpoint<OrbitalType> **Kptr, int state_start, int state_end, 
+                    OrbitalType *sint_derx, OrbitalType *sint_dery, OrbitalType *sint_derz);
+
 
 
 template <typename OrbitalType> void AssignDerweight (Kpoint<OrbitalType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, OrbitalType

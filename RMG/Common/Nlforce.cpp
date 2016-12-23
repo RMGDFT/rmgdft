@@ -41,6 +41,7 @@
 #include "Lattice.h"
 #include "FiniteDiff.h"
 #include "transition.h"
+#include "GlobalSums.h"
 
 
 
@@ -106,14 +107,28 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
     /*max for nh * (nh + 1) / 2 */
-    size = (ct.max_nl + 1) * ct.max_nl / 2;
+    int max_nl2 = (ct.max_nl + 1) * ct.max_nl / 2;
     
-    gamma = new double[ size];
-    par_gamma = new double[ 6 * size];
-    par_omega = par_gamma + 3 * size;
+    gamma = new double[ max_nl2];
+//    par_gamma = new double[ 6 * max_nl2];
+//    par_omega = par_gamma + 3 * max_nl2;
+    double *par_gamma_allions = new double[3 * pct.num_owned_ions * max_nl2];
+    double *par_omega_allions = new double[3 * pct.num_owned_ions * max_nl2];
+    for(int i = 0; i < 3 * pct.num_owned_ions * max_nl2; i++)
+    {
+        par_gamma_allions[i] = 0.0;
+        par_omega_allions[i] = 0.0;
+    }
+
+    
+    size =  pct.num_nonloc_ions * ct.state_block_size * ct.max_nl; 
+    OrbitalType *sint_der = new OrbitalType[3*size];
+    OrbitalType *sint_derx = sint_der + 0 * size;
+    OrbitalType *sint_dery = sint_der + 1 * size;
+    OrbitalType *sint_derz = sint_der + 2 * size;
+    
 
 
-    RT1 = new RmgTimer("2-Force: non-local: betaxpsi");
 //  determin the number of occupied states for all kpoints.
 
     num_occupied = 0;
@@ -183,24 +198,60 @@ ct.state_block_size);
 
 
             int num_state_thisblock = state_end[ib] - state_start[ib];
-            int ider = pct.num_nonloc_ions * ct.max_nl * state_start[ib];
 
 
-            Betaxpsi(Kptr[kpt], ct.num_states,                       num_state_thisblock, &Kptr[kpt]->sint_derx[ider], Kptr[kpt]->nl_weight);
-            Betaxpsi(Kptr[kpt], ct.num_states+ ct.state_block_size,  num_state_thisblock, &Kptr[kpt]->sint_dery[ider], Kptr[kpt]->nl_weight);
-            Betaxpsi(Kptr[kpt], ct.num_states+2*ct.state_block_size, num_state_thisblock, &Kptr[kpt]->sint_derz[ider], Kptr[kpt]->nl_weight);
-        }
+            RT1 = new RmgTimer("2-Force: non-local: betaxpsi");
+            Betaxpsi(Kptr[kpt], ct.num_states,                       num_state_thisblock, sint_derx, Kptr[kpt]->nl_weight);
+            Betaxpsi(Kptr[kpt], ct.num_states+ ct.state_block_size,  num_state_thisblock, sint_dery, Kptr[kpt]->nl_weight);
+            Betaxpsi(Kptr[kpt], ct.num_states+2*ct.state_block_size, num_state_thisblock, sint_derz, Kptr[kpt]->nl_weight);
 
-        for(int i = 0; i < pct.num_nonloc_ions * ct.num_states * ct.max_nl; i++)
-        {
-            Kptr[kpt]->sint_derx[i] *= -1.0;
-            Kptr[kpt]->sint_dery[i] *= -1.0;
-            Kptr[kpt]->sint_derz[i] *= -1.0;
+            for(int i = 0; i < pct.num_nonloc_ions * num_state_thisblock * ct.max_nl; i++)
+            {
+                sint_derx[i] *= -1.0;
+                sint_dery[i] *= -1.0;
+                sint_derz[i] *= -1.0;
+            }
+            delete RT1;
+
+            RT1 = new RmgTimer("2-Force: non-local: partial gamma");
+            nion = -1;
+            for (ion = 0; ion < pct.num_owned_ions; ion++)
+            {
+                /*Global index of owned ion*/
+                gion = pct.owned_ions_list[ion];
+
+                /* Figure out index of owned ion in nonloc_ions_list array, store it in nion*/
+                do {
+
+                    nion++;
+                    if (nion >= pct.num_nonloc_ions)
+                    {
+                        printf("\n Could not find matching entry in pct.nonloc_ions_list for owned ion %d", gion);
+                        rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in pct.nonloc_ions_list for owned ion ");
+                    }
+
+                } while (pct.nonloc_ions_list[nion] != gion);
+
+                iptr = &ct.ions[gion];
+
+
+                nh = ct.sp[iptr->species].nh;
+
+                /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
+                par_gamma = &par_gamma_allions[ion * 3 * max_nl2];
+                par_omega = &par_omega_allions[ion * 3 * max_nl2];
+
+                PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr, state_start[ib], state_end[ib], sint_derx, sint_dery, sint_derz);
+
+            }
+            delete RT1;
+
         }
 
     }
-    delete RT1;
 
+    GlobalSums(par_gamma_allions, 3*pct.num_owned_ions*max_nl2, pct.kpsub_comm);
+    GlobalSums(par_omega_allions, 3*pct.num_owned_ions*max_nl2, pct.kpsub_comm);
 
     RT1 = new RmgTimer("2-Force: non-local: veff grad");
     OrbitalType *gx = new OrbitalType[FP0_BASIS];
@@ -269,9 +320,9 @@ ct.state_block_size);
         nh = ct.sp[iptr->species].nh;
 
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
-        RT1 = new RmgTimer("2-Force: non-local: partial gamma");
-        PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr);
-        delete RT1;
+        //PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr);
+        par_gamma = &par_gamma_allions[ion * 3 * max_nl2];
+        par_omega = &par_omega_allions[ion * 3 * max_nl2];
         RT1 = new RmgTimer("2-Force: non-local: nlforce_par_gamma");
         nlforce_par_gamma (par_gamma, gion, nh, &tmp_force_gamma[3*gion]);
         delete RT1;
@@ -299,7 +350,11 @@ ct.state_block_size);
 #endif
 
 
-    delete[] par_gamma;
+    //    delete[] par_gamma;
+    delete[] par_gamma_allions;
+    delete[] par_omega_allions;
+    delete[] sint_der;
+
     delete[] gamma;
     delete[] tmp_force_omega;
     delete[] tmp_force_gamma;
@@ -307,4 +362,5 @@ ct.state_block_size);
 
 
 }
+
 
