@@ -210,6 +210,7 @@ typedef struct
 
     /** Number of states to allocate memory for */
     int alloc_states;
+    int state_block_size;
 
     /** total number of atomic orbitals including the m dependency */
     int total_atomic_orbitals;

@@ -114,43 +114,82 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
     RT1 = new RmgTimer("2-Force: non-local: betaxpsi");
+//  determin the number of occupied states for all kpoints.
 
+    num_occupied = 0;
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-        int pbasis = Kptr[kpt]->pbasis;
-        num_occupied = 0;
         for(int st = 0; st < ct.num_states; st++)
         {
-            if(Kptr[kpt]->Kstates[st].occupation[0] < 1.0e-10) break;
-            num_occupied++;
-            psi = Kptr[kpt]->Kstates[st].psi;
-            psi_x = psi + ct.num_states*pbasis;
-            psi_y = psi + 2*ct.num_states*pbasis;
-            psi_z = psi + 3*ct.num_states*pbasis;
-            CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
-
-            if(!ct.is_gamma)
+            if(abs(Kptr[kpt]->Kstates[st].occupation[0]) < 1.0e-10) 
             {
-                std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
-                psi_C = (std::complex<double> *) psi;
-                psi_xC = (std::complex<double> *) psi_x;
-                psi_yC = (std::complex<double> *) psi_y;
-                psi_zC = (std::complex<double> *) psi_z;
-                for(int i = 0; i < P0_BASIS; i++) 
+                num_occupied = std::max(num_occupied, st);
+                break;
+            }
+        }
+    }
+
+
+    int num_state_block = (num_occupied +ct.state_block_size -1) / ct.state_block_size;
+    int *state_start = new int[num_state_block];
+    int *state_end = new int[num_state_block];
+    for(int ib = 0; ib < num_state_block; ib++)
+    {
+        state_start[ib] = ib * ct.state_block_size;
+        state_end[ib] = (ib+1) * ct.state_block_size;
+        if(state_end[ib] > num_occupied) state_end[ib] = num_occupied;
+    }
+
+    int pbasis = Kptr[0]->pbasis;
+
+
+    if(ct.alloc_states < ct.num_states + 3 * ct.state_block_size)     
+    {
+       printf("\n allco_states %d should be larger than ct.num_states %d + 3* ct.state_block_size, %d", ct.alloc_states, ct.num_states,
+ct.state_block_size);
+       exit(0);
+    }
+    
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+
+        for(int ib = 0; ib < num_state_block; ib++)
+        {
+            for(int st = state_start[ib]; st < state_end[ib]; st++)
+            {
+                psi = Kptr[kpt]->Kstates[st].psi;
+                psi_x = Kptr[kpt]->Kstates[ct.num_states].psi + (st-state_start[ib]) * pbasis;
+                psi_y = psi_x + ct.state_block_size*pbasis;
+                psi_z = psi_x +2* ct.state_block_size*pbasis;
+                CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+
+                if(!ct.is_gamma)
                 {
-                    psi_xC[i] += I_t *  Kptr[kpt]->kvec[0] * psi_C[i];
-                    psi_yC[i] += I_t *  Kptr[kpt]->kvec[1] * psi_C[i];
-                    psi_zC[i] += I_t *  Kptr[kpt]->kvec[2] * psi_C[i];
+                    std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
+                    psi_C = (std::complex<double> *) psi;
+                    psi_xC = (std::complex<double> *) psi_x;
+                    psi_yC = (std::complex<double> *) psi_y;
+                    psi_zC = (std::complex<double> *) psi_z;
+                    for(int i = 0; i < P0_BASIS; i++) 
+                    {
+                        psi_xC[i] += I_t *  Kptr[kpt]->kvec[0] * psi_C[i];
+                        psi_yC[i] += I_t *  Kptr[kpt]->kvec[1] * psi_C[i];
+                        psi_zC[i] += I_t *  Kptr[kpt]->kvec[2] * psi_C[i];
+                    }
                 }
+
+
             }
 
-            
+
+            int num_state_thisblock = state_end[ib] - state_start[ib];
+            int ider = pct.num_nonloc_ions * ct.max_nl * state_start[ib];
+
+
+            Betaxpsi(Kptr[kpt], ct.num_states,                       num_state_thisblock, &Kptr[kpt]->sint_derx[ider], Kptr[kpt]->nl_weight);
+            Betaxpsi(Kptr[kpt], ct.num_states+ ct.state_block_size,  num_state_thisblock, &Kptr[kpt]->sint_dery[ider], Kptr[kpt]->nl_weight);
+            Betaxpsi(Kptr[kpt], ct.num_states+2*ct.state_block_size, num_state_thisblock, &Kptr[kpt]->sint_derz[ider], Kptr[kpt]->nl_weight);
         }
-
-
-        Betaxpsi(Kptr[kpt], 1*Kptr[kpt]->nstates, num_occupied, Kptr[kpt]->sint_derx, Kptr[kpt]->nl_weight);
-        Betaxpsi(Kptr[kpt], 2*Kptr[kpt]->nstates, num_occupied, Kptr[kpt]->sint_dery, Kptr[kpt]->nl_weight);
-        Betaxpsi(Kptr[kpt], 3*Kptr[kpt]->nstates, num_occupied, Kptr[kpt]->sint_derz, Kptr[kpt]->nl_weight);
 
         for(int i = 0; i < pct.num_nonloc_ions * ct.num_states * ct.max_nl; i++)
         {
@@ -244,7 +283,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     }                           /*end for(ion=0; ion<num_ions; ion++) */
 
 
-    
+
     for(int i = 0; i < ct.num_ions * 3; i++) 
     {
         force_nl[i] += qforce[i];

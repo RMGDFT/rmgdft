@@ -389,6 +389,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "The number of unoccupied orbitals.\n", 
                      "unoccupied_states_per_kpoint must be at least 10. Fixing.\n");
 
+    If.RegisterInputKey("state_block_size", &lc.state_block_size, 1, INT_MAX, 64, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "state_block used in nlforce.\n", 
+                     "it is better to be 2^n.\n");
+
+
     If.RegisterInputKey("extra_random_lcao_states", &lc.extra_random_lcao_states, 0, INT_MAX, 0, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
                      "Extra random wavefunctions to use for LCAO starts.\n", 

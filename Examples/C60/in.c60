@@ -14,6 +14,8 @@ unoccupied_states_per_kpoint="18"
 
 bravais_lattice_type="Cubic Primitive"
 
+state_block_size="11164"
+
 # Lattice constants 
 a_length="18.0"
 b_length="18.0"
@@ -24,7 +26,7 @@ gamma="0.0"
 
 start_mode="LCAO Start"
 calculation_mode="Quench Electrons"
-kohn_sham_solver="davidson"
+#kohn_sham_solver="davidson"
 subdiag_driver="scalapack"
 charge_mixing_type = "Broyden"
 potential_acceleration_constant_step="1.0"
