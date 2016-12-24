@@ -219,7 +219,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     if(ct.eig_parm.mucycles > 1)
         kptr->mix_betaxpsi1(sp->istate);
-        //MixBetaxpsi1(sp);
 
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectrvely) */

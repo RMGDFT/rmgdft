@@ -109,8 +109,6 @@ void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, void * kd,
 void pack_to_complex(double *psi, int nstates, int pbasis);
 void pack_to_standard(double *psi, int nstates, int pbasis);
 void MixBetaxpsi (int mix, int kpt);
-template <typename OrbitalType>
-void MixBetaxpsi1 (State<OrbitalType> *sp);
 template  <typename OrbitalType> void AppCilrDriver (TradeImages *T, OrbitalType * psi, OrbitalType * a_psi, OrbitalType *b_psi, double *vtot,
     int dimx, int dimy, int dimz, double hx, double hy, double hz, int order);
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);

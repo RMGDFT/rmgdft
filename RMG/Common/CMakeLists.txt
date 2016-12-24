@@ -14,7 +14,6 @@ WriteData.cpp
 WriteBGW_Wfng.cpp
 WriteBGW_Rhog.cpp
 WriteBGW_VxcEig.cpp
-MixBetaxpsi1.cpp
 WriteRestart.cpp
 LcaoGetAwave.cpp
 LcaoGetPsi.cpp
