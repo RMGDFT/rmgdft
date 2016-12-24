@@ -505,6 +505,9 @@ typedef struct
     /*Maximum value of nldim for any species */
     int max_nldim;
 
+    /* Whether or not Bweight is required (not needed for Central FD operator with NCPP */
+    bool need_Bweight;
+
     /*This keeps track whether ct.fftw_wisdom_setup was setup or not so that
      * we know whether to release wisdom memory at the end or not*/
     int fftw_wisdom_setup;

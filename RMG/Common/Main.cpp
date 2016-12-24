@@ -235,6 +235,9 @@ void initialize(int argc, char **argv)
     /* for spin polarized calculation set pointer to memory for density of the opposite spin */
     rho_oppo = rho + FP0_BASIS;
 
+    /* Check if Bweight is needed */
+    ct.need_Bweight = true;
+    if((ct.discretization == CENTRAL_DISCRETIZATION) && ct.norm_conserving_pp) ct.need_Bweight = false;
 
     /* Initialize some k-point stuff */
     Kptr_g = new Kpoint<double> * [ct.num_kpts_pe];

@@ -293,17 +293,24 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     if( cudaSuccess != cudaMallocHost((void **)&pct.weight, weight_size * sizeof(double) ))
         rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
     for(idx = 0;idx < weight_size;idx++) pct.weight[idx] = 0.0;
-    if( cudaSuccess != cudaMallocHost((void **)&pct.Bweight, weight_size * sizeof(double) ))
-        rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
-    for(idx = 0;idx < weight_size;idx++) pct.Bweight[idx] = 0.0;
 
-    weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
-
+    if(ct.need_Bweight) 
+    {
+        if( cudaSuccess != cudaMallocHost((void **)&pct.Bweight, weight_size * sizeof(double) ))
+            rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
+        for(idx = 0;idx < weight_size;idx++) pct.Bweight[idx] = 0.0;
+    }
+    else {
+        pct.Bweight = pct.weight;
+    }
 #else
     pct.weight = new double[weight_size]();
-    pct.Bweight = new double[weight_size]();
-
-    weight_size = pct.num_tot_proj * pct.num_tot_proj + 128;
+    if(ct.need_Bweight) {
+        pct.Bweight = new double[weight_size]();
+    }
+    else {
+        pct.Bweight = pct.weight;
+    }
 #endif
 
 
@@ -572,7 +579,7 @@ static void reset_pct_arrays (int num_ions)
         delete [] pct.weight;
 #endif
     }
-    if (pct.Bweight != NULL) {
+    if ((pct.Bweight != NULL) && ct.need_Bweight) {
 #if GPU_ENABLED
         cudaFreeHost(pct.Bweight);
 #else
