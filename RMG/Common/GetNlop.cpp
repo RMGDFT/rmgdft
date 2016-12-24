@@ -331,24 +331,18 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     // Set storage sequentially for real and imaginary components so we can transform storage pattern
     if (pct.newsintR_local)
         delete [] pct.newsintR_local;
-    if (pct.oldsintR_local)
-        delete [] pct.oldsintR_local;
    
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
     pct.newsintR_local = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
-    pct.oldsintR_local = new double[factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.max_states * ct.max_nl]();
 
     KpointType *tsintnew_ptr = (KpointType *)pct.newsintR_local;
-    KpointType *tsintold_ptr = (KpointType *)pct.oldsintR_local;
 
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++){
         Kptr[kpt]->sint_size = pct.num_nonloc_ions * ct.max_states * ct.max_nl;
         Kptr[kpt]->newsint_local = tsintnew_ptr;
-        Kptr[kpt]->oldsint_local = tsintold_ptr;
 
         tsintnew_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
-        tsintold_ptr += pct.num_nonloc_ions * ct.max_states * ct.max_nl;
     }
     
 

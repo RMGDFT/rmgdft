@@ -142,7 +142,7 @@ bool scf_tau (STATE * states, double * vxc, double * vh, double * vnuc,
         EndRmgTimer(RT1);
 
 #if BATCH_NLS
-        app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.oldsintR_local);
+        app_nls_batch (states, pct.nv, pct.ns, pct.Bns, pct.newsintR_local);
 #endif
 
         /* Update the wavefunctions */

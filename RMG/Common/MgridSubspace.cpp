@@ -77,7 +77,6 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
-        kptr->mix_betaxpsi(0);
 
         /* Update the wavefunctions */
         int istop = kptr->nstates / T->get_threads_per_node();
@@ -85,7 +84,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
         // Apply the non-local operators to a block of orbitals
         RT1 = new RmgTimer("3-MgridSubspace: AppNls");
-        AppNls(kptr, kptr->oldsint_local, kptr->Kstates[0].psi, kptr->nv, kptr->ns, kptr->Bns,
+        AppNls(kptr, kptr->newsint_local, kptr->Kstates[0].psi, kptr->nv, kptr->ns, kptr->Bns,
                0, std::min(ct.non_local_block_size, kptr->nstates));
         delete(RT1);
         int first_nls = 0;
@@ -97,7 +96,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
           int check = first_nls + T->get_threads_per_node();
           if(check > ct.non_local_block_size) {
               RT1 = new RmgTimer("3-MgridSubspace: AppNls");
-              AppNls(kptr, kptr->oldsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
+              AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
                      st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
               first_nls = 0;
               delete(RT1);
@@ -219,7 +218,6 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
-        kptr->mix_betaxpsi(0);
         // Projectors are rotated along with orbitals in Subdiag so no need to recalculate
         // after diagonalizing.
 
@@ -234,7 +232,6 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
-        kptr->mix_betaxpsi(1);
 
     }
         

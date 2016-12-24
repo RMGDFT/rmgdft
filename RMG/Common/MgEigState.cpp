@@ -201,7 +201,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     int pbasis = kptr->pbasis;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
-    double min_eig = kptr->Kstates[0].eig[0];
 
     /* Grab some memory */
     CalcType *res2_t = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
@@ -216,9 +215,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
     std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
-
-    if(ct.eig_parm.mucycles > 1)
-        kptr->mix_betaxpsi1(sp->istate);
 
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectrvely) */
@@ -410,7 +406,6 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
              * routine to update the orbital which is stored in a physical grid.
              */
 
-            //t1 = -0.3/fabs(min_eig);
             t1 = -ct.eig_parm.mg_timestep;
             CPP_pack_stop_axpy<CalcType> (sg_twovpsi_t, tmp_psi_t, t1, dimx, dimy, dimz);
 

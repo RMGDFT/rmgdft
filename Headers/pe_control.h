@@ -165,8 +165,6 @@ typedef struct
     double *localrhonlcc;
     double *localatomicrho;
 
-    double *oldsintR_local;
-    double *oldsintI_local;
     double *newsintR_local;
     double *newsintI_local;
 

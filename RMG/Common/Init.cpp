@@ -125,7 +125,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /* Allocate storage for non-local projectors */
     pct.newsintR_local = NULL;
-    pct.oldsintR_local = NULL;
 
     pct.localpp = NULL;
     pct.localrhoc = NULL;
@@ -460,8 +459,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete(RT2);
     }
 
-    //mix_betaxpsi(0);
-
 
     /*For random start, use charge density equal to compensating charge */
     if (ct.runflag == RANDOM_START)
@@ -541,7 +538,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
-        Kptr[kpt]->mix_betaxpsi(0);
     }
     delete RT3;
 
@@ -579,7 +575,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
             Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
-            Kptr[kpt]->mix_betaxpsi(0);
             delete RT3;
         }
 

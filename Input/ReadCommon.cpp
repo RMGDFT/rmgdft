@@ -638,11 +638,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used.\n",
                      "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5.\n");
 
-    If.RegisterInputKey("projector_mixing", &lc.prjmix, 0.0, 1.0, 0.5,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "Proportion of the current non-local projections to replace with the new projections after each scf step.\n ",
-                     "projector_mixing must lie in the range (0.0, 1.0). Resetting to the default value of 0.5.\n");
-
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.15, 1.0, 0.3,
                      CHECK_AND_FIX, OPTIONAL,
                      "Submatrix width to use as a fraction of the full spectrum.\n",

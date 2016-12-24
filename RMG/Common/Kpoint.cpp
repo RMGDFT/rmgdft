@@ -60,10 +60,6 @@ template void Kpoint<double>::random_init(void);
 template void Kpoint<std::complex <double> >::random_init(void);
 template void Kpoint<double>::orthogonalize(double *tpsi);
 template void Kpoint<std::complex <double> >::orthogonalize(std::complex <double> *tpsi);
-template void Kpoint<double>::mix_betaxpsi(int mix);
-template void Kpoint<std::complex <double> >::mix_betaxpsi(int mix);
-template void Kpoint<double>::mix_betaxpsi1(int istate);
-template void Kpoint<std::complex <double> >::mix_betaxpsi1(int istate);
 template void Kpoint<double>::write_occ(void);
 template void Kpoint<std::complex <double> >::write_occ(void);
 
@@ -840,47 +836,6 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
 }
 
-template <class KpointType> void Kpoint<KpointType>::mix_betaxpsi(int mix)
-{
-    if(mix) {
-
-        double scale = 1.0 - ct.prjmix;
-        for(int idx = 0;idx < this->sint_size;idx++) {
-            this->oldsint_local[idx] = scale * this->oldsint_local[idx];
-            this->oldsint_local[idx] = this->oldsint_local[idx] + ct.prjmix * this->newsint_local[idx];
-        }
-
-    }
-    else {
-
-        for(int idx=0;idx < this->sint_size;idx++) {
-            this->oldsint_local[idx] = this->newsint_local[idx];
-        }
-
-    }
-}
-
-template <class KpointType> void Kpoint<KpointType>::mix_betaxpsi1(int istate)
-{
-
-    double scale = pow(1.0 - ct.prjmix, (double)istate);
-    if(istate == 0) scale = 1.0 - ct.prjmix;
-    for (int ion = 0; ion < pct.num_nonloc_ions; ion++) {
-
-        /* For localized <beta|psi>, there is offset due to the ion*/
-        int loffset = istate * pct.num_nonloc_ions * ct.max_nl;
-        for(int idx=0;idx < ct.max_nl;idx++) 
-            this->oldsint_local[loffset + ion * ct.max_nl + idx] *= scale;
-
-        for(int idx=0;idx < ct.max_nl;idx++) {
-            this->oldsint_local[loffset + ion * ct.max_nl + idx] += 
-                (1.0 - scale) * this->newsint_local[loffset + ion * ct.max_nl + idx];
-
-        }
-
-    }
-
-}
 
 template <class KpointType> void Kpoint<KpointType>::write_occ(void)
 {
