@@ -66,30 +66,46 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
 #if GPU_ENABLED
             if(Kptr[kpt]->nl_weight != NULL) cudaFreeHost(Kptr[kpt]->nl_weight);
-            if(Kptr[kpt]->nl_Bweight != NULL) cudaFreeHost(Kptr[kpt]->nl_Bweight);
+            if((Kptr[kpt]->nl_Bweight != NULL) && ct.need_Bweight) cudaFreeHost(Kptr[kpt]->nl_Bweight);
 
             cudaError_t cuerr;
             // Allocate new storage
-            if(pct.num_tot_proj) {
+            if(pct.num_tot_proj) 
+            {
 
                 cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_weight , pbasis * pct.num_tot_proj * sizeof(KpointType) );
                 if(cuerr != cudaSuccess)
                     RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
 
-                cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_Bweight , pbasis * pct.num_tot_proj * sizeof(KpointType) );
-                if(cuerr != cudaSuccess)
-                    RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
+                if(ct.need_Bweight) 
+                {
+                    cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_Bweight , pbasis * pct.num_tot_proj * sizeof(KpointType) );
+                    if(cuerr != cudaSuccess)
+                        RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
+                }
+                else 
+                {
+                    Kptr[kpt]->nl_Bweight = Kptr[kpt]->nl_weight;
+                }
 
             }
 #else
             // Release old memory storage for weights
             if(Kptr[kpt]->nl_weight != NULL) delete [] Kptr[kpt]->nl_weight;
-            if(Kptr[kpt]->nl_Bweight != NULL) delete [] Kptr[kpt]->nl_Bweight;
+            if((Kptr[kpt]->nl_Bweight != NULL) && ct.need_Bweight) delete [] Kptr[kpt]->nl_Bweight;
 
             // Allocate new storage
-            if(pct.num_tot_proj) {
+            if(pct.num_tot_proj) 
+            {
                 Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis]();
-                Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis]();
+                if(ct.need_Bweight) 
+                {
+                    Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis]();
+                }
+                else
+                {
+                    Kptr[kpt]->nl_Bweight = Kptr[kpt]->nl_weight;
+                }
 
             }
 #endif
