@@ -80,7 +80,7 @@ void InitClebschGordan (int lmax, double *ap, int *lpx, int *lpl)
         }
 
 
-    delete ylm_array;
-    delete ylm_invert;
-    delete ylm_tem;
+    delete [] ylm_array;
+    delete [] ylm_invert;
+    delete [] ylm_tem;
 }
