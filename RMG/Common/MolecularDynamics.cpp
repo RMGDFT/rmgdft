@@ -34,6 +34,7 @@
 #include "typedefs.h"
 #include "RmgException.h"
 #include "RmgSumAll.h"
+#include "Atomic.h"
 #include "transition.h"
 
 
@@ -216,7 +217,8 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         // Get atomic rho for this ionic configuration and subtract from current rho
         int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
         double *arho = new double[FP0_BASIS];
-        lcao_get_rho(arho);
+        LcaoGetAtomicRho(arho);
+
         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
 
 
@@ -225,7 +227,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 	move_ions (ct.iondt);
 
         // Get atomic rho for new configuration and add back to rho
-        lcao_get_rho(arho);
+        LcaoGetAtomicRho(arho);
         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
         delete [] arho;
 

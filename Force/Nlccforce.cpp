@@ -25,7 +25,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "const.h"
+#include "params.h"
 #include "RmgTimer.h"
+#include "Atomic.h"
 #include "rmgtypedefs.h"
 #include "params.h"
 #include "typedefs.h"
@@ -47,6 +49,7 @@ void Nlccforce (double * rho, double * vxc, double *force_nlcc)
     double *gx = new double[3*FP0_BASIS];
     double *gy = gx + FP0_BASIS;
     double *gz = gx + 2*FP0_BASIS;
+    double *dum_array = new double[FP0_BASIS];
 
     ApplyGradient (vxc, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
@@ -56,8 +59,11 @@ void Nlccforce (double * rho, double * vxc, double *force_nlcc)
     
     force_tmp = new double[pct.num_loc_ions * 3];
 
+    InitLocalObject (dum_array, pct.localrhonlcc, ATOMIC_RHOCORE, true);
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
             pct.localrhonlcc, &FP0_BASIS, &zero, force_tmp, &ithree); 
+    delete [] pct.localrhonlcc;
+
     for(int ion1 = 0; ion1 <pct.num_loc_ions; ion1++)
     {
         int ion = pct.loc_ions_list[ion1];
@@ -68,6 +74,7 @@ void Nlccforce (double * rho, double * vxc, double *force_nlcc)
     }
     
 
+    delete [] dum_array;
     delete [] force_tmp;
     delete [] gx;
 

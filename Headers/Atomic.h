@@ -35,6 +35,10 @@
 
 #ifdef __cplusplus
 
+void InitLocalObject (double *sumobject, double * &lobject, int object_type, bool compute_lobject);
+void InitLocalObject(double *sumobject, int object_type);
+void LcaoGetAtomicRho(double *arho);
+
 class Atomic {
 
 private:

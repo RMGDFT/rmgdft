@@ -25,7 +25,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "const.h"
+#include "params.h"
 #include "RmgTimer.h"
+#include "Atomic.h"
 #include "rmgtypedefs.h"
 #include "params.h"
 #include "typedefs.h"
@@ -50,6 +52,7 @@ void Lforce (double * rho, double * vh, double *force)
     double *gy = gx + FP0_BASIS;
     double *gz = gy + FP0_BASIS;
     double *force_tmp = new double[pct.num_loc_ions * 3];
+    double *dum_array = new double[FP0_BASIS];
 
     int ithree = 3;
     double alpha = -get_vel_f(), zero = 0.0, mone = -1.0;
@@ -57,15 +60,17 @@ void Lforce (double * rho, double * vh, double *force)
 
     ApplyGradient (vh, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
-
+    InitLocalObject (dum_array, pct.localrhoc, ATOMIC_RHOCOMP, true);
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
             pct.localrhoc, &FP0_BASIS, &zero, force_tmp, &ithree); 
-
+    delete [] pct.localrhoc;
 
     ApplyGradient (rho, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
+    InitLocalObject (dum_array, pct.localpp, ATOMIC_LOCAL_PP, true);
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
            pct.localpp, &FP0_BASIS, &mone, force_tmp, &ithree); 
+    delete [] pct.localpp;
 
 
     for(int ion1 = 0; ion1 <pct.num_loc_ions; ion1++)
@@ -79,6 +84,7 @@ void Lforce (double * rho, double * vh, double *force)
     }
     
 
+    delete [] dum_array;
     delete [] force_tmp;
     delete [] gx;
 

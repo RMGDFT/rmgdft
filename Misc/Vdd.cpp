@@ -3,6 +3,7 @@
 #include <cmath>
 #include "const.h"
 #include "params.h"
+#include "Atomic.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "rmg_error.h"
@@ -150,7 +151,8 @@ void Vdd(double * rho)
 
     /*Get atomic charge density*/
     atomic_rho = new double[FP0_BASIS];
-    lcao_get_rho (atomic_rho); 
+    LcaoGetAtomicRho(atomic_rho);
+
 
     /* Array for storing indices of ions*/
     rel_index = new int[num_ions];

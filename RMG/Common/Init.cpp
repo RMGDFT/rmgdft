@@ -45,6 +45,7 @@
 #include "RmgException.h"
 #include "Functional.h"
 #include "Solvers.h"
+#include "Atomic.h"
 #include "pfft.h"
 #include "RmgParallelFft.h"
 
@@ -492,7 +493,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE)) {
         RT1 = new RmgTimer("2-Init: LcaoGetRho");
-        lcao_get_rho(rho);
+        LcaoGetAtomicRho(rho);
+
         if(ct.spin_flag) {
             if(pct.spinpe==0){
                 for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] *= ct.nel_up / ct.nel;

@@ -25,6 +25,7 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "Kpoint.h"
+#include "Atomic.h"
 #include "ErrorFuncs.h"
 #include "transition.h"
 
@@ -40,7 +41,12 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     /* Update items that change when the ionic coordinates change */
     RT1= new RmgTimer("3-ReinitIonicPotentials: init_nuc");
-    init_nuc (vnuc, rhoc, rhocore);
+    //init_nuc (vnuc, rhoc, rhocore);
+    double *dum_array = NULL;
+    InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+    InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
+    InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
+
 //    InitLocalBackward(vnuc, rhoc, rhocore);
     delete RT1;
     RT1= new RmgTimer("3-ReinitIonicPotentials: get_QI");

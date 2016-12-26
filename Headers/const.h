@@ -242,4 +242,10 @@
 #define CHARGE_ANALYSIS_NONE 0 
 #define CHARGE_ANALYSIS_VORONOI 1 
 
+// Constants for InitLocalObject
+#define ATOMIC_LOCAL_PP  0
+#define ATOMIC_RHO       1
+#define ATOMIC_RHOCOMP   2
+#define ATOMIC_RHOCORE   3
+
 #endif /* CONST_H_INCLUDED */

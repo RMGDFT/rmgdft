@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "const.h"
+#include "params.h"
+#include "Atomic.h"
 #include "RmgTimer.h"
 #include "rmgtypedefs.h"
 #include "params.h"
@@ -60,9 +62,14 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
 
     ApplyGradient (dvh, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
+    double *dum_array = new double[FP0_BASIS];
+    InitLocalObject (dum_array, pct.localatomicrho, ATOMIC_RHO, true);
 
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
             pct.localatomicrho, &FP0_BASIS, &zero, force_tmp, &ithree); 
+
+    delete [] pct.localatomicrho;
+    delete [] dum_array;
 
     for(int ion1 = 0; ion1 <pct.num_loc_ions; ion1++)
     {

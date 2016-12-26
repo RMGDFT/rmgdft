@@ -16,9 +16,10 @@ Atomic.cpp
 Atomic_Cbindings.cpp
 InitPseudo.cpp
 InitQfunct.cpp
+InitLocalObject.cpp
 US_Cbindings.cpp
 lcao_get_rho.c
-init_nuc.c
+#init_nuc.c
 init_efield.c
 weight_shift_center.c
 ylmr2.c
