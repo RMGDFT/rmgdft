@@ -250,6 +250,9 @@ ct.state_block_size);
 
     }
 
+    delete [] state_end;
+    delete [] state_start;
+
     GlobalSums(par_gamma_allions, 3*pct.num_owned_ions*max_nl2, pct.kpsub_comm);
     GlobalSums(par_omega_allions, 3*pct.num_owned_ions*max_nl2, pct.kpsub_comm);
 
