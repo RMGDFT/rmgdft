@@ -182,7 +182,8 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     }
 
     // Responsibility for freeing lobject lies in the calling routine
-    if(compute_lobject) lobject = new double[pct.num_loc_ions * FP0_BASIS + 128]();
+    size_t alloc = (size_t)pct.num_loc_ions * (size_t)FP0_BASIS + 128;
+    if(compute_lobject) lobject = new double[alloc]();
 
     int ion1;
     for (ion1 = 0; ion1 < pct.num_loc_ions; ion1++)
@@ -277,7 +278,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                 }
 
                                 sumobject[idx] += t1;
-                                if(compute_lobject) lobject[ion1 * FP0_BASIS + idx] += t1;
+                                if(compute_lobject) lobject[(size_t)ion1 * (size_t)FP0_BASIS + idx] += t1;
 
                             }                           /* end for */
 
