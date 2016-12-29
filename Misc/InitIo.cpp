@@ -275,6 +275,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     // Allocate storage for trade_images and global sums routines
     Rmg_T = new TradeImages(Rmg_G);
+    if(ct.verbose) Rmg_T->set_timer_mode(true);
     Rmg_T->set_MPI_comm(pct.grid_comm);
 
     GlobalSumsInit();
