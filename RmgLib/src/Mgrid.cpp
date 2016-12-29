@@ -88,6 +88,7 @@ Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
     L = lptr;
     T = tptr;
     level_flag = 0;
+    this->timer_mode = false;
 }
 
 Mgrid::~Mgrid(void)
@@ -95,6 +96,11 @@ Mgrid::~Mgrid(void)
     if(level_flag && !Mgrid::level_warning)
         std::cout << "Warning: too many multigrid levels were requested " << level_flag << " times.\n";
     Mgrid::level_warning = true;   // Only want to print one warning
+}
+
+void Mgrid::set_timer_mode(bool verbose)
+{
+    Mgrid::timer_mode = verbose;
 }
 
 
@@ -153,9 +159,12 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundaryflag)
 {
-    RmgTimer RT0("Mgrid_solv");
-    std::string timername = "Mgrid_solv: level " + boost::to_string(level);
-    RmgTimer RT1(timername.c_str());
+    RmgTimer *RT = NULL;
+    std::string timername;
+    if(this->timer_mode) {
+        timername = "Mgrid_solv: level " + boost::to_string(level);
+        RT = new RmgTimer(timername.c_str());
+    }
 
     int i;
     int cycl;
@@ -218,7 +227,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
     if (level == max_levels)
     {
-
+        if(this->timer_mode) delete RT;
         return;
 
     }                           /* end if */
@@ -233,6 +242,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     // Since this is normally called inside loops we don't print an error message each time but wait until the destructor is called.
     if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
         level_flag++;
+        if(this->timer_mode) delete RT;
         return;
     }
 
@@ -305,6 +315,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 
     }                           /* for mu_cyc */
 
+    if(this->timer_mode) delete RT;
 }
 
 template <typename RmgType>

@@ -387,7 +387,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
                         (double *)m_distA, &ione, &ione, m_f_desca);
         delete(RT2);
     }
-    RT2 = new RmgTimer("Diagonalization: fs-Gather3");
+    RT2 = new RmgTimer("4-Diagonalization: fs-Gather3");
     MainSp->GatherMatrix(A, m_distA);
     MainSp->BcastRoot(A, factor * n * n, MPI_DOUBLE);
     delete(RT2);

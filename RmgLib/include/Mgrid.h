@@ -43,9 +43,14 @@ private:
     int level_flag;
     static int level_warning;
 
+    // Timer mode 0=off (default) 1=on
+    bool timer_mode;
+
 public:
     Mgrid(Lattice *lptr, TradeImages *tptr);
    ~Mgrid(void);
+
+    void set_timer_mode(bool verbose);
 
     template <typename RmgType> void mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 
