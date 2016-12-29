@@ -26,7 +26,7 @@ endif(NOT FFTW_LIBRARIES)
 
 # use libfftw3_mpi.so if you have errors like "fftw_mktensor_4d"
 #find_library (FFTW_MPI_LIBRARIES NAMES libfftw3_mpi.so)
-find_library (FFTW_MPI_LIBRARIES NAMES libfftw3_mpi.a)
+find_library (FFTW_MPI_LIBRARIES NAMES fftw3_mpi)
 
 # handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if
 # all listed variables are TRUE

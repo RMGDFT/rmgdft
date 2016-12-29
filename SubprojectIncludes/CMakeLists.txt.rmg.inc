@@ -1,3 +1,6 @@
+if(USE_NUMA_INTERNAL)
+target_link_libraries(${rmg} ${NUMA_LIBRARIES})
+endif(USE_NUMA_INTERNAL)
 if(USE_LIBXC)
 add_dependencies(${rmg} libxc)
 target_link_libraries(${rmg} ${LIBXC_LIBRARIES})
@@ -7,6 +10,9 @@ target_link_libraries( ${rmg} ${LIBSPG_LIBRARIES})
 # static libraries are created for the object files in each subdir. Duplicates
 # are needed to handle circular references
 target_link_libraries( ${rmg} RmgLib)
+if(USE_NUMA_INTERNAL)
+target_link_libraries( ${rmg} RMG_Common ${NUMA_LIBRARIES})
+endif(USE_NUMA_INTERNAL)
 target_link_libraries( ${rmg} InternalPseudo)
 target_link_libraries( ${rmg} Finite_diff RMG_Common RmgLib ${ZLIB} ${FFTW_LIBRARIES})
 target_link_libraries( ${rmg} Misc RMG_Common Finite_diff)

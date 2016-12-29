@@ -191,6 +191,14 @@ if (${UNIX})
     target_link_libraries (rmg-on ${RTLIB})
 endif(${UNIX})
 
+find_package(NUMA)
+if(NUMA_FOUND AND NUMA_INCLUDES)
+    include_directories(${NUMA_INCLUDES})
+    add_definitions(-DUSE_NUMA)
+    set(USE_NUMA_INTERNAL 1)
+else(NUMA_FOUND AND NUMA_INCLUDES)
+    set(USE_NUMA_INTERNAL 0)
+endif(NUMA_FOUND AND NUMA_INCLUDES)
 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

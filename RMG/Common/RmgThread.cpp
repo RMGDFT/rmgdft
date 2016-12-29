@@ -33,6 +33,9 @@
 #include "Kpoint.h"
 #include "Subdiag.h"
 #include "Solvers.h"
+#ifdef USE_NUMA
+    #include "numa.h"
+#endif
 #if GPU_ENABLED
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -42,6 +45,10 @@
 
 // Main thread function specific to subprojects
 void *run_threads(void *v) {
+
+#ifdef USE_NUMA
+    numa_set_localalloc();
+#endif
 
     Kpoint<double> *kptr_d;
     Kpoint<std::complex<double>> *kptr_c;
