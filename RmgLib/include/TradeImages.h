@@ -62,6 +62,9 @@ private:
     /// Synchronous/asynchronous mode. 0=asnychronous (default) 1=synchronous
     int mode;
 
+    // Timer mode 0=off (default) 1=on
+    bool timer_mode;
+
     // rank of this node in comm
     int gridpe;
 
@@ -102,6 +105,7 @@ public:
     ~TradeImages(void);
     void set_synchronous_mode(void);
     void set_asynchronous_mode(void);
+    void set_timer_mode(bool verbose);
     void set_MPI_comm(MPI_Comm comm);
     MPI_Comm get_MPI_comm(void);
     void set_gridpe(int gridpe);

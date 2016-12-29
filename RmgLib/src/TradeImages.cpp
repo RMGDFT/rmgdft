@@ -111,6 +111,7 @@ TradeImages::TradeImages(BaseGrid *BG)
      TradeImages::max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * T->get_threads_per_node();
 
      TradeImages::mode = ASYNC_MODE;
+     TradeImages::timer_mode = false;
      TradeImages::init_trade_imagesx_async();        
 
      return;
@@ -142,6 +143,11 @@ TradeImages::~TradeImages(void)
 }
 
 
+void TradeImages::set_timer_mode(bool verbose)
+{
+    TradeImages::timer_mode = verbose;
+}
+
 void TradeImages::set_synchronous_mode(void)
 {
     TradeImages::mode = SYNC_MODE;
@@ -163,8 +169,8 @@ MPI_Comm TradeImages::get_MPI_comm(void)
 template <typename RmgType>
 void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type)
 {
-    RmgTimer RT("Trade images: trade_imagesx");
-    RmgTimer RT1("Trade images");
+    RmgTimer *RT=NULL;
+    if(this->timer_mode) RT = new RmgTimer("Trade images: trade_imagesx");
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim;
     int ixs, iys, ixs2, iys2, c1, c2, alloc;
     int xlen, ylen, zlen, stop, tid;
@@ -182,11 +188,12 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
     if(TradeImages::mode == ASYNC_MODE) {
         if(type == CENTRAL_TRADE) {
             TradeImages::trade_imagesx_central_async (f, w, dimx, dimy, dimz, images);
+            if(this->timer_mode) delete RT;
             return;
         }
         else {
             TradeImages::trade_imagesx_async (f, w, dimx, dimy, dimz, images);
-            return;
+            if(this->timer_mode) return;
         }
     }
 
@@ -437,6 +444,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
     }                           /* end for */
 
+    if(this->timer_mode) delete RT;
 
 } // end trade_imagesx
 
@@ -444,8 +452,9 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 template <typename RmgType>
 void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int type)
 {
-    RmgTimer RT("Trade images: trade_images");
-    RmgTimer RT1("Trade images");
+    RmgTimer *RT=NULL;
+    if(this->timer_mode) RT = new RmgTimer("Trade images: trade_images");
+
     int i, j;
     int incx, incy, incz;
     int xmax, ymax, zmax;
@@ -471,6 +480,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     if(TradeImages::mode == ASYNC_MODE) {
         if(type == CENTRAL_TRADE) {
             TradeImages::trade_images1_central_async (mat, dimx, dimy, dimz);
+            if(this->timer_mode) delete RT;
             return;
         }
     }
@@ -669,7 +679,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 //    if ((ct.boundaryflag == CLUSTER) || (ct.boundaryflag == SURFACE))
 //        set_bc (mat, dimx, dimy, dimz, 1, 0.0);
 
-
+    if(this->timer_mode) delete RT;
 }
 
 
