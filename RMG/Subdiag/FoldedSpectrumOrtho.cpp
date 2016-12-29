@@ -86,7 +86,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     if(ct.is_gamma) factor = 1;
 
     // Overlaps
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: Gram-overlaps");
+    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs-Gram-overlaps");
     if(!B) {
 #if GPU_ENABLED
         cublasXtDsyrk(ct.cublasXt_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C, n);
@@ -121,7 +121,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
     // Cholesky factorization
-    RT1 = new RmgTimer("Diagonalization: fs: Gram-cholesky");
+    RT1 = new RmgTimer("Diagonalization: fs-Gram-cholesky");
 #if GPU_ENABLED && MAGMA_LIBS
     magma_dpotrf(MagmaLower, n, C, n, &info);
 #else
@@ -130,7 +130,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
 
-    RT1 = new RmgTimer("Diagonalization: fs: Gram-update");
+    RT1 = new RmgTimer("Diagonalization: fs-Gram-update");
     // Get inverse of diagonal elements
     for(int ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
 
@@ -173,7 +173,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
     // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
     // greatly reduces the network bandwith required at the cost of doing local transposes.
-    RT1 = new RmgTimer("Diagonalization: fs: Gram-allreduce");
+    RT1 = new RmgTimer("Diagonalization: fs-Gram-allreduce");
 //    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, fs_comm);
 
     for(int st1 = eig_start;st1 < eig_stop;st1++) {

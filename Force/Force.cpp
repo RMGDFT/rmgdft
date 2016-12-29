@@ -207,7 +207,7 @@ void output_force(double *force_tmp, char *desc)
 
         for (int ion = 0; ion < ct.num_ions; ion++)
         {
-            printf ("\n Ion %d Force  %10.7f  %10.7f  %10.7f",
+            printf ("\n Ion %d Force  %16.10f  %16.10f  %16.10f",
                     ion, force_tmp[3 * ion],force_tmp[3 * ion + 1],force_tmp[3 * ion + 2]);
         }
     }

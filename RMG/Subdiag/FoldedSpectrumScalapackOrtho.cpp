@@ -112,7 +112,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     }
 
     // Overlaps
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: Gram-overlaps");
+    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs-Gram-overlaps");
     if(!B) {
 #if GPU_ENABLED
         custat = cublasSetVector(n * n , sizeof(KpointType), V, 1, Vgpu, 1 );
@@ -135,7 +135,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 
 
     // Cholesky factorization
-    RT1 = new RmgTimer("Diagonalization: fs: Gram-cholesky");
+    RT1 = new RmgTimer("4-Diagonalization: fs-Gram-cholesky");
 #if GPU_ENABLED && MAGMA_LIBS
     magma_dpotrf_gpu(MagmaLower, n, Cgpu, n, &info);
     custat = cublasGetVector(n * n, sizeof( KpointType ), Cgpu, 1, C, 1 );
@@ -156,7 +156,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 
 
 
-    RT1 = new RmgTimer("Diagonalization: fs: Gram-update");
+    RT1 = new RmgTimer("4-Diagonalization: fs-Gram-update");
     // Get inverse of diagonal elements
     for(int ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
 
@@ -199,7 +199,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 
     // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
     // greatly reduces the network bandwith required at the cost of doing local transposes.
-    RT1 = new RmgTimer("Diagonalization: fs: Gram-allreduce");
+    RT1 = new RmgTimer("4-Diagonalization: fs-Gram-allreduce");
     for(int i=0;i < n*n;i++)V[i] = ZERO_t;
 #if 0
     for(int st1 = eig_start;st1 < eig_stop;st1++) {

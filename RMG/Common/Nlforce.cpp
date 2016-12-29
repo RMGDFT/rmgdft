@@ -200,7 +200,7 @@ ct.state_block_size);
             int num_state_thisblock = state_end[ib] - state_start[ib];
 
 
-            RT1 = new RmgTimer("2-Force: non-local: betaxpsi");
+            RT1 = new RmgTimer("2-Force: non-local-betaxpsi");
             Betaxpsi(Kptr[kpt], ct.num_states,                       num_state_thisblock, sint_derx, Kptr[kpt]->nl_weight);
             Betaxpsi(Kptr[kpt], ct.num_states+ ct.state_block_size,  num_state_thisblock, sint_dery, Kptr[kpt]->nl_weight);
             Betaxpsi(Kptr[kpt], ct.num_states+2*ct.state_block_size, num_state_thisblock, sint_derz, Kptr[kpt]->nl_weight);
@@ -213,7 +213,7 @@ ct.state_block_size);
             }
             delete RT1;
 
-            RT1 = new RmgTimer("2-Force: non-local: partial gamma");
+            RT1 = new RmgTimer("2-Force: non-local-partial gamma");
             nion = -1;
             for (ion = 0; ion < pct.num_owned_ions; ion++)
             {
@@ -256,7 +256,7 @@ ct.state_block_size);
     GlobalSums(par_gamma_allions, 3*pct.num_owned_ions*max_nl2, pct.kpsub_comm);
     GlobalSums(par_omega_allions, 3*pct.num_owned_ions*max_nl2, pct.kpsub_comm);
 
-    RT1 = new RmgTimer("2-Force: non-local: veff grad");
+    RT1 = new RmgTimer("2-Force: non-local-veff grad");
     OrbitalType *gx = new OrbitalType[FP0_BASIS];
     OrbitalType *gy = new OrbitalType[FP0_BASIS];
     OrbitalType *gz = new OrbitalType[FP0_BASIS];
@@ -274,10 +274,10 @@ ct.state_block_size);
 
         nh = ct.sp[iptr->species].nh;
 
-        RT1 = new RmgTimer("2-Force: non-local: get gamma");
+        RT1 = new RmgTimer("2-Force: non-local-get gamma");
         GetGamma (gamma, ion, nh, Kptr);
         delete RT1;
-        RT1 = new RmgTimer("2-Force: non-local: nlforce_par_Q");
+        RT1 = new RmgTimer("2-Force: non-local-nlforce_par_Q");
         nlforce_par_Q ((double *)gx, (double *)gy, (double *)gz, gamma, gion, iptr, nh, &qforce[3 * gion]);
         delete RT1;
 
@@ -326,11 +326,11 @@ ct.state_block_size);
         //PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr);
         par_gamma = &par_gamma_allions[ion * 3 * max_nl2];
         par_omega = &par_omega_allions[ion * 3 * max_nl2];
-        RT1 = new RmgTimer("2-Force: non-local: nlforce_par_gamma");
+        RT1 = new RmgTimer("2-Force: non-local-nlforce_par_gamma");
         nlforce_par_gamma (par_gamma, gion, nh, &tmp_force_gamma[3*gion]);
         delete RT1;
 
-        RT1 = new RmgTimer("2-Force: non-local: nlforce_par_omega");
+        RT1 = new RmgTimer("2-Force: non-local-nlforce_par_omega");
         nlforce_par_omega (par_omega, gion, nh, &tmp_force_omega[3*gion]);
         delete RT1;
 

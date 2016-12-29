@@ -54,7 +54,7 @@
 #endif
 
 
-#define FOLDED_GSE 1
+#define FOLDED_GSE 0
 
 
 
@@ -78,7 +78,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
 		double *eigs, KpointType *C, Scalapack* MainSp, int driver, int blocksize)
 {
 
-    RmgTimer RT0("Diagonalization: fs:");
+    RmgTimer RT0("4-Diagonalization: fs");
     RmgTimer *RT1, *RT2;
 
     KpointType ZERO_t(0.0);
@@ -208,7 +208,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
     //  Transform problem to standard eigenvalue form. For now this is done in the Main sp using
     // pdsygst which is equivalent to FOLDED_GSE=1 in the non-scalapack case.
     {
-        RT2 = new RmgTimer("Diagonalization: fs: transform");
+        RT2 = new RmgTimer("4-Diagonalization: fs-transform");
 
         // Copy A and B into m_distA, m_distB
         //MainSp->CopySquareMatrixToDistArray(A, m_distA, n, m_f_desca);
@@ -224,7 +224,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
     }
 #else
     {
-        RT2 = new RmgTimer("Diagonalization: fs: transform");
+        RT2 = new RmgTimer("4-Diagonalization: fs-transform");
 
         // We have to gather Adist back to A and then broadcast it to all nodes in the root
         MainSp->GatherMatrix(A, Adist);
@@ -245,7 +245,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
 
     // Copy transformed matrix back to local matrix and then broadcast to other nodes
     // Possible optimization is to only broadcast to root of each subscalapack
-    RT2 = new RmgTimer("Diagonalization: fs: Gather2");
+    RT2 = new RmgTimer("4-Diagonalization: fs-Gather2");
     MainSp->GatherMatrix(A, m_distA);
     MainSp->BcastRoot(A, factor * n * n, MPI_DOUBLE);
     delete(RT2);
@@ -263,7 +263,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
      
     // Do the submatrix along the diagonal to get starting values for folded spectrum
     //--------------------------------------------------------------------
-    RT2 = new RmgTimer("Diagonalization: fs: submatrix");
+    RT2 = new RmgTimer("4-Diagonalization: fs-submatrix");
     {
 
         for(int ix = 0;ix < n_win;ix++){
@@ -282,7 +282,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
         pdsyevd_(jobz, cuplo, &n_win, distA, &ione, &ione, s_s_desca, &eigs[n_start],
                 distV, &ione, &ione, s_s_desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
         lwork = 8*(int)lwork_tmp;
-lwork = 6*n*n;
+        //lwork = 6*n*n;
         liwork = 16*n;
         double *work = new double[lwork];
         int *iwork = new int[liwork];
@@ -356,7 +356,7 @@ lwork = 6*n*n;
     // Since we have the full Asave present on every physical node we can parallelize the iteration over
     // all of them without communication but we have to recompute our starting and stopping points since
     // each scalapack instance may consist of many physical nodes
-    RT2 = new RmgTimer("Diagonalization: fs: iteration");
+    RT2 = new RmgTimer("4-Diagonalization: fs-iteration");
     FoldedSpectrumIterator(Asave, n, &eigs[eig_start + offset], chunksize, &V[(eig_start + offset) * n], -0.5, 10, driver);
     delete(RT2);
      
@@ -367,7 +367,7 @@ lwork = 6*n*n;
     for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
     // Make sure all PE's have all eigenvectors.
-    RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
+    RT2 = new RmgTimer("4-Diagonalization: fs-allreduce1");
     MPI_Allgatherv(MPI_IN_PLACE, chunksize * n * factor, MPI_DOUBLE, V, fs_chunkcounts, fs_chunkstart, MPI_DOUBLE, MainSp->GetComm());
     delete(RT2);
 
@@ -375,19 +375,19 @@ lwork = 6*n*n;
 #if !FOLDED_GSE
 
     // Gram-Schmidt ortho for eigenvectors.
-    RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
+    RT2 = new RmgTimer("4-Diagonalization: fs-Gram-Schmidt");
     MainSp->CopySquareMatrixToDistArray(V, m_distA, n, m_f_desca);
     FoldedSpectrumScalapackOrtho(n, eig_start+offset, eig_start+offset + chunksize, fs_chunkcounts, fs_chunkstart, m_distA, V, NULLptr, Asave, Bsave, MainSp);
     delete(RT2);
 
     // Back transform eigenvectors
     {
-        RT2 = new RmgTimer("Diagonalization: fs: back transform");
+        RT2 = new RmgTimer("4-Diagonalization: fs-back transform");
         pdtrsm_("Left", cuplo, "T", "N", &n, &n, &rone, (double *)m_distB, &ione, &ione, m_f_desca,
                         (double *)m_distA, &ione, &ione, m_f_desca);
         delete(RT2);
     }
-    RT2 = new RmgTimer("Diagonalization: fs: Gather3");
+    RT2 = new RmgTimer("Diagonalization: fs-Gather3");
     MainSp->GatherMatrix(A, m_distA);
     MainSp->BcastRoot(A, factor * n * n, MPI_DOUBLE);
     delete(RT2);

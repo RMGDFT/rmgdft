@@ -70,7 +70,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 		double *eigs, double *work, int lwork, int *iwork, int liwork, int driver)
 {
 
-    RmgTimer RT0("Diagonalization: fs:");
+    RmgTimer RT0("4-Diagonalization: fs");
     RmgTimer *RT1;
 
     KpointType ONE_t(1.0);
@@ -125,10 +125,10 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 
 
-    RT1 = new RmgTimer("Diagonalization: fs: folded");
+    RT1 = new RmgTimer("4-Diagonalization: fs: folded");
 
     //  Transform problem to standard eigenvalue problem
-    RmgTimer *RT2 = new RmgTimer("Diagonalization: fs: transform");
+    RmgTimer *RT2 = new RmgTimer("4-Diagonalization: fs: transform");
 
     int its=7;
 #if GPU_ENABLED
@@ -169,7 +169,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
  
     // Do the submatrix along the diagonal to get starting values for folded spectrum
     //--------------------------------------------------------------------
-    RT2 = new RmgTimer("Diagonalization: fs: submatrix");
+    RT2 = new RmgTimer("4-Diagonalization: fs: submatrix");
     for(int ix = 0;ix < n_win;ix++){
         for(int iy = 0;iy < n_win;iy++){
             G[ix*n_win + iy] = Asave[(n_start+ix)*n + n_start + iy];
@@ -232,7 +232,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 
     // Apply folded spectrum to this PE's range of eigenvectors
-    RT2 = new RmgTimer("Diagonalization: fs: iteration");
+    RT2 = new RmgTimer("4-Diagonalization: fs: iteration");
     FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 10, driver);
     delete(RT2);
 
@@ -243,13 +243,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
     // Make sure all PE's have all eigenvectors.
-    RT2 = new RmgTimer("Diagonalization: fs: allreduce1");
+    RT2 = new RmgTimer("4-Diagonalization: fs: allreduce1");
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
     delete(RT2);
 
 
     // Gram-Schmidt ortho for eigenvectors.
-    RT2 = new RmgTimer("Diagonalization: fs: Gram-Schmidt");
+    RT2 = new RmgTimer("4-Diagonalization: fs: Gram-Schmidt");
 
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, driver, fs_comm);
     for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];

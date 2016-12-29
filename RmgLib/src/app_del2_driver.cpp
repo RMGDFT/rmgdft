@@ -44,7 +44,6 @@ template <typename RmgType>
 double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
 {
 
-    RmgTimer RT("App_del2");
     int sbasis;
     RmgType *rptr;
     double cc = 0.0;

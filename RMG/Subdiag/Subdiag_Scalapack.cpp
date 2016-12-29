@@ -70,7 +70,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
 //  folded spectrum with scalapack is experimental. Uncomment the second line if you want to try it.
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
-    use_folded = false;
+    //use_folded = false;
 
     int izero = 0;
     int ione=1;

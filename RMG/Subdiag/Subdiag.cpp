@@ -150,7 +150,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     // Apply operators on each wavefunction
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: apply operators");
-    RmgTimer *RT2 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
+    RmgTimer *RT2 = new RmgTimer("4-Diagonalization: AppNls");
 
     // Apply Nls
     AppNls(kptr, kptr->newsint_local, kptr->Kstates[0].psi, kptr->nv, kptr->ns, kptr->Bns,
