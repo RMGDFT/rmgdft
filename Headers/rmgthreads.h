@@ -2,6 +2,10 @@
 #define RMG_THREADS_H 1
 
 
+#ifdef USE_NUMA
+    #include <numa.h>
+#endif
+
 /* Thread control structures */
 typedef struct
 {

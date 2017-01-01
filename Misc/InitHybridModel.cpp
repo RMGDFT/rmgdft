@@ -28,6 +28,11 @@
 #include <omp.h>
 #include <transition.h>
 
+#ifdef USE_NUMA
+    #include <numa.h>
+#endif
+
+
 void *run_threads(void *v);
 static BaseThread *B;
 
@@ -64,6 +69,8 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
             ranks[i] = -1;
         }
     }
+
+
 
 
     pct.mpi_local_ranks = new int[pct.procs_per_host];
@@ -161,11 +168,39 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
     }
 
-
     if(ct.spin_flag) nthreads /= 2;
     ct.THREADS_PER_NODE = nthreads;
     B = BaseThread::getBaseThread(nthreads);
     B->RegisterThreadFunction(run_threads);
+
+#ifdef USE_NUMA
+    // Determine if this is a numa system and setup up policies correctly if that is the case.
+    // We need to optimize the interaction between MPI procs, threads and numa nodes.
+    //
+    // Case 1: A single MPI process per host.
+    //         Main thread data structures prefer node interleaved memory allocation
+    //         Worker thread data structures prefer node local memory allocation
+    // Case 2: 1 MPI process per each core on a host
+    //         Both main and worker threads prefer node local memory allocation 
+    // Case 3: Number of MPI procs per host is equal to the number of numa nodes
+    //         Both main and worker threads prefer node local memory allocation
+    //         but the key is to lock each proc and it's threads to separate nodes.
+    // Case 4: number of cores > MPI_procs > numa_nodes
+    
+    if(numa_available() < 0)
+    {
+        pct.has_numa = false;
+    }
+    else
+    {
+        pct.has_numa = true;
+        pct.numa_nodes_per_host = numa_max_node();
+    }
+
+    if(pct.has_numa && (pct.numa_nodes_per_host == pct.procs_per_host)) {
+        numa_set_interleave_mask(&numa_all_nodes);
+    }
+#endif
 
 }
 

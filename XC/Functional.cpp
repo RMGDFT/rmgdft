@@ -213,6 +213,8 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
    RmgTimer *RT2 = new RmgTimer("5-Functional: vxc local");
    if(!spinflag) {
 
+       double etxcl=0.0, vtxcl=0.0, rhonegl=0.0;
+#pragma omp parallel for private( ex, ec, vx, vc ) reduction(+:etxcl,vtxcl), reduction(-:rhonegl)
        // spin unpolarized  
        for(int ix=0;ix < this->pbasis;ix++) {
 
@@ -222,8 +224,8 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
                __funct_MOD_xc( &trho, &ex, &ec, &vx[0], &vc[0] );
                v[ix] = vx[0] + vc[0];
-               etxc = etxc + ( ex + ec ) * trho;
-               vtxc = vtxc + v[ix] * rho[ix];
+               etxcl = etxcl + ( ex + ec ) * trho;
+               vtxcl = vtxcl + v[ix] * rho[ix];
 
            }
 
@@ -232,14 +234,17 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
                __funct_MOD_xc( &rhotem, &ex, &ec, &vx[0], &vc[0] );
                double frac = std::cbrt(atrho/SMALL_CHARGE);
                v[ix] = (vx[0] + vc[0]) * frac;
-               etxc = etxc + ( ex + ec ) * trho * frac;
-               vtxc = vtxc + v[ix] * rho[ix];
+               etxcl = etxcl + ( ex + ec ) * trho * frac;
+               vtxcl = vtxcl + v[ix] * rho[ix];
                 
            }
 
-           if(rho[ix] < 0.0) rhoneg[0] = rhoneg[0] - rho[ix];
+           if(rho[ix] < 0.0) rhonegl = rhonegl - rho[ix];
 
        } 
+       etxc += etxcl;
+       vtxc += vtxcl;
+       rhoneg[0] += rhonegl;
 
    } 
    else {
@@ -360,6 +365,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
 
     RmgTimer *RT4 = new RmgTimer("5-Functional: libxc");
+
+#pragma omp parallel for reduction(+:etxcgc,vtxcgc)
     for(int k=0;k < this->pbasis;k++) {
 
         double arho = fabs(rhoout[k]);

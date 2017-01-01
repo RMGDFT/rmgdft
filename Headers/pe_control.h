@@ -35,6 +35,12 @@ typedef struct
     // Number of cpu cores per physical host
     int ncpus;
 
+    // Numa flag
+    bool has_numa;
+
+    // Numa nodes per host
+    int numa_nodes_per_host;
+
     // Local rank of this proc
     int local_rank;
 
