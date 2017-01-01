@@ -67,7 +67,7 @@ static double occupied_tol = 0.01;
 template <typename OrbitalType>
 void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 {
-    RmgTimer RT0("Davidson"), *RT1;
+    RmgTimer RT0("6-Davidson"), *RT1;
 
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
@@ -135,10 +135,10 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
     // Apply Hamiltonian to current set of eigenvectors. At the current time
     // kptr->ns is also computed in ApplyHamiltonianBlock by AppNls and stored in kptr->ns
-    RT1 = new RmgTimer("Davidson: Betaxpsi");
+    RT1 = new RmgTimer("6-Davidson: Betaxpsi");
     Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
     delete RT1;
-    RT1 = new RmgTimer("Davidson: apply hamiltonian");
+    RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
     double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot); 
     delete RT1;
     OrbitalType *s_psi = kptr->ns;
@@ -147,7 +147,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     for(int st1 = 0;st1 < nstates;st1++) eigs[st1] = kptr->Kstates[st1].eig[0];
 
     // Compute A matrix
-    RT1 = new RmgTimer("Davidson: matrix setup/reduce");
+    RT1 = new RmgTimer("6-Davidson: matrix setup/reduce");
     RmgGemm(trans_a, trans_n, nbase, nbase, pbasis, alphavel, psi, pbasis, h_psi, pbasis, beta, hr, ct.max_states, 
             NULLptr, NULLptr, NULLptr, false, false, false, false);
 
@@ -206,7 +206,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         }
 
         // expand the basis set with the residuals ( H - e*S )|psi>
-        RT1 = new RmgTimer("Davidson: generate residuals");
+        RT1 = new RmgTimer("6-Davidson: generate residuals");
         RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, false, false, false);
 
@@ -219,14 +219,14 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         delete RT1;
 
         // Apply preconditioner
-        RT1 = new RmgTimer("Davidson: precondition");
+        RT1 = new RmgTimer("6-Davidson: precondition");
         DavPreconditioner (kptr, &psi[nbase*pbasis], fd_diag, &eigsw[nbase], vtot, notconv, avg_potential);
         delete RT1;
 
         // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials
         // but that is OK. The goal is to get the magnitudes of all of the vectors being passed to the
         // diagonalizer roughly equal to improve stability.
-        RT1 = new RmgTimer("Davidson: normalization");
+        RT1 = new RmgTimer("6-Davidson: normalization");
         double *norms = new double[notconv]();
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis;idx++) norms[st1] += vel * std::norm(psi[(st1 + nbase)*pbasis + idx]);
@@ -243,18 +243,18 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
 
         // Apply Hamiltonian to the new vectors
-        RT1 = new RmgTimer("Davidson: Betaxpsi");
+        RT1 = new RmgTimer("6-Davidson: Betaxpsi");
         newsint = kptr->newsint_local + nbase*pct.num_nonloc_ions*ct.max_nl;
         Betaxpsi (kptr, nbase, notconv, newsint, kptr->nl_weight);
         delete RT1;
 
-        RT1 = new RmgTimer("Davidson: apply hamiltonian");
+        RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
         ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot);
         delete RT1;
 
 
         // Update the reduced Hamiltonian and S matrices
-        RT1 = new RmgTimer("Davidson: matrix setup/reduce");
+        RT1 = new RmgTimer("6-Davidson: matrix setup/reduce");
         RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alphavel, psi, pbasis, &h_psi[nbase*pbasis], pbasis, beta, &hr[nbase*ct.max_states], ct.max_states, 
                 NULLptr, NULLptr, NULLptr, false, false, false, false);
 
@@ -296,7 +296,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             }
         }
 
-        RT1 = new RmgTimer("Davidson: diagonalization");
+        RT1 = new RmgTimer("6-Davidson: diagonalization");
         int info = GeneralDiag(hr, sr, eigsw, vr, nbase, nstates, ct.max_states, ct.subdiag_driver);
         delete RT1;
         if(info) {
@@ -369,7 +369,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         if(((steps == (max_steps-1)) || ((nbase+notconv) > ct.max_states) || (notconv == 0))) {
 
             // Rotate orbitals
-            RT1 = new RmgTimer("Davidson: rotate orbitals");
+            RT1 = new RmgTimer("6-Davidson: rotate orbitals");
 #if GPU_ENABLED
             OrbitalType *npsi = (OrbitalType *)GpuMallocHost(nstates*pbasis*sizeof(OrbitalType));
 #else
@@ -399,7 +399,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             }
 
             // refresh s_psi and h_psi
-            RT1 = new RmgTimer("Davidson: refresh h_psi and s_psi");
+            RT1 = new RmgTimer("6-Davidson: refresh h_psi and s_psi");
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, false, false, false);
             for(int idx=0;idx < nstates*pbasis;idx++)s_psi[idx] = psi[nstates*pbasis + idx];
@@ -411,7 +411,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
 
             // Reset hr,sr,vr
-            RT1 = new RmgTimer("Davidson: reset hr,sr,vr");
+            RT1 = new RmgTimer("6-Davidson: reset hr,sr,vr");
             nbase = nstates;
             for(int ix=0;ix < ct.max_states*ct.max_states;ix++) hr[ix] = OrbitalType(0.0);
             for(int ix=0;ix < ct.max_states*ct.max_states;ix++) sr[ix] = OrbitalType(0.0);
@@ -448,7 +448,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     delete [] eigsw;
     delete [] eigs;
 
-    RT1 = new RmgTimer("Davidson: Betaxpsi");
+    RT1 = new RmgTimer("6-Davidson: Betaxpsi");
     Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
     delete RT1;
     

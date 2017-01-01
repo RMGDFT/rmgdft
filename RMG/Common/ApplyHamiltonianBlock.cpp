@@ -55,10 +55,9 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
     istop = istop * T->get_threads_per_node();
 
     // Apply the non-local operators to this block of orbitals
-RmgTimer *RT0 = new RmgTimer("Davidson: appnls");
     AppNls(kptr, kptr->newsint_local, kptr->Kstates[first_state].psi, kptr->nv, &kptr->ns[first_state*pbasis], kptr->Bns,
            first_state, std::min(ct.non_local_block_size, num_states), false);
-delete RT0;
+
     int first_nls = 0;
 
     // Apply Hamiltonian to state 0 to get the diagonal from the finite diff operator. Work is repeated

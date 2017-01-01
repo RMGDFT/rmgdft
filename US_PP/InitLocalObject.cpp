@@ -55,7 +55,6 @@ void InitLocalObject(double *sumobject, int object_type)
 void InitLocalObject (double *sumobject, double * &lobject, int object_type, bool compute_lobject)
 {
 
-    int ix, iy, iz, ixx, iyy, izz;
     int xstart, ystart, zstart, xend, yend, zend;
     int ion;
     int ilow, jlow, klow, ihi, jhi, khi;
@@ -65,8 +64,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
-    double r, Zv, rc, rc2, rcnorm, t1;
-    double x[3];
+    double Zv, rc, rc2, rcnorm;
     double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
     SPECIES *sp;
@@ -127,11 +125,11 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
 
         bool map_x = false, map_y = false, map_z = false;
-        for (ix = xstart; ix < xend; ix++)
+        for (int ix = xstart; ix < xend; ix++)
         {
             // fold the grid into the unit cell
             // maxium fold 20 times, local potential can extend to 20-1 unit cell
-            ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
+            int ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
             if(ixx >= ilow && ixx < ihi)
             {
                 map_x = true;
@@ -141,10 +139,10 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
         if(!map_x) continue;
 
-        for (iy = ystart; iy < yend; iy++)
+        for (int iy = ystart; iy < yend; iy++)
         {
             // fold the grid into the unit cell
-            iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
+            int iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
             if(iyy >= jlow && iyy < jhi)
             {
                 map_y = true;
@@ -155,10 +153,10 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         if(!map_y) continue;
 
 
-        for (iz = zstart; iz < zend; iz++)
+        for (int iz = zstart; iz < zend; iz++)
         {
             // fold the grid into the unit cell
-            izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
+            int izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
             if(izz >= klow && izz < khi)
             {
                 map_z = true;
@@ -216,35 +214,37 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         zstart = iptr->xtal[2] / hzzgrid - dimz/2;
         zend = zstart + dimz;
 
-
-        for (ix = xstart; ix < xend; ix++)
+#pragma omp parallel for
+        for (int ix = xstart; ix < xend; ix++)
         {
             // fold the grid into the unit cell
             // maxium fold 20 times, local potential can extend to 20-1 unit cell
-            ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
+            int ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
             if(ixx >= ilow && ixx < ihi)
             {
 
-                for (iy = ystart; iy < yend; iy++)
+                for (int iy = ystart; iy < yend; iy++)
                 {
                     // fold the grid into the unit cell
-                    iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
+                    int iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
                     if(iyy >= jlow && iyy < jhi)
                     {
-                        for (iz = zstart; iz < zend; iz++)
+                        for (int iz = zstart; iz < zend; iz++)
                         {
                             // fold the grid into the unit cell
-                            izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
+                            int izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
                             if(izz >= klow && izz < khi)
                             {
 
                                 int idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
+                                double x[3];
                                 x[0] = ix * hxxgrid - iptr->xtal[0];
                                 x[1] = iy * hyygrid - iptr->xtal[1];
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
-                                r = metric (x);
+                                double r = metric (x);
 
                                 if(r > sp->lradius) continue;
+                                double t1;
 
                                 switch(object_type) 
                                 {
