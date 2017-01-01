@@ -185,8 +185,7 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
    RmgTimer RT0("5-Functional");
    RmgTimer RT1("5-Functional: vxc");
-   double vx[2]{0.0,0.0}, vc[2]{0.0,0.0}, rhoneg[2]{0.0,0.0};
-   double ex=0.0, ec=0.0;
+   double rhoneg[2]{0.0,0.0};
    double *rho_up, *rho_down;
    double *v_up, *v_down;
 
@@ -214,16 +213,17 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
    if(!spinflag) {
 
        double etxcl=0.0, vtxcl=0.0, rhonegl=0.0;
-#pragma omp parallel for private( ex, ec, vx, vc ) reduction(+:etxcl,vtxcl), reduction(-:rhonegl)
+#pragma omp parallel for reduction(+:etxcl,vtxcl), reduction(-:rhonegl)
        // spin unpolarized  
        for(int ix=0;ix < this->pbasis;ix++) {
 
            double trho = rho[ix] + rho_core[ix];
            double atrho = fabs(trho);
+           double ex, ec, vx, vc;
            if(atrho > SMALL_CHARGE) {
 
-               __funct_MOD_xc( &trho, &ex, &ec, &vx[0], &vc[0] );
-               v[ix] = vx[0] + vc[0];
+               __funct_MOD_xc( &trho, &ex, &ec, &vx, &vc);
+               v[ix] = vx + vc;
                etxcl = etxcl + ( ex + ec ) * trho;
                vtxcl = vtxcl + v[ix] * rho[ix];
 
@@ -231,9 +231,9 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
            else {
                double rhotem = SMALL_CHARGE * (1.0 + SMALL_CHARGE);
-               __funct_MOD_xc( &rhotem, &ex, &ec, &vx[0], &vc[0] );
+               __funct_MOD_xc( &rhotem, &ex, &ec, &vx, &vc );
                double frac = std::cbrt(atrho/SMALL_CHARGE);
-               v[ix] = (vx[0] + vc[0]) * frac;
+               v[ix] = (vx + vc) * frac;
                etxcl = etxcl + ( ex + ec ) * trho * frac;
                vtxcl = vtxcl + v[ix] * rho[ix];
                 
@@ -249,11 +249,15 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
    } 
    else {
 
-        // spin polarized
+       // spin polarized
+       double etxcl=0.0, vtxcl=0.0;
+#pragma omp parallel for reduction(+:etxcl,vtxcl)
        for(int ix=0;ix < this->pbasis;ix++) {
 
            double trho = rho_up[ix] + rho_down[ix] + rho_core[ix];
            double atrho = fabs(trho);
+           double vx0, vx1, vc0, vc1;
+           double ex, ec;
            if(atrho > SMALL_CHARGE) {
 
                double zeta = (rho_up[ix] - rho_down[ix]) / atrho;
@@ -262,11 +266,11 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
                    if(zeta < 0.0) tzeta = -1.0;
                    zeta = tzeta;
                }
-               __funct_MOD_xc_spin( &trho, &zeta, &ex, &ec, &vx[0], &vx[1], &vc[0], &vc[1] );
-               v_up[ix] = vx[0] + vc[0];
-               v_down[ix] = vx[1] + vc[1];
-               etxc = etxc + ( ex + ec ) * trho;
-               vtxc = vtxc + v_up[ix] * rho_up[ix] + v_down[ix] * rho_down[ix];
+               __funct_MOD_xc_spin( &trho, &zeta, &ex, &ec, &vx0, &vx1, &vc0, &vc1 );
+               v_up[ix] = vx0 + vc0;
+               v_down[ix] = vx1 + vc1;
+               etxcl = etxcl + ( ex + ec ) * trho;
+               vtxcl = vtxcl + v_up[ix] * rho_up[ix] + v_down[ix] * rho_down[ix];
 
            }
            else {
@@ -274,6 +278,8 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
            }
 
        }
+       etxc += etxcl;
+       vtxc += vtxcl;
 
    }
    delete RT2;
@@ -457,8 +463,6 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
 
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
-    double v1xup, v1xdw, v2xup, v2xdw, sx, sc;
-    double v1cup, v1cdw, v2c, v2cup, v2cdw;
  
     double grho2[2];
     const double epsr=1.0e-10;
@@ -503,6 +507,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
 
 
     RmgTimer *RT4 = new RmgTimer("5-Functional: libxc");
+#pragma omp parallel for reduction(+:etxcgc,vtxcgc)
     for(int k=0;k < this->pbasis;k++) {
         double arho_up = fabs(rhoout_up[k]);
         double arho_down = fabs(rhoout_down[k]);
@@ -513,16 +518,17 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
 
         double pgrho2_up = grho2[0] + epsg_guard;
         double pgrho2_down = grho2[1] + epsg_guard;
+        double v1xup, v1xdw, v2xup, v2xdw, sx;
 
         __funct_MOD_gcx_spin( &arho_up, &arho_down, &pgrho2_up,
                         &pgrho2_down, &sx, &v1xup, &v1xdw, &v2xup, &v2xdw );
 
-         sc    = 0.0;
-         v1cup = 0.0;
-         v1cdw = 0.0;
-         v2c   = 0.0;
-         v2cup = 0.0;
-         v2cdw = 0.0;
+         double sc    = 0.0;
+         double v1cup = 0.0;
+         double v1cdw = 0.0;
+         double v2c   = 0.0;
+         double v2cup = 0.0;
+         double v2cdw = 0.0;
          v2cud[k] = 0.0;
 
         if(arho > epsr) {
