@@ -59,13 +59,18 @@ void *run_threads(void *v) {
         numa_set_localalloc();
         // For case with 1 MPI proc per host restrict threads to numa nodes
         if(pct.procs_per_host == 1) {
-            nodemask = numa_allocate_nodemask();
-            numa_bitmask_setbit(nodemask,  s->tid % pct.numa_nodes_per_host);
-            numa_bind(nodemask);
+            //nodemask = numa_allocate_nodemask();
+            //numa_bitmask_setbit(nodemask,  s->tid % pct.numa_nodes_per_host);
+            //numa_bind(nodemask);
+        }
+        else
+        {
+            numa_run_on_node_mask(pct.nodemask);
         }
     }
 #endif
 
+T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
     
 
 #if GPU_ENABLED
