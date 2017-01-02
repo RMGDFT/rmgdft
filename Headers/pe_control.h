@@ -1,6 +1,10 @@
 #ifndef RMG_pe_control_H
 #define RMG_pe_control_H 1
 
+#ifdef USE_NUMA
+    #include <numa.h>
+#endif
+
 /** @name PE_CONTROL
   *
   * @memo Processor control structure.
@@ -35,11 +39,17 @@ typedef struct
     // Number of cpu cores per physical host
     int ncpus;
 
-    // Numa flag
-    bool has_numa;
-
+#ifdef USE_NUMA
     // Numa nodes per host
     int numa_nodes_per_host;
+
+    // cpumask for mpi process
+    struct bitmask *cpumask;
+
+    // nodemask for mpi process
+    struct bitmask *nodemask;
+
+#endif
 
     // Local rank of this proc
     int local_rank;

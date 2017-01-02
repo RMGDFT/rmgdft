@@ -700,6 +700,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("folded_spectrum", &lc.use_folded_spectrum, false, 
                          "Use folded spectrum.");
 
+    If.RegisterInputKey("use_numa", &lc.use_numa, true, 
+                         "Use internal numa setup if available.");
+
     If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
                         "Flag indicating whether or not to use dynamic timesteps in relaxation mode.\n");
 

@@ -169,11 +169,6 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
     }
 
-    if(ct.spin_flag) nthreads /= 2;
-    ct.THREADS_PER_NODE = nthreads;
-    B = BaseThread::getBaseThread(nthreads);
-    B->RegisterThreadFunction(run_threads);
-
 #ifdef USE_NUMA
     // Determine if this is a numa system and setup up policies correctly if that is the case.
     // We need to optimize the interaction between MPI procs, threads and numa nodes.
@@ -188,23 +183,50 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     //         but the key is to lock each proc and it's threads to separate nodes.
     // Case 4: number of cores > MPI_procs > numa_nodes
     
-    if(numa_available() < 0)
+    if(ct.use_numa && (numa_available() < 0))
     {
-        pct.has_numa = false;
-        pct.numa_nodes_per_host = 1;  // May not be right but no way to tell
-    }
-    else
-    {
-        pct.has_numa = true;
-        // Obviously assuming all CPU's active which is reasonable for HPC
-        pct.numa_nodes_per_host = numa_max_node() + 1;
+        ct.use_numa = false;
     }
 
-    if(pct.has_numa && (pct.procs_per_host == 1)) {
-        int ret = set_mempolicy(MPOL_INTERLEAVE, (const unsigned long *)&numa_all_nodes, 63);
-        printf("set_mempolicy ret=%d   %d\n",ret,pct.numa_nodes_per_host);
+    if(ct.use_numa)
+    {
+        // Obviously assuming all CPU's active which is reasonable for HPC
+        pct.numa_nodes_per_host = numa_max_node() + 1;
+        pct.cpumask = numa_allocate_cpumask();
+        pct.nodemask = numa_allocate_nodemask();
     }
+
+    // Case 1
+    if(ct.use_numa && (pct.procs_per_host == 1)) {
+        for(int nid = 0;nid < pct.numa_nodes_per_host;nid++) numa_bitmask_setbit(pct.nodemask, nid);
+        numa_set_interleave_mask(pct.nodemask);
+        //printf("set_mempolicy ret=%d   %d\n",ret,pct.numa_nodes_per_host);
+    }
+
+    // Case 2
+    if(ct.use_numa && (pct.ncpus == pct.procs_per_host)) {
+        numa_bitmask_setbit(pct.nodemask, pct.local_rank % pct.numa_nodes_per_host);
+        numa_bind(pct.nodemask);
+        printf("Numa aware allocation with %d numa nodes.\n", pct.numa_nodes_per_host);
+    }
+
+    // Case 3
+    if(ct.use_numa && (pct.procs_per_host == pct.numa_nodes_per_host)) {
+        //numa_node_to_cpus(pct.local_rank, pct.cpumask);
+        //numa_set_localalloc();
+        numa_bitmask_setbit(pct.nodemask, pct.local_rank); 
+        numa_bind(pct.nodemask);
+        printf("Numa aware allocation with 1 numa node per MPI process.\n");
+    }
+
+
 #endif
+
+    if(ct.spin_flag) nthreads /= 2;
+    ct.THREADS_PER_NODE = nthreads;
+    B = BaseThread::getBaseThread(nthreads);
+    B->RegisterThreadFunction(run_threads);
+
 
 }
 

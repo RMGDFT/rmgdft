@@ -413,7 +413,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     ApplyGradient (vxc2, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
     delete RT5;
 
-
+#pragma omp parallel for
     for(int ix=0;ix < this->pbasis;ix++) {
 
         v[ix] -= ( h[ix] * gx[ix] +
@@ -587,6 +587,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     ApplyGradient (vxc2_up, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
     delete RT5;
 
+#pragma omp parallel for 
     for(int ix=0;ix < this->pbasis;ix++) {
 
         v_up[ix] -= ( h[ix] * gx_up[ix] +
@@ -601,6 +602,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     ApplyGradient (vxc2_down, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
     delete RT6;
 
+#pragma omp parallel for 
     for(int ix=0;ix < this->pbasis;ix++) {
 
         v_down[ix] -= ( h[ix] * gx_down[ix] +
@@ -612,12 +614,14 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     }
 
     ApplyGradient (v2cud, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
+#pragma omp parallel for 
     for(int ix=0;ix < this->pbasis;ix++) {
         v_up[ix] -= ( h[ix] * gx_down[ix] +
                 h[ix+this->pbasis] * gy_down[ix] +
                 h[ix+2*this->pbasis] * gz_down[ix] ) ;
         v_up[ix] -= v2cud[ix] * d2rho_down[ix];
     }
+#pragma omp parallel for 
     for(int ix=0;ix < this->pbasis;ix++) {
         v_down[ix] -= ( h[ix] * gx_up[ix] +
                 h[ix+this->pbasis] * gy_up[ix] +

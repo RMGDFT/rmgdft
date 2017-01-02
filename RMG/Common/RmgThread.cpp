@@ -46,22 +46,31 @@
 // Main thread function specific to subprojects
 void *run_threads(void *v) {
 
-#ifdef USE_NUMA
-    numa_set_localalloc();
-#endif
-
     Kpoint<double> *kptr_d;
     Kpoint<std::complex<double>> *kptr_c;
     BaseThreadControl *s;
     SCF_THREAD_CONTROL *ss;
     s = (BaseThreadControl *)v;
     BaseThread *T = BaseThread::getBaseThread(0);
+
+#ifdef USE_NUMA
+    struct bitmask *nodemask;
+    if(ct.use_numa) {
+        numa_set_localalloc();
+        // For case with 1 MPI proc per host restrict threads to numa nodes
+        if(pct.procs_per_host == 1) {
+            nodemask = numa_allocate_nodemask();
+            numa_bitmask_setbit(nodemask,  s->tid % pct.numa_nodes_per_host);
+            numa_bind(nodemask);
+        }
+    }
+#endif
+
     
+
 #if GPU_ENABLED
     cudaError_t cuerr;
 #endif
-
-    T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
 
     // Set up thread local storage
     rmg_set_tsd(s);
