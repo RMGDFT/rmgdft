@@ -180,8 +180,10 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     //         Both main and worker threads prefer node local memory allocation 
     // Case 3: Number of MPI procs per host is equal to the number of numa nodes
     //         Both main and worker threads prefer node local memory allocation
-    //         but the key is to lock each proc and it's threads to separate nodes.
-    // Case 4: number of cores > MPI_procs > numa_nodes
+    //         but we want to lock each proc and it's threads to separate nodes.
+    // Case 4: Number of MPI_procs > numa_nodes
+    //         Each MPI proc and it's threads should be locked to a specific node
+    //         and distributed evenly.
     
     if(ct.use_numa && (numa_available() < 0))
     {
@@ -201,13 +203,14 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
         for(int nid = 0;nid < pct.numa_nodes_per_host;nid++) numa_bitmask_setbit(pct.nodemask, nid);
         numa_set_interleave_mask(pct.nodemask);
         //printf("set_mempolicy ret=%d   %d\n",ret,pct.numa_nodes_per_host);
+        if(pct.gridpe==0)printf("Numa aware allocation with %d MPI procs and %d numa nodes.\n", pct.procs_per_host, pct.numa_nodes_per_host);
     }
 
     // Case 2
     if(ct.use_numa && (pct.ncpus == pct.procs_per_host)) {
         numa_bitmask_setbit(pct.nodemask, pct.local_rank % pct.numa_nodes_per_host);
         numa_bind(pct.nodemask);
-        printf("Numa aware allocation with %d numa nodes.\n", pct.numa_nodes_per_host);
+        if(pct.gridpe==0)printf("Numa aware allocation with %d MPI procs and %d numa nodes.\n", pct.procs_per_host, pct.numa_nodes_per_host);
     }
 
     // Case 3
@@ -216,9 +219,15 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
         //numa_set_localalloc();
         numa_bitmask_setbit(pct.nodemask, pct.local_rank); 
         numa_bind(pct.nodemask);
-        printf("Numa aware allocation with 1 numa node per MPI process.\n");
+        if(pct.gridpe==0) printf("Numa aware allocation with %d MPI procs and %d numa nodes.\n", pct.procs_per_host, pct.numa_nodes_per_host);
     }
 
+    // Case 4
+    if(ct.use_numa && (pct.ncpus > pct.numa_nodes_per_host) && (pct.procs_per_host > pct.numa_nodes_per_host)) {
+        numa_bitmask_setbit(pct.nodemask, pct.local_rank % pct.numa_nodes_per_host);
+        numa_bind(pct.nodemask);
+        if(pct.gridpe==0)printf("Numa aware allocation with %d MPI procs and %d numa nodes.\n", pct.procs_per_host, pct.numa_nodes_per_host);
+    }
 
 #endif
 
