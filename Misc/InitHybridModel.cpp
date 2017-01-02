@@ -30,6 +30,7 @@
 
 #ifdef USE_NUMA
     #include <numa.h>
+    #include <numaif.h>
 #endif
 
 
@@ -190,15 +191,18 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     if(numa_available() < 0)
     {
         pct.has_numa = false;
+        pct.numa_nodes_per_host = 1;  // May not be right but no way to tell
     }
     else
     {
         pct.has_numa = true;
-        pct.numa_nodes_per_host = numa_max_node();
+        // Obviously assuming all CPU's active which is reasonable for HPC
+        pct.numa_nodes_per_host = numa_max_node() + 1;
     }
 
-    if(pct.has_numa && (pct.numa_nodes_per_host == pct.procs_per_host)) {
-        numa_set_interleave_mask(&numa_all_nodes);
+    if(pct.has_numa && (pct.procs_per_host == 1)) {
+        int ret = set_mempolicy(MPOL_INTERLEAVE, (const unsigned long *)&numa_all_nodes, 63);
+        printf("set_mempolicy ret=%d   %d\n",ret,pct.numa_nodes_per_host);
     }
 #endif
 
