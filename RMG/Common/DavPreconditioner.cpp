@@ -24,7 +24,6 @@
 #include <omp.h>
 #include <cmath>
 #include <float.h>
-#include <alloca.h>
 #include "FiniteDiff.h"
 #include "const.h"
 #include "rmgtypedefs.h"
