@@ -218,8 +218,6 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
     // Case 3
     if(ct.use_numa && (pct.procs_per_host == pct.numa_nodes_per_host)) {
-        //numa_node_to_cpus(pct.local_rank, pct.cpumask);
-        //numa_set_localalloc();
         numa_bitmask_setbit(pct.nodemask, (unsigned int)pct.local_rank); 
         numa_bind(pct.nodemask);
         numa_migrate_pages(getpid(), numa_all_nodes_ptr, pct.nodemask);
@@ -231,16 +229,14 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     if(ct.use_numa && (pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host)) {
         unsigned int nid = pct.local_rank / (pct.procs_per_host / pct.numa_nodes_per_host);
         numa_bitmask_setbit(pct.nodemask, nid);
-        //numa_set_membind(pct.nodemask);
         numa_bind(pct.nodemask);
         numa_migrate_pages(getpid(), numa_all_nodes_ptr, pct.nodemask);
         if(pct.gridpe == 0)
-            printf("C4 Numa aware allocation with %d MPI procs and %d numa nodes.  %d\n", pct.procs_per_host, pct.numa_nodes_per_host,nid);
+            printf("C4 Numa aware allocation with %d MPI procs and %d numa nodes.\n", pct.procs_per_host, pct.numa_nodes_per_host,nid);
     }
 
 #endif
 
-    if(ct.spin_flag) nthreads /= 2;
     ct.THREADS_PER_NODE = nthreads;
     B = BaseThread::getBaseThread(nthreads);
     B->RegisterThreadFunction(run_threads);
