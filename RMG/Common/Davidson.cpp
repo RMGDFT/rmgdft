@@ -210,6 +210,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis, 
                 NULLptr, NULLptr, NULLptr, false, false, false, false);
 
+#pragma omp parallel for
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis + idx];
         }
@@ -228,12 +229,14 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         // diagonalizer roughly equal to improve stability.
         RT1 = new RmgTimer("6-Davidson: normalization");
         double *norms = new double[notconv]();
+#pragma omp parallel for
         for(int st1=0;st1 < notconv;st1++) {
             for(int idx=0;idx < pbasis;idx++) norms[st1] += vel * std::norm(psi[(st1 + nbase)*pbasis + idx]);
         }
 
         MPI_Allreduce(MPI_IN_PLACE, (double *)norms, notconv, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
+#pragma omp parallel for
         for(int st1=0;st1 < notconv;st1++) {
              norms[st1] = 1.0 / sqrt(norms[st1]);
              for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] *= norms[st1];

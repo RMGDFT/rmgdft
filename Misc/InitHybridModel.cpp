@@ -207,13 +207,28 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     if(ct.use_numa)
     {
         if(pct.procs_per_host == 1) {
-
             // Case 1
-            for(int nid = 0;nid < pct.numa_nodes_per_host;nid++) numa_bitmask_setbit(pct.nodemask, nid);
+            bitmask *tmask = numa_allocate_cpumask();
+            numa_bitmask_clearall(tmask);
+            numa_bitmask_clearall(pct.cpumask);
+            for(int nid = 0;nid < pct.numa_nodes_per_host;nid++)
+            {
+                numa_bitmask_setbit(pct.nodemask, nid);
+                numa_node_to_cpus(nid, tmask);
+                for(unsigned int idx=0;idx < tmask->size;idx++)
+                {
+                    if(numa_bitmask_isbitset(tmask, idx)) numa_bitmask_setbit(pct.cpumask, idx); 
+                }
+            }
             numa_set_interleave_mask(pct.nodemask);
+            numa_bind(pct.nodemask);
+
             //printf("set_mempolicy ret=%d   %d\n",ret,pct.numa_nodes_per_host);
             if(pct.gridpe==0)
                 printf("Numa aware allocation with 1 MPI proc, %d cores and %d numa nodes per host.\n", pct.ncpus, pct.numa_nodes_per_host);
+
+            numa_free_cpumask(tmask);
+
         }
         else if(pct.ncpus == pct.procs_per_host) {
 
@@ -245,35 +260,22 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
             // Case 3
             unsigned int nid = pct.local_rank;
-            struct bitmask *mainmask = numa_allocate_cpumask();
             numa_node_to_cpus(nid, pct.cpumask);
 
             numa_bitmask_setbit(pct.nodemask, nid); 
             numa_bind(pct.nodemask);
             numa_migrate_pages(getpid(), numa_all_nodes_ptr, pct.nodemask);
 
-    #if 0
-            // Set the main thread to run on the first cpu in this node
-            for(unsigned int idx=0;idx<pct.cpumask->size;idx++)
-            {
-                if(numa_bitmask_isbitset(pct.cpumask, idx))
-                {
-                    numa_bitmask_clearall(mainmask);
-                    numa_bitmask_setbit(mainmask, idx); 
-                    numa_sched_setaffinity(getpid(), mainmask);
-                    break;
-                }
-            }
-    #endif
             if(pct.gridpe==0)
                 printf("Case 3: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
         }
         else if((pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host)) 
         {
             // Case 4
-            int nid = pct.local_rank % pct.numa_nodes_per_host;
+            int nid = pct.local_rank / (pct.procs_per_host / pct.numa_nodes_per_host);
             numa_bitmask_setbit(pct.nodemask, nid);
             numa_bind(pct.nodemask);
+            numa_node_to_cpus(nid, pct.cpumask);
             numa_migrate_pages(getpid(), numa_all_nodes_ptr, pct.nodemask);
             if(pct.gridpe == 0)
                 printf("Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);

@@ -1225,7 +1225,7 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
 
 
 template <typename RmgType>
-double FiniteDiff::app8_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
                double gridhx, double gridhy, double gridhz)
 {
 
@@ -1234,13 +1234,9 @@ double FiniteDiff::app8_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
         rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
     }
 
-    int iz, ix, iy;
-    int ixs, iys, ix1, iy1;
 
-    ixs = (dimy + 8) * (dimz + 8);
-    iys = (dimz + 8);
-    ix1 = dimy * dimz;
-    iy1 = dimz;
+    int ixs = (dimy + 8) * (dimz + 8);
+    int iys = (dimz + 8);
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
     double th2 (-205.0 / (72.0 * h2));
@@ -1266,45 +1262,42 @@ double FiniteDiff::app8_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
 
 
 
-    for (ix = 4; ix < dimx + 4; ix++)
+    for (int ix = 4; ix < dimx + 4; ix++)
     {
 
-        for (iy = 4; iy < dimy + 4; iy++)
+        for (int iy = 4; iy < dimy + 4; iy++)
         {
 
-            for (iz = 4; iz < dimz + 4; iz++)
+            RmgType *A = &a[iy*iys + ix*ixs];
+            RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+
+            for (int iz = 4; iz < dimz + 4; iz++)
             {
+                B[iz] = t0 * A[iz] +
+                        t1z * (A[iz + 1] + A[iz - 1]) +
+                        t2z * (A[iz + 2] + A[iz - 2]) +
+                        t3z * (A[iz + 3] + A[iz - 3]) +
+                        t4z * (A[iz + 4] + A[iz - 4]);
+            }
 
-                b[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
-                    t0 * a[ix * ixs + iy * iys + iz] +
-                    t1x * ( a[(ix - 1) * ixs + iy * iys + iz] +
-                            a[(ix + 1) * ixs + iy * iys + iz]) +
-                    t2x * ( a[(ix - 2) * ixs + iy * iys + iz] +
-                            a[(ix + 2) * ixs + iy * iys + iz]) +
-                    t3x * ( a[(ix - 3) * ixs + iy * iys + iz] +
-                            a[(ix + 3) * ixs + iy * iys + iz]) +
-                    t4x * ( a[(ix - 4) * ixs + iy * iys + iz] +
-                            a[(ix + 4) * ixs + iy * iys + iz]) +
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                B[iz] +=
+                        t1y * (A[iz + iys] + A[iz - iys]) +
+                        t2y * (A[iz + 2*iys] + A[iz - 2*iys]) +
+                        t3y * (A[iz + 3*iys] + A[iz - 3*iys]) +
+                        t4y * (A[iz + 4*iys] + A[iz - 4*iys]);
+            }
 
-                    t1y * ( a[ix * ixs + (iy - 1) * iys + iz] +
-                            a[ix * ixs + (iy + 1) * iys + iz]) +
-                    t2y * ( a[ix * ixs + (iy - 2) * iys + iz] +
-                            a[ix * ixs + (iy + 2) * iys + iz]) +
-                    t3y * ( a[ix * ixs + (iy - 3) * iys + iz] +
-                            a[ix * ixs + (iy + 3) * iys + iz]) +
-                    t4y * ( a[ix * ixs + (iy - 4) * iys + iz] +
-                            a[ix * ixs + (iy + 4) * iys + iz]) +
-
-                    t1z * ( a[ix * ixs + iy * iys + iz - 1] +
-                            a[ix * ixs + iy * iys + iz + 1]) +
-                    t2z * ( a[ix * ixs + iy * iys + iz - 2] +
-                            a[ix * ixs + iy * iys + iz + 2]) +
-                    t3z * ( a[ix * ixs + iy * iys + iz - 3] +
-                            a[ix * ixs + iy * iys + iz + 3]) +
-                    t4z * ( a[ix * ixs + iy * iys + iz - 4] +
-                            a[ix * ixs + iy * iys + iz + 4]);
-
+            for (int iz = 4; iz < dimz + 4; iz++)
+            {
+                B[iz] +=
+                        t1x * (A[iz + ixs] + A[iz - ixs]) +
+                        t2x * (A[iz + 2*ixs] + A[iz - 2*ixs]) +
+                        t3x * (A[iz + 3*ixs] + A[iz - 3*ixs]) +
+                        t4x * (A[iz + 4*ixs] + A[iz - 4*ixs]);
             }                   /* end for */
+
         }                       /* end for */
     }                           /* end for */
 

@@ -42,8 +42,9 @@
 #endif
 
 #include <sys/types.h>
-#include <sys/syscall.h>
 #include <pthread.h>
+#include <sched.h>
+
 
 // Main thread function specific to subprojects
 void *run_threads(void *v) {
@@ -57,8 +58,6 @@ void *run_threads(void *v) {
 
 #ifdef USE_NUMA
     struct bitmask *thread_cpumask = NULL;
-    pid_t thread_pid = getpid();
-
     if(ct.use_numa) {
         thread_cpumask = numa_allocate_cpumask();
 
@@ -66,9 +65,22 @@ void *run_threads(void *v) {
         // For case with 1 MPI proc per host restrict threads to numa nodes
         if(pct.procs_per_host == 1) 
         {
-            //nodemask = numa_allocate_nodemask();
-            //numa_bitmask_setbit(nodemask,  s->tid % pct.numa_nodes_per_host);
-            //numa_bind(nodemask);
+            int t_tid = 0;
+            for(unsigned int idx=0;idx<pct.cpumask->size;idx++)
+            {
+                if(numa_bitmask_isbitset(pct.cpumask, idx))
+                {
+                    if(s->tid == t_tid)
+                    {
+                        numa_bitmask_clearall(thread_cpumask);
+                        numa_bitmask_setbit(thread_cpumask, idx);
+                        numa_sched_setaffinity(0, thread_cpumask);
+                        if(ct.verbose) printf("Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
+                        break;
+                    }
+                    t_tid++;
+                }
+            }
         }
         else if(pct.ncpus == pct.procs_per_host) 
         {
@@ -76,40 +88,66 @@ void *run_threads(void *v) {
         }
         else if(pct.procs_per_host == pct.numa_nodes_per_host)
         {
-            unsigned int t_tid = 0;
-            for(unsigned int idx=0;idx<pct.cpumask->size;idx++) {
+            int t_tid = 0;
+            for(unsigned int idx=0;idx<pct.cpumask->size;idx++)
+            {
                 if(numa_bitmask_isbitset(pct.cpumask, idx))
                 {
                     if(s->tid == t_tid)
                     {
                         numa_bitmask_clearall(thread_cpumask);
                         numa_bitmask_setbit(thread_cpumask, idx);
-                        numa_sched_setaffinity(thread_pid, thread_cpumask);
-                        printf("Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
+                        numa_sched_setaffinity(0, thread_cpumask);
+                        if(ct.verbose) printf("Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
                         break;
                     }
                     t_tid++;
                 }
             }
-            numa_migrate_pages(thread_pid, numa_all_nodes_ptr, pct.nodemask);
         }
         else if((pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host))
         {
+            // Multiple MPI procs per numa node so default is to bind threads to a specific node
             copy_bitmask_to_bitmask(pct.cpumask, thread_cpumask);
+
+            // If threads*procs = cpus/node then do a one to one binding
+            unsigned int cpus_per_node = numa_bitmask_weight(pct.cpumask);
+            unsigned int procs_per_node = pct.procs_per_host / pct.numa_nodes_per_host;
+            if(procs_per_node*ct.THREADS_PER_NODE == cpus_per_node && !(pct.procs_per_host % pct.numa_nodes_per_host))
+            {
+                unsigned int proc_rank_in_node = pct.local_rank % procs_per_node;
+                unsigned int nid = pct.local_rank / (pct.procs_per_host / pct.numa_nodes_per_host);
+                unsigned int t_tid = nid*cpus_per_node;
+                for(unsigned int idx=0;idx<pct.cpumask->size;idx++)
+                {
+                    if(numa_bitmask_isbitset(pct.cpumask, idx))
+                    {
+                        if((s->tid + proc_rank_in_node * ct.THREADS_PER_NODE + nid*cpus_per_node) == t_tid)
+                        {
+                            numa_bitmask_clearall(thread_cpumask);
+                            numa_bitmask_setbit(thread_cpumask, idx);
+                            numa_sched_setaffinity(0, thread_cpumask);
+                            if(ct.verbose) printf("Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
+                            break;
+                        }
+                        t_tid++;
+                    }
+                }
+            }
         }
         else
         {
             ct.use_numa = false;
         }
 
-        //numa_set_localalloc();
-        numa_sched_setaffinity(thread_pid, thread_cpumask);
+        numa_sched_setaffinity(0, thread_cpumask);
+        numa_set_localalloc();
+
     }
 
 
 #endif
     
-//T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
 
 #if GPU_ENABLED
     cudaError_t cuerr;
@@ -128,12 +166,17 @@ void *run_threads(void *v) {
 
     while(1) {
 
-        if(ct.use_numa) numa_sched_setaffinity(thread_pid, thread_cpumask);
+#ifdef USE_NUMA
+        if(ct.use_numa) numa_sched_setaffinity(0, thread_cpumask);
+#endif
+
         // We sleep until main wakes us up
         T->thread_sleep();
 
-        if(ct.use_numa) numa_sched_setaffinity(thread_pid, thread_cpumask);
-
+#ifdef USE_NUMA
+        if(ct.use_numa) numa_sched_setaffinity(0, thread_cpumask);
+        //T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
+#endif
 
         // Get the control structure
         ss = (SCF_THREAD_CONTROL *)s->pptr;
