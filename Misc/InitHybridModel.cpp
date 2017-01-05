@@ -234,24 +234,29 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
             // Case 2
             unsigned int nid = pct.local_rank / (pct.ncpus / pct.numa_nodes_per_host);
+            unsigned int procs_per_node = pct.procs_per_host / pct.numa_nodes_per_host;
+            unsigned int proc_rank_in_node = pct.local_rank % procs_per_node;
 
             numa_node_to_cpus(nid, pct.cpumask);
             numa_bitmask_setbit(pct.nodemask, nid);
             numa_bind(pct.nodemask);
             numa_migrate_pages(getpid(), numa_all_nodes_ptr, pct.nodemask);
-
             // We have one MPI proc per cpu so set affinity based on a one to one mapping from low to high
             unsigned int offset = 0;
             for(unsigned int idx=0;idx<pct.cpumask->size;idx++) 
             {
-                if(numa_bitmask_isbitset(pct.cpumask, idx) && (offset == pct.local_rank))
+                if(numa_bitmask_isbitset(pct.cpumask, idx))
                 {
-                    numa_bitmask_clearall(pct.cpumask);
-                    numa_bitmask_setbit(pct.cpumask, offset); 
-                    numa_sched_setaffinity(getpid(), pct.cpumask);
-                    printf("Binding rank %d  to cpu %d\n", pct.local_rank, offset);
+                    if(offset == proc_rank_in_node)
+                    {
+                        numa_bitmask_clearall(pct.cpumask);
+                        numa_bitmask_setbit(pct.cpumask, idx); 
+                        numa_sched_setaffinity(0, pct.cpumask);
+                        if(ct.verbose) printf("Binding rank %d  to cpu %d\n", pct.local_rank, offset);
+                        break;
+                    }
+                    offset++;
                 }
-                offset++;
             }
             if(pct.gridpe==0)
                 printf("Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
