@@ -225,7 +225,7 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
             //printf("set_mempolicy ret=%d   %d\n",ret,pct.numa_nodes_per_host);
             if(pct.gridpe==0)
-                printf("Numa aware allocation with 1 MPI proc, %d cores and %d numa nodes per host.\n", pct.ncpus, pct.numa_nodes_per_host);
+                printf("C1: Numa aware allocation with 1 MPI proc, %d cores and %d numa nodes per host.\n", pct.ncpus, pct.numa_nodes_per_host);
 
             numa_free_cpumask(tmask);
 
@@ -252,14 +252,14 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
                         numa_bitmask_clearall(pct.cpumask);
                         numa_bitmask_setbit(pct.cpumask, idx); 
                         numa_sched_setaffinity(0, pct.cpumask);
-                        if(ct.verbose) printf("Binding rank %d  to cpu %d\n", pct.local_rank, offset);
+                        if(ct.verbose) printf("Binding rank %d  to cpu %d\n", pct.local_rank, idx);
                         break;
                     }
                     offset++;
                 }
             }
             if(pct.gridpe==0)
-                printf("Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
+                printf("C2: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
         }
         else if(pct.procs_per_host == pct.numa_nodes_per_host) {
 
@@ -272,7 +272,7 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
             numa_migrate_pages(getpid(), numa_all_nodes_ptr, pct.nodemask);
 
             if(pct.gridpe==0)
-                printf("Case 3: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
+                printf("C3: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
         }
         else if((pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host)) 
         {
@@ -283,7 +283,7 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
             numa_node_to_cpus(nid, pct.cpumask);
             numa_migrate_pages(getpid(), numa_all_nodes_ptr, pct.nodemask);
             if(pct.gridpe == 0)
-                printf("Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
+                printf("C4: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
         }
     }
 #endif
