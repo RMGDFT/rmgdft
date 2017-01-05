@@ -41,7 +41,9 @@
 #include <cuda_runtime.h>
 #endif
 
-
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <pthread.h>
 
 // Main thread function specific to subprojects
 void *run_threads(void *v) {
@@ -54,24 +56,60 @@ void *run_threads(void *v) {
     BaseThread *T = BaseThread::getBaseThread(0);
 
 #ifdef USE_NUMA
-    struct bitmask *nodemask;
+    struct bitmask *thread_cpumask = NULL;
+    pid_t thread_pid = getpid();
+
     if(ct.use_numa) {
-        numa_set_localalloc();
+        thread_cpumask = numa_allocate_cpumask();
+
+        //numa_set_localalloc();
         // For case with 1 MPI proc per host restrict threads to numa nodes
-        if(pct.procs_per_host == 1) {
+        if(pct.procs_per_host == 1) 
+        {
             //nodemask = numa_allocate_nodemask();
             //numa_bitmask_setbit(nodemask,  s->tid % pct.numa_nodes_per_host);
             //numa_bind(nodemask);
         }
+        else if(pct.ncpus == pct.procs_per_host) 
+        {
+            copy_bitmask_to_bitmask(pct.cpumask, thread_cpumask);
+        }
+        else if(pct.procs_per_host == pct.numa_nodes_per_host)
+        {
+            unsigned int t_tid = 0;
+            for(unsigned int idx=0;idx<pct.cpumask->size;idx++) {
+                if(numa_bitmask_isbitset(pct.cpumask, idx))
+                {
+                    if(s->tid == t_tid)
+                    {
+                        numa_bitmask_clearall(thread_cpumask);
+                        numa_bitmask_setbit(thread_cpumask, idx);
+                        numa_sched_setaffinity(thread_pid, thread_cpumask);
+                        printf("Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
+                        break;
+                    }
+                    t_tid++;
+                }
+            }
+            numa_migrate_pages(thread_pid, numa_all_nodes_ptr, pct.nodemask);
+        }
+        else if((pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host))
+        {
+            copy_bitmask_to_bitmask(pct.cpumask, thread_cpumask);
+        }
         else
         {
-            numa_run_on_node_mask(pct.nodemask);
+            ct.use_numa = false;
         }
-    }
-#endif
 
-T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
+        //numa_set_localalloc();
+        numa_sched_setaffinity(thread_pid, thread_cpumask);
+    }
+
+
+#endif
     
+//T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
 
 #if GPU_ENABLED
     cudaError_t cuerr;
@@ -90,8 +128,12 @@ T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
 
     while(1) {
 
+        if(ct.use_numa) numa_sched_setaffinity(thread_pid, thread_cpumask);
         // We sleep until main wakes us up
         T->thread_sleep();
+
+        if(ct.use_numa) numa_sched_setaffinity(thread_pid, thread_cpumask);
+
 
         // Get the control structure
         ss = (SCF_THREAD_CONTROL *)s->pptr;
