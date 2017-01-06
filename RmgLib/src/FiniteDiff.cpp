@@ -1163,22 +1163,22 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
     iy1 = dimz;
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-    double th2 (-49.0 / (18.0 * h2));
-    RmgType t1x (3.0 / ( 2.0 * h2));
-    RmgType t2x (-3.0 / (20.0 * h2));
-    RmgType t3x (1.0 / (90.0 * h2));
+    double th2 (-2.8215452 / h2);
+    RmgType t1x (1.57663238 / h2);
+    RmgType t2x (-0.18347238 / h2);
+    RmgType t3x (0.01761260 / h2);
 
     h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-    th2 -= (49.0 / (18.0 * h2));
-    RmgType t1y  (3.0 / ( 2.0 * h2));
-    RmgType t2y  (-3.0 / (20.0 * h2));
-    RmgType t3y  (1.0 / (90.0 * h2));
+    th2 -= (2.8215452 / h2);
+    RmgType t1y (1.57663238 / h2);
+    RmgType t2y (-0.18347238 / h2);
+    RmgType t3y (0.01761260 / h2);
 
     h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-    th2 -= (49.0 / (18.0 * h2));
-    RmgType t1z  (3.0 / ( 2.0 * h2));
-    RmgType t2z  (-3.0 / (20.0 * h2));
-    RmgType t3z  (1.0 / (90.0 * h2));
+    th2 -= (2.8215452 / h2);
+    RmgType t1z (1.57663238 / h2);
+    RmgType t2z (-0.18347238 / h2);
+    RmgType t3z (0.01761260 / h2);
     RmgType t0 (th2);
 
 
@@ -1239,25 +1239,25 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     int iys = (dimz + 8);
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-    double th2 (-205.0 / (72.0 * h2));
-    RmgType t1x (8.0 / ( 5.0 * h2));
-    RmgType t2x (-1.0 / (5.0 * h2));
-    RmgType t3x (8.0 / (315.0 * h2));
-    RmgType t4x (-1.0 / (560.0 * h2));
+    double th2 (-2.97581692 / h2);
+    RmgType t1x (1.70664680 / h2);
+    RmgType t2x (-0.25959423 / h2);
+    RmgType t3x (0.04618682 / h2);
+    RmgType t4x (-0.00533093 / h2);
 
     h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-    th2 -= (205.0 / (72.0 * h2));
-    RmgType t1y (8.0 / ( 5.0 * h2));
-    RmgType t2y (-1.0 / (5.0 * h2));
-    RmgType t3y (8.0 / (315.0 * h2));
-    RmgType t4y (-1.0 / (560.0 * h2));
+    th2 -= (2.97581692 / h2);
+    RmgType t1y (1.70664680 / h2);
+    RmgType t2y (-0.25959423 / h2);
+    RmgType t3y (0.04618682 / h2);
+    RmgType t4y (-0.00533093 / h2);
 
     h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-    th2 -= (205.0 / (72.0 * h2));
-    RmgType t1z (8.0 / ( 5.0 * h2));
-    RmgType t2z (-1.0 / (5.0 * h2));
-    RmgType t3z (8.0 / (315.0 * h2));
-    RmgType t4z (-1.0 / (560.0 * h2));
+    th2 -= (2.97581692 / h2);
+    RmgType t1z (1.70664680 / h2);
+    RmgType t2z (-0.25959423 / h2);
+    RmgType t3z (0.04618682 / h2);
+    RmgType t4z (-0.00533093 / h2);
     RmgType t0 (th2);
 
 
