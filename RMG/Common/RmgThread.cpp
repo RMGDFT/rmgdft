@@ -35,6 +35,19 @@
 #include "Solvers.h"
 #ifdef USE_NUMA
     #include "numa.h"
+
+// Some versions of the numa library don't have the numa_bitmask_weight
+// function so provide our own version to cover those cases.
+unsigned int count_numamask_set_bits(const struct bitmask *mask)
+{
+    unsigned int count = 0;
+    for(unsigned int idx = 0;idx < mask->size;idx++)
+    {
+        if(numa_bitmask_isbitset(mask, idx))count++;
+    }
+    return count;
+}
+
 #endif
 #if GPU_ENABLED
 #include <cuda.h>
@@ -111,7 +124,7 @@ void *run_threads(void *v) {
             copy_bitmask_to_bitmask(pct.cpumask, thread_cpumask);
 
             // If threads*procs = cpus/node then do a one to one binding
-            unsigned int cpus_per_node = numa_bitmask_weight(pct.cpumask);
+            unsigned int cpus_per_node = count_numamask_set_bits(pct.cpumask);
             unsigned int procs_per_node = pct.procs_per_host / pct.numa_nodes_per_host;
             if(procs_per_node*ct.THREADS_PER_NODE == cpus_per_node && !(pct.procs_per_host % pct.numa_nodes_per_host))
             {
