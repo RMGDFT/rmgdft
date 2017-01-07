@@ -468,6 +468,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "charge_broyden_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50\n");
 
+    If.RegisterInputKey("projector_expansion_factor", &lc.projector_expansion_factor, 0.5, 3.0, 1.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0\n");
+
     If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "",

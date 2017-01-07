@@ -73,7 +73,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Might need to adjust this depending on filtering changes. Also assumes that all beta have roughly the same range
-        sp->nlradius = 4.5 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points);
+        sp->nlradius = ct.projector_expansion_factor * 4.5 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points);
 
         /*Get nldim */
         bool done = false;

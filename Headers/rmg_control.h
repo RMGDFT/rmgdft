@@ -428,6 +428,9 @@ typedef struct
     /* Folded spectrum width */
     double folded_spectrum_width;
 
+    /* Expansion factor for non-local projectors */
+    double projector_expansion_factor;
+
     /* Flag indicating whether to use MPI_Allreduce operations or point to point in subdiag */
     bool scalapack_global_sums;
 
