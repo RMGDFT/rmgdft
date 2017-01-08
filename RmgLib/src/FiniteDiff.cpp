@@ -1181,8 +1181,6 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
     RmgType t3z (0.01761260 / h2);
     RmgType t0 (th2);
 
-
-
     for (ix = 3; ix < dimx + 3; ix++)
     {
 
@@ -1327,30 +1325,29 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     iy1 = dimz;
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-    double th2 (-2.927222222222221948 / (h2));
-    RmgType t1x (5.0 / ( 3.0 * h2));
-    RmgType t2x (-0.238095238095238138 / (h2));
-    RmgType t3x (0.039682539682539694 / (h2));
-    RmgType t4x (-0.004960317460317462 / (h2));
-    RmgType t5x (0.000317460317460317 / (h2));
+    double th2 (-3.06801592 / h2);
+    RmgType t1x (1.78858721 / h2);
+    RmgType t2x (-0.31660756 / h2);
+    RmgType t3x (0.07612137 / h2);
+    RmgType t4x (-0.01626042 / h2);
+    RmgType t5x (0.00216736 / h2);
 
     h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-    th2 -= (2.927222222222221948 / (h2));
-    RmgType t1y (5.0 / ( 3.0 * h2));
-    RmgType t2y (-0.238095238095238138 / (h2));
-    RmgType t3y (0.039682539682539694 / (h2));
-    RmgType t4y (-0.004960317460317462 / (h2));
-    RmgType t5y (0.000317460317460317 / (h2));
+    th2 -= (3.06801592 / h2);
+    RmgType t1y (1.78858721 / h2);
+    RmgType t2y (-0.31660756 / h2);
+    RmgType t3y (0.07612137 / h2);
+    RmgType t4y (-0.01626042 / h2);
+    RmgType t5y (0.00216736 / h2);
 
     h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-    th2 -= (2.927222222222221948 / (h2));
-    RmgType t1z (5.0 / ( 3.0 * h2));
-    RmgType t2z (-0.238095238095238138 / (h2));
-    RmgType t3z (0.039682539682539694 / (h2));
-    RmgType t4z (-0.004960317460317462 / (h2));
-    RmgType t5z (0.000317460317460317 / (h2));
+    th2 -= (3.06801592 / h2);
+    RmgType t1z (1.78858721 / h2);
+    RmgType t2z (-0.31660756 / h2);
+    RmgType t3z (0.07612137 / h2);
+    RmgType t4z (-0.01626042 / h2);
+    RmgType t5z (0.00216736 / h2);
     RmgType t0 (th2);
-
 
 
     for (ix = 5; ix < dimx + 5; ix++)
@@ -1427,34 +1424,32 @@ double FiniteDiff::app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     iy1 = dimz;
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-    double th2 (-2.982777777777779971 / (h2));
-    RmgType t1x (12.0 / ( 7.0 * h2));
-    RmgType t2x (-0.267857142857142849 / (h2));
-    RmgType t3x (0.052910052910052872 / (h2));
-    RmgType t4x (-0.008928571428571425 / (h2));
-    RmgType t5x (0.001038961038961037 / (h2));
-    RmgType t6x (-0.000060125060125060 / (h2));
+    double th2 (-3.12513824 / (h2));
+    RmgType t1x (1.84108651 / h2);
+    RmgType t2x (-0.35706478 / (h2));
+    RmgType t3x (0.10185626 / (h2));
+    RmgType t4x (-0.02924772 / (h2));
+    RmgType t5x (0.00696837 / (h2));
+    RmgType t6x (-0.00102952 / (h2));
 
     h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-    th2 -= (2.982777777777779971 / (h2));
-    RmgType t1y (12.0 / ( 7.0 * h2));
-    RmgType t2y (-0.267857142857142849 / (h2));
-    RmgType t3y (0.052910052910052872 / (h2));
-    RmgType t4y (-0.008928571428571425 / (h2));
-    RmgType t5y (0.001038961038961037 / (h2));
-    RmgType t6y (-0.000060125060125060 / (h2));
+    th2 -= (3.12513824 / (h2));
+    RmgType t1y (1.84108651 / h2);
+    RmgType t2y (-0.35706478 / (h2));
+    RmgType t3y (0.10185626 / (h2));
+    RmgType t4y (-0.02924772 / (h2));
+    RmgType t5y (0.00696837 / (h2));
+    RmgType t6y (-0.00102952 / (h2));
 
     h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-    th2 -= (2.982777777777779971 / (h2));
-    RmgType t1z (12.0 / ( 7.0 * h2));
-    RmgType t2z (-0.267857142857142849 / (h2));
-    RmgType t3z (0.052910052910052872 / (h2));
-    RmgType t4z (-0.008928571428571425 / (h2));
-    RmgType t5z (0.001038961038961037 / (h2));
-    RmgType t6z (-0.000060125060125060 / (h2));
+    th2 -= (3.12513824 / (h2));
+    RmgType t1z (1.84108651 / h2);
+    RmgType t2z (-0.35706478 / (h2));
+    RmgType t3z (0.10185626 / (h2));
+    RmgType t4z (-0.02924772 / (h2));
+    RmgType t5z (0.00696837 / (h2));
+    RmgType t6z (-0.00102952 / (h2));
     RmgType t0 (th2);
-
-
 
     for (ix = 6; ix < dimx + 6; ix++)
     {
