@@ -26,6 +26,10 @@
 #include "transition.h"
 #include "ErrorFuncs.h"
 
+#if LINUX
+#include <hugetlbfs.h>
+#endif
+
 #if GPU_ENABLED
 
 #include <cuda.h>
@@ -56,6 +60,10 @@ static size_t host_max_size;
 void InitGpuMallocHost(size_t bufsize)
 {
 
+#if LINUX
+    if (ct.require_huge_pages) return;
+#endif
+
     cudaError_t custat;
     bufsize += GPU_ALIGNMENT * MAX_HOSTGPU_BLOCKS;
     custat = cudaMallocHost((void **)&host_gpubuffer , bufsize );
@@ -68,6 +76,18 @@ void InitGpuMallocHost(size_t bufsize)
 
 void *DGpuMallocHost(size_t size, const char *fname, size_t line)
 {
+
+#if LINUX
+    if(ct.require_huge_pages)
+    {
+        void *tptr = malloc(size);
+        if(!tptr)
+            rmg_error_handler (fname, line, "Error: Cannot allocate memory in GpuMallocHost.\n");
+
+        cudaHostRegister( tptr, size, cudaHostRegisterPortable);
+        return tptr;
+    }
+#endif
     size_t new_size, new_block;
 
     if(host_allocated_blocks == MAX_HOSTGPU_BLOCKS) {
@@ -92,6 +112,15 @@ void *DGpuMallocHost(size_t size, const char *fname, size_t line)
 
 void DGpuFreeHost(void *ptr, const char *fname, size_t line)
 {
+#if LINUX
+    if(ct.require_huge_pages)
+    {
+        cudaHostUnregister( ptr );
+        free(ptr);
+        return;
+    }
+#endif
+
     if(host_allocated_blocks == 0) {
         rmg_printf("DEBUG: allocated_blocks = %d\n", host_allocated_blocks);
         rmg_error_handler (fname, line, "Error: Attempt to release non reserved block.\n");

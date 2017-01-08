@@ -787,6 +787,11 @@ typedef struct
     bool use_numa;
 #endif
 
+    // Default is false. RMG will still be able to use transparent huge pages but
+    // certain special optimizations will be disabled. If you set this to true then
+    // RMG assumes that sufficient huge pages are available to meet all memory
+    // requirements and bad results may occur if that is not true.
+    bool require_huge_pages;
 } CONTROL;
 
 
