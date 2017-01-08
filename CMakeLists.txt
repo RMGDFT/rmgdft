@@ -91,8 +91,8 @@ endif()
 # Compiler flags. We currently only support GNU and Intel compilers so if
 # GNUCC is not detected we set the compiler to Intel
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -mfpmath=sse -fopenmp -m64 -I$(MKLROOT)/include")
-    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -mfpmath=sse -fopenmp -m64 -pthread -I$(MKLROOT)/include")
+    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -fopenmp -m64 -I$(MKLROOT)/include")
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -fopenmp -m64 -pthread -I$(MKLROOT)/include")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")
     if(USE_LIBXC)
         set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c -cpp -D__LIBXC=1 -c")
