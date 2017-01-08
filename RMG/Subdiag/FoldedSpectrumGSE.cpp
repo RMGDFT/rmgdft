@@ -90,9 +90,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
     DataType *T1 = (DataType *)GpuMallocHost(n * n * sizeof(DataType));
     //DataType *gpuT1 = (DataType *)GpuMalloc(n * n * sizeof(DataType));
-    DataType *gpuA = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
-    DataType *gpuZ = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
-    DataType *gpuB = (DataType *)GpuMalloc(istep * n * sizeof(DataType));
+    DataType *gpuA = (DataType *)GpuMallocDevice(istep * n * sizeof(DataType));
+    DataType *gpuZ = (DataType *)GpuMallocDevice(istep * n * sizeof(DataType));
+    DataType *gpuB = (DataType *)GpuMallocDevice(istep * n * sizeof(DataType));
 
     // Set up D^(-1) and transfer it to the GPU
     for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / B[ix*n + ix];
@@ -176,9 +176,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 //    custat = cublasGetVector(istep *n, sizeof( DataType ), gpuZ, 1, &Z[istart*n], 1 );
 //    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring Z matrix from GPU to system memory.");
 
-    GpuFree(gpuB);
-    GpuFree(gpuZ);
-    GpuFree(gpuA);
+    GpuFreeDevice(gpuB);
+    GpuFreeDevice(gpuZ);
+    GpuFreeDevice(gpuA);
     //GpuFree(gpuT1);
     GpuFreeHost(T1);
     GpuFreeHost(D);

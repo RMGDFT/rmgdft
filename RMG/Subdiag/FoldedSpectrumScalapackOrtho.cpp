@@ -73,10 +73,10 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     cublasStatus_t custat;
     KpointType *C = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
     KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
-    Bgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
-    Ggpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
-    Vgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
-    Cgpu = (KpointType *)GpuMalloc(n * n * sizeof(KpointType));
+    Bgpu = (KpointType *)GpuMallocDevice(n * n * sizeof(KpointType));
+    Ggpu = (KpointType *)GpuMallocDevice(n * n * sizeof(KpointType));
+    Vgpu = (KpointType *)GpuMallocDevice(n * n * sizeof(KpointType));
+    Cgpu = (KpointType *)GpuMallocDevice(n * n * sizeof(KpointType));
 #else
     KpointType *C = work1;
     KpointType *G = work2;
@@ -228,10 +228,10 @@ for(int st1 = 0;st1 < n;st1++) {
 #endif
 
 #if GPU_ENABLED
-    GpuFree(Cgpu);
-    GpuFree(Vgpu);
-    GpuFree(Ggpu);
-    GpuFree(Bgpu);
+    GpuFreeDevice(Cgpu);
+    GpuFreeDevice(Vgpu);
+    GpuFreeDevice(Ggpu);
+    GpuFreeDevice(Bgpu);
 #endif
     delete(RT1);
 

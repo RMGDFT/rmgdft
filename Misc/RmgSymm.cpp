@@ -87,7 +87,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
 
     if(Agpu == NULL) {
 
-        Agpu1 = (DataType *)GpuMalloc(ka * lda * sizeof( DataType ));
+        Agpu1 = (DataType *)GpuMallocDevice(ka * lda * sizeof( DataType ));
         custat = cublasSetVector(ka * lda , sizeof( DataType ), A, 1, Agpu1, 1 );
         RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring A matrix to GPU.");
 
@@ -101,7 +101,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
     }
     if(Bgpu == NULL) {
 
-        Bgpu1 = (DataType *)GpuMalloc(n * ldb * sizeof( DataType ));
+        Bgpu1 = (DataType *)GpuMallocDevice(n * ldb * sizeof( DataType ));
         custat = cublasSetVector(n * ldb , sizeof( DataType ), B, 1, Bgpu1, 1 );
         RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring B matrix to GPU.");
 
@@ -115,7 +115,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
     }
     if(Cgpu == NULL) {
 
-        Cgpu1 = (DataType *)GpuMalloc(n * ldc * sizeof( DataType ));
+        Cgpu1 = (DataType *)GpuMallocDevice(n * ldc * sizeof( DataType ));
         // No need to copy if beta is zero
         if(beta != ZERO_t) {
             custat = cublasSetVector(n * ldc , sizeof( DataType ), C, 1, Cgpu1, 1 );
@@ -156,9 +156,9 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
         RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
     }
 
-    if(Cgpu == NULL) GpuFree(Cgpu1);
-    if(Bgpu == NULL) GpuFree(Bgpu1);
-    if(Agpu == NULL) GpuFree(Agpu1);
+    if(Cgpu == NULL) GpuFreeDevice(Cgpu1);
+    if(Bgpu == NULL) GpuFreeDevice(Bgpu1);
+    if(Agpu == NULL) GpuFreeDevice(Agpu1);
 
 #else
 

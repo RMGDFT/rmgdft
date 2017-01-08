@@ -68,12 +68,12 @@ void InitGpuMalloc(size_t bufsize)
 }
 
 
-void *GpuMalloc(size_t size)
+void *DGpuMallocDevice(size_t size, const char *fname, size_t line)
 {
     size_t new_size, new_block;
 
     if(allocated_blocks == MAX_GPU_BLOCKS) {
-        rmg_error_handler (__FILE__, __LINE__, "Error: Too many blocks. Consider increasing MAX_GPU_BLOCKS.\n");
+        rmg_error_handler (fname, line, "Error: Too many blocks. Consider increasing MAX_GPU_BLOCKS.\n");
     }
 
     new_block = size / GPU_ALIGNMENT;
@@ -81,7 +81,7 @@ void *GpuMalloc(size_t size)
     new_size = cur_size + new_block; 
     if(new_size > max_size) {
         rmg_printf("GPU memory of %d bytes exceeds reserved size of %d.\n", new_size, max_size);
-        rmg_error_handler (__FILE__, __LINE__, "Error: Reservation too large. Consider increasing reserved GPU memory.\n");
+        rmg_error_handler (fname, line, "Error: Reservation too large. Consider increasing reserved GPU memory.\n");
     }
 
     block_ptrs[allocated_blocks] = curptr; 
@@ -92,16 +92,16 @@ void *GpuMalloc(size_t size)
     return block_ptrs[allocated_blocks - 1];
 }
 
-void GpuFree(void *ptr)
+void DGpuFreeDevice(void *ptr, const char *fname, size_t line)
 {
     if(allocated_blocks == 0) {
         rmg_printf("DEBUG: allocated_blocks = %d\n", allocated_blocks);
-        rmg_error_handler (__FILE__, __LINE__, "Error: Attempt to release non reserved block.\n");
+        rmg_error_handler (fname, line, "Error: Attempt to release non reserved block.\n");
     }
 
     if(ptr != block_ptrs[allocated_blocks-1]) {
         rmg_printf("DEBUG: ptr = %p    allocated_ptr = %p\n", ptr, block_ptrs[allocated_blocks-1]);
-        rmg_error_handler (__FILE__, __LINE__, "Error: Attempt to release non reserved block.\n");
+        rmg_error_handler (fname, line, "Error: Attempt to release non reserved block.\n");
     }
 
     allocated_blocks--;
