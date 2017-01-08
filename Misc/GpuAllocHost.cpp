@@ -26,10 +26,6 @@
 #include "transition.h"
 #include "ErrorFuncs.h"
 
-#if LINUX
-#include <hugetlbfs.h>
-#endif
-
 #if GPU_ENABLED
 
 #include <cuda.h>
