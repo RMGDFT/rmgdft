@@ -292,6 +292,5 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     B = BaseThread::getBaseThread(nthreads);
     B->RegisterThreadFunction(run_threads);
 
-
 }
 

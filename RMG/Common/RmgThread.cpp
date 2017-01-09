@@ -161,7 +161,6 @@ void *run_threads(void *v) {
 
 #endif
     
-
 #if GPU_ENABLED
     cudaError_t cuerr;
 #endif
@@ -183,8 +182,13 @@ void *run_threads(void *v) {
         if(ct.use_numa) numa_sched_setaffinity(0, thread_cpumask);
 #endif
 
-        // We sleep until main wakes us up
         T->thread_sleep();
+
+        if(T->get_exitflag())
+        {
+            rmg_release_tsd();
+            return NULL;
+        }
 
 #ifdef USE_NUMA
         if(ct.use_numa) numa_sched_setaffinity(0, thread_cpumask);

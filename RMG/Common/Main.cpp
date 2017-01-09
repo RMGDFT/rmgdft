@@ -47,6 +47,8 @@
 #include "InputKey.h"
 #include "RmgShm.h"
 #include "blas.h"
+#include "RmgThread.h"
+#include "rmgthreads.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -143,8 +145,8 @@ int main (int argc, char **argv)
     }
 
 
-    dgemm (trans, trans, &asize, &asize, &asize, &alpha, A, &asize,
-               B, &asize, &beta, C, &asize);
+//    dgemm (trans, trans, &asize, &asize, &asize, &alpha, A, &asize,
+//               B, &asize, &beta, C, &asize);
 #endif
 
 
@@ -195,8 +197,13 @@ int main (int argc, char **argv)
     report ();
 
     finish ();
-    
-    return 0;
+
+    // Shutdown threads gracefully otherwise Cray perftools has issues
+    BaseThread *T = BaseThread::getBaseThread(0);
+    T->set_exitflag(true);
+    T->wake_all_threads();
+    T->thread_joinall();
+
 }
 
 
@@ -209,7 +216,6 @@ void initialize(int argc, char **argv)
     ct.time0 = my_crtc ();
     RmgTimer *RT0 = new RmgTimer("2-Init");
     RmgTimer *RT = new RmgTimer("2-Init: KpointClass");
-
 
     /* Initialize all I/O including MPI group comms */
     /* Also reads control and pseudopotential files*/

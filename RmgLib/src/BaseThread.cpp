@@ -35,6 +35,9 @@
 // Init flag
 int BaseThread::init_flag=0;
 
+// Exit flag
+bool BaseThread::exit_flag=false;
+
 // Main thread control structure
 BaseThreadControl thread_controls[MAX_RMG_THREADS];
 
@@ -54,6 +57,8 @@ BaseThread *BaseThread::instance = NULL;
 
 // Pointer to the thread function
 void *(*BaseThread::funcptr)(void *s) = NULL;
+
+boost::thread_group threadgroup;
 
 // Constructor
 BaseThread::BaseThread(int nthreads)
@@ -91,11 +96,10 @@ void BaseThread::RegisterThreadFunction(void *(*funcptr)(void *s))
     BaseThread::funcptr = funcptr;
 
     // Create a set of long lived threads
-    for(thread = 0;thread < BaseThread::THREADS_PER_NODE;thread++) {
-
+    for(thread = 0;thread < BaseThread::THREADS_PER_NODE;thread++) 
+    {
         thread_controls[thread].tid = thread;
-        threads[thread] = new boost::thread(BaseThread::funcptr, (void *)&thread_controls[thread]);
-
+        threadgroup.create_thread(boost::bind(BaseThread::funcptr, (void *)&thread_controls[thread]));
     }
     
 }
@@ -120,6 +124,12 @@ void BaseThread::run_thread_tasks(int jobs) {
  
 }
 
+// Called from main when we terminate all threads
+void BaseThread::wake_all_threads(void)
+{
+    BaseThread::thread_cv.notify_all();
+}
+
 void BaseThread::thread_sleep(void)
 {
     std::unique_lock<std::mutex> lk(BaseThread::thread_mutex);
@@ -128,6 +138,21 @@ void BaseThread::thread_sleep(void)
         BaseThread::main_cv.notify_one();
     }
     BaseThread::thread_cv.wait(lk);
+}
+
+void BaseThread::thread_joinall(void)
+{
+    threadgroup.join_all();
+}
+
+bool BaseThread::get_exitflag(void)
+{
+    return BaseThread::exit_flag;
+}
+
+void BaseThread::set_exitflag(bool flag)
+{
+    BaseThread::exit_flag = flag;
 }
 
 // Blocks all threads until nthreads specified in the init call have reached this point
@@ -235,7 +260,10 @@ void BaseThread::set_pptr(int tid, void *p)
 
 
 // Non member functions used for handling thread specific data
-static boost::thread_specific_ptr<BaseThreadControl> my_ptr;
+void tsd_cleanup(BaseThreadControl *T)
+{
+}
+static boost::thread_specific_ptr<BaseThreadControl> my_ptr(tsd_cleanup);
 void rmg_set_tsd(BaseThreadControl *p)
 {
     if(!my_ptr.get()) {
@@ -245,4 +273,7 @@ void rmg_set_tsd(BaseThreadControl *p)
 BaseThreadControl *rmg_get_tsd(void) {
     return my_ptr.get();
 }
-
+void rmg_release_tsd(void)
+{
+    my_ptr.release();
+}
