@@ -150,6 +150,9 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
                 if(iz==0) w3 = 0.5*(0.5 - wz);
                 if(iz==nlzdim-1) w3 = 0.5*(0.5 + wz);
                 int map;
+                // With localized projectors we need to know if this point maps
+                // into this processors space. With delocalized we know it does
+                // so the index array was never even generated.
                 if(ct.localize_projectors) 
                 {
                     map = dvec[idx];
