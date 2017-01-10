@@ -45,19 +45,10 @@ template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr)
 {
 
-    int ion, idx, i, pe, owned, nlion, owner;
-    int ix, iy, iz, prj_per_ion;
-    int *pvec, *dvec, *ivec;
-    int ilow, jlow, klow, ihi, jhi, khi, map, map2, icount;
-    int alloc;
+    int *pvec, *dvec=NULL, *ivec;
     int *Aix, *Aiy, *Aiz;
     int *Aix2, *Aiy2, *Aiz2;
-    int icut, itmp, icenter;
-    double vect[3];
-    SPECIES *sp;
-    ION *iptr;
-    int known_nonowner, nonwner_index, known_owner, owner_index, owned_ions_per_pe, nonowned_ions_per_pe; 
-
+    int P0_BASIS = get_P0_BASIS();
 
     /*Reset number of nonlocal ions */
     pct.num_nonloc_ions = 0;
@@ -67,42 +58,58 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
 
     /* Grab some memory for temporary storage */
-    alloc = ct.max_nlpoints;
-    
+    int alloc = ct.max_nlpoints;
+
     if (alloc <get_NX_GRID() * get_NY_GRID() * get_NZ_GRID())
         alloc =get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-    pvec = new int[2*alloc];
-    dvec = pvec + alloc;
+    if(ct.localize_projectors) dvec = new int[alloc];
 
-    Aix = new int[get_NX_GRID()];
-    Aiy = new int[get_NY_GRID()];
-    Aiz = new int[get_NZ_GRID()];
-
-    Aix2 = new int[get_FNX_GRID()];
-    Aiy2 = new int[get_FNY_GRID()];
-    Aiz2 = new int[get_FNZ_GRID()];
-
+    pvec = new int[P0_BASIS];
 
     reset_pct_arrays (ct.num_ions);
+    size_t NX_GRID = get_NX_GRID();
+    size_t NY_GRID = get_NY_GRID();
+    size_t NZ_GRID = get_NZ_GRID();
+    size_t FNX_GRID = get_FNX_GRID();
+    size_t FNY_GRID = get_FNY_GRID();
+    size_t FNZ_GRID = get_FNZ_GRID();
+    size_t PX0_GRID = get_PX0_GRID();
+    size_t PY0_GRID = get_PY0_GRID();
+    size_t PZ0_GRID = get_PZ0_GRID();
 
+    int nthreads = std::max(ct.THREADS_PER_NODE, 4);
+
+#pragma omp parallel private(Aix, Aiy, Aiz, Aix2, Aiy2, Aiz2, pvec, dvec)
+{
+
+    pvec = new int[P0_BASIS]();
+    if(ct.localize_projectors) dvec = new int[alloc];
+    Aix = new int[NX_GRID]();
+    Aiy = new int[NY_GRID]();
+    Aiz = new int[NZ_GRID]();
+
+    Aix2 = new int[FNX_GRID]();
+    Aiy2 = new int[FNY_GRID]();
+    Aiz2 = new int[FNZ_GRID]();
+
+#pragma omp parallel for num_threads(nthreads)
     /* Loop over ions */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (int ion = 0; ion < ct.num_ions; ion++)
     {
 
-        /*Release memory and reset other parameters for given ion */
+        int ilow, jlow, klow, ihi, jhi, khi, map;
+        double vect[3];
 
         /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+        ION *iptr = &ct.ions[ion];
 
 
         /* Get species type */
-        sp = &ct.sp[iptr->species];
-
-        prj_per_ion = sp->nh;
+        SPECIES *sp = &ct.sp[iptr->species];
 
 
-        icenter = sp->nldim / 2;
-        icut = (icenter + 1) * (icenter + 1);
+        int icenter = sp->nldim / 2;
+        int icut = (icenter + 1) * (icenter + 1);
 
 
         /* Determine mapping indices or even if a mapping exists */
@@ -146,30 +153,34 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         /* If there is a mapping for this ion then we have to generate */
         /* the projector.                                              */
 
-        for (idx = 0; idx < alloc; idx++)
-            dvec[idx] = pvec[idx] = 0;
+        for (int idx = 0; idx < P0_BASIS; idx++) pvec[idx] = 0;
 
-        icount = 0;
+        if(ct.localize_projectors) 
+        {
+            for (int idx = 0; idx < alloc; idx++) dvec[idx] = 0;
+        }
+
+        int icount = 0;
         if (map)
         {
 
             /* Generate index arrays */
-            icount = idx = 0;
-            for (ix = 0; ix < nlxdim; ix++)
+            int idx = 0;
+            for (int ix = 0; ix < nlxdim; ix++)
             {
-                for (iy = 0; iy < nlydim; iy++)
+                for (int iy = 0; iy < nlydim; iy++)
                 {
-                    for (iz = 0; iz < nlzdim; iz++)
+                    for (int iz = 0; iz < nlzdim; iz++)
                     {
-                        dvec[idx] = FALSE;
                         if(ct.localize_projectors) {
 
+                            dvec[idx] = FALSE;
                             if ((((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
                                  ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
                                  ((Aiz[iz] >= klow) && (Aiz[iz] <= khi))))
                             {
                                 /* Cut it off if required */
-                                itmp =
+                                int itmp =
                                     (ix - icenter) * (ix - icenter) +
                                     (iy - icenter) * (iy - icenter) + (iz - icenter) * (iz - icenter);
 
@@ -177,9 +188,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                                 {
 
                                     pvec[icount] =
-                                        get_PY0_GRID() * get_PZ0_GRID() * ((Aix[ix]-get_PX_OFFSET()) % get_PX0_GRID()) +
-                                        get_PZ0_GRID() * ((Aiy[iy]-get_PY_OFFSET()) % get_PY0_GRID()) + 
-                                        ((Aiz[iz]-get_PZ_OFFSET()) % get_PZ0_GRID());
+                                        PY0_GRID * PZ0_GRID * ((Aix[ix]-get_PX_OFFSET()) % PX0_GRID) +
+                                        PZ0_GRID * ((Aiy[iy]-get_PY_OFFSET()) % PY0_GRID) + 
+                                        ((Aiz[iz]-get_PZ_OFFSET()) % PZ0_GRID);
 
                                     dvec[idx] = TRUE;
 
@@ -194,11 +205,10 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                                  ((iy >= jlow) && (iy <= jhi)) &&
                                  ((iz >= klow) && (iz <= khi)))) {
                                     pvec[icount] =
-                                        get_PY0_GRID() * get_PZ0_GRID() * ((ix-get_PX_OFFSET()) % get_PX0_GRID()) +
-                                        get_PZ0_GRID() * ((iy-get_PY_OFFSET()) % get_PY0_GRID()) + 
-                                        ((iz-get_PZ_OFFSET()) % get_PZ0_GRID());
+                                        PY0_GRID * PZ0_GRID * ((ix-get_PX_OFFSET()) % PX0_GRID) +
+                                        PZ0_GRID * ((iy-get_PY_OFFSET()) % PY0_GRID) + 
+                                        ((iz-get_PZ_OFFSET()) % PZ0_GRID);
 
-                                    dvec[idx] = TRUE;
 
                                     icount++;
                             } 
@@ -212,12 +222,12 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             pct.idxptrlen[ion] = icount;
 
             /* Now we have to allocate memory for the index array */
-            if (icount)
+            if (icount && ct.localize_projectors)
             {
                 pct.idxflag[ion] = new int[idx];
 
                 ivec = pct.idxflag[ion];
-                for (ix = 0; ix < idx; ix++)
+                for (int ix = 0; ix < idx; ix++)
                     ivec[ix] = (int) dvec[ix];
             }
 
@@ -239,9 +249,29 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
         }                       /* end if (map) */
 
+    }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
+
+    
+    delete [] Aiz2;
+    delete [] Aiy2;
+    delete [] Aix2;
+    delete [] Aiz;
+    delete [] Aiy;
+    delete [] Aix;
+    if(ct.localize_projectors) delete [] dvec;
+    delete [] pvec;
+
+} // end omp private area
+
+
+    for (int ion = 0; ion < ct.num_ions; ion++)
+    {
+
+        /* Generate ion pointer */
+        ION *iptr = &ct.ions[ion];
 
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
-        if (icount || pct.Qidxptrlen[ion])
+        if (pct.idxptrlen[ion] || pct.Qidxptrlen[ion])
         {
 
             if (pct.num_nonloc_ions >= MAX_NONLOC_IONS)
@@ -253,9 +283,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             pct.nonloc_ion_ownflag[pct.num_nonloc_ions] = 0;
 
             /*See if this processor owns current ion */
-            if (pct.gridpe ==
-                claim_ion (iptr->xtal, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_NX_GRID(), get_NY_GRID(),
-                           get_NZ_GRID()))
+            if (pct.gridpe == claim_ion (iptr->xtal, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID))
             {
                 if (pct.num_owned_ions >= MAX_NONLOC_IONS)
                     rmg_error_handler (__FILE__, __LINE__, "Too many owned ions, pct.owned_ions_list will overflow");
@@ -271,23 +299,19 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
     }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
 
+    Aix = new int[NX_GRID]();
+    Aiy = new int[NY_GRID]();
+    Aiz = new int[NZ_GRID]();
+
+    Aix2 = new int[FNX_GRID]();
+    Aiy2 = new int[FNY_GRID]();
+    Aiz2 = new int[FNZ_GRID]();
+
     pct.num_tot_proj = pct.num_nonloc_ions * ct.max_nl;
 
-//    pct.num_tot_proj = 0;
-//    for(ion = 0; ion <pct.num_nonloc_ions; ion++)
-//    {
-//        ion1 = pct.nonloc_ions_list[ion];
-//
-//        iptr = &ct.ions[ion1];
-//
-        /* Get species type */
-//        sp = &ct.sp[iptr->species];
-
-//        prj_per_ion = sp->nh;
-//        pct.num_tot_proj += prj_per_ion;
-//    }
-        
+    int known_nonowner, nonwner_index, known_owner, owner_index, owned_ions_per_pe, nonowned_ions_per_pe; 
     size_t weight_size = pct.num_tot_proj * get_P0_BASIS() + 128;
+    int owned, owner;
 
 #if GPU_ENABLED
     if( cudaSuccess != cudaMallocHost((void **)&pct.weight, weight_size * sizeof(double) ))
@@ -325,11 +349,11 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     {
 	rmg_printf ("\n PE %d: Number of nonlocal ions is %d", pct.gridpe, pct.num_nonloc_ions);
 
-	for (i = 0; i < pct.num_nonloc_ions; i++)
+	for (int i = 0; i < pct.num_nonloc_ions; i++)
 	    rmg_printf (" %d", pct.nonloc_ions_list[i]);
 
 	rmg_printf ("\n PE %d: Number of claimed ions is %d", pct.gridpe, pct.num_owned_ions);
-	for (i = 0; i < pct.num_owned_ions; i++)
+	for (int i = 0; i < pct.num_owned_ions; i++)
 	    rmg_printf (" %d", pct.owned_ions_list[i]);
     }
 
@@ -355,25 +379,22 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     }
     
 
-#if 1
-
     /* Loop over all ions to obtain the lists necessary for communication */
-    for (nlion = 0; nlion < pct.num_nonloc_ions; nlion++)
+    for (int nlion = 0; nlion < pct.num_nonloc_ions; nlion++)
     {
 
-        ion = pct.nonloc_ions_list[nlion];
+        int ion = pct.nonloc_ions_list[nlion];
+        int map, map2;
 
         /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+        ION *iptr = &ct.ions[ion];
 
         /* Get species type */
-        sp = &ct.sp[iptr->species];
+        SPECIES *sp = &ct.sp[iptr->species];
 
 
         /*See if this processor owns current ion */
-        owner =
-            claim_ion (iptr->xtal, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_NX_GRID(), get_NY_GRID(),
-                       get_NZ_GRID());
+        owner = claim_ion (iptr->xtal, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
 	//Dprintf ("Owner of ion %d nlion %d is PE %d", ion, nlion, owner); 
         
 	owned = 0;
@@ -391,7 +412,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 	    
 	    /*Loop over all processors in caculation to determine if it overlaps with current ion */
 	    /* This should only loop over processors in a grid */
-	    for (pe = 0; pe < NPES; pe++)
+	    for (int pe = 0; pe < NPES; pe++)
 	    {
 		
 		/*Skip the case when pe is equal to the rank of current processor, in that case no send or
@@ -400,139 +421,133 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 		    continue;
 
 		/* Determine if ion has overlap with a given PE becasue of beta functions */
-        if(!ct.localize_projectors) map = true;
-        else
-            map = test_overlap (pe, iptr, Aix, Aiy, Aiz, sp->nldim,
-                    get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_NX_GRID(), get_NY_GRID(), get_NZ_GRID());
+                if(!ct.localize_projectors) map = true;
+                else
+                    map = test_overlap (pe, iptr, Aix, Aiy, Aiz, sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
 
-        /* Determine if ion has overlap with a given PE becasue of Q function */
-        if(ct.norm_conserving_pp) {
-            map2 = FALSE;
-        }
-        else {
-            map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2, sp->qdim, 
-                    get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
-        }
+                /* Determine if ion has overlap with a given PE becasue of Q function */
+                if(ct.norm_conserving_pp) {
+                    map2 = FALSE;
+                }
+                else {
+                    map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2, sp->qdim, 
+                            get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), FNX_GRID, FNY_GRID, FNZ_GRID);
+                }
 
-        //Dprintf("Overlap condition for ion %d and PE %d is %d, map is %d, map2 is %d ", ion, pe, map || map2, map, map2); 
+                //Dprintf("Overlap condition for ion %d and PE %d is %d, map is %d, map2 is %d ", ion, pe, map || map2, map, map2); 
 
-        if (map || map2)
+                if (map || map2)
+                {
+
+
+                    /* See if this non-owning pe has already been recorded*/
+                    known_nonowner = 0;
+                    for (int i = 0; i < pct.num_owned_pe; i++)
+                    {
+                        if (pct.owned_pe_list[i] == pe)
+                        {
+                            known_nonowner++;
+                            nonwner_index = i;
+                            break;
+                        }
+                    }
+
+                    //Dprintf("known_nonowner is %d and nonwner_index is %d for PE %d and ion %d", known_nonowner, nonwner_index, pe, ion);
+
+                    /* Record pe index into communication list, if it has not been recorded yet*/
+                    if (!known_nonowner)
+                    {
+                        if (pct.num_owned_pe >= MAX_NONLOC_PROCS)
+                            rmg_error_handler (__FILE__, __LINE__, "pct.num_nonloc_pes is too large.");
+
+                        pct.owned_pe_list[pct.num_owned_pe] = pe;
+
+                        pct.num_owned_ions_per_pe[pct.num_owned_pe] = 1;
+
+                        pct.list_owned_ions_per_pe[pct.num_owned_pe][0] = nlion;
+
+                        pct.num_owned_pe++;
+
+                        //Dprintf("Recording previously unknown PE %d, pct.owned_pe_list[%d]=%d,  pct.num_owned_ions_per_pe[%d]=%d, pct.list_owned_ions_per_pe[%d][0]=%d,  pct.num_owned_pe = %d for ion %d", 
+                        //		pe, pct.num_owned_pe, pct.owned_pe_list[pct.num_owned_pe],pct.num_owned_pe, pct.num_owned_ions_per_pe[pct.num_owned_pe], pct.num_owned_pe, pct.list_owned_ions_per_pe[pct.num_owned_pe][0], pct.num_owned_pe, ion);
+
+                    }
+
+                    else
+                    {
+                        /*Number of ions to communicate with current non-owner PE*/
+                        owned_ions_per_pe = pct.num_owned_ions_per_pe[nonwner_index];
+
+                        if (owned_ions_per_pe >= MAX_NONLOC_IONS)
+                            rmg_error_handler (__FILE__, __LINE__, "pct.num_owned_ions_per_pe too large.");
+
+                        pct.list_owned_ions_per_pe[nonwner_index][owned_ions_per_pe] = nlion;
+                        pct.num_owned_ions_per_pe[nonwner_index]++;
+
+                        //Dprintf("ion %d: PE %d is already known, pct.list_owned_ions_per_pe[%d][%d]=%d, pct.num_owned_ions_per_pe[%d]=%d",
+                        //	ion, pe, nonwner_index, owned_ions_per_pe, pct.list_owned_ions_per_pe[nonwner_index][owned_ions_per_pe],
+                        //	nonwner_index, pct.num_owned_ions_per_pe[nonwner_index]);
+                    }
+                }
+
+            }  /* End of for (pe=0; pe < NPES; pe++) */
+
+        }            
+
+        /*For non-owned ion we need to record rank of owner */
+        else	
         {
 
 
-            /* See if this non-owning pe has already been recorded*/
-            known_nonowner = 0;
-            for (i = 0; i < pct.num_owned_pe; i++)
+            /*Loop over list of processors that we already have to see if owning "pe" has alredy been recorded */
+            known_owner = 0;
+            for (int i = 0; i < pct.num_owners; i++)
             {
-                if (pct.owned_pe_list[i] == pe)
+                if (pct.owners_list[i] == owner)
                 {
-                    known_nonowner++;
-                    nonwner_index = i;
+                    known_owner++;
+                    owner_index = i;
                     break;
                 }
             }
 
-            //Dprintf("known_nonowner is %d and nonwner_index is %d for PE %d and ion %d", known_nonowner, nonwner_index, pe, ion);
+            //Dprintf("known_owner is %d and owner_index is %d for ion %d", known_owner, owner_index, ion);
 
-            /* Record pe index into communication list, if it has not been recorded yet*/
-            if (!known_nonowner)
+
+            if (!known_owner)
             {
-                if (pct.num_owned_pe >= MAX_NONLOC_PROCS)
-                    rmg_error_handler (__FILE__, __LINE__, "pct.num_nonloc_pes is too large.");
+                if (pct.num_owners >= MAX_NONLOC_PROCS) {
+                    rmg_error_handler (__FILE__, __LINE__, "pct.num_owners (%d) is too large (max: %d)");
+                }
 
-                pct.owned_pe_list[pct.num_owned_pe] = pe;
+                pct.owners_list[pct.num_owners] = owner;
 
-                pct.num_owned_ions_per_pe[pct.num_owned_pe] = 1;
+                pct.num_nonowned_ions_per_pe[pct.num_owners] = 1;
 
-                pct.list_owned_ions_per_pe[pct.num_owned_pe][0] = nlion;
+                pct.list_ions_per_owner[pct.num_owners][0] = nlion;
 
-                pct.num_owned_pe++;
+                pct.num_owners++;
 
-                //Dprintf("Recording previously unknown PE %d, pct.owned_pe_list[%d]=%d,  pct.num_owned_ions_per_pe[%d]=%d, pct.list_owned_ions_per_pe[%d][0]=%d,  pct.num_owned_pe = %d for ion %d", 
-                //		pe, pct.num_owned_pe, pct.owned_pe_list[pct.num_owned_pe],pct.num_owned_pe, pct.num_owned_ions_per_pe[pct.num_owned_pe], pct.num_owned_pe, pct.list_owned_ions_per_pe[pct.num_owned_pe][0], pct.num_owned_pe, ion);
-
+                //rmg_printf("Owner of ion %d PE %d has not been previously recorded: pct.owners_list[%d]=%d, pct.num_nonowned_ions_per_pe[%d]=%d, pct.list_ions_per_owner[%d][0]=%d, pct.num_owners=%d", 
+                //	ion, owner, pct.num_owners, pct.owners_list[pct.num_owners], pct.num_owners, pct.num_nonowned_ions_per_pe[pct.num_owners], pct.num_owners, pct.list_ions_per_owner[pct.num_owners][0], pct.num_owners); 
             }
 
             else
             {
-                /*Number of ions to communicate with current non-owner PE*/
-                owned_ions_per_pe = pct.num_owned_ions_per_pe[nonwner_index];
 
-                if (owned_ions_per_pe >= MAX_NONLOC_IONS)
-                    rmg_error_handler (__FILE__, __LINE__, "pct.num_owned_ions_per_pe too large.");
+                nonowned_ions_per_pe = pct.num_nonowned_ions_per_pe[owner_index];
 
-                pct.list_owned_ions_per_pe[nonwner_index][owned_ions_per_pe] = nlion;
-                pct.num_owned_ions_per_pe[nonwner_index]++;
+                if (nonowned_ions_per_pe >= MAX_NONLOC_IONS)
+                    rmg_error_handler(__FILE__, __LINE__, "pct.num_nonowned_ions_per_pe too large.");
 
-                //Dprintf("ion %d: PE %d is already known, pct.list_owned_ions_per_pe[%d][%d]=%d, pct.num_owned_ions_per_pe[%d]=%d",
-                //	ion, pe, nonwner_index, owned_ions_per_pe, pct.list_owned_ions_per_pe[nonwner_index][owned_ions_per_pe],
-                //	nonwner_index, pct.num_owned_ions_per_pe[nonwner_index]);
-            }
-        }
+                pct.list_ions_per_owner[owner_index][nonowned_ions_per_pe] = nlion;
+                pct.num_nonowned_ions_per_pe[owner_index]++;
 
-
-        }  /* End of for (pe=0; pe < NPES; pe++) */
-
-    }            
-
-
-
-    /*For non-owned ion we need to record rank of owner */
-    else	
-    {
-
-
-        /*Loop over list of processors that we already have to see if owning "pe" has alredy been recorded */
-        known_owner = 0;
-        for (i = 0; i < pct.num_owners; i++)
-        {
-            if (pct.owners_list[i] == owner)
-            {
-                known_owner++;
-                owner_index = i;
-                break;
-            }
-        }
-
-        //Dprintf("known_owner is %d and owner_index is %d for ion %d", known_owner, owner_index, ion);
-
-
-        if (!known_owner)
-        {
-            if (pct.num_owners >= MAX_NONLOC_PROCS) {
-                rmg_error_handler (__FILE__, __LINE__, "pct.num_owners (%d) is too large (max: %d)");
+                //Dprintf("ion %d owned by %d: pct.list_ions_per_owner[%d][%d]=%d, pct.num_nonowned_ions_per_pe[%d]=%d", 
+                //		ion, owner, owner_index, nonowned_ions_per_pe, pct.list_ions_per_owner[owner_index][nonowned_ions_per_pe], owner_index, pct.num_nonowned_ions_per_pe[owner_index]);
             }
 
-            pct.owners_list[pct.num_owners] = owner;
-
-            pct.num_nonowned_ions_per_pe[pct.num_owners] = 1;
-
-            pct.list_ions_per_owner[pct.num_owners][0] = nlion;
-
-            pct.num_owners++;
-
-            //rmg_printf("Owner of ion %d PE %d has not been previously recorded: pct.owners_list[%d]=%d, pct.num_nonowned_ions_per_pe[%d]=%d, pct.list_ions_per_owner[%d][0]=%d, pct.num_owners=%d", 
-            //	ion, owner, pct.num_owners, pct.owners_list[pct.num_owners], pct.num_owners, pct.num_nonowned_ions_per_pe[pct.num_owners], pct.num_owners, pct.list_ions_per_owner[pct.num_owners][0], pct.num_owners); 
         }
-
-        else
-        {
-
-            nonowned_ions_per_pe = pct.num_nonowned_ions_per_pe[owner_index];
-
-            if (nonowned_ions_per_pe >= MAX_NONLOC_IONS)
-                rmg_error_handler(__FILE__, __LINE__, "pct.num_nonowned_ions_per_pe too large.");
-
-            pct.list_ions_per_owner[owner_index][nonowned_ions_per_pe] = nlion;
-            pct.num_nonowned_ions_per_pe[owner_index]++;
-
-            //Dprintf("ion %d owned by %d: pct.list_ions_per_owner[%d][%d]=%d, pct.num_nonowned_ions_per_pe[%d]=%d", 
-            //		ion, owner, owner_index, nonowned_ions_per_pe, pct.list_ions_per_owner[owner_index][nonowned_ions_per_pe], owner_index, pct.num_nonowned_ions_per_pe[owner_index]);
-        }
-
-    }
-
-#endif
 
     }/*for (nlion = 0; nlion < pct.num_nonloc_ions; nlion++)*/
 
@@ -545,6 +560,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     delete [] Aiy;
     delete [] Aix;
 
+    if(ct.localize_projectors) delete [] dvec;
     delete [] pvec;
 
 } 

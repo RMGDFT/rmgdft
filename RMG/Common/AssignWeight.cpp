@@ -149,9 +149,18 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
                 double w3 = 1.0;
                 if(iz==0) w3 = 0.5*(0.5 - wz);
                 if(iz==nlzdim-1) w3 = 0.5*(0.5 + wz);
+                int map;
+                if(ct.localize_projectors) 
+                {
+                    map = dvec[idx];
+                }
+                else
+                {
+                    map = true;
+                    w1 = w2 = w3 = 1.0;
+                }
 
-                if(!ct.localize_projectors) w1 = w2 = w3 = 1.0;
-                if (dvec[idx])
+                if (map)
                 {
                     int idx1 = ix * nlydim * nlzdim + iy * nlzdim + iz;
                     rtptr[pidx[docount]] = std::real(nbeptr[idx1]);
