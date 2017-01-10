@@ -83,6 +83,11 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     size_t PY_OFFSET = get_PY_OFFSET();
     size_t PZ_OFFSET = get_PZ_OFFSET();
 
+    // The serial version of this is a little faster for small systems
+    // but is horrendously slow when there are thousands of ions. We
+    // parallelize over ions but keep the number of threads used limited
+    // to a maximum of 4 due to the large amounts of memory required
+    // per thread.
     int nthreads = ct.THREADS_PER_NODE;
     nthreads = std::min(ct.THREADS_PER_NODE, 4);
 
