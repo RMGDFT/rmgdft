@@ -344,12 +344,10 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/
-printf("AAAAAAA  %d  %d\n",pct.num_owned_ions, pct.num_nonloc_ions);fflush(NULL);
     if (int_sum_all (pct.num_owned_ions, pct.grid_comm) != ct.num_ions)
-{
-printf("BBBBBBB  %d\n",pct.num_owned_ions);fflush(NULL);
+    {
         rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
-}
+    }
 
   
     if (ct.verbose)
