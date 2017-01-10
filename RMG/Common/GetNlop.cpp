@@ -45,7 +45,7 @@ template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr)
 {
 
-    int *pvec, *dvec=NULL, *ivec;
+    int *pvec, *dvec=NULL;
     int *Aix, *Aiy, *Aiz;
     int *Aix2, *Aiy2, *Aiz2;
     int P0_BASIS = get_P0_BASIS();
@@ -77,11 +77,14 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     size_t PY0_GRID = get_PY0_GRID();
     size_t PZ0_GRID = get_PZ0_GRID();
 
-    int nthreads = std::max(ct.THREADS_PER_NODE, 4);
+     
+    int nthreads = ct.THREADS_PER_NODE;
+    nthreads = std::min(ct.THREADS_PER_NODE, 4);
 
 #pragma omp parallel private(Aix, Aiy, Aiz, Aix2, Aiy2, Aiz2, pvec, dvec)
 {
 
+    int *ivec;
     pvec = new int[P0_BASIS]();
     if(ct.localize_projectors) dvec = new int[alloc];
     Aix = new int[NX_GRID]();
@@ -92,7 +95,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     Aiy2 = new int[FNY_GRID]();
     Aiz2 = new int[FNZ_GRID]();
 
-#pragma omp parallel for num_threads(nthreads)
+#pragma omp parallel for schedule(static,1) num_threads(nthreads)
     /* Loop over ions */
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
@@ -341,8 +344,12 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/
+printf("AAAAAAA  %d  %d\n",pct.num_owned_ions, pct.num_nonloc_ions);fflush(NULL);
     if (int_sum_all (pct.num_owned_ions, pct.grid_comm) != ct.num_ions)
+{
+printf("BBBBBBB  %d\n",pct.num_owned_ions);fflush(NULL);
         rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
+}
 
   
     if (ct.verbose)
