@@ -70,14 +70,19 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     size_t NX_GRID = get_NX_GRID();
     size_t NY_GRID = get_NY_GRID();
     size_t NZ_GRID = get_NZ_GRID();
+
     size_t FNX_GRID = get_FNX_GRID();
     size_t FNY_GRID = get_FNY_GRID();
     size_t FNZ_GRID = get_FNZ_GRID();
+
     size_t PX0_GRID = get_PX0_GRID();
     size_t PY0_GRID = get_PY0_GRID();
     size_t PZ0_GRID = get_PZ0_GRID();
 
-     
+    size_t PX_OFFSET = get_PX_OFFSET();
+    size_t PY_OFFSET = get_PY_OFFSET();
+    size_t PZ_OFFSET = get_PZ_OFFSET();
+
     int nthreads = ct.THREADS_PER_NODE;
     nthreads = std::min(ct.THREADS_PER_NODE, 4);
 
@@ -87,15 +92,11 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     int *ivec;
     pvec = new int[P0_BASIS]();
     if(ct.localize_projectors) dvec = new int[alloc];
-    Aix = new int[NX_GRID]();
-    Aiy = new int[NY_GRID]();
-    Aiz = new int[NZ_GRID]();
+    Aix = new int[NX_GRID];
+    Aiy = new int[NY_GRID];
+    Aiz = new int[NZ_GRID];
 
-    Aix2 = new int[FNX_GRID]();
-    Aiy2 = new int[FNY_GRID]();
-    Aiz2 = new int[FNZ_GRID]();
-
-#pragma omp parallel for schedule(static,1) num_threads(nthreads)
+#pragma omp parallel for schedule(static, 1) num_threads(nthreads)
     /* Loop over ions */
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
@@ -122,21 +123,21 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         int nlzdim = sp->nldim;
         if(!ct.localize_projectors) {
             map = true;
-            nlxdim = get_NX_GRID();
-            nlydim = get_NY_GRID();
-            nlzdim = get_NZ_GRID();
+            nlxdim = NX_GRID;
+            nlydim = NY_GRID;
+            nlzdim = NZ_GRID;
             iptr->nlxcstart = iptr->nlycstart = iptr->nlzcstart = 0.0;
-            ilow = get_PX_OFFSET();
+            ilow = PX_OFFSET;
             ihi = ilow + get_PX0_GRID() -1;
-            jlow = get_PY_OFFSET();
+            jlow = PY_OFFSET;
             jhi = jlow + get_PY0_GRID() -1;
-            klow = get_PZ_OFFSET();
+            klow = PZ_OFFSET;
             khi = klow + get_PZ0_GRID() -1;
         }
         else
             map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                         sp->nldim, get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(),
-                         get_NX_GRID(), get_NY_GRID(), get_NZ_GRID(),
+                         sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID,
+                         NX_GRID, NY_GRID, NZ_GRID,
                          &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
 
         /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
@@ -146,9 +147,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         vect[2] = iptr->xtal[2] - iptr->nlzcstart;
 
         /*Substract vector between left bottom corner of the box and center of the box */
-        vect[0] -= (nlxdim / 2) / (double) get_NX_GRID();
-        vect[1] -= (nlydim / 2) / (double) get_NY_GRID();
-        vect[2] -= (nlzdim / 2) / (double) get_NZ_GRID();
+        vect[0] -= (nlxdim / 2) / (double) NX_GRID;
+        vect[1] -= (nlydim / 2) / (double) NY_GRID;
+        vect[2] -= (nlzdim / 2) / (double) NZ_GRID;
 
         /*The vector we are looking for should be */
         to_cartesian (vect, iptr->nlcrds);
@@ -156,16 +157,16 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         /* If there is a mapping for this ion then we have to generate */
         /* the projector.                                              */
 
-        for (int idx = 0; idx < P0_BASIS; idx++) pvec[idx] = 0;
-
-        if(ct.localize_projectors) 
-        {
-            for (int idx = 0; idx < alloc; idx++) dvec[idx] = 0;
-        }
 
         int icount = 0;
         if (map)
         {
+
+            for (int idx = 0; idx < P0_BASIS; idx++) pvec[idx] = 0;
+            if(ct.localize_projectors) 
+            {
+                for (int idx = 0; idx < alloc; idx++) dvec[idx] = 0;
+            }
 
             /* Generate index arrays */
             int idx = 0;
@@ -191,9 +192,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                                 {
 
                                     pvec[icount] =
-                                        PY0_GRID * PZ0_GRID * ((Aix[ix]-get_PX_OFFSET()) % PX0_GRID) +
-                                        PZ0_GRID * ((Aiy[iy]-get_PY_OFFSET()) % PY0_GRID) + 
-                                        ((Aiz[iz]-get_PZ_OFFSET()) % PZ0_GRID);
+                                        PY0_GRID * PZ0_GRID * ((Aix[ix]-PX_OFFSET) % PX0_GRID) +
+                                        PZ0_GRID * ((Aiy[iy]-PY_OFFSET) % PY0_GRID) + 
+                                        ((Aiz[iz]-PZ_OFFSET) % PZ0_GRID);
 
                                     dvec[idx] = TRUE;
 
@@ -208,9 +209,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                                  ((iy >= jlow) && (iy <= jhi)) &&
                                  ((iz >= klow) && (iz <= khi)))) {
                                     pvec[icount] =
-                                        PY0_GRID * PZ0_GRID * ((ix-get_PX_OFFSET()) % PX0_GRID) +
-                                        PZ0_GRID * ((iy-get_PY_OFFSET()) % PY0_GRID) + 
-                                        ((iz-get_PZ_OFFSET()) % PZ0_GRID);
+                                        PY0_GRID * PZ0_GRID * ((ix-PX_OFFSET) % PX0_GRID) +
+                                        PZ0_GRID * ((iy-PY_OFFSET) % PY0_GRID) + 
+                                        ((iz-PZ_OFFSET) % PZ0_GRID);
 
 
                                     icount++;
@@ -255,9 +256,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
 
     
-    delete [] Aiz2;
-    delete [] Aiy2;
-    delete [] Aix2;
     delete [] Aiz;
     delete [] Aiy;
     delete [] Aix;
@@ -345,9 +343,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/
     if (int_sum_all (pct.num_owned_ions, pct.grid_comm) != ct.num_ions)
-    {
         rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
-    }
 
   
     if (ct.verbose)
