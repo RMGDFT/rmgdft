@@ -39,7 +39,7 @@ void get_qqq ()
     FILE *ftpr=NULL;
     char filename[MAX_PATH];
     const bool SET=true;
-
+//if(ct.norm_conserving_pp)return;
     if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
     {
 	snprintf (filename, MAX_PATH, "q.txt");
@@ -54,44 +54,52 @@ void get_qqq ()
 
         nh = sp->nh;
         ncount = pct.Qidxptrlen[ion];
+
         qnmI = pct.augfunc[ion];
 
-        if (pct.qqq[ion] == NULL)
+        if (pct.qqq[ion] == NULL) {
             my_malloc (pct.qqq[ion], nh * nh, double);
+            qqq = pct.qqq[ion];
+            for(idx = 0;idx < nh * nh;idx++) qqq[idx] = 0.0;
+        }
         qqq = pct.qqq[ion];
 
         if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
             fprintf (ftpr, "%% for ion %d :\n", ion);
 
         idx = 0;
-        for (i = 0; i < nh; i++)
-        {
-            for (j = i; j < nh; j++)
+        if(!ct.norm_conserving_pp) {
+
+            for (i = 0; i < nh; i++)
             {
-                sum = 0.0;
-                if (ncount)
+                for (j = i; j < nh; j++)
                 {
-                    qnmI = pct.augfunc[ion] + idx * ncount;
-                    for (icount = 0; icount < ncount; icount++)
-                    {
-                        sum += qnmI[icount];
-                    }
-                }
-                sum = real_sum_all (sum, pct.grid_comm);
-                sum = sum * get_vel_f();
-                if (fabs (sum) < 1.0e-8)
                     sum = 0.0;
-                if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
-                    fprintf (ftpr, "i=%d j=%d q_cal=%15.8f q_rel=%15.8f\n",
-                             i, j, sum, sp->qqq[i][j]);
+                    if (ncount)
+                    {
+                        qnmI = pct.augfunc[ion] + idx * ncount;
+                        for (icount = 0; icount < ncount; icount++)
+                        {
+                            sum += qnmI[icount];
+                        }
+                    }
+                    sum = real_sum_all (sum, pct.grid_comm);
+                    sum = sum * get_vel_f();
+                    if (fabs (sum) < 1.0e-8)
+                        sum = 0.0;
+                    if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
+                        fprintf (ftpr, "i=%d j=%d q_cal=%15.8f q_rel=%15.8f\n",
+                                 i, j, sum, sp->qqq[i][j]);
 
-                qqq[i * nh + j] = sum;
-                if (i != j)
-                    qqq[j * nh + i] = qqq[i * nh + j];
+                    qqq[i * nh + j] = sum;
+                    if (i != j)
+                        qqq[j * nh + i] = qqq[i * nh + j];
 
-                idx++;
-            }                   /*end for j */
-        }                       /*end for i */
+                    idx++;
+                }                   /*end for j */
+            }                       /*end for i */
+        } // end if for norm conserving
+
         if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
             fprintf (ftpr, "\n");
     }                           /*end for ion */
