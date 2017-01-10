@@ -62,7 +62,6 @@ private:
     // proper serialization
     static std::mutex mpi_mutex;
 
-    boost::thread *threads[MAX_RMG_THREADS];
     std::atomic<int> jobs;
     std::atomic<bool> in_threaded_region;
 
@@ -81,6 +80,9 @@ private:
 
     // Thread function pointer
     static void *(*funcptr)(void *);
+
+    // Exit flag for threads
+    static bool exit_flag;
 
     // Private constructur
     BaseThread(int nthreads);
@@ -118,10 +120,15 @@ public:
     int is_loop_over_states(void);
     int get_threads_per_node(void);
     void thread_sleep(void);
+    void wake_all_threads(void);
+    void thread_joinall(void);
+    bool get_exitflag(void);
+    void set_exitflag(bool flag);
 
 };
 
 void rmg_set_tsd(BaseThreadControl *p);
+void rmg_release_tsd(void);
 BaseThreadControl *rmg_get_tsd(void);
 
 #endif
