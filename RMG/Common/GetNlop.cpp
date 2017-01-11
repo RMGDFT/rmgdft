@@ -322,13 +322,13 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 #if GPU_ENABLED
     if( cudaSuccess != cudaMallocHost((void **)&pct.weight, weight_size * sizeof(double) ))
         rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
-    for(idx = 0;idx < weight_size;idx++) pct.weight[idx] = 0.0;
+    for(int idx = 0;idx < weight_size;idx++) pct.weight[idx] = 0.0;
 
     if(ct.need_Bweight) 
     {
         if( cudaSuccess != cudaMallocHost((void **)&pct.Bweight, weight_size * sizeof(double) ))
             rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
-        for(idx = 0;idx < weight_size;idx++) pct.Bweight[idx] = 0.0;
+        for(int idx = 0;idx < weight_size;idx++) pct.Bweight[idx] = 0.0;
     }
     else {
         pct.Bweight = pct.weight;
