@@ -41,15 +41,13 @@ template <typename KpointType>
 void GetWeight (Kpoint<KpointType> **Kptr)
 {
 
-    int ion, ip, max_size, idx;
+    int max_size;
     double *rtptr;
     KpointType *Bweight, *Nlweight;
     KpointType ZERO_t(0.0);
     std::complex<double> I_t(0.0, 1.0);
     int pbasis = Kptr[0]->pbasis;
 
-    SPECIES *sp;
-    ION *iptr;
 
     /*Pointer to the result of forward transform on the coarse grid */
     std::complex<double> *fptr;
@@ -72,7 +70,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
     // reallocation (if needed) in find_phase
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
-    for(idx = 0; idx < pct.num_tot_proj * pbasis; idx++)
+    for(int idx = 0; idx < pct.num_tot_proj * pbasis; idx++)
     {
         pct.weight[idx] = 0.0;
         pct.Bweight[idx] = 0.0;
@@ -80,18 +78,21 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
     for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
+        KpointType *tem_array = new KpointType[pbasis];
+        KpointType *Btem_array = new KpointType[pbasis];
+
         /* Loop over ions */
-        for (ion = 0; ion < ct.num_ions; ion++)
+        for (int ion = 0; ion < ct.num_ions; ion++)
         {
             rtptr = &pct.weight[ion * ct.max_nl * pbasis];
             Bweight = &Kptr[kpt]->nl_Bweight[ion * ct.max_nl * pbasis];
             Nlweight = &Kptr[kpt]->nl_weight[ion * ct.max_nl * pbasis];
-            /* Generate ion pointer */
-            iptr = &ct.ions[ion];
 
+            /* Generate ion pointer */
+            ION *iptr = &ct.ions[ion];
 
             /* Get species type */
-            sp = &ct.sp[iptr->species];
+            SPECIES *sp = &ct.sp[iptr->species];
 
             int nlxdim = get_NX_GRID();
             int nlydim = get_NY_GRID();
@@ -101,17 +102,16 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             FindPhase (nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase);
 
             /*Temporary pointer to the already calculated forward transform */
-            int size = nlxdim * nlydim * nlzdim;
             fptr = (std::complex<double> *)&sp->forward_beta[kpt * sp->num_projectors * pbasis];
 
 
             /* Loop over radial projectors */
-            for (ip = 0; ip < sp->num_projectors; ip++)
+            for (int ip = 0; ip < sp->num_projectors; ip++)
             {
 
 
                 /*Apply the phase factor */
-                for (idx = 0; idx < pbasis; idx++)
+                for (int idx = 0; idx < pbasis; idx++)
                 {
                     gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
                 }
@@ -132,8 +132,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
                 std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 
-                KpointType *tem_array = new KpointType[pbasis]();
-                KpointType *Btem_array = new KpointType[pbasis]();
                 std::complex<double> *tem_array_C = (std::complex<double> *)tem_array;
                 std::complex<double> *Btem_array_C = (std::complex<double> *)Btem_array;
                 double *Btem_array_R = (double *)Btem_array;
@@ -172,10 +170,6 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
                 }
 
 
-                delete [] Btem_array;
-                delete [] tem_array;
-
-
                 /*Advance the temp pointers */
                 fptr += pbasis;
                 rtptr += pbasis;
@@ -185,6 +179,9 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
             }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
 
         }                           /* end for */
+
+        delete [] Btem_array;
+        delete [] tem_array;
 
     } // end for(kpt)
 
