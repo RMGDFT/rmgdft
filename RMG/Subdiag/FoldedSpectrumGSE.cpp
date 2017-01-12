@@ -60,7 +60,7 @@
 //
 template void FoldedSpectrumGSE<double> (double *, double *, double *, int, int, int, int *, int *, int, int, MPI_Comm &);
 template <typename DataType>
-void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver, MPI_Comm &fs_comm)
+void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, DataType * __restrict__ Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver, MPI_Comm &fs_comm)
 {
     RmgTimer RT0("Diagonalization: fs: GSE");
     DataType ZERO_t(0.0);
@@ -106,17 +106,14 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
     // T1 starts out as the identity but will hold (I - D-1 * B)
 
-    int st1, st2;
-#pragma omp parallel private(st1, st2)
-{
 #pragma omp for schedule(static, 1) nowait
     // (I - D-1 * B)
-    for(st1 = 0;st1 < n;st1++){
-        for(st2 = 0;st2 < n;st2++){
+    for(int st1 = 0;st1 < n;st1++){
+        for(int st2 = 0;st2 < n;st2++){
             T1[st1*n + st2] = -D[st2] * B[st1*n + st2];
         }
     }
-}
+
     for(int ix = 0;ix < n;ix++) T1[ix*n + ix] += 1.0;
 
     delete(RT1);
@@ -124,16 +121,13 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 //    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
 
     RT1 = new RmgTimer("Diagonalization: fs: GSE-Second term");
-#pragma omp parallel private(st1, st2)
-{
 #pragma omp for schedule(static, 1) nowait
     // Compute D^(-1) * B * I and store in B
-    for(st1 = istart;st1 < istop;st1++){
-        for(st2 = 0;st2 < n;st2++){
+    for(int st1 = istart;st1 < istop;st1++){
+        for(int st2 = 0;st2 < n;st2++){
               B[st1*n + st2] = D[st2] * A[st1*n + st2];
         }
     }
-} // end omp parallel region
 
 
     delete(RT1);
@@ -161,15 +155,12 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
 //        custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, gpuA, n, &ONE_t, gpuB, n, gpuZ, n);
 //        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
-#pragma omp parallel private(st1, st2)
-{
 #pragma omp for schedule(static, 1) nowait
-        for(st1 = istart;st1 < istop;st1++){
-            for(st2 = 0;st2 < n;st2++){
+        for(int st1 = istart;st1 < istop;st1++){
+            for(int st2 = 0;st2 < n;st2++){
                 Z[st1*n + st2] =  A[st1*n + st2] +  B[st1*n + st2];
             }
         }
-} // end omp parallel region
 
     }
 
@@ -204,24 +195,18 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // T1 starts out as the identity but will hold (I - D-1 * B)
     for(int ix = 0;ix < n;ix++) T1[ix*n + ix] = 1.0;
 
-    int st1, st2;
-#pragma omp parallel private(st1, st2)
-{
 #pragma omp for schedule(static, 1) nowait
     // (I - D-1 * B)
-    for(st1 = 0;st1 < n;st1++){
-        for(st2 = 0;st2 < n;st2++){
+    for(int st1 = 0;st1 < n;st1++){
+        for(int st2 = 0;st2 < n;st2++){
             T1[st1*n + st2] -= D[st2] * B[st1*n + st2];
         }
     }
-}
 
     delete(RT1);
 
 
     RT1 = new RmgTimer("Diagonalization: fs: GSE-Second term");
-#pragma omp parallel private(st1, st2)
-{
 #pragma omp for schedule(static, 1) nowait
     // Compute D^(-1) * B * X and store in B
     for(int st1 = istart;st1 < istop;st1++){
@@ -229,7 +214,6 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
             B[st1*n + st2] = D[st2] * A[st1*n + st2];
         }
     }
-} // end omp parallel region
     delete(RT1);
 
     RT1 = new RmgTimer("Diagonalization: fs: GSE-First term");
@@ -242,6 +226,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
         // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
         //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
+#pragma omp for schedule(static, 1) nowait
         for(int st1 = istart;st1 < istop;st1++){
             for(int st2 = 0;st2 < n;st2++){
                 Z[st1*n + st2] =  A[st1*n + st2] +  B[st1*n + st2];
