@@ -54,6 +54,7 @@ void rmg_printout_devices( )
         cuDeviceGet( &dev, idevice );
         cuDeviceGetName( name, sizeof(name), dev );
         cuDeviceTotalMem( &totalMem, dev );
+        ct.gpu_mem[idevice] = totalMem;
         cuDeviceGetAttribute( &clock, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
         printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n",
         idevice, name, clock/1000.f, totalMem/1024.f/1024.f );
@@ -69,9 +70,7 @@ void rmg_printout_devices( )
 void init_gpu (void)
 {
 
-  cublasStatus_t custat;
-  int alloc;
-
+//  cublasStatus_t custat;
 
   rmg_printout_devices( );
   cudaSetDeviceFlags(cudaDeviceScheduleSpin);
