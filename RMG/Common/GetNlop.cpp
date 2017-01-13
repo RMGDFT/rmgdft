@@ -245,7 +245,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
 
 
-            if (icount)
+            if (icount && ct.localize_projectors)
             {
                 pct.nlindex[ion] = new int[icount + 128]();
 
