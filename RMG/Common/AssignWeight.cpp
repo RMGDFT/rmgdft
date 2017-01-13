@@ -199,7 +199,11 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     delete [] Btem_array;
     delete [] tem_array;
 
-
-
+    // Don't need these anymore until the ions move again when they need to be recomputed
+    // so release the memory they use.
+    if(pct.nlindex[ion]) delete [] pct.nlindex[ion];
+    if(pct.idxflag[ion]) delete [] pct.idxflag[ion];
+    pct.nlindex[ion] = NULL;
+    pct.idxflag[ion] = NULL;
 
 }
