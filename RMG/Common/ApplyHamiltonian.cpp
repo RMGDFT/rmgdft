@@ -48,7 +48,7 @@ template double ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<doub
 //    h_psi  = H|psi>
 //
 template <typename KpointType>
-double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv)
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi, KpointType * __restrict__ h_psi, double * __restrict__ vtot, KpointType * __restrict__ nv)
 {
     int pbasis = kptr->pbasis;
     double fd_diag;

@@ -150,7 +150,7 @@ void Mgrid::mgrid_solv_schrodinger (RmgType * v_mat, RmgType * f_mat, RmgType * 
 
 
 template <typename RmgType>
-void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
+void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
                  int level, int *nb_ids, int max_levels, int *pre_cyc,
@@ -319,7 +319,7 @@ void Mgrid::mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
 }
 
 template <typename RmgType>
-void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
     int ix, iy, iz, ibrav;
@@ -594,7 +594,7 @@ void Mgrid::mg_restrict (RmgType * full, RmgType * half, int dimx, int dimy, int
 
 
 template <typename RmgType>
-void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
 
     int ix, iy, iz;
@@ -994,7 +994,7 @@ void Mgrid::mg_prolong (RmgType * full, RmgType * half, int dimx, int dimy, int 
 
 
 template <typename RmgType>
-void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, int dimz,
+void Mgrid::eval_residual (RmgType * __restrict__ mat, RmgType * __restrict__ f_mat, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz, RmgType * res, double *pot)
 {
     int size, idx;
@@ -1017,7 +1017,7 @@ void Mgrid::eval_residual (RmgType * mat, RmgType * f_mat, int dimx, int dimy, i
 
 
 template <typename RmgType>
-void Mgrid::solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
+void Mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat, RmgType * work,
                 int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double Zfac, double k, double *pot)
 {
     int size, idx;
