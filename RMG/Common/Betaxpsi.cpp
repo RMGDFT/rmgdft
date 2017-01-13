@@ -52,28 +52,28 @@ void betaxpsi_calculate (Kpoint<KpointType> * sint_ptr, KpointType * psi, int nu
 
 template <typename KpointType>
 void betaxpsi_receive (KpointType * recv_buff, int num_pes,
-                               int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
+                               int *pe_list, int *num_ions_per_pe,
                                MPI_Request * req_recv, int num_states);
 
 template <typename KpointType>
 void betaxpsi_send (KpointType * send_buff, int num_pes,
-                            int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
+                            int *pe_list, int *num_ions_per_pe,
                             MPI_Request * req_send, int num_states);
 
 template <typename KpointType>
 void betaxpsi_pack (KpointType * sint, KpointType * fill_buff,
-                            int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
+                            int num_pes, int *num_ions_per_pe,
                             int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
 
 template <typename KpointType>
 void betaxpsi_sum_owned (KpointType * recv_buff, KpointType * sint,
-                                 int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
+                                 int num_pes, int *num_ions_per_pe,
                                  int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
 
 template <typename KpointType>
 void betaxpsi_write_non_owned (KpointType * sint, KpointType * recv_buff,
                                        int num_pes,
-                                       int num_ions_per_pe[MAX_NONLOC_PROCS],
+                                       int *num_ions_per_pe,
                                        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
 
 template void Betaxpsi<double>(Kpoint<double> *, int, int, double *, double *);
@@ -294,7 +294,7 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
 /*This receives data from other PEs for ions owned by current PE*/
 template <typename KpointType>
 void betaxpsi_receive (KpointType * recv_buff, int num_pes,
-        int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
+        int *pe_list, int *num_ions_per_pe,
         MPI_Request * req_recv, int num_states)
 {
     KpointType *tpr;
@@ -320,7 +320,7 @@ void betaxpsi_receive (KpointType * recv_buff, int num_pes,
 
 template <typename KpointType>
 void betaxpsi_send (KpointType * send_buff, int num_pes,
-        int pe_list[MAX_NONLOC_PROCS], int num_ions_per_pe[MAX_NONLOC_PROCS],
+        int *pe_list, int *num_ions_per_pe,
         MPI_Request * req_send, int num_states)
 {
     KpointType *tpr;
@@ -349,7 +349,7 @@ void betaxpsi_send (KpointType * send_buff, int num_pes,
 
 template <typename KpointType>
 void betaxpsi_pack (KpointType * sint, KpointType * fill_buff, 
-        int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
+        int num_pes, int *num_ions_per_pe,
         int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
 {
     KpointType *tpr_buff, *sint_tpr;
@@ -383,7 +383,7 @@ void betaxpsi_pack (KpointType * sint, KpointType * fill_buff,
 
 template <typename KpointType>
 void betaxpsi_sum_owned (KpointType * recv_buff, KpointType * sint,
-        int num_pes, int num_ions_per_pe[MAX_NONLOC_PROCS],
+        int num_pes, int *num_ions_per_pe,
         int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
 {
     KpointType *tpr1, *tpr2;
@@ -415,7 +415,7 @@ void betaxpsi_sum_owned (KpointType * recv_buff, KpointType * sint,
 
 template <typename KpointType>
 void betaxpsi_write_non_owned (KpointType * sint, KpointType * recv_buff, int num_pes,
-        int num_ions_per_pe[MAX_NONLOC_PROCS],
+        int *num_ions_per_pe,
         int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
 {
     KpointType *tpr1, *tpr2;
