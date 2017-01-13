@@ -56,6 +56,14 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     pct.num_owned_pe = 0;
     pct.num_owners = 0;
 
+    // Allocate memory for some lists
+    if(!pct.owned_pe_list) pct.owned_pe_list = new int[NPES]();
+    if(!pct.num_owned_ions_per_pe) pct.num_owned_ions_per_pe = new int[NPES]();
+    if(!pct.owners_list) pct.owners_list = new int[NPES]();
+    if(!pct.num_nonowned_ions_per_pe) pct.num_nonowned_ions_per_pe = new int[ct.num_ions]();
+    if(!pct.nonloc_ions_list) pct.nonloc_ions_list = new int[ct.num_ions]();
+    if(!pct.nonloc_ion_ownflag) pct.nonloc_ion_ownflag = new int[ct.num_ions]();
+
 
     /* Grab some memory for temporary storage */
     int alloc = ct.max_nlpoints;
@@ -94,7 +102,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 #pragma omp parallel private(Aix, Aiy, Aiz, Aix2, Aiy2, Aiz2, pvec, dvec)
 {
 
-    int *ivec;
     pvec = new int[P0_BASIS]();
     if(ct.localize_projectors) dvec = new int[alloc];
     Aix = new int[NX_GRID];
@@ -233,11 +240,11 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             /* Now we have to allocate memory for the index array */
             if (icount && ct.localize_projectors)
             {
-                pct.idxflag[ion] = new int[idx];
+                pct.idxflag[ion] = new bool[idx];
 
-                ivec = pct.idxflag[ion];
+                bool *ivec = pct.idxflag[ion];
                 for (int ix = 0; ix < idx; ix++)
-                    ivec[ix] = (int) dvec[ix];
+                    ivec[ix] = dvec[ix];
             }
 
             else
@@ -249,9 +256,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             {
                 pct.nlindex[ion] = new int[icount + 128]();
 
-                ivec = pct.nlindex[ion];
+                int *ivec = pct.nlindex[ion];
                 for (idx = 0; idx < icount; idx++)
-                    ivec[idx] = (int) pvec[idx];
+                    ivec[idx] = pvec[idx];
             }
             else
                 pct.nlindex[ion] = NULL;
