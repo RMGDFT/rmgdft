@@ -83,6 +83,35 @@ template void Betaxpsi<std::complex<double> >(Kpoint<std::complex<double>> *, in
 template <typename KpointType>
 void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local, KpointType *nlweight)
 {
+
+
+    if(ct.localize_projectors == false) 
+    {
+
+        /*Loop over ions and calculate local projection between beta functions and wave functions */
+        int factor = 1;
+        KpointType rzero(0.0);
+        KpointType alpha(get_vel());
+        KpointType *NULLptr = NULL;
+
+        if(typeid(KpointType) == typeid(std::complex<double>)) factor = 2;
+        char *transt = "t", *transn = "n", *transc = "c";
+        char *transa;
+        transa = transc;
+        if(ct.is_gamma) transa = transt;
+
+        int length = factor * ct.num_ions * nstates * ct.max_nl;
+        RmgGemm (transa, transn, pct.num_tot_proj, nstates, kptr->pbasis, alpha,
+            nlweight, kptr->pbasis, &kptr->orbital_storage[first_state*kptr->pbasis], kptr->pbasis,
+            rzero, sint_local, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
+
+
+        MPI_Allreduce(MPI_IN_PLACE, (double *)sint_local, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+        return;
+    }
+
+
     KpointType *own_buff = NULL, *nown_buff = NULL;
     KpointType *send_buff, *recv_buff;
     MPI_Request *req_send, *req_recv;
