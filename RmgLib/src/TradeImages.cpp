@@ -69,12 +69,12 @@ template void TradeImages::trade_imagesx<std::complex<double> >(std::complex <do
 
 
 // Constructor
-TradeImages::TradeImages(BaseGrid *BG)
+TradeImages::TradeImages(BaseGrid *BG, size_t elem_len)
 {
 
     this->G = BG;
 
-    int grid_xp, grid_yp, grid_zp, grid_max1, grid_max2, retval;
+    int grid_xp, grid_yp, grid_zp, grid_max1, grid_max2;
     BaseThread *T = BaseThread::getBaseThread(0);
 
     grid_xp = this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
@@ -98,21 +98,21 @@ TradeImages::TradeImages(BaseGrid *BG)
               grid_max2 = grid_zp;
           }
      }
-     retval = MPI_Alloc_mem(6 * sizeof(std::complex<double>) * MAX_TRADE_IMAGES * T->get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf1x);
-     if(retval != MPI_SUCCESS) {
-         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
-     }
-     retval = MPI_Alloc_mem(6 * sizeof(std::complex<double>) * MAX_TRADE_IMAGES * T->get_threads_per_node() * grid_max1*grid_max2 , MPI_INFO_NULL, &swbuf2x);
-     if(retval != MPI_SUCCESS) {
-         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
-     }
 
 
      TradeImages::max_alloc = 6 * MAX_TRADE_IMAGES * grid_max1 * grid_max2 * T->get_threads_per_node();
+     int retval = MPI_Alloc_mem(sizeof(std::complex<double>) * this->max_alloc , MPI_INFO_NULL, &swbuf1x);
+     if(retval != MPI_SUCCESS) {
+         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
+     }
+     retval = MPI_Alloc_mem(sizeof(std::complex<double>)* this->max_alloc , MPI_INFO_NULL, &swbuf2x);
+     if(retval != MPI_SUCCESS) {
+         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
+     }
 
      TradeImages::mode = ASYNC_MODE;
      TradeImages::timer_mode = false;
-     TradeImages::init_trade_imagesx_async();        
+     TradeImages::init_trade_imagesx_async(elem_len);        
 
      return;
 
@@ -147,7 +147,6 @@ void TradeImages::set_timer_mode(bool verbose)
 {
     TradeImages::timer_mode = verbose;
 }
-
 void TradeImages::set_synchronous_mode(void)
 {
     TradeImages::mode = SYNC_MODE;
@@ -731,7 +730,7 @@ void TradeImages::RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offs
 
 
 // Allocates memory via MPI_Alloc_mem for use on systems with RDMA capability
-void TradeImages::init_trade_imagesx_async(void) 
+void TradeImages::init_trade_imagesx_async(size_t elem_len) 
 {
     int retval, THREADS_PER_NODE;
     int ix, iy, iz;
@@ -794,55 +793,55 @@ void TradeImages::init_trade_imagesx_async(void)
 
 
     // Allocate memory buffers using MPI_Alloc_mem
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1n);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx1n);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2n);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdx2n);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1n);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy1n);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2n);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdy2n);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1n);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz1n);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2n);
+    retval = MPI_Alloc_mem(elem_len * MAX_TRADE_IMAGES * THREADS_PER_NODE * GRID_MAX1 * GRID_MAX2 , MPI_INFO_NULL, &frdz2n);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &yzpsms_r);
+    retval = MPI_Alloc_mem(elem_len * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &yzpsms_r);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
@@ -854,7 +853,7 @@ void TradeImages::init_trade_imagesx_async(void)
     TradeImages::yzmsms_s = TradeImages::yzpsps_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
     TradeImages::yzmsps_s = TradeImages::yzmsms_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
 
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xypsms_r);
+    retval = MPI_Alloc_mem(elem_len * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xypsms_r);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
@@ -866,7 +865,7 @@ void TradeImages::init_trade_imagesx_async(void)
     TradeImages::xymsms_s = TradeImages::xypsps_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
     TradeImages::xymsps_s = TradeImages::xymsms_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
 
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xzpsms_r);
+    retval = MPI_Alloc_mem(elem_len * 8 * MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES , MPI_INFO_NULL, &xzpsms_r);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
@@ -878,12 +877,12 @@ void TradeImages::init_trade_imagesx_async(void)
     TradeImages::xzmsms_s = TradeImages::xzpsps_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
     TradeImages::xzmsps_s = TradeImages::xzmsms_s + MAX_IMG2 * THREADS_PER_NODE * TRADE_GRID_EDGES;
 
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * 8 * MAX_IMG3 * THREADS_PER_NODE , MPI_INFO_NULL, &m0_r);
+    retval = MPI_Alloc_mem(elem_len * 8 * MAX_IMG3 * THREADS_PER_NODE , MPI_INFO_NULL, &m0_r);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
 
-    retval = MPI_Alloc_mem(sizeof(std::complex<double>) * 8 * MAX_IMG3 * THREADS_PER_NODE , MPI_INFO_NULL, &m0_s);
+    retval = MPI_Alloc_mem(elem_len * 8 * MAX_IMG3 * THREADS_PER_NODE , MPI_INFO_NULL, &m0_s);
     if(retval != MPI_SUCCESS) {
         rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
@@ -1127,6 +1126,9 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
 
     }
 
+int flag;
+MPI_Status mstat;
+MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, this->comm, &flag, &mstat);
     /* Collect the north and south planes */
     c1 = (dimy - images)*incy0;
     idx = tid * dimx * dimz * images;
@@ -1196,6 +1198,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     }
 
 
+MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, this->comm, &flag, &mstat);
     // Pack yz-plane edges
     c1 = (dimy-images)*incy0;
     c2 = (dimz - images);
@@ -1217,6 +1220,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     }
 
 
+MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, this->comm, &flag, &mstat);
     // Pack xy plane edges
     c1 = (dimy-images)*incy0;
     c2 = (dimx-images)*incx0;
@@ -1237,7 +1241,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
         }
     }
 
-
+MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, this->comm, &flag, &mstat);
     // Pack xz plane edges
     c1 = (dimz-images);
     c2 = (dimx-images)*incx0;
@@ -1288,7 +1292,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     {
         ixs = ix * incx0;
         ixs2 = (ix + images) * incx;
-
+MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, this->comm, &flag, &mstat);
         for (iy = 0; iy < dimy; iy++)
         {
             iys = ixs + iy * incy0;
@@ -1789,6 +1793,261 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
 
 } // end trade_imagesx_central_async
 
+
+// Asynchronous image trades for central finite difference operators assuming MPI_THREAD_MULTIPLE is available
+template <typename RmgType>
+void TradeImages::trade_imagesx_central_async_mul (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images)
+{
+    int ix, iy, iz, incx, incy, incx0, incy0, index, tim;
+    int ixs, iys, ixs2, iys2, c1, idx;
+    int xlen, ylen, zlen;
+    int tid=0, retval;
+
+    RmgType *frdx1_f, *frdx2_f, *frdy1_f, *frdy2_f, *frdz1_f, *frdz2_f;
+    RmgType *frdx1n_f, *frdx2n_f, *frdy1n_f, *frdy2n_f, *frdz1n_f, *frdz2n_f;
+
+    frdx1_f = (RmgType *)TradeImages::frdx1;
+    frdx2_f = (RmgType *)TradeImages::frdx2;
+    frdy1_f = (RmgType *)TradeImages::frdy1;
+    frdy2_f = (RmgType *)TradeImages::frdy2;
+    frdz1_f = (RmgType *)TradeImages::frdz1;
+    frdz2_f = (RmgType *)TradeImages::frdz2;
+    frdx1n_f = (RmgType *)TradeImages::frdx1n;
+    frdx2n_f = (RmgType *)TradeImages::frdx2n;
+    frdy1n_f = (RmgType *)TradeImages::frdy1n;
+    frdy2n_f = (RmgType *)TradeImages::frdy2n;
+    frdz1n_f = (RmgType *)TradeImages::frdz1n;
+    frdz2n_f = (RmgType *)TradeImages::frdz2n;
+
+    MPI_Request sreqs[6], rreqs[6];
+    int THREADS_PER_NODE;
+
+    BaseThread *T = BaseThread::getBaseThread(0);
+    THREADS_PER_NODE = T->get_threads_per_node();
+
+
+    if(images > MAX_TRADE_IMAGES) {
+       rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
+    }
+
+    tid = T->get_thread_tid();
+    if(tid < 0) tid = 0;
+
+    tim = 2 * images;
+
+    incx = (dimy + tim) * (dimz + tim);
+    incy = dimz + tim;
+    incx0 = dimy * dimz;
+    incy0 = dimz;
+
+    zlen = dimx * dimy * images;
+    ylen = dimx * dimz * images;
+    xlen = dimy * dimz * images;
+
+
+    // The z planes
+    TradeImages::RMG_MPI_trade(frdz2n_f, zlen, RMG_MPI_IRECV, 0, 0, 1, TradeImages::comm, 0, &rreqs[0]);
+    TradeImages::RMG_MPI_trade(frdz1n_f, zlen, RMG_MPI_IRECV, 0, 0, -1, TradeImages::comm, 1, &rreqs[1]);
+
+    // The y planes
+    TradeImages::RMG_MPI_trade(frdy2n_f, ylen, RMG_MPI_IRECV, 0, 1, 0, TradeImages::comm, 2, &rreqs[2]);
+    TradeImages::RMG_MPI_trade(frdy1n_f, ylen, RMG_MPI_IRECV, 0, -1, 0, TradeImages::comm, 3, &rreqs[3]);
+
+    // The x planes
+    TradeImages::RMG_MPI_trade(frdx2n_f, xlen, RMG_MPI_IRECV, 1, 0, 0, TradeImages::comm, 4, &rreqs[4]);
+    TradeImages::RMG_MPI_trade(frdx1n_f, xlen, RMG_MPI_IRECV, -1, 0, 0, TradeImages::comm, 5, &rreqs[5]);
+
+
+    /* Collect the positive z-plane and negative z-planes */
+    c1 = (dimz-images);
+    idx = tid * dimx * dimy * images;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs2 = ix * incx0;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys2 = ixs2 + iy * incy0;
+            for (iz = 0; iz < images; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdz1_f[idx] = f[index];
+                frdz2_f[idx] = f[index+c1];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Collect the north and south planes */
+    c1 = (dimy - images)*incy0;
+    idx = tid * dimx * dimz * images;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs2 = ix * incx0;
+        for (iy = 0; iy < images; iy++)
+        {
+
+            iys2 = ixs2 + iy * incy0;
+            for (iz = 0; iz < dimz; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdy1_f[idx] = f[index];
+                frdy2_f[idx] = f[index + c1];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Collect the east and west planes */
+    c1 = (dimx - images)*incx0;
+    idx = tid * dimy * dimz * images;
+    for (ix = 0; ix < images; ix++)
+    {
+        ixs2 = ix * incx0;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys2 = ixs2 + iy * incy0;
+            for (iz = 0; iz < dimz; iz++)
+            {
+
+                index = iys2 + iz;
+
+                frdx1_f[idx] = f[index];
+                frdx2_f[idx] = f[index + c1];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    // Send z planes
+    TradeImages::RMG_MPI_trade(frdz1_f, zlen, RMG_MPI_ISEND, 0, 0, -1, TradeImages::comm, 0, &sreqs[0]);
+    TradeImages::RMG_MPI_trade(frdz2_f, zlen, RMG_MPI_ISEND, 0, 0, 1, TradeImages::comm, 1, &sreqs[1]);
+
+    // Send the north and south planes
+    TradeImages::RMG_MPI_trade(frdy1_f, ylen, RMG_MPI_ISEND, 0, -1, 0, TradeImages::comm, 2, &sreqs[2]);
+    TradeImages::RMG_MPI_trade(frdy2_f, ylen, RMG_MPI_ISEND, 0, 1, 0, TradeImages::comm, 3, &sreqs[3]);
+
+    // Send the east and west planes
+    TradeImages::RMG_MPI_trade(frdx1_f, xlen, RMG_MPI_ISEND, -1, 0, 0, TradeImages::comm, 4, &sreqs[4]);
+    TradeImages::RMG_MPI_trade(frdx2_f, xlen, RMG_MPI_ISEND, 1, 0, 0, TradeImages::comm, 5, &sreqs[5]);
+
+
+    // Load up w with the interior points
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs = ix * incx0;
+        ixs2 = (ix + images) * incx;
+
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys = ixs + iy * incy0;
+            iys2 = ixs2 + (iy + images) * incy;
+
+            for(int idx = 0;idx < dimz;idx++)
+                w[iys2 + images + idx] = f[iys + idx];
+
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    // Wait for all the recvs to finish
+    retval = MPI_Waitall(6, rreqs, MPI_STATUSES_IGNORE);
+    if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+
+
+    /* Unpack z-planes */
+    c1 = dimz + images;
+    idx = tid * dimx * dimy * images;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs2 = (ix + images) * incx;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys2 = ixs2 + (iy + images) * incy;
+            for (iz = 0; iz < images; iz++)
+            {
+
+                index = iys2 + iz;
+                w[index] = frdz1n_f[idx];
+                w[index + c1] = frdz2n_f[idx];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Unpack the north and south planes */
+    c1 = (dimy + images) * incy;
+    idx = tid * dimx * dimz * images;
+    for (ix = 0; ix < dimx; ix++)
+    {
+        ixs2 = (ix + images) * incx;
+        for (iy = 0; iy < images; iy++)
+        {
+            iys2 = ixs2 + iy * incy;
+            for (iz = 0; iz < dimz; iz++)
+            {
+                index = iys2 + iz + images;
+                w[index] = frdy1n_f[idx];
+                w[index + c1] = frdy2n_f[idx];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Unpack the east and west planes */
+    c1 = (dimx + images) * incx;
+    idx = tid * dimy * dimz * images;
+    for (ix = 0; ix < images; ix++)
+    {
+        ixs2 = ix * incx;
+        for (iy = 0; iy < dimy; iy++)
+        {
+            iys2 = ixs2 + (iy + images) * incy;
+            for (iz = 0; iz < dimz; iz++)
+            {
+
+                index = iys2 + iz + images;
+                w[index] = frdx1n_f[idx];
+                w[index + c1] = frdx2n_f[idx];
+                idx++;
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    // Finally wait for all the sends to finish
+    retval = MPI_Waitall(6, sreqs, MPI_STATUSES_IGNORE);
+    if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
+
+} // end trade_imagesx_central_async_mul
 
 
 // Used by coarse level multigrid routines which assume that the central data is already present

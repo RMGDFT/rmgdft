@@ -89,10 +89,11 @@ private:
     MPI_Request sreqs[26];
     MPI_Request rreqs[26];
 
-    void init_trade_imagesx_async(void);
+    void init_trade_imagesx_async(size_t elem_len);
     template <typename RmgType> void RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
     template <typename RmgType> void trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_imagesx_central_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
+    template <typename RmgType> void trade_imagesx_central_async_mul (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_images1_central_async (RmgType * f, int dimx, int dimy, int dimz);
     template <typename RmgType> void trade_images1_async (RmgType * f, int dimx, int dimy, int dimz);
 
@@ -101,7 +102,7 @@ public:
     /// MPI communicator to use
     MPI_Comm comm;
 
-    TradeImages(BaseGrid *BG);
+    TradeImages(BaseGrid *BG, size_t elem_len);
     ~TradeImages(void);
     void set_synchronous_mode(void);
     void set_asynchronous_mode(void);

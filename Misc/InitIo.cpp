@@ -274,7 +274,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     fflush(NULL);
 
     // Allocate storage for trade_images and global sums routines
-    Rmg_T = new TradeImages(Rmg_G);
+    size_t elem_len = sizeof(std::complex<double>);
+    if(ct.is_gamma) elem_len = sizeof(double);
+    Rmg_T = new TradeImages(Rmg_G, elem_len);
     if(ct.verbose) Rmg_T->set_timer_mode(true);
     Rmg_T->set_MPI_comm(pct.grid_comm);
 

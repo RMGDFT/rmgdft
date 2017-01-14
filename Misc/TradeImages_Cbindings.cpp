@@ -7,7 +7,9 @@
 // C interfaces for transitional usage
 extern "C" void init_TradeImages(void)
 {
-    Rmg_T = new TradeImages(Rmg_G);
+    size_t elem_len = sizeof(std::complex<double>);
+    if(ct.is_gamma) elem_len = sizeof(double);
+    Rmg_T = new TradeImages(Rmg_G, elem_len);
 }
 extern "C" void set_MPI_comm(MPI_Comm comm)
 {
