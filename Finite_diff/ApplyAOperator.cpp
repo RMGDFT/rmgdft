@@ -41,6 +41,11 @@ template double ApplyAOperator<double>(double *, double *, char *grid);
 template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, char *grid);
 template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, char *grid);
 
+template double ApplyAOperator<float>(float *, float *, char *grid, BaseGrid *G, TradeImages *T);
+template double ApplyAOperator<double>(double *, double *, char *grid, BaseGrid *G, TradeImages *T);
+template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, char *grid, BaseGrid *G, TradeImages *T);
+template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, char *grid, BaseGrid *G, TradeImages *T);
+
 template double ApplyAOperator<float>(Lattice *, TradeImages *, float *, float *, int, int, int, double, double, double, int);
 template double ApplyAOperator<double>(Lattice *, TradeImages *, double *, double *, int, int, int, double, double, double, int);
 template double ApplyAOperator<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, int);
@@ -74,6 +79,36 @@ double ApplyAOperator (DataType *a, DataType *b, char *grid)
     double gridhz = Rmg_G->get_hzgrid(density);
                                                               
     return ApplyAOperator (&Rmg_L, Rmg_T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order);
+
+}
+
+template <typename DataType>
+double ApplyAOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T)
+{
+    int density;
+    const char *coarse = "Coarse";
+    const char *fine = "Fine";
+
+    if(!strcmp(grid, coarse)) {
+        density = 1;
+    }
+    else if(!strcmp(grid, fine)) {
+        density = G->default_FG_RATIO;
+    }
+    else {
+        throw RmgFatalException() << "Error! Grid type " << grid << " not defined in "
+                                 << __FILE__ << " at line " << __LINE__ << "\n";
+    }
+
+    int dimx = G->get_PX0_GRID(density);
+    int dimy = G->get_PY0_GRID(density);
+    int dimz = G->get_PZ0_GRID(density);
+
+    double gridhx = G->get_hxgrid(density);
+    double gridhy = G->get_hygrid(density);
+    double gridhz = G->get_hzgrid(density);
+                                                              
+    return ApplyAOperator (&Rmg_L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order);
 
 }
 

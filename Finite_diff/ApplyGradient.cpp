@@ -41,6 +41,12 @@ template void ApplyGradient<double>(double *, double *, double *, double *, int,
 template void ApplyGradient<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, int, char *grid);
 template void ApplyGradient<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, char *grid);
 
+template void ApplyGradient<float>(float *, float *, float *, float *, int, char *grid, BaseGrid *G, TradeImages *T);
+template void ApplyGradient<double>(double *, double *, double *, double *, int, char *grid, BaseGrid *G, TradeImages *T);
+template void ApplyGradient<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, int, char *grid, BaseGrid *G, TradeImages *T);
+template void ApplyGradient<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, char *grid, BaseGrid *G, TradeImages *T);
+
+
 
 template <typename DataType>
 void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid)
@@ -71,5 +77,36 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
     CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
 
 }
+
+template <typename DataType>
+void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid, BaseGrid *G, TradeImages *T)
+{
+    int density;
+    const char *coarse = "Coarse";
+    const char *fine = "Fine";
+
+    if(!strcmp(grid, coarse)) {
+        density = 1;
+    }
+    else if(!strcmp(grid, fine)) {
+        density = G->default_FG_RATIO;
+    }
+    else {
+        throw RmgFatalException() << "Error! Grid type " << grid << " not defined in "
+                                 << __FILE__ << " at line " << __LINE__ << "\n";
+    }
+
+    int dimx = G->get_PX0_GRID(density);
+    int dimy = G->get_PY0_GRID(density);
+    int dimz = G->get_PZ0_GRID(density);
+
+    double gridhx = G->get_hxgrid(density);
+    double gridhy = G->get_hygrid(density);
+    double gridhz = G->get_hzgrid(density);
+
+    CPP_app_grad_driver (&Rmg_L, T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
+
+}
+
 
 

@@ -56,9 +56,14 @@ extern "C" int init_kpoints (int *mesh, int *is_shift);
 template <typename RmgType> void AppCir (RmgType * a, RmgType * b, char * grid);
 template <typename RmgType> double AppCil (RmgType * a, RmgType * b, char * grid);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid);
+template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid);
+template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid);
+template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid);
+template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid, BaseGrid *G, TradeImages *T);
+
 void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio);
 template <typename KpointType>
 void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,

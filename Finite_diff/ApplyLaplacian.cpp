@@ -41,7 +41,12 @@ template double ApplyLaplacian<double>(double *, double *, int, char *);
 template double ApplyLaplacian<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, char *);
 template double ApplyLaplacian<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, char *);
 
+template double ApplyLaplacian<float>(float *, float *, int, char *, BaseGrid *, TradeImages *);
+template double ApplyLaplacian<double>(double *, double *, int, char *, BaseGrid *, TradeImages *);
+template double ApplyLaplacian<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, char *, BaseGrid *, TradeImages *);
+template double ApplyLaplacian<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, char *, BaseGrid *, TradeImages *);
 
+// Generic version
 template <typename DataType>
 double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid)
 {
@@ -73,5 +78,41 @@ double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid)
 
 
 }
+
+
+// Version that lets you use specific grid and trade image objects
+template <typename DataType>
+double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid, BaseGrid *G, TradeImages *T)
+{
+    int density;
+    const char *coarse = "Coarse";
+    const char *fine = "Fine";
+
+    if(!strcmp(grid, coarse)) {
+        density = 1;
+    }
+    else if(!strcmp(grid, fine)) {
+        density = G->default_FG_RATIO;
+    }
+    else {
+        throw RmgFatalException() << "Error! Grid type " << grid << " not defined in "
+                                 << __FILE__ << " at line " << __LINE__ << "\n";
+    }
+
+    int dimx = G->get_PX0_GRID(density);
+    int dimy = G->get_PY0_GRID(density);
+    int dimz = G->get_PZ0_GRID(density);
+
+    double gridhx = G->get_hxgrid(density);
+    double gridhy = G->get_hygrid(density);
+    double gridhz = G->get_hzgrid(density);
+
+    return CPP_app_del2_driver (&Rmg_L, T, a, b, dimx, dimy, dimz,
+                         gridhx, gridhy, gridhz, order);
+
+
+}
+
+
 
 
