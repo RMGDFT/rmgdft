@@ -312,7 +312,6 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
         }                       /* end if */
 
-
     }                           /* for mu_cyc */
 
     if(this->timer_mode) delete RT;

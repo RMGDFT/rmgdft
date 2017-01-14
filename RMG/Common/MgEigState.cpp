@@ -212,6 +212,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double *nvtot_psi = (double *)malloc(2*sbasis * sizeof(double));
     CalcType *tmp_psi_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
     CalcType *res_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
+    CalcType *twork_t  = (CalcType *)malloc(sbasis * sizeof(CalcType));
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
     std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
@@ -387,19 +388,46 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
 		}
 
 
-                CalcType *v_mat = &sg_twovpsi_t[sbasis];
-                CalcType *f_mat = &work1_t[sbasis];
-                MG.mg_restrict (work1_t, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                // We use a residual correction multigrid scheme where the right hand side is the residual
+                // so single precision is adequate for the correction since the errors from lower precision
+                // will be approximately 7 decimal digits smaller than the original error we athe errors from lower precision
+                // will be approximately 7 decimal digits smaller than the original error we are correcting for
+                if(typeid(CalcType) == typeid(double))
+                {
+                    float *v_mat = (float *)&sg_twovpsi_t[sbasis];
+                    float *f_mat = (float *)&work1_t[sbasis];
+                    float *twork_tf = (float *)twork_t;
+                    for(int idx = 0;idx < sbasis;idx++) twork_tf[idx] = std::real(work1_t[idx]);
+                    MG.mg_restrict<float> (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
-                MG.mgrid_solv<CalcType> (v_mat, f_mat, work2_t,
-                            dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                            1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
-                            ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
-                            G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                            G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                            G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-            
-                MG.mg_prolong (sg_twovpsi_t, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                    MG.mgrid_solv<float> (v_mat, f_mat, (float *)work2_t,
+                                dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
+                                1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
+                                ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
+                                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+                
+                    MG.mg_prolong<float> (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                    for(int idx = 0;idx < sbasis;idx++) sg_twovpsi_t[idx] = std::real(twork_tf[idx]);
+
+                 }
+                 else
+                 {
+                    CalcType *v_mat = &sg_twovpsi_t[sbasis];
+                    CalcType *f_mat = &work1_t[sbasis];
+                    MG.mg_restrict (work1_t, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+
+                    MG.mgrid_solv<CalcType> (v_mat, f_mat, work2_t,
+                                dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
+                                1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
+                                ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
+                                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+                
+                    MG.mg_prolong (sg_twovpsi_t, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                 }
             }
 
             /* The correction is in a smoothing grid so we use this
@@ -451,6 +479,7 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
 
     /* Release our memory */
     delete [] kdr;
+    free(twork_t);
     free(res_t);
     free(tmp_psi_t);
     free(nvtot_psi);
