@@ -33,6 +33,12 @@ typedef struct
     MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm, scalapack_comm;
     MPI_Comm kpsub_comm, allkp_comm;
 
+    // Coalesced grid MPI communicator
+    MPI_Comm grid_comm_coalesced;
+
+    // coalesce factors in each coordinate direction
+    int coalesce_factors[3];
+
     // Number of MPI procs per physical host
     int procs_per_host;
 

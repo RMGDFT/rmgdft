@@ -187,9 +187,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     Mgrid MG(L, T);
 
     int nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
-    int dimx = G->get_PX0_GRID(1);
-    int dimy = G->get_PY0_GRID(1);
-    int dimz = G->get_PZ0_GRID(1);
+    int dimx = G->get_PX0_GRID(1) * pct.coalesce_factors[0];
+    int dimy = G->get_PY0_GRID(1) * pct.coalesce_factors[1];
+    int dimz = G->get_PZ0_GRID(1) * pct.coalesce_factors[2];
     double hxgrid = G->get_hxgrid(1);
     double hygrid = G->get_hygrid(1);
     double hzgrid = G->get_hzgrid(1);
@@ -198,7 +198,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     if ((ct.runflag == RANDOM_START) && (ct.scf_steps < 2)) do_mgrid = false;
 
     double Zfac = 2.0 * ct.max_zvalence;
-    int pbasis = kptr->pbasis;
+    int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
 

@@ -32,9 +32,7 @@ extern Pw *coarse_pwaves, *fine_pwaves;
 extern "C"
 {
 double my_crtc (void);
-MPI_Comm transition_get_grid_comm(void);
 void thread_barrier_wait(void);
-int transition_get_gridpe(void);
 void get_vxc (double * rho, double * rho_oppo, double * rhocore, double * vxc);
 void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt,
                int *ftau, int *nat, double * tau, int *ityp, int *nks,
