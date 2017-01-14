@@ -780,12 +780,10 @@ typedef struct
     int nsym, *sym_rotate;
     double *sym_trans;
 
-#ifdef USE_NUMA
     // In case system has numa whether or not to use it
     // (may not want to try setting it up internally since the user may want to
     // to do it manually with numactl or aprun
     bool use_numa;
-#endif
 
     // Default is false. RMG will still be able to use transparent huge pages but
     // certain special optimizations will be disabled. If you set this to true then
