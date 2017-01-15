@@ -114,12 +114,11 @@ typedef struct
     /** An index array which maps the projectors onto the 3-d grid associated
         with each processor.
     */
-    int **nlindex;
     int **Qindex;
 
     /** An index array which indicate whether the grid map on the current pocessor*/
-    bool **idxflag;
     int **Qdvec;
+    bool *nl_flag;
 
     /** Number of points in the nlindex array for each ion */
     int *idxptrlen;

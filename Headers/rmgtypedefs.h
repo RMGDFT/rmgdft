@@ -102,6 +102,10 @@ typedef struct
     double nlxcstart;
     double nlycstart;
     double nlzcstart;
+ 
+    int nl_global_grid_xstart;
+    int nl_global_grid_ystart;
+    int nl_global_grid_zstart;
 
 
     /* Coordinates of the corner of the grid that the Qfunction */

@@ -634,10 +634,10 @@ static void init_alloc_nonloc_mem (void)
     int ion;
 
 
-    pct.nlindex = new int *[ct.num_ions];
     pct.Qindex = new int *[ct.num_ions];
-    pct.idxflag = new bool *[ct.num_ions];
     pct.Qdvec = new int *[ct.num_ions];
+
+    pct.nl_flag = new bool[ct.num_ions];
 
     pct.idxptrlen = new int [ct.num_ions];
     pct.Qidxptrlen = new int [ct.num_ions];
@@ -657,9 +657,7 @@ static void init_alloc_nonloc_mem (void)
         pct.Qidxptrlen[ion] = 0;
         pct.lptrlen[ion] = 0;
 
-        pct.nlindex[ion] = NULL;
         pct.Qindex[ion] = NULL;
-        pct.idxflag[ion] = NULL;
         pct.Qdvec[ion] = NULL;
 
         pct.augfunc[ion] = NULL;

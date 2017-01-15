@@ -166,6 +166,8 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         /*The vector we are looking for should be */
         to_cartesian (vect, iptr->nlcrds);
 
+            pct.nl_flag[ion] = map;
+
         /* If there is a mapping for this ion then we have to generate */
         /* the projector.                                              */
 
@@ -237,31 +239,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
             /* Save number of points */
             pct.idxptrlen[ion] = icount;
 
-            /* Now we have to allocate memory for the index array */
-            if (icount && ct.localize_projectors)
-            {
-                pct.idxflag[ion] = new bool[idx];
 
-                bool *ivec = pct.idxflag[ion];
-                for (int ix = 0; ix < idx; ix++)
-                    ivec[ix] = dvec[ix];
-            }
-
-            else
-                pct.idxflag[ion] = NULL;
-
-
-
-            if (icount && ct.localize_projectors)
-            {
-                pct.nlindex[ion] = new int[icount + 128]();
-
-                int *ivec = pct.nlindex[ion];
-                for (idx = 0; idx < icount; idx++)
-                    ivec[idx] = pvec[idx];
-            }
-            else
-                pct.nlindex[ion] = NULL;
 
         }                       /* end if (map) */
 
@@ -588,16 +566,6 @@ static void reset_pct_arrays (int num_ions)
     for(ion = 0; ion < num_ions; ion++)
     {
         pct.idxptrlen[ion] = 0;
-
-        if (pct.idxflag[ion]) {
-            delete [] pct.idxflag[ion];
-            pct.idxflag[ion] = NULL;
-        }
-
-        if (pct.nlindex[ion]) {
-            delete [] pct.nlindex[ion];
-            pct.nlindex[ion] = NULL;
-        }
 
     }
 

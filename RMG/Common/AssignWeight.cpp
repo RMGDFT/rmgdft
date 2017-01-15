@@ -41,9 +41,28 @@ template <typename KpointType>
 void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, KpointType *Bweight, KpointType *Nlweight)
 {
 
+    if(!pct.nl_flag[ion]) return ;
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
     ION *iptr = &ct.ions[ion];
+
+    BaseGrid *G = kptr->G;
+    int dimx = G->get_PX0_GRID(1);
+    int dimy = G->get_PY0_GRID(1);
+    int dimz = G->get_PZ0_GRID(1);
+    int nxgrid = G->get_NX_GRID(1);
+    int nygrid = G->get_NY_GRID(1);
+    int nzgrid = G->get_NZ_GRID(1);
+
+
+    int ilow, jlow, klow, ihi, jhi, khi;
+    find_node_offsets(pct.gridpe, nxgrid, nygrid, nzgrid,
+                      &ilow, &jlow, &klow);
+
+    ihi = ilow + dimx - 1;
+    jhi = jlow + dimy - 1;
+    khi = klow + dimz - 1;
+
 
     int nlxdim = sp->nldim;
     int nlydim = sp->nldim;
@@ -87,113 +106,80 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
     for(int ix = 0; ix < nlxdim * nlydim * nlzdim; ix++) {
         tem_array[ix] = std::real(nbeptr[ix]);
-    }
-
-
-    int *pidx = pct.nlindex[ion];
-    bool *dvec = pct.idxflag[ion];
-    int idx = 0;
-    int docount = 0;
-
-
-    // Apply phase factor
-    for (int ix = 0; ix < nlxdim; ix++)
-    {
-
-        for (int iy = 0; iy < nlydim; iy++)
-        {
-
-            for (int iz = 0; iz < nlzdim; iz++)
-            {
-                int idx1 = ix * nlydim * nlzdim + iy * nlzdim + iz;
-                if(!ct.is_gamma) {
-                    tem_array_C[idx1] = nbeptr[idx1];
-                }
-
-                if (dvec[idx])
-                {
-                    rtptr[pidx[docount]] = std::real(nbeptr[idx1]);
-                    docount++;
-                }
-
-                idx++;
-            }
+        if(!ct.is_gamma) {
+            tem_array_C[ix] = nbeptr[ix];
         }
-    }
-    if (docount != pct.idxptrlen[ion])
-    {
-        rmg_printf ("docount = %d != %d = pct.idxptrlen[ion = %d]\n", docount, pct.idxptrlen[ion], ion);
-        rmg_error_handler (__FILE__, __LINE__, "wrong numbers of projectors");
     }
 
 
     // Apply B operator then map weights back
     AppCirDriverBeta (L, T, tem_array, Btem_array, nlxdim, nlydim, nlzdim, ct.kohn_sham_fd_order);
 
-    idx = 0;
-    docount = 0;
+    int ixstart = iptr->nl_global_grid_xstart;
+    int iystart = iptr->nl_global_grid_ystart;
+    int izstart = iptr->nl_global_grid_zstart;
+    int igx, igy, igz, ipx, ipy, ipz;
+
+    bool map;
     for (int ix = 0; ix < nlxdim; ix++)
     {
+
+        // global index of nl grid , mode to unit cell  
+        igx = (ixstart + ix +nxgrid) % nxgrid ;
+
+        if(igx <ilow || igx > ihi) continue;
 
         double w1=1.0;
         if(ix==0) w1 = 0.5*(0.5 - wx);
         if(ix==nlxdim-1) w1 = 0.5*(0.5 + wx);
         for (int iy = 0; iy < nlydim; iy++)
         {
+            // global index of nl grid , mode to unit cell  
+            igy = (iystart + iy +nygrid) % nygrid ;
+            if(igy <jlow || igy > jhi) continue;
             double w2=1.0;
             if(iy==0) w2 = 0.5*(0.5 - wy);
             if(iy==nlydim-1) w2 = 0.5*(0.5 + wy);
 
             for (int iz = 0; iz < nlzdim; iz++)
             {
+                // global index of nl grid , mode to unit cell  
+                igz = (izstart + iz +nzgrid) % nzgrid ;
+                if(igz <klow || igz > khi) continue;
+
+
                 double w3 = 1.0;
                 if(iz==0) w3 = 0.5*(0.5 - wz);
                 if(iz==nlzdim-1) w3 = 0.5*(0.5 + wz);
-                bool map;
                 // With localized projectors we need to know if this point maps
                 // into this processors space. With delocalized we know it does
                 // so the index array was never even generated.
-                if(ct.localize_projectors) 
+                if(!ct.localize_projectors) 
                 {
-                    map = dvec[idx];
-                }
-                else
-                {
-                    map = true;
                     w1 = w2 = w3 = 1.0;
                 }
 
-                if (map)
-                {
-                    int idx1 = ix * nlydim * nlzdim + iy * nlzdim + iz;
-                    rtptr[pidx[docount]] = std::real(nbeptr[idx1]);
-                    if(ct.is_gamma) {
-                        Nlweight_R[pidx[docount]] = std::real(nbeptr[idx1]);
-                        Bweight_R[pidx[docount]] = Btem_array_R[idx1];
-                        Nlweight_R[pidx[docount]] *= w1*w2*w3;
-                        Bweight_R[pidx[docount]] *= w1*w2*w3;
+                int idx1 = ix * nlydim * nlzdim + iy * nlzdim + iz;
+                int idx2 = (igx-ilow) * dimy * dimz +(igy - jlow) * dimz + igz-klow;
+                rtptr[idx2] = std::real(nbeptr[idx1]);
+                if(ct.is_gamma) {
+                    Nlweight_R[idx2] = std::real(nbeptr[idx1]);
+                    Bweight_R[idx2] = Btem_array_R[idx1];
+                    Nlweight_R[idx2] *= w1*w2*w3;
+                    Bweight_R[idx2] *= w1*w2*w3;
 
-                    }
-                    else {
-                        Nlweight_C[pidx[docount]] = nbeptr[idx1];
-                        Bweight_C[pidx[docount]] = Btem_array_C[idx1];
-                        Nlweight_C[pidx[docount]] *= w1*w2*w3;
-                        Bweight_C[pidx[docount]] *= w1*w2*w3;
-                    }
-
-                    docount++;
+                }
+                else {
+                    Nlweight_C[idx2] = nbeptr[idx1];
+                    Bweight_C[idx2] = Btem_array_C[idx1];
+                    Nlweight_C[idx2] *= w1*w2*w3;
+                    Bweight_C[idx2] *= w1*w2*w3;
                 }
 
-                idx++;
             }
         }
     }
 
-    if (docount != pct.idxptrlen[ion])
-    {
-        rmg_printf ("docount = %d != %d = pct.idxptrlen[ion = %d]\n", docount, pct.idxptrlen[ion], ion);
-        rmg_error_handler (__FILE__, __LINE__, "wrong numbers of projectors");
-    }
 
 
     delete [] Btem_array;

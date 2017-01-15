@@ -119,6 +119,9 @@ int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
     *zcstart = ct.zcstart + izstart / (double) nzgrid;
 
 
+    iptr->nl_global_grid_xstart = ixstart;
+    iptr->nl_global_grid_ystart = iystart;
+    iptr->nl_global_grid_zstart = izstart;
 
     /* Generate range of indices over which the projectors */
     /* will be mapped onto the global grid.                */

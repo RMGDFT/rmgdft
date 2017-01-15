@@ -178,12 +178,6 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
 
             }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
 
-            // Don't need these anymore until the ions move again when they need to be recomputed
-            // so release the memory they use.
-            if(pct.nlindex[ion]) delete [] pct.nlindex[ion];
-            if(pct.idxflag[ion]) delete [] pct.idxflag[ion];
-            pct.nlindex[ion] = NULL;
-            pct.idxflag[ion] = NULL;
 
         }                           /* end for */
 

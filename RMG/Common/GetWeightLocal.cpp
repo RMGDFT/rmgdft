@@ -146,12 +146,6 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
             fftw_free(out);
             fftw_free(in);
 
-            // Don't need these anymore until the ions move again when they need to be recomputed
-            // so release the memory they use.
-            if(pct.nlindex[ion]) delete [] pct.nlindex[ion];
-            if(pct.idxflag[ion]) delete [] pct.idxflag[ion];
-            pct.nlindex[ion] = NULL;
-            pct.idxflag[ion] = NULL;
 
         }                           /* end for */
 
