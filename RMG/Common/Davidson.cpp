@@ -116,7 +116,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
 
 #if GPU_ENABLED
-    cublasStatus_t custat;
     OrbitalType *h_psi = (OrbitalType *)GpuMallocHost(pbasis * ct.max_states * sizeof(OrbitalType));
     OrbitalType *hr = (OrbitalType *)GpuMallocHost(ct.max_states * ct.max_states * sizeof(OrbitalType));
     OrbitalType *sr = (OrbitalType *)GpuMallocHost(ct.max_states * ct.max_states * sizeof(OrbitalType));

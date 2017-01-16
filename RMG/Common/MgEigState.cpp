@@ -181,15 +181,15 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     TradeImages *T = kptr->T;
 
     double eig, diag, t1, t2, t4;
-    int eig_pre[8] = { 0, 8, 8, 20, 20, 20, 20, 20 };
-    int eig_post[8] = { 0, 2, 2, 2, 2, 2, 2, 2 };
+    int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 20, 20, 20, 20, 20 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 2, 2, 2, 2, 2, 2, 2 };
     int potential_acceleration;
     Mgrid MG(L, T);
 
     int nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
-    int dimx = G->get_PX0_GRID(1) * pct.coalesce_factors[0];
-    int dimy = G->get_PY0_GRID(1) * pct.coalesce_factors[1];
-    int dimz = G->get_PZ0_GRID(1) * pct.coalesce_factors[2];
+    int dimx = G->get_PX0_GRID(1) * pct.coalesce_factors[0][0];
+    int dimy = G->get_PY0_GRID(1) * pct.coalesce_factors[0][1];
+    int dimz = G->get_PZ0_GRID(1) * pct.coalesce_factors[0][2];
     double hxgrid = G->get_hxgrid(1);
     double hygrid = G->get_hygrid(1);
     double hzgrid = G->get_hzgrid(1);

@@ -111,8 +111,8 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     TradeImages *T = kptr->T;
     Lattice *L = kptr->L;
     Mgrid MG(L, T);
-    int pre[8] = { 2, 2, 4, 20, 20, 20, 20, 20 };
-    int post[8] = { 2, 2, 2, 2, 2, 2, 2, 2 };
+    int pre[MAX_MG_LEVELS] = { 2, 2, 4, 20, 20, 20, 20, 20 };
+    int post[MAX_MG_LEVELS] = { 2, 2, 2, 2, 2, 2, 2, 2 };
     int levels = ct.eig_parm.levels;
     double Zfac = 2.0 * ct.max_zvalence;
     double tstep = 0.8;

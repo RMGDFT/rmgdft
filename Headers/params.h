@@ -40,8 +40,10 @@
 
 */
 
+#ifndef RMG_params_H
+#define RMG_params_H 1
 
-/* Global grid sizes set in the Makefile */
+
 #include "make_conf.h"
 
 
@@ -82,6 +84,8 @@
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
 #define         MAX_L       	4
 
+/* Maximum number of multigrid levels */
+#define         MAX_MG_LEVELS   8
 
 // Default character buffer size
 #define		MAX_CHAR	255
@@ -148,5 +152,7 @@
 
     #define MAX_GPU_DEVICES 16
     #define RMG_CUBLASXT_BLOCKSIZE 2048
+
+#endif
 
 #endif
