@@ -84,9 +84,6 @@
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
 #define         MAX_L       	4
 
-/* Maximum number of multigrid levels */
-#define         MAX_MG_LEVELS   8
-
 // Default character buffer size
 #define		MAX_CHAR	255
 

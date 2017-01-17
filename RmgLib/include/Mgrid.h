@@ -31,9 +31,14 @@
 #ifndef RMG_Mgrid_H
 #define RMG_Mgrid_H 1
 
+/* Maximum number of multigrid levels */
+#define         MAX_MG_LEVELS   8
+
+#ifdef __cplusplus
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "rmg_error.h"
+
 
 class Mgrid {
 
@@ -41,6 +46,7 @@ private:
     Lattice *L;
     TradeImages *T;
     int level_flag;
+
     static int level_warning;
 
     // Timer mode 0=off (default) 1=on
@@ -91,5 +97,6 @@ public:
                  int pxdim, int pydim, int pzdim, int boundary_flag);
 };
 
+#endif
 #endif
 
