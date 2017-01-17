@@ -120,6 +120,10 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     int izstart = iptr->nl_global_grid_zstart;
     int igx, igy, igz, ipx, ipy, ipz;
 
+    int icenter = sp->nldim / 2;
+    int icut = (icenter + 1) * (icenter + 1);
+
+
     bool map;
     for (int ix = 0; ix < nlxdim; ix++)
     {
@@ -143,6 +147,14 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
             for (int iz = 0; iz < nlzdim; iz++)
             {
+
+
+
+                int itmp = (ix - icenter) * (ix - icenter) +
+                    (iy - icenter) * (iy - icenter) + (iz - icenter) * (iz - icenter);
+
+                if (ct.localize_projectors && itmp > icut ) continue;
+
                 // global index of nl grid , mode to unit cell  
                 igz = (izstart + iz +nzgrid) % nzgrid ;
                 if(igz <klow || igz > khi) continue;
@@ -186,3 +198,4 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     delete [] tem_array;
 
 }
+
