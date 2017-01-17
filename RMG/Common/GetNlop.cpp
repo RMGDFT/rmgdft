@@ -45,7 +45,6 @@ template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr)
 {
 
-    int *pvec, *dvec=NULL;
     int *Aix, *Aiy, *Aiz;
     int *Aix2, *Aiy2, *Aiz2;
     int P0_BASIS = get_P0_BASIS();
@@ -70,9 +69,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
     if (alloc <get_NX_GRID() * get_NY_GRID() * get_NZ_GRID())
         alloc =get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-    if(ct.localize_projectors) dvec = new int[alloc];
-
-    pvec = new int[P0_BASIS];
 
     reset_pct_arrays (ct.num_ions);
     size_t NX_GRID = get_NX_GRID();
@@ -99,11 +95,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     int nthreads = ct.THREADS_PER_NODE;
     nthreads = std::min(ct.THREADS_PER_NODE, 4);
 
-#pragma omp parallel private(Aix, Aiy, Aiz, Aix2, Aiy2, Aiz2, pvec, dvec)
+#pragma omp parallel private(Aix, Aiy, Aiz, Aix2, Aiy2, Aiz2)
 {
 
-    pvec = new int[P0_BASIS]();
-    if(ct.localize_projectors) dvec = new int[alloc];
     Aix = new int[NX_GRID];
     Aiy = new int[NY_GRID];
     Aiz = new int[NZ_GRID];
@@ -176,12 +170,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         if (map)
         {
 
-            for (int idx = 0; idx < P0_BASIS; idx++) pvec[idx] = 0;
-            if(ct.localize_projectors) 
-            {
-                for (int idx = 0; idx < alloc; idx++) dvec[idx] = 0;
-            }
-
             /* Generate index arrays */
             int idx = 0;
             for (int ix = 0; ix < nlxdim; ix++)
@@ -192,7 +180,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                     {
                         if(ct.localize_projectors) {
 
-                            dvec[idx] = FALSE;
                             if ((((Aix[ix] >= ilow) && (Aix[ix] <= ihi)) &&
                                  ((Aiy[iy] >= jlow) && (Aiy[iy] <= jhi)) &&
                                  ((Aiz[iz] >= klow) && (Aiz[iz] <= khi))))
@@ -205,13 +192,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                                 if (icut >= itmp)
                                 {
 
-                                    pvec[icount] =
-                                        PY0_GRID * PZ0_GRID * ((Aix[ix]-PX_OFFSET) % PX0_GRID) +
-                                        PZ0_GRID * ((Aiy[iy]-PY_OFFSET) % PY0_GRID) + 
-                                        ((Aiz[iz]-PZ_OFFSET) % PZ0_GRID);
-
-                                    dvec[idx] = TRUE;
-
                                     icount++;
 
                                 }
@@ -222,11 +202,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                             if ((((ix >= ilow) && (ix <= ihi)) &&
                                  ((iy >= jlow) && (iy <= jhi)) &&
                                  ((iz >= klow) && (iz <= khi)))) {
-                                    pvec[icount] =
-                                        PY0_GRID * PZ0_GRID * ((ix-PX_OFFSET) % PX0_GRID) +
-                                        PZ0_GRID * ((iy-PY_OFFSET) % PY0_GRID) + 
-                                        ((iz-PZ_OFFSET) % PZ0_GRID);
-
 
                                     icount++;
                             } 
@@ -249,8 +224,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     delete [] Aiz;
     delete [] Aiy;
     delete [] Aix;
-    if(ct.localize_projectors) delete [] dvec;
-    delete [] pvec;
 
 } // end omp private area
 
@@ -550,9 +523,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     delete [] Aiz;
     delete [] Aiy;
     delete [] Aix;
-
-    if(ct.localize_projectors) delete [] dvec;
-    delete [] pvec;
 
 } 
 
