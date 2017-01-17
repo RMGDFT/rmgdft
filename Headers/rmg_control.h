@@ -230,6 +230,8 @@ typedef struct
     /*string to store repeat count occupations for spin down*/
     char occupation_str_spin_down[256]; 
     
+    /* Coalesce states */
+    bool coalesce_states;
 
     /** Number of ions */
     int num_ions;

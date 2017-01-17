@@ -678,6 +678,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
 
     // Booleans next. Booleans are never required.
+    If.RegisterInputKey("coalesce_states", &lc.coalesce_states, false,
+                        "Flag indicating whether or not to coalesce states.");
+
     If.RegisterInputKey("localize_projectors", &lc.localize_projectors, true,
                         "Flag indicating whether or not the non-local projectors should be localized.");
 
