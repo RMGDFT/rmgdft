@@ -4,6 +4,8 @@
 #ifdef USE_NUMA
     #include <numa.h>
 #endif
+#include "Mgrid.h"
+
 
 /** @name PE_CONTROL
   *
