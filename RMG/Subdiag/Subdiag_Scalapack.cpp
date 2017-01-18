@@ -65,14 +65,13 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
-    static char *trans_t = "t";
+    //static char *trans_t = "t";
     static char *trans_n = "n";
 
 //  folded spectrum with scalapack is experimental. Uncomment the second line if you want to try it.
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
     //use_folded = false;
 
-    int izero = 0;
     int ione=1;
     int num_states = kptr->nstates;
     int factor = 1;
@@ -225,13 +224,12 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
             RT1 = new RmgTimer("4-Diagonalization: PDSYGVX/PZHEGVX");
             {
-                char *range = "a";
                 char *uplo = "l", *jobz = "v";
                 int info;
 
                 if(ct.is_gamma) {
 
-                    int ibtype = 1;izero = 0;
+                    int ibtype = 1;
                     double scale=1.0, rone = 1.0;
 
                     pdpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
@@ -271,7 +269,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                 }
                 else {
 
-                    int ibtype = 1;izero = 0;
+                    int ibtype = 1;
                     double scale=1.0, rone[2] = {1.0, 0.0};
 
                     pzpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);

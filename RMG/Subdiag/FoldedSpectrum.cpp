@@ -74,7 +74,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     RmgTimer *RT1;
 
     KpointType ONE_t(1.0);
-    KpointType ZERO_t(0.0);
     char *cuplo = "l", *jobz="V";
     int info=0;
 
@@ -152,6 +151,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     delete(RT2);
     // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
 #if GPU_ENABLED
+    KpointType ZERO_t(0.0);
     KpointType *V = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
     KpointType *G = (KpointType *)GpuMallocHost(n_win * n_win * sizeof(KpointType));
     for(int ix = 0;ix < n * n;ix++) V[ix] = ZERO_t;

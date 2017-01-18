@@ -18,7 +18,6 @@ void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions
     size_t i, count, count1;
     BaseThread *T = BaseThread::getBaseThread(0);
     RmgTimer RT("Print timings");
-    double time1, time2;
 
     std::ofstream logfile;
 

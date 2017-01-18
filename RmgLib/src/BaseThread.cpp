@@ -64,8 +64,6 @@ boost::thread_group threadgroup;
 BaseThread::BaseThread(int nthreads)
 {
 
-    int ncpus;
-
     if(nthreads > MAX_RMG_THREADS)
         rmg_error_handler (__FILE__, __LINE__, "Too many threads requested. Change MAX_RMG_THREADS and recompile if needed.");
 
