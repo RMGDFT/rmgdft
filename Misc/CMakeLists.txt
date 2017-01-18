@@ -49,7 +49,6 @@ pack_stod.cpp
 BaseGrid_Cbindings.cpp
 Lattice_Cbindings.cpp
 transition.cpp
-init_pestr.c
 init_states.c
 get_index.c
 get_te.c
