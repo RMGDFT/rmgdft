@@ -30,14 +30,8 @@
 
 void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion, ION * iptr, int nh, double * forces)
 {
-    int idx1, idx2, n, m, count, icount, size;
+    int idx2, n, m, count, icount, size;
     int *pidx;
-    double tmp;
-
-
-    /*Forces array is assumed to be already initialized */
-    /*for(idx1=0;idx1<3;idx1++)  forces[idx1]=0.0; */
-
 
     count = pct.Qidxptrlen[ion];
     pidx = pct.Qindex[ion];

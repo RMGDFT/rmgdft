@@ -29,7 +29,6 @@ void Vdd(double * rho)
     int ion_index, count, ion_multiply, *xtal_index, ix, iy, iz, ionct;
     int loopx_max, loopx_min, loopy_max, loopy_min, loopz_max, loopz_min;
     ION *iptr;
-    SPECIES *sp;
     double *loc_array_recv, x[3], cartesian[3];
     MPI_Request *recv_request, send_request1, send_request2;
     double a00, a01, a02;

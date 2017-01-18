@@ -508,7 +508,7 @@ void matsum (double *tmat, double *dismat, double *globmat, int size)
 int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int size)
 {
 
-    int i, j, ii, jj, iii, jjj, li, lj, maxrow, maxcol,idx;
+    int i, j, ii, jj, iii, jjj, li, lj, maxrow, maxcol;
     int iistart, jjstart, limb, ljnb, izero = 0;
     int nprow, npcol, dist_length;
     int mb, nb, mxllda, mxlloc;

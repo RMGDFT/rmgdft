@@ -589,9 +589,7 @@ void Atomic::InitBessel(
 {
 
 
-    int istep;
     double t1;
-    int npes = Rmg_G->get_PE_X() * Rmg_G->get_PE_Y() * Rmg_G->get_PE_Z();
 
     /* Get some temporary memory */
     int alloc = rg_points;

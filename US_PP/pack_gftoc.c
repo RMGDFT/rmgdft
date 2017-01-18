@@ -46,7 +46,7 @@ void pack_gftoc (SPECIES * sp, double complex * gwptr, double complex * gbptr)
     for(idx1 = 0; idx1 < nlxdim * nlydim *nlzdim; idx1++) gbptr[idx1] = 0.0 + 0.0I;
     size = nlfxdim * nlfydim * nlfzdim;
 
-    for (i = -nlxdim/2; i < nlxdim/ 2; i++)
+    for (i = ixstart; i < nlxdim/ 2; i++)
     {
         int isq = i * i;
         i1 = (i + nlxdim) %nlxdim;
