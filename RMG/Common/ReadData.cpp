@@ -86,31 +86,31 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     /* read grid info */
     read_int (fhand, grid, 3);
-    if (grid[0] != get_NX_GRID())
+    if (grid[0] != Kptr[0]->G->get_NX_GRID(1))
         rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
-    if (grid[1] != get_NY_GRID())
+    if (grid[1] != Kptr[0]->G->get_NY_GRID(1))
         rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
-    if (grid[2] != get_NZ_GRID())
+    if (grid[2] != Kptr[0]->G->get_NZ_GRID(1))
         rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
 
     /* read grid processor topology */
     read_int (fhand, pe, 3);
-    if (pe[0] != get_PE_X())
+    if (pe[0] != Kptr[0]->G->get_PE_X())
         rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
-    if (pe[1] != get_PE_Y())
+    if (pe[1] != Kptr[0]->G->get_PE_Y())
         rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
-    if (pe[2] != get_PE_Z())
+    if (pe[2] != Kptr[0]->G->get_PE_Z())
         rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
 
     grid_size = Kptr[0]->pbasis;
 
     /* read fine grid info */
     read_int (fhand, fine, 3);
-    if (fine[0] != get_FPX0_GRID() / get_PX0_GRID())
+    if (fine[0] != Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PX0_GRID(1))
         rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
-    if (fine[1] != get_FPY0_GRID() / get_PY0_GRID())
+    if (fine[1] != Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PY0_GRID(1))
         rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
-    if (fine[2] != get_FPZ0_GRID() / get_PZ0_GRID())
+    if (fine[2] != Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PZ0_GRID(1))
         rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
@@ -204,25 +204,25 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
         for (ik = 0; ik < ct.num_kpts_pe; ik++){
 
-            int PX0_GRID = Rmg_G->get_PX0_GRID(1);
-            int PY0_GRID = Rmg_G->get_PY0_GRID(1);
-            int PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
+            int PX0_GRID = Kptr[0]->G->get_PX0_GRID(1);
+            int PY0_GRID = Kptr[0]->G->get_PY0_GRID(1);
+            int PZ0_GRID = Kptr[0]->G->get_PZ0_GRID(1);
 
             int pbasis = PX0_GRID * PY0_GRID * PZ0_GRID;
             double *tmp_psiR = new double[pbasis];
             double *tmp_psiI = new double[pbasis];
 
-            double *xrand = new double[2 * Rmg_G->get_NX_GRID(1)];
-            double *yrand = new double[2 * Rmg_G->get_NY_GRID(1)];
-            double *zrand = new double[2 * Rmg_G->get_NZ_GRID(1)];
+            double *xrand = new double[2 * Kptr[0]->G->get_NX_GRID(1)];
+            double *yrand = new double[2 * Kptr[0]->G->get_NY_GRID(1)];
+            double *zrand = new double[2 * Kptr[0]->G->get_NZ_GRID(1)];
 
             int factor = 2;
             if(ct.is_gamma) factor = 1;
 
             long int idum = 7493;
-            int xoff = Rmg_G->get_PX_OFFSET(1);
-            int yoff = Rmg_G->get_PY_OFFSET(1);
-            int zoff = Rmg_G->get_PZ_OFFSET(1);
+            int xoff = Kptr[0]->G->get_PX_OFFSET(1);
+            int yoff = Kptr[0]->G->get_PY_OFFSET(1);
+            int zoff = Kptr[0]->G->get_PZ_OFFSET(1);
 
             /* Initialize the random number generator */
             rand0 (&idum);
@@ -232,11 +232,11 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
 
                 /* Generate x, y, z random number sequences */
-                for (int idx = 0; idx < factor*Rmg_G->get_NX_GRID(1); idx++)
+                for (int idx = 0; idx < factor*Kptr[0]->G->get_NX_GRID(1); idx++)
                     xrand[idx] = rand0 (&idum) - 0.5;
-                for (int idx = 0; idx < factor*Rmg_G->get_NY_GRID(1); idx++)
+                for (int idx = 0; idx < factor*Kptr[0]->G->get_NY_GRID(1); idx++)
                     yrand[idx] = rand0 (&idum) - 0.5;
-                for (int idx = 0; idx < factor*Rmg_G->get_NZ_GRID(1); idx++)
+                for (int idx = 0; idx < factor*Kptr[0]->G->get_NZ_GRID(1); idx++)
                     zrand[idx] = rand0 (&idum) - 0.5;
 
 
@@ -259,9 +259,9 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
                             if(!ct.is_gamma) {
 
-                                tmp_psiI[idx] = xrand[Rmg_G->get_NX_GRID(1) + xoff + ix] * 
-                                    yrand[Rmg_G->get_NY_GRID(1) + yoff + iy] * 
-                                    zrand[Rmg_G->get_NZ_GRID(1) + zoff + iz];
+                                tmp_psiI[idx] = xrand[Kptr[0]->G->get_NX_GRID(1) + xoff + ix] * 
+                                    yrand[Kptr[0]->G->get_NY_GRID(1) + yoff + iy] * 
+                                    zrand[Kptr[0]->G->get_NZ_GRID(1) + zoff + iz];
                                 tmp_psiI[idx] = tmp_psiI[idx] * tmp_psiI[idx];
 
                             }

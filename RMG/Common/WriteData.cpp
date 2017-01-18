@@ -73,24 +73,24 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
 
 
     /* write grid info */
-    grid[0] = get_NX_GRID();
-    grid[1] = get_NY_GRID();
-    grid[2] = get_NZ_GRID();
+    grid[0] = Kptr[0]->G->get_NX_GRID(1);
+    grid[1] = Kptr[0]->G->get_NY_GRID(1);
+    grid[2] = Kptr[0]->G->get_NZ_GRID(1);
     write_int (fhand, grid, 3);
 
     /* write grid processor topology */
-    pe[0] = get_PE_X();
-    pe[1] = get_PE_Y();
-    pe[2] = get_PE_Z();
+    pe[0] = Kptr[0]->G->get_PE_X();
+    pe[1] = Kptr[0]->G->get_PE_Y();
+    pe[2] = Kptr[0]->G->get_PE_Z();
     write_int (fhand, pe, 3);
 
     npe = (pe[0] * pe[1] * pe[2]);
     grid_size = Kptr[0]->pbasis;
 
     /* write fine grid info */
-    fine[0] = get_FPX0_GRID() / get_PX0_GRID();
-    fine[1] = get_FPY0_GRID() / get_PY0_GRID();
-    fine[2] = get_FPZ0_GRID() / get_PZ0_GRID();
+    fine[0] = Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PX0_GRID(1);
+    fine[1] = Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PY0_GRID(1);
+    fine[2] = Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PZ0_GRID(1);
     write_int (fhand, fine, 3);
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
