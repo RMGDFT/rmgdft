@@ -680,7 +680,7 @@ if(Subversion_FOUND AND USE_SVN)
     string(REPLACE " " ";" foo4 ${foo3})
     list(GET foo4 2 LastChangeDate)
 else(Subversion_FOUND AND USE_SVN)
-    set(CodeRevision "release 1.1")
+    set(CodeRevision "release 2.2")
     set(LastChangeDate "Unknown")
 endif(Subversion_FOUND AND USE_SVN)
 
