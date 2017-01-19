@@ -46,4 +46,8 @@ void CPP_pack_dtos (BaseGrid *G, double * s, double * d, int dimx, int dimy, int
 
 void CPP_pack_stod (BaseGrid *G, double * s, double * d, int dimx, int dimy, int dimz, int boundaryflag);
 
+void CPP_pack_ptos_convert(float * sg, double * pg, int dimx, int dimy, int dimz);
+
+void CPP_pack_stop_convert(float * sg, double * pg, int dimx, int dimy, int dimz);
+
 #endif

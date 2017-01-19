@@ -115,7 +115,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     int post[MAX_MG_LEVELS] = { 2, 2, 2, 2, 2, 2, 2, 2 };
     int levels = ct.eig_parm.levels;
     double Zfac = 2.0 * ct.max_zvalence;
-    double tstep = 0.8;
+    double tstep = 0.666666666666;
 
     int dimx = G->get_PX0_GRID(1);
     int dimy = G->get_PY0_GRID(1);
@@ -140,16 +140,32 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     // neutralize cell
     for(int idx = 0;idx <pbasis;idx++) res[idx] -= OrbitalType(t1);
 
-    CPP_pack_ptos (work1_t, res, dimx, dimy, dimz);
-    MG.mgrid_solv (work2_t, work1_t, work_t,
-                dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                0, G->get_neighbors(), levels, pre, post, 1,
-                tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
-                //tstep, 1.0*Zfac, 0.0, nvtot,
-                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-    CPP_pack_stop (work2_t, res, dimx, dimy, dimz);
+    if(typeid(OrbitalType) == typeid(double))
+    {
+        CPP_pack_ptos_convert ((float *)work1_t, (double *)res, dimx, dimy, dimz);
+        MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
+                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
+                    0, G->get_neighbors(), levels, pre, post, 1,
+                    tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
+                    //tstep, 1.0*Zfac, 0.0, nvtot,
+                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+        CPP_pack_stop_convert((float *)work2_t, (double *)res, dimx, dimy, dimz);
+    }
+    else
+    {
+        CPP_pack_ptos (work1_t, res, dimx, dimy, dimz);
+        MG.mgrid_solv (work2_t, work1_t, work_t,
+                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
+                    0, G->get_neighbors(), levels, pre, post, 1,
+                    tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
+                    //tstep, 1.0*Zfac, 0.0, nvtot,
+                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+        CPP_pack_stop (work2_t, res, dimx, dimy, dimz);
+    }
 
     for(int idx = 0;idx <pbasis;idx++) res[idx] += eig * t1;;
 
