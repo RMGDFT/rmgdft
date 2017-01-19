@@ -27,8 +27,10 @@
  * 
 */
 
+
 #ifndef RMG_Pw_H
 #define RMG_Pw_H 1
+
 
 // This class is used to handle the integration of plane wave functionality into RMG
 
@@ -70,20 +72,12 @@ public:
     int pbasis;
     int global_basis;
     int remap_local_size;
-    struct remap_plan_3d *fwd_remap_ctoc;
-    struct remap_plan_3d *inv_remap_ctoc;
-
-    struct remap_plan_3d *fwd_remap_rtoc;
-    struct remap_plan_3d *inv_remap_ctor;
+    struct remap_plan_3d *fwd_remap;
+    struct remap_plan_3d *inv_remap;
 
     // pfft plans to use with this PW object
-    // complex double to complex double
-    pfft_plan *forward_plan_ctoc;
-    pfft_plan *backward_plan_ctoc;
-
-    // real double to complex double and back
-    pfft_plan *forward_plan_rtoc;
-    pfft_plan *backward_plan_ctor;
+    pfft_plan *forward_plan;
+    pfft_plan *backward_plan;
 
     // Real space grid dimensions on this node
     int dimx;

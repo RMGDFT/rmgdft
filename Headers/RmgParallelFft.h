@@ -52,11 +52,13 @@ void FftFreqBin(double *x, Pw &pwaves, double *bins);
 
 void FftRestrict(double *fine, double *coarse, int ratio);
 
-void PfftForward(double *, std::complex<double> *, char *);
+void PfftForward(double *, std::complex<double> *, Pw &pwaves);
 
 void PfftForward(std::complex<double> *, std::complex<double> *, Pw &pwaves);
 
 void PfftInverse(std::complex<double> *, std::complex<double> *, Pw &pwaves);
+
+void PfftInverse(std::complex<double> *, double *, Pw &pwaves);
 
 #endif
 #endif

@@ -36,6 +36,7 @@
 #include "transition.h"
 #include "RmgParallelFft.h"
 
+
 void FftLaplacianCoarse(double *x, double *lapx)
 {
     FftLaplacian(x, lapx, *coarse_pwaves);

@@ -36,6 +36,7 @@
 #include "transition.h"
 #include "RmgParallelFft.h"
 
+
 // On input performs a dft of x which is an array distributed in real space across all node
 // using the plane wave structure defined in pwaves. This is then filtered in g-space with
 // the coefficients of all plane waves with a cutoff greater than or less than or equal to

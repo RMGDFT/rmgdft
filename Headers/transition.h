@@ -29,6 +29,7 @@ extern Lattice Rmg_L;
 extern pfft_plan forward_coarse, backward_coarse, forward_fine, backward_fine;
 extern Pw *coarse_pwaves, *fine_pwaves;
 
+
 extern "C"
 {
 double my_crtc (void);

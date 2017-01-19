@@ -31,7 +31,6 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "RmgException.h"
 #include "RmgSumAll.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
