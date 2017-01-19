@@ -52,6 +52,8 @@
 #include "init_var.h"
 #include "transition.h"
 #include "pfft.h"
+#include "Atomic.h"
+#include "Functional.h"
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
@@ -153,7 +155,12 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     //  init_sym();
 
     /* Initialize the nuclear local potential and the compensating charges */
-    init_nuc(vnuc, rhoc, rhocore);
+//    init_nuc(vnuc, rhoc, rhocore);
+
+    double *dum_array = NULL;
+    InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+    InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
+    InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
 
 
 
@@ -291,7 +298,13 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             int ione = 1;
             dscal(&iii, &t2, &rho[0], &ione);
 
-            get_vxc(rho, rho_oppo, rhocore, vxc);
+            //    get_vxc(rho, rho_oppo, rhocore, vxc);
+            double vtxc, etxc;
+            RT1 = new RmgTimer("2-Init: exchange/correlation");
+            Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+            F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+            delete F;
+            delete RT1;
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
             for (idx = 0; idx < get_FP0_BASIS(); idx++)

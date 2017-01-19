@@ -131,6 +131,11 @@ using namespace El;
 #endif
 using namespace std;
 
+MPI_Comm COMM_PEX, COMM_PEY, COMM_PEZ, COMM_3D;
+MPI_Comm COMM_EN, COMM_EN1, COMM_EN2;
+
+
+
 static void dipole_calculation(double *rhooo, double *dipole);
 
 int main(int argc, char **argv)
@@ -242,10 +247,6 @@ int main(int argc, char **argv)
                 quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                 break;
 
-            case MD_FASTRLX:           /* Fast relax */
-                fastrlx(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rhocore, rhoc);
-                /* error_handler ("Undefined MD method"); */
-                break;
             default:
                 printf("\n undifined MD Method");
                 exit(0);

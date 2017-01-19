@@ -21,7 +21,6 @@ add_library (ON_Common
  change_states_crds.c
  CMakeLists.txt
  diag_eig_matrix.c
- fastrlx.c
  genvpsi.c
  get_cholesky_real.c
  get_dm_diag_p.c

@@ -46,6 +46,7 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "Atomic.h"
 
 
 
@@ -176,7 +177,11 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
                 make_mask_grid_state(level, states);
 
             /* Initialize the nuclear local potential and the compensating charges */
-            init_nuc(vnuc, rhoc, rhocore);
+            //init_nuc(vnuc, rhoc, rhocore);
+    double *dum_array = NULL;
+    InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+    InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
+    InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
 
             /* Initialize Non-local operators */
             init_nl_xyz();
@@ -246,5 +251,3 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
 
 }                               /* end fastrlx */
 
-
-/******/
