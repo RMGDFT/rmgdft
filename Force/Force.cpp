@@ -168,6 +168,10 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     output_force(force_tmp, "Correction force:");
 #endif
 
+//   sum over grid_comm for nl_force part, because each grid_proc only calculates the owned_ions' force, 
+//                      nlforce for other ions on the proc is  zero
+//  sum over grid_comm for lforce and other parts are due to the integration over grid space.
+
     global_sums (force_sum, &size1, pct.grid_comm);
 
     for (ion = 0; ion < ct.num_ions; ion++)
