@@ -70,12 +70,20 @@ public:
     int pbasis;
     int global_basis;
     int remap_local_size;
-    struct remap_plan_3d *fwd_remap;
-    struct remap_plan_3d *inv_remap;
+    struct remap_plan_3d *fwd_remap_ctoc;
+    struct remap_plan_3d *inv_remap_ctoc;
+
+    struct remap_plan_3d *fwd_remap_rtoc;
+    struct remap_plan_3d *inv_remap_ctor;
 
     // pfft plans to use with this PW object
-    pfft_plan *forward_plan;
-    pfft_plan *backward_plan;
+    // complex double to complex double
+    pfft_plan *forward_plan_ctoc;
+    pfft_plan *backward_plan_ctoc;
+
+    // real double to complex double and back
+    pfft_plan *forward_plan_rtoc;
+    pfft_plan *backward_plan_ctor;
 
     // Real space grid dimensions on this node
     int dimx;

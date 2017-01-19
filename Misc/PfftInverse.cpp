@@ -42,9 +42,9 @@ void PfftInverse (std::complex<double> * in, std::complex<double> * out, Pw &pwa
   std::complex<double> *buf = new std::complex<double>[size];
   for(int i = 0;i < pwaves.pbasis;i++) buf[i] = in[i];
 
-  if(pwaves.fwd_remap) remap_3d((double *)buf, (double *)buf, NULL, pwaves.fwd_remap);
-  pfft_execute_dft(*pwaves.backward_plan, (double (*)[2])buf, (double (*)[2])buf);
-  if(pwaves.inv_remap) remap_3d((double *)buf, (double *)buf, NULL, pwaves.inv_remap);
+  if(pwaves.fwd_remap_ctoc) remap_3d((double *)buf, (double *)buf, NULL, pwaves.fwd_remap_ctoc);
+  pfft_execute_dft(*pwaves.backward_plan_ctoc, (double (*)[2])buf, (double (*)[2])buf);
+  if(pwaves.inv_remap_ctoc) remap_3d((double *)buf, (double *)buf, NULL, pwaves.inv_remap_ctoc);
 
   for(int i = 0;i < pwaves.pbasis;i++) out[i] = buf[i];
 
