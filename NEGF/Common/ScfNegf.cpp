@@ -36,6 +36,7 @@
 
 #include "method.h"
 #include "pmo.h"
+#include "Functional.h"
 
 
 static double t[2];
@@ -275,17 +276,24 @@ void update_pot (double *vxc, double *vh, double * vxc_old, double * vh_old, dou
     }                           /* idx */
 
     /* Generate exchange-correlation potential */
-    get_vxc(rho, rho, rhocore, vxc);
+    //get_vxc(rho, rho, rhocore, vxc);
+    double vtxc, etxc;
+    RmgTimer *RT1 = new RmgTimer("2-Init: exchange/correlation");
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+    delete F;
+    delete RT1;
+
 
     pack_vhstod (vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
     if (ct.num_tfions > 0)
     {
-	/*Add charge density from simplified waters to rho and get Hartree potential*/
-	for (idx = 0; idx < get_FP0_BASIS(); idx++)
-	{
-	    rho[idx] += rho_tf[idx];
-	}
+        /*Add charge density from simplified waters to rho and get Hartree potential*/
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
+        {
+            rho[idx] += rho_tf[idx];
+        }
     }	
 
 
@@ -294,14 +302,14 @@ void update_pot (double *vxc, double *vh, double * vxc_old, double * vh_old, dou
     get_vh_negf (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
     //   get_vh (rho, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio);
 
-    
+
     if (ct.num_tfions > 0)
     {
-	/*Back out density due to simplified waters after Hartree potential is evaluated*/
-	for (idx = 0; idx < get_FP0_BASIS(); idx++)
-	{
-	    rho[idx] -= rho_tf[idx];
-	}
+        /*Back out density due to simplified waters after Hartree potential is evaluated*/
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
+        {
+            rho[idx] -= rho_tf[idx];
+        }
     }	
 
 

@@ -49,7 +49,7 @@ void allocate_matrix_soft ()
     int sbasis;
 
     int NB = ct.scalapack_block_factor;
-    ispin = ct.spin + 1;
+    ispin = ct.spin_flag + 1;
 
     sbasis = (get_PX0_GRID() +2) * (get_PY0_GRID() +2) * (get_PZ0_GRID() +2);
     my_malloc_init( peaks, 100, double );

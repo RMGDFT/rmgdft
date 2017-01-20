@@ -32,7 +32,7 @@
 
 
 
-void read_potrho (double *vh, int iflag, int data_indicator)
+void read_potrho (double *vh, int iflag, char *file_ex)
 {
     long fhand;
     long nbytes, nbytes_first, nbytes_last;
@@ -91,7 +91,6 @@ void read_potrho (double *vh, int iflag, int data_indicator)
 
 /* =========== Allocate memory & Reading ON2 data ================ */
 
-    printf("\n time_readpotrho a: %f", my_crtc());
 
     idx = get_FNX_GRID() * get_FNY_GRID();
     my_malloc_init(xold_global, idx, double);   
@@ -130,23 +129,18 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
         MPI_File mpi_fhand ;
 
-        sprintf(newname, "%s%s", lcr[subsystem].lead_name, ".pot_rho");
+        sprintf(newname, "%s.%s", lcr[subsystem].lead_name, file_ex);
         MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
         disp=0;
         MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
 
         //position = ( idx * data_indicator) * sizeof(double);
-        position =  subsizes[0] * data_indicator;
-        MPI_File_seek(mpi_fhand, position, MPI_SEEK_SET);
         MPI_File_read(mpi_fhand, &array_tmp[starts[0]], subsizes[0],MPI_DOUBLE, &status);
-        MPI_File_get_position(mpi_fhand, &position);
 
         MPI_File_close(&mpi_fhand);
-        printf("\n time_readpotrho b: %f", my_crtc());
 
         fflush(NULL);
         MPI_Allgatherv(MPI_IN_PLACE, subsizes[0], MPI_DOUBLE, array_tmp, rcount, rdisp, MPI_DOUBLE, pct.grid_comm);
-        printf("\n time_readpotrho bgather: %f", my_crtc());
         /* ================ Patches the potentials and rhos ================ */
 
 
@@ -238,7 +232,6 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     } /*  subsystem loop ends here */
 
 
-    printf("\n time_readpotrho c: %f", my_crtc());
     /*if(pct.gridpe ==0) printf (" Potential patching is done...  \n" );*/
 
     /* ====== Fillin the vaccuam space: put a ramp ============== */
@@ -486,7 +479,6 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     my_malloc_init(vh_new,  get_FNX_GRID(), double);   
 
 
-    printf("\n time_readpotrho d: %f", my_crtc());
     for (iz = 0; iz < get_FPZ0_GRID(); iz++)  
     {
         for (iy = 0; iy < get_FNY_GRID(); iy++)
@@ -520,7 +512,6 @@ void read_potrho (double *vh, int iflag, int data_indicator)
         }
     }
 
-    printf("\n time_readpotrho e: %f", my_crtc());
     /*if(pct.gridpe ==0) printf (" x-interpolation is done \n" );*/
 
 
@@ -598,7 +589,6 @@ void read_potrho (double *vh, int iflag, int data_indicator)
     }
 
 
-    printf("\n time_readpotrho f: %f", my_crtc());
 
     my_free(vh_global);
     my_free(xold_global);

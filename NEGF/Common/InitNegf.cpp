@@ -64,6 +64,7 @@
 #include "RmgException.h"
 #include "RmgParallelFft.h"
 #include "pfft.h"
+#include "Atomic.h"
 
 
 
@@ -279,7 +280,13 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     //init_sym ();
 
     /* Initialize the nuclear local potential and the compensating charges */
-    init_nuc (vnuc, rhoc, rhocore);
+//    init_nuc (vnuc, rhoc, rhocore);
+    double *dum_array = NULL;
+    InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+    InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
+    InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
+
+
 
     delete(RT4);
 
