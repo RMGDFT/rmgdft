@@ -70,9 +70,11 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
 
     int nspin = ct.spin_flag + 1;
     double ec = 0.0;
+    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
 
     for (int is = 0; is < nspin; is++)
     {
+        double ccharge = 0.0;
         for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
 
@@ -80,7 +82,10 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
             double t1 = 0.0;
             for (int st = 0; st < kptr->nstates; st++)
             {
-                t1 += (kptr->Kstates[st].occupation[is] * (kptr->Kstates[st].feig[is] - kptr->Kstates[st].eig[is]));
+                double mix = 1.0;
+                if(potential_acceleration) mix = ccharge / ct.nel;
+                t1 += (kptr->Kstates[st].occupation[is] * mix * (kptr->Kstates[st].feig[is] - kptr->Kstates[st].eig[is]));
+                ccharge += kptr->Kstates[st].occupation[is];
             }
             ec += t1 * kptr->kweight;
 
