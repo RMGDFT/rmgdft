@@ -599,12 +599,6 @@ typedef struct
 
     // Pinned host memory for finite difference routines. Allocation is slow so it
     // needs to be done once at initializatio time for each thread.
-    double *gpu_host_temp1;
-    double *gpu_host_temp2;
-    double *gpu_host_temp3;
-    double *gpu_host_temp4;
-    double *gpu_host_fdbuf1;
-    double *gpu_host_fdbuf2;
     double *gpu_host_work;
 
     cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow;

@@ -139,39 +139,6 @@ void init_gpu (void)
 		exit(-1);
 	}
 
-	// Make sure enough is allocated for hartree solver on fine grid
-	alloc = 1024 ;
-
-	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp1, alloc * sizeof(double) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp1\n");
-		exit(-1);
-	}
-
-	alloc = 1024 ;
-	if(alloc < get_P0_BASIS()) alloc = get_P0_BASIS();
-
-	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_temp2, alloc * sizeof(double) )){
-		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp2\n");
-		exit(-1);
-	}
-
-	// fdbuf needs to be big enough for hartee potential on fine grid
-//	alloc = ct.THREADS_PER_NODE * (get_PX0_GRID() + 4) * (get_PY0_GRID() + 4) * (get_PZ0_GRID() + 4);
-//	if(alloc < ((get_FPX0_GRID() + 2)*(get_FPY0_GRID() + 2)*(get_FPZ0_GRID() + 2))) alloc = (get_FPX0_GRID() + 2)*(get_FPY0_GRID() + 2)*(get_FPZ0_GRID() + 2);
-//	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf1, alloc * sizeof(double) )){
-//		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_fdbuf1\n");
-//		exit(-1);
-//	}
-//	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_fdbuf2, alloc * sizeof(double) )){
-//		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_fdbuf2\n");
-//		exit(-1);
-//	}
-//	if( cudaSuccess != cudaMallocHost((void **)&ct.gpu_host_work, (3 * ct.num_states*ct.num_states + 8*ct.num_states) * sizeof(double) )){
-//		fprintf (stderr, "Error: cudaMallocHost failed for: ct.gpu_host_temp\n");
-//		exit(-1);
-//	}
-
-
 
 	custat = cublasCreate(&ct.cublas_handle);
 	if( custat != CUBLAS_STATUS_SUCCESS ) {
@@ -198,10 +165,6 @@ void finalize_gpu (void)
 //	cudaFree(ct.gpu_work2);
 //	cudaFree(ct.gpu_work3);
 //	cudaFree(ct.gpu_work4);
-	cudaFreeHost(ct.gpu_host_temp4);
-	cudaFreeHost(ct.gpu_host_temp3);
-	cudaFreeHost(ct.gpu_host_temp2);
-	cudaFreeHost(ct.gpu_host_temp1);
 
 	//    cuCtxDetach( ct.cu_context ); 
 	//   cublasShutdown();
