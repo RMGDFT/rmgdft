@@ -44,7 +44,6 @@ genvpsi.cpp
 MgEigState.cpp
 GetGamma.cpp
 fastrelax.c
-scalapack_tools.c
 lbfgs_init.c
 Nlforce.cpp
 pack_rho_ctof.c

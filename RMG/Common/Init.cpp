@@ -112,18 +112,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Set ct.num_states to ct.init_states. After init it is set to ct.run_states
     ct.num_states = ct.init_states;
 
-#if SCALAPACK_LIBS
-    if(ct.subdiag_driver == SUBDIAG_SCALAPACK) {
-
-        /*Initialize ScaLapack, get context */
-        sl_init (&pct.ictxt, ct.num_states);
-
-        /*Set desca, variable used in ScaLapack functions */
-        set_desca (pct.desca, &pct.ictxt, ct.num_states);
-
-    }
-#endif
-
     // Initialize some commonly used plans for our parallel ffts
     FftInitPlans();
 
