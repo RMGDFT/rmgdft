@@ -312,7 +312,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
             ComputeEig(pbasis, tmp_psi_t, work1_t, res_t, &eig);
             // Save this for variational energy correction
-            if((cycles == 0) && (vcycle == 0)) sp->feig[0] = eig;
+            if((cycles == 0) && (vcycle == 0)) sp->feig[0]=eig;
+
 
             /*If diagonalization is done every step, do not calculate eigenvalues, use those
              * from diagonalization, except for the first step, since at that time eigenvalues 
@@ -352,26 +353,15 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         // Get the residual
         CalcType f1(TWO * eig);
         for (int idx = 0; idx <pbasis; idx++) res_t[idx] = f1 * res_t[idx] - work1_t[idx];
-// Debug code for multigrid spectral analysis
-#if 0
-if((sp->istate == 0) && (ct.scf_steps==7)) {
-  double *newres = new double[pbasis]();
-  for(int idx=0;idx<pbasis;idx++)newres[idx] = (double)std::real(res_t[idx]);
-  int nvecs = (int)rint(sqrt(coarse_pwaves->gmax)) + 1;
-  double *gmags = new double[nvecs+1]();
-  FftFreqBin((double *)newres, *coarse_pwaves, gmags);
-  if(pct.gridpe==0)
-      for(int idx=0;idx<nvecs;idx++)printf("BINS%d  %d  %20.12e\n",cycles,idx,gmags[idx]);
-  delete [] gmags;
-  delete [] newres;
-}
-#endif
+
+
         /* Now either smooth the wavefunction or do a multigrid cycle */
         if ((cycles == ct.eig_parm.gl_pre) && do_mgrid)
         {
 
             /* Pack the residual data into multigrid array */
             CPP_pack_ptos<CalcType> (work1_t, res_t, dimx, dimy, dimz);
+            T->trade_images (work1_t, dimx, dimy, dimz, FULL_TRADE);
 
 
             /* Do multigrid step with solution returned in sg_twovpsi */
@@ -384,7 +374,7 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
     
 		if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
 		    printf("Multigrid error: Grid cannot be coarsened. Most likely the current grid is not divisable by 2 or 4. It is recommended to use grid that is, at minimum, divisable by 4. The current grid is %d %d %d" , G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1));
-            exit(0);
+                    exit(0);
 		}
 
 
@@ -411,9 +401,9 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
                     MG.mg_prolong<float> (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
                     for(int idx = 0;idx < sbasis;idx++) sg_twovpsi_t[idx] = std::real(twork_tf[idx]);
 
-                 }
-                 else
-                 {
+                }
+                else
+                {
                     CalcType *v_mat = &sg_twovpsi_t[sbasis];
                     CalcType *f_mat = &work1_t[sbasis];
                     MG.mg_restrict (work1_t, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
@@ -427,7 +417,7 @@ if((sp->istate == 0) && (ct.scf_steps==7)) {
                                 G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
                 
                     MG.mg_prolong (sg_twovpsi_t, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-                 }
+                }
             }
 
             /* The correction is in a smoothing grid so we use this
