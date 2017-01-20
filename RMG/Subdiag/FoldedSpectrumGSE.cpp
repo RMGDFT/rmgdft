@@ -62,7 +62,7 @@ template void FoldedSpectrumGSE<double> (double *, double *, double *, int, int,
 template <typename DataType>
 void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, DataType * __restrict__ Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver, MPI_Comm &fs_comm)
 {
-    RmgTimer RT0("Diagonalization: fs: GSE");
+    RmgTimer RT0("4-Diagonalization: fs: GSE");
     DataType ZERO_t(0.0);
     DataType ONE_t(1.0);
 
@@ -82,7 +82,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 #if GPU_ENABLED
 
     if(n > RMG_CUBLASXT_BLOCKSIZE) usecuxt = false;
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: GSE-setup");
+    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");
     DataType *D = (DataType *)GpuMallocHost(n * sizeof(DataType));
 
     int ione = 1;
@@ -120,7 +120,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 //    custat = cublasSetVector(n * n , sizeof(DataType), T1, ione, gpuT1, ione );
 //    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
 
-    RT1 = new RmgTimer("Diagonalization: fs: GSE-Second term");
+    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-1st term");
 #pragma omp for schedule(static, 1) nowait
     // Compute D^(-1) * B * I and store in B
     for(int st1 = istart;st1 < istop;st1++){
@@ -131,7 +131,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 
 
     delete(RT1);
-    RT1 = new RmgTimer("Diagonalization: fs: GSE-First term");
+    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-2nd term");
 
 
     // Start the slice of A from istart to istop transferring to the GPU
@@ -178,7 +178,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 #else
 
     DataType *D = new DataType[n];
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs: GSE-setup");
+    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");
 
     DataType *T1 = new DataType[n*n]();
 
@@ -206,7 +206,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
     delete(RT1);
 
 
-    RT1 = new RmgTimer("Diagonalization: fs: GSE-Second term");
+    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-1st term");
 #pragma omp for schedule(static, 1) nowait
     // Compute D^(-1) * B * X and store in B
     for(int st1 = istart;st1 < istop;st1++){
@@ -216,7 +216,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
     }
     delete(RT1);
 
-    RT1 = new RmgTimer("Diagonalization: fs: GSE-First term");
+    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-2nd term");
 
     // outer loop over steps
     for(int step = 0;step < iterations;step++) {
@@ -241,7 +241,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 #endif
 
     // Make sure everybody has a copy
-    RT1 = new RmgTimer("Diagonalization: fs: GSE-Allgatherv");
+    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-Allgatherv");
     MPI_Allgatherv(MPI_IN_PLACE, istep * n * factor, MPI_DOUBLE, Z, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
     delete(RT1);
 

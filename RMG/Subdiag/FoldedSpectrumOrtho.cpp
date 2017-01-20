@@ -61,8 +61,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 {
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
-    double rzero = 0.0;
-    double rone = 1.0;
 
     KpointType *NULLptr = NULL;
     KpointType alpha(1.0);
@@ -79,14 +77,14 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     int info = 0;
     int eig_step = eig_stop - eig_start;
 
-    char *trans_t="t", *trans_n="n", *cuplo = "l", *side = "l";
+    char *trans_t="t", *trans_n="n", *cuplo = "l";
 
     // For mpi routines. Transfer twice as much data for complex orbitals
     int factor = 2;
     if(ct.is_gamma) factor = 1;
 
     // Overlaps
-    RmgTimer *RT1 = new RmgTimer("Diagonalization: fs-Gram-overlaps");
+    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: Gram-overlaps");
     if(!B) {
 #if GPU_ENABLED
         cublasXtDsyrk(ct.cublasXt_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C, n);
@@ -121,7 +119,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
     // Cholesky factorization
-    RT1 = new RmgTimer("Diagonalization: fs-Gram-cholesky");
+    RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
 #if GPU_ENABLED && MAGMA_LIBS
     magma_dpotrf(MagmaLower, n, C, n, &info);
 #else
@@ -130,24 +128,20 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
 
-    RT1 = new RmgTimer("Diagonalization: fs-Gram-update");
+    RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
     // Get inverse of diagonal elements
     for(int ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
 
 //----------------------------------------------------------------
     for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
 
-    int idx, omp_tid;
-    double *darr;
-    int st, st1;
-#pragma omp parallel private(idx,st,st1,omp_tid, darr)
+#pragma omp parallel
 {
-    omp_tid = omp_get_thread_num();
-    darr = new double[n];
+    double *darr = new double[n];
 #pragma omp barrier
 
 #pragma omp for schedule(static, 1) nowait
-    for(idx = eig_start;idx < eig_stop;idx++) {
+    for(int idx = eig_start;idx < eig_stop;idx++) {
 
         for (int st = 0; st < n; st++) darr[st] = V[st*n + idx];
 
@@ -161,7 +155,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
         }
 
-        for (st = 0; st < n; st++) G[st*n + idx] = darr[st];
+        for (int st = 0; st < n; st++) G[st*n + idx] = darr[st];
 
     }
 
@@ -173,7 +167,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
     // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
     // greatly reduces the network bandwith required at the cost of doing local transposes.
-    RT1 = new RmgTimer("Diagonalization: fs-Gram-allreduce");
+    RT1 = new RmgTimer("4-Diagonalization: fs: Gram-allreduce");
 //    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, fs_comm);
 
     for(int st1 = eig_start;st1 < eig_stop;st1++) {
