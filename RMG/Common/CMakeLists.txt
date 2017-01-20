@@ -68,7 +68,6 @@ claim_ion.c
 debug_write_rho_z.c
 write_pdb.c
 nlforce_par_omega.c
-real_min_all.c
 neb_relax.c
 app_smooth.cpp
 xbsmovie.c

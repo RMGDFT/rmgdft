@@ -124,8 +124,8 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
 
     /*Find absolute minimum from all PEs */
-    min = real_min_all (min, pct.img_comm);
-    min2 = real_min_all (min2, pct.img_comm);
+    MPI_Allreduce (MPI_IN_PLACE, &min, 1, MPI_DOUBLE, MPI_MIN, pct.img_comm);
+    MPI_Allreduce (MPI_IN_PLACE, &min2, 1, MPI_DOUBLE, MPI_MIN, pct.img_comm);
 
     if (min < ZERO)
     {
