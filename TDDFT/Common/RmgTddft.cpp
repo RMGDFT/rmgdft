@@ -238,7 +238,14 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         dcopy(&FP0_BASIS, vh, &ione, vh_old, &ione);
         dcopy(&FP0_BASIS, vxc, &ione, vxc_old, &ione);
 
-        get_vxc(rho, rho_oppo, rhocore, vxc);
+        //get_vxc(rho, rho_oppo, rhocore, vxc);
+        double vtxc, etxc;
+        RmgTimer *RT1 = new RmgTimer("2-Init: exchange/correlation");
+        Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+        F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+        delete F;
+        delete RT1;
+
         VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0-12);
         for (int idx = 0; idx < FP0_BASIS; idx++) {
             vtot[idx] = vxc[idx] + vh[idx]
@@ -260,7 +267,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     }
 
     if(pct.gridpe == 0) fclose(dfi);
-    
+
 
     WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, tot_steps+1);
 }

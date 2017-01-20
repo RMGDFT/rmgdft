@@ -414,12 +414,6 @@ void report ()
 void finish ()
 {
 
-#if SCALAPACK_LIBS
-    /*Exit Scalapack */
-    if (pct.scalapack_pe)
-        sl_exit (pct.ictxt, 1);
-#endif
-
     MPI_Barrier(MPI_COMM_WORLD);
     /*Exit MPI */
     MPI_Finalize ();

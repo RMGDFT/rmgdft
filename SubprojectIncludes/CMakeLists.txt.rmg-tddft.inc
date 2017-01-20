@@ -32,8 +32,10 @@ target_link_libraries( ${rmg-tddft} XC Finite_diff)
 target_link_libraries( ${rmg-tddft} XC RmgLib)
 target_link_libraries( ${rmg-tddft} XC RMG_Spin)
 else(USE_LIBXC)
-target_link_libraries( ${rmg-tddft} XC1)
-target_link_libraries( ${rmg-tddft} XC1)
+target_link_libraries( ${rmg-tddft} XC1 Misc)
+target_link_libraries( ${rmg-tddft} XC1 Finite_diff)
+target_link_libraries( ${rmg-tddft} XC1 RmgLib)
+target_link_libraries( ${rmg-tddft} XC1 RMG_Spin)
 endif(USE_LIBXC)
 target_link_libraries( ${rmg-tddft} RMG_Spin)
 target_link_libraries( ${rmg-tddft} US_PP Input)
@@ -56,9 +58,7 @@ target_link_libraries( ${rmg-tddft} ${Boost_LIBRARIES})
 if(USE_OPENBABEL_LIBS)
     target_link_libraries( ${rmg-tddft} ${OPENBABEL_LIBRARIES})
 
-target_link_libraries( ${rmg-tddft} RmgTddft Misc XC RMG_Spin_XC RMG_Spin Finite_diff)
-
-
+target_link_libraries( ${rmg-tddft} RmgTddft)
 target_link_libraries (${rmg-tddft} Eldyn)
 endif(USE_OPENBABEL_LIBS)
 

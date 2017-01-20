@@ -128,7 +128,10 @@ double *vxc_old, *vh_old, *vh_corr, *vh_x, *vh_y, *vh_z, *vh_corr_old;
 int mpi_nprocs;
 int mpi_myrank;
 
-//STATE *states, *states1;
+MPI_Comm COMM_PEX, COMM_PEY, COMM_PEZ, COMM_3D;
+MPI_Comm COMM_EN, COMM_EN1, COMM_EN2;
+
+
 
 /*Variables from recips.h*/
 double b0[3], b1[3], b2[3];
