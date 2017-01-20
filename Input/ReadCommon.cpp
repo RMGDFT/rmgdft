@@ -528,10 +528,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner.\n",
                      "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 0.66.\n");
 
-    If.RegisterInputKey("kohn_sham_mg_timestep", &lc.eig_parm.mg_timestep, 0.0, 2.0, 1.0,
+    If.RegisterInputKey("kohn_sham_mg_timestep", &lc.eig_parm.mg_timestep, 0.0, 2.0, 0.6666666666666,
                      CHECK_AND_FIX, OPTIONAL,
                      "timestep for multigrid correction.\n",
-                     "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 1.0.\n");
+                     "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 0.66\n");
 
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 3,
                      CHECK_AND_FIX, OPTIONAL,
