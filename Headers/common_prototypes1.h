@@ -411,10 +411,6 @@ void debug_write_rho_z (double *rhoz);
 void print_density_z_direction (int grid_x, int grid_y, double *density,
                                 int px0_grid, int py0_grid, int pz0_grid,
                                 double zside);
-void get_derweight (int ion, double *beta_x, double *beta_y, double *beta_z,
-                    ION *iptr, fftw_plan p2);
-void partial_beta_fdiff (fftw_complex *beptr, int nldim, double *beta_x,
-                         double *beta_y, double *beta_z);
 
 void mulliken (STATE *states);
 double ylm(int l, double *r);
