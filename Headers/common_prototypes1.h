@@ -286,8 +286,6 @@ void gather_psi (double *tmp_psiR, double *tmp_psiI, STATE *sp, int tid);
 void scatter_psi (double *tmp_psiR, double *tmp_psiI, STATE *sp, int tid);
 void get_milliken (STATE *states);
 
-void output_wave( STATE *states, int kpt, int fhand );
-
 
 int get_index (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int *ilow, int *ihi, int *jlow, int *jhi, int *klow,
