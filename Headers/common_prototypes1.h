@@ -275,7 +275,6 @@ void write_avgv (double *vh, double *vnuc);
 void write_zstates (STATE *states);
 
 void write_header (void);
-void write_occ (STATE *states);
 void write_force (void);
 void write_timings (void);
 void wvfn_residual(STATE *states);

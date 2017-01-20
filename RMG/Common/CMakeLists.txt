@@ -42,7 +42,6 @@ Scf.cpp
 pack_stop_axpy.cpp
 genvpsi.cpp
 MgEigState.cpp
-write_occ.c
 GetGamma.cpp
 fastrelax.c
 scalapack_tools.c
