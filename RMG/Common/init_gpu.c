@@ -84,10 +84,6 @@ void finalize_gpu (void)
 {
     cublasDestroy(ct.cublas_handle);
     cublasXtDestroy(ct.cublasXt_handle);
-    cudaFreeHost(ct.gpu_host_temp4);
-    cudaFreeHost(ct.gpu_host_temp3);
-    cudaFreeHost(ct.gpu_host_temp2);
-    cudaFreeHost(ct.gpu_host_temp1);
 
 //    cuCtxDetach( ct.cu_context ); 
  //   cublasShutdown();
