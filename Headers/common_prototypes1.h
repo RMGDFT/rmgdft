@@ -282,7 +282,6 @@ void wvfn_residual(STATE *states);
 double rand0 (long *idum);
 void cgen_prolong(double coef[], double fraction, int order);
 void mg_restrict_6 (double * full, double * half, int dimx, int dimy, int dimz, int grid_ratio);
-void mg_prolong_6 (double * full, double * half, int dimx, int dimy, int dimz);
 void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz, int grid_ratio, int order);
 void gather_psi (double *tmp_psiR, double *tmp_psiI, STATE *sp, int tid);
 void scatter_psi (double *tmp_psiR, double *tmp_psiI, STATE *sp, int tid);

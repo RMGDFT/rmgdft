@@ -86,7 +86,6 @@ set_pbc.c
 pulay_rho.c
 PartialGamma.cpp
 fire.c
-mg_prolong_6.c
 partial_beta_fdiff.c
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
