@@ -136,6 +136,7 @@ template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalT
 template <typename OrbitalType, typename CalcType>
 void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *nvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi);
 // Print function
+void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_loc, int override_rank);
 void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_loc);
 template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **kptr, double * vnuc, double * rhocore, double * rhoc);

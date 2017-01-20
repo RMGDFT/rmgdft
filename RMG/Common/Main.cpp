@@ -413,8 +413,9 @@ void report ()
     /* Write timing information */
     //    write_timings ();
     if(pct.imgpe == 0) fclose(ct.logfile);
-    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe);
-
+    int override_rank = 0;
+    if(pct.imgpe==0) MPI_Comm_rank (pct.img_comm, &override_rank);
+    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe, override_rank);
 
 
 }                               /* end report */

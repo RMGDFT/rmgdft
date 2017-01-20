@@ -12,7 +12,7 @@
 #include "RmgTimer.h"
 
 
-void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_thispe) {
+void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_thispe, int override_rank) {
 
     int tid;
     size_t i, count, count1;
@@ -69,7 +69,7 @@ void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions
     }
 
     MPI_Barrier(comm);
-    if(my_rank == max_rank.rank) {
+   if(((my_rank == max_rank.rank) && (override_rank == -1)) || (my_rank == override_rank)) {
 
         logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 
@@ -133,7 +133,7 @@ void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions
     }
 
     MPI_Barrier(comm);
-    if(my_rank == min_rank.rank) {
+    if((my_rank == min_rank.rank) && (override_rank == -1)){
 
         logfile.open(outfile, std::ofstream::out | std::ofstream::app);
 
@@ -197,3 +197,9 @@ void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions
     }
 
 }
+
+void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_thispe)
+{
+    RmgPrintTimings(comm, outfile, steps, num_ions_thispe, -1);
+}
+
