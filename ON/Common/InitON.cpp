@@ -245,7 +245,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             break;
         case LCAO_START:
             init_wf_lcao(states);
-            lcao_get_rho(rho);
+            LcaoGetAtomicRho(rho);
 
             break;
         case INIT_FIREBALL:
