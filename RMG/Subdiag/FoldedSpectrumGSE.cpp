@@ -81,15 +81,16 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 
 #if GPU_ENABLED
 
-    if(n > RMG_CUBLASXT_BLOCKSIZE) usecuxt = false;
+    if(n <= RMG_CUBLASXT_BLOCKSIZE) usecuxt = false;
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");
     DataType *D = (DataType *)GpuMallocHost(n * sizeof(DataType));
+    DataType *gpuT1 = NULL;
 
     int ione = 1;
     cublasStatus_t custat;
 
     DataType *T1 = (DataType *)GpuMallocHost(n * n * sizeof(DataType));
-    //DataType *gpuT1 = (DataType *)GpuMalloc(n * n * sizeof(DataType));
+    if(!usecuxt) gpuT1 = (DataType *)GpuMallocDevice(n * n * sizeof(DataType));
     DataType *gpuA = (DataType *)GpuMallocDevice(istep * n * sizeof(DataType));
     DataType *gpuZ = (DataType *)GpuMallocDevice(istep * n * sizeof(DataType));
     DataType *gpuB = (DataType *)GpuMallocDevice(istep * n * sizeof(DataType));
@@ -117,10 +118,13 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
     for(int ix = 0;ix < n;ix++) T1[ix*n + ix] += 1.0;
 
     delete(RT1);
-//    custat = cublasSetVector(n * n , sizeof(DataType), T1, ione, gpuT1, ione );
-//    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
+    if(!usecuxt)
+    {
+        custat = cublasSetVector(n * n , sizeof(DataType), T1, ione, gpuT1, ione );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
+    }
 
-    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-1st term");
+    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-Second term");
 #pragma omp for schedule(static, 1) nowait
     // Compute D^(-1) * B * I and store in B
     for(int st1 = istart;st1 < istop;st1++){
@@ -131,46 +135,59 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 
 
     delete(RT1);
-    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-2nd term");
+    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-First term");
 
 
     // Start the slice of A from istart to istop transferring to the GPU
-//    custat = cublasSetVector(istep * n , sizeof(DataType), &A[istart*n], ione, gpuA, ione );
-//    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing A from system memory to gpu.");
+    if(!usecuxt)
+    {
+        custat = cublasSetVector(istep * n , sizeof(DataType), &A[istart*n], ione, gpuA, ione );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing A from system memory to gpu.");
 
-//    custat = cublasSetVector(istep * n , sizeof(DataType), &Z[istart*n], ione, gpuZ, ione );
-//    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
+        custat = cublasSetVector(istep * n , sizeof(DataType), &Z[istart*n], ione, gpuZ, ione );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
 
-//    custat = cublasSetVector(istep * n , sizeof(DataType), &B[istart*n], ione, gpuB, ione );
-//    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
-
+        custat = cublasSetVector(istep * n , sizeof(DataType), &B[istart*n], ione, gpuB, ione );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing T1 from system memory to gpu.");
+    }
 
     // outer loop over steps
     for(int step = 0;step < iterations;step++) {
 
-//        RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, gpuT1, gpuZ, gpuA, false, false, false, false);
-//        RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, NULLptr, NULLptr, NULLptr, false, false, false, false);
-        dgemm(trans_n, trans_n, &n, &istep, &n, (double *)&ONE_t, (double *)T1, &n,
-        (double *)&Z[istart*n], &n, (double *)&ZERO_t, (double *)&A[istart*n], &n);
-
-//        custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, gpuA, n, &ONE_t, gpuB, n, gpuZ, n);
-//        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
-#pragma omp for schedule(static, 1) nowait
-        for(int st1 = istart;st1 < istop;st1++){
-            for(int st2 = 0;st2 < n;st2++){
-                Z[st1*n + st2] =  A[st1*n + st2] +  B[st1*n + st2];
+        if(usecuxt)
+        {
+            RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, NULLptr, NULLptr, NULLptr, false, false, false, false);
+//            custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, gpuA, n, &ONE_t, gpuB, n, gpuZ, n);
+//            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
+            // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
+            //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
+    #pragma omp for schedule(static, 1) nowait
+            for(int st1 = istart;st1 < istop;st1++){
+                for(int st2 = 0;st2 < n;st2++){
+                    Z[st1*n + st2] =  A[st1*n + st2] +  B[st1*n + st2];
+                }
             }
+
+        }
+        else
+        {
+            RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, gpuT1, gpuZ, gpuA, false, false, false, false);
+            custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, gpuA, n, &ONE_t, gpuB, n, gpuZ, n);
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
         }
 
     }
 
-//    custat = cublasGetVector(istep *n, sizeof( DataType ), gpuZ, 1, &Z[istart*n], 1 );
-//    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring Z matrix from GPU to system memory.");
+    if(!usecuxt)
+    {
+        custat = cublasGetVector(istep *n, sizeof( DataType ), gpuZ, 1, &Z[istart*n], 1 );
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring Z matrix from GPU to system memory.");
+    }
 
     GpuFreeDevice(gpuB);
     GpuFreeDevice(gpuZ);
     GpuFreeDevice(gpuA);
-    //GpuFree(gpuT1);
+    if(!usecuxt) GpuFreeDevice(gpuT1);
     GpuFreeHost(T1);
     GpuFreeHost(D);
 
@@ -206,7 +223,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
     delete(RT1);
 
 
-    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-1st term");
+    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-Second term");
 #pragma omp for schedule(static, 1) nowait
     // Compute D^(-1) * B * X and store in B
     for(int st1 = istart;st1 < istop;st1++){
@@ -216,7 +233,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
     }
     delete(RT1);
 
-    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-2nd term");
+    RT1 = new RmgTimer("4-Diagonalization: fs: GSE-First term");
 
     // outer loop over steps
     for(int step = 0;step < iterations;step++) {
