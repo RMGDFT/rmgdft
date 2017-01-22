@@ -177,13 +177,20 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     }
 
     for(int idx = 0;idx < n_win * n_win;idx++) A[idx] = G[idx];
-    //QMD_dcopy (n_win * n_win, G, 1, a, 1);
 
 #if (GPU_ENABLED && MAGMA_LIBS)
-    magma_dsyevd(MagmaVec, MagmaLower, n_win, A, n_win, &eigs[n_start],
-                    work, lwork,
-                    iwork, liwork,
-                    &info);
+//    magma_dsyevd(MagmaVec, MagmaLower, n_win, A, n_win, &eigs[n_start],
+//                    work, lwork,
+//                    iwork, liwork,
+//                    &info);
+    double vl=0.0, vu=0.0;
+    magma_int_t eigs_found;
+    int il=1;
+    int iu = eig_stop-n_start+1;
+    if(iu > n_win)iu=n_win;
+    magma_dsyevdx(MagmaVec, MagmaRangeI, MagmaLower, n_win, A, n_win, vl, vu,
+                      il, iu, &eigs_found, &eigs[n_start], work, lwork, iwork, liwork, &info);
+
 #else
     dsyevd(jobz, cuplo, &n_win, A, &n_win, &eigs[n_start],
                     work, &lwork,
@@ -196,7 +203,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     //--------------------------------------------------------------------
 
     for(int idx = 0;idx < n_win * n_win;idx++) G[idx] = A[idx];
-    //QMD_dcopy (n_win * n_win, a, 1, G, 1);
 
     for(int ix = 0;ix < n_win;ix++) {
         Vdiag[ix] = ONE_t;

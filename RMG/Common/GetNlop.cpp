@@ -31,7 +31,9 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
-
+#include "GpuAlloc.h"
+#include "rmg_error.h"
+#include "ErrorFuncs.h"
 
 /*Call to this function needs to be preceeded by get_QI, since we use pct.Qidxptrlen,
  * which is setup in that function*/
@@ -324,14 +326,25 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     
     
     // Set storage sequentially for real and imaginary components so we can transform storage pattern
+#if GPU_ENABLED
+    if (pct.newsintR_local)
+        cudaFreeHost(pct.newsintR_local);
+#else
     if (pct.newsintR_local)
         delete [] pct.newsintR_local;
+#endif
    
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
     size_t sint_alloc = (size_t)(factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.max_nl);
     sint_alloc *= (size_t)ct.max_states;
+#if GPU_ENABLED
+    cudaError_t custat;
+    custat = cudaMallocHost((void **)&pct.newsintR_local , sint_alloc * sizeof(double));
+    RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaHostMalloc failed in InitGpuHostMalloc\n");
+#else
     pct.newsintR_local = new double[sint_alloc]();
+#endif
 
     KpointType *tsintnew_ptr = (KpointType *)pct.newsintR_local;
 

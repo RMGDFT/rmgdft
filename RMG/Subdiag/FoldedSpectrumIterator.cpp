@@ -71,7 +71,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
 
 #if GPU_ENABLED
     usecuxt = true;
-    if(n > RMG_CUBLASXT_BLOCKSIZE) usecuxt = false;
+    if(n <= ct.cublasxt_block_size) usecuxt = false;
     double *Y = (double *)GpuMallocHost(n * k *  sizeof(double));
     for(int i = 0;i < n * k;i++) Y[i] = 0.0;
 #else
@@ -82,7 +82,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
 #if GPU_ENABLED
 
     cublasStatus_t custat;
-    if(usecuxt) {
+    if(!usecuxt) {
 
         Agpu = (double *)GpuMallocDevice(n * n * sizeof(double));
         Xgpu = (double *)GpuMallocDevice(n * k * sizeof(double));
@@ -115,7 +115,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
 
         // Subtract off lamda * I component. Gemm call is mainly for simplicity with GPU.
 #if GPU_ENABLED
-        if(usecuxt) {
+        if(!usecuxt) {
 
             double neg_rone = -1.0;
             custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, Xgpu, n, eigs_gpu, ione, Tgpu, n);
@@ -128,7 +128,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
         }
 #endif
 
-        if(!GPU_ENABLED || (usecuxt == false)) {
+        if(!GPU_ENABLED || (usecuxt == true)) {
 
             int kcol, ix;
 #pragma omp parallel private(kcol, ix)
@@ -150,7 +150,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     }    
 
 #if GPU_ENABLED
-    if(usecuxt) {
+    if(!usecuxt) {
 
         custat = cublasGetVector(n * k, sizeof( double ), Xgpu, 1, X, 1 );
         RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring X matrix from GPU to system memory.");

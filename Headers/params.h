@@ -148,7 +148,6 @@
 #if GPU_ENABLED
 
     #define MAX_GPU_DEVICES 16
-    #define RMG_CUBLASXT_BLOCKSIZE 2048
 
 #endif
 

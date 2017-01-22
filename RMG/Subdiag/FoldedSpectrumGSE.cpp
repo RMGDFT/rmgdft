@@ -81,7 +81,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 
 #if GPU_ENABLED
 
-    if(n <= RMG_CUBLASXT_BLOCKSIZE) usecuxt = false;
+    if(n <= ct.cublasxt_block_size) usecuxt = false;
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");
     DataType *D = (DataType *)GpuMallocHost(n * sizeof(DataType));
     DataType *gpuT1 = NULL;

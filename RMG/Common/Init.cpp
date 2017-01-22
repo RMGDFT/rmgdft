@@ -196,14 +196,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     cudaError_t custat;
 
     // Figure out how much memory space to reserve on the GPU
-    // 3 blocks of RMG_CUBLASXT_BLOCKSIZE*ct.max_states for diagonalization arrays
+    // 3 blocks of ct.cublasxt_block_size*ct.max_states for diagonalization arrays
     size_t gpu_bufsize, t1;
-    t1 = RMG_CUBLASXT_BLOCKSIZE * std::max(ct.max_states, P0_BASIS) * sizeof(OrbitalType);
+    t1 = ct.cublasxt_block_size * ct.max_states * sizeof(OrbitalType);
     gpu_bufsize = 3 * t1;
 #if MAGMA_LIBS
     gpu_bufsize += t1;
 #endif
-
     InitGpuMalloc(gpu_bufsize);
 
     // Next is page locked memory for transferring data back and forth

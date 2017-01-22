@@ -439,6 +439,9 @@ typedef struct
     /* scalapack block size */
     int scalapack_block_factor;
 
+    /* cublasxt block size */
+    int cublasxt_block_size;
+
     /* How many steps between writeout of eigenvalues*/
     int write_eigvals_period;
 
