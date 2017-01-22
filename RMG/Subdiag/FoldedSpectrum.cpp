@@ -89,7 +89,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
         fs_comm = pct.grid_comm;
         if(pct.procs_per_host > 1) {
             int tpes = FS_NPES / pct.procs_per_host;
-            if(tpes > 12) {
+            if(tpes >= 12) {
                 FS_NPES = tpes;
                 fs_comm = pct.local_master_comm;
             }
