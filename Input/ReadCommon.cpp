@@ -716,6 +716,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("use_numa", &lc.use_numa, true, 
                          "Use internal numa setup if available.");
 
+    If.RegisterInputKey("mpi_queue_mode", &lc.mpi_queue_mode, false, 
+                         "Use mpi queue mode.");
+
     If.RegisterInputKey("require_huge_pages", &lc.require_huge_pages, false, 
                          "If set RMG assumes that sufficient huge pages are available. Bad results may occur if that is not true.");
 

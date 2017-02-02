@@ -39,7 +39,7 @@
 #include "transition.h"
 
 
-static std::mutex vtot_sync_mutex;
+std::mutex vtot_sync_mutex;
 
 template void PotentialAcceleration<double,float>(Kpoint<double> *, State<double> *, double *, double *, float *, double *);
 template void PotentialAcceleration<double,double>(Kpoint<double> *, State<double> *, double *, double *, double *, double *);

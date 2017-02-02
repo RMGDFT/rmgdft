@@ -23,7 +23,10 @@
 #include "BaseThread.h"
 #include "RmgTimer.h"
 #include "rmg_error.h"
+#include "main.h"
+#include "transition.h"
 #include "GlobalSums.h"
+#include "transition.h"
 #include <typeinfo>
 #include <complex>
 
@@ -55,15 +58,41 @@ void GlobalSumsInit(void) {
 
 template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Comm comm)
 {
-    int tid;
     RmgTimer RT0("GlobalSums");
     BaseThread *T = BaseThread::getBaseThread(0);
+
     RmgType *v1, *v2;
 
     v1 = (RmgType *)fixed_vector1;
     v2 = (RmgType *)fixed_vector2;
 
-    tid = T->get_thread_tid();
+    if(ct.mpi_queue_mode && T->is_loop_over_states())
+    {
+        int tid = T->get_thread_tid();
+        if(tid < 0) tid = 0;
+        int istate = T->get_thread_basetag();
+        std::atomic_bool is_completed;
+        is_completed.store(false);
+
+        mpi_queue_item_t qi;
+        qi.is_completed = &is_completed;
+        qi.type = RMG_MPI_SUM;
+        qi.comm = T->get_unique_comm(istate);
+        qi.buflen = length;
+        qi.buf = (void *)vect;
+
+        if(typeid(RmgType) == typeid(int)) qi.datatype = MPI_INT;
+        if(typeid(RmgType) == typeid(float)) qi.datatype = MPI_FLOAT;
+        if(typeid(RmgType) == typeid(double)) qi.datatype = MPI_DOUBLE;
+//        std::atomic_thread_fence(std::memory_order_seq_cst);
+        Rmg_Q->queue[tid]->push(qi);
+        while(!is_completed.load(std::memory_order_acquire)){;}
+//        std::atomic_thread_fence(std::memory_order_seq_cst);
+        return;
+    }
+
+    int tid = T->get_thread_tid();
+
     if(tid < 0) {
 
         if(typeid(RmgType) == typeid(int))
@@ -82,12 +111,12 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
 
             for(int idx = 0;idx < length;idx++)
                 v1[length * tid + idx] = vect[idx];
-            T->thread_barrier_wait();
+            T->thread_barrier_wait(true);
 
             if(tid == 0)
                 MPI_Allreduce(v1, v2, length * T->get_threads_per_node(), MPI_DOUBLE, MPI_SUM, comm);
 
-            T->thread_barrier_wait();
+            T->thread_barrier_wait(true);
             for(int idx = 0;idx < length;idx++) vect[idx] = v2[length * tid + idx];
 
             return;

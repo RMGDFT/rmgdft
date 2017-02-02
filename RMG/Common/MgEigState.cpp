@@ -39,6 +39,7 @@
 #include "packfuncs.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
+#include "BaseThread.h"
 
 
 void CopyAndConvert(int n, double *A, float *B)
@@ -153,7 +154,7 @@ void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::co
 
 }
 
-static std::mutex vtot_sync_mutex;
+extern std::mutex vtot_sync_mutex;
 
 template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, double *, double *, int);
 template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *, double *, double *, int);
@@ -183,6 +184,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double eig, diag, t1, t2, t4;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 20, 20, 20, 20, 20 };
     int eig_post[MAX_MG_LEVELS] = { 0, 2, 2, 2, 2, 2, 2, 2 };
+
     int potential_acceleration;
     Mgrid MG(L, T);
 
@@ -212,7 +214,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     double *nvtot_psi = (double *)malloc(2*sbasis * sizeof(double));
     CalcType *tmp_psi_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
     CalcType *res_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
-    CalcType *twork_t  = (CalcType *)malloc(sbasis * sizeof(CalcType));
+    CalcType *twork_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
     std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
@@ -237,8 +239,12 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Setup some potential acceleration stuff
     potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     if(potential_acceleration) {
+        vtot_sync_mutex.lock();
         for(int idx = 0;idx <pbasis;idx++) {
             nvtot_psi[idx] = vtot_psi[idx];
+        }
+        vtot_sync_mutex.unlock();
+        for(int idx = 0;idx <pbasis;idx++) {
             saved_psi[idx] = tmp_psi[idx];
         }
     }
@@ -246,7 +252,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     /* Smoothing cycles */
     for (int cycles = 0; cycles <= nits; cycles++)
     {
-
 
         /* Apply Mehrstellen left hand operators */
         {
@@ -309,7 +314,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         /* If this is the first time through compute the eigenvalue */
         if ((cycles == 0) || (potential_acceleration != 0) || (using_davidson && (cycles == 0))) 
         {
-
             ComputeEig(pbasis, tmp_psi_t, work1_t, res_t, &eig);
             // Save this for variational energy correction
             if((cycles == 0) && (vcycle == 0)) sp->feig[0]=eig;
@@ -448,10 +452,11 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                 // If occupied orbitals are frozen we compute residuals 
                 if(freeze_occupied) {
-                    t2 = RmgSumAll (t2, pct.grid_comm);
-                    t1 = (double) (ct.psi_nbasis);
-                    sp->res = sqrt (t2 / t1);
-                    //if(pct.imgpe == 0) std::cout << "Orbital " << sp->istate << " residual = " << sp->res << std::endl;
+                    //GlobalSums (&t2, 1, pct.grid_comm);
+                    //t2 = RmgSumAll (t2, pct.grid_comm);
+                    //t1 = (double) (ct.psi_nbasis);
+                    //sp->res = sqrt (t2 / t1);
+//                    if(pct.imgpe == 0) std::cout << "Orbital " << sp->istate << " residual = " << sp->res << std::endl;
                 }
 
             }

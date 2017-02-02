@@ -162,12 +162,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     KpointType *a_psi = (KpointType *)tmp_arrayT;
     KpointType *b_psi = (KpointType *)tmp_array2T;
 
-    int istop = kptr->nstates / T->get_threads_per_node();
-    istop = istop * T->get_threads_per_node();
-    for(int st1=0;st1 < istop;st1 += T->get_threads_per_node()) {
-        SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
+    int active_threads = T->get_threads_per_node();
+    if(ct.mpi_queue_mode) active_threads--;
+
+    int istop = kptr->nstates / active_threads;
+    istop = istop * active_threads;
+    for(int st1=0;st1 < istop;st1 += active_threads) {
+        SCF_THREAD_CONTROL thread_control;
         // Make sure the non-local operators are applied for the next block if needed
-         int check = first_nls + T->get_threads_per_node();
+         int check = first_nls + active_threads;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 
@@ -177,26 +180,28 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
              delete RT3;
          }
 
-        for(int ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
-            thread_control[ist].job = HYBRID_SUBDIAG_APP_AB;
-            thread_control[ist].sp = &kptr->Kstates[st1 + ist];
-            thread_control[ist].p1 = (void *)&a_psi[(st1 + ist) * pbasis];
-            thread_control[ist].p2 = (void *)&b_psi[(st1 + ist) * pbasis];
-            thread_control[ist].p3 = (void *)kptr;
-            thread_control[ist].vtot = vtot_eig;
-            thread_control[ist].nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
-            thread_control[ist].Bns = (void *)&kptr->Bns[(first_nls + ist) * pbasis];
-
-            T->set_pptr(ist, &thread_control[ist]);
+        for(int ist = 0;ist < active_threads;ist++) {
+            thread_control.job = HYBRID_SUBDIAG_APP_AB;
+            thread_control.sp = &kptr->Kstates[st1 + ist];
+            thread_control.p1 = (void *)&a_psi[(st1 + ist) * pbasis];
+            thread_control.p2 = (void *)&b_psi[(st1 + ist) * pbasis];
+            thread_control.p3 = (void *)kptr;
+            thread_control.vtot = vtot_eig;
+            thread_control.nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
+            thread_control.Bns = (void *)&kptr->Bns[(first_nls + ist) * pbasis];
+            thread_control.basetag = kptr->Kstates[st1 + ist].istate;
+            QueueThreadTask(ist, thread_control);
         }
 
         // Thread tasks are set up so wake them
-        T->run_thread_tasks(T->get_threads_per_node());
+        if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
 
         // Increment index into non-local block
-        first_nls += T->get_threads_per_node();
+        first_nls += active_threads;
 
     }
+
+    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads+1, Rmg_Q);
 
     // Process any remaining orbitals serially
     for(int st1 = istop;st1 < kptr->nstates;st1++) {
@@ -204,7 +209,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
                        &kptr->nv[first_nls * pbasis], &kptr->Bns[first_nls * pbasis]);
         first_nls++;
     }
-
     delete(RT1);
     /* Operators applied and we now have
          tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>

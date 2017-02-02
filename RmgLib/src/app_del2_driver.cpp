@@ -52,6 +52,7 @@ double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b
     if(order == APP_CI_SECOND) {
         sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
         rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
+        //rptr = new RmgType [sbasis + 64];
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 1, CENTRAL_TRADE);
         cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         //free(rptr);

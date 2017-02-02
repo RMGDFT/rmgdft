@@ -155,7 +155,6 @@ bool scf_tau (STATE * states, double * vxc, double * vh, double * vnuc,
               thread_control[ist].job = HYBRID_EIG;
               thread_control[ist].vtot = vtot_psi;
               thread_control[ist].sp = &states[st1 + ist];
-              set_pptr(ist, &thread_control[ist]);
           }
 
           // Thread tasks are set up so run them

@@ -24,6 +24,7 @@
 extern BaseGrid *Rmg_G;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
+extern MpiQueue *Rmg_Q;
 
 #include "pfft.h"
 extern pfft_plan forward_coarse, backward_coarse, forward_fine, backward_fine;

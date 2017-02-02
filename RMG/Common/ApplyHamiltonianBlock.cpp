@@ -50,9 +50,11 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
 {
     int pbasis = kptr->pbasis;
     BaseThread *T = BaseThread::getBaseThread(0);
+    int active_threads = T->get_threads_per_node();
+    if(ct.mpi_queue_mode) active_threads--;
 
-    int istop = num_states / T->get_threads_per_node();
-    istop = istop * T->get_threads_per_node();
+    int istop = num_states / active_threads;
+    istop = istop * active_threads;
 
     // Apply the non-local operators to this block of orbitals
     AppNls(kptr, kptr->newsint_local, kptr->Kstates[first_state].psi, kptr->nv, &kptr->ns[first_state*pbasis], kptr->Bns,
@@ -64,38 +66,40 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
     // in the thread loop below but that's not much extra work.
     double fd_diag = ApplyHamiltonian (kptr, kptr->Kstates[first_state].psi, &h_psi[first_state*pbasis], vtot, kptr->nv);
 
-    for(int st1=first_state;st1 < first_state + istop;st1+=T->get_threads_per_node()) {
-        SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
+    for(int st1=first_state;st1 < first_state + istop;st1+=active_threads) {
+        SCF_THREAD_CONTROL thread_control;
 
         // Make sure the non-local operators are applied for the next block if needed
-        int check = first_nls + T->get_threads_per_node();
+        int check = first_nls + active_threads;
         if(check > ct.non_local_block_size) {
             AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
                    st1, std::min(ct.non_local_block_size, num_states + first_state - st1), false);
             first_nls = 0;
         }
 
-        for(int ist = 0;ist < T->get_threads_per_node();ist++) {
-            thread_control[ist].job = HYBRID_APPLY_HAMILTONIAN;
-            thread_control[ist].vtot = vtot;
-            thread_control[ist].istate = st1 + ist;
-            thread_control[ist].sp = &kptr->Kstates[st1 + ist];
-            thread_control[ist].p1 = (void *)kptr->Kstates[st1 + ist].psi;
-            thread_control[ist].p2 = (void *)&h_psi[(st1 + ist) * pbasis];
-            thread_control[ist].p3 = (void *)kptr;
-            thread_control[ist].nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
-            thread_control[ist].ns = (void *)&kptr->ns[(st1 + ist) * pbasis];  // ns is not blocked!
-            T->set_pptr(ist, &thread_control[ist]);
+        for(int ist = 0;ist < active_threads;ist++) {
+            thread_control.job = HYBRID_APPLY_HAMILTONIAN;
+            thread_control.vtot = vtot;
+            thread_control.istate = st1 + ist;
+            thread_control.sp = &kptr->Kstates[st1 + ist];
+            thread_control.p1 = (void *)kptr->Kstates[st1 + ist].psi;
+            thread_control.p2 = (void *)&h_psi[(st1 + ist) * pbasis];
+            thread_control.p3 = (void *)kptr;
+            thread_control.nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
+            thread_control.ns = (void *)&kptr->ns[(st1 + ist) * pbasis];  // ns is not blocked!
+            thread_control.basetag = kptr->Kstates[st1 + ist].istate;
+            QueueThreadTask(ist, thread_control);
         }
 
         // Thread tasks are set up so run them
-        T->run_thread_tasks(T->get_threads_per_node());
+        if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
 
         // Increment index into non-local block
-        first_nls += T->get_threads_per_node();
-
+        first_nls += active_threads;
         
     }
+
+    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads+1, Rmg_Q);
 
     // Process any remaining states in serial fashion
     for(int st1 = first_state + istop;st1 < first_state + num_states;st1++) {

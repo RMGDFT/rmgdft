@@ -81,7 +81,7 @@ RmgType RmgSumAll (RmgType x, MPI_Comm comm)
     RmgSumAllLock.unlock();
 
     // Wait until everyone gets here
-    T->thread_barrier_wait();
+    T->thread_barrier_wait(true);
 
     RmgSumAllLock.lock();
         if(vector_state == 1) {

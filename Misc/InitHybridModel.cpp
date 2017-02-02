@@ -290,7 +290,7 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
     ct.THREADS_PER_NODE = nthreads;
     B = BaseThread::getBaseThread(nthreads);
-    B->RegisterThreadFunction(run_threads);
+    B->RegisterThreadFunction(run_threads, pct.grid_comm);
 
 }
 

@@ -199,10 +199,7 @@ int main (int argc, char **argv)
     finish ();
 
     // Shutdown threads gracefully otherwise Cray perftools has issues
-    BaseThread *T = BaseThread::getBaseThread(0);
-    T->set_exitflag(true);
-    T->wake_all_threads();
-    T->thread_joinall();
+    RmgTerminateThreads();
 
 }
 

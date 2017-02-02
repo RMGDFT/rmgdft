@@ -57,6 +57,9 @@ typedef struct
     // nodemask for mpi process
     struct bitmask *nodemask;
 
+    // cpumask for manager thread
+    struct bitmask *manager_cpumask;
+
 #endif
 
     // Local rank of this proc

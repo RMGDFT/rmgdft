@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2014, Emil Briggs
+ * Copyright (c) 2013, Emil Briggs
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,28 +27,30 @@
  * 
 */
 
-#ifndef RMG_BaseThreadControl_H
-#define RMG_BaseThreadControl_H 1
+#ifndef RMG_Thread_Barrier_H
+#define RMG_Thread_Barrier_H 1
 
-#include <mpi.h>
+#ifdef __cplusplus
 
-class BaseThreadControl {
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
+#include <boost/thread.hpp>
 
+class Thread_barrier_t {
+private:
+    unsigned const count;
+    std::atomic<unsigned> spaces;
+    std::atomic<unsigned> generation;
+    boost::barrier bbarrier;
 public:
-
-    // Base tag
-    std::atomic<int> basetag;
-
-    // Thread ID number assigned by us
-    int tid;
-
-    // MPI communicator specfic to this thread
-    MPI_Comm grid_comm;
-
-    // Pointer to project specific data structure
-    void * pptr;
-
+    Thread_barrier_t(unsigned ncount) :
+        count(ncount), spaces(ncount), generation(0), bbarrier(ncount){}
+    void wait_for_threads(bool spin);
+    unsigned barrier_count(void);
 };
 
 
+#endif
 #endif

@@ -39,6 +39,8 @@
 #include <mpi.h>
 #include "BaseGrid.h"
 #include "rmg_error.h"
+#include "MpiQueue.h"
+
 
 
 /* Type of image trading */
@@ -51,6 +53,9 @@
 #if __cplusplus
 
 #include "BaseThread.h"
+#include <boost/lockfree/queue.hpp>
+
+
 
 class TradeImages {
 
@@ -58,6 +63,9 @@ class TradeImages {
 private:
 
     BaseGrid *G;
+    MpiQueue *queue;
+    void allocate_buffers(double ** &P, int nthreads, int length_per_thread, size_t elem_len);
+    bool queue_mode;
 
     /// Synchronous/asynchronous mode. 0=asnychronous (default) 1=synchronous
     int mode;
@@ -76,36 +84,47 @@ private:
     /// Buffers allocated via MPI_Allocmem
     double *swbuf1x;
     double *swbuf2x;
-    double *frdx1, *frdx2, *frdy1, *frdy2, *frdz1, *frdz2;
-    double *frdx1n, *frdx2n, *frdy1n, *frdy2n, *frdz1n, *frdz2n;
-    double *yzpsms_r, *yzpsps_r, *yzmsms_r, *yzmsps_r;
-    double *yzpsms_s, *yzpsps_s, *yzmsms_s, *yzmsps_s;
-    double *xzpsms_r, *xzpsps_r, *xzmsms_r, *xzmsps_r;
-    double *xzpsms_s, *xzpsps_s, *xzmsms_s, *xzmsps_s;
-    double *xypsms_r, *xypsps_r, *xymsms_r, *xymsps_r;
-    double *xypsms_s, *xypsps_s, *xymsms_s, *xymsps_s;
-    double *m0_s, *m0_r;
+
+    double **frdx1, **frdx2, **frdy1, **frdy2, **frdz1, **frdz2;
+    double **frdx1n, **frdx2n, **frdy1n, **frdy2n, **frdz1n, **frdz2n;
+    double **yzpsms_r, **yzpsps_r, **yzmsms_r, **yzmsps_r;
+    double **yzpsms_s, **yzpsps_s, **yzmsms_s, **yzmsps_s;
+    double **xzpsms_r, **xzpsps_r, **xzmsms_r, **xzmsps_r;
+    double **xzpsms_s, **xzpsps_s, **xzmsms_s, **xzmsps_s;
+    double **xypsms_r, **xypsps_r, **xymsms_r, **xymsps_r;
+    double **xypsms_s, **xypsps_s, **xymsms_s, **xymsps_s;
+    double **m0_s, **m0_r;
 
     MPI_Request sreqs[26];
     MPI_Request rreqs[26];
 
     void init_trade_imagesx_async(size_t elem_len);
-    template <typename RmgType> void RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
+    template <typename RmgType> void RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, int extra_tag, MPI_Request *req);
+
+    template <typename RmgType> void RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, int extra_tag, mpi_queue_item_t &qitem);
+
+    template <typename RmgType> void RMG_MPI_queue_allreduce(RmgType *buf, int count, MPI_Datatype type, MPI_Comm comm, mpi_queue_item_t &qitem);
+
     template <typename RmgType> void trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_imagesx_central_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
-    template <typename RmgType> void trade_imagesx_central_async_mul (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
+    template <typename RmgType> void trade_imagesx_central_async_managed (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_images1_central_async (RmgType * f, int dimx, int dimy, int dimz);
     template <typename RmgType> void trade_images1_async (RmgType * f, int dimx, int dimy, int dimz);
+    template <typename RmgType> void trade_images1_async_managed (RmgType * f, int dimx, int dimy, int dimz);
+    template <typename RmgType> void trade_images1_central_async_managed (RmgType * f, int dimx, int dimy, int dimz);
+    template <typename RmgType> void trade_images_async_managed (RmgType * f, int dimx, int dimy, int dimz);
+
 
 
 public:
     /// MPI communicator to use
     MPI_Comm comm;
 
-    TradeImages(BaseGrid *BG, size_t elem_len);
+    TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM);
     ~TradeImages(void);
     void set_synchronous_mode(void);
     void set_asynchronous_mode(void);
+    void set_queue_mode(bool mode);
     void set_timer_mode(bool verbose);
     void set_MPI_comm(MPI_Comm comm);
     MPI_Comm get_MPI_comm(void);

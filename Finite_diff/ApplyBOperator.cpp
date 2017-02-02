@@ -77,7 +77,7 @@ void ApplyBOperator (RmgType * a, RmgType * b, char *grid)
 }
 
 template <typename RmgType>
-void ApplyBOperator (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order)
+void ApplyBOperator (Lattice *L, TradeImages *T, RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz, int order)
 {
 
     if(ct.discretization == MEHRSTELLEN_DISCRETIZATION) {

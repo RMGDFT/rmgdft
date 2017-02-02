@@ -40,7 +40,7 @@ extern "C" void run_thread_tasks(int jobs)
 extern "C" void thread_barrier_wait(void) 
 {
     BaseThread *B = BaseThread::getBaseThread(0);
-    B->thread_barrier_wait();
+    B->thread_barrier_wait(true);
 }
 
 extern "C" int get_thread_basetag(void)

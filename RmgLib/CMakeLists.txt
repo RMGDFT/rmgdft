@@ -39,6 +39,7 @@ src/Lattice.cpp
 src/BaseThread.cpp
 src/BaseGrid.cpp
 src/Mgrid.cpp
+src/MpiQueue.cpp
 src/app_cir_driver.cpp
 src/app_cil_driver.cpp
 src/app_cil_driver_threaded.cpp
@@ -49,6 +50,7 @@ src/RmgTimer.cpp
 src/RmgPrintTimings.cpp
 src/RmgSumAll.cpp
 src/RmgMaxAll.cpp
+src/ThreadBarrier.cpp
 src/rmg_error.cpp
 src/get_vh.cpp
 src/packfuncs.cpp

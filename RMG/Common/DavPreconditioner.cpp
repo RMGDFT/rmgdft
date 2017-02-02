@@ -71,16 +71,17 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 {
 
     BaseThread *T = BaseThread::getBaseThread(0);
+    int active_threads = T->get_threads_per_node();
+    if(ct.mpi_queue_mode) active_threads--;
 
-    int istop = notconv / T->get_threads_per_node();
-    istop = istop * T->get_threads_per_node();
-//    if(T->get_threads_per_node() < 4) istop = 0;
+    int istop = notconv / active_threads;
+    istop = istop * active_threads;
 
-    for(int st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
+    for(int st1=0;st1 < istop;st1+=active_threads) {
 
           SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
 
-          for(int ist = 0;ist < T->get_threads_per_node();ist++) {
+          for(int ist = 0;ist < active_threads;ist++) {
               thread_control[ist].job = HYBRID_DAV_PRECONDITIONER;
               thread_control[ist].vtot = vtot;
               thread_control[ist].p1 = (void *)kptr;
@@ -88,13 +89,16 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
               thread_control[ist].avg_potential = avg_potential;
               thread_control[ist].fd_diag = fd_diag;
               thread_control[ist].eig = eigs[st1 + ist];
-              T->set_pptr(ist, &thread_control[ist]);
+              thread_control[ist].basetag = st1 + ist;
+              QueueThreadTask(ist, thread_control[ist]);
           }
 
-          // Thread tasks are set up so run them
-          T->run_thread_tasks(T->get_threads_per_node());
+          // Thread tasks are set up so wake them
+          if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
 
     }
+
+    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads+1, Rmg_Q);
 
     // Process any remaining states in serial fashion
     for(int st1 = istop;st1 < notconv;st1++) {
@@ -136,7 +140,10 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     double t1 = 0.0;
     for(int idx = 0;idx <pbasis;idx++) t1 += std::real(res[idx]);
 
-    t1 = RmgSumAll(t1, pct.grid_comm) / (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
+//    t1 = RmgSumAll(t1, pct.grid_comm) / (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
+    GlobalSums (&t1, 1, pct.grid_comm);
+    t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
+
     // neutralize cell
     for(int idx = 0;idx <pbasis;idx++) res[idx] -= OrbitalType(t1);
 

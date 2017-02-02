@@ -276,7 +276,20 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // Allocate storage for trade_images and global sums routines
     size_t elem_len = sizeof(std::complex<double>);
     if(ct.is_gamma) elem_len = sizeof(double);
-    Rmg_T = new TradeImages(Rmg_G, elem_len);
+    if(ct.THREADS_PER_NODE > 1)
+    {
+#ifdef USE_NUMA
+        Rmg_Q = new MpiQueue(64, ct.THREADS_PER_NODE, pct.manager_cpumask);
+#else
+        Rmg_Q = new MpiQueue(64, ct.THREADS_PER_NODE);
+#endif
+    }
+    else
+    {
+        ct.mpi_queue_mode = false;
+    }
+
+    Rmg_T = new TradeImages(Rmg_G, elem_len, ct.mpi_queue_mode, Rmg_Q);
     if(ct.verbose) Rmg_T->set_timer_mode(true);
     Rmg_T->set_MPI_comm(pct.grid_comm);
 

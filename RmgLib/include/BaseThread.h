@@ -32,6 +32,7 @@
 
 
 #include "rmg_error.h"
+#include "ThreadBarrier.h"
 
 // Maximum number of Rmg threads. Adjust based on hardware resources.
 #define MAX_RMG_THREADS 32
@@ -46,6 +47,8 @@
 #include <boost/thread.hpp>
 #include <boost/thread/tss.hpp>
 #include "BaseThreadControl.h"
+#include <boost/lockfree/queue.hpp>
+#include "MpiQueue.h"
 
 // Singleton class used to manage a thread pool
 class BaseThread {
@@ -55,9 +58,6 @@ private:
     // Threads to use on each MPI node
     int THREADS_PER_NODE;
 
-    // Used to implement a local barrier inside of the scf loops
-    boost::barrier *scf_barrier;
-
     // This is used when running with MPI_THREAD_SERIALIZED to ensure 
     // proper serialization
     static std::mutex mpi_mutex;
@@ -65,12 +65,17 @@ private:
     std::atomic<int> jobs;
     std::atomic<bool> in_threaded_region;
 
-    // These are used to ensure thread ordering
-    volatile int mpi_thread_order_counter;
-    static std::mutex thread_order_mutex;
+    // Parent grid_comm returned from get_grid_comm when not in threaded region
+    MPI_Comm parent_grid_comm;
 
-    // Base tag
-    int basetag;
+    // Pool of communicators not tied to a specific thread. Pool size is set equal to the
+    // number of threads. Typically used to ensure that electronic orbitals being processed
+    // by parallel threads use a unique communicator across nodes.
+    MPI_Comm *comm_pool;
+
+    // Job queue. Only truly independent thread tasks should be queued. Mainly used for MgEigState
+    // when using mpi_queue_mode.
+    boost::lockfree::queue<BaseThreadControl *, boost::lockfree::fixed_sized<true>> *jobqueue;
 
     // Initialization flag
     static int init_flag;
@@ -81,17 +86,14 @@ private:
     // Thread function pointer
     static void *(*funcptr)(void *);
 
-    // Exit flag for threads
-    static bool exit_flag;
-
-    // Private constructur
+    // Private constructor
     BaseThread(int nthreads);
 
 public:
 
     static BaseThread *getBaseThread(int nthreads);
 
-    void RegisterThreadFunction(void *(*funcptr)(void *));
+    void RegisterThreadFunction(void *(*funcptr)(void *), MPI_Comm &comm);
 
     // Condition variable and mutex for threads
     static std::mutex thread_mutex;
@@ -104,26 +106,37 @@ public:
     // Thread ID number assigned by us
     int tid;
 
-    // Pointer to project specific data structure
-    void *pptr;
+    // Used to implement local barriers inside of the scf loops
+    //boost::barrier *scf_barrier;
+    Thread_barrier_t *barrier;
 
+    void run_thread_tasks(int jobs, MpiQueue *Queue);
     void run_thread_tasks(int jobs);
-    void thread_barrier_wait(void);
+    void thread_barrier_wait(bool spin);
     int get_thread_basetag(void);
     void set_thread_basetag(int tid, int tag);
     BaseThreadControl *get_thread_control(void);
     int get_thread_tid(void);
+
+    // Called from thread returns grid_comm specific to that thread
+    // which is a duplicate of parent_grid_comm with a different context
+    MPI_Comm get_grid_comm(void);
+
+    // For a given value of index returns a unique communicator across nodes for each
+    // value of index.
+    MPI_Comm get_unique_comm(int index);
+
     void set_cpu_affinity(int tid, int procs_per_node, int local_rank);
     void RMG_MPI_lock(void);
     void RMG_MPI_unlock(void);
     void set_pptr(int tid, void *p);
+    void *get_pptr(int tid);
     int is_loop_over_states(void);
     int get_threads_per_node(void);
     void thread_sleep(void);
+    void thread_exit(void);
     void wake_all_threads(void);
     void thread_joinall(void);
-    bool get_exitflag(void);
-    void set_exitflag(bool flag);
 
 };
 

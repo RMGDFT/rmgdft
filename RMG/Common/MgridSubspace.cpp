@@ -67,9 +67,10 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     double min_occ_res = DBL_MAX;
     double min_unocc_res = DBL_MAX;
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
-
-
     int pbasis = kptr->pbasis;
+
+    int active_threads = T->get_threads_per_node();
+    if(ct.mpi_queue_mode) active_threads--;
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
 
@@ -79,8 +80,8 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         delete(RT1);
 
         /* Update the wavefunctions */
-        int istop = kptr->nstates / T->get_threads_per_node();
-        istop = istop * T->get_threads_per_node();
+        int istop = kptr->nstates / active_threads;
+        istop = istop * active_threads;
 
         // Apply the non-local operators to a block of orbitals
         RT1 = new RmgTimer("3-MgridSubspace: AppNls");
@@ -89,11 +90,11 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         delete(RT1);
         int first_nls = 0;
 
-        for(int st1=0;st1 < istop;st1+=T->get_threads_per_node()) {
-          SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
+        for(int st1=0;st1 < istop;st1+=active_threads) {
+          SCF_THREAD_CONTROL thread_control;
 
           // Make sure the non-local operators are applied for the next block if needed
-          int check = first_nls + T->get_threads_per_node();
+          int check = first_nls + active_threads;
           if(check > ct.non_local_block_size) {
               RT1 = new RmgTimer("3-MgridSubspace: AppNls");
               AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
@@ -103,25 +104,28 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
           }
         
           RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
-          for(int ist = 0;ist < T->get_threads_per_node();ist++) {
-              thread_control[ist].job = HYBRID_EIG;
-              thread_control[ist].vtot = vtot_psi;
-              thread_control[ist].vcycle = vcycle;
-              thread_control[ist].sp = &kptr->Kstates[st1 + ist];
-              thread_control[ist].p3 = (void *)kptr;
-              thread_control[ist].nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
-              thread_control[ist].ns = (void *)&kptr->ns[(st1 + ist) * pbasis];  // ns is not blocked!
-              T->set_pptr(ist, &thread_control[ist]);
+          for(int ist = 0;ist < active_threads;ist++) {
+              thread_control.job = HYBRID_EIG;
+              thread_control.vtot = vtot_psi;
+              thread_control.vcycle = vcycle;
+              thread_control.sp = &kptr->Kstates[st1 + ist];
+              thread_control.p3 = (void *)kptr;
+              thread_control.nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
+              thread_control.ns = (void *)&kptr->ns[(st1 + ist) * pbasis];  // ns is not blocked!
+              thread_control.basetag = kptr->Kstates[st1 + ist].istate;
+              QueueThreadTask(ist, thread_control);
           }
 
           // Thread tasks are set up so run them
-          T->run_thread_tasks(T->get_threads_per_node());
+          if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
 
           // Increment index into non-local block
-          first_nls += T->get_threads_per_node();
+          first_nls += active_threads;
           delete RT1;
 
         }
+
+        if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads + 1, Rmg_Q);
 
         // Process any remaining states in serial fashion
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");

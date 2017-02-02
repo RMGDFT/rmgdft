@@ -68,6 +68,9 @@ typedef struct
     // requested mpi thread level
     int mpi_threadlevel;
 
+    // mpi queued mode
+    bool mpi_queue_mode;
+
     /** Description of the run. */
     char description[MAX_CHAR];
 
@@ -759,6 +762,8 @@ typedef struct
 
     int is_gamma;
     bool is_use_symmetry;
+
+    bool freeze_occupied;
 
     // Maximum number of valence electrons for any atomic species
     double max_zvalence;
