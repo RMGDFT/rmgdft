@@ -210,14 +210,15 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *work1_t = (CalcType *)malloc(4*sbasis * sizeof(CalcType));
     CalcType *sg_twovpsi_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
 
-    OrbitalType *saved_psi  = (OrbitalType *)malloc(2*sbasis * sizeof(OrbitalType));
-    double *nvtot_psi = (double *)malloc(2*sbasis * sizeof(double));
-    CalcType *tmp_psi_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
-    CalcType *res_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
-    CalcType *twork_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
+    OrbitalType *saved_psi  = (OrbitalType *)malloc(sbasis * sizeof(OrbitalType));
+    double *nvtot_psi = (double *)malloc(sbasis * sizeof(double));
+    CalcType *tmp_psi_t  = (CalcType *)malloc(sbasis * sizeof(CalcType));
+    CalcType *res_t  = (CalcType *)malloc(sbasis * sizeof(CalcType));
+    CalcType *twork_t  = (CalcType *)malloc(sbasis * sizeof(CalcType));
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
-    std::complex<double> *kdr = new std::complex<double>[2*sbasis]();
+    std::complex<double> *kdr = NULL;
+    if(typeid(OrbitalType) == typeid(std::complex<double>)) kdr = new std::complex<double>[2*sbasis]();
 
 
     /* Get the non-local operator and S acting on psi (nv and ns, respectrvely) */
@@ -473,7 +474,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         CopyAndConvert(pbasis, tmp_psi_t, tmp_psi);
 
     /* Release our memory */
-    delete [] kdr;
+    if(typeid(OrbitalType) == typeid(std::complex<double>)) delete [] kdr;
     free(twork_t);
     free(res_t);
     free(tmp_psi_t);
