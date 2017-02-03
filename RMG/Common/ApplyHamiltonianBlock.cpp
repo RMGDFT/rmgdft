@@ -50,8 +50,10 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
 {
     int pbasis = kptr->pbasis;
     BaseThread *T = BaseThread::getBaseThread(0);
-    int active_threads = T->get_threads_per_node();
+
+    int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode) active_threads--;
+    if(active_threads < 1) active_threads = 1;
 
     int istop = num_states / active_threads;
     istop = istop * active_threads;
@@ -99,7 +101,7 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
         
     }
 
-    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads+1, Rmg_Q);
+    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
     // Process any remaining states in serial fashion
     for(int st1 = first_state + istop;st1 < first_state + num_states;st1++) {
