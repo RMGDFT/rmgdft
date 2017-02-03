@@ -68,7 +68,6 @@ nlforce_par_omega.c
 neb_relax.c
 app_smooth.cpp
 xbsmovie.c
-init_gpu.c
 write_zstates.c
 symmetry.c
 lbfgs.c

@@ -428,7 +428,8 @@ void finish ()
     MPI_Finalize ();
 
 #if GPU_ENABLED
-    finalize_gpu();
+    cublasDestroy(ct.cublas_handle);
+    cublasXtDestroy(ct.cublasXt_handle);
 #endif
 
 }                               /* end finish */

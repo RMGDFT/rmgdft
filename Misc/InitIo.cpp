@@ -214,6 +214,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         cuDeviceGet( &dev, idevice );
         cuDeviceGetName( name, sizeof(name), dev );
         cuDeviceTotalMem( &deviceMem, dev );
+        ct.gpu_mem[idevice] = deviceMem;
         cuDeviceGetAttribute( &clock, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
         rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
