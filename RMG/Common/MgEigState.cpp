@@ -205,8 +205,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
 
     /* Grab some memory */
-    CalcType *res2_t = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
-    CalcType *work2_t = (CalcType *)malloc(4*sbasis * sizeof(CalcType));
+    CalcType *res2_t = (CalcType *)malloc(sbasis * sizeof(CalcType));
+    CalcType *work2_t = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
     CalcType *work1_t = (CalcType *)malloc(4*sbasis * sizeof(CalcType));
     CalcType *sg_twovpsi_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
 
