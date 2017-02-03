@@ -21,6 +21,7 @@
 */
 
 #include <complex>
+#include <boost/pool/pool.hpp>
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Mgrid.h"
@@ -161,6 +162,8 @@ template void MgEigState<double,double>(Kpoint<double> *, State<double> *, doubl
 template void MgEigState<std::complex<double>, std::complex<float> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, std::complex<double> *, std::complex<double> *, int);
 template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std::complex<double>> *, State<std::complex<double> > *, double *, std::complex<double> *, std::complex<double> *, int);
 
+
+
 template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
@@ -203,27 +206,25 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
+    size_t aratio = sizeof(OrbitalType) / sizeof(CalcType);
 
-    /* Grab some memory */
-    CalcType *res2_t = (CalcType *)malloc(sbasis * sizeof(CalcType));
-    CalcType *work2_t = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
-    CalcType *work1_t = (CalcType *)malloc(4*sbasis * sizeof(CalcType));
-    CalcType *sg_twovpsi_t  = (CalcType *)malloc(2*sbasis * sizeof(CalcType));
-
-    OrbitalType *saved_psi  = (OrbitalType *)malloc(sbasis * sizeof(OrbitalType));
-    double *nvtot_psi = (double *)malloc(sbasis * sizeof(double));
-    CalcType *tmp_psi_t  = (CalcType *)malloc(sbasis * sizeof(CalcType));
-    CalcType *res_t  = (CalcType *)malloc(sbasis * sizeof(CalcType));
-    CalcType *twork_t  = (CalcType *)malloc(sbasis * sizeof(CalcType));
+    // Boost pool only makes a single call to system allocation routines and manages the blocks
+    // after that which reduces contention when many threads are running. Automatically frees
+    // the allocated memory when it goes out of scope.
+    boost::pool<> p(sbasis*aratio*sizeof(CalcType), 18);
+    CalcType *res2_t = (CalcType *)p.ordered_malloc(1);
+    CalcType *work2_t = (CalcType *)p.ordered_malloc(2);
+    CalcType *work1_t = (CalcType *)p.ordered_malloc(2);
+    CalcType *sg_twovpsi_t  =  (CalcType *)p.ordered_malloc(2);
+    OrbitalType *saved_psi  = (OrbitalType *)p.ordered_malloc(aratio);
+    double *nvtot_psi = (double *)p.ordered_malloc(aratio);
+    CalcType *tmp_psi_t  = (CalcType *)p.ordered_malloc(1);
+    CalcType *res_t  =  (CalcType *)p.ordered_malloc(1);
+    CalcType *twork_t  = (CalcType *)p.ordered_malloc(1);
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
     std::complex<double> *kdr = NULL;
     if(typeid(OrbitalType) == typeid(std::complex<double>)) kdr = new std::complex<double>[2*sbasis]();
-
-
-    /* Get the non-local operator and S acting on psi (nv and ns, respectrvely) */
-    //nv = &kptr->nv[sp->istate * pbasis];
-    //ns = &kptr->ns[sp->istate * pbasis];
 
     // Copy double precision ns into temp single precision array */
     CopyAndConvert(pbasis, ns, work1_t);
@@ -241,13 +242,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     if(potential_acceleration) {
         vtot_sync_mutex.lock();
-        for(int idx = 0;idx <pbasis;idx++) {
-            nvtot_psi[idx] = vtot_psi[idx];
-        }
+        for(int idx = 0;idx <pbasis;idx++) nvtot_psi[idx] = vtot_psi[idx];
         vtot_sync_mutex.unlock();
-        for(int idx = 0;idx <pbasis;idx++) {
-            saved_psi[idx] = tmp_psi[idx];
-        }
+        for(int idx = 0;idx <pbasis;idx++) saved_psi[idx] = tmp_psi[idx];
     }
 
     /* Smoothing cycles */
@@ -286,9 +283,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         }
 
         // Copy saved application to ns to res
-        for(int idx=0;idx < pbasis;idx++) {
-            res_t[idx] = res2_t[idx];
-        }
+        for(int idx=0;idx < pbasis;idx++) res_t[idx] = res2_t[idx];
 
         if(potential_acceleration) {
             /* Generate 2 * V * psi */
@@ -475,15 +470,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     /* Release our memory */
     if(typeid(OrbitalType) == typeid(std::complex<double>)) delete [] kdr;
-    free(twork_t);
-    free(res_t);
-    free(tmp_psi_t);
-    free(nvtot_psi);
-    free(saved_psi);
-    free(sg_twovpsi_t);
-    free(work1_t);
-    free(work2_t);
-    free(res2_t);
 
 } // end MgEigState
 
