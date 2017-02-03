@@ -44,54 +44,44 @@ template <typename RmgType>
 double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
 {
 
-    int sbasis;
-    RmgType *rptr;
     double cc = 0.0;
     FiniteDiff FD(L);
+    int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
+    int images = order / 2;
+    size_t alloc = (sbasis + 64) * sizeof(RmgType);
+    RmgType *rptr;
+
+    // while alloca is dangerous it's very fast for small arrays and the 110k limit
+    // is fine for linux and 64bit power
+    if(alloc <= 110592)
+    {
+        rptr = (RmgType *)alloca(alloc);
+    }
+    else
+    {
+        rptr = new RmgType[sbasis + 64];
+    }
+    
+
+    T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
     if(order == APP_CI_SECOND) {
-        sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
-        rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
-        //rptr = new RmgType [sbasis + 64];
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 1, CENTRAL_TRADE);
         cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        //free(rptr);
     }
     else if(order == APP_CI_FOURTH) {
-        sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-        rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 2, CENTRAL_TRADE);
         cc = FD.app4_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        //free(rptr);
     }
     else if(order == APP_CI_SIXTH) {
-        sbasis = (dimx + 6) * (dimy + 6) * (dimz + 6);
-        rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 3, CENTRAL_TRADE);
         cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        //free(rptr);
     }
     else if(order == APP_CI_EIGHT) {
-        sbasis = (dimx + 8) * (dimy + 8) * (dimz + 8);
-        rptr = new RmgType [sbasis + 64];
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 4, CENTRAL_TRADE);
         cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        delete [] rptr;
-        //free(rptr);
     }
     else if(order == APP_CI_TEN) {
-        sbasis = (dimx + 10) * (dimy + 10) * (dimz + 10);
-        rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 5, CENTRAL_TRADE);
         cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        //free(rptr);
     }
     else if(order == APP_CI_TWELVE) {
-        sbasis = (dimx + 12) * (dimy + 12) * (dimz + 12);
-        rptr = (RmgType *)alloca((sbasis + 64) * sizeof(RmgType));
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 6, CENTRAL_TRADE);
         cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        //free(rptr);
     }
     else {
 
@@ -99,6 +89,8 @@ double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b
         return 0;   // Just to keep the compiler from complaining
 
     }
+
+    if(alloc > 110592) delete [] rptr;
 
     return cc;
 
