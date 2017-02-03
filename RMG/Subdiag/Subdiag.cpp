@@ -162,8 +162,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     KpointType *a_psi = (KpointType *)tmp_arrayT;
     KpointType *b_psi = (KpointType *)tmp_array2T;
 
-    int active_threads = T->get_threads_per_node();
+    int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode) active_threads--;
+    if(active_threads < 1) active_threads = 1;
 
     int istop = kptr->nstates / active_threads;
     istop = istop * active_threads;
@@ -201,7 +202,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     }
 
-    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads+1, Rmg_Q);
+    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
     // Process any remaining orbitals serially
     for(int st1 = istop;st1 < kptr->nstates;st1++) {

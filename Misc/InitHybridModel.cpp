@@ -289,6 +289,18 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 #endif
 
     ct.THREADS_PER_NODE = nthreads;
+    ct.MG_THREADS_PER_NODE = nthreads;
+
+    // Check if RMG_NUM_THREADS was set?
+    tptr = getenv("RMG_NUM_THREADS");
+    if(tptr) ct.MG_THREADS_PER_NODE = atoi(tptr);
+    if((ct.MG_THREADS_PER_NODE < 1) || (ct.MG_THREADS_PER_NODE > ct.THREADS_PER_NODE))
+    {
+        printf("Warning: RMG_NUM_THREADS set to invalid value. Resetting to default.\n");
+        ct.MG_THREADS_PER_NODE = ct.THREADS_PER_NODE;
+    }
+
+
     B = BaseThread::getBaseThread(nthreads);
     B->RegisterThreadFunction(run_threads, pct.grid_comm);
 

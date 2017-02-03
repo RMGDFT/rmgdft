@@ -68,6 +68,7 @@ BaseThread::BaseThread(int nthreads)
     if(!BaseThread::init_flag) {
 
         BaseThread::THREADS_PER_NODE = nthreads;
+        BaseThread::ACTIVE_THREADS_PER_NODE.store(1);
         BaseThread::in_threaded_region.store(false);
         BaseThread::init_flag = 1;
 
@@ -117,27 +118,21 @@ void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
         rmg_error_handler (__FILE__, __LINE__, "More jobs than available threads scheduled\n");
     }
 
+    BaseThread::ACTIVE_THREADS_PER_NODE.store(rjobs);
     std::atomic_thread_fence(std::memory_order_seq_cst);
     // wake manager thread first
-    if(Queue)
-    {
-        Queue->run_manager();
-        BaseThread::barrier = new Thread_barrier_t(rjobs-1);
-    }
-    else
-    {
-        BaseThread::barrier = new Thread_barrier_t(rjobs);
-    }
+    if(Queue) Queue->run_manager();
+    BaseThread::barrier = new Thread_barrier_t(rjobs);
     std::unique_lock<std::mutex> lk(BaseThread::thread_mutex);
     BaseThread::in_threaded_region.store(true);
-    BaseThread::jobs.store(rjobs);
-//    for(int i = 0;i < rjobs;i++) BaseThread::thread_cv.notify_one();
+    BaseThread::jobs.store(BaseThread::THREADS_PER_NODE);  // Even threads with no task update this
     BaseThread::thread_cv.notify_all();
     BaseThread::main_cv.wait(lk, [&] {return BaseThread::jobs.load() == 0;});
     BaseThread::in_threaded_region.store(false);
     delete BaseThread::barrier;
     if(Queue) Queue->stop_manager();
     std::atomic_thread_fence(std::memory_order_seq_cst);
+    BaseThread::ACTIVE_THREADS_PER_NODE.store(1);
  
 }
 
@@ -285,6 +280,13 @@ int BaseThread::get_threads_per_node(void)
     if(BaseThread::THREADS_PER_NODE == 0)
         rmg_error_handler (__FILE__, __LINE__, "Threads not initialized yet");
     return BaseThread::THREADS_PER_NODE;
+}
+
+int BaseThread::get_active_threads_per_node(void)
+{
+    if(BaseThread::THREADS_PER_NODE == 0)
+        rmg_error_handler (__FILE__, __LINE__, "Threads not initialized yet");
+    return BaseThread::ACTIVE_THREADS_PER_NODE;
 }
 
 void BaseThread::set_pptr(int tid, void *p)

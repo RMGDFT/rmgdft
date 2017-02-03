@@ -69,8 +69,9 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     int pbasis = kptr->pbasis;
 
-    int active_threads = T->get_threads_per_node();
+    int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode) active_threads--;
+    if(active_threads < 1) active_threads = 1;
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
 
@@ -125,7 +126,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
         }
 
-        if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads + 1, Rmg_Q);
+        if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
         // Process any remaining states in serial fashion
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");

@@ -57,6 +57,7 @@ private:
 
     // Threads to use on each MPI node
     int THREADS_PER_NODE;
+    std::atomic<int> ACTIVE_THREADS_PER_NODE;
 
     // This is used when running with MPI_THREAD_SERIALIZED to ensure 
     // proper serialization
@@ -133,6 +134,7 @@ public:
     void *get_pptr(int tid);
     int is_loop_over_states(void);
     int get_threads_per_node(void);
+    int get_active_threads_per_node(void);
     void thread_sleep(void);
     void thread_exit(void);
     void wake_all_threads(void);

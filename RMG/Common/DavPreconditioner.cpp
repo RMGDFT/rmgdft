@@ -71,26 +71,29 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 {
 
     BaseThread *T = BaseThread::getBaseThread(0);
-    int active_threads = T->get_threads_per_node();
+
+    int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode) active_threads--;
+    if(active_threads < 1) active_threads = 1;
+
 
     int istop = notconv / active_threads;
     istop = istop * active_threads;
 
     for(int st1=0;st1 < istop;st1+=active_threads) {
 
-          SCF_THREAD_CONTROL thread_control[MAX_RMG_THREADS];
+          SCF_THREAD_CONTROL thread_control;
 
           for(int ist = 0;ist < active_threads;ist++) {
-              thread_control[ist].job = HYBRID_DAV_PRECONDITIONER;
-              thread_control[ist].vtot = vtot;
-              thread_control[ist].p1 = (void *)kptr;
-              thread_control[ist].p2 = (void *)&res[(st1 + ist) * kptr->pbasis];
-              thread_control[ist].avg_potential = avg_potential;
-              thread_control[ist].fd_diag = fd_diag;
-              thread_control[ist].eig = eigs[st1 + ist];
-              thread_control[ist].basetag = st1 + ist;
-              QueueThreadTask(ist, thread_control[ist]);
+              thread_control.job = HYBRID_DAV_PRECONDITIONER;
+              thread_control.vtot = vtot;
+              thread_control.p1 = (void *)kptr;
+              thread_control.p2 = (void *)&res[(st1 + ist) * kptr->pbasis];
+              thread_control.avg_potential = avg_potential;
+              thread_control.fd_diag = fd_diag;
+              thread_control.eig = eigs[st1 + ist];
+              thread_control.basetag = st1 + ist;
+              QueueThreadTask(ist, thread_control);
           }
 
           // Thread tasks are set up so wake them
@@ -98,7 +101,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     }
 
-    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads+1, Rmg_Q);
+    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
     // Process any remaining states in serial fashion
     for(int st1 = istop;st1 < notconv;st1++) {

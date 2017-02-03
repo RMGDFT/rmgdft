@@ -62,8 +62,11 @@ typedef struct
     // Image node index ranging from 0 to (images_per_node-1)
     int image_node_id;
 
-    //pid_t main_thread_pid;
+    // OpenMP threads per node
     int THREADS_PER_NODE;
+
+    // Multigrid threads per node. Normally the same as above but may be tunred for performance.
+    int MG_THREADS_PER_NODE;
 
     // requested mpi thread level
     int mpi_threadlevel;
