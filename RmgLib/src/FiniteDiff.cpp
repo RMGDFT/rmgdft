@@ -1182,38 +1182,39 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
     RmgType t0 (th2);
 
 
-
-    for (ix = 3; ix < dimx + 3; ix++)
+    for (int ix = 3; ix < dimx + 3; ix++)
     {
 
-        for (iy = 3; iy < dimy + 3; iy++)
+        for (int iy = 3; iy < dimy + 3; iy++)
         {
 
-            for (iz = 3; iz < dimz + 3; iz++)
+            RmgType *A = &a[iy*iys + ix*ixs];
+            RmgType *B = &b[(iy - 3)*dimz + (ix - 3)*dimy*dimz - 3];
+
+            for (int iz = 3; iz < dimz + 3; iz++)
             {
+                B[iz] = t0 * A[iz] +
+                        t1z * (A[iz + 1] + A[iz - 1]) +
+                        t2z * (A[iz + 2] + A[iz - 2]) +
+                        t3z * (A[iz + 3] + A[iz - 3]);
+            }
 
-                b[(ix - 3) * ix1 + (iy - 3) * iy1 + iz - 3] =
-                    t0 * a[ix * ixs + iy * iys + iz] +
-                    t1x * a[(ix - 1) * ixs + iy * iys + iz] +
-                    t1x * a[(ix + 1) * ixs + iy * iys + iz] +
-                    t2x * a[(ix - 2) * ixs + iy * iys + iz] +
-                    t2x * a[(ix + 2) * ixs + iy * iys + iz] +
-                    t3x * a[(ix - 3) * ixs + iy * iys + iz] +
-                    t3x * a[(ix + 3) * ixs + iy * iys + iz] +
-                    t1y * a[ix * ixs + (iy - 1) * iys + iz] +
-                    t1y * a[ix * ixs + (iy + 1) * iys + iz] +
-                    t2y * a[ix * ixs + (iy - 2) * iys + iz] +
-                    t2y * a[ix * ixs + (iy + 2) * iys + iz] +
-                    t3y * a[ix * ixs + (iy - 3) * iys + iz] +
-                    t3y * a[ix * ixs + (iy + 3) * iys + iz] +
-                    t1z * a[ix * ixs + iy * iys + iz - 1] +
-                    t1z * a[ix * ixs + iy * iys + iz + 1] +
-                    t2z * a[ix * ixs + iy * iys + iz - 2] +
-                    t2z * a[ix * ixs + iy * iys + iz + 2] +
-                    t3z * a[ix * ixs + iy * iys + iz - 3] +
-                    t3z * a[ix * ixs + iy * iys + iz + 3];
+            for (int iz = 3; iz < dimz + 3; iz++)
+            {
+                B[iz] +=
+                        t1y * (A[iz + iys] + A[iz - iys]) +
+                        t2y * (A[iz + 2*iys] + A[iz - 2*iys]) +
+                        t3y * (A[iz + 3*iys] + A[iz - 3*iys]);
+            }
 
+            for (int iz = 3; iz < dimz + 3; iz++)
+            {
+                B[iz] +=
+                        t1x * (A[iz + ixs] + A[iz - ixs]) +
+                        t2x * (A[iz + 2*ixs] + A[iz - 2*ixs]) +
+                        t3x * (A[iz + 3*ixs] + A[iz - 3*ixs]);
             }                   /* end for */
+
         }                       /* end for */
     }                           /* end for */
 
