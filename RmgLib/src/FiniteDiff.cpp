@@ -1154,13 +1154,8 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
         rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
     }
 
-    int iz, ix, iy;
-    int ixs, iys, ix1, iy1;
-
-    ixs = (dimy + 6) * (dimz + 6);
-    iys = (dimz + 6);
-    ix1 = dimy * dimz;
-    iy1 = dimz;
+    int ixs = (dimy + 6) * (dimz + 6);
+    int iys = (dimz + 6);
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
     double th2 (-49.0 / (18.0 * h2));
