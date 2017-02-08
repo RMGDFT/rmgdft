@@ -38,10 +38,11 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
         rho_tot[i] = rho_tot[i] - rhoc[i];
 
     // Make sure it is completely neutral
+    int global_basis = Rmg_G->get_GLOBAL_BASIS(Rmg_G->default_FG_RATIO);
     double sum = 0.0;
     for(int i = 0;i < FP0_BASIS;i++) sum += rho_tot[i];
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] -= sum / (double)FP0_BASIS;
+    for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] -= sum / (double)global_basis;
 
 
     if(ct.poisson_solver == POISSON_PFFT_SOLVER)
