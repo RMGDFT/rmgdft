@@ -76,13 +76,13 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
     int idx, its, cycles;
     double t1, vavgcor, diag=0.0;
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    double *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
+    double *sg_res, residual = 100.0;
     Mgrid MG(L, T);
 
     int global_basis = G->get_GLOBAL_BASIS(density);
 
     /* Pre and post smoothings on each level */
-    int poi_pre[MAX_MG_LEVELS] = { 0, 3, 6, 12, 20, 20, 20, 20 };
+    int poi_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
     int poi_post[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3 };
 
     if(maxlevel >= MAX_MG_LEVELS)
@@ -91,30 +91,23 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
     int dimx = G->get_PX0_GRID(density), dimy = G->get_PY0_GRID(density), dimz = G->get_PZ0_GRID(density);
 
     // Solve to a high degree of precision on the coarsest level
-    poi_pre[maxlevel] = 25;
-
+    poi_pre[maxlevel] = 20;
     int nits = global_presweeps + global_postsweeps;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
-
     /* Grab some memory for our multigrid structures */
     mgrhsarr = new double[sbasis];
-    mglhsarr = new  double[sbasis];
+    mglhsarr = new  double[2*sbasis];
     mgresarr = new  double[sbasis];
     work = new  double[4*sbasis];
-    sg_rho = new  double[sbasis];
-    sg_vh = new  double[sbasis];
-    sg_res = new  double[sbasis];
-    nrho = new  double[sbasis];
+    sg_res = new  double[2*sbasis];
+
 
     CPP_app_cir_driver<double> (L, T, rho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
 
-
-
     /* Multiply through by 4PI */
     t1 = -4.0 * PI;
-#pragma omp for schedule(static, 1024) nowait
     for(idx = 0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * mgrhsarr[idx];
 
     its = 0;
@@ -127,7 +120,6 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
         for (cycles = 0; cycles < nits; cycles++)
         {
 
-
 	    /*At the end of this force loop, laplacian operator is reapplied to evalute the residual. Therefore,
 	     * there is no need to reapply it, when this loop is called second, third, etc time. */
             if ( (cycles) || (!its))
@@ -136,10 +128,10 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
                 /* Apply operator */
                 diag = CPP_app_cil_driver_threaded (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density), APP_CI_FOURTH);
+
                 diag = -1.0 / diag;
 
                 /* Generate residual vector */
-#pragma omp for schedule(static, 1024) nowait
                 for (idx = 0; idx < pbasis; idx++)
                 {
 
@@ -153,12 +145,11 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
             if (cycles == global_presweeps)
             {
 
-
                 /* Transfer res into smoothing grid */
                 CPP_pack_ptos<double> (sg_res, mgresarr, dimx, dimy, dimz);
 
                 MG.mgrid_solv_pois<double> (mglhsarr, sg_res, work,
-                            dimx, dimy, dimz, 
+                            dimx, dimy, dimz,
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
                             0, G->get_neighbors(), maxlevel, poi_pre,
                             poi_post, mucycles, coarse_step,
@@ -171,8 +162,6 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
                 CPP_pack_stop<double> (mglhsarr, mgresarr, dimx, dimy, dimz);
 
                 /* Update vh */
-                t1 = 1.0;
-#pragma omp for schedule(static, 1024) nowait
                 for(int i = 0;i < pbasis;i++) vhartree[i] += mgresarr[i];
 
             }
@@ -181,7 +170,6 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
                 /* Update vh */
                 t1 = - global_step * diag;
-#pragma omp for schedule(static, 1024) nowait
                 for(int i = 0;i < pbasis;i++) vhartree[i] = vhartree[i] + t1 * mgresarr[i];
 
             }                   /* end if */
@@ -191,7 +179,6 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
                 /* Evaluate the average potential */
                 vavgcor = 0.0;
-#pragma omp for schedule(static, 1024) nowait
                 for (idx = 0; idx < pbasis; idx++)
                     vavgcor += vhartree[idx];
 
@@ -201,7 +188,6 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
 
 
                 /* Make sure that the average value is zero */
-#pragma omp for schedule(static, 1024) nowait
                 for (idx = 0; idx < pbasis; idx++)
                     vhartree[idx] -= vavgcor;
 
@@ -225,21 +211,18 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
         }                   /* end for */
 
         residual = sqrt (RmgSumAll(residual, T->get_MPI_comm()) / global_basis);
-
-        //std::cout << "\n get_vh sweep " << its << " rms residual is " << residual;
+        //if(G->get_rank() == 0) std::cout << "\n get_vh sweep " << its << " rms residual is " << residual << std::endl;
 
 	    
         its ++;
     }                           /* end for */
 
     if((G->get_rank() == 0) && print_status)
-        std::cout << "get_vh: executed " << its << " sweeps, residual is " << residual << std::endl;
+        std::cout << "\nget_vh: executed " << its << " sweeps, residual is " << residual << std::endl;
+
 
     /* Release our memory */
-    delete [] nrho;
     delete [] sg_res;
-    delete [] sg_vh;
-    delete [] sg_rho;
     delete [] work;
     delete [] mgresarr;
     delete [] mglhsarr;
