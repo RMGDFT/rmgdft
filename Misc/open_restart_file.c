@@ -71,7 +71,7 @@ FILE *open_restart_file (char *filename)
         if (!_mkdir(dirname))
 #endif
 	if (1)
-	    printf ("\n Creating directory %s succesfull\n\n", tmpname);
+	    printf ("\n Creating directory %s successfully\n\n", tmpname);
 	else
 	    printf ("\n Creating directory %s FAILED\n\n", tmpname);
 
