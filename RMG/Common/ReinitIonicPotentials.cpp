@@ -43,7 +43,12 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     RT1= new RmgTimer("3-ReinitIonicPotentials: init_nuc");
     //init_nuc (vnuc, rhoc, rhocore);
     double *dum_array = NULL;
-    InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+    if(ct.localize_localpp) 
+        InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+    else
+        InitDelocalizedLocalpp(vnuc);
+
+
     InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
     InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
 

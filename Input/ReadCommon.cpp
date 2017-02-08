@@ -663,7 +663,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                         "For non-gamma point, always true, for gamma point, optional");
     If.RegisterInputKey("rmg2bgw", &lc.rmg2bgw, false, 
                         "Write wavefunction in G-space to BerkeleyGW WFN file.");
-    If.RegisterInputKey("ecutrho", &lc.ecutrho, 0.0, 10000.0, 160.0,
+    If.RegisterInputKey("ecutrho", &lc.ecutrho, 0.0, 10000.0, -100.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "ecut for rho in unit of Ry.\n",
                      "\n");
@@ -688,6 +688,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("localize_projectors", &lc.localize_projectors, true,
                         "Flag indicating whether or not the non-local projectors should be localized.");
+
+    If.RegisterInputKey("localize_localpp", &lc.localize_localpp, true,
+                        "Flag indicating whether or not the local pseudopotential should be localized.");
 
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
                         "Flag to test whether or not the modified metrics should be used in Pulay mixing.");

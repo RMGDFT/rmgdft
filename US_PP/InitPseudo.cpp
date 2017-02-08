@@ -134,6 +134,15 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         for (int idx = 0; idx < sp->rg_points; idx++)
             work[idx] = sp->vloc0[idx] + Zv * erf (sp->r[idx] / rc) / sp->r[idx];
 
+        /* Write raw beta function into file if requested*/
+        double *bessel_rg = new double[(ct.max_l+1) * RADIAL_GVECS * sp->rg_points];
+            RmgTimer *RT1 = new RmgTimer("radial beta");
+        A->InitBessel(sp->r, sp->rg_points, ct.max_l, bessel_rg);
+            delete RT1;
+        // get the local pseudopotential in G space
+        sp->localpp_g = new double[RADIAL_GVECS];
+        A->RLogGridToGLogGrid(work, sp->r, sp->rab, sp->localpp_g,
+                sp->rg_points, 0, bessel_rg);
 
         if (pct.gridpe == 0 && write_flag)
         {
@@ -181,11 +190,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 throw RmgFatalException() << "Unable to open beta function graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
 
-        /* Write raw beta function into file if requested*/
-        double *bessel_rg = new double[(ct.max_l+1) * RADIAL_GVECS * sp->rg_points];
-            RmgTimer *RT1 = new RmgTimer("radial beta");
-        A->InitBessel(sp->r, sp->rg_points, ct.max_l, bessel_rg);
-            delete RT1;
         for (ip = 0; ip < sp->nbeta; ip++)
         {
 
@@ -201,6 +205,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         }                       /* end for ip */
+
+
 
         delete [] bessel_rg;
         /* Now take care of the core charge if nlcc is being used */

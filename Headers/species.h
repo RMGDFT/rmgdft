@@ -177,7 +177,12 @@ typedef struct
 
     /* Utrosoft Vandbelit Projectors on log interpolation grid */
     double betalig[MAX_NB][MAX_LOGGRID];
+
+    // projectors in G-space radial log grid
     double *beta_g[MAX_NB];
+
+    // local pseudopotential (rhoc part not included ) in G-space radial log grid.
+    double *localpp_g;
 
     /* Array of r and xyz vals used to setup forward fft's for init_weight and init_derweight
      * the r_index array is dimensioned (nlfdim*nlfdim*nlfdim) while the others are nlfdim

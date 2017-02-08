@@ -6,6 +6,7 @@ Ylm.cpp
 CubicHarmonic.cpp
 InitWeight.cpp
 InitWeightOne.cpp
+InitDelocalizedLocalpp.cpp
 InitLocalForward.cpp
 InitLocalBackward.cpp
 #PackFine2Rhogrid.cpp
