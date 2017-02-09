@@ -70,7 +70,7 @@ void InitDelocalizedLocalpp(double *vlocpp_r)
 
         for(int ig=0;ig < fine_pwaves->pbasis;ig++) 
         {
-            if(fine_pwaves->gmags[ig] < fine_pwaves->gcut)
+            if(fine_pwaves->gmags[ig] < 0.8*fine_pwaves->gcut)
             {
                 gsquare = fine_pwaves->gmags[ig] * tpiba2;
                 gval = sqrt(gsquare);
