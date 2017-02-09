@@ -63,7 +63,11 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
     ApplyGradient (dvh, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
     double *dum_array = new double[FP0_BASIS];
-    InitLocalObject (dum_array, pct.localatomicrho, ATOMIC_RHO, true);
+    
+    if(ct.localize_localpp)
+        InitLocalObject (dum_array, pct.localatomicrho, ATOMIC_RHO, true);
+    else
+        InitDelocalizedObject (dum_array, pct.localatomicrho, ATOMIC_RHO, true);
 
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
             pct.localatomicrho, &FP0_BASIS, &zero, force_tmp, &ithree); 
@@ -74,14 +78,14 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
     for(int ion1 = 0; ion1 <pct.num_loc_ions; ion1++)
     {
         int ion = pct.loc_ions_list[ion1];
-        
+
         force[ion *3 + 0] = force_tmp[ion1 *3 + 0];
         force[ion *3 + 1] = force_tmp[ion1 *3 + 1];
         force[ion *3 + 2] = force_tmp[ion1 *3 + 2];
 
     }
 
-    
+
     delete [] dvh;
     delete [] force_tmp;
     delete [] gx;

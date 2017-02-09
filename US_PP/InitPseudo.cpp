@@ -141,7 +141,11 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             delete RT1;
         // get the local pseudopotential in G space
         sp->localpp_g = new double[RADIAL_GVECS];
+        sp->arho_g = new double[RADIAL_GVECS];
+        sp->rhocore_g = new double[RADIAL_GVECS];
         A->RLogGridToGLogGrid(work, sp->r, sp->rab, sp->localpp_g,
+                sp->rg_points, 0, bessel_rg);
+        A->RLogGridToGLogGrid(sp->atomic_rho, sp->r, sp->rab, sp->arho_g,
                 sp->rg_points, 0, bessel_rg);
 
         if (pct.gridpe == 0 && write_flag)
@@ -208,7 +212,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
 
-        delete [] bessel_rg;
         /* Now take care of the core charge if nlcc is being used */
         if (sp->nlccflag)
         {
@@ -216,6 +219,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             for (int idx = 0; idx < sp->rg_points; idx++)
                 work[idx] = sp->rspsco[idx] / (4.0 * PI);
 
+            A->RLogGridToGLogGrid(work, sp->r, sp->rab, sp->rhocore_g,
+                sp->rg_points, 0, bessel_rg);
 
             /*Write raw (pre-filtered) data to a file if requested */
             if (pct.gridpe == 0 && write_flag)
@@ -261,6 +266,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         {
             fclose (psp);
         }
+
+        delete [] bessel_rg;
 
     }                           /* end for */
 

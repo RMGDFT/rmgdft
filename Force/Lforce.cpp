@@ -60,29 +60,37 @@ void Lforce (double * rho, double * vh, double *force)
 
     ApplyGradient (vh, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
-    InitLocalObject (dum_array, pct.localrhoc, ATOMIC_RHOCOMP, true);
+    if(ct.localize_localpp)
+        InitLocalObject (dum_array, pct.localrhoc, ATOMIC_RHOCOMP, true);
+    else
+        InitDelocalizedObject (dum_array, pct.localrhoc, ATOMIC_RHOCOMP, true);
+
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
             pct.localrhoc, &FP0_BASIS, &zero, force_tmp, &ithree); 
     delete [] pct.localrhoc;
 
     ApplyGradient (rho, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
 
-    InitLocalObject (dum_array, pct.localpp, ATOMIC_LOCAL_PP, true);
+    if(ct.localize_localpp)
+        InitLocalObject (dum_array, pct.localpp, ATOMIC_LOCAL_PP, true);
+    else
+        InitDelocalizedObject (dum_array, pct.localpp, ATOMIC_LOCAL_PP, true);
+
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
-           pct.localpp, &FP0_BASIS, &mone, force_tmp, &ithree); 
+            pct.localpp, &FP0_BASIS, &mone, force_tmp, &ithree); 
     delete [] pct.localpp;
 
 
     for(int ion1 = 0; ion1 <pct.num_loc_ions; ion1++)
     {
         int ion = pct.loc_ions_list[ion1];
-        
+
         force[ion *3 + 0] = force_tmp[ion1 *3 + 0];
         force[ion *3 + 1] = force_tmp[ion1 *3 + 1];
         force[ion *3 + 2] = force_tmp[ion1 *3 + 2];
 
     }
-    
+
 
     delete [] dum_array;
     delete [] force_tmp;

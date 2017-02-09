@@ -44,15 +44,19 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     //init_nuc (vnuc, rhoc, rhocore);
     double *dum_array = NULL;
     if(ct.localize_localpp) 
+    {
         InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+        InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
+        InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
+    }
     else
-        InitDelocalizedLocalpp(vnuc);
+    {
+        InitDelocalizedObject(vnuc, dum_array, ATOMIC_LOCAL_PP, false);
+        InitDelocalizedObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
+        InitDelocalizedObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
+    }
 
-
-    InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
-    InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
-
-//    InitLocalBackward(vnuc, rhoc, rhocore);
+    //    InitLocalBackward(vnuc, rhoc, rhocore);
     delete RT1;
     RT1= new RmgTimer("3-ReinitIonicPotentials: get_QI");
     GetQI ();

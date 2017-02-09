@@ -59,7 +59,10 @@ void Nlccforce (double * rho, double * vxc, double *force_nlcc)
     
     force_tmp = new double[pct.num_loc_ions * 3];
 
-    InitLocalObject (dum_array, pct.localrhonlcc, ATOMIC_RHOCORE, true);
+    //if(ct.localize_localpp)
+        InitLocalObject (dum_array, pct.localrhonlcc, ATOMIC_RHOCORE, true);
+    //else
+    //    InitDelocalizedObject (dum_array, pct.localrhonlcc, ATOMIC_RHOCORE, true);
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
             pct.localrhonlcc, &FP0_BASIS, &zero, force_tmp, &ithree); 
     delete [] pct.localrhonlcc;
@@ -72,7 +75,7 @@ void Nlccforce (double * rho, double * vxc, double *force_nlcc)
         force_nlcc[ion *3 + 2] = force_tmp[ion1 *3 + 2];
 
     }
-    
+
 
     delete [] dum_array;
     delete [] force_tmp;
