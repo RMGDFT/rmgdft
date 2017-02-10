@@ -76,6 +76,13 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
     if(ct.mpi_queue_mode) active_threads--;
     if(active_threads < 1) active_threads = 1;
 
+    int dimx = kptr->G->get_PX0_GRID(1);
+    int dimy = kptr->G->get_PY0_GRID(1);
+    int dimz = kptr->G->get_PZ0_GRID(1);
+
+    double *nvtot = new double[2*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    CPP_pack_ptos (nvtot, vtot, dimx, dimy, dimz);
+    for(int idx = 0;idx <(dimx + 2)*(dimy + 2)*(dimz + 2);idx++) nvtot[idx] = -nvtot[idx];
 
     int istop = notconv / active_threads;
     istop = istop * active_threads;
@@ -86,7 +93,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
           for(int ist = 0;ist < active_threads;ist++) {
               thread_control.job = HYBRID_DAV_PRECONDITIONER;
-              thread_control.vtot = vtot;
+              thread_control.vtot = nvtot;
               thread_control.p1 = (void *)kptr;
               thread_control.p2 = (void *)&res[(st1 + ist) * kptr->pbasis];
               thread_control.avg_potential = avg_potential;
@@ -105,9 +112,10 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     // Process any remaining states in serial fashion
     for(int st1 = istop;st1 < notconv;st1++) {
-        DavPreconditionerOne (kptr, &res[st1 * kptr->pbasis], fd_diag, eigs[st1], vtot, avg_potential);
+        DavPreconditionerOne (kptr, &res[st1 * kptr->pbasis], fd_diag, eigs[st1], nvtot, avg_potential);
     }
 
+    delete [] nvtot;
 }
 
 template <typename OrbitalType>
@@ -118,7 +126,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     TradeImages *T = kptr->T;
     Lattice *L = kptr->L;
     Mgrid MG(L, T);
-    int pre[MAX_MG_LEVELS] = { 2, 2, 4, 20, 20, 20, 20, 20 };
+    int pre[MAX_MG_LEVELS] = { 2, 8, 8, 20, 20, 20, 20, 20 };
     int post[MAX_MG_LEVELS] = { 2, 2, 2, 2, 2, 2, 2, 2 };
     int levels = ct.eig_parm.levels;
     double Zfac = 2.0 * ct.max_zvalence;
@@ -133,31 +141,28 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     double hygrid = G->get_hygrid(1);
     double hzgrid = G->get_hzgrid(1);
 
-    OrbitalType *work_t = (OrbitalType *)malloc(12*(dimx + 2)*(dimy + 2)*(dimz + 2) * sizeof(OrbitalType));
-    OrbitalType *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    OrbitalType *work2_t = &work_t[8*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    //double *nvtot = new double[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    //for(int idx = 0;idx <pbasis;idx++) nvtot[idx] = -vtot[idx];
+    OrbitalType *work_t = (OrbitalType *)malloc(8*(dimx + 2)*(dimy + 2)*(dimz + 2) * sizeof(OrbitalType));
+    OrbitalType *work1_t = &work_t[2*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    OrbitalType *work2_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+
 
     // Apply preconditioner
     double t1 = 0.0;
     for(int idx = 0;idx <pbasis;idx++) t1 += std::real(res[idx]);
 
-//    t1 = RmgSumAll(t1, pct.grid_comm) / (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
     GlobalSums (&t1, 1, pct.grid_comm);
     t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
 
     // neutralize cell
     for(int idx = 0;idx <pbasis;idx++) res[idx] -= OrbitalType(t1);
-
     if(typeid(OrbitalType) == typeid(double))
     {
         CPP_pack_ptos_convert ((float *)work1_t, (double *)res, dimx, dimy, dimz);
         MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                     0, G->get_neighbors(), levels, pre, post, 1,
-                    tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
-                    //tstep, 1.0*Zfac, 0.0, nvtot,
+                    //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
+                    tstep, 1.0, 0.0, vtot,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                     G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                     G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
@@ -179,6 +184,5 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
 
     for(int idx = 0;idx <pbasis;idx++) res[idx] += eig * t1;;
 
-    //delete [] nvtot;
     free(work_t);
 }

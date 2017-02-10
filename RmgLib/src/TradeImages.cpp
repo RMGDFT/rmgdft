@@ -2217,7 +2217,7 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
 
     } // end while
 
-   this->queue->spinwaitall(is_completed_r, 6);
+   //this->queue->spinwaitall(is_completed_r, 6);
    this->queue->spinwaitall(is_completed_s, 6);
 
 } // end trade_imagesx_central_async_managed
@@ -3174,7 +3174,10 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[0].is_unpacked = true;
             }
-            if(!qitems_r[0].is_unpacked)this->queue->spinwait(1000);
+            else
+            {
+                if(!qitems_r[0].is_unpacked)this->queue->spinwait(10);
+            }
         }
     }
 
@@ -3203,6 +3206,10 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 }                           /* end for */
                 items_completed++;
                 qitems_r[1].is_unpacked = true;
+            }
+            else
+            {
+                if(!qitems_r[1].is_unpacked)this->queue->spinwait(10);
             }
         }
     }
@@ -3235,6 +3242,10 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[2].is_unpacked = true;
             }
+            else
+            {
+                if(!qitems_r[2].is_unpacked)this->queue->spinwait(10);
+            }
         }
     }
 
@@ -3263,6 +3274,10 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 }                           /* end for */
                 items_completed++;
                 qitems_r[3].is_unpacked = true;
+            }
+            else
+            {
+                if(!qitems_r[3].is_unpacked)this->queue->spinwait(10);
             }
         }
     }
@@ -3295,6 +3310,10 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[4].is_unpacked = true;
             }
+            else
+            {
+                if(!qitems_r[4].is_unpacked)this->queue->spinwait(10);
+            }
         }
     }
 
@@ -3324,11 +3343,15 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
                 items_completed++;
                 qitems_r[5].is_unpacked = true;
             }
+            else
+            {
+                if(!qitems_r[5].is_unpacked)this->queue->spinwait(10);
+            }
         }
 
     } // end while
 
-   this->queue->spinwaitall(is_completed_r, 6);
+   //this->queue->spinwaitall(is_completed_r, 6);
    this->queue->spinwaitall(is_completed_s, 6);
 
 } // end trade_images1_central_async_managed
@@ -3868,7 +3891,7 @@ void TradeImages::trade_images1_async_managed (RmgType * f, int dimx, int dimy, 
 
     } // end while
 
-   this->queue->spinwaitall(is_completed_r, 26);
+   //this->queue->spinwaitall(is_completed_r, 26);
    this->queue->spinwaitall(is_completed_s, 26);
 
 } // end trade_images1_async_managed
