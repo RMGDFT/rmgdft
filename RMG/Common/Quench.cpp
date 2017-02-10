@@ -154,7 +154,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     rmg_printf ("\n");
     progress_tag ();
-    rmg_printf ("final total energy = %14.7f Ha\n", ct.TOTAL);
+    rmg_printf ("final total energy = %16.8f Ha\n", ct.TOTAL);
 
 
 
