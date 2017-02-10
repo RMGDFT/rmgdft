@@ -280,6 +280,7 @@ void PackGftoc(int, int, int, int, int, int, std::complex<double> *, std::comple
 double IonIonEnergy_Ewald();
 void IIforce(double *);
 void InitDelocalizedLocalpp(double *vlocpp_r);
+template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, char *grid);
 
 #endif
 #endif

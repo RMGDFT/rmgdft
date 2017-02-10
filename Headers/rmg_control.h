@@ -284,6 +284,7 @@ typedef struct
 
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;
+    int force_grad_order;
 
     /* This is the max of nldim for any species cubed */
     int max_nlpoints;

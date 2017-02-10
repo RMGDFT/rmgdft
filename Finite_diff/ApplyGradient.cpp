@@ -74,7 +74,10 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
     double gridhy = Rmg_G->get_hygrid(density);
     double gridhz = Rmg_G->get_hzgrid(density);
 
-    CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
+    if(order == APP_CI_FFT)
+        AppGradPfft(a, gx, gy, gz, grid); 
+    else
+        CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
 
 }
 
@@ -104,7 +107,10 @@ void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int o
     double gridhy = G->get_hygrid(density);
     double gridhz = G->get_hzgrid(density);
 
-    CPP_app_grad_driver (&Rmg_L, T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
+    if(order == APP_CI_FFT)
+        AppGradPfft(a, gx, gy, gz, grid); 
+    else
+        CPP_app_grad_driver (&Rmg_L, T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
 
 }
 

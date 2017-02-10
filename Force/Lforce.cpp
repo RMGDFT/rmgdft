@@ -58,7 +58,7 @@ void Lforce (double * rho, double * vh, double *force)
     double alpha = -get_vel_f(), zero = 0.0, mone = -1.0;
 
 
-    ApplyGradient (vh, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
+    ApplyGradient (vh, gx, gy, gz, ct.force_grad_order, "Fine");
 
     if(ct.localize_localpp)
         InitLocalObject (dum_array, pct.localrhoc, ATOMIC_RHOCOMP, true);
@@ -69,7 +69,7 @@ void Lforce (double * rho, double * vh, double *force)
             pct.localrhoc, &FP0_BASIS, &zero, force_tmp, &ithree); 
     delete [] pct.localrhoc;
 
-    ApplyGradient (rho, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
+    ApplyGradient (rho, gx, gy, gz, ct.force_grad_order, "Fine");
 
     if(ct.localize_localpp)
         InitLocalObject (dum_array, pct.localpp, ATOMIC_LOCAL_PP, true);

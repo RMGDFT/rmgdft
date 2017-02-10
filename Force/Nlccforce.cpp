@@ -51,7 +51,7 @@ void Nlccforce (double * rho, double * vxc, double *force_nlcc)
     double *gz = gx + 2*FP0_BASIS;
     double *dum_array = new double[FP0_BASIS];
 
-    ApplyGradient (vxc, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
+    ApplyGradient (vxc, gx, gy, gz, ct.force_grad_order, "Fine");
 
 
     int ithree = 3;

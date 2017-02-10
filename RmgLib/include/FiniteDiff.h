@@ -31,6 +31,7 @@
 #define RMG_FiniteDiff_H 1
 
 /* Order of finite differencing for driver routines */
+#define APP_CI_FFT 0
 #define APP_CI_SECOND 2
 #define APP_CI_FOURTH 4
 #define APP_CI_SIXTH 6

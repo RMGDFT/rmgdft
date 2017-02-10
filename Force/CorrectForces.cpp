@@ -60,7 +60,7 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
 
     for(int ix = 0;ix < FP0_BASIS;ix++) dvh[ix] = vh_in[ix] + vxc_in[ix]  - vh[ix] - vxc[ix];
 
-    ApplyGradient (dvh, gx, gy, gz, ct.kohn_sham_fd_order, "Fine");
+    ApplyGradient (dvh, gx, gy, gz, ct.force_grad_order, "Fine");
 
     double *dum_array = new double[FP0_BASIS];
     

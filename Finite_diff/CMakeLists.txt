@@ -1,5 +1,6 @@
 add_library (Finite_diff
 ApplyGradient.cpp
+AppGradPfft.cpp
 ApplyLaplacian.cpp
 ApplyAOperator.cpp
 ApplyBOperator.cpp
