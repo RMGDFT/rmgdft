@@ -214,7 +214,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
     /*Generate the Dnm_I */
+    FftFilter(vtot, *fine_pwaves, sqrt(0.5) / (double)ct.FG_RATIO, LOW_PASS);
     get_ddd (vtot);
+
 
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {

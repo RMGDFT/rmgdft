@@ -35,6 +35,7 @@
 #include "RmgSumAll.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
+#include <boost/math/special_functions/powm1.hpp>
 
 void Fftpack_coarse_to_fine(std::complex<double> *coarse, double *fine,
                             int dimx_c, int dimy_c, int dimz_c, 
@@ -85,9 +86,16 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
 
 
   // Get the forward transform
+//  for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(sqrt(coarse[ix]), 0.0);
   for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(sqrt(coarse[ix]), 0.0);
 
   PfftForward(base_coarse, base_coarse, *coarse_pwaves);
+  // Zero higher frequency components
+  for(int ix = 0;ix < pbasis_c;ix++)
+  {
+      if(coarse_pwaves->gmags[ix] >= 0.5*coarse_pwaves->gcut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
+  }
+
 
 
   // Loop over phase shifts.

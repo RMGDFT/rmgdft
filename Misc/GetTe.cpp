@@ -91,8 +91,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double *vxc = new double[FP0_BASIS];
     for(int i=0;i < FP0_BASIS;i++)vh[i] = vh_in[i];
     for(int i=0;i < FP0_BASIS;i++)vxc[i] = vxc_in[i];
-    FftFilter(vh, *fine_pwaves, 1.0 / (double)ct.FG_RATIO, LOW_PASS);
-    FftFilter(vxc, *fine_pwaves, 1.0 / (double)ct.FG_RATIO, LOW_PASS);
+    FftFilter(vh, *fine_pwaves, sqrt(0.5) / (double)ct.FG_RATIO, LOW_PASS);
+    FftFilter(vxc, *fine_pwaves, sqrt(0.5) / (double)ct.FG_RATIO, LOW_PASS);
 
 
 
