@@ -46,6 +46,8 @@ void Lforce (double * rho, double * vh, double *force)
 {
 
 
+    if(!ct.localize_localpp) pct.num_loc_ions = ct.num_ions;
+
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     double *gx = new double[3*FP0_BASIS];

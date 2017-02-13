@@ -46,6 +46,7 @@
 void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, double *force)
 {
 
+    if(!ct.localize_localpp) pct.num_loc_ions = ct.num_ions;
 
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
