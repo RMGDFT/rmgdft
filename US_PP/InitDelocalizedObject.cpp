@@ -64,6 +64,8 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
     size_t alloc = (size_t)ct.num_ions * (size_t)FP0_BASIS + 128;
     if(compute_lobject) ionobject = new double[alloc]();
 
+    // fully delocalized objects
+    pct.num_loc_ions = ct.num_ions;
 
     for(unsigned int ig=0;ig < ig_storage; ig++) temp_g[ig] = 0.0;
 
