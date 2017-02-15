@@ -37,8 +37,12 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "RmgException.h"
+#include <boost/math/special_functions/erf.hpp>
 #include "Atomic.h"
 
+using boost::math::policies::policy;
+using boost::math::policies::promote_double;
+typedef policy<promote_double<false> > bessel_policy;
 
 void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 {
@@ -132,7 +136,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         /* Generate the difference potential */
         for (int idx = 0; idx < sp->rg_points; idx++)
-            work[idx] = sp->vloc0[idx] + Zv * erf (sp->r[idx] / rc) / sp->r[idx];
+            work[idx] = sp->vloc0[idx] + Zv * boost::math::erf (sp->r[idx] / rc) / sp->r[idx];
 
         /* Write raw beta function into file if requested*/
         double *bessel_rg = new double[(ct.max_l+1) * RADIAL_GVECS * sp->rg_points];
@@ -174,6 +178,21 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             fclose (psp);
         }
 
+#if 1
+        // Get the G=0 component
+        for (int idx = 0; idx < sp->rg_points; idx++)
+            work[idx] = sp->vloc0[idx] + Zv/sp->r[idx];
+        double G0 = 4.0*PI*radint1 (work, sp->r, sp->rab, sp->rg_points);
+        sp->localpp_g[0] = G0;
+        double fac = Zv * 4.0 * PI;
+
+        // Subtract off analytic transform of erf that was added above
+        for(int idx=1;idx < RADIAL_GVECS;idx++)
+        {
+            double gval = A->gvec[idx]*A->gvec[idx];
+            sp->localpp_g[idx] -= fac * exp ( - 0.25*gval) / gval;
+        }
+#endif
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts and force correction routines
         
