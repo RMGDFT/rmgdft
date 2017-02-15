@@ -191,8 +191,8 @@ void init_sym (void)
     my_malloc (sym_atom,  ct.num_ions* nsym, int);
 
 //  determine equivenlent ions after symmetry operation
-    bool find_atom;
-    double r;
+    bool find_atom, cond_x, cond_y, cond_z;
+    double mod_x, mod_y, mod_z;
     int ionb, isym;
     for(isym = 0; isym < nsym; isym++)
     {
@@ -211,15 +211,24 @@ void init_sym (void)
             }
 
             find_atom = false;
+            cond_x = false;
+            cond_y = false;
+            cond_z = false;
             for (ionb = 0; ionb < ct.num_ions; ionb++)
             {
                 if(ityp[ion] == ityp[ionb])
                 {
-                    r =  (xtal[0] - ct.ions[ionb].xtal[0]) *(xtal[0] - ct.ions[ionb].xtal[0])
-                        +(xtal[1] - ct.ions[ionb].xtal[1]) *(xtal[1] - ct.ions[ionb].xtal[1])
-                        +(xtal[2] - ct.ions[ionb].xtal[2]) *(xtal[2] - ct.ions[ionb].xtal[2]);
-                    r = sqrt(r);
-                    if(r < symprec * 10) 
+//                    r =  (xtal[0] - ct.ions[ionb].xtal[0]) *(xtal[0] - ct.ions[ionb].xtal[0])
+//                        +(xtal[1] - ct.ions[ionb].xtal[1]) *(xtal[1] - ct.ions[ionb].xtal[1])
+//                        +(xtal[2] - ct.ions[ionb].xtal[2]) *(xtal[2] - ct.ions[ionb].xtal[2]);
+                    mod_x = (xtal[0] - ct.ions[ionb].xtal[0]) *(xtal[0] - ct.ions[ionb].xtal[0]);
+                    mod_y = (xtal[1] - ct.ions[ionb].xtal[1]) *(xtal[1] - ct.ions[ionb].xtal[1]);
+                    mod_z = (xtal[2] - ct.ions[ionb].xtal[2]) *(xtal[2] - ct.ions[ionb].xtal[2]);
+
+                    cond_x = fabs(mod_x - (int) mod_x) < symprec*10 || fabs(mod_x - (int)mod_x) > 1.0-symprec*10;
+                    cond_y = fabs(mod_y - (int) mod_y) < symprec*10 || fabs(mod_y - (int)mod_y) > 1.0-symprec*10;
+                    cond_z = fabs(mod_z - (int) mod_z) < symprec*10 || fabs(mod_z - (int)mod_z) > 1.0-symprec*10;
+                    if(cond_x && cond_y && cond_z) 
                     {
                         sym_atom[isym * ct.num_ions + ion] = ionb;
                         find_atom = true;
@@ -231,7 +240,7 @@ void init_sym (void)
 
             }
             if(!find_atom) 
-            {   printf("\n equ atom not find %d %d %d %d %e %e %e \n", ion, ionb,isym, nsym, xtal[0],xtal[1], xtal[2]);
+            {   printf("\n Equivalent atom not found %d %d %d %d %e %e %e \n", ion, ionb,isym, nsym, xtal[0],xtal[1], xtal[2]);
                 fflush(NULL);
                 exit(0);
             }
