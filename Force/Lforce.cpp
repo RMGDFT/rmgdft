@@ -53,23 +53,24 @@ void Lforce (double * rho, double * vh, double *force)
     double *gx = new double[3*FP0_BASIS];
     double *gy = gx + FP0_BASIS;
     double *gz = gy + FP0_BASIS;
-    double *force_tmp = new double[pct.num_loc_ions * 3];
+    double *force_tmp = new double[pct.num_loc_ions * 3]();
     double *dum_array = new double[FP0_BASIS];
 
     int ithree = 3;
     double alpha = -get_vel_f(), zero = 0.0, mone = -1.0;
 
 
-    ApplyGradient (vh, gx, gy, gz, ct.force_grad_order, "Fine");
 
     if(ct.localize_localpp)
-        InitLocalObject (dum_array, pct.localrhoc, ATOMIC_RHOCOMP, true);
-    else
-        InitDelocalizedObject (dum_array, pct.localrhoc, ATOMIC_RHOCOMP, true);
+    {
 
-    dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
-            pct.localrhoc, &FP0_BASIS, &zero, force_tmp, &ithree); 
-    delete [] pct.localrhoc;
+        ApplyGradient (vh, gx, gy, gz, ct.force_grad_order, "Fine");
+        InitLocalObject (dum_array, pct.localrhoc, ATOMIC_RHOCOMP, true);
+
+        dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
+                pct.localrhoc, &FP0_BASIS, &zero, force_tmp, &ithree); 
+        delete [] pct.localrhoc;
+    }
 
     ApplyGradient (rho, gx, gy, gz, ct.force_grad_order, "Fine");
 
