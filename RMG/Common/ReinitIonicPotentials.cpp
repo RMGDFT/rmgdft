@@ -38,6 +38,8 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     RmgTimer *RT1;
     RmgTimer RT0("3-ReinitIonicPotentials");
     int pbasis = Kptr[0]->pbasis;
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+
 
     /* Update items that change when the ionic coordinates change */
     RT1= new RmgTimer("3-ReinitIonicPotentials: init_nuc");
@@ -52,8 +54,9 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     else
     {
         InitDelocalizedObject(vnuc, dum_array, ATOMIC_LOCAL_PP, false);
-        InitDelocalizedObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
         InitDelocalizedObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
+        // For delocalized rhoc is zero
+        for(int ix=0;ix < FP0_BASIS;ix++) rhoc[ix] = 0.0;
     }
 
     //    InitLocalBackward(vnuc, rhoc, rhocore);
