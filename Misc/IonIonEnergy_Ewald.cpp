@@ -100,29 +100,32 @@ double IonIonEnergy_Ewald ()
 //   reciprocal space term
     double ii_kspace = 0.0;
 
-#if 0
     // this term is included in rhoc and vh term ct.ES and EigSums
-    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
-    double tpiba2 = tpiba * tpiba;
-    double gsquare, k[3];
-    std::complex<double> S;
+    // so it is not necessary to include it when using localized localpp
+    // but when using delocalized rhoc does not exist so we need it
+    if(!ct.localize_localpp)
+    {
+        double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+        double tpiba2 = tpiba * tpiba;
+        double gsquare, k[3];
+        std::complex<double> S;
 
-    for(int ig=0;ig < coarse_pwaves->pbasis;ig++) 
-        if(coarse_pwaves->gmags[ig] > 1.0e-6)
-        {
-            gsquare = coarse_pwaves->gmags[ig] * tpiba2;
-            k[0] = coarse_pwaves->g[ig].a[0] * tpiba;
-            k[1] = coarse_pwaves->g[ig].a[1] * tpiba;
-            k[2] = coarse_pwaves->g[ig].a[2] * tpiba;
+        for(int ig=0;ig < coarse_pwaves->pbasis;ig++) 
+            if(coarse_pwaves->gmags[ig] > 1.0e-6)
+            {
+                gsquare = coarse_pwaves->gmags[ig] * tpiba2;
+                k[0] = coarse_pwaves->g[ig].a[0] * tpiba;
+                k[1] = coarse_pwaves->g[ig].a[1] * tpiba;
+                k[2] = coarse_pwaves->g[ig].a[2] * tpiba;
 
-            S = structure_factor(k);
+                S = structure_factor(k);
 
-            ii_kspace += exp(-sigma *sigma * gsquare/2.0)/gsquare * std::norm(S);
+                ii_kspace += exp(-sigma *sigma * gsquare/2.0)/gsquare * std::norm(S);
 
+            }                               /* end get_te */
 
-        }                               /* end get_te */
+    }
 
-#endif
 
     // term self 
     double ii_self = 0.0;
