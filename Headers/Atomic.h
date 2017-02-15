@@ -73,6 +73,7 @@ public:
 
     static double r_filtered[MAX_LOGGRID];
     static double log_r_filtered[MAX_LOGGRID];
+    static double gvec[RADIAL_GVECS];
     void PackFine2Rhogrid(std::complex<double> *gweight_fine, int ngrid_fine, std::complex<double> *gweigh, int ngrid);
 
 };

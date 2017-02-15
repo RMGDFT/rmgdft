@@ -39,6 +39,7 @@
 int Atomic::Log_grid_initialized = false;
 double Atomic::r_filtered[MAX_LOGGRID];
 double Atomic::log_r_filtered[MAX_LOGGRID];
+double Atomic::gvec[RADIAL_GVECS];
 
 // Interpolation parameters
 double Atomic::a;
@@ -599,14 +600,11 @@ void Atomic::InitBessel(
     if (alloc < MAX_RGRID)
         alloc = MAX_RGRID;
 
-    double *gvec = new double[RADIAL_GVECS]();
-
     int gnum = RADIAL_GVECS;
 
     /* G-vectors are defined on a log grid with the smallest value set */
     /* by the largest real-space value of r.                           */
     gvec[0] = LOGGRID_START;
-
     // The largest g-vector we use corresponds to an energy cutoff of 5483 Rydbergs.
     double gmax = PI / 0.03;
 
@@ -646,7 +644,5 @@ void Atomic::InitBessel(
     int size = (lmax+1) * gnum * rg_points; 
     GlobalSums (bessel_rg, size, pct.grid_comm); 
 
-    /* Release memory */
-    delete [] gvec;
 
 } 
