@@ -480,7 +480,6 @@ void LoadUpf(SPECIES *sp)
     sp->rc = std::max(sp->rc, 0.5);
     sp->rc = std::min(sp->rc, 1.5);
     //sp->rc = 1.0;
-sp->rc = 1.0;
     sp->lradius = 8.5;
     sp->gwidth = 8.0;
 sp->rwidth = 15.0; 
