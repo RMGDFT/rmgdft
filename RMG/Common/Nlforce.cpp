@@ -184,7 +184,7 @@ ct.state_block_size);
                 psi_x = Kptr[kpt]->Kstates[ct.num_states].psi + (st-state_start[ib]) * pbasis;
                 psi_y = psi_x + ct.state_block_size*pbasis;
                 psi_z = psi_x +2* ct.state_block_size*pbasis;
-                CPP_app_grad_driver (&Rmg_L, Rmg_T, psi, psi_x, psi_y, psi_z, PX0_GRID, PY0_GRID, PZ0_GRID, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
+                ApplyGradient(psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
 
                 if(!ct.is_gamma)
                 {

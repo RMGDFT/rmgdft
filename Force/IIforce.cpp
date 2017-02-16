@@ -136,6 +136,64 @@ void IIforce (double *force)
         }                           /* end for */
 
     }
-}                               /* end iiforce */
 
+//   reciprocal space term
+    // this term is included in Lforce when ct.localize_localpp is true
+    // so it is not necessary to include it when using localized localpp
+    // but when using delocalized rhoc does not exist so we need it
+
+    // real space term is paralleled over ions and k-space term is paralleled over G vectors (pwaves).
+    if(!ct.localize_localpp)
+    {
+        double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+        double tpiba2 = tpiba * tpiba;
+        double gsquare, k[3];
+        std::complex<double> strfac, der_strfac_x, der_strfac_y, der_strfac_z;
+        ION *iptr1;
+        double kr, Zi, ii_kspace;
+                    
+
+        // in fact we don't need to include all pwaves since exp(-sigma*sigma * gsquare/2.0) will be zero for large G
+        for(int ig=0;ig < coarse_pwaves->pbasis;ig++) 
+            if(coarse_pwaves->gmags[ig] > 1.0e-6)
+            {
+                gsquare = coarse_pwaves->gmags[ig] * tpiba2;
+                k[0] = coarse_pwaves->g[ig].a[0] * tpiba;
+                k[1] = coarse_pwaves->g[ig].a[1] * tpiba;
+                k[2] = coarse_pwaves->g[ig].a[2] * tpiba;
+
+                strfac = 0.0;
+
+                for (int i = 0; i < ct.num_ions; i++)
+                {
+
+                    iptr1 = &ct.ions[i];
+                    Zi = ct.sp[iptr1->species].zvalence;
+                    kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
+                    strfac +=  Zi * std::exp(std::complex<double>(0.0, kr));
+                }
+
+
+                strfac = std::conj(strfac);
+                ii_kspace = 2.0 * PI/Rmg_L.omega * exp(-sigma *sigma * gsquare/2.0)/gsquare;
+                for (int i = 0; i < ct.num_ions; i++)
+                {
+                    
+                    iptr1 = &ct.ions[i];
+                    Zi = ct.sp[iptr1->species].zvalence;
+                    kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
+                    der_strfac_x =  Zi * std::complex<double>(0.0, k[0]) * std::exp(std::complex<double>(0.0, kr));
+                    der_strfac_y =  Zi * std::complex<double>(0.0, k[1]) * std::exp(std::complex<double>(0.0, kr));
+                    der_strfac_z =  Zi * std::complex<double>(0.0, k[2]) * std::exp(std::complex<double>(0.0, kr));
+            
+                    force[i*3 + 0] -= ii_kspace * 2.0 * std::real(strfac * der_strfac_x);
+                    force[i*3 + 1] -= ii_kspace * 2.0 * std::real(strfac * der_strfac_y);
+                    force[i*3 + 2] -= ii_kspace * 2.0 * std::real(strfac * der_strfac_z);
+
+
+                }                               /* end iiforce */
+            }
+    }
+
+}
 
