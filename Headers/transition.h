@@ -271,6 +271,7 @@ void PrintSums(double *, int, char*);
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, 
         fftw_plan p1, fftw_plan p2);
 void InitWeight(void);
+void InitWeightDelocalized (void);
 double CubicHarmonic(int L, int M, double *r);
 double Ylm(int L, int M, double *r);
 void InitClebschGordan (int lmax, double *ap, int *lpx, int *lpl);
