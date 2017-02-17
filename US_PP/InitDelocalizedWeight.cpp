@@ -55,7 +55,7 @@ void InitWeightDelocalized (void)
     double hzz = get_hzgrid() * get_zside();
     double vol = hxx * hyy * hzz * global_basis;
     std::complex<double> I_t(0.0, 1.0);
-    std::complex<double> phase = -PI * I_t;
+    std::complex<double> phase = PI * I_t;
     phase = std::exp(phase);
 
 
@@ -108,15 +108,16 @@ void InitWeightDelocalized (void)
 //              phaseptr = (std::complex<double> *) &sp->phase[kpt * pbasis];
                 std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis];
 
+                for(int idx = 0;idx < pbasis;idx++) weptr[idx] = std::complex<double>(0.0,0.0);
                 for(int idx = 0;idx < pbasis;idx++)
                 {
                     double gval = coarse_pwaves->gmags[idx];
                     if(gval > 0.8*coarse_pwaves->gcut) continue;
                     double t1 = AtomicInterpolateInline_Ggrid(&sp->beta_g[proj.ip][0], sqrt(gval)/PI);
-                    weptr[idx] = IL * Ylm(proj.l, proj.m, coarse_pwaves->g->a) * t1;
+                    weptr[idx] = IL * Ylm(proj.l, proj.m, coarse_pwaves->g[idx].a) * t1;
                 }
 
-                // shift atom to the center instead of corner
+                // Shift atom to the center instead of corner.
                 for(int ix = 0; ix < dimx; ix++)
                 {
                     for(int iy = 0; iy < dimy; iy++)
@@ -124,8 +125,7 @@ void InitWeightDelocalized (void)
                         for(int iz = 0; iz < dimz; iz++)
                         {
                             int idx = ix * dimy * dimz + iy * dimz + iz;
-                            //weptr[idx] *= std::pow(phase, ix + ixstart + iy + iystart + iz + izstart);
-                            if( !(ix + iy + iz) %2 ) weptr[idx] *=-1.0;
+                            weptr[idx] *= std::pow(phase, ix + ixstart + iy + iystart + iz + izstart);
                         }
                     }
                 }
