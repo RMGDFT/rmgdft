@@ -34,6 +34,7 @@ void InitWeightDelocalized (void)
     typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     PROJ_INFO proj;
     std::vector<PROJ_INFO> proj_iter;
+    double ax[3];
 
 
     // get tot number of projectors and their information
@@ -102,18 +103,21 @@ void InitWeightDelocalized (void)
             proj = proj_iter[iproj];
             std::complex<double> IL = std::pow(-I_t, proj.l);
             sp = &ct.sp[proj.species];
+            double gcut = PI / hxx + 1.0e-6;
 
             for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
             {
 //              phaseptr = (std::complex<double> *) &sp->phase[kpt * pbasis];
                 std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis];
-
                 for(int idx = 0;idx < pbasis;idx++) weptr[idx] = std::complex<double>(0.0,0.0);
                 for(int idx = 0;idx < pbasis;idx++)
                 {
-                    double gval = coarse_pwaves->gmags[idx];
-                    if(gval > 0.8*coarse_pwaves->gcut) continue;
-                    double t1 = AtomicInterpolateInline_Ggrid(&sp->beta_g[proj.ip][0], sqrt(gval)/PI);
+                    ax[0] = 2.0*PI*coarse_pwaves->g[idx].a[0] / (hxx * NX_GRID);
+                    ax[1] = 2.0*PI*coarse_pwaves->g[idx].a[1] / (hyy * NY_GRID);
+                    ax[2] = 2.0*PI*coarse_pwaves->g[idx].a[2] / (hzz * NZ_GRID);
+                    double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
+                    if(gval >= 0.8*gcut) continue;
+                    double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip], gval);
                     weptr[idx] = IL * Ylm(proj.l, proj.m, coarse_pwaves->g[idx].a) * t1;
                 }
 
