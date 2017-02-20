@@ -5,6 +5,7 @@ InitClebschGordan.cpp
 Ylm.cpp
 CubicHarmonic.cpp
 InitWeight.cpp
+InitDelocalizedWeight.cpp
 InitWeightOne.cpp
 InitDelocalizedObject.cpp
 InitLocalForward.cpp
