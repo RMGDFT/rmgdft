@@ -38,8 +38,8 @@
 #include "RmgParallelFft.h"
 
 // Declared here with extern declarations in transition.h
-pfft_plan forward_coarse, backward_coarse, forward_fine, backward_fine, forward_beta, backward_beta;
-Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves;
+pfft_plan forward_coarse, backward_coarse, forward_fine, backward_fine;
+Pw *coarse_pwaves, *fine_pwaves;
 
 // Initializes common plans and plane wave objects for reuse.
 void FftInitPlans(void)
@@ -48,7 +48,6 @@ void FftInitPlans(void)
     ptrdiff_t grid[3]; 
     ptrdiff_t coarse_ni[3], coarse_i_start[3], coarse_no[3], coarse_o_start[3];
     ptrdiff_t fine_ni[3], fine_i_start[3], fine_no[3], fine_o_start[3];
-    ptrdiff_t beta_ni[3], beta_i_start[3], beta_no[3], beta_o_start[3];
     int np[3];
 
     // First we check if standard decomposition with pfft will work
@@ -112,54 +111,6 @@ void FftInitPlans(void)
     }
 
 
-    // See if we can use pfft without remapping. In and out arrays must be equal in size.
-    grid[0] = Rmg_G->get_NX_GRID(2);
-    grid[1] = Rmg_G->get_NY_GRID(2);
-    grid[2] = Rmg_G->get_NZ_GRID(2);
-    dimx = Rmg_G->get_PX0_GRID(2);
-    dimy = Rmg_G->get_PY0_GRID(2);
-    dimz = Rmg_G->get_PZ0_GRID(2);
-
-    int beta_size = pfft_local_size_dft_3d(grid, pct.pfft_comm, PFFT_TRANSPOSED_NONE,
-                                          beta_ni, beta_i_start, beta_no, beta_o_start);
-
-    int beta_remap = (beta_ni[0] != dimx) || (beta_ni[1] != dimy) || (beta_ni[2] != dimz) ||
-                (beta_no[0] != dimx) || (beta_no[1] != dimy) || (beta_no[2] != dimz);
-    MPI_Allreduce(MPI_IN_PLACE, &beta_remap, 1, MPI_INT, MPI_SUM, pct.grid_comm);
-
-    beta_pwaves = new Pw(*Rmg_G, Rmg_L, 2, false, pct.pfft_comm);
-    beta_pwaves->remap_local_size = beta_size;
-    beta_pwaves->fwd_remap = NULL;
-    beta_pwaves->inv_remap = NULL;
-
-    // Create remap plans if needed
-    if(beta_remap) {
-        if(pct.gridpe == 0) printf("Remapping beta grids for parallel fft.\n");
-
-        Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);
-        // We only treat the double precision complex case
-        beta_pwaves->fwd_remap = remap_3d_create_plan(
-                           pct.grid_comm,
-                           pzoffset, pzoffset + dimz - 1,
-                           pyoffset, pyoffset + dimy - 1,
-                           pxoffset, pxoffset + dimx - 1,
-                           beta_i_start[2], beta_i_start[2] + beta_ni[2] - 1,
-                           beta_i_start[1], beta_i_start[1] + beta_ni[1] - 1,
-                           beta_i_start[0], beta_i_start[0] + beta_ni[0] - 1,
-                           sizeof(std::complex<double>)/sizeof(double), 0, 1, 2);
-
-        beta_pwaves->inv_remap = remap_3d_create_plan(
-                           pct.grid_comm,
-                           beta_o_start[2], beta_o_start[2] + beta_no[2] - 1,
-                           beta_o_start[1], beta_o_start[1] + beta_no[1] - 1,
-                           beta_o_start[0], beta_o_start[0] + beta_no[0] - 1,
-                           pzoffset, pzoffset + dimz - 1,
-                           pyoffset, pyoffset + dimy - 1,
-                           pxoffset, pxoffset + dimx - 1,
-                           sizeof(std::complex<double>)/sizeof(double), 0, 1, 2);
-
-    }
-
     grid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
     grid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
     grid[2] = Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
@@ -206,7 +157,7 @@ void FftInitPlans(void)
     }
 
 
-    // Fine grid size is large enough for both coarse,beta and fine
+    // Fine grid size is large enough for both coarse and fine
     std::complex<double> *tx = new std::complex<double>[fine_size];
 
     grid[0] = Rmg_G->get_NX_GRID(1);
@@ -227,26 +178,6 @@ void FftInitPlans(void)
                           PFFT_BACKWARD,
                           PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
     coarse_pwaves->backward_plan = &backward_coarse;
-
-
-    grid[0] = Rmg_G->get_NX_GRID(2);
-    grid[1] = Rmg_G->get_NY_GRID(2);
-    grid[2] = Rmg_G->get_NZ_GRID(2);
-    forward_beta =  pfft_plan_dft_3d(grid,
-                          (double (*)[2])tx,
-                          (double (*)[2])tx,
-                          pct.pfft_comm,
-                          PFFT_FORWARD,
-                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-    beta_pwaves->forward_plan = &forward_beta;
-
-    backward_beta = pfft_plan_dft_3d(grid,
-                          (double (*)[2])tx,
-                          (double (*)[2])tx,
-                          pct.pfft_comm,
-                          PFFT_BACKWARD,
-                          PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-    beta_pwaves->backward_plan = &backward_beta;
 
 
     grid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
