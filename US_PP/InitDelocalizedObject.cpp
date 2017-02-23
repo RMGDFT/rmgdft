@@ -76,7 +76,6 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
         /* Get species type */
         sp = &ct.sp[isp];
         double Zv = sp->zvalence;
-double fac = Zv / tpiba2;
 
         rc = sp->rc;
         rc2 = rc * rc;
@@ -103,7 +102,6 @@ double fac = Zv / tpiba2;
 
                     case ATOMIC_RHOCOMP:
                         t1= Zv * exp (-rc2 * gsquare/4.0);
-t1 = 0.0;
                         break;
 
                     case ATOMIC_RHOCORE: 
@@ -213,7 +211,6 @@ t1 = 0.0;
     {
 
         /* Check compensating charges */
-        for (int idx = 0; idx < FP0_BASIS; idx++) sumobject[idx] = 0.0;
         ct.crho = 0.0;
         for (int idx = 0; idx < FP0_BASIS; idx++) ct.crho += sumobject[idx];
 
