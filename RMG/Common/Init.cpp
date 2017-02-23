@@ -381,7 +381,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
     else
     {
-        InitDelocalizedWeight ();
+        //InitDelocalizedWeight ();
+        InitWeight ();
     }
     delete(RT1);
 
