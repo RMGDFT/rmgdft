@@ -48,7 +48,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
     std::complex<double> I_t(0.0, 1.0);
     int pbasis = Kptr[0]->pbasis;
 
-
     /*Pointer to the result of forward transform on the coarse grid */
     std::complex<double> *fptr;
     std::complex<double> *beptr, *gbptr;
@@ -156,13 +155,13 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
 
                 for (int idx = 0; idx < pbasis; idx++)
                 {
-                    rtptr[idx] = std::real(nbeptr[idx]);
                     if(ct.is_gamma) {
                         Nlweight_R[idx] = std::real(nbeptr[idx]);
                         Bweight_R[idx] = Btem_array_R[idx];
 
                     }
                     else {
+                        rtptr[idx] = std::real(nbeptr[idx]);
                         Nlweight_C[idx] = nbeptr[idx];
                         Bweight_C[idx] = Btem_array_C[idx];
                     }
