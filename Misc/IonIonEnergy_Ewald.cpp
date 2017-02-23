@@ -33,6 +33,8 @@
 #include "GlobalSums.h"
 #include "transition.h"
 #include "RmgSumAll.h"
+#include <boost/math/special_functions/erf.hpp>
+
 
 /* Evaluate total ion-ion energy by ewald method 
    written by Wenchang Lu NCSU*/
@@ -45,9 +47,10 @@ double IonIonEnergy_Ewald ()
     int i, j;
     
     double total_ii;
-    double sigma, t1;
+    double t1;
 
-    sigma = 0.0;
+    double sigma = 0.0;
+    if(!ct.localize_localpp) sigma = 3.0; 
     for (i = 0; i<ct.num_species; i++) 
         sigma = std::max(sigma, ct.sp[i].rc);
 
@@ -76,8 +79,10 @@ double IonIonEnergy_Ewald ()
 
             iptr2 = &ct.ions[j];
             double Zj = ct.sp[iptr2->species].zvalence;
-            t1 = sqrt (ct.sp[iptr1->species].rc * ct.sp[iptr1->species].rc +
-                    ct.sp[iptr2->species].rc * ct.sp[iptr2->species].rc);
+            t1 = sqrt (sigma);
+            if(ct.localize_localpp)
+                t1 = sqrt (ct.sp[iptr1->species].rc * ct.sp[iptr1->species].rc +
+                        ct.sp[iptr2->species].rc * ct.sp[iptr2->species].rc);
             
             for(int ix = -num_cell_x; ix<= num_cell_x; ix++)
             for(int iy = -num_cell_y; iy<= num_cell_y; iy++)
@@ -89,11 +94,17 @@ double IonIonEnergy_Ewald ()
                 r = sqrt(x*x + y*y + z*z);
 
                 // r= 0 means two atoms are the same one.
-                if(r > 1.0e-5) ii_real_space += Zi * Zj/r * erfc(r/t1);
+                if(ct.localize_localpp)
+                {
+                    if(r > 1.0e-5) ii_real_space += Zi * Zj/r * boost::math::erfc(r/t1);
+                }
+                else
+                {
+                    if(r > 1.0e-5) ii_real_space += Zi * Zj * boost::math::erfc(t1*r) / r;
+                }
 
             }
         }
-
 
     }
 
@@ -105,36 +116,48 @@ double IonIonEnergy_Ewald ()
     // but when using delocalized rhoc does not exist so we need it
     if(!ct.localize_localpp)
     {
+        if(pct.gridpe == 0) ii_kspace = -ct.nel*ct.nel / sigma / 4.0;
         double tpiba = 2.0 * PI / Rmg_L.celldm[0];
         double tpiba2 = tpiba * tpiba;
         double gsquare, k[3];
         std::complex<double> S;
 
-        for(int ig=0;ig < coarse_pwaves->pbasis;ig++) 
-            if(coarse_pwaves->gmags[ig] > 1.0e-6)
+        for(int ig=0;ig < fine_pwaves->pbasis;ig++)
+        {
+            if(fine_pwaves->gmags[ig] > 1.0e-6)
             {
-                gsquare = coarse_pwaves->gmags[ig] * tpiba2;
-                k[0] = coarse_pwaves->g[ig].a[0] * tpiba;
-                k[1] = coarse_pwaves->g[ig].a[1] * tpiba;
-                k[2] = coarse_pwaves->g[ig].a[2] * tpiba;
+                gsquare = fine_pwaves->gmags[ig] * tpiba2;
+                k[0] = fine_pwaves->g[ig].a[0] * tpiba;
+                k[1] = fine_pwaves->g[ig].a[1] * tpiba;
+                k[2] = fine_pwaves->g[ig].a[2] * tpiba;
 
                 S = structure_factor(k);
 
-                ii_kspace += exp(-sigma *sigma * gsquare/2.0)/gsquare * std::norm(S);
-
-            }                               /* end get_te */
-
+                ii_kspace += std::norm(S) * exp(-gsquare/sigma/4.0)/ fine_pwaves->gmags[ig] / tpiba2;
+            }
+         }
+         ii_kspace = 4.0*PI/Rmg_L.omega * ii_kspace;
     }
 
 
     // term self 
     double ii_self = 0.0;
 
-    for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
-        ii_self -= ct.sp[ct.ions[i].species].zvalence *
-            ct.sp[ct.ions[i].species].zvalence / (sqrt (2.0 * PI) * ct.sp[ct.ions[i].species].rc);
+    if(ct.localize_localpp)
+    {
+        for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
+            ii_self -= ct.sp[ct.ions[i].species].zvalence *
+                ct.sp[ct.ions[i].species].zvalence / (sqrt (2.0 * PI) * ct.sp[ct.ions[i].species].rc);
+    }
+    else
+    {
+        for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
+            ii_self -= ct.sp[ct.ions[i].species].zvalence *
+                ct.sp[ct.ions[i].species].zvalence * sqrt (4.0 * sigma / PI);
+        ii_self *= 0.5;
+    }
 
-    total_ii =  0.5 * ii_real_space + 2.0*PI/Rmg_L.omega *ii_kspace + ii_self;
+    total_ii =  0.5 * ii_real_space + 0.5 * ii_kspace + ii_self;
     MPI_Allreduce(MPI_IN_PLACE, &total_ii, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
     return total_ii;

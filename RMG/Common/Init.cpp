@@ -375,9 +375,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /*Do forward transform for each species and store results on the coarse grid */
     RT1 = new RmgTimer("2-Init: weights");
-    InitWeight ();
-    //init_weight ();
-   // InitLocalForward();  
+    if(ct.localize_projectors)
+    {
+        InitWeight ();
+    }
+    else
+    {
+        InitDelocalizedWeight ();
+    }
     delete(RT1);
 
     if (ct.verbose == 1)
