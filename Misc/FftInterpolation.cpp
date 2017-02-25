@@ -86,14 +86,14 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
 
 
   // Get the forward transform
-//  for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(sqrt(coarse[ix]), 0.0);
-  for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(sqrt(coarse[ix]), 0.0);
+  //for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(sqrt(coarse[ix]), 0.0);
+  for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(coarse[ix], 0.0);
 
   PfftForward(base_coarse, base_coarse, *coarse_pwaves);
   // Zero higher frequency components
   for(int ix = 0;ix < pbasis_c;ix++)
   {
-      if(coarse_pwaves->gmags[ix] >= 0.5*coarse_pwaves->gcut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
+      if(coarse_pwaves->gmags[ix] >= coarse_pwaves->gcut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
   }
 
 
@@ -142,7 +142,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
                       for(int izz = 0;izz < dimz_c;izz++) {
                           rootrho =  std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
                           fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
-                             scale * scale * rootrho * rootrho;
+                             scale*rootrho;
 
                       }
                   }

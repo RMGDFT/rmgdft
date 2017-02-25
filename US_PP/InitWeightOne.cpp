@@ -92,7 +92,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
                 izz = (iz + zdim)%zdim;
 
                 gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
-                if(gval > 0.8*gcut) continue;
+                if(gval > 0.5*gcut) continue;
                 t1 = AtomicInterpolateInline_Ggrid(&sp->beta_g[ip][0], gval);
 
                 idx1 = ixx * ydim * zdim + iyy * zdim + izz;

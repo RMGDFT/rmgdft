@@ -103,14 +103,13 @@ void InitDelocalizedWeight (void)
             throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
     }
-
+    double gcut = PI / hxx + 1.0e-6;
     RmgTimer *RT3= new RmgTimer("Weight: proj cal");
     for(int iproj = 0; iproj < tot_proj; iproj++)
     {
         proj = proj_iter[iproj];
         std::complex<double> IL = std::pow(-I_t, proj.l);
         SPECIES *sp = &ct.sp[proj.species];
-        double gcut = PI / hxx + 1.0e-6;
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
@@ -123,7 +122,7 @@ void InitDelocalizedWeight (void)
                 ax[1] = 2.0*PI*coarse_pwaves->g[idx].a[1] / (hyy * NY_GRID);
                 ax[2] = 2.0*PI*coarse_pwaves->g[idx].a[2] / (hzz * NZ_GRID);
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
-                if(gval >= 0.4*gcut) continue;
+                if(gval >= 0.5*gcut) continue;
                 double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip], gval);
                 weptr[idx] = IL * Ylm(proj.l, proj.m, coarse_pwaves->g[idx].a) * t1;
             }
