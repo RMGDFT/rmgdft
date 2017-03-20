@@ -87,7 +87,7 @@ void write_header(void)
 
     }                           /* end switch */
 
-    printf ("    Code Revision %d, Last change on %s", SVN_REV, SVN_REVDATE);
+    printf ("    Code Revision %s, Last change on %s", SVN_REV, SVN_REVDATE);
     printf("\n\n    %s", ct.description);
 
     printf("\n\n    FILES USED");
