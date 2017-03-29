@@ -113,6 +113,7 @@ TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, Mpi
          rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
      }
 
+     this->local_mode = (this->G->get_PE_X() == 1) && (this->G->get_PE_Y() == 1) && (this->G->get_PE_Z() == 1);
      TradeImages::mode = ASYNC_MODE;
      TradeImages::timer_mode = false;
      TradeImages::init_trade_imagesx_async(elem_len);        
@@ -200,6 +201,14 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 {
     RmgTimer *RT=NULL;
     if(this->timer_mode) RT = new RmgTimer("Trade images: trade_imagesx");
+
+    if(this->local_mode && (type == CENTRAL_TRADE))
+    {
+        TradeImages::trade_imagesx_central_local (f, w, dimx, dimy, dimz, images);
+        if(this->timer_mode) delete RT;
+        return;
+    }
+
     int ix, iy, iz, incx, incy, incx0, incy0, index, tim;
     int ixs, iys, ixs2, iys2, c1, c2, alloc;
     int xlen, ylen, zlen, stop;
@@ -492,12 +501,122 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 } // end trade_imagesx
 
+// Local trade images when the object is only defined on one MPI process
+template <typename RmgType>
+void TradeImages::trade_imagesx_central_local (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images)
+{
+
+    int tim = 2 * images;
+    int incx = (dimy + tim) * (dimz + tim);
+    int incy = dimz + tim;
+    int incx0 = dimy * dimz;
+    int incy0 = dimz;
+
+    /* Load up w with the basic stuff */
+    for (int ix = 0; ix < dimx; ix++)
+    {
+        int ixs = ix * incx0;
+        int ixs2 = (ix + images) * incx;
+
+        for (int iy = 0; iy < dimy; iy++)
+        {
+            int iys = ixs + iy * incy0;
+            int iys2 = ixs2 + (iy + images) * incy;
+
+            for(int idx = 0;idx < dimz;idx++)
+                  w[iys2 + images + idx] = f[iys + idx];
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* positive z-plane and negative z-planes */
+    int c1 = dimz + images;
+    for (int ix = 0; ix < dimx; ix++)
+    {
+        int ixs2 = (ix + images) * incx;
+        for (int iy = 0; iy < dimy; iy++)
+        {
+            int iys2 = ixs2 + (iy + images) * incy;
+            for (int iz = 0; iz < images; iz++)
+            {
+                int index = iys2 + iz;
+                w[index + c1] = w[index + images];
+                w[index] = w[index + dimz];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+    /* north and south planes */
+    c1 = images * incy;
+    int c2 = dimy * incy;
+    int c3 = (dimy + images) * incy;
+    for (int ix = 0; ix < dimx; ix++)
+    {
+        int ixs = ix * images * (dimz + tim);
+        int ixs2 = (ix + images) * incx;
+        for (int iy = 0; iy < images; iy++)
+        {
+
+            int iys = ixs + iy * (dimz + tim);
+            int iys2 = ixs2 + iy * incy;
+            for (int iz = 0; iz < dimz + tim; iz++)
+            {
+
+                int index = iys2 + iz;
+                w[index + c3] = w[index + c1];
+                w[index] = w[index + c2];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    c1 = images * incx;
+    c2 = dimx * incx;
+    c3 = (dimx + images) * incx;
+    for (int ix = 0; ix < images; ix++)
+    {
+        int ixs = ix * (dimy + tim) * (dimz + tim);
+        int ixs2 = ix * incx;
+        for (int iy = 0; iy < dimy + tim; iy++)
+        {
+            int iys = ixs + iy * (dimz + tim);
+            int iys2 = ixs2 + iy * incy;
+            for (int iz = 0; iz < dimz + tim; iz++)
+            {
+
+                int index = iys2 + iz;
+                w[index + c3]  = w[index + c1];
+                w[index]  = w[index + c2];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+}
 
 template <typename RmgType>
 void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int type)
 {
     RmgTimer *RT=NULL;
     if(this->timer_mode) RT = new RmgTimer("Trade images: trade_images");
+
+    if(this->local_mode)
+    {
+        TradeImages::trade_images_local(mat, dimx, dimy, dimz, type);
+        if(this->timer_mode) delete RT;
+        return;
+    }
 
     int i, j;
     int incx, incy, incz;
@@ -743,6 +862,44 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
 
 
+template <typename RmgType>
+void TradeImages::trade_images_local (RmgType * mat, int dimx, int dimy, int dimz, int type)
+{
+
+    /* precalc some boundaries */
+    int incx = (dimy + 2) * (dimz + 2);
+    int incy = (dimz + 2);
+    int incz = 1;
+    int xmax = dimx * incx;
+    int ymax = dimy * incy;
+    int zmax = dimz * incz;
+
+    for (int i = incx; i <= incx * dimx; i += incx)
+    {
+        for (int j = 1; j <= dimy; j++)
+        {
+            mat[i + j * incy] = mat[i + j * incy + zmax];
+            mat[i + j * incy + zmax + incz] = mat[i + j * incy + incz];
+        }
+    }
+
+    for (int ix = 0; ix < dimx; ix++) {
+        int iys2 = (ix + 1) * incx;
+        for (int iz = 0; iz < dimz + 2; iz++) {
+            mat[iys2 + ymax + incy + iz] = mat[iys2 + incy + iz];
+            mat[iys2 + iz] = mat[iys2 + ymax + iz];
+        }
+    }
+
+    int stop = (dimy + 2) * (dimz + 2);
+    for(int idx = 0;idx < stop;idx++)
+       mat[idx] = mat[xmax + idx];
+
+    for(int idx = 0;idx < stop;idx++)
+       mat[xmax + incx + idx] = mat[incx + idx];
+
+
+}
 
 int TRADE_GRID_EDGES;
 int GRID_MAX1;

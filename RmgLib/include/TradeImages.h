@@ -73,6 +73,9 @@ private:
     // Timer mode 0=off (default) 1=on
     bool timer_mode;
 
+    // Is array local? (Only 1 MPI process)
+    bool local_mode;
+
     // rank of this node in comm
     int gridpe;
 
@@ -107,12 +110,14 @@ private:
 
     template <typename RmgType> void trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_imagesx_central_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
+    template <typename RmgType> void trade_imagesx_central_local (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_imagesx_central_async_managed (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_images1_central_async (RmgType * f, int dimx, int dimy, int dimz);
     template <typename RmgType> void trade_images1_async (RmgType * f, int dimx, int dimy, int dimz);
     template <typename RmgType> void trade_images1_async_managed (RmgType * f, int dimx, int dimy, int dimz);
     template <typename RmgType> void trade_images1_central_async_managed (RmgType * f, int dimx, int dimy, int dimz);
     template <typename RmgType> void trade_images_async_managed (RmgType * f, int dimx, int dimy, int dimz);
+    template <typename RmgType> void trade_images_local (RmgType * mat, int dimx, int dimy, int dimz, int type);
 
 
 
