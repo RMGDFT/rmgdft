@@ -56,6 +56,9 @@ protected:
     int NY_GRID;
     int NZ_GRID;
 
+    /* Total PES */
+    int NPES;
+
     /* Node (PE) dimensions */
     int PE_X;
     int PE_Y;
@@ -94,6 +97,7 @@ public:
 
     int get_default_FG_RATIO(void);
 
+    int get_NPES(void);
     int get_PE_X(void);
     int get_PE_Y(void);
     int get_PE_Z(void);

@@ -85,7 +85,7 @@ void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointTyp
 {
 
 
-    if(ct.localize_projectors == false) 
+    if((ct.localize_projectors == false) || (Rmg_G->get_NPES() == 1))
     {
 
         /*Loop over ions and calculate local projection between beta functions and wave functions */
@@ -106,7 +106,8 @@ void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointTyp
             rzero, sint_local, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
 
 
-        MPI_Allreduce(MPI_IN_PLACE, (double *)sint_local, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        if(Rmg_G->get_NPES() != 1)
+            MPI_Allreduce(MPI_IN_PLACE, (double *)sint_local, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
         return;
     }

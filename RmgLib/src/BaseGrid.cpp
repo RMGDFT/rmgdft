@@ -53,6 +53,7 @@
         BaseGrid::PE_X = newPE_X;
         BaseGrid::PE_Y = newPE_Y;
         BaseGrid::PE_Z = newPE_Z;
+        BaseGrid::NPES = newPE_X * newPE_Y * newPE_Z;
 
         BaseGrid::default_FG_RATIO = newFG_RATIO;
 
@@ -171,6 +172,10 @@
     int BaseGrid::get_default_FG_RATIO(void)
     {
         return BaseGrid::default_FG_RATIO;
+    }
+    int BaseGrid::get_NPES(void)
+    {
+	return BaseGrid::NPES;
     }
     int BaseGrid::get_PE_X(void)
     {
