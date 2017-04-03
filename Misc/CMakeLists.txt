@@ -19,6 +19,7 @@ FftLaplacian.cpp
 FftGradient.cpp
 FftInterpolation.cpp
 FftRestrict.cpp
+fft3d.cpp
 CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
 Scalapack.cpp
@@ -69,9 +70,7 @@ sl_init_comm.c
 get_opposite_occupancies.c
 get_opposite_eigvals.c
 fill_on.c
-pack_3d.c
-remap_3d.c
-factor.c
+remap.cpp
 get_tf_rho.c
 Vdd.cpp
 WriteChargeAnalysis.cpp

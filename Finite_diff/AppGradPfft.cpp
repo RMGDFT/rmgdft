@@ -65,7 +65,7 @@ void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, char *g
 
     
     int pbasis = pwaves->pbasis;
-    int size = std::max(pbasis, pwaves->remap_local_size);
+    int size = pbasis;
 
     std::complex<double> *a_in = new std::complex<double>[size];
     std::complex<double> *a_out = new std::complex<double>[size];

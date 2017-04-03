@@ -32,7 +32,7 @@ INCLUDE (CMakeForceCompiler)
 # User editable options
 set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
-set (USE_SCALAPACK_LIBS 1)
+set (USE_SCALAPACK_LIBS 0)
 set (USE_ELEMENTAL_LIBS 0)
 set (USE_LIBXC 0)
 set (USE_OPENBABEL_LIBS 1)
@@ -349,6 +349,15 @@ include_directories(${FFTW_INCLUDES})
 # MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
 
+    find_package(FFTW REQUIRED)
+    include_directories(${FFTW_INCLUDES})
+    target_link_libraries (${rmg} ${FFTW_LIBRARIES})
+    target_link_libraries (${rmg-tddft} ${FFTW_LIBRARIES})
+    target_link_libraries (rmg-on ${FFTW_LIBRARIES})
+    target_link_libraries (on-tddft ${FFTW_LIBRARIES})
+    target_link_libraries (${rmg-negf} ${FFTW_LIBRARIES})
+    target_link_libraries (${rmg} RMG_Common ${FFTW_LIBRARIES})
+    target_link_libraries (${rmg-tddft} RMG_Common ${FFTW_LIBRARIES})
 
 
 if(NOT RMG_MATH_LIBS)
@@ -437,33 +446,6 @@ if(NOT RMG_MATH_LIBS)
     endif(USE_SCALAPACK_LIBS AND NOT CRAY_XK)
 
 endif(NOT RMG_MATH_LIBS)
-
-find_package(PFFT)
-if(NOT PFFT_FOUND)
-    #set(ENV{MPI_C_COMPILER} ${MPI_C_COMPILER})
-    execute_process(
-    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/pfft-master.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
-    execute_process(
-    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
-    execute_process(COMMAND bootstrap.sh 
-        WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/pfft-master)
-    execute_process(COMMAND
-    ${PROJECT_SOURCE_DIR}/lib/pfft-master/configure
-    --host=x86_64
-    --prefix=${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64
-    --libdir=${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64/lib
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
-
-    execute_process(COMMAND make  -j 4
-        WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/pfft-master)
-    execute_process(COMMAND make install
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/pfft-master/lib64)
-endif(NOT PFFT_FOUND)
-find_package(PFFT)
-# Not sure why but we seem to need both of these
-find_package(PFFT REQUIRED)
-include_directories(${PFFT_INCLUDES})
-add_definitions(-DUSE_PFFT)
 
 
 # Look for GPU libraries. Only CUDA supported for now
@@ -699,8 +681,9 @@ include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
 include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
 include("SubprojectIncludes/CMakeLists.txt.on-tddft.inc")
 if(USE_LINUX_MKL_LIBS)
-    target_link_libraries (${rmg-tddft} -Wl,--start-group ${MKL_LIB64}/libmkl_scalapack_lp64.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
-    target_link_libraries (${rmg} -Wl,--start-group ${MKL_LIB64}/libmkl_scalapack_lp64.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
+    target_link_libraries (${rmg-tddft} -Wl,--start-group ${MKL_LIB64}/libfftw3x_cdft_lp64.a ${MKL_LIB64}/libmkl_scalapack_lp64.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
+#    target_link_libraries (${rmg} ${MKL_LIB64}/libmkl_scalapack_lp64.a -Wl,--start-group  ${MKL_LIB64}/libfftw3x_cdft_lp64.a ${MKL_LIB64}/libfftw3xc_gnu.a ${MKLROOT}/lib/intel64/libmkl_cdft_core.a ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_blacs_openmpi_lp64.a  -Wl,--end-group)
+    target_link_libraries (${rmg} ${MKL_LIB64}/libmkl_scalapack_lp64.a -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a ${MKLROOT}/lib/intel64/libmkl_blacs_openmpi_lp64.a  -Wl,--end-group)
 endif(USE_LINUX_MKL_LIBS)
 
 install(TARGETS ${rmg} 

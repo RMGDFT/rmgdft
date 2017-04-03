@@ -49,7 +49,6 @@
 #include "Functional.h"
 #include "Solvers.h"
 #include "Atomic.h"
-#include "pfft.h"
 #include "RmgParallelFft.h"
 
 #include "Scalapack.h"

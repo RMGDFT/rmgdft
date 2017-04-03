@@ -61,6 +61,7 @@ void IIforce (double *force)
     double sigma;
 
     sigma = 0.0;
+    if(!ct.localize_localpp) sigma = 3.0;
     for (i = 0; i<ct.num_species; i++) 
         sigma = std::max(sigma, ct.sp[i].rc);
 
@@ -88,6 +89,7 @@ void IIforce (double *force)
 
         Zi = ct.sp[iptr1->species].zvalence;
         rci = ct.sp[iptr1->species].rc;
+        if(!ct.localize_localpp) rci = sigma;
 
 
         /* Sum contributions from the rest of the ions. */
@@ -98,6 +100,7 @@ void IIforce (double *force)
 
             Zj = ct.sp[iptr2->species].zvalence;
             rcj = ct.sp[iptr2->species].rc;
+            if(!ct.localize_localpp) rcj = sigma;
 
 
             t1 = rci * rci + rcj * rcj;
@@ -154,13 +157,13 @@ void IIforce (double *force)
                     
 
         // in fact we don't need to include all pwaves since exp(-sigma*sigma * gsquare/2.0) will be zero for large G
-        for(int ig=0;ig < coarse_pwaves->pbasis;ig++) 
-            if(coarse_pwaves->gmags[ig] > 1.0e-6)
+        for(int ig=0;ig < fine_pwaves->pbasis;ig++) 
+            if(fine_pwaves->gmags[ig] > 1.0e-6)
             {
-                gsquare = coarse_pwaves->gmags[ig] * tpiba2;
-                k[0] = coarse_pwaves->g[ig].a[0] * tpiba;
-                k[1] = coarse_pwaves->g[ig].a[1] * tpiba;
-                k[2] = coarse_pwaves->g[ig].a[2] * tpiba;
+                gsquare = fine_pwaves->gmags[ig] * tpiba2;
+                k[0] = fine_pwaves->g[ig].a[0] * tpiba;
+                k[1] = fine_pwaves->g[ig].a[1] * tpiba;
+                k[2] = fine_pwaves->g[ig].a[2] * tpiba;
 
                 strfac = 0.0;
 

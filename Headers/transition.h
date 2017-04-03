@@ -26,9 +26,10 @@ extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
 
-#include "pfft.h"
-extern pfft_plan forward_coarse, backward_coarse, forward_fine, backward_fine, forward_beta, backward_beta;
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves;
+#include "fft3d.h"
+
+extern struct fft_plan_3d *fft_forward_coarse, *fft_backward_coarse, *fft_forward_fine, *fft_backward_fine;
 
 
 extern "C"

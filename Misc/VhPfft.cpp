@@ -39,7 +39,7 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
 {
 
     int pbasis = fine_pwaves->pbasis;
-    int size = std::max(pbasis, fine_pwaves->remap_local_size);
+    int size = pbasis;
     double sum = 0.0;
 
     std::complex<double> *crho = new std::complex<double>[size];

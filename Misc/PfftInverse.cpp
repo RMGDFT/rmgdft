@@ -30,25 +30,15 @@
 #include "RmgParallelFft.h"
 
 
-// This function performs a parallel inverse FFT of a std::complex<double> array using the pfft library.
-// If the actual processor grid is not directly compatible with the pfft requirements
-// it handles the required data movement in order to perform the FFT. No scaling is done.
+// This function performs a parallel inverse FFT of a std::complex<double> array using the pfft code from lammps
 void PfftInverse (std::complex<double> * in, std::complex<double> * out, Pw &pwaves)
 {
 
-  int size = std::max(pwaves.pbasis, pwaves.remap_local_size);
-  std::complex<double> *buf = new std::complex<double>[size];
+  std::complex<double> *buf = new std::complex<double>[pwaves.pbasis];
   for(int i = 0;i < pwaves.pbasis;i++) buf[i] = in[i];
-
-  if(pwaves.fwd_remap) remap_3d((double *)buf, (double *)buf, NULL, pwaves.fwd_remap);
-  pfft_execute_dft(*pwaves.backward_plan, (double (*)[2])buf, (double (*)[2])buf);
-  if(pwaves.inv_remap) remap_3d((double *)buf, (double *)buf, NULL, pwaves.inv_remap);
-
-  for(int i = 0;i < pwaves.pbasis;i++) out[i] = buf[i];
+  fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, pwaves.fft_backward_plan);
 
   delete [] buf;
 }
-
-
 
 

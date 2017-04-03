@@ -28,7 +28,6 @@
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "Pw.h"
-#include "pfft.h"
 
 void FftInitPlans(void);
 

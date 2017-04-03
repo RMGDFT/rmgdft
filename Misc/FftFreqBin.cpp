@@ -46,7 +46,7 @@ void FftFreqBin(double *x,   // IN:OUT  Input array in real space. Distributed a
                               // respsponsible for making sure the array is big enough ((int)rint(pwaves.gmax) + 1)
  
 {
-
+#if 0
   ptrdiff_t grid[3];
   pfft_plan forw;
   grid[0] = pwaves.global_dimx;
@@ -100,5 +100,6 @@ void FftFreqBin(double *x,   // IN:OUT  Input array in real space. Distributed a
 
   delete [] binsize;
   delete [] cvec;
+#endif
 }
 

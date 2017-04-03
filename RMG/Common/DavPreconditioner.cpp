@@ -44,7 +44,6 @@
 #include "RmgParallelFft.h"
 #include "TradeImages.h"
 #include "packfuncs.h"
-#include "pfft.h"
 
 #include "transition.h"
 #include "blas.h"

@@ -36,8 +36,7 @@
 
 #include "BaseGrid.h"
 #include "Lattice.h"
-#include "pfft.h"
-#include "remap_3d.h"
+#include "fft3d.h"
 
 
 typedef struct {
@@ -71,13 +70,10 @@ public:
     // Real space basis on this node and globally
     int pbasis;
     int global_basis;
-    int remap_local_size;
-    struct remap_plan_3d *fwd_remap;
-    struct remap_plan_3d *inv_remap;
 
-    // pfft plans to use with this PW object
-    pfft_plan *forward_plan;
-    pfft_plan *backward_plan;
+    // fft plans to use with this PW object
+    struct fft_plan_3d *fft_forward_plan;
+    struct fft_plan_3d *fft_backward_plan;
 
     // Real space grid dimensions on this node
     int dimx;

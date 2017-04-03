@@ -131,7 +131,7 @@ double *Vdw::d2y_dx2;
 */
 Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
-
+#if 0
   bool use_coarsegrid = !ct.use_vdwdf_finegrid;
 
   if((type != 1) && (type != 2))
@@ -471,7 +471,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   delete [] q0;
   delete [] gx;
   delete [] total_rho;
-
+#endif
 }
 
 
@@ -596,7 +596,7 @@ void Vdw::get_q0_on_grid (double *calc_rho, double *q0, double *dq0_drho, double
 
 
   for(int iq = 0;iq < Nqs;iq++) {
-      pfft_execute_dft(plan_forward_calc, (double (*)[2])&thetas[iq*ibasis], (double (*)[2])&thetas[iq*ibasis]);
+      //pfft_execute_dft(plan_forward_calc, (double (*)[2])&thetas[iq*ibasis], (double (*)[2])&thetas[iq*ibasis]);
   }
 
 }
@@ -751,7 +751,7 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
      }
 
 
-     pfft_execute_dft(plan_forward_calc, (double (*)[2])h, (double (*)[2])h);
+     //pfft_execute_dft(plan_forward_calc, (double (*)[2])h, (double (*)[2])h);
      for(int ix=0;ix < ibasis;ix++) {
          if(pwaves->gmask[ix] == 1.0) {
              h[ix] = i * tpiba * pwaves->g[ix].a[icar] * h[ix];
@@ -768,7 +768,7 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
          }
      }
 
-     pfft_execute_dft(plan_back_calc, (double (*)[2])h, (double (*)[2])h);
+     //pfft_execute_dft(plan_back_calc, (double (*)[2])h, (double (*)[2])h);
      double scale = 1.0 / (double)N_calc;
 
      for(int ix=0;ix < ibasis;ix++) potential[ix] -= scale * std::real(h[ix]);

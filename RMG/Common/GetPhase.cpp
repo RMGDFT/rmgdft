@@ -46,7 +46,6 @@
 #include "RmgException.h"
 #include "Functional.h"
 #include "Solvers.h"
-#include "pfft.h"
 #include "RmgParallelFft.h"
 
 void GetPhase (ION * iptr, std::complex<double> *rtptr)
