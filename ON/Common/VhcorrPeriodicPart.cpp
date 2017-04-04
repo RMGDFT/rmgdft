@@ -35,7 +35,7 @@
 #include "RmgSumAll.h"
 #include "transition.h"
 
-
+#include "fft3d.h"
 #include "RmgParallelFft.h"
 
 void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, double *r0)
@@ -44,7 +44,6 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
     double gsquare, gx, g_r0;
     std::complex<double> phase_r0;
     ptrdiff_t densgrid[3];
-    pfft_plan plan_forward, plan_back;
     densgrid[0] = fine_pwaves->global_dimx;
     densgrid[1] = fine_pwaves->global_dimy;
     densgrid[2] = fine_pwaves->global_dimz;
@@ -54,20 +53,6 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
     int pbasis = fine_pwaves->pbasis;
 
     std::complex<double> *crho = new std::complex<double>[pbasis];
-    plan_forward = pfft_plan_dft_3d(densgrid,
-            (double (*)[2])crho,
-            (double (*)[2])crho,
-            pct.pfft_comm,
-            PFFT_FORWARD,
-            PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-
-    plan_back = pfft_plan_dft_3d(densgrid,
-            (pfft_complex *)crho,
-            (pfft_complex *)crho,
-            pct.pfft_comm,
-            PFFT_BACKWARD,
-            PFFT_TRANSPOSED_NONE|PFFT_ESTIMATE);
-
 
     //  for(int ig=0;ig < pbasis;ig++) {
     //      if(pwaves.gmags[ig] > g2cut) {
@@ -99,7 +84,8 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
         
     }
 
-    pfft_execute_dft(plan_back, (double (*)[2])crho, (double (*)[2])crho);
+    fft_3d((FFT_DATA *)crho, (FFT_DATA *)crho, 1, fine_pwaves->fft_backward_plan);
+
     for(int i = 0;i < pbasis;i++) vh_x[i] = std::imag(crho[i]) * 4 * PI/Rmg_L.get_omega();
 
 
@@ -123,7 +109,7 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
         
     }
 
-    pfft_execute_dft(plan_back, (double (*)[2])crho, (double (*)[2])crho);
+    fft_3d((FFT_DATA *)crho, (FFT_DATA *)crho, 1, fine_pwaves->fft_backward_plan);
     for(int i = 0;i < pbasis;i++) vh_y[i] = std::imag(crho[i]) * 4 * PI/Rmg_L.get_omega();
 
     for(int ig=0;ig < pbasis;ig++) {
@@ -148,14 +134,10 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
         
     }
 
-    pfft_execute_dft(plan_back, (double (*)[2])crho, (double (*)[2])crho);
+    fft_3d((FFT_DATA *)crho, (FFT_DATA *)crho, 1, fine_pwaves->fft_backward_plan);
     for(int i = 0;i < pbasis;i++) vh_z[i] = std::imag(crho[i]) * 4 * PI/Rmg_L.get_omega();
 
 
-
-
-    pfft_destroy_plan(plan_back);
-    pfft_destroy_plan(plan_forward);
     delete [] crho;
 
 }
