@@ -70,6 +70,7 @@ void FftInitPlans(void)
                            pxoffset, pxoffset + dimx - 1,
                            scaled, permute, &nbuf, usecollective);
 
+    fft_backward_coarse = fft_forward_coarse;
     coarse_pwaves->fft_forward_plan = fft_forward_coarse;
     coarse_pwaves->fft_backward_plan = fft_forward_coarse;
 
@@ -94,6 +95,7 @@ void FftInitPlans(void)
                            pxoffset, pxoffset + dimx - 1,
                            scaled, permute, &nbuf, usecollective);
 
+    fft_backward_fine = fft_forward_fine;
     fine_pwaves->fft_forward_plan = fft_forward_fine;
     fine_pwaves->fft_backward_plan = fft_forward_fine;
 

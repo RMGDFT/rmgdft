@@ -80,6 +80,7 @@
 #include "transition.h"
 #include "packfuncs.h"
 #include "RmgParallelFft.h"
+#include "fft3d.h"
 #if USE_LIBXC
 #include "xc.h"
 #endif
@@ -131,7 +132,6 @@ double *Vdw::d2y_dx2;
 */
 Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag)
 {
-#if 0
   bool use_coarsegrid = !ct.use_vdwdf_finegrid;
 
   if((type != 1) && (type != 2))
@@ -143,7 +143,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   // Gamma disabled until lookup table into fft grid is completed
   this->is_gamma = false;
-
   this->Grid = &G;
   this->T = &T;
   this->L = &L;
@@ -205,43 +204,18 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   }
 
   // FFT plans
-  this->plan_forward = pfft_plan_dft_3d(this->densgrid, 
-                                       (double (*)[2])thetas, 
-                                       (double (*)[2])thetas,
-                                       pct.pfft_comm, 
-                                       PFFT_FORWARD, 
-                                       PFFT_TRANSPOSED_NONE|PFFT_MEASURE);
-
-  this->plan_back = pfft_plan_dft_3d(this->densgrid, 
-                                     (pfft_complex *)thetas, 
-                                     (pfft_complex *)thetas,
-                                     pct.pfft_comm, 
-                                     PFFT_BACKWARD, 
-                                     PFFT_TRANSPOSED_NONE|PFFT_MEASURE);
   if(use_coarsegrid) {
 
-      this->plan_forward_calc = pfft_plan_dft_3d(this->coarsegrid,
-                                                (double (*)[2])thetas,
-                                                (double (*)[2])thetas,
-                                                pct.pfft_comm,
-                                                PFFT_FORWARD,
-                                                PFFT_TRANSPOSED_NONE|PFFT_MEASURE);
-
-      this->plan_back_calc = pfft_plan_dft_3d(this->coarsegrid, 
-                                             (pfft_complex *)thetas, 
-                                             (pfft_complex *)thetas,
-                                             pct.pfft_comm, 
-                                             PFFT_BACKWARD, 
-                                             PFFT_TRANSPOSED_NONE|PFFT_MEASURE);
+      this->plan_forward = fft_forward_coarse;
+      this->plan_back = fft_backward_coarse;
 
   }
   else {
 
-      this->plan_forward_calc = this->plan_forward;
-      this->plan_back_calc = this->plan_back;
+      this->plan_forward = fft_forward_fine;
+      this->plan_back = fft_backward_fine;
 
   }
-
 
   // If not initialized we must read in the kernel table
   if(!this->initialized) {
@@ -431,7 +405,8 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
 
   for(int iq = 0;iq < Nqs;iq++) {
-      pfft_execute_dft(plan_back_calc, (double (*)[2])&thetas[iq*calc_basis], (double (*)[2])&thetas[iq*calc_basis]);
+    //pfft_execute_dft(plan_back_calc, (double (*)[2])&thetas[iq*calc_basis], (double (*)[2])&thetas[iq*calc_basis]);
+      fft_3d((FFT_DATA *)&thetas[iq*calc_basis], (FFT_DATA *)&thetas[iq*calc_basis], 1, plan_back);
   }
 
   double *potential = new double[this->pbasis]();
@@ -455,13 +430,9 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
 
   if(use_coarsegrid) {
-      pfft_destroy_plan(plan_back_calc);
-      pfft_destroy_plan(plan_forward_calc);
       delete [] calc_gx;
       delete [] calc_rho;
   }
-  pfft_destroy_plan(plan_back);
-  pfft_destroy_plan(plan_forward);
 
   delete [] calc_potential;
   delete [] potential;
@@ -471,7 +442,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   delete [] q0;
   delete [] gx;
   delete [] total_rho;
-#endif
 }
 
 
@@ -597,6 +567,7 @@ void Vdw::get_q0_on_grid (double *calc_rho, double *q0, double *dq0_drho, double
 
   for(int iq = 0;iq < Nqs;iq++) {
       //pfft_execute_dft(plan_forward_calc, (double (*)[2])&thetas[iq*ibasis], (double (*)[2])&thetas[iq*ibasis]);
+      fft_3d((FFT_DATA *)&thetas[iq*ibasis], (FFT_DATA *)&thetas[iq*ibasis], -1, plan_forward);
   }
 
 }
@@ -752,6 +723,8 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
 
 
      //pfft_execute_dft(plan_forward_calc, (double (*)[2])h, (double (*)[2])h);
+     fft_3d((FFT_DATA *)h, (FFT_DATA *)h, -1, plan_forward);
+
      for(int ix=0;ix < ibasis;ix++) {
          if(pwaves->gmask[ix] == 1.0) {
              h[ix] = i * tpiba * pwaves->g[ix].a[icar] * h[ix];
@@ -769,6 +742,7 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
      }
 
      //pfft_execute_dft(plan_back_calc, (double (*)[2])h, (double (*)[2])h);
+     fft_3d((FFT_DATA *)h, (FFT_DATA *)h, 1, plan_back);
      double scale = 1.0 / (double)N_calc;
 
      for(int ix=0;ix < ibasis;ix++) potential[ix] -= scale * std::real(h[ix]);

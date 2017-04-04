@@ -29,7 +29,7 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Pw.h"
-//#include "pfft.h"
+#include "fft3d.h"
 
 #define VDW_NQPOINTS  20
 #define VDW_NRPOINTS  1024
@@ -125,10 +125,8 @@ private:
     // cutoff value for density
     static const double epsr;
 
-    //pfft_plan plan_forward;
-    //pfft_plan plan_back;
-    //pfft_plan plan_forward_calc;
-    //pfft_plan plan_back_calc;
+    struct fft_plan_3d *plan_forward;
+    struct fft_plan_3d *plan_back;
 
 public:
     Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
