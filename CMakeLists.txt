@@ -32,7 +32,7 @@ INCLUDE (CMakeForceCompiler)
 # User editable options
 set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
-set (USE_SCALAPACK_LIBS 0)
+set (USE_SCALAPACK_LIBS 1)
 set (USE_ELEMENTAL_LIBS 0)
 set (USE_LIBXC 0)
 set (USE_OPENBABEL_LIBS 1)
