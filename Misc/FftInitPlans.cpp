@@ -49,9 +49,9 @@ void FftInitPlans(void)
     pct.pfft_comm = pct.grid_comm;
 
     // See if we can use pfft without remapping. In and out arrays must be equal in size.
-    grid[0] = Rmg_G->get_NX_GRID(1);
+    grid[2] = Rmg_G->get_NX_GRID(1);
     grid[1] = Rmg_G->get_NY_GRID(1);
-    grid[2] = Rmg_G->get_NZ_GRID(1);
+    grid[0] = Rmg_G->get_NZ_GRID(1);
     int dimx = Rmg_G->get_PX0_GRID(1);
     int dimy = Rmg_G->get_PY0_GRID(1);
     int dimz = Rmg_G->get_PZ0_GRID(1);
@@ -75,9 +75,9 @@ void FftInitPlans(void)
     coarse_pwaves->fft_backward_plan = fft_forward_coarse;
 
 
-    grid[0] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
+    grid[2] = Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
     grid[1] = Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
-    grid[2] = Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
+    grid[0] = Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
     dimx = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     dimy = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
     dimz = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
