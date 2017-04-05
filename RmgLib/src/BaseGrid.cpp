@@ -282,4 +282,17 @@
         return BaseGrid::rank;
     }
 
+    bool BaseGrid::is_face_pe(void)
+    {
+        return BaseGrid::face_pe;
+    }
 
+    bool BaseGrid::is_edge_pe(void)
+    {
+        return BaseGrid::edge_pe;
+    }
+
+    bool BaseGrid::is_corner_pe(void)
+    {
+        return BaseGrid::corner_pe;
+    }

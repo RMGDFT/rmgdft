@@ -75,7 +75,10 @@ protected:
     /* MPI specific info */
     int rank;
     int neighbors[6];
-
+    bool face_pe;
+    bool edge_pe;
+    bool corner_pe;
+  
 private:
 
     /* Grid offsets on each PE */
@@ -123,6 +126,10 @@ public:
 
     void pe2xyz(int pe, int *x, int *y, int *z);
     int xyz2pe(int x, int y, int z);
+
+    bool is_face_pe(void);
+    bool is_edge_pe(void);
+    bool is_corner_pe(void);
 
     // Returns a pointer to the neighbors structure which contains the rank
     // of neighboring processors in three-dimensional space.
