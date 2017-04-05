@@ -317,6 +317,8 @@ endif (NOT MKLROOT)
 
 if(NOT CRAY_XK)
     if(MKLROOT)
+        include_directories(${MKLROOT}/include)
+        add_definitions(-DUSE_MKL)
         set(FFTW_INCLUDES "${MKLROOT}/include/fftw")
         set(MKL_LIBDIR "${MKLROOT}/lib/intel64")
         set(MKL_LIB64 "${MKLROOT}/lib/intel64")
