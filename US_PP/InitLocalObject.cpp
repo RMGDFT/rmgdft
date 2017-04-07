@@ -175,7 +175,8 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
     if(object_type == ATOMIC_RHOCOMP) {
         int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
-        for (int idx = 0; idx < FP0_BASIS; idx++) sumobject[idx] = ct.background_charge / FP0_BASIS / get_vel_f() / npes;
+        double t1 = ct.background_charge / (double)FP0_BASIS / get_vel_f() / (double)npes;
+        for (int idx = 0; idx < FP0_BASIS; idx++) sumobject[idx] = t1;
 
     }
 
