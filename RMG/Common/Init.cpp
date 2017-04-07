@@ -225,7 +225,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     InitGpuMallocHost(gpu_hostbufsize);
 
     // Wavefunctions are actually stored here
-    
+    ct.non_local_block_size = std::min(ct.non_local_block_size, ct.max_states);
+ 
     custat = cudaMallocHost((void **)&rptr, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
     RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
     custat = cudaMallocHost((void **)&nv, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
