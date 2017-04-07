@@ -299,7 +299,10 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
             solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
 
             /* trade boundary info */
-            T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+            if(cycl < (post_cyc[level] - 1))
+                T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+            else
+                T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
 
         }                       /* end for */
 
