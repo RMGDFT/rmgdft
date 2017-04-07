@@ -93,4 +93,4 @@ kohn_sham_solver = "multigrid"
 #kohn_sham_solver = "davidson"
 output_wave_function_file = "Waves/wave.out"
 
-potential_acceleration_constant_step = "1.00000000e+00"
+potential_acceleration_constant_step = "0.00000000e+00"
