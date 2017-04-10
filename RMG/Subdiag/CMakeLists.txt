@@ -1,6 +1,7 @@
 add_library (RMG_Subdiag
 ApplyOperators.cpp
 Subdiag.cpp
+Subdiag_Elpa.cpp
 Subdiag_Lapack.cpp
 Subdiag_Magma.cpp
 Subdiag_Scalapack.cpp

@@ -46,7 +46,7 @@ class Scalapack {
 
 public:
 
-    Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm);
+    explicit Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm);
     void DistributeMatrix(double *A, double *A_dist);
     void GatherMatrix(double *A, double *A_dist);
 
@@ -108,7 +108,7 @@ public:
 
     ~Scalapack(void);
 
-private:
+protected:
 
     void matscatter (double *globmat, double *dismat, int size, int *desca, bool isreal);
     void matgather (double *globmat, double *dismat, int size, int *desca, bool isreal);

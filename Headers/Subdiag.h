@@ -55,6 +55,8 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 template <typename KpointType>
 char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
 template <typename KpointType>
+char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors);
+template <typename KpointType>
 int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb,
                 double *eigs, double *work, int lwork, int *iwork, int liwork, int driver);
 template <typename KpointType>

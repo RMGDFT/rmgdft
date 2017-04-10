@@ -23,6 +23,7 @@ fft3d.cpp
 CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
 Scalapack.cpp
+Elpa.cpp
 open_restart_file.c
 cnpy.cpp
 LinePlot.cpp
