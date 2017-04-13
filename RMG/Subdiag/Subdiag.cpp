@@ -290,6 +290,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
         case SUBDIAG_SCALAPACK:
             trans_b = Subdiag_Scalapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
             break;
+        case SUBDIAG_ELPA:
+            trans_b = Subdiag_Elpa (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
+            break;
         case SUBDIAG_MAGMA:
 #if GPU_ENABLED && MAGMA_LIBS
             trans_b = Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);

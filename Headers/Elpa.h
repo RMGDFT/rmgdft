@@ -35,7 +35,14 @@ public:
 
   //Elpa(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm);
   using Scalapack::Scalapack;
+  void GetCommunicators(void);
+  int GetElpaCommRows(void);
+  int GetElpaCommCols(void);
+
   ~Elpa(void);
+
+private:
+   int elpa_comm_rows, elpa_comm_cols;
 
 };
 

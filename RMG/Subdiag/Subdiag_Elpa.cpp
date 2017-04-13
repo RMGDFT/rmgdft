@@ -58,7 +58,7 @@ template <typename KpointType>
 char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
 {
 
-#if !SCALAPACK_LIBS || !ELPA_LIBS
+#if !SCALAPACK_LIBS || !USE_ELPA
     rmg_printf("This version of RMG was not built with Scalapack/Elpa support. Redirecting to LAPACK.");
     return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #else
@@ -66,7 +66,7 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
-    //static char *trans_t = "t";
+    static char *trans_t = "t";
     static char *trans_n = "n";
 
 //  folded spectrum with scalapack is experimental. Uncomment the second line if you want to try it.
@@ -86,6 +86,7 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
         MainElpa = new Elpa(scalapack_groups, pct.thisimg, ct.images_per_node, num_states,
                      ct.scalapack_block_factor, last, pct.grid_comm);
 
+        MainElpa->GetCommunicators();
     }
 
     bool participates = MainElpa->Participates();
@@ -93,6 +94,8 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     int scalapack_npcol = MainElpa->GetCols();
     int scalapack_npes = scalapack_nprow * scalapack_npcol;
     int root_npes = MainElpa->GetRootNpes();
+    int elpa_comm_rows = MainElpa->GetElpaCommRows();
+    int elpa_comm_cols = MainElpa->GetElpaCommCols();
 
     // Allocate and clear distributed matrices */
     static KpointType *distAij;
@@ -180,7 +183,7 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
                             distSij, &ione, &ione, desca, distBij, &ione, 
                             &ione, desca, &beta, distCij, &ione, &ione, desca);
 
-                // Copy result into Bij
+                // Copy result into Bij and Aij
                 for(int idx=0;idx < dist_length;idx++) distBij[idx] = distCij[idx];
 
             }
@@ -228,10 +231,38 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
                 int info;
 
                 if(ct.is_gamma) {
+                    int useQr = false;
+                    int useGPU = false;
+                    int wantDebug = true;
+                    double rone = 1.0;
+                    int THIS_REAL_ELPA_KERNEL_API = ELPA2_REAL_KERNEL_GENERIC;
+printf("DDD  %d  %d  %d  %d  %d  %d\n",num_states,scalapack_nprow,scalapack_npcol,ct.scalapack_block_factor,MainElpa->GetDistMdim(),MainElpa->GetDistNdim());
+                    info = elpa_cholesky_real_double(num_states, (double *)distSij, 
+                           MainElpa->GetDistMdim(), ct.scalapack_block_factor, MainElpa->GetDistNdim(), 
+                           elpa_comm_rows, elpa_comm_cols, wantDebug);
 
-//                    info = elpa_solve_evp_real_2stage_double_precision(na, nev, a, na_rows, ev, z, na_rows, nblk, na_cols, 
-//                              mpi_comm_rows, mpi_comm_cols, my_mpi_comm_world, THIS_REAL_ELPA_KERNEL_API, useQr, useGPU);
+                    info = elpa_invert_trm_real_double(num_states, (double *)distSij, 
+                           MainElpa->GetDistMdim(), ct.scalapack_block_factor, MainElpa->GetDistNdim(),
+                           elpa_comm_rows, elpa_comm_cols, wantDebug);
 
+                    info = elpa_mult_at_b_real_double('U', 'F', num_states, num_states,
+                           (double *)distSij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim(),
+                           (double *)distBij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim(),
+                           ct.scalapack_block_factor, elpa_comm_rows, elpa_comm_cols,
+                           (double *)distCij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim());
+
+                           pdtrmm_("R", "U", "N", "N", &num_states, &num_states, &rone,
+                           (double *)distSij, &ione, &ione, desca, (double *)distBij, &ione, &ione, desca);
+
+                    info = elpa_solve_evp_real_double(
+                           num_states, num_states, 
+                           (double *)distBij, MainElpa->GetDistMdim(), 
+                           eigs, 
+                           (double *)Cij, MainElpa->GetDistMdim(), 
+                           ct.scalapack_block_factor, MainElpa->GetDistNdim(), 
+                           elpa_comm_rows, elpa_comm_cols, MPI_Comm_c2f(MainElpa->GetComm()), THIS_REAL_ELPA_KERNEL_API, useQr, useGPU,"auto");
+printf("INFO4 = %d\n",info);
+printf("EIGS = %f   %d\n",Ha_eV*eigs[0],info);
 
                 }
                 else {
@@ -248,7 +279,7 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
             }
             // Gather distributed results from distAij into eigvectors
             //MainElpa->GatherMatrix(eigvectors, distAij);
-            MainElpa->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
+            MainElpa->CopyDistArrayToSquareMatrix(eigvectors, Cij, num_states, desca);
             MainElpa->Allreduce(MPI_IN_PLACE, eigvectors, factor *num_states*num_states, MPI_DOUBLE, MPI_SUM);
 
 

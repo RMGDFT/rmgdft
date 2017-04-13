@@ -45,3 +45,19 @@ Elpa::~Elpa(void)
     delete [] this->local_desca;
     delete [] this->dist_desca;
 }
+
+// Gets row and column communicators needed by elpa routines
+void Elpa::GetCommunicators(void)
+{
+    elpa_get_communicators(MPI_Comm_c2f(this->comm), this->my_row, this->my_col, &this->elpa_comm_rows, &this->elpa_comm_cols);
+}
+
+int Elpa::GetElpaCommRows(void)
+{
+    return this->elpa_comm_rows;
+}
+
+int Elpa::GetElpaCommCols(void)
+{
+    return this->elpa_comm_cols;
+}

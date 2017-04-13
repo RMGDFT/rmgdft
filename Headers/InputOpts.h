@@ -85,7 +85,8 @@ static std::unordered_map<std::string, int> subdiag_driver = {
         {"lapack", 0},
         {"scalapack", 1},
         {"magma", 2},
-        {"auto", 3}};
+        {"auto", 3},
+        {"elpa", 6}};
 
 static std::unordered_map<std::string, int> kohn_sham_solver = {
         {"multigrid", MULTIGRID_SOLVER},

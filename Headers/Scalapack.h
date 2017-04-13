@@ -203,6 +203,8 @@ void pdgeadd_(char *, int *, int *, double *, double *, int *, int *, int *, dou
        double *, int *, int *, int *);               
 void pzgeadd_(char *, int *, int *, double *, double *, int *, int *, int *, double *,
        double *, int *, int *, int *);               
+void pdtrmm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
+             double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
 void pdtrsm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
              double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
 void pztrmm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,

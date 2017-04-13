@@ -1,4 +1,5 @@
  #include <complex>
+extern "C" {
  /*! \brief C old, deprecated interface, will be deleted. Use "elpa_get_communicators"
  *
  * \param mpi_comm_word    MPI global communicator (in)
@@ -677,3 +678,4 @@
  \result succes               int reports success (1) or failure (0)
  */
  int elpa_cholesky_complex_single(int na, std::complex<float> *a, int lda, int nblk, int matrixCols, int mpi_comm_rows, int mpi_comm_cols, int wantDebug);
+}
