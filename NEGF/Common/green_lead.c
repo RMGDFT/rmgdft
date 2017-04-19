@@ -166,7 +166,7 @@ void green_lead (complex double *ch0_host, complex double *ch01_host,
         comm_sums(&converge2, &ione, COMM_EN2);
 
         if(converge1 > 1.0E06 | converge2 > 1.0E06) 
-            dprintf("\n WARNING Green function in green_lead.c diverging");
+            dprintf("\n WARNING Green function in green_lead.c diverging %e %e", converge1, converge2);
         if (converge1 < 1.0E-7 && converge2 < 1.0E-7)
             break;
     }

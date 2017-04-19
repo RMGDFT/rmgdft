@@ -26,7 +26,6 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
 
     tem2 = my_crtc();
 
-    sprintf(newname, "%s%s", name, ".pot_rho");
 
 
     int sizes[3], subsizes[3], starts[3];
@@ -63,20 +62,31 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
 
     int amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
     MPI_File mpi_fhand ;
+
+    sprintf(newname, "%s%s", name, ".vh");
     MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
-
-
     disp=0;
     MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
-
     MPI_File_read(mpi_fhand, vh, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_close(&mpi_fhand);
+
+    sprintf(newname, "%s%s", name, ".vxc");
+    MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+    disp=0;
+    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
     MPI_File_read(mpi_fhand, vxc, get_FP0_BASIS(),MPI_DOUBLE, &status);
+    MPI_File_close(&mpi_fhand);
+
+    sprintf(newname, "%s%s", name, ".rho");
+    MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+    disp=0;
+    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
     MPI_File_read(mpi_fhand, rho, get_FP0_BASIS(),MPI_DOUBLE, &status);
     MPI_File_close(&mpi_fhand);
 
     my_barrier();
     tem1 = my_crtc();
-    if(pct.gridpe == 0) printf("\n aaaa read pot_rho %f", tem2 - tem1);
+    if(pct.gridpe == 0) printf("\n time for read vh, vxc, rho %f", tem2 - tem1);
     fflush(NULL);
 
 }

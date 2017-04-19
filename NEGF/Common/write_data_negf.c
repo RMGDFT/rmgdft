@@ -39,7 +39,7 @@ void write_data_negf (char *name, double *vh, double *vxc, double *vh_old, doubl
     int state, i1;
     STATE *sp;
     int idx, st, ntot, i;
-    int fhand;
+    int fhand, fhand_rho, fhand_vh, fhand_vxc;
     char newname[MAX_PATH + 20];
     int st1;
 
@@ -137,15 +137,22 @@ void write_data_negf (char *name, double *vh, double *vxc, double *vh_old, doubl
 
 	if (pct.gridpe == 0)
 	{
-		sprintf (newname, "%s%s", name, ".pot_rho");
-		my_open (fhand, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
+		sprintf (newname, "%s%s", name, ".rho");
+		my_open (fhand_rho, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
+		chmod (newname, S_IREAD | S_IWRITE);
+		sprintf (newname, "%s%s", name, ".vh");
+		my_open (fhand_vh, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
+		chmod (newname, S_IREAD | S_IWRITE);
+		sprintf (newname, "%s%s", name, ".vxc");
+		my_open (fhand_vxc, newname, O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
+		chmod (newname, S_IREAD | S_IWRITE);
 	}
 
-	write_global_data (fhand, vh, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
+	write_global_data (fhand_vh, vh, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
 
-	write_global_data (fhand, vxc, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
+	write_global_data (fhand_vxc, vxc, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
 
-	write_global_data (fhand, rho, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
+	write_global_data (fhand_rho, rho, get_FNX_GRID(), get_FNY_GRID(), get_FNZ_GRID());
 
 
 	/*        ntot = 0;
@@ -167,11 +174,12 @@ void write_data_negf (char *name, double *vh, double *vxc, double *vh_old, doubl
 	 *  	if(pct.gridpe ==0) write(fhand, lcr[2].S01, idx * sizeof(double));
 	 */
 	my_barrier ();
-	/* Force change mode of output file */
 	if (pct.gridpe == 0)
-		chmod (newname, S_IREAD | S_IWRITE);
-	if (pct.gridpe == 0)
-		close (fhand);
+    {
+		close (fhand_vh);
+		close (fhand_vxc);
+		close (fhand_rho);
+    }
 
 /* ===================== writing pot ======================= */
 

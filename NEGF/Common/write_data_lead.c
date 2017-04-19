@@ -38,7 +38,7 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 {
 	int amode;
 	char newname[MAX_PATH + 20];
-	int fhand;
+	int fhand_rho, fhand_vxc, fhand_vh;
 
 	int size, rank, ndims, gsizes[2], distribs[2];
 	int order,  dargs[2], psizes[2];
@@ -58,12 +58,25 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 
 	if (pct.gridpe == 0)
 	{
-		sprintf (newname, "%s%s", name, ".pot_rho");
+		sprintf (newname, "%s%s", name, ".vh");
 		amode = S_IREAD | S_IWRITE;
 
-		fhand = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
-		if (fhand < 0)
-			error_handler (" Unable to write file ");
+		fhand_vh = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+		if (fhand_vh < 0)
+			error_handler (" Unable to write file for vh ");
+
+		sprintf (newname, "%s%s", name, ".vxc");
+		amode = S_IREAD | S_IWRITE;
+
+		fhand_vxc = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+		if (fhand_vxc < 0)
+			error_handler (" Unable to write file for vxc ");
+		sprintf (newname, "%s%s", name, ".rho");
+		amode = S_IREAD | S_IWRITE;
+
+		fhand_rho = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+		if (fhand_rho < 0)
+			error_handler (" Unable to write file for rho ");
 	}
 
 	if (lcr[1].NY_GRID != get_NY_GRID())
@@ -71,19 +84,20 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 	if (lcr[1].NZ_GRID != get_NZ_GRID())
 		error_handler ("not a lead calculation z");
 
-	write_global_data_lead (fhand, vh, lcr[1].NX_GRID * get_FG_RATIO() * 3, lcr[1].NY_GRID * get_FG_RATIO(),
+	write_global_data_lead (fhand_vh, vh, lcr[1].NX_GRID * get_FG_RATIO() * 3, lcr[1].NY_GRID * get_FG_RATIO(),
 			lcr[1].NZ_GRID * get_FG_RATIO());
-	write_global_data_lead (fhand, vxc, lcr[1].NX_GRID * get_FG_RATIO() * 3, lcr[1].NY_GRID * get_FG_RATIO(),
+	write_global_data_lead (fhand_vxc, vxc, lcr[1].NX_GRID * get_FG_RATIO() * 3, lcr[1].NY_GRID * get_FG_RATIO(),
 			lcr[1].NZ_GRID * get_FG_RATIO());
-	write_global_data_lead (fhand, rho, lcr[1].NX_GRID * get_FG_RATIO() * 3, lcr[1].NY_GRID * get_FG_RATIO(),
-			lcr[1].NZ_GRID * get_FG_RATIO());
-	write_global_data_lead (fhand, vh_old, lcr[1].NX_GRID * get_FG_RATIO() * 3, lcr[1].NY_GRID * get_FG_RATIO(),
-			lcr[1].NZ_GRID * get_FG_RATIO());
-	write_global_data_lead (fhand, vxc_old, lcr[1].NX_GRID * get_FG_RATIO() * 3, lcr[1].NY_GRID * get_FG_RATIO(),
+	write_global_data_lead (fhand_rho, rho, lcr[1].NX_GRID * get_FG_RATIO() * 3, lcr[1].NY_GRID * get_FG_RATIO(),
 			lcr[1].NZ_GRID * get_FG_RATIO());
 
 
-	if (pct.gridpe == 0) close(fhand);
+	if (pct.gridpe == 0) 
+    {
+        close(fhand_vh);
+        close(fhand_vxc);
+        close(fhand_rho);
+    }
 
 
 	int ictxt = pmo.ictxt[pmo.myblacs];
