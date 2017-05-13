@@ -976,6 +976,13 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + boost::lexical_cast<std::string>(NY_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(NZ_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Z dimension is " + boost::lexical_cast<std::string>(NZ_GRID) + " and only postive values are allowed.");
 
+    pelc.pe_x = ProcessorGrid.vals.at(0);
+    pelc.pe_y = ProcessorGrid.vals.at(1);
+    pelc.pe_z = ProcessorGrid.vals.at(2);
+
+    CheckAndTerminate(pelc.pe_x, 1, INT_MAX, "The value given for the global processor grid X dimension is " + boost::lexical_cast<std::string>(NX_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the global processor grid Y dimension is " + boost::lexical_cast<std::string>(NY_GRID) + " and only postive values are allowed.");
+    CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the global processor grid Z dimension is " + boost::lexical_cast<std::string>(NZ_GRID) + " and only postive values are allowed.");
 
     /* read the electric field vector */
     try {
