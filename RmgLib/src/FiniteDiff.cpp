@@ -120,6 +120,194 @@ template void FiniteDiff::app_gradient_twelfth<std::complex<float> > (std::compl
 FiniteDiff::FiniteDiff(Lattice *lptr)
 {
     L = lptr;
+    this->np_xweight = NULL;
+    this->np_yweight = NULL;
+    this->np_zweight = NULL;
+    this->xoff = NULL;
+    this->yoff = NULL;
+    this->zoff = NULL;
+    this->x_type = PERIODIC;
+    this->y_type = PERIODIC;
+    this->z_type = PERIODIC;
+
+}
+
+FiniteDiff::FiniteDiff(Lattice *lptr, BaseGrid *gptr, int xtype, int ytype, int ztype, int density, int order)
+{
+    L = lptr;
+    G = gptr;
+    this->np_xweight = NULL;
+    this->np_yweight = NULL;
+    this->np_zweight = NULL;
+    this->xoff = NULL;
+    this->yoff = NULL;
+    this->zoff = NULL;
+    this->np_density = density;
+    this->x_type = PERIODIC;
+    this->y_type = PERIODIC;
+    this->z_type = PERIODIC;
+    this->stride = order + 3;
+    //if((xtype == PERIODIC) && (ytype == PERIODIC) && (ztype == PERIODIC)) return;
+
+    this->np_xweight = new double[G->get_NX_GRID(this->np_density)*stride]();
+    this->np_yweight = new double[G->get_NY_GRID(this->np_density)*stride]();
+    this->np_zweight = new double[G->get_NZ_GRID(this->np_density)*stride]();
+
+    this->xoff = new uint16_t[G->get_PX0_GRID(this->np_density)];
+    this->yoff = new uint16_t[G->get_PY0_GRID(this->np_density)];
+    this->zoff = new uint16_t[G->get_PZ0_GRID(this->np_density)];
+
+    int alloc = std::max(G->get_PX0_GRID(this->np_density), G->get_PY0_GRID(this->np_density));
+    alloc = std::max(alloc, G->get_PZ0_GRID(this->np_density));
+    double *xr = new double[alloc];
+    for(int i=0;i < alloc;i++) xr[i] = (double)i;
+
+    // The stride var is the number of weights for each grid point. 
+    // An eighth order second derivative for example requires 9 points in
+    // the symmetric case and 10 points for the non-symmetric. We increment
+    // this to 11 to maintain symmetry and simplify later code (but pad with
+    // either 1 or two zeros as required.
+    int stride = order + 2;
+    int range = stride / 2;
+
+    // Default is periodic boundary condition
+    for(int i =0 ;i < G->get_NX_GRID(this->np_density);i++) xoff[i] = i - range;
+    for(int i =0 ;i < G->get_NY_GRID(this->np_density);i++) yoff[i] = i - range;
+    for(int i =0 ;i < G->get_NZ_GRID(this->np_density);i++) zoff[i] = i - range;
+
+
+    int np = G->get_NX_GRID(this->np_density);
+    for(int i =0 ;i < np;i++)
+    {
+        if(i < range)
+        {
+            this->xoff[i] = 0;
+            gen_weights(order + 1 , 2, (double)i, xr, &this->np_xweight[i*stride]);
+        }
+        else if((i >= range) && (i <= (np - range)))
+        {
+            this->xoff[i] = i - range;
+            gen_weights(order + 1 , 2, (double)i, &xr[i-range], &this->np_xweight[i*stride]);
+        }
+        else
+        {
+            this->xoff[i] = np - stride;
+            gen_weights(order + 1 , 2, (double)i, &xr[np-stride], &this->np_xweight[i*stride]);
+        }
+    }
+
+    np = G->get_NY_GRID(this->np_density);
+    for(int i =0 ;i < np;i++)
+    {
+        if(i < range)
+        {
+            this->yoff[i] = 0;
+            gen_weights(order + 1 , 2, (double)i, xr, &this->np_yweight[i*stride]);
+        }
+        else if((i >= range) && (i <= (np - range)))
+        {
+            this->yoff[i] = i - range + 1;
+            gen_weights(order + 1 , 2, (double)i, &xr[i-range], &this->np_yweight[i*stride]);
+        }
+        else
+        {
+            this->yoff[i] = np - stride;
+            gen_weights(order + 1 , 2, (double)i, &xr[np-stride], &this->np_yweight[i*stride]);
+        }
+    }
+
+    np = G->get_NZ_GRID(this->np_density);
+    for(int i =0 ;i < np;i++)
+    {
+        if(i < range)
+        {
+            this->zoff[i] = 0;
+            gen_weights(order + 1 , 2, (double)i, xr, &this->np_zweight[i*stride]);
+        }
+        else if((i >= range) && (i <= (np - range)))
+        {
+            this->zoff[i] = i - range + 1;
+            gen_weights(order + 1 , 2, (double)i, &xr[i-range], &this->np_zweight[i*stride]);
+        }
+        else
+        {
+            this->zoff[i] = np - stride;
+            gen_weights(order + 1 , 2, (double)i, &xr[np-stride], &this->np_zweight[i*stride]);
+        }
+    }
+
+#if 0
+    printf("\n");
+for(int i=0;i<np;i++)
+{
+    printf("\n");
+    for(int j=0;j<stride;j++)
+    {
+        printf("%d   %d   %18.12f\n",i,this->xoff[i],this->np_xweight[i*stride+j]);
+    }
+}
+#endif
+    delete [] xr;
+}
+
+//
+void FiniteDiff::gen_weights(int n, int m, double xr, double *x, double *w)
+{
+    double c1 = 1.0, c2, c3, c4, c5;
+    double c[20][20];
+
+    c4 = x[0] - xr;
+
+    for(int k=0;k <= m;k++)
+    {
+        for(int j=0;j <= n;j++)
+        {
+            c[j][k] = 0.0;
+        }
+    }
+    c[0][0] = 1.0;
+
+    for(int i=1;i <= n;i++)
+    {
+        int mn = std::min(i,m);
+        c2 = 1.0;
+        c5 = c4;
+
+        c4 = x[i] - xr;
+
+        for(int j=0;j <= i-1;j++)
+        {
+            c3 = x[i] - x[j];
+            c2 = c2*c3;
+
+            if (j == (i-1))
+            {
+                for(int k=mn;k >= 1;k--)
+                {
+                    c[i][k] = c1*(k*c[i-1][k-1] - c5*c[i-1][k]) / c2;
+                }
+                c[i][0] = -c1*c5*c[i-1][0] / c2;
+            }
+            for(int k=mn;k >= 1;k--)
+            {
+                c[j][k] = (c4*c[j][k]-k*c[j][k-1]) / c3;
+            }
+            c[j][0] = c4*c[j][0] / c3;
+        }
+        c1 = c2;
+     }
+
+     for(int i=0;i <= n;i++)w[i] = c[i][2];
+}
+
+FiniteDiff::~FiniteDiff(void)
+{
+    if(this->xoff) delete [] this->xoff;
+    if(this->yoff) delete [] this->yoff;
+    if(this->zoff) delete [] this->zoff;
+    if(this->np_xweight) delete [] this->np_xweight;
+    if(this->np_yweight) delete [] this->np_yweight;
+    if(this->np_zweight) delete [] this->np_zweight;
 }
 
 bool FiniteDiff::check_anisotropy(double hx, double hy, double hz, double limit)
@@ -132,6 +320,7 @@ bool FiniteDiff::check_anisotropy(double hx, double hy, double hz, double limit)
     if(fabs(anisotropy - 1.0) > limit) return false;
     return true;
 }
+
 
 template <typename RmgType>
 double FiniteDiff::app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)

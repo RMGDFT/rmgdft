@@ -42,6 +42,7 @@
 #ifdef __cplusplus
 #include "Lattice.h"
 #include "TradeImages.h"
+#include "boundary_conditions.h"
 
 template <typename RmgType>
 void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
@@ -62,9 +63,30 @@ class FiniteDiff {
 
 private:
     Lattice *L;
+    BaseGrid *G;
+
+    int x_type;
+    int y_type;
+    int z_type;
+
+    // For non-periodic boundary conditions.
+    double *np_xweight;
+    double *np_yweight;
+    double *np_zweight;
+    int np_density;
+    uint16_t *xoff;
+    uint16_t *yoff;
+    uint16_t *zoff;
+    int stride;
+    
 
 public:
     FiniteDiff(Lattice *lptr);
+    FiniteDiff(Lattice *lptr, BaseGrid *G, int xtype, int ytype, int ztype, int density, int order);
+    void gen_weights(int n, int m, double xr, double *x, double *w);
+
+
+    ~FiniteDiff(void);
 
     bool check_anisotropy(double hx, double hy, double hz, double limit);
 
