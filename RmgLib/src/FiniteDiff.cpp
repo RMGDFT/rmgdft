@@ -147,7 +147,7 @@ FiniteDiff::FiniteDiff(Lattice *lptr, BaseGrid *gptr, int xtype, int ytype, int 
     this->y_type = PERIODIC;
     this->z_type = PERIODIC;
     this->stride = order + 3;
-    //if((xtype == PERIODIC) && (ytype == PERIODIC) && (ztype == PERIODIC)) return;
+    if((xtype == PERIODIC) && (ytype == PERIODIC) && (ztype == PERIODIC)) return;
 
     this->np_xweight = new double[G->get_NX_GRID(this->np_density)*stride]();
     this->np_yweight = new double[G->get_NY_GRID(this->np_density)*stride]();
@@ -164,9 +164,9 @@ FiniteDiff::FiniteDiff(Lattice *lptr, BaseGrid *gptr, int xtype, int ytype, int 
 
     // The stride var is the number of weights for each grid point. 
     // An eighth order second derivative for example requires 9 points in
-    // the symmetric case and 10 points for the non-symmetric. We increment
-    // this to 11 to maintain symmetry and simplify later code (but pad with
-    // either 1 or two zeros as required.
+    // the symmetric case and 10 points for the non-symmetric. We use 10 for
+    // both in order to simplify later code and pad with a zero for the
+    // symmetric case.
     int stride = order + 2;
     int range = stride / 2;
 
