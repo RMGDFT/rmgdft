@@ -41,6 +41,7 @@ template double FiniteDiff::app_cil_sixth<double>(double *, double *, int, int, 
 template double FiniteDiff::app_cil_sixth<std::complex<float> >(std::complex <float> *, std::complex <float> *, int, int, int, double, double, double);
 template double FiniteDiff::app_cil_sixth<std::complex<double> >(std::complex <double> *, std::complex <double> *, int, int, int, double, double, double);
 
+template double FiniteDiff::app_del2_np<double>(double *, double *, double, double, double);
 template void FiniteDiff::app_cir_sixth<float>(float *, float *, int, int, int);
 template void FiniteDiff::app_cir_sixth<double>(double *, double *, int, int, int);
 template void FiniteDiff::app_cir_sixth<std::complex<float> >(std::complex <float> *, std::complex <float> *, int, int, int);
@@ -132,6 +133,9 @@ FiniteDiff::FiniteDiff(Lattice *lptr)
 
 }
 
+// Constructor for non-periodic boundary conditions. Unlike the case with
+// the standard constructor the non-periodic case is specific to a specific
+// grid density and order of accuracy.
 FiniteDiff::FiniteDiff(Lattice *lptr, BaseGrid *gptr, int xtype, int ytype, int ztype, int density, int order)
 {
     L = lptr;
@@ -146,28 +150,29 @@ FiniteDiff::FiniteDiff(Lattice *lptr, BaseGrid *gptr, int xtype, int ytype, int 
     this->x_type = PERIODIC;
     this->y_type = PERIODIC;
     this->z_type = PERIODIC;
-    this->stride = order + 3;
-    if((xtype == PERIODIC) && (ytype == PERIODIC) && (ztype == PERIODIC)) return;
 
-    this->np_xweight = new double[G->get_NX_GRID(this->np_density)*stride]();
-    this->np_yweight = new double[G->get_NY_GRID(this->np_density)*stride]();
-    this->np_zweight = new double[G->get_NZ_GRID(this->np_density)*stride]();
-
-    this->xoff = new uint16_t[G->get_PX0_GRID(this->np_density)];
-    this->yoff = new uint16_t[G->get_PY0_GRID(this->np_density)];
-    this->zoff = new uint16_t[G->get_PZ0_GRID(this->np_density)];
-
-    int alloc = std::max(G->get_PX0_GRID(this->np_density), G->get_PY0_GRID(this->np_density));
-    alloc = std::max(alloc, G->get_PZ0_GRID(this->np_density));
-    double *xr = new double[alloc];
-    for(int i=0;i < alloc;i++) xr[i] = (double)i;
 
     // The stride var is the number of weights for each grid point. 
     // An eighth order second derivative for example requires 9 points in
     // the symmetric case and 10 points for the non-symmetric. We use 10 for
     // both in order to simplify later code and pad with a zero for the
     // symmetric case.
-    int stride = order + 2;
+    this->stride = order + 2;
+    if((xtype == PERIODIC) && (ytype == PERIODIC) && (ztype == PERIODIC)) return;
+
+    this->np_xweight = new double[G->get_NX_GRID(this->np_density)*stride]();
+    this->np_yweight = new double[G->get_NY_GRID(this->np_density)*stride]();
+    this->np_zweight = new double[G->get_NZ_GRID(this->np_density)*stride]();
+
+    this->xoff = new int[G->get_NX_GRID(this->np_density)];
+    this->yoff = new int[G->get_NX_GRID(this->np_density)];
+    this->zoff = new int[G->get_NX_GRID(this->np_density)];
+
+    int alloc = std::max(G->get_NX_GRID(this->np_density), G->get_NX_GRID(this->np_density));
+    alloc = std::max(alloc, G->get_NX_GRID(this->np_density));
+    double *xr = new double[alloc];
+    for(int i=0;i < alloc;i++) xr[i] = (double)i;
+
     int range = stride / 2;
 
     // Default is periodic boundary condition
@@ -179,40 +184,41 @@ FiniteDiff::FiniteDiff(Lattice *lptr, BaseGrid *gptr, int xtype, int ytype, int 
     int np = G->get_NX_GRID(this->np_density);
     for(int i =0 ;i < np;i++)
     {
-        if(i < range)
+        if(i < range-1)
         {
-            this->xoff[i] = 0;
-            gen_weights(order + 1 , 2, (double)i, xr, &this->np_xweight[i*stride]);
+            this->xoff[i] = -i;
+            gen_weights(order + 1 , 2, (double)i, xr, &this->np_xweight[i*this->stride]);
         }
-        else if((i >= range) && (i <= (np - range)))
+        else if((i >= range-1) && (i <= (np - range)))
         {
-            this->xoff[i] = i - range;
-            gen_weights(order + 1 , 2, (double)i, &xr[i-range], &this->np_xweight[i*stride]);
+            this->xoff[i] = - range + 1;
+            gen_weights(order + 1 , 2, (double)i, &xr[i-range+1], &this->np_xweight[i*this->stride]);
         }
         else
         {
-            this->xoff[i] = np - stride;
-            gen_weights(order + 1 , 2, (double)i, &xr[np-stride], &this->np_xweight[i*stride]);
+           this->xoff[i] = np - i - stride;
+            gen_weights(order + 1 , 2, (double)i, &xr[np-this->stride], &this->np_xweight[i*this->stride]);
         }
     }
 
+    //for(int i =0 ;i < G->get_NX_GRID(this->np_density);i++) printf("PPPPP %d\n",xoff[i]);
     np = G->get_NY_GRID(this->np_density);
     for(int i =0 ;i < np;i++)
     {
         if(i < range)
         {
-            this->yoff[i] = 0;
-            gen_weights(order + 1 , 2, (double)i, xr, &this->np_yweight[i*stride]);
+            this->yoff[i] = -i;
+            gen_weights(order + 1 , 2, (double)i, xr, &this->np_yweight[i*this->stride]);
         }
-        else if((i >= range) && (i <= (np - range)))
+        else if((i >= range-1) && (i <= (np - range)))
         {
-            this->yoff[i] = i - range + 1;
-            gen_weights(order + 1 , 2, (double)i, &xr[i-range], &this->np_yweight[i*stride]);
+            this->yoff[i] = - range + 1;
+            gen_weights(order + 1 , 2, (double)i, &xr[i-range+1], &this->np_yweight[i*this->stride]);
         }
         else
         {
-            this->yoff[i] = np - stride;
-            gen_weights(order + 1 , 2, (double)i, &xr[np-stride], &this->np_yweight[i*stride]);
+            this->yoff[i] = np - i - stride;
+            gen_weights(order + 1 , 2, (double)i, &xr[np-this->stride], &this->np_yweight[i*this->stride]);
         }
     }
 
@@ -221,18 +227,18 @@ FiniteDiff::FiniteDiff(Lattice *lptr, BaseGrid *gptr, int xtype, int ytype, int 
     {
         if(i < range)
         {
-            this->zoff[i] = 0;
-            gen_weights(order + 1 , 2, (double)i, xr, &this->np_zweight[i*stride]);
+            this->zoff[i] = -i;
+            gen_weights(order + 1 , 2, (double)i, xr, &this->np_zweight[i*this->stride]);
         }
-        else if((i >= range) && (i <= (np - range)))
+        else if((i >= range-1) && (i <= (np - range)))
         {
-            this->zoff[i] = i - range + 1;
-            gen_weights(order + 1 , 2, (double)i, &xr[i-range], &this->np_zweight[i*stride]);
+            this->zoff[i] = - range + 1;
+            gen_weights(order + 1 , 2, (double)i, &xr[i-range+1], &this->np_zweight[i*this->stride]);
         }
         else
         {
-            this->zoff[i] = np - stride;
-            gen_weights(order + 1 , 2, (double)i, &xr[np-stride], &this->np_zweight[i*stride]);
+            this->zoff[i] = np - i - stride;
+            gen_weights(order + 1 , 2, (double)i, &xr[np-this->stride], &this->np_zweight[i*this->stride]);
         }
     }
 
@@ -321,6 +327,47 @@ bool FiniteDiff::check_anisotropy(double hx, double hy, double hz, double limit)
     return true;
 }
 
+
+// For the non-periodic case grid dims and spacing are set at construction time
+template <typename RmgType>
+double FiniteDiff::app_del2_np (RmgType *rptr, RmgType *b, double gridhx, double gridhy, double gridhz)
+{
+    int xdim = this->G->get_NX_GRID(this->np_density);
+    int ydim = this->G->get_NY_GRID(this->np_density);
+    int zdim = this->G->get_NZ_GRID(this->np_density);
+
+    double ihx = 1.0 / (gridhx * this->L->get_xside());
+    double ihy = 1.0 / (gridhy * this->L->get_yside());
+    double ihz = 1.0 / (gridhz * this->L->get_zside());
+
+    ihx = ihx*ihx;
+    ihy = ihy*ihy;
+    ihz = ihz*ihz;
+
+
+    int incy = zdim;
+    int incx = ydim*zdim;
+
+    for(int ix = 0;ix < xdim;ix++)
+    {
+        for(int iy = 0;iy < ydim;iy++)
+        {
+            for(int iz = 0;iz < zdim;iz++)
+            {
+                int idx = ix*incx + iy*incy + iz;
+                RmgType sumx = 0.0;
+                RmgType sumy = 0.0;
+                RmgType sumz = 0.0;
+                for(int ii = 0;ii < this->stride;ii++) sumx += this->np_xweight[ii+ix*stride] * rptr[incx*(ix + ii + this->xoff[ix]) + iy*incy + iz];
+                for(int ii = 0;ii < this->stride;ii++) sumy += this->np_yweight[ii+iy*stride] * rptr[ix*incx + incy*(iy + ii + this->yoff[iy]) + iz];
+                for(int ii = 0;ii < this->stride;ii++) sumz += this->np_zweight[ii+iz*stride] * rptr[ix*incx + iy*incy + this->zoff[iz] + ii + iz];
+                b[idx] = ihx*sumx + ihy*sumy + ihz*sumz;
+
+            }
+        }
+    }
+    return 0;
+}
 
 template <typename RmgType>
 double FiniteDiff::app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz)

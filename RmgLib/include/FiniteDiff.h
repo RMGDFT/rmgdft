@@ -74,9 +74,9 @@ private:
     double *np_yweight;
     double *np_zweight;
     int np_density;
-    uint16_t *xoff;
-    uint16_t *yoff;
-    uint16_t *zoff;
+    int *xoff;
+    int *yoff;
+    int *zoff;
     int stride;
     
 
@@ -89,6 +89,9 @@ public:
     ~FiniteDiff(void);
 
     bool check_anisotropy(double hx, double hy, double hz, double limit);
+
+    template <typename RmgType>
+    double app_del2_np (RmgType *rptr, RmgType *b, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
     double app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
