@@ -50,6 +50,7 @@ add_library (ON_Common
 ortho_norm_local.c
  precond.c
  precond_mg.c
+ PrecondMg.cpp
  print_status.c
  print_wave.c
  pulay.c
@@ -70,6 +71,7 @@ ortho_norm_local.c
  write_states_info.c
  xbsmovie.c
  RmgThread.cpp
+ ZeroBoundary.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
 include_directories("${RMG_BINARY_DIR}/ON/Headers/")

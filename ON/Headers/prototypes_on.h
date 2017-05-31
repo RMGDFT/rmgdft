@@ -26,11 +26,15 @@ void GetNlop_on(void);
 
 #include <unordered_map>
 #include "InputKey.h"
+#include "FiniteDiff.h"
 
-
+extern "C" void precond_mg_c(double *res, double *work1, double *work2, int istate);
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
           double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
+void PrecondMg(double *res, double *work1, double *work2, int istate);
+void ZeroBoundary(double *a, int ixx, int iyy, int izz);
+
 
 extern "C" {
 #endif

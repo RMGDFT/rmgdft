@@ -32,6 +32,8 @@ static void get_qnm_res(double *work_theta);
 static void get_nonortho_res(STATE *, double *, STATE *);
 static void get_dnmpsi(STATE *);
 
+BaseGrid *OG;
+FiniteDiff *OFD;
 
 void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
             double *vnuc, double *rho, double *rhoc, double * vxc_old, double * vh_old)
@@ -44,12 +46,17 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     double hxgrid, hygrid, hzgrid;
     double *orbital_border;
-    FiniteDiff FD(&Rmg_L);
+
+//    FiniteDiff FD(&Rmg_L);
+    ixx = states[0].ixmax - states[0].ixmin + 1;
+    iyy = states[0].iymax - states[0].iymin + 1;
+    izz = states[0].izmax - states[0].izmin + 1;
+    if(OG == NULL) OG = new BaseGrid(ixx, iyy, izz, 1, 1, 1, 0, 1);
+    if(OFD == NULL) OFD = new FiniteDiff(&Rmg_L, OG, CLUSTER, CLUSTER, CLUSTER, 1, 8);
 
     hxgrid = Rmg_G->get_hxgrid(1);
     hygrid = Rmg_G->get_hygrid(1);
     hzgrid = Rmg_G->get_hzgrid(1);
-
 
     item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
     orbital_border = new double[item];
@@ -57,6 +64,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     ct.meanres = 0.;
     ct.minres = 100000.0;
     ct.maxres = 0.;
+
 
     /* Grab some memory */
     work1 = work_memory;
@@ -97,13 +105,12 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
 
-
     /* Loop over states istate (correction of state istate) */
     RmgTimer *RT2a = new RmgTimer("3-OrbitalOptimize: mask");
 
     for (istate = ct.state_begin; istate < ct.state_end; istate++)
     {
-        app_mask(istate, states1[istate].psiR, 0);
+        ZeroBoundary(states[istate].psiR, ixx, iyy, izz);
     }
 
     delete(RT2a);
@@ -130,13 +137,14 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         /* A operating on psi stored in work2 */
         /*		app_cil(sg_orbit, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid()); 
          */
-        FillOrbitalBorders(orbital_border, states[st1].psiR, ixx, iyy, izz, order);
-        FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
-     //   app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+        //FillOrbitalBorders(orbital_border, states[st1].psiR, ixx, iyy, izz, order);
+        //FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+        OFD->app_del2_np(states[st1].psiR, orbit_tem, hxgrid, hygrid, hzgrid);
 
+     //   app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
         t1 = 1.0;
         daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
-
+        OFD->app_del2_np(states[st1].psiR, orbit_tem, hxgrid, hygrid, hzgrid);
 
         /*                                                                     
          * Add the contribution of the non-local potential to the 
@@ -154,7 +162,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     for (istate = ct.state_begin; istate < ct.state_end; istate++)
     {
-        app_mask(istate, states1[istate].psiR, 0);
+        ZeroBoundary(states[istate].psiR, ixx, iyy, izz);
     }
 
     delete(RTa);
@@ -420,6 +428,5 @@ void get_dnmpsi(STATE *states1)
     delete [] prj_sum;
     delete [] work_kbpsi;
     
-
 
 }
