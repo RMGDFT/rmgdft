@@ -14,7 +14,7 @@
 #include "init_var.h"
 
 extern BaseGrid *OG;
-extern FiniteDiff *OFD;
+FiniteDiff *MGFD;
 
 extern "C" void precond_mg_c(double *res, double *work1, double *work2, int istate)
 {
@@ -61,24 +61,25 @@ void PrecondMg(double *res, double *work1, double *work2, int istate)
     double hzgrid = get_hzgrid();
 
     if(OG == NULL) OG = new BaseGrid(ixx, iyy, izz, 1, 1, 1, 0, 1);
-    if(OFD == NULL) OFD = new FiniteDiff(&Rmg_L, OG, CLUSTER, CLUSTER, CLUSTER, 1, 8);
+    if(MGFD == NULL) MGFD = new FiniteDiff(&Rmg_L, OG, CLUSTER, CLUSTER, CLUSTER, 1, 2);
     stopp0 = ixx * iyy * izz;
 
 
     idx = (ixx + 4) * (iyy +4) * (izz+4);
     work3 = new double[idx];
 
+    ZeroBoundary(work1, ixx, iyy, izz);
+
     /* Smoothing cycles */
     for (cycles = 0; cycles <= nits; cycles++)
     {
 
+//        pack_ptos(sg_orbit, work1, ixx, iyy, izz);
+//        pack_ptos(work3,sg_orbit, ixx+2, iyy+2, izz+2);
+//        diag = app_cil_orbital6(work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
 
-        //pack_ptos(sg_orbit, work1, ixx, iyy, izz);
-        //pack_ptos(work3,sg_orbit, ixx+2, iyy+2, izz+2);
-
-        //diag = app_cil_orbital6(work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
-        OFD->app_del2_np(work1, work2, hxgrid, hygrid, hzgrid);
-
+        diag = -24.678116343490;
+        MGFD->app_del2_np(work1, work2, hxgrid, hygrid, hzgrid);
 
         daxpy(&stopp0, &one, res, &ione, work2, &ione);
 
@@ -101,8 +102,6 @@ void PrecondMg(double *res, double *work1, double *work2, int istate)
 
 
             pack_stop(sg_orbit, work2, ixx, iyy, izz);
-
-
             t1 = -1.;
 
         }
@@ -111,13 +110,11 @@ void PrecondMg(double *res, double *work1, double *work2, int istate)
             double t5 = diag - Zfac;
             t5 = -1.0 / t5;
             t1 = ct.eig_parm.gl_step * t5;
-
         }                       /* end if cycles == ct.eig_parm.gl_pre */
 
         /* Update correction for wavefuntion */
         daxpy(&stopp0, &t1, work2, &ione, work1, &ione);
 
-        //app_mask(istate, work1, 0);
         ZeroBoundary(work1, ixx, iyy, izz);
 
     }                           /* end for Smoothing cycles */

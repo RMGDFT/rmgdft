@@ -52,7 +52,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     iyy = states[0].iymax - states[0].iymin + 1;
     izz = states[0].izmax - states[0].izmin + 1;
     if(OG == NULL) OG = new BaseGrid(ixx, iyy, izz, 1, 1, 1, 0, 1);
-    if(OFD == NULL) OFD = new FiniteDiff(&Rmg_L, OG, CLUSTER, CLUSTER, CLUSTER, 1, 8);
+    if(OFD == NULL) OFD = new FiniteDiff(&Rmg_L, OG, CLUSTER, CLUSTER, CLUSTER, 1, order);
 
     hxgrid = Rmg_G->get_hxgrid(1);
     hygrid = Rmg_G->get_hygrid(1);

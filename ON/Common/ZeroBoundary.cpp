@@ -4,7 +4,7 @@
 #include "typedefs.h"
 #include "prototypes_on.h"
 
-extern "C" void ZeroBoundary_C(double *a, int ixx, int iyy, int izz)
+extern "C" void ZeroBoundaryC(double *a, int ixx, int iyy, int izz)
 {
     ZeroBoundary(a, ixx, iyy, izz);
 }
