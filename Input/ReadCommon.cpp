@@ -688,6 +688,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
 
     // Booleans next. Booleans are never required.
+    If.RegisterInputKey("renormalize_forces", &lc.renormalize_forces, true,
+                        "Flag indicating whether or not to renormalize forces.");
+
     If.RegisterInputKey("coalesce_states", &lc.coalesce_states, false,
                         "Flag indicating whether or not to coalesce states.");
 

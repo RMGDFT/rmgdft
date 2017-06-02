@@ -36,6 +36,7 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "transition.h"
+#include "Atomic.h"
 #include "../Headers/prototypes.h"
 
 
@@ -71,8 +72,15 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         if (pct.imgpe == 0)
             rmg_printf ("\nrelax: ---------- [rlx: %d/%d] ----------\n", rlx_steps, steps);
 
+        // Get atomic rho for this ionic configuration and subtract from current rho
+        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+        double *arho = new double[FP0_BASIS];
+        LcaoGetAtomicRho(arho);
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
+
         /* not done yet ? => move atoms */
 		/* move the ions */
+
         switch(ct.relax_method)
         {
 
@@ -96,6 +104,11 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
             default:
                 rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
         }
+
+        // Get atomic rho for new configuration and add back to rho
+        LcaoGetAtomicRho(arho);
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+        delete [] arho;
 
         /* ct.md_steps measures the number of updates to the atomic positions */
         ct.md_steps++;

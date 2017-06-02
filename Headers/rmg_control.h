@@ -239,6 +239,9 @@ typedef struct
     /* Coalesce states */
     bool coalesce_states;
 
+    /* Renormalize forcecs */
+    bool renormalize_forces;
+
     /** Number of ions */
     int num_ions;
     
