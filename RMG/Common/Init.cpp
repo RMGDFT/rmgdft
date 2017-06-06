@@ -50,9 +50,13 @@
 #include "Solvers.h"
 #include "Atomic.h"
 #include "RmgParallelFft.h"
-
+#include "FiniteDiff.h"
 #include "Scalapack.h"
+#include "Elpa.h"
 extern Scalapack *MainSp;
+#if USE_ELPA
+extern Elpa *MainElpa;
+#endif
 
 static void init_alloc_nonloc_mem (void);
 
@@ -433,7 +437,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
 
-
     
     /* Write header, do it here rather than later, otherwise other information is printed first*/
     if (pct.imgpe == 0)
@@ -573,6 +576,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                 if(MainSp->Participates()) delete MainSp;
                 MainSp = NULL;
             }
+#if USE_ELPA
+            if(MainElpa) {
+                if(MainElpa->Participates()) delete MainElpa;
+                MainElpa = NULL;
+            }
+#endif
             delete RT2;
 
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");

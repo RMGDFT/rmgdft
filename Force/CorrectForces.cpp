@@ -57,7 +57,7 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
     double *dvh = new double[FP0_BASIS];
 
     int ithree = 3;
-    double alpha = get_vel_f(), zero = 0.0, mone = -1.0;
+    double alpha = get_vel_f(), zero = 0.0;
 
     for(int ix = 0;ix < FP0_BASIS;ix++) dvh[ix] = vh_in[ix] + vxc_in[ix]  - vh[ix] - vxc[ix];
 

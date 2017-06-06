@@ -155,7 +155,6 @@ void set_grids(int NX_GRID, int NY_GRID, int NZ_GRID, int PE_X, int PE_Y, int PE
 void set_rank(int newgridpe, MPI_Comm comm);
 int get_ibrav_type(void);
 void set_ibrav_type(int ibrav);
-ION *get_ion(int ion);
 double get_xside(void);
 double get_yside(void);
 double get_zside(void);

@@ -66,7 +66,6 @@ mg_prolong_MAX10.c
 init_pos.c
 rmg_error.c
 rmg_alloc.c
-ions.c
 sl_init_comm.c
 get_opposite_occupancies.c
 get_opposite_eigvals.c

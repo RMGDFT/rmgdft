@@ -62,7 +62,7 @@ void constrain (void)
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
-                    iptr = get_ion(ion);
+                    iptr = &ct.ions[ion];
 
                     /*Calculate displacement vectors from self to left and right image coords */
                     Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
@@ -434,10 +434,7 @@ void constrain (void)
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
-                    //    printf("ION %3d F_orig: %g, %g, %g\n",ion, iptr->force[ct.fpt[0]][X], iptr->force[ct.fpt[0]][Y] ,iptr->force[ct.fpt[0]][Z]);
-                    //    printf("ION %3d FdotT : %g, %g, %g\n",ion, FdotT*iptr->force[ct.fpt[0]][X], FdotT*iptr->force[ct.fpt[0]][Y] ,FdotT*iptr->force[ct.fpt[0]][Z]);
-                    //    printf("ION %3d F_rest: %g, %g, %g\n\n",ion, Mag_T*iptr->force[ct.fpt[0]][X], Mag_T*iptr->force[ct.fpt[0]][Y] ,Mag_T*iptr->force[ct.fpt[0]][Z]);
-
+                    iptr = &ct.ions[ion];
 
                     iptr->constraint.forcemask[X] = (Mag_T - FdotT) * Tau[3*ion+X];
                     iptr->constraint.forcemask[Y] = (Mag_T - FdotT) * Tau[3*ion+Y];
