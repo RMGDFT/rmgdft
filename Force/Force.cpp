@@ -183,28 +183,33 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
     }
 
-    // Now get sum of forces over all ions
-    double sumx = 0.0, sumy = 0.0, sumz = 0.0;
-    for (ion = 0; ion < ct.num_ions; ion++)
+    if(ct.renormalize_forces)
     {
-        double *fp = ct.ions[ion].force[ct.fpt[0]];
-        sumx += fp[0];
-        sumy += fp[1];
-        sumz += fp[2];
-    }
 
-    // Normalize by the number of ions
-    sumx /= (double)ct.num_ions;
-    sumy /= (double)ct.num_ions;
-    sumz /= (double)ct.num_ions;
+        // Now get sum of forces over all ions
+        double sumx = 0.0, sumy = 0.0, sumz = 0.0;
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+            double *fp = ct.ions[ion].force[ct.fpt[0]];
+            sumx += fp[0];
+            sumy += fp[1];
+            sumz += fp[2];
+        }
 
-    // And correct forces
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        double *fp = ct.ions[ion].force[ct.fpt[0]];
-        fp[0] -= sumx;
-        fp[1] -= sumy;
-        fp[2] -= sumz;
+        // Normalize by the number of ions
+        sumx /= (double)ct.num_ions;
+        sumy /= (double)ct.num_ions;
+        sumz /= (double)ct.num_ions;
+
+        // And correct forces
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+            double *fp = ct.ions[ion].force[ct.fpt[0]];
+            fp[0] -= sumx;
+            fp[1] -= sumy;
+            fp[2] -= sumz;
+        }
+
     }
 
     if (!ct.is_gamma) {

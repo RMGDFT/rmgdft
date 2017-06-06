@@ -8,12 +8,14 @@
 #        on-tddft:  TDDFT based on rmg-on
 #
 # Environment variables that may also control configuration
+#
 # MKLROOT = root directory of Intel MKL libraries if installed.
 # BOOST_ROOT = root directory of Boost installation
 # CC = Full path to C compiler
 # CXX = Full path to C++ compiler
 #
 #
+
 cmake_minimum_required (VERSION 2.8) 
 
 enable_language(Fortran)
@@ -53,6 +55,7 @@ else(RMG_GPU_ENABLED)
     set(rmg-tddft "rmg-tddft-cpu")
 endif(RMG_GPU_ENABLED)
 
+
 # Here set any extra compiler flags required for a specific platform
 # This is for stampede
 #set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
@@ -66,6 +69,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(ZLIB "z")
     set(RTLIB "rt")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     # Windows specific code. RMG currently only builds on Windows with
@@ -83,6 +87,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(LIBSPG_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/SPGLIBVC12.lib")    
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
+
 if(DEFINED ENV{CRAY_LIBSCI_VERSION})
     # Cray platforms
     set (CRAY_XK 1)
@@ -92,8 +97,8 @@ endif()
 # Compiler flags. We currently only support GNU and Intel compilers so if
 # GNUCC is not detected we set the compiler to Intel
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -fopenmp -m64 -I$(MKLROOT)/include")
-    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -fopenmp -m64 -pthread -I$(MKLROOT)/include")
+    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -march=native -fopenmp -m64 -I$(MKLROOT)/include")
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT  -march=native -fopenmp -m64 -pthread -I$(MKLROOT)/include")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")
     if(USE_LIBXC)
         set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c -cpp -D__LIBXC=1 -c")
@@ -105,8 +110,8 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp  -ldl")
 else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Intel compiler
-    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c++0x -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
-    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c99 -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
+    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c++0x -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
+    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c99 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++")
 endif()
 

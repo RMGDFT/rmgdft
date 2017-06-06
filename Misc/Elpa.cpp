@@ -30,26 +30,34 @@
 #include <sstream>
 
 
+#if USE_ELPA
 #include "RmgException.h"
 #include "Elpa.h"
 #include "blacs.h"
 
 
+void set_up_blacsgrid_from_fortran(int mpi_comm_world, int* my_blacs_ctxt,
+                                    int *np_rows, int *np_cols, int *nprow, int *npcol,
+                                    int *my_prow, int *my_pcol);
 
 
-// Clean up
+// Clean up. Elpa inherits scalapack so scalapack destructor is called automatically on exit
 Elpa::~Elpa(void)
 {
-    Cblacs_gridexit(this->context);
-    MPI_Comm_free(&this->comm);
-    delete [] this->local_desca;
-    delete [] this->dist_desca;
 }
 
 // Gets row and column communicators needed by elpa routines
 void Elpa::GetCommunicators(void)
 {
-    elpa_get_communicators(MPI_Comm_c2f(this->comm), this->my_row, this->my_col, &this->elpa_comm_rows, &this->elpa_comm_cols);
+    int mpierr;
+    int np_rows, np_cols;
+    int np_row, np_col;
+    int my_prow, my_pcol;
+    int my_blacs_ctxt;
+
+//    set_up_blacsgrid_from_fortran(MPI_Comm_c2f(this->comm), &my_blacs_ctxt, &this->group_rows, &this->group_cols, &np_row, &np_col, &this->my_row, &this->my_col);
+    mpierr = elpa_get_communicators(MPI_Comm_c2f(this->root_comm), this->my_row, this->my_col, &this->elpa_comm_rows, &this->elpa_comm_cols);
+    printf("MPIERR = %d  %d  %d  %d  %d\n",mpierr, this->my_row, this->my_col, this->elpa_comm_rows, this->elpa_comm_cols);
 }
 
 int Elpa::GetElpaCommRows(void)
@@ -61,3 +69,4 @@ int Elpa::GetElpaCommCols(void)
 {
     return this->elpa_comm_cols;
 }
+#endif

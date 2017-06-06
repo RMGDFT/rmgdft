@@ -45,7 +45,6 @@
 #endif
 
 #include "Elpa.h"
-//#include "elpa/elpa.h"
 
 
 template char * Subdiag_Elpa<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
@@ -66,8 +65,8 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
-    static char *trans_t = "t";
     static char *trans_n = "n";
+    static char *trans_t = "t";
 
 //  folded spectrum with scalapack is experimental. Uncomment the second line if you want to try it.
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
@@ -85,7 +84,6 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
         int last = !ct.use_folded_spectrum;
         MainElpa = new Elpa(scalapack_groups, pct.thisimg, ct.images_per_node, num_states,
                      ct.scalapack_block_factor, last, pct.grid_comm);
-
         MainElpa->GetCommunicators();
     }
 
@@ -175,7 +173,7 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
 
                 /*B^-1*A */
                 MainElpa->Pgemm(trans, trans, &num_states, &num_states, &num_states, &alpha,
-                            distCij, &ione, &ione, desca, distAij, &ione, 
+                            distCij, &ione, &ione, desca, distAij, &ione,
                             &ione, desca, &beta, distBij, &ione, &ione, desca);
 
                 /*Multiply the result with Sij, result is in distCij */
@@ -228,41 +226,90 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
             /* Using lwork=-1, PDSYGVX should return minimum required size for the work array */
             RT1 = new RmgTimer("4-Diagonalization: ELPA");
             {
-                int info;
+                int info, ibtype=1;
+                char *uplo = "u", *jobz = "v";
 
                 if(ct.is_gamma) {
+
                     int useQr = false;
                     int useGPU = false;
                     int wantDebug = true;
-                    double rone = 1.0;
-                    int THIS_REAL_ELPA_KERNEL_API = ELPA2_REAL_KERNEL_GENERIC;
-printf("DDD  %d  %d  %d  %d  %d  %d\n",num_states,scalapack_nprow,scalapack_npcol,ct.scalapack_block_factor,MainElpa->GetDistMdim(),MainElpa->GetDistNdim());
-                    info = elpa_cholesky_real_double(num_states, (double *)distSij, 
-                           MainElpa->GetDistMdim(), ct.scalapack_block_factor, MainElpa->GetDistNdim(), 
-                           elpa_comm_rows, elpa_comm_cols, wantDebug);
+                    double scale=1.0, rone = 1.0;
+                    KpointType alpha(1.0);
+                    KpointType beta(0.0);
+                    int THIS_REAL_ELPA_KERNEL_API = ELPA2_REAL_KERNEL_SSE;
 
-                    info = elpa_invert_trm_real_double(num_states, (double *)distSij, 
-                           MainElpa->GetDistMdim(), ct.scalapack_block_factor, MainElpa->GetDistNdim(),
-                           elpa_comm_rows, elpa_comm_cols, wantDebug);
+printf("DDD  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d\n",num_states,MainElpa->GetRow(),MainElpa->GetCol(),ct.scalapack_block_factor,MainElpa->GetDistMdim(),MainElpa->GetDistNdim(), elpa_comm_rows, elpa_comm_cols, MainElpa->GetRow(),MainElpa->GetCol());
 
+//                    info = elpa_cholesky_real_double(num_states, (double *)distSij, 
+//                           MainElpa->GetDistMdim(), ct.scalapack_block_factor, MainElpa->GetDistNdim(), 
+//                           elpa_comm_rows, elpa_comm_cols, wantDebug);
+                    pdpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
+
+//                    info = elpa_invert_trm_real_double(num_states, (double *)distSij, 
+//                           MainElpa->GetDistMdim(), ct.scalapack_block_factor, MainElpa->GetDistNdim(),
+//                           elpa_comm_rows, elpa_comm_cols, wantDebug);
+
+                    // Get pdsyngst_ workspace
+                    int lwork = -1;
+                    double lwork_tmp;
+                    pdsyngst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            (double *)distSij, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
+                    lwork = 2*(int)lwork_tmp;
+                    double *work2 = new double[lwork];
+
+                    pdsyngst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            (double *)distSij, &ione, &ione, desca, &scale, work2, &lwork, &info);
+
+
+#if 0
                     info = elpa_mult_at_b_real_double('U', 'F', num_states, num_states,
-                           (double *)distSij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim(),
                            (double *)distBij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim(),
+                           (double *)distSij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim(),
                            ct.scalapack_block_factor, elpa_comm_rows, elpa_comm_cols,
                            (double *)distCij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim());
 
-                           pdtrmm_("R", "U", "N", "N", &num_states, &num_states, &rone,
-                           (double *)distSij, &ione, &ione, desca, (double *)distBij, &ione, &ione, desca);
+                    info = elpa_mult_at_b_real_double('U', 'F', num_states, num_states,
+                           (double *)distCij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim(),
+                           (double *)distSij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim(),
+                           ct.scalapack_block_factor, elpa_comm_rows, elpa_comm_cols,
+                           (double *)distBij, MainElpa->GetDistMdim(), MainElpa->GetDistNdim());
+                MainElpa->Pgemm (trans_n, trans_n, &num_states, &num_states, &num_states, &alpha,
+                            distSij, &ione, &ione, desca, distBij, &ione, 
+                            &ione, desca, &beta, distCij, &ione, &ione, desca);
+                MainElpa->Pgemm (trans_n, trans_t, &num_states, &num_states, &num_states, &alpha,
+                            distCij, &ione, &ione, desca, distSij, &ione, 
+                            &ione, desca, &beta, distBij, &ione, &ione, desca);
+#endif
+                    // Get workspace required
+                    lwork = -1;
+                    int liwork=-1;
+                    int liwork_tmp;
+                    pdsyevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                            eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
+                    lwork = 16*(int)lwork_tmp;
+                    liwork = 16*num_states;
+                    double *nwork = new double[lwork];
+                    int *iwork = new int[liwork];
 
-                    info = elpa_solve_evp_real_double(
+                    // and now solve it 
+//                    pdsyevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+//                            eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
+printf("DDDD  %d  %d  %d  %d  %d  %d  %d  %d  %d\n",desca[0],desca[1],desca[2],desca[3],desca[4],desca[5],desca[6],desca[7],desca[8]);
+printf("MMMM  %d  %d  %d  %d\n",MainElpa->GetDistMdim(),MainElpa->GetDistNdim(),num_states,ct.scalapack_block_factor);
+                    info = elpa_solve_evp_real_2stage_double_precision(
                            num_states, num_states, 
-                           (double *)distBij, MainElpa->GetDistMdim(), 
+                           (double *)distBij, MainElpa->GetDistMdim(),
                            eigs, 
-                           (double *)Cij, MainElpa->GetDistMdim(), 
+                           (double *)distAij, MainElpa->GetDistMdim(),
                            ct.scalapack_block_factor, MainElpa->GetDistNdim(), 
-                           elpa_comm_rows, elpa_comm_cols, MPI_Comm_c2f(MainElpa->GetComm()), THIS_REAL_ELPA_KERNEL_API, useQr, useGPU,"auto");
+                           elpa_comm_rows, elpa_comm_cols, MPI_Comm_c2f(MainElpa->GetRootComm()), 
+                           THIS_REAL_ELPA_KERNEL_API, useQr, useGPU);
+
+for(int i=0;i<num_states;i++){
+printf("EIGS = %f   %d\n",Ha_eV*eigs[i],info);
+}
 printf("INFO4 = %d\n",info);
-printf("EIGS = %f   %d\n",Ha_eV*eigs[0],info);
 
                 }
                 else {
@@ -279,7 +326,7 @@ printf("EIGS = %f   %d\n",Ha_eV*eigs[0],info);
             }
             // Gather distributed results from distAij into eigvectors
             //MainElpa->GatherMatrix(eigvectors, distAij);
-            MainElpa->CopyDistArrayToSquareMatrix(eigvectors, Cij, num_states, desca);
+            MainElpa->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
             MainElpa->Allreduce(MPI_IN_PLACE, eigvectors, factor *num_states*num_states, MPI_DOUBLE, MPI_SUM);
 
 
