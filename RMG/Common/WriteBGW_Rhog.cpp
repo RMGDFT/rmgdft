@@ -47,7 +47,7 @@
 
 void WriteBGW_Rhog (double *rho, double *rho_oppo)
 {
-    int amode, fhand;
+    int amode;
     ION *iptr;
     SPECIES *sp;
     char stitle[32], sdate[32], stime[32];
@@ -68,10 +68,9 @@ void WriteBGW_Rhog (double *rho, double *rho_oppo)
     int cell_symmetry = 0; //for cubic and orthorhobic 
     int nrecord = 1;
     int nspin = ct.spin_flag + 1;
-    double ecutrho, ecutwfc, at[9], adot[9], bg[9], bdot[9]; 
+    double ecutrho, at[9], adot[9], bg[9], bdot[9]; 
     double tpiba, recvol;
     ecutrho = ct.ecutrho;
-    ecutwfc = ct.ecutwfc;
 
     at[0] = Rmg_L.get_a0(0);
     at[1] = Rmg_L.get_a0(1)/at[0];
@@ -273,7 +272,7 @@ void WriteBGW_Rhog (double *rho, double *rho_oppo)
     {
 
         amode = S_IREAD | S_IWRITE;
-        fhand = open("rhog.complex", O_CREAT | O_TRUNC | O_RDWR, amode);
+        int fhand = open("rhog.complex", O_CREAT | O_TRUNC | O_RDWR, amode);
         int length;
         length = 96;
         write(fhand, &length, sizeof(int));
