@@ -52,7 +52,7 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
 {
     SPECIES *sp;
     ION *iptr;
-    int amode, fhand;
+    int amode, fhand=0;
     char stitle[32], sdate[32], stime[32];
     double wfng_dk1, wfng_dk2, wfng_dk3;
     time_t tt;

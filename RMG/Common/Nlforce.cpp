@@ -65,7 +65,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     OrbitalType *psi, *psi_x, *psi_y, *psi_z;
     double hxxgrid, hyygrid, hzzgrid;
-    double hxgrid, hygrid, hzgrid;
 
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
     int PX0_GRID, PY0_GRID, PZ0_GRID, P0_BASIS;
@@ -75,9 +74,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
     hzzgrid = get_hzzgrid();
-    hxgrid = get_hxgrid();
-    hygrid = get_hygrid();
-    hzgrid = get_hzgrid();
 
     FPX0_GRID = get_FPX0_GRID();
     FPY0_GRID = get_FPY0_GRID();

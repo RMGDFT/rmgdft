@@ -54,7 +54,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 {
 
     int iion;
-    int CONV_FORCE, MAX_STEPS;
+    int CONV_FORCE=false, MAX_STEPS;
     int DONE, rlx_steps = 0;
     static double *rhodiff;
 

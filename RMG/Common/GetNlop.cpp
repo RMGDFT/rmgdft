@@ -276,7 +276,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     pct.num_tot_proj = pct.num_nonloc_ions * ct.max_nl;
 
     int known_nonowner, nonwner_index, known_owner, owner_index, owned_ions_per_pe, nonowned_ions_per_pe; 
-    size_t weight_size = pct.num_tot_proj * get_P0_BASIS() + 128;
+    size_t weight_size = pct.num_tot_proj * P0_BASIS + 128;
     int owned, owner;
 
 #if GPU_ENABLED

@@ -45,7 +45,7 @@ boost::lockfree::spsc_queue<SCF_THREAD_CONTROL, boost::lockfree::fixed_sized<fal
 // Called from main to setup thread tasks
 void QueueThreadTask(int tid, SCF_THREAD_CONTROL &task)
 {
-    bool queued = Tasks[tid].push(task);
+    Tasks[tid].push(task);
 }
 
 // Called from threads to get what they are supposed to do
