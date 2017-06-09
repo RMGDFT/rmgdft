@@ -18,7 +18,7 @@ double CubicHarmonic(int L, int M, double *r)
 //  M = [0, 2*L+1)
 //  spherical m = M-L,  range [-L,L]
 
-    double xymod, rmod, theta, phi, m_spherical;
+    double xymod, rmod, theta, phi;
     double val;
     double eps = 1.0e-10;
     if(L == 0) return sqrt(1.0/fourPI);

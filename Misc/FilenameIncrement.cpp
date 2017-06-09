@@ -38,7 +38,7 @@ int FilenameIncrement(char *pathname)
     }
 
     
-    char lognum_str[4]; 
+    char lognum_str[8]; 
     snprintf(lognum_str, 3, "%02d", lognum);
     std::string nextname = std::string(pathname) + "." + lognum_str + ".log";
     while (boost::filesystem::exists(nextname))
@@ -46,7 +46,7 @@ int FilenameIncrement(char *pathname)
         if (++lognum > 99)
             throw RmgFatalException() << "You have over 100 logfiles, you need to think of a better job naming scenario!" << "\n";
         nextname.erase();
-        snprintf(lognum_str, 3, "%02d", lognum);
+        snprintf(lognum_str, 4, "%02d", lognum);
         nextname = std::string(pathname) + "." + lognum_str + ".log";
     }
 

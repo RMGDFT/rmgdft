@@ -120,7 +120,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     }
 
-//    init_pestr ();
     InitPe4image();
 
     snprintf (ct.cfile, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);

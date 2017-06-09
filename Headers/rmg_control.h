@@ -98,29 +98,29 @@ typedef struct
      *  Example:
      *  bash$  md in.diamond8
      */
-    char cfile[MAX_PATH];
+    char cfile[2*MAX_PATH];
 
     /* Part of the log file name without numerical increment and ".log" added */
     char shortname[MAX_PATH];
 
     /* Basename for control file and other related files (beta and q function plots, etc.)  This is full name except the ".log" extension*/
-    char basename[MAX_PATH];
+    char basename[2*MAX_PATH];
 
     /** Handle of the output log file. Constructed from command line argument */
     FILE *logfile;
 
     /** Actual full name to the log file */
-    char logname[MAX_PATH];
+    char logname[2*MAX_PATH];
 
     /** Input file name to read wavefunctions from when doing a restart */
-    char infile[MAX_PATH];
+    char infile[2*MAX_PATH];
 
     /** Input file name to write wavefunctions to */
     /* Output file name */
-    char outfile[MAX_PATH];
+    char outfile[2*MAX_PATH];
 
-    char infile_tddft[MAX_PATH];
-    char outfile_tddft[MAX_PATH];
+    char infile_tddft[2*MAX_PATH];
+    char outfile_tddft[2*MAX_PATH];
     bool restart_tddft;
 
     /** File to read the pseudopotentials from */

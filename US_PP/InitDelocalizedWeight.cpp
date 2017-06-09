@@ -31,8 +31,6 @@ void InitDelocalizedWeight (void)
     RmgTimer RT0("Weight");
     Mgrid MG(&Rmg_L, Rmg_T);
 
-    std::complex<double> *phaseptr;
-
     typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     PROJ_INFO proj;
     std::vector<PROJ_INFO> proj_iter;
@@ -73,9 +71,6 @@ void InitDelocalizedWeight (void)
         /* Get species type */
         SPECIES *sp = &ct.sp[isp];
 
-//        sp->phase = new fftw_complex[pbasis * ct.num_kpts_pe];
-//        phaseptr = (std::complex<double> *)sp->phase;
-//        GetPhaseSpecies(sp, phaseptr);
         /*Loop over all betas to calculate num of projectors for given species */
         int prjcount = 0;
         for (int ip = 0; ip < sp->nbeta; ip++)
@@ -113,7 +108,6 @@ void InitDelocalizedWeight (void)
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
-//              phaseptr = (std::complex<double> *) &sp->phase[kpt * pbasis];
             std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis];
             for(int idx = 0;idx < pbasis;idx++) weptr[idx] = std::complex<double>(0.0,0.0);
             for(int idx = 0;idx < pbasis;idx++)

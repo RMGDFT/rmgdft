@@ -59,7 +59,7 @@ void ReadVelocities(char *cfile, CONTROL& lc, std::unordered_map<std::string, In
 
     boost::algorithm::split( Velocities, VelocityArray, boost::is_any_of(line_delims), boost::token_compress_on );
 
-    if(Velocities.size() != lc.num_ions) {
+    if(Velocities.size() != (size_t)lc.num_ions) {
 
         throw RmgFatalException() << "Ionic velocities must be present for " << lc.num_ions << " ions but only " << Velocities.size() << " found! Terminating.\n";
 

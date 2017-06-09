@@ -245,7 +245,7 @@ ct.state_block_size);
                 par_gamma = &par_gamma_allions[ion * 3 * max_nl2];
                 par_omega = &par_omega_allions[ion * 3 * max_nl2];
 
-                PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr[kpt], state_start[ib], state_end[ib], sint_derx, sint_dery, sint_derz);
+                PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr, state_start[ib], state_end[ib], sint_derx, sint_dery, sint_derz);
 
             }
             delete RT1;

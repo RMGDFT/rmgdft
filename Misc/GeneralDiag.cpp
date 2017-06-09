@@ -216,9 +216,6 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
     bool participates = MainSp->Participates();
     int scalapack_nprow = MainSp->GetRows();
     int scalapack_npcol = MainSp->GetCols();
-    int scalapack_npes = scalapack_nprow * scalapack_npcol;
-    int root_npes = MainSp->GetRootNpes();
-
 
 
     if (participates) {

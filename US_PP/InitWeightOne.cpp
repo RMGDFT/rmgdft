@@ -26,7 +26,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 {
 
     int idx, idx1, size;
-    double r, ax[3], bx[3];
+    double ax[3];
     double t1;
     std::complex<double> *weptr, *gwptr;
     int xdim, ydim, zdim;
@@ -35,9 +35,6 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     double hxx = get_hxgrid() / (double) ct.nxfgrid;
     double hyy = get_hygrid() / (double) ct.nyfgrid;
     double hzz = get_hzgrid() / (double) ct.nzfgrid;
-    double xside = get_xside();
-    double yside = get_yside();
-    double zside = get_zside();
 
     /* nl[xyz]fdim is the size of the non-local box in the high density grid */
     size = sp->nldim * sp->nldim * sp->nldim;

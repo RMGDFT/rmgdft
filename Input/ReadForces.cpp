@@ -59,7 +59,7 @@ void ReadForces(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputK
 
     boost::algorithm::split( Forces, ForceArray, boost::is_any_of(line_delims), boost::token_compress_on );
 
-    if(Forces.size() != 4 * lc.num_ions) {
+    if(Forces.size() != (size_t)(4 * lc.num_ions)) {
 
         throw RmgFatalException() << "Ionic forces must be present for " << lc.num_ions << " ions but only " << Forces.size() << " found! Terminating.\n";
 

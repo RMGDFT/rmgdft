@@ -73,9 +73,9 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     const int maxit = 50;
     const double charge_tol = 1.0e-10;
 
-    int iter, st, st1, kpt, idx, nks, nspin = (ct.spin_flag + 1);
+    int iter, st, st1, idx, nks, nspin = (ct.spin_flag + 1);
     State<KpointType> *sp;
-    double mu, dmu, mu1, mu2, f, fmid, eig;
+    double mu, dmu, mu1, mu2, f, fmid;
 
     double *occ;
     double eigs[ct.num_states*ct.num_kpts_pe*nspin];
@@ -229,7 +229,7 @@ static double occ_allstates (double mu, double * occ, double *eigs, double width
         int num_st, double *weight, int occ_flag, int mp_order)
 {
     int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
-    double t1, t2, sumf, eig, fac = (2.0 - ct.spin_flag);
+    double t1, sumf, eig, fac = (2.0 - ct.spin_flag);
 
     /* fermi-dirac occupations:
        f(x) = 2 / (1 + Exp[x/T]) */
@@ -339,4 +339,5 @@ static inline double dist_func(double t1, int occ_flag, int mp_order)
 
     }                           /* end switch */
 
+    return 0.0;
 }

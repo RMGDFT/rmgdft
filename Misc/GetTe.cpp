@@ -78,11 +78,10 @@ template void GetTe (double *, double *, double *, double *, double *, double *,
 template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
 {
-    int state, kpt, idx, i, j, nspin = (ct.spin_flag + 1), FP0_BASIS;
-    double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag, absmag = 0.0;
-    double vel, loc_sum;
+    int state, kpt, idx, nspin = (ct.spin_flag + 1), FP0_BASIS;
+    double esum[3], t1, eigsum, xcstate, mag, absmag = 0.0;
+    double vel;
     double *exc, *nrho, *nrho_oppo=NULL;
-    ION *iptr1, *iptr2;
     Kpoint<KpointType> *kptr;
 
     FP0_BASIS = get_FP0_BASIS();
@@ -93,7 +92,6 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     for(int i=0;i < FP0_BASIS;i++)vxc[i] = vxc_in[i];
     FftFilter(vh, *fine_pwaves, sqrt(0.5) / (double)ct.FG_RATIO, LOW_PASS);
     FftFilter(vxc, *fine_pwaves, sqrt(0.5) / (double)ct.FG_RATIO, LOW_PASS);
-
 
 
     vel = get_vel_f();
