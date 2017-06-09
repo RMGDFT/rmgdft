@@ -112,7 +112,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     for (int i = 0; i < this->npes;i++) tgmap[i] = i;
 
     // Get the world rank mapping of this groups processes since blacs uses world group ranking
-    int item = thisimg % images_per_node;
     MPI_Comm_group (MPI_COMM_WORLD, &grp_world);
     MPI_Comm_group (this->comm, &grp_this);
     MPI_Comm_size (this->comm, &this->scalapack_npes);

@@ -116,7 +116,7 @@ template <typename KpointType>
 int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld)
 {
     int info = 0;
-    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+    //bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
     if(pct.is_local_master) {
 
@@ -211,12 +211,7 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
 #else
 
     double *global_matrix1 = (double *)GMatrix1;
-
-
     bool participates = MainSp->Participates();
-    int scalapack_nprow = MainSp->GetRows();
-    int scalapack_npcol = MainSp->GetCols();
-
 
     if (participates) {
 
@@ -331,7 +326,7 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
 {
 
     int info = 0;
-    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+    //bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
     if(N < M) throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
     if(pct.is_local_master) {

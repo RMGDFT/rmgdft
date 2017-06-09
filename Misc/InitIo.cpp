@@ -93,10 +93,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 {
 
     int npes, worldpe, status, provided=0;
-    time_t timer;
 
-    /* Set start of program time */
-    timer = time (NULL);
     MPI_Init_thread(&argc, &argv, ct.mpi_threadlevel, &provided);
 
     /* get this cores mpi rank */
@@ -172,8 +169,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     {
         int name_incr;
         name_incr = FilenameIncrement(ct.shortname);
-        snprintf (ct.basename, MAX_PATH, "%s.%02d", ct.shortname, name_incr);
-        snprintf (ct.logname, MAX_PATH, "%s.%02d.log", ct.shortname, name_incr);
+        snprintf (ct.basename, sizeof(ct.basename) - 1, "%s.%02d", ct.shortname, name_incr);
+        snprintf (ct.logname, sizeof(ct.logname) - 1, "%s.%02d.log", ct.shortname, name_incr);
 
         /* open and save logfile handle, printf is stdout before here */
         ct.logfile = fopen(ct.logname, "w");

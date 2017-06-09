@@ -57,19 +57,8 @@ void MpiQueue::manager_thread(MpiQueue *Q)
 #endif
     unsigned qcount_large = 0;
     unsigned qcount_small = 0;
-    unsigned qcount_tsmall[27];
     mpi_queue_item_t qobj;
 
-#if 0
-    boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> **postedq_tsmall =
-       new boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> * [27];
-
-    for(int i=0;i < 27;i++)
-    {
-        postedq_tsmall[i] = new boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>>(Q->max_threads*8);
-        qcount_tsmall[i] = 0;
-    }
-#endif
 
     boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> *postedq_large = 
         new boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>>(Q->max_threads*54);
@@ -120,12 +109,9 @@ void MpiQueue::manager_thread(MpiQueue *Q)
                 {
                     if(!postedq_small->push(qobj)) {printf("Error: full queue.\n");fflush(NULL);exit(0);}
                     qcount_small++;
-//postedq_tsmall[qobj.target_index]->push(qobj);
-//qcount_tsmall[qobj.target_index]++;
                 }
             }
         }
-//if(qcount_tsmall[0] > 2)printf("PPP  %u\n",qcount_tsmall[0]);
 
         // Now check the posted items to see if any have completed        
         int breakcount = 0;
@@ -167,8 +153,6 @@ void MpiQueue::manager_thread(MpiQueue *Q)
                 if(breakcount >= 16)break;
             }
         }
-//while(postedq_tsmall[qobj.target_index]->pop(qobj))
-//qcount_tsmall[qobj.target_index]--;
 
         // No pending requests so yield CPU if running flag is set. Otherwise sleep.
         if((qcount_large == 0) && (qcount_small == 0))

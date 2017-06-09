@@ -557,12 +557,10 @@ void TradeImages::trade_imagesx_central_local (RmgType * f, RmgType * w, int dim
     int c3 = (dimy + images) * incy;
     for (int ix = 0; ix < dimx; ix++)
     {
-        int ixs = ix * images * (dimz + tim);
         int ixs2 = (ix + images) * incx;
         for (int iy = 0; iy < images; iy++)
         {
 
-            int iys = ixs + iy * (dimz + tim);
             int iys2 = ixs2 + iy * incy;
             for (int iz = 0; iz < dimz + tim; iz++)
             {
@@ -583,11 +581,9 @@ void TradeImages::trade_imagesx_central_local (RmgType * f, RmgType * w, int dim
     c3 = (dimx + images) * incx;
     for (int ix = 0; ix < images; ix++)
     {
-        int ixs = ix * (dimy + tim) * (dimz + tim);
         int ixs2 = ix * incx;
         for (int iy = 0; iy < dimy + tim; iy++)
         {
-            int iys = ixs + iy * (dimz + tim);
             int iys2 = ixs2 + iy * incy;
             for (int iz = 0; iz < dimz + tim; iz++)
             {

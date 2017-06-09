@@ -860,17 +860,15 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     if(lc.outfile[0] !='/') 
     {
-        char *temp = new char[255];
-        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.outfile);
+        char temp[4*MAX_PATH];
+        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.outfile);
         std::strncpy(lc.outfile, temp, sizeof(lc.outfile));
-        delete [] temp;
     }
     if(lc.infile[0] !='/') 
     {
-        char *temp = new char[255];
-        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.infile);
+        char temp[4*MAX_PATH];
+        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.infile);
         std::strncpy(lc.infile, temp, sizeof(lc.infile));
-        delete [] temp;
     }
 
     if(!Infile_tddft.length()) Infile = "Waves/wave_tddft.out";
@@ -881,17 +879,15 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     if(lc.outfile_tddft[0] !='/') 
     {
-        char *temp = new char[255];
-        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.outfile_tddft);
+        char temp[4*MAX_PATH];
+        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.outfile_tddft);
         std::strncpy(lc.outfile_tddft, temp, sizeof(lc.outfile_tddft));
-        delete [] temp;
     }
     if(lc.infile[0] !='/') 
     {
-        char *temp = new char[255];
-        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.infile_tddft);
+        char temp[4*MAX_PATH];
+        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.infile_tddft);
         std::strncpy(lc.infile_tddft, temp, sizeof(lc.infile_tddft));
-        delete [] temp;
     }
 
 

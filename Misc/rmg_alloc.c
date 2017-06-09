@@ -98,7 +98,7 @@ static void rmg_alloc_initialize (void *ptr, size_t n, char *type)
     }
     else
     {
-        printf ("!!!! warning: requested initialization of data pointed to by '%s' not done.\n", ptr);
+        printf ("!!!! warning: requested initialization of data pointed to by '%p' not done.\n", ptr);
         printf ("              please inplement initialization procedure for type '%s' in '%s:%d'.\n",
              type, __FILE__, __LINE__);
 
