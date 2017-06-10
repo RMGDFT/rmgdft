@@ -44,7 +44,7 @@ void constrain (void)
 {
 
     int ion;
-    ION *iptr;
+    ION *iptr=NULL;
     printf("Entering constrained forces for image %d", pct.thisimg+1);
     double *Tau, *Img_L, *Img_R;
     my_malloc(Tau, 3*ct.num_ions, double);

@@ -72,7 +72,7 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1), FP0_BASIS;
     double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
     double vel, loc_sum;
-    double *exc, *nrho, *nrho_oppo;
+    double *exc, *nrho, *nrho_oppo=NULL;
     ION *iptr1, *iptr2;
 
 

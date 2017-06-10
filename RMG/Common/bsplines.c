@@ -227,16 +227,13 @@ void dbsint (int nx, double *xvec, double *xdata, int kx, double *xknot, double 
 /* Subroutine */ void dbsint (int nx, double *xvec, double *xdata,
                               int kx, double *xknot, double *bcoef)
 {
-    /* System generated locals */
-    int i2;
-
 
     /* Local variables */
-    int i, jj, ik, ix, kxm1, nxp1, lenq;
+    int i, jj, ik, ix, kxm1, lenq;
     double *work;
     int kpkm2, iflag;
     double xveci;
-    int leftx, ilp1mx;
+    int leftx;
 
     /* Function Body */
     if (kx > 8)
@@ -250,7 +247,6 @@ void dbsint (int nx, double *xvec, double *xdata, int kx, double *xknot, double 
     }
 
 
-    nxp1 = nx + 1;
     kxm1 = kx - 1;
     kpkm2 = kxm1 << 1;
     leftx = kx;
@@ -267,8 +263,6 @@ void dbsint (int nx, double *xvec, double *xdata, int kx, double *xknot, double 
     for (ix = 0; ix < nx; ++ix)
     {
         xveci = xvec[ix];
-        i2 = ix + kx + 1;
-        ilp1mx = rmg_min (i2, nxp1);
         leftx = rmg_max (leftx, ix + 1);
 
         if (xveci < xknot[leftx - 1])
@@ -287,6 +281,9 @@ void dbsint (int nx, double *xvec, double *xdata, int kx, double *xknot, double 
 
 
 #if 0
+        int i2 = ix + kx + 1;
+        int nxp1 = nx + 1;
+        int ilp1mx = rmg_min (i2, nxp1);
         /*This should probably find leftx so that xvec[ix] < xknot[leftx] */
         while (1)
         {
@@ -959,7 +956,7 @@ static void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n
 
 
     /* Local variables */
-    int i, j, jj, km1, np1, left, lenq, kpkm2, iflag, ilp1mx;
+    int i, j, jj, km1, left, lenq, kpkm2, iflag;
     double xyveci;
 
     /* Parameter adjustments */
@@ -967,7 +964,6 @@ static void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n
     xydata_dim1 = ld;
 
     /* Function Body */
-    np1 = n + 1;
     km1 = k - 1;
     kpkm2 = km1 << 1;
     left = k;
@@ -984,10 +980,11 @@ static void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n
         xyveci = xyvec[i];
 /* Computing MIN */
         i2 = i + 1 + k;
-        ilp1mx = rmg_min (i2, np1);
         left = rmg_max (left, i + 1);
 
 #if 0
+        int np1 = n + 1;
+        int ilp1mx = rmg_min (i2, np1);
         if (xyveci < xyknot[left - 1])
         {
             /*L998: */
@@ -1354,7 +1351,7 @@ static void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
     int xyzdata_dim2, xyzdata_dim3, bcoef_dim1, bcoef_dim2, i1, i2, i3;
 
     /* Local variables */
-    int i, j, jj, in, km1, np1, left, lenq, kpkm2, iflag, ilp1mx;
+    int i, j, jj, in, km1, left, lenq, kpkm2, iflag;
     double xyzveci;
 
     /* Parameter adjustments */
@@ -1375,7 +1372,6 @@ static void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
 
 
     /* Function Body */
-    np1 = n + 1;
     km1 = k - 1;
     kpkm2 = km1 << 1;
     left = k;
@@ -1392,9 +1388,10 @@ static void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
         xyzveci = xyzvec[i];
 /* Computing MIN */
         i2 = i + 1 + k;
-        ilp1mx = rmg_min (i2, np1);
         left = rmg_max (left, i + 1);
 #if 0
+        int np1 = n + 1;
+        int ilp1mx = rmg_min (i2, np1);
         if (xyzveci < xyzknot[left - 1])
         {
 
