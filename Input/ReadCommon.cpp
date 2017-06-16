@@ -341,6 +341,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Approximate grid spacing (bohr).\n", 
                      "grid_spacing must be a positive number. Terminating.\n");
 
+    If.RegisterInputKey("filter_factor", &lc.filter_factor, 0.25, 2.0, 1.0, 
+                     CHECK_AND_TERMINATE, OPTIONAL, 
+                     "Filtering factor.\n", 
+                     "filter_factor must lie in the range (0.25, 1.0). Terminating.\n");
+
     // Deault of zero is OK because this means to try to set it automatically later on.
     // The value of 64 covers any possible hardware scenario I can imagine currently but might
     // need to be adjusted at some point in the future.

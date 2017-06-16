@@ -162,10 +162,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     // Save input hartree potential
     for (int idx = 0; idx < FP0_BASIS; idx++) vh_in[idx] = vh[idx];
 
-    // Make sure the hartree and vxc potentials are bandwidth limited on the fine grid
-    //FftFilter(vh, *fine_pwaves, 1.0, LOW_PASS);
-    //FftFilter(vxc, *fine_pwaves, 1.0, LOW_PASS);
-
     /* check convergence */
     t[0] = t[1] = t[2] = 0.0;
 
@@ -214,7 +210,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
     /*Generate the Dnm_I */
-    FftFilter(vtot, *fine_pwaves, sqrt(0.5) / (double)ct.FG_RATIO, LOW_PASS);
+    FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
     get_ddd (vtot);
 
 

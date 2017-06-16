@@ -116,7 +116,7 @@ void InitDelocalizedWeight (void)
                 ax[1] = 2.0*PI*coarse_pwaves->g[idx].a[1] / (hyy * NY_GRID);
                 ax[2] = 2.0*PI*coarse_pwaves->g[idx].a[2] / (hzz * NZ_GRID);
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
-                if(gval >= 0.5*gcut) continue;
+                if(gval >= ct.filter_factor*gcut) continue;
                 double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip], gval);
                 weptr[idx] = IL * Ylm(proj.l, proj.m, coarse_pwaves->g[idx].a) * t1;
             }

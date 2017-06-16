@@ -57,7 +57,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
 
     if(grid_ratio == 2) {
 
-        FftFilter(vtot, *fine_pwaves, sqrt(0.5) / (double)grid_ratio, LOW_PASS);
+        FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)grid_ratio, LOW_PASS);
 
         for(ix = 0; ix < dimx/2; ix++)
         for(iy = 0; iy < dimy/2; iy++)
@@ -71,7 +71,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     }
     else if(grid_ratio == 3) {
 
-        FftFilter(vtot, *fine_pwaves, sqrt(0.5) / (double)grid_ratio, LOW_PASS);
+        FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)grid_ratio, LOW_PASS);
 
         for(ix = 0; ix < dimx/3; ix++)
         for(iy = 0; iy < dimy/3; iy++)
@@ -85,7 +85,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     }
     else if(grid_ratio == 4) {
 
-        FftFilter(vtot, *fine_pwaves, sqrt(0.5) / (double)grid_ratio, LOW_PASS);
+        FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)grid_ratio, LOW_PASS);
 
         for(ix = 0; ix < dimx/4; ix++)
         for(iy = 0; iy < dimy/4; iy++)
@@ -100,7 +100,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     else
     {
 
-        FftFilter(vtot, *fine_pwaves, sqrt(0.5) / (double)grid_ratio, LOW_PASS);
+        FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)grid_ratio, LOW_PASS);
 
         mg_restrict_6 (vtot, vtot_psi, dimx, dimy, dimz, grid_ratio);
     }
