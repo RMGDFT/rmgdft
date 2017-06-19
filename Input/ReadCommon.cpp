@@ -693,7 +693,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
 
     // Booleans next. Booleans are never required.
-    If.RegisterInputKey("filter_dpot", &lc.filter_dpot, false,
+    If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, false,
+                        "Flag indicating whether or not to use alternate laplacian weights for some operators.");
+
+    If.RegisterInputKey("filter_dpot", &lc.filter_dpot, true,
                         "Flag indicating whether or not to filter density depenedent potentials.");
 
     If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, true,

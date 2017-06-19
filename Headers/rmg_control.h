@@ -812,6 +812,9 @@ typedef struct
     // Filter density dependent potentials
     bool filter_dpot;
 
+    // Alternate laplacian discretization
+    bool alt_laplacian;
+
 } CONTROL;
 
 

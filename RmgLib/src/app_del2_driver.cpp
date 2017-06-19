@@ -40,12 +40,34 @@ template double CPP_app_del2_driver<double>(Lattice *, TradeImages *, double *, 
 template double CPP_app_del2_driver<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, int);
 template double CPP_app_del2_driver<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, int);
 
+template double CPP_app_del2_driver<float>(Lattice *, TradeImages *, float *, float *, int, int, int, double, double, double, int, bool);
+template double CPP_app_del2_driver<double>(Lattice *, TradeImages *, double *, double *, int, int, int, double, double, double, int, bool);
+template double CPP_app_del2_driver<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, int, bool);
+template double CPP_app_del2_driver<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, int, bool);
+
+template double CPP_app_del2_driver_int<float>(Lattice *, TradeImages *, float *, float *, int, int, int, double, double, double, int, bool);
+template double CPP_app_del2_driver_int<double>(Lattice *, TradeImages *, double *, double *, int, int, int, double, double, double, int, bool);
+template double CPP_app_del2_driver_int<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, int, bool);
+template double CPP_app_del2_driver_int<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, int, bool);
+
 template <typename RmgType>
 double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
 {
+    return CPP_app_del2_driver_int(L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, false);
+}
+
+template <typename RmgType>
+double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, bool alt_flag)
+{
+    return CPP_app_del2_driver_int(L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, true);
+}
+
+template <typename RmgType>
+double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, bool alt_flag)
+{
 
     double cc = 0.0;
-    FiniteDiff FD(L);
+    FiniteDiff FD(L, alt_flag);
     int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
     int images = order / 2;
     size_t alloc = (sbasis + 64) * sizeof(RmgType);

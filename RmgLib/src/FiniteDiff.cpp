@@ -130,7 +130,22 @@ FiniteDiff::FiniteDiff(Lattice *lptr)
     this->x_type = PERIODIC;
     this->y_type = PERIODIC;
     this->z_type = PERIODIC;
+    this->alt_laplacian = false;
+}
 
+FiniteDiff::FiniteDiff(Lattice *lptr, bool alt_flag)
+{
+    L = lptr;
+    this->np_xweight = NULL;
+    this->np_yweight = NULL;
+    this->np_zweight = NULL;
+    this->xoff = NULL;
+    this->yoff = NULL;
+    this->zoff = NULL;
+    this->x_type = PERIODIC;
+    this->y_type = PERIODIC;
+    this->z_type = PERIODIC;
+    this->alt_laplacian = alt_flag;
 }
 
 // Constructor for non-periodic boundary conditions. Unlike the case with
@@ -304,6 +319,11 @@ void FiniteDiff::gen_weights(int n, int m, double xr, double *x, double *w)
      }
 
      for(int i=0;i <= n;i++)w[i] = c[i][2];
+}
+
+void FiniteDiff::set_alt_laplacian_flag(bool flag)
+{
+    this->alt_laplacian = flag;
 }
 
 FiniteDiff::~FiniteDiff(void)
@@ -1412,6 +1432,27 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
     RmgType t3z  (1.0 / (90.0 * h2));
     RmgType t0 (th2);
 
+    if(this->alt_laplacian)
+    {
+        h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
+        th2 = (-2.8215452 / h2);
+        t1x = (1.57663238 / h2);
+        t2x = (-0.18347238 / h2);
+        t3x = (0.01761260 / h2);
+
+        h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
+        th2 -= (2.8215452 / h2);
+        t1y = (1.57663238 / h2);
+        t2y = (-0.18347238 / h2);
+        t3y = (0.01761260 / h2);
+
+        h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
+        th2 -= (2.8215452 / h2);
+        t1z = (1.57663238 / h2);
+        t2z = (-0.18347238 / h2);
+        t3z = (0.01761260 / h2);
+        t0 = th2;
+    }
 
     for (int ix = 3; ix < dimx + 3; ix++)
     {
@@ -1491,7 +1532,30 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     RmgType t4z (-1.0 / (560.0 * h2));
     RmgType t0 (th2);
 
+    if(this->alt_laplacian)
+    {
+        h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
+        th2 = (-2.97581692 / h2);
+        t1x = (1.70664680 / h2);
+        t2x = (-0.25959423 / h2);
+        t3x = (0.04618682 / h2);
+        t4x = (-0.00533093 / h2);
 
+        h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
+        th2 -= (2.97581692 / h2);
+        t1y = (1.70664680 / h2);
+        t2y = (-0.25959423 / h2);
+        t3y = (0.04618682 / h2);
+        t4y = (-0.00533093 / h2);
+
+        h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
+        th2 -= (2.97581692 / h2);
+        t1z = (1.70664680 / h2);
+        t2z = (-0.25959423 / h2);
+        t3z = (0.04618682 / h2);
+        t4z = (-0.00533093 / h2);
+        t0 = (th2);
+    }
 
     for (int ix = 4; ix < dimx + 4; ix++)
     {
