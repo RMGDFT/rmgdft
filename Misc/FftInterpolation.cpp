@@ -86,8 +86,14 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
 
 
   // Get the forward transform
-  //for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(sqrt(coarse[ix]), 0.0);
-  for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(coarse[ix], 0.0);
+  if(ct.sqrt_interpolation)
+  {
+      for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(sqrt(coarse[ix]), 0.0);
+  }
+  else
+  {
+      for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(coarse[ix], 0.0);
+  }
 
   PfftForward(base_coarse, base_coarse, *coarse_pwaves);
   // Zero higher frequency components
@@ -126,7 +132,6 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
                           double theta = 2.0*PI*(rp1 + rp2 + rp3);
                           std::complex<double> phase = std::complex<double>(cos(theta), sin(theta));
                           shifted_coarse[idx] = phase * base_coarse[idx];
-//if((p1 == n[0]/2) || (p2 == n[1]/2) || (p3 == n[2]/2))shifted_coarse[idx]=std::complex<double>(0.0, 0.0);
                           idx++;
 
                       }
@@ -141,8 +146,16 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
                   for(int iyy = 0;iyy < dimy_c;iyy++) {
                       for(int izz = 0;izz < dimz_c;izz++) {
                           rootrho =  std::real(backshifted_coarse[ixx*incx_c + iyy*incy_c + izz]);
-                          fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
-                             scale*rootrho;
+                          if(ct.sqrt_interpolation)
+                          {
+                              fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
+                                     scale*scale*rootrho*rootrho;
+                          }
+                          else
+                          {
+                              fine[(ratio*ixx + ix)*incx_f + (ratio*iyy + iy)*incy_f + (ratio*izz + iz)] = 
+                                     scale*rootrho;
+                          }
 
                       }
                   }

@@ -806,6 +806,12 @@ typedef struct
     // Controls how far below the Nyquist frequency potentials are cutoff. Default is 1.0
     double filter_factor;
 
+    // Use square root technique for density interpolation
+    bool sqrt_interpolation;
+
+    // Filter density dependent potentials
+    bool filter_dpot;
+
 } CONTROL;
 
 

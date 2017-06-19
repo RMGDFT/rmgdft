@@ -210,7 +210,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
     /*Generate the Dnm_I */
-    FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+    if(ct.filter_dpot) FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
     get_ddd (vtot);
 
 
