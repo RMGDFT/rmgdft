@@ -288,16 +288,24 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         }
 
 
+        /* re-solve on this grid level */
+
+        T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+
         for (cycl = 0; cycl < post_cyc[level]; cycl++)
         {
 
             /* solve once */
-            T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
             solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
+
+            /* trade boundary info */
+            if(cycl < (post_cyc[level] - 1))
+                T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+            else
+                T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
 
         }                       /* end for */
 
-        T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
         /* evaluate max residual */
         if (i < (mu_cyc - 1))
         {
