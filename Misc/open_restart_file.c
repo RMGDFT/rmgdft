@@ -64,7 +64,7 @@ FILE *open_restart_file (char *filename)
 		"  Trying to create subdirectory in case it does not exist\n", newname);
 
 #if !(defined(_WIN32) || defined(_WIN64))
-	if (!mkdir (dirname (tmpname), S_IRWXU))
+	if (mkdir (dirname (tmpname), S_IRWXU))
         {
 	    printf ("\n Creating directory %s FAILED\n\n", tmpname);
             rmg_error_handler("Terminating.");
