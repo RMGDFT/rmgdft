@@ -25,10 +25,18 @@ beta="0.0"
 gamma="0.0"
 
 start_mode="LCAO Start"
+#start_mode="Restart From File"
+
+
 calculation_mode="Quench Electrons"
+#calculation_mode="Relax Structure"
+
 kohn_sham_solver="davidson"
 subdiag_driver="scalapack"
 charge_mixing_type = "Broyden"
+charge_density_mixing = "0.7"
+kohn_sham_mucycles = "3"
+
 potential_acceleration_constant_step="1.0"
 
 # Criterion used to judge SCF convergency 
@@ -99,4 +107,3 @@ C    12.1885    10.7468     6.6948    1
 C    16.6144    10.2823     8.0317    1
 C    14.7907    11.5939     6.6672    1
 "
-localize_projectors = "false"
