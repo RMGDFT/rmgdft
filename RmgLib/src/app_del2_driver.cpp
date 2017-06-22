@@ -59,7 +59,7 @@ double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b
 template <typename RmgType>
 double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, bool alt_flag)
 {
-    return CPP_app_del2_driver_int(L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, true);
+    return CPP_app_del2_driver_int(L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, alt_flag);
 }
 
 template <typename RmgType>
