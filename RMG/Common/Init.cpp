@@ -573,6 +573,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
             // Force reinit of MainSp in case initialzation matrices are
             // not the same size
+#if SCALAPACK_LIBS
             if(MainSp) {
                 if(MainSp->Participates()) delete MainSp;
                 MainSp = NULL;
@@ -582,6 +583,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                 if(MainElpa->Participates()) delete MainElpa;
                 MainElpa = NULL;
             }
+#endif
 #endif
             delete RT2;
 
