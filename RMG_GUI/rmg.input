@@ -1,0 +1,82 @@
+
+# **** Setup  ****
+
+description = "Short description of the input file"
+start_mode = "LCAO Start"
+calculation_mode = "Quench Electrons"
+relax_method ="Fast Relax"
+exchange_correlation_type = "AUTO_XC"
+bravais_lattice_type = "Orthorhombic Primitive"
+system_charge = "0.0"
+
+#space grid and processor grid control
+
+wavefunction_grid ="16 52 20"
+potential_grid_refinement="2 "
+processor_grid="1 1 1"
+kpoint_mesh ="1 1 1"
+kpoint_is_shift ="0 0 0"
+kpoints_bandstructure ="
+0.0  0.0  0.0  10  G
+0.0  0.0  0.0  10  G
+"
+
+# **** Units  ****
+
+length_units = "Bohr"
+atomic_coordinate_type = "Absolute"
+
+# *****Occupation *****
+
+occupations_type = "Fermi Dirac"
+occupation_electron_temperature_eV = "0.1"
+occupation_number_mixing = "0.3"
+
+# ****  Multigrid **** 
+
+kohn_sham_mg_levels  = "2"
+poisson_mg_levels    = "2"
+kohn_sham_time_step  = "0.66"
+poisson_time_step    = "0.66"
+
+#  **** IO control  ****
+
+write_eigvals_period = "10"
+md_steps_til_write_waves = "10"
+input_wave_function_file = "Wave/wave"
+output_wave_function_file = "Wave/wave"
+pseudopotential="
+ P    /home/luw/test/RMG-GUI-2.0/README
+"
+
+# **** MD/Relax controls  **** 
+  
+max_md_steps = "10"
+fast_relax_max_force = "1e-3"
+ionic_time_step = "45"
+relax_dynamic_timestep = "true"
+
+# **** Mixing controls **** 
+  
+charge_density_mixing = "0.1"
+projector_mixing = "0.1"
+charge_mixing_type = "Pulay"
+charge_pulay_order = "5"
+charge_pulay_scale = "0.5"
+charge_pulay_refresh = "100"
+
+# **** SCF controls ****  
+  
+max_scf_steps = "50"
+rms_convergence_criterion = "1e-6"
+#  **** Lattice constants **** 
+
+atoms=
+" P     0.000000000000e+00    0.000000000000e+00    0.000000000000e+00      1
+ P     3.130899491097e+00    0.000000000000e+00    2.803674384941e+00      1
+ P     3.130899491097e+00    4.026138702173e+00    4.135005867602e+00      1
+ P     0.000000000000e+00    4.026138702173e+00    6.938680252543e+00      1
+"
+a_length =" 6.26179898219"
+b_length =" 19.8005582253"
+c_length =" 8.2700117352"

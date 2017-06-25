@@ -1,0 +1,8 @@
+software requirement:
+
+ python2.7
+ pymol
+ PyQt4
+ PyCifRW to read CIF Format
+
+python RMG-GUI.py
