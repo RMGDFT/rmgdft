@@ -76,18 +76,19 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     get_ddd (vtot);
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
+    if(ct.alloc_states < 2 * ct.num_states) 
+    {
+        printf("\n band strucuture need 2*ct.num_states allocated\n");
+        exit(0);
+    }
+
+    LcaoGetPsi(&Kptr[0]->Kstates[ct.num_states]);
+
 
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
-        if(ct.alloc_states < 2 * ct.num_states) 
-        {
-            printf("\n band strucuture need 2*ct.num_states allocated\n");
-            exit(0);
-        }
-
-        Kptr[kpt]->nstates = ct.init_states;
-        LcaoGetPsi(&Kptr[kpt]->Kstates[0]);
+        Kptr[kpt]->nstates = 2 * ct.num_states;
 
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
@@ -101,21 +102,21 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
             for(int istate = 0; istate < ct.num_states; istate++)
                 if( max_res < Kptr[kpt]->Kstates[istate].res) 
                     max_res = Kptr[kpt]->Kstates[istate].res;
-   //         for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
-   //           rmg_printf("\n kpt = %d scf =%d state=%d res = %e", kpt, ct.scf_steps, istate, Kptr[kpt]->Kstates[istate].res);
-             if(pct.gridpe == 0) printf("\n kpt= %d  scf = %d  max_res = %e", kpt+pct.kstart, ct.scf_steps, max_res);
+            //         for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
+             //          rmg_printf("\n kpt = %d scf =%d state=%d res = %e", kpt, ct.scf_steps, istate, Kptr[kpt]->Kstates[istate].res);
+            //if(pct.gridpe == 0) printf("\n kpt= %d  scf = %d  max_res = %e", kpt+pct.kstart, ct.scf_steps, max_res);
 
-            if (max_res <1.0e-3)
-            {
-                rmg_printf("\n BAND STRUCTURE: Converged with max_res %10.5e", max_res);
-                CONVERGED = true;
-            }
+            //if (max_res <1.0e-3)
+           // {
+            //    rmg_printf("\n BAND STRUCTURE: Converged with max_res %10.5e", max_res);
+             //   CONVERGED = true;
+           // }
 
         } // end loop scf
 
         //for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
         //rmg_printf("\n BAND STRUCTURE: state %d res %10.5e ", istate, Kptr[kpt]->Kstates[istate].res);
-       
+
         int kpt_global = kpt + pct.kstart;
         if(ct.rmg2bgw)
         {
@@ -123,7 +124,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
             WriteBGW_VxcEig(kpt_global,vxc, Kptr[kpt]);
         }
 
-        
+
     } // end loop over kpoints
 
 
@@ -136,4 +137,4 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
 
 
-    
+
