@@ -80,6 +80,12 @@ void GetWeight (Kpoint<KpointType> **Kptr)
         KpointType *tem_array = new KpointType[pbasis];
         KpointType *Btem_array = new KpointType[pbasis];
 
+        int kpt1 = kpt + pct.kstart;
+        double kvec[3];
+        kvec[0] = ct.kp[kpt1].kvec[0];
+        kvec[1] = ct.kp[kpt1].kvec[1];
+        kvec[2] = ct.kp[kpt1].kvec[2];
+
         /* Loop over ions */
         for (int ion = 0; ion < ct.num_ions; ion++)
         {
@@ -98,7 +104,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             int nlzdim = get_NZ_GRID();
 
             /*Calculate the phase factor */
-            FindPhase (nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase);
+            FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase);
 
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)&sp->forward_beta[kpt * sp->num_projectors * pbasis];

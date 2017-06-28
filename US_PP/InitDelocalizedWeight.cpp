@@ -108,6 +108,7 @@ void InitDelocalizedWeight (void)
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
+            int kpt1 = kpt + pct.kstart;
             std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis];
             for(int idx = 0;idx < pbasis;idx++) weptr[idx] = std::complex<double>(0.0,0.0);
             for(int idx = 0;idx < pbasis;idx++)
@@ -115,10 +116,17 @@ void InitDelocalizedWeight (void)
                 ax[0] = 2.0*PI*coarse_pwaves->g[idx].a[0] / (hxx * NX_GRID);
                 ax[1] = 2.0*PI*coarse_pwaves->g[idx].a[1] / (hyy * NY_GRID);
                 ax[2] = 2.0*PI*coarse_pwaves->g[idx].a[2] / (hzz * NZ_GRID);
+
+               // printf("\n %d %e  %e %e  %e %e %e", ax[0], ax[1], ax[2], ct.kp[kpt1].kvec[0], ct.kp[kpt1].kvec[1],  ct.kp[kpt1].kvec[2]);
+
+                ax[0] += ct.kp[kpt1].kvec[0];
+                ax[1] += ct.kp[kpt1].kvec[1];
+                ax[2] += ct.kp[kpt1].kvec[2];
+
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
                 if(gval >= ct.filter_factor*gcut) continue;
                 double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip], gval);
-                weptr[idx] = IL * Ylm(proj.l, proj.m, coarse_pwaves->g[idx].a) * t1;
+                weptr[idx] = IL * Ylm(proj.l, proj.m, ax) * t1;
             }
 
             // Shift atom to the center instead of corner.
@@ -147,3 +155,5 @@ void InitDelocalizedWeight (void)
     delete [] weptr;
 
 } /* end InitDelocalizedWeight */
+
+

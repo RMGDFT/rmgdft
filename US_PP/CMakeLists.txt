@@ -14,6 +14,7 @@ InitLocalBackward.cpp
 FindFftwPhaseLocalpp.cpp
 Radius2grid.cpp
 FindPhase.cpp
+FindPhaseKpoint.cpp
 Atomic.cpp
 Atomic_Cbindings.cpp
 InitPseudo.cpp
