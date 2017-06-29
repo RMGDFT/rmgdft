@@ -255,6 +255,7 @@ int CountAtomicOrbitals(void);
 void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap);
 void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap);
 void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double> *phase);
+void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw);
 void VhPfft(double *rho, double *rhoc, double *vh);
 double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rms_target);
 void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in, double *vh_out, int max_iter, bool reset);
