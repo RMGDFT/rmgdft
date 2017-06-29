@@ -105,13 +105,20 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
     int *desca;
     int dist_length;
+    static int saved_dist_length;
     
     if (participates) {
 
         dist_length = MainSp->GetDistMdim() * MainSp->GetDistNdim();
         desca = MainSp->GetDistDesca();
 
-
+        if(dist_length != saved_dist_length)
+        {
+            if(distCij) {MPI_Free_mem(distCij);distCij = NULL;}
+            if(distSij) {MPI_Free_mem(distSij);distSij = NULL;}
+            if(distBij) {MPI_Free_mem(distBij);distBij = NULL;}
+            if(distAij) {MPI_Free_mem(distAij);distAij = NULL;}
+        }
         if(!distAij) {
             int retval1 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distAij);
             int retval2 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distBij);
@@ -120,6 +127,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS) || (retval4 != MPI_SUCCESS)) {
                 rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag_Scalapack");
             }
+            saved_dist_length = dist_length;
         }
 
         // Copy matrices to dist arrays
