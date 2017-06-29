@@ -297,6 +297,7 @@ void LoadUpf(SPECIES *sp)
     if(sp->nbeta > MAX_NB)
         throw RmgFatalException() << "Pseudopotential has " << sp->nbeta << " projectors but this version of RMG only supports s,p and d proejectors with a limit of " << MAX_NB << " projectors.\n";
 
+    sp->is_ddd_diagonal = true;
     if(sp->nbeta > 0) {
 
         for(int ip = 0;ip < sp->nbeta;ip++) {
@@ -317,15 +318,17 @@ void LoadUpf(SPECIES *sp)
         /*read in the Matrix ddd0(nbeta,nbeta) */
         std::string PP_DIJ = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_DIJ");
         double *tmatrix = UPF_str_to_double_array(PP_DIJ, sp->nbeta*sp->nbeta, 0);
+        double offd_sum = 0.0;
         for (int j = 0; j < sp->nbeta; j++)
         {
             for (int k = 0; k < sp->nbeta; k++)
             {
                 ddd0[j][k] = tmatrix[j*sp->nbeta + k] / 2.0;
+                if(j != k) offd_sum += ddd0[j][k]*ddd0[j][k];
             }
         }
         delete [] tmatrix;
-      
+        if(offd_sum > 1.0e-20) sp->is_ddd_diagonal = false; 
     }
 
     sp->nqf=0;
@@ -494,7 +497,7 @@ sp->rwidth = 15.0;
     // Finally adjust sp->rg_points to skip the high end
     sp->rg_points = iend - ibegin + 1;
     if(pp_buffer) delete [] pp_buffer;
-
+    if(!sp->is_ddd_diagonal) ct.is_ddd_non_diagonal = true;
 }
 
 // C binding

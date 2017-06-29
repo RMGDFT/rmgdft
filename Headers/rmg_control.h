@@ -815,6 +815,9 @@ typedef struct
     // Alternate laplacian discretization
     bool alt_laplacian;
 
+    // Flag is true if the ddd is non-diagonal for any atomic species
+    bool is_ddd_non_diagonal;
+
 } CONTROL;
 
 
