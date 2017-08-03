@@ -121,8 +121,8 @@ void rho_munu (complex double * rho_mn_host, complex double * G_row_host,
             desca = &pmo.desc_cond[ (N1 +  i   * ct.num_blocks ) * DLEN ];
             descb = &pmo.desc_cond[ (i  +  N1  * ct.num_blocks ) * DLEN ];
             descc = &pmo.desc_cond[ (i  +  i   * ct.num_blocks ) * DLEN ];
-            descd = &pmo.desc_cond[ (N1 +  i+1 * ct.num_blocks ) * DLEN ];
-            desce = &pmo.desc_cond[ (i  +  i+1 * ct.num_blocks ) * DLEN ];
+            descd = &pmo.desc_cond[ (N1 +  (i+1) * ct.num_blocks ) * DLEN ];
+            desce = &pmo.desc_cond[ (i  +  (i+1) * ct.num_blocks ) * DLEN ];
 
 
             /*  temp = G_i0 * Gamma  */
