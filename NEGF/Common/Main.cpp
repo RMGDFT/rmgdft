@@ -175,6 +175,7 @@ int main (int argc, char **argv)
 
 
     ct.images_per_node = 1;
+    ct.proj_nophase = 1;
     InitIo(argc, argv, ControlMap);
 
     ReadBranchNEGF(ct.cfile, ct, cei, potentialCompass, chargeDensityCompass);

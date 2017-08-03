@@ -109,7 +109,7 @@ charge_mixing_type=
 charge_pulay_order="5"
 charge_pulay_scale="0.2"
 
-max_scf_steps="1"
+max_scf_steps="50"
 
 
 #freeze_occupied="true"

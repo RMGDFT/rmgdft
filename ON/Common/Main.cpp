@@ -78,6 +78,7 @@ PE_CONTROL pct;
 KBPSI Kbpsi_str;
 unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;
 double *projectors, *projectors_x, *projectors_y, *projectors_z;
+
 int *num_nonlocal_ion;
 double *kbpsi, *kbpsi_comm, *kbpsi_res, *partial_kbpsi_x, *partial_kbpsi_y, *partial_kbpsi_z;
 int kbpsi_num_loop, *kbpsi_comm_send, *kbpsi_comm_recv;
@@ -161,6 +162,7 @@ int main(int argc, char **argv)
     // tem();
 
     ct.images_per_node = 1;
+    ct.proj_nophase = 1;
     try 
     {
         InitIo(argc, argv, ControlMap);

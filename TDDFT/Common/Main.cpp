@@ -185,6 +185,8 @@ int main(int argc, char **argv)
 
     RmgTimer *RT1 = new RmgTimer("1-TOTAL: read_and_alloc");
     ct.images_per_node = 1;
+
+    ct.proj_nophase = 1;
     InitIo(argc, argv, ControlMap);
 
     //  initialize for ELEMENTAl lib

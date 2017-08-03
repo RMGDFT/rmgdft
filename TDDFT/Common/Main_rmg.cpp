@@ -117,6 +117,7 @@ int main (int argc, char **argv)
 
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;
+    ct.proj_nophase = 0;
 
 #if GPU_ENABLED
 //  Hack to force initialization of libsci on Cray before we create our own threads

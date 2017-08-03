@@ -134,6 +134,4 @@ double kvecy, double kvecz, complex double *work)
 
     Sigma_p (sigma, ch0, ch01, ch10, g, jprobe);
 
-    for(i = 0; i <10; i++)
-        printf("\n sigmaold  %d %f  %f", i, sigma[i]);
 }

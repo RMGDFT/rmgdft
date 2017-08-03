@@ -96,6 +96,8 @@ void GetPhaseSpecies (SPECIES *sp , std::complex<double> *rtptr)
                     kdr = ct.kp[kpt1].kvec[0] * bx[0] +
                         ct.kp[kpt1].kvec[1] * bx[1] + ct.kp[kpt1].kvec[2] * bx[2];
 
+                    if(ct.proj_nophase) kdr = 0.0;
+
                     idx = ix * dimy * dimz + iy * dimz + iz;
 
                     rtptr[idx + kpt * pbasis] = exp(std::complex<double>(0.0, -kdr));
