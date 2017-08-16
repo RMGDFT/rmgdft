@@ -27,11 +27,13 @@ void charge_density_matrix_p (complex double * sigma_all)
     double denominator, numerator, dum, sum, *wmn;
     int nC, nL, i, ntot, *sigma_idx, idx_delta, j;
     complex double *green_C_row, *green_C_col;
+    double *ptrdouble;
     int maxrow, maxcol;
-    double one, zero;
+    double one, zero, half;
     int ione =1;
     one =1.0;
     zero =0.0;
+    half = 0.5;
 
 
     void *RT = BeginRmgTimer("4-ChargeDensityMatrix");
@@ -341,6 +343,38 @@ void charge_density_matrix_p (complex double * sigma_all)
         lcr[0].density_matrix_tri[st1] *= ct.kp[pct.kstart].kweight /PI ;
 
     comm_sums (lcr[0].density_matrix_tri, &ntot, pct.kpsub_comm);
+
+
+// for off-diagonal parts, we have already average the upper and lower
+// off-diagonal to take care of G(k) + G(-k) being symmetric. For
+// diagoanl blocks, we should also make it symmetric.
+
+    if(!ct.is_gamma)
+    {
+        ptrdouble = (double *)green_C;
+
+        for(i = 0; i < ct.num_blocks ; i++)
+        {
+            int n1 = ct.block_dim[i];
+            int n2 = pmo.diag_begin[i];
+
+            int nsize = n1 * n1;
+
+            desca = &pmo.desc_cond[ ( i +  i  * ct.num_blocks) * DLEN];
+
+            dcopy (&nsize, &lcr[0].density_matrix_tri[pmo.diag_begin[i]], 
+                    &ione, ptrdouble, &ione);
+            pdtran_(&n1, &n1, &half, ptrdouble, &ione, &ione, desca, 
+                    &half, &lcr[0].density_matrix_tri[pmo.diag_begin[i]], 
+                    &ione, &ione, desca);
+
+        }
+    }
+
+
+
+
+
     my_free( green_C );
     my_free( sigma_idx );
 
@@ -351,3 +385,4 @@ void charge_density_matrix_p (complex double * sigma_all)
 
 
 }
+
