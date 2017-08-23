@@ -42,7 +42,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     double t1;
     int st1, ixx, iyy, izz;
     int item;
-    int order = 8;
+    int order = ct.kohn_sham_fd_order;
 
     double hxgrid, hygrid, hzgrid;
     double *orbital_border;
@@ -144,7 +144,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
      //   app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
         t1 = 1.0;
         daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
-        OFD->app_del2_np(states[st1].psiR, orbit_tem, hxgrid, hygrid, hzgrid);
+        //OFD->app_del2_np(states[st1].psiR, orbit_tem, hxgrid, hygrid, hzgrid);
 
         /*                                                                     
          * Add the contribution of the non-local potential to the 
@@ -195,10 +195,12 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RT6 = new RmgTimer("3-OrbitalOptimize: mixing+precond");
 
+    double gamma = -0.5;
     switch (ct.mg_method)
     {
         case 0:
-            sd(ct.scf_steps, pct.psi_size, states[ct.state_begin].psiR, states1[ct.state_begin].psiR);
+            Precond(states1[ct.state_begin].psiR);
+            daxpy(&pct.psi_size, &gamma, states1[ct.state_begin].psiR, &ione, states[ct.state_begin].psiR, &ione);
             break;
         case 1:
             pulay(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
@@ -305,10 +307,9 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 void get_qnm_res(double *work_theta)
 {
 
-    int ip1, st1, st2;
-    int ion1, ion2, ion1_global, ion2_global;
+    int st1, st2;
+    int ion1;
     int st11;
-    int size_projector;
     int num_prj, num_orb, tot_orb, idx1, idx2;
     int max_orb;
     double one = 1.0, zero = 0.0, *work_mat;
@@ -361,13 +362,12 @@ void get_qnm_res(double *work_theta)
 
 void get_dnmpsi(STATE *states1)
 {
-    int ion, idx, ip1, ip2;
+    int ion;
     double *prjptr;
     int ion2, st0, st1;
     double *ddd, *qnm_weight;
     double *qqq;
     double *prj_sum;
-    double qsum;
 
     double one=1.0, zero=0.0, mtwo=-2.0, *work_kbpsi; 
     int ione=1, num_orb, num_prj;

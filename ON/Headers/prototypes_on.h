@@ -32,7 +32,8 @@ extern "C" void precond_mg_c(double *res, double *work1, double *work2, int ista
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
           double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
-void PrecondMg(double *res, double *work1, double *work2, int istate);
+void PrecondMg(double *psiR, double *work1, STATE *sp);
+void Precond(double *x);
 void ZeroBoundary(double *a, int ixx, int iyy, int izz);
 
 

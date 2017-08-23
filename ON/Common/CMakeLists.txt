@@ -47,7 +47,8 @@ add_library (ON_Common
  nlforce.c
  nlforce_par_omega.c
  normalize_orbits.c
-ortho_norm_local.c
+ ortho_norm_local.c
+ Precond.cpp
  precond.c
  precond_mg.c
  PrecondMg.cpp

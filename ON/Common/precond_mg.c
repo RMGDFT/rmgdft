@@ -56,7 +56,6 @@ void precond_mg(double *res, double *work1, double *work2, int istate)
     for (cycles = 0; cycles <= nits; cycles++)
     {
 
-
         pack_ptos(sg_orbit, work1, ixx, iyy, izz);
         pack_ptos(work3,sg_orbit, ixx+2, iyy+2, izz+2);
 

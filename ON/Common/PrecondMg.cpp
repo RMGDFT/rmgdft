@@ -16,16 +16,10 @@
 extern BaseGrid *OG;
 FiniteDiff *MGFD;
 
-extern "C" void precond_mg_c(double *res, double *work1, double *work2, int istate)
-{
-   PrecondMg(res, work1, work2, istate);
-}
-
-void PrecondMg(double *res, double *work1, double *work2, int istate)
+void PrecondMg(double *psiR, double *work1, STATE *sp)
 {
     int cycles, ione = 1, nits, stopp0;
     double diag, t1, one = 1.;
-    STATE *sp;
     double Zfac = 2.0 * ct.max_zvalence;
     int levels = ct.eig_parm.levels;
     if(ct.scf_steps < 2) levels = 0;
@@ -39,8 +33,6 @@ void PrecondMg(double *res, double *work1, double *work2, int istate)
     int eig_pre[6] = { 0, 6, 6, 6, 6, 6 };
     int eig_post[6] = { 0, 3, 3, 3, 3, 3 };
 
-    double *work3;
-
 //    eig_pre[ct.eig_parm.levels] = 50;
 
     diag = -1. / ct.Ac;
@@ -49,12 +41,9 @@ void PrecondMg(double *res, double *work1, double *work2, int istate)
 #endif
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
 
-    /* Get state pointer */
-    sp = &states[istate];
-
-    ixx = states[istate].ixmax - states[istate].ixmin + 1;
-    iyy = states[istate].iymax - states[istate].iymin + 1;
-    izz = states[istate].izmax - states[istate].izmin + 1;
+    ixx = sp->ixmax - sp->ixmin + 1;
+    iyy = sp->iymax - sp->iymin + 1;
+    izz = sp->izmax - sp->izmin + 1;
 
     double hxgrid = get_hxgrid();
     double hygrid = get_hygrid();
@@ -65,8 +54,10 @@ void PrecondMg(double *res, double *work1, double *work2, int istate)
     stopp0 = ixx * iyy * izz;
 
 
-    idx = (ixx + 4) * (iyy +4) * (izz+4);
-    work3 = new double[idx];
+    idx = (ixx + 8) * (iyy + 8) * (izz + 8);
+    double *work2 = new double[4*idx];
+    double *work3 = new double[4*idx];
+    double *work4 = new double[4*idx];
 
     ZeroBoundary(work1, ixx, iyy, izz);
 
@@ -74,14 +65,9 @@ void PrecondMg(double *res, double *work1, double *work2, int istate)
     for (cycles = 0; cycles <= nits; cycles++)
     {
 
-//        pack_ptos(sg_orbit, work1, ixx, iyy, izz);
-//        pack_ptos(work3,sg_orbit, ixx+2, iyy+2, izz+2);
-//        diag = app_cil_orbital6(work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
 
-        diag = -24.678116343490;
-        MGFD->app_del2_np(work1, work2, hxgrid, hygrid, hzgrid);
-
-        daxpy(&stopp0, &one, res, &ione, work2, &ione);
+        diag = MGFD->app_del2_np(work1, work2, hxgrid, hygrid, hzgrid);
+        daxpy(&stopp0, &one, psiR, &ione, work2, &ione);
 
 
         /* Now either smooth the wavefunction or do a multigrid cycle */
@@ -89,19 +75,19 @@ void PrecondMg(double *res, double *work1, double *work2, int istate)
         {
 
             /* Pack the residual data into multigrid array */
-            pack_ptos(sg_orbit_res, work2, ixx, iyy, izz);
+            pack_ptos(work3, work2, ixx, iyy, izz);
 
 
             /* Do multigrid step with solution in sg_twovpsi */
 
 
-            mgrid_solv_local(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,
-                       get_hxgrid(), get_hygrid(), get_hzgrid(), 0, get_neighbors(),
-                       ct.eig_parm.levels, eig_pre, eig_post, ct.eig_parm.sb_step,
-                       1, istate, &sp->inum, 1, Zfac);
+            mgrid_solv_local(work4, work3, work2, ixx, iyy, izz,
+                       hxgrid, hygrid, hzgrid, 0, get_neighbors(),
+                       levels, eig_pre, eig_post, ct.eig_parm.sb_step,
+                       1, sp->istate, &sp->inum, 1, Zfac);
 
 
-            pack_stop(sg_orbit, work2, ixx, iyy, izz);
+            pack_stop(work4, work2, ixx, iyy, izz);
             t1 = -1.;
 
         }
@@ -114,14 +100,15 @@ void PrecondMg(double *res, double *work1, double *work2, int istate)
 
         /* Update correction for wavefuntion */
         daxpy(&stopp0, &t1, work2, &ione, work1, &ione);
-
         ZeroBoundary(work1, ixx, iyy, izz);
 
     }                           /* end for Smoothing cycles */
 
 
 
+    delete [] work4;
     delete [] work3;
+    delete [] work2;
 
 
 }

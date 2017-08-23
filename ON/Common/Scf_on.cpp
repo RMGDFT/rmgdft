@@ -30,7 +30,6 @@ void update_pot(double *, double *, double *, double *, double *, double *, doub
 void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
         int Nrefresh, double scale, int preconditioning);
 extern int it_scf;
-double tem1;
 
 void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
@@ -108,6 +107,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RT2 = new RmgTimer("2-SCF: get_new_rho");
     GetNewRho_on(states, rho, work_matrix_row);
+    //BroydenPotential(rho_old, rho, rhoc, vh_old, vh, ct.charge_broyden_order, false);
 
     int iii = get_FP0_BASIS();
 
@@ -130,16 +130,13 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     delete(RT2);
 
-    tem1 = 0.0;
     for (idx = 0; idx < nfp0; idx++)
     {
         tem = rho_old[idx];
         rho_old[idx] = -rho[idx] + rho_old[idx];
         rho[idx] = tem;
-        tem1 += rho_old[idx] * rho_old[idx];
     }
 
-    tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) )/ ((double) (ct.vh_nbasis));
     RmgTimer *RT3 = new RmgTimer("2-SCF: pulay mix");
     if(ct.scf_steps <ct.freeze_orbital_step)
     {
@@ -150,7 +147,9 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
         steps = ct.scf_steps - ct.freeze_orbital_step;
     }
+    get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
     pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
+//for(int i=0;i<nfp0;i++)rho[i] = (1.0-ct.mix)*rho_pre[i] + ct.mix*rho[i];
     delete(RT3);
 
     if(ct.spin_flag) get_rho_oppo(rho, rho_oppo);
@@ -163,7 +162,6 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     CheckConvergence(vxc, vh, vxc_old, vh_old, rho, rho_pre, CONVERGENCE);
 
     RmgTimer *RT5 = new RmgTimer("2-SCF: get_te");
-    get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
     delete(RT5);
 
     /* Update the orbitals */

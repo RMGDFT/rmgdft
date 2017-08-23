@@ -131,7 +131,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
             pack_stop(v_mat, work, dimx, dimy, dimz);
 
             /* Localization the work array */
-            app_mask(istate, work, level);
+            //app_mask(istate, work, level);
+            ZeroBoundaryC(work, dimx,dimy,dimz);
 
             pack_ptos(v_mat, work, dimx, dimy, dimz);
 
@@ -164,7 +165,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
         pack_stop(resid, work, dimx, dimy, dimz);
 
         /* Localization the work array */
-        app_mask(istate, work, level);
+        //app_mask(istate, work, level);
+        ZeroBoundaryC(work, dimx,dimy,dimz);
 
         pack_ptos(resid, work, dimx, dimy, dimz);
 
@@ -175,9 +177,9 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
     }
 
 /* size for next smaller grid */
-    dx2 = dimx / 2;
-    dy2 = dimy / 2;
-    dz2 = dimz / 2;
+    dx2 = dimx / 2 + 1;
+    dy2 = dimy / 2 + 1;
+    dz2 = dimz / 2 + 1;
     siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
 
 /* set storage pointers in the current workspace */
@@ -196,7 +198,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
             pack_stop(newf, newwork, dx2, dy2, dz2);
 
             /* Localization the work array */
-            app_mask(istate, newwork, level + 1);
+            //app_mask(istate, newwork, level + 1);
+            ZeroBoundaryC(newwork, dx2,dy2,dz2);
 
             pack_ptos(newf, newwork, dx2, dy2, dz2);
         }                       /* end if flag_local */
@@ -212,7 +215,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
             pack_stop(newv, newwork, dx2, dy2, dz2);
 
             /* Localization the work array */
-            app_mask(istate, newwork, level + 1);
+            //app_mask(istate, newwork, level + 1);
+            ZeroBoundaryC(newwork, dx2,dy2,dz2);
 
             pack_ptos(newv, newwork, dx2, dy2, dz2);
 
@@ -229,7 +233,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
             pack_stop(resid, work, dimx, dimy, dimz);
 
             /* Localization the work array */
-            app_mask(istate, work, level);
+            //app_mask(istate, work, level);
+            ZeroBoundaryC(work, dimx,dimy,dimz);
 
             pack_ptos(resid, work, dimx, dimy, dimz);
         }                       /* end if flag_local */
@@ -259,7 +264,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
                 pack_stop(v_mat, work, dimx, dimy, dimz);
 
                 /* Localization the work array */
-                app_mask(istate, work, level);
+                //app_mask(istate, work, level);
+                ZeroBoundaryC(work, dimx,dimy,dimz);
 
                 pack_ptos(v_mat, work, dimx, dimy, dimz);
 
@@ -282,7 +288,8 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
                 pack_stop(resid, work, dimx, dimy, dimz);
 
                 /* Localization the work array */
-                app_mask(istate, work, level);
+                //app_mask(istate, work, level);
+                ZeroBoundaryC(work, dimx,dimy,dimz);
 
                 pack_ptos(resid, work, dimx, dimy, dimz);
 
