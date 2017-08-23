@@ -387,7 +387,6 @@ double FiniteDiff::app_del2_np (RmgType *rptr, RmgType *b, double gridhx, double
         }
     }
     double t0 = this->np_xweight[stride*(xdim/2) + stride/2-1]*ihx + this->np_yweight[stride*(ydim/2) + stride/2-1]*ihy + this->np_zweight[stride*(zdim/2) + stride/2-1]*ihz;
-printf("RRRR %f\n",t0);
     return t0;
 }
 
