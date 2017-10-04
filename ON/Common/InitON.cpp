@@ -99,9 +99,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     my_barrier();
 
-    /* Initialize the mehrstellen weights */
-    get_mehr();
-
 
     RmgTimer *RT = new RmgTimer("1-TOTAL: init: state_init");
 
@@ -132,7 +129,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     init_comm_res(states);
     delete(RT1);
-
     RmgTimer *RT2 = new RmgTimer("1-TOTAL: init: init_nuc");
     allocate_psi(states, states1);
 

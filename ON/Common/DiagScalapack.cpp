@@ -33,7 +33,7 @@
 void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, double *rho_matrix, double *theta_ptr)
 {
     int ione = 1;    /* blas constants */
-    char *uplo = "l", *jobz = "v";
+    char *uplo = "u", *jobz = "v";
 
     int info;
     double zero = 0., one = 1.,half = 0.5,  alpha;
@@ -53,11 +53,10 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
             pct.desca, pct.desca[1]);
 
-    dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
-    PDTRAN(&numst, &numst, &half, uu_dis, &ione, &ione, pct.desca,
-                &half, Hij, &ione, &ione, pct.desca);
+    //dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
+    //PDTRAN(&numst, &numst, &half, uu_dis, &ione, &ione, pct.desca,
+    //            &half, Hij, &ione, &ione, pct.desca);
     delete(RT2);
-
 
     RmgTimer *RT = new RmgTimer("3-DiagScalapack: pdsygvx ");
     /* If I'm in the process grid, execute the program */
@@ -150,7 +149,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     delete [] eigs;
 
     ct.efermi = fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
-
     delete(RT1);
 
     RmgTimer *RT5 = new RmgTimer("3-DiagScalapack: pscal occ ");

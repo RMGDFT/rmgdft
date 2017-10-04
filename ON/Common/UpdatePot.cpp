@@ -14,6 +14,8 @@
 #include "transition.h"
 #include "blas.h"
 #include "Functional.h"
+#include "RmgParallelFft.h"
+
 
 
 #include "prototypes_on.h"
@@ -62,20 +64,20 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 
 
     double rms_target = ct.rms/ct.hartree_rms_ratio;
+    // And new hartree potential
     VhDriver(rho_tot, rhoc, vh, ct.vh_ext, rms_target);
-//    get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
-
-
 
 
     /* evaluate correction vh+vxc */
     for (idx = 0; idx < nfp0; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vh_corr[idx];
 
+    // Transfer vtot from the fine grid to the wavefunction grid
+    GetVtotPsi (vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
+    FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
     get_ddd(vtot);
 
-    get_vtot_psi(vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
 }
 

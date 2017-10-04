@@ -147,7 +147,7 @@ void GetNlop_on(void)
         /*The vector we are looking for should be */
         to_cartesian (vect, nlcrds);
         coarse_size = sp->nldim *sp->nldim *sp->nldim ;
-        
+
         /*Calculate the phase factor */
         FindPhase (sp->nldim, sp->nldim, sp->nldim, nlcrds, fftw_phase);
 

@@ -35,6 +35,18 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 void PrecondMg(double *psiR, double *work1, STATE *sp);
 void Precond(double *x);
 void ZeroBoundary(double *a, int ixx, int iyy, int izz);
+void ZeroBoundary(double *a, int ixx, int iyy, int izz, int width);
+void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
+                int dimx, int dimy, int dimz,
+                double gridhx, double gridhy, double gridhz,
+                int level, int *nb_ids, int max_levels, int *pre_cyc,
+                int *post_cyc, double step,
+                int mu_cyc, int istate, int *iion, double Zfac);
+void EvalResidualLocal (FiniteDiff *FD, double *mat, double *f_mat, int dimx, int dimy, int dimz,
+                    double gridhx, double gridhy, double gridhz, double *res);
+void SolvPoisLocal (FiniteDiff *FD, double *vmat, double *fmat, double *work,
+                int dimx, int dimy, int dimz, double gridhx,
+                double gridhy, double gridhz, double step, double Zfac, double k);
 
 
 extern "C" {
@@ -231,7 +243,6 @@ void cholesky (double * a, int n);
 
 double minimage1 (double aa[3], double bb[3]);
 void init_parameter (STATE * states);
-void get_mehr (void);
 void make_mask_grid (double rcut, int level, STATE * states);
 void make_mask_grid_state (int level, STATE * states);
 void allocate_func (STATE * states, int inist);

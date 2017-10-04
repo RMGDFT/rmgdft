@@ -20,7 +20,6 @@ void allocate_masks(STATE * states)
     int idx, level, nx, ny, nz;
 
 
-
     for (state = ct.state_begin; state < ct.state_end; state++)
     {
         idx = states[state].size;
@@ -32,7 +31,6 @@ void allocate_masks(STATE * states)
             nz = (states[state].orbit_nz + item -1)/item;
             idx += nx * ny * nz;
         }
-
         my_malloc( mask_ptr, idx, char );
 
         idx = 0;

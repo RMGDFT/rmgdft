@@ -14,7 +14,15 @@
 double get_gamma_precond(double *vtot, double small_eig)
 {
     int idx, nits;
-    double vmax, diag = -1. / ct.Ac, gamma;
+    double vmax, gamma;
+    double Zfac = 2.0 * ct.max_zvalence;
+
+
+    double ihx = 1. / (get_hxgrid() * get_hxgrid() * get_xside() * get_xside());
+    double ihy = 1. / (get_hygrid() * get_hygrid() * get_yside() * get_yside());
+    double ihz = 1. / (get_hzgrid() * get_hzgrid() * get_zside() * get_zside());
+    double diag = (-4. / 3.) * (ihx + ihy + ihz);
+    diag = -1. / diag;
 
     /* Definition of parameter gamma */
     vmax = -100000.0;
@@ -36,7 +44,13 @@ double get_gamma_precond(double *vtot, double small_eig)
     /* gamma = inverse of the largest eigenvalue for the low frequency error */
     gamma = 1.0 / (2.0 / gamma + vmax + fabs(small_eig));
 
+//double t5 = diag - Zfac;
+//t5 = -1.0 / t5;
+//gamma = ct.eig_parm.gl_step * t5;
+
     if (pct.gridpe == 0)
         printf("\n get_gamma %22.16f ", gamma);
+
+
     return gamma;
 }

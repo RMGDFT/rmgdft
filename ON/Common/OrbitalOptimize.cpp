@@ -47,10 +47,10 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     double hxgrid, hygrid, hzgrid;
     double *orbital_border;
 
-//    FiniteDiff FD(&Rmg_L);
     ixx = states[0].ixmax - states[0].ixmin + 1;
     iyy = states[0].iymax - states[0].iymin + 1;
     izz = states[0].izmax - states[0].izmin + 1;
+
     if(OG == NULL) OG = new BaseGrid(ixx, iyy, izz, 1, 1, 1, 0, 1);
     if(OFD == NULL) OFD = new FiniteDiff(&Rmg_L, OG, CLUSTER, CLUSTER, CLUSTER, 1, order);
 
@@ -91,11 +91,9 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     delete(RT12);
 
     /*  add q_n,m|beta_n><beta_m|psi> on states_res.psiR */
-
-
-
     RmgTimer *RT3 = new RmgTimer("3-OrbitalOptimize: nonortho");
     get_nonortho_res(states, theta, states1);
+
     delete(RT3);
     RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm");
     get_qnm_res(theta);
@@ -131,20 +129,11 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         t1 = -1.0;
         daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
 
-        /* Pack psi into smoothing array */
-        /*		pack_ptos(sg_orbit, states[st1].psiR, ixx, iyy, izz); 
-         */
-        /* A operating on psi stored in work2 */
-        /*		app_cil(sg_orbit, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid()); 
-         */
-        //FillOrbitalBorders(orbital_border, states[st1].psiR, ixx, iyy, izz, order);
-        //FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+        /* A operating on psi stored in orbit_tem */
         OFD->app_del2_np(states[st1].psiR, orbit_tem, hxgrid, hygrid, hzgrid);
-
-     //   app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
         t1 = 1.0;
         daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
-        //OFD->app_del2_np(states[st1].psiR, orbit_tem, hxgrid, hygrid, hzgrid);
+        ZeroBoundary(states1[st1].psiR, ixx, iyy, izz);
 
         /*                                                                     
          * Add the contribution of the non-local potential to the 
@@ -230,7 +219,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     delete(RT7);
 
-    // normalize_orbits(states);
+    normalize_orbits(states);
 
 
 
@@ -256,7 +245,6 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
     int num_recv;
     double temp;
     int st11;
-
 
     state_per_proc = ct.state_per_proc + 2;
 
