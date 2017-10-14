@@ -124,7 +124,7 @@ double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int
     }
     else if(ct.discretization == CENTRAL_DISCRETIZATION) {
 
-        double cc = CPP_app_del2_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
+        double cc = CPP_app_del2_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, ct.alt_laplacian);
         return cc;
 
     }
