@@ -972,7 +972,7 @@ void TradeImages::RMG_MPI_queue_allreduce(RmgType *buf, int count, MPI_Datatype 
 
     // Tag is based on tid in the lower 8 bits which gives us up to 256 threads
     qitem.comm = comm;
-    qitem.is_completed = false;
+    qitem.is_completed->store(false);
     qitem.is_unpacked = false;
     qitem.type = RMG_MPI_SUM;
     qitem.datatype = datatype;
