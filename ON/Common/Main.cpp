@@ -175,11 +175,11 @@ int main(int argc, char **argv)
         ReadBranchON(ct.cfile, ct, ControlMap);
         allocate_states();
         get_state_to_proc(states);
-        perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
-        for(int i = 0; i < ct.num_ions; i++) perm_ion_index[i] = i;
+        perm_ion_index = new unsigned int[ct.num_ions + 1];
+        for(int i = 0; i < ct.num_ions + 1; i++) perm_ion_index[i] = i;
 
-        perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
-        rev_perm_state_index = (unsigned int *) malloc(ct.num_states * sizeof(int));
+        perm_state_index = new unsigned int[ct.num_states];
+        rev_perm_state_index = new unsigned int[ct.num_states];
 
         switch(ct.runflag)
         {
