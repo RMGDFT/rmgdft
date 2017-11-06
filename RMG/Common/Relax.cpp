@@ -141,9 +141,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
 
         /* save data to file for future restart */
-        if (ct.checkpoint)
-            if ( ct.md_steps % ct.checkpoint == 0 )
-                WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+	WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
 
         /* check force convergence */
