@@ -48,7 +48,7 @@
 
 /*Set this to 1 to write out true NL force and the part
  * that comes from eigenvalues*/
-#define VERBOSE 0
+#define VERBOSE 1
 
 template void Nlforce<double> (double *, Kpoint<double> **Kptr, double *force_nl);
 template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<double>> **Kptr, double *force_nl);
@@ -245,7 +245,7 @@ ct.state_block_size);
                 par_gamma = &par_gamma_allions[ion * 3 * max_nl2];
                 par_omega = &par_omega_allions[ion * 3 * max_nl2];
 
-                PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr, state_start[ib], state_end[ib], sint_derx, sint_dery, sint_derz);
+                PartialGamma (kpt, gion, par_gamma, par_omega, nion, nh, Kptr, state_start[ib], state_end[ib], sint_derx, sint_dery, sint_derz);
 
             }
             delete RT1;

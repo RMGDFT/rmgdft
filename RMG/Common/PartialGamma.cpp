@@ -42,18 +42,18 @@
 /* If you want this , you should also make sure that VERBOSE flag is enabled in
  * nlforce.c*/
 
-template void PartialGamma<double> ( int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
+template void PartialGamma<double> ( int kidx,int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
                      Kpoint<double> **Kptr, int state_start, int state_end, double * sint_derx, double * sint_dery, double * sint_derz );
-template void PartialGamma<std::complex<double>> ( int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
+template void PartialGamma<std::complex<double>> ( int kidx,int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
                     Kpoint<std::complex<double>> **Kptr, int state_start, int state_end, std::complex<double> *sint_derx,
                     std::complex<double> *sint_dery, std::complex<double> *sint_derz);
 
 
-template <typename OrbitalType> void PartialGamma (
+template <typename OrbitalType> void PartialGamma (int kidx,
         int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
         Kpoint<OrbitalType> **Kptr, int state_start, int state_end, OrbitalType *sint_derx, OrbitalType *sint_dery, OrbitalType *sint_derz)
 {
-    int i, j, idx, kidx, istate, size;
+    int i, j, idx,  istate, size;
     double *gamma_x, *gamma_y, *gamma_z;
     double *omega_x, *omega_y, *omega_z;
     double t1;
@@ -72,8 +72,6 @@ template <typename OrbitalType> void PartialGamma (
     omega_z = omega_y + size;
 
 
-    for (kidx = 0; kidx < ct.num_kpts_pe; kidx++)
-    {
         for (istate = state_start; istate < state_end; istate++)
         {
             int istate_local = istate - state_start;
@@ -129,6 +127,6 @@ template <typename OrbitalType> void PartialGamma (
                 }               /* end for j */
             }                   /*end for i */
         }                       /*end for istate */
-    }                           /*end for kidx */
+
 
 }

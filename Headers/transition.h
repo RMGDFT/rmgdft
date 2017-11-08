@@ -222,7 +222,7 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
 template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh , Kpoint<OrbitalType> **Kptr);
 
 
-template <typename OrbitalType> void PartialGamma (
+template <typename OrbitalType> void PartialGamma (int kpt,
                     int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
                     Kpoint<OrbitalType> **kptr, int state_start, int state_end, 
                     OrbitalType *sint_derx, OrbitalType *sint_dery, OrbitalType *sint_derz);
