@@ -233,6 +233,7 @@ std::unordered_map<std::string, const int> SymbolToMass ({
 {"Hs", 277.0000},
 {"Mt", 276.0000},
 {"Ds", 281.0000},
+{"DLO", 1000000.0000},
 });
 
 

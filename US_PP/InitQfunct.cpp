@@ -61,6 +61,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
     {
 
         sp = &ct.sp[isp];
+        if(!std::strcmp(sp->atomic_symbol, "DLO")) continue;
         if (Verify ("write_pseudopotential_plots", true, ControlMap))
         {
             snprintf (newname1, MAX_PATH, "q_%s.xmgr", sp->atomic_symbol);
