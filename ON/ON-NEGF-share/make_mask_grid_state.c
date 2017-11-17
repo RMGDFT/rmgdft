@@ -26,7 +26,7 @@ void make_mask_grid_state(int level, STATE * states)
     int state;
     int cut_grid[5];
    
-    cut_grid[0] = 2;
+    cut_grid[0] = 4;
     cut_grid[1] = 2;
     cut_grid[2] = 2;
     cut_grid[3] = 2;
@@ -55,10 +55,13 @@ void make_mask_grid_state(int level, STATE * states)
             for (iy = 0; iy < dim[1]; iy++)
                 for (iz = 0; iz < dim[2]; iz++)
                 {
-                    if( (ix <cut_grid[level]) | (ix >=dim[0]-cut_grid[level]) 
-                       |(iy <cut_grid[level]) | (iy >=dim[1]-cut_grid[level]) 
-                       |(iz <cut_grid[level]) | (iz >=dim[2]-cut_grid[level])) 
-                    maskptr[ix * incx + iy * incy + iz] = 0;
+                    if(states[state].radius > 0.0)
+                    {
+                        if( (ix <cut_grid[level]) | (ix >=dim[0]-cut_grid[level]) 
+                           |(iy <cut_grid[level]) | (iy >=dim[1]-cut_grid[level]) 
+                           |(iz <cut_grid[level]) | (iz >=dim[2]-cut_grid[level])) 
+                        maskptr[ix * incx + iy * incy + iz] = 0;
+                    }
                 }
     }
 

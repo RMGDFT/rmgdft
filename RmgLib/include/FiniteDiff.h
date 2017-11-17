@@ -75,6 +75,7 @@ private:
 
     bool alt_laplacian;
     // For non-periodic boundary conditions.
+    double *np_weight;
     double *np_xweight;
     double *np_yweight;
     double *np_zweight;
@@ -82,6 +83,7 @@ private:
     int *xoff;
     int *yoff;
     int *zoff;
+    int order;
     int stride;
     
 

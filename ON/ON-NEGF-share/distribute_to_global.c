@@ -26,6 +26,10 @@ void distribute_to_global(double * distr_array, double * global_array)
 
     int ix, iy, iz, ii, jj, kk;
     int idx2, idx1, incx, incx1, incy, incy1;
+    int dimx =  get_PX0_GRID();
+    int dimy =  get_PY0_GRID();
+    int dimz =  get_PZ0_GRID();
+    int global_basis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
     incx = get_PY0_GRID() * get_PZ0_GRID();
     incy = get_PZ0_GRID();
@@ -36,19 +40,18 @@ void distribute_to_global(double * distr_array, double * global_array)
     jj =  get_PY_OFFSET();
     kk =  get_PZ_OFFSET();
 
-    for (idx1 = 0; idx1 < get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(); idx1++)
+    for (idx1 = 0; idx1 < global_basis; idx1++)
         global_array[idx1] = 0.0;
 
-    for (ix = 0; ix < get_PX0_GRID(); ix++)
-        for (iy = 0; iy < get_PY0_GRID(); iy++)
-            for (iz = 0; iz < get_PZ0_GRID(); iz++)
+    for (ix = 0; ix < dimx; ix++)
+        for (iy = 0; iy < dimy; iy++)
+            for (iz = 0; iz < dimz; iz++)
             {
                 idx1 = ix * incx + iy * incy + iz;
                 idx2 = (ix + ii) * incx1 + (iy + jj) * incy1 + iz + kk;
                 global_array[idx2] = distr_array[idx1];
             }
 
-    idx1 = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-    global_sums(global_array, &idx1, pct.grid_comm);
+    global_sums(global_array, &global_basis, pct.grid_comm);
 
 }

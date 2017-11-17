@@ -16,7 +16,21 @@
 #include "main.h"
 #include "prototypes_on.h"
 
-static int fold_to_unitcell(int, int);
+
+int inline fold_to_unitcell(int ix, int NX)
+{
+
+    int item;
+
+    if (ix < 0)
+        item = ix + NX;
+    else if (ix >= NX)
+        item = ix - NX;
+    else
+        item = ix;
+
+    return item;
+}
 
 void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
                            double * psi2, double * rho_global, int mode, 
@@ -32,6 +46,9 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
     int ix1, ix2, iy1, iy2, iz1, iz2, idx1, idx2;
     int ix3, iy3, iz3, idx3;
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
+    int nx_grid = get_NX_GRID();
+    int ny_grid = get_NY_GRID();
+    int nz_grid = get_NZ_GRID();
 
     if (mode == 0)
         index = (st1 - ct.state_begin) * ct.num_states + st2;
@@ -82,18 +99,18 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
     {
         ix1 = (ix - states[st1].ixmin) * incx;
         ix2 = (ix - states[st2].ixmin) * incx1;
-        ix3 = fold_to_unitcell(ix, get_NX_GRID()) * get_NY_GRID() * get_NZ_GRID();
+        ix3 = fold_to_unitcell(ix, nx_grid) * ny_grid * nz_grid;
 
         for (iy = ylow1; iy <= yhigh1; iy++)
         {
             iy1 = (iy - states[st1].iymin) * incy;
             iy2 = (iy - states[st2].iymin) * incy1;
-            iy3 = fold_to_unitcell(iy, get_NY_GRID()) * get_NZ_GRID();
+            iy3 = fold_to_unitcell(iy, ny_grid) * nz_grid;
             for (iz = zlow1; iz <= zhigh1; iz++)
             {
                 iz1 = iz - states[st1].izmin;
                 iz2 = iz - states[st2].izmin;
-                iz3 = fold_to_unitcell(iz, get_NZ_GRID());
+                iz3 = fold_to_unitcell(iz, nz_grid);
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 idx3 = ix3 + iy3 + iz3;
@@ -103,7 +120,7 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
             {
                 iz1 = iz - states[st1].izmin - zshift1;
                 iz2 = iz - states[st2].izmin - zshift2;
-                iz3 = fold_to_unitcell(iz, get_NZ_GRID());
+                iz3 = fold_to_unitcell(iz, nz_grid);
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 idx3 = ix3 + iy3 + iz3;
@@ -115,13 +132,13 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
         {
             iy1 = (iy - states[st1].iymin - yshift1) * incy;
             iy2 = (iy - states[st2].iymin - yshift2) * incy1;
-            iy3 = fold_to_unitcell(iy, get_NY_GRID()) * get_NZ_GRID();
+            iy3 = fold_to_unitcell(iy, ny_grid) * nz_grid;
 
             for (iz = zlow1; iz <= zhigh1; iz++)
             {
                 iz1 = iz - states[st1].izmin;
                 iz2 = iz - states[st2].izmin;
-                iz3 = fold_to_unitcell(iz, get_NZ_GRID());
+                iz3 = fold_to_unitcell(iz, nz_grid);
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 idx3 = ix3 + iy3 + iz3;
@@ -132,7 +149,7 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
             {
                 iz1 = iz - states[st1].izmin - zshift1;
                 iz2 = iz - states[st2].izmin - zshift2;
-                iz3 = fold_to_unitcell(iz, get_NZ_GRID());
+                iz3 = fold_to_unitcell(iz, nz_grid);
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 idx3 = ix3 + iy3 + iz3;
@@ -145,19 +162,19 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
     {
         ix1 = (ix - states[st1].ixmin - xshift1) * incx;
         ix2 = (ix - states[st2].ixmin - xshift2) * incx1;
-        ix3 = fold_to_unitcell(ix, get_NX_GRID()) * get_NY_GRID() * get_NZ_GRID();
+        ix3 = fold_to_unitcell(ix, nx_grid) * ny_grid * nz_grid;
 
         for (iy = ylow1; iy <= yhigh1; iy++)
         {
             iy1 = (iy - states[st1].iymin) * incy;
             iy2 = (iy - states[st2].iymin) * incy1;
-            iy3 = fold_to_unitcell(iy, get_NY_GRID()) * get_NZ_GRID();
+            iy3 = fold_to_unitcell(iy, ny_grid) * nz_grid;
 
             for (iz = zlow1; iz <= zhigh1; iz++)
             {
                 iz1 = iz - states[st1].izmin;
                 iz2 = iz - states[st2].izmin;
-                iz3 = fold_to_unitcell(iz, get_NZ_GRID());
+                iz3 = fold_to_unitcell(iz, nz_grid);
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 idx3 = ix3 + iy3 + iz3;
@@ -168,7 +185,7 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
             {
                 iz1 = iz - states[st1].izmin - zshift1;
                 iz2 = iz - states[st2].izmin - zshift2;
-                iz3 = fold_to_unitcell(iz, get_NZ_GRID());
+                iz3 = fold_to_unitcell(iz, nz_grid);
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 idx3 = ix3 + iy3 + iz3;
@@ -180,12 +197,12 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
         {
             iy1 = (iy - states[st1].iymin - yshift1) * incy;
             iy2 = (iy - states[st2].iymin - yshift2) * incy1;
-            iy3 = fold_to_unitcell(iy, get_NY_GRID()) * get_NZ_GRID();
+            iy3 = fold_to_unitcell(iy, ny_grid) * nz_grid;
             for (iz = zlow1; iz <= zhigh1; iz++)
             {
                 iz1 = iz - states[st1].izmin;
                 iz2 = iz - states[st2].izmin;
-                iz3 = fold_to_unitcell(iz, get_NZ_GRID());
+                iz3 = fold_to_unitcell(iz, nz_grid);
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 idx3 = ix3 + iy3 + iz3;
@@ -196,7 +213,7 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
             {
                 iz1 = iz - states[st1].izmin - zshift1;
                 iz2 = iz - states[st2].izmin - zshift2;
-                iz3 = fold_to_unitcell(iz, get_NZ_GRID());
+                iz3 = fold_to_unitcell(iz, nz_grid);
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 idx3 = ix3 + iy3 + iz3;
@@ -208,18 +225,3 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
 }
 
 
-
-static int fold_to_unitcell(int ix, int NX)
-{
-
-    int item;
-
-    if (ix < 0)
-        item = ix + NX;
-    else if (ix >= NX)
-        item = ix - NX;
-    else
-        item = ix;
-
-    return item;
-}

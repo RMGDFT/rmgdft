@@ -69,7 +69,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
 
     BaseGrid *OG = new BaseGrid(dimx, dimy, dimz, 1, 1, 1, 0, 1);
     FiniteDiff *FD = new FiniteDiff(&Rmg_L, OG, CLUSTER, CLUSTER, CLUSTER, 1, 2);
-
+//printf("LLLLLLLLL %d  %d\n",level,max_levels);
     int ixoff = 0;
     int iyoff = 0;
     int izoff = 0;
@@ -122,6 +122,9 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     dy2 = dimy / 2 + 1;
     dz2 = dimz / 2 + 1;
     siz2 = dx2 * dy2 * dz2;
+    if(!(dx2 % 2)) max_levels = 0;
+    if(!(dy2 % 2)) max_levels = 0;
+    if(!(dz2 % 2)) max_levels = 0;
 
 /* set storage pointers in the current workspace */
     newv = &work[0];

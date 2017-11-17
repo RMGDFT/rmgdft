@@ -110,7 +110,6 @@ private:
 
     template <typename RmgType> void trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_imagesx_central_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
-    template <typename RmgType> void trade_imagesx_central_local (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_imagesx_central_async_managed (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_images1_central_async (RmgType * f, int dimx, int dimy, int dimz);
     template <typename RmgType> void trade_images1_async (RmgType * f, int dimx, int dimy, int dimz);
@@ -136,9 +135,7 @@ public:
     void set_gridpe(int gridpe);
     template <typename RmgType> void trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type);
     template <typename RmgType> void trade_images (RmgType * mat, int dimx, int dimy, int dimz, int type);
-
-
-
+    template <typename RmgType> void trade_imagesx_central_local (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
 
 };
 

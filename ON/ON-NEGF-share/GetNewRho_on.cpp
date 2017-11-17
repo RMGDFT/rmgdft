@@ -44,6 +44,8 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
     int loop, state_per_proc, num_recv;
     double *rho_temp;
     double tem;
+    int global_basis = Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1);
+    int global_fbasis = get_FPX0_GRID() *get_FPY0_GRID() *get_FPZ0_GRID();
 
     int st11;
 
@@ -53,7 +55,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
     rho_temp = new double[Rmg_G->get_P0_BASIS(1)];
 
 
-    for (idx = 0; idx < Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1); idx++)
+    for (idx = 0; idx < global_basis; idx++)
         rho_global[idx] = 0.;
 
     RmgTimer *RT1 = new RmgTimer("3-get_new_rho: states in this proc");
@@ -110,11 +112,8 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 
 
     RmgTimer *RT3 = new RmgTimer("3-get_new_rho: distribution");
-    idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-    global_sums(rho_global, &idx, pct.grid_comm);
-
+    MPI_Allreduce(MPI_IN_PLACE, rho_global, global_basis, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     global_to_distribute(rho_global, rho_temp);
-
     delete(RT3);
 
     RmgTimer *RT4 = new RmgTimer("3-get_new_rho: interpolation");
@@ -145,7 +144,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
     RhoAugmented(rho, rho_matrix);
 
     tem = 0.0;
-    for(st1 = 0; st1 < get_FPX0_GRID() *get_FPY0_GRID() *get_FPZ0_GRID(); st1++)
+    for(st1 = 0; st1 < global_fbasis; st1++)
         tem += rho[st1];
 
 

@@ -16,6 +16,7 @@
 #include "init_var.h"
 #include "RmgTimer.h"
 #include "common_prototypes1.h"
+#include "Scalapack.h"
 
 //#include "main.h"
 //#include "init_var.h"
@@ -44,6 +45,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     int mb= pct.desca[4];
     int  mxllda2;
     mxllda2 = MXLLDA * MXLCOL;
+    double *work1 = new double[mxllda2]();
 
     RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
 
@@ -53,10 +55,35 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
             pct.desca, pct.desca[1]);
 
-    //dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
-    //PDTRAN(&numst, &numst, &half, uu_dis, &ione, &ione, pct.desca,
-    //            &half, Hij, &ione, &ione, pct.desca);
+#if 0
+dcopy(&mxllda2, matB, &ione, l_s, &ione);
+PDTRAN(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
+            &half, matB, &ione, &ione, pct.desca);
+
+    
+    pdlaset_( "A", &numst, &numst, &zero, &one, work1, &ione, &ione, pct.desca );
+    int *ipiv = new int[2*numst]();
+    pdgesv_(&numst, &numst, matB, &ione, &ione, pct.desca, ipiv, work1, &ione, &ione, pct.desca, &info);
+    delete [] ipiv;
+
+    pdgemm_("n", "n", &numst, &numst, &numst, &one,
+                            work1, &ione, &ione, pct.desca, Hij, &ione,
+                            &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
+    dcopy(&mxllda2, uu_dis, &ione, Hij, &ione);
+    PDTRAN(&numst, &numst, &half, Hij, &ione, &ione, pct.desca,
+                &half, uu_dis, &ione, &ione, pct.desca);
+
+    dcopy(&mxllda2, uu_dis, &ione, work1, &ione);
     delete(RT2);
+
+Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
+            pct.desca, pct.desca[1]);
+Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
+            pct.desca, pct.desca[1]);
+pdgemm_("n", "n", &numst, &numst, &numst, &one,
+                        matB, &ione, &ione, pct.desca, work1, &ione,
+                        &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
+#endif
 
     RmgTimer *RT = new RmgTimer("3-DiagScalapack: pdsygvx ");
     /* If I'm in the process grid, execute the program */
@@ -76,6 +103,9 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     /* Transform the generalized eigenvalue problem to a sStandard form */
     dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
     dcopy(&mxllda2, matB, &ione, l_s, &ione);
+//dcopy(&mxllda2, matB, &ione, l_s, &ione);
+//PDTRAN(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
+//           &half, matB, &ione, &ione, pct.desca);
 
     char *range = "a";
     double vx = 0.0;
@@ -93,7 +123,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
 
     lwork = -1;
     liwork = -1;
-
 
     PDSYGVX (&ione, jobz, range, uplo, &numst, uu_dis, &ione, &ione, pct.desca,
             l_s, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
@@ -185,8 +214,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
 
     RmgTimer *RT1b = new RmgTimer("3-DiagScalapack: (S^-1)H");
 
-    int *ipiv;
-    ipiv = new int[numst];
+    int *ipiv = new int[numst];
     /* Compute matrix theta = matB^-1 * Hij  */
     pdgetrf(&numst, &numst, matB, &ione, &ione, pct.desca, ipiv, &info);
     if(info !=0)
@@ -210,6 +238,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
             pct.descb, pct.desca[1]);
     delete(RT1b);
 
+    delete [] work1;
 
 
 }

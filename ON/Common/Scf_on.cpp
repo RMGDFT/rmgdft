@@ -20,7 +20,6 @@
 #include "blas.h"
 #include "RmgSumAll.h"
 
-
 #include "prototypes_on.h"
 #include "init_var.h"
 #define DELTA_V_MAX 1.0
@@ -30,6 +29,7 @@ void update_pot(double *, double *, double *, double *, double *, double *, doub
 void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
         int Nrefresh, double scale, int preconditioning);
 extern int it_scf;
+
 
 void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
@@ -84,16 +84,9 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 #else
     RmgTimer *RTb = new RmgTimer("2-SCF: DiagScalapack");
     DiagScalapack(states, ct.num_states, Hij_00, Bij_00, work_matrix_row, theta);
+
     delete(RTb);
 #endif
-for (int istate = ct.state_begin; istate < ct.state_end; istate++)
-{
-  int ixx = states[istate].ixmax - states[istate].ixmin + 1;
-  int iyy = states[istate].iymax - states[istate].iymin + 1;
-  int izz = states[istate].izmax - states[istate].izmin + 1;
-  ZeroBoundary(states[istate].psiR, ixx, iyy, izz);
-
-}
 
     if(ct.spin_flag)
     {
@@ -137,6 +130,7 @@ for (int istate = ct.state_begin; istate < ct.state_end; istate++)
     delete(RT2);
 
     RmgTimer *RT3 = new RmgTimer("2-SCF: pulay mix");
+
     if(ct.charge_mixing_type == 0)
     {
         get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);

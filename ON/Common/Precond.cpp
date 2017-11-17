@@ -5,13 +5,63 @@
 #include	"main.h"
 #include	"prototypes_on.h"
 #include "init_var.h"
+#include <boost/circular_buffer.hpp>
 
 
 void Precond(double *x)
 {
 
-    double *work1 = new double[4 * ct.max_orbit_size];
-    double *work2 = new double[4 * ct.max_orbit_size];
+    static boost::circular_buffer<double> rms(3);
+    double rms_hist[3];
+    static double beta=0.5;
+    if(ct.scf_steps >= 3)
+    {
+        rms_hist[0] = rms.back();
+        rms.pop_back();
+        rms_hist[1] = rms.back();
+        rms.pop_back();
+        rms_hist[2] = rms.back();
+        rms.pop_back();
+        rms.push_back(rms_hist[2]);
+        rms.push_back(rms_hist[1]);
+        rms.push_back(rms_hist[0]);
+
+        double ratio0 = rms_hist[0] / ct.rms;
+        double ratio1 = rms_hist[1] / rms_hist[0];
+        double ratio2 = rms_hist[2] / rms_hist[1];
+#if 0
+        if((ratio0 > ratio1) && (ratio1 > ratio2))
+        {
+             beta *= 2.0;
+             if(ratio0 < 1.0) beta /= 4.0;
+        }
+        else if((ratio0 > ratio1) && (ratio1 < ratio2))
+        {
+             beta *= 2.0;
+             if(ratio0 < 1.0) beta /= 4.0;
+        }
+        else if((ratio0 < ratio1) && (ratio1 > ratio2))
+        { 
+             if(ratio0 < 1.0) beta /= 2.0;
+        }
+        else if((ratio0 < ratio1) && (ratio1 < ratio2))
+        {
+            beta *= 2.0; 
+             if(ratio0 < 1.0) beta /= 4.0;
+        }
+#endif
+        if(ratio0 > ratio1)
+            beta *= 1.5;
+        else
+            beta /= 1.5;
+
+        if(beta > 1.5) beta = 1.5;
+        printf("RATIO = %f  %f  %f  %f\n",ratio0, ratio1, ratio2, beta);
+        printf("HIST  = %f  %f  %f  %f\n",ct.rms,rms_hist[0],rms_hist[1],rms_hist[2]);
+    }
+    rms.push_back(ct.rms);
+
+    double *work1 = new double[4 * ct.max_orbit_size]();
 
     double gamma = get_gamma_precond(vtot_c, states[0].eig[0]);
     int size = 0;
@@ -30,17 +80,15 @@ void Precond(double *x)
         /* compute the preconditioned steepest descent direction
          * -> work1 */
 
-        ZeroBoundary(psiR, ixx, iyy, izz);
         PrecondMg(psiR, work1, &states[istate]);
+
         for (int idx = 0; idx < states[istate].size; idx++)
         {
-            psiR[idx] = 0.5 * work1[idx];
+            psiR[idx] = beta*work1[idx];
         }
-        ZeroBoundary(psiR, ixx, iyy, izz);
 
     }
 
-    delete [] work2;
     delete [] work1;
 
 }

@@ -13,7 +13,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 
-extern BaseGrid *OG;
+BaseGrid *OG;
 FiniteDiff *MGFD;
 
 void PrecondMg(double *psiR, double *work1, STATE *sp)
@@ -23,12 +23,12 @@ void PrecondMg(double *psiR, double *work1, STATE *sp)
     double Zfac = 2.0 * ct.max_zvalence;
     double step = ct.eig_parm.gl_step;
     int levels = ct.eig_parm.levels;
+    FiniteDiff FD(&Rmg_L);
     if(ct.scf_steps < 2) levels = 0;
-
 
     int idx;
     /* Pre and post smoothings on each level */
-    int eig_pre[MAX_MG_LEVELS] = { 8, 8, 8, 20, 20, 20, 20, 20 };
+    int eig_pre[MAX_MG_LEVELS] = { 2, 2, 2, 20, 20, 20, 20, 20 };
     int eig_post[MAX_MG_LEVELS] = { 2, 2, 2, 2, 2, 2, 2, 2 };
 
     nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
@@ -65,18 +65,27 @@ void PrecondMg(double *psiR, double *work1, STATE *sp)
     {
 
 
-        diag = MGFD->app_del2_np(work1, work2, hxgrid, hygrid, hzgrid);
+        if(sp->radius > 0) 
+        {
+            diag = MGFD->app_del2_np(work1, work2, hxgrid, hygrid, hzgrid);
+        }
+        else
+        {
+             Rmg_T->trade_imagesx_central_local(work1, work3, ixx, iyy, izz, 4);
+             diag = FD.app8_del2 (work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+        }
         daxpy(&stopp0, &one, psiR, &ione, work2, &ione);
 
 
         /* Now either smooth the wavefunction or do a multigrid cycle */
         if (cycles == ct.eig_parm.gl_pre)
+//if(0)
         {
 
             /* Pack the residual data into multigrid array */
-            ZeroBoundary(work2, ixx, iyy, izz, 1);
+            if(sp->radius > 0)ZeroBoundary(work2, ixx, iyy, izz, 1);
             mg_restrict(work2, work4, ixx-2, iyy-2, izz-2, dx2-2, dy2-2, dz2-2, ixoff, iyoff, izoff);
-            ZeroBoundary(work4, dx2,dy2,dz2, 1);
+            if(sp->radius > 0)ZeroBoundary(work4, dx2,dy2,dz2, 1);
         
             /* Do multigrid step with solution in sg_twovpsi */
             MgridSolvLocal(work2, work4, work3, dx2, dy2, dz2,
@@ -84,9 +93,9 @@ void PrecondMg(double *psiR, double *work1, STATE *sp)
                        levels, eig_pre, eig_post, step,
                        1, sp->istate, &sp->inum, 2.0*Zfac);
 
-            ZeroBoundary(work2, dx2,dy2,dz2, 1);
+            if(sp->radius > 0)ZeroBoundary(work2, dx2,dy2,dz2, 1);
             mg_prolong(work4, work2, ixx-2, iyy-2, izz-2, dx2-2, dy2-2, dz2-2, ixoff, iyoff, izoff);
-            ZeroBoundary(work4, ixx, iyy, izz, 1);
+            if(sp->radius > 0)ZeroBoundary(work4, ixx, iyy, izz, 1);
 
             t1 = -1.;
             /* Update correction for wavefuntion */
@@ -102,7 +111,8 @@ void PrecondMg(double *psiR, double *work1, STATE *sp)
             daxpy(&stopp0, &t1, work2, &ione, work1, &ione);
         }                       /* end if cycles == ct.eig_parm.gl_pre */
 
-        ZeroBoundary(work1, ixx, iyy, izz);
+        if(sp->radius > 0)ZeroBoundary(work1, ixx, iyy, izz);
+
 
     }                           /* end for Smoothing cycles */
 
