@@ -44,7 +44,7 @@ void Fftpack_coarse_to_fine(std::complex<double> *coarse, double *fine,
 
 // Used to performa a parallel interpolation from the wavefunction grid to the 
 // potential grid using a phase shifting technique
-void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
+void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, bool use_sqrt)
 {
 
   int pbasis_c = G.get_P0_BASIS(1);
@@ -86,7 +86,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio)
 
 
   // Get the forward transform
-  if(ct.sqrt_interpolation)
+  if(use_sqrt)
   {
       for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(sqrt(coarse[ix]), 0.0);
   }

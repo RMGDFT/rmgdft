@@ -410,7 +410,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->get_potential(q0, dq0_drho, dq0_dgradrho, calc_potential, thetas, calc_basis, N_calc, calc_gx, calc_gy, calc_gz, planewaves_calc);
 
   if(use_coarsegrid) {
-      FftInterpolation (G, calc_potential, potential, G.default_FG_RATIO);
+      FftInterpolation (G, calc_potential, potential, G.default_FG_RATIO, false);
   }
   else {
       for(int ix = 0;ix < this->pbasis;ix++)potential[ix] = calc_potential[ix];
