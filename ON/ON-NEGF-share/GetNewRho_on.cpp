@@ -125,7 +125,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
             break;
         case FFT_INTERPOLATION:
             //FftFilter(work, *coarse_pwaves, ct.cparm, LOW_PASS);  // limit to G-vectors within the inscribed sphere
-            FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO);
+            FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
             break;
         default:
             //Dprintf ("charge interpolation is set to %d", ct.interp_flag);
