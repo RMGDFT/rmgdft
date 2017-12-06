@@ -48,7 +48,6 @@
 
 /*Set this to 1 to write out true NL force and the part
  * that comes from eigenvalues*/
-#define VERBOSE 1
 
 template void Nlforce<double> (double *, Kpoint<double> **Kptr, double *force_nl);
 template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<double>> **Kptr, double *force_nl);
@@ -350,11 +349,12 @@ ct.state_block_size);
     }
 
 
-#if VERBOSE  
-    output_force(qforce, "Non-local forces: QForce");
-    output_force(tmp_force_gamma, "Non-local forces: der_gamma term");
-    output_force(tmp_force_omega, "Non-local forces: der_omega term");
-#endif
+    if(ct.verbose)
+    {
+        output_force(qforce, "Non-local forces: QForce");
+        output_force(tmp_force_gamma, "Non-local forces: der_gamma term");
+        output_force(tmp_force_omega, "Non-local forces: der_omega term");
+    }
 
 
     //    delete[] par_gamma;
