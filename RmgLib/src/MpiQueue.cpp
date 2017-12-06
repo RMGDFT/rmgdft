@@ -159,8 +159,11 @@ void MpiQueue::manager_thread(MpiQueue *Q)
         {
             if(Q->running.load(std::memory_order_acquire))
             {
-                //std::this_thread::yield();
+#if USE_SPINWAIT
                 Q->spinwait(100);
+#else
+                std::this_thread::yield();
+#endif
             }
             else
             {
