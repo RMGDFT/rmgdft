@@ -33,6 +33,8 @@
 
 void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, double *rho_matrix, double *theta_ptr)
 {
+
+    RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
     int ione = 1;    /* blas constants */
     char *uplo = "u", *jobz = "v";
 
@@ -47,7 +49,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     mxllda2 = MXLLDA * MXLCOL;
     double *work1 = new double[mxllda2]();
 
-    RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
 
     RmgTimer  *RT2 = new RmgTimer("3-DiagScalapack: cpdgemr2d");
     Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
@@ -210,7 +211,6 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
     Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
             pct.descb, pct.desca[1]);
     delete(RT4);
-    delete(RT0);
 
     RmgTimer *RT1b = new RmgTimer("3-DiagScalapack: (S^-1)H");
 
@@ -241,6 +241,7 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
     delete [] work1;
 
 
+    delete(RT0);
 }
 #endif
 
