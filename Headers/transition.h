@@ -60,10 +60,10 @@ template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, ch
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid);
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid, BaseGrid *G, TradeImages *T);
-template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid);
-template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid, BaseGrid *G, TradeImages *T);
-template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid);
-template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid, BaseGrid *G, TradeImages *T);
+template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid);
+template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, BaseGrid *G, TradeImages *T);
+template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid);
+template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, BaseGrid *G, TradeImages *T);
 
 void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio);
 template <typename KpointType>
@@ -283,7 +283,7 @@ void PackGftoc(int, int, int, int, int, int, std::complex<double> *, std::comple
 double IonIonEnergy_Ewald();
 void IIforce(double *);
 void InitDelocalizedLocalpp(double *vlocpp_r);
-template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, char *grid);
+template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const char *grid);
 
 #endif
 #endif

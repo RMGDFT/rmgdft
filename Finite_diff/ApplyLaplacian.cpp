@@ -36,19 +36,19 @@
 // IN:    grid = "Coarse" or "Fine" for grid type
 
 
-template double ApplyLaplacian<float>(float *, float *, int, char *);
-template double ApplyLaplacian<double>(double *, double *, int, char *);
-template double ApplyLaplacian<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, char *);
-template double ApplyLaplacian<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, char *);
+template double ApplyLaplacian<float>(float *, float *, int, const char *);
+template double ApplyLaplacian<double>(double *, double *, int, const char *);
+template double ApplyLaplacian<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, const char *);
+template double ApplyLaplacian<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, const char *);
 
-template double ApplyLaplacian<float>(float *, float *, int, char *, BaseGrid *, TradeImages *);
-template double ApplyLaplacian<double>(double *, double *, int, char *, BaseGrid *, TradeImages *);
-template double ApplyLaplacian<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, char *, BaseGrid *, TradeImages *);
-template double ApplyLaplacian<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, char *, BaseGrid *, TradeImages *);
+template double ApplyLaplacian<float>(float *, float *, int, const char *, BaseGrid *, TradeImages *);
+template double ApplyLaplacian<double>(double *, double *, int, const char *, BaseGrid *, TradeImages *);
+template double ApplyLaplacian<std::complex<float> >(std::complex<float> *, std::complex<float> *, int, const char *, BaseGrid *, TradeImages *);
+template double ApplyLaplacian<std::complex<double> >(std::complex<double> *, std::complex<double> *, int, const char *, BaseGrid *, TradeImages *);
 
 // Generic version
 template <typename DataType>
-double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid)
+double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid)
 {
     int density;
     const char *coarse = "Coarse";
@@ -82,7 +82,7 @@ double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid)
 
 // Version that lets you use specific grid and trade image objects
 template <typename DataType>
-double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid, BaseGrid *G, TradeImages *T)
+double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, BaseGrid *G, TradeImages *T)
 {
     int density;
     const char *coarse = "Coarse";
