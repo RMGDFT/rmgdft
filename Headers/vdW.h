@@ -34,12 +34,18 @@
 #define VDW_NQPOINTS  20
 #define VDW_NRPOINTS  1024
 
+// Needed to deal with some issues when calling f90 module function from C++
+#if __ibmxl__
+extern "C" {void __vdw_splines_NMOD_spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values, double *d2y_dx2);}
+extern "C" {void __vdw_splines_NMOD_initialize_spline_interpolation (double *x, const int *Nx, double *d2y_dx2);}
+#define  spline_interpolation  __vdw_splines_NMOD_spline_interpolation
+#define  initialize_spline_interpolation  __vdw_splines_NMOD_initialize_spline_interpolation
+#else
 extern "C" {void __vdw_splines_MOD_spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values, double *d2y_dx2);}
 extern "C" {void __vdw_splines_MOD_initialize_spline_interpolation (double *x, const int *Nx, double *d2y_dx2);}
-
-// Needed to deal with some issues when calling f90 module function from C++
 #define  spline_interpolation  __vdw_splines_MOD_spline_interpolation
 #define  initialize_spline_interpolation  __vdw_splines_MOD_initialize_spline_interpolation
+#endif
 
 #ifdef __cplusplus
 

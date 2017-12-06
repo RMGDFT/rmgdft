@@ -45,6 +45,25 @@
 #include "xc.h"
 #endif
 
+#if __ibmxl__
+#define __funct_MOD_set_dft_from_name __funct_NMOD_set_dft_from_name
+#define __funct_MOD_get_dft_name __funct_NMOD_get_dft_name 
+#define __funct_MOD_dft_is_gradient __funct_NMOD_dft_is_gradient
+#define __funct_MOD_dft_is_meta __funct_NMOD_dft_is_meta
+#define __funct_MOD_dft_is_hybrid __funct_NMOD_dft_is_hybrid
+#define __funct_MOD_igcc_is_lyp __funct_NMOD_igcc_is_lyp
+#define __funct_MOD_dft_has_finite_size_correction __funct_NMOD_dft_has_finite_size_correction
+#define __funct_MOD_dft_is_nonlocc __funct_NMOD_dft_is_nonlocc
+#define __funct_MOD_xc __funct_NMOD_xc
+#define __funct_MOD_xc_spin __funct_NMOD_xc_spin
+#define __funct_MOD_nlc __funct_NMOD_nlc
+#define __funct_MOD_gcxc __funct_NMOD_gcxc
+#define __funct_MOD_gcx_spin __funct_NMOD_gcx_spin
+#define __funct_MOD_gcc_spin_more __funct_NMOD_gcc_spin_more
+#define __funct_MOD_gcc_spin __funct_NMOD_gcc_spin
+#define __funct_MOD_get_inlc __funct_NMOD_get_inlc
+#endif
+
 extern "C" void __funct_MOD_set_dft_from_name( const char *name, std::size_t len );
 extern "C" char *__funct_MOD_get_dft_name(void);
 extern "C" bool __funct_MOD_dft_is_gradient(void);
