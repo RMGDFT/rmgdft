@@ -11,6 +11,7 @@ usually world
 #include <stdlib.h>
 #include <math.h>
 #include "main.h"
+#include "blacs.h"
 
 
 /*

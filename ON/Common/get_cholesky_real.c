@@ -45,7 +45,7 @@ void get_cholesky_real(double *matS)
     int *iwork, liwork, locr;
     int nb, nproc;
     int mxllda2;
-    _fcd char_fcd1;
+    char *char_fcd1;
 
 
     nb = ct.scalapack_block_factor;
@@ -70,10 +70,10 @@ void get_cholesky_real(double *matS)
 
         /* Compute the Cholesky decomposition of statearray */
         char_fcd1 = &uplo;
-        PSPOTRF(char_fcd1, &numst, l_s, &ione, &ione, pct.desca, &info);
+        pdpotrf(char_fcd1, &numst, l_s, &ione, &ione, pct.desca, &info);
         if (info != 0)
         {
-            printf(" PSPOTRF, output info=%d\n", info);
+            printf(" pdpotrf, output info=%d\n", info);
             fflush(NULL);
             exit(0);
         }
@@ -88,12 +88,12 @@ void get_cholesky_real(double *matS)
         my_malloc( iwork, (size_t) (liwork), int );
 
         work = work_memory;
-        PSPOCON(char_fcd1, &numst, l_s, &ione, &ione, pct.desca,
+        pdpocon(char_fcd1, &numst, l_s, &ione, &ione, pct.desca,
                 &anorm, &rcond, work, &lwork, iwork, &liwork, &info);
         if (info != 0)
         {
-		printf("\n work space %f %d \n", work[0], lwork);
-            printf(" error in PSPOCON, info = %d\n", info);
+	    printf("\n work space %f %d \n", work[0], lwork);
+            printf(" error in pdpocon, info = %d\n", info);
             fflush(NULL);
             exit(0);
         }

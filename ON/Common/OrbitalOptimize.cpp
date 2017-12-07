@@ -18,7 +18,6 @@
 
 #include "prototypes_on.h"
 #include "init_var.h"
-#include "my_scalapack.h"
 #include "transition.h"
 #include "blas.h"
 #include "Kbpsi.h"

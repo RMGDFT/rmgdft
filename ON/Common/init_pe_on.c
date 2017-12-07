@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "init_var.h"
+#include "blacs.h"
+
 
 extern int mpi_nprocs;
 extern int mpi_myrank;
@@ -57,10 +59,10 @@ void init_pe_on(void)
     /* Initialize the array descriptors for the matrices */
     if(pct.scalapack_myrow !=-1)
     {
-        DESCINIT(pct.desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
+        descinit(pct.desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
         if (info != 0)
         {
-            printf(" init_pe: DESCINIT, info=%d\n", info);
+            printf(" init_pe: descinit, info=%d\n", info);
             fflush(NULL);
             exit(0);
 
@@ -73,11 +75,11 @@ void init_pe_on(void)
     int nprow, npcol, myrow,mycol;
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 
-    DESCINIT(pct.descb, &numst, &numst, &numst, &numst1, &rsrc, &csrc,
+    descinit(pct.descb, &numst, &numst, &numst, &numst1, &rsrc, &csrc,
             &ictxt, &numst, &info);
     if (info != 0)
     {
-        printf(" init_pe for 1xnpes: DESCINIT, info=%d\n", info);
+        printf(" init_pe for 1xnpes: descinit, info=%d\n", info);
         fflush(NULL);
         exit(0);
     }

@@ -26,7 +26,6 @@ potential, and add them into Aij.
 #include "prototypes_on.h"
 #include "init_var.h"
 
-#include "my_scalapack.h"
 #include "blas.h"
 #include "Kbpsi.h"
 

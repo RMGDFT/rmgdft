@@ -15,7 +15,6 @@ Get a particular wave st and store it in wave_global
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
-#include "my_scalapack.h"
 
 
 void get_wave(int st, STATE * states)
@@ -45,7 +44,7 @@ void get_wave(int st, STATE * states)
 		printf("proc %d:   zz_dis[%d] = %f\n", pct.gridpe, j, zz_dis[j]);
 	}
 */        
-        PDTRAN(&numst, &numst, &one, zz_dis, &IA, &JA, pct.desca, &zero, cc_dis, &IB, &JB, pct.desca);//transpose zz_dis to cc_dis
+        pdtran(&numst, &numst, &one, zz_dis, &IA, &JA, pct.desca, &zero, cc_dis, &IB, &JB, pct.desca);//transpose zz_dis to cc_dis
 
 	printf("print out cc_dis right after transpose to cc :\n");
 

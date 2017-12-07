@@ -6,11 +6,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-
 #include "make_conf.h"
 #include "params.h"
-
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "init_var.h"
@@ -25,9 +22,6 @@
 
 #if !ELEMENTAL_LIBS
 #include "blas.h"
-
-
-#include "my_scalapack.h"
 
 
 
@@ -125,14 +119,14 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
     lwork = -1;
     liwork = -1;
 
-    PDSYGVX (&ione, jobz, range, uplo, &numst, uu_dis, &ione, &ione, pct.desca,
+    pdsygvx (&ione, jobz, range, uplo, &numst, uu_dis, &ione, &ione, pct.desca,
             l_s, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
             &eigvs_found, eigs, &orfac, zz_dis, &ione, &ione, pct.desca, &lwork_tmp, &lwork,
             &liwork_tmp, &liwork, ifail, iclustr, gap, &info);
 
     if (info)
     {
-        printf ("\n PDSYGVX query failed, info is %d", info);
+        printf ("\n pdsygvx query failed, info is %d", info);
         exit(0);
     }
 
@@ -148,7 +142,7 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
 
 
     tol = 1.0e-15;
-    PDSYGVX (&ione, jobz, range, uplo, &numst, uu_dis, &ione, &ione, pct.desca,
+    pdsygvx (&ione, jobz, range, uplo, &numst, uu_dis, &ione, &ione, pct.desca,
             l_s, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
             &eigvs_found, eigs, &orfac, zz_dis, &ione, &ione, pct.desca, work2, &lwork,
             iwork, &liwork, ifail, iclustr, gap, &info);
@@ -156,7 +150,7 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
 
     if (info)
     {
-        printf ("\n PDSYGVX failed, info is %d", info);
+        printf ("\n pdsygvx failed, info is %d", info);
         exit(0);
     }
 
@@ -200,7 +194,7 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
 
     RmgTimer *RT3 = new RmgTimer("3-DiagScalapack: gemm ");
 
-    PSGEMM("N", "T", &numst, &numst, &numst, &one,
+    psgemm("N", "T", &numst, &numst, &numst, &one,
             uu_dis, &ione, &ione, pct.desca,
             zz_dis, &ione, &ione, pct.desca, &zero, mat_X, &ione, &ione, pct.desca);
 

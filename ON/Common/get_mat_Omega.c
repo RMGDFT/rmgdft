@@ -14,9 +14,8 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "Scalapack.h"
 
-
-#include "my_scalapack.h"
 
 
 
@@ -29,8 +28,8 @@ void get_mat_Omega(STATE * states, double Omega[])
 
     /* for parallel libraries */
     int myrow;
-    _fcd char_fcd1;
-    _fcd char_fcd2;
+    char * char_fcd1;
+    char * char_fcd2;
 
 
     myrow = pct.scalapack_myrow;
@@ -58,7 +57,7 @@ void get_mat_Omega(STATE * states, double Omega[])
         uplo = 'l';
         char_fcd1 = &side;
         char_fcd2 = &uplo;
-        PSSYMM(char_fcd1, char_fcd2, &numst, &numst, &one,
+        pssymm (char_fcd1, char_fcd2, &numst, &numst, &one,
                gamma_dis, &ione, &ione, pct.desca,
                zz_dis, &ione, &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
 
@@ -66,7 +65,7 @@ void get_mat_Omega(STATE * states, double Omega[])
         transb = 't';
         char_fcd1 = &transa;
         char_fcd2 = &transb;
-        PSGEMM(char_fcd1, char_fcd2, &numst, &numst, &numst, &one,
+        psgemm (char_fcd1, char_fcd2, &numst, &numst, &numst, &one,
                uu_dis, &ione, &ione, pct.desca,
                zz_dis, &ione, &ione, pct.desca, &zero, Omega, &ione, &ione, pct.desca);
 

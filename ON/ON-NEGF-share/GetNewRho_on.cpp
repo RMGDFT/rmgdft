@@ -20,7 +20,6 @@
 #include "transition.h"
 #include "prototypes_on.h"
 
-#include "my_scalapack.h"
 #include "blas.h"
 #include "RmgParallelFft.h"
 #include "BaseGrid.h"

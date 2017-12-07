@@ -151,7 +151,7 @@ protected:
     #define         descinit        descinit_
     #define         pdsyev          pdsyev_
     #define         pcheev          pzheev_
-    #define         pspocon         pdpocon_
+    #define         pspocon         pspocon_
     #define         pspotrf         pdpotrf_
     #define         pspotri         pdpotri_
     #define         pssygst         pdsygst_
@@ -181,6 +181,8 @@ protected:
     #define         pztrsm          pztrsm_
     #define         pdsygst         pdsygst_
     #define         pdsyrk          pdsyrk_
+    #define         pdgetrf         pdgetrf_
+    #define         pdgetrs         pdgetrs_
 #endif
 
 #ifdef __cplusplus
@@ -189,8 +191,11 @@ extern "C" {
 
 int Csys2blacs_handle(MPI_Comm SysCtxt );
 MPI_Comm Cblacs2sys_handle (int BlacsCtxt);
+void Cpdgemr2d(int, int, double*, int, int, int*, double*, int, int, int*, int);
 int numroc (int *, int *, int *, int *, int *);
 int indxg2p (int *, int *, int *, int *, int *);
+void pdgetrf( int *, int *, double *, int *, int *, int *, int *, int * );
+void pdgetrs( char *, int *, int *, double *, int *, int *, int *, int *, double *, int *, int *, int *, int *);
 void descinit (int[], int *, int *, int *, int *, int *, int *, int *, int *,
                int *);
 void pdgesv (int *, int *, double *, int * , int *, int *, int *, double *,

@@ -33,7 +33,7 @@ Documentation:
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
-#include "my_scalapack.h"
+#include "blacs.h"
 
 
 #define globalexit  exit
@@ -148,8 +148,8 @@ void diaginit(double *aa, int *desca, double *a, int lda)
 
 void dsymm_dis(char *side, char *uplo, int *nn, double *aa, double *bb, double *cc)
 {
-    _fcd char_fcd1;
-    _fcd char_fcd2;
+    char *char_fcd1;
+    char *char_fcd2;
     double zero = 0., one = 1.;
     int ione = 1;
 
@@ -161,7 +161,7 @@ void dsymm_dis(char *side, char *uplo, int *nn, double *aa, double *bb, double *
         char_fcd1 = side;
         char_fcd2 = uplo;
 
-        PSSYMM(char_fcd1, char_fcd2, nn, nn,
+        pssymm(char_fcd1, char_fcd2, nn, nn,
                &one, aa, &ione, &ione, pct.desca,
                bb, &ione, &ione, pct.desca, &zero, cc, &ione, &ione, pct.desca);
 

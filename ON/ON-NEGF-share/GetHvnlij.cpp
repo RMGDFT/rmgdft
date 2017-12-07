@@ -15,18 +15,14 @@ potential, and add them into Aij.
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-
 #include "make_conf.h"
 #include "params.h"
-
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgTimer.h"
 #include "transition.h"
 #include "prototypes_on.h"
 #include "init_var.h"
-
-#include "my_scalapack.h"
 #include "blas.h"
 #include "Kbpsi.h"
 
