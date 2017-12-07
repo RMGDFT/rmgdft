@@ -41,6 +41,31 @@ set (USE_LIBXC 0)
 set (USE_OPENBABEL_LIBS 1)
 set (USE_SVN 1)
 
+
+# spinwait option helps on some platforms but normally leave disabled
+add_definitions(-DUSE_SPINWAIT=0)
+
+# Append underscores to fortran functions called from C
+add_definitions(-DRMG_APPEND_UNDERSCORES=1)
+
+
+# Helps to find boost on some systems
+#set(Boost_NO_SYSTEM_PATHS "On")
+
+# If you are having problems with boost at link time try toggling these (e.g. some IBM Power machines)
+#set(Boost_USE_STATIC_LIBS        OFF)
+#set(Boost_USE_MULTITHREADED      ON)
+
+
+# Here set any extra compiler flags required for a specific platform
+# This is for stampede
+#set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
+#
+# Set extra arch and optimization flags here
+#set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops -flto")
+#set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
+
+
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
@@ -55,10 +80,6 @@ else(RMG_GPU_ENABLED)
     set(rmg-tddft "rmg-tddft-cpu")
 endif(RMG_GPU_ENABLED)
 
-
-# Here set any extra compiler flags required for a specific platform
-# This is for stampede
-#set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
 
 
 # Detect system type and set appropriate flags
@@ -97,15 +118,15 @@ endif()
 # Compiler flags. We currently only support GNU and Intel compilers so if
 # GNUCC is not detected we set the compiler to Intel
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_C_FLAGS "-Wall -O2 -g ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -march=native -fopenmp -m64 -I$(MKLROOT)/include")
-    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O2 -g -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT  -march=native -fopenmp -m64 -pthread -I$(MKLROOT)/include")
+    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -I$(MKLROOT)/include")
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -pthread -I$(MKLROOT)/include")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")
     if(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c -cpp -D__LIBXC=1 -c")
-        set (CMAKE_Fortran_FLAGS "-O3 -fopenmp -march=native -lg2c -cpp -D__LIBXC=1 -c")
+        set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -lg2c -cpp -D__LIBXC=1 -c")
+        set (CMAKE_Fortran_FLAGS "-O3 -fopenmp -lg2c -cpp -D__LIBXC=1 -c")
     else(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c -cpp -c")
-        set (CMAKE_Fortran_FLAGS "-O3 -fopenmp -march=native -lg2c -cpp -c")
+        set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -lg2c -cpp -c")
+        set (CMAKE_Fortran_FLAGS "-O3 -fopenmp -lg2c -cpp -c")
     endif(USE_LIBXC)
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp  -ldl")
 else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
@@ -255,8 +276,6 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     if(DEFINED ENV{BOOST_ROOT})
         set(BOOST_ROOT  $ENV{BOOST_ROOT})
     endif()
-    set(Boost_USE_STATIC_LIBS        OFF)
-    set(Boost_USE_MULTITHREADED      ON)
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
@@ -399,17 +418,8 @@ if(NOT RMG_MATH_LIBS)
 
     if(NOT CRAY_XK)
 
-        # OPENBLAS
-        set(OPEN_BLAS_SEARCH_PATHS  /lib/ /lib64/  /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/OpenBLAS/lib $ENV{OPENBLAS_HOME}/lib )
-        FIND_LIBRARY(OPENBLAS NAMES openblas PATHS ${OPEN_BLAS_SEARCH_PATHS})
-        if (OPENBLAS)
-            set(BLAS_FOUND TRUE)
-            set(BLAS_LIBRARIES ${OPENBLAS})
-            set(BLAS_blas_LIBRARY ${OPENBLAS})
-        else (OPENBLAS)
-            find_package(BLAS REQUIRED)
-        endif (OPENBLAS)
-
+        # BLAS
+        find_package(BLAS REQUIRED)
         if(BLAS_FOUND)
             target_link_libraries (${rmg} ${BLAS_LIBRARIES})
             target_link_libraries (${rmg-tddft} ${BLAS_LIBRARIES})
@@ -473,6 +483,7 @@ if(NOT RMG_MATH_LIBS)
 
 endif(NOT RMG_MATH_LIBS)
 
+            add_definitions(-DSCALAPACK_LIBS=1)
 
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_GPU_ENABLED)

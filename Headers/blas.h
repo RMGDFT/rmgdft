@@ -43,17 +43,14 @@
 */
 #include "rmgtypedefs.h"
 
-#if LINUX || __CYGWIN__ || _WIN32 || _WIN64
+#if ((LINUX || __CYGWIN__ || _WIN32 || _WIN64) && RMG_APPEND_UNDERSCORES)
 
-#define                 sger            dger_
-//#  define		global_sums     global_sums_
+#  define               sger            dger_
 #  define		daxpy		daxpy_
 #  define		zaxpy		zaxpy_
-#  define	    dzasum      dzasum_	
-#  define		ZAXPY		zaxpy_
+#  define	        dzasum      dzasum_	
 #  define		dcopy   	dcopy_
 #  define		zcopy   	zcopy_
-#  define		ZCOPY   	zcopy_
 #  define		ddot    	ddot_
 #  define		dscal   	dscal_
 #  define		dsyrk   	dsyrk_
@@ -84,7 +81,6 @@
 #  define		dpotri 	        dpotri_
 #  define		dgesv 	        dgesv_
 #  define		zgesv 	        zgesv_
-#  define		ZGESV 	        zgesv_
 #  define               dgemv           dgemv_
 #  define               dsygvx          dsygvx_
 #  define               dsygvd          dsygvd_

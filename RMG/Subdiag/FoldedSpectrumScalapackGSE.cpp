@@ -102,7 +102,7 @@ void FoldedSpectrumScalapackGSE(DataType *A, DataType *B, DataType *Z, int n, in
     for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / B[ix*n + ix];
 
     // Initial starting guess is just the identity
-    pdlaset_( "A", &istep, &n, &rone, &rzero, (double *)Zdist, &ione, &ione, s_s_desca );
+    pdlaset( "A", &istep, &n, &rone, &rzero, (double *)Zdist, &ione, &ione, s_s_desca );
 
     // (I - D-1 * B)
     for(int st1 = 0;st1 < n;st1++){

@@ -240,24 +240,24 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     int ibtype = 1;
                     double scale=1.0, rone = 1.0;
 
-                    pdpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
+                    pdpotrf(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
 
                     // Get pdsyngst_ workspace
                     int lwork = -1;
                     double lwork_tmp;
-                    pdsyngst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                    pdsyngst(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             (double *)distSij, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
                     lwork = 2*(int)lwork_tmp; 
                     double *work2 = new double[lwork];
                     
-                    pdsyngst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                    pdsyngst(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             (double *)distSij, &ione, &ione, desca, &scale, work2, &lwork, &info);
 
                     // Get workspace required
                     lwork = -1;
                     int liwork=-1;
                     int liwork_tmp;
-                    pdsyevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                    pdsyevd(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             eigs, (double *)distAij, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
                     lwork = 16*(int)lwork_tmp;
                     liwork = 16*num_states;
@@ -265,10 +265,10 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     int *iwork = new int[liwork];
 
                     // and now solve it 
-                    pdsyevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                    pdsyevd(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                             eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
 
-                    pdtrsm_("Left", uplo, "T", "N", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
+                    pdtrsm("Left", uplo, "T", "N", &num_states, &num_states, &rone, (double *)distSij, &ione, &ione, desca,
                             (double *)distAij, &ione, &ione, desca);
                     delete [] iwork;
                     delete [] nwork;
@@ -280,16 +280,16 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     int ibtype = 1;
                     double scale=1.0, rone[2] = {1.0, 0.0};
 
-                    pzpotrf_(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
+                    pzpotrf(uplo, &num_states, (double *)distSij,  &ione, &ione, desca,  &info);
 
-                    pzhegst_(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                    pzhegst(&ibtype, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                                 (double *)distSij, &ione, &ione, desca, &scale, &info);
 
                     // Get workspace required
                     int lwork = -1, liwork=-1, lrwork=-1;
                     double lwork_tmp[2], lrwork_tmp;
                     int liwork_tmp;
-                    pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                    pzheevd(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                                 eigs, (double *)distAij, &ione, &ione, desca, lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
                     lwork = (int)lwork_tmp[0]+1;
                     liwork = 16*num_states;
@@ -299,10 +299,10 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
                     int *iwork = new int[liwork];
 
                     // and now solve it
-                    pzheevd_(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
+                    pzheevd(jobz, uplo, &num_states, (double *)distBij, &ione, &ione, desca,
                                 eigs, (double *)distAij, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
 
-                    pztrsm_("Left", uplo, "C", "N", &num_states, &num_states, rone, (double *)distSij, &ione, &ione, desca,
+                    pztrsm("Left", uplo, "C", "N", &num_states, &num_states, rone, (double *)distSij, &ione, &ione, desca,
                                 (double *)distAij, &ione, &ione, desca);
 
                     delete [] iwork;

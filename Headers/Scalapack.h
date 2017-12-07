@@ -24,6 +24,7 @@
 #ifndef RMG_Scalapack_H
 #define RMG_Scalapack_H 1
 
+
 #include <mpi.h>
 
 
@@ -35,8 +36,8 @@
 // Maximum number of folded spectrum scalapack instances
 #define MAX_FOLDED_SCALAPACKS 32
 
-extern "C" int Csys2blacs_handle(MPI_Comm SysCtxt );
-extern "C" MPI_Comm Cblacs2sys_handle (int BlacsCtxt);
+
+#ifdef __cplusplus
 
 // npes is the total number of pes, ngroups is the number of
 // scalapack groups that should be created out of npes where
@@ -142,79 +143,124 @@ protected:
 
 };
 
-extern "C" {
+#endif
 
-int numroc_ (int *, int *, int *, int *, int *);
-int INDXG2P (int *, int *, int *, int *, int *);
-void descinit_ (int[], int *, int *, int *, int *, int *, int *, int *, int *,
+#if ((LINUX || __CYGWIN__ || _WIN32 || _WIN64) && RMG_APPEND_UNDERSCORES)
+    #define         numroc          numroc_
+    #define         indxg2p         indxg2p_
+    #define         descinit        descinit_
+    #define         pdsyev          pdsyev_
+    #define         pcheev          pzheev_
+    #define         pspocon         pdpocon_
+    #define         pspotrf         pdpotrf_
+    #define         pspotri         pdpotri_
+    #define         pssygst         pdsygst_
+    #define         pstrtrs         pdtrtrs_
+    #define         pdgemm          pdgemm_
+    #define         psgemm          pdgemm_
+    #define         pzgemm          pzgemm_
+    #define         pssymm          pdsymm_
+    #define         pssyev          pdsyev_
+    #define         pdgesv          pdgesv_
+    #define         pzgesv          pzgesv_
+    #define         psubdiag        psubdiag_
+    #define         pdsygvx         pdsygvx_
+    #define         pdsyevx         pdsyevx_
+    #define         pdpotrf         pdpotrf_
+    #define         pdsyngst        pdsyngst_
+    #define         pdtrsm          pdtrsm_
+    #define         pdtran          pdtran_
+    #define         pztranc         pztranc_
+    #define         pzhegvx         pzhegvx_
+    #define         pdsyevd         pdsyevd_
+    #define         pdgeadd         pdgeadd_
+    #define         pzgeadd         pzgeadd_
+    #define         pzpotrf         pzpotrf_
+    #define         pzhegst         pzhegst_
+    #define         pzheevd         pzheevd_
+    #define         pztrsm          pztrsm_
+    #define         pdsygst         pdsygst_
+    #define         pdsyrk          pdsyrk_
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int Csys2blacs_handle(MPI_Comm SysCtxt );
+MPI_Comm Cblacs2sys_handle (int BlacsCtxt);
+int numroc (int *, int *, int *, int *, int *);
+int indxg2p (int *, int *, int *, int *, int *);
+void descinit (int[], int *, int *, int *, int *, int *, int *, int *, int *,
                int *);
-void pdgesv_ (int *, int *, double *, int * , int *, int *, int *, double *,
+void pdgesv (int *, int *, double *, int * , int *, int *, int *, double *,
         int *, int *, int *, int *);
-void pzgesv_ (int *, int *, double *, int * , int *, int *, int *, double *,
+void pzgesv (int *, int *, double *, int * , int *, int *, int *, double *,
         int *, int *, int *, int *);
-void pdgemm_ (char *, char *, int *, int *, int *, double *, double *, int *,
+void pdgemm (char *, char *, int *, int *, int *, double *, double *, int *,
              int *, int *, double *, int *, int *, int *, double *, double *,
              int *, int *, int *);
-void pzgemm_ (char *, char *, int *, int *, int *, double *, double *, int *,
+void pzgemm (char *, char *, int *, int *, int *, double *, double *, int *,
              int *, int *, double *, int *, int *, int *, double *, double *,
              int *, int *, int *);
-void pdsyev_ (char *, char *, int *, double *, int *, int *, int *, double *,
+void pdsyev (char *, char *, int *, double *, int *, int *, int *, double *,
              double *, int *, int *, int *, double *, int *, int *);
-void pdsyevd_ (char *, char *, int *, double *, int *, int *, int *, double *, double *, int *, int *, int *, double *, int *, int *, int *, int *);
-void pzheevd_ (char *, char *, int *, double *, int *, int *, int *, double *, double *, int *, int *, int *, double *, int *, double *, int *, int *, int *, int *);
-void pcheev_ (char *, char *, int *, double *, int *, int *, int *, double *,
+void pdsyevd (char *, char *, int *, double *, int *, int *, int *, double *, double *, int *, int *, int *, double *, int *, int *, int *, int *);
+void pzheevd (char *, char *, int *, double *, int *, int *, int *, double *, double *, int *, int *, int *, double *, int *, double *, int *, int *, int *, int *);
+void pcheev (char *, char *, int *, double *, int *, int *, int *, double *,
              double *, int *, int *, int *, double *, int *, double *, int *, int *);
-void pdsygst_(int *, char *, int *, double *, int *, int *, int *, double *, int *,
+void pdsygst(int *, char *, int *, double *, int *, int *, int *, double *, int *,
               int *, int *, double *, int *);
-void pdsyngst_(int *, char *, int *, double *, int *, int *, int *, double *, int *,
+void pdsyngst(int *, char *, int *, double *, int *, int *, int *, double *, int *,
               int *, int *, double *, double *, int *, int *);
 
-void pzhegst_(int *, char *, int *, double *, int *, int *, int *, double *, int *,
+void pzhegst(int *, char *, int *, double *, int *, int *, int *, double *, int *,
               int *, int *, double *, int *);
-void pdpotrf_(char *, int*, double*, int*, int*, int*, int*);
-void pzpotrf_(char *, int*, double*, int*, int*, int*, int*);
-void pdtrtri_(char *, char *, int*, double*, int*, int*, int*, int*);
-void pdsyrk_( char *, char *, int *, int *, double *, double *, int *, int *, int *,
+void pdpotrf(char *, int*, double*, int*, int*, int*, int*);
+void pzpotrf(char *, int*, double*, int*, int*, int*, int*);
+void pdtrtri(char *, char *, int*, double*, int*, int*, int*, int*);
+void pdsyrk( char *, char *, int *, int *, double *, double *, int *, int *, int *,
              double *, double *, int *, int *, int *);
-void pdlaset_(char *, int *, int *, double *, double *, double *, int *, int *, int *);
+void pdlaset(char *, int *, int *, double *, double *, double *, int *, int *, int *);
 
-void PSPOCON (char *, int *, double *, int *, int *, int *, double *, double *,
+void pspocon (char *, int *, double *, int *, int *, int *, double *, double *,
               double *, int *, int *, int *, int *);
-void PSPOTRF (char *, int *, double *, int *, int *, int *, int *);
-void PSPOTRI (char *, int *, double *, int *, int *, int *, int *);
-void PSSYGST (int *, char *, int *, double *, int *, int *, int *, double *,
+void pspotrf (char *, int *, double *, int *, int *, int *, int *);
+void pspotri (char *, int *, double *, int *, int *, int *, int *);
+void pssygst (int *, char *, int *, double *, int *, int *, int *, double *,
               int *, int *, int *, double *, int *);
-void PSTRTRS (char *, char *, char *, int *, int *, double *, int *, int *, int *,
+void pstrtrs (char *, char *, char *, int *, int *, double *, int *, int *, int *,
               double *, int *, int *, int *, int *);
-void PSSYMM (char *, char *, int *, int *, double *, double *, int *, int *,
+void pssymm (char *, char *, int *, int *, double *, double *, int *, int *,
              int *, double *, int *, int *, int *, double *, double *, int *,
              int *, int *);
 
-void PSUBDIAG (char *, char *, int, double *, int, double *, int *);
-void PDSYGVX(int *, char*, char*, char*, int*, double *, int*, int*, int*, double*, int*, int*,
+void psubdiag (char *, char *, int, double *, int, double *, int *);
+void pdsygvx(int *, char*, char*, char*, int*, double *, int*, int*, int*, double*, int*, int*,
        int*, double*, double *, int*, int*, double*, int*, int*, double*, double*, double*, int*,
        int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
-void PZHEGVX(int *, char*, char*, char*, int*, double *, int*, int*, int*, double*, int*, int*,
+void pzhegvx(int *, char*, char*, char*, int*, double *, int*, int*, int*, double*, int*, int*,
        int*, double*, double *, int*, int*, double*, int*, int*, double*, double*, double*, int*,
        int*, int*, double*, int *, double *, int*, int*, int*, int*, int*, double*, int*);
-void PDSYEVX(char*, char*, char*, int*, double *, int*, int*, int*, double*, double*, int*,
+void pdsyevx(char*, char*, char*, int*, double *, int*, int*, int*, double*, double*, int*,
        int*, double*, int*, int*, double*, double*, double*, int*,
        int*, int*, double*, int*, int*, int*, int*, int*, double*, int*);
-void pdgeadd_(char *, int *, int *, double *, double *, int *, int *, int *, double *,
+void pdgeadd(char *, int *, int *, double *, double *, int *, int *, int *, double *,
        double *, int *, int *, int *);               
-void pzgeadd_(char *, int *, int *, double *, double *, int *, int *, int *, double *,
+void pzgeadd(char *, int *, int *, double *, double *, int *, int *, int *, double *,
        double *, int *, int *, int *);               
-void pdtrmm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
-             double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
-void pdtrsm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
-             double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
-void pztrmm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
-             double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
-void pztrsm_(char *SIDE, char *UPLO, char *TRANS, char *DIAG, int * M, int *N, double *ALPHA,
-             double * A, int *IA, int *JA, int *DESCA, double *B, int *IB, int *JB, int *DESCB);               
+void pdtrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
+             double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
+void pdtrsm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
+             double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
+void pztrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
+             double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
+void pztrsm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
+             double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
 
-
+#ifdef __cplusplus
 }
+#endif
 
 
 #endif

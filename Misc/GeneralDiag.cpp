@@ -148,7 +148,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             if(ct.is_gamma)
             {
                 if(M == N) {
-                    dsygvd_(&itype, "V", "L", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, iwork, &liwork, &info);
+                    dsygvd (&itype, "V", "L", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, iwork, &liwork, &info);
                     for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
                 }
                 else if(N > M) {
@@ -160,7 +160,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             else
             {
                 if(M == N) {
-                    zhegvd_(&itype, "V", "U", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
+                    zhegvd (&itype, "V", "U", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
                     for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
                 }
                 else if(N > M) {
@@ -253,24 +253,24 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         int ione = 1;
         int info = 0;
 
-        pdpotrf_("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
+        pdpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
 
         // Get pdsyngst_ workspace
         int lwork = -1;
         double lwork_tmp;
-        pdsyngst_(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
+        pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
                 (double *)distB, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
         lwork = 2*(int)lwork_tmp;
         double *work2 = new double[lwork];
 
-        pdsyngst_(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
+        pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
                 (double *)distB, &ione, &ione, desca, &scale, work2, &lwork, &info);
 
         // Get workspace required
         lwork = -1;
         int liwork=-1;
         int liwork_tmp;
-        pdsyevd_("V", "L", &N, (double *)distA, &ione, &ione, desca,
+        pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
                 eigs, (double *)distV, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
         lwork = 16*(int)lwork_tmp;
         liwork = 16*N;
@@ -278,10 +278,10 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         int *iwork = new int[liwork];
 
         // and now solve it 
-        pdsyevd_("V", "L", &N, (double *)distA, &ione, &ione, desca,
+        pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
                 eigs, (double *)distV, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
 
-        pdtrsm_("Left", "L", "T", "N", &N, &N, &rone, (double *)distB, &ione, &ione, desca,
+        pdtrsm("Left", "L", "T", "N", &N, &N, &rone, (double *)distB, &ione, &ione, desca,
                 (double *)distV, &ione, &ione, desca);
         delete [] iwork;
         delete [] nwork;

@@ -113,7 +113,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 
 #else
 //        dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
-        pdsyrk_ (cuplo, trans_t, &n, &n, &alpha, Vdist, &ione, &ione, m_f_desca, &beta, m_distC, &ione, &ione, m_f_desca);
+        pdsyrk(cuplo, trans_t, &n, &n, &alpha, Vdist, &ione, &ione, m_f_desca, &beta, m_distC, &ione, &ione, m_f_desca);
 #endif
     }
     else {
@@ -138,7 +138,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     dpotrf(cuplo, &n, C, &n, &info);
 #else
     //dpotrf(cuplo, &n, C, &n, &info);
-    pdpotrf_( cuplo, &n, m_distC, &ione, &ione, m_f_desca, &info );
+    pdpotrf( cuplo, &n, m_distC, &ione, &ione, m_f_desca, &info );
     for(int i=0;i<n*n;i++)C[i]=0.0;
     MainSp->GatherMatrix(C, m_distC);
 

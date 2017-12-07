@@ -71,7 +71,7 @@
 #include    "my_mpi.h"
 
 /* include scalapack wrapper */
-#include "my_scalapack.h"
+#include "Scalapack.h"
 
 /* Header file for blas routines */
 #include "blas.h"

@@ -22,7 +22,11 @@ void rmg_error_handler(char *message)
 }
 
 // Here for fortran routines. Might be some portability issues on non GCC compilers
+#if RMG_APPEND_UNDERSCORES
 void errore_(char *where, char *message, int ierr, int where_len, int message_len)
+#else
+void errore(char *where, char *message, int ierr, int where_len, int message_len)
+#endif
 {
   char tbuf[1000];
   memset(tbuf, 0, sizeof(tbuf));
