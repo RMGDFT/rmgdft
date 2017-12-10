@@ -89,6 +89,7 @@ private:
     boost::thread QueueManager;
     static void manager_thread(MpiQueue *Q);
     std::atomic<bool> running;
+    std::atomic<bool> exitflag;
     int max_threads;
 
 #ifdef USE_NUMA
@@ -112,6 +113,7 @@ public:
     void spinwait(int count);
     void run_manager(void);
     void stop_manager(void);
+    void set_exitflag(void);
     boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> **queue;
 };
 

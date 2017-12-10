@@ -46,7 +46,7 @@ std::mutex manager_mutex;
 // per node counts when one CPU is dedicated to the manager thread.
 void MpiQueue::manager_thread(MpiQueue *Q)
 {
-    printf("Manager thread started.\n");
+    //printf("Manager thread started.\n");
 
 #ifdef USE_NUMA
     if(Q->cpumask)
@@ -154,9 +154,11 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             }
         }
 
+
         // No pending requests so yield CPU if running flag is set. Otherwise sleep.
         if((qcount_large == 0) && (qcount_small == 0))
         {
+            if(Q->exitflag.load(std::memory_order_acquire)) return;
             if(Q->running.load(std::memory_order_acquire))
             {
 #if USE_SPINWAIT
@@ -191,8 +193,10 @@ MpiQueue::MpiQueue(int max_size, int max_threads)
     {
         this->queue[tid] = new boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>>(max_size);
     }
+    this->exitflag.store(false, std::memory_order_release);
     this->running.store(true, std::memory_order_release);
     this->QueueManager = boost::thread(&manager_thread, this);
+    this->QueueManager.detach();
     this->running.store(false, std::memory_order_release);
 }
 
@@ -221,6 +225,11 @@ void MpiQueue::run_manager(void)
 void MpiQueue::stop_manager(void)
 {
     this->running.store(false, std::memory_order_release);
+}
+
+void MpiQueue::set_exitflag(void)
+{
+    this->exitflag.store(true, std::memory_order_release);
 }
 
 void MpiQueue::cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_int &var)

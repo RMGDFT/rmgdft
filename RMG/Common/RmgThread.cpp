@@ -66,6 +66,8 @@ void RmgTerminateThreads(void)
         QueueThreadTask(ist, thread_controls[ist]);
     }
     T->run_thread_tasks(T->get_threads_per_node());
+    if(ct.mpi_queue_mode) Rmg_Q->set_exitflag();
+    if(ct.mpi_queue_mode) Rmg_Q->run_manager();
     T->thread_joinall();
 }
 
