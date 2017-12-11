@@ -46,6 +46,9 @@ set (USE_SVN 1)
 add_definitions(-DUSE_SPINWAIT=0)
 
 # Append underscores to fortran functions called from C
+#
+# Set to 1 for most x86 linux distributions
+# Set to 0 when using IBM xlc on Power with ESSL
 add_definitions(-DRMG_APPEND_UNDERSCORES=1)
 
 
@@ -56,15 +59,15 @@ add_definitions(-DRMG_APPEND_UNDERSCORES=1)
 #set(Boost_USE_STATIC_LIBS        OFF)
 #set(Boost_USE_MULTITHREADED      ON)
 
-
 # Here set any extra compiler flags required for a specific platform
 # This is for stampede
 #set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
-#
-# Set extra arch and optimization flags here
-#set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops -flto")
+
+# Ryzen Threadripper with gcc
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 
+# Generic
+set(RMG_EXTRA_COMPILER_FLAGS "-O3")
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
@@ -118,21 +121,21 @@ endif()
 # Compiler flags. We currently only support GNU and Intel compilers so if
 # GNUCC is not detected we set the compiler to Intel
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -I$(MKLROOT)/include")
-    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -pthread -I$(MKLROOT)/include")
+    set(CMAKE_C_FLAGS "-Wall ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -I$(MKLROOT)/include")
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -pthread -I$(MKLROOT)/include")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")
     if(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -lg2c -cpp -D__LIBXC=1 -c")
-        set (CMAKE_Fortran_FLAGS "-O3 -fopenmp -lg2c -cpp -D__LIBXC=1 -c")
+        set (CMAKE_Fortran_FLAGS_RELEASE "-fopenmp -lg2c -cpp -D__LIBXC=1 -c")
+        set (CMAKE_Fortran_FLAGS "-fopenmp -lg2c -cpp -D__LIBXC=1 -c")
     else(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -lg2c -cpp -c")
-        set (CMAKE_Fortran_FLAGS "-O3 -fopenmp -lg2c -cpp -c")
+        set (CMAKE_Fortran_FLAGS_RELEASE "-fopenmp -lg2c -cpp -c")
+        set (CMAKE_Fortran_FLAGS "-fopenmp -lg2c -cpp -c")
     endif(USE_LIBXC)
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp  -ldl")
 else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Intel compiler
-    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c++0x -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
-    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c99 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
+    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -std=c++0x -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
+    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -std=c99 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++")
 endif()
 
@@ -656,17 +659,6 @@ else (RMG_GAMMA_PT)
     set (GAMMA_PT 0)
 endif(RMG_GAMMA_PT)
 
-option (RMG_FDIFF_BETA 
-"Set this to 1 if you want to use finite difference method for calculating
- derivatives of beta. This is faster since it avoids doing 3 backwards fourier
- transforms per ion, but it may not be very accurate since the finite diff
- derivative is done on the coarse grid.
- Leave this set to 0 unless you know what you are doing " OFF)
-if (RMG_FDIFF_BETA)
-    set (FDIFF_BETA 1)
-else (RMG_FDIFF_BETA)
-    set (FDIFF_BETA 0)
-endif(RMG_FDIFF_BETA)
 
 # Send the configure file to the build directory
 configure_file (
