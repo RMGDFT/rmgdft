@@ -127,7 +127,6 @@ public:
     // value of index.
     MPI_Comm get_unique_comm(int index);
 
-    void set_cpu_affinity(int tid, int procs_per_node, int local_rank);
     void RMG_MPI_lock(void);
     void RMG_MPI_unlock(void);
     void set_pptr(int tid, void *p);

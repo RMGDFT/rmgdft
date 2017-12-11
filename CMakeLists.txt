@@ -213,12 +213,9 @@ endif (MPI_C_FOUND)
 
 # Require pthreads on UNIX
 if (${UNIX})
-    set (CMAKE_THREAD_PREFER_PTHREAD)
     find_package(Threads REQUIRED)
-    if(CMAKE_USE_PTHREADS_INIT)
-        target_link_libraries (${rmg} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
-        target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
-    endif(CMAKE_USE_PTHREADS_INIT)
+    target_link_libraries (${rmg} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
+    target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
     target_link_libraries (rmg-on ${RTLIB})
 endif(${UNIX})
 

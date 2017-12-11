@@ -93,7 +93,6 @@ unsigned int count_numamask_set_bits(const struct bitmask *mask)
 #endif
 
 #include <sys/types.h>
-#include <pthread.h>
 #include <sched.h>
 
 
@@ -237,7 +236,6 @@ void *run_threads(void *v) {
 
 #ifdef USE_NUMA
         if(ct.use_numa) numa_sched_setaffinity(0, thread_cpumask);
-        //T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
 #endif
 
         // Switch that controls what we do
