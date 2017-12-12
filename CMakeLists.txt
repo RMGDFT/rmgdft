@@ -483,7 +483,6 @@ if(NOT RMG_MATH_LIBS)
 
 endif(NOT RMG_MATH_LIBS)
 
-            add_definitions(-DSCALAPACK_LIBS=1)
 
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_GPU_ENABLED)
