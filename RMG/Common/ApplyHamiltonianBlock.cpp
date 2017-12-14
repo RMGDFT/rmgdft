@@ -105,8 +105,15 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
 
     // Process any remaining states in serial fashion
     for(int st1 = first_state + istop;st1 < first_state + num_states;st1++) {
-         ApplyHamiltonian (kptr, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis], vtot, &kptr->nv[first_nls * pbasis]);
-         first_nls++;
+        // Make sure the non-local operators are applied for the next state if needed
+        int check = first_nls + 1;
+        if(check > ct.non_local_block_size) {
+            AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
+                   st1, std::min(ct.non_local_block_size, num_states + first_state - st1), false);
+            first_nls = 0;
+        }
+        ApplyHamiltonian (kptr, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis], vtot, &kptr->nv[first_nls * pbasis]);
+        first_nls++;
     }
     
     return -0.5 * fd_diag;

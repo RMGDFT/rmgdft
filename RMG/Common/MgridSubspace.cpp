@@ -131,6 +131,15 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         // Process any remaining states in serial fashion
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
         for(int st1 = istop;st1 < kptr->nstates;st1++) {
+            // Make sure the non-local operators are applied for the next state if needed
+            int check = first_nls + 1;
+            if(check > ct.non_local_block_size) {
+                RT1 = new RmgTimer("3-MgridSubspace: AppNls");
+                AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
+                       st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
+                first_nls = 0;
+                delete(RT1);
+            }
             if(ct.is_gamma) {
                 if(ct.rms > ct.preconditioner_thr)
                     MgEigState<double,float> ((Kpoint<double> *)kptr, (State<double> *)&kptr->Kstates[st1], vtot_psi, 

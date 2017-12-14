@@ -74,10 +74,6 @@ private:
     // by parallel threads use a unique communicator across nodes.
     MPI_Comm *comm_pool;
 
-    // Job queue. Only truly independent thread tasks should be queued. Mainly used for MgEigState
-    // when using mpi_queue_mode.
-    boost::lockfree::queue<BaseThreadControl *, boost::lockfree::fixed_sized<true>> *jobqueue;
-
     // Initialization flag
     static int init_flag;
 

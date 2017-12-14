@@ -174,7 +174,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
          int check = first_nls + active_threads;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-
              AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
                     st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
              first_nls = 0;
@@ -206,6 +205,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     // Process any remaining orbitals serially
     for(int st1 = istop;st1 < kptr->nstates;st1++) {
+        // Make sure the non-local operators are applied for the next state if needed
+         int check = first_nls + 1;
+         if(check > ct.non_local_block_size) {
+             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
+             AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
+                    st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
+             first_nls = 0;
+             delete RT3;
+         }
         ApplyOperators (kptr, st1, &a_psi[st1 * pbasis], &b_psi[st1 * pbasis], vtot_eig, 
                        &kptr->nv[first_nls * pbasis], &kptr->Bns[first_nls * pbasis]);
         first_nls++;
