@@ -49,7 +49,9 @@ add_definitions(-DUSE_SPINWAIT=0)
 #
 # Set to 1 for most x86 linux distributions
 # Set to 0 when using IBM xlc on Power with ESSL
-add_definitions(-DRMG_APPEND_UNDERSCORES=1)
+set(RMG_APPEND_UNDERSCORES 1)
+add_definitions(-DRMG_APPEND_UNDERSCORES=${RMG_APPEND_UNDERSCORES})
+
 
 
 # Helps to find boost on some systems
