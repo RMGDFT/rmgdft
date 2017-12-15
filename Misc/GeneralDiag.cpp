@@ -60,7 +60,6 @@
 // Kludge for now
 extern Scalapack *MainSp;
 extern void *GMatrix1;
-extern void *GMatrix2;
 
 // Solves for the eigenvalues and eigenvectors of a generalized Hermitian matrix.
 //

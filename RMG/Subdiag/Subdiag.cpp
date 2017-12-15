@@ -56,7 +56,6 @@ template void Subdiag<std::complex<double> >(Kpoint<std::complex<double>> *, dou
 
 // Temporary hack to enable the use of these arrays in GeneralDiag.
 void *GMatrix1;
-void *GMatrix2;
 
 template <typename KpointType>
 void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
@@ -93,9 +92,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 #if GPU_ENABLED
 
     cublasStatus_t custat;
-    static KpointType *Aij;
-    static KpointType *Bij;
-    static KpointType *Sij;
+    KpointType *Aij = (KpointType *)GpuMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
+    KpointType *Bij = (KpointType *)GpuMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
+    KpointType *Sij = (KpointType *)GpuMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
     KpointType *tmp_array2T = (KpointType *)GpuMallocHost(pbasis * kptr->nstates * sizeof(KpointType));     
 
 #else
@@ -132,14 +131,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
         }
 
         GMatrix1 = (void *)global_matrix1;
-        GMatrix2 = (void *)global_matrix2;
 
         #if GPU_ENABLED
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix2, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Aij, ct.max_states * ct.max_states * sizeof(KpointType)), "Error allocating memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Bij, ct.max_states * ct.max_states * sizeof(KpointType)), "Error allocating memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaMallocHost((void **)&Sij, ct.max_states * ct.max_states * sizeof(KpointType)), "Error allocating memory.\n");
         #endif
 
     }
@@ -340,7 +335,11 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     // free memory
     delete [] eigs;
-#if !GPU_ENABLED
+#if GPU_ENABLED
+    GpuFreeHost(Sij);
+    GpuFreeHost(Bij);
+    GpuFreeHost(Aij);
+#else
     delete [] Sij;
     delete [] Bij;
     delete [] Aij;
