@@ -26,6 +26,7 @@
 
 
 #include <mpi.h>
+#include "rmg_mangling.h"
 
 
 /* Blacs dimension */
@@ -145,46 +146,44 @@ protected:
 
 #endif
 
-#if ((LINUX || __CYGWIN__ || _WIN32 || _WIN64) && RMG_APPEND_UNDERSCORES)
-    #define         numroc          numroc_
-    #define         indxg2p         indxg2p_
-    #define         descinit        descinit_
-    #define         pdsyev          pdsyev_
-    #define         pcheev          pzheev_
-    #define         pspocon         pspocon_
-    #define         pspotrf         pdpotrf_
-    #define         pspotri         pdpotri_
-    #define         pssygst         pdsygst_
-    #define         pstrtrs         pdtrtrs_
-    #define         pdgemm          pdgemm_
-    #define         psgemm          pdgemm_
-    #define         pzgemm          pzgemm_
-    #define         pssymm          pdsymm_
-    #define         pssyev          pdsyev_
-    #define         pdgesv          pdgesv_
-    #define         pzgesv          pzgesv_
-    #define         psubdiag        psubdiag_
-    #define         pdsygvx         pdsygvx_
-    #define         pdsyevx         pdsyevx_
-    #define         pdpotrf         pdpotrf_
-    #define         pdsyngst        pdsyngst_
-    #define         pdtrsm          pdtrsm_
-    #define         pdtran          pdtran_
-    #define         pztranc         pztranc_
-    #define         pzhegvx         pzhegvx_
-    #define         pdsyevd         pdsyevd_
-    #define         pdgeadd         pdgeadd_
-    #define         pzgeadd         pzgeadd_
-    #define         pzpotrf         pzpotrf_
-    #define         pzhegst         pzhegst_
-    #define         pzheevd         pzheevd_
-    #define         pztrsm          pztrsm_
-    #define         pdsygst         pdsygst_
-    #define         pdsyrk          pdsyrk_
-    #define         pdgetrf         pdgetrf_
-    #define         pdgetrs         pdgetrs_
-#endif
 
+#define		numroc		RMG_FC_GLOBAL(numroc, NUMROC)
+#define		indxg2p		RMG_FC_GLOBAL(indxg2p, INDXG2P)
+#define		descinit	RMG_FC_GLOBAL(descinit, DESCINIT)
+#define		pdsyev		RMG_FC_GLOBAL(pdsyev, PDSYEV)
+#define		pcheev		RMG_FC_GLOBAL(pcheev, PCHEEV)
+#define		pspocon		RMG_FC_GLOBAL(pspocon, PSPOCON)
+#define		pspotrf		RMG_FC_GLOBAL(pspotrf, PSPOTRF)
+#define		pspotri		RMG_FC_GLOBAL(pspotri, PSPOTRI)
+#define		pssygst		RMG_FC_GLOBAL(pssygst, PSSYGST)
+#define		pstrtrs		RMG_FC_GLOBAL(pstrtrs, PSTRTRS)
+#define		pdgemm		RMG_FC_GLOBAL(pdgemm, PDGEMM)
+#define		psgemm		RMG_FC_GLOBAL(psgemm, PSGEMM)
+#define		pzgemm		RMG_FC_GLOBAL(pzgemm, PZGEMM)
+#define		pssymm		RMG_FC_GLOBAL(pssymm, PSSYMM)
+#define		pssyev		RMG_FC_GLOBAL(pssyev, PSSYEV)
+#define		pdgesv		RMG_FC_GLOBAL(pdgesv, PDGESV)
+#define		pzgesv		RMG_FC_GLOBAL(pzgesv, PZGESV)
+#define		psubdiag	RMG_FC_GLOBAL(psubdiag, PSUBDIAG)
+#define		pdsygvx		RMG_FC_GLOBAL(pdsygvx, PDSYGVX)
+#define		pdsyevx		RMG_FC_GLOBAL(pdsyevx, PDSYEVX)
+#define		pdpotrf		RMG_FC_GLOBAL(pdpotrf, PDPOTRF)
+#define		pdsyngst	RMG_FC_GLOBAL(pdsyngst, PDSYNGST)
+#define		pdtrsm		RMG_FC_GLOBAL(pdtrsm, PDTRSM)
+#define		pdtran		RMG_FC_GLOBAL(pdtran, PDTRAN)
+#define		pztranc		RMG_FC_GLOBAL(pztranc, PZTRANC)
+#define		pzhegvx		RMG_FC_GLOBAL(pzhegvx, PZHEGVX)
+#define		pdsyevd		RMG_FC_GLOBAL(pdsyevd, PDSYEVD)
+#define		pdgeadd		RMG_FC_GLOBAL(pdgeadd, PDGEADD)
+#define		pzgeadd		RMG_FC_GLOBAL(pzgeadd, PZGEADD)
+#define		pzpotrf		RMG_FC_GLOBAL(pzpotrf, PZPOTRF)
+#define		pzhegst		RMG_FC_GLOBAL(pzhegst, PZHEGST)
+#define		pzheevd		RMG_FC_GLOBAL(pzheevd, PZHEEVD)
+#define		pztrsm		RMG_FC_GLOBAL(pztrsm, PZTRSM)
+#define		pdsygst		RMG_FC_GLOBAL(pdsygst, PDSYGST)
+#define		pdsyrk		RMG_FC_GLOBAL(pdsyrk, PDSYRK)
+#define		pdgetrf		RMG_FC_GLOBAL(pdgetrf, PDGETRF)
+#define		pdgetrs		RMG_FC_GLOBAL(pdgetrs, PDGETRS)
 #ifdef __cplusplus
 extern "C" {
 #endif

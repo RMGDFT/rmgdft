@@ -30,22 +30,18 @@
 #include "FiniteDiff.h"
 #include "Pw.h"
 #include "fft3d.h"
+#include "rmg_mangling.h"
 
 #define VDW_NQPOINTS  20
 #define VDW_NRPOINTS  1024
 
 // Needed to deal with some issues when calling f90 module function from C++
-#if __ibmxl__
-extern "C" {void __vdw_splines_NMOD_spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values, double *d2y_dx2);}
-extern "C" {void __vdw_splines_NMOD_initialize_spline_interpolation (double *x, const int *Nx, double *d2y_dx2);}
-#define  spline_interpolation  __vdw_splines_NMOD_spline_interpolation
-#define  initialize_spline_interpolation  __vdw_splines_NMOD_initialize_spline_interpolation
-#else
-extern "C" {void __vdw_splines_MOD_spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values, double *d2y_dx2);}
-extern "C" {void __vdw_splines_MOD_initialize_spline_interpolation (double *x, const int *Nx, double *d2y_dx2);}
-#define  spline_interpolation  __vdw_splines_MOD_spline_interpolation
-#define  initialize_spline_interpolation  __vdw_splines_MOD_initialize_spline_interpolation
-#endif
+#define     spline_interpolation                RMG_FC_MODULE(vdw_splines,spline_interpolation,mod_VDW_SPINES, SPLINE_INTERPOLATION) 
+#define     initialize_spline_interpolation     RMG_FC_MODULE(vdw_splines,initialize_spline_interpolation, mod_VDW_SPINES, INITIALIZE_SPLINE_INTERPOLATION)
+
+extern "C" {void spline_interpolation (double *x, const int *Nx, double *evaluation_points, const int *Ngrid_points, std::complex<double>  *values, double *d2y_dx2);}
+extern "C" {void initialize_spline_interpolation (double *x, const int *Nx, double *d2y_dx2);}
+
 
 #ifdef __cplusplus
 

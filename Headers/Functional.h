@@ -32,6 +32,7 @@
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "vdW.h"
+#include "rmg_mangling.h"
 
 #if USE_LIBXC
 #include "xc.h"

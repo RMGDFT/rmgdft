@@ -29,6 +29,8 @@ INCLUDE (CheckCXXSourceCompiles)
 INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckLibraryExists)
 INCLUDE (CMakeForceCompiler)
+INCLUDE (FortranCInterface)
+FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling_cmake.h MACRO_NAMESPACE RMG_FC_)
 
 
 # User editable options
