@@ -11,9 +11,9 @@
 #
 # MKLROOT = root directory of Intel MKL libraries if installed.
 # BOOST_ROOT = root directory of Boost installation
-# CC = Full path to C compiler
+# CC  = Full path to C compiler
 # CXX = Full path to C++ compiler
-#
+# FC  = Full path to Fortran compiler
 #
 
 cmake_minimum_required (VERSION 2.8) 
@@ -30,7 +30,7 @@ INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckLibraryExists)
 INCLUDE (CMakeForceCompiler)
 INCLUDE (FortranCInterface)
-FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling_cmake.h MACRO_NAMESPACE RMG_FC_)
+FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling.h MACRO_NAMESPACE RMG_FC_)
 
 
 # User editable options
@@ -46,14 +46,6 @@ set (USE_SVN 1)
 
 # spinwait option helps on some platforms but normally leave disabled
 add_definitions(-DUSE_SPINWAIT=0)
-
-# Append underscores to fortran functions called from C
-#
-# Set to 1 for most x86 linux distributions
-# Set to 0 when using IBM xlc on Power with ESSL
-set(RMG_APPEND_UNDERSCORES 1)
-add_definitions(-DRMG_APPEND_UNDERSCORES=${RMG_APPEND_UNDERSCORES})
-
 
 
 # Helps to find boost on some systems
