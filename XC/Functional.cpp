@@ -44,47 +44,46 @@
 #if USE_LIBXC
 #include "xc.h"
 #endif
+#include "rmg_mangling.h"
 
-#if __ibmxl__
-#define __funct_MOD_set_dft_from_name __funct_NMOD_set_dft_from_name
-#define __funct_MOD_get_dft_name __funct_NMOD_get_dft_name 
-#define __funct_MOD_dft_is_gradient __funct_NMOD_dft_is_gradient
-#define __funct_MOD_dft_is_meta __funct_NMOD_dft_is_meta
-#define __funct_MOD_dft_is_hybrid __funct_NMOD_dft_is_hybrid
-#define __funct_MOD_igcc_is_lyp __funct_NMOD_igcc_is_lyp
-#define __funct_MOD_dft_has_finite_size_correction __funct_NMOD_dft_has_finite_size_correction
-#define __funct_MOD_dft_is_nonlocc __funct_NMOD_dft_is_nonlocc
-#define __funct_MOD_xc __funct_NMOD_xc
-#define __funct_MOD_xc_spin __funct_NMOD_xc_spin
-#define __funct_MOD_nlc __funct_NMOD_nlc
-#define __funct_MOD_gcxc __funct_NMOD_gcxc
-#define __funct_MOD_gcx_spin __funct_NMOD_gcx_spin
-#define __funct_MOD_gcc_spin_more __funct_NMOD_gcc_spin_more
-#define __funct_MOD_gcc_spin __funct_NMOD_gcc_spin
-#define __funct_MOD_get_inlc __funct_NMOD_get_inlc
-#endif
+#define set_dft_from_name       RMG_FC_MODULE(funct,set_dft_from_name,mod_FUNCT,SET_DFT_FROM_NAME)
+#define get_dft_name            RMG_FC_MODULE(funct,get_dft_name,mod_FUNCT,GET_DFT_NAME)
+#define dft_is_gradient         RMG_FC_MODULE(funct,dft_is_gradient,mod_FUNCT,DFT_IS_GRADIENT)
+#define dft_is_meta             RMG_FC_MODULE(funct,dft_is_meta,mod_FUNCT,DFT_IS_META)
+#define dft_is_hybrid           RMG_FC_MODULE(funct,dft_is_hybrid,mod_FUNCT,DFT_IS_HYBRID)
+#define igcc_is_lyp             RMG_FC_MODULE(funct,igcc_is_lyp,mod_FUNCT,IGCC_IS_LYP)
+#define dft_has_finite_size_correction RMG_FC_MODULE(funct,dft_has_finite_size_correction,mod_FUNCT,DFT_HAS_FINITE_SIZE_CORRECTION)
+#define dft_is_nonlocc          RMG_FC_MODULE(funct,dft_is_nonlocc,mod_FUNCT,DFT_IS_NONLOCC)
+#define xc                      RMG_FC_MODULE(funct,xc,mod_FUNCT,XC)
+#define xc_spin                 RMG_FC_MODULE(funct,xc_spin,mod_FUNCT,XC_SPIN)
+#define nlc                     RMG_FC_MODULE(funct,nlc,mod_FUNCT,NLC)
+#define gcxc                    RMG_FC_MODULE(funct,gcxc,mod_FUNCT,GCXC)
+#define gcx_spin                RMG_FC_MODULE(funct,gcx_spin,mod_FUNCT,GCX_SPIN)
+#define gcc_spin_more           RMG_FC_MODULE(funct,gcc_spin_more,mod_FUNCT,GCC_SPIN_MORE)
+#define gcc_spin                RMG_FC_MODULE(funct,gcc_spin,mod_FUNCT,GCC_SPIN)
+#define get_inlc                RMG_FC_MODULE(funct,get_inlc,mod_FUNCT,GET_INLC)
 
-extern "C" void __funct_MOD_set_dft_from_name( const char *name, std::size_t len );
-extern "C" char *__funct_MOD_get_dft_name(void);
-extern "C" bool __funct_MOD_dft_is_gradient(void);
-extern "C" bool __funct_MOD_dft_is_meta(void);
-extern "C" bool __funct_MOD_dft_is_hybrid(void);
-extern "C" bool __funct_MOD_igcc_is_lyp(void);
-extern "C" bool __funct_MOD_dft_has_finite_size_correction(void);
-extern "C" bool __funct_MOD_dft_is_nonlocc(void);
-extern "C" void __funct_MOD_xc (double *rho, double *ex, double *ec, double *vx, double *vc);
-extern "C" void __funct_MOD_xc_spin (double *rho, double *zeta, double *ex, double *ec, double *vxup, double *vxdw, double *vcup, double *vcdw);
+extern "C" void set_dft_from_name( const char *name, std::size_t len );
+extern "C" char *get_dft_name(void);
+extern "C" bool dft_is_gradient(void);
+extern "C" bool dft_is_meta(void);
+extern "C" bool dft_is_hybrid(void);
+extern "C" bool igcc_is_lyp(void);
+extern "C" bool dft_has_finite_size_correction(void);
+extern "C" bool dft_is_nonlocc(void);
+extern "C" void xc (double *rho, double *ex, double *ec, double *vx, double *vc);
+extern "C" void xc_spin (double *rho, double *zeta, double *ex, double *ec, double *vxup, double *vxdw, double *vcup, double *vcdw);
 
-extern "C" void __funct_MOD_nlc (double *rho_valence, double *rho_core, int *nspin, double *ec, double *vx, double *vc);
-extern "C" void __funct_MOD_gcxc (double *rho, double *grho, double *sx, double *sc, 
+extern "C" void nlc (double *rho_valence, double *rho_core, int *nspin, double *ec, double *vx, double *vc);
+extern "C" void gcxc (double *rho, double *grho, double *sx, double *sc, 
                                   double *v1x, double *v2x, double *v1c, double *v2c);
-extern "C" void __funct_MOD_gcx_spin(double *rhoup, double *rhodown, double *grhoup, double *grhodown, double *sx,
+extern "C" void gcx_spin(double *rhoup, double *rhodown, double *grhoup, double *grhodown, double *sx,
                                   double *v1xup, double *v1xdw, double *v2xup, double *v2xdw);
-extern "C" void __funct_MOD_gcc_spin_more( double *arho_up, double *arho_down,  double *grhoup, double *grhodw, double *grhoud,
+extern "C" void gcc_spin_more( double *arho_up, double *arho_down,  double *grhoup, double *grhodw, double *grhoud,
                                   double *sc, double *v1cup, double *v1cdw, double *v2cup, double *v2cdw, double *v2cud );
-extern "C" void __funct_MOD_gcc_spin( double *arho, double *zeta, double *grh2, double *sc, double *v1cup, double *v1cdw, double *v2c );
+extern "C" void gcc_spin( double *arho, double *zeta, double *grh2, double *sc, double *v1cup, double *v1cdw, double *v2c );
 
-extern "C" int __funct_MOD_get_inlc(void);
+extern "C" int get_inlc(void);
 
 bool Functional::dft_set=false;
 std::string Functional::saved_dft_name;
@@ -137,10 +136,10 @@ Functional::~Functional(void)
 }
 
 
-void Functional::set_dft_from_name(char *newdft_name) 
+void Functional::set_dft_from_name_rmg(char *newdft_name) 
 {
     if(!this->dft_set) {
-        __funct_MOD_set_dft_from_name(newdft_name, std::strlen(newdft_name) );
+        set_dft_from_name(newdft_name, std::strlen(newdft_name) );
         saved_dft_name = newdft_name;
     }
     else {
@@ -149,7 +148,7 @@ void Functional::set_dft_from_name(char *newdft_name)
     this->dft_set = true;
 }
 
-const char *Functional::get_dft_name(void)
+const char *Functional::get_dft_name_rmg(void)
 {
     if(!dft_set) {
         throw RmgFatalException() << "Error! get_dft_name called before dft type was set." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -157,10 +156,10 @@ const char *Functional::get_dft_name(void)
     return saved_dft_name.c_str();
 }
 
-void Functional::set_dft_from_name(std::string newdft_name)
+void Functional::set_dft_from_name_rmg(std::string newdft_name)
 {
     if(!this->dft_set) {
-        __funct_MOD_set_dft_from_name(newdft_name.c_str(), std::strlen(newdft_name.c_str()) );
+        set_dft_from_name(newdft_name.c_str(), std::strlen(newdft_name.c_str()) );
         saved_dft_name = newdft_name;
     }
     else {
@@ -169,34 +168,34 @@ void Functional::set_dft_from_name(std::string newdft_name)
     this->dft_set = true;
 }
 
-bool Functional::dft_is_gradient(void)
+bool Functional::dft_is_gradient_rmg(void)
 {
-    return __funct_MOD_dft_is_gradient();
+    return dft_is_gradient();
 }
 
-bool Functional::dft_is_meta(void)
+bool Functional::dft_is_meta_rmg(void)
 {
-    return __funct_MOD_dft_is_meta();
+    return dft_is_meta();
 }
 
-bool Functional::dft_is_hybrid(void)
+bool Functional::dft_is_hybrid_rmg(void)
 {
-    return __funct_MOD_dft_is_hybrid();
+    return dft_is_hybrid();
 }
 
-bool Functional::igcc_is_lyp(void)
+bool Functional::igcc_is_lyp_rmg(void)
 {
-    return __funct_MOD_igcc_is_lyp();
+    return igcc_is_lyp();
 }
 
-bool Functional::dft_has_finite_size_correction(void)
+bool Functional::dft_has_finite_size_correction_rmg(void)
 {
-    return __funct_MOD_dft_has_finite_size_correction();
+    return dft_has_finite_size_correction();
 }
 
-bool Functional::dft_is_nonlocc(void)
+bool Functional::dft_is_nonlocc_rmg(void)
 {
-    return __funct_MOD_dft_is_nonlocc();
+    return dft_is_nonlocc();
 }
 
 void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
@@ -241,7 +240,7 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
            double ex, ec, vx, vc;
            if(atrho > SMALL_CHARGE) {
 
-               __funct_MOD_xc( &trho, &ex, &ec, &vx, &vc);
+               xc( &trho, &ex, &ec, &vx, &vc);
                v[ix] = vx + vc;
                etxcl = etxcl + ( ex + ec ) * trho;
                vtxcl = vtxcl + v[ix] * rho[ix];
@@ -250,7 +249,7 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
            else {
                double rhotem = SMALL_CHARGE * (1.0 + SMALL_CHARGE);
-               __funct_MOD_xc( &rhotem, &ex, &ec, &vx, &vc );
+               xc( &rhotem, &ex, &ec, &vx, &vc );
                double frac = std::cbrt(atrho/SMALL_CHARGE);
                v[ix] = (vx + vc) * frac;
                etxcl = etxcl + ( ex + ec ) * trho * frac;
@@ -285,7 +284,7 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
                    if(zeta < 0.0) tzeta = -1.0;
                    zeta = tzeta;
                }
-               __funct_MOD_xc_spin( &trho, &zeta, &ex, &ec, &vx0, &vx1, &vc0, &vc1 );
+               xc_spin( &trho, &zeta, &ex, &ec, &vx0, &vx1, &vc0, &vc1 );
                v_up[ix] = vx0 + vc0;
                v_down[ix] = vx1 + vc1;
                etxcl = etxcl + ( ex + ec ) * trho;
@@ -318,9 +317,9 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 
    // And finally any non-local corrections
    RmgTimer *RT4 = new RmgTimer("5-Functional: vxc nonlocal");
-   if(this->dft_is_nonlocc()) {
-       this->nlc(rho, rho_core, etxc, vtxc, v, spinflag);
-       //__funct_MOD_nlc( rho, rho_core, &nspin, &etxc, &vtxc, v );
+   if(this->dft_is_nonlocc_rmg()) {
+       this->nlc_rmg(rho, rho_core, etxc, vtxc, v, spinflag);
+       //nlc( rho, rho_core, &nspin, &etxc, &vtxc, v );
    }
    delete RT4;
 
@@ -331,9 +330,9 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
 }
 
 // Applies non-local corrections for the correlation
-void Functional::nlc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
+void Functional::nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
 {
-    int inlc = __funct_MOD_get_inlc();
+    int inlc = get_inlc();
 
     // No non-local correction just return
     if(inlc == 0) return;
@@ -354,7 +353,7 @@ void Functional::nlc(double *rho, double *rho_core, double &etxc, double &vtxc, 
 void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v)
 {
 
-    if(!this->dft_is_gradient()) return;
+    if(!this->dft_is_gradient_rmg()) return;
 
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
@@ -405,7 +404,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                 if(rhoout[k] < 0.0)segno = -1.0; 
 
                 double pgrho2 = grho2[0] + epsg_guard;
-                __funct_MOD_gcxc( &arho, &pgrho2, &sx, &sc, &v1x, &v2x, &v1c, &v2c );
+                gcxc( &arho, &pgrho2, &sx, &sc, &v1x, &v2x, &v1c, &v2c );
                 //
                 // first term of the gradient correction : D(rho*Exc)/D(rho)
                 v[k] = v[k] +( v1x + v1c );
@@ -462,7 +461,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 // Applies gradient corrections for spin case
 void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, double &vtxc, double *v)
 {
-    if(!this->dft_is_gradient()) return;
+    if(!this->dft_is_gradient_rmg()) return;
 
     double *rho_up, *rho_down;
     double *v_up, *v_down;
@@ -539,7 +538,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
         double pgrho2_down = grho2[1] + epsg_guard;
         double v1xup, v1xdw, v2xup, v2xdw, sx;
 
-        __funct_MOD_gcx_spin( &arho_up, &arho_down, &pgrho2_up,
+        gcx_spin( &arho_up, &arho_down, &pgrho2_up,
                         &pgrho2_down, &sx, &v1xup, &v1xdw, &v2xup, &v2xdw );
 
          double sc    = 0.0;
@@ -552,13 +551,13 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
 
         if(arho > epsr) {
 
-            if(__funct_MOD_igcc_is_lyp()) {
+            if(igcc_is_lyp()) {
 
                 double grhoup = gx_up[k]*gx_up[k] + gy_up[k]*gy_up[k] + gz_up[k]*gz_up[k];
                 double grhodw = gx_down[k]*gx_down[k] + gy_down[k]*gy_down[k] + gz_down[k]*gz_down[k];
                 double grhoud = gx_up[k]*gx_down[k] + gy_up[k]*gy_down[k] + gz_up[k]*gz_down[k];
 
-                __funct_MOD_gcc_spin_more( &arho_up, &arho_down, &grhoup, &grhodw, &grhoud,
+                gcc_spin_more( &arho_up, &arho_down, &grhoup, &grhodw, &grhoud,
                                   &sc, &v1cup, &v1cdw, &v2cup, &v2cdw, &v2cud[k] );
 
             }
@@ -570,7 +569,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
                               (gy_up[k] + gy_down[k]) * (gy_up[k] + gy_down[k]) +
                               (gz_up[k] + gz_down[k]) * (gz_up[k] + gz_down[k]);
                 
-                __funct_MOD_gcc_spin( &arho, &zeta, &grh2, &sc, &v1cup, &v1cdw, &v2c );
+                gcc_spin( &arho, &zeta, &grh2, &sc, &v1cup, &v1cdw, &v2c );
                 v2cup = v2c;
                 v2cdw = v2c;
                 v2cud[k] = v2c;

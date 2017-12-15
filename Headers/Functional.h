@@ -74,17 +74,17 @@ public:
 
     ~Functional(void);
 
-    void set_dft_from_name(char *newdft_name);
-    const char *get_dft_name(void);
-    void set_dft_from_name(std::string newdft_name);
-    bool dft_is_gradient(void);
-    bool dft_is_meta(void);
-    bool dft_is_hybrid(void);
-    bool igcc_is_lyp(void);
-    bool dft_is_nonlocc(void);
-    bool dft_has_finite_size_correction(void);
+    void set_dft_from_name_rmg(char *newdft_name);
+    const char *get_dft_name_rmg(void);
+    void set_dft_from_name_rmg(std::string newdft_name);
+    bool dft_is_gradient_rmg(void);
+    bool dft_is_meta_rmg(void);
+    bool dft_is_hybrid_rmg(void);
+    bool igcc_is_lyp_rmg(void);
+    bool dft_is_nonlocc_rmg(void);
+    bool dft_has_finite_size_correction_rmg(void);
     void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
-    void nlc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
+    void nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
 
     static std::string saved_dft_name;
 };
