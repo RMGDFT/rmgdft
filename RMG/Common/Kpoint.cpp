@@ -222,6 +222,13 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     //ct.alloc_states = std::max(4*ct.run_states, ct.max_states);
     ct.alloc_states = std::max(2*ct.init_states + 3 * ct.state_block_size, ct.max_states + 3 * ct.state_block_size);
 
+    if(ct.init_states > ct.non_local_block_size)
+    {
+        ct.mpi_queue_mode = false;
+        Rmg_T->set_queue_mode(false);
+        printf("Warning: you have selected mpi_queue_mode but non_local_block_size is too small. Try using %d.\n",ct.init_states);
+    }
+
 
 //    if (verify ("calculation_mode", "Band Structure Only"))
 //        nk = 1;

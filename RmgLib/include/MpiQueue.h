@@ -109,8 +109,8 @@ public:
     bool pop(int tid, mpi_queue_item_t &item);
     void cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_int &var);
     void cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_bool &var);
-    void spinwaitall(std::atomic_bool *items, int n);
-    void spinwait(int count);
+    void waitall(std::atomic_bool *items, int n);
+    void wait(int count);
     void run_manager(void);
     void stop_manager(void);
     void set_exitflag(void);

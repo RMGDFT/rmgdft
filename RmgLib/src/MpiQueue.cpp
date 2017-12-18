@@ -55,14 +55,11 @@ void MpiQueue::manager_thread(MpiQueue *Q)
         numa_set_localalloc();
     }
 #endif
-    unsigned qcount_large = 0;
-    unsigned qcount_small = 0;
+    unsigned qcount = 0;
     mpi_queue_item_t qobj;
 
 
-    boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> *postedq_large = 
-        new boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>>(Q->max_threads*54);
-    boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> *postedq_small = 
+    boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> *postedq = 
         new boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>>(Q->max_threads*54);
 
 
@@ -99,25 +96,19 @@ void MpiQueue::manager_thread(MpiQueue *Q)
                 {
                     printf("Error: unknown MPI type.\n");fflush(NULL);exit(0);
                 }
+
                 // Now push it into our already posted queues which are only accessed by this thread so faster
-                if(qobj.buflen>=256)
-                {
-                    if(!postedq_large->push(qobj)) {printf("Error: full queue.\n");fflush(NULL);exit(0);}
-                    qcount_large++;
-                }
-                else
-                {
-                    if(!postedq_small->push(qobj)) {printf("Error: full queue.\n");fflush(NULL);exit(0);}
-                    qcount_small++;
-                }
+                if(!postedq->push(qobj)) {printf("Error: full queue.\n");fflush(NULL);exit(0);}
+                qcount++;
+
             }
         }
 
         // Now check the posted items to see if any have completed        
-        int breakcount = 0;
-        while(postedq_large->pop(qobj))
+        int breakcount = Q->max_threads;
+        while(postedq->pop(qobj))
         {
-            qcount_large--;
+            qcount--;
             int flag;
             MPI_Test(&qobj.req, &flag, MPI_STATUS_IGNORE);
             if(flag)
@@ -127,42 +118,22 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             else
             {
                 // Not complete so push it back on the queue and loop around again
-                qcount_large++;
-                postedq_large->push(qobj);
-                breakcount++;
-                if(breakcount >= 16)break;
-            }
-        }
-
-        breakcount = 0;
-        while(postedq_small->pop(qobj))
-        {
-            qcount_small--;
-            int flag;
-            MPI_Test(&qobj.req, &flag, MPI_STATUS_IGNORE);
-            if(flag)
-            {
-                qobj.is_completed->store(true, std::memory_order_release);
-            }
-            else
-            {
-                // Not complete so push it back on the queue and loop around again
-                qcount_small++;
-                postedq_small->push(qobj);
-                breakcount++;
-                if(breakcount >= 16)break;
+                qcount++;
+                postedq->push(qobj);
+                breakcount--;
+                if(breakcount == 0)break;
             }
         }
 
 
         // No pending requests so yield CPU if running flag is set. Otherwise sleep.
-        if((qcount_large == 0) && (qcount_small == 0))
+        if(qcount == 0)
         {
             if(Q->exitflag.load(std::memory_order_acquire)) return;
             if(Q->running.load(std::memory_order_acquire))
             {
 #if USE_SPINWAIT
-                Q->spinwait(100);
+                Q->wait(100);
 #else
                 std::this_thread::yield();
 #endif
@@ -244,18 +215,20 @@ void MpiQueue::cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_
     cv.wait(lk, [&] {return var.load(std::memory_order_acquire)==true;});
 }
 
-void MpiQueue::spinwaitall(std::atomic_bool *items, int n)
+void MpiQueue::waitall(std::atomic_bool *items, int n)
 {
     for(int i=0;i<n;i++)
     {
-        while(!items[i].load(std::memory_order_acquire)) this->spinwait(200);
+        while(!items[i].load(std::memory_order_acquire)) this->wait(200);
     }
 }
 
-void MpiQueue::spinwait(int n)
+void MpiQueue::wait(int n)
 {
-#if __GNUC__
+#if (__GNUC__ && USE_SPINWAIT)
   for (int i = 0; i < n; i++) asm volatile ("nop");
+#else
+  std::this_thread::yield();
 #endif
 }
 

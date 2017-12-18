@@ -40,7 +40,7 @@ set (USE_SCALAPACK_LIBS 1)
 set (USE_ELPA_LIBS 0)
 set (USE_ELEMENTAL_LIBS 0)
 set (USE_LIBXC 0)
-set (USE_OPENBABEL_LIBS 1)
+set (USE_OPENBABEL_LIBS 0)
 set (USE_SVN 1)
 
 
@@ -48,7 +48,10 @@ set (USE_SVN 1)
 add_definitions(-DUSE_SPINWAIT=0)
 
 
-# Helps to find boost on some systems
+# Helps to find the correct version of boost on some systems. In particular
+# many supercomputers will have a system version located in the standard
+# directories that does not match the version required by the compiler you
+# want to use. If cmake is not picking up the correct version try uncommenting this.
 #set(Boost_NO_SYSTEM_PATHS "On")
 
 # If you are having problems with boost at link time try toggling these (e.g. some IBM Power machines)
@@ -60,10 +63,11 @@ add_definitions(-DUSE_SPINWAIT=0)
 #set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
 
 # Ryzen Threadripper with gcc
+#
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 
 # Generic
-set(RMG_EXTRA_COMPILER_FLAGS "-O3")
+#set(RMG_EXTRA_COMPILER_FLAGS "-O3")
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)

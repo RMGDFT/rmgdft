@@ -68,7 +68,6 @@ BaseThread::BaseThread(int nthreads)
     if(!BaseThread::init_flag) {
 
         BaseThread::THREADS_PER_NODE = nthreads;
-        BaseThread::ACTIVE_THREADS_PER_NODE.store(1);
         BaseThread::in_threaded_region.store(false);
         BaseThread::init_flag = 1;
 
@@ -118,7 +117,6 @@ void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
         rmg_error_handler (__FILE__, __LINE__, "More jobs than available threads scheduled\n");
     }
 
-    BaseThread::ACTIVE_THREADS_PER_NODE.store(rjobs);
     std::atomic_thread_fence(std::memory_order_seq_cst);
     // wake manager thread first
     if(Queue) Queue->run_manager();
@@ -132,7 +130,6 @@ void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
     delete BaseThread::barrier;
     if(Queue) Queue->stop_manager();
     std::atomic_thread_fence(std::memory_order_seq_cst);
-    BaseThread::ACTIVE_THREADS_PER_NODE.store(1);
  
 }
 
@@ -254,13 +251,6 @@ int BaseThread::get_threads_per_node(void)
     if(BaseThread::THREADS_PER_NODE == 0)
         rmg_error_handler (__FILE__, __LINE__, "Threads not initialized yet");
     return BaseThread::THREADS_PER_NODE;
-}
-
-int BaseThread::get_active_threads_per_node(void)
-{
-    if(BaseThread::THREADS_PER_NODE == 0)
-        rmg_error_handler (__FILE__, __LINE__, "Threads not initialized yet");
-    return BaseThread::ACTIVE_THREADS_PER_NODE;
 }
 
 void BaseThread::set_pptr(int tid, void *p)

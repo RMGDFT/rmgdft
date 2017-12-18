@@ -225,7 +225,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
     if(TradeImages::mode == ASYNC_MODE) {
         if(type == CENTRAL_TRADE) {
-            if(this->queue_mode && T->is_loop_over_states() && (testsize >= 1092))
+            if(this->queue_mode && T->is_loop_over_states() && (testsize >= 0))
             {
                 TradeImages::trade_imagesx_central_async_managed (f, w, dimx, dimy, dimz, images);
             }
@@ -235,7 +235,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
             }
         }
         else {
-            if(this->queue_mode && T->is_loop_over_states() && (testsize >= 1092))
+            if(this->queue_mode && T->is_loop_over_states() && (testsize >= 0))
             {
                 //TradeImages::trade_imagesx_async_managed (f, w, dimx, dimy, dimz, images);
                 printf("Variant not programmed yet.\n");fflush(NULL);exit(0);
@@ -2370,8 +2370,8 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
 
     } // end while
 
-   //this->queue->spinwaitall(is_completed_r, 6);
-   this->queue->spinwaitall(is_completed_s, 6);
+   //this->queue->waitall(is_completed_r, 6);
+   this->queue->waitall(is_completed_s, 6);
 
 } // end trade_imagesx_central_async_managed
 
@@ -3329,7 +3329,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
             }
             else
             {
-                if(!qitems_r[0].is_unpacked)this->queue->spinwait(10);
+                if(!qitems_r[0].is_unpacked)this->queue->wait(10);
             }
         }
     }
@@ -3362,7 +3362,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
             }
             else
             {
-                if(!qitems_r[1].is_unpacked)this->queue->spinwait(10);
+                if(!qitems_r[1].is_unpacked)this->queue->wait(10);
             }
         }
     }
@@ -3397,7 +3397,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
             }
             else
             {
-                if(!qitems_r[2].is_unpacked)this->queue->spinwait(10);
+                if(!qitems_r[2].is_unpacked)this->queue->wait(10);
             }
         }
     }
@@ -3430,7 +3430,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
             }
             else
             {
-                if(!qitems_r[3].is_unpacked)this->queue->spinwait(10);
+                if(!qitems_r[3].is_unpacked)this->queue->wait(10);
             }
         }
     }
@@ -3465,7 +3465,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
             }
             else
             {
-                if(!qitems_r[4].is_unpacked)this->queue->spinwait(10);
+                if(!qitems_r[4].is_unpacked)this->queue->wait(10);
             }
         }
     }
@@ -3498,14 +3498,14 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
             }
             else
             {
-                if(!qitems_r[5].is_unpacked)this->queue->spinwait(10);
+                if(!qitems_r[5].is_unpacked)this->queue->wait(10);
             }
         }
 
     } // end while
 
-   //this->queue->spinwaitall(is_completed_r, 6);
-   this->queue->spinwaitall(is_completed_s, 6);
+   //this->queue->waitall(is_completed_r, 6);
+   this->queue->waitall(is_completed_s, 6);
 
 } // end trade_images1_central_async_managed
 
@@ -4044,8 +4044,8 @@ void TradeImages::trade_images1_async_managed (RmgType * f, int dimx, int dimy, 
 
     } // end while
 
-   //this->queue->spinwaitall(is_completed_r, 26);
-   this->queue->spinwaitall(is_completed_s, 26);
+   //this->queue->waitall(is_completed_r, 26);
+   this->queue->waitall(is_completed_s, 26);
 
 } // end trade_images1_async_managed
 
@@ -4229,7 +4229,7 @@ void TradeImages::trade_images_async_managed (RmgType * mat, int dimx, int dimy,
     TradeImages::RMG_MPI_queue_trade(&mat[incx], (dimy+2)*(dimz+2), RMG_MPI_ISEND, -1, 0, 0, grid_comm, 4, istate, qitems_s[4]);
     TradeImages::RMG_MPI_queue_trade(&mat[xmax], (dimy+2)*(dimz+2), RMG_MPI_ISEND, 1, 0, 0, grid_comm, 5, istate, qitems_s[5]);
 
-   this->queue->spinwaitall(is_completed_r, 6);
-   this->queue->spinwaitall(is_completed_s, 6);
+   this->queue->waitall(is_completed_r, 6);
+   this->queue->waitall(is_completed_s, 6);
 
 }
