@@ -126,6 +126,7 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
     else
         mg_nthreads = mg_nthreads;
 
+    bool omp_numthreads_set = true;
 
     // If user has not set omp_nthreads manually then we 
     if(omp_nthreads == 0) {
@@ -136,19 +137,26 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
         else {
             omp_nthreads = 1;
         }
+        omp_numthreads_set = false;
 
     }
 
     // If user has set mg_nthreads manually then we don't try to adjust it
     if(mg_nthreads == 0) {
 
-        if(pct.ncpus >= pct.procs_per_host) {
-            mg_nthreads = pct.ncpus / pct.procs_per_host;
+        if(omp_numthreads_set)
+        {
+            mg_nthreads = omp_nthreads;
         }
-        else {
-            mg_nthreads = 1;
+        else
+        {
+            if(pct.ncpus >= pct.procs_per_host) {
+                mg_nthreads = pct.ncpus / pct.procs_per_host;
+            }
+            else {
+                mg_nthreads = 1;
+            }
         }
-
     }
 
 #ifdef USE_NUMA

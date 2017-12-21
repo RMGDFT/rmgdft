@@ -66,6 +66,9 @@ add_definitions(-DUSE_SPINWAIT=0)
 #
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 
+# Generic debug
+set(RMG_EXTRA_COMPILER_FLAGS "-O2 -g")
+
 # Generic
 set(RMG_EXTRA_COMPILER_FLAGS "-O3")
 
