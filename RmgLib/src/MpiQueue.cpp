@@ -109,8 +109,13 @@ void MpiQueue::manager_thread(MpiQueue *Q)
         while(postedq->pop(qobj))
         {
             qcount--;
-            int flag;
-            MPI_Test(&qobj.req, &flag, MPI_STATUS_IGNORE);
+            int flag=false;
+            // test this request a couple of times
+            for(int tests=0;tests < 1;tests++)
+            {
+                MPI_Test(&qobj.req, &flag, MPI_STATUS_IGNORE);
+                if(flag) break;
+            }
             if(flag)
             {
                 qobj.is_completed->store(true, std::memory_order_release);

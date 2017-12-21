@@ -347,11 +347,16 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "filter_factor must lie in the range (0.25, 1.0). Terminating.\n");
 
     // Deault of zero is OK because this means to try to set it automatically later on.
-    // The value of 64 covers any possible hardware scenario I can imagine currently but might
+    // The value of 128 covers any possible hardware scenario I can imagine currently but might
     // need to be adjusted at some point in the future.
-    If.RegisterInputKey("threads_per_node", &lc.THREADS_PER_NODE, 0, 64, 0, 
+    If.RegisterInputKey("omp_threads_per_node", &lc.OMP_THREADS_PER_NODE, 0, 64, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Number of threads each MPI process will use. A value of 0 selects automatic setting.\n", 
+                     "Number of Open MP threads each MPI process will use. A value of 0 selects automatic setting.\n", 
+                     "threads_per_node cannnot be a negative number and must be less than 64.\n");
+
+    If.RegisterInputKey("rmg_threads_per_node", &lc.MG_THREADS_PER_NODE, 0, 64, 0, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "Number of Multigrid threads each MPI process will use. A value of 0 selects automatic setting.\n", 
                      "threads_per_node cannnot be a negative number and must be less than 64.\n");
 
     If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 5, 2, 

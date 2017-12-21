@@ -30,6 +30,7 @@
 #ifdef USE_NUMA
     #include <numa.h>
 #endif
+#include <sys/mman.h>
 #include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"
@@ -246,10 +247,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Wavefunctions are actually stored here
 
     rptr = new OrbitalType[kpt_storage * ct.alloc_states * P0_BASIS + 1024]();
+madvise(rptr, sizeof(OrbitalType)*(kpt_storage * ct.alloc_states * P0_BASIS + 1024), MADV_HUGEPAGE);
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
+madvise(nv, sizeof(OrbitalType)*ct.non_local_block_size * P0_BASIS, MADV_HUGEPAGE);
     ns = new OrbitalType[ct.max_states * P0_BASIS]();
+madvise(ns, sizeof(OrbitalType)*ct.max_states * P0_BASIS, MADV_HUGEPAGE);
+
+
     if(!ct.norm_conserving_pp) {
         Bns = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
+madvise(Bns, sizeof(OrbitalType)*ct.non_local_block_size * P0_BASIS, MADV_HUGEPAGE);
+
         pct.Bns = (double *)Bns;
     }
 #endif
@@ -287,9 +295,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //Dprintf ("If not an initial run read data from files");
     if ((ct.runflag == RESTART) || (ct.forceflag == BAND_STRUCTURE) )
     {
-        int THREADS_PER_NODE = ct.THREADS_PER_NODE;
         ReadData (ct.infile, vh, rho, vxc, Kptr);
-        ct.THREADS_PER_NODE = THREADS_PER_NODE;
 
         /*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
         if (ct.spin_flag)

@@ -162,7 +162,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
 
-    InitHybridModel(ct.THREADS_PER_NODE, NPES, pct.gridpe, pct.grid_comm);
+    InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, NPES, pct.gridpe, pct.grid_comm);
 
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)
@@ -274,12 +274,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     size_t elem_len = sizeof(std::complex<double>);
     if(ct.is_gamma) elem_len = sizeof(double);
     Rmg_Q = NULL;
-    if((ct.THREADS_PER_NODE > 1) && ct.mpi_queue_mode)
+    if((ct.MG_THREADS_PER_NODE > 1) && ct.mpi_queue_mode)
     {
 #ifdef USE_NUMA
-        Rmg_Q = new MpiQueue(64, ct.THREADS_PER_NODE, pct.manager_cpumask);
+        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, pct.manager_cpumask);
 #else
-        Rmg_Q = new MpiQueue(64, ct.THREADS_PER_NODE);
+        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE);
 #endif
     }
     else

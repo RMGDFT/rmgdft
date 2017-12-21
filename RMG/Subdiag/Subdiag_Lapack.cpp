@@ -79,7 +79,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
         // Increase the resources available to this proc since the others on the local node
         // will be idle
-        int nthreads = ct.THREADS_PER_NODE;
+        int nthreads = ct.OMP_THREADS_PER_NODE;
         if((pct.procs_per_host > 1) && !use_folded) nthreads = pct.ncpus;
         omp_set_num_threads(nthreads);
 
@@ -209,7 +209,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         }
 
         // Reset omp_num_threads
-        omp_set_num_threads(ct.THREADS_PER_NODE);
+        omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
 
     } // end if is_local_master
 

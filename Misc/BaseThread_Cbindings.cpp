@@ -64,7 +64,7 @@ extern "C" int get_thread_tid(void)
 extern "C" void init_HYBRID_MODEL(int npes, int thispe, int nthreads, MPI_Comm comm)
 {
 
-    InitHybridModel(nthreads, npes, thispe, comm);
+    InitHybridModel(nthreads, nthreads, npes, thispe, comm);
 
 }
 

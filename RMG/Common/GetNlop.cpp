@@ -94,8 +94,8 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     // parallelize over ions but keep the number of threads used limited
     // to a maximum of 4 due to the large amounts of memory required
     // per thread.
-    int nthreads = ct.THREADS_PER_NODE;
-    nthreads = std::min(ct.THREADS_PER_NODE, 4);
+    int nthreads = ct.OMP_THREADS_PER_NODE;
+    nthreads = std::min(ct.OMP_THREADS_PER_NODE, 4);
 
 #pragma omp parallel private(Aix, Aiy, Aiz, Aix2, Aiy2, Aiz2)
 {

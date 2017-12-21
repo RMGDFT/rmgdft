@@ -192,7 +192,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 template <typename KpointType>
 void OutputBandPlot(Kpoint<KpointType> ** Kptr);
 int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm);
-void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm);
+void InitHybridModel(int omp_nthreads, int mg_threads, int npes, int thispe, MPI_Comm comm);
 void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& cont, PE_CONTROL& pecont, std::unordered_map<std::string, InputKey *>& Map);
 void AutoSet(CONTROL& cont, PE_CONTROL& pecont, std::unordered_map<std::string, InputKey *>& Map);
 void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap);

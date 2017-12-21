@@ -121,7 +121,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
 
         // Increase the resources available to this proc since the others on the local node
         // will be idle
-        int nthreads = ct.THREADS_PER_NODE;
+        int nthreads = ct.OMP_THREADS_PER_NODE;
         if(pct.procs_per_host > 1) nthreads = pct.ncpus;
         omp_set_num_threads(nthreads);
 
@@ -184,7 +184,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
         }
 
         // Reset omp_num_threads
-        omp_set_num_threads(ct.THREADS_PER_NODE);
+        omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
 
     } // end if pct.is_local_master
 

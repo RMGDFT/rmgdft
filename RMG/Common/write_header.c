@@ -200,7 +200,8 @@ void write_header (void)
     printf ("   X direction:               %d\n", get_PE_X());
     printf ("   Y direction:               %d\n", get_PE_Y());
     printf ("   Z direction:               %d\n", get_PE_Z());
-    printf ("   Threads/PE:                %d\n", ct.THREADS_PER_NODE);
+    printf ("   MG Threads/PE:             %d\n", ct.MG_THREADS_PER_NODE);
+    printf ("   OMP Threads/PE:            %d\n", ct.OMP_THREADS_PER_NODE);
     
     
     

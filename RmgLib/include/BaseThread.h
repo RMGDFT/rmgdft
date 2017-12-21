@@ -35,7 +35,7 @@
 #include "ThreadBarrier.h"
 
 // Maximum number of Rmg threads. Adjust based on hardware resources.
-#define MAX_RMG_THREADS 40
+#define MAX_RMG_THREADS 64
 
 
 #ifdef __cplusplus

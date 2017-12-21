@@ -93,6 +93,7 @@ unsigned int count_numamask_set_bits(const struct bitmask *mask)
 #endif
 
 #include <sys/types.h>
+#include <sys/resource.h>
 #include <sched.h>
 
 
@@ -107,6 +108,13 @@ void *run_threads(void *v) {
     BaseThread *T = BaseThread::getBaseThread(0);
     int my_tid = s->tid;
  
+    // if mpi_queue_mode make sure manager thread has better priority than us
+    if(ct.mpi_queue_mode)
+    {
+        int priority = getpriority(PRIO_PROCESS, 0);
+        setpriority(PRIO_PROCESS, 0, priority+1);
+    }
+
 #ifdef USE_NUMA
     struct bitmask *thread_cpumask = NULL;
     if(ct.use_numa) {
@@ -164,7 +172,7 @@ void *run_threads(void *v) {
             // If threads*procs = cpus/node then do a one to one binding
             unsigned int cpus_per_node = count_numamask_set_bits(pct.cpumask);
             unsigned int procs_per_node = pct.procs_per_host / pct.numa_nodes_per_host;
-            if(procs_per_node*ct.THREADS_PER_NODE == cpus_per_node && !(pct.procs_per_host % pct.numa_nodes_per_host))
+            if(procs_per_node*ct.MG_THREADS_PER_NODE == cpus_per_node && !(pct.procs_per_host % pct.numa_nodes_per_host))
             {
                 unsigned int proc_rank_in_node = pct.local_rank % procs_per_node;
                 unsigned int nid = pct.local_rank / (pct.procs_per_host / pct.numa_nodes_per_host);
@@ -173,7 +181,7 @@ void *run_threads(void *v) {
                 {
                     if(numa_bitmask_isbitset(pct.cpumask, idx))
                     {
-                        if((s->tid + proc_rank_in_node * ct.THREADS_PER_NODE + nid*cpus_per_node) == t_tid)
+                        if((s->tid + proc_rank_in_node * ct.MG_THREADS_PER_NODE + nid*cpus_per_node) == t_tid)
                         {
                             numa_bitmask_clearall(thread_cpumask);
                             numa_bitmask_setbit(thread_cpumask, idx);
@@ -194,7 +202,7 @@ void *run_threads(void *v) {
         numa_sched_setaffinity(0, thread_cpumask);
         numa_set_localalloc();
 
-        if(my_tid == (ct.THREADS_PER_NODE-1)) 
+        if(my_tid == (ct.MG_THREADS_PER_NODE-1)) 
         {
             pct.manager_cpumask = thread_cpumask;
         }
