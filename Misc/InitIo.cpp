@@ -277,9 +277,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if((ct.MG_THREADS_PER_NODE > 1) && ct.mpi_queue_mode)
     {
 #ifdef USE_NUMA
-        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, pct.manager_cpumask);
+        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, pct.manager_cpumask, ct.spin_manager_thread, ct.spin_worker_threads);
 #else
-        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE);
+        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, ct.spin_manager_thread, ct.spin_worker_threads);
 #endif
     }
     else

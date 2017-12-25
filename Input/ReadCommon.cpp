@@ -749,6 +749,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("mpi_queue_mode", &lc.mpi_queue_mode, false, 
                          "Use mpi queue mode.");
 
+    If.RegisterInputKey("spin_manager_thread", &lc.spin_manager_thread, true, 
+                         "When mpi_queue_mode is enabled the manager thread spins instead of sleeping.");
+
+    If.RegisterInputKey("spin_worker_threads", &lc.spin_worker_threads, true, 
+                         "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.");
+
     If.RegisterInputKey("require_huge_pages", &lc.require_huge_pages, false, 
                          "If set RMG assumes that sufficient huge pages are available. Bad results may occur if that is not true.");
 

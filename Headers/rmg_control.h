@@ -73,6 +73,8 @@ typedef struct
 
     // mpi queued mode
     bool mpi_queue_mode;
+    bool spin_manager_thread;
+    bool spin_worker_threads;
 
     /** Description of the run. */
     char description[MAX_CHAR];
