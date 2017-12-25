@@ -31,6 +31,8 @@
 #include <thread>
 #include <condition_variable>
 #include <queue>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/thread/thread.hpp>
@@ -68,9 +70,9 @@ void MpiQueue::manager_thread(MpiQueue *Q)
     while(1)
     {
 
-        // Threads post requests into a boost multi-producer, multi-consumer queue.
-        // We dequeue them and pass them on to MPI then put the request info into separate
-        // small and large request queues that we then check for completion.
+        // Threads post requests into a boost single-producer, single-consumer queue.
+        // Manager thread dequeues them and passes them on to MPI then we put the request info
+        // into a separate queue that we then check for completion.
         for(int tid=0;tid < Q->max_threads;tid++)
         {
             while(Q->queue[tid]->pop(qobj))
@@ -100,7 +102,6 @@ void MpiQueue::manager_thread(MpiQueue *Q)
                 // Now push it into our already posted queues which are only accessed by this thread so faster
                 if(!postedq->push(qobj)) {printf("Error: full queue.\n");fflush(NULL);exit(0);}
                 qcount++;
-
             }
         }
 
@@ -111,7 +112,7 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             qcount--;
             int flag=false;
             // test this request a couple of times
-            for(int tests=0;tests < 1;tests++)
+            for(int tests=0;tests < 2;tests++)
             {
                 MPI_Test(&qobj.req, &flag, MPI_STATUS_IGNORE);
                 if(flag) break;
@@ -131,24 +132,17 @@ void MpiQueue::manager_thread(MpiQueue *Q)
         }
 
 
-        // No pending requests so yield CPU if running flag is set. Otherwise sleep.
+        // No pending requests so spin CPU if running flag is set. Otherwise sleep.
         if(qcount == 0)
         {
             if(Q->exitflag.load(std::memory_order_acquire)) return;
             if(Q->running.load(std::memory_order_acquire))
             {
-#if USE_SPINWAIT
-                Q->wait(100);
-#else
-                std::this_thread::yield();
-#endif
+                if(Q->spin_manager) MpiQueue::spin(10);
             }
             else
             {
                 Q->cvwait(manager_mutex, manager_cv, Q->running);
-#ifdef USE_NUMA
-                if(Q->cpumask) numa_sched_setaffinity(0, Q->cpumask);
-#endif
             }
         }
     }
@@ -156,14 +150,16 @@ void MpiQueue::manager_thread(MpiQueue *Q)
 
 
 #ifdef USE_NUMA
-MpiQueue::MpiQueue(int max_size, int max_threads, void *mask)
+MpiQueue::MpiQueue(int max_size, int max_threads, void *mask, bool spin_manager_thread, bool spin_worker_threads)
 {
     this->cpumask = (struct bitmask *)mask;
 #else
-MpiQueue::MpiQueue(int max_size, int max_threads)
+MpiQueue::MpiQueue(int max_size, int max_threads, bool spin_manager_thread, bool spin_worker_threads)
 {
 #endif
     this->max_threads = max_threads;
+    this->spin_manager = spin_manager_thread;
+    this->spin_workers = spin_worker_threads;
     this->queue = new boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> *[max_threads];
     for(int tid = 0;tid < max_threads;tid++)
     {
@@ -230,10 +226,19 @@ void MpiQueue::waitall(std::atomic_bool *items, int n)
 
 void MpiQueue::wait(int n)
 {
-#if (__GNUC__ && USE_SPINWAIT)
-  for (int i = 0; i < n; i++) asm volatile ("nop");
-#else
-  std::this_thread::yield();
-#endif
+    if(this->spin_workers)
+    {
+        MpiQueue::spin(n);
+    }
+    else
+    {
+        std::this_thread::yield();
+    }
 }
 
+void MpiQueue::spin(int n)
+{
+#if __GNUC__
+    for (int i = 0; i < n; i++) asm volatile ("nop");
+#endif
+}

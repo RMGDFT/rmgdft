@@ -44,9 +44,6 @@ set (USE_OPENBABEL_LIBS 0)
 set (USE_SVN 1)
 
 
-# spinwait option helps on some platforms but normally leave disabled
-add_definitions(-DUSE_SPINWAIT=0)
-
 
 # Helps to find the correct version of boost on some systems. In particular
 # many supercomputers will have a system version located in the standard
@@ -67,7 +64,7 @@ add_definitions(-DUSE_SPINWAIT=0)
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 
 # Generic debug
-set(RMG_EXTRA_COMPILER_FLAGS "-O2 -g")
+#set(RMG_EXTRA_COMPILER_FLAGS "-O2 -g")
 
 # Generic
 set(RMG_EXTRA_COMPILER_FLAGS "-O3")

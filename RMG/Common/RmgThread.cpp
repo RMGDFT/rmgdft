@@ -147,22 +147,8 @@ void *run_threads(void *v) {
         }
         else if(pct.procs_per_host == pct.numa_nodes_per_host)
         {
-            int t_tid = 0;
-            for(unsigned int idx=0;idx<pct.cpumask->size;idx++)
-            {
-                if(numa_bitmask_isbitset(pct.cpumask, idx))
-                {
-                    if(s->tid == t_tid)
-                    {
-                        numa_bitmask_clearall(thread_cpumask);
-                        numa_bitmask_setbit(thread_cpumask, idx);
-                        numa_sched_setaffinity(0, thread_cpumask);
-                        if(ct.verbose) printf("C2 Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
-                        break;
-                    }
-                    t_tid++;
-                }
-            }
+            copy_bitmask_to_bitmask(pct.cpumask, thread_cpumask);
+            numa_sched_setaffinity(0, thread_cpumask);
         }
         else if((pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host))
         {

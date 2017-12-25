@@ -91,6 +91,8 @@ private:
     std::atomic<bool> running;
     std::atomic<bool> exitflag;
     int max_threads;
+    bool spin_manager;
+    bool spin_workers;
 
 #ifdef USE_NUMA
     struct bitmask *cpumask{NULL};
@@ -99,9 +101,9 @@ private:
 public:
 
 #ifdef USE_NUMA
-    MpiQueue(int max_size, int max_threads, void *mask);
+    MpiQueue(int max_size, int max_threads, void *mask, bool spin_manager_thread, bool spin_worker_threads);
 #else
-    MpiQueue(int max_size, int max_threads);
+    MpiQueue(int max_size, int max_threads, bool spin_manager_thread, bool spin_worker_threads);
 #endif
     ~MpiQueue(void);
 
@@ -111,6 +113,7 @@ public:
     void cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_bool &var);
     void waitall(std::atomic_bool *items, int n);
     void wait(int count);
+    static void spin(int count);
     void run_manager(void);
     void stop_manager(void);
     void set_exitflag(void);
