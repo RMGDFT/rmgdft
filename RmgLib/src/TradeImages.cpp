@@ -640,7 +640,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     if(TradeImages::mode == ASYNC_MODE) {
         if(type == CENTRAL_TRADE)
         {
-            if(this->queue_mode && T->is_loop_over_states() && (testsize > 1092))
+            if(this->queue_mode && T->is_loop_over_states() && (testsize > 0))
             {
                 TradeImages::trade_images1_central_async_managed (mat, dimx, dimy, dimz);
             }
@@ -651,7 +651,7 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
             if(this->timer_mode) delete RT;
             return;
         }
-        else if(this->queue_mode && T->is_loop_over_states() && (testsize > 1092))
+        else if(this->queue_mode && T->is_loop_over_states() && (testsize > 0))
         {
             TradeImages::trade_images_async_managed (mat, dimx, dimy, dimz);
             if(this->timer_mode) delete RT;
