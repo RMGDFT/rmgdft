@@ -111,12 +111,7 @@ void MpiQueue::manager_thread(MpiQueue *Q)
         {
             qcount--;
             int flag=false;
-            // test this request a couple of times
-            for(int tests=0;tests < 2;tests++)
-            {
-                MPI_Test(&qobj.req, &flag, MPI_STATUS_IGNORE);
-                if(flag) break;
-            }
+            MPI_Test(&qobj.req, &flag, MPI_STATUS_IGNORE);
             if(flag)
             {
                 qobj.is_completed->store(true, std::memory_order_release);
@@ -129,6 +124,7 @@ void MpiQueue::manager_thread(MpiQueue *Q)
                 breakcount--;
                 if(breakcount == 0)break;
             }
+            if(qcount == 0) break;
         }
 
 
