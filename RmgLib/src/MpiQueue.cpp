@@ -115,6 +115,8 @@ void MpiQueue::manager_thread(MpiQueue *Q)
             if(flag)
             {
                 qobj.is_completed->store(true, std::memory_order_release);
+                if((qobj.type == RMG_MPI_IRECV) || (qobj.type == RMG_MPI_ISEND))
+                    qobj.group_count->fetch_sub(1, std::memory_order_release);
             }
             else
             {
@@ -214,9 +216,19 @@ void MpiQueue::cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_
 
 void MpiQueue::waitall(std::atomic_bool *items, int n)
 {
-    for(int i=0;i<n;i++)
+    if(this->spin_workers)
     {
-        while(!items[i].load(std::memory_order_acquire)) this->wait(200);
+        for(int i=0;i<n;i++)
+        {
+            while(!items[i].load(std::memory_order_acquire)) this->wait(10);
+        }
+    }
+    else
+    {
+        for(int i=0;i<n;i++)
+        {
+            while(!items[i].load(std::memory_order_acquire)) std::this_thread::yield();
+        }
     }
 }
 
@@ -229,6 +241,14 @@ void MpiQueue::wait(int n)
     else
     {
         std::this_thread::yield();
+    }
+}
+
+void MpiQueue::waitgroup(std::atomic_int &count)
+{
+    while(count.load(std::memory_order_acquire))
+    {
+        MpiQueue::spin(5);
     }
 }
 

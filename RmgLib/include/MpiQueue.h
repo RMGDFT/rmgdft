@@ -58,6 +58,9 @@ typedef struct
     // Used by both manager and client threads
     std::atomic_bool *is_completed;
 
+    // Used to indicate a group of requests is complete
+    std::atomic_int *group_count;
+
     // Async operation type, RMG_MPI_ISEND, RMG_MPI_IRECV, RMG_MPI_SUM
     int type;
 
@@ -117,6 +120,7 @@ public:
     void run_manager(void);
     void stop_manager(void);
     void set_exitflag(void);
+    void waitgroup(std::atomic_int &count);
     boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> **queue;
 };
 

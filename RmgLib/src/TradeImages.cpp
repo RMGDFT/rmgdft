@@ -2042,6 +2042,7 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
 
     std::atomic_bool is_completed_r[6];
     std::atomic_bool is_completed_s[6];
+    std::atomic_int group_count{12};
     std::mutex send_mutex;
     std::condition_variable send_cv;
 
@@ -2064,9 +2065,11 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
     {
         qitems_r[it].is_completed = &is_completed_r[it];
         qitems_s[it].is_completed = &is_completed_s[it];
+        qitems_r[it].group_count = &group_count;
+        qitems_s[it].group_count = &group_count;
     }
 
-
+    
     frdx1_f = (RmgType *)TradeImages::frdx1[tid];
     frdx2_f = (RmgType *)TradeImages::frdx2[tid];
     frdy1_f = (RmgType *)TradeImages::frdy1[tid];
@@ -2371,7 +2374,9 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
     } // end while
 
    //this->queue->waitall(is_completed_r, 6);
-   this->queue->waitall(is_completed_s, 6);
+//   this->queue->waitall(is_completed_s, 6);
+
+    this->queue->waitgroup(group_count);
 
 } // end trade_imagesx_central_async_managed
 
@@ -3167,6 +3172,7 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
 
     std::atomic_bool is_completed_r[6];
     std::atomic_bool is_completed_s[6];
+    std::atomic_int group_count{12};
 
     incx = (dimy + 2) * (dimz + 2);
     incy = dimz + 2;
@@ -3182,6 +3188,8 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
     {
         qitems_r[it].is_completed = &is_completed_r[it];
         qitems_s[it].is_completed = &is_completed_s[it];
+        qitems_r[it].group_count = &group_count;
+        qitems_s[it].group_count = &group_count;
     }
 
     RmgType *frdx1_f = (RmgType *)TradeImages::frdx1[tid];
@@ -3505,7 +3513,9 @@ void TradeImages::trade_images1_central_async_managed (RmgType * f, int dimx, in
     } // end while
 
    //this->queue->waitall(is_completed_r, 6);
-   this->queue->waitall(is_completed_s, 6);
+//   this->queue->waitall(is_completed_s, 6);
+//while(group_count.load(std::memory_order_acquire));
+    this->queue->waitgroup(group_count);
 
 } // end trade_images1_central_async_managed
 
@@ -3540,6 +3550,8 @@ void TradeImages::trade_images1_async_managed (RmgType * f, int dimx, int dimy, 
 
     std::atomic_bool is_completed_r[26];
     std::atomic_bool is_completed_s[26];
+    std::atomic_int group_count{52};
+
 
     mpi_queue_item_t qitems_r[26];
     mpi_queue_item_t qitems_s[26];
@@ -3548,6 +3560,8 @@ void TradeImages::trade_images1_async_managed (RmgType * f, int dimx, int dimy, 
     {
         qitems_r[it].is_completed = &is_completed_r[it];
         qitems_s[it].is_completed = &is_completed_s[it];
+        qitems_r[it].group_count = &group_count;
+        qitems_s[it].group_count = &group_count;
     }
 
     RmgType *frdx1_f = (RmgType *)TradeImages::frdx1[tid];
@@ -4045,7 +4059,8 @@ void TradeImages::trade_images1_async_managed (RmgType * f, int dimx, int dimy, 
     } // end while
 
    //this->queue->waitall(is_completed_r, 26);
-   this->queue->waitall(is_completed_s, 26);
+//   this->queue->waitall(is_completed_s, 26);
+    this->queue->waitgroup(group_count);
 
 } // end trade_images1_async_managed
 
@@ -4073,6 +4088,8 @@ void TradeImages::trade_images_async_managed (RmgType * mat, int dimx, int dimy,
 
     std::atomic_bool is_completed_r[6];
     std::atomic_bool is_completed_s[6];
+    std::atomic_int group_count{12};
+
 
     mpi_queue_item_t qitems_r[6];
     mpi_queue_item_t qitems_s[6];
@@ -4081,6 +4098,8 @@ void TradeImages::trade_images_async_managed (RmgType * mat, int dimx, int dimy,
     {
         qitems_r[it].is_completed = &is_completed_r[it];
         qitems_s[it].is_completed = &is_completed_s[it];
+        qitems_r[it].group_count = &group_count;
+        qitems_s[it].group_count = &group_count;
     }
 
     RmgType *frdy1_f = (RmgType *)TradeImages::frdy1[tid];
@@ -4229,7 +4248,8 @@ void TradeImages::trade_images_async_managed (RmgType * mat, int dimx, int dimy,
     TradeImages::RMG_MPI_queue_trade(&mat[incx], (dimy+2)*(dimz+2), RMG_MPI_ISEND, -1, 0, 0, grid_comm, 4, istate, qitems_s[4]);
     TradeImages::RMG_MPI_queue_trade(&mat[xmax], (dimy+2)*(dimz+2), RMG_MPI_ISEND, 1, 0, 0, grid_comm, 5, istate, qitems_s[5]);
 
-   this->queue->waitall(is_completed_r, 6);
-   this->queue->waitall(is_completed_s, 6);
+//   this->queue->waitall(is_completed_r, 6);
+//   this->queue->waitall(is_completed_s, 6);
 
+    this->queue->waitgroup(group_count);
 }
