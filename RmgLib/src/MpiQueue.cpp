@@ -147,13 +147,13 @@ void MpiQueue::manager_thread(MpiQueue *Q)
 }
 
 
+MpiQueue::MpiQueue(int max_size, int max_threads, void *mask, void *newtopology, bool spin_manager_thread, bool spin_worker_threads)
+{
 #ifdef USE_NUMA
-MpiQueue::MpiQueue(int max_size, int max_threads, void *mask, bool spin_manager_thread, bool spin_worker_threads)
-{
     this->cpumask = (struct bitmask *)mask;
-#else
-MpiQueue::MpiQueue(int max_size, int max_threads, bool spin_manager_thread, bool spin_worker_threads)
-{
+#endif
+#ifdef USE_HWLOC
+    this->topology = (hwloc_topology_t *)newtopology;
 #endif
     this->max_threads = max_threads;
     this->spin_manager = spin_manager_thread;

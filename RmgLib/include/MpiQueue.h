@@ -36,6 +36,9 @@
 #ifdef USE_NUMA
     #include <numa.h>
 #endif
+#ifdef USE_HWLOC
+    #include <hwloc.h>
+#endif
 
 /* Type of async request passed to the mpi trade_images manager */
 #define RMG_MPI_ISEND 1
@@ -101,13 +104,13 @@ private:
     struct bitmask *cpumask{NULL};
 #endif
 
+#ifdef USE_HWLOC
+    hwloc_topology_t *topology;
+#endif
+
 public:
 
-#ifdef USE_NUMA
-    MpiQueue(int max_size, int max_threads, void *mask, bool spin_manager_thread, bool spin_worker_threads);
-#else
-    MpiQueue(int max_size, int max_threads, bool spin_manager_thread, bool spin_worker_threads);
-#endif
+    MpiQueue(int max_size, int max_threads, void *mask, void *topology, bool spin_manager_thread, bool spin_worker_threads);
     ~MpiQueue(void);
 
     bool push(int tid, mpi_queue_item_t &item);

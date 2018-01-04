@@ -34,6 +34,9 @@
     #include <numaif.h>
 #endif
 
+#ifdef USE_HWLOC
+    #include <hwloc.h>
+#endif
 
 void *run_threads(void *v);
 static BaseThread *B;
@@ -108,6 +111,11 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
     pct.ncpus = sysconf( _SC_NPROCESSORS_ONLN );
 #else
     pct.ncpus = std::thread::hardware_concurrency();
+#endif
+
+#ifdef USE_HWLOC
+    hwloc_topology_init(&pct.topology);
+    hwloc_topology_load(pct.topology);
 #endif
 
     if(pct.worldrank == 0)

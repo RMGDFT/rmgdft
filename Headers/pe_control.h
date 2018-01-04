@@ -4,6 +4,9 @@
 #ifdef USE_NUMA
     #include <numa.h>
 #endif
+#ifdef USE_HWLOC
+    #include <hwloc.h>
+#endif
 #include "Mgrid.h"
 
 
@@ -60,6 +63,10 @@ typedef struct
     // cpumask for manager thread
     struct bitmask *manager_cpumask;
 
+#endif
+
+#ifdef USE_HWLOC
+    hwloc_topology_t topology;
 #endif
 
     // Local rank of this proc
