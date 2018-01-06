@@ -127,6 +127,8 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
 
 
         {
+            if(N < M) throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
+            
             int *ifail = new int[N];
             int lwork = 6 * N * N + 6 * N + 2;
             int liwork = 6*N;
@@ -137,12 +139,12 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             double tol = 1.0e-15;
             int itype = 1, ione = 1;
 
+            
             KpointType *Asave = new KpointType[N*ld];
             KpointType *Bsave = new KpointType[N*ld];
             for(int i = 0;i < N*ld;i++) Asave[i] = A[i];
             for(int i = 0;i < N*ld;i++) Bsave[i] = B[i];
 
-            if(N < M) throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
 
             if(ct.is_gamma)
             {
