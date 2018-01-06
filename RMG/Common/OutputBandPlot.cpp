@@ -99,6 +99,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
             bs_f = fopen (filename, "w");
             if(!bs_f) {
                 rmg_printf("Unable to write band plot data.\n");
+                delete [] x;
                 return;
             }
 
@@ -129,6 +130,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
             bs_f = fopen (filename, "w");
             if(!bs_f) {
                 rmg_printf("Unable to write band plot data.\n");
+                delete [] x;
                 return;
             }
             fprintf (bs_f, "@version 50123\n");
@@ -216,6 +218,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
     }
 
+    delete [] x;
 }
 
 
