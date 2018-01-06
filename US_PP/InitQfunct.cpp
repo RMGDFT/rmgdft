@@ -42,6 +42,7 @@
 
 void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 {
+    if(ct.norm_conserving_pp) return;
     int idx, i, j, k, num, il, jl, ll;
     double *work = new double[MAX_RGRID]();
     double *qnmlig_tpr, *qnm_tpr;
@@ -49,7 +50,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
     char newname1[MAX_PATH];
     FILE *fqq = NULL;
     
-    if(ct.norm_conserving_pp) return;
+
 
     Atomic *A = new Atomic();
     double *rgrid = A->GetRgrid();
