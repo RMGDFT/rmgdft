@@ -800,6 +800,9 @@ typedef struct
     // to do it manually with numactl or aprun
     bool use_numa;
 
+    // In case system has hwloc whether or not to use it
+    bool use_hwloc;
+
     // Default is false. RMG will still be able to use transparent huge pages but
     // certain special optimizations will be disabled. If you set this to true then
     // RMG assumes that sufficient huge pages are available to meet all memory

@@ -67,6 +67,8 @@ typedef struct
 
 #ifdef USE_HWLOC
     hwloc_topology_t topology;
+    hwloc_const_bitmap_t pu_set;
+    hwloc_const_bitmap_t nn_set;
 #endif
 
     // Local rank of this proc

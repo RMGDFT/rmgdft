@@ -106,66 +106,53 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
     delete [] ranks;
     delete [] hnames; 
 
-    // Sysconf works on linux, hopefully C++11 works elsewhere
+    if(pct.worldrank == 0)
+        std::cout << "RMG running with " << pct.procs_per_host << " MPI procs per host." << std::endl;
+
+    // We initially try to get ncpus via sysconf on linux and C++11 elsewhere
+    // but if hwloc or libnuma is available we will reset using them.
 #if __linux__
     pct.ncpus = sysconf( _SC_NPROCESSORS_ONLN );
 #else
     pct.ncpus = std::thread::hardware_concurrency();
 #endif
 
+
 #ifdef USE_HWLOC
-    hwloc_topology_init(&pct.topology);
-    hwloc_topology_load(pct.topology);
-#endif
-
-    if(pct.worldrank == 0)
-        std::cout << "RMG running with " << pct.procs_per_host << " MPI procs per host." << std::endl;
-
-    // Check if OMP_NUM_THREADS was set?
-    char *tptr = getenv("OMP_NUM_THREADS");
-    if(tptr)
-        omp_nthreads = atoi(tptr);
-    else
-        omp_nthreads = omp_nthreads;
-
-    tptr = getenv("RMG_NUM_THREADS");
-    if(tptr) 
-        mg_nthreads = atoi(tptr);
-    else
-        mg_nthreads = mg_nthreads;
-
-    bool omp_numthreads_set = true;
-
-    // If user has not set omp_nthreads manually then we 
-    if(omp_nthreads == 0) {
-
-        if(pct.ncpus >= pct.procs_per_host) {
-            omp_nthreads = pct.ncpus / pct.procs_per_host;
-        }
-        else {
-            omp_nthreads = 1;
-        }
-        omp_numthreads_set = false;
-
-    }
-
-    // If user has set mg_nthreads manually then we don't try to adjust it
-    if(mg_nthreads == 0) {
-
-        if(omp_numthreads_set)
+    if(ct.use_hwloc)
+    {
+        int retval = hwloc_topology_init(&pct.topology);
+        if(retval < 0)
         {
-            mg_nthreads = omp_nthreads;
+            ct.use_hwloc = false;
+            if(pct.worldrank == 0)
+                std::cout << "Unable to initialize hwloc topology. Disabling hwloc support." << std::endl;
         }
         else
         {
-            if(pct.ncpus >= pct.procs_per_host) {
-                mg_nthreads = pct.ncpus / pct.procs_per_host;
+            retval = hwloc_topology_load(pct.topology);
+            if(retval < 0)
+            {
+                ct.use_hwloc = false;
+                hwloc_topology_destroy(pct.topology);
+                if(pct.worldrank == 0)
+                    std::cout << "Unable to load hwloc topology. Disabling hwloc support." << std::endl;
             }
-            else {
-                mg_nthreads = 1;
+            else
+            {
+                // Get set of available processing units
+                pct.pu_set = hwloc_topology_get_topology_cpuset(pct.topology);
+                pct.ncpus = hwloc_bitmap_weight(pct.pu_set);
+                // And numa nodes
+                pct.nn_set = hwloc_topology_get_topology_nodeset(pct.topology);
+                pct.numa_nodes_per_host = hwloc_bitmap_weight(pct.nn_set);
             }
         }
     }
+#endif
+
+
+
 
 #ifdef USE_NUMA
     // Determine if this is a numa system and setup up policies correctly if that is the case.
@@ -286,6 +273,51 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
     }
 #endif
 
+    // Check if OMP_NUM_THREADS was set?
+    char *tptr = getenv("OMP_NUM_THREADS");
+    if(tptr)
+        omp_nthreads = atoi(tptr);
+    else
+        omp_nthreads = omp_nthreads;
+
+    tptr = getenv("RMG_NUM_THREADS");
+    if(tptr) 
+        mg_nthreads = atoi(tptr);
+    else
+        mg_nthreads = mg_nthreads;
+
+    bool omp_numthreads_set = true;
+
+    // If user has not set omp_nthreads manually then we 
+    if(omp_nthreads == 0) {
+
+        if(pct.ncpus >= pct.procs_per_host) {
+            omp_nthreads = pct.ncpus / pct.procs_per_host;
+        }
+        else {
+            omp_nthreads = 1;
+        }
+        omp_numthreads_set = false;
+
+    }
+
+    // If user has set mg_nthreads manually then we don't try to adjust it
+    if(mg_nthreads == 0) {
+
+        if(omp_numthreads_set)
+        {
+            mg_nthreads = omp_nthreads;
+        }
+        else
+        {
+            if(pct.ncpus >= pct.procs_per_host) {
+                mg_nthreads = pct.ncpus / pct.procs_per_host;
+            }
+            else {
+                mg_nthreads = 1;
+            }
+        }
+    }
     ct.OMP_THREADS_PER_NODE = omp_nthreads;
     ct.MG_THREADS_PER_NODE = mg_nthreads;
 

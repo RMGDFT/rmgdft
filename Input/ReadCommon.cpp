@@ -746,6 +746,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("use_numa", &lc.use_numa, true, 
                          "Use internal numa setup if available.");
 
+    If.RegisterInputKey("use_hwloc", &lc.use_hwloc, true, 
+                         "Use internal hwloc setup if available. If both this and use_numa are true hwloc takes precedence.");
+
     If.RegisterInputKey("mpi_queue_mode", &lc.mpi_queue_mode, false, 
                          "Use mpi queue mode.");
 

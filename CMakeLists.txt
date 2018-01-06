@@ -41,7 +41,7 @@ set (USE_ELPA_LIBS 0)
 set (USE_ELEMENTAL_LIBS 0)
 set (USE_LIBXC 0)
 set (USE_OPENBABEL_LIBS 0)
-set (USE_SVN 1)
+set (USE_SVN 0)
 
 
 
@@ -61,13 +61,13 @@ set (USE_SVN 1)
 
 # Ryzen Threadripper with gcc
 #
-#set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
+set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 
 # Generic debug
 #set(RMG_EXTRA_COMPILER_FLAGS "-O2 -g")
 
 # Generic
-set(RMG_EXTRA_COMPILER_FLAGS "-O3")
+#set(RMG_EXTRA_COMPILER_FLAGS "-O3")
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)

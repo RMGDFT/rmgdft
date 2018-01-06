@@ -43,39 +43,39 @@ namespace RmgInput {
     // handles integer vectors
     void validate(boost::any& v, const std::vector<std::string>& values, ReadVector<int>*, int)
     {
-        ReadVector<int> *A = new ReadVector<int>;
+        ReadVector<int> A;
         po::validators::check_first_occurrence(v);
         const std::string& s = po::validators::get_single_string(values);
         std::string t1 = s;
         boost::trim_if(t1, boost::algorithm::is_any_of("\" \t"));
 
         while(t1.size() > 0) {
-            A->vals.push_back( std::atoi(t1.c_str()));
+            A.vals.push_back( std::atoi(t1.c_str()));
             size_t f1 = t1.find_first_of(" \t");
             if(f1 == std::string::npos) break;
             t1 = t1.substr(f1, std::string::npos);
             boost::trim(t1);
         }
-        v = *A;
+        v = A;
     }
 
     // handles double vectors
     void validate(boost::any& v, const std::vector<std::string>& values, ReadVector<double>*, double)
     {
-        ReadVector<double> *A = new ReadVector<double>;
+        ReadVector<double> A;
         po::validators::check_first_occurrence(v);
         const std::string& s = po::validators::get_single_string(values);
         std::string t1 = s;
         boost::trim_if(t1, boost::algorithm::is_any_of("\" \t"));
 
         while(t1.size() > 0) {
-            A->vals.push_back( std::atof(t1.c_str()));
+            A.vals.push_back( std::atof(t1.c_str()));
             size_t f1 = t1.find_first_of(" \t");
             if(f1 == std::string::npos) break;
             t1 = t1.substr(f1, std::string::npos);
             boost::trim(t1);
         }
-        v = *A;
+        v = A;
     }
 
 }
@@ -436,10 +436,10 @@ void RmgInputFile::PreprocessInputFile(char *cfile, MPI_Comm comm)
     // Second tokenizer pass to make the InputPairs map
     boost::char_separator<char> pairsep("\"=");
     tokenizer pairtokens(outbuf, pairsep);
-    for (tokenizer::iterator tok_iter = pairtokens.begin();tok_iter != tokens.end(); ++tok_iter) {
+    for (tokenizer::iterator tok_iter = pairtokens.begin();tok_iter != pairtokens.end(); ++tok_iter) {
         std::string line1(*tok_iter);
         tok_iter++;
-        if(tok_iter == tokens.end()) break;
+        if(tok_iter == pairtokens.end()) break;
         std::string line2(*tok_iter);
         boost::trim_if(line1, boost::algorithm::is_any_of("\" \t\n\r"));
         boost::trim_if(line2, boost::algorithm::is_any_of("\" \t\n\r"));
