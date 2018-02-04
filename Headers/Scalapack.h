@@ -158,6 +158,7 @@ protected:
 #define		pssygst		RMG_FC_GLOBAL(pssygst, PSSYGST)
 #define		pstrtrs		RMG_FC_GLOBAL(pstrtrs, PSTRTRS)
 #define		pdgemm		RMG_FC_GLOBAL(pdgemm, PDGEMM)
+#define		pdlaset		RMG_FC_GLOBAL(pdlaset, PDLASET)
 #define		psgemm		RMG_FC_GLOBAL(psgemm, PSGEMM)
 #define		pzgemm		RMG_FC_GLOBAL(pzgemm, PZGEMM)
 #define		pssymm		RMG_FC_GLOBAL(pssymm, PSSYMM)

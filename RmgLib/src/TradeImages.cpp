@@ -41,6 +41,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <boost/lockfree/queue.hpp>
+#include "zfp.h"
+#include "zfp/macros.h"
 
 
 #define ASYNC_MODE      0
@@ -947,6 +949,7 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
 
     qitem.comm = comm;
     qitem.is_unpacked = false;
+    qitem.is_compressed = false;
     qitem.is_completed->store(false);
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
@@ -956,7 +959,6 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
     // 2^16 states while the MPI spec only requires 2^16 bits which gives 2^11 states.
     qitem.mpi_tag = (istate<<5) + tag;
     qitem.target = TradeImages::target_node[pe_x_offset+1][pe_y_offset+1][pe_z_offset+1];
-    qitem.target_index = (pe_x_offset+1)*9 + (pe_y_offset+1)*3 + pe_z_offset+1;
     qitem.type = type;
     qitem.buf = (void *)buf;
     qitem.buflen = sizeof(RmgType)*count;

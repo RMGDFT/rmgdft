@@ -73,11 +73,13 @@ typedef struct
     // Used only by client threads
     bool is_unpacked;
 
+    // Compression flag
+    bool is_compressed;
+
     // Initialized by clients but never change
     void *buf;
     int buflen;
     int target;
-    int target_index;
 
     // Actual tag passed to mpi routines.
     int mpi_tag;

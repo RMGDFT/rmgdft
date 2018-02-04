@@ -44,7 +44,7 @@ static BaseThread *B;
 // Determine system information required to to setup optimal threading and local
 // MPI communications. We assume that if the user has set OMP_NUM_THREADS manually
 // that they know what they are doing so we don't try to override their choices.
-// We will issue a warning if // they do something that doesn't make sense though.
+// We will issue a warning if they do something that doesn't make sense though.
 //
 //  omp_nthreads and mg_nthreads are values read from the input file or 0 if not set
 void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MPI_Comm comm)
@@ -128,25 +128,49 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
             if(pct.worldrank == 0)
                 std::cout << "Unable to initialize hwloc topology. Disabling hwloc support." << std::endl;
         }
-        else
+    }
+    
+    if(ct.use_hwloc) 
+    {
+        int retval = hwloc_topology_load(pct.topology);
+        if(retval < 0)
         {
-            retval = hwloc_topology_load(pct.topology);
-            if(retval < 0)
+            ct.use_hwloc = false;
+            hwloc_topology_destroy(pct.topology);
+            if(pct.worldrank == 0)
+                std::cout << "Unable to load hwloc topology. Disabling hwloc support." << std::endl;
+        }
+    }
+    
+    if(ct.use_hwloc)
+    {
+        // Get set of available processing units
+        pct.pu_set = hwloc_topology_get_topology_cpuset(pct.topology);
+        pct.ncpus = hwloc_bitmap_weight(pct.pu_set);
+        // And numa nodes
+        pct.nn_set = hwloc_topology_get_topology_nodeset(pct.topology);
+        pct.numa_nodes_per_host = hwloc_bitmap_weight(pct.nn_set);
+        if(pct.procs_per_host == 1) 
+        {
+        }
+        else if(pct.ncpus == pct.procs_per_host) 
+        {
+        }
+        else if(pct.procs_per_host == pct.numa_nodes_per_host) 
+        {
+        }
+        else if((pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host)) 
+        {
+            unsigned i;
+            hwloc_obj_t obj;
+            unsigned nid = pct.local_rank / (pct.procs_per_host / pct.numa_nodes_per_host);
+            hwloc_bitmap_foreach_begin(i, pct.nn_set)
             {
-                ct.use_hwloc = false;
-                hwloc_topology_destroy(pct.topology);
-                if(pct.worldrank == 0)
-                    std::cout << "Unable to load hwloc topology. Disabling hwloc support." << std::endl;
-            }
-            else
-            {
-                // Get set of available processing units
-                pct.pu_set = hwloc_topology_get_topology_cpuset(pct.topology);
-                pct.ncpus = hwloc_bitmap_weight(pct.pu_set);
-                // And numa nodes
-                pct.nn_set = hwloc_topology_get_topology_nodeset(pct.topology);
-                pct.numa_nodes_per_host = hwloc_bitmap_weight(pct.nn_set);
-            }
+                obj = hwloc_get_numanode_obj_by_os_index(pct.topology, i);
+                if(nid == obj->logical_index)
+                {
+                }
+            } hwloc_bitmap_foreach_end();
         }
     }
 #endif
@@ -191,7 +215,8 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
 
     if(ct.use_numa)
     {
-        if(pct.procs_per_host == 1) {
+        if(pct.procs_per_host == 1)
+        {
             // Case 1
             bitmask *tmask = numa_allocate_cpumask();
             numa_bitmask_clearall(tmask);
@@ -215,8 +240,8 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
             numa_free_cpumask(tmask);
 
         }
-        else if(pct.ncpus == pct.procs_per_host) {
-
+        else if(pct.ncpus == pct.procs_per_host) 
+        {
             // Case 2
             unsigned int nid = pct.local_rank / (pct.ncpus / pct.numa_nodes_per_host);
             unsigned int procs_per_node = pct.procs_per_host / pct.numa_nodes_per_host;
@@ -246,8 +271,8 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
             if(pct.gridpe==0)
                 printf("C2: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
         }
-        else if(pct.procs_per_host == pct.numa_nodes_per_host) {
-
+        else if(pct.procs_per_host == pct.numa_nodes_per_host) 
+        {
             // Case 3
             unsigned int nid = pct.local_rank;
             numa_node_to_cpus(nid, pct.cpumask);
@@ -275,16 +300,10 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
 
     // Check if OMP_NUM_THREADS was set?
     char *tptr = getenv("OMP_NUM_THREADS");
-    if(tptr)
-        omp_nthreads = atoi(tptr);
-    else
-        omp_nthreads = omp_nthreads;
+    if(tptr) omp_nthreads = atoi(tptr);
 
     tptr = getenv("RMG_NUM_THREADS");
-    if(tptr) 
-        mg_nthreads = atoi(tptr);
-    else
-        mg_nthreads = mg_nthreads;
+    if(tptr) mg_nthreads = atoi(tptr);
 
     bool omp_numthreads_set = true;
 
