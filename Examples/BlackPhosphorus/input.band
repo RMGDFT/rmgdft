@@ -27,11 +27,11 @@ kpoint_mesh="-4 2 4"
 kpoint_is_shift="0 0 0"
 kpoints_bandstructure="
 0.5   0.0   0.0   0    X
-0.0   0.0   0.0  100   \xG
-0.0   0.0   0.5  100  Z
+0.0   0.0   0.0  10   \xG
+0.0   0.0   0.5  10  Z
 "
 
-#kpoint_distribution="1"
+kpoint_distribution="1"
 
 length_units=
 #"Bohr"
@@ -91,7 +91,7 @@ charge_mixing_type=
 charge_pulay_order="5"
 charge_pulay_scale="0.2"
 
-max_scf_steps="1"
+max_scf_steps="10"
 localize_projectors = "false"
 processor_grid = "1 2 1 "
 

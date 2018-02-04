@@ -14,7 +14,7 @@ void app_mask(int istate, double *u, int level)
     int idx;
     int size, nx, ny, nz, item;
 
-
+    if(ct.states[istate].radius < 0.0) return;
 
     maskptr = ct.states[istate].lmask[level];
     

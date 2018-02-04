@@ -16,6 +16,13 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 
+static double inline inline_ddot(int *length, double *p1, int *ione, double *p2, int *iione)
+{
+    double sum = 0.0;
+    for(int idx=0;idx < *length;idx++) sum += p1[idx] * p2[idx];
+    return sum;
+}
+
 
 void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
 *orbit3, double *H, double *S)
@@ -127,8 +134,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength1, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength1, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength1, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength1, p3, &ione, p2, &ione);
 
                     idx1 = ix1 + iy1 + zlow2 - orbit1->izmin - zshift1;
                     idx2 = ix2 + iy2 + zlow2 - orbit2->izmin - zshift2;
@@ -136,8 +143,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength2, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength2, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength2, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength2, p3, &ione, p2, &ione);
 
                 }
 
@@ -152,8 +159,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength1, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength1, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength1, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength1, p3, &ione, p2, &ione);
 
                     idx1 = ix1 + iy1 + zlow2 - orbit1->izmin - zshift1;
                     idx2 = ix2 + iy2 + zlow2 - orbit2->izmin - zshift2;
@@ -161,8 +168,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength2, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength2, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength2, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength2, p3, &ione, p2, &ione);
 
                 }
             }
@@ -181,8 +188,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength1, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength1, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength1, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength1, p3, &ione, p2, &ione);
 
                     idx1 = ix1 + iy1 + zlow2 - orbit1->izmin - zshift1;
                     idx2 = ix2 + iy2 + zlow2 - orbit2->izmin - zshift2;
@@ -190,8 +197,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength2, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength2, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength2, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength2, p3, &ione, p2, &ione);
 
                 }
 
@@ -205,8 +212,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength1, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength1, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength1, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength1, p3, &ione, p2, &ione);
 
                     idx1 = ix1 + iy1 + zlow2 - orbit1->izmin - zshift1;
                     idx2 = ix2 + iy2 + zlow2 - orbit2->izmin - zshift2;
@@ -214,8 +221,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength2, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength2, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength2, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength2, p3, &ione, p2, &ione);
 
                 }
             }
@@ -238,8 +245,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength1, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength1, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength1, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength1, p3, &ione, p2, &ione);
 
                 }
 
@@ -254,8 +261,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength1, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength1, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength1, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength1, p3, &ione, p2, &ione);
 
                 }
             }
@@ -274,8 +281,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength1, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength1, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength1, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength1, p3, &ione, p2, &ione);
 
                 }
 
@@ -289,8 +296,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength1, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength1, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength1, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength1, p3, &ione, p2, &ione);
 
                 }
             }
@@ -314,8 +321,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength2, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength2, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength2, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength2, p3, &ione, p2, &ione);
 
                 }
 
@@ -329,8 +336,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength2, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength2, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength2, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength2, p3, &ione, p2, &ione);
 
                 }
             }
@@ -349,8 +356,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength2, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength2, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength2, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength2, p3, &ione, p2, &ione);
 
                 }
 
@@ -364,8 +371,8 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
                     p2 = &psi2[idx2];
                     p3 = &psi3[idx1];
 
-                    *H += ddot(&zlength2, p1, &ione, p2, &ione);
-                    *S += ddot(&zlength2, p3, &ione, p2, &ione);
+                    *H += inline_ddot(&zlength2, p1, &ione, p2, &ione);
+                    *S += inline_ddot(&zlength2, p3, &ione, p2, &ione);
 
                 }
             }

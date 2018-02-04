@@ -341,12 +341,22 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Approximate grid spacing (bohr).\n", 
                      "grid_spacing must be a positive number. Terminating.\n");
 
+    If.RegisterInputKey("filter_factor", &lc.filter_factor, 0.25, 2.0, 1.0, 
+                     CHECK_AND_TERMINATE, OPTIONAL, 
+                     "Filtering factor.\n", 
+                     "filter_factor must lie in the range (0.25, 1.0). Terminating.\n");
+
     // Deault of zero is OK because this means to try to set it automatically later on.
-    // The value of 64 covers any possible hardware scenario I can imagine currently but might
+    // The value of 128 covers any possible hardware scenario I can imagine currently but might
     // need to be adjusted at some point in the future.
-    If.RegisterInputKey("threads_per_node", &lc.THREADS_PER_NODE, 0, 64, 0, 
+    If.RegisterInputKey("omp_threads_per_node", &lc.OMP_THREADS_PER_NODE, 0, 64, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Number of threads each MPI process will use. A value of 0 selects automatic setting.\n", 
+                     "Number of Open MP threads each MPI process will use. A value of 0 selects automatic setting.\n", 
+                     "threads_per_node cannnot be a negative number and must be less than 64.\n");
+
+    If.RegisterInputKey("rmg_threads_per_node", &lc.MG_THREADS_PER_NODE, 0, 64, 0, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "Number of Multigrid threads each MPI process will use. A value of 0 selects automatic setting.\n", 
                      "threads_per_node cannnot be a negative number and must be less than 64.\n");
 
     If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 5, 2, 
@@ -583,15 +593,15 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Fine grid for non-local pseudopotential.\n",
                      "fine_grid_non_local_pp must lie in the range (1,4). Resetting to the default value of 4.\n");
 
-    If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 4, 512,64,
+    If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 4, 512,32,
                      CHECK_AND_FIX, OPTIONAL,
                      "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware.\n",
-                     "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 64.\n");
+                     "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 32.\n");
 
-    If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 2048, 512,
+    If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 8192, 512,
                      CHECK_AND_FIX, OPTIONAL,
                      "Block size to use when applying the non-local and S operators.\n",
-                     "non_local_block_size must lie in the range (64,2048). Resetting to the default value of 512.\n");
+                     "non_local_block_size must lie in the range (64,8192). Resetting to the default value of 512.\n");
 
     If.RegisterInputKey("cublasxt_block_size", &lc.cublasxt_block_size, 512, 10240, 2048,
                      CHECK_AND_FIX, OPTIONAL,
@@ -688,6 +698,18 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
 
     // Booleans next. Booleans are never required.
+    If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, false,
+                        "Flag indicating whether or not to use alternate laplacian weights for some operators.");
+
+    If.RegisterInputKey("filter_dpot", &lc.filter_dpot, true,
+                        "Flag indicating whether or not to filter density depenedent potentials.");
+
+    If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, true,
+                        "Flag indicating whether or not to use square root technique for density interpolation.");
+
+    If.RegisterInputKey("renormalize_forces", &lc.renormalize_forces, true,
+                        "Flag indicating whether or not to renormalize forces.");
+
     If.RegisterInputKey("coalesce_states", &lc.coalesce_states, false,
                         "Flag indicating whether or not to coalesce states.");
 
@@ -724,8 +746,17 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("use_numa", &lc.use_numa, true, 
                          "Use internal numa setup if available.");
 
+    If.RegisterInputKey("use_hwloc", &lc.use_hwloc, true, 
+                         "Use internal hwloc setup if available. If both this and use_numa are true hwloc takes precedence.");
+
     If.RegisterInputKey("mpi_queue_mode", &lc.mpi_queue_mode, false, 
                          "Use mpi queue mode.");
+
+    If.RegisterInputKey("spin_manager_thread", &lc.spin_manager_thread, true, 
+                         "When mpi_queue_mode is enabled the manager thread spins instead of sleeping.");
+
+    If.RegisterInputKey("spin_worker_threads", &lc.spin_worker_threads, true, 
+                         "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.");
 
     If.RegisterInputKey("require_huge_pages", &lc.require_huge_pages, false, 
                          "If set RMG assumes that sufficient huge pages are available. Bad results may occur if that is not true.");
@@ -755,10 +786,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
                      "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7.\n");
 
-    If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-8, 1.0e-13,
+    If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-7, 1.0e-13,
                      CHECK_AND_FIX, OPTIONAL,
                      "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
-                     "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7.\n");
+                     "rms_convergence_criterion must lie in the range (1.0e-07,1.0e-20). Resetting to default value of 1.0e-12.\n");
 
     If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-9, 1.0e-1, 1.0e-1,
                      CHECK_AND_FIX, OPTIONAL,
@@ -857,17 +888,15 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     if(lc.outfile[0] !='/') 
     {
-        char *temp = new char[255];
-        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.outfile);
+        char temp[4*MAX_PATH];
+        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.outfile);
         std::strncpy(lc.outfile, temp, sizeof(lc.outfile));
-        delete [] temp;
     }
     if(lc.infile[0] !='/') 
     {
-        char *temp = new char[255];
-        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.infile);
+        char temp[4*MAX_PATH];
+        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.infile);
         std::strncpy(lc.infile, temp, sizeof(lc.infile));
-        delete [] temp;
     }
 
     if(!Infile_tddft.length()) Infile = "Waves/wave_tddft.out";
@@ -878,17 +907,15 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     if(lc.outfile_tddft[0] !='/') 
     {
-        char *temp = new char[255];
-        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.outfile_tddft);
+        char temp[4*MAX_PATH];
+        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.outfile_tddft);
         std::strncpy(lc.outfile_tddft, temp, sizeof(lc.outfile_tddft));
-        delete [] temp;
     }
     if(lc.infile[0] !='/') 
     {
-        char *temp = new char[255];
-        snprintf(temp, 255, "%s%s", pct.image_path[pct.thisimg], lc.infile_tddft);
+        char temp[4*MAX_PATH];
+        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.infile_tddft);
         std::strncpy(lc.infile_tddft, temp, sizeof(lc.infile_tddft));
-        delete [] temp;
     }
 
 

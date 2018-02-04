@@ -79,20 +79,16 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
 {
 
     RmgTimer RT0("4-Diagonalization: fs");
-    RmgTimer *RT1, *RT2;
+    RmgTimer *RT1;
 
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
     KpointType *NULLptr = NULL;
 
-    char *trans_t="t", *trans_n="n";
     char *cuplo = "L", *jobz="V";
 
     int ione=1, itype=1, info=0, izero=0;
     double rone = 1.0, rzero = 0.0;
-
-    BaseGrid *Grid = kptr->G;
-    Lattice *L = kptr->L;
 
 
     // For mpi routines. Transfer twice as much data for complex orbitals
@@ -102,13 +98,12 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
     // Folded spectrum scalapacks
     Scalapack *FSp = MainSp->GetNextScalapack();
     int FSp_my_row = FSp->GetRow();
-    int FSp_my_col = FSp->GetCol();
     int FSp_rows = FSp->GetRows();
     int FSp_cols = FSp->GetCols();
     int FSp_nodes = FSp_rows * FSp_cols;
     int FSp_context = FSp->GetContext();
     int FSp_my_index = FSp->GetCommRank();
-    MPI_Comm scalapack_comm = FSp->GetComm();
+    //MPI_Comm scalapack_comm = FSp->GetComm();
 
     // A PE is actually a scalapack instance
     int THIS_PE = FSp->GetGroupIndex();
@@ -144,7 +139,6 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
 
     // Get dist length and desca for the submatrices
     int s_s_desca[DLEN];
-    int s_s_dist_length = FSp->ComputeDesca(n_win, n_win, s_s_desca);
     int s_f_desca[DLEN];
     int s_f_dist_length = FSp->ComputeDesca(n, n, s_f_desca);
 
@@ -208,7 +202,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
     //  Transform problem to standard eigenvalue form. For now this is done in the Main sp using
     // pdsygst which is equivalent to FOLDED_GSE=1 in the non-scalapack case.
     {
-        RT2 = new RmgTimer("4-Diagonalization: fs-transform");
+        RT1 = new RmgTimer("4-Diagonalization: fs-transform");
 
         // Copy A and B into m_distA, m_distB
         //MainSp->CopySquareMatrixToDistArray(A, m_distA, n, m_f_desca);
@@ -216,15 +210,15 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
         for(int i=0;i < m_f_dist_length;i++) m_distA[i] = Adist[i];
 
         double scale = 1.0;
-        pdpotrf_( cuplo, &n, m_distB, &ione, &ione, m_f_desca, &info );
+        pdpotrf( cuplo, &n, m_distB, &ione, &ione, m_f_desca, &info );
         if(info != 0) throw RmgFatalException() << "pdpotrf failed in " << __FILE__ << " at line " << __LINE__ << ".\n";
-        pdsygst_(&itype, cuplo, &n, m_distA, &ione, &ione, m_f_desca, m_distB, &ione, &ione, m_f_desca, &scale, &info);
+        pdsygst(&itype, cuplo, &n, m_distA, &ione, &ione, m_f_desca, m_distB, &ione, &ione, m_f_desca, &scale, &info);
 
-        delete(RT2);
+        delete(RT1);
     }
 #else
     {
-        RT2 = new RmgTimer("4-Diagonalization: fs-transform");
+        RT1 = new RmgTimer("4-Diagonalization: fs-transform");
 
         // We have to gather Adist back to A and then broadcast it to all nodes in the root
         MainSp->GatherMatrix(A, Adist);
@@ -239,16 +233,16 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
         for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
         delete [] T;
 
-        delete(RT2);
+        delete(RT1);
     }
 #endif
 
     // Copy transformed matrix back to local matrix and then broadcast to other nodes
     // Possible optimization is to only broadcast to root of each subscalapack
-    RT2 = new RmgTimer("4-Diagonalization: fs-Gather2");
+    RT1 = new RmgTimer("4-Diagonalization: fs-Gather2");
     MainSp->GatherMatrix(A, m_distA);
     MainSp->BcastRoot(A, factor * n * n, MPI_DOUBLE);
-    delete(RT2);
+    delete(RT1);
 
     for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
     for(int idx = 0;idx < n*n;idx++) V[idx] = ZERO_t;
@@ -263,7 +257,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
      
     // Do the submatrix along the diagonal to get starting values for folded spectrum
     //--------------------------------------------------------------------
-    RT2 = new RmgTimer("4-Diagonalization: fs-submatrix");
+    RT1 = new RmgTimer("4-Diagonalization: fs-submatrix");
     {
 
         for(int ix = 0;ix < n_win;ix++){
@@ -279,7 +273,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
         int lwork=-1, liwork=-1, liwork_tmp;
         double lwork_tmp;
         lwork = -1;
-        pdsyevd_(jobz, cuplo, &n_win, distA, &ione, &ione, s_s_desca, &eigs[n_start],
+        pdsyevd(jobz, cuplo, &n_win, distA, &ione, &ione, s_s_desca, &eigs[n_start],
                 distV, &ione, &ione, s_s_desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
         lwork = 8*(int)lwork_tmp;
         //lwork = 6*n*n;
@@ -287,7 +281,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
         double *work = new double[lwork];
         int *iwork = new int[liwork];
 
-        pdsyevd_(jobz, cuplo, &n_win, distA, &ione, &ione, s_s_desca, &eigs[n_start],
+        pdsyevd(jobz, cuplo, &n_win, distA, &ione, &ione, s_s_desca, &eigs[n_start],
                  distV, &ione, &ione, s_s_desca, work, &lwork, iwork, &liwork, &info);
 
         delete [] iwork;
@@ -299,10 +293,10 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
 
     // Copy distributed matrix into local. All nodes in the local scalapack will get
     // a copy
-    int lld = std::max( numroc_( &n_win, &n_win, &FSp_my_row, &izero, &FSp_rows ), 1 );
+    int lld = std::max( numroc( &n_win, &n_win, &FSp_my_row, &izero, &FSp_rows ), 1 );
     int local_desca[DLEN];
-    descinit_( local_desca, &n_win, &n_win, &n_win, &n_win, &izero, &izero, &FSp_context, &lld, &info );
-    pdgeadd_( "N", &n_win, &n_win, &rone, distV, &ione, &ione, s_s_desca, &rzero, G, &ione, &ione, local_desca );
+    descinit( local_desca, &n_win, &n_win, &n_win, &n_win, &izero, &izero, &FSp_context, &lld, &info );
+    pdgeadd( "N", &n_win, &n_win, &rone, distV, &ione, &ione, s_s_desca, &rzero, G, &ione, &ione, local_desca );
     FSp->BcastComm(G, factor * n_win * n_win, MPI_DOUBLE);
     // This may be faster or slower than the above on a big system. Have to test to find out.
     //for(int i=0;i<n_win*n_win;i++)G[i]=0.0;
@@ -332,7 +326,7 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
     }
 
     delete [] Vdiag;
-    delete(RT2);  // submatrix part done
+    delete(RT1);  // submatrix part done
 
     // Every node in a scalapack group has a copy of it's set of eigenvalues
     // which we have to get to all nodes so use an Allreduce but make sure
@@ -356,9 +350,9 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
     // Since we have the full Asave present on every physical node we can parallelize the iteration over
     // all of them without communication but we have to recompute our starting and stopping points since
     // each scalapack instance may consist of many physical nodes
-    RT2 = new RmgTimer("4-Diagonalization: fs-iteration");
+    RT1 = new RmgTimer("4-Diagonalization: fs-iteration");
     FoldedSpectrumIterator(Asave, n, &eigs[eig_start + offset], chunksize, &V[(eig_start + offset) * n], -0.5, 10, driver);
-    delete(RT2);
+    delete(RT1);
      
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for eig request to finish and copy summed eigs from n_eigs back to eigs
@@ -367,30 +361,30 @@ int FoldedSpectrumScalapack(Kpoint<KpointType> *kptr, int n, KpointType *A, Kpoi
     for(int idx = 0;idx < n;idx++) eigs[idx] = n_eigs[idx];
 
     // Make sure all PE's have all eigenvectors.
-    RT2 = new RmgTimer("4-Diagonalization: fs-allreduce1");
+    RT1 = new RmgTimer("4-Diagonalization: fs-allreduce1");
     MPI_Allgatherv(MPI_IN_PLACE, chunksize * n * factor, MPI_DOUBLE, V, fs_chunkcounts, fs_chunkstart, MPI_DOUBLE, MainSp->GetComm());
-    delete(RT2);
+    delete(RT1);
 
 
 #if !FOLDED_GSE
 
     // Gram-Schmidt ortho for eigenvectors.
-    RT2 = new RmgTimer("4-Diagonalization: fs-Gram-Schmidt");
+    RT1 = new RmgTimer("4-Diagonalization: fs-Gram-Schmidt");
     MainSp->CopySquareMatrixToDistArray(V, m_distA, n, m_f_desca);
     FoldedSpectrumScalapackOrtho(n, eig_start+offset, eig_start+offset + chunksize, fs_chunkcounts, fs_chunkstart, m_distA, V, NULLptr, Asave, Bsave, MainSp);
-    delete(RT2);
+    delete(RT1);
 
     // Back transform eigenvectors
     {
-        RT2 = new RmgTimer("4-Diagonalization: fs-back transform");
-        pdtrsm_("Left", cuplo, "T", "N", &n, &n, &rone, (double *)m_distB, &ione, &ione, m_f_desca,
+        RT1 = new RmgTimer("4-Diagonalization: fs-back transform");
+        pdtrsm("Left", cuplo, "T", "N", &n, &n, &rone, (double *)m_distB, &ione, &ione, m_f_desca,
                         (double *)m_distA, &ione, &ione, m_f_desca);
-        delete(RT2);
+        delete(RT1);
     }
-    RT2 = new RmgTimer("4-Diagonalization: fs-Gather3");
+    RT1 = new RmgTimer("4-Diagonalization: fs-Gather3");
     MainSp->GatherMatrix(A, m_distA);
     MainSp->BcastRoot(A, factor * n * n, MPI_DOUBLE);
-    delete(RT2);
+    delete(RT1);
 #else
 
 //    FoldedSpectrumScalapackOrtho(n, eig_start+offset, eig_start+offset + chunksize, fs_chunkcounts, fs_chunkstart, m_distA, V, m_distB, MainSp);

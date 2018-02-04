@@ -10,62 +10,44 @@
 #include <float.h>
 #include <stdio.h>
 #include <assert.h>
-
 #include "make_conf.h"
 #include "params.h"
-
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "RmgTimer.h"
 #include "transition.h"
 #include "prototypes_on.h"
 #include "init_var.h"
-
-
-
-#include "my_scalapack.h"
 #include "blas.h"
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
 
 
 
+
 void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, double *Bij_00)
 {
-    int idx, st1;
-    int maxst, n2;
-    STATE *sp;
     int ione = 1;
-    int ixx, iyy, izz;
-    unsigned int ion, num_orbital_thision, num_proj;
-    int ip, iip1;
+    int maxst = ct.num_states;
 
-    double hxgrid, hygrid, hzgrid;
+    double hxgrid = Rmg_G->get_hxgrid(1);
+    double hygrid = Rmg_G->get_hygrid(1);
+    double hzgrid = Rmg_G->get_hzgrid(1);
 
-    int order = 8;
-
-    double *orbital_border;
-    FiniteDiff FD(&Rmg_L);
-
+    int order = ct.kohn_sham_fd_order;
     int item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
-    orbital_border = new double[item];
+    double *orbital_border = new double[2*item];
 
-
-
-    hxgrid = Rmg_G->get_hxgrid(1);
-    hygrid = Rmg_G->get_hygrid(1);
-    hzgrid = Rmg_G->get_hzgrid(1);
+    FiniteDiff FD(&Rmg_L);
 
 
 
     RmgTimer *RT = new RmgTimer("4-get_HS");
 
 
-    maxst = ct.num_states;
-
     distribute_to_global(vtot_c, vtot_global);
 
-    for (st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++)
+    for (int st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++)
     {
         Hij_00[st1] = 0.;
         Bij_00[st1] = 0.;
@@ -73,31 +55,38 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
     /* Loop over states */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
-
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    for (int st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
-        sp = &states[st1];
-        ixx = states[st1].ixmax - states[st1].ixmin + 1;
-        iyy = states[st1].iymax - states[st1].iymin + 1;
-        izz = states[st1].izmax - states[st1].izmin + 1;
+        STATE *sp = &states[st1];
+        if(sp->radius > 0) app_mask(st1, sp->psiR, 0);
+        int ixx = states[st1].orbit_nx;
+        int iyy = states[st1].orbit_ny;
+        int izz = states[st1].orbit_nz;
+
 
         /* Generate 2*V*psi and store it  in orbit_tem */
         genvlocpsi(states[st1].psiR, st1, states1[st1].psiR, vtot_global, states);
+        //ZeroBoundary(states1[st1].psiR, ixx, iyy, izz);
 
 
         /* A operating on psi stored in orbit_tem */
-
-        /* Eighth-order finite-differenital method for Laplatian operating on psi stored in orbit_tem */
-        FillOrbitalBorders(orbital_border, sp->psiR, ixx, iyy, izz, order);
+        /* Eighth-order finite-differencing for Laplacian operating on psi stored in orbit_tem */
+        if(sp->radius > 0) 
+        {
+            FillOrbitalBorders(orbital_border, sp->psiR, ixx, iyy, izz, order);
+        }
+        else
+        {
+            Rmg_T->trade_imagesx_central_local(sp->psiR, orbital_border, ixx, iyy, izz, order/2);
+        }
         FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
-
         /* A |psi > + 0.5 (B V|psi> + V B |psi>) */
 
-        for (idx = 0; idx < ixx * iyy * izz; idx++)
+        for (int idx = 0; idx < ixx * iyy * izz; idx++)
         {
             states1[st1].psiR[idx] = 0.5 * states1[st1].psiR[idx] - 0.5 * orbit_tem[idx];
-
         }                       
+
     }                           /* end for st1 = .. */
 
     /* print_sum(pct.psi_size, states1[ct.state_begin].psiR, "states1 sum get_Hij");
@@ -113,27 +102,11 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
 
     RmgTimer *RT3 = new RmgTimer("4-get_HS: Hvnlij");
-//    for (st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++)
-//    {
- //       Hij_00[st1] = 0.;
-  //      Bij_00[st1] = 0.;
-   // }
     GetHvnlij(Hij_00, Bij_00);
-
-/*
-    for (st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++)
-    {
-        Hij_00[st1] = 0.;
-        Bij_00[st1] = 0.;
-    }
-    get_Hvnlij(Hij_00, Bij_00);
- */
     delete(RT3);
 
-    fflush(NULL);
-  //  exit(0);
 
-    n2 = (ct.state_end-ct.state_begin) * ct.num_states;
+    int n2 = (ct.state_end-ct.state_begin) * ct.num_states;
 
     double t1 = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
     double vel = Rmg_L.get_omega() / t1;
@@ -143,15 +116,13 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
     if (pct.gridpe == 0)
     {
-        print_matrix(Hij_00, 5, maxst);
-        print_matrix(Bij_00, 5, maxst);
+        print_matrix(Hij_00, 6, maxst);
+        print_matrix(Bij_00, 6, maxst);
     }
 
-    delete(RT);
     delete [] orbital_border;
+    delete(RT);
 
 }
-
-
 
 

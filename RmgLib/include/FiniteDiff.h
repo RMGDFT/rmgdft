@@ -54,6 +54,10 @@ template <typename RmgType>
 void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx, RmgType * by, RmgType * bz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
 double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
+template <typename RmgType>
+double CPP_app_del2_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, bool alt_flag);
+template <typename RmgType>
+double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, bool alt_flag);
 
 
 
@@ -69,26 +73,34 @@ private:
     int y_type;
     int z_type;
 
+    bool alt_laplacian;
     // For non-periodic boundary conditions.
+    double *np_weight;
     double *np_xweight;
     double *np_yweight;
     double *np_zweight;
     int np_density;
-    uint16_t *xoff;
-    uint16_t *yoff;
-    uint16_t *zoff;
+    int *xoff;
+    int *yoff;
+    int *zoff;
+    int order;
     int stride;
     
 
 public:
     FiniteDiff(Lattice *lptr);
+    FiniteDiff(Lattice *lptr, bool alt_flag);
     FiniteDiff(Lattice *lptr, BaseGrid *G, int xtype, int ytype, int ztype, int density, int order);
     void gen_weights(int n, int m, double xr, double *x, double *w);
+    void set_alt_laplacian_flag(bool flag);
 
 
     ~FiniteDiff(void);
 
     bool check_anisotropy(double hx, double hy, double hz, double limit);
+
+    template <typename RmgType>
+    double app_del2_np (RmgType *rptr, RmgType *b, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
     double app_cil_sixth (RmgType *rptr, RmgType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);

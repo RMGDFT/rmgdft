@@ -93,10 +93,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 {
 
     int npes, worldpe, status, provided=0;
-    time_t timer;
 
-    /* Set start of program time */
-    timer = time (NULL);
     MPI_Init_thread(&argc, &argv, ct.mpi_threadlevel, &provided);
 
     /* get this cores mpi rank */
@@ -120,7 +117,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     }
 
-//    init_pestr ();
     InitPe4image();
 
     snprintf (ct.cfile, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
@@ -166,15 +162,15 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
 
-    InitHybridModel(ct.THREADS_PER_NODE, NPES, pct.gridpe, pct.grid_comm);
+    InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, NPES, pct.gridpe, pct.grid_comm);
 
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)
     {
         int name_incr;
         name_incr = FilenameIncrement(ct.shortname);
-        snprintf (ct.basename, MAX_PATH, "%s.%02d", ct.shortname, name_incr);
-        snprintf (ct.logname, MAX_PATH, "%s.%02d.log", ct.shortname, name_incr);
+        snprintf (ct.basename, sizeof(ct.basename) - 1, "%s.%02d", ct.shortname, name_incr);
+        snprintf (ct.logname, sizeof(ct.logname) - 1, "%s.%02d.log", ct.shortname, name_incr);
 
         /* open and save logfile handle, printf is stdout before here */
         ct.logfile = fopen(ct.logname, "w");
@@ -278,12 +274,16 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     size_t elem_len = sizeof(std::complex<double>);
     if(ct.is_gamma) elem_len = sizeof(double);
     Rmg_Q = NULL;
-    if((ct.THREADS_PER_NODE > 1) && ct.mpi_queue_mode)
+    if((ct.MG_THREADS_PER_NODE > 1) && ct.mpi_queue_mode)
     {
-#ifdef USE_NUMA
-        Rmg_Q = new MpiQueue(64, ct.THREADS_PER_NODE, pct.manager_cpumask);
+#ifdef USE_NUMA && USE_HWLOC
+        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, pct.manager_cpumask, &pct.topology, ct.spin_manager_thread, ct.spin_worker_threads);
+#elif USE_NUMA
+        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, pct.manager_cpumask, NULL, ct.spin_manager_thread, ct.spin_worker_threads);
+#elif USE_HWLOC
+        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, NULL, &pct.topology, ct.spin_manager_thread, ct.spin_worker_threads);
 #else
-        Rmg_Q = new MpiQueue(64, ct.THREADS_PER_NODE);
+        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, NULL, NULL, ct.spin_manager_thread, ct.spin_worker_threads);
 #endif
     }
     else
@@ -324,13 +324,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(*ik->Readintval == AUTO_XC) {
         // Type set from pp files
         Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F.set_dft_from_name(reordered_xc_type[ct.xctype]);
+        F.set_dft_from_name_rmg(reordered_xc_type[ct.xctype]);
     }
     else {
         // Type set explicitly in input file
         std::string xc_type = reordered_xc_type[*ik->Readintval];
         Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F.set_dft_from_name(xc_type.c_str());
+        F.set_dft_from_name_rmg(xc_type.c_str());
     }
 
 }

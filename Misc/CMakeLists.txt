@@ -23,6 +23,7 @@ fft3d.cpp
 CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
 Scalapack.cpp
+Smooth.cpp
 Elpa.cpp
 open_restart_file.c
 cnpy.cpp
@@ -39,7 +40,7 @@ RmgGemm.cpp
 RmgSymm.cpp
 GpuAlloc.cpp
 GpuAllocHost.cpp
-RmgTimer_Cbindings.cpp
+#RmgTimer_Cbindings.cpp
 GlobalSums.cpp
 GlobalSums_Cbindings.cpp
 BaseThread_Cbindings.cpp
@@ -66,7 +67,6 @@ mg_prolong_MAX10.c
 init_pos.c
 rmg_error.c
 rmg_alloc.c
-ions.c
 sl_init_comm.c
 get_opposite_occupancies.c
 get_opposite_eigvals.c

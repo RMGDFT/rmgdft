@@ -177,12 +177,17 @@ void write_force (void)
         }
 
         printf ("\n");
-        printf (" sum FX       = %12.8f %s/a0\n", efactor*sumx, eunits);
-        printf (" sum FY       = %12.8f %s/a0\n", efactor*sumy, eunits);
-        printf (" sum FZ       = %12.8f %s/a0\n", efactor*sumz, eunits);
-        printf (" Average      = %12.8f %s/a0\n", efactor*(fabs (sumx) + fabs (sumy) + fabs (sumz)) / 3.0, eunits);
-        printf (" sqrt < F^2 > = %12.8f %s/a0\n", efactor*avf, eunits);
-        printf ("\n");
+        if(!ct.renormalize_forces)
+        {
+
+            printf (" sum FX       = %12.8f %s/a0\n", efactor*sumx, eunits);
+            printf (" sum FY       = %12.8f %s/a0\n", efactor*sumy, eunits);
+            printf (" sum FZ       = %12.8f %s/a0\n", efactor*sumz, eunits);
+            printf (" Average      = %12.8f %s/a0\n", efactor*(fabs (sumx) + fabs (sumy) + fabs (sumz)) / 3.0, eunits);
+            printf (" sqrt < F^2 > = %12.8f %s/a0\n", efactor*avf, eunits);
+            printf ("\n");
+
+        }
 
     }
 

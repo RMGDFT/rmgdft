@@ -78,22 +78,18 @@ void FoldedSpectrumScalapackGSE(DataType *A, DataType *B, DataType *Z, int n, in
     if(ct.is_gamma) factor = 1;
 
     char *trans_n = "n";
-    char *trans_t = "t";
 
     Scalapack *FSp = MainSp->GetNextScalapack();
     // A PE is actually a scalapack instance
-    int THIS_PE = FSp->GetGroupIndex();
-    int my_root_index = MainSp->GetCommRank();
 
     // descriptor for full matrix in main scalapack instance
-    int *m_f_desca = MainSp->GetDistDesca();
-    int m_f_dist_length = MainSp->ComputeMdim(n) *  MainSp->ComputeNdim(n);
+    //int m_f_dist_length = MainSp->ComputeMdim(n) *  MainSp->ComputeNdim(n);
 
     // Get dist length and desca for the submatrices
     int s_s_desca[DLEN];
     int s_s_dist_length = FSp->ComputeDesca(istep, n, s_s_desca);
     int s_f_desca[DLEN];
-    int s_f_dist_length = FSp->ComputeDesca(n, n, s_f_desca);
+    //int s_f_dist_length = FSp->ComputeDesca(n, n, s_f_desca);
 
 
     DataType *D = new DataType[n];
@@ -106,7 +102,7 @@ void FoldedSpectrumScalapackGSE(DataType *A, DataType *B, DataType *Z, int n, in
     for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / B[ix*n + ix];
 
     // Initial starting guess is just the identity
-    pdlaset_( "A", &istep, &n, &rone, &rzero, (double *)Zdist, &ione, &ione, s_s_desca );
+    pdlaset( "A", &istep, &n, &rone, &rzero, (double *)Zdist, &ione, &ione, s_s_desca );
 
     // (I - D-1 * B)
     for(int st1 = 0;st1 < n;st1++){

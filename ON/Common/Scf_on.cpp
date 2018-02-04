@@ -20,7 +20,6 @@
 #include "blas.h"
 #include "RmgSumAll.h"
 
-
 #include "prototypes_on.h"
 #include "init_var.h"
 #define DELTA_V_MAX 1.0
@@ -30,7 +29,7 @@ void update_pot(double *, double *, double *, double *, double *, double *, doub
 void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
         int Nrefresh, double scale, int preconditioning);
 extern int it_scf;
-double tem1;
+
 
 void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
@@ -47,6 +46,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     double *rho_pre;
 
     rho_pre = new double[nfp0];
+    double *trho = new double[nfp0];
     RmgTimer *RT = new RmgTimer("2-SCF");
 
     ct.move_centers_at_this_step = 0;
@@ -84,9 +84,9 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 #else
     RmgTimer *RTb = new RmgTimer("2-SCF: DiagScalapack");
     DiagScalapack(states, ct.num_states, Hij_00, Bij_00, work_matrix_row, theta);
+
     delete(RTb);
 #endif
-
 
     if(ct.spin_flag)
     {
@@ -107,7 +107,10 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     dcopy(&nfp0, rho, &ione, rho_pre, &ione);
 
     RmgTimer *RT2 = new RmgTimer("2-SCF: get_new_rho");
+    for (idx = 0; idx < nfp0; idx++)trho[idx] = rho[idx];
+
     GetNewRho_on(states, rho, work_matrix_row);
+    //BroydenPotential(rho_old, rho, rhoc, vh_old, vh, ct.charge_broyden_order, false);
 
     int iii = get_FP0_BASIS();
 
@@ -116,41 +119,43 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         tcharge += rho[idx];
     ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
     ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
-
-
     ct.tcharge *= get_vel_f();
 
     double t2 = ct.nel / ct.tcharge;
     dscal(&iii, &t2, &rho[0], &ione);
 
 
-    if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
-        printf("\n Warning: total charge Normalization constant = %e  \n", t2);
-
-
+//    if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
+        printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2);
     delete(RT2);
 
-    tem1 = 0.0;
-    for (idx = 0; idx < nfp0; idx++)
-    {
-        tem = rho_old[idx];
-        rho_old[idx] = -rho[idx] + rho_old[idx];
-        rho[idx] = tem;
-        tem1 += rho_old[idx] * rho_old[idx];
-    }
-
-    tem1 = sqrt(real_sum_all (tem1, pct.grid_comm) )/ ((double) (ct.vh_nbasis));
     RmgTimer *RT3 = new RmgTimer("2-SCF: pulay mix");
-    if(ct.scf_steps <ct.freeze_orbital_step)
+
+    if(ct.charge_mixing_type == 0)
     {
-        steps = ct.scf_steps;
+        get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
+        for(int idx=0;idx < nfp0;idx++)rho[idx] = ct.mix*rho[idx] + (1.0-ct.mix)*trho[idx];
     }
     else
     {
-        if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
-        steps = ct.scf_steps - ct.freeze_orbital_step;
+        if(ct.scf_steps <ct.freeze_orbital_step)
+        {
+            steps = ct.scf_steps;
+        }
+        else
+        {
+            if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
+            steps = ct.scf_steps - ct.freeze_orbital_step;
+        }
+        for (idx = 0; idx < nfp0; idx++)
+        {
+            tem = rho_old[idx];
+            rho_old[idx] = -rho[idx] + rho_old[idx];
+            rho[idx] = tem;
+        }
+        get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
+        pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
     }
-    pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
     delete(RT3);
 
     if(ct.spin_flag) get_rho_oppo(rho, rho_oppo);
@@ -163,13 +168,9 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     CheckConvergence(vxc, vh, vxc_old, vh_old, rho, rho_pre, CONVERGENCE);
 
     RmgTimer *RT5 = new RmgTimer("2-SCF: get_te");
-    get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
     delete(RT5);
 
     /* Update the orbitals */
-
-
-
     if(ct.scf_steps < ct.freeze_orbital_step)
     {
         steps = ct.scf_steps;
@@ -180,6 +181,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     delete(RT);
 
+    delete [] trho;
     delete [] rho_pre;
 }                               /* end scf */
 

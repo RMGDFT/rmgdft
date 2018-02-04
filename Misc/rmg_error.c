@@ -4,6 +4,10 @@
 #include "string.h"
 #include "mpi.h"
 #include "rmg_error.h"
+#include "rmg_mangling.h"
+
+#define         errore          RMG_FC_GLOBAL(errore, ERRORE)
+
 
 void error_handler(char *message)
 {
@@ -21,8 +25,8 @@ void rmg_error_handler(char *message)
     MPI_Abort( MPI_COMM_WORLD, 0 );
 }
 
-// Here for fortran routines. Might be some portability issues on non GCC compilers
-void errore_(char *where, char *message, int ierr, int where_len, int message_len)
+// Here for fortran routines.
+void errore(char *where, char *message, int ierr, int where_len, int message_len)
 {
   char tbuf[1000];
   memset(tbuf, 0, sizeof(tbuf));

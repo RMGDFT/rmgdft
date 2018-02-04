@@ -85,7 +85,7 @@ namespace cnpy {
                 assert(tmp_dims == ndims);
             }
 
-            for(int i = 1; i < ndims; i++) {
+            for(unsigned int i = 1; i < ndims; i++) {
                 if(shape[i] != tmp_shape[i]) {
                     std::cout<<"libnpy error: npy_save attempting to append misshaped data to "<<fname<<"\n";
                     assert(shape[i] == tmp_shape[i]);
@@ -148,7 +148,7 @@ namespace cnpy {
         std::vector<char> npy_header = create_npy_header(data,shape,ndims);
 
         unsigned long nels = 1;
-        for (int m=0; m<ndims; m++ ) nels *= shape[m];
+        for (unsigned int m=0; m<ndims; m++ ) nels *= shape[m];
         int nbytes = nels*sizeof(T) + npy_header.size();
 
         //get the CRC of the data to be added
@@ -213,7 +213,7 @@ namespace cnpy {
         dict += tostring(sizeof(T));
         dict += "', 'fortran_order': False, 'shape': (";
         dict += tostring(shape[0]);
-        for(int i = 1;i < ndims;i++) {
+        for(unsigned int i = 1;i < ndims;i++) {
             dict += ", ";
             dict += tostring(shape[i]);
         }

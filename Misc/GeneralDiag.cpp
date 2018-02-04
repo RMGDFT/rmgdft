@@ -60,7 +60,6 @@
 // Kludge for now
 extern Scalapack *MainSp;
 extern void *GMatrix1;
-extern void *GMatrix2;
 
 // Solves for the eigenvalues and eigenvectors of a generalized Hermitian matrix.
 //
@@ -116,18 +115,20 @@ template <typename KpointType>
 int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld)
 {
     int info = 0;
-    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+    //bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
     if(pct.is_local_master) {
 
         // Increase the resources available to this proc since the others on the local node
         // will be idle
-        int nthreads = ct.THREADS_PER_NODE;
+        int nthreads = ct.OMP_THREADS_PER_NODE;
         if(pct.procs_per_host > 1) nthreads = pct.ncpus;
         omp_set_num_threads(nthreads);
 
 
         {
+            if(N < M) throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
+            
             int *ifail = new int[N];
             int lwork = 6 * N * N + 6 * N + 2;
             int liwork = 6*N;
@@ -138,17 +139,17 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             double tol = 1.0e-15;
             int itype = 1, ione = 1;
 
+            
             KpointType *Asave = new KpointType[N*ld];
             KpointType *Bsave = new KpointType[N*ld];
             for(int i = 0;i < N*ld;i++) Asave[i] = A[i];
             for(int i = 0;i < N*ld;i++) Bsave[i] = B[i];
 
-            if(N < M) throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
 
             if(ct.is_gamma)
             {
                 if(M == N) {
-                    dsygvd_(&itype, "V", "L", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, iwork, &liwork, &info);
+                    dsygvd (&itype, "V", "L", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, iwork, &liwork, &info);
                     for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
                 }
                 else if(N > M) {
@@ -160,7 +161,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             else
             {
                 if(M == N) {
-                    zhegvd_(&itype, "V", "U", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
+                    zhegvd (&itype, "V", "U", &N, (double *)A, &ld, (double *)B, &ld, eigs, work2, &lwork, &work2[lwork], &lwork, iwork, &liwork, &info);
                     for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
                 }
                 else if(N > M) {
@@ -185,7 +186,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
         }
 
         // Reset omp_num_threads
-        omp_set_num_threads(ct.THREADS_PER_NODE);
+        omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
 
     } // end if pct.is_local_master
 
@@ -211,15 +212,7 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
 #else
 
     double *global_matrix1 = (double *)GMatrix1;
-
-
     bool participates = MainSp->Participates();
-    int scalapack_nprow = MainSp->GetRows();
-    int scalapack_npcol = MainSp->GetCols();
-    int scalapack_npes = scalapack_nprow * scalapack_npcol;
-    int root_npes = MainSp->GetRootNpes();
-
-
 
     if (participates) {
 
@@ -261,24 +254,24 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         int ione = 1;
         int info = 0;
 
-        pdpotrf_("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
+        pdpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
 
         // Get pdsyngst_ workspace
         int lwork = -1;
         double lwork_tmp;
-        pdsyngst_(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
+        pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
                 (double *)distB, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
         lwork = 2*(int)lwork_tmp;
         double *work2 = new double[lwork];
 
-        pdsyngst_(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
+        pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
                 (double *)distB, &ione, &ione, desca, &scale, work2, &lwork, &info);
 
         // Get workspace required
         lwork = -1;
         int liwork=-1;
         int liwork_tmp;
-        pdsyevd_("V", "L", &N, (double *)distA, &ione, &ione, desca,
+        pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
                 eigs, (double *)distV, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
         lwork = 16*(int)lwork_tmp;
         liwork = 16*N;
@@ -286,10 +279,10 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         int *iwork = new int[liwork];
 
         // and now solve it 
-        pdsyevd_("V", "L", &N, (double *)distA, &ione, &ione, desca,
+        pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
                 eigs, (double *)distV, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
 
-        pdtrsm_("Left", "L", "T", "N", &N, &N, &rone, (double *)distB, &ione, &ione, desca,
+        pdtrsm("Left", "L", "T", "N", &N, &N, &rone, (double *)distB, &ione, &ione, desca,
                 (double *)distV, &ione, &ione, desca);
         delete [] iwork;
         delete [] nwork;
@@ -334,7 +327,7 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
 {
 
     int info = 0;
-    bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
+    //bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
     if(N < M) throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
     if(pct.is_local_master) {

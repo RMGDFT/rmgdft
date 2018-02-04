@@ -13,7 +13,7 @@ void *rmg_malloc(int n, size_t size )
 {
     void *ptr;
     if(NULL == (ptr = malloc(n * size))) {
-           printf("\n memory size required %d x %d", n, size);
+           printf("\n memory size required %d x %lu", n, size);
            rmg_error_handler("can't allocate memory malloc ");
     }
     return ptr;
@@ -23,7 +23,7 @@ void *rmg_malloc_init(int n, size_t size, char *type )
 {
     void *ptr;
     if(NULL == (ptr = malloc(n * size))) {
-            printf("\n memory size required %d x %d", n, size);
+            printf("\n memory size required %d x %lu", n, size);
            rmg_error_handler("can't allocate memory malloc_init " );
     }
     rmg_alloc_initialize (ptr, n, type);
@@ -34,7 +34,7 @@ void *rmg_calloc(int n, size_t size )
 {
     void *ptr;
     if(NULL == (ptr = calloc(n, size))) {
-            printf("\n memory size required %d x %d", n, size);
+            printf("\n memory size required %d x %lu", n, size);
            rmg_error_handler("can't allocate memory calloc ");
     }
     return ptr;
@@ -98,7 +98,7 @@ static void rmg_alloc_initialize (void *ptr, size_t n, char *type)
     }
     else
     {
-        printf ("!!!! warning: requested initialization of data pointed to by '%s' not done.\n", ptr);
+        printf ("!!!! warning: requested initialization of data pointed to by '%p' not done.\n", ptr);
         printf ("              please inplement initialization procedure for type '%s' in '%s:%d'.\n",
              type, __FILE__, __LINE__);
 

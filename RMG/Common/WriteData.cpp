@@ -39,6 +39,7 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "transition.h"
+#include "zfp.h"
 
 static size_t totalsize;
 
@@ -50,6 +51,7 @@ static void write_int (int fh, int *ip, int count);
 template void WriteData (int, double *, double *, double *, double *, Kpoint<double> **);
 template void WriteData (int, double *, double *, double *, double *, Kpoint<std::complex<double> > **);
 
+void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz);
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
@@ -123,6 +125,8 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
             for (is = 0; is < ns; is++)
             {
                 write_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+//write_compressed_buffer(fhand, (double *)Kptr[ik]->Kstates[is].psi,
+//                        Kptr[0]->G->get_PX0_GRID(1), Kptr[0]->G->get_PY0_GRID(1), Kptr[0]->G->get_PZ0_GRID(1));
             }
         }
     }
@@ -188,4 +192,58 @@ static void write_int (int fh, int *ip, int count)
     totalsize += size;
 }
 
+void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
+{
+  zfp_type type;     /* array scalar type */
+  zfp_field* field;  /* array meta data */
+  zfp_stream* zfp;   /* compressed stream */
+  void* buffer;      /* storage for compressed stream */
+  size_t bufsize;    /* byte size of compressed buffer */
+  bitstream* stream; /* bit stream to write to or read from */
+  size_t zfpsize;    /* byte size of compressed stream */
+  size_t wsize;
+
+  /* allocate meta data for the 3D array a[nz][ny][nx] */
+  type = zfp_type_double;
+  field = zfp_field_3d(array, type, nx, ny, nz);
+
+  /* allocate meta data for a compressed stream */
+  zfp = zfp_stream_open(NULL);
+
+  /* set compression mode and parameters via one of three functions */
+/*  zfp_stream_set_rate(zfp, rate, type, 3, 0); */
+  zfp_stream_set_precision(zfp, 48);
+//  zfp_stream_set_accuracy(zfp, tolerance);
+
+  /* allocate buffer for compressed data */
+  bufsize = zfp_stream_maximum_size(zfp, field);
+  buffer = malloc(bufsize);
+
+  /* associate bit stream with allocated buffer */
+  stream = stream_open(buffer, bufsize);
+  zfp_stream_set_bit_stream(zfp, stream);
+  zfp_stream_rewind(zfp);
+
+  /* compress array and output compressed stream */
+  zfpsize = zfp_compress(zfp, field);
+
+  wsize = write (fh, &zfpsize, sizeof(zfpsize));
+  if(wsize != sizeof(zfpsize))
+        rmg_error_handler (__FILE__,__LINE__,"error writing");
+
+  wsize = write (fh, buffer, zfpsize);
+  if(wsize != zfpsize)
+        rmg_error_handler (__FILE__,__LINE__,"error writing");
+
+  totalsize += wsize;
+
+  
+  /* clean up */
+  zfp_field_free(field);
+  zfp_stream_close(zfp);
+  stream_close(stream);
+  free(buffer);
+
+
+}
 /******/

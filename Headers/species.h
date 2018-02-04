@@ -120,6 +120,7 @@ typedef struct
     /*matrix ddd0(nbeta,nbeta) */
     double ddd0[MAX_NL][MAX_NL];
     double ddd[MAX_NL][MAX_NL];
+    bool is_ddd_diagonal;   // Per species. We also have is_ddd_non_diagonal in the main control structure
 
     /*matrix qqq(nbeta,nbeta) */
     double qqq[MAX_NL][MAX_NL];

@@ -196,7 +196,9 @@ void neb_relax (STATE * states, double * vxc, double * vh, double * vnuc,
 #endif
 
 	MPI_Allreduce( &tmp_mag, &max_frc, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-        relax (2, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+printf("NEB IS NOT FUNCTIONING RIGHT NOw.\n");exit(0);
+// Have to port this function to C++
+        //relax (2, states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
 
         /* Check for NEB convergence */
         /* Are we force converged? */

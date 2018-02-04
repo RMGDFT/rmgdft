@@ -18,7 +18,6 @@
 
 #include "prototypes_on.h"
 #include "init_var.h"
-#include "my_scalapack.h"
 #include "transition.h"
 #include "blas.h"
 #include "Kbpsi.h"
@@ -26,50 +25,33 @@
 
 /* Flag for projector mixing */
 static int mix_steps;
-double *work1;                    /* Smoothing grids */
 
 static void get_qnm_res(double *work_theta);
 static void get_nonortho_res(STATE *, double *, STATE *);
 static void get_dnmpsi(STATE *);
 
-
 void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
             double *vnuc, double *rho, double *rhoc, double * vxc_old, double * vh_old)
 {
-    int istate, ione = 1;
+    int ione = 1;
     double t1;
-    int st1, ixx, iyy, izz;
-    int item;
-    int order = 8;
+    int order = ct.kohn_sham_fd_order;
+    double hxgrid = Rmg_G->get_hxgrid(1);
+    double hygrid = Rmg_G->get_hygrid(1);
+    double hzgrid = Rmg_G->get_hzgrid(1);
 
-    double hxgrid, hygrid, hzgrid;
-    double *orbital_border;
+    int item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
+    double *orbital_border = new double[2*item];
+    double *orbit_tem = new double[2*item];
+
     FiniteDiff FD(&Rmg_L);
 
-    hxgrid = Rmg_G->get_hxgrid(1);
-    hygrid = Rmg_G->get_hygrid(1);
-    hzgrid = Rmg_G->get_hzgrid(1);
-
-
-    item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
-    orbital_border = new double[item];
-
-    ct.meanres = 0.;
-    ct.minres = 100000.0;
-    ct.maxres = 0.;
-
-    /* Grab some memory */
-    work1 = work_memory;
-
     RmgTimer *RT = new RmgTimer("3-OrbitalOptimize");
-
 
 
     RmgTimer *RT1a = new RmgTimer("3-OrbitalOptimize: distribute");
     distribute_to_global(vtot_c, vtot_global);
     delete(RT1a);
-
-
 
 
     /* calculate  Theta * S * |states[].psiR > and stored in  states1[].psiR 
@@ -78,84 +60,58 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     /*begin shuchun wang */
     RmgTimer *RT12 = new RmgTimer("3-OrbitalOptimize: dcopya");
-    dcopy(&pct.psi_size, states[ct.state_begin].psiR, &ione,
-            states_tem[ct.state_begin].psiR, &ione);
+    dcopy(&pct.psi_size, states[ct.state_begin].psiR, &ione, states_tem[ct.state_begin].psiR, &ione);
     delete(RT12);
 
     /*  add q_n,m|beta_n><beta_m|psi> on states_res.psiR */
-
-
-
     RmgTimer *RT3 = new RmgTimer("3-OrbitalOptimize: nonortho");
     get_nonortho_res(states, theta, states1);
     delete(RT3);
+
     RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm");
     get_qnm_res(theta);
-
     delete(RT4);
     /* end shuchun wang */
 
-
-
-
-    /* Loop over states istate (correction of state istate) */
-    RmgTimer *RT2a = new RmgTimer("3-OrbitalOptimize: mask");
-
-    for (istate = ct.state_begin; istate < ct.state_end; istate++)
-    {
-        app_mask(istate, states1[istate].psiR, 0);
-    }
-
-    delete(RT2a);
 
     /* Loop over states istate to compute the whole matrix Hij 
        and all the vectors H|psi> */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
 
     RmgTimer *RTa = new RmgTimer("3-OrbitalOptimize: Hpsi");
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    for (int st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
-        ixx = states[st1].ixmax - states[st1].ixmin + 1;
-        iyy = states[st1].iymax - states[st1].iymin + 1;
-        izz = states[st1].izmax - states[st1].izmin + 1;
+        STATE *sp = &states[st1];
+        STATE *sp1 = &states1[st1];
+        int ixx = states[st1].orbit_nx;
+        int iyy = states[st1].orbit_ny;
+        int izz = states[st1].orbit_nz;
 
         /* Generate 2*V*psi and store it  in orbit_tem */
-        genvlocpsi(states[st1].psiR, st1, orbit_tem, vtot_global, states);
-        t1 = -1.0;
-        daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
+        genvlocpsi(sp->psiR, st1, orbit_tem, vtot_global, states);
 
-        /* Pack psi into smoothing array */
-        /*		pack_ptos(sg_orbit, states[st1].psiR, ixx, iyy, izz); 
-         */
-        /* A operating on psi stored in work2 */
-        /*		app_cil(sg_orbit, orbit_tem, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid()); 
-         */
-        FillOrbitalBorders(orbital_border, states[st1].psiR, ixx, iyy, izz, order);
+        t1 = -1.0;
+        daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
+
+        /* A operating on psi stored in orbit_tem */
+        if(sp->radius > 0)
+        {
+            FillOrbitalBorders(orbital_border, sp->psiR, ixx, iyy, izz, order);
+        }
+        else
+        {
+            Rmg_T->trade_imagesx_central_local(sp->psiR, orbital_border, ixx, iyy, izz, order/2);
+        }
         FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
-     //   app10_del2(states[st1].psiR, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
 
         t1 = 1.0;
-        daxpy(&states[st1].size, &t1, orbit_tem, &ione, states1[st1].psiR, &ione);
-
-
-        /*                                                                     
-         * Add the contribution of the non-local potential to the 
-         * residual 
-         */
-        /* Get the non-local operator acting on psi and store in nvtot */
-        item = (st1 - ct.state_begin) * pct.n_ion_center * ct.max_nl;
-
+        daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
 
     }                           /* end for st1 = .. */
     RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: dnm");
     get_dnmpsi(states1);
     delete(RT5);
 
-
-    for (istate = ct.state_begin; istate < ct.state_end; istate++)
-    {
-        app_mask(istate, states1[istate].psiR, 0);
-    }
 
     delete(RTa);
 
@@ -170,7 +126,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     /*  SD, Pulay or KAIN method for Linear and Nonlinear equations */
 
     RmgTimer *RT6a = new RmgTimer("3-OrbitalOptimize: scale");
-    for (istate = ct.state_begin; istate < ct.state_end; istate++)
+    for (int istate = ct.state_begin; istate < ct.state_end; istate++)
     {
         t1 = -1.0;
         dscal(&states1[istate].size, &t1, states1[istate].psiR, &ione);
@@ -187,10 +143,12 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RT6 = new RmgTimer("3-OrbitalOptimize: mixing+precond");
 
+    double gamma = -0.5;
     switch (ct.mg_method)
     {
         case 0:
-            sd(ct.scf_steps, pct.psi_size, states[ct.state_begin].psiR, states1[ct.state_begin].psiR);
+            Precond(states1[ct.state_begin].psiR);
+            daxpy(&pct.psi_size, &gamma, states1[ct.state_begin].psiR, &ione, states[ct.state_begin].psiR, &ione);
             break;
         case 1:
             pulay(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
@@ -216,11 +174,11 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     delete(RT6);
 
     RmgTimer *RT7 = new RmgTimer("3-OrbitalOptimize: ortho_norm");
-    ortho_norm_local(states); 
+    //ortho_norm_local(states); 
 
     delete(RT7);
 
-    // normalize_orbits(states);
+    normalize_orbits(states);
 
 
 
@@ -230,6 +188,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     print_status(states, vh, vxc, vnuc, vh_old, "before leaving OrbitalOptimize.c  ");
     print_state_sum(states1);
 #endif
+    delete [] orbit_tem;
     delete [] orbital_border;
     delete(RT);
 
@@ -246,7 +205,6 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
     int num_recv;
     double temp;
     int st11;
-
 
     state_per_proc = ct.state_per_proc + 2;
 
@@ -297,10 +255,9 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 void get_qnm_res(double *work_theta)
 {
 
-    int ip1, st1, st2;
-    int ion1, ion2, ion1_global, ion2_global;
+    int st1, st2;
+    int ion1;
     int st11;
-    int size_projector;
     int num_prj, num_orb, tot_orb, idx1, idx2;
     int max_orb;
     double one = 1.0, zero = 0.0, *work_mat;
@@ -353,13 +310,12 @@ void get_qnm_res(double *work_theta)
 
 void get_dnmpsi(STATE *states1)
 {
-    int ion, idx, ip1, ip2;
+    int ion;
     double *prjptr;
     int ion2, st0, st1;
     double *ddd, *qnm_weight;
     double *qqq;
     double *prj_sum;
-    double qsum;
 
     double one=1.0, zero=0.0, mtwo=-2.0, *work_kbpsi; 
     int ione=1, num_orb, num_prj;
@@ -420,6 +376,5 @@ void get_dnmpsi(STATE *states1)
     delete [] prj_sum;
     delete [] work_kbpsi;
     
-
 
 }

@@ -184,7 +184,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    double eig, diag, t1, t2, t4;
+    double eig=0.0, diag, t1, t2, t4;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 20, 20, 20, 20, 20 };
     int eig_post[MAX_MG_LEVELS] = { 0, 2, 2, 2, 2, 2, 2, 2 };
 

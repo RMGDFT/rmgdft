@@ -63,9 +63,9 @@ typedef struct
     int image_node_id;
 
     // OpenMP threads per node
-    int THREADS_PER_NODE;
+    int OMP_THREADS_PER_NODE;
 
-    // Multigrid threads per node. Normally the same as above but may be tunred for performance.
+    // Multigrid threads per node. Normally the same as above but may be tuned for performance.
     int MG_THREADS_PER_NODE;
 
     // requested mpi thread level
@@ -73,6 +73,8 @@ typedef struct
 
     // mpi queued mode
     bool mpi_queue_mode;
+    bool spin_manager_thread;
+    bool spin_worker_threads;
 
     /** Description of the run. */
     char description[MAX_CHAR];
@@ -98,29 +100,29 @@ typedef struct
      *  Example:
      *  bash$  md in.diamond8
      */
-    char cfile[MAX_PATH];
+    char cfile[2*MAX_PATH];
 
     /* Part of the log file name without numerical increment and ".log" added */
     char shortname[MAX_PATH];
 
     /* Basename for control file and other related files (beta and q function plots, etc.)  This is full name except the ".log" extension*/
-    char basename[MAX_PATH];
+    char basename[2*MAX_PATH];
 
     /** Handle of the output log file. Constructed from command line argument */
     FILE *logfile;
 
     /** Actual full name to the log file */
-    char logname[MAX_PATH];
+    char logname[2*MAX_PATH];
 
     /** Input file name to read wavefunctions from when doing a restart */
-    char infile[MAX_PATH];
+    char infile[2*MAX_PATH];
 
     /** Input file name to write wavefunctions to */
     /* Output file name */
-    char outfile[MAX_PATH];
+    char outfile[2*MAX_PATH];
 
-    char infile_tddft[MAX_PATH];
-    char outfile_tddft[MAX_PATH];
+    char infile_tddft[2*MAX_PATH];
+    char outfile_tddft[2*MAX_PATH];
     bool restart_tddft;
 
     /** File to read the pseudopotentials from */
@@ -238,6 +240,9 @@ typedef struct
     
     /* Coalesce states */
     bool coalesce_states;
+
+    /* Renormalize forcecs */
+    bool renormalize_forces;
 
     /** Number of ions */
     int num_ions;
@@ -783,6 +788,7 @@ typedef struct
     // Flag indicating whether or not to localize the non-local projectors
     bool localize_projectors;
     bool localize_localpp;
+    bool proj_nophase;
 
     // Flag indicating whether or not to calculate dipole moment for the entrire cell. Default is off
     bool dipole_moment;
@@ -794,11 +800,30 @@ typedef struct
     // to do it manually with numactl or aprun
     bool use_numa;
 
+    // In case system has hwloc whether or not to use it
+    bool use_hwloc;
+
     // Default is false. RMG will still be able to use transparent huge pages but
     // certain special optimizations will be disabled. If you set this to true then
     // RMG assumes that sufficient huge pages are available to meet all memory
     // requirements and bad results may occur if that is not true.
     bool require_huge_pages;
+
+    // Controls how far below the Nyquist frequency potentials are cutoff. Default is 1.0
+    double filter_factor;
+
+    // Use square root technique for density interpolation
+    bool sqrt_interpolation;
+
+    // Filter density dependent potentials
+    bool filter_dpot;
+
+    // Alternate laplacian discretization
+    bool alt_laplacian;
+
+    // Flag is true if the ddd is non-diagonal for any atomic species
+    bool is_ddd_non_diagonal;
+
 } CONTROL;
 
 

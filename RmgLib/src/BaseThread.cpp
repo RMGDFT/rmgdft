@@ -68,7 +68,6 @@ BaseThread::BaseThread(int nthreads)
     if(!BaseThread::init_flag) {
 
         BaseThread::THREADS_PER_NODE = nthreads;
-        BaseThread::ACTIVE_THREADS_PER_NODE.store(1);
         BaseThread::in_threaded_region.store(false);
         BaseThread::init_flag = 1;
 
@@ -118,7 +117,6 @@ void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
         rmg_error_handler (__FILE__, __LINE__, "More jobs than available threads scheduled\n");
     }
 
-    BaseThread::ACTIVE_THREADS_PER_NODE.store(rjobs);
     std::atomic_thread_fence(std::memory_order_seq_cst);
     // wake manager thread first
     if(Queue) Queue->run_manager();
@@ -132,7 +130,6 @@ void BaseThread::run_thread_tasks(int rjobs, MpiQueue *Queue) {
     delete BaseThread::barrier;
     if(Queue) Queue->stop_manager();
     std::atomic_thread_fence(std::memory_order_seq_cst);
-    BaseThread::ACTIVE_THREADS_PER_NODE.store(1);
  
 }
 
@@ -232,32 +229,6 @@ MPI_Comm BaseThread::get_unique_comm(int index) {
 
 
 
-// Used for positioning and setting processor affinity. For now assumes that
-// THREADS_PER_NODE is an even multiple of ct.ncpus. If this is not true it
-// does not attemp to schedule
-void BaseThread::set_cpu_affinity(int tid, int procs_per_node, int local_rank)
-{
-#if __linux__
-    int s;
-    cpu_set_t cpuset;
-    pthread_t thread;
-    int cores = sysconf( _SC_NPROCESSORS_ONLN );
-    if(procs_per_node > cores) return;
-
-    if(BaseThread::THREADS_PER_NODE % (cores / procs_per_node)) return;
-
-    s = tid % BaseThread::THREADS_PER_NODE + local_rank * BaseThread::THREADS_PER_NODE;
-//printf("THREAD1  %d  %d  %d\n",tid, s, local_rank);
-
-    // Set affinity mask
-    CPU_ZERO(&cpuset);
-    CPU_SET(s, &cpuset);
-
-    thread = pthread_self();
-    pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
-#endif
-}
-
 void BaseThread::RMG_MPI_lock(void) {
     BaseThread::mpi_mutex.lock();
 }
@@ -280,13 +251,6 @@ int BaseThread::get_threads_per_node(void)
     if(BaseThread::THREADS_PER_NODE == 0)
         rmg_error_handler (__FILE__, __LINE__, "Threads not initialized yet");
     return BaseThread::THREADS_PER_NODE;
-}
-
-int BaseThread::get_active_threads_per_node(void)
-{
-    if(BaseThread::THREADS_PER_NODE == 0)
-        rmg_error_handler (__FILE__, __LINE__, "Threads not initialized yet");
-    return BaseThread::ACTIVE_THREADS_PER_NODE;
 }
 
 void BaseThread::set_pptr(int tid, void *p)

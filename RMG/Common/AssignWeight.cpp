@@ -118,13 +118,12 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     int ixstart = iptr->nl_global_grid_xstart;
     int iystart = iptr->nl_global_grid_ystart;
     int izstart = iptr->nl_global_grid_zstart;
-    int igx, igy, igz, ipx, ipy, ipz;
+    int igx, igy, igz;
 
     int icenter = sp->nldim / 2;
     int icut = (icenter + 1) * (icenter + 1);
 
 
-    bool map;
     for (int ix = 0; ix < nlxdim; ix++)
     {
 

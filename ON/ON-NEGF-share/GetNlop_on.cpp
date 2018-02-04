@@ -19,19 +19,13 @@
 #include <assert.h>
 #include <complex>
 #include <fftw3.h>
-
 #include "make_conf.h"
 #include "params.h"
-
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "transition.h"
 #include "prototypes_on.h"
 #include "init_var.h"
-
-
-
-#include "my_scalapack.h"
 #include "blas.h"
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
@@ -147,7 +141,7 @@ void GetNlop_on(void)
         /*The vector we are looking for should be */
         to_cartesian (vect, nlcrds);
         coarse_size = sp->nldim *sp->nldim *sp->nldim ;
-        
+
         /*Calculate the phase factor */
         FindPhase (sp->nldim, sp->nldim, sp->nldim, nlcrds, fftw_phase);
 

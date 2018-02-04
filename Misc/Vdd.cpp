@@ -24,13 +24,13 @@ void Vdd(double * rho)
 
     double hxgrid, hygrid, hzgrid, vel, *atomic_rho, distmin, del_vdd, check, dist;
     double xc, yc, zc, *xtal_x, *xtal_y, *xtal_z;
-    int i, j, FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET, FP0_BASIS, dimx, dimy, dimz, min_ion, num_ions;
-    int *rel_index, rel_index_size, *rel_index_size_all, *rel_index_recv, recv_buff_size, offset;
+    int i, j, FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET, FP0_BASIS, dimx, dimy, dimz, min_ion=0, num_ions;
+    int *rel_index, rel_index_size, *rel_index_size_all, *rel_index_recv=NULL, recv_buff_size, offset;
     int ion_index, count, ion_multiply, *xtal_index, ix, iy, iz, ionct;
     int loopx_max, loopx_min, loopy_max, loopy_min, loopz_max, loopz_min;
     ION *iptr;
-    double *loc_array_recv, x[3], cartesian[3];
-    MPI_Request *recv_request, send_request1, send_request2;
+    double *loc_array_recv=NULL, x[3], cartesian[3];
+    MPI_Request *recv_request=NULL, send_request1=NULL, send_request2=NULL;
     double a00, a01, a02;
     double a10, a11, a12;
     double a20, a21, a22;

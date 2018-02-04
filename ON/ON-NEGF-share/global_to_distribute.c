@@ -26,9 +26,12 @@ void global_to_distribute(double * global_array, double * distr_array)
 
     int ix, iy, iz, ii, jj, kk;
     int idx2, idx1, incx, incx1, incy, incy1;
+    int dimx = get_PX0_GRID();
+    int dimy = get_PY0_GRID();
+    int dimz = get_PZ0_GRID();
 
-    incx = get_PY0_GRID() * get_PZ0_GRID();
-    incy = get_PZ0_GRID();
+    incx = dimy * dimz;
+    incy = dimz;
     incx1 = get_NY_GRID() * get_NZ_GRID();
     incy1 = get_NZ_GRID();
 
@@ -39,9 +42,9 @@ void global_to_distribute(double * global_array, double * distr_array)
 
     idx1 = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
-    for (ix = 0; ix < get_PX0_GRID(); ix++)
-        for (iy = 0; iy < get_PY0_GRID(); iy++)
-            for (iz = 0; iz < get_PZ0_GRID(); iz++)
+    for (ix = 0; ix < dimx; ix++)
+        for (iy = 0; iy < dimy; iy++)
+            for (iz = 0; iz < dimz; iz++)
             {
                 idx1 = ix * incx + iy * incy + iz;
                 idx2 = (ix + ii) * incx1 + (iy + jj) * incy1 + iz + kk;

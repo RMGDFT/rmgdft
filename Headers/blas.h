@@ -42,79 +42,64 @@
 
 */
 #include "rmgtypedefs.h"
-
-#if LINUX || __CYGWIN__ || _WIN32 || _WIN64
-
-#define                 sger            dger_
-//#  define		global_sums     global_sums_
-#  define		daxpy		daxpy_
-#  define		zaxpy		zaxpy_
-#  define	    dzasum      dzasum_	
-#  define		ZAXPY		zaxpy_
-#  define		dcopy   	dcopy_
-#  define		zcopy   	zcopy_
-#  define		ZCOPY   	zcopy_
-#  define		ddot    	ddot_
-#  define		dscal   	dscal_
-#  define		dsyrk   	dsyrk_
-#  define		zsyrk   	zsyrk_
-#  define		dpotrf  	dpotrf_
-#  define		zpotrf  	zpotrf_
-#  define		dswap   	dswap_
-#  define		cheev		zheev_
-#  define		xbecke		xbecke_
-#  define		corlyp_f90      corlyp_f90_
-#  define		corpbe  	corpbe_
-#  define		exchpbe 	exchpbe_
-#  define		exch		exch_
-#  define		corlsd		corlsd_
-#  define		corgga		corgga_
-#  define		symrho  	symrho_
-#  define		fsymforces  	fsymforces_
-#  define		symmetry 	symmetry_
-#  define		fgram   	dfgram_
-#  define		dlamch  	dlamch_
-#  define		dgemm  	        dgemm_
-#  define		zgemm  	        zgemm_
-#  define		ZGEMM  	        zgemm_
-#  define		dgetrf 	        dgetrf_
-#  define		dgetri 	        dgetri_
-#  define		zgetrf 	        zgetrf_
-#  define		zgetri 	        zgetri_
-#  define		dpotri 	        dpotri_
-#  define		dgesv 	        dgesv_
-#  define		zgesv 	        zgesv_
-#  define		ZGESV 	        zgesv_
-#  define               dgemv           dgemv_
-#  define               dsygvx          dsygvx_
-#  define               dsygvd          dsygvd_
-#  define               zhegvx          zhegvx_
-#  define               zhegvd          zhegvd_
-#  define               zhegst          zhegst_
-#  define               zheevd          zheevd_
-#  define               dsyev           dsyev_
-#  define               dsyevd          dsyevd_
-#  define               dsyevx          dsyevx_
-#  define               dsyevr          dsyevr_
-#  define               zheev           zheev_
-#  define               dtrsm           dtrsm_
-#  define               dsygst          dsygst_
-#  define               zgeev           zgeev_
-#  define               zgemv           zgemv_
-#  define               zdotc           zdotc_
-#  define               dgels           dgels_
-#  define               dsytrf          dsytrf_
-#  define               dsytri          dsytri_
+#include "rmg_mangling.h"
 
 
-#else
-#ifdef AIX
-
-#  define		fgram   	dfgram
-
-#endif
-#endif
-
+#define		sger		RMG_FC_GLOBAL(sger, SGER)
+#define		daxpy		RMG_FC_GLOBAL(daxpy, DAXPY)
+#define		zaxpy		RMG_FC_GLOBAL(zaxpy, ZAXPY)
+#define		dzasum		RMG_FC_GLOBAL(dzasum, DZASUM)
+#define		dcopy		RMG_FC_GLOBAL(dcopy, DCOPY)
+#define		zcopy		RMG_FC_GLOBAL(zcopy, ZCOPY)
+#define		ddot		RMG_FC_GLOBAL(ddot, DDOT)
+#define		dscal		RMG_FC_GLOBAL(dscal, DSCAL)
+#define		dsyrk		RMG_FC_GLOBAL(dsyrk, DSYRK)
+#define		zsyrk		RMG_FC_GLOBAL(zsyrk, ZSYRK)
+#define		dpotrf		RMG_FC_GLOBAL(dpotrf, DPOTRF)
+#define		zpotrf		RMG_FC_GLOBAL(zpotrf, ZPOTRF)
+#define		dswap		RMG_FC_GLOBAL(dswap, DSWAP)
+#define		cheev		RMG_FC_GLOBAL(cheev, CHEEV)
+#define		xbecke		RMG_FC_GLOBAL(xbecke, XBECKE)
+#define		corlyp_f90	RMG_FC_GLOBAL(corlyp_f90, CORLYP_F90)
+#define		corpbe		RMG_FC_GLOBAL(corpbe, CORPBE)
+#define		exchpbe		RMG_FC_GLOBAL(exchpbe, EXCHPBE)
+#define		exch		RMG_FC_GLOBAL(exch, EXCH)
+#define		corlsd		RMG_FC_GLOBAL(corlsd, CORLSD)
+#define		corgga		RMG_FC_GLOBAL(corgga, CORGGA)
+#define		symrho		RMG_FC_GLOBAL(symrho, SYMRHO)
+#define		symmetry	RMG_FC_GLOBAL(symmetry, SYMMETRY)
+#define		fgram		RMG_FC_GLOBAL(fgram, FGRAM)
+#define		dlamch		RMG_FC_GLOBAL(dlamch, DLAMCH)
+#define		dgemm		RMG_FC_GLOBAL(dgemm, DGEMM)
+#define		zgemm		RMG_FC_GLOBAL(zgemm, ZGEMM)
+#define		ZGEMM		RMG_FC_GLOBAL(ZGEMM, ZGEMM)
+#define		dgetrf		RMG_FC_GLOBAL(dgetrf, DGETRF)
+#define		dgetri		RMG_FC_GLOBAL(dgetri, DGETRI)
+#define		zgetrf		RMG_FC_GLOBAL(zgetrf, ZGETRF)
+#define		zgetri		RMG_FC_GLOBAL(zgetri, ZGETRI)
+#define		dpotri		RMG_FC_GLOBAL(dpotri, DPOTRI)
+#define		dgesv		RMG_FC_GLOBAL(dgesv, DGESV)
+#define		zgesv		RMG_FC_GLOBAL(zgesv, ZGESV)
+#define		dgemv		RMG_FC_GLOBAL(dgemv, DGEMV)
+#define		dsygvx		RMG_FC_GLOBAL(dsygvx, DSYGVX)
+#define		dsygvd		RMG_FC_GLOBAL(dsygvd, DSYGVD)
+#define		zhegvx		RMG_FC_GLOBAL(zhegvx, ZHEGVX)
+#define		zhegvd		RMG_FC_GLOBAL(zhegvd, ZHEGVD)
+#define		zhegst		RMG_FC_GLOBAL(zhegst, ZHEGST)
+#define		zheevd		RMG_FC_GLOBAL(zheevd, ZHEEVD)
+#define		dsyev		RMG_FC_GLOBAL(dsyev, DSYEV)
+#define		dsyevd		RMG_FC_GLOBAL(dsyevd, DSYEVD)
+#define		dsyevx		RMG_FC_GLOBAL(dsyevx, DSYEVX)
+#define		dsyevr		RMG_FC_GLOBAL(dsyevr, DSYEVR)
+#define		zheev		RMG_FC_GLOBAL(zheev, ZHEEV)
+#define		dtrsm		RMG_FC_GLOBAL(dtrsm, DTRSM)
+#define		dsygst		RMG_FC_GLOBAL(dsygst, DSYGST)
+#define		zgeev		RMG_FC_GLOBAL(zgeev, ZGEEV)
+#define		zgemv		RMG_FC_GLOBAL(zgemv, ZGEMV)
+#define		zdotc		RMG_FC_GLOBAL(zdotc, ZDOTC)
+#define		dgels		RMG_FC_GLOBAL(dgels, DGELS)
+#define		dsytrf		RMG_FC_GLOBAL(dsytrf, DSYTRF)
+#define		dsytri		RMG_FC_GLOBAL(dsytri, DSYTRI)
 
 #if __cplusplus
 extern "C" {
@@ -126,9 +111,6 @@ void my_axpy(double alpha, double *in, double *out, int length);
 void my_swap(double *vec1, double *vec2, int length);
 
 
-void fsymforces (double * force, int *s, int *irg, int *irt,
-                 int *nat, int *ibrav, int *nsym,
-                 double * celldm, int *nr1, int *nr2, int *nr3);
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);
 void daxpy (int *n, double * alpha, double * x, int *incx, double * y, int *incy);

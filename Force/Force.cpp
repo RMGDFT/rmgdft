@@ -51,11 +51,6 @@
 #include "Kpoint.h"
 
 
-/*Set this to 1 to have forces written out part by part*/
-/* If you want this , you should also make sure that VERBOSE flag is enabled in
- * nlforce.c*/
-#define VERBOSE 0
-
 
 template void Force<double> (double * rho, double * rho_oppo, double * rhoc, double * vh, double*vh_in,
         double * vxc, double *vxc_in, double * vnuc, Kpoint<double> **Kptr);
@@ -104,9 +99,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
     delete RT1;
 
-#if VERBOSE
-    output_force(force_tmp, "Ion-Ion force:");
-#endif
+    if(ct.verbose) output_force(force_tmp, "Ion-Ion force:");
 
     /* Add in the local. No need to sum over spin or kpoint. */
     RmgTimer *RT2 = new RmgTimer("2-Force: local");
@@ -126,9 +119,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     delete RT2;
 
 
-#if VERBOSE
-    output_force(force_tmp, "Local force:"); 
-#endif
+    if(ct.verbose) output_force(force_tmp, "Local force:"); 
 
 
     /* Add in the non-local stuff. Needs to be summed over spins. Already summed over kpoints in lower level routines */
@@ -140,9 +131,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
     delete RT3;
 
-#if VERBOSE
-    output_force(force_tmp, "Non-Local force:");
-#endif
+    if(ct.verbose) output_force(force_tmp, "Non-Local force:");
 
 
     /* The non-linear core correction part if any. Sum over spin since each spin state has separate vxc. */
@@ -153,10 +142,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += fac_spin * force_tmp[i];
     delete RT4;
 
-
-#if VERBOSE
-    output_force(force_tmp, "Non-linear core force:");
-#endif
+    if(ct.verbose) output_force(force_tmp, "Non-linear core force:");
 
     RmgTimer *RT5 = new RmgTimer("2-Force: corrections");
     for(int i = 0; i < ct.num_ions * 3; i++) force_tmp[i] = 0.0;
@@ -164,9 +150,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     for(int i = 0; i < ct.num_ions * 3; i++) force_sum[i] += force_tmp[i];
     delete RT5;
 
-#if VERBOSE
-    output_force(force_tmp, "Correction force:");
-#endif
+    if(ct.verbose) output_force(force_tmp, "Correction force:");
 
 //   sum over grid_comm for nl_force part, because each grid_proc only calculates the owned_ions' force, 
 //                      nlforce for other ions on the proc is  zero
@@ -183,6 +167,34 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
     }
 
+    if(ct.renormalize_forces)
+    {
+
+        // Now get sum of forces over all ions
+        double sumx = 0.0, sumy = 0.0, sumz = 0.0;
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+            double *fp = ct.ions[ion].force[ct.fpt[0]];
+            sumx += fp[0];
+            sumy += fp[1];
+            sumz += fp[2];
+        }
+
+        // Normalize by the number of ions
+        sumx /= (double)ct.num_ions;
+        sumy /= (double)ct.num_ions;
+        sumz /= (double)ct.num_ions;
+
+        // And correct forces
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+            double *fp = ct.ions[ion].force[ct.fpt[0]];
+            fp[0] -= sumx;
+            fp[1] -= sumy;
+            fp[2] -= sumz;
+        }
+
+    }
 
     if (!ct.is_gamma) {
         RmgTimer *RT5 = new RmgTimer("2-Force: symmetrization");

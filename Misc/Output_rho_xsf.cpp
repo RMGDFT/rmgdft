@@ -190,7 +190,7 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
 
     MPI_Allreduce(MPI_IN_PLACE, g_array, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
  
-    const unsigned int shape1[] = {sizes[0], sizes[1], sizes[2]};
+    const unsigned int shape1[] = {(unsigned int)sizes[0], (unsigned int)sizes[1], (unsigned int)sizes[2]};
     cnpy::npz_save(newname, "density", g_array, shape1, 3, "a");
 #endif
 

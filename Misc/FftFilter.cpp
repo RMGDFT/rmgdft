@@ -63,7 +63,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
 
   if(filter_type == LOW_PASS) {
       for(int ig=0;ig < pbasis;ig++) {
-          if(pwaves.gmags[ig] >= g2cut) {
+          if(pwaves.gmags[ig] > g2cut) {
               crho[ig] = std::complex<double>(0.0, 0.0);
           }
       }

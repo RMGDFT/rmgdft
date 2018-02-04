@@ -64,9 +64,15 @@ void init_state_size(STATE * states)
         states[state].orbit_ny = (ny_tem + item -1)/item * item +1;
         states[state].orbit_nz = (nz_tem + item -1)/item * item +1;
 
+        // delocalized orbital
+        if(states[state].radius < 0.0) 
+        {
+            states[state].orbit_nx = get_NX_GRID();
+            states[state].orbit_ny = get_NY_GRID();
+            states[state].orbit_nz = get_NZ_GRID();
+        }
 
-        states[state].size = states[state].orbit_nx * states[state].orbit_ny
-            * states[state].orbit_nz;
+        states[state].size = states[state].orbit_nx * states[state].orbit_ny * states[state].orbit_nz;
         max_nx = rmg_max(max_nx, states[state].orbit_nx);
         max_ny = rmg_max(max_ny, states[state].orbit_ny);
         max_nz = rmg_max(max_nz, states[state].orbit_nz);

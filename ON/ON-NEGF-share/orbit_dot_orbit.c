@@ -44,13 +44,14 @@ void orbit_dot_orbit(STATE * states, STATE * states1, double *Aij, double *Bij)
     {
         st11 = st1 - ct.state_begin;
         for (st2 = ct.state_begin; st2 < ct.state_end; st2++)
+        {
             if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
             {
                 dot_product_orbit_orbit(&states1[st1], &states[st2], &states[st1],  &H, &S);
                 Aij[st11 * ct.num_states + st2] = H;
                 Bij[st11 * ct.num_states + st2] = S;
-
             }
+        }
     }
 
 

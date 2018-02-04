@@ -11,6 +11,7 @@ usually world
 #include <stdlib.h>
 #include <math.h>
 #include "main.h"
+#include "blacs.h"
 
 
 /*
@@ -42,7 +43,7 @@ usually world
 */
 void sl_init_comm (int *ictxt, int nprow, int npcol, MPI_Comm this_comm)
 {
-#if SCALAPACK_LIBS 
+//#if SCALAPACK_LIBS 
     int i, npes;
     int *pmap, *tgmap;
 
@@ -77,6 +78,6 @@ void sl_init_comm (int *ictxt, int nprow, int npcol, MPI_Comm this_comm)
 
     my_free (pmap);
     my_free (tgmap);
-#endif
+//#endif
 }
 

@@ -45,7 +45,7 @@ boost::lockfree::spsc_queue<SCF_THREAD_CONTROL, boost::lockfree::fixed_sized<fal
 // Called from main to setup thread tasks
 void QueueThreadTask(int tid, SCF_THREAD_CONTROL &task)
 {
-    bool queued = Tasks[tid].push(task);
+    Tasks[tid].push(task);
 }
 
 // Called from threads to get what they are supposed to do
@@ -66,6 +66,8 @@ void RmgTerminateThreads(void)
         QueueThreadTask(ist, thread_controls[ist]);
     }
     T->run_thread_tasks(T->get_threads_per_node());
+    if(ct.mpi_queue_mode) Rmg_Q->set_exitflag();
+    if(ct.mpi_queue_mode) Rmg_Q->run_manager();
     T->thread_joinall();
 }
 
@@ -91,7 +93,7 @@ unsigned int count_numamask_set_bits(const struct bitmask *mask)
 #endif
 
 #include <sys/types.h>
-#include <pthread.h>
+#include <sys/resource.h>
 #include <sched.h>
 
 
@@ -111,7 +113,6 @@ void *run_threads(void *v) {
     if(ct.use_numa) {
         thread_cpumask = numa_allocate_cpumask();
 
-        //numa_set_localalloc();
         // For case with 1 MPI proc per host restrict threads to numa nodes
         if(pct.procs_per_host == 1) 
         {
@@ -135,68 +136,24 @@ void *run_threads(void *v) {
         else if(pct.ncpus == pct.procs_per_host) 
         {
             copy_bitmask_to_bitmask(pct.cpumask, thread_cpumask);
+            numa_sched_setaffinity(0, thread_cpumask);
         }
         else if(pct.procs_per_host == pct.numa_nodes_per_host)
         {
-            int t_tid = 0;
-            for(unsigned int idx=0;idx<pct.cpumask->size;idx++)
-            {
-                if(numa_bitmask_isbitset(pct.cpumask, idx))
-                {
-                    if(s->tid == t_tid)
-                    {
-                        numa_bitmask_clearall(thread_cpumask);
-                        numa_bitmask_setbit(thread_cpumask, idx);
-                        numa_sched_setaffinity(0, thread_cpumask);
-                        if(ct.verbose) printf("C2 Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
-                        break;
-                    }
-                    t_tid++;
-                }
-            }
+            copy_bitmask_to_bitmask(pct.cpumask, thread_cpumask);
+            numa_sched_setaffinity(0, thread_cpumask);
         }
         else if((pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host))
         {
-            // Multiple MPI procs per numa node so default is to bind threads to a specific node
             copy_bitmask_to_bitmask(pct.cpumask, thread_cpumask);
-
-            // If threads*procs = cpus/node then do a one to one binding
-            unsigned int cpus_per_node = count_numamask_set_bits(pct.cpumask);
-            unsigned int procs_per_node = pct.procs_per_host / pct.numa_nodes_per_host;
-            if(procs_per_node*ct.THREADS_PER_NODE == cpus_per_node && !(pct.procs_per_host % pct.numa_nodes_per_host))
-            {
-                unsigned int proc_rank_in_node = pct.local_rank % procs_per_node;
-                unsigned int nid = pct.local_rank / (pct.procs_per_host / pct.numa_nodes_per_host);
-                unsigned int t_tid = nid*cpus_per_node;
-                for(unsigned int idx=0;idx<pct.cpumask->size;idx++)
-                {
-                    if(numa_bitmask_isbitset(pct.cpumask, idx))
-                    {
-                        if((s->tid + proc_rank_in_node * ct.THREADS_PER_NODE + nid*cpus_per_node) == t_tid)
-                        {
-                            numa_bitmask_clearall(thread_cpumask);
-                            numa_bitmask_setbit(thread_cpumask, idx);
-                            numa_sched_setaffinity(0, thread_cpumask);
-                            if(ct.verbose) printf("C3 Binding rank %d thread %d to cpu %d.\n", pct.local_rank, s->tid, idx);
-                            break;
-                        }
-                        t_tid++;
-                    }
-                }
-            }
+            numa_sched_setaffinity(0, thread_cpumask);
         }
         else
         {
             ct.use_numa = false;
         }
 
-        numa_sched_setaffinity(0, thread_cpumask);
         numa_set_localalloc();
-
-        if(my_tid == (ct.THREADS_PER_NODE-1)) 
-        {
-            pct.manager_cpumask = thread_cpumask;
-        }
 
     }
 
@@ -217,10 +174,6 @@ void *run_threads(void *v) {
 
     while(1) {
 
-#ifdef USE_NUMA
-        if(ct.use_numa) numa_sched_setaffinity(0, thread_cpumask);
-#endif
-
         // See if a task if waiting. If not then sleep.
         if(!PopThreadTask(my_tid, ss)) 
         {
@@ -232,11 +185,6 @@ void *run_threads(void *v) {
         // Set the project specific basetag into the main BaseThreadControl structure.
         T->set_thread_basetag(my_tid, ss.basetag);
 
-
-#ifdef USE_NUMA
-        if(ct.use_numa) numa_sched_setaffinity(0, thread_cpumask);
-        //T->set_cpu_affinity(s->tid, pct.procs_per_host, pct.local_rank);
-#endif
 
         // Switch that controls what we do
         switch(ss.job) {

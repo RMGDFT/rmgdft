@@ -60,10 +60,10 @@ template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, ch
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid);
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid, BaseGrid *G, TradeImages *T);
-template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid);
-template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, char *grid, BaseGrid *G, TradeImages *T);
-template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid);
-template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, char *grid, BaseGrid *G, TradeImages *T);
+template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid);
+template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, BaseGrid *G, TradeImages *T);
+template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid);
+template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, BaseGrid *G, TradeImages *T);
 
 void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio);
 template <typename KpointType>
@@ -192,7 +192,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 template <typename KpointType>
 void OutputBandPlot(Kpoint<KpointType> ** Kptr);
 int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm);
-void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm);
+void InitHybridModel(int omp_nthreads, int mg_threads, int npes, int thispe, MPI_Comm comm);
 void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& cont, PE_CONTROL& pecont, std::unordered_map<std::string, InputKey *>& Map);
 void AutoSet(CONTROL& cont, PE_CONTROL& pecont, std::unordered_map<std::string, InputKey *>& Map);
 void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap);
@@ -222,9 +222,9 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
 template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh , Kpoint<OrbitalType> **Kptr);
 
 
-template <typename OrbitalType> void PartialGamma (
+template <typename OrbitalType> void PartialGamma (int kpt,
                     int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
-                    Kpoint<OrbitalType> *kptr, int state_start, int state_end, 
+                    Kpoint<OrbitalType> **kptr, int state_start, int state_end, 
                     OrbitalType *sint_derx, OrbitalType *sint_dery, OrbitalType *sint_derz);
 
 
@@ -255,6 +255,7 @@ int CountAtomicOrbitals(void);
 void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap);
 void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap);
 void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double> *phase);
+void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw);
 void VhPfft(double *rho, double *rhoc, double *vh);
 double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rms_target);
 void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in, double *vh_out, int max_iter, bool reset);
@@ -282,7 +283,7 @@ void PackGftoc(int, int, int, int, int, int, std::complex<double> *, std::comple
 double IonIonEnergy_Ewald();
 void IIforce(double *);
 void InitDelocalizedLocalpp(double *vlocpp_r);
-template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, char *grid);
+template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const char *grid);
 
 #endif
 #endif

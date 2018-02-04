@@ -36,6 +36,9 @@
 #ifdef USE_NUMA
     #include <numa.h>
 #endif
+#ifdef USE_HWLOC
+    #include <hwloc.h>
+#endif
 
 /* Type of async request passed to the mpi trade_images manager */
 #define RMG_MPI_ISEND 1
@@ -58,6 +61,9 @@ typedef struct
     // Used by both manager and client threads
     std::atomic_bool *is_completed;
 
+    // Used to indicate a group of requests is complete
+    std::atomic_int *group_count;
+
     // Async operation type, RMG_MPI_ISEND, RMG_MPI_IRECV, RMG_MPI_SUM
     int type;
 
@@ -67,11 +73,13 @@ typedef struct
     // Used only by client threads
     bool is_unpacked;
 
+    // Compression flag
+    bool is_compressed;
+
     // Initialized by clients but never change
     void *buf;
     int buflen;
     int target;
-    int target_index;
 
     // Actual tag passed to mpi routines.
     int mpi_tag;
@@ -89,29 +97,35 @@ private:
     boost::thread QueueManager;
     static void manager_thread(MpiQueue *Q);
     std::atomic<bool> running;
+    std::atomic<bool> exitflag;
     int max_threads;
+    bool spin_manager;
+    bool spin_workers;
 
 #ifdef USE_NUMA
     struct bitmask *cpumask{NULL};
 #endif
 
+#ifdef USE_HWLOC
+    hwloc_topology_t *topology;
+#endif
+
 public:
 
-#ifdef USE_NUMA
-    MpiQueue(int max_size, int max_threads, void *mask);
-#else
-    MpiQueue(int max_size, int max_threads);
-#endif
+    MpiQueue(int max_size, int max_threads, void *mask, void *topology, bool spin_manager_thread, bool spin_worker_threads);
     ~MpiQueue(void);
 
     bool push(int tid, mpi_queue_item_t &item);
     bool pop(int tid, mpi_queue_item_t &item);
     void cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_int &var);
     void cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_bool &var);
-    void spinwaitall(std::atomic_bool *items, int n);
-    void spinwait(int count);
+    void waitall(std::atomic_bool *items, int n);
+    void wait(int count);
+    static void spin(int count);
     void run_manager(void);
     void stop_manager(void);
+    void set_exitflag(void);
+    void waitgroup(std::atomic_int &count);
     boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> **queue;
 };
 

@@ -35,7 +35,7 @@
 #include "ThreadBarrier.h"
 
 // Maximum number of Rmg threads. Adjust based on hardware resources.
-#define MAX_RMG_THREADS 32
+#define MAX_RMG_THREADS 64
 
 
 #ifdef __cplusplus
@@ -57,7 +57,6 @@ private:
 
     // Threads to use on each MPI node
     int THREADS_PER_NODE;
-    std::atomic<int> ACTIVE_THREADS_PER_NODE;
 
     // This is used when running with MPI_THREAD_SERIALIZED to ensure 
     // proper serialization
@@ -73,10 +72,6 @@ private:
     // number of threads. Typically used to ensure that electronic orbitals being processed
     // by parallel threads use a unique communicator across nodes.
     MPI_Comm *comm_pool;
-
-    // Job queue. Only truly independent thread tasks should be queued. Mainly used for MgEigState
-    // when using mpi_queue_mode.
-    boost::lockfree::queue<BaseThreadControl *, boost::lockfree::fixed_sized<true>> *jobqueue;
 
     // Initialization flag
     static int init_flag;
@@ -127,14 +122,12 @@ public:
     // value of index.
     MPI_Comm get_unique_comm(int index);
 
-    void set_cpu_affinity(int tid, int procs_per_node, int local_rank);
     void RMG_MPI_lock(void);
     void RMG_MPI_unlock(void);
     void set_pptr(int tid, void *p);
     void *get_pptr(int tid);
     int is_loop_over_states(void);
     int get_threads_per_node(void);
-    int get_active_threads_per_node(void);
     void thread_sleep(void);
     void thread_exit(void);
     void wake_all_threads(void);

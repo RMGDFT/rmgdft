@@ -31,6 +31,7 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
+#include <sys/mman.h>
 
 
 // We also need a way to manage blocks of page locked memory for moving
@@ -80,6 +81,7 @@ void *DGpuMallocHost(size_t size, const char *fname, size_t line)
         if(!tptr)
             rmg_error_handler (fname, line, "Error: Cannot allocate memory in GpuMallocHost.\n");
 
+        madvise(tptr, size, MADV_HUGEPAGE);
         cudaHostRegister( tptr, size, cudaHostRegisterPortable);
         return tptr;
     }

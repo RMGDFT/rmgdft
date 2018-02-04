@@ -99,9 +99,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     my_barrier();
 
-    /* Initialize the mehrstellen weights */
-    get_mehr();
-
 
     RmgTimer *RT = new RmgTimer("1-TOTAL: init: state_init");
 
@@ -132,7 +129,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     init_comm_res(states);
     delete(RT1);
-
     RmgTimer *RT2 = new RmgTimer("1-TOTAL: init: init_nuc");
     allocate_psi(states, states1);
 
@@ -298,7 +294,10 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
                 rho_tot[idx] = rho[idx] + rho_oppo[idx];
 
-            get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
+            //get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
+            double rms_target = ct.rms/ct.hartree_rms_ratio;
+            VhDriver(rho_tot, rhoc, vh, ct.vh_ext, rms_target);
+
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
             {
                 vh_old[idx] = vh[idx];

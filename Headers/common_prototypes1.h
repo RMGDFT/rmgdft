@@ -333,7 +333,6 @@ void app_nls (double * psiR, double * psiI, double * workR, double * workI, doub
      double *sintR, double *sintI, int state, int kidx);
 void app_nls_allstates (double * psiR, double * psiI, double * workR, double * workI, double *work2R, double *work2I, 
      double *Bns, double *BnsI, double *sintR, double *sintI, int kidx);
-void app_nls_batch (STATE *sp, double *nv, double *ns, double *Bns, double *sintR);
 void get_ddd (double *veff);
 void get_nlop_d (ION *iptr, double *rtptr, int ip, int icount, int *dvec);
 void get_nlop_p (ION *iptr, double *rtptr, int ip, int icount, int *dvec);

@@ -190,13 +190,11 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // wavefunction grid are used.
   int calc_basis = this->pbasis;
   int N_calc = this->N;
-  double filter_ratio = 1.0;
-  double *calc_rho, *calc_gx, *calc_gy, *calc_gz;
+  double *calc_rho=NULL, *calc_gx=NULL, *calc_gy=NULL, *calc_gz=NULL;
   Pw *planewaves_calc;
   if(use_coarsegrid) {
       calc_basis = this->pbasis_c;    // basis size for rho on this PE
       N_calc = this->N_c;             // total basis size across all nodes
-      filter_ratio = 0.5;
       calc_rho = new double[calc_basis];
       calc_gx = new double[3*calc_basis];
       calc_gy = calc_gx + calc_basis;
@@ -360,9 +358,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
-  //FftFilter(total_rho, *planewaves_calc, filter_ratio, LOW_PASS);
   CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
-  //FftGradientFine(total_rho, gx, gy, gz);
 
   // Have to generate half density versions of gradient and rho if use_coarsegrid is true.
   if(use_coarsegrid) {
@@ -414,7 +410,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   this->get_potential(q0, dq0_drho, dq0_dgradrho, calc_potential, thetas, calc_basis, N_calc, calc_gx, calc_gy, calc_gz, planewaves_calc);
 
   if(use_coarsegrid) {
-      FftInterpolation (G, calc_potential, potential, G.default_FG_RATIO);
+      FftInterpolation (G, calc_potential, potential, G.default_FG_RATIO, false);
   }
   else {
       for(int ix = 0;ix < this->pbasis;ix++)potential[ix] = calc_potential[ix];

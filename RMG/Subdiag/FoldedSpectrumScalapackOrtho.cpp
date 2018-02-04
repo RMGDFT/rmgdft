@@ -62,7 +62,6 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 {
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
-    KpointType *NULLptr = NULL;
     KpointType alpha(1.0);
     KpointType beta(0.0);
     KpointType *Bgpu = NULL; 
@@ -83,7 +82,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 #endif
     double *tarr = new double[n];
     int info = 0, ione = 1;
-    char *trans_t="t", *trans_n="n", *cuplo = "l", *side = "l";
+    char *trans_t="t", *trans_n="n", *cuplo = "l";
 
     // For mpi routines. Transfer twice as much data for complex orbitals
     int factor = 2;
@@ -94,14 +93,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     int m_f_dist_length = MainSp->ComputeMdim(n) *  MainSp->ComputeNdim(n);
 
     // Folded spectrum scalapacks
-    Scalapack *FSp = MainSp->GetNextScalapack();
-    int FSp_my_row = FSp->GetRow();
-    int FSp_my_col = FSp->GetCol();
-    int FSp_rows = FSp->GetRows();
-    int FSp_cols = FSp->GetCols();
-    int FSp_nodes = FSp_rows * FSp_cols;
-    int FSp_context = FSp->GetContext();
-    int FSp_my_index = FSp_my_row*FSp_cols + FSp_my_col;
+    //Scalapack *FSp = MainSp->GetNextScalapack();
 
     static KpointType *m_distC;
     if(!m_distC) {
@@ -121,7 +113,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 
 #else
 //        dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
-        pdsyrk_ (cuplo, trans_t, &n, &n, &alpha, Vdist, &ione, &ione, m_f_desca, &beta, m_distC, &ione, &ione, m_f_desca);
+        pdsyrk(cuplo, trans_t, &n, &n, &alpha, Vdist, &ione, &ione, m_f_desca, &beta, m_distC, &ione, &ione, m_f_desca);
 #endif
     }
     else {
@@ -146,7 +138,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     dpotrf(cuplo, &n, C, &n, &info);
 #else
     //dpotrf(cuplo, &n, C, &n, &info);
-    pdpotrf_( cuplo, &n, m_distC, &ione, &ione, m_f_desca, &info );
+    pdpotrf( cuplo, &n, m_distC, &ione, &ione, m_f_desca, &info );
     for(int i=0;i<n*n;i++)C[i]=0.0;
     MainSp->GatherMatrix(C, m_distC);
 
@@ -163,12 +155,11 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 //----------------------------------------------------------------
     for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
 
-    int idx, omp_tid;
+    int idx;
     double *darr;
     int st, st1;
-#pragma omp parallel private(idx,st,st1,omp_tid, darr)
+#pragma omp parallel private(idx,st,st1,darr)
 {
-    omp_tid = omp_get_thread_num();
     darr = new double[n];
 #pragma omp barrier
 

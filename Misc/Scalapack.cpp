@@ -37,7 +37,7 @@
 
 Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int NB, int last, MPI_Comm rootcomm)
 {
-
+#if SCALAPACK_LIBS
     this->ngroups = ngroups;
     this->N = N;
     this->NB = NB;
@@ -112,7 +112,6 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     for (int i = 0; i < this->npes;i++) tgmap[i] = i;
 
     // Get the world rank mapping of this groups processes since blacs uses world group ranking
-    int item = thisimg % images_per_node;
     MPI_Comm_group (MPI_COMM_WORLD, &grp_world);
     MPI_Comm_group (this->comm, &grp_this);
     MPI_Comm_size (this->comm, &this->scalapack_npes);
@@ -141,18 +140,18 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
 
         // Set up descriptors for a local matrix (one block on (0,0)
         int izero = 0, info = 0;
-        int lld = std::max( numroc_( &this->N, &this->N, &this->my_row, &izero, &this->group_rows ), 1 );
+        int lld = std::max( numroc( &this->N, &this->N, &this->my_row, &izero, &this->group_rows ), 1 );
         this->local_desca = new int[this->npes*DLEN];
-        descinit_( this->local_desca, &this->N, &this->N, &this->N, &this->N, &izero, &izero, &this->context, &lld, &info );
+        descinit( this->local_desca, &this->N, &this->N, &this->N, &this->N, &izero, &izero, &this->context, &lld, &info );
 
         // Get dimensions of the local part of the distributed matrix
-        this->m_dist = numroc_( &this->N, &this->NB, &this->my_row, &izero, &this->group_rows );
-        this->n_dist = numroc_( &this->N, &this->NB, &this->my_col, &izero, &this->group_cols );
+        this->m_dist = numroc( &this->N, &this->NB, &this->my_row, &izero, &this->group_rows );
+        this->n_dist = numroc( &this->N, &this->NB, &this->my_col, &izero, &this->group_cols );
 
         // descriptors for the distributed matrix
         int lld_distr = std::max( this->m_dist, 1 );
         this->dist_desca = new int[this->npes*DLEN];
-        descinit_( this->dist_desca, &this->N, &this->N, &this->NB, &this->NB, &izero, &izero, &this->context, &lld_distr, &info );
+        descinit( this->dist_desca, &this->N, &this->N, &this->NB, &this->NB, &izero, &izero, &this->context, &lld_distr, &info );
         //printf("dist_desca = %d  %d  %d  %d  %d  %d  %d  %d  %d  root_rank=%d\n",
         //      this->dist_desca[0], this->dist_desca[1], this->dist_desca[2],
         //      this->dist_desca[3], this->dist_desca[4], this->dist_desca[5],
@@ -194,10 +193,10 @@ int Scalapack::ComputeDesca(int m, int n, int *desca)
 {
     if(!this->participates) return 0;
     int izero = 0, info = 0;
-    int m_dist = numroc_( &m, &this->NB, &this->my_row, &izero, &this->group_rows );
-    int n_dist = numroc_( &n, &this->NB, &this->my_col, &izero, &this->group_cols );
+    int m_dist = numroc( &m, &this->NB, &this->my_row, &izero, &this->group_rows );
+    int n_dist = numroc( &n, &this->NB, &this->my_col, &izero, &this->group_cols );
     int lld_distr = std::max( m_dist, 1 );
-    descinit_( desca, &m, &n, &this->NB, &this->NB, &izero, &izero, &this->context, &lld_distr, &info );
+    descinit( desca, &m, &n, &this->NB, &this->NB, &izero, &izero, &this->context, &lld_distr, &info );
     if(info < 0) return info;
     return m_dist * n_dist;
 }
@@ -205,13 +204,13 @@ int Scalapack::ComputeDesca(int m, int n, int *desca)
 int Scalapack::ComputeMdim(int m)
 {
     int izero = 0;
-    return numroc_( &m, &this->NB, &this->my_row, &izero, &this->group_rows );
+    return numroc( &m, &this->NB, &this->my_row, &izero, &this->group_rows );
 }
 
 int Scalapack::ComputeNdim(int n)
 {
     int izero = 0;
-    return numroc_( &n, &this->NB, &this->my_col, &izero, &this->group_cols );
+    return numroc( &n, &this->NB, &this->my_col, &izero, &this->group_cols );
 }
 
 int Scalapack::GetRootRank(void)
@@ -299,7 +298,7 @@ Scalapack *Scalapack::GetNextScalapack(void)
 int Scalapack::GetIpivSize(void)
 {
     if(!this->participates) return 0;
-    return numroc_ (&this->dist_desca[2], &this->dist_desca[4], &this->my_row, &this->dist_desca[6],
+    return numroc(&this->dist_desca[2], &this->dist_desca[4], &this->my_row, &this->dist_desca[6],
                                 &this->group_rows) + this->dist_desca[4];
 
 }
@@ -311,7 +310,7 @@ void Scalapack::DistributeMatrix(double *A, double *A_dist)
     // Call pdgeadd_ to distribute matrix (i.e. copy A into A_dist)
     int ione = 1;
     double rone = 1.0, rzero = 0.0;
-    pdgeadd_( "N", &this->N, &this->N, &rone, A, &ione, &ione, this->local_desca, &rzero, A_dist, &ione, &ione, this->dist_desca );
+    pdgeadd( "N", &this->N, &this->N, &rone, A, &ione, &ione, this->local_desca, &rzero, A_dist, &ione, &ione, this->dist_desca );
 }
 
 
@@ -323,7 +322,7 @@ void Scalapack::GatherMatrix(double *A, double *A_dist)
     // Call pdgeadd_ to gather matrix (i.e. copy A_dist into A)
     int ione = 1;
     double rone = 1.0, rzero = 0.0;
-    pdgeadd_( "N", &this->N, &this->N, &rone, A_dist, &ione, &ione, this->dist_desca, &rzero, A, &ione, &ione, this->local_desca );
+    pdgeadd( "N", &this->N, &this->N, &rone, A_dist, &ione, &ione, this->dist_desca, &rzero, A, &ione, &ione, this->local_desca );
 
 }
 
@@ -335,7 +334,7 @@ void Scalapack::DistributeMatrix(std::complex<double> *A, std::complex<double> *
     // Call pdgeadd_ to distribute matrix (i.e. copy A into A_dist)
     int ione = 1;
     double rone = 1.0, rzero = 0.0;
-    pzgeadd_( "N", &this->N, &this->N, &rone, (double *)A, &ione, &ione, this->local_desca, &rzero, (double *)A_dist, &ione, &ione, this->dist_desca );
+    pzgeadd( "N", &this->N, &this->N, &rone, (double *)A, &ione, &ione, this->local_desca, &rzero, (double *)A_dist, &ione, &ione, this->dist_desca );
 }
 
 
@@ -347,7 +346,7 @@ void Scalapack::GatherMatrix(std::complex<double> *A, std::complex<double> *A_di
     // Call pdgeadd_ to gather matrix (i.e. copy A_dist into A)
     int ione = 1;
     double rone = 1.0, rzero = 0.0;
-    pzgeadd_( "N", &this->N, &this->N, &rone, (double *)A_dist, &ione, &ione, this->dist_desca, &rzero, (double *)A, &ione, &ione, this->local_desca );
+    pzgeadd( "N", &this->N, &this->N, &rone, (double *)A_dist, &ione, &ione, this->dist_desca, &rzero, (double *)A, &ione, &ione, this->local_desca );
 
 }
 
@@ -358,7 +357,7 @@ void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, doubl
                        double *beta, double *C, int *IC, int *JC, int *descc)
 {
     if(!this->participates) return;
-    pdgemm_ (transa, transb, M, N, K, alpha, A, IA, JA, desca, B, IB, JB, descb, beta, C, IC, JC, descc);
+    pdgemm(transa, transb, M, N, K, alpha, A, IA, JA, desca, B, IB, JB, descb, beta, C, IC, JC, descc);
 }
 
 void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, std::complex<double> *alpha, 
@@ -367,21 +366,21 @@ void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, std::
                        std::complex<double> *beta, std::complex<double> *C, int *IC, int *JC, int *descc)
 {
     if(!this->participates) return;
-    pzgemm_ (transa, transb, M, N, K, (double *)alpha, (double *)A, IA, JA, desca, (double *)B, IB, JB, descb, (double *)beta, (double *)C, IC, JC, descc);
+    pzgemm(transa, transb, M, N, K, (double *)alpha, (double *)A, IA, JA, desca, (double *)B, IB, JB, descb, (double *)beta, (double *)C, IC, JC, descc);
 }
 
 void Scalapack::Pgesv (int *N, int *NRHS, double *A, int *IA, int *JA, int *desca, int *ipiv, double *B, int *IB,
                             int *JB, int *descb, int *info)
 {
     if(!this->participates) return;
-    pdgesv_(N, NRHS, A, IA, JA, desca, ipiv, B, IB, JB, descb, info);
+    pdgesv(N, NRHS, A, IA, JA, desca, ipiv, B, IB, JB, descb, info);
 }
 
 void Scalapack::Pgesv (int *N, int *NRHS, std::complex<double> *A, int *IA, int *JA, int *desca, int *ipiv, std::complex<double> *B, int *IB,
                             int *JB, int *descb, int *info)
 {
     if(!this->participates) return;
-    pzgesv_(N, NRHS, (double *)A, IA, JA, desca, ipiv, (double *)B, IB, JB, descb, info);
+    pzgesv(N, NRHS, (double *)A, IA, JA, desca, ipiv, (double *)B, IB, JB, descb, info);
 }
 
 // Reduces within the group only
@@ -445,7 +444,7 @@ void Scalapack::matscatter (double *globmat, double *dismat, int size, int *desc
     int iistart, jjstart, limb, ljnb, izero = 0;
     int mycol, myrow, nprow, npcol;
     int mb = desca[4], nb = desca[5], mxllda = desca[8];
-    int mxlloc = numroc_ (&size, &nb, &this->my_col, &izero, &this->group_cols);
+    int mxlloc = numroc(&size, &nb, &this->my_col, &izero, &this->group_cols);
 
     mycol = this->my_col;
     myrow = this->my_row;
@@ -512,7 +511,7 @@ void Scalapack::matgather (double *globmat, double *dismat, int size, int *desca
     int limb, ljnb, izero = 0;
     int mycol, myrow, nprow, npcol;
     int mb = desca[4], nb = desca[5], mxllda = desca[8];
-    int mxlloc = numroc_ (&size, &nb, &this->my_col, &izero, &this->group_cols);
+    int mxlloc = numroc(&size, &nb, &this->my_col, &izero, &this->group_cols);
 
 
     mycol = this->my_col;
@@ -581,13 +580,15 @@ void Scalapack::matgather (double *globmat, double *dismat, int size, int *desca
             }
         }
     }
-
+#endif
 }
 // Clean up
 Scalapack::~Scalapack(void)
 {
+#if SCALAPACK_LIBS
     Cblacs_gridexit(this->context);
     MPI_Comm_free(&this->comm);
     delete [] this->local_desca;
     delete [] this->dist_desca;
+#endif
 }

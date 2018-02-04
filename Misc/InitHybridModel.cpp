@@ -27,12 +27,16 @@
 #include <mpi.h>
 #include <omp.h>
 #include <transition.h>
+#include <BaseThread.h>
 
 #ifdef USE_NUMA
     #include <numa.h>
     #include <numaif.h>
 #endif
 
+#ifdef USE_HWLOC
+    #include <hwloc.h>
+#endif
 
 void *run_threads(void *v);
 static BaseThread *B;
@@ -40,11 +44,12 @@ static BaseThread *B;
 // Determine system information required to to setup optimal threading and local
 // MPI communications. We assume that if the user has set OMP_NUM_THREADS manually
 // that they know what they are doing so we don't try to override their choices.
-// We will issue a warning if // they do something that doesn't make sense though.
-void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
+// We will issue a warning if they do something that doesn't make sense though.
+//
+//  omp_nthreads and mg_nthreads are values read from the input file or 0 if not set
+void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MPI_Comm comm)
 {
 
-    int omp_num_threads_set = -1;
     MPI_Group parent, localgroup;
 
     // Determine hardware resources and how many MPI procs there are per host
@@ -101,7 +106,11 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     delete [] ranks;
     delete [] hnames; 
 
-    // Sysconf works on linux, hopefully C++11 works elsewhere
+    if(pct.worldrank == 0)
+        std::cout << "RMG running with " << pct.procs_per_host << " MPI procs per host." << std::endl;
+
+    // We initially try to get ncpus via sysconf on linux and C++11 elsewhere
+    // but if hwloc or libnuma is available we will reset using them.
 #if __linux__
     pct.ncpus = sysconf( _SC_NPROCESSORS_ONLN );
 #else
@@ -109,65 +118,65 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 #endif
 
 
-    // Check if OMP_NUM_THREADS was set?
-    char *tptr = getenv("OMP_NUM_THREADS");
-    if(tptr) omp_num_threads_set = atoi(tptr);
-
-    // If user has set nthreads manually then we don't try to adjust it
-    if(nthreads > 0) {
-
-        if(pct.worldrank == 0)
-            std::cout << "RMG running with " << nthreads << " threads set manually via input file." << std::endl;
-
-        // User set threads in input file but did not set OMP_NUM_THREADS so use input file value
-        if(omp_num_threads_set < 0) { 
-
-            omp_set_num_threads(nthreads);
+#ifdef USE_HWLOC
+    if(ct.use_hwloc)
+    {
+        int retval = hwloc_topology_init(&pct.topology);
+        if(retval < 0)
+        {
+            ct.use_hwloc = false;
             if(pct.worldrank == 0)
-                std::cout << "OMP_NUM_THREADS environment variable was not set so using input file value for threads_per_node." << std::endl;
-
+                std::cout << "Unable to initialize hwloc topology. Disabling hwloc support." << std::endl;
         }
-        else {
-
-            // Both input file and OMP_NUM_THREADS set so check if they are equal and issue warning if not
-            if(nthreads != omp_num_threads_set) {
-                if(pct.worldrank == 0)
-                    std::cout << "Warning: OMP_NUM_THREADS = " << omp_num_threads_set << " and threads_per_node = " << nthreads << "." << std::endl;
-                if(pct.worldrank == 0)
-                    std::cout << "This may be OK but just checking if that is what you intended." << std::endl;
-            }
-
-        }
-
     }
-    else {
-
-        if(omp_num_threads_set > 0) {
-
-            // set nthreads to OMP_NUM_THREADS
-            nthreads = omp_num_threads_set;
+    
+    if(ct.use_hwloc) 
+    {
+        int retval = hwloc_topology_load(pct.topology);
+        if(retval < 0)
+        {
+            ct.use_hwloc = false;
+            hwloc_topology_destroy(pct.topology);
             if(pct.worldrank == 0)
-                std::cout << "RMG running with " << nthreads << " threads set via OMP_NUM_THREADS." << std::endl;
-
+                std::cout << "Unable to load hwloc topology. Disabling hwloc support." << std::endl;
         }
-        else {
-
-            if(pct.ncpus >= pct.procs_per_host) {
-                nthreads = pct.ncpus / pct.procs_per_host;
-            }
-            else {
-                nthreads = 1;
-            }
-
-            omp_set_num_threads(nthreads);
-            if(pct.worldrank == 0)
-                std::cout << "RMG running with " << pct.procs_per_host << " MPI procs per host and " << nthreads << " threads per MPI proc set automatically." << std::endl;
-            if(pct.worldrank == 0)
-                std::cout << "OMP_NUM_THREADS environment variable was not set so using automatically determined value of " << nthreads << "." << std::endl;
-
-        }
-
     }
+    
+    if(ct.use_hwloc)
+    {
+        // Get set of available processing units
+        pct.pu_set = hwloc_topology_get_topology_cpuset(pct.topology);
+        pct.ncpus = hwloc_bitmap_weight(pct.pu_set);
+        // And numa nodes
+        pct.nn_set = hwloc_topology_get_topology_nodeset(pct.topology);
+        pct.numa_nodes_per_host = hwloc_bitmap_weight(pct.nn_set);
+        if(pct.procs_per_host == 1) 
+        {
+        }
+        else if(pct.ncpus == pct.procs_per_host) 
+        {
+        }
+        else if(pct.procs_per_host == pct.numa_nodes_per_host) 
+        {
+        }
+        else if((pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host)) 
+        {
+            unsigned i;
+            hwloc_obj_t obj;
+            unsigned nid = pct.local_rank / (pct.procs_per_host / pct.numa_nodes_per_host);
+            hwloc_bitmap_foreach_begin(i, pct.nn_set)
+            {
+                obj = hwloc_get_numanode_obj_by_os_index(pct.topology, i);
+                if(nid == obj->logical_index)
+                {
+                }
+            } hwloc_bitmap_foreach_end();
+        }
+    }
+#endif
+
+
+
 
 #ifdef USE_NUMA
     // Determine if this is a numa system and setup up policies correctly if that is the case.
@@ -206,7 +215,8 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
 
     if(ct.use_numa)
     {
-        if(pct.procs_per_host == 1) {
+        if(pct.procs_per_host == 1)
+        {
             // Case 1
             bitmask *tmask = numa_allocate_cpumask();
             numa_bitmask_clearall(tmask);
@@ -230,8 +240,8 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
             numa_free_cpumask(tmask);
 
         }
-        else if(pct.ncpus == pct.procs_per_host) {
-
+        else if(pct.ncpus == pct.procs_per_host) 
+        {
             // Case 2
             unsigned int nid = pct.local_rank / (pct.ncpus / pct.numa_nodes_per_host);
             unsigned int procs_per_node = pct.procs_per_host / pct.numa_nodes_per_host;
@@ -261,8 +271,8 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
             if(pct.gridpe==0)
                 printf("C2: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
         }
-        else if(pct.procs_per_host == pct.numa_nodes_per_host) {
-
+        else if(pct.procs_per_host == pct.numa_nodes_per_host) 
+        {
             // Case 3
             unsigned int nid = pct.local_rank;
             numa_node_to_cpus(nid, pct.cpumask);
@@ -288,20 +298,82 @@ void InitHybridModel(int nthreads, int npes, int thispe, MPI_Comm comm)
     }
 #endif
 
-    ct.THREADS_PER_NODE = nthreads;
-    ct.MG_THREADS_PER_NODE = nthreads;
+    // Check if OMP_NUM_THREADS was set?
+    char *tptr = getenv("OMP_NUM_THREADS");
+    if(tptr) omp_nthreads = atoi(tptr);
 
-    // Check if RMG_NUM_THREADS was set?
     tptr = getenv("RMG_NUM_THREADS");
-    if(tptr) ct.MG_THREADS_PER_NODE = atoi(tptr);
-    if((ct.MG_THREADS_PER_NODE < 1) || (ct.MG_THREADS_PER_NODE > ct.THREADS_PER_NODE))
-    {
-        printf("Warning: RMG_NUM_THREADS set to invalid value. Resetting to default.\n");
-        ct.MG_THREADS_PER_NODE = ct.THREADS_PER_NODE;
+    if(tptr) mg_nthreads = atoi(tptr);
+
+    bool omp_numthreads_set = true;
+
+    // If user has not set omp_nthreads manually then we 
+    if(omp_nthreads == 0) {
+
+        if(pct.ncpus >= pct.procs_per_host) {
+            omp_nthreads = pct.ncpus / pct.procs_per_host;
+        }
+        else {
+            omp_nthreads = 1;
+        }
+        omp_numthreads_set = false;
+
     }
 
+    // If user has set mg_nthreads manually then we don't try to adjust it
+    if(mg_nthreads == 0) {
 
-    B = BaseThread::getBaseThread(nthreads);
+        if(omp_numthreads_set)
+        {
+            mg_nthreads = omp_nthreads;
+        }
+        else
+        {
+            if(pct.ncpus >= pct.procs_per_host) {
+                mg_nthreads = pct.ncpus / pct.procs_per_host;
+            }
+            else {
+                mg_nthreads = 1;
+            }
+        }
+    }
+    ct.OMP_THREADS_PER_NODE = omp_nthreads;
+    ct.MG_THREADS_PER_NODE = mg_nthreads;
+
+
+    if(ct.OMP_THREADS_PER_NODE < 1)
+    {
+        ct.OMP_THREADS_PER_NODE = pct.ncpus / pct.procs_per_host;
+        if(pct.gridpe==0) printf("Warning: omp_num_threads not set or set to invalid value. Auto set to %d.\n", ct.OMP_THREADS_PER_NODE);
+    }
+    else if(ct.OMP_THREADS_PER_NODE > (pct.ncpus/pct.procs_per_host))
+    {
+        ct.OMP_THREADS_PER_NODE = pct.ncpus / pct.procs_per_host;
+        if(pct.gridpe==0) printf("Warning: omp_num_threads set greater than cores/proc. Resetting to %d.\n", ct.OMP_THREADS_PER_NODE);
+    }
+    else
+    {
+        if(pct.gridpe==0) printf("Running with %d Open MP threads.\n", ct.OMP_THREADS_PER_NODE);
+    }
+
+    if(ct.MG_THREADS_PER_NODE < 1) 
+    {
+        ct.MG_THREADS_PER_NODE = ct.OMP_THREADS_PER_NODE;
+        if(pct.gridpe==0) printf("Warning: mg_num_threads not set or set to invalid value. Auto set to %d.\n", ct.MG_THREADS_PER_NODE);
+    }
+    else if(ct.MG_THREADS_PER_NODE > MAX_RMG_THREADS)
+    {
+        ct.MG_THREADS_PER_NODE = pct.ncpus / pct.procs_per_host;
+        if(pct.gridpe==0) printf("Warning: mg_num_threads set greater than MAX_RMG_THREADS. Resetting to %d.\n", ct.MG_THREADS_PER_NODE);
+    }
+    else
+    {
+        if(pct.gridpe==0) printf("Running with %d RMG threads.\n", ct.MG_THREADS_PER_NODE);
+    }
+
+    omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
+
+    B = BaseThread::getBaseThread(ct.MG_THREADS_PER_NODE);
     B->RegisterThreadFunction(run_threads, pct.grid_comm);
 
 }

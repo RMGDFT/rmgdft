@@ -36,6 +36,8 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "transition.h"
+#include "Atomic.h"
+#include "RmgParallelFft.h"
 #include "../Headers/prototypes.h"
 
 
@@ -52,8 +54,9 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 {
 
     int iion;
-    int CONV_FORCE, MAX_STEPS;
+    int CONV_FORCE=false, MAX_STEPS;
     int DONE, rlx_steps = 0;
+    static double *rhodiff;
 
     /* if ( ct.override_atoms == 1 ) quench(states, vxc, vh, vnuc, rho, rhocore, rhoc); */
 
@@ -71,8 +74,31 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         if (pct.imgpe == 0)
             rmg_printf ("\nrelax: ---------- [rlx: %d/%d] ----------\n", rlx_steps, steps);
 
+        // Get atomic rho for this ionic configuration and subtract from current rho
+        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+        double *arho = new double[FP0_BASIS];
+        LcaoGetAtomicRho(arho);
+
+        // If first step allocate rhodiff
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
+
+        if(rhodiff == NULL)
+        {
+            rhodiff = new double[FP0_BASIS];
+            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = rho[idx];
+        }
+        else
+        {
+            double *trho = new double[FP0_BASIS];
+            for(int idx = 0;idx < FP0_BASIS;idx++) trho[idx] = rho[idx];
+            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
+            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = trho[idx];
+            delete [] trho;
+        }
+
         /* not done yet ? => move atoms */
 		/* move the ions */
+
         switch(ct.relax_method)
         {
 
@@ -97,22 +123,25 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
                 rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
         }
 
-        /* ct.md_steps measures the number of updates to the atomic positions */
-        ct.md_steps++;
-
         /* Update items that change when the ionic coordinates change */
         RmgTimer *RT0=new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
         ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
         delete RT0;
+
+        // Get atomic rho for new configuration and add back to rho
+        LcaoGetAtomicRho(arho);
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+        delete [] arho;
+
+        /* ct.md_steps measures the number of updates to the atomic positions */
+        ct.md_steps++;
 
         /* quench the electrons and calculate forces */
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
 
 
         /* save data to file for future restart */
-        if (ct.checkpoint)
-            if ( ct.md_steps % ct.checkpoint == 0 )
-                WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+	WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
 
         /* check force convergence */

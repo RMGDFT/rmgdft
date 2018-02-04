@@ -26,7 +26,7 @@ kpoint_mesh="2 1 2"
 kpoint_is_shift="0 0 0"
 #kpoints = "0.25  0.25  0.25  1.0"
 
-#kpoint_distribution="1"
+kpoint_distribution="1"
 
 length_units=
 #"Bohr"

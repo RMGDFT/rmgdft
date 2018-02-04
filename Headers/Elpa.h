@@ -26,8 +26,9 @@
 
 #include <mpi.h>
 #include "Scalapack.h"
-#include "elpa_generated.h"
-#include "elpa_kernel_constants.h"
+#if USE_ELPA
+#include "elpa.h"
+#endif
 
 class Elpa: public Scalapack {
 

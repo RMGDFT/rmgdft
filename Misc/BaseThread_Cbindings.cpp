@@ -64,14 +64,8 @@ extern "C" int get_thread_tid(void)
 extern "C" void init_HYBRID_MODEL(int npes, int thispe, int nthreads, MPI_Comm comm)
 {
 
-    InitHybridModel(nthreads, npes, thispe, comm);
+    InitHybridModel(nthreads, nthreads, npes, thispe, comm);
 
-}
-
-extern "C" void set_cpu_affinity(int tid)
-{
-    BaseThread *B = BaseThread::getBaseThread(0);
-    B->set_cpu_affinity(tid, pct.procs_per_host, pct.local_rank);
 }
 
 extern "C" void RMG_MPI_lock(void)

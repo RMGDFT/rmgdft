@@ -39,10 +39,8 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     fftw_plan p2;
 
 
-    double r, Zv, rc, rc2, rcnorm, t1;
-    double x[3];
+    double r, rc, rcnorm, t1;
     double hxxgrid, hyygrid, hzzgrid;
-    double xside, yside, zside;
     SPECIES *sp;
     ION *iptr;
 
@@ -50,14 +48,9 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     std::complex<double> *fptr;
     double shift[3], crds_shift[3];
    
-    int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
-
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
     hzzgrid = get_hzzgrid();
-    xside = get_xside();
-    yside = get_yside();
-    zside = get_zside();
 
     FP0_BASIS = get_FP0_BASIS();
     FPX0_GRID = get_FPX0_GRID();
@@ -77,15 +70,6 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     ihi = ilow + FPX0_GRID;
     jhi = jlow + FPY0_GRID;
     khi = klow + FPZ0_GRID;
-
-
-    /* Initialize the compensating charge array and the core charge array */
-    for (idx = 0; idx < FP0_BASIS; idx++)
-    {
-        //rhoc_f[idx] = ct.background_charge / FP0_BASIS / get_vel_f() / npes;
-        //rhocore_f[idx] = 0.0;
-        //vnuc_f[idx] = 0.0;
-    }
 
     /* Loop over ions determine num of ions whose local pp has overlap with this pe */
 
@@ -188,9 +172,7 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
 
         /* Get species type */
         sp = &ct.sp[iptr->species];
-        Zv = sp->zvalence;
         rc = sp->rc;
-        rc2 = rc * rc;
         rcnorm = rc * rc * rc * pow (PI, 1.5);
         rcnorm = 1.0 / rcnorm;
 
@@ -219,7 +201,6 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         rhocore_ptr = new std::complex<double>[coarse_size];
         phase_fftw = new std::complex<double>[coarse_size];
 
-        //fftw_import_wisdom_from_string (sp->backward_wisdom);
         p2 = fftw_plan_dft_3d (dimx, dimy, dimz, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
 
         shift[0] = iptr->xtal[0] - (xstart + dimx/2) * hxxgrid;
@@ -227,9 +208,9 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
         shift[2] = iptr->xtal[2] - (zstart + dimz/2) * hzzgrid;
         to_cartesian(shift, crds_shift);
 
-    RmgTimer *RT = new RmgTimer("phase");
+        RmgTimer *RT = new RmgTimer("phase");
         FindFftwPhaseLocalpp (sp->ldim, sp->ldim, sp->ldim, crds_shift, phase_fftw, 2);
-    delete RT;
+        delete RT;
 
         fptr = (std::complex<double> *) sp->forward_vnuc;
         for(idx = 0; idx < coarse_size; idx++) 
@@ -281,11 +262,7 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                                 idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
                                 idx1 = ix1 * dimy * dimz + iy1 * dimz + iz1;
 
-                                //uc_f[idx] += std::real(vnuc_ptr[idx1]);
-
                                 pct.localpp[ion1 * FP0_BASIS + idx] += std::real(vnuc_ptr[idx1]);
-
-                                //rhoc_f[idx] +=  std::real(rhoc_ptr[idx1]);
                                 pct.localrhoc[ion1 * FP0_BASIS + idx] += std::real(rhoc_ptr[idx1]);
 
 
@@ -293,7 +270,6 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
                                 {
 
                                     t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
-                                 //   rhocore_f[idx] += std::real(rhocore_ptr[idx1]);
                                     pct.localrhonlcc[ion1 * FP0_BASIS + idx] += std::real(rhocore_ptr[idx1]);
 
                                 }

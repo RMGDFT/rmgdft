@@ -28,7 +28,7 @@
 
 void nlforce_par_gamma (double * par_gamma, int ion, int nh, double *force)
 {
-    int idx, idx1, size, n, m, three = 3;
+    int idx, idx1, size, n, m;
     double forces[3];
     double *gamma_x, *gamma_y, *gamma_z, *dnmI;
 

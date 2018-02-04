@@ -39,12 +39,12 @@
 
 
 
-template void AppGradPfft(double *a, double *gx, double *gy, double *gz, char *grid);
-template void AppGradPfft(float *a, float *gx, float *gy, float *gz, char *grid);
-template void AppGradPfft(std::complex<float> *a, std::complex<float> *gx, std::complex<float> *gy, std::complex<float> *gz, char *grid);
-template void AppGradPfft(std::complex<double> *a, std::complex<double> *gx, std::complex<double> *gy, std::complex<double> *gz, char *grid);
+template void AppGradPfft(double *a, double *gx, double *gy, double *gz, const char *grid);
+template void AppGradPfft(float *a, float *gx, float *gy, float *gz, const char *grid);
+template void AppGradPfft(std::complex<float> *a, std::complex<float> *gx, std::complex<float> *gy, std::complex<float> *gz, const char *grid);
+template void AppGradPfft(std::complex<double> *a, std::complex<double> *gx, std::complex<double> *gy, std::complex<double> *gz, const char *grid);
 template <typename DataType>
-void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, char *grid)
+void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const char *grid)
 {
 
     Pw *pwaves;

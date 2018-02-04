@@ -41,7 +41,7 @@ void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz)
     int ixdim, iydim, izdim;
     int pex, pey, pez;
     double ir2, q, px, py, pz, sxx, syy, szz, sxy, syz, szx, temp;
-    double r, xc, yc, zc, x, y, z;
+    double xc, yc, zc, x, y, z;
     double ax[3], bx[3];
     double xoff, yoff, zoff;
     double *mask;
@@ -116,7 +116,6 @@ void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz)
                 ax[0] = xc - 0.5;
                 ax[1] = yc - 0.5;
                 ax[2] = zc - 0.5;
-                r = metric (ax);
                 to_cartesian (ax, bx);
                 x = bx[0];
                 y = bx[1];
@@ -200,7 +199,6 @@ void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz)
                 ax[0] = xc;
                 ax[1] = yc;
                 ax[2] = zc;
-                r = metric (ax);
                 to_cartesian (ax, bx);
                 x = bx[0];
                 y = bx[1];
@@ -230,7 +228,6 @@ void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz)
                             ax[0] = xc + (double) ix1;
                             ax[1] = yc + (double) iy1;
                             ax[2] = zc;
-                            r = metric (ax);
                             to_cartesian (ax, bx);
                             x = bx[0];
                             y = bx[1];

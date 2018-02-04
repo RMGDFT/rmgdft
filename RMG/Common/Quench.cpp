@@ -81,6 +81,10 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         CONVERGED = Scf (vxc, vxc_in, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
         step_time = my_crtc () - step_time;
 
+        /* save data to file for future restart */
+        if (ct.checkpoint)
+            if ( ct.scf_steps % ct.checkpoint == 0 )
+                WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
         /* output the eigenvalues with occupations */
         if (ct.write_eigvals_period)
@@ -245,5 +249,3 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
 
 
-
-/******/

@@ -14,7 +14,6 @@
 
 
 
-#include "my_scalapack.h"
 
 
 void get_invmat(double *matB)
@@ -25,7 +24,7 @@ void get_invmat(double *matB)
 
     int ione = 1;
     int myrow;
-    _fcd char_fcd1;
+    char *char_fcd1;
 
 
 
@@ -36,18 +35,18 @@ void get_invmat(double *matB)
     {
         /* Compute the Cholesky decomposition of matB */
         char_fcd1 = &uplo;
-        PSPOTRF(char_fcd1, &numst, matB, &ione, &ione, pct.desca, &info);
+        pdpotrf(char_fcd1, &numst, matB, &ione, &ione, pct.desca, &info);
         if (info != 0)
         {
-            printf(" PSPOTRF in get_invmat.c, output info=%d\n", info);
+            printf(" pdpotrf in get_invmat.c, output info=%d\n", info);
             fflush(NULL);
             exit(0);
         }
         /* now get the inverse */
-        PSPOTRI(char_fcd1, &numst, matB, &ione, &ione, pct.desca, &info);
+        pdpotri(char_fcd1, &numst, matB, &ione, &ione, pct.desca, &info);
         if (info != 0)
         {
-            printf(" PSPOTRI, output info=%d\n", info);
+            printf(" pdpotri, output info=%d\n", info);
             fflush(NULL);
             exit(0);
         }

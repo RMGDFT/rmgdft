@@ -8,12 +8,14 @@
 #        on-tddft:  TDDFT based on rmg-on
 #
 # Environment variables that may also control configuration
+#
 # MKLROOT = root directory of Intel MKL libraries if installed.
 # BOOST_ROOT = root directory of Boost installation
-# CC = Full path to C compiler
+# CC  = Full path to C compiler
 # CXX = Full path to C++ compiler
+# FC  = Full path to Fortran compiler
 #
-#
+
 cmake_minimum_required (VERSION 2.8) 
 
 enable_language(Fortran)
@@ -27,6 +29,8 @@ INCLUDE (CheckCXXSourceCompiles)
 INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckLibraryExists)
 INCLUDE (CMakeForceCompiler)
+INCLUDE (FortranCInterface)
+FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling.h MACRO_NAMESPACE RMG_FC_)
 
 
 # User editable options
@@ -36,8 +40,34 @@ set (USE_SCALAPACK_LIBS 1)
 set (USE_ELPA_LIBS 0)
 set (USE_ELEMENTAL_LIBS 0)
 set (USE_LIBXC 0)
-set (USE_OPENBABEL_LIBS 1)
-set (USE_SVN 1)
+set (USE_OPENBABEL_LIBS 0)
+set (USE_SVN 0)
+
+
+
+# Helps to find the correct version of boost on some systems. In particular
+# many supercomputers will have a system version located in the standard
+# directories that does not match the version required by the compiler you
+# want to use. If cmake is not picking up the correct version try uncommenting this.
+#set(Boost_NO_SYSTEM_PATHS "On")
+
+# If you are having problems with boost at link time try toggling these (e.g. some IBM Power machines)
+#set(Boost_USE_STATIC_LIBS        OFF)
+#set(Boost_USE_MULTITHREADED      ON)
+
+# Here set any extra compiler flags required for a specific platform
+# This is for stampede
+#set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
+
+# Ryzen Threadripper with gcc
+#
+set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
+
+# Generic debug
+#set(RMG_EXTRA_COMPILER_FLAGS "-O2 -g")
+
+# Generic
+#set(RMG_EXTRA_COMPILER_FLAGS "-O3")
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
@@ -53,9 +83,6 @@ else(RMG_GPU_ENABLED)
     set(rmg-tddft "rmg-tddft-cpu")
 endif(RMG_GPU_ENABLED)
 
-# Here set any extra compiler flags required for a specific platform
-# This is for stampede
-#set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
 
 
 # Detect system type and set appropriate flags
@@ -66,6 +93,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(ZLIB "z")
     set(RTLIB "rt")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     # Windows specific code. RMG currently only builds on Windows with
@@ -83,6 +111,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(LIBSPG_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/SPGLIBVC12.lib")    
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
+
 if(DEFINED ENV{CRAY_LIBSCI_VERSION})
     # Cray platforms
     set (CRAY_XK 1)
@@ -92,21 +121,21 @@ endif()
 # Compiler flags. We currently only support GNU and Intel compilers so if
 # GNUCC is not detected we set the compiler to Intel
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_C_FLAGS "-Wall -O3 ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -fopenmp -m64 -I$(MKLROOT)/include")
-    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -O3 -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -DBATCH_NLS=1 -march=native -fopenmp -m64 -pthread -I$(MKLROOT)/include")
+    set(CMAKE_C_FLAGS "-Wall ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -I$(MKLROOT)/include")
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -pthread -I$(MKLROOT)/include")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")
     if(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c -cpp -D__LIBXC=1 -c")
-        set (CMAKE_Fortran_FLAGS "-O3 -fopenmp -march=native -lg2c -cpp -D__LIBXC=1 -c")
+        set (CMAKE_Fortran_FLAGS_RELEASE "-fopenmp -lg2c -cpp -D__LIBXC=1 -c")
+        set (CMAKE_Fortran_FLAGS "-fopenmp -lg2c -cpp -D__LIBXC=1 -c")
     else(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -fopenmp -march=native -lg2c -cpp -c")
-        set (CMAKE_Fortran_FLAGS "-O3 -fopenmp -march=native -lg2c -cpp -c")
+        set (CMAKE_Fortran_FLAGS_RELEASE "-fopenmp -lg2c -cpp -c")
+        set (CMAKE_Fortran_FLAGS "-fopenmp -lg2c -cpp -c")
     endif(USE_LIBXC)
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp  -ldl")
 else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Intel compiler
-    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c++0x -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
-    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -O3 -std=c99 -DBATCH_NLS=1 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
+    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -std=c++0x -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
+    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -std=c99 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
     set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++")
 endif()
 
@@ -184,12 +213,9 @@ endif (MPI_C_FOUND)
 
 # Require pthreads on UNIX
 if (${UNIX})
-    set (CMAKE_THREAD_PREFER_PTHREAD)
     find_package(Threads REQUIRED)
-    if(CMAKE_USE_PTHREADS_INIT)
-        target_link_libraries (${rmg} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
-        target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
-    endif(CMAKE_USE_PTHREADS_INIT)
+    target_link_libraries (${rmg} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
+    target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
     target_link_libraries (rmg-on ${RTLIB})
 endif(${UNIX})
 
@@ -201,6 +227,15 @@ if(NUMA_FOUND AND NUMA_INCLUDES)
 else(NUMA_FOUND AND NUMA_INCLUDES)
     set(USE_NUMA_INTERNAL 0)
 endif(NUMA_FOUND AND NUMA_INCLUDES)
+
+find_package(HWLOC)
+if(HWLOC_FOUND AND HWLOC_INCLUDES)
+    include_directories(${HWLOC_INCLUDES})
+    add_definitions(-DUSE_HWLOC)
+    target_link_libraries (${rmg} ${HWLOC_LIBRARIES})
+    target_link_libraries (${rmg-tddft} ${HWLOC_LIBRARIES})
+    target_link_libraries (${rmg-negf} ${HWLOC_LIBRARIES})
+endif(HWLOC_FOUND AND HWLOC_INCLUDES)
 
 if(USE_ELPA_LIBS)
     add_definitions(-DUSE_ELPA=1)
@@ -250,8 +285,6 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     if(DEFINED ENV{BOOST_ROOT})
         set(BOOST_ROOT  $ENV{BOOST_ROOT})
     endif()
-    set(Boost_USE_STATIC_LIBS        OFF)
-    set(Boost_USE_MULTITHREADED      ON)
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
@@ -394,17 +427,8 @@ if(NOT RMG_MATH_LIBS)
 
     if(NOT CRAY_XK)
 
-        # OPENBLAS
-        set(OPEN_BLAS_SEARCH_PATHS  /lib/ /lib64/  /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib64 /opt/OpenBLAS/lib $ENV{OPENBLAS_HOME}/lib )
-        FIND_LIBRARY(OPENBLAS NAMES openblas PATHS ${OPEN_BLAS_SEARCH_PATHS})
-        if (OPENBLAS)
-            set(BLAS_FOUND TRUE)
-            set(BLAS_LIBRARIES ${OPENBLAS})
-            set(BLAS_blas_LIBRARY ${OPENBLAS})
-        else (OPENBLAS)
-            find_package(BLAS REQUIRED)
-        endif (OPENBLAS)
-
+        # BLAS
+        find_package(BLAS REQUIRED)
         if(BLAS_FOUND)
             target_link_libraries (${rmg} ${BLAS_LIBRARIES})
             target_link_libraries (${rmg-tddft} ${BLAS_LIBRARIES})
@@ -640,17 +664,6 @@ else (RMG_GAMMA_PT)
     set (GAMMA_PT 0)
 endif(RMG_GAMMA_PT)
 
-option (RMG_FDIFF_BETA 
-"Set this to 1 if you want to use finite difference method for calculating
- derivatives of beta. This is faster since it avoids doing 3 backwards fourier
- transforms per ion, but it may not be very accurate since the finite diff
- derivative is done on the coarse grid.
- Leave this set to 0 unless you know what you are doing " OFF)
-if (RMG_FDIFF_BETA)
-    set (FDIFF_BETA 1)
-else (RMG_FDIFF_BETA)
-    set (FDIFF_BETA 0)
-endif(RMG_FDIFF_BETA)
 
 # Send the configure file to the build directory
 configure_file (
@@ -723,8 +736,8 @@ SET(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in"
 set(CPACK_GENERATOR "RPM")
 
 set(CPACK_PACKAGE_VERSION_MAJOR "2")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_VERSION_MINOR "2")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
 set(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 set(CPACK_PACKAGE_NAME "rmg")
 set(CPACK_PACKAGE_RELEASE 1)

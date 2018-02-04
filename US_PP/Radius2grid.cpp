@@ -56,14 +56,14 @@ int Radius2grid (double radius, double mingrid_spacing)
     if (ibrav == CUBIC_FC)
 	scale = 1.3;
         
-	t1 = 2.0 * scale * radius / mingrid_spacing;
-        t1 = modf (t1, &t2);
-        it1 = (int) t2;
-        if (t1 > 0.5)
-            it1++;
-        if (!(it1 % 2))
-            it1++;
-	dim = it1;
+    t1 = 2.0 * scale * radius / mingrid_spacing;
+    t1 = modf (t1, &t2);
+    it1 = (int) t2;
+    if (t1 > 0.5)
+          it1++;
+    if (!(it1 % 2))
+        it1++;
+    dim = it1;
 
-	return dim;
+    return dim;
 }

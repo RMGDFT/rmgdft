@@ -31,8 +31,6 @@ void InitDelocalizedWeight (void)
     RmgTimer RT0("Weight");
     Mgrid MG(&Rmg_L, Rmg_T);
 
-    std::complex<double> *phaseptr;
-
     typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     PROJ_INFO proj;
     std::vector<PROJ_INFO> proj_iter;
@@ -73,9 +71,6 @@ void InitDelocalizedWeight (void)
         /* Get species type */
         SPECIES *sp = &ct.sp[isp];
 
-//        sp->phase = new fftw_complex[pbasis * ct.num_kpts_pe];
-//        phaseptr = (std::complex<double> *)sp->phase;
-//        GetPhaseSpecies(sp, phaseptr);
         /*Loop over all betas to calculate num of projectors for given species */
         int prjcount = 0;
         for (int ip = 0; ip < sp->nbeta; ip++)
@@ -113,7 +108,7 @@ void InitDelocalizedWeight (void)
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
-//              phaseptr = (std::complex<double> *) &sp->phase[kpt * pbasis];
+            int kpt1 = kpt + pct.kstart;
             std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis];
             for(int idx = 0;idx < pbasis;idx++) weptr[idx] = std::complex<double>(0.0,0.0);
             for(int idx = 0;idx < pbasis;idx++)
@@ -121,10 +116,17 @@ void InitDelocalizedWeight (void)
                 ax[0] = 2.0*PI*coarse_pwaves->g[idx].a[0] / (hxx * NX_GRID);
                 ax[1] = 2.0*PI*coarse_pwaves->g[idx].a[1] / (hyy * NY_GRID);
                 ax[2] = 2.0*PI*coarse_pwaves->g[idx].a[2] / (hzz * NZ_GRID);
+
+               // printf("\n %d %e  %e %e  %e %e %e", ax[0], ax[1], ax[2], ct.kp[kpt1].kvec[0], ct.kp[kpt1].kvec[1],  ct.kp[kpt1].kvec[2]);
+
+                ax[0] += ct.kp[kpt1].kvec[0];
+                ax[1] += ct.kp[kpt1].kvec[1];
+                ax[2] += ct.kp[kpt1].kvec[2];
+
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
-                if(gval >= 0.5*gcut) continue;
+                if(gval >= ct.filter_factor*gcut) continue;
                 double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip], gval);
-                weptr[idx] = IL * Ylm(proj.l, proj.m, coarse_pwaves->g[idx].a) * t1;
+                weptr[idx] = IL * Ylm(proj.l, proj.m, ax) * t1;
             }
 
             // Shift atom to the center instead of corner.
@@ -153,3 +155,5 @@ void InitDelocalizedWeight (void)
     delete [] weptr;
 
 } /* end InitDelocalizedWeight */
+
+

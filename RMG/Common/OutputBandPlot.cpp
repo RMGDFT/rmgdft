@@ -56,7 +56,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 {
 
     double kx, ky, kz;
-    char filename[MAX_PATH], pngfile[MAX_PATH];
+    char filename[4*MAX_PATH];
     FILE *bs_f;
     double *eig_all;
     int nspin = ct.spin_flag +1;
@@ -95,10 +95,11 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
         for(int ispin = 0; ispin < nspin; ispin++)
         {
-            snprintf(filename, MAX_PATH, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.dat");
+            snprintf(filename, sizeof(filename) - 1, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.dat");
             bs_f = fopen (filename, "w");
             if(!bs_f) {
                 rmg_printf("Unable to write band plot data.\n");
+                delete [] x;
                 return;
             }
 
@@ -125,10 +126,11 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
             eig_min -= 1.0;
 
-            snprintf(filename, MAX_PATH, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.xmgr");
+            snprintf(filename, sizeof(filename) - 1, "%s_spin%d%s", ct.basename, ispin, ".bandstructure.xmgr");
             bs_f = fopen (filename, "w");
             if(!bs_f) {
                 rmg_printf("Unable to write band plot data.\n");
+                delete [] x;
                 return;
             }
             fprintf (bs_f, "@version 50123\n");
@@ -139,7 +141,6 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
             fprintf (bs_f, "@    xaxis  tick spec type both\n");
 
             int num_tick = 0;
-            char *line_object;
             for(int ik = 0; ik < ct.num_kpts; ik++)
             {
                 if(strlen(ct.kp[ik].symbol))
@@ -217,6 +218,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
 
     }
 
+    delete [] x;
 }
 
 

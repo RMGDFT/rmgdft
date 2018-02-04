@@ -77,7 +77,7 @@ void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_mat
             mg_prolong_MAX10 (rho, rho_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
             break;
         case FFT_INTERPOLATION:
-            FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO);
+            FftInterpolation (*Rmg_G, rho_temp, rho, Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
      //       printf("\n Fftint not yet \n");
      //       exit(0);
             break;

@@ -129,11 +129,19 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
         work_matrix = new double[size];
 
 
+
         if (pct.imgpe == 0)
             rmg_printf ("init_soft is done\n");
 
         if (ct.runflag == 200)
         {
+            RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
+            orbital_comm(states);
+            delete(RT0);
+
+            RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
+            KbpsiUpdate(states);
+            delete(RTk);
             get_dos(states);
         }
         else

@@ -31,7 +31,7 @@
 
 void FftInitPlans(void);
 
-void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio);
+void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, bool use_sqrt);
 
 void FftGradientCoarse(double *x, double *fgx, double *fgy, double *fgz);
 

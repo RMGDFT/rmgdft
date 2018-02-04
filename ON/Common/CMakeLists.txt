@@ -27,7 +27,6 @@ add_library (ON_Common
  get_gamma_precond.c
  get_invmat.c
  get_mat_Omega.c
- get_mehr.c
  get_orbit_center.c
  get_state_to_proc.c
  get_sum_eig.c
@@ -43,11 +42,14 @@ add_library (ON_Common
  matrix_and_diag.c
  md_fastrelax.c
  mgrid_solv_local.c
+ MgridSolvLocal.cpp
  movie.c
  nlforce.c
  nlforce_par_omega.c
  normalize_orbits.c
-ortho_norm_local.c
+ ortho_norm_local.c
+ Precond.cpp
+ PrecondMg.cpp
  precond.c
  precond_mg.c
  print_status.c
@@ -70,6 +72,7 @@ ortho_norm_local.c
  write_states_info.c
  xbsmovie.c
  RmgThread.cpp
+ ZeroBoundary.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
 include_directories("${RMG_BINARY_DIR}/ON/Headers/")

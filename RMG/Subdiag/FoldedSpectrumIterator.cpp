@@ -56,20 +56,20 @@
 void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, double alpha, int iterations, int driver)
 {
 
-    int ione = 1;
     double ONE_t = 1.0;
     double ZERO_t = 0.0;
     double *Agpu = NULL;
     double *Xgpu = NULL;
     double *Ygpu = NULL;
-    int sizr = n * k;
     char *trans_n = "n";
     bool usecuxt;
-    double *Tgpu = NULL;
-    double *eigs_gpu = NULL;
 
 
 #if GPU_ENABLED
+    int ione = 1;
+    int sizr = n * k;
+    double *Tgpu = NULL;
+    double *eigs_gpu = NULL;
     usecuxt = true;
     if(n <= ct.cublasxt_block_size) usecuxt = false;
     double *Y = (double *)GpuMallocHost(n * k *  sizeof(double));

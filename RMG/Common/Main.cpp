@@ -128,7 +128,12 @@ int main (int argc, char **argv)
     char *tptr;
 
     /* Define a default output stream, gets redefined to log file later */
+
     ct.logfile = stdout;
+
+// for RMG, the projectors |beta> are multiplied by exp(-ik.r) for non-gamma point
+// for ON and NEGF, the phase exp(-ik.r) is in the matrix separtion.
+    ct.proj_nophase = 0; 
 
 #if GPU_ENABLED
 //  Hack to force initialization of libsci on Cray before we create our own threads

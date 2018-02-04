@@ -44,8 +44,8 @@ void print_density_z_direction (int grid_x, int grid_y, double * density, int px
     int i, j, ii, jj, kk, counter;
     MPI_Status mstatus;
     double *temp_buff;
-    int p0_basis, xgrid, ygrid, zgrid;
-    int min_grid_x, min_grid_y, min_grid_z, max_grid_x, max_grid_y, max_grid_z;
+    int p0_basis, xgrid, ygrid;
+    int min_grid_x, min_grid_y, max_grid_x, max_grid_y;
 
 
     /*Check consistency */
@@ -63,11 +63,9 @@ void print_density_z_direction (int grid_x, int grid_y, double * density, int px
     /*Max and minimum global grid for given processor */
     min_grid_x = ii * px0_grid;
     min_grid_y = jj * py0_grid;
-    min_grid_z = kk * pz0_grid;
 
     max_grid_x = min_grid_x + px0_grid;
     max_grid_y = min_grid_y + py0_grid;
-    max_grid_z = min_grid_z + pz0_grid;
 
 
     /*printf("\nPE %d: ii %d jj %d kk %d",pct.gridpe, ii, jj, kk);
@@ -91,7 +89,6 @@ void print_density_z_direction (int grid_x, int grid_y, double * density, int px
                 /*Absolute grid coordiantes for grid point j */
                 xgrid = j / (pz0_grid * py0_grid) + ii * px0_grid;
                 ygrid = (j % (pz0_grid * py0_grid)) / pz0_grid + jj * py0_grid;
-                zgrid = j % pz0_grid + kk * pz0_grid;
 
                 if ((xgrid == grid_x) && (ygrid == grid_y))
                 {

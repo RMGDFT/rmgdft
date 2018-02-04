@@ -42,8 +42,7 @@
 #include <stdbool.h>
 #include "fftw3.h"
 #include "mpi.h"
-#include "my_scalapack.h"
-
+#include "Scalapack.h"
 
 #include "pe_control.h"
 

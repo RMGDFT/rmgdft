@@ -14,6 +14,8 @@
 #include "transition.h"
 #include "blas.h"
 #include "Functional.h"
+#include "RmgParallelFft.h"
+
 
 
 #include "prototypes_on.h"
@@ -22,6 +24,7 @@
 void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore)
 {
+    double vtxc;
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     int FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     int FPY0_GRID = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
@@ -55,27 +58,32 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     }
 
     /* Generate exchange-correlation potential */
+//double *rho_temp=new double[4*nfp0]();
+//Smooth(rho_tot, rho_temp, FPX0_GRID, FPY0_GRID, FPZ0_GRID, 40.0);
+//Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+//F->v_xc(rho_temp, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
+//delete F;
+//delete [] rho_temp;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    double vtxc;
     F->v_xc(rho_tot, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
     delete F;
 
 
     double rms_target = ct.rms/ct.hartree_rms_ratio;
+    // And new hartree potential
     VhDriver(rho_tot, rhoc, vh, ct.vh_ext, rms_target);
-//    get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.rms/ct.hartree_rms_ratio, ct.boundaryflag);
-
-
 
 
     /* evaluate correction vh+vxc */
     for (idx = 0; idx < nfp0; idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx] + vh_corr[idx];
 
+    // Transfer vtot from the fine grid to the wavefunction grid
+    GetVtotPsi (vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
+    FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
     get_ddd(vtot);
 
-    get_vtot_psi(vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
 }
 
