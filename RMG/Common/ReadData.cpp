@@ -59,12 +59,21 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     char newname[MAX_PATH + 200];
     int grid[3];
     int fine[3];
+    int pgrid[3];
+    int fpgrid[3];
     int pe[3];
     int grid_size;
     int fgrid_size;
     int gamma;
     int nk, ik;
     int ns, is;
+
+    pgrid[0] = Kptr[0]->G->get_PX0_GRID(1);
+    pgrid[1] = Kptr[0]->G->get_PY0_GRID(1);
+    pgrid[2] = Kptr[0]->G->get_PZ0_GRID(1);
+    fpgrid[0] = Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO);
+    fpgrid[1] = Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO);
+    fpgrid[2] = Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO);
 
     /* wait until everybody gets here */
     /* my_barrier (); */
@@ -147,17 +156,25 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     rmg_printf ("read_data: ns = %d\n", ns);
 
 
-    /* read the hartree potential */
-    read_double (fhand, vh, fgrid_size);
-    rmg_printf ("read_data: read 'vh'\n");
-
-    /* read density */
-    read_double (fhand, rho, fgrid_size);
-    rmg_printf ("read_data: read 'rho'\n");
-
-    /* read Vxc */
-    read_double (fhand, vxc, fgrid_size);
-    rmg_printf ("read_data: read 'vxc'\n");
+    /* read the hartree potential, electronic density and xc potential */
+    if(ct.compressed_infile)
+    {
+        read_compressed_buffer(fhand, vh, fpgrid[0], fpgrid[1], fpgrid[2]);
+        rmg_printf ("read_data: read 'vh'\n");
+        read_compressed_buffer(fhand, rho, fpgrid[0], fpgrid[1], fpgrid[2]);
+        rmg_printf ("read_data: read 'rho'\n");
+        read_compressed_buffer(fhand, vxc, fpgrid[0], fpgrid[1], fpgrid[2]);
+        rmg_printf ("read_data: read 'vxc'\n");
+    }
+    else
+    {
+        read_double (fhand, vh, fgrid_size);
+        rmg_printf ("read_data: read 'vh'\n");
+        read_double (fhand, rho, fgrid_size);
+        rmg_printf ("read_data: read 'rho'\n");
+        read_double (fhand, vxc, fgrid_size);
+        rmg_printf ("read_data: read 'vxc'\n");
+    }
 
     /* read wavefunctions */
     {
@@ -171,10 +188,14 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
             {
 
                 if(gamma == ct.is_gamma) {
-                    read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
-//read_compressed_buffer(fhand, (double *)Kptr[ik]->Kstates[is].psi, 
-//                      Kptr[0]->G->get_PX0_GRID(1), Kptr[0]->G->get_PY0_GRID(1), Kptr[0]->G->get_PZ0_GRID(1));
-
+                    if(ct.compressed_infile)
+                    {
+                        read_compressed_buffer(fhand, (double *)Kptr[ik]->Kstates[is].psi, pgrid[0], pgrid[1], pgrid[2]);
+                    }
+                    else
+                    {
+                        read_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+                    }
                 }
                 else {
                     // If wavefunctions on disk are complex but current calc is real then throw error
@@ -424,7 +445,7 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 
   /* set compression mode and parameters via one of three functions */
 /*  zfp_stream_set_rate(zfp, rate, type, 3, 0); */
-  zfp_stream_set_precision(zfp, 48);
+  zfp_stream_set_precision(zfp, 36);
 //  zfp_stream_set_accuracy(zfp, tolerance);
 
   /* allocate buffer for compressed data */

@@ -698,6 +698,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
 
     // Booleans next. Booleans are never required.
+    If.RegisterInputKey("compressed_infile", &lc.compressed_infile, true,
+                        "Flag indicating whether or not restart wavefunction file uses compressed format.");
+
+    If.RegisterInputKey("compressed_outfile", &lc.compressed_outfile, true,
+                        "Flag indicating whether or not output wavefunction file uses compressed format.");
+
     If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, false,
                         "Flag indicating whether or not to use alternate laplacian weights for some operators.");
 

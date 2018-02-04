@@ -60,6 +60,8 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
 {
     int fine[3];
     int grid[3];
+    int pgrid[3];
+    int fpgrid[3];
     int pe[3];
     int npe;
     int grid_size;
@@ -72,7 +74,12 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     time0 = my_crtc ();
     totalsize = 0;
 
-
+    pgrid[0] = Kptr[0]->G->get_PX0_GRID(1);
+    pgrid[1] = Kptr[0]->G->get_PY0_GRID(1);
+    pgrid[2] = Kptr[0]->G->get_PZ0_GRID(1);
+    fpgrid[0] = Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO);
+    fpgrid[1] = Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO);
+    fpgrid[2] = Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO);
 
     /* write grid info */
     grid[0] = Kptr[0]->G->get_NX_GRID(1);
@@ -107,14 +114,21 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
     write_int (fhand, &ns, 1); 
 
 
-    /* write the hartree potential */
-    write_double (fhand, vh, fgrid_size);
 
-    /* write the total electronic density */
-    write_double (fhand, rho, fgrid_size);
 
-    /* write Vxc */
-    write_double (fhand, vxc, fgrid_size);
+    /* write the hartree potential, electronic density and xc potentials */
+    if(ct.compressed_outfile)
+    {
+        write_compressed_buffer(fhand, vh, fpgrid[0], fpgrid[1], fpgrid[2]);
+        write_compressed_buffer(fhand, rho, fpgrid[0], fpgrid[1], fpgrid[2]);
+        write_compressed_buffer(fhand, vxc, fpgrid[0], fpgrid[1], fpgrid[2]);
+    }
+    else
+    {
+        write_double (fhand, vh, fgrid_size);
+        write_double (fhand, rho, fgrid_size);
+        write_double (fhand, vxc, fgrid_size);
+    }
 
     /* write wavefunctions */
     {
@@ -124,9 +138,14 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
         {
             for (is = 0; is < ns; is++)
             {
-                write_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
-//write_compressed_buffer(fhand, (double *)Kptr[ik]->Kstates[is].psi,
-//                        Kptr[0]->G->get_PX0_GRID(1), Kptr[0]->G->get_PY0_GRID(1), Kptr[0]->G->get_PZ0_GRID(1));
+                if(ct.compressed_outfile)
+                {
+                    write_compressed_buffer(fhand, (double *)Kptr[ik]->Kstates[is].psi, pgrid[0], pgrid[1], pgrid[2]);
+                }
+                else
+                {
+                    write_double (fhand, (double *)Kptr[ik]->Kstates[is].psi, wvfn_size);
+                }
             }
         }
     }
@@ -212,7 +231,7 @@ void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 
   /* set compression mode and parameters via one of three functions */
 /*  zfp_stream_set_rate(zfp, rate, type, 3, 0); */
-  zfp_stream_set_precision(zfp, 48);
+  zfp_stream_set_precision(zfp, 36);
 //  zfp_stream_set_accuracy(zfp, tolerance);
 
   /* allocate buffer for compressed data */

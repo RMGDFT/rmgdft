@@ -114,6 +114,10 @@ typedef struct
     /** Actual full name to the log file */
     char logname[2*MAX_PATH];
 
+    /** whether input and output files are compressed */
+    bool compressed_infile;
+    bool compressed_outfile;
+
     /** Input file name to read wavefunctions from when doing a restart */
     char infile[2*MAX_PATH];
 
