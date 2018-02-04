@@ -21,6 +21,19 @@ cmake_minimum_required (VERSION 2.8)
 enable_language(Fortran)
 project (RMG C CXX Fortran) 
 
+# force an out-of-source build
+string( COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" RMG_COMPILE_INPLACE )
+if( RMG_COMPILE_INPLACE )
+        message( FATAL_ERROR "Building RMG with CMake requires an out-of-source build. To proceed:
+    rm -rf CMakeCache.txt CMakeFiles/   # delete files in ${CMAKE_SOURCE_DIR}
+    mkdir build
+    cd build
+    cmake ..
+    make -jX target
+    Where -jX with X=ncpus to compile with and target may be rmg-cpu or rmg-gpu")
+endif()
+
+
 # Standard modules for platform checks
 INCLUDE (CheckFunctionExists)
 INCLUDE (CheckSymbolExists)
@@ -600,9 +613,11 @@ endif(USE_ELEMENTAL_LIBS)
 
 # include files
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories("${RMG_SOURCE_DIR}/Headers/")
-include_directories("${RMG_SOURCE_DIR}/RmgLib/")
-include_directories("${RMG_SOURCE_DIR}/RmgLib/include")
+include_directories("${PROJECT_SOURCE_DIR}/Headers/")
+include_directories("${PROJECT_BINARY_DIR}/Headers/")
+include_directories("${PROJECT_SOURCE_DIR}/RmgLib/")
+include_directories("${PROJECT_SOURCE_DIR}/RmgLib/include")
+include_directories("${PROJECT_SOURCE_DIR}/zfp/include")
   
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/TDDFT/Headers/")
@@ -617,6 +632,7 @@ add_subdirectory (Input)
 add_subdirectory (MG) 
 add_subdirectory (Misc) 
 add_subdirectory (US_PP) 
+add_subdirectory (zfp) 
 if(USE_LIBXC)
     add_subdirectory (XC_useLIBXC) 
 endif(USE_LIBXC)
