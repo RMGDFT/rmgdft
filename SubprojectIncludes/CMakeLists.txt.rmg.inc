@@ -9,7 +9,7 @@ add_dependencies(${rmg} libspg)
 target_link_libraries( ${rmg} ${LIBSPG_LIBRARIES})
 # static libraries are created for the object files in each subdir. Duplicates
 # are needed to handle circular references
-target_link_libraries( ${rmg} RmgLib)
+target_link_libraries( ${rmg} RmgLib zfp)
 if(USE_NUMA_INTERNAL)
 target_link_libraries( ${rmg} RMG_Common ${NUMA_LIBRARIES} zfp)
 endif(USE_NUMA_INTERNAL)

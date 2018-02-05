@@ -215,7 +215,7 @@ void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 {
 
     ZfpCompress C;
-    double *out = new double[nx*ny*nz];
+    double *out = new double[2*nx*ny*nz];
 
     size_t csize = C.compress_buffer(array, out, nx, ny, nz, RESTART_PRECISION, 2*nx*ny*nz*sizeof(double));
     size_t wsize = write (fh, &csize, sizeof(csize));
