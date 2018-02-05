@@ -54,6 +54,7 @@ src/ThreadBarrier.cpp
 src/rmg_error.cpp
 src/get_vh.cpp
 src/packfuncs.cpp
+src/ZfpCompress.cpp
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

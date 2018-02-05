@@ -194,7 +194,7 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
 
     RmgTimer *RT3 = new RmgTimer("3-DiagScalapack: gemm ");
 
-    psgemm("N", "T", &numst, &numst, &numst, &one,
+    pdgemm("N", "T", &numst, &numst, &numst, &one,
             uu_dis, &ione, &ione, pct.desca,
             zz_dis, &ione, &ione, pct.desca, &zero, mat_X, &ione, &ione, pct.desca);
 

@@ -39,7 +39,7 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "transition.h"
-#include "zfp.h"
+#include "ZfpCompress.h"
 
 static size_t totalsize;
 
@@ -213,56 +213,20 @@ static void write_int (int fh, int *ip, int count)
 
 void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 {
-  zfp_type type;     /* array scalar type */
-  zfp_field* field;  /* array meta data */
-  zfp_stream* zfp;   /* compressed stream */
-  void* buffer;      /* storage for compressed stream */
-  size_t bufsize;    /* byte size of compressed buffer */
-  bitstream* stream; /* bit stream to write to or read from */
-  size_t zfpsize;    /* byte size of compressed stream */
-  size_t wsize;
 
-  /* allocate meta data for the 3D array a[nz][ny][nx] */
-  type = zfp_type_double;
-  field = zfp_field_3d(array, type, nx, ny, nz);
+    ZfpCompress C;
+    double *out = new double[nx*ny*nz];
 
-  /* allocate meta data for a compressed stream */
-  zfp = zfp_stream_open(NULL);
-
-  /* set compression mode and parameters via one of three functions */
-/*  zfp_stream_set_rate(zfp, rate, type, 3, 0); */
-  zfp_stream_set_precision(zfp, 36);
-//  zfp_stream_set_accuracy(zfp, tolerance);
-
-  /* allocate buffer for compressed data */
-  bufsize = zfp_stream_maximum_size(zfp, field);
-  buffer = malloc(bufsize);
-
-  /* associate bit stream with allocated buffer */
-  stream = stream_open(buffer, bufsize);
-  zfp_stream_set_bit_stream(zfp, stream);
-  zfp_stream_rewind(zfp);
-
-  /* compress array and output compressed stream */
-  zfpsize = zfp_compress(zfp, field);
-
-  wsize = write (fh, &zfpsize, sizeof(zfpsize));
-  if(wsize != sizeof(zfpsize))
+    size_t csize = C.compress_buffer(array, out, nx, ny, nz, RESTART_PRECISION, 2*nx*ny*nz*sizeof(double));
+    size_t wsize = write (fh, &csize, sizeof(csize));
+    if(wsize != sizeof(csize))
         rmg_error_handler (__FILE__,__LINE__,"error writing");
 
-  wsize = write (fh, buffer, zfpsize);
-  if(wsize != zfpsize)
+    wsize = write (fh, out, csize);
+    if(wsize != csize)
         rmg_error_handler (__FILE__,__LINE__,"error writing");
 
-  totalsize += wsize;
-
-  
-  /* clean up */
-  zfp_field_free(field);
-  zfp_stream_close(zfp);
-  stream_close(stream);
-  free(buffer);
-
+    totalsize += csize;
+    delete [] out;
 
 }
-/******/
