@@ -49,9 +49,11 @@ public:
     ZfpCompress(void);
     ~ZfpCompress(void);
 
-    size_t compress_buffer(double *in, double *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
-    size_t decompress_buffer(double *in, double *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
+    template <typename RmgType> size_t compress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
+    template <typename RmgType> size_t decompress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
 
+    template <typename RmgType> size_t compress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int sx, int sy, int sz, int precision, size_t outbufsize);
+    template <typename RmgType> size_t decompress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int sx, int sy, int sz, int precision, size_t outbufsize);
 
 };
 

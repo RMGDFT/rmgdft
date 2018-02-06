@@ -29,6 +29,15 @@
 
 
 #include "ZfpCompress.h"
+template size_t ZfpCompress::compress_buffer<double>(double *, double *, int, int, int, int, size_t);
+template size_t ZfpCompress::decompress_buffer<double>(double *, double *, int, int, int, int, size_t);
+template size_t ZfpCompress::compress_buffer<float>(float *, float *, int, int, int, int, size_t);
+template size_t ZfpCompress::decompress_buffer<float>(float *, float *, int, int, int, int, size_t);
+
+template size_t ZfpCompress::compress_buffer<double>(double *, double *, int, int, int, int, int, int, int, size_t);
+template size_t ZfpCompress::decompress_buffer<double>(double *, double *, int, int, int, int, int, int, int, size_t);
+template size_t ZfpCompress::compress_buffer<float>(float *, float *, int, int, int, int, int, int, int, size_t);
+template size_t ZfpCompress::decompress_buffer<float>(float *, float *, int, int, int, int, int, int, int, size_t);
 
 ZfpCompress::ZfpCompress(void)
 {
@@ -43,11 +52,13 @@ ZfpCompress::~ZfpCompress(void)
 
 }
 
-size_t ZfpCompress::compress_buffer(double *in, double *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize)
+template <typename RmgType>
+size_t ZfpCompress::compress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize)
 {
-    zfp_type type = zfp_type_double;
-    zfp_field_set_type(this->field, type);
-    zfp_field_set_size_3d(this->field, xdim, ydim, zdim);
+    if(typeid(RmgType) == typeid(double)) zfp_field_set_type(this->field, zfp_type_double);
+    if(typeid(RmgType) == typeid(float)) zfp_field_set_type(this->field, zfp_type_float);
+
+    zfp_field_set_size_3d(this->field, zdim, ydim, xdim);
     zfp_field_set_stride_3d(this->field, 1, zdim, ydim*zdim);
     zfp_field_set_pointer(this->field, in);
     zfp_stream_set_precision(zfp, precision);
@@ -67,13 +78,69 @@ size_t ZfpCompress::compress_buffer(double *in, double *out, int xdim, int ydim,
     return compressed_size;
 }
 
-size_t ZfpCompress::decompress_buffer(double *in, double *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize)
+template <typename RmgType>
+size_t ZfpCompress::decompress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize)
 {
+    if(typeid(RmgType) == typeid(double)) zfp_field_set_type(this->field, zfp_type_double);
+    if(typeid(RmgType) == typeid(float)) zfp_field_set_type(this->field, zfp_type_float);
 
-    zfp_type type = zfp_type_double;
-    zfp_field_set_type(this->field, type);
     zfp_field_set_size_3d(this->field, xdim, ydim, zdim);
     zfp_field_set_stride_3d(this->field, 1, zdim, ydim*zdim);
+    zfp_field_set_pointer(this->field, in);
+    zfp_stream_set_precision(zfp, precision);
+
+    size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
+    if(bufsize > outbufsize)
+        rmg_error_handler (__FILE__, __LINE__, "Decompressed buffer is too small.\n");
+
+    bitstream *stream = stream_open(out, bufsize);
+    zfp_stream_set_bit_stream(this->zfp, stream);
+    zfp_stream_rewind(this->zfp);
+    size_t decompressed_size = zfp_decompress(this->zfp, this->field);
+    if(!decompressed_size)
+        rmg_error_handler (__FILE__, __LINE__, "Error decompressing buffer.\n");
+
+    stream_close(stream);
+
+    return decompressed_size;
+
+}
+
+// Strided variants
+template <typename RmgType>
+size_t ZfpCompress::compress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int sx, int sy, int sz, int precision, size_t outbufsize)
+{
+    if(typeid(RmgType) == typeid(double)) zfp_field_set_type(this->field, zfp_type_double);
+    if(typeid(RmgType) == typeid(float)) zfp_field_set_type(this->field, zfp_type_float);
+
+    zfp_field_set_size_3d(this->field, xdim, ydim, zdim);
+    zfp_field_set_stride_3d(this->field, sz, sy, sx);
+    zfp_field_set_pointer(this->field, in);
+    zfp_stream_set_precision(zfp, precision);
+
+    size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
+    if(bufsize > outbufsize)
+        rmg_error_handler (__FILE__, __LINE__, "Compressed buffer is too small.\n");
+
+    bitstream *stream = stream_open(out, bufsize);
+    zfp_stream_set_bit_stream(this->zfp, stream);
+    zfp_stream_rewind(this->zfp);
+    size_t compressed_size = zfp_compress(this->zfp, this->field);
+    if(!compressed_size)
+        rmg_error_handler (__FILE__, __LINE__, "Error compressing buffer.\n");
+
+    stream_close(stream);
+    return compressed_size;
+}
+
+template <typename RmgType>
+size_t ZfpCompress::decompress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int sx, int sy, int sz, int precision, size_t outbufsize)
+{
+    if(typeid(RmgType) == typeid(double)) zfp_field_set_type(this->field, zfp_type_double);
+    if(typeid(RmgType) == typeid(float)) zfp_field_set_type(this->field, zfp_type_float);
+
+    zfp_field_set_size_3d(this->field, xdim, ydim, zdim);
+    zfp_field_set_stride_3d(this->field, sz, sy, sx);
     zfp_field_set_pointer(this->field, in);
     zfp_stream_set_precision(zfp, precision);
 
