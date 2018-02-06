@@ -2,7 +2,7 @@ add_executable(testzfp testzfp.cpp fields.c)
 target_link_libraries(testzfp zfp)
 target_compile_definitions(testzfp PRIVATE ${zfp_defs})
 
-option(ZFP_BUILD_TESTING_SMALL "Enable small-sized array testing" ON)
+option(ZFP_BUILD_TESTING_SMALL "Enable small-sized array testing" OFF)
 if(ZFP_BUILD_TESTING_SMALL)
   foreach(D IN ITEMS 1 2 3)
     foreach(P IN ITEMS 32 64)

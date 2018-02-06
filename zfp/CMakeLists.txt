@@ -154,7 +154,7 @@ endif()
 #------------------------------------------------------------------------------#
 add_subdirectory(src)
 
-option(BUILD_UTILITIES "Build command line utilities for zfp" ON)
+option(BUILD_UTILITIES "Build command line utilities for zfp" OFF)
 if(BUILD_UTILITIES)
   add_subdirectory(utils)
 endif()
