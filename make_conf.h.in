@@ -3,20 +3,5 @@
 /* Gamma point only set to 1, otherwise, 0 */
 #define GAMMA_PT ${GAMMA_PT}
 
-/* Use GPU accelerations. */
-#define GPU_ENABLED ${GPU_ENABLED}
-
-/* Use Magma libs. */
-#define MAGMA_LIBS ${MAGMA_LIBS}
-
 #define ELEMENTAL_LIBS ${USE_ELEMENTAL_LIBS}
-
-/* Use OPENBABEL libs. */
-#define OPENBABEL_LIBS ${USE_OPENBABEL_LIBS}
-
-/* Use PLPLOT. */
-#define PLPLOT_LIBS ${USE_PLPLOT_LIBS}
-
-/* Use async all reduce */
-#define HAVE_ASYNC_ALLREDUCE ${RMG_ASYNC_ALLREDUCE}
 
