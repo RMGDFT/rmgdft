@@ -33,37 +33,23 @@
 ZfpCompress::ZfpCompress(void)
 {
     this->zfp = zfp_stream_open(NULL);
-    this->field = NULL;
-    this->old_in = NULL;
-    this->old_out = NULL;
-    this->nx = 0;
-    this->ny = 0;
-    this->nz = 0;
-
+    this->field = zfp_field_alloc();
 }
 
 ZfpCompress::~ZfpCompress(void)
 {
-    if(this->field) zfp_field_free(this->field);
+    zfp_field_free(this->field);
     zfp_stream_close(this->zfp);
 
 }
 
 size_t ZfpCompress::compress_buffer(double *in, double *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize)
 {
-
-    if(this->nx == 0)
-    {
-        this->nx = xdim;this->ny = ydim;this->nz = zdim;
-        this->field = zfp_field_3d(in, zfp_type_double, xdim, ydim, zdim);
-    }
-    else if((this->nx != xdim) || (this->ny != ydim) || (this->nz != zdim) || (this->old_in != in))
-    {
-        zfp_field_free(this->field);
-        this->nx = xdim;this->ny = ydim;this->nz = zdim;
-        this->field = zfp_field_3d(in, zfp_type_double, xdim, ydim, zdim);
-    }
-
+    zfp_type type = zfp_type_double;
+    zfp_field_set_type(this->field, type);
+    zfp_field_set_size_3d(this->field, xdim, ydim, zdim);
+    zfp_field_set_stride_3d(this->field, 1, zdim, ydim*zdim);
+    zfp_field_set_pointer(this->field, in);
     zfp_stream_set_precision(zfp, precision);
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);
@@ -78,24 +64,17 @@ size_t ZfpCompress::compress_buffer(double *in, double *out, int xdim, int ydim,
         rmg_error_handler (__FILE__, __LINE__, "Error compressing buffer.\n");
 
     stream_close(stream);
-
     return compressed_size;
 }
 
 size_t ZfpCompress::decompress_buffer(double *in, double *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize)
 {
-    if(this->nx == 0)
-    {
-        this->nx = xdim;this->ny = ydim;this->nz = zdim;
-        this->field = zfp_field_3d(in, zfp_type_double, xdim, ydim, zdim);
-    }
-    else if((this->nx != xdim) || (this->ny != ydim) || (this->nz != zdim) || (this->old_in != in))
-    {
-        zfp_field_free(this->field);
-        this->nx = xdim;this->ny = ydim;this->nz = zdim;
-        this->field = zfp_field_3d(out, zfp_type_double, xdim, ydim, zdim);
-    }
 
+    zfp_type type = zfp_type_double;
+    zfp_field_set_type(this->field, type);
+    zfp_field_set_size_3d(this->field, xdim, ydim, zdim);
+    zfp_field_set_stride_3d(this->field, 1, zdim, ydim*zdim);
+    zfp_field_set_pointer(this->field, in);
     zfp_stream_set_precision(zfp, precision);
 
     size_t bufsize = zfp_stream_maximum_size(this->zfp, this->field);

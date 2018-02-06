@@ -43,18 +43,12 @@ protected:
 private:
     zfp_stream *zfp;   /* compressed stream */
     zfp_field *field;  /* array meta data */
-    double *old_in;    /* in array used in previous call, if the same then reuse internal structs */
-    double *old_out;   /* out array used in previous call, if the same then reuse internal structs */
-    int nx;
-    int ny;
-    int nz;
 
 public:
 
     ZfpCompress(void);
     ~ZfpCompress(void);
 
-    void set_array_size(int xdim, int ydim, int zdim);
     size_t compress_buffer(double *in, double *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
     size_t decompress_buffer(double *in, double *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
 
