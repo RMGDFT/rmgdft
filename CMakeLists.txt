@@ -74,7 +74,7 @@ set (USE_SVN 0)
 
 # Ryzen Threadripper with gcc
 #
-set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
+#set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 
 # Generic debug
 #set(RMG_EXTRA_COMPILER_FLAGS "-O2 -g")
@@ -323,15 +323,18 @@ endif(CRAY_XK)
 
 
 # Look for openbabel
-find_package(OPENBABEL)
-include("PlatformChecks/CheckOpenbabel.inc")
+if(USE_OPENBABEL_LIBS)
+    find_package(OPENBABEL)
+    include("PlatformChecks/CheckOpenbabel.inc")
 
-if(CHECK_OPENBABEL_INTERNAL AND USE_OPENBABEL_LIBS)
-    include_directories(${OPENBABEL_INCLUDES})
-    add_definitions(-DOPENBABLE_LIBS=1)
-else(CHECK_OPENBABEL_INTERNAL)
-    add_definitions(-DOPENBABLE_LIBS=0)
-endif (CHECK_OPENBABEL_INTERNAL AND USE_OPENBABEL_LIBS)
+    if(CHECK_OPENBABEL_INTERNAL)
+        include_directories(${OPENBABEL_INCLUDES})
+        add_definitions(-DOPENBABEL_LIBS=1)
+    else(CHECK_OPENBABEL_INTERNAL)
+        add_definitions(-DOPENBABEL_LIBS=0)
+    endif (CHECK_OPENBABEL_INTERNAL)
+
+endif(USE_OPENBABEL_LIBS)
 
 
 # Look for the magma libraries
