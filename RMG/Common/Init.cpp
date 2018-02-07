@@ -247,17 +247,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Wavefunctions are actually stored here
 
     rptr = new OrbitalType[kpt_storage * ct.alloc_states * P0_BASIS + 1024]();
-madvise(rptr, sizeof(OrbitalType)*(kpt_storage * ct.alloc_states * P0_BASIS + 1024), MADV_HUGEPAGE);
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
-madvise(nv, sizeof(OrbitalType)*ct.non_local_block_size * P0_BASIS, MADV_HUGEPAGE);
     ns = new OrbitalType[ct.max_states * P0_BASIS]();
-madvise(ns, sizeof(OrbitalType)*ct.max_states * P0_BASIS, MADV_HUGEPAGE);
 
 
     if(!ct.norm_conserving_pp) {
         Bns = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
-madvise(Bns, sizeof(OrbitalType)*ct.non_local_block_size * P0_BASIS, MADV_HUGEPAGE);
-
         pct.Bns = (double *)Bns;
     }
 #endif

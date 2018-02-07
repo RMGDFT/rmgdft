@@ -440,7 +440,7 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
     if(wsize != csize)
         rmg_error_handler (__FILE__,__LINE__,"error reading");
 
-    csize = C.decompress_buffer(array, in, nx, ny, nz, RESTART_PRECISION, 2*nx*ny*nz*sizeof(double));
+    csize = C.decompress_buffer(array, in, nx, ny, nz, RESTART_TOLERANCE, 2*nx*ny*nz*sizeof(double));
     delete [] in;
 
 }

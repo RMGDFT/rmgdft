@@ -217,7 +217,7 @@ void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
     ZfpCompress C;
     double *out = new double[2*nx*ny*nz];
 
-    size_t csize = C.compress_buffer(array, out, nx, ny, nz, RESTART_PRECISION, 2*nx*ny*nz*sizeof(double));
+    size_t csize = C.compress_buffer(array, out, nx, ny, nz, RESTART_TOLERANCE, 2*nx*ny*nz*sizeof(double));
     size_t wsize = write (fh, &csize, sizeof(csize));
     if(wsize != sizeof(csize))
         rmg_error_handler (__FILE__,__LINE__,"error writing");

@@ -144,9 +144,8 @@
 
 #define MAX_BLOCKS      20
 
-/* Restart files are compressed using zfp compressor and this compression */
-/* factor which represents bits of precision                              */
-#define RESTART_PRECISION  36
+/* Restart files are compressed using zfp compressor and this accuracy factor */
+#define RESTART_TOLERANCE  1.0e-09
 
 #if GPU_ENABLED
 
