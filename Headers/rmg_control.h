@@ -118,6 +118,14 @@ typedef struct
     bool compressed_infile;
     bool compressed_outfile;
 
+    /** whether to mmap the weights for the projectors weights, work space and orbitals */
+    bool nvme_weights;
+    bool nvme_work;
+    bool nvme_orbitals;
+    char nvme_weights_path[2*MAX_PATH];
+    char nvme_work_path[2*MAX_PATH];
+    char nvme_orbitals_path[2*MAX_PATH];
+
     /** Input file name to read wavefunctions from when doing a restart */
     char infile[2*MAX_PATH];
 

@@ -27,6 +27,11 @@
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include <complex> 
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <libgen.h>
 #include "Kpoint.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -46,6 +51,28 @@ template void GetNlop<std::complex<double> > (Kpoint<std::complex<double>> **);
 template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr)
 {
+
+    static int weight_fd=-1;
+    static int Bweight_fd=-1;
+    std::string newpath;
+
+    if(ct.nvme_weights)
+    {
+        if(weight_fd != -1) close(weight_fd);
+        if(Bweight_fd != -1) close(Bweight_fd);
+
+        newpath = ct.nvme_weights_path + std::string("rmg_weight_") + std::to_string(pct.spinpe) + std::string("_") + 
+                  std::to_string(pct.kstart) + std::string("_") + std::to_string(pct.gridpe);
+        weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        if(weight_fd == -1) 
+            rmg_error_handler(__FILE__, __LINE__, "Could not open mmap file for pct.weight.");
+        
+        newpath = ct.nvme_weights_path + std::string("rmg_Bweight_") + std::to_string(pct.spinpe) + std::string("_") +
+                  std::to_string(pct.kstart) + std::string("_") + std::to_string(pct.gridpe);
+        Bweight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        if(Bweight_fd == -1) 
+            rmg_error_handler(__FILE__, __LINE__, "Could not open mmap file for pct.Bweight.");
+    }
 
     int *Aix, *Aiy, *Aiz;
     int *Aix2, *Aiy2, *Aiz2;
@@ -276,30 +303,46 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     pct.num_tot_proj = pct.num_nonloc_ions * ct.max_nl;
 
     int known_nonowner, nonwner_index, known_owner, owner_index, owned_ions_per_pe, nonowned_ions_per_pe; 
-    size_t weight_size = pct.num_tot_proj * P0_BASIS + 128;
+    pct.weight_size = pct.num_tot_proj * P0_BASIS + 128;
     int owned, owner;
 
 #if GPU_ENABLED
-    if( cudaSuccess != cudaMallocHost((void **)&pct.weight, weight_size * sizeof(double) ))
+    if( cudaSuccess != cudaMallocHost((void **)&pct.weight, pct.weight_size * sizeof(double) ))
         rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
-    for(int idx = 0;idx < weight_size;idx++) pct.weight[idx] = 0.0;
+    for(int idx = 0;idx < pct.weight_size;idx++) pct.weight[idx] = 0.0;
 
     if(ct.need_Bweight) 
     {
-        if( cudaSuccess != cudaMallocHost((void **)&pct.Bweight, weight_size * sizeof(double) ))
+        if( cudaSuccess != cudaMallocHost((void **)&pct.Bweight, pct.weight_size * sizeof(double) ))
             rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
-        for(int idx = 0;idx < weight_size;idx++) pct.Bweight[idx] = 0.0;
+        for(int idx = 0;idx < pct.weight_size;idx++) pct.Bweight[idx] = 0.0;
     }
     else {
         pct.Bweight = pct.weight;
     }
 #else
-    pct.weight = new double[weight_size]();
-    if(ct.need_Bweight) {
-        pct.Bweight = new double[weight_size]();
+    if(ct.nvme_weights)
+    {
+        pct.weight = (double *)CreateMmapArray(weight_fd, pct.weight_size*sizeof(double));
+        if(!pct.weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+
+        if(ct.need_Bweight) {
+            pct.Bweight = (double *)CreateMmapArray(weight_fd, pct.weight_size*sizeof(double));
+            if(!pct.Bweight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        }
+        else {
+            pct.Bweight = pct.weight;
+        }
     }
-    else {
-        pct.Bweight = pct.weight;
+    else
+    {
+        pct.weight = new double[pct.weight_size]();
+        if(ct.need_Bweight) {
+            pct.Bweight = new double[pct.weight_size]();
+        }
+        else {
+            pct.Bweight = pct.weight;
+        }
     }
 #endif
 
@@ -558,14 +601,28 @@ static void reset_pct_arrays (int num_ions)
 #if GPU_ENABLED
         cudaFreeHost(pct.weight);
 #else
-        delete [] pct.weight;
+        if(ct.nvme_weights)
+        {
+            munmap(pct.weight, pct.weight_size*sizeof(double));
+        }
+        else
+        {
+            delete [] pct.weight;
+        }
 #endif
     }
     if ((pct.Bweight != NULL) && ct.need_Bweight) {
 #if GPU_ENABLED
         cudaFreeHost(pct.Bweight);
 #else
-        delete [] pct.Bweight;
+        if(ct.nvme_weights)
+        {
+            munmap(pct.Bweight, pct.weight_size*sizeof(double));
+        }
+        else
+        {
+            delete [] pct.Bweight;
+        }
 #endif
     }
 

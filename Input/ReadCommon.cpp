@@ -105,13 +105,24 @@ namespace po = boost::program_options;
 
 **********************************************************************/
 
+// Auxiliary function used to convert input file names into a full path
+void MakeFullPath(char *fullpath, PE_CONTROL& pelc)
+{
+    if(fullpath[0] !='/')
+    {
+        char temp[4*MAX_PATH];
+        snprintf(temp, sizeof(temp) - 1, "%s%s", pelc.image_path[pelc.thisimg], fullpath);
+        std::strncpy(fullpath, temp, MAX_PATH);
+    }
+}
+
 
 namespace Ri = RmgInput;
 
 void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
-    RmgInputFile If(cfile, InputMap, pct.img_comm);
+    RmgInputFile If(cfile, InputMap, pelc.img_comm);
     std::string CalculationMode;
     std::string DiscretizationType;
     std::string EnergyOutputType;
@@ -123,6 +134,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::string wfng_file;
     std::string rhog_file;
     std::string vxc_file;
+    std::string Weightsfile;
+    std::string Workfile;
+    std::string Orbitalfile;
  
     static Ri::ReadVector<int> ProcessorGrid;
     Ri::ReadVector<int> DefProcessorGrid({{1,1,1}});
@@ -158,6 +172,21 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("input_tddft_file", &Infile_tddft, "Waves/wave_tddft.out",
                      CHECK_AND_FIX, OPTIONAL,
                      "Input file/path to  read wavefunctions and other binary data from on a restart.\n", 
+                     "");
+
+    If.RegisterInputKey("nvme_weights_filepath", &Weightsfile, "Weights/",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "File/path for disk storage of projector weights.\n", 
+                     "");
+
+    If.RegisterInputKey("nvme_work_filepath", &Workfile, "Work/",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "File/path for disk storage of workspace.\n", 
+                     "");
+
+    If.RegisterInputKey("nvme_orbitals_filepath", &Orbitalfile, "Orbitals/",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "File/path for runtime disk storage of orbitals.\n", 
                      "");
 
     If.RegisterInputKey("output_wave_function_file", &Outfile, "Waves/wave.out",
@@ -704,6 +733,15 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("compressed_outfile", &lc.compressed_outfile, true,
                         "Flag indicating whether or not output wavefunction file uses compressed format.");
 
+    If.RegisterInputKey("nvme_weights", &lc.nvme_weights, false,
+                        "Flag indicating whether or not projector weights should be mapped to disk.");
+
+    If.RegisterInputKey("nvme_work", &lc.nvme_work, false,
+                        "Flag indicating whether or not work arrays should be mapped to disk.");
+
+    If.RegisterInputKey("nvme_orbitals", &lc.nvme_orbitals, false,
+                        "Flag indicating whether or not orbitals should be mapped to disk.");
+
     If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, false,
                         "Flag indicating whether or not to use alternate laplacian weights for some operators.");
 
@@ -888,43 +926,31 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     if(!Infile.length()) Infile = "Waves/wave.out";
     std::strncpy(lc.infile, Infile.c_str(), sizeof(lc.infile));
+    MakeFullPath(lc.infile, pelc);
 
     if(!Outfile.length()) Outfile = "Waves/wave.out";
     std::strncpy(lc.outfile, Outfile.c_str(), sizeof(lc.outfile));
+    MakeFullPath(lc.outfile, pelc);
 
-    if(lc.outfile[0] !='/') 
-    {
-        char temp[4*MAX_PATH];
-        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.outfile);
-        std::strncpy(lc.outfile, temp, sizeof(lc.outfile));
-    }
-    if(lc.infile[0] !='/') 
-    {
-        char temp[4*MAX_PATH];
-        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.infile);
-        std::strncpy(lc.infile, temp, sizeof(lc.infile));
-    }
+    if(!Weightsfile.length()) Weightsfile = "Weights/";
+    std::strncpy(lc.nvme_weights_path, Weightsfile.c_str(), sizeof(lc.nvme_weights_path));
+    MakeFullPath(lc.nvme_weights_path, pelc);
+
+    if(!Workfile.length()) Workfile = "Work/";
+    std::strncpy(lc.nvme_work_path, Workfile.c_str(), sizeof(lc.nvme_work_path));
+    MakeFullPath(lc.nvme_work_path, pelc);
+
+    if(!Orbitalfile.length()) Orbitalfile = "Orbitals/";
+    std::strncpy(lc.nvme_orbitals_path, Orbitalfile.c_str(), sizeof(lc.nvme_orbitals_path));
+    MakeFullPath(lc.nvme_orbitals_path, pelc);
 
     if(!Infile_tddft.length()) Infile = "Waves/wave_tddft.out";
     std::strncpy(lc.infile_tddft, Infile_tddft.c_str(), sizeof(lc.infile_tddft));
+    MakeFullPath(lc.infile_tddft, pelc);
 
     if(!Outfile_tddft.length()) Outfile = "Waves/wave_tddft.out";
     std::strncpy(lc.outfile_tddft, Outfile_tddft.c_str(), sizeof(lc.outfile_tddft));
-
-    if(lc.outfile_tddft[0] !='/') 
-    {
-        char temp[4*MAX_PATH];
-        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.outfile_tddft);
-        std::strncpy(lc.outfile_tddft, temp, sizeof(lc.outfile_tddft));
-    }
-    if(lc.infile[0] !='/') 
-    {
-        char temp[4*MAX_PATH];
-        snprintf(temp, sizeof(temp) - 1, "%s%s", pct.image_path[pct.thisimg], lc.infile_tddft);
-        std::strncpy(lc.infile_tddft, temp, sizeof(lc.infile_tddft));
-    }
-
-
+    MakeFullPath(lc.outfile_tddft, pelc);
 
 
     if(lc.spin_flag) {

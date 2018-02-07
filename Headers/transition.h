@@ -128,6 +128,9 @@ void ReadPermInfo(char *, unsigned int *);
 void WritePermInfo(char *, unsigned int *);
 void InitPe4image();
 void InitPe4kpspin();
+int FileOpenAndCreate(std::string &pathname, int flags, mode_t mode);
+void *CreateMmapArray(int &fd, size_t length);
+
 
 
 extern "C" void app_cilr_driver (double * psi, double * a_psi, double *b_psi, double *vtot_eig_s,

@@ -35,6 +35,8 @@ InitHybridModel.cpp
 Fill.cpp
 GetTe.cpp
 init_kpoints.c
+FileOpenAndCreate.cpp
+CreateMmapArray.cpp
 RmgCudaError.cpp
 RmgGemm.cpp
 RmgSymm.cpp

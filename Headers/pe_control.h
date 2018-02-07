@@ -124,6 +124,7 @@ typedef struct
     /** Points to start of projector storage for this ion in projector space */
     double *weight;
     double *Bweight;
+    size_t weight_size;
 
     /** An index array which maps the projectors onto the 3-d grid associated
         with each processor.
