@@ -47,7 +47,7 @@ FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling.h MACRO_NAMESP
 
 
 # User editable options
-set (RMG_GPU_ENABLED 0)
+set (RMG_GPU_ENABLED 1)
 set (RMG_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
 set (USE_ELPA_LIBS 0)
@@ -171,11 +171,6 @@ endif(CRAY_XK)
 
 if (RMG_GPU_ENABLED)
    add_definitions(-DGPU_ENABLED=1)
-   if(RMG_MAGMA_LIBS)
-      add_definitions(-DMAGMA_LIBS=1)
-   else (RMG_MAGMA_LIBS)
-      add_definitions(-DMAGMA_LIBS=0)
-   endif(RMG_MAGMA_LIBS) 
 else (RMG_GPU_ENABLED)
    add_definitions(-DGPU_ENABLED=0)
    add_definitions(-DMAGMA_LIBS=0)
@@ -341,10 +336,11 @@ endif(USE_OPENBABEL_LIBS)
 
 
 # Look for the magma libraries
-if(MAGMA_LIBS)
+if(RMG_MAGMA_LIBS AND RMG_GPU_ENABLED)
   find_package(MAGMA)
-  include_directories(${MAGMA_INCLUDES})
   if(MAGMA_FOUND)
+    add_definitions(-DMAGMA_LIBS=1)
+    include_directories(${MAGMA_INCLUDES})
     if(MAGMABLAS_FOUND) 
         target_link_libraries (${rmg} ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
         target_link_libraries (${rmg-tddft} ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
@@ -358,6 +354,8 @@ if(MAGMA_LIBS)
         target_link_libraries (on-tddft ${MAGMA_LIBRARIES} )
         target_link_libraries (${rmg-negf} ${MAGMA_LIBRARIES} )
     endif(MAGMABLAS_FOUND) 
+  elseif(MAGMA_FOUND)
+      add_definitions(-DMAGMA_LIBS=0)
   endif(MAGMA_FOUND)
 endif(MAGMA_LIBS)
 
