@@ -670,6 +670,7 @@ link_directories (${RMG_BINARY_DIR}/Force)
 link_directories (${RMG_BINARY_DIR}/Input)
 link_directories (${RMG_BINARY_DIR}/MG)
 link_directories (${RMG_BINARY_DIR}/Misc)
+link_directories (${RMG_BINARY_DIR}/zfp)
 link_directories (${RMG_BINARY_DIR}/US_PP)
 link_directories (${RMG_BINARY_DIR}/XC)
 

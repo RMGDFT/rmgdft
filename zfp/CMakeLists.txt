@@ -1,15 +1,15 @@
-if(WIN32)
-  cmake_minimum_required(VERSION 3.4)
-else()
-  cmake_minimum_required(VERSION 3.1)
-endif()
+add_library(zfp
+  src/zfp.c
+  src/bitstream.c
+  src/traitsf.h src/traitsd.h src/block1.h src/block2.h src/block3.h
+  src/encode1f.c src/encode1d.c src/encode1i.c src/encode1l.c
+  src/decode1f.c src/decode1d.c src/decode1i.c src/decode1l.c
+  src/encode2f.c src/encode2d.c src/encode2i.c src/encode2l.c
+  src/decode2f.c src/decode2d.c src/decode2i.c src/decode2l.c
+  src/encode3f.c src/encode3d.c src/encode3i.c src/encode3l.c
+  src/decode3f.c src/decode3d.c src/decode3i.c src/decode3l.c
+)
 
-# Fail immediately if not using an out-of-source build
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
-  message(FATAL_ERROR
-    "In-source builds are not supported.  Please create a build directory "
-    "separate from the source directory")
-endif()
 
 #------------------------------------------------------------------------------#
 # Parse version number from zfp.h
@@ -24,23 +24,7 @@ string(REGEX REPLACE ".*#define[ \t]+ZFP_VERSION_PATCH[ \t]+([0-9]+).*"
 set(ZFP_VERSION
   "${ZFP_VERSION_MAJOR}.${ZFP_VERSION_MINOR}.${ZFP_VERSION_PATCH}")
 
-project(ZFP VERSION ${ZFP_VERSION})
-
-#------------------------------------------------------------------------------#
-# Some boilerplate to setup nice output directories
-#------------------------------------------------------------------------------#
-include(GNUInstallDirs)
-
-list(INSERT CMAKE_MODULE_PATH 0 "${ZFP_SOURCE_DIR}/cmake")
-if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ZFP_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
-endif()
-if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ZFP_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-endif()
-if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ZFP_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-endif()
+#project(ZFP VERSION ${ZFP_VERSION})
 
 #------------------------------------------------------------------------------#
 # Top level options
@@ -74,28 +58,6 @@ message(STATUS "Compiling with C++ standard: ${CMAKE_CXX_STANDARD}")
 
 include(CMakeDependentOption)
 
-# Typically you'd always be able to enable shared libraries but default
-# configurations with the Cray toolchain will explicitly disable shared lib
-# support and only allow static libs.  Making this a cmake_dependent_option
-# will ensure that shared library support will be disabled if the system does
-# not support it.
-
-# Setup shared library / -fPIC stuff
-get_property(SHARED_LIBS_SUPPORTED GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS)
-cmake_dependent_option(BUILD_SHARED_LIBS
-  "Whether or not to build shared libraries" OFF
-  "SHARED_LIBS_SUPPORTED" OFF)
-
-# PIC is always on for shared libs.  This allows it to be selectable for
-# static libs.
-if(SHARED_LIBS_SUPPORTED)
-  cmake_dependent_option(ZFP_ENABLE_PIC
-    "Build with Position Independent Code" ON
-    "NOT BUILD_SHARED_LIBS" ON)
-endif()
-if(ZFP_ENABLE_PIC)
-  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
 
 set(ZFP_BIT_STREAM_WORD_SIZE 64 CACHE STRING
   "Use smaller bit stream word type for finer rate granularity")
@@ -152,35 +114,12 @@ endif()
 #------------------------------------------------------------------------------#
 # Add source code
 #------------------------------------------------------------------------------#
-add_subdirectory(src)
-
-option(BUILD_UTILITIES "Build command line utilities for zfp" OFF)
-if(BUILD_UTILITIES)
-  add_subdirectory(utils)
-endif()
-
-option(BUILD_EXAMPLES "Build Examples" OFF)
-if(BUILD_EXAMPLES)
-  add_subdirectory(examples)
-endif()
-
-include(CTest)
-if(BUILD_TESTING)
-  enable_testing()
-  add_subdirectory(tests)
-endif()
+#add_subdirectory(src)
 
 #------------------------------------------------------------------------------#
 # Header install
 #------------------------------------------------------------------------------#
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(DIRECTORY array/   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(DIRECTORY array/   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-#------------------------------------------------------------------------------#
-# Build type: one of None, Debug, Release, RelWithDebInfo, MinSizeRel
-#------------------------------------------------------------------------------#
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Type of CMake build" FORCE)
-endif()

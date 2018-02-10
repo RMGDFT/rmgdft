@@ -28,6 +28,7 @@
 */
 
 
+#include <typeinfo>
 #include "ZfpCompress.h"
 template size_t ZfpCompress::compress_buffer<double>(double *, double *, int, int, int, int, size_t);
 template size_t ZfpCompress::decompress_buffer<double>(double *, double *, int, int, int, int, size_t);
@@ -123,7 +124,7 @@ size_t ZfpCompress::decompress_buffer(RmgType *in, RmgType *out, int xdim, int y
     if(typeid(RmgType) == typeid(double)) zfp_field_set_type(this->field, zfp_type_double);
     if(typeid(RmgType) == typeid(float)) zfp_field_set_type(this->field, zfp_type_float);
 
-    zfp_field_set_size_3d(this->field, xdim, ydim, zdim);
+    zfp_field_set_size_3d(this->field, zdim, ydim, xdim);
     zfp_field_set_stride_3d(this->field, 1, zdim, ydim*zdim);
     zfp_field_set_pointer(this->field, in);
     zfp_stream_set_precision(zfp, precision);
@@ -151,7 +152,7 @@ size_t ZfpCompress::decompress_buffer(RmgType *in, RmgType *out, int xdim, int y
     if(typeid(RmgType) == typeid(double)) zfp_field_set_type(this->field, zfp_type_double);
     if(typeid(RmgType) == typeid(float)) zfp_field_set_type(this->field, zfp_type_float);
 
-    zfp_field_set_size_3d(this->field, xdim, ydim, zdim);
+    zfp_field_set_size_3d(this->field, zdim, ydim, xdim);
     zfp_field_set_stride_3d(this->field, 1, zdim, ydim*zdim);
     zfp_field_set_pointer(this->field, in);
     zfp_stream_set_accuracy(zfp, tolerance);
