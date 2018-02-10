@@ -109,7 +109,14 @@ std::unordered_map<std::string, InputKey *> ControlMap;
 extern "C" void term_handler(int signal)
 {
     FreeAllSharedMemory();
-    exit(1);
+    MPI_Finalize ();
+
+#if GPU_ENABLED
+    cublasDestroy(ct.cublas_handle);
+    cublasXtDestroy(ct.cublasXt_handle);
+#endif
+    DeleteNvmeArrays();
+    kill(getpid(), SIGKILL);
 }
 
 int main (int argc, char **argv)
@@ -427,6 +434,7 @@ void finish ()
 {
 
     FreeAllSharedMemory();
+    DeleteNvmeArrays();
 
     MPI_Barrier(MPI_COMM_WORLD);
     /*Exit MPI */

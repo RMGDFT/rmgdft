@@ -37,6 +37,7 @@ GetTe.cpp
 init_kpoints.c
 FileOpenAndCreate.cpp
 CreateMmapArray.cpp
+DeleteNvmeArrays.cpp
 RmgCudaError.cpp
 RmgGemm.cpp
 RmgSymm.cpp

@@ -130,6 +130,7 @@ void InitPe4image();
 void InitPe4kpspin();
 int FileOpenAndCreate(std::string &pathname, int flags, mode_t mode);
 void *CreateMmapArray(int &fd, size_t length);
+void DeleteNvmeArrays(void);
 
 
 

@@ -122,6 +122,10 @@ typedef struct
     bool nvme_weights;
     bool nvme_work;
     bool nvme_orbitals;
+    int nvme_orbital_fd;
+    int nvme_work_fd;
+    int nvme_weight_fd;
+    int nvme_Bweight_fd;
     char nvme_weights_path[2*MAX_PATH];
     char nvme_work_path[2*MAX_PATH];
     char nvme_orbitals_path[2*MAX_PATH];

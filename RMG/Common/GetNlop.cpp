@@ -52,26 +52,20 @@ template <typename KpointType>
 void GetNlop (Kpoint<KpointType> **Kptr)
 {
 
-    static int weight_fd=-1;
-    static int Bweight_fd=-1;
     std::string newpath;
 
     if(ct.nvme_weights)
     {
-        if(weight_fd != -1) close(weight_fd);
-        if(Bweight_fd != -1) close(Bweight_fd);
+        if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
+        if(ct.nvme_Bweight_fd != -1) close(ct.nvme_Bweight_fd);
 
-        newpath = ct.nvme_weights_path + std::string("rmg_weight_") + std::to_string(pct.spinpe) + std::string("_") + 
-                  std::to_string(pct.kstart) + std::string("_") + std::to_string(pct.gridpe);
-        weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        if(weight_fd == -1) 
-            rmg_error_handler(__FILE__, __LINE__, "Could not open mmap file for pct.weight.");
+        newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) +
+                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
+        ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         
-        newpath = ct.nvme_weights_path + std::string("rmg_Bweight_") + std::to_string(pct.spinpe) + std::string("_") +
-                  std::to_string(pct.kstart) + std::string("_") + std::to_string(pct.gridpe);
-        Bweight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        if(Bweight_fd == -1) 
-            rmg_error_handler(__FILE__, __LINE__, "Could not open mmap file for pct.Bweight.");
+        newpath = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) +
+                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
+        ct.nvme_Bweight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
     }
 
     int *Aix, *Aiy, *Aiz;
@@ -323,11 +317,12 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 #else
     if(ct.nvme_weights)
     {
-        pct.weight = (double *)CreateMmapArray(weight_fd, pct.weight_size*sizeof(double));
+        pct.weight = (double *)CreateMmapArray(ct.nvme_weight_fd, pct.weight_size*sizeof(double));
         if(!pct.weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        madvise(pct.weight, pct.weight_size*sizeof(double), MADV_SEQUENTIAL);
 
         if(ct.need_Bweight) {
-            pct.Bweight = (double *)CreateMmapArray(weight_fd, pct.weight_size*sizeof(double));
+            pct.Bweight = (double *)CreateMmapArray(ct.nvme_Bweight_fd, pct.weight_size*sizeof(double));
             if(!pct.Bweight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
         }
         else {
@@ -592,7 +587,6 @@ static void reset_pct_arrays (int num_ions)
     for(ion = 0; ion < num_ions; ion++)
     {
         pct.idxptrlen[ion] = 0;
-
     }
 
 

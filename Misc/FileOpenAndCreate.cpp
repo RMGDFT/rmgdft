@@ -31,31 +31,30 @@
 #include <stdio.h>
 #include <string.h>
 #include "main.h"
+#include "RmgException.h"
 
+
+// This function should only be used for mandatory files where program
+// execution should not continue if the file cannot be opened or created
+// since it terminates if the open/create step fails.
 int FileOpenAndCreate(std::string &pathname, int flags, mode_t mode)
 {
     // Try to open the file
     int fd = open(pathname.c_str(), flags, mode);
 
-    // Check if it failed because the directory did not exist
+    // In case it failed because the directory did not exist try creating
+    // that and then try opening again.
     if(fd < 0) 
     {
         char tmpname[MAX_PATH];
         strncpy (tmpname, pathname.c_str(), sizeof(tmpname));
-
-#if !(defined(_WIN32) || defined(_WIN64))
-        if (mkdir (dirname (tmpname), S_IRWXU)) return -1;
-#else
-        char dirname[_MAX_DIR];
-        _splitpath(tmpname, NULL, dirname, NULL, NULL);
-        if (!_mkdir(dirname)) return -1;
-#endif
-
+        mkdir (dirname (tmpname), S_IRWXU);
     }
 
     // Try to open the file again
     fd = open(pathname.c_str(), flags, mode);
-    if(fd < 0) return -1;
+    if(fd < 0)
+        throw RmgFatalException() << "Error! Could not open " << pathname << " . Terminating.\n";
 
     return fd;
 }

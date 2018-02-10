@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #ifdef USE_NUMA
     #include <numa.h>
 #endif
@@ -77,6 +78,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     int kpt, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
     int species;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
+
+    ct.nvme_orbital_fd = -1;
+    ct.nvme_work_fd = -1;
+    ct.nvme_weight_fd = -1;
+    ct.nvme_Bweight_fd = -1;
 
     SPECIES *sp;
     OrbitalType *rptr = NULL, *nv, *ns, *Bns = NULL;
@@ -245,12 +251,41 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
+    std::string newpath;
 
-    rptr = new OrbitalType[kpt_storage * ct.alloc_states * P0_BASIS + 1024]();
+    if(ct.nvme_orbitals)
+    {
+        if(ct.nvme_orbital_fd != -1) close(ct.nvme_orbital_fd);
+
+        newpath = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) +
+                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
+        ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+        if(!rptr) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        madvise(rptr, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType), MADV_SEQUENTIAL);
+    }
+    else
+    {
+        rptr = new OrbitalType[kpt_storage * ct.alloc_states * P0_BASIS + 1024]();
+    }
+
+    if(ct.nvme_work)
+    {
+        if(ct.nvme_work_fd != -1) close(ct.nvme_work_fd);
+
+        newpath = ct.nvme_work_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
+                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
+        ct.nvme_work_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, ct.max_states * P0_BASIS * sizeof(OrbitalType));
+        if(!ns) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        madvise(ns, ct.max_states * P0_BASIS * sizeof(OrbitalType), MADV_SEQUENTIAL);
+    }
+    else
+    {
+        ns = new OrbitalType[ct.max_states * P0_BASIS]();
+    }
+
     nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
-    ns = new OrbitalType[ct.max_states * P0_BASIS]();
-
-
     if(!ct.norm_conserving_pp) {
         Bns = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
         pct.Bns = (double *)Bns;
