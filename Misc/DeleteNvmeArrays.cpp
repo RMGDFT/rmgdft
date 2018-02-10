@@ -45,7 +45,7 @@ void DeleteNvmeArrays(void)
     if(ct.nvme_work_fd > 0)
     {
         close(ct.nvme_work_fd);
-        newpath = ct.nvme_orbitals_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
+        newpath = ct.nvme_work_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
         unlink(newpath.c_str());
     }
@@ -53,7 +53,7 @@ void DeleteNvmeArrays(void)
     if(ct.nvme_weight_fd > 0)
     {
         close(ct.nvme_weight_fd);
-        newpath = ct.nvme_orbitals_path + std::string("rmg_weight") + std::to_string(pct.spinpe) +
+        newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) +
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
         unlink(newpath.c_str());
     }
@@ -61,7 +61,7 @@ void DeleteNvmeArrays(void)
     if(ct.nvme_Bweight_fd > 0)
     {
         close(ct.nvme_Bweight_fd);
-        newpath = ct.nvme_orbitals_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) +
+        newpath = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) +
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
         unlink(newpath.c_str());
     }
