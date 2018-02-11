@@ -17,7 +17,7 @@
 #endif
 
 #include "main.h"
-#include "my_scalapack.h"
+#include "Scalapack.h"
 #include "blas.h"
 
 

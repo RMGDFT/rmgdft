@@ -52,7 +52,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
 
 #if 0
 dcopy(&mxllda2, matB, &ione, l_s, &ione);
-PDTRAN(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
+pdtran(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
             &half, matB, &ione, &ione, pct.desca);
 
     
@@ -65,7 +65,7 @@ PDTRAN(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
                             work1, &ione, &ione, pct.desca, Hij, &ione,
                             &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
     dcopy(&mxllda2, uu_dis, &ione, Hij, &ione);
-    PDTRAN(&numst, &numst, &half, Hij, &ione, &ione, pct.desca,
+    pdtran(&numst, &numst, &half, Hij, &ione, &ione, pct.desca,
                 &half, uu_dis, &ione, &ione, pct.desca);
 
     dcopy(&mxllda2, uu_dis, &ione, work1, &ione);
@@ -99,7 +99,7 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
     dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
     dcopy(&mxllda2, matB, &ione, l_s, &ione);
 //dcopy(&mxllda2, matB, &ione, l_s, &ione);
-//PDTRAN(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
+//pdtran(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
 //           &half, matB, &ione, &ione, pct.desca);
 
     char *range = "a";

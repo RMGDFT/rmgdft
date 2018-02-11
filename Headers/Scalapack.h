@@ -183,6 +183,7 @@ protected:
 #define		pztrsm		RMG_FC_GLOBAL(pztrsm, PZTRSM)
 #define		pdsygst		RMG_FC_GLOBAL(pdsygst, PDSYGST)
 #define		pdsyrk		RMG_FC_GLOBAL(pdsyrk, PDSYRK)
+#define		pdsymm		RMG_FC_GLOBAL(pdsymm, PDSYMM)
 #define		pdgetrf		RMG_FC_GLOBAL(pdgetrf, PDGETRF)
 #define		pdgetrs		RMG_FC_GLOBAL(pdgetrs, PDGETRS)
 #ifdef __cplusplus
@@ -262,6 +263,10 @@ void pztrmm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, do
              double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
 void pztrsm(char *side, char *uplo, char *trans, char *diag, int * m, int *n, double *alpha,
              double * a, int *ia, int *ja, int *desca, double *b, int *ib, int *jb, int *descb);               
+void pdtran( int * M, int * N, double * ALPHA, double * A, int * IA, int * JA, int * DESCA,
+              double * BETA, double * C, int * IC, int * JC, int * DESCC );
+void pdsymm(char *SIDE, char *UPLO, int *M, int *N, double *ALPHA, double *A, int *IA, int *JA, int *DESCA,
+            double *B, int *IB, int *JB, int *DESCB, double *BETA, double *C, int *IC, int *JC, int *DESCC);
 
 #ifdef __cplusplus
 }

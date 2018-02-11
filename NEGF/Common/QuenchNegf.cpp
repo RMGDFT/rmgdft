@@ -59,7 +59,7 @@
 
 
 
-#include "my_scalapack.h"
+#include "Scalapack.h"
 #include "blas.h"
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
@@ -208,7 +208,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         dcopy (&size_of_matrix, &lcr[0].Stri[2*size_of_matrix], &ione, lcr[2].S00, &ione);
 
 
-        PDTRAN(&numst, &numst, &one, &lcr[0].Stri[size_of_matrix], &ione, &ione, desca,
+        pdtran(&numst, &numst, &one, &lcr[0].Stri[size_of_matrix], &ione, &ione, desca,
                 &zero, lcr[1].S01, &ione, &ione, desca);
         dcopy (&size_of_matrix, lcr[1].S01, &ione, lcr[1].SCL, &ione);
 

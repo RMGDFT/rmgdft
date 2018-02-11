@@ -11,7 +11,7 @@ Documentation:
 
 	LAPACK Working Note 94, A User's Guide to the BLACS v1.1
 
-	Manpages: DESCINIT
+	Manpages: descinit 
 
 	WWW: http://www.netlib.org/scalapack/slug/scalapack_slug.html
 	(ScaLapack user's guide)
@@ -31,7 +31,8 @@ Documentation:
 #include "main.h"
 #include "init_var.h"
 #include "LCR.h"
-#include "my_scalapack.h"
+#include "Scalapack.h"
+#include "blacs.h"
 
 
 #define globalexit  exit
@@ -249,10 +250,10 @@ void get_distributed_mat (double *bigmat, double *dismat)
 
         /* DISTRIBUTE THE MATRIX ON THE PROCESS GRID */
         /* Initialize the array descriptors for the matrices */
-        DESCINIT (desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
+        descinit (desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
         if (info != 0)
         {
-            printf (" distribute_mat: DESCINIT, info=%d\n", info);
+            printf (" distribute_mat: descinit, info=%d\n", info);
             fflush (NULL);
             globalexit (0);
         }
@@ -303,10 +304,10 @@ void dsymm_dis (char *side, char *uplo, int *nn, double *aa, double *bb, double 
 
         /* DISTRIBUTE THE MATRIX ON THE PROCESS GRID */
         /* Initialize the array descriptors for the matrices */
-        DESCINIT (desca, nn, nn, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
+        descinit (desca, nn, nn, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
         if (info != 0)
         {
-            printf (" distribute_mat: DESCINIT, info=%d\n", info);
+            printf (" distribute_mat: descinit, info=%d\n", info);
             fflush (NULL);
             globalexit (0);
         }
@@ -318,7 +319,7 @@ void dsymm_dis (char *side, char *uplo, int *nn, double *aa, double *bb, double 
         char_fcd2 = uplo;
 #endif
 
-        PSSYMM (char_fcd1, char_fcd2, nn, nn,
+        pdsymm (char_fcd1, char_fcd2, nn, nn,
                 &one, aa, &ione, &ione, desca,
                 bb, &ione, &ione, desca, &zero, cc, &ione, &ione, desca);
 /*
@@ -335,7 +336,8 @@ void dsymm_dis (char *side, char *uplo, int *nn, double *aa, double *bb, double 
 
 
 #if LINUX
-void PSSYMM (_fcd side_fcd, _fcd uplo_fcd, int *m, int *n, double *alpha,
+#if 0
+void pdsymm (_fcd side_fcd, _fcd uplo_fcd, int *m, int *n, double *alpha,
              double *a, int *t1, int *t2, int *desca,
              double *b, int *t3, int *t4, int *descb,
              double *beta, double *c, int *t5, int *t6, int *descc)
@@ -345,4 +347,5 @@ void PSSYMM (_fcd side_fcd, _fcd uplo_fcd, int *m, int *n, double *alpha,
     dsymm_ (side_fcd, uplo_fcd, m, n, alpha, a, &lda, b, &ldb, beta, c, &ldc);
 
 }
+#endif
 #endif

@@ -50,7 +50,7 @@
 
 
 
-#include "my_scalapack.h"
+#include "Scalapack.h"
 #include "blas.h"
 #include "Kbpsi.h"
 #include "FiniteDiff.h"

@@ -176,9 +176,9 @@ void matrix_kpoint_center (complex double *H_tri, double *Stri, double
 
         desca = &pmo.desc_cond[( n + (n+1) * ct.num_blocks) * DLEN];
         descb = &pmo.desc_cond[( n+1 + n * ct.num_blocks) * DLEN];
-        PDTRAN(&ct.block_dim[n+1], &ct.block_dim[n], &one, Htem, &ione, &ione, desca,
+        pdtran(&ct.block_dim[n+1], &ct.block_dim[n], &one, Htem, &ione, &ione, desca,
                 &zero, Htem1, &ione, &ione, descb);
-        PDTRAN(&ct.block_dim[n+1], &ct.block_dim[n], &one, Stem, &ione, &ione, desca,
+        pdtran(&ct.block_dim[n+1], &ct.block_dim[n], &one, Stem, &ione, &ione, desca,
                 &zero, Stem1, &ione, &ione, descb);
 
 

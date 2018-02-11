@@ -223,9 +223,9 @@ void get_cond_frommatrix ()
 
                 numst = lcr[iprobe].num_states;
 
-                PDTRAN(&numst, &numst, &one, lcr[iprobe].S01, &ione, &ione, desca, 
+                pdtran(&numst, &numst, &one, lcr[iprobe].S01, &ione, &ione, desca, 
                         &zero, S10, &ione, &ione, desca); 
-                PDTRAN(&numst, &numst, &one, lcr[iprobe].H01, &ione, &ione, desca, 
+                pdtran(&numst, &numst, &one, lcr[iprobe].H01, &ione, &ione, desca, 
                         &zero, H10, &ione, &ione, desca); 
 
                 idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
@@ -252,9 +252,9 @@ void get_cond_frommatrix ()
                 numstC = ct.block_dim[idx_C];
 
 
-                PDTRAN(&numst, &numstC, &one, lcr[iprobe].SCL, &ione, &ione, desca, 
+                pdtran(&numst, &numstC, &one, lcr[iprobe].SCL, &ione, &ione, desca, 
                         &zero, S10, &ione, &ione, descb); 
-                PDTRAN(&numst, &numstC, &one, lcr[iprobe].HCL, &ione, &ione, desca, 
+                pdtran(&numst, &numstC, &one, lcr[iprobe].HCL, &ione, &ione, desca, 
                         &zero, H10, &ione, &ione, descb); 
                 idx = pmo.mxllda_lead[iprobe -1] * pmo.mxlocc_cond[idx_C];
                 for (i = 0; i < idx; i++)

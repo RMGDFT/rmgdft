@@ -29,8 +29,9 @@
 #include "prototypes_negf.h"
 #include "init_var.h"
 
-#include "my_scalapack.h"
+#include "Scalapack.h"
 #include "blas.h"
+#include "blacs.h"
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
 
@@ -126,9 +127,9 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
 
         int numst = lcr[1].num_states;
         desca = pmo.desc_lead;
-        PDTRAN(&numst, &numst, &one, lcr[2].H01, &ione, &ione, desca,
+        pdtran(&numst, &numst, &one, lcr[2].H01, &ione, &ione, desca,
                 &zero, lcr[1].H01, &ione, &ione, desca);
-        PDTRAN(&numst, &numst, &one, lcr[2].HCL, &ione, &ione, desca,
+        pdtran(&numst, &numst, &one, lcr[2].HCL, &ione, &ione, desca,
                 &zero, lcr[1].HCL, &ione, &ione, desca);
 
     }

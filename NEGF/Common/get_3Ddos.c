@@ -201,10 +201,10 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
             numst = lcr[iprobe].num_states;
 
-            PDTRAN(&numst, &numst, &one, lcr[iprobe].S01, &ione,
+            pdtran(&numst, &numst, &one, lcr[iprobe].S01, &ione,
                     &ione, desca,
                     &zero, S10, &ione, &ione, desca);
-            PDTRAN(&numst, &numst, &one, lcr[iprobe].H01, &ione,
+            pdtran(&numst, &numst, &one, lcr[iprobe].H01, &ione,
                     &ione, desca,
                     &zero, H10, &ione, &ione, desca);
 
@@ -233,9 +233,9 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
             numstC = ct.block_dim[idx_C];
 
 
-            PDTRAN(&numst, &numstC, &one, lcr[iprobe].SCL, &ione, &ione, desca,
+            pdtran(&numst, &numstC, &one, lcr[iprobe].SCL, &ione, &ione, desca,
                     &zero, S10, &ione, &ione, descb);
-            PDTRAN(&numst, &numstC, &one, lcr[iprobe].HCL, &ione, &ione, desca,
+            pdtran(&numst, &numstC, &one, lcr[iprobe].HCL, &ione, &ione, desca,
                     &zero, H10, &ione, &ione, descb);
             idx = pmo.mxllda_lead[iprobe -1] *
                 pmo.mxlocc_cond[idx_C];

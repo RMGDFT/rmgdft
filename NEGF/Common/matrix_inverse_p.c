@@ -10,7 +10,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
-#include "my_scalapack.h"
+#include "Scalapack.h"
 
 void *memory_ptr_host_device(void *ptr_host, void *ptr_device);
 void matrix_inverse_driver(double *, int *);

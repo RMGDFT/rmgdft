@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "blacs.h"
 #include "main.h"
 #include "init_var.h"
 #include "LCR.h"

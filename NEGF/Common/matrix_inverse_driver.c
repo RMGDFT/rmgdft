@@ -23,7 +23,7 @@
 #include <cublas_v2.h>
 #endif
 
-#include "my_scalapack.h"
+#include "Scalapack.h"
 #include "blas.h"
 #include "RmgTimer.h"
 
