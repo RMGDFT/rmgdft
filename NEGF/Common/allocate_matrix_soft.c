@@ -101,11 +101,11 @@ void allocate_matrix_soft ()
     if (myrow != -1)
         Cblacs_gridexit (ictxt);
 
-    icrow = INDXG2P (&itwo, &nb, &myrow, &izero, &nprow);
-    iccol = INDXG2P (&ione, &nb, &mycol, &izero, &npcol);
-    mpc0 = NUMROC (&nn, &nb, &myrow, &icrow, &nprow);
-    nqc0 = NUMROC (&nn, &nb, &mycol, &iccol, &npcol);
-    nrc = NUMROC (&nn, &nb, &myrow, &izero, &npes);
+    icrow = indxg2p (&itwo, &nb, &myrow, &izero, &nprow);
+    iccol = indxg2p (&ione, &nb, &mycol, &izero, &npcol);
+    mpc0 = numroc (&nn, &nb, &myrow, &icrow, &nprow);
+    nqc0 = numroc (&nn, &nb, &mycol, &iccol, &npcol);
+    nrc = numroc (&nn, &nb, &myrow, &izero, &npes);
     ldc = rmg_max (1, nrc);
     sizemqrleft = rmg_max ((ct.scalapack_block_factor * (NB - 1)) / 2, (nqc0 + mpc0) * NB) + NB * NB;
     sizemqrleft *= 2;

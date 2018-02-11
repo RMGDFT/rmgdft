@@ -277,62 +277,6 @@ void get_distributed_mat (double *bigmat, double *dismat)
 
 }
 
-/********************************************************************/
-
-void dsymm_dis (char *side, char *uplo, int *nn, double *aa, double *bb, double *cc)
-{
-    int desca[DLEN];
-    int ictxt;
-    int nb = ct.scalapack_block_factor, npcol = pct.scalapack_npcol, nprow = pct.scalapack_nprow;
-    int mycol, myrow, mxllda;
-    int rsrc = 0, csrc = 0, info;
-    _fcd char_fcd1;
-    _fcd char_fcd2;
-    double zero = 0., one = 1.;
-    int ione = 1;
-
-    mxllda = MXLLDA;
-    /* INITIALIZE THE PROCESS GRID */
-    sl_init_on (&ictxt, pct.scalapack_nprow, pct.scalapack_npcol);
-
-    Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
-
-
-    /* If I'm in the process grid, execute the program */
-    if (myrow != -1)
-    {
-
-        /* DISTRIBUTE THE MATRIX ON THE PROCESS GRID */
-        /* Initialize the array descriptors for the matrices */
-        descinit (desca, nn, nn, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
-        if (info != 0)
-        {
-            printf (" distribute_mat: descinit, info=%d\n", info);
-            fflush (NULL);
-            globalexit (0);
-        }
-#if CRAY_T3E
-        char_fcd1 = _cptofcd (side, 1);
-        char_fcd2 = _cptofcd (uplo, 1);
-#else
-        char_fcd1 = side;
-        char_fcd2 = uplo;
-#endif
-
-        pdsymm (char_fcd1, char_fcd2, nn, nn,
-                &one, aa, &ione, &ione, desca,
-                bb, &ione, &ione, desca, &zero, cc, &ione, &ione, desca);
-/*
- *     RELEASE THE PROCESS GRID
- *     Free the BLACS context
- */
-        Cblacs_gridexit (ictxt);
-
-    }
-
-
-}
-
 
 
 #if LINUX

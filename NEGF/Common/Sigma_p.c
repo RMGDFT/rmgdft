@@ -59,10 +59,10 @@ void Sigma_p (complex double *sigma, complex double *ch, complex double
     /*    sigma(C,C) = ch1(C,L) * ch(L,C)  */ 
 		  
 
-    PZGEMM (&fcd_n, &fcd_n, &ndim, &nmax, &nmax, &alpha, ch01, &ione, &ione, desca,
+    pzgemm (&fcd_n, &fcd_n, &ndim, &nmax, &nmax, &alpha, ch01, &ione, &ione, desca,
             green, &ione, &ione, descb, &beta, ch, &ione, &ione, desca);
 
-    PZGEMM (&fcd_n, &fcd_n, &ndim, &ndim, &nmax, &alpha, ch, &ione, &ione, desca,
+    pzgemm (&fcd_n, &fcd_n, &ndim, &ndim, &nmax, &alpha, ch, &ione, &ione, desca,
             ch10, &ione, &ione, descd, &beta, sigma, &ione, &ione, descc);
 
 

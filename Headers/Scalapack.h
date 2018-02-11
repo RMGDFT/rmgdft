@@ -153,16 +153,9 @@ protected:
 #define		pdsyev		RMG_FC_GLOBAL(pdsyev, PDSYEV)
 #define		pcheev		RMG_FC_GLOBAL(pcheev, PCHEEV)
 #define		pspocon		RMG_FC_GLOBAL(pspocon, PSPOCON)
-#define		pspotrf		RMG_FC_GLOBAL(pspotrf, PSPOTRF)
-#define		pspotri		RMG_FC_GLOBAL(pspotri, PSPOTRI)
-#define		pssygst		RMG_FC_GLOBAL(pssygst, PSSYGST)
-#define		pstrtrs		RMG_FC_GLOBAL(pstrtrs, PSTRTRS)
 #define		pdgemm		RMG_FC_GLOBAL(pdgemm, PDGEMM)
 #define		pdlaset		RMG_FC_GLOBAL(pdlaset, PDLASET)
-#define		psgemm		RMG_FC_GLOBAL(psgemm, PSGEMM)
 #define		pzgemm		RMG_FC_GLOBAL(pzgemm, PZGEMM)
-#define		pssymm		RMG_FC_GLOBAL(pssymm, PSSYMM)
-#define		pssyev		RMG_FC_GLOBAL(pssyev, PSSYEV)
 #define		pdgesv		RMG_FC_GLOBAL(pdgesv, PDGESV)
 #define		pzgesv		RMG_FC_GLOBAL(pzgesv, PZGESV)
 #define		psubdiag	RMG_FC_GLOBAL(psubdiag, PSUBDIAG)
@@ -228,19 +221,6 @@ void pdtrtri(char *, char *, int*, double*, int*, int*, int*, int*);
 void pdsyrk( char *, char *, int *, int *, double *, double *, int *, int *, int *,
              double *, double *, int *, int *, int *);
 void pdlaset(char *, int *, int *, double *, double *, double *, int *, int *, int *);
-
-void pspocon (char *, int *, double *, int *, int *, int *, double *, double *,
-              double *, int *, int *, int *, int *);
-void pspotrf (char *, int *, double *, int *, int *, int *, int *);
-void pspotri (char *, int *, double *, int *, int *, int *, int *);
-void pssygst (int *, char *, int *, double *, int *, int *, int *, double *,
-              int *, int *, int *, double *, int *);
-void pstrtrs (char *, char *, char *, int *, int *, double *, int *, int *, int *,
-              double *, int *, int *, int *, int *);
-void pssymm (char *, char *, int *, int *, double *, double *, int *, int *,
-             int *, double *, int *, int *, int *, double *, double *, int *,
-             int *, int *);
-
 void psubdiag (char *, char *, int, double *, int, double *, int *);
 void pdsygvx(int *, char*, char*, char*, int*, double *, int*, int*, int*, double*, int*, int*,
        int*, double*, double *, int*, int*, double*, int*, int*, double*, double*, double*, int*,

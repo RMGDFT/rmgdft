@@ -206,7 +206,7 @@ void charge_density_matrix_p (complex double * sigma_all)
 
                         desca = &pmo.desc_cond[( idx_C + idx_C * ct.num_blocks) * DLEN];   /* nC_1 * nC_1 matrix */
                         nC_1 = ct.block_dim[idx_C];
-                        PZTRANC(&nC_1, &nC_1, &one, sigma, &ione, &ione, desca,
+                        pztranc(&nC_1, &nC_1, &one, sigma, &ione, &ione, desca,
                                 &zero, gamma, &ione, &ione, desca);
                         for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                         {

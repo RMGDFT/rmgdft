@@ -57,7 +57,7 @@ void get_mat_Omega(STATE * states, double Omega[])
         uplo = 'l';
         char_fcd1 = &side;
         char_fcd2 = &uplo;
-        pssymm (char_fcd1, char_fcd2, &numst, &numst, &one,
+        pdsymm (char_fcd1, char_fcd2, &numst, &numst, &one,
                gamma_dis, &ione, &ione, pct.desca,
                zz_dis, &ione, &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
 
@@ -65,11 +65,9 @@ void get_mat_Omega(STATE * states, double Omega[])
         transb = 't';
         char_fcd1 = &transa;
         char_fcd2 = &transb;
-        psgemm (char_fcd1, char_fcd2, &numst, &numst, &numst, &one,
+        pdgemm (char_fcd1, char_fcd2, &numst, &numst, &numst, &one,
                uu_dis, &ione, &ione, pct.desca,
                zz_dis, &ione, &ione, pct.desca, &zero, Omega, &ione, &ione, pct.desca);
-
-
 
 
     }

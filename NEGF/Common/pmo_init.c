@@ -166,8 +166,8 @@ void pmo_init ()
         numst = lcr[iprobe].num_states;
 
 
-        pmo.mxllda_lead[iprobe-1] = NUMROC(&numst, &pmo.mblock, &myrow, &izero, &nprow);
-        pmo.mxlocc_lead[iprobe-1] = NUMROC(&numst, &pmo.mblock, &mycol, &izero, &npcol);
+        pmo.mxllda_lead[iprobe-1] = numroc(&numst, &pmo.mblock, &myrow, &izero, &nprow);
+        pmo.mxlocc_lead[iprobe-1] = numroc(&numst, &pmo.mblock, &mycol, &izero, &npcol);
 
         mxllda = pmo.mxllda_lead[iprobe -1];
 
@@ -175,10 +175,10 @@ void pmo_init ()
 
 
         /* Initialize the array descriptors for the matrices */
-        DESCINIT (desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &pmo.ictxt[pmo.myblacs], &mxllda, &info);
+        descinit (desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &pmo.ictxt[pmo.myblacs], &mxllda, &info);
         if (info != 0)
         {
-            printf (" pmo_init: DESCINIT, info=%d\n", info);
+            printf (" pmo_init: descinit, info=%d\n", info);
             fflush (NULL);
             exit (0);
         } 
@@ -198,15 +198,15 @@ void pmo_init ()
             idx = i + j * ct.num_blocks;
 
 
-            mxllda = NUMROC(&ct.block_dim[i], &pmo.mblock, &myrow, &izero, &nprow);
+            mxllda = numroc(&ct.block_dim[i], &pmo.mblock, &myrow, &izero, &nprow);
             desca = &pmo.desc_cond[ idx * DLEN];
 
 
-            DESCINIT (desca, &ct.block_dim[i], &ct.block_dim[j], &nb, &nb, &rsrc, &csrc, 
+            descinit (desca, &ct.block_dim[i], &ct.block_dim[j], &nb, &nb, &rsrc, &csrc, 
                     &pmo.ictxt[pmo.myblacs], &mxllda, &info);
             if (info != 0)
             {
-                printf (" distribute_mat: DESCINIT, info=%d\n", info);
+                printf (" distribute_mat: descinit, info=%d\n", info);
                 fflush (NULL);
                 exit (0);
             } 
@@ -218,8 +218,8 @@ void pmo_init ()
     for(i = 0; i < ct.num_blocks; i++)
     {
 
-        pmo.mxllda_cond[i] = NUMROC(&ct.block_dim[i], &pmo.mblock, &myrow, &izero, &nprow);
-        pmo.mxlocc_cond[i] = NUMROC(&ct.block_dim[i], &pmo.mblock, &mycol, &izero, &npcol);
+        pmo.mxllda_cond[i] = numroc(&ct.block_dim[i], &pmo.mblock, &myrow, &izero, &nprow);
+        pmo.mxlocc_cond[i] = numroc(&ct.block_dim[i], &pmo.mblock, &mycol, &izero, &npcol);
     }
 
 
@@ -258,31 +258,31 @@ void pmo_init ()
                                                                                                                                             
             idx = i + (iprobe - 1) * ct.num_blocks;
                                                                                                                                             
-            mxllda = NUMROC(&ct.block_dim[i], &pmo.mblock, &myrow, &izero, &nprow);
+            mxllda = numroc(&ct.block_dim[i], &pmo.mblock, &myrow, &izero, &nprow);
             numst = lcr[iprobe].num_states;
                                                                                                                                             
             desca = &pmo.desc_cond_lead[ idx * DLEN];
                                                                                                                                             
-            DESCINIT (desca, &ct.block_dim[i], &numst, &nb, &nb, &rsrc, &csrc,
+            descinit (desca, &ct.block_dim[i], &numst, &nb, &nb, &rsrc, &csrc,
                     &pmo.ictxt[pmo.myblacs], &mxllda, &info);
             if (info != 0)
             {
-                printf (" distribute_mat: DESCINIT, info=%d\n", info);
+                printf (" distribute_mat: descinit, info=%d\n", info);
                 fflush (NULL);
                 exit (0);
             }
 
                                                                                                                                             
             numst = lcr[iprobe].num_states;
-            mxllda = NUMROC(&numst, &pmo.mblock, &myrow, &izero, &nprow);
+            mxllda = numroc(&numst, &pmo.mblock, &myrow, &izero, &nprow);
                                                                                                                                             
             desca = &pmo.desc_lead_cond[ idx * DLEN];
                                                                                                                                             
-            DESCINIT (desca, &numst, &ct.block_dim[i], &nb, &nb, &rsrc, &csrc,
+            descinit (desca, &numst, &ct.block_dim[i], &nb, &nb, &rsrc, &csrc,
                     &pmo.ictxt[pmo.myblacs], &mxllda, &info);
             if (info != 0)
             {
-                printf (" distribute_mat: DESCINIT, info=%d\n", info);
+                printf (" distribute_mat: descinit, info=%d\n", info);
                 fflush (NULL);
                 exit (0);
             }

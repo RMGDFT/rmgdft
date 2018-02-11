@@ -283,7 +283,7 @@ void get_cond_frommatrix_kyz ()
 
 
                             desca = &pmo.desc_cond[( n1 + n1 * ct.num_blocks) * DLEN];   /* nC_1 * nC_1 matrix */
-                            PZTRANC(&nC_1, &nC_1, &one, sigma, &ione, &ione, desca,
+                            pztranc(&nC_1, &nC_1, &one, sigma, &ione, &ione, desca,
                                     &zero, Gamma1, &ione, &ione, desca);
                             for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                             {
@@ -294,7 +294,7 @@ void get_cond_frommatrix_kyz ()
                         if(iprobe == iprobe2)
                         {
                             desca = &pmo.desc_cond[( n2 + n2 * ct.num_blocks) * DLEN];   /* nC_2 * nC_2 matrix */
-                            PZTRANC(&nC_2, &nC_2, &one, sigma, &ione, &ione, desca,
+                            pztranc(&nC_2, &nC_2, &one, sigma, &ione, &ione, desca,
                                     &zero, Gamma2, &ione, &ione, desca);
                             for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                             {
@@ -324,15 +324,15 @@ void get_cond_frommatrix_kyz ()
 
 
                     /* Gamma(C_1, C_1) * G(C_1, C_2) = temp(C_1, C_2) */
-                    PZGEMM (&fcd_n, &fcd_n, &nC_2, &nC_1, &nC_1, &alpha, green_C, &ione, &ione, descc,
+                    pzgemm (&fcd_n, &fcd_n, &nC_2, &nC_1, &nC_1, &alpha, green_C, &ione, &ione, descc,
                             Gamma1, &ione, &ione, desca, &beta, temp_matrix1, &ione, &ione, descc);
 
                     /* temp(C_1, C_2) * Gamma(C_2, C_2) = temp2(C_1, C_2) */
-                    PZGEMM (&fcd_n, &fcd_c, &nC_2, &nC_2, &nC_1, &alpha, temp_matrix1, &ione, &ione, descc,
+                    pzgemm (&fcd_n, &fcd_c, &nC_2, &nC_2, &nC_1, &alpha, temp_matrix1, &ione, &ione, descc,
                             green_C, &ione, &ione, descc, &beta, temp_matrix2, &ione, &ione, descb);
 
                     /* temp2(C_1, C_2) * G(C_2, C_1) = temp(C_1, C_1) */
-                    PZGEMM (&fcd_n, &fcd_n, &nC_2, &nC_2, &nC_2, &alpha, temp_matrix2, &ione, &ione, descb,
+                    pzgemm (&fcd_n, &fcd_n, &nC_2, &nC_2, &nC_2, &alpha, temp_matrix2, &ione, &ione, descb,
                             Gamma2, &ione, &ione, descb, &beta, temp_matrix1, &ione, &ione, descb);
 
                     /* desca= &pmo.desc_lead[0]; */

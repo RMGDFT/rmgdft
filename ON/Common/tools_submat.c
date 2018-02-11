@@ -5,7 +5,7 @@
 /*
 
 	Requires the predefined parameters:
-		NN:	size of the global matrix (my_scalapack.h)
+		NN:	size of the global matrix
 		NPES:	number of processors (CFLAGS)
 
         desca and ictxt are initialized in init_pe.c
@@ -161,7 +161,7 @@ void dsymm_dis(char *side, char *uplo, int *nn, double *aa, double *bb, double *
         char_fcd1 = side;
         char_fcd2 = uplo;
 
-        pssymm(char_fcd1, char_fcd2, nn, nn,
+        pdsymm(char_fcd1, char_fcd2, nn, nn,
                &one, aa, &ione, &ione, pct.desca,
                bb, &ione, &ione, pct.desca, &zero, cc, &ione, &ione, pct.desca);
 

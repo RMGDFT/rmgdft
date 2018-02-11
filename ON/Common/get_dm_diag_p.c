@@ -8,7 +8,7 @@
     desca and ictxt are predefined in init_pe.c
 
 	Requires the predefined parameters:
-		NN:	size of the global matrix (my_scalapack.h)
+		NN:	size of the global matrix
 		NPES:	number of processors (CFLAGS)
 
 Documentation:

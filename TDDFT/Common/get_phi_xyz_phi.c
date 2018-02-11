@@ -12,11 +12,7 @@
 #include <assert.h>
 #include "main.h"
 #include "init_var.h"
-
-
-
-
-#include "my_scalapack.h"
+#include "Scalapack.h"
 
 
 

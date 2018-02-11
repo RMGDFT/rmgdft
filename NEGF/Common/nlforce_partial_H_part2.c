@@ -8,10 +8,7 @@
 #include "main.h"
 #include "init_var.h"
 #include "LCR.h"
-
-
-
-#include "my_scalapack.h"
+#include "Scalapack.h"
 
 
 

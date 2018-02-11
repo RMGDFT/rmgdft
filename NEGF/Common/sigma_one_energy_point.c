@@ -67,9 +67,9 @@ double kvecy, double kvecz, complex double *work)
 
     numst = lcr[jprobe].num_states;
 
-    PZTRANC(&numst, &numst, &one, S01, &ione, &ione, desca,
+    pztranc(&numst, &numst, &one, S01, &ione, &ione, desca,
             &zero, S10, &ione, &ione, desca);
-    PZTRANC(&numst, &numst, &one, H01, &ione, &ione, desca,
+    pztranc(&numst, &numst, &one, H01, &ione, &ione, desca,
             &zero, H10, &ione, &ione, desca);
 
 
@@ -122,9 +122,9 @@ double kvecy, double kvecz, complex double *work)
     numstC = ct.block_dim[idx_C];
 
 
-    PZTRANC(&numst, &numstC, &one, SCL, &ione, &ione, desca,
+    pztranc(&numst, &numstC, &one, SCL, &ione, &ione, desca,
             &zero, S10, &ione, &ione, descb);
-    PZTRANC(&numst, &numstC, &one, HCL, &ione, &ione, desca,
+    pztranc(&numst, &numstC, &one, HCL, &ione, &ione, desca,
             &zero, H10, &ione, &ione, descb);
     idx = pmo.mxllda_lead[jprobe -1] * pmo.mxlocc_cond[idx_C];
     for (i = 0; i < idx; i++)

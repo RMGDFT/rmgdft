@@ -186,7 +186,7 @@ void lead_bandstructure ()
     kmax = 4.0 * atan (1.0);
     dk = (kmax - kmin) / (kpoints[0] - 1);
 
-    NP0 = NUMROC( &nL, &NB, &izero, &izero, &pmo.nrow );
+    NP0 = numroc( &nL, &NB, &izero, &izero, &pmo.nrow );
     LWORK = nL + rmg_max( NB * ( NP0 + 1 ), 3 );
     LRWORK = 9 * nL;
     LIWORK = 6 * nL;
@@ -215,9 +215,9 @@ void lead_bandstructure ()
 
     int numst = lcr[iprobe].num_states;
 
-    PZTRANC(&numst, &numst, &one, S01, &ione, &ione, desca,
+    pztranc(&numst, &numst, &one, S01, &ione, &ione, desca,
             &zero, S10, &ione, &ione, desca);
-    PZTRANC(&numst, &numst, &one, H01, &ione, &ione, desca,
+    pztranc(&numst, &numst, &one, H01, &ione, &ione, desca,
             &zero, H10, &ione, &ione, desca);
 
 
@@ -253,7 +253,7 @@ void lead_bandstructure ()
         }
 
 
-        PZHEGVX( &itype, &jobz, &range, &uplo, &nL, (double *)matH, &ione, &ione,
+        pzhegvx( &itype, &jobz, &range, &uplo, &nL, (double *)matH, &ione, &ione,
                 desca, (double *)matS, &ione, &ione, desca, &VL, &VU, &IL, &IU,
                 &tol, &nL1, &nL2, eig_val, &orfac,(double *)z_vec, &ione, &ione, desca,
                 (double *)WORK, &LWORK, RWORK, &LRWORK, IWORK, &LIWORK,
