@@ -352,16 +352,6 @@ void reinit_ionic_pp (STATE * states, double * vnuc, double * rhocore, double * 
 void init_pestr(void);
 void read_init(char *meta);
 int filename_increment(char *filename);
-
-#if GAMMA_PT
-void subdiag_gamma (STATE *states, double *vh, double *vnuc, double *vxc);
-void subdiag_app_A (STATE * states, double * a_psi, double * s_psi, double * vtot_eig);
-void subdiag_app_B (STATE * states, double * b_psi);
-#else
-void subdiag_nongamma (STATE * states, double * vh, double * vnuc, double * vxc);
-void subdiag_app_A (STATE * states, double * a_psiR, double * a_psiI, double * s_psiR, double * s_psiI, double * vtot_eig);
-void subdiag_app_B (STATE * states, double * b_psiR, double * b_psiI);
-#endif
 void init_subdiag(void);
 
 

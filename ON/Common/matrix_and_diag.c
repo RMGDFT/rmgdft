@@ -40,10 +40,8 @@ void matrix_and_diag(STATE * states, STATE * states1, double * vtot_c, int flag)
 
     int IA=1, JA=1, IB=1, JB=1, numst = ct.num_states;
 
-
-
-
-#if GAMMA_PT
+if(ct.is_gamma)
+{
 
     /* initialize matrices statearray and matB */
 void *RT = BeginRmgTimer("3-matrix_and_diag");
@@ -72,10 +70,11 @@ my_barrier();
 
     EndRmgTimer(RT);
 
-#else
+}
+else
+{
     error_handler("not programmed for non-Gamma point");
-#endif
-
+}
 
 
 }

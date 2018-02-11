@@ -1,11 +1,16 @@
 #
 #    RMG master cmake file
 #
-#    Subprojects:
-#        rmg        Base code
-#        rmg-on     ON code
-#        NEGF
-#        on-tddft:  TDDFT based on rmg-on
+#    Subprojects
+#        rmg-cpu        Base code cpu only
+#        rmg-gpu        Base code with gpu support
+#        rmg-on-cpu     ON code cpu only
+#        rmg-on-gpu     ON code with gpu support
+#        rmg-negf-cpu   Non equilibrium greens function code cpu only
+#        rmg-negf-gpu   Non equilibrium greens function code with gpu support
+#        rmg-tddft-cpu  TDDFT based on rmg-on cpu only
+#        rmg-tddft-gpu  TDDFT based on rmg-on with gpu support
+
 #
 # Environment variables that may also control configuration
 #
@@ -91,11 +96,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 find_package(OpenMP)
 
 if(RMG_GPU_ENABLED)
+    add_definitions(-DGPU_ENABLED=1)
     set(rmg-negf "rmg-negf-gpu")
     set(rmg "rmg-gpu")
     set(rmg-on "rmg-on-gpu")
     set(rmg-tddft "rmg-tddft-gpu")
 else(RMG_GPU_ENABLED)
+    add_definitions(-DGPU_ENABLED=0)
+    add_definitions(-DMAGMA_LIBS=0)
     set(rmg-negf "rmg-negf-cpu")
     set(rmg "rmg-cpu")
     set(rmg-on "rmg-on-cpu")
@@ -103,10 +111,8 @@ else(RMG_GPU_ENABLED)
 endif(RMG_GPU_ENABLED)
 
 
-
 # Detect system type and set appropriate flags
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    # Linux specific code
     set(OperatingSystem "Linux")
     add_definitions(-DLINUX=1)
     set(ZLIB "z")
@@ -172,12 +178,6 @@ else (CRAY_XK)
 endif(CRAY_XK)
 
 
-if (RMG_GPU_ENABLED)
-   add_definitions(-DGPU_ENABLED=1)
-else (RMG_GPU_ENABLED)
-   add_definitions(-DGPU_ENABLED=0)
-   add_definitions(-DMAGMA_LIBS=0)
-endif(RMG_GPU_ENABLED)
 
 include(CMakeFindRootPath.inc)
 # Executables defined by the file that contains main()
@@ -573,7 +573,7 @@ find_package(LIBXC REQUIRED)
 include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/")
 endif(USE_LIBXC)
 
-
+unset(LIBSPG_LIBRARIES CACHE)
 find_package(LIBSPG)
 if(NOT LIBSPG_FOUND)
     execute_process(
@@ -596,7 +596,8 @@ endif(NOT LIBSPG_FOUND)
 find_package(LIBSPG REQUIRED)
 
 if(USE_ELEMENTAL_LIBS)
-find_package(ELEMENTAL)
+    add_definitions(-DELEMENTAL_LIBS=1)
+    find_package(ELEMENTAL)
     if(NOT ELEMENTAL_FOUND)
         execute_process(
         COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85.tgz -C ${PROJECT_SOURCE_DIR}/lib )
@@ -626,7 +627,6 @@ include_directories("${PROJECT_BINARY_DIR}/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/RmgLib/")
 include_directories("${PROJECT_SOURCE_DIR}/RmgLib/include")
 include_directories("${PROJECT_SOURCE_DIR}/zfp/include")
-  
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/TDDFT/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
@@ -682,14 +682,6 @@ link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
 link_directories (${RMG_BINARY_DIR}/RMG/Subdiag)
 
 
-option (RMG_GAMMA_PT "Turn on for a gamma point only calculation." ON)
-if (RMG_GAMMA_PT)
-    set (GAMMA_PT 1)
-else (RMG_GAMMA_PT)
-    set (GAMMA_PT 0)
-endif(RMG_GAMMA_PT)
-
-
 # Send the configure file to the build directory
 configure_file (
   "${PROJECT_SOURCE_DIR}/make_conf.h.in"
@@ -721,7 +713,7 @@ if(Subversion_FOUND AND USE_SVN)
     string(REPLACE " " ";" foo4 ${foo3})
     list(GET foo4 2 LastChangeDate)
 else(Subversion_FOUND AND USE_SVN)
-    set(CodeRevision "release 2.2")
+    set(CodeRevision "release 2.3")
     set(LastChangeDate "Unknown")
 endif(Subversion_FOUND AND USE_SVN)
 
@@ -761,8 +753,8 @@ SET(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in"
 set(CPACK_GENERATOR "RPM")
 
 set(CPACK_PACKAGE_VERSION_MAJOR "2")
-set(CPACK_PACKAGE_VERSION_MINOR "2")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION_MINOR "3")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 set(CPACK_PACKAGE_NAME "rmg")
 set(CPACK_PACKAGE_RELEASE 1)

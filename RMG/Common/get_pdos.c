@@ -54,9 +54,7 @@ void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS)
     FPY0_GRID = get_FPY0_GRID();
     FPZ0_GRID = get_FPZ0_GRID();
 
-#if !GAMMA_PT
     double *sintI;
-#endif
     STATE *sp;
     ION *iptr;
     de = (Emax - Emin) / (E_POINTS - 1);
@@ -66,11 +64,15 @@ void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS)
 
     my_calloc (work, P0_BASIS, double);
 
-#if GAMMA_PT
-    my_malloc (sintR, ct.max_nl, double);
-#else
-    my_malloc (sintR, 2 * ct.max_nl, double);
-    sintI = sintR + ct.max_nl;
+    if(ct.is_gamma)
+    {
+        my_malloc (sintR, ct.max_nl, double);
+    }
+    else
+    {
+        my_malloc (sintR, 2 * ct.max_nl, double);
+        sintI = sintR + ct.max_nl;
+    }
 #endif
             
     max_product = (ct.max_nl + 1) * ct.max_nl / 2;
@@ -107,9 +109,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 		for (idx = 0; idx < P0_BASIS; idx++)
 		{
 			work_temp[idx] += t1 * sp->psiR[idx] * sp->psiR[idx];
-#if !GAMMA_PT
-			work_temp[idx] += t1 * sp->psiI[idx] * sp->psiI[idx];
-#endif
+                        if(!ct.is_gamma) work_temp[idx] += t1 * sp->psiI[idx] * sp->psiI[idx];
 		}                   /* end for */
 
 		sp++;
@@ -174,11 +174,10 @@ for (iene = 0; iene < E_POINTS; iene++)
 					    sintR[i] =
 						    pct.newsintR_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
 						    + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
-#if !GAMMA_PT
-					    sintI[i] =
+                                            if(!ct.is_gamma)
+					        sintI[i] =
 						    pct.newsintI_local[kpt * pct.num_nonloc_ions * ct.num_states * ct.max_nl 
 						    + ion * ct.num_states * ct.max_nl + istate * ct.max_nl + i];
-#endif
 				    }               /*end for i */
 
 				    idx = 0;
@@ -186,18 +185,22 @@ for (iene = 0; iene < E_POINTS; iene++)
 				    {
 					    for (j = i; j < nh; j++)
 					    {
-#if GAMMA_PT
+                                                if(ct.is_gamma)
+                                                {
+
 						    if (i == j)
 							    product[idx] += t1 * sintR[i] * sintR[j];
 						    else
 							    product[idx] += 2 * t1 * sintR[i] * sintR[j];
-#else
+                                                }
+                                                else
+                                                {
 						    if (i == j)
 							    product[idx] += t1 * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
 						    else
 							    product[idx] += 2 * t1 * (sintR[i] * sintR[j] + sintI[i] * sintI[j]);
-#endif
-						    idx++;
+                                                }
+						idx++;
 					    }           /*end for j */
 				    }               /*end for i */
 				    sp++;

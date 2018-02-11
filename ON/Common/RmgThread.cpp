@@ -54,7 +54,6 @@ void *run_threads(void *v) {
                break;
             case HYBRID_SKIP:
                break;
-#if GAMMA_PT
             case HYBRID_SUBDIAG_APP_AB:
                subdiag_app_AB_one(ss->sp, (double *)ss->p1, (double *)ss->p2, ss->vtot);
                break;
@@ -64,7 +63,6 @@ void *run_threads(void *v) {
             case HYBRID_SUBDIAG_APP_B:
                subdiag_app_B_one(ss->sp, (double *)ss->p1);
                break;
-#endif 
             case HYBRID_BETAX_PSI1_CALCULATE:
                betaxpsi1_calculate_one(ss->sp, ss->ion, ss->nion, ss->sintR, ss->sintI, ss->kpt, ss->weiptr);
                break;

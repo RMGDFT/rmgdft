@@ -1,3 +1,4 @@
+#define GAMMA_PT 1
 //#include "typedefs.h"
 void KbpsiComm();
 void InitNonlocalComm();

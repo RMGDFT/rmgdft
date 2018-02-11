@@ -1,7 +1,4 @@
 /****** Compile-time options for real-space code are set here  ******/
 
-/* Gamma point only set to 1, otherwise, 0 */
-#define GAMMA_PT ${GAMMA_PT}
 
-#define ELEMENTAL_LIBS ${USE_ELEMENTAL_LIBS}
 
