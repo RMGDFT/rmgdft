@@ -40,7 +40,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "make_conf.h"
+
 #include "params.h"
 
 #include "rmgtypedefs.h"

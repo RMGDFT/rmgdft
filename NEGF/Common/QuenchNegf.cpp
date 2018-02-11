@@ -45,7 +45,7 @@
 #include <stdio.h>
 
 
-#include "make_conf.h"
+
 #include "params.h"
 
 #include "rmgtypedefs.h"

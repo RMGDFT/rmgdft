@@ -1,4 +1,4 @@
-#include "make_conf.h"
+
 #include "rmg_error.h"
 #include "ErrorFuncs.h"
 

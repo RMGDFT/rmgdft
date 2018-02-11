@@ -37,7 +37,7 @@
 #include <unistd.h>
 #include <complex>
 
-#include "make_conf.h"
+
 #include "params.h"
 
 #include "rmgtypedefs.h"

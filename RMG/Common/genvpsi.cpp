@@ -22,7 +22,7 @@
 
 
 #include <complex>
-#include "make_conf.h"
+
 #include "common_prototypes.h"
 #include "transition.h"
 

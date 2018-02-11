@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
-#include "make_conf.h"
+
 
 #if GPU_ENABLED
 //#include <magma.h>

@@ -12,7 +12,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
-#include "make_conf.h"
+
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "params.h"

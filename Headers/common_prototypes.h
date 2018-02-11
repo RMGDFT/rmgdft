@@ -7,7 +7,6 @@
 #ifndef RMG_COMMON_PROTOTYPES_H
 #define RMG_COMMON_PROTOTYPES_H 1
 
-#include "make_conf.h"
 #include "mpi.h"
 
 #if GPU_ENABLED

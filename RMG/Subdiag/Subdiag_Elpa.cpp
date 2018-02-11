@@ -21,7 +21,7 @@
 */
 
 #include <complex>
-#include "make_conf.h"
+
 #include "FiniteDiff.h"
 #include "const.h"
 #include "rmgtypedefs.h"

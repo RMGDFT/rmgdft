@@ -19,7 +19,6 @@ cp -r Input ../rmg-release
 cp -r InternalPseudo ../rmg-release
 cp -r lib ../rmg-release
 cp -r XC ../rmg-release
-cp make_conf.h.in ../rmg-release
 cp -r MG ../rmg-release
 cp -r Misc ../rmg-release
 cp -r RMG ../rmg-release
@@ -28,7 +27,6 @@ cp -r US_PP ../rmg-release
 cp -r XC_useLIBXC ../rmg-release
 cp -r Examples ../rmg-release
 cp -r PlatformChecks ../rmg-release
-cp make_conf.h.in ../rmg-release
 cp svnrev.h.in ../rmg-release
 cp COPYING ../rmg-release
 cp COPYRIGHT ../rmg-release

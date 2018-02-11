@@ -18,7 +18,7 @@ namespace po = boost::program_options;
 #include <boost/filesystem.hpp>
 #include "MapElements.h"
 #include "transition.h"
-#include "make_conf.h"
+
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "params.h"

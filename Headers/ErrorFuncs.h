@@ -1,7 +1,7 @@
 #ifndef RMG_ErrorFuncs_H
 #define RMG_ErrorFuncs_H 1
 
-#include "make_conf.h"
+
 
 #if __cplusplus
 

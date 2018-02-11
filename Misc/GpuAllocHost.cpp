@@ -20,7 +20,7 @@
  *
 */
 
-#include "make_conf.h"
+
 #include "GpuAlloc.h"
 #include "rmg_error.h"
 #include "transition.h"

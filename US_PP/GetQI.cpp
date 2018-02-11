@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include "grid.h"
 
-#include "make_conf.h"
+
 #include "const.h"
 #include "params.h"
 #include "grid.h"

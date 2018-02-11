@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "make_conf.h"
+
 #include "const.h"
 #include "grid.h"
 #include "rmgtypedefs.h"

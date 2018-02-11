@@ -29,7 +29,7 @@
 #include <complex>
 #include <cmath>
 
-#include "make_conf.h"
+
 #include "params.h"
 
 #include "rmgtypedefs.h"

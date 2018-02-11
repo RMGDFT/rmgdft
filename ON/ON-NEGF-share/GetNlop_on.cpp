@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <complex>
 #include <fftw3.h>
-#include "make_conf.h"
+
 #include "params.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"

@@ -41,7 +41,7 @@ namespace po = boost::program_options;
 #include "portability.h"
 #include "BaseGrid.h"
 #include "transition.h"
-#include "make_conf.h"
+
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "params.h"

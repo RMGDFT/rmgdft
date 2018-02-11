@@ -55,7 +55,7 @@ FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling.h MACRO_NAMESP
 
 # User editable options
 set (RMG_GPU_ENABLED 0)
-set (RMG_MAGMA_LIBS 0) 
+set (USE_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
 set (USE_ELPA_LIBS 0)
 set (USE_ELEMENTAL_LIBS 0)
@@ -182,9 +182,9 @@ endif(CRAY_XK)
 include(CMakeFindRootPath.inc)
 # Executables defined by the file that contains main()
 # Main codes
-add_executable(${rmg} RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
-add_executable(${rmg-tddft} TDDFT/Common/Main_rmg.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# Base code
-add_executable(${rmg-on} ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)		# ON code
+add_executable(${rmg} RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+add_executable(${rmg-tddft} TDDFT/Common/Main_rmg.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+add_executable(${rmg-on} ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 add_executable(on-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 
@@ -339,7 +339,7 @@ endif(USE_OPENBABEL_LIBS)
 
 
 # Look for the magma libraries
-if(RMG_MAGMA_LIBS AND RMG_GPU_ENABLED)
+if(USE_MAGMA_LIBS AND RMG_GPU_ENABLED)
   find_package(MAGMA)
   if(MAGMA_FOUND)
     add_definitions(-DMAGMA_LIBS=1)
@@ -360,7 +360,7 @@ if(RMG_MAGMA_LIBS AND RMG_GPU_ENABLED)
   elseif(MAGMA_FOUND)
       add_definitions(-DMAGMA_LIBS=0)
   endif(MAGMA_FOUND)
-endif(RMG_MAGMA_LIBS AND RMG_GPU_ENABLED)
+endif(USE_MAGMA_LIBS AND RMG_GPU_ENABLED)
 
 
 
@@ -681,12 +681,6 @@ link_directories (${RMG_BINARY_DIR}/RMG/Spin)
 link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
 link_directories (${RMG_BINARY_DIR}/RMG/Subdiag)
 
-
-# Send the configure file to the build directory
-configure_file (
-  "${PROJECT_SOURCE_DIR}/make_conf.h.in"
-  "${PROJECT_BINARY_DIR}/Headers/make_conf.h"
-  )
 
 # Build date and time revisions
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

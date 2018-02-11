@@ -1,7 +1,7 @@
 #include <complex>
 #include <typeinfo>
 #include <string.h>
-#include "make_conf.h"
+
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"

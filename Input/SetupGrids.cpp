@@ -13,7 +13,7 @@ void fix_anisotropy(int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm);
 #include <boost/lexical_cast.hpp>
 #include "BaseGrid.h"
 #include "transition.h"
-#include "make_conf.h"
+
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "params.h"

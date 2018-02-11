@@ -23,7 +23,7 @@
 #include "RmgException.h"
 #include "CheckValue.h"
 
-#include "make_conf.h"
+
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "params.h"

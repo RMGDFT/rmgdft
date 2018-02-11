@@ -7,7 +7,7 @@
    http://opensource.org/licenses/BSD-2-Clause
 */
 
-#include "make_conf.h"
+
 #include "params.h"
 
 #include "rmgtypedefs.h"
