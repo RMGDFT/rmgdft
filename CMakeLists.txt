@@ -16,7 +16,9 @@
 # FC  = Full path to Fortran compiler
 #
 
-cmake_minimum_required (VERSION 2.8) 
+cmake_minimum_required (VERSION 3.1) 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_language(Fortran)
 project (RMG C CXX Fortran) 
@@ -47,7 +49,7 @@ FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling.h MACRO_NAMESP
 
 
 # User editable options
-set (RMG_GPU_ENABLED 1)
+set (RMG_GPU_ENABLED 0)
 set (RMG_MAGMA_LIBS 0) 
 set (USE_SCALAPACK_LIBS 1)
 set (USE_ELPA_LIBS 0)
@@ -78,14 +80,15 @@ set (USE_SVN 0)
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 
 # Generic debug
-#set(RMG_EXTRA_COMPILER_FLAGS "-O2 -g")
+set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Debug)
 
-# Generic
-set(RMG_EXTRA_COMPILER_FLAGS "-O3")
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
+# Get Openmp flags
+find_package(OpenMP)
 
 if(RMG_GPU_ENABLED)
     set(rmg-negf "rmg-negf-gpu")
@@ -105,7 +108,7 @@ endif(RMG_GPU_ENABLED)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     # Linux specific code
     set(OperatingSystem "Linux")
-    set(RMG_SYSTEM_COMPILER_FLAG "-DLINUX=1")
+    add_definitions(-DLINUX=1)
     set(ZLIB "z")
     set(RTLIB "rt")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -120,8 +123,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(CMAKE_Fortran_COMPILER "C:/Program Files (x86)/Intel/Composer XE 2015/bin/intel64/ifort.exe")
     set(CMAKE_C_COMPILER "C:/Program Files (x86)/Intel/Composer XE 2015/bin/intel64/icl.exe")
     set(CMAKE_CXX_COMPILER "C:/Program Files (x86)/Intel/Composer XE 2015/bin/intel64/icl.exe")
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /GR /EHsc /Qstd=c++11 /DNOMINMAX /D_NOMINMAX /Qopenmp" CACHE STRING "" FORCE)
-    set(CMAKE_C_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /Qstd=c99 /DNOMINMAX /D_NOMINMAX /Qopenmp" CACHE STRING "" FORCE)
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /GR /EHsc /DNOMINMAX /D_NOMINMAX ${OpenMP_CXX_FLAGS}" CACHE STRING "" FORCE)
+    set(CMAKE_C_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /DNOMINMAX /D_NOMINMAX ${OpenMP_C_FLAGS}" CACHE STRING "" FORCE)
 
     set(LIBXC_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/LIBXC.lib")
     set(LIBSPG_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/SPGLIBVC12.lib")    
@@ -137,22 +140,22 @@ endif()
 # Compiler flags. We currently only support GNU and Intel compilers so if
 # GNUCC is not detected we set the compiler to Intel
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_C_FLAGS "-Wall ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -I$(MKLROOT)/include")
-    set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-local-typedefs -std=c++11 -Wno-write-strings ${RMG_SYSTEM_COMPILER_FLAG} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -pthread -I$(MKLROOT)/include")
-    set(CMAKE_EXE_LINKER_FLAGS "-ldl -fopenmp")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT ${OpenMP_C_FLAGS} -m64 -I$(MKLROOT)/include")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs -Wno-write-strings ${OpenMP_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -pthread -I$(MKLROOT)/include")
+    set(CMAKE_EXE_LINKER_FLAGS "-ldl")
     if(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "-fopenmp -lg2c -cpp -D__LIBXC=1 -c")
-        set (CMAKE_Fortran_FLAGS "-fopenmp -lg2c -cpp -D__LIBXC=1 -c")
+        set (CMAKE_Fortran_FLAGS_RELEASE "${OpenMP_Fortran_FLAGS} -lg2c -cpp -D__LIBXC=1 -c")
+        set (CMAKE_Fortran_FLAGS "${OpenMP_Fortran_FLAGS} -lg2c -cpp -D__LIBXC=1 -c")
     else(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "-fopenmp -lg2c -cpp -c")
-        set (CMAKE_Fortran_FLAGS "-fopenmp -lg2c -cpp -c")
+        set (CMAKE_Fortran_FLAGS_RELEASE "${OpenMP_Fortran_FLAGS} -lg2c -cpp -c")
+        set (CMAKE_Fortran_FLAGS "${OpenMP_Fortran_FLAGS} -lg2c -cpp -c")
     endif(USE_LIBXC)
-    set(CMAKE_EXE_LINKER_FLAGS "-fopenmp  -ldl")
+    set(CMAKE_EXE_LINKER_FLAGS "-ldl")
 else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Intel compiler
-    set(CMAKE_CXX_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -std=c++0x -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
-    set(CMAKE_C_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -std=c99 -DNOMINMAX -D_NOMINMAX -openmp -I${MKLROOT}/include ${RMG_SYSTEM_COMPILER_FLAG}")
-    set(CMAKE_EXE_LINKER_FLAGS "-fopenmp -static-libstdc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS} -DNOMINMAX -D_NOMINMAX ${OpenMP_CXX_FLAGS} -I${MKLROOT}/include")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS} -DNOMINMAX -D_NOMINMAX ${OpenMP_C_FLAGS} -I${MKLROOT}/include")
+    set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++")
 endif()
 
 
@@ -357,7 +360,7 @@ if(RMG_MAGMA_LIBS AND RMG_GPU_ENABLED)
   elseif(MAGMA_FOUND)
       add_definitions(-DMAGMA_LIBS=0)
   endif(MAGMA_FOUND)
-endif(MAGMA_LIBS)
+endif(RMG_MAGMA_LIBS AND RMG_GPU_ENABLED)
 
 
 

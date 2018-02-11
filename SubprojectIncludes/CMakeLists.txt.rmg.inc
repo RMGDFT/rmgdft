@@ -5,7 +5,7 @@ if(USE_LIBXC)
 add_dependencies(${rmg} libxc)
 target_link_libraries(${rmg} ${LIBXC_LIBRARIES})
 endif(USE_LIBXC)
-add_dependencies(${rmg} libspg)
+#add_dependencies(${rmg} libspg)
 target_link_libraries( ${rmg} ${LIBSPG_LIBRARIES})
 # static libraries are created for the object files in each subdir. Duplicates
 # are needed to handle circular references
