@@ -24,6 +24,8 @@
 cmake_minimum_required (VERSION 3.1) 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 enable_language(Fortran)
 project (RMG C CXX Fortran) 
@@ -680,7 +682,6 @@ link_directories (${RMG_BINARY_DIR}/RMG/Input)
 link_directories (${RMG_BINARY_DIR}/RMG/Spin)
 link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
 link_directories (${RMG_BINARY_DIR}/RMG/Subdiag)
-
 
 # Build date and time revisions
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
