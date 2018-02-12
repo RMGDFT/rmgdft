@@ -949,7 +949,6 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
 
     qitem.comm = comm;
     qitem.is_unpacked = false;
-    qitem.is_compressed = false;
     qitem.is_completed->store(false);
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
