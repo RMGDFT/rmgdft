@@ -1,6 +1,6 @@
 target_link_libraries (${rmg-negf} ${LIBXC_LIBRARIES})
-target_link_libraries (${rmg-negf} RmgLib)
-target_link_libraries (${rmg-negf} Finite_diff NEGF_Common RmgLib)
+target_link_libraries (${rmg-negf} zfp RmgLib)
+target_link_libraries (${rmg-negf} Finite_diff NEGF_Common RmgLib zfp)
 target_link_libraries (${rmg-negf} Misc NEGF_Common Finite_diff ${ZLIB} ${FFTW_LIBRARIES})
 target_link_libraries (${rmg-negf} NEGF_Common ON_NEGF_share)
 target_link_libraries (${rmg-negf} NEGF_Common NEGF_Green)
@@ -55,7 +55,7 @@ endif(USE_LIBXC)
 
 
 if(USE_NUMA_INTERNAL)
-target_link_libraries(${rmg-negf} ${NUMA_LIBRARIES})
+target_link_libraries(${rmg-negf} ${NUMA_LIBRARIES} zfp)
 endif(USE_NUMA_INTERNAL)
 if(USE_LIBXC)
 target_link_libraries(${${rmg-negf}} ${LIBXC_LIBRARIES})

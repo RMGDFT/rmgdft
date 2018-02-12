@@ -54,7 +54,6 @@ pulay_rho_on.c
 rho_augmented.c
 rho_Qnm_mat.c
 state_corner_xyz.c
-symmetry.c
 write_force.c
 write_header.c
 write_pos.c
