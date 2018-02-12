@@ -39,7 +39,7 @@ target_link_libraries (on-tddft ${Boost_LIBRARIES})
 if(USE_OPENBABEL_LIBS)
     target_link_libraries (on-tddft ${OPENBABEL_LIBRARIES})
 endif(USE_OPENBABEL_LIBS)
-target_link_libraries (on-tddft ${LIBSPG_LIBRARIES})
+target_link_libraries (on-tddft symspg_static)
 
 if(USE_LIBXC)
 target_link_libraries( on-tddft XC XC1 ${LIBXC_LIBRARIES} ${LIBXC_LIBRARIES_F90})

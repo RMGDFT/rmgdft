@@ -6,7 +6,7 @@ add_dependencies(${rmg} libxc)
 target_link_libraries(${rmg} ${LIBXC_LIBRARIES})
 endif(USE_LIBXC)
 #add_dependencies(${rmg} libspg)
-target_link_libraries( ${rmg} ${LIBSPG_LIBRARIES})
+target_link_libraries( ${rmg} symspg_static)
 # static libraries are created for the object files in each subdir. Duplicates
 # are needed to handle circular references
 target_link_libraries( ${rmg} RmgLib zfp)

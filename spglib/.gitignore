@@ -1,0 +1,92 @@
+*.py[cod]
+*~
+MANIFEST
+
+# C extensions
+*.so
+*.lo
+*.o
+python/src
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+include
+lib64
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Doc
+.buildinfo
+.doctrees
+_build
+
+# autotools
+AUTHORS
+INSTALL
+NEWS
+README
+aclocal.m4
+autom4te.cache/
+compile
+config.guess
+config.h.in
+config.sub
+install-sh
+missing
+Makefile.in
+config.log
+config.status
+configure
+depcomp
+ltmain.sh
+m4/
+src/Makefile.in
+Makefile
+config.h
+libtool
+src/.deps/
+src/.libs/
+src/Makefile
+src/libsymspg.la
+stamp-h1
+autoscan.log
+configure.scan
+test-driver
+
+example/a.out
+example/defs_basis.mod
+example/example
+example/spglib_f08.mod
+
+test/getspg.bundle
+test/mkmf.log
+
+findsym.log
+
+spglib_test*
+test-suite.log

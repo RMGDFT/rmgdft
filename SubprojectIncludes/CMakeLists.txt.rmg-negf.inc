@@ -37,7 +37,7 @@ target_link_libraries (${rmg-negf} ${Boost_LIBRARIES})
 if(USE_OPENBABEL_LIBS)
     target_link_libraries (${rmg-negf} ${OPENBABEL_LIBRARIES})
 endif(USE_OPENBABEL_LIBS)
-target_link_libraries (${rmg-negf} ${LIBSPG_LIBRARIES})
+target_link_libraries (${rmg-negf} symspg_static)
 
 if(USE_LIBXC)
 target_link_libraries( ${rmg-negf} XC XC1 ${LIBXC_LIBRARIES} ${LIBXC_LIBRARIES_F90})
@@ -60,7 +60,7 @@ endif(USE_NUMA_INTERNAL)
 if(USE_LIBXC)
 target_link_libraries(${${rmg-negf}} ${LIBXC_LIBRARIES})
 endif(USE_LIBXC)
-target_link_libraries( ${rmg-negf} ${LIBSPG_LIBRARIES})
+target_link_libraries( ${rmg-negf} symspg_static)
 
 
 target_link_libraries (${rmg-negf} ${LIBXC_LIBRARIES})

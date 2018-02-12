@@ -85,6 +85,7 @@ set (USE_SVN 0)
 # Ryzen Threadripper with gcc
 #
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
+#set(RMG_EXTRA_COMPILER_FLAGS "-funroll-loops")
 
 # Generic debug
 set(CMAKE_BUILD_TYPE Release)
@@ -135,7 +136,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(CMAKE_C_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /DNOMINMAX /D_NOMINMAX ${OpenMP_C_FLAGS}" CACHE STRING "" FORCE)
 
     set(LIBXC_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/LIBXC.lib")
-    set(LIBSPG_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/SPGLIBVC12.lib")    
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 
@@ -575,27 +575,6 @@ find_package(LIBXC REQUIRED)
 include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/")
 endif(USE_LIBXC)
 
-unset(LIBSPG_LIBRARIES CACHE)
-find_package(LIBSPG)
-if(NOT LIBSPG_FOUND)
-    execute_process(
-    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
-    execute_process(
-    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
-    execute_process(
-    COMMAND ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/configure
-        --prefix=${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64
-        --libdir=${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
-    execute_process(COMMAND make 
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
-    execute_process(
-    	COMMAND cp src/.libs/libsymspg.a . 
-    	COMMAND cp src/.libs/libsymspg.la . 
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/spglib-1.6.3/lib64)
-endif(NOT LIBSPG_FOUND)
-
-find_package(LIBSPG REQUIRED)
 
 if(USE_ELEMENTAL_LIBS)
     add_definitions(-DELEMENTAL_LIBS=1)
@@ -629,6 +608,7 @@ include_directories("${PROJECT_BINARY_DIR}/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/RmgLib/")
 include_directories("${PROJECT_SOURCE_DIR}/RmgLib/include")
 include_directories("${PROJECT_SOURCE_DIR}/zfp/include")
+include_directories("${PROJECT_SOURCE_DIR}/spglib/src")
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/TDDFT/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
@@ -643,6 +623,7 @@ add_subdirectory (MG)
 add_subdirectory (Misc) 
 add_subdirectory (US_PP) 
 add_subdirectory (zfp) 
+add_subdirectory (spglib) 
 if(USE_LIBXC)
     add_subdirectory (XC_useLIBXC) 
 endif(USE_LIBXC)
@@ -674,6 +655,7 @@ link_directories (${RMG_BINARY_DIR}/Input)
 link_directories (${RMG_BINARY_DIR}/MG)
 link_directories (${RMG_BINARY_DIR}/Misc)
 link_directories (${RMG_BINARY_DIR}/zfp)
+link_directories (${RMG_BINARY_DIR}/spglib)
 link_directories (${RMG_BINARY_DIR}/US_PP)
 link_directories (${RMG_BINARY_DIR}/XC)
 
