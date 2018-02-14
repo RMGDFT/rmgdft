@@ -4,6 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <sstream>
 #include <iomanip>
+#include <math.h>
 #include "InputKey.h"
 
 // This is a rather kludgy way of doing this but I didn't have much luck getting
