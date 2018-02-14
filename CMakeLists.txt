@@ -22,13 +22,21 @@
 #
 
 cmake_minimum_required (VERSION 3.1) 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
 
 enable_language(Fortran)
 project (RMG C CXX Fortran) 
+
+# User editable options
+set (RMG_GPU_ENABLED 0)
+set (USE_MAGMA_LIBS 0) 
+set (USE_SCALAPACK_LIBS 1)
+set (USE_ELPA_LIBS 0)
+set (USE_ELEMENTAL_LIBS 0)
+set (USE_LIBXC 0)
+set (USE_OPENBABEL_LIBS 0)
+set (USE_PLPLOT_LIBS 0)
+set (USE_SVN 0)
+
 
 # force an out-of-source build
 string( COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" RMG_COMPILE_INPLACE )
@@ -52,20 +60,34 @@ INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckLibraryExists)
 INCLUDE (CMakeForceCompiler)
 INCLUDE (FortranCInterface)
+include(CheckCXXCompilerFlag)
+include(CheckCCompilerFlag)
 FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling.h MACRO_NAMESPACE RMG_FC_)
 
 
-# User editable options
-set (RMG_GPU_ENABLED 0)
-set (USE_MAGMA_LIBS 0) 
-set (USE_SCALAPACK_LIBS 1)
-set (USE_ELPA_LIBS 0)
-set (USE_ELEMENTAL_LIBS 0)
-set (USE_LIBXC 0)
-set (USE_OPENBABEL_LIBS 0)
-set (USE_PLPLOT_LIBS 0)
-set (USE_SVN 0)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_STANDARD 11)
+elseif(COMPILER_SUPPORTS_CXX0X)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+    set(CMAKE_CXX_STANDARD 11)
+else()
+    message( WARNING "The detected compiler ${CMAKE_CXX_COMPILER} doesn't support the c++11 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
+endif()
 
+CHECK_C_COMPILER_FLAG("-std=c99" COMPILER_SUPPORTS_C99)
+CHECK_C_COMPILER_FLAG("-c99" COMPILER_SUPPORTS_DASH_C99)
+if(COMPILER_SUPPORTS_C99)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+    set(CMAKE_C_STANDARD 99)
+elseif(COMPILER_SUPPORTS_DASH_C99)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -c99")
+    set(CMAKE_C_STANDARD 99)
+else()
+    message( WARNING "The detected compiler ${CMAKE_C_COMPILER} does not support the c99 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
+endif()
 
 
 # Helps to find the correct version of boost on some systems. In particular
