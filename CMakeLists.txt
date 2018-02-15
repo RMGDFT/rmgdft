@@ -116,7 +116,6 @@ endif()
 #
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 #set(RMG_EXTRA_COMPILER_FLAGS "-funroll-loops")
-
 # Generic debug
 set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_BUILD_TYPE Debug)
@@ -181,7 +180,7 @@ endif()
 # GNUCC specific compiler flags
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pthread -m64")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs -Wno-write-strings -pthread -m64")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs -Wno-write-strings -pthread -m64 -fext-numeric-literals")
     set (CMAKE_Fortran_FLAGS_RELEASE "-lg2c -cpp -c")
     set (CMAKE_Fortran_FLAGS "-lg2c -cpp -c")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl")
