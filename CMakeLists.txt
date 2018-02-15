@@ -26,16 +26,25 @@ cmake_minimum_required (VERSION 3.1)
 enable_language(Fortran)
 project (RMG C CXX Fortran) 
 
-# User editable options
-set (RMG_GPU_ENABLED 0)
-set (USE_MAGMA_LIBS 0) 
-set (USE_SCALAPACK_LIBS 1)
-set (USE_ELPA_LIBS 0)
-set (USE_ELEMENTAL_LIBS 0)
-set (USE_LIBXC 0)
-set (USE_OPENBABEL_LIBS 0)
-set (USE_PLPLOT_LIBS 0)
-set (USE_SVN 0)
+# User settable options from cmake-gui, ccmake for text terminals
+# or command line
+option(RMG_GPU_ENABLED "Enable GPU support." OFF)
+option(USE_MAGMA_LIBS "Use magma libraries. Requires RMG_GPU_ENABLED." OFF)
+option(USE_SCALAPACK_LIBS "Use scalapack libraries." ON)
+option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
+option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
+# Helps to find the correct version of boost on some systems. In particular
+# many supercomputers will have a system version located in the standard
+# directories that does not match the version required by the compiler you
+# want to use. If cmake is not picking up the correct version try toggling this.
+option(Boost_NO_SYSTEM_PATHS "If you have multiple versions of boost installed toggling this may be required" OFF)
+# If you are having problems with boost at link time try toggling these (e.g. some IBM Power machines)
+option(Boost_USE_STATIC_LIBS        OFF)
+option(Boost_USE_MULTITHREADED      ON)
+option(USE_ELPA_LIBS "Experimental." OFF)
+option(USE_ELEMENTAL_LIBS "Experimental." OFF)
+option(USE_LIBXC "Use external libxc. Not recommended in most cases." OFF)
+option(USE_SVN "Use svn to include version info in binary." OFF)
 
 
 # force an out-of-source build
@@ -97,16 +106,6 @@ else()
     message( WARNING "The detected compiler ${CMAKE_C_COMPILER} does not support the c99 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
 endif()
 
-
-# Helps to find the correct version of boost on some systems. In particular
-# many supercomputers will have a system version located in the standard
-# directories that does not match the version required by the compiler you
-# want to use. If cmake is not picking up the correct version try uncommenting this.
-#set(Boost_NO_SYSTEM_PATHS "On")
-
-# If you are having problems with boost at link time try toggling these (e.g. some IBM Power machines)
-#set(Boost_USE_STATIC_LIBS        OFF)
-#set(Boost_USE_MULTITHREADED      ON)
 
 # Here set any extra compiler flags required for a specific platform
 # This is for stampede
@@ -717,7 +716,7 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 include(FindSubversion)
 if(Subversion_FOUND AND USE_SVN)
     execute_process (
-        COMMAND svn info OUTPUT_VARIABLE foo)
+        COMMAND svn info .. OUTPUT_VARIABLE foo)
     string(REPLACE "Last Changed" ";" foo2 ${foo})
     list(GET foo2 2 foo3)
     string(REPLACE "\n" ";" foo4 ${foo3})
