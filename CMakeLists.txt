@@ -65,6 +65,13 @@ include(CheckCCompilerFlag)
 FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling.h MACRO_NAMESPACE RMG_FC_)
 
 
+# Require a 64 bit system
+if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
+    message( SEND_ERROR "RMG requires a 64 bit architechture." )
+endif (NOT CMAKE_SIZEOF_VOID_P MATCHES 8)
+
+
+# Check for c++11 and c99 support
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX11)
@@ -76,6 +83,7 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 else()
     message( WARNING "The detected compiler ${CMAKE_CXX_COMPILER} doesn't support the c++11 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
 endif()
+
 
 CHECK_C_COMPILER_FLAG("-std=c99" COMPILER_SUPPORTS_C99)
 CHECK_C_COMPILER_FLAG("-c99" COMPILER_SUPPORTS_DASH_C99)
@@ -119,6 +127,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 # Get Openmp flags
 find_package(OpenMP)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
+
 
 if(RMG_GPU_ENABLED)
     add_definitions(-DGPU_ENABLED=1)
@@ -154,9 +166,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(CMAKE_Fortran_COMPILER "C:/Program Files (x86)/Intel/Composer XE 2015/bin/intel64/ifort.exe")
     set(CMAKE_C_COMPILER "C:/Program Files (x86)/Intel/Composer XE 2015/bin/intel64/icl.exe")
     set(CMAKE_CXX_COMPILER "C:/Program Files (x86)/Intel/Composer XE 2015/bin/intel64/icl.exe")
-    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /GR /EHsc /DNOMINMAX /D_NOMINMAX ${OpenMP_CXX_FLAGS}" CACHE STRING "" FORCE)
-    set(CMAKE_C_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /DNOMINMAX /D_NOMINMAX ${OpenMP_C_FLAGS}" CACHE STRING "" FORCE)
-
+    set(CMAKE_CXX_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /GR /EHsc /DNOMINMAX /D_NOMINMAX" CACHE STRING "" FORCE)
+    set(CMAKE_C_FLAGS "/DWIN32 /D_WIN32 /D_WINDOWS /W3 /DNOMINMAX /D_NOMINMAX" CACHE STRING "" FORCE)
     set(LIBXC_LIBRARIES "${PROJECT_SOURCE_DIR}/lib/winlibs/x64/LIBXC.lib")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
@@ -167,43 +178,46 @@ if(DEFINED ENV{CRAY_LIBSCI_VERSION})
 endif()
 
 
-# Compiler flags. We currently only support GNU and Intel compilers so if
-# GNUCC is not detected we set the compiler to Intel
+# GNUCC specific compiler flags
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT ${OpenMP_C_FLAGS} -m64 -I$(MKLROOT)/include")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs -Wno-write-strings ${OpenMP_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS} -pthread -D_REENTRANT -fopenmp -m64 -pthread -I$(MKLROOT)/include")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pthread -m64")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-local-typedefs -Wno-write-strings -pthread -m64")
+    set (CMAKE_Fortran_FLAGS_RELEASE "-lg2c -cpp -c")
+    set (CMAKE_Fortran_FLAGS "-lg2c -cpp -c")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl")
-    if(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "${OpenMP_Fortran_FLAGS} -lg2c -cpp -D__LIBXC=1 -c")
-        set (CMAKE_Fortran_FLAGS "${OpenMP_Fortran_FLAGS} -lg2c -cpp -D__LIBXC=1 -c")
-    else(USE_LIBXC)
-        set (CMAKE_Fortran_FLAGS_RELEASE "${OpenMP_Fortran_FLAGS} -lg2c -cpp -c")
-        set (CMAKE_Fortran_FLAGS "${OpenMP_Fortran_FLAGS} -lg2c -cpp -c")
-    endif(USE_LIBXC)
-    set(CMAKE_EXE_LINKER_FLAGS "-ldl")
-else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    # Intel compiler
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS} -DNOMINMAX -D_NOMINMAX ${OpenMP_CXX_FLAGS} -I${MKLROOT}/include")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS} -DNOMINMAX -D_NOMINMAX ${OpenMP_C_FLAGS} -I${MKLROOT}/include")
-    set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++")
 endif()
 
+# MKL specific compiler flags
+#else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+#    # Intel compiler
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX -D_NOMINMAX -I${MKLROOT}/include")
+#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNOMINMAX -D_NOMINMAX -I${MKLROOT}/include")
+#    #set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++")
+#endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
+
+if(USE_LIBXC)
+    add_definitions(-D__LIBXC=1)
+endif()
 
 if (CRAY_XK)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
    set(USE_SCALAPACK_LIBS 1)
    add_definitions(-DSCALAPACK_LIBS=1)
-   # External packages (e.g. PFFT) need this
+   # External packages sometimes have trouble with this on Crays
    set($ENV{MPICC} "${CMAKE_C_COMPILER}")
-else (CRAY_XK)
-   set(ENV{MPICC} "${MPI_C_COMPILER}")
-   set(ENV{CC} "${MPI_C_COMPILER}")
-endif(CRAY_XK)
+endif()
 
 
-
+# This file contains system specific paths. If cmake is unable to find
+# a specific package or library look in this file and uncomment or add
+# specific search paths.
 include(CMakeFindRootPath.inc)
+
+
 # Executables defined by the file that contains main()
 # Main codes
 add_executable(${rmg} RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
@@ -213,18 +227,14 @@ add_executable(on-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main
 add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 
 
-# Require a 64 bit system
-if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
-    message( SEND_ERROR "RMG requires a 64 bit architechture." )
-endif (NOT CMAKE_SIZEOF_VOID_P MATCHES 8)
+# Search for an MPI implementation. On Crays cmake does not pick up some
+# vars but the compiler wrappers take care of it automatically.
+if(CRAY_XK)
+    find_package(MPI)
+else()
+    find_package(MPI REQUIRED)
+endif()
 
-
-
-# Search for an MPI implementation
-#set(MPI_C_COMPILER "/opt/openmpi/bin/mpicc")
-#find_package(MPI REQUIRED)
-find_package(MPI)
-#  include_directories(${MPI_INCLUDE_PATH})
 if(MPI_CXX_FOUND)
     include_directories(${MPI_CXX_INCLUDE_PATH})
     target_link_libraries (${rmg} ${MPI_CXX_LIBRARIES})
@@ -234,7 +244,7 @@ if(MPI_CXX_FOUND)
     target_link_libraries (${rmg-negf} ${MPI_CXX_LIBRARIES})
 else (MPI_CXX_FOUND)
     if(CRAY_XK)
-	CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
+        CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
     endif(CRAY_XK)	
 endif (MPI_CXX_FOUND)
 if(MPI_C_FOUND)
@@ -247,7 +257,6 @@ if(MPI_C_FOUND)
 else(MPI_C_FOUND)
     CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
 endif (MPI_C_FOUND)
-
 
 # Require pthreads on UNIX
 if (${UNIX})
@@ -282,6 +291,7 @@ if(USE_ELPA_LIBS)
     #target_link_libraries(${rmg} /usr/lib64/libelpa.so)
 endif(USE_ELPA_LIBS)
 
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     if(CRAY_XK)
         add_definitions(-DHAVE_ASYNC_ALLREDUCE=1)
@@ -294,6 +304,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         endif(RMG_ASYNC_ALLREDUCE_INTERNAL)
     endif(CRAY_XK)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
 
 if(USE_PLPLOT_LIBS)
     find_package(PLPLOT)
@@ -310,6 +321,7 @@ if(USE_PLPLOT_LIBS)
         add_definitions(-DPLPLOT_LIBS=0)
     endif(PLPLOT_FOUND)
 endif(USE_PLPLOT_LIBS)
+
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_definitions(-DHAVE_ASYNC_ALLREDUCE=0)
@@ -328,7 +340,6 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     endif()
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
 
 
 if(CRAY_XK)
@@ -387,18 +398,17 @@ if(USE_MAGMA_LIBS AND RMG_GPU_ENABLED)
 endif(USE_MAGMA_LIBS AND RMG_GPU_ENABLED)
 
 
-
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set
-#set(MKLROOT $ENV{MKLROOT})
-if (NOT MKLROOT)
+if(NOT MKLROOT)
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         # Check the default location
         if (EXISTS "/opt/intel/mkl")
 #            set(MKLROOT "/opt/intel/mkl")
         endif (EXISTS "/opt/intel/mkl")
     endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-endif (NOT MKLROOT)
+endif()
+
 
 if(NOT CRAY_XK)
     if(MKLROOT)
@@ -442,19 +452,19 @@ if(NOT CRAY_XK)
     endif(MKLROOT)
 endif(NOT CRAY_XK)
 
-include_directories(${FFTW_INCLUDES})
+
 # MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
 
-    find_package(FFTW REQUIRED)
-    include_directories(${FFTW_INCLUDES})
-    target_link_libraries (${rmg} ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg-tddft} ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg-on} ${FFTW_LIBRARIES})
-    target_link_libraries (on-tddft ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg-negf} ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg} RMG_Common ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg-tddft} RMG_Common ${FFTW_LIBRARIES})
+find_package(FFTW REQUIRED)
+include_directories(${FFTW_INCLUDES})
+target_link_libraries (${rmg} ${FFTW_LIBRARIES})
+target_link_libraries (${rmg-tddft} ${FFTW_LIBRARIES})
+target_link_libraries (${rmg-on} ${FFTW_LIBRARIES})
+target_link_libraries (on-tddft ${FFTW_LIBRARIES})
+target_link_libraries (${rmg-negf} ${FFTW_LIBRARIES})
+target_link_libraries (${rmg} RMG_Common ${FFTW_LIBRARIES})
+target_link_libraries (${rmg-tddft} RMG_Common ${FFTW_LIBRARIES})
 
 
 if(NOT RMG_MATH_LIBS)
@@ -508,9 +518,13 @@ if(NOT RMG_MATH_LIBS)
             target_link_libraries (${rmg-negf} ${BLACSCINIT_LIBRARIES})
         endif(BLACS_FOUND)
 
-        set(USE_SCALAPACK_LIBS 0)
-        find_package(SCALAPACK)
-        if(SCALAPACK_FOUND)
+        # If the user has manually set SCALAPACK_LIBRARIES then don't try to override their choice
+        if(NOT SCALAPACK_LIBRARIES)
+            set(USE_SCALAPACK_LIBS 0)
+            find_package(SCALAPACK)
+        endif()
+
+        if(SCALAPACK_FOUND OR SCALAPACK_LIBRARIES)
             unset (USE_SCALAPACK_LIBS CACHE)
             set(USE_SCALAPACK_LIBS 1)
             target_link_libraries (${rmg} ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
@@ -518,7 +532,7 @@ if(NOT RMG_MATH_LIBS)
             target_link_libraries (${rmg-on} ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
             target_link_libraries (on-tddft ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
             target_link_libraries (${rmg-negf} ${SCALAPACK_LIBRARIES} ${MPI_C_LIBRARIES})
-        endif (SCALAPACK_FOUND)
+        endif()
 
     else (NOT CRAY_XK)
         set(USE_SCALAPACK_LIBS 1)
@@ -530,6 +544,7 @@ if(NOT RMG_MATH_LIBS)
         if(NOT RMG_SCALAPACK_INTERNAL)
             unset (USE_SCALAPACK_LIBS CACHE)
             set(USE_SCALAPACK_LIBS 0)
+            message(WARNING "Unable to compile a test application with scalapack so scalapack support has been disabled.")
         else(NOT RMG_SCALAPACK_INTERNAL)
             add_definitions(-DSCALAPACK_LIBS=1)
         endif(NOT RMG_SCALAPACK_INTERNAL)
@@ -579,23 +594,23 @@ endif(RMG_GPU_ENABLED)
 #include_directories(rmg "/usr/local/magma/include")
 
 if(USE_LIBXC)
-find_package(LIBXC)
-if(NOT LIBXC_FOUND)
-    execute_process(
-    COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
-    execute_process(
-    COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
-    execute_process(
-    COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/configure
-        --prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64
-        --libdir=${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
-    execute_process(COMMAND make install
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
-endif(NOT LIBXC_FOUND)
-find_package(LIBXC REQUIRED)
-include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/")
-endif(USE_LIBXC)
+    find_package(LIBXC)
+    if(NOT LIBXC_FOUND)
+        execute_process(
+        COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
+        execute_process(
+        COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
+        execute_process(
+        COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/configure
+            --prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64
+            --libdir=${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
+        execute_process(COMMAND make install
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
+    endif(NOT LIBXC_FOUND)
+    find_package(LIBXC REQUIRED)
+    include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/")
+endif()
 
 
 if(USE_ELEMENTAL_LIBS)
@@ -620,7 +635,7 @@ if(USE_ELEMENTAL_LIBS)
     include_directories(${PMRRR_INCLUDES})
     target_link_libraries (${rmg-on} ${PMRRR_LIBRARIES})
     target_link_libraries (${rmg-on} ON_Common ${PMRRR_LIBRARIES})
-endif(USE_ELEMENTAL_LIBS)
+endif()
 
 
 # include files
