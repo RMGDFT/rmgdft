@@ -1,7 +1,7 @@
 # - Find Scalapack
 #
-#  FFTW_LIBRARIES   - List of libraries when using FFTW.
-#  FFTW_FOUND       - True if FFTW found.
+#  SCALAPACK_LIBRARIES   - List of libraries when using scalapack.
+#  SCALAPACK_FOUND       - True if SCALAPACK found.
 
 if (SCALAPACK_LIBRARIES)
   # Already in cache, be silent
@@ -9,6 +9,16 @@ if (SCALAPACK_LIBRARIES)
 endif (SCALAPACK_LIBRARIES)
 
 find_library (SCALAPACK_LIBRARIES NAMES scalapack)
+
+# if not found try using the MPI library path as a hint
+# since it's often included there
+if(NOT SCALAPACK_LIBRARIES)
+    get_filename_component(RMG_MPI_LIB_PATH ${MPI_C_LIBRARIES} PATH CACHE)
+endif()
+
+find_library (SCALAPACK_LIBRARIES NAMES scalapack
+HINTS "${RMG_MPI_LIB_PATH}"
+)
 
 # handle the QUIETLY and REQUIRED arguments and set SCALAPACK_FOUND to TRUE if
 # all listed variables are TRUE
