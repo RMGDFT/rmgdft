@@ -231,9 +231,12 @@ add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/ma
 # vars but the compiler wrappers take care of it automatically.
 if(CRAY_XK)
     find_package(MPI)
+    CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
+    CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
 else()
     find_package(MPI REQUIRED)
 endif()
+
 
 if(MPI_CXX_FOUND)
     include_directories(${MPI_CXX_INCLUDE_PATH})
@@ -242,11 +245,9 @@ if(MPI_CXX_FOUND)
     target_link_libraries (${rmg-on} ${MPI_CXX_LIBRARIES})
     target_link_libraries (on-tddft ${MPI_CXX_LIBRARIES})
     target_link_libraries (${rmg-negf} ${MPI_CXX_LIBRARIES})
-else (MPI_CXX_FOUND)
-    if(CRAY_XK)
-        CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
-    endif(CRAY_XK)	
-endif (MPI_CXX_FOUND)
+endif()
+
+
 if(MPI_C_FOUND)
     include_directories(${MPI_C_INCLUDE_PATH})
     target_link_libraries (${rmg} ${MPI_C_LIBRARIES})
@@ -254,9 +255,8 @@ if(MPI_C_FOUND)
     target_link_libraries (${rmg-on} ${MPI_C_LIBRARIES})
     target_link_libraries (on-tddft ${MPI_C_LIBRARIES})
     target_link_libraries (${rmg-negf} ${MPI_C_LIBRARIES})
-else(MPI_C_FOUND)
-    CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
-endif (MPI_C_FOUND)
+endif()
+
 
 # Require pthreads on UNIX
 if (${UNIX})
@@ -265,6 +265,7 @@ if (${UNIX})
     target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
     target_link_libraries (${rmg-on} ${RTLIB})
 endif(${UNIX})
+
 
 find_package(NUMA)
 if(NUMA_FOUND AND NUMA_INCLUDES)
@@ -275,6 +276,7 @@ else(NUMA_FOUND AND NUMA_INCLUDES)
     set(USE_NUMA_INTERNAL 0)
 endif(NUMA_FOUND AND NUMA_INCLUDES)
 
+
 find_package(HWLOC)
 if(HWLOC_FOUND AND HWLOC_INCLUDES)
     include_directories(${HWLOC_INCLUDES})
@@ -284,6 +286,7 @@ if(HWLOC_FOUND AND HWLOC_INCLUDES)
     target_link_libraries (${rmg-tddft} ${HWLOC_LIBRARIES})
     target_link_libraries (${rmg-negf} ${HWLOC_LIBRARIES})
 endif(HWLOC_FOUND AND HWLOC_INCLUDES)
+
 
 if(USE_ELPA_LIBS)
     add_definitions(-DUSE_ELPA=1)
@@ -455,7 +458,6 @@ endif(NOT CRAY_XK)
 
 # MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
-
 find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDES})
 target_link_libraries (${rmg} ${FFTW_LIBRARIES})
