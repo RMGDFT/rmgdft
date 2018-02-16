@@ -29,9 +29,6 @@
 #include "main.h"
 #include "Functional.h"
 #include "input.h"
-#if !(_WIN32 || _WIN64)
-#include "svnrev.h"
-#endif
 
 static void init_write_pos (void);
 

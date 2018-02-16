@@ -36,7 +36,6 @@
 #include "main.h"
 #include "grid.h"
 #include "prototypes_on.h"
-#include "svnrev.h"
 
 
 char *lattice_type[] = {

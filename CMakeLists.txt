@@ -40,6 +40,44 @@ endif()
 enable_language(Fortran)
 project (RMG C CXX Fortran) 
 
+# Build date and time revisions
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    execute_process (COMMAND "cmd" " /C date /T" OUTPUT_VARIABLE foo1)
+    execute_process (COMMAND "cmd" " /C time /T" OUTPUT_VARIABLE foo2)
+    string(CONCAT foo3 ${foo1} ${foo2})
+    string(REPLACE "\n" "" BuildDate ${foo3})
+else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    execute_process (COMMAND date OUTPUT_VARIABLE foo5)
+    string(REPLACE "\n" "" BuildDate ${foo5})
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+
+include(FindSubversion)
+if(Subversion_FOUND AND USE_SVN)
+    execute_process (
+        COMMAND svn info .. OUTPUT_VARIABLE foo)
+    if(foo)
+        string(REPLACE "Last Changed" ";" foo2 ${foo})
+        list(GET foo2 2 foo3)
+        string(REPLACE "\n" ";" foo4 ${foo3})
+        string(REPLACE " " ";" foo3 ${foo4})
+        list(GET foo3 2 CodeRevision)
+
+        list(GET foo2 3 foo3)
+        string(REPLACE " " ";" foo4 ${foo3})
+        list(GET foo4 2 LastChangeDate)
+    elseif()
+        set(CodeRevision "release 2.3")
+        set(LastChangeDate "Unknown")
+    endif()
+else(Subversion_FOUND AND USE_SVN)
+    set(CodeRevision "2.3")
+    set(LastChangeDate "Unknown")
+endif(Subversion_FOUND AND USE_SVN)
+add_definitions(-DSVN_REV="${CodeRevision}")
+add_definitions(-DSVN_REVDATE="${LastChangeDate}")
+add_definitions(-DBUILD_DATE="${BuildDate}")
+
 
 # Require a 64 bit system
 if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
@@ -717,29 +755,6 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     string(REPLACE "\n" "" BuildDate ${foo5})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-include(FindSubversion)
-if(Subversion_FOUND AND USE_SVN)
-    execute_process (
-        COMMAND svn info .. OUTPUT_VARIABLE foo)
-    string(REPLACE "Last Changed" ";" foo2 ${foo})
-    list(GET foo2 2 foo3)
-    string(REPLACE "\n" ";" foo4 ${foo3})
-    string(REPLACE " " ";" foo3 ${foo4})
-    list(GET foo3 2 CodeRevision)
-
-    list(GET foo2 3 foo3)
-    string(REPLACE " " ";" foo4 ${foo3})
-    list(GET foo4 2 LastChangeDate)
-else(Subversion_FOUND AND USE_SVN)
-    set(CodeRevision "release 2.3")
-    set(LastChangeDate "Unknown")
-endif(Subversion_FOUND AND USE_SVN)
-
-
-configure_file (
-  "${PROJECT_SOURCE_DIR}/svnrev.h.in"
-  "${PROJECT_BINARY_DIR}/Headers/svnrev.h"
-  )
 
 # These include files include some subproject specific stuff
 # in order to keep from cluttering up the main CMakeLists.txt
