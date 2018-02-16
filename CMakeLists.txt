@@ -23,8 +23,36 @@
 
 cmake_minimum_required (VERSION 3.1) 
 
+
+# force an out-of-source build
+string( COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" RMG_COMPILE_INPLACE )
+if( RMG_COMPILE_INPLACE )
+        message( FATAL_ERROR "Building RMG with CMake requires an out-of-source build. To proceed:
+    rm -rf CMakeCache.txt CMakeFiles/   # delete files in ${CMAKE_SOURCE_DIR}
+    mkdir build
+    cd build
+    cmake ..
+    make -jX target
+    Where -jX with X=ncpus to compile with and target may be rmg-cpu or rmg-gpu")
+endif()
+
+
 enable_language(Fortran)
 project (RMG C CXX Fortran) 
+
+
+# Require a 64 bit system
+if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
+    message( SEND_ERROR "RMG requires a 64 bit architechture." )
+endif (NOT CMAKE_SIZEOF_VOID_P MATCHES 8)
+
+
+# Check if this is a cray
+if(DEFINED ENV{CRAY_LIBSCI_VERSION})
+    # Cray platforms
+    set (CRAY_XK 1)
+endif()
+
 
 # User settable options from cmake-gui, ccmake for text terminals
 # or command line
@@ -46,38 +74,9 @@ option(USE_ELEMENTAL_LIBS "Experimental." OFF)
 option(USE_LIBXC "Use external libxc. Not recommended in most cases." OFF)
 option(USE_SVN "Use svn to include version info in binary." OFF)
 
-
-# force an out-of-source build
-string( COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" RMG_COMPILE_INPLACE )
-if( RMG_COMPILE_INPLACE )
-        message( FATAL_ERROR "Building RMG with CMake requires an out-of-source build. To proceed:
-    rm -rf CMakeCache.txt CMakeFiles/   # delete files in ${CMAKE_SOURCE_DIR}
-    mkdir build
-    cd build
-    cmake ..
-    make -jX target
-    Where -jX with X=ncpus to compile with and target may be rmg-cpu or rmg-gpu")
-endif()
-
-
-# Standard modules for platform checks
-INCLUDE (CheckFunctionExists)
-INCLUDE (CheckSymbolExists)
-INCLUDE (CheckCSourceCompiles)
-INCLUDE (CheckCXXSourceCompiles)
-INCLUDE (CheckIncludeFiles)
-INCLUDE (CheckLibraryExists)
-INCLUDE (CMakeForceCompiler)
-INCLUDE (FortranCInterface)
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
-FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling.h MACRO_NAMESPACE RMG_FC_)
 
-
-# Require a 64 bit system
-if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
-    message( SEND_ERROR "RMG requires a 64 bit architechture." )
-endif (NOT CMAKE_SIZEOF_VOID_P MATCHES 8)
 
 
 # Check for c++11 and c99 support
@@ -107,6 +106,17 @@ else()
 endif()
 
 
+# Standard modules for platform checks
+include (CheckFunctionExists)
+include (CheckSymbolExists)
+include (CheckCSourceCompiles)
+include (CheckCXXSourceCompiles)
+include (CheckIncludeFiles)
+include (CheckLibraryExists)
+include (CMakeForceCompiler)
+include (FortranCInterface)
+FortranCInterface_HEADER(${CMAKE_SOURCE_DIR}/Headers/rmg_mangling.h MACRO_NAMESPACE RMG_FC_)
+
 # Here set any extra compiler flags required for a specific platform
 # This is for stampede
 #set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
@@ -122,6 +132,16 @@ set(CMAKE_BUILD_TYPE Release)
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
+
+# Search for an MPI implementation. On Crays cmake does not pick up some
+# vars but the compiler wrappers take care of it automatically.
+if(CRAY_XK)
+    find_package(MPI)
+    CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
+    CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
+else()
+    find_package(MPI REQUIRED)
+endif()
 
 # Get Openmp flags
 find_package(OpenMP)
@@ -146,7 +166,7 @@ else(RMG_GPU_ENABLED)
 endif(RMG_GPU_ENABLED)
 
 
-# Detect system type and set appropriate flags
+# System specific flags
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(OperatingSystem "Linux")
     add_definitions(-DLINUX=1)
@@ -170,12 +190,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 
-if(DEFINED ENV{CRAY_LIBSCI_VERSION})
-    # Cray platforms
-    set (CRAY_XK 1)
-endif()
-
-
 # GNUCC specific compiler flags
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pthread -m64")
@@ -186,7 +200,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # MKL specific compiler flags
-#else(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+#if(CMAKE_C_COMPILER_ID)
 #    # Intel compiler
 #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX -D_NOMINMAX -I${MKLROOT}/include")
 #    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNOMINMAX -D_NOMINMAX -I${MKLROOT}/include")
@@ -225,15 +239,6 @@ add_executable(on-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main
 add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 
 
-# Search for an MPI implementation. On Crays cmake does not pick up some
-# vars but the compiler wrappers take care of it automatically.
-if(CRAY_XK)
-    find_package(MPI)
-    CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
-    CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
-else()
-    find_package(MPI REQUIRED)
-endif()
 
 
 if(MPI_CXX_FOUND)
@@ -244,7 +249,6 @@ if(MPI_CXX_FOUND)
     target_link_libraries (on-tddft ${MPI_CXX_LIBRARIES})
     target_link_libraries (${rmg-negf} ${MPI_CXX_LIBRARIES})
 endif()
-
 
 if(MPI_C_FOUND)
     include_directories(${MPI_C_INCLUDE_PATH})
