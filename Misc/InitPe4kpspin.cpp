@@ -39,12 +39,9 @@ void InitPe4kpspin()
 {
 
     // Initialize coalesce factors. Will adjust later
-    for(int level = 0;level < MAX_MG_LEVELS;level++)
-    {
-        pct.coalesce_factors[level][0] = 1;
-        pct.coalesce_factors[level][1] = 1;
-        pct.coalesce_factors[level][2] = 1;
-    }
+    pct.coalesce_factors[0] = 1;
+    pct.coalesce_factors[1] = 1;
+    pct.coalesce_factors[2] = 1;
 
  // Get the prime factors of kpt
     std::vector<int> kpt_factors = {1};

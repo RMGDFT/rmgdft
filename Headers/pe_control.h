@@ -42,7 +42,7 @@ typedef struct
     MPI_Comm grid_comm_coalesced;
 
     // coalesce factors in each coordinate direction
-    int coalesce_factors[MAX_MG_LEVELS][3];
+    int coalesce_factors[3];
 
     // Number of MPI procs per physical host
     int procs_per_host;
