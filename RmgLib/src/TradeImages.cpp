@@ -2027,7 +2027,6 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
 template <typename RmgType>
 void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images)
 {
-
     if(images > MAX_TRADE_IMAGES) {
        rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
     }
@@ -2044,6 +2043,9 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
     std::atomic_bool is_completed_r[6];
     std::atomic_bool is_completed_s[6];
     std::atomic_int group_count{12};
+    if(this->G->get_PE_X() == 1)group_count.fetch_sub(4, std::memory_order_seq_cst);
+    if(this->G->get_PE_Y() == 1)group_count.fetch_sub(4, std::memory_order_seq_cst);
+    if(this->G->get_PE_Z() == 1)group_count.fetch_sub(4, std::memory_order_seq_cst);
     std::mutex send_mutex;
     std::condition_variable send_cv;
 
@@ -2061,6 +2063,7 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
     int zlen = dimx * dimy * images;
     int ylen = dimx * dimz * images;
     int xlen = dimy * dimz * images;
+    int items_to_complete = 0;
 
     for(int it = 0;it < 6;it++)
     {
@@ -2087,107 +2090,118 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
 
 
     // The z planes
-    TradeImages::RMG_MPI_queue_trade(frdz2n_f, zlen, RMG_MPI_IRECV, 0, 0, 1, grid_comm, 0, istate, qitems_r[0]);
-    TradeImages::RMG_MPI_queue_trade(frdz1n_f, zlen, RMG_MPI_IRECV, 0, 0, -1, grid_comm, 1, istate, qitems_r[1]);
+    if(this->G->get_PE_Z() > 1)
+    {
+        items_to_complete += 2;
+        TradeImages::RMG_MPI_queue_trade(frdz2n_f, zlen, RMG_MPI_IRECV, 0, 0, 1, grid_comm, 0, istate, qitems_r[0]);
+        TradeImages::RMG_MPI_queue_trade(frdz1n_f, zlen, RMG_MPI_IRECV, 0, 0, -1, grid_comm, 1, istate, qitems_r[1]);
+
+        /* Collect the positive z-plane and negative z-planes */
+        c1 = (dimz-images);
+        idx = 0;
+        for (ix = 0; ix < dimx; ix++)
+        {
+            ixs2 = ix * incx0;
+            for (iy = 0; iy < dimy; iy++)
+            {
+                iys2 = ixs2 + iy * incy0;
+                for (iz = 0; iz < images; iz++)
+                {
+
+                    index = iys2 + iz;
+
+                    frdz1_f[idx] = f[index];
+                    frdz2_f[idx] = f[index+c1];
+                    idx++;
+
+                }                   /* end for */
+
+            }                       /* end for */
+
+        }                           /* end for */
+
+        // Send z planes
+        TradeImages::RMG_MPI_queue_trade(frdz1_f, zlen, RMG_MPI_ISEND, 0, 0, -1, grid_comm, 0, istate, qitems_s[0]);
+        TradeImages::RMG_MPI_queue_trade(frdz2_f, zlen, RMG_MPI_ISEND, 0, 0, 1, grid_comm, 1, istate, qitems_s[1]);
+
+    }
+
 
     // The y planes
-    TradeImages::RMG_MPI_queue_trade(frdy2n_f, ylen, RMG_MPI_IRECV, 0, 1, 0, grid_comm, 2, istate, qitems_r[2]);
-    TradeImages::RMG_MPI_queue_trade(frdy1n_f, ylen, RMG_MPI_IRECV, 0, -1, 0, grid_comm, 3, istate, qitems_r[3]);
+    if(this->G->get_PE_Y() > 1)
+    {
+        items_to_complete += 2;
+        TradeImages::RMG_MPI_queue_trade(frdy2n_f, ylen, RMG_MPI_IRECV, 0, 1, 0, grid_comm, 2, istate, qitems_r[2]);
+        TradeImages::RMG_MPI_queue_trade(frdy1n_f, ylen, RMG_MPI_IRECV, 0, -1, 0, grid_comm, 3, istate, qitems_r[3]);
+
+        /* Collect the north and south planes */
+        c1 = (dimy - images)*incy0;
+        idx = 0;
+        for (ix = 0; ix < dimx; ix++)
+        {
+            ixs2 = ix * incx0;
+            for (iy = 0; iy < images; iy++)
+            {
+
+                iys2 = ixs2 + iy * incy0;
+                for (iz = 0; iz < dimz; iz++)
+                {
+
+                    index = iys2 + iz;
+
+                    frdy1_f[idx] = f[index];
+                    frdy2_f[idx] = f[index + c1];
+                    idx++;
+
+                }                   /* end for */
+
+            }                       /* end for */
+
+        }                           /* end for */
+
+        // Send the north and south planes
+        TradeImages::RMG_MPI_queue_trade(frdy1_f, ylen, RMG_MPI_ISEND, 0, -1, 0, grid_comm, 2, istate, qitems_s[2]);
+        TradeImages::RMG_MPI_queue_trade(frdy2_f, ylen, RMG_MPI_ISEND, 0, 1, 0, grid_comm, 3, istate, qitems_s[3]);
+
+    }
+
 
     // The x planes
-    TradeImages::RMG_MPI_queue_trade(frdx2n_f, xlen, RMG_MPI_IRECV, 1, 0, 0, grid_comm, 4, istate, qitems_r[4]);
-    TradeImages::RMG_MPI_queue_trade(frdx1n_f, xlen, RMG_MPI_IRECV, -1, 0, 0, grid_comm, 5, istate, qitems_r[5]);
-
-
-    /* Collect the positive z-plane and negative z-planes */
-    c1 = (dimz-images);
-    idx = 0;
-    for (ix = 0; ix < dimx; ix++)
+    if(this->G->get_PE_X() > 1)
     {
-        ixs2 = ix * incx0;
-        for (iy = 0; iy < dimy; iy++)
+        items_to_complete += 2;
+        TradeImages::RMG_MPI_queue_trade(frdx2n_f, xlen, RMG_MPI_IRECV, 1, 0, 0, grid_comm, 4, istate, qitems_r[4]);
+        TradeImages::RMG_MPI_queue_trade(frdx1n_f, xlen, RMG_MPI_IRECV, -1, 0, 0, grid_comm, 5, istate, qitems_r[5]);
+
+        /* Collect the east and west planes */
+        c1 = (dimx - images)*incx0;
+        idx = 0;
+        for (ix = 0; ix < images; ix++)
         {
-            iys2 = ixs2 + iy * incy0;
-            for (iz = 0; iz < images; iz++)
+            ixs2 = ix * incx0;
+            for (iy = 0; iy < dimy; iy++)
             {
+                iys2 = ixs2 + iy * incy0;
+                for (iz = 0; iz < dimz; iz++)
+                {
 
-                index = iys2 + iz;
+                    index = iys2 + iz;
 
-                frdz1_f[idx] = f[index];
-                frdz2_f[idx] = f[index+c1];
-                idx++;
+                    frdx1_f[idx] = f[index];
+                    frdx2_f[idx] = f[index + c1];
+                    idx++;
 
-            }                   /* end for */
+                }                   /* end for */
 
-        }                       /* end for */
+            }                       /* end for */
 
-    }                           /* end for */
+        }                           /* end for */
 
+        // Send the east and west planes
+        TradeImages::RMG_MPI_queue_trade(frdx1_f, xlen, RMG_MPI_ISEND, -1, 0, 0, grid_comm, 4, istate, qitems_s[4]);
+        TradeImages::RMG_MPI_queue_trade(frdx2_f, xlen, RMG_MPI_ISEND, 1, 0, 0, grid_comm, 5, istate, qitems_s[5]);
 
-    // Send z planes
-    TradeImages::RMG_MPI_queue_trade(frdz1_f, zlen, RMG_MPI_ISEND, 0, 0, -1, grid_comm, 0, istate, qitems_s[0]);
-    TradeImages::RMG_MPI_queue_trade(frdz2_f, zlen, RMG_MPI_ISEND, 0, 0, 1, grid_comm, 1, istate, qitems_s[1]);
-
-
-    /* Collect the north and south planes */
-    c1 = (dimy - images)*incy0;
-    idx = 0;
-    for (ix = 0; ix < dimx; ix++)
-    {
-        ixs2 = ix * incx0;
-        for (iy = 0; iy < images; iy++)
-        {
-
-            iys2 = ixs2 + iy * incy0;
-            for (iz = 0; iz < dimz; iz++)
-            {
-
-                index = iys2 + iz;
-
-                frdy1_f[idx] = f[index];
-                frdy2_f[idx] = f[index + c1];
-                idx++;
-
-            }                   /* end for */
-
-        }                       /* end for */
-
-    }                           /* end for */
-
-
-    // Send the north and south planes
-    TradeImages::RMG_MPI_queue_trade(frdy1_f, ylen, RMG_MPI_ISEND, 0, -1, 0, grid_comm, 2, istate, qitems_s[2]);
-    TradeImages::RMG_MPI_queue_trade(frdy2_f, ylen, RMG_MPI_ISEND, 0, 1, 0, grid_comm, 3, istate, qitems_s[3]);
-
-
-    /* Collect the east and west planes */
-    c1 = (dimx - images)*incx0;
-    idx = 0;
-    for (ix = 0; ix < images; ix++)
-    {
-        ixs2 = ix * incx0;
-        for (iy = 0; iy < dimy; iy++)
-        {
-            iys2 = ixs2 + iy * incy0;
-            for (iz = 0; iz < dimz; iz++)
-            {
-
-                index = iys2 + iz;
-
-                frdx1_f[idx] = f[index];
-                frdx2_f[idx] = f[index + c1];
-                idx++;
-
-            }                   /* end for */
-
-        }                       /* end for */
-
-    }                           /* end for */
-
-
-    // Send the east and west planes
-    TradeImages::RMG_MPI_queue_trade(frdx1_f, xlen, RMG_MPI_ISEND, -1, 0, 0, grid_comm, 4, istate, qitems_s[4]);
-    TradeImages::RMG_MPI_queue_trade(frdx2_f, xlen, RMG_MPI_ISEND, 1, 0, 0, grid_comm, 5, istate, qitems_s[5]);
+    }
 
 
     // Load up w with the interior points
@@ -2210,9 +2224,69 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
     }                           /* end for */
 
 
+    // Local in z so just copy
+    if(this->G->get_PE_Z() == 1)
+    {
+        int c1 = dimz + images;
+        for (int ix = 0; ix < dimx; ix++)
+        {
+            int ixs2 = (ix + images) * incx;
+            for (int iy = 0; iy < dimy; iy++)
+            {
+                int iys2 = ixs2 + (iy + images) * incy;
+                for (int iz = 0; iz < images; iz++)
+                {
+                    int index = iys2 + iz;
+                    w[index + c1] = w[index + images];
+                    w[index] = w[index + dimz];
+                }                   /* end for */
+            }                       /* end for */
+        }                           /* end for */
+        qitems_r[0].is_unpacked = true;
+        qitems_r[1].is_unpacked = true;
+    }
+
+    // Local in y so just copy
+    if(this->G->get_PE_Y() == 1)
+    {
+        int c1 = images * incy;
+        int c2 = dimy * incy;
+        int c3 = (dimy + images) * incy;
+        for (int ix = 0; ix < dimx; ix++)
+        {
+            int ixs2 = (ix + images) * incx;
+            for (int iy = 0; iy < images; iy++)
+            {
+                int iys2 = ixs2 + iy * incy;
+                for (int iz = 0; iz < dimz + tim; iz++)
+                {
+                    int index = iys2 + iz;
+                    w[index + c3] = w[index + c1];
+                    w[index] = w[index + c2];
+                }                   /* end for */
+            }                       /* end for */
+        }                           /* end for */
+        qitems_r[2].is_unpacked = true;
+        qitems_r[3].is_unpacked = true;
+    }
+
+    // Local in x so just copy. Arrays in x are continuous.
+    if(this->G->get_PE_X() == 1)
+    {
+        int c1 = images * incx;
+        int c2 = dimx * incx;
+        int c3 = (dimx + images) * incx;
+        int stop = images * (dimy + tim) * (dimz + tim);
+        for(int ix = 0;ix < stop;ix++) w[ix + c3] = w[ix+c1];
+        for(int ix = 0;ix < stop;ix++) w[ix] = w[ix+c2];
+        qitems_r[4].is_unpacked = true;
+        qitems_r[5].is_unpacked = true;
+    }
+
+
     // Loop and unpack items as they become available
     int items_completed = 0;
-    while(items_completed < 6)
+    while(items_completed < items_to_complete)
     {
 
         if(!qitems_r[0].is_unpacked)
@@ -2373,9 +2447,6 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
         } 
 
     } // end while
-
-   //this->queue->waitall(is_completed_r, 6);
-//   this->queue->waitall(is_completed_s, 6);
 
     this->queue->waitgroup(group_count);
 
