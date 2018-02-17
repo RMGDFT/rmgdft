@@ -2046,8 +2046,6 @@ void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w,
     if(this->G->get_PE_X() == 1)group_count.fetch_sub(4, std::memory_order_seq_cst);
     if(this->G->get_PE_Y() == 1)group_count.fetch_sub(4, std::memory_order_seq_cst);
     if(this->G->get_PE_Z() == 1)group_count.fetch_sub(4, std::memory_order_seq_cst);
-    std::mutex send_mutex;
-    std::condition_variable send_cv;
 
     mpi_queue_item_t qitems_r[6];
     mpi_queue_item_t qitems_s[6];
