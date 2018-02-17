@@ -99,6 +99,7 @@ option(USE_MAGMA_LIBS "Use magma libraries. Requires RMG_GPU_ENABLED." OFF)
 option(USE_SCALAPACK_LIBS "Use scalapack libraries." ON)
 option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
 option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
+option(USE_INTERNAL_PSEUDOPOTENTIALS "Include internal pseudopotentials in binary." ON)
 # Helps to find the correct version of boost on some systems. In particular
 # many supercomputers will have a system version located in the standard
 # directories that does not match the version required by the compiler you
@@ -193,6 +194,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
 
+if(USE_INTERNAL_PSEUDOPOTENTIALS)
+    add_definitions(-DINTERNAL_PP=1)
+endif()
 
 if(RMG_GPU_ENABLED)
     add_definitions(-DGPU_ENABLED=1)

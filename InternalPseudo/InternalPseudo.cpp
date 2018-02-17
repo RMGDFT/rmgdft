@@ -1,3 +1,5 @@
+#if INTERNAL_PP
+
 #include <unordered_map>
 #include <stdexcept>
 #include <exception>
@@ -112,3 +114,4 @@ std::string GetInternalPseudo(const char *symbol)
     
 }
 
+#endif

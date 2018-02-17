@@ -92,8 +92,14 @@ void LoadUpf(SPECIES *sp)
     }
     else if(!std::strcmp(sp->pseudo_filename, "./@Internal") || !strlen(sp->pseudo_filename)) {
 
+#if INTERNAL_PP
         std::string pp_string = GetInternalPseudo(&sp->atomic_symbol[0]);
         ss << pp_string;
+#else
+        throw RmgFatalException() << "This version of RMG was not built with internal pseudopotential support. You need to "
+                                  << "specify a pseudopotential for " << sp->atomic_symbol << " in the input file.\n";
+
+#endif
 
     }
     else {
