@@ -218,43 +218,59 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     size_t max_mem = *std::max_element(device_mem.begin(), device_mem.end());
     ct.num_usable_gpu_devices = 0;
+    int idevice = 0;
     for(auto it = device_mem.begin();it != device_mem.end();++it) {
-        if(*it == max_mem) {
+        if(*it >= 0.99*max_mem) {
             ct.gpu_device_ids[ct.num_usable_gpu_devices] = ct.num_usable_gpu_devices;
+            cuDeviceGet( &ct.cu_devices[ct.num_usable_gpu_devices], idevice);
             ct.num_usable_gpu_devices++;
         }
+        idevice++;
     }
 
+    // Now we have to decide how to allocate the GPU's to MPI procs if we have more than
+    // one GPU/node.
     cudaSetDeviceFlags(cudaDeviceScheduleSpin);
-    if( CUDA_SUCCESS != cuInit( 0 ) ) {
-        fprintf(stderr, "CUDA: Not initialized\n" ); exit(-1);
+    if((ct.num_usable_gpu_devices == pct.numa_nodes_per_host) && (pct.numa_nodes_per_host == pct.procs_per_host))
+    {
+        if( CUDA_SUCCESS != cuInit( 0 ) ) {
+            fprintf(stderr, "CUDA: Not initialized\n" ); exit(-1);
+        }
+        cudaSetDevice(ct.gpu_device_ids[pct.local_rank]);
+        if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
+            fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
+        }
+        if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
+            fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
+        }
+        if(cublasXtDeviceSelect(ct.cublasXt_handle, 1, &ct.gpu_device_ids[pct.local_rank]) != CUBLAS_STATUS_SUCCESS) {
+            fprintf(stderr, "XT set devices fail\n"); exit(-1);
+        }
+        cublasXtSetBlockDim(ct.cublasXt_handle, ct.cublasxt_block_size);
     }
-    if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
-        fprintf(stderr, "CUDA: Cannot get the device\n"); exit(-1);
+    else
+    {
+        if( CUDA_SUCCESS != cuInit( 0 ) ) {
+            fprintf(stderr, "CUDA: Not initialized\n" ); exit(-1);
+        }
+        if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
+            fprintf(stderr, "CUDA: Cannot get the device\n"); exit(-1);
+        }
+        cudaSetDevice(ct.cu_dev);
+        if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
+            fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
+        }
+        if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
+            fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
+        }
+        if(cublasXtDeviceSelect(ct.cublasXt_handle, ct.num_usable_gpu_devices, ct.gpu_device_ids) != CUBLAS_STATUS_SUCCESS) {
+            fprintf(stderr, "XT set devices fail\n"); exit(-1);
+        } //
+        cublasXtSetBlockDim(ct.cublasXt_handle, ct.cublasxt_block_size);
     }
-    cudaSetDevice(ct.cu_dev);
-    if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-        fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
-    }
-
-    if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
-        fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
-    }
-    if(cublasXtDeviceSelect(ct.cublasXt_handle, ct.num_usable_gpu_devices, ct.gpu_device_ids) != CUBLAS_STATUS_SUCCESS) {
-        fprintf(stderr, "XT set devices fail\n"); exit(-1);
-    } //
-
-    cublasXtSetBlockDim(ct.cublasXt_handle, ct.cublasxt_block_size);
-    void *fptr;
-    fptr = (void *)&dgemm_;
-    //    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, fptr);
-    fptr = (void *)&zgemm_;
-    //    cublasXtSetCpuRoutine(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_COMPLEX, fptr);
-    //    cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 0.5);
 
 #if MAGMA_LIBS
     magma_init();
-    //magmablasSetKernelStream(ct.cuda_stream);
 #endif
 
 #endif

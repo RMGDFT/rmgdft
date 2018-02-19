@@ -8,7 +8,6 @@ AppCir.cpp
 AppCilrFourth.cpp
 AppCilrSixth.cpp
 AppCilrDriver.cpp
-app_cir_beta_fourth.c
 app_cir_fcc.c
 app_cir_ortho.c
 app_cir_bcc.c

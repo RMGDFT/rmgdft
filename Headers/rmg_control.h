@@ -608,8 +608,9 @@ typedef struct
     // GPU memory for the usable devices
     size_t gpu_mem[MAX_GPU_DEVICES];
 
-    // Cuda device
+    // Cuda devices
     CUdevice  cu_dev;
+    CUdevice  cu_devices[MAX_GPU_DEVICES];
 
     // Cuda device context
     CUcontext cu_context;
