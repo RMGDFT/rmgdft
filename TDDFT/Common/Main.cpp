@@ -42,7 +42,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-#include "svnrev.h"
 #include <float.h>
 #include <math.h>
 #include <string.h>
