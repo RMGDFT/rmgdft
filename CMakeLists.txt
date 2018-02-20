@@ -111,7 +111,7 @@ option(Boost_USE_MULTITHREADED      ON)
 option(USE_ELPA_LIBS "Experimental." OFF)
 option(USE_ELEMENTAL_LIBS "Experimental." OFF)
 option(USE_LIBXC "Use external libxc. Not recommended in most cases." OFF)
-option(USE_SVN "Use svn to include version info in binary." OFF)
+option(USE_SVN "Use svn to include version info in binary." ON)
 
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)

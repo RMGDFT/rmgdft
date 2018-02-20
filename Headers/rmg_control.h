@@ -615,29 +615,17 @@ typedef struct
     // Cuda device context
     CUcontext cu_context;
 
+    // Flag indicating whether all of the gpu devices we plan on using support managed memory
+    bool gpus_support_managed_memory;
+
     // CUBLAS library handles
     cublasHandle_t cublas_handle;
     cublasXtHandle_t cublasXt_handle;
-
-    // cuda stream
-    cudaStream_t cuda_stream;
-
-    // GPU storage space for wavefunctions
-    double *gpu_states;
-
-    // GPU temporary storage space for wavefunctions
-
-    // GPU temporary storage space for weights
-
-    // Pinned host memory for finite difference routines. Allocation is slow so it
-    // needs to be done once at initializatio time for each thread.
-    double *gpu_host_work;
 
     cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow;
     cuDoubleComplex *gpu_GdiagBlocks;
     cuDoubleComplex *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
     cuDoubleComplex *gpu_Gcol;
-
 
     int *gpu_ipiv;
 

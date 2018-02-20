@@ -219,10 +219,14 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     size_t max_mem = *std::max_element(device_mem.begin(), device_mem.end());
     ct.num_usable_gpu_devices = 0;
     int idevice = 0;
+    int does_managed;
+    ct.gpus_support_managed_memory = true;
     for(auto it = device_mem.begin();it != device_mem.end();++it) {
-        if(*it >= 0.99*max_mem) {
-            ct.gpu_device_ids[ct.num_usable_gpu_devices] = ct.num_usable_gpu_devices;
+        if(*it >= 0.9*max_mem) {
+            ct.gpu_device_ids[ct.num_usable_gpu_devices] = idevice;
             cuDeviceGet( &ct.cu_devices[ct.num_usable_gpu_devices], idevice);
+            cuDeviceGetAttribute( &does_managed, CU_DEVICE_ATTRIBUTE_MANAGED_MEMORY, ct.cu_devices[ct.num_usable_gpu_devices]);
+            if(!does_managed) ct.gpus_support_managed_memory = false;
             ct.num_usable_gpu_devices++;
         }
         idevice++;
