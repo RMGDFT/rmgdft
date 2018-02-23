@@ -395,6 +395,36 @@ void get_cond_frommatrix_kyz ()
 
             fclose (file);
         }
+        /* find peaks of conductance, max 100 peaks, */
+        int peaki=0; 
+        peakNum=0; 
+        for (iene = 0; iene < tot_energy_point; iene++)
+        {
+            if  (iene<tot_energy_point-2)
+	    if  (cond[iene]<cond[iene+1] && cond[iene+2]<cond[iene+1] )
+            {
+                if (peaki<100)/* max 100 peaks, */
+                {
+                    peaks[peaki]=ener1[iene+1] ;
+                    peaki++;
+                }
+                peakNum++;
+             }
+        }
+        if (peakNum==0)
+        {
+           peaks[0]=0;
+           peaks[1]=-0.5;
+           peaks[2]=0.5;
+           peakNum=3;
+           if (pct.gridpe == 0)   printf ("\n no peak in conductance, add 3 energy points: 0, 0.5, -0.5\n");
+        }
+        if (pct.gridpe == 0)
+        {
+            printf ("\n number of peaks: %d\n", peakNum);
+            for(peaki=0;peaki<peakNum;peaki++)
+            printf ("\n peaks[%d]: %f\n",peaki,peaks[peaki]);
+        }
 
 
         /* calculating the current */

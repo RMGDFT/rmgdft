@@ -208,7 +208,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     if(ct.runflag == 300) 
     {
         plane_average_rho(rho); 
-        exit(0);
+//        exit(0);
     }
 
     write_rho_x (vh, "vh_init");  // information about vh_init is recorded in zvec array
@@ -313,6 +313,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     // Initialize some commonly used plans
     FftInitPlans();
 
+    if (pct.imgpe == 0) printf ("completed: initnegf \n");
 
 }                               /* end init */
 

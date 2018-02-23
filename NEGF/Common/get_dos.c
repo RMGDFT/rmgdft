@@ -219,10 +219,10 @@ void get_dos (STATE * states)
                 /*printf (" checkit  = %d %d %f \n", iene, idx + st1, Green_store[idx + st1]);*/
             }
 
-        }                           /*  end for iene */
+        }
 
         idx_e += ntot;
-    }
+    }                           /*  end for iene */
 
 
 

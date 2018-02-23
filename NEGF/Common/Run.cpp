@@ -98,6 +98,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
         /* allocate memory for matrixs  */
         //get_cond_frommatrix ();
+        allocate_matrix_soft ();
         RmgTimer *RT2 = new RmgTimer("Conductance Calculation");
         get_cond_frommatrix_kyz ();
         delete(RT2);
@@ -142,13 +143,22 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
             RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
             KbpsiUpdate(states);
             delete(RTk);
+
             get_dos(states);
         }
         else
             if (ct.runflag == 300)
             {
-                get_cond_frommatrix_kyz ();
+                RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
+                orbital_comm(states);
+                delete(RT0);
 
+                RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
+                KbpsiUpdate(states);
+                delete(RTk);
+ 
+
+                get_cond_frommatrix_kyz ();
                 /* it will automatically calculate and plot 3Ddos for each peak */
                 for (i = 0; i < peakNum; i++)
                 {
@@ -229,7 +239,11 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
                 {
 
                     case MD_QUENCH:            /* Quench the electrons */
+                        if (pct.imgpe == 0)
+                            printf ("\n quench start...\n");
                         QuenchNegf (states, states1, vxc, vh, vnuc, vext, vh_old, vxc_old, rho, rhoc, rhocore, rho_tf, vbias);
+                        if (pct.imgpe == 0)
+                            printf ("\n quench done...\n");
 
                         break;
 

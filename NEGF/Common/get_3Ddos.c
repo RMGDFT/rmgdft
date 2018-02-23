@@ -24,34 +24,44 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 {
     int iprobe, idx_e;
     int iene, st1;
-    complex double *tot, *tott, *g;
     complex double *sigma;
-    double *temp_matrix_tri, *temp_matrix, *matrix_product;
     double de, emin, emax;
 
-    complex double *green_C, *ch0, *ch01, *ch10;
-    complex double ene, ctem;
-    int nC;
-    int i, j, *sigma_idx, idx_C;
-    char fcd_n = 'N', fcd_c = 'C';
+    complex double *work, *green_C;
+    complex double ene;
+    int kp, i, *sigma_idx, idx_C;
     FILE *file;
-    double *H10, *S10;
-    double one = 1.0, zero = 0.0;
-    int ione = 1;
 
     int ntot, ndim;
     int  xoff, yoff, zoff;
     double *Green_store, *rho_energy, *rho_energy2;
     int root_pe, idx, ix, iy, iz;
 
-    int E_POINTS, kpoint[3];
+    int E_POINTS, nkp[3];
     double E_imag, KT;
     int FPYZ = get_FPY0_GRID() * get_FPZ0_GRID();
     int nx1, nx2, ny1, ny2, nz1, nz2; 
-    int *desca, *descb, numst, numstC;
+    double *kvecx, *kvecy, *kvecz, *kweight;
 
-    read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, kpoint);
+
+    read_cond_input (&emin, &emax, &E_POINTS, &E_imag, &KT, nkp);
     de = (EMAX - EMIN) / (EPoints - 1);
+
+    //  set number of kpoint in x direction be 1, 
+    nkp[0] = 1;
+
+    if(cei.num_probe > 2 ) nkp[1] = 1;
+    int nkp_tot = nkp[0] * nkp[1] * nkp[2];
+    printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
+
+    if (nkp_tot == 0 ) error_handler ("wrong number of kpoints in cond.in");
+
+    my_malloc( kvecx, nkp_tot, double );
+    my_malloc( kvecy, nkp_tot, double );
+    my_malloc( kvecz, nkp_tot, double );
+    my_malloc( kweight, nkp_tot, double );
+
+    kpoints(nkp, kvecx, kvecy, kvecz, &nkp_tot, kweight);
 
 
 
@@ -61,20 +71,13 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
      * and stored in rho_energy after average in the yz plane
      */
 
-    nC = ct.num_states;
 
 /*========================== Reading Matrices =======================*/
 
-    ntot = 0;
     ndim = 0;
     for (i = 0; i < ct.num_blocks; i++)
     {
-        ntot += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
         ndim += ct.block_dim[i];
-    }
-    for (i = 1; i < ct.num_blocks; i++)
-    {
-        ntot += pmo.mxllda_cond[i-1] * pmo.mxlocc_cond[i];
     }
     if (ndim != ct.num_states)
     {
@@ -83,6 +86,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     }
 
 
+    ntot = pmo.ntot;
     my_malloc_init( lcr[0].Htri, ntot, double );
     my_malloc_init( lcr[0].Stri, ntot, double );
 
@@ -119,7 +123,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
 
     my_malloc_init( sigma_idx, cei.num_probe, int );
-                                                                                  
+
     idx = 0;
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
@@ -127,7 +131,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
         idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
     }
-                                                                                       
+
     my_malloc_init( sigma_all, idx, complex double );
                                                                                                 
 
@@ -140,21 +144,15 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
         idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
                                                                                 
-    my_malloc_init( tot,  idx, complex double );
-    my_malloc_init( tott, idx, complex double );
-    my_malloc_init( g,    idx, complex double );
-    my_malloc_init( ch0,  idx, complex double );
-    my_malloc_init( ch01,  idx, complex double );
-    my_malloc_init( ch10,  idx, complex double );
-    my_malloc_init( H10,  idx,  double );
-    my_malloc_init( S10,  idx,  double );
+    my_malloc_init( work,  12 * idx, complex double );
 
 
-    my_malloc_init( green_C, ntot, complex double );
-    st1 = (EPoints + pmo.npe_energy - 1) / pmo.npe_energy;
-   
-    my_malloc_init( Green_store, st1 * ntot, double );
+    my_malloc_init( green_C, pmo.ntot_low, complex double );
 
+    st1 = ( E_POINTS + pmo.npe_energy-1)/pmo.npe_energy;
+    my_malloc_init( Green_store, st1 * pmo.ntot, double );
+    double *density_matrix;
+    my_malloc_init( density_matrix, pmo.ntot, double );
 /*===================================================================*/
 
     nx1 = cei.dos_window_start[0] * get_FG_RATIO();
@@ -181,94 +179,43 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
 
     idx_e = 0;
+    //for (iene = 0; iene < EPoints; iene ++)
     for (iene = pmo.myblacs; iene < EPoints; iene += pmo.npe_energy)
     {
         ene = EMIN + iene * de + I * E_imag;
-        printf ("\n energy point %d %f +i %f\n", iene, creal(ene), cimag(ene));
-
 
         /* sigma is a complex matrix with dimension ct.num_states * ct.num_states 
          * it sums over all probes
          * tot, tott, green_tem is also a complex matrix, 
          * their memory should be the maximum of probe dimensions, lcr[1,...].num_states
          */
-        for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
+        for(kp = 0; kp < nkp_tot; kp++)
         {
-
-
-
-            desca = &pmo.desc_lead[ (iprobe-1) * DLEN];
-
-            numst = lcr[iprobe].num_states;
-
-            pdtran(&numst, &numst, &one, lcr[iprobe].S01, &ione,
-                    &ione, desca,
-                    &zero, S10, &ione, &ione, desca);
-            pdtran(&numst, &numst, &one, lcr[iprobe].H01, &ione,
-                    &ione, desca,
-                    &zero, H10, &ione, &ione, desca);
-
-            idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-            for (i = 0; i < idx; i++)
+            for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
             {
-                ch0[i] = ene * lcr[iprobe].S00[i] - Ha_eV * lcr[iprobe].H00[i];
-                ch01[i] = ene * lcr[iprobe].S01[i] - Ha_eV * lcr[iprobe].H01[i];
-                ch10[i] = ene * S10[i] - Ha_eV * H10[i];
-            }
+
+                sigma_one_energy_point(sigma, iprobe, ene, kvecy[kp], kvecz[kp], work);
+
+                for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
+                {
+                    sigma_all[sigma_idx[iprobe - 1] + i] = sigma[i];
+                }
+
+            }                       /*  end for iprobe */
 
 
-            green_lead (ch0, ch01, ch10, g, iprobe);
 
-            idx_C = cei.probe_in_block[iprobe - 1];  /* block index
-                                                      */
-            idx = pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1];
-            for (i = 0; i < idx; i++)
+
+
+            Sgreen_c_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
+                    ene, green_C); 
+
+
+            for (st1 = 0; st1 < ntot; st1++)
             {
-                ch01[i] = ene * lcr[iprobe].SCL[i] - Ha_eV * lcr[iprobe].HCL[i];
+                Green_store[idx_e + st1] += -cimag(green_C[st1]) * kweight[kp];
+                /*printf (" checkit  = %d %d %f \n", iene, idx + st1, Green_store[idx + st1]);*/
             }
-
-            desca = &pmo.desc_cond_lead[ (idx_C + (iprobe-1) * ct.num_blocks) * DLEN];
-            descb = &pmo.desc_lead_cond[ (idx_C + (iprobe-1) * ct.num_blocks) * DLEN];
-            numst = lcr[iprobe].num_states;
-            numstC = ct.block_dim[idx_C];
-
-
-            pdtran(&numst, &numstC, &one, lcr[iprobe].SCL, &ione, &ione, desca,
-                    &zero, S10, &ione, &ione, descb);
-            pdtran(&numst, &numstC, &one, lcr[iprobe].HCL, &ione, &ione, desca,
-                    &zero, H10, &ione, &ione, descb);
-            idx = pmo.mxllda_lead[iprobe -1] *
-                pmo.mxlocc_cond[idx_C];
-            for (i = 0; i < idx; i++)
-            {
-                ch10[i] = ene * S10[i] - Ha_eV * H10[i];
-            }
-
-            Sigma_p (sigma, ch0, ch01, ch10, g, iprobe);
-
-
-
-            for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
-            {
-                sigma_all[sigma_idx[iprobe - 1] + i] = sigma[i];
-            }
-
-
-        }                       /*  end for iprobe */
-
-
-
-
-        /*Sgreen_c_wang (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
-          eneR, eneI, (complex double *) green_C, nC);*/
-        Sgreen_c_p (lcr[0].Htri, lcr[0].Stri, sigma_all, sigma_idx, 
-                ene, green_C); 
-
-
-        for (st1 = 0; st1 < ntot; st1++)
-        {
-            Green_store[idx_e + st1] = -cimag(green_C[st1]);
-            /*printf (" checkit  = %d %d %f \n", iene, idx + st1, Green_store[idx + st1]);*/
         }
         idx_e += ntot;
 
@@ -276,13 +223,12 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
 
 
-
     /*===================================================================*/
+
 
 
     for (iene = 0; iene < EPoints; iene++)
     {
-        printf ("hello .... %d\n", iene);
 
         root_pe = iene % pmo.npe_energy;
         idx = iene / pmo.npe_energy;
@@ -290,15 +236,15 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
         for (st1 = 0; st1 < ntot; st1++)
         {
-            lcr[0].density_matrix_tri[st1] = Green_store[idx * ntot + st1];
+            density_matrix[st1] = Green_store[idx * ntot + st1];
         }
 
 
         idx = ntot;
-        MPI_Bcast (lcr[0].density_matrix_tri, idx, MPI_DOUBLE, root_pe,
+        MPI_Bcast (density_matrix, idx, MPI_DOUBLE, root_pe,
                 COMM_EN1);
 
-        tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
+        tri_to_row (density_matrix, work_matrix, ct.num_blocks, ct.block_dim);
         GetNewRho_on_c(states, rho, work_matrix);
 
         for (ix = 0; ix < get_FPX0_GRID(); ix++)
@@ -361,9 +307,9 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     fflush (NULL);
 
     /*===============================*/
-    my_free(tot);
-    my_free(tott);
-    my_free(g);
+//    my_free(tot);
+//    my_free(tott);
+//    my_free(g);
     my_free(sigma_all);
     my_free(sigma_idx);
     my_free(green_C);
@@ -382,11 +328,11 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
     my_free(rho_energy); 
     my_free(Green_store);
-    my_free(ch0);
-    my_free(ch01);
-    my_free(ch10);
-    my_free(H10);
-    my_free(S10);
+ //   my_free(ch0);
+//    my_free(ch01);
+//    my_free(ch10);
+//    my_free(H10);
+//    my_free(S10);
 
 
 
