@@ -301,14 +301,12 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     int owned, owner;
 
 #if GPU_ENABLED
-    if( cudaSuccess != cudaMallocHost((void **)&pct.weight, pct.weight_size * sizeof(double) ))
-        rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
+    pct.weight = (double *)GpuMallocManaged(pct.weight_size * sizeof(double));
     for(int idx = 0;idx < pct.weight_size;idx++) pct.weight[idx] = 0.0;
 
     if(ct.need_Bweight) 
     {
-        if( cudaSuccess != cudaMallocHost((void **)&pct.Bweight, pct.weight_size * sizeof(double) ))
-            rmg_error_handler(__FILE__,__LINE__,"Error: cudaMallocHost failed for: get_nlop \n");
+        pct.Bweight = (double *)GpuMallocManaged(pct.weight_size * sizeof(double));
         for(int idx = 0;idx < pct.weight_size;idx++) pct.Bweight[idx] = 0.0;
     }
     else {
@@ -366,7 +364,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     // Set storage sequentially for real and imaginary components so we can transform storage pattern
 #if GPU_ENABLED
     if (pct.newsintR_local)
-        cudaFreeHost(pct.newsintR_local);
+        GpuFreeManaged(pct.newsintR_local);
 #else
     if (pct.newsintR_local)
         delete [] pct.newsintR_local;
@@ -377,9 +375,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     size_t sint_alloc = (size_t)(factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.max_nl);
     sint_alloc *= (size_t)ct.max_states;
 #if GPU_ENABLED
-    cudaError_t custat;
-    custat = cudaMallocHost((void **)&pct.newsintR_local , sint_alloc * sizeof(double));
-    RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaHostMalloc failed in InitGpuHostMalloc\n");
+    pct.newsintR_local = (double *)GpuMallocManaged(sint_alloc * sizeof(double));
 #else
     pct.newsintR_local = new double[sint_alloc]();
 #endif
@@ -593,7 +589,7 @@ static void reset_pct_arrays (int num_ions)
 
     if (pct.weight != NULL) {
 #if GPU_ENABLED
-        cudaFreeHost(pct.weight);
+        GpuFreeManaged(pct.weight);
 #else
         if(ct.nvme_weights)
         {
@@ -607,7 +603,7 @@ static void reset_pct_arrays (int num_ions)
     }
     if ((pct.Bweight != NULL) && ct.need_Bweight) {
 #if GPU_ENABLED
-        cudaFreeHost(pct.Bweight);
+        GpuFreeManaged(pct.Bweight);
 #else
         if(ct.nvme_weights)
         {

@@ -40,12 +40,6 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-#if GPU_ENABLED
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
-#endif
-
 
 template char * Subdiag_Lapack<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
 template char * Subdiag_Lapack<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors);
@@ -88,7 +82,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         KpointType *NULLptr = NULL;
     #if GPU_ENABLED
         KpointType ZERO_t(0.0);
-        KpointType *Cij = (KpointType *)GpuMallocHost(num_states * num_states * sizeof(KpointType));
+        KpointType *Cij = (KpointType *)GpuMallocManaged(num_states * num_states * sizeof(KpointType));
         for(int ix = 0;ix < num_states * num_states;ix++) Cij[ix] = ZERO_t;
     #else
         KpointType *Cij = new KpointType[num_states * num_states]();
@@ -197,7 +191,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
         delete(RT1);
     #if GPU_ENABLED
-        GpuFreeHost(Cij);
+        GpuFreeManaged(Cij);
     #else
         delete [] Cij;
     #endif

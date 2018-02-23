@@ -104,10 +104,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     int alloc1 = pct.num_tot_proj * M_cols;
 
 #if GPU_ENABLED
-    KpointType *sint_compack = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc);
-    KpointType *nwork = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc);
-    KpointType *M_dnm = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc1);
-    KpointType *M_qqq = (KpointType *)GpuMallocHost(sizeof(KpointType) * alloc1);
+    KpointType *sint_compack = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc);
+    KpointType *nwork = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc);
+    KpointType *M_dnm = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc1);
+    KpointType *M_qqq = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc1);
     for(int i = 0;i < alloc;i++) sint_compack[i] = 0.0;
 #else
     KpointType *sint_compack = new KpointType[alloc]();
@@ -241,10 +241,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     }
 
 #if GPU_ENABLED
-    GpuFreeHost(M_qqq);
-    GpuFreeHost(M_dnm);
-    GpuFreeHost(nwork);
-    GpuFreeHost(sint_compack);
+    GpuFreeManaged(M_qqq);
+    GpuFreeManaged(M_dnm);
+    GpuFreeManaged(nwork);
+    GpuFreeManaged(sint_compack);
 #else
     delete [] nwork;
     delete [] sint_compack;

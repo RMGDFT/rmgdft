@@ -48,9 +48,6 @@
 #include "blas.h"
 
 #if GPU_ENABLED
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 #if MAGMA_LIBS
     #include <magma.h>
 #endif
@@ -59,7 +56,6 @@
 
 // Kludge for now
 extern Scalapack *MainSp;
-extern void *GMatrix1;
 
 // Solves for the eigenvalues and eigenvectors of a generalized Hermitian matrix.
 //
@@ -211,7 +207,8 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
     return GeneralDiagLapack(A, B, eigs, V, N, M, ld);
 #else
 
-    double *global_matrix1 = (double *)GMatrix1;
+    double *global_matrix1 = (double *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(double));
+
     bool participates = MainSp->Participates();
 
     if (participates) {
@@ -309,6 +306,7 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         }
     }
 
+    GpuFreeManaged(global_matrix1);
     return 0;
 
 #endif
@@ -347,7 +345,7 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
         int itype = 1, ione = 1;
         int lwork = 3 * N * N + 6 * N;
         //int lwork = 6 * N * N + 6 * N + 2;
-        double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
+        double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
 
         if(M == N) {
             magma_dsygvd(itype, MagmaVec, MagmaLower, N, (double *)A, ld, (double *)B, ld, eigs, work, lwork, iwork, liwork, &info);
@@ -360,7 +358,7 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
         }
 
 
-        GpuFreeHost(work);
+        GpuFreeManaged(work);
 
         for(int i=0;i < N*ld;i++) A[i] = Asave[i];
         for(int i=0;i < N*ld;i++) B[i] = Bsave[i];

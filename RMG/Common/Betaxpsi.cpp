@@ -40,12 +40,6 @@
 #include "../Headers/prototypes.h"
 
 
-#if GPU_ENABLED
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
-#endif
-
 
 template <typename KpointType>
 void betaxpsi_calculate (Kpoint<KpointType> * sint_ptr, KpointType * psi, int num_states, KpointType *);
@@ -259,7 +253,7 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
     int pbasis = kptr->pbasis;
 
 #if GPU_ENABLED
-    KpointType *nlarray = (KpointType *)GpuMallocHost(sizeof(KpointType) * pct.num_tot_proj * num_states);
+    KpointType *nlarray = (KpointType *)GpuMallocManaged(sizeof(KpointType) * pct.num_tot_proj * num_states);
 #else
     KpointType *nlarray = new KpointType[pct.num_tot_proj * num_states]();
 #endif
@@ -283,7 +277,7 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
     }
 
 #if GPU_ENABLED
-    GpuFreeHost(nlarray);
+    GpuFreeManaged(nlarray);
 #else
     delete [] nlarray;
 #endif

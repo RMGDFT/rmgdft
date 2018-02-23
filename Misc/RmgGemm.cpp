@@ -84,12 +84,6 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     if(!strcmp("n", transb)) kb = n;
     if(!strcmp("N", transb)) kb = n;
 
-    if((m <= 512) || (k <= 512)) {
-//        cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 1.0);
-    }
-    else {
-//        cublasXtSetCpuRatio(ct.cublasXt_handle, CUBLASXT_GEMM, CUBLASXT_DOUBLE, 0.0);
-    }
     cudaPointerAttributes attrib_A, attrib_B, attrib_C;
     cudaError_t cudaErrA, cudaErrB, cudaErrC;
 
@@ -100,13 +94,14 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 //if(!UsingCudaMemory)printf("NOT USING\n");
     // Check attributes and if all matrices are located on the host then
     // we can use the XT interface.
-    if((attrib_A.memoryType == cudaMemoryTypeHost) &&
-       (attrib_B.memoryType == cudaMemoryTypeHost) &&
-       (attrib_C.memoryType == cudaMemoryTypeHost) &&
-       (Agpu == NULL) &&
-       (Bgpu == NULL) &&
-       (Cgpu == NULL) &&
-        UsingCudaMemory) {
+//    if((attrib_A.memoryType == cudaMemoryTypeHost) &&
+//       (attrib_B.memoryType == cudaMemoryTypeHost) &&
+//       (attrib_C.memoryType == cudaMemoryTypeHost) &&
+//       (Agpu == NULL) &&
+//       (Bgpu == NULL) &&
+//       (Cgpu == NULL) &&
+//        UsingCudaMemory) {
+if(1){
 //printf("HOST GEMM\n");
 
             if(typeid(DataType) == typeid(std::complex<double>)) {
@@ -136,7 +131,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
        (attrib_B.memoryType == cudaMemoryTypeDevice) &&
        (attrib_C.memoryType == cudaMemoryTypeDevice) &&
         UsingCudaMemory) {
-//printf("DEVICE GEMM\n");
+printf("DEVICE GEMM\n");
             if(typeid(DataType) == typeid(std::complex<double>)) {
                 custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                                     (cuDoubleComplex *)&alpha,
@@ -159,7 +154,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     }
 
 
-//printf("MIXED GEMM\n");
+printf("MIXED GEMM\n");
 
 
     DataType *Agpu1;
@@ -168,9 +163,10 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 
     if(Agpu == NULL) {
 
-        Agpu1 = (DataType *)GpuMallocDevice(ka * lda * sizeof( DataType ));
-        custat = cublasSetVector(ka * lda , sizeof( DataType ), A, 1, Agpu1, 1 );
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring A matrix to GPU.");
+//        Agpu1 = (DataType *)GpuMallocDevice(ka * lda * sizeof( DataType ));
+        Agpu1 = (DataType *)GpuMallocManaged(ka * lda * sizeof( DataType ));
+//        custat = cublasSetVector(ka * lda , sizeof( DataType ), A, 1, Agpu1, 1 );
+//        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring A matrix to GPU.");
 
     }
     else {
@@ -182,9 +178,10 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     }
     if(Bgpu == NULL) {
 
-        Bgpu1 = (DataType *)GpuMallocDevice(kb * ldb * sizeof( DataType ));
-        custat = cublasSetVector(kb * ldb , sizeof( DataType ), B, 1, Bgpu1, 1 );
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring B matrix to GPU.");
+        //Bgpu1 = (DataType *)GpuMallocDevice(kb * ldb * sizeof( DataType ));
+        Bgpu1 = (DataType *)GpuMallocManaged(kb * ldb * sizeof( DataType ));
+        //custat = cublasSetVector(kb * ldb , sizeof( DataType ), B, 1, Bgpu1, 1 );
+        //RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring B matrix to GPU.");
 
     }
     else {
@@ -196,11 +193,12 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     }
     if(Cgpu == NULL) {
 
-        Cgpu1 = (DataType *)GpuMallocDevice(n * ldc * sizeof( DataType ));
+        //Cgpu1 = (DataType *)GpuMallocDevice(n * ldc * sizeof( DataType ));
+        Cgpu1 = (DataType *)GpuMallocManaged(n * ldc * sizeof( DataType ));
         // No need to copy if beta is zero
         if(beta != ZERO_t) {
-            custat = cublasSetVector(n * ldc , sizeof( DataType ), C, 1, Cgpu1, 1 );
-            RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix to GPU.");
+            //custat = cublasSetVector(n * ldc , sizeof( DataType ), C, 1, Cgpu1, 1 );
+            //RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix to GPU.");
         }
 
     }
@@ -237,9 +235,9 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
     }
 
-    if(Cgpu == NULL) GpuFreeDevice(Cgpu1);
-    if(Bgpu == NULL) GpuFreeDevice(Bgpu1);
-    if(Agpu == NULL) GpuFreeDevice(Agpu1);
+    if(Cgpu == NULL) GpuFreeManaged(Cgpu1);
+    if(Bgpu == NULL) GpuFreeManaged(Bgpu1);
+    if(Agpu == NULL) GpuFreeManaged(Agpu1);
 
 #else
 

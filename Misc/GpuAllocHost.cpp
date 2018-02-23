@@ -34,16 +34,30 @@
 #include <sys/mman.h>
 
 
-// We also need a way to manage blocks of page locked memory for moving
-// data into and out of the GPU since transfers to this type of memory
-// are much faster. Certain data structures (e.g. the wavefunction arrays
-// and non-local projectors) are allocated in this fashion separately
-// but there are other methods/functions that need such memory on a
-// temporary basis.
+// Cuda managed memory is supposed to ease the burden of copying data
+// from host to gpu and back again. Performance, particularly on older
+// hardware is likely to be better using explicit copies though so
+// we also need a way to manage blocks of page locked memory for moving
+// data into and out of the GPU.
 
 
 #define         GPU_ALIGNMENT   1024  
 #define         MAX_HOSTGPU_BLOCKS  20
+
+void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
+{
+    void *ptr;
+    cudaError_t custat;
+    custat = cudaMallocManaged ( &ptr, size, cudaMemAttachGlobal );
+    RmgCudaError(fname, line, custat, "Error: cudaMallocManaged failed.\n");
+    return ptr;
+
+}
+
+void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
+{
+    cudaFree(ptr);
+}
 
 
 static void *host_gpubuffer;

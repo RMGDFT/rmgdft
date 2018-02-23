@@ -38,11 +38,6 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-#if GPU_ENABLED
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
-#endif
 
 #include "Scalapack.h"
 

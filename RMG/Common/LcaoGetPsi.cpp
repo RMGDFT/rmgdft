@@ -173,7 +173,7 @@ void LcaoGetPsi (State<StateType> * states)
 
         // Now generate a random mix
 #if GPU_ENABLED
-        StateType *rmatrix = (StateType *)GpuMallocHost(state_count * ct.num_states * sizeof(StateType));
+        StateType *rmatrix = (StateType *)GpuMallocManaged(state_count * ct.num_states * sizeof(StateType));
 #else
         StateType *rmatrix = new StateType[state_count * ct.num_states];
 #endif
@@ -195,7 +195,7 @@ void LcaoGetPsi (State<StateType> * states)
             NULLptr, NULLptr, NULLptr, false, false, false, true);
 
 #if GPU_ENABLED
-        GpuFreeHost(rmatrix);
+        GpuFreeManaged(rmatrix);
 #else
         delete [] rmatrix;
 #endif

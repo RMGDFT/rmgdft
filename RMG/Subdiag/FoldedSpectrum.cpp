@@ -114,8 +114,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     double *Vdiag = new double[n];
     double *tarr = new double[n];
 #if GPU_ENABLED
-    double *Asave = (double *)GpuMallocHost(n * n * sizeof(double));
-    double *Bsave = (double *)GpuMallocHost(n * n * sizeof(double));
+    double *Asave = (double *)GpuMallocManaged(n * n * sizeof(double));
+    double *Bsave = (double *)GpuMallocManaged(n * n * sizeof(double));
 #else
     double *Asave = new double[n*n];
     double *Bsave = new double[n*n];
@@ -131,7 +131,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     int its=7;
 #if GPU_ENABLED
-    double *T = (double *)GpuMallocHost(n * n * sizeof(double));
+    double *T = (double *)GpuMallocManaged(n * n * sizeof(double));
 #else
     double *T = new double[n*n];
 #endif
@@ -141,8 +141,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     // Copy back to A
     for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
 #if GPU_ENABLED
-    GpuFreeHost(T);
-    GpuFreeHost(Bsave);
+    GpuFreeManaged(T);
+    GpuFreeManaged(Bsave);
 #else
     delete [] T;
     delete [] Bsave;
@@ -152,8 +152,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
 #if GPU_ENABLED
     KpointType ZERO_t(0.0);
-    KpointType *V = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
-    KpointType *G = (KpointType *)GpuMallocHost(n_win * n_win * sizeof(KpointType));
+    KpointType *V = (KpointType *)GpuMallocManaged(n * n * sizeof(KpointType));
+    KpointType *G = (KpointType *)GpuMallocManaged(n_win * n_win * sizeof(KpointType));
     for(int ix = 0;ix < n * n;ix++) V[ix] = ZERO_t;
     for(int ix = 0;ix < n_win * n_win;ix++) G[ix] = ZERO_t;
 #else
@@ -264,9 +264,9 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     delete(RT1);
 #if GPU_ENABLED
-    GpuFreeHost(G);
-    GpuFreeHost(V);
-    GpuFreeHost(Asave);
+    GpuFreeManaged(G);
+    GpuFreeManaged(V);
+    GpuFreeManaged(Asave);
 #else
     delete [] G;
     delete [] V;

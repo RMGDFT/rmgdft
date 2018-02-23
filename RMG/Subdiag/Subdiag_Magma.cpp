@@ -182,9 +182,9 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
             if(use_folded) {
 
                 int lwork = num_states * num_states / 3 + num_states;
-                double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));        
+                double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));        
                 FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, SUBDIAG_MAGMA);
-                GpuFreeHost(work);
+                GpuFreeManaged(work);
 
             }
             else {
@@ -192,9 +192,9 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
                 int info;
                 int itype = 1;
                 int lwork = 3 * num_states * num_states + 8 * num_states;
-                double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
+                double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
                 magma_dsygvd(itype, MagmaVec, MagmaLower, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, &info);
-                GpuFreeHost(work);
+                GpuFreeManaged(work);
 
             }
 
@@ -204,13 +204,13 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
             int info;
             int itype = 1;
             int lwork = 3 * num_states * num_states + 8 * num_states;
-            double *work = (double *)GpuMallocHost(lwork * sizeof(KpointType));
+            double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
             int lrwork = 2 * num_states * num_states + 6 * num_states;
             double *rwork = new double[2 * lrwork];
             magma_zhegvd(itype, MagmaVec, MagmaLower, num_states, (cuDoubleComplex *)eigvectors, num_states, (cuDoubleComplex *)Sij, num_states,
                                   eigs, (cuDoubleComplex *)work, lwork, rwork, lrwork, iwork, liwork, &info);
 
-            GpuFreeHost(work);
+            GpuFreeManaged(work);
         }
 
         delete [] iwork;

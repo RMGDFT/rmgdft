@@ -27,6 +27,7 @@
 #include "Kpoint.h"
 #include "Atomic.h"
 #include "ErrorFuncs.h"
+#include "GpuAlloc.h"
 #include "transition.h"
 
 template void ReinitIonicPotentials<double>(Kpoint<double> **, double *, double *, double *);
@@ -83,23 +84,17 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
         else {
 
 #if GPU_ENABLED
-            if(Kptr[kpt]->nl_weight != NULL) cudaFreeHost(Kptr[kpt]->nl_weight);
-            if((Kptr[kpt]->nl_Bweight != NULL) && ct.need_Bweight) cudaFreeHost(Kptr[kpt]->nl_Bweight);
+            if(Kptr[kpt]->nl_weight != NULL) GpuFreeManaged(Kptr[kpt]->nl_weight);
+            if((Kptr[kpt]->nl_Bweight != NULL) && ct.need_Bweight) GpuFreeManaged(Kptr[kpt]->nl_Bweight);
 
-            cudaError_t cuerr;
             // Allocate new storage
             if(pct.num_tot_proj) 
             {
 
-                cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_weight , pbasis * pct.num_tot_proj * sizeof(KpointType) );
-                if(cuerr != cudaSuccess)
-                    RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
-
+                Kptr[kpt]->nl_weight = (KpointType *)GpuMallocManaged(pbasis * pct.num_tot_proj * sizeof(KpointType));
                 if(ct.need_Bweight) 
                 {
-                    cuerr = cudaMallocHost((void **)&Kptr[kpt]->nl_Bweight , pbasis * pct.num_tot_proj * sizeof(KpointType) );
-                    if(cuerr != cudaSuccess)
-                        RmgCudaError(__FILE__, __LINE__, cuerr, "GPU memory allocation error");
+                    Kptr[kpt]->nl_Bweight = (KpointType *)GpuMallocManaged(pbasis * pct.num_tot_proj * sizeof(KpointType));
                 }
                 else 
                 {

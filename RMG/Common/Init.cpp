@@ -204,7 +204,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Set state pointers and initialize state data */
 #if GPU_ENABLED
 
-    cudaError_t custat;
 
     // Figure out how much memory space to reserve on the GPU
     // 3 blocks of ct.cublasxt_block_size*ct.max_states for diagonalization arrays
@@ -237,16 +236,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     // Wavefunctions are actually stored here
     ct.non_local_block_size = std::min(ct.non_local_block_size, ct.max_states);
- 
-    custat = cudaMallocHost((void **)&rptr, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
-    RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
-    custat = cudaMallocHost((void **)&nv, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
-    RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
-    custat = cudaMallocHost((void **)&ns, ct.max_states * P0_BASIS * sizeof(OrbitalType));
-    RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
+
+    rptr = (OrbitalType *)GpuMallocManaged((kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+    nv = (OrbitalType *)GpuMallocManaged(ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
+    ns = (OrbitalType *)GpuMallocManaged(ct.max_states * P0_BASIS * sizeof(OrbitalType));
     if(!ct.norm_conserving_pp) {
-        custat = cudaMallocHost((void **)&Bns, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
-        RmgCudaError(__FILE__, __LINE__, custat, "cudaMallocHost failed");
+        Bns = (OrbitalType *)GpuMallocManaged(ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
         pct.Bns = (double *)Bns;
     }
 #else
