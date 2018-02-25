@@ -59,8 +59,6 @@ template <typename KpointType>
 void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 {
     RmgTimer RT0("4-Diagonalization");
-    //rmg_printf("\nSUBSPACE DIAGONALIZATION\n");
-
     BaseGrid *G = kptr->G;
     Lattice *L = kptr->L;
 
@@ -74,7 +72,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     if(!ct.is_gamma) factor = 2;
 
     BaseThread *T = BaseThread::getBaseThread(0);
-
     // State array is 4 * the number of states in length but memory above
     // the first set of nstates is unused in this routine so we can use it
     // as temporary space.
@@ -82,61 +79,45 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     tmp_arrayT += num_states * pbasis;
 
     static KpointType *global_matrix1;
-    static KpointType *global_matrix2;
 
-    KpointType *Agpu = NULL;
     KpointType *NULLptr = NULL;
 
 #if GPU_ENABLED
-
     KpointType *Aij = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
     KpointType *Bij = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
     KpointType *Sij = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
     KpointType *tmp_array2T = (KpointType *)GpuMallocManaged(pbasis * kptr->nstates * sizeof(KpointType));     
-
 #else
-
     KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *tmp_array2T = new KpointType[pbasis * kptr->nstates];
-
 #endif
-
-
 
     char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
-    char *trans_a;
-    if(typeid(KpointType) == typeid(std::complex<double>)) {
-         trans_a = trans_c;
-    }
-    else {
-        trans_a = trans_t;
-    }   
+    char *trans_a = trans_t;
+    if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
 
 
     // First time through allocate pinned memory for buffers
     if(!global_matrix1) {
 
         int retval1 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
-        int retval2 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix2);
 
-        if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS)) {
+        if(retval1 != MPI_SUCCESS) 
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
-        }
 
         #if GPU_ENABLED
             RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix2, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
         #endif
 
     }
-
+    
 #if GPU_ENABLED
     double *eigs = (double *)GpuMallocManaged(2*kptr->nstates * sizeof(double));
-#else    
+#else
     double *eigs = new double[2*kptr->nstates];
 #endif
 
@@ -220,19 +201,19 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, num_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqAij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+    MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
     // Compute S matrix
     KpointType alpha1(vel);
-    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, Sij, num_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
@@ -242,19 +223,17 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     MPI_Request MPI_reqSij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix2, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+    MPI_Iallreduce(MPI_IN_PLACE, (double *)Sij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix2, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
-    // Store reduced Aij back in Aij matrix
-    for(int idx = 0;idx < num_states*num_states;idx++) Aij[idx] = global_matrix1[idx];
 
     // We need B matrix for US pseudopotentials and/or MEHRSTELLEN_DISCRETIZATION
     if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
         // Compute B matrix
-        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix1, num_states);
 
         // Reduce matrix and store copy in Bij
         MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
@@ -266,7 +245,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     // Wait for S request to finish and when done store copy in Sij
     MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
-    for(int idx = 0;idx < num_states*num_states;idx++) Sij[idx] = global_matrix2[idx];
+//cudaMemPrefetchAsync(Sij, num_states*num_states*sizeof(KpointType), 0);
     delete(RT1);
 
     // Free up tmp_array2T
@@ -320,8 +299,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
 
     RmgGemm(trans_n, trans_b, pbasis, num_states, num_states, alpha, 
-            kptr->orbital_storage, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis, 
-            Agpu, NULLptr, NULLptr, false, true, false, true);
+            kptr->orbital_storage, pbasis, global_matrix1, num_states, beta, tmp_arrayT, pbasis);
 
     // And finally copy them back
     int istart = 0;

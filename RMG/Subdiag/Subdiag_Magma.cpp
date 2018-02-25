@@ -49,6 +49,8 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
+    #include <thrust/fill.h>
+    #include <thrust/device_vector.h>
 
 #endif
 
@@ -101,25 +103,24 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     int NPES = Rmg_G->get_PE_X() * Rmg_G->get_PE_Y() * Rmg_G->get_PE_Z();
     int nodes = NPES / pct.procs_per_host;
 
-    if(pct.is_local_master || (use_folded && (nodes < 12))) {
-
+//    if(pct.is_local_master || (use_folded && (nodes < 12))) {
+if(1){
 
         if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
             // Invert Bij
-            int *ipiv = new int[2*num_states]();
             int info = 0;
+            int *ipiv = new int[2*num_states]();
             if(ct.is_gamma) {
 
+                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
                 // Create unitary matrix
                 for(int i = 0;i < num_states*num_states;i++) eigvectors[i] = 0.0;
                 for(int i = 0;i < num_states;i++) eigvectors[i + i*num_states] = 1.0;
 
                 // Inverse of B should be in eigvectors after this call
-                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
                 magma_dgesv (num_states, num_states, (double *)Bij, num_states, ipiv, (double *)eigvectors, num_states, &info);
                 delete(RT1);
-
 
             }
             else {
@@ -134,7 +135,6 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
                 RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
                 magma_zgesv (num_states, num_states, (magmaDoubleComplex *)Bij, num_states, ipiv, (magmaDoubleComplex *)eigvectors, num_states, &info);
                 delete(RT1);
-
 
             }
             if (info) {
@@ -219,11 +219,11 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
         delete(RT1);
 
-        
     } // end if is_local_master
 
     // If only one proc on this host participated broadcast results to the rest
-    if((pct.procs_per_host > 1) && !(use_folded && (nodes < 12))) {
+//    if((pct.procs_per_host > 1) && !(use_folded && (nodes < 12))) {
+if(1){
         int factor = 2;
         if(ct.is_gamma) factor = 1;
         MPI_Bcast(eigvectors, factor * num_states*num_states, MPI_DOUBLE, 0, pct.local_comm);

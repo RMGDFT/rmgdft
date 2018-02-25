@@ -207,7 +207,11 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
     return GeneralDiagLapack(A, B, eigs, V, N, M, ld);
 #else
 
+#if GPU_ENABLED
     double *global_matrix1 = (double *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(double));
+#else
+    double *global_matrix1 = new double[ct.max_states * ct.max_states];
+#endif
 
     bool participates = MainSp->Participates();
 
@@ -306,7 +310,11 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         }
     }
 
+#if GPU_ENABLED
     GpuFreeManaged(global_matrix1);
+#else
+    delete [] global_matrix1;
+#endif
     return 0;
 
 #endif

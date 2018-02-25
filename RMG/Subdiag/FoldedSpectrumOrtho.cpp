@@ -66,9 +66,8 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     KpointType alpha(1.0);
     KpointType beta(0.0);
 #if GPU_ENABLED
-    cublasStatus_t custat;
-    KpointType *C = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
-    KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
+    KpointType *C = (KpointType *)GpuMallocManaged(n * n * sizeof(KpointType));
+    KpointType *G = (KpointType *)GpuMallocManaged(n * n * sizeof(KpointType));
 #else
     KpointType *C = new KpointType[n * n];
     KpointType *G = new KpointType[n * n];
@@ -133,7 +132,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     for(int ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
 
 //----------------------------------------------------------------
-    for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
+    //for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
 
 #pragma omp parallel
 {
@@ -183,8 +182,8 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
     delete [] tarr;
 #if GPU_ENABLED
-    GpuFreeHost(G);
-    GpuFreeHost(C);
+    GpuFreeManaged(G);
+    GpuFreeManaged(C);
 #else
     delete [] G;
     delete [] C;

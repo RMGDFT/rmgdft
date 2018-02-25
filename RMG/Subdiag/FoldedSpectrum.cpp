@@ -87,14 +87,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
         FS_NPES = Grid->get_PE_X() * Grid->get_PE_Y() * Grid->get_PE_Z();
         fs_comm = pct.grid_comm;
-        if(pct.procs_per_host > 1) {
-            int tpes = FS_NPES / pct.procs_per_host;
-            if(tpes >= 12) {
-                FS_NPES = tpes;
-                fs_comm = pct.local_master_comm;
-            }
-        }
-
         MPI_Comm_rank(fs_comm, &FS_RANK);
 
     }
@@ -120,7 +112,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     double *Asave = new double[n*n];
     double *Bsave = new double[n*n];
 #endif
-    for(int ix = 0;ix < n*n;ix++) Bsave[ix] = B[ix];
+//    for(int ix = 0;ix < n*n;ix++) Bsave[ix] = B[ix];
+memcpy(Bsave, B, n*n*sizeof(double));
 
 
 
@@ -135,11 +128,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #else
     double *T = new double[n*n];
 #endif
-    for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
+//    for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
+memcpy(Asave, A, n*n*sizeof(double));
     FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver, fs_comm);
 
     // Copy back to A
-    for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
+//    for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
+memcpy(A, T, n*n*sizeof(double));
 #if GPU_ENABLED
     GpuFreeManaged(T);
     GpuFreeManaged(Bsave);
@@ -190,7 +185,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     if(iu > n_win)iu=n_win;
     magma_dsyevdx(MagmaVec, MagmaRangeI, MagmaLower, n_win, A, n_win, vl, vu,
                       il, iu, &eigs_found, &eigs[n_start], work, lwork, iwork, liwork, &info);
-
 #else
     dsyevd(jobz, cuplo, &n_win, A, &n_win, &eigs[n_start],
                     work, &lwork,
@@ -258,7 +252,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     RT2 = new RmgTimer("4-Diagonalization: fs: Gram-Schmidt");
 
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, driver, fs_comm);
-    for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
+//    for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
+memcpy(A, V, n*n*sizeof(double));
     delete(RT2);
 
 

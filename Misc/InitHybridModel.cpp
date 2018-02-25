@@ -297,14 +297,12 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
         }
     }
 #endif
-
     // Check if OMP_NUM_THREADS was set?
     char *tptr = getenv("OMP_NUM_THREADS");
     if(tptr) omp_nthreads = atoi(tptr);
 
     tptr = getenv("RMG_NUM_THREADS");
     if(tptr) mg_nthreads = atoi(tptr);
-
     bool omp_numthreads_set = true;
 
     // If user has not set omp_nthreads manually then we 

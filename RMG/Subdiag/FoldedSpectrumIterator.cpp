@@ -72,7 +72,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     double *eigs_gpu = NULL;
     usecuxt = true;
     if(n <= ct.cublasxt_block_size) usecuxt = false;
-    double *Y = (double *)GpuMallocHost(n * k *  sizeof(double));
+    double *Y = (double *)GpuMallocManaged(n * k *  sizeof(double));
     for(int i = 0;i < n * k;i++) Y[i] = 0.0;
 #else
     usecuxt = false; 
@@ -162,7 +162,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
         GpuFreeDevice(Agpu);
     }
 
-    GpuFreeHost(Y);
+    GpuFreeManaged(Y);
 #else
     delete [] Y;
 #endif
