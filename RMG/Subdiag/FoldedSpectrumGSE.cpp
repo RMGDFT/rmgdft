@@ -120,24 +120,16 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
     delete(RT1);
     RT1 = new RmgTimer("4-Diagonalization: fs: GSE-First term");
 
-
+    cublasStatus_t custat;
     // outer loop over steps
     for(int step = 0;step < iterations;step++) {
 
-            RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, NULLptr, NULLptr, NULLptr, false, false, false, false);
-//            custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, gpuA, n, &ONE_t, gpuB, n, gpuZ, n);
-//            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
             // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
-            //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
-    #pragma omp for schedule(static, 1) nowait
-            for(int st1 = istart;st1 < istop;st1++){
-                for(int st2 = 0;st2 < n;st2++){
-                    Z[st1*n + st2] =  A[st1*n + st2] +  B[st1*n + st2];
-                }
-            }
+            RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
+            custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, &A[istart*n], n, &ONE_t, &B[istart*n], n, &Z[istart*n], n);
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
 
     }
-
 
     GpuFreeManaged(T1);
     GpuFreeManaged(D);
@@ -190,7 +182,7 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
     for(int step = 0;step < iterations;step++) {
 
         // Compute (I - D-1 * B) * Z(step) and store in A
-        RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, NULLptr, NULLptr, NULLptr, false, false, false, true);
+        RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
 
         // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
         //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];

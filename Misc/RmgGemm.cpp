@@ -45,30 +45,29 @@ void zgemm(const char *, const char *, int *, int *, int *, std::complex<double>
 
 */
 
-template void RmgGemm<double>(char *, char *, int, int, int, double, double *, int, double *, int,
+
+template void RmgGemm<double>(char *, char *, int, int, int, double, double *, int, double *, int, 
                                   double, double *, int, double *, double *, double *, bool, bool, bool, bool);
-template void RmgGemm<double>(char *, char *, int, int, int, double, double *, int, double *, int,
+template void RmgGemm<double>(char *, char *, int, int, int, double, double *, int, double *, int, 
                                   double, double *, int);
 
-template void RmgGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>,
-                      std::complex<double> *, int, std::complex<double> *, int,
-                      std::complex<double>, std::complex<double> *, int, std::complex<double> *,
+template void RmgGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, 
+                      std::complex<double> *, int, std::complex<double> *, int, 
+                      std::complex<double>, std::complex<double> *, int, std::complex<double> *, 
                       std::complex<double> *, std::complex<double> *, bool, bool, bool, bool);
 
-template void RmgGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>,
-                      std::complex<double> *, int, std::complex<double> *, int,
+template void RmgGemm<std::complex<double> >(char *, char *, int, int, int, std::complex<double>, 
+                      std::complex<double> *, int, std::complex<double> *, int, 
                       std::complex<double>, std::complex<double> *, int);
 
 
-template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int n, int k,
-                             DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
+template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int n, int k, 
+                             DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta, 
                              DataType *C, int ldc)
 {
     DataType *NULLptr = NULL;
     RmgGemm(transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc, NULLptr, NULLptr, NULLptr, false, false, false, false);
 }
-
-
 
 template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int n, int k, 
                              DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta, 
@@ -148,7 +147,7 @@ if(1){
        (attrib_B.memoryType == cudaMemoryTypeDevice) &&
        (attrib_C.memoryType == cudaMemoryTypeDevice) &&
         UsingCudaMemory) {
-printf("DEVICE GEMM\n");
+//printf("DEVICE GEMM\n");
             if(typeid(DataType) == typeid(std::complex<double>)) {
                 custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                                     (cuDoubleComplex *)&alpha,

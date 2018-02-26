@@ -38,7 +38,7 @@ endif()
 
 
 enable_language(Fortran)
-project (RMG C CXX Fortran) 
+project (RMG CXX C Fortran) 
 
 # Build date and time revisions
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -630,16 +630,7 @@ if(RMG_GPU_ENABLED)
   include_directories(${CUDA_INCLUDE_DIRS})
 
 
-  set(CUDA_NVCC_FLAGS "-arch=sm_13" CACHE STRING "nvcc flags" FORCE)
- 
-#HW capability 1.3
-  set (CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
-#  set(LIB_TYPE STATIC) #set the lib type
-#  CUDA_ADD_LIBRARY(TestLib ${LIB_TYPE}
-#  ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/genvpsi_gpu.cu 
-#  ${PROJECT_SOURCE_DIR}/NEGF/Cuda_funcs/rho_psi_times_psi.cu)
-#  target_link_libraries(rmg-negf TestLib)
-#  ADD_DEPENDENCIES(rmg-negf TestLib)
+# Cuda functions that we build are in Gpufuncs/CMakeLists.txt
  
 endif(RMG_GPU_ENABLED)
 
@@ -718,6 +709,9 @@ if(USE_LIBXC)
 endif(USE_LIBXC)
 add_subdirectory (XC) 
 add_subdirectory (InternalPseudo) 
+if(RMG_GPU_ENABLED)
+    add_subdirectory(Gpufuncs)
+endif(RMG_GPU_ENABLED)
 
 # Target specific code subdirectories
 add_subdirectory (RMG/Common EXCLUDE_FROM_ALL) 

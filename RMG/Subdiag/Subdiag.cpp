@@ -80,46 +80,31 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     static KpointType *global_matrix1;
 
-    KpointType *NULLptr = NULL;
-
 #if GPU_ENABLED
-    KpointType *Aij = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
-    KpointType *Bij = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
-    KpointType *Sij = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
+    KpointType *Aij = (KpointType *)GpuMallocManaged(kptr->nstates * kptr->nstates * sizeof(KpointType));
+    KpointType *Bij = (KpointType *)GpuMallocManaged(kptr->nstates * kptr->nstates * sizeof(KpointType));
+    KpointType *Sij = (KpointType *)GpuMallocManaged(kptr->nstates * kptr->nstates * sizeof(KpointType));
     KpointType *tmp_array2T = (KpointType *)GpuMallocManaged(pbasis * kptr->nstates * sizeof(KpointType));     
+    if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));     
+    double *eigs = (double *)GpuMallocManaged(2*kptr->nstates * sizeof(double));
 #else
     KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *tmp_array2T = new KpointType[pbasis * kptr->nstates];
+    if(!global_matrix1) {
+        int retval1 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
+        if(retval1 != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
+    }
+    double *eigs = new double[2*kptr->nstates];
 #endif
+
 
     char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
     char *trans_a = trans_t;
     if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
-
-
-    // First time through allocate pinned memory for buffers
-    if(!global_matrix1) {
-
-        int retval1 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
-
-        if(retval1 != MPI_SUCCESS) 
-            rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
-
-        #if GPU_ENABLED
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
-        #endif
-
-    }
-    
-#if GPU_ENABLED
-    double *eigs = (double *)GpuMallocManaged(2*kptr->nstates * sizeof(double));
-#else
-    double *eigs = new double[2*kptr->nstates];
-#endif
 
 
     // Apply operators on each wavefunction
@@ -206,7 +191,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqAij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+    if(ct.use_async_allreduce)
+       MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+    else
+       MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #else
     MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
@@ -217,13 +205,16 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
-    MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
+    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     MPI_Request MPI_reqSij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)Sij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+    if(ct.use_async_allreduce)
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)Sij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+    else
+        MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #else
     MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
@@ -243,7 +234,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for S request to finish and when done store copy in Sij
-    MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
+    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
 //cudaMemPrefetchAsync(Sij, num_states*num_states*sizeof(KpointType), 0);
     delete(RT1);

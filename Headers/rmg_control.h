@@ -829,6 +829,12 @@ typedef struct
     // Flag is true if the ddd is non-diagonal for any atomic species
     bool is_ddd_non_diagonal;
 
+    // Flag controlling whether or not to use asynchronous MPI allreduce operations in certain places.
+    // Async reduction is not available on all platforms so there is both a compilation flag and a
+    // runtime flag. In particular on a GPU platform that supports asynchronous all reduce operations
+    // on CPU's only you want to set this to false.
+    bool use_async_allreduce;
+
 } CONTROL;
 
 

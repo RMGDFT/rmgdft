@@ -96,20 +96,15 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
        if(n < 128) {
 
             RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, NULLptr, NULLptr, NULLptr, true, true, false, false);
-            RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n, NULLptr, NULLptr, NULLptr, false, false, false, false);
+            RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
 
         }
         else {
 
             // split over PE's if n is large enough
-            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, &V[eig_start*n], n, ZERO_t, &G[eig_start*n], n, 
-                    NULLptr, NULLptr, NULLptr, false, false, false, false);
-
+            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, B, n, &V[eig_start*n], n, ZERO_t, &G[eig_start*n], n);
             MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, G, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
-
-            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, G, n, &V[eig_start*n], n, ZERO_t, &C[eig_start*n], n, 
-                                                NULLptr, NULLptr, NULLptr, false, false, false, false);
-
+            RmgGemm(trans_t, trans_n, n, eig_step, n, ONE_t, G, n, &V[eig_start*n], n, ZERO_t, &C[eig_start*n], n);
             MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, C, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
 
         }

@@ -32,6 +32,7 @@
 #include "Subdiag.h"
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
+#include "Gpufuncs.h"
 #include "ErrorFuncs.h"
 #include "blas.h"
 
@@ -83,7 +84,6 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 #if GPU_ENABLED
     KpointType ONE_t(1.0);
     KpointType ZERO_t(1.0);
-    KpointType *NULLptr = NULL;
 
 
     static char *trans_t = "t";
@@ -115,11 +115,16 @@ if(1){
 
                 RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
                 // Create unitary matrix
-                for(int i = 0;i < num_states*num_states;i++) eigvectors[i] = 0.0;
-                for(int i = 0;i < num_states;i++) eigvectors[i + i*num_states] = 1.0;
+//                for(int i = 0;i < num_states*num_states;i++) eigvectors[i] = 0.0;
+//                for(int i = 0;i < num_states;i++) eigvectors[i + i*num_states] = 1.0;
+                GpuFill((double *)eigvectors, num_states*num_states, 0.0);
+                double *unitvector = (double *)GpuMallocManaged(num_states*sizeof(double));
+                GpuFill((double *)unitvector, num_states, 1.0);
+                cublasDcopy(ct.cublas_handle, num_states, unitvector, 1, (double *)eigvectors, num_states+1);
 
                 // Inverse of B should be in eigvectors after this call
-                magma_dgesv (num_states, num_states, (double *)Bij, num_states, ipiv, (double *)eigvectors, num_states, &info);
+                magma_dgesv_gpu(num_states, num_states, (double *)Bij, num_states, ipiv, (double *)eigvectors, num_states, &info);
+                GpuFreeManaged(unitvector);
                 delete(RT1);
 
             }
@@ -150,14 +155,12 @@ if(1){
             KpointType beta(0.0);;
 
             RmgTimer *RT1 = new RmgTimer("4-Diagonalization: matrix setup");
-            RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                            eigvectors, num_states, Aij, num_states, beta, Bij,
-                            num_states, NULLptr, NULLptr, NULLptr, false, false, false, false);
+            RmgGemm ("n", "n", num_states, num_states, num_states, alpha, eigvectors,
+                      num_states, Aij, num_states, beta, Bij, num_states);
 
             /*Multiply the result with Sij, result is in eigvectors */
-            RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                            Sij, num_states, Bij, num_states, beta, eigvectors,
-                            num_states, NULLptr, NULLptr, NULLptr, false, false, false, false);
+            RmgGemm ("n", "n", num_states, num_states, num_states, alpha, Sij, 
+                      num_states, Bij, num_states, beta, eigvectors, num_states);
             delete(RT1);
 
         }

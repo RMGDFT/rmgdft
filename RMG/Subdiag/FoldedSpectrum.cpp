@@ -107,14 +107,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     double *tarr = new double[n];
 #if GPU_ENABLED
     double *Asave = (double *)GpuMallocManaged(n * n * sizeof(double));
-    double *Bsave = (double *)GpuMallocManaged(n * n * sizeof(double));
+    double *Bsave = (double *)GpuMallocManaged(3*n * n * sizeof(double));
 #else
     double *Asave = new double[n*n];
     double *Bsave = new double[n*n];
 #endif
-//    for(int ix = 0;ix < n*n;ix++) Bsave[ix] = B[ix];
-memcpy(Bsave, B, n*n*sizeof(double));
 
+    memcpy(Bsave, B, n*n*sizeof(double));
 
 
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
@@ -123,24 +122,14 @@ memcpy(Bsave, B, n*n*sizeof(double));
     RmgTimer *RT2 = new RmgTimer("4-Diagonalization: fs: transform");
 
     int its=7;
-#if GPU_ENABLED
-    double *T = (double *)GpuMallocManaged(n * n * sizeof(double));
-#else
-    double *T = new double[n*n];
-#endif
-//    for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
-memcpy(Asave, A, n*n*sizeof(double));
-    FoldedSpectrumGSE<double> (Asave, Bsave, T, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver, fs_comm);
 
-    // Copy back to A
-//    for(int ix=0;ix < n*n;ix++) A[ix] = T[ix];
-memcpy(A, T, n*n*sizeof(double));
+    memcpy(Asave, A, n*n*sizeof(double));
+    FoldedSpectrumGSE<double> (Asave, Bsave, A, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver, fs_comm);
+
 #if GPU_ENABLED
-    GpuFreeManaged(T);
-    GpuFreeManaged(Bsave);
+//    GpuFreeManaged(Bsave);
 #else
-    delete [] T;
-    delete [] Bsave;
+//    delete [] Bsave;
 #endif
 
     delete(RT2);
@@ -252,8 +241,7 @@ memcpy(A, T, n*n*sizeof(double));
     RT2 = new RmgTimer("4-Diagonalization: fs: Gram-Schmidt");
 
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, driver, fs_comm);
-//    for(int idx = 0;idx < n*n;idx++) A[idx] = V[idx];
-memcpy(A, V, n*n*sizeof(double));
+    memcpy(A, V, n*n*sizeof(double));
     delete(RT2);
 
 
@@ -261,10 +249,12 @@ memcpy(A, V, n*n*sizeof(double));
 #if GPU_ENABLED
     GpuFreeManaged(G);
     GpuFreeManaged(V);
+    GpuFreeManaged(Bsave);
     GpuFreeManaged(Asave);
 #else
     delete [] G;
     delete [] V;
+    delete [] Bsave;
     delete [] Asave;
 #endif
     delete [] n_eigs;
