@@ -165,7 +165,7 @@ if(1){
         else {
 
             // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into eigvectors
-            for(int i = 0;i < num_states * num_states;i++) eigvectors[i] = Aij[i];
+            memcpy(eigvectors, Aij, num_states * num_states * sizeof(KpointType));
 
         }
 
