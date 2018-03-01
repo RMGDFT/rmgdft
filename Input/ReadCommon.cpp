@@ -692,10 +692,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used.\n",
                      "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5.\n");
 
-    If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.15, 1.0, 0.3,
+    If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
                      CHECK_AND_FIX, OPTIONAL,
                      "Submatrix width to use as a fraction of the full spectrum.\n",
-                     "folded_spectrum_width must lie in the range (0.15,1.0). Resetting to the default value of 0.3.\n");
+                     "folded_spectrum_width must lie in the range (0.10,1.0). Resetting to the default value of 0.3.\n");
 
     If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, -DBL_MAX, DBL_MAX, 100.0,
                      CHECK_AND_FIX, OPTIONAL,
