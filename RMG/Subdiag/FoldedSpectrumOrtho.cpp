@@ -127,7 +127,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     for(int ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
 
 //----------------------------------------------------------------
-    //for(int idx = 0;idx < n*n;idx++)G[idx] = ZERO_t;
 
 #pragma omp parallel
 {
@@ -149,7 +148,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
         }
 
-        for (int st = 0; st < n; st++) G[st*n + idx] = darr[st];
+        for (int st = 0; st < n; st++) G[idx*n + st] = darr[st];
 
     }
 
@@ -162,17 +161,8 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
     // greatly reduces the network bandwith required at the cost of doing local transposes.
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-allreduce");
-//    MPI_Allreduce(MPI_IN_PLACE, G, n*n * factor, MPI_DOUBLE, MPI_SUM, fs_comm);
-
-    for(int st1 = eig_start;st1 < eig_stop;st1++) {
-        for(int st2 = 0;st2 < n;st2++) {
-            V[st1*n + st2] = G[st1 + st2*n];
-        }
-    }
-
+    memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
-
-
     delete(RT1);
 
     delete [] tarr;

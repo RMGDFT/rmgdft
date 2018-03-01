@@ -268,12 +268,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             {
                 cudaSetDevice(ct.gpu_device_ids[next_gpu]);
                 if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-printf("BBBB0  %d  %d  %d\n",rank,next_gpu,ct.gpu_device_ids[next_gpu]);
-            //        fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
+                    fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
                 }
                 if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
-printf("BBBB1  %d  %d  %d\n",rank,next_gpu,ct.gpu_device_ids[next_gpu]);
-            //        fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
+                    fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
                 }
                 if(cublasXtDeviceSelect(ct.cublasXt_handle, 1, &ct.gpu_device_ids[next_gpu]) != CUBLAS_STATUS_SUCCESS) {
                     fprintf(stderr, "XT set devices fail\n"); exit(-1);

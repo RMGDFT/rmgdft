@@ -627,10 +627,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware.\n",
                      "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 32.\n");
 
-    If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 8192, 512,
+    If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 16384, 512,
                      CHECK_AND_FIX, OPTIONAL,
                      "Block size to use when applying the non-local and S operators.\n",
-                     "non_local_block_size must lie in the range (64,8192). Resetting to the default value of 512.\n");
+                     "non_local_block_size must lie in the range (64,16384). Resetting to the default value of 512.\n");
 
     If.RegisterInputKey("cublasxt_block_size", &lc.cublasxt_block_size, 512, 10240, 2048,
                      CHECK_AND_FIX, OPTIONAL,

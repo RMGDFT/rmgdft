@@ -115,8 +115,6 @@ if(1){
 
                 RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
                 // Create unitary matrix
-//                for(int i = 0;i < num_states*num_states;i++) eigvectors[i] = 0.0;
-//                for(int i = 0;i < num_states;i++) eigvectors[i + i*num_states] = 1.0;
                 GpuFill((double *)eigvectors, num_states*num_states, 0.0);
                 double *unitvector = (double *)GpuMallocManaged(num_states*sizeof(double));
                 GpuFill((double *)unitvector, num_states, 1.0);

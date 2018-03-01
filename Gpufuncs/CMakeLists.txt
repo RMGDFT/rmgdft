@@ -67,6 +67,7 @@ set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${NV_SM} ${NV_COMP}")
 add_definitions( "-DMIN_CUDA_ARCH=${MIN_ARCH}" )
 set(LIB_TYPE STATIC)
   CUDA_ADD_LIBRARY(Gpufuncs ${LIB_TYPE}
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuNegate.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu)
 
 

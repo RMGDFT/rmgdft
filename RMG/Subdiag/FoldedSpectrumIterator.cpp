@@ -33,6 +33,7 @@
 #include "Subdiag.h"
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
+#include "Gpufuncs.h"
 #include "ErrorFuncs.h"
 #include "blas.h"
 
@@ -66,7 +67,7 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     int ione = 1;
     int sizr = n * k;
     double *Y = (double *)GpuMallocManaged(n * k *  sizeof(double));
-    for(int i = 0;i < n * k;i++) Y[i] = 0.0;
+    GpuFill(Y, n * k, 0.0);
     double *T = (double *)GpuMallocManaged(n * k * sizeof(double));
 #else
     double *Y = new double[n * k]();

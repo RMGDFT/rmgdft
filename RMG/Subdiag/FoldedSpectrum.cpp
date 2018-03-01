@@ -33,6 +33,7 @@
 #include "Subdiag.h"
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
+#include "Gpufuncs.h"
 #include "ErrorFuncs.h"
 #include "blas.h"
 
@@ -103,12 +104,14 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
                         n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, 1);
 
 
+#if GPU_ENABLED
+    double *Vdiag = (double *)GpuMallocManaged(n * sizeof(double));
+    double *tarr = (double *)GpuMallocManaged(n * sizeof(double));
+    double *Asave = (double *)GpuMallocManaged(n * n * sizeof(double));
+    double *Bsave = (double *)GpuMallocManaged(n * n * sizeof(double));
+#else
     double *Vdiag = new double[n];
     double *tarr = new double[n];
-#if GPU_ENABLED
-    double *Asave = (double *)GpuMallocManaged(n * n * sizeof(double));
-    double *Bsave = (double *)GpuMallocManaged(3*n * n * sizeof(double));
-#else
     double *Asave = new double[n*n];
     double *Bsave = new double[n*n];
 #endif
@@ -126,20 +129,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     memcpy(Asave, A, n*n*sizeof(double));
     FoldedSpectrumGSE<double> (Asave, Bsave, A, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver, fs_comm);
 
-#if GPU_ENABLED
-//    GpuFreeManaged(Bsave);
-#else
-//    delete [] Bsave;
-#endif
 
     delete(RT2);
     // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
 #if GPU_ENABLED
-    KpointType ZERO_t(0.0);
     KpointType *V = (KpointType *)GpuMallocManaged(n * n * sizeof(KpointType));
     KpointType *G = (KpointType *)GpuMallocManaged(n_win * n_win * sizeof(KpointType));
-    for(int ix = 0;ix < n * n;ix++) V[ix] = ZERO_t;
-    for(int ix = 0;ix < n_win * n_win;ix++) G[ix] = ZERO_t;
+    GpuFill((double *)V, n*n, 0.0);
 #else
     KpointType *V = new KpointType[n*n]();
     KpointType *G = new KpointType[n_win*n_win]();
@@ -147,20 +143,23 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     double *n_eigs = new double[n]();
 
     // AX=lambdaX  store a copy of A in Asave
-    for(int idx = 0;idx < n*n;idx++) Asave[idx] = A[idx];
-    //QMD_dcopy (n*n, a, 1, Asave, 1);
+    memcpy(Asave, A, n*n*sizeof(double));
 
  
     // Do the submatrix along the diagonal to get starting values for folded spectrum
     //--------------------------------------------------------------------
     RT2 = new RmgTimer("4-Diagonalization: fs: submatrix");
+#if GPU_ENABLED
+    cudaMemcpy2D ( G, n_win*sizeof(double), &A[n_start*n + n_start], n*sizeof(double), n_win*sizeof(double), n_win, cudaMemcpyDefault); 
+#else
     for(int ix = 0;ix < n_win;ix++){
         for(int iy = 0;iy < n_win;iy++){
-            G[ix*n_win + iy] = Asave[(n_start+ix)*n + n_start + iy];
+            G[ix*n_win + iy] = A[(n_start+ix)*n + n_start + iy];
         }
     }
+#endif
 
-    for(int idx = 0;idx < n_win * n_win;idx++) A[idx] = G[idx];
+    memcpy(A, G, n_win*n_win*sizeof(double));
 
 #if (GPU_ENABLED && MAGMA_LIBS)
 //    magma_dsyevd(MagmaVec, MagmaLower, n_win, A, n_win, &eigs[n_start],
@@ -185,25 +184,33 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     //--------------------------------------------------------------------
 
-    for(int idx = 0;idx < n_win * n_win;idx++) G[idx] = A[idx];
+    memcpy(G, A, n_win*n_win*sizeof(double));
 
+
+    // Store the eigen vector from the submatrix
+#if GPU_ENABLED
+    GpuFill(Vdiag, n, 1.0);
+    GpuNegate(G, n_win + 1, Vdiag, 1, n_win);
+    int i1=0, ione = 1;
+    for(int i = 0;i < n_win;i++) if((i + n_start) == eig_start) i1 = i;
+    cublasStatus_t custat;
+    custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n);
+    RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
+#else
+    // Make sure same sign convention is followed by all eigenvectors
     for(int ix = 0;ix < n_win;ix++) {
         Vdiag[ix] = ONE_t;
         if(G[ix*n_win + ix] < 0.0) Vdiag[ix] = -ONE_t;
     }
-
-    // Store the eigen vector from the submatrix
     for(int ix = 0;ix < n_win;ix++) {
-
-        if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) {
-
+        if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) 
+        {
             for(int iy = 0;iy < n_win;iy++) {
                   V[(ix + n_start)*n + n_start + iy] = Vdiag[ix] * G[ix * n_win + iy];
             }
-
         }
-
     }
+#endif
     delete(RT2);
 
     // And the eigenvalues
@@ -251,16 +258,17 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     GpuFreeManaged(V);
     GpuFreeManaged(Bsave);
     GpuFreeManaged(Asave);
+    GpuFreeManaged(tarr);
+    GpuFreeManaged(Vdiag);
 #else
     delete [] G;
     delete [] V;
     delete [] Bsave;
     delete [] Asave;
-#endif
-    delete [] n_eigs;
-
     delete [] tarr;
     delete [] Vdiag;
+#endif
+    delete [] n_eigs;
 
     delete [] fs_eigcounts;
     delete [] fs_eigstop;
