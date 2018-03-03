@@ -119,7 +119,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     else {
         // transfer V and B to the GPU for the multiplication and leave the result there
 //        RmgGemm(trans_n, trans_n, n, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, Vgpu, Bgpu, Ggpu, true, true, false, false);
-        RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, Bgpu, Vgpu, Ggpu, true, true, false, false);
+        RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
         // Multiply G by V and leave result in Cgpu for the magma_dpotrf_gpu call coming up next
         RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n, Vgpu, Ggpu, Cgpu, false, false, false, false);
     }

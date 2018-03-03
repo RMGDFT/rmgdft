@@ -21,27 +21,6 @@
 */
 
 
-/***** RMG: Common/init_IO.c *****
- * NAME
- *   Ab initio real space multigrid acceleration
- *   Quantum molecular dynamics package.
- * COPYRIGHT
- *   Copyright (C) 2009  Frisco Rose, Jerzy Bernholc
- * FUNCTION
- *   void init_IO( int argc, char **argv )
- *   Initializes settings and creates directory structures for ouput logging
- *   Make each run image manage its own directory of input/output
- * INPUTS
- *   argc and argv from main
- * OUTPUT
- *   none
- * PARENTS
- *   main.c
- * CHILDREN
- *   init_pe.c read_pseudo.c
- * SOURCE
- */
-
 #include "portability.h"
 #include <stdio.h>
 #include <string.h>
@@ -76,7 +55,6 @@
 #if GPU_ENABLED
     #if MAGMA_LIBS
         #include <magma.h>
-        //#include <magmablas.h>
     #endif
 
     #include <cuda.h>
@@ -86,8 +64,45 @@
 
 #endif
 
-extern "C" void dgemm_(void);
-extern "C" void zgemm_(void);
+#if LINUX
+void get_topology(void)
+{
+  int rank,nproc,nid;
+  int i,core;
+  MPI_Status status;
+  pid_t pid = getpid();
+  cpu_set_t my_set;
+  int ret;
+  char hostname[256];
+
+  setbuf(stdout, NULL);
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+
+  core=sched_getcpu();
+  gethostname(hostname,255);
+
+  CPU_ZERO(&my_set);
+  ret = sched_getaffinity(0, sizeof(my_set), &my_set);
+  char str[1024];
+  strcpy(str," ");
+  int count = 0;
+  int j;
+  for (j = 0; j < CPU_SETSIZE; ++j)
+  {
+    if (CPU_ISSET(j, &my_set))
+    {
+      ++count;
+      char cpunum[2];
+      sprintf(cpunum, "%d ", j);
+      strcat(str, cpunum);
+    }
+  }
+  printf("Rank: %4d; NumRanks: %d; RankCore: %3d; Hostname: %s; Affinity: %3d\n", rank, nproc, core, hostname, count);
+}
+#endif
+
 
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
@@ -383,11 +398,4 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
 }
 
-// Required here for transitional routines
-extern std::unordered_map<std::string, InputKey *> ControlMap;
-
-extern "C" void init_IO(int argc, char **argv)
-{
-    InitIo(argc, argv, ControlMap);
-}
 

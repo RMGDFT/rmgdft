@@ -92,10 +92,10 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 #endif
     }
     else {
-        // Multiply G by V and leave result in C
-       if(n < 128) {
+        // Multiply G by V and leave result in C. Should probably make this a tunable option instead of 256.
+       if(n < 256) {
 
-            RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, NULLptr, NULLptr, NULLptr, true, true, false, false);
+            RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
             RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
 
         }

@@ -301,12 +301,17 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     int owned, owner;
 
 #if GPU_ENABLED
-    pct.weight = (double *)GpuMallocManaged(pct.weight_size * sizeof(double));
+    cudaError_t custat;
+//    pct.weight = (double *)GpuMallocHost(pct.weight_size * sizeof(double));
+    custat = cudaMallocHost((void **)&pct.weight , pct.weight_size * sizeof(double));
+    RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
     for(int idx = 0;idx < pct.weight_size;idx++) pct.weight[idx] = 0.0;
 
     if(ct.need_Bweight) 
     {
-        pct.Bweight = (double *)GpuMallocManaged(pct.weight_size * sizeof(double));
+        //pct.Bweight = (double *)GpuMallocHost(pct.weight_size * sizeof(double));
+        custat = cudaMallocHost((void **)&pct.Bweight , pct.weight_size * sizeof(double));
+        RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
         for(int idx = 0;idx < pct.weight_size;idx++) pct.Bweight[idx] = 0.0;
     }
     else {
@@ -589,7 +594,7 @@ static void reset_pct_arrays (int num_ions)
 
     if (pct.weight != NULL) {
 #if GPU_ENABLED
-        GpuFreeManaged(pct.weight);
+        cudaFreeHost(pct.weight);
 #else
         if(ct.nvme_weights)
         {
@@ -603,7 +608,7 @@ static void reset_pct_arrays (int num_ions)
     }
     if ((pct.Bweight != NULL) && ct.need_Bweight) {
 #if GPU_ENABLED
-        GpuFreeManaged(pct.Bweight);
+        cudaFreeHost(pct.Bweight);
 #else
         if(ct.nvme_weights)
         {

@@ -204,36 +204,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Set state pointers and initialize state data */
 #if GPU_ENABLED
 
-
-    // Figure out how much memory space to reserve on the GPU
-    // 3 blocks of ct.cublasxt_block_size*ct.max_states for diagonalization arrays
-    size_t gpu_bufsize, t1;
-    t1 = ct.cublasxt_block_size * ct.max_states * sizeof(OrbitalType);
-    gpu_bufsize = 3 * t1;
-#if MAGMA_LIBS
-    gpu_bufsize += t1;
-#endif
-    InitGpuMalloc(gpu_bufsize);
-
-    // Next is page locked memory for transferring data back and forth
-    int n_win = 0;
-    if(ct.use_folded_spectrum) {
-        double r_width = ct.folded_spectrum_width;
-        double t1 = (double)ct.num_states;
-        n_win = (int)(r_width * t1) + 1;
-    }
-
-    size_t gpu_hostbufsize;
-    gpu_hostbufsize = 2 * ct.max_states * ct.max_states * sizeof(OrbitalType) + 
-        3 * ct.max_states * std::max(ct.max_states, P0_BASIS) * sizeof(OrbitalType) +
-        n_win * n_win * sizeof(OrbitalType);
-
-    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
-        gpu_hostbufsize += ct.max_states * std::max(ct.max_states, P0_BASIS) * sizeof(OrbitalType);
-    }
-
-    InitGpuMallocHost(gpu_hostbufsize);
-
     // Wavefunctions are actually stored here
     ct.non_local_block_size = std::min(ct.non_local_block_size, ct.max_states);
 
@@ -548,7 +518,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     //Dprintf ("Generate initial vxc potential and hartree potential");
     pack_vhstod (vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
-
 
 
     //Dprintf ("Condition of run flag is %d", ct.runflag);
