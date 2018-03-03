@@ -727,9 +727,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
 
     // Booleans next. Booleans are never required.
+#if GPU_ENABLED
     // If GPU memory is constrained this one should be set to true.
     If.RegisterInputKey("pin_nonlocal_weights", &lc.pin_nonlocal_weights, false,
                         "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.");
+#endif
 
     If.RegisterInputKey("compressed_infile", &lc.compressed_infile, true,
                         "Flag indicating whether or not restart wavefunction file uses compressed format.");
