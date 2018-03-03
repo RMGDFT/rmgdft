@@ -629,6 +629,10 @@ typedef struct
 
     int *gpu_ipiv;
 
+    // Default is to use managed memory for non-local weights but if GPU memory
+    // is constrained performance is much better using pinned memory.
+    bool pin_nonlocal_weights;
+
 #else
     double *gpu_Htri, *gpu_Gtri, *gpu_GdiagBlocks;
     double *gpu_Grow;

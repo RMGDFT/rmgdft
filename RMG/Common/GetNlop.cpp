@@ -302,16 +302,30 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 
 #if GPU_ENABLED
     cudaError_t custat;
-//    pct.weight = (double *)GpuMallocHost(pct.weight_size * sizeof(double));
-    custat = cudaMallocHost((void **)&pct.weight , pct.weight_size * sizeof(double));
-    RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+    // Managed memory is faster when gpu memory is not constrained but 
+    // pinned memory works better when it is constrained.
+    if(ct.pin_nonlocal_weights)
+    {
+        custat = cudaMallocHost((void **)&pct.weight , pct.weight_size * sizeof(double));
+        RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+    }
+    else
+    {
+        pct.weight = (double *)GpuMallocManaged(pct.weight_size * sizeof(double));
+    }
     for(int idx = 0;idx < pct.weight_size;idx++) pct.weight[idx] = 0.0;
 
     if(ct.need_Bweight) 
     {
-        //pct.Bweight = (double *)GpuMallocHost(pct.weight_size * sizeof(double));
-        custat = cudaMallocHost((void **)&pct.Bweight , pct.weight_size * sizeof(double));
-        RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+        if(ct.pin_nonlocal_weights)
+        {
+            custat = cudaMallocHost((void **)&pct.Bweight , pct.weight_size * sizeof(double));
+            RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+        }
+        else
+        {
+            pct.Bweight = (double *)GpuMallocManaged(pct.weight_size * sizeof(double));
+        }
         for(int idx = 0;idx < pct.weight_size;idx++) pct.Bweight[idx] = 0.0;
     }
     else {
@@ -594,7 +608,14 @@ static void reset_pct_arrays (int num_ions)
 
     if (pct.weight != NULL) {
 #if GPU_ENABLED
-        cudaFreeHost(pct.weight);
+        if(ct.pin_nonlocal_weights)
+        {
+            cudaFreeHost(pct.weight);
+        }
+        else
+        {
+            cudaFree(pct.weight);
+        }
 #else
         if(ct.nvme_weights)
         {
@@ -608,7 +629,14 @@ static void reset_pct_arrays (int num_ions)
     }
     if ((pct.Bweight != NULL) && ct.need_Bweight) {
 #if GPU_ENABLED
-        cudaFreeHost(pct.Bweight);
+        if(ct.pin_nonlocal_weights)
+        {
+            cudaFreeHost(pct.Bweight);
+        }
+        else
+        {
+            cudaFree(pct.Bweight);
+        }
 #else
         if(ct.nvme_weights)
         {
