@@ -27,43 +27,31 @@
 #include <cuda_runtime_api.h>
 #include <cuda_device_runtime_api.h>
 #include <crt/host_runtime.h>
+#include <cublas_v2.h>
+#include <cublasXt.h>
+#include "ErrorFuncs.h"
 
-#define GRAM_GPU_BLOCK 64
-
-__global__ void gramsch_update_psi_kernel(double *G,
-                                     const double * __restrict__ V,
+__global__ void gramsch_update_psi_kernel(
                                      const double * __restrict__ C,
                                      int N,
-                                     int eig_start,
-                                     int eig_stop)
+                                     double *darr,
+                                     int eig)
 {
 
-//    __shared__ double sarr[GRAM_GPU_BLOCK];
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-#if 0
-    // Get inverse of diagonal elements
-    for(int ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
-
-//----------------------------------------------------------------
-//----------------------------------------------------------------
-
-    for(int idx = eig_start;idx < eig_stop;idx++)
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    for(int st=0;st < N;st++)
     {
-        for (int st = 0; st < n; st++) 
+
+        if(tid == 0) darr[st] = darr[st] / C[st*N + st];
+        __threadfence();
+        for(int st1 = blockIdx.x * blockDim.x + threadIdx.x + st + 1;st1 < N;st1 += blockDim.x * gridDim.x) 
         {
-            double dtmp = V[st*n + idx] * tarr[st];
-            for (int st1 = st+1; st1 < n; st1++)
-            {
-                V[st1*n + idx] -= C[st1 + n*st] * dtmp;
-            }
+            darr[st1] -= C[st1 + N*st] * darr[st];
         }
+        __threadfence();
+
     }
 
-    for(int idx = eig_start;idx < eig_stop;idx++)
-    {
-        for (int st = 0; st < n; st++) G[idx*n + st] = V[st*n + idx];
-    }
-#endif
 }
 
 
@@ -72,22 +60,24 @@ void gramsch_update_psi(double *V,
                         double *C,
                         int N,
                         int eig_start,
-                        int eig_stop)
+                        int eig_stop,
+                        cublasHandle_t cublasH)
 {
 
-  dim3 Grid, Block;
-  Grid.x = eig_stop - eig_start + 1;
-  Grid.y = 1;
-  Block.x = N;
-  Block.y = 1;
+  int threads = 32;
+  int blocks = N / threads + 1;
+  double *darr;
+  RmgCudaError(__FILE__, __LINE__, cudaMallocManaged ( &darr, N*sizeof(double), cudaMemAttachGlobal ), "Error: cudaMallocManaged failed.\n");
 
-  gramsch_update_psi_kernel<<<Grid, Block, 0>>>(
-                                           V,
-                                           G,
-                                           C,
-                                           N,
-                                           eig_start,
-                                           eig_stop);
+  for(int eig = eig_start;eig < eig_stop;eig++)
+  {
+      cublasDcopy(cublasH, N, &V[eig], N, darr, 1);
+      gramsch_update_psi_kernel<<<blocks, threads>>>(C, N, darr, eig);
+      cublasDcopy(cublasH, N, darr, 1, &G[eig*N], 1);
+  }
+
+  cudaFree(darr);
+
 }
 
 

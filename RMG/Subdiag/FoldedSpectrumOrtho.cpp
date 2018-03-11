@@ -43,6 +43,7 @@
     #if MAGMA_LIBS
         #include <magma.h>
     #endif
+    #include "Gpufuncs.h"
 #endif
 
 // Gram-Schmidt ortho for eigenvectors.
@@ -113,14 +114,21 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
     // Cholesky factorization
+//#if GPU_ENABLED && MAGMA_LIBS
+#if 0
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
-#if GPU_ENABLED && MAGMA_LIBS
     magma_dpotrf(MagmaLower, n, C, n, &info);
-#else
-    dpotrf(cuplo, &n, C, &n, &info);
-#endif
     delete(RT1);
 
+    RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
+    gramsch_update_psi(V, G, C, n, eig_start, eig_stop, ct.cublas_handle);
+    delete(RT1);
+
+#else
+    RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
+    //dpotrf(cuplo, &n, C, &n, &info);
+    magma_dpotrf(MagmaLower, n, C, n, &info);
+    delete(RT1);
 
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
     // Get inverse of diagonal elements
@@ -157,6 +165,9 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 } // end omp section
 
     delete(RT1);
+#endif
+
+
 
     // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
     // greatly reduces the network bandwith required at the cost of doing local transposes.
