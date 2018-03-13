@@ -46,6 +46,7 @@
 
 
 #define		sger		RMG_FC_GLOBAL(sger, SGER)
+#define		dger		RMG_FC_GLOBAL(dger, DGER)
 #define		daxpy		RMG_FC_GLOBAL(daxpy, DAXPY)
 #define		zaxpy		RMG_FC_GLOBAL(zaxpy, ZAXPY)
 #define		dzasum		RMG_FC_GLOBAL(dzasum, DZASUM)
@@ -186,6 +187,8 @@ void zgemv (char *, int *, int *, DoubleC *, DoubleC*, int *, DoubleC*, int *, D
 void dgels(char *trans, int *M, int *N, int *nrhs, double *A, int *lda, double *b, int *ldb, double *work, int *lwork, int *info);
 void dsytrf(char *, int *, double *, int *, int *, double *, int *, int *);
 void dsytri(char *, int *, double *, int *, int *, double *, int *);
+void dger(int *, int *, double *, double *, int *, double *, int *, double *, int *);
+
 
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
 

@@ -72,8 +72,8 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 #else
     KpointType *C = new KpointType[n * n];
     KpointType *G = new KpointType[n * n];
-#endif
     double *tarr = new double[n];
+#endif
     int info = 0;
     int eig_step = eig_stop - eig_start;
 
@@ -114,14 +114,27 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
     // Cholesky factorization
-//#if GPU_ENABLED && MAGMA_LIBS
-#if 0
+#if GPU_ENABLED && MAGMA_LIBS
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
-    magma_dpotrf(MagmaLower, n, C, n, &info);
+    cudaDeviceSynchronize();
+    if(n < 512)
+    {
+        magma_dpotrf(MagmaLower, n, C, n, &info);
+    }
+    else
+    {
+        magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
+    }
+    cudaDeviceSynchronize();
     delete(RT1);
 
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
     gramsch_update_psi(V, G, C, n, eig_start, eig_stop, ct.cublas_handle);
+    // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
+    // greatly reduces the network bandwith required at the cost of doing local transposes.
+    cublasDgeam(ct.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, n, eig_step, &alpha, &V[eig_start], n, &beta, C, n, G, n);
+    cudaMemcpy(&V[eig_start*n], G, eig_step*n*sizeof(KpointType), cudaMemcpyDefault);
+    cudaDeviceSynchronize();
     delete(RT1);
 
 #else
@@ -156,6 +169,8 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
         }
 
+        // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
+        // greatly reduces the network bandwith required at the cost of doing local transposes.
         for (int st = 0; st < n; st++) G[idx*n + st] = darr[st];
 
     }
@@ -164,19 +179,17 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 } // end omp section
 
+    memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
     delete(RT1);
+    delete [] tarr;
 #endif
 
 
 
-    // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
-    // greatly reduces the network bandwith required at the cost of doing local transposes.
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-allreduce");
-    memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
     delete(RT1);
 
-    delete [] tarr;
 #if GPU_ENABLED
     GpuFreeManaged(G);
     GpuFreeManaged(C);

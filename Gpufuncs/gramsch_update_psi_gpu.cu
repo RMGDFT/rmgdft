@@ -29,8 +29,11 @@
 #include <crt/host_runtime.h>
 #include <cublas_v2.h>
 #include <cublasXt.h>
+#include "blas.h"
 #include "ErrorFuncs.h"
 
+// In some cases this may be faster than the version using cublasDger inside a loop
+// but it only uses a single SM per eigenstate so 
 __global__ void gramsch_update_psi_kernel(
                                      const double * __restrict__ C,
                                      int N,
@@ -43,12 +46,12 @@ __global__ void gramsch_update_psi_kernel(
     {
 
         if(tid == 0) darr[st] = darr[st] / C[st*N + st];
-        __threadfence();
+        __syncthreads();
         for(int st1 = blockIdx.x * blockDim.x + threadIdx.x + st + 1;st1 < N;st1 += blockDim.x * gridDim.x) 
         {
             darr[st1] -= C[st1 + N*st] * darr[st];
         }
-        __threadfence();
+        __syncthreads();
 
     }
 
@@ -63,20 +66,36 @@ void gramsch_update_psi(double *V,
                         int eig_stop,
                         cublasHandle_t cublasH)
 {
+    int eig_step = eig_stop - eig_start;
+    int ione = 1;
+    double alpha = -1.0;
 
-  int threads = 32;
-  int blocks = N / threads + 1;
-  double *darr;
-  RmgCudaError(__FILE__, __LINE__, cudaMallocManaged ( &darr, N*sizeof(double), cudaMemAttachGlobal ), "Error: cudaMallocManaged failed.\n");
+    // We get the inverse of the diagonal elements here rather than inside the loop to avoid page faults
+    double *darr;
+    RmgCudaError(__FILE__, __LINE__, cudaMallocManaged ( &darr, N*sizeof(double), cudaMemAttachGlobal ), "Error: cudaMallocManaged failed.\n");
+    //for(int i = 0;i < N;i++) darr[i] = 1.0 / C[i*N + i];
+    cublasDcopy(cublasH, N, C, N + 1, darr, 1);
+    cudaDeviceSynchronize();
+    for(int i = 0;i < N;i++) darr[i] = 1.0 / darr[i];
+    cudaDeviceSynchronize();
+    /* apply inverse of cholesky factor to states */
+    for (int st = 0; st < N; st++)
+    {
 
-  for(int eig = eig_start;eig < eig_stop;eig++)
-  {
-      cublasDcopy(cublasH, N, &V[eig], N, darr, 1);
-      gramsch_update_psi_kernel<<<blocks, threads>>>(C, N, darr, eig);
-      cublasDcopy(cublasH, N, darr, 1, &G[eig*N], 1);
-  }
+        /* normalize V[st] */
+        cublasDscal(cublasH, eig_step, &darr[st], &V[st * N + eig_start], ione);
 
-  cudaFree(darr);
+        /* subtract the projection along c[st] from the remaining vectors */
+        int idx = N - st - 1;
+        if(idx)
+        {
+            cublasDger(cublasH, eig_step, idx, &alpha, &V[st * N + eig_start], ione,
+               &C[(st+1) + N*st], ione, &V[(st+1) * N + eig_start], N);
+        }
+
+    } /* end of for */
+
+    cudaFree(darr);
 
 }
 
