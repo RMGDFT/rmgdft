@@ -423,10 +423,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Maximum ionic time step to use.\n",
                      "max_ionic_time_step must lie in the range (0.0,150.0). Resetting to the default value of 150.0.\n");
 
-    If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 10, INT_MAX, 10, 
+    If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 4, INT_MAX, 10, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "The number of unoccupied orbitals.\n", 
-                     "unoccupied_states_per_kpoint must be at least 10. Fixing.\n");
+                     "unoccupied_states_per_kpoint must be at least 4. Fixing.\n");
 
     If.RegisterInputKey("state_block_size", &lc.state_block_size, 1, INT_MAX, 64, 
                      CHECK_AND_FIX, OPTIONAL, 

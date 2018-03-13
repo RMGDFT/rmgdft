@@ -2,6 +2,7 @@
 #ifndef GPU_FUNCS_H
 #define GPU_FUNCS_H 1
 
+#if GPU_ENABLED
 #include <cublas_v2.h>
 #include <cublasXt.h>
 
@@ -14,6 +15,6 @@ void gramsch_update_psi(double *V,
                         int eig_start,
                         int eig_stop,
                         cublasHandle_t cublasH);
-
+#endif
 
 #endif

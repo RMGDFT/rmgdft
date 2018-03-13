@@ -63,7 +63,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
-    KpointType *NULLptr = NULL;
     KpointType alpha(1.0);
     KpointType beta(0.0);
 #if GPU_ENABLED
@@ -139,8 +138,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 #else
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
-    //dpotrf(cuplo, &n, C, &n, &info);
-    magma_dpotrf(MagmaLower, n, C, n, &info);
+    dpotrf(cuplo, &n, C, &n, &info);
     delete(RT1);
 
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
