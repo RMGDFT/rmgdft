@@ -59,7 +59,6 @@ __global__ void gramsch_update_psi_kernel(
 
 
 void gramsch_update_psi(double *V,
-                        double *G,
                         double *C,
                         int N,
                         int eig_start,

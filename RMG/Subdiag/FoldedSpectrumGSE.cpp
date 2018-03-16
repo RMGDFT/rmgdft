@@ -34,6 +34,7 @@
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
+#include "Gpufuncs.h"
 #include "blas.h"
 
 #include "prototypes.h"
@@ -60,13 +61,12 @@
 //
 template void FoldedSpectrumGSE<double> (double *, double *, double *, int, int, int, int *, int *, int, int, MPI_Comm &);
 template <typename DataType>
-void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, DataType * __restrict__ Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver, MPI_Comm &fs_comm)
+void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart, int istop, int *fs_eigcounts, int *fs_eigstart, int iterations, int driver, MPI_Comm &fs_comm)
 {
     RmgTimer RT0("4-Diagonalization: fs: GSE");
     DataType ZERO_t(0.0);
     DataType ONE_t(1.0);
 
-    DataType *NULLptr = NULL;
     int istep = istop - istart;
 
     // For mpi routines. Transfer twice as much data for complex orbitals
@@ -79,42 +79,61 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 
 #if GPU_ENABLED
 
+    cublasStatus_t custat;
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");
     DataType *D = (DataType *)GpuMallocManaged(n * sizeof(DataType));
     DataType *T1 = (DataType *)GpuMallocManaged(n * n * sizeof(DataType));
+    double *unitvector = (double *)GpuMallocManaged(n*sizeof(double));
+    double *tvector = (double *)GpuMallocManaged(n*sizeof(double)); 
+    cublasDcopy(ct.cublas_handle, n, B, n+1, tvector, 1);
+    cudaDeviceSynchronize();
+    for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / tvector[ix]; 
+    cudaDeviceSynchronize();
+
 
     // Set up D^(-1) and transfer it to the GPU
-    for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / B[ix*n + ix];
+    //for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / B[ix*n + ix];
 
     // Initial starting guess goes in Z and is just the identity
-    //for(int ix = 0;ix < n*n;ix++) Z[ix] = ZERO_t;
-    for(int st1 = istart;st1 < istop;st1++){
-        for(int st2 = 0;st2 < n;st2++) Z[st1*n + st2] = ZERO_t;
-    }
-    for(int ix = istart;ix < istop;ix++) Z[ix*n + ix] = ONE_t;
+    GpuFill((double *)&Z[istart*n], istep*n, 0.0);
+    GpuFill((double *)unitvector, n, 1.0);
+    cublasDcopy(ct.cublas_handle, istep, unitvector, 1, (double *)&Z[istart*n], istep+1);
+
+    //for(int st1 = istart;st1 < istop;st1++){
+    //    for(int st2 = 0;st2 < n;st2++) Z[st1*n + st2] = ZERO_t;
+    //}
+    //for(int ix = istart;ix < istop;ix++) Z[ix*n + ix] = ONE_t;
+    
 
     // T1 starts out as the identity but will hold (I - D-1 * B)
 
-#pragma omp for schedule(static, 1) nowait
     // (I - D-1 * B)
-    for(int st1 = 0;st1 < n;st1++){
-        for(int st2 = 0;st2 < n;st2++){
-            T1[st1*n + st2] = -D[st2] * B[st1*n + st2];
-        }
-    }
+    double negrone = -1.0;
+    double rone = 1.0;
+    custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_LEFT, n, n, B, n, D, 1, T1, n);
+    custat = cublasDscal(ct.cublas_handle, n*n, &negrone, T1, 1);
+    custat = cublasDaxpy(ct.cublas_handle, n, &rone, unitvector, 1, T1, n+1);
 
-    for(int ix = 0;ix < n;ix++) T1[ix*n + ix] += 1.0;
+//#pragma omp for schedule(static, 1) nowait
+//    for(int st1 = 0;st1 < n;st1++){
+//        for(int st2 = 0;st2 < n;st2++){
+//            T1[st1*n + st2] = -D[st2] * B[st1*n + st2];
+//        }
+//    }
+//    for(int ix = 0;ix < n;ix++) T1[ix*n + ix] += 1.0;
 
+    GpuFreeManaged(unitvector);
     delete(RT1);
 
     RT1 = new RmgTimer("4-Diagonalization: fs: GSE-Second term");
-#pragma omp for schedule(static, 1) nowait
     // Compute D^(-1) * B * I and store in B
-    for(int st1 = istart;st1 < istop;st1++){
-        for(int st2 = 0;st2 < n;st2++){
-              B[st1*n + st2] = D[st2] * A[st1*n + st2];
-        }
-    }
+    custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_LEFT, n, istep, &A[istart*n], n, D, 1, &B[istart*n], n);
+//#pragma omp for schedule(static, 1) nowait
+//    for(int st1 = istart;st1 < istop;st1++){
+//        for(int st2 = 0;st2 < n;st2++){
+//              B[st1*n + st2] = D[st2] * A[st1*n + st2];
+//        }
+//    }
 
 
     delete(RT1);
@@ -122,23 +141,31 @@ void FoldedSpectrumGSE(DataType * __restrict__ A, DataType * __restrict__ B, Dat
 
 
     // outer loop over steps
+    int device = -1;
+    cudaGetDevice(&device);
+    //cudaMemPrefetchAsync ( &A[istart*n], istep*n*sizeof(double), device, NULL);
+    //cudaMemPrefetchAsync ( &Z[istart*n], istep*n*sizeof(double), device, NULL);
+    //cudaMemPrefetchAsync ( &T1[istart*n], istep*n*sizeof(double), device, NULL);
+    cudaDeviceSynchronize();
     for(int step = 0;step < iterations;step++) {
 
             RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
-//            custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, gpuA, n, &ONE_t, gpuB, n, gpuZ, n);
-//            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
             // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
             //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
-    #pragma omp for schedule(static, 1) nowait
-            for(int st1 = istart;st1 < istop;st1++){
-                for(int st2 = 0;st2 < n;st2++){
-                    Z[st1*n + st2] =  A[st1*n + st2] +  B[st1*n + st2];
-                }
-            }
+            custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, 
+                                 &A[istart*n], n, &ONE_t, &B[istart*n], n, &Z[istart*n], n);
+            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
+//#pragma omp for schedule(static, 1) nowait
+//            for(int st1 = istart;st1 < istop;st1++){
+//                for(int st2 = 0;st2 < n;st2++){
+//                    Z[st1*n + st2] =  A[st1*n + st2] +  B[st1*n + st2];
+//                }
+//            }
+
 
     }
-
-
+    cudaDeviceSynchronize();
+cudaMemPrefetchAsync ( Z, n*n*sizeof(double), cudaCpuDeviceId, NULL);
     GpuFreeManaged(T1);
     GpuFreeManaged(D);
 

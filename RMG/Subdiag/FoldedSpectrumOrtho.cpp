@@ -31,6 +31,7 @@
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
+#include "Gpufuncs.h"
 #include "blas.h"
 
 
@@ -43,7 +44,6 @@
     #if MAGMA_LIBS
         #include <magma.h>
     #endif
-    #include "Gpufuncs.h"
 #endif
 
 // Gram-Schmidt ortho for eigenvectors.
@@ -63,6 +63,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
+    KpointType *NULLptr = NULL;
     KpointType alpha(1.0);
     KpointType beta(0.0);
 #if GPU_ENABLED
@@ -71,8 +72,8 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 #else
     KpointType *C = new KpointType[n * n];
     KpointType *G = new KpointType[n * n];
-    double *tarr = new double[n];
 #endif
+    double *tarr = new double[n];
     int info = 0;
     int eig_step = eig_stop - eig_start;
 
@@ -93,7 +94,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     }
     else {
         // Multiply G by V and leave result in C. Should probably make this a tunable option instead of 256.
-       if(n < 256) {
+       if(n < 2048) {
 
             RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
             RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
@@ -114,33 +115,37 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
     // Cholesky factorization
 #if GPU_ENABLED && MAGMA_LIBS
+    cudaDeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
-    cudaDeviceSynchronize();
-    if(n < 512)
-    {
-        magma_dpotrf(MagmaLower, n, C, n, &info);
-    }
-    else
-    {
-        magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
-    }
+    int device = -1;
+    cudaGetDevice(&device);
+    cudaMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
+    magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
     cudaDeviceSynchronize();
     delete(RT1);
-
-    RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
-    gramsch_update_psi(V, G, C, n, eig_start, eig_stop, ct.cublas_handle);
-    // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
-    // greatly reduces the network bandwith required at the cost of doing local transposes.
-    cublasDgeam(ct.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, n, eig_step, &alpha, &V[eig_start], n, &beta, C, n, G, n);
-    cudaMemcpy(&V[eig_start*n], G, eig_step*n*sizeof(KpointType), cudaMemcpyDefault);
-    cudaDeviceSynchronize();
-    delete(RT1);
-
 #else
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
     dpotrf(cuplo, &n, C, &n, &info);
     delete(RT1);
+#endif
 
+
+#if GPU_ENABLED
+    cudaDeviceSynchronize();
+    RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
+    cudaMemPrefetchAsync ( V, n*n*sizeof(double), device, NULL);
+    gramsch_update_psi(V, C, n, eig_start, eig_stop, ct.cublas_handle);
+    cudaDeviceSynchronize();
+#pragma omp for schedule(static, 1) nowait
+    for(int st1=eig_start;st1 < eig_stop;st1++)
+    {
+        for(int st2=0;st2 < n;st2++)G[st1*n + st2] = V[st1 + st2*n];
+    }
+//    cublasDgeam(ct.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, n, eig_step, &alpha, &V[eig_start], n, &beta, C, n, G, n);
+    cudaDeviceSynchronize();
+    memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
+    delete(RT1);
+#else
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
     // Get inverse of diagonal elements
     for(int ix = 0;ix < n;ix++) tarr[ix] = 1.0 / C[n * ix + ix];
@@ -167,8 +172,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
         }
 
-        // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
-        // greatly reduces the network bandwith required at the cost of doing local transposes.
         for (int st = 0; st < n; st++) G[idx*n + st] = darr[st];
 
     }
@@ -179,15 +182,15 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
     memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
     delete(RT1);
-    delete [] tarr;
 #endif
 
-
-
+    // The matrix transpose here lets us use an Allgatherv instead of an Allreduce which
+    // greatly reduces the network bandwith required at the cost of doing local transposes.
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-allreduce");
     MPI_Allgatherv(MPI_IN_PLACE, eig_step * n * factor, MPI_DOUBLE, V, fs_eigcounts, fs_eigstart, MPI_DOUBLE, fs_comm);
     delete(RT1);
 
+    delete [] tarr;
 #if GPU_ENABLED
     GpuFreeManaged(G);
     GpuFreeManaged(C);
