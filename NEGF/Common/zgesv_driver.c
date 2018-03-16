@@ -7,7 +7,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <complex.h>
 
 
 #if GPU_ENABLED
@@ -17,6 +16,7 @@
 #include <cublas_v2.h>
 #include <magma.h>
 #endif
+#include <complex.h>
 
 #include "Scalapack.h"
 #include "blas.h"

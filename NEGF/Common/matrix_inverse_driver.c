@@ -7,14 +7,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <complex.h>
-
-
-#include "rmgtypedefs.h"
-#include "params.h"
-#include "typedefs.h"
-#include "LCR.h"
-#include "init_var.h"
 
 #if GPU_ENABLED
 #include <magma.h>
@@ -22,6 +14,14 @@
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
 #endif
+
+#include <complex.h>
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "LCR.h"
+#include "init_var.h"
+
 
 #include "Scalapack.h"
 #include "blas.h"

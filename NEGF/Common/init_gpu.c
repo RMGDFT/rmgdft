@@ -62,7 +62,6 @@ void rmg_printout_devices( )
 
 
 
-cudaStream_t rmg_default_cuda_stream;
 void init_gpu (void)
 {
 
@@ -147,10 +146,6 @@ void init_gpu (void)
 	}
 
 	cudaSetDeviceFlags(cudaDeviceScheduleSpin);
-	// Create a stream for the main process
-	cudaStreamCreate(&ct.cuda_stream);
-	//  cublasSetStream(ct.cublas_handle, ct.cuda_stream); 
-	//  magmablasSetKernelStream(ct.cuda_stream);
 
 }
 
