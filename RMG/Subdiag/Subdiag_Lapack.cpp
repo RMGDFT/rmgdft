@@ -79,7 +79,6 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
 
         KpointType ONE_t(1.0);
-        KpointType *NULLptr = NULL;
     #if GPU_ENABLED
         KpointType ZERO_t(0.0);
         KpointType *Cij = (KpointType *)GpuMallocManaged(num_states * num_states * sizeof(KpointType));
@@ -126,14 +125,12 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
             RmgTimer *RT1 = new RmgTimer("4-Diagonalization: matrix setup");
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
                             Cij, num_states, Aij, num_states, beta, Bij,
-                            num_states, NULLptr, NULLptr, NULLptr,
-                            true, true, true, true);
+                            num_states);
 
             /*Multiply the result with Sij, result is in Cij */
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
                             Sij, num_states, Bij, num_states, beta, Cij,
-                            num_states, NULLptr, NULLptr, NULLptr,
-                            true, true, true, true);
+                            num_states);
             delete(RT1);
 
         }

@@ -64,18 +64,10 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     KpointType ONE_t(1.0);
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    KpointType *Bgpu = NULL; 
-    KpointType *Ggpu = NULL; 
-    KpointType *Vgpu = NULL; 
-    KpointType *Cgpu = NULL; 
 #if GPU_ENABLED
     cublasStatus_t custat;
     KpointType *C = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
     KpointType *G = (KpointType *)GpuMallocHost(n * n * sizeof(KpointType));
-    Bgpu = (KpointType *)GpuMallocDevice(n * n * sizeof(KpointType));
-    Ggpu = (KpointType *)GpuMallocDevice(n * n * sizeof(KpointType));
-    Vgpu = (KpointType *)GpuMallocDevice(n * n * sizeof(KpointType));
-    Cgpu = (KpointType *)GpuMallocDevice(n * n * sizeof(KpointType));
 #else
     KpointType *C = work1;
     KpointType *G = work2;
@@ -107,9 +99,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs-Gram-overlaps");
     if(!B) {
 #if GPU_ENABLED
-        custat = cublasSetVector(n * n , sizeof(KpointType), V, 1, Vgpu, 1 );
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem transferreing C from system memory to gpu.");
-        cublasDsyrk(ct.cublas_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, Vgpu, n, &beta, Cgpu, n);
+        cublasDsyrk(ct.cublas_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C, n);
 
 #else
 //        dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
@@ -118,10 +108,9 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     }
     else {
         // transfer V and B to the GPU for the multiplication and leave the result there
-//        RmgGemm(trans_n, trans_n, n, n, n, ONE_t, B, n, V, n, ZERO_t, G, n, Vgpu, Bgpu, Ggpu, true, true, false, false);
         RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
-        // Multiply G by V and leave result in Cgpu for the magma_dpotrf_gpu call coming up next
-        RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n, Vgpu, Ggpu, Cgpu, false, false, false, false);
+        // Multiply G by V and leave result in C for the magma_dpotrf_gpu call coming up next
+        RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
     }
     delete(RT1);
 
@@ -129,11 +118,11 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
     // Cholesky factorization
     RT1 = new RmgTimer("4-Diagonalization: fs-Gram-cholesky");
 #if GPU_ENABLED && MAGMA_LIBS
-    magma_dpotrf_gpu(MagmaLower, n, Cgpu, n, &info);
-    custat = cublasGetVector(n * n, sizeof( KpointType ), Cgpu, 1, C, 1 );
+    magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
+    custat = cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 );
     RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
 #elif GPU_ENABLED
-    custat = cublasGetVector(n * n, sizeof( KpointType ), Cgpu, 1, C, 1 );
+    custat = cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 );
     RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
     dpotrf(cuplo, &n, C, &n, &info);
 #else
@@ -218,14 +207,7 @@ for(int st1 = 0;st1 < n;st1++) {
 
 #endif
 
-#if GPU_ENABLED
-    GpuFreeDevice(Cgpu);
-    GpuFreeDevice(Vgpu);
-    GpuFreeDevice(Ggpu);
-    GpuFreeDevice(Bgpu);
-#endif
     delete(RT1);
-
     delete [] tarr;
 #if GPU_ENABLED
     GpuFreeHost(G);

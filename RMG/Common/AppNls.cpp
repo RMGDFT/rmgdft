@@ -75,7 +75,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     int P0_BASIS = kpoint->pbasis;
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
-    KpointType *NULLptr = NULL;
 
     char *transa = "n";
 
@@ -200,7 +199,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
         RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj, 
                 ONE_t, M_qqq,  pct.num_tot_proj, sint_compack, pct.num_tot_proj,
-                ZERO_t,  nwork, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
+                ZERO_t,  nwork, pct.num_tot_proj);
 
         RmgGemm (transa, transa, P0_BASIS, num_states, pct.num_tot_proj, 
                 ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, pct.num_tot_proj,

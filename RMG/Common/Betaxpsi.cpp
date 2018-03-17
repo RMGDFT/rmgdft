@@ -86,7 +86,6 @@ void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointTyp
         int factor = 1;
         KpointType rzero(0.0);
         KpointType alpha(get_vel());
-        KpointType *NULLptr = NULL;
 
         if(typeid(KpointType) == typeid(std::complex<double>)) factor = 2;
         char *transt = "t", *transn = "n", *transc = "c";
@@ -97,7 +96,7 @@ void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointTyp
         int length = factor * ct.num_ions * nstates * ct.max_nl;
         RmgGemm (transa, transn, pct.num_tot_proj, nstates, kptr->pbasis, alpha,
             nlweight, kptr->pbasis, &kptr->orbital_storage[first_state*kptr->pbasis], kptr->pbasis,
-            rzero, sint_local, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
+            rzero, sint_local, pct.num_tot_proj);
 
 
         if(Rmg_G->get_NPES() != 1)
@@ -240,7 +239,6 @@ template <typename KpointType>
 void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, KpointType *psi, int num_states, KpointType *nlweight)
 {
     KpointType rzero(0.0);
-    KpointType *NULLptr = NULL;
     char *transt = "t", *transn = "n", *transc = "c";
     char *transa;
    
@@ -258,8 +256,7 @@ void betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, Kpoint
     KpointType *nlarray = new KpointType[pct.num_tot_proj * num_states]();
 #endif
     RmgGemm (transa, transn, pct.num_tot_proj, num_states, pbasis, alpha, 
-            nlweight, pbasis, psi, pbasis, 
-            rzero, nlarray, pct.num_tot_proj, NULLptr, NULLptr, NULLptr, false, false, false, true);
+            nlweight, pbasis, psi, pbasis, rzero, nlarray, pct.num_tot_proj);
 
     for (int nion = 0; nion < pct.num_nonloc_ions; nion++)
     {

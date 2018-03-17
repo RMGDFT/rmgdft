@@ -187,12 +187,10 @@ void LcaoGetPsi (State<StateType> * states)
         char *trans_n = "n";
         StateType alpha(1.0);
         StateType beta(0.0);
-        StateType *NULLptr = NULL;
 
     
         RmgGemm(trans_n, trans_n, P0_BASIS, ct.num_states, state_count, alpha,
-            npsi, P0_BASIS, rmatrix, state_count, beta, states[0].psi, P0_BASIS,
-            NULLptr, NULLptr, NULLptr, false, false, false, true);
+            npsi, P0_BASIS, rmatrix, state_count, beta, states[0].psi, P0_BASIS);
 
 #if GPU_ENABLED
         GpuFreeManaged(rmatrix);
