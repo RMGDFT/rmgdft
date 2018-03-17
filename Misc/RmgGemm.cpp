@@ -8,7 +8,6 @@
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
-#include "blas.h"
 
 #if GPU_ENABLED
 #include <cuda.h>
@@ -16,11 +15,13 @@
 #include <cublas_v2.h>
 #endif
 
+#define         dgemm           RMG_FC_GLOBAL(dgemm, DGEMM)
+#define         zgemm           RMG_FC_GLOBAL(zgemm, ZGEMM)
 
-//extern "C" {
-//void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
-//void zgemm(const char *, const char *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, std::complex<double> *, int *, std::complex<double> *, std::complex<double> *, int *);
-//}
+extern "C" {
+void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+void zgemm(const char *, const char *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, std::complex<double> *, int *, std::complex<double> *, std::complex<double> *, int *);
+}
 
 
 
@@ -124,8 +125,8 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 #else
 
     if(typeid(DataType) == typeid(std::complex<double>)) {
-        zgemm(transa, transb, &m, &n, &k, (std::complex<double> *)&alpha, (std::complex<double> *)A, &lda, 
-             (std::complex<double> *)B, &ldb, (std::complex<double> *)&beta, (std::complex<double> *)C, &ldc);
+        zgemm(transa, transb, &m, &n, &k, (std::complex<double> *)(&alpha), (std::complex<double> *)A, &lda, 
+             (std::complex<double> *)B, &ldb, (std::complex<double> *)(&beta), (std::complex<double> *)C, &ldc);
     }
     else {
         dgemm(transa, transb, &m, &n, &k, (double *)&alpha, (double *)A, &lda, 

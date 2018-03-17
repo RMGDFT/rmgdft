@@ -289,7 +289,9 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     // Gram-Schmidt ortho for eigenvectors.
     RT2 = new RmgTimer("4-Diagonalization: fs: Gram-Schmidt");
 
+#if GPU_ENABLED
     cudaDeviceSynchronize();
+#endif
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, driver, fs_comm);
 #if GPU_ENABLED
     cudaDeviceSynchronize();
