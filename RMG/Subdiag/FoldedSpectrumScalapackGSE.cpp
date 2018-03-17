@@ -68,7 +68,6 @@ void FoldedSpectrumScalapackGSE(DataType *A, DataType *B, DataType *Z, int n, in
     DataType ZERO_t(0.0);
     DataType ONE_t(1.0);
 
-    DataType *NULLptr = NULL;
     int istep = istop - istart;
     int ione = 1;
     double rone=1.0, rzero=0.0;
@@ -132,7 +131,7 @@ void FoldedSpectrumScalapackGSE(DataType *A, DataType *B, DataType *Z, int n, in
     for(int step = 0;step < iterations;step++) {
 
         // Compute (I - D-1 * B) * Z(step) and store in A
-        RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n, NULLptr, NULLptr, NULLptr, false, false, false, true);
+        RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
 
         // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
         //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
