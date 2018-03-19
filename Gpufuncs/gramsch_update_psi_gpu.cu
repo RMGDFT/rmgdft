@@ -29,33 +29,32 @@
 #include <crt/host_runtime.h>
 #include <cublas_v2.h>
 #include <cublasXt.h>
-#include "blas.h"
 #include "ErrorFuncs.h"
 
-// In some cases this may be faster than the version using cublasDger inside a loop
-// but it only uses a single SM per eigenstate so 
 __global__ void gramsch_update_psi_kernel(
-                                     const double * __restrict__ C,
-                                     int N,
-                                     double *darr,
-                                     int eig)
+                                     double *V,
+                                     double *C,
+                                     double *G,
+                                     int n,
+                                     int eig_start,
+                                     int eig_stop)
 {
 
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    for(int st=0;st < N;st++)
-    {
-
-        if(tid == 0) darr[st] = darr[st] / C[st*N + st];
-        __syncthreads();
-        for(int st1 = blockIdx.x * blockDim.x + threadIdx.x + st + 1;st1 < N;st1 += blockDim.x * gridDim.x) 
-        {
-            darr[st1] -= C[st1 + N*st] * darr[st];
-        }
-        __syncthreads();
-
-    }
-
+    int ix = (threadIdx.x + eig_start) * n + blockIdx.x;
+    int iy = blockIdx.x * n + threadIdx.x + eig_start;
+    __syncthreads();
+    G[ix] = V[iy];
+    __syncthreads();
 }
+
+//for(int st1=eig_start;st1<eig_stop;st1++)
+//{
+//    for(int st2=0;st2<n;st2++)
+//    {
+//        G[st1*n + st2] = V[st1 + st2*n];
+//    }
+//}
+//memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
 
 
 void gramsch_update_psi(double *V,
@@ -65,6 +64,7 @@ void gramsch_update_psi(double *V,
                         int eig_stop,
                         cublasHandle_t cublasH)
 {
+
     int eig_step = eig_stop - eig_start;
     int ione = 1;
     double alpha = -1.0;
@@ -72,10 +72,9 @@ void gramsch_update_psi(double *V,
     // We get the inverse of the diagonal elements here rather than inside the loop to avoid page faults
     double *darr;
     RmgCudaError(__FILE__, __LINE__, cudaMallocManaged ( &darr, N*sizeof(double), cudaMemAttachGlobal ), "Error: cudaMallocManaged failed.\n");
-    //for(int i = 0;i < N;i++) darr[i] = 1.0 / C[i*N + i];
-    cublasDcopy(cublasH, N, C, N + 1, darr, 1);
-    cudaDeviceSynchronize();
-    for(int i = 0;i < N;i++) darr[i] = 1.0 / darr[i];
+    for(int i = 0;i < N;i++) darr[i] = 1.0 / C[i*N + i];
+    //cublasDcopy(cublasH, N, C, N + 1, darr, 1);
+    //for(int i = 0;i < N;i++) darr[i] = 1.0 / darr[i];
     cudaDeviceSynchronize();
     /* apply inverse of cholesky factor to states */
     for (int st = 0; st < N; st++)
@@ -94,9 +93,9 @@ void gramsch_update_psi(double *V,
 
     } /* end of for */
 
+    cudaDeviceSynchronize();
     cudaFree(darr);
-
 }
 
-
 #endif
+

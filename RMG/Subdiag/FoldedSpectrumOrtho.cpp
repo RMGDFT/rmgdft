@@ -55,10 +55,10 @@
 // else <i|j> = I
 //
 
-template void FoldedSpectrumOrtho<double> (int, int, int, int *, int *, double *, double *, int, MPI_Comm &);
+template void FoldedSpectrumOrtho<double> (int, int, int, int *, int *, double *, double *, double *, double *, int, MPI_Comm &);
 
 template <typename KpointType>
-void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, int driver, MPI_Comm &fs_comm)
+void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, int *fs_eigstart, KpointType *V, KpointType *B, KpointType *C, KpointType *G, int driver, MPI_Comm &fs_comm)
 {
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
@@ -66,13 +66,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     KpointType *NULLptr = NULL;
     KpointType alpha(1.0);
     KpointType beta(0.0);
-#if GPU_ENABLED
-    KpointType *C = (KpointType *)GpuMallocManaged(n * n * sizeof(KpointType));
-    KpointType *G = (KpointType *)GpuMallocManaged(n * n * sizeof(KpointType));
-#else
-    KpointType *C = new KpointType[n * n];
-    KpointType *G = new KpointType[n * n];
-#endif
+
     double *tarr = new double[n];
     int info = 0;
     int eig_step = eig_stop - eig_start;
@@ -94,7 +88,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     }
     else {
         // Multiply G by V and leave result in C. Should probably make this a tunable option instead of 256.
-       if(n < 2048) {
+       if(n < 4192) {
 
             RmgSymm("l", cuplo, n, n, ONE_t, B, n, V, n, ZERO_t, G, n);
             RmgGemm(trans_t, trans_n, n, n, n, ONE_t, V, n, G, n, ZERO_t, C, n);
@@ -120,7 +114,14 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     int device = -1;
     cudaGetDevice(&device);
     cudaMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
-    magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
+    if(n < 1024)
+    {
+        magma_dpotrf(MagmaLower, n, C, n, &info);
+    }
+    else
+    {
+        magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
+    }
     cudaDeviceSynchronize();
     delete(RT1);
 #else
@@ -191,13 +192,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
     delete [] tarr;
-#if GPU_ENABLED
-    GpuFreeManaged(G);
-    GpuFreeManaged(C);
-#else
-    delete [] G;
-    delete [] C;
-#endif
 }
 
 
