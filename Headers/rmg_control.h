@@ -458,6 +458,9 @@ typedef struct
     /* Folded spectrum width */
     double folded_spectrum_width;
 
+    /* Folded spectrum iterations */
+    int folded_spectrum_iterations;
+
     /* Expansion factor for non-local projectors */
     double projector_expansion_factor;
 

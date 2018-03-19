@@ -697,6 +697,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Submatrix width to use as a fraction of the full spectrum.\n",
                      "folded_spectrum_width must lie in the range (0.10,1.0). Resetting to the default value of 0.3.\n");
 
+    If.RegisterInputKey("folded_spectrum_iterations", &lc.folded_spectrum_iterations, 0, 10, 2,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Number of folded spectrum iterations to perform.\n",
+                     "folded_spectrum_iterations must lie in the range (0,10). Resetting to the default value of 2.\n");
+
     If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, -DBL_MAX, DBL_MAX, 100.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "",

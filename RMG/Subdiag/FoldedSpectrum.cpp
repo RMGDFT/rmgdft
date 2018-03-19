@@ -265,7 +265,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     // Apply folded spectrum to this PE's range of eigenvectors
     RT2 = new RmgTimer("4-Diagonalization: fs: iteration");
-    FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, 10, driver);
+    if(ct.folded_spectrum_iterations)
+        FoldedSpectrumIterator(Asave, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, ct.folded_spectrum_iterations, driver);
     delete(RT2);
 
 #if HAVE_ASYNC_ALLREDUCE
