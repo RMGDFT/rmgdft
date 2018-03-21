@@ -113,7 +113,24 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
     int device = -1;
     cudaGetDevice(&device);
-    cudaMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
+    cudaError_t cuerr = cudaMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
+    //if(cuerr != cudaSuccess) rmg_error_handler (__FILE__, __LINE__, "Prefetch failed.");
+    //cuerr = cudaMemPrefetchAsync ( G, n*n*sizeof(double), device, NULL);
+    cudaDeviceSynchronize();
+#if 1
+    cusolverStatus_t cu_status;
+    int Lwork;
+    int *dev_info;
+    cuerr = cudaMalloc(&dev_info, sizeof(int));
+    cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    cu_status = cusolverDnDpotrf_bufferSize(ct.cusolver_handle, cu_uplo, n, C, n, &Lwork);
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf_bufferSize failed.");
+    if(Lwork > n*n) rmg_error_handler (__FILE__, __LINE__, " something wrong with cusolverDnDpotrf workspace allocation.");
+    cu_status = cusolverDnDpotrf(ct.cusolver_handle, cu_uplo, n, C, n, G, Lwork, dev_info );
+    cudaDeviceSynchronize();
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
+    cudaFree(dev_info);
+#else
     if(n < 1024)
     {
         magma_dpotrf(MagmaLower, n, C, n, &info);
@@ -122,6 +139,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     {
         magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
     }
+#endif
     cudaDeviceSynchronize();
     delete(RT1);
 #else

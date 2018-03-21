@@ -8,6 +8,10 @@
     #include <complex.h>
 #endif
 
+#if GPU_ENABLED
+    #include <cusolverDn.h>
+    #include <cublas_v2.h>
+#endif
 
 /* multigrid-parameter structure */
 typedef struct
@@ -624,6 +628,8 @@ typedef struct
     // CUBLAS library handles
     cublasHandle_t cublas_handle;
     cublasXtHandle_t cublasXt_handle;
+    cusolverDnHandle_t cusolver_handle;
+    cudaStream_t cusolver_stream;
 
     cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow;
     cuDoubleComplex *gpu_GdiagBlocks;

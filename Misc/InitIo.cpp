@@ -67,7 +67,7 @@
 #if LINUX
 void get_topology(void)
 {
-  int rank,nproc,nid;
+  int rank,nproc;
   int i,core;
   MPI_Status status;
   pid_t pid = getpid();
@@ -315,6 +315,19 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         } //
         cublasXtSetBlockDim(ct.cublasXt_handle, ct.cublasxt_block_size);
     }
+
+    cusolverStatus_t cusolver_status = cusolverDnCreate(&ct.cusolver_handle);
+    if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
+    {
+        fprintf(stderr, "cusolver initialization failed.\n"); exit(-1);
+    }
+    cudaStreamCreateWithFlags(&ct.cusolver_stream, cudaStreamNonBlocking);
+    cusolver_status = cusolverDnSetStream(ct.cusolver_handle, ct.cusolver_stream);
+    if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
+    {
+        fprintf(stderr, "cusolver stream initialization failed.\n"); exit(-1);
+    }
+
 
 #if MAGMA_LIBS
     magma_init();
