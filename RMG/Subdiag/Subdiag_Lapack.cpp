@@ -155,7 +155,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         if(ct.is_gamma) {
 
             if(use_folded) {
-                FoldedSpectrum<double> (kptr->G, num_states, (double *)Cij, num_states, (double *)Sij, num_states, eigs, work2, lwork, iwork, liwork, SUBDIAG_LAPACK);
+                FoldedSpectrum<double> (kptr->G, num_states, (double *)Cij, num_states, (double *)Sij, num_states, (double *)Aij, (double *)Bij, eigs, work2, lwork, iwork, liwork, SUBDIAG_LAPACK);
                 for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx]; 
 
             }

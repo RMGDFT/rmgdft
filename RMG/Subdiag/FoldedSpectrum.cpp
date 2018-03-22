@@ -64,10 +64,10 @@ static int FS_RANK;
 // I have not finished updating this to work with complex orbitals yet. Given that the folded spectrum method is only
 // useful for large systems which are almost always run at gamma with real orbitals it's not a high priority but should
 // be straightforward enough to finish.
-template int FoldedSpectrum<double> (BaseGrid *, int, double *, int, double *, int, double *, double *, int, int *, int, int);
+template int FoldedSpectrum<double> (BaseGrid *, int, double *, int, double *, int, double *, double *, double *, double *, int, int *, int, int);
 
 template <typename KpointType>
-int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb, 
+int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B, int ldb, KpointType *Asave, KpointType *Bsave,
 		double *eigs, double *work, int lwork, int *iwork, int liwork, int driver)
 {
 
@@ -107,8 +107,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #if GPU_ENABLED
     double *Vdiag = (double *)GpuMallocManaged(n * sizeof(double));
     double *tarr = (double *)GpuMallocManaged(n * sizeof(double));
-    double *Asave = (double *)GpuMallocManaged(n * n * sizeof(double));
-    double *Bsave = (double *)GpuMallocManaged(n * n * sizeof(double));
     cudaDeviceSynchronize();
     cudaMemcpy(Bsave, B, n*n*sizeof(double), cudaMemcpyDefault);
     //memcpy(Bsave, B, n*n*sizeof(double));
@@ -142,8 +140,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #else
     double *Vdiag = new double[n];
     double *tarr = new double[n];
-    double *Asave = new double[n*n];
-    double *Bsave = new double[n*n];
     memcpy(Bsave, B, n*n*sizeof(double));
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
 
@@ -286,15 +282,11 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #if GPU_ENABLED
     GpuFreeManaged(G);
     GpuFreeManaged(V);
-    GpuFreeManaged(Bsave);
-    GpuFreeManaged(Asave);
     GpuFreeManaged(tarr);
     GpuFreeManaged(Vdiag);
 #else
     delete [] G;
     delete [] V;
-    delete [] Bsave;
-    delete [] Asave;
     delete [] tarr;
     delete [] Vdiag;
 #endif

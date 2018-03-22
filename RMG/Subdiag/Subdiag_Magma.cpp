@@ -184,7 +184,7 @@ if(1){
 
                 int lwork = num_states * num_states / 3 + num_states;
                 double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));        
-                FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, SUBDIAG_MAGMA);
+                FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, (double *)Aij, (double *)Bij, eigs, work, lwork, iwork, liwork, SUBDIAG_MAGMA);
                 GpuFreeManaged(work);
 
             }
