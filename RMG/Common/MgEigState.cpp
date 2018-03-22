@@ -380,7 +380,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                 // We use a residual correction multigrid scheme where the right hand side is the residual
                 // so single precision is adequate for the correction since the errors from lower precision
-                // will be approximately 7 decimal digits smaller than the original error we athe errors from lower precision
                 // will be approximately 7 decimal digits smaller than the original error we are correcting for
                 if(typeid(CalcType) == typeid(double))
                 {
