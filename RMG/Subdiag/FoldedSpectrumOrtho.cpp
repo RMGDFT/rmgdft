@@ -41,9 +41,6 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
-    #if MAGMA_LIBS
-        #include <magma.h>
-    #endif
 #endif
 
 // Gram-Schmidt ortho for eigenvectors.
@@ -108,7 +105,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
     // Cholesky factorization
-#if GPU_ENABLED && MAGMA_LIBS
+#if GPU_ENABLED
     cudaDeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
     int device = -1;
@@ -117,7 +114,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     //if(cuerr != cudaSuccess) rmg_error_handler (__FILE__, __LINE__, "Prefetch failed.");
     //cuerr = cudaMemPrefetchAsync ( G, n*n*sizeof(double), device, NULL);
     cudaDeviceSynchronize();
-#if 1
+
     cusolverStatus_t cu_status;
     int Lwork;
     int *dev_info;
@@ -130,16 +127,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     cudaDeviceSynchronize();
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
     cudaFree(dev_info);
-#else
-    if(n < 1024)
-    {
-        magma_dpotrf(MagmaLower, n, C, n, &info);
-    }
-    else
-    {
-        magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
-    }
-#endif
     cudaDeviceSynchronize();
     delete(RT1);
 #else
