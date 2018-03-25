@@ -73,6 +73,7 @@ set(LIB_TYPE STATIC)
   CUDA_ADD_LIBRARY(Gpufuncs ${LIB_TYPE}
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuNegate.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/gramsch_update_psi_gpu.cu
+  ${PROJECT_SOURCE_DIR}/Gpufuncs/app8_del2_gpu.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu)
 
 
