@@ -30,10 +30,9 @@
 #include <crt/host_runtime.h>
 #include <stdio.h>
 
-#define BLOCKX 16
-#define BLOCKY 16
 #define IMAGES 4
 
+template <int BLOCKX, int BLOCKY>
 __global__ void app8_del2_kernel(const double * __restrict__ a, 
                                                 double *b, 
                                                 const int dimx,
@@ -89,7 +88,7 @@ __global__ void app8_del2_kernel(const double * __restrict__ a,
 
     __syncthreads();
 
-    for (int iz = 0; iz < dimz; iz++)
+    for (int ix = 0; ix < dimx; ix++)
     {
 
         // Advance the central point data
@@ -159,27 +158,65 @@ double app8_del2_gpu(const double * __restrict__ a,
                    cudaStream_t cstream)
 {
     dim3 Grid, Block;
-    Grid.x = dimy / 16;
-    Grid.y = dimz / 16;
-    Grid.z = 1;
-    if(dimy % 16) Grid.x++;
-    if(dimz % 16) Grid.y++;
-    Block.x = 16;
-    Block.y = 16;
-    Block.z = 1;
+    double retval = -(205.0 / 72.0) * (h2x + h2y + h2z);
 
-    app8_del2_kernel<<<Grid, Block, 0>>>(
-                    a,
-                    b,
-                    dimx,    
-                    dimy,    
-                    dimz,
-                    h2x,
-                    h2y,
-                    h2z);
+    if(!(dimy % 16) && !(dimz % 16))
+    {
+        Grid.x = dimy / 16;
+        Block.x = 16;
+        Grid.y = dimz / 16;
+        Block.y = 16;
+        app8_del2_kernel<16, 16><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        return retval;
+    }
+    if(!(dimy % 16) && !(dimz % 24))
+    {
+        Grid.x = dimy / 16;
+        Block.x = 16;
+        Grid.y = dimz / 24;
+        Block.y = 24;
+        app8_del2_kernel<16, 24><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        return retval;
+    }
+    if(!(dimy % 24) && !(dimz % 16))
+    {
+        Grid.x = dimy / 24;
+        Block.x = 24;
+        Grid.y = dimz / 16;
+        Block.y = 16;
+        app8_del2_kernel<24, 16><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        return retval;
+    }
+    if(!(dimy % 24) && !(dimz % 24))
+    {
+        Grid.x = dimy / 24;
+        Block.x = 24;
+        Grid.y = dimz / 24;
+        Block.y = 24;
+        app8_del2_kernel<24, 24><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        return retval;
+    }
+    if(!(dimy % 8) && !(dimz % 8))
+    {
+        Grid.x = dimy / 8;
+        Block.x = 8;
+        Grid.y = dimz / 8;
+        Block.y = 8;
+        app8_del2_kernel<8, 8><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        return retval;
+    }
+    if(!(dimy % 12) && !(dimz % 12))
+    {
+        Grid.x = dimy / 12;
+        Block.x = 12;
+        Grid.y = dimz / 12;
+        Block.y = 12;
+        app8_del2_kernel<12, 12><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        return retval;
+    }
 
 cudaDeviceSynchronize();
 //printf("EEEE %s\n",cudaGetErrorString(cudaGetLastError()));
-    return -(205.0 / 72.0) * (h2x + h2y + h2z);
+    return retval;
 }
 #endif
