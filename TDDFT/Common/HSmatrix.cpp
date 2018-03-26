@@ -83,7 +83,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, Kpoi
 #if GPU_ENABLED
 
     cublasStatus_t custat;
-    KpointType *tmp_array2T = (KpointType *)GpuMallocHost(pbasis * kptr->nstates * sizeof(KpointType));     
+    KpointType *tmp_array2T = (KpointType *)GpuMallocManaged(pbasis * kptr->nstates * sizeof(KpointType));     
 
 #else
 
