@@ -121,6 +121,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     KpointType *a_psi = (KpointType *)tmp_arrayT;
     KpointType *b_psi = (KpointType *)tmp_array2T;
 
+#if GPU_ENABLED
+    // Until the finite difference operators are being applied on the GPU it's faster
+    // to make sure that the result arrays are present on the cpu side.
+    int device = -1;
+    cudaMemPrefetchAsync ( a_psi, num_states*pbasis*sizeof(KpointType), device, NULL);
+    cudaMemPrefetchAsync ( b_psi, num_states*pbasis*sizeof(KpointType), device, NULL);
+    cudaDeviceSynchronize();
+#endif
+
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode) active_threads--;
     if(active_threads < 1) active_threads = 1;
@@ -294,9 +303,15 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     // And finally copy them back
     int istart = 0;
-    if(Verify ("freeze_occupied", true, kptr->ControlMap)) istart = kptr->highest_occupied + 1;
-
-    for(int idx = istart;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
+    if(Verify ("freeze_occupied", true, kptr->ControlMap)) istart = (kptr->highest_occupied + 1)*pbasis;
+    istop = num_states * pbasis - istart * pbasis;
+    //for(int idx = istart;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
+#if GPU_ENABLED
+    cudaMemcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], istop*sizeof(double), cudaMemcpyDefault);
+    //cudaMemPrefetchAsync (kptr->orbital_storage , num_states*sizeof(double), cudaCpuDeviceId, NULL);
+#else
+    memcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], istop*sizeof(double));
+#endif
 
     delete(RT1);
 
