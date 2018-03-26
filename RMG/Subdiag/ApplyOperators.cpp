@@ -90,7 +90,6 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
                                kptr->kvec[2] * (std::complex<double>)gz[idx]);
         }
 
-        delete [] kdr;
         delete [] gz;
         delete [] gy;
         delete [] gx;
@@ -142,7 +141,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
     }
 
-    delete [] kdr;
+    if(kdr) delete [] kdr;
     delete [] work_t;
     delete [] sg_twovpsi_t;
 
