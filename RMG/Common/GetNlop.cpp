@@ -312,6 +312,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     else
     {
         pct.weight = (double *)GpuMallocManaged(pct.weight_size * sizeof(double));
+        int device = -1;
+        cudaGetDevice(&device);
+        cudaMemAdvise ( pct.weight, pct.weight_size * sizeof(double), cudaMemAdviseSetReadMostly, device);
     }
     for(int idx = 0;idx < pct.weight_size;idx++) pct.weight[idx] = 0.0;
 
@@ -325,6 +328,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         else
         {
             pct.Bweight = (double *)GpuMallocManaged(pct.weight_size * sizeof(double));
+            int device = -1;
+            cudaGetDevice(&device);
+            cudaMemAdvise ( pct.Bweight, pct.weight_size * sizeof(double), cudaMemAdviseSetReadMostly, device);
         }
         for(int idx = 0;idx < pct.weight_size;idx++) pct.Bweight[idx] = 0.0;
     }

@@ -269,8 +269,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, Asave, Bsave, driver, fs_comm);
 #if GPU_ENABLED
     cudaDeviceSynchronize();
-    //cudaMemcpy(A, V, n*n*sizeof(double), cudaMemcpyDefault);
-    memcpy(A, V, n*n*sizeof(double));
+    cudaMemcpy(A, V, n*n*sizeof(double), cudaMemcpyDefault);
+    //memcpy(A, V, n*n*sizeof(double));
     cudaDeviceSynchronize();
 #else
     memcpy(A, V, n*n*sizeof(double));

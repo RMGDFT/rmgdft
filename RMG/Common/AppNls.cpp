@@ -196,6 +196,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                     ZERO_t,  nv, P0_BASIS);
 
         for(int idx = 0;idx < num_states * P0_BASIS;idx++) ns[idx] = psi[idx];
+#if GPU_ENABLED
+        cudaMemcpy(ns, psi, num_states*P0_BASIS*sizeof(KpointType), cudaMemcpyDefault);
+#else
+        memcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType));
+#endif
 
         RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj, 
                 ONE_t, M_qqq,  pct.num_tot_proj, sint_compack, pct.num_tot_proj,
@@ -234,7 +239,12 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                     ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
                     ZERO_t,  nv, P0_BASIS);
 
-        for(int idx = 0;idx < num_states * P0_BASIS;idx++) ns[idx] = psi[idx];
+        //for(int idx = 0;idx < num_states * P0_BASIS;idx++) ns[idx] = psi[idx];
+#if GPU_ENABLED
+        cudaMemcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType), cudaMemcpyDefault);
+#else
+        memcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType));
+#endif
 
     }
 
