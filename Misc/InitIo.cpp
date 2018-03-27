@@ -214,7 +214,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     {
         cudaDeviceReset();
         cuInit(0);
-        cudaSetDeviceFlags(cudaDeviceScheduleSpin);
+        cudaSetDeviceFlags(cudaDeviceScheduleAuto);
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if(pct.local_rank != 0)
