@@ -142,8 +142,14 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
          int check = first_nls + active_threads;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
+#if GPU_ENABLED
+             cudaDeviceSynchronize();
+#endif
              AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
                     st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
+#if GPU_ENABLED
+             cudaDeviceSynchronize();
+#endif
              first_nls = 0;
              delete RT3;
          }
@@ -177,8 +183,14 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
          int check = first_nls + 1;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
+#if GPU_ENABLED
+             cudaDeviceSynchronize();
+#endif
              AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
                     st1, std::min(ct.non_local_block_size, kptr->nstates - st1));
+#if GPU_ENABLED
+             cudaDeviceSynchronize();
+#endif
              first_nls = 0;
              delete RT3;
          }
@@ -190,6 +202,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     /* Operators applied and we now have
          tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
          tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
+
+#if GPU_ENABLED
+    cudaDeviceSynchronize();
+#endif
 
     // Compute A matrix
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
