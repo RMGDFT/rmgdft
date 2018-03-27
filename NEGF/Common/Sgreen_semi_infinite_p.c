@@ -51,10 +51,10 @@ void Sgreen_semi_infinite_p (complex double * green_host, complex double
 
 
     ch00 = memory_ptr_host_device(ch00_host, ct.gpu_Htri);
-    ch10 = memory_ptr_host_device(ch10_host, ct.gpu_temp);
+    ch10 = memory_ptr_host_device(ch10_host, &ct.gpu_Htri[n1]);
     ch01 = memory_ptr_host_device(ch01_host, ct.gpu_Hii);
     setvector_host_device (n1, sizeof(complex double), ch00_host, ione, ct.gpu_Htri, ione);
-    setvector_host_device (n1, sizeof(complex double), ch10_host, ione, ct.gpu_temp, ione);
+    setvector_host_device (n1, sizeof(complex double), ch10_host, ione, &ct.gpu_Htri[n1], ione);
     setvector_host_device (n1, sizeof(complex double), ch01_host, ione, ct.gpu_Hii, ione);
 
     chtem  = memory_ptr_host_device(chtem_host, ct.gpu_Gtri);

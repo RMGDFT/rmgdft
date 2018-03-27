@@ -73,14 +73,16 @@ void init_gpu (void)
 
 
 	alloc = pmo.ntot_low * sizeof(complex double);
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Htri , alloc )){
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Htri , alloc, cudaMemAttachGlobal )){
 		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %d\n", alloc);
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Gtri , alloc )){
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Gtri , alloc, cudaMemAttachGlobal )){
 		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %d\n", alloc);
 		exit(-1);
 	}
+
+    printf("\n bbb %e %e", ct.gpu_Htri[0]);
 
     int size;
     size = 0;
@@ -89,7 +91,7 @@ void init_gpu (void)
         size += ct.block_dim[i]*ct.block_dim[i];
     }
 	alloc = size * sizeof(complex double);
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_GdiagBlocks , alloc )){
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_GdiagBlocks , alloc, cudaMemAttachGlobal )){
 		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %d\n", alloc);
         
 		exit(-1);
@@ -105,36 +107,36 @@ void init_gpu (void)
 	}
 
 	alloc = ntot_row * maxrow * sizeof(complex double);
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Grow , alloc ) ){
-		fprintf (stderr, "Error: cudaMalloc failed for: gpu_Grow\n");
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Grow , alloc, cudaMemAttachGlobal ) ){
+		fprintf (stderr, "Error: cudaMallocManaged failed for: gpu_Grow\n");
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Gcol , alloc ) ){
-		fprintf (stderr, "Error: cudaMalloc failed for: gpu_Grow\n");
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Gcol , alloc, cudaMemAttachGlobal ) ){
+		fprintf (stderr, "Error: cudaMallocManaged failed for: gpu_Grow\n");
 		exit(-1);
 	}
 
 	alloc = maxrow * maxrow * sizeof(complex double);
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Hii, alloc )){
-		fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_Hii\n");
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Hii, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_Hii\n");
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Gii, alloc )){
-		fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_Gii\n");
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Gii, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_Gii\n");
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_temp, alloc )){
-		fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_temp\n");
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_temp, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_temp\n");
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_Imatrix, alloc )){
-		fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_Imatrix\n");
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Imatrix, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_Imatrix\n");
 		exit(-1);
 	}
 
 	alloc = maxrow * sizeof(int);
-	if( cudaSuccess != cudaMalloc((void **)&ct.gpu_ipiv, alloc )){
-		fprintf (stderr, "Error: cudaMalloc failed for: ct.gpu_ipiv\n");
+	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_ipiv, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_ipiv\n");
 		exit(-1);
 	}
 

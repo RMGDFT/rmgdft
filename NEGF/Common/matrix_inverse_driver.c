@@ -9,23 +9,36 @@
 #include <stdlib.h>
 
 #if GPU_ENABLED
-#include <magma.h>
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
+    #include <cuda.h>
+    #include <cuda_runtime_api.h>
+    #include <cublas_v2.h>
+    #include <cublasXt.h>
+    #include <cusolverDn.h>
+    #if MAGMA_LIBS
+        #include <magma.h>
+    #endif
 #endif
 
-#include <complex.h>
-#include "rmgtypedefs.h"
-#include "params.h"
-#include "typedefs.h"
-#include "LCR.h"
-#include "init_var.h"
 
+#include <complex.h>
 
 #include "Scalapack.h"
 #include "blas.h"
 #include "RmgTimer.h"
+
+#include "const.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "rmg_error.h"
+#include "RmgTimer.h"
+#include "Subdiag.h"
+#include "RmgGemm.h"
+#include "GpuAlloc.h"
+#include "ErrorFuncs.h"
+#include "Gpufuncs.h"
+#include "blas.h"
+
+
 
 
 
@@ -60,6 +73,7 @@ void matrix_inverse_driver (complex double *Hii, int *desca )
         exit (0);
     }
     
+#if MAGMA_LIBS
     d_ipiv = nn;
     lwork = magma_get_zgetri_nb(nn);
     lwork = lwork * nn;
@@ -86,6 +100,14 @@ void matrix_inverse_driver (complex double *Hii, int *desca )
         exit (0);
     }
     free(ipiv);
+#else
+    
+    pmo_unitary_matrix((complex double *)ct.gpu_temp, desca);
+    zgesv_driver (Hii, desca, (complex double *) ct.gpu_temp, desca);
+    zcopy_driver (nn*nn, (complex double *)ct.gpu_temp, ione, Hii, ione);
+
+#endif
+
 #else
     //  use scalapack if nprow * npcol > 1
     if(nprow*npcol > 1)  

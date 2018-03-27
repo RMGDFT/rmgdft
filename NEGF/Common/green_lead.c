@@ -63,10 +63,10 @@ void green_lead (complex double *ch0_host, complex double *ch01_host,
 #endif
 
     ch0 = memory_ptr_host_device(ch0_host, ct.gpu_Htri);
-    ch10 = memory_ptr_host_device(ch10_host, ct.gpu_temp);
+    ch10 = memory_ptr_host_device(ch10_host, &ct.gpu_Htri[n1]);
     ch01 = memory_ptr_host_device(ch01_host, ct.gpu_Hii);
     setvector_host_device (n1, sizeof(complex double), ch0_host, ione, ct.gpu_Htri, ione);
-    setvector_host_device (n1, sizeof(complex double), ch10_host, ione, ct.gpu_temp, ione);
+    setvector_host_device (n1, sizeof(complex double), ch10_host, ione, &ct.gpu_Htri[n1], ione);
     setvector_host_device (n1, sizeof(complex double), ch01_host, ione, ct.gpu_Hii, ione);
 
     tot  = memory_ptr_host_device(&temp_host[0*n1], &ct.gpu_Gtri[0*n1]);
