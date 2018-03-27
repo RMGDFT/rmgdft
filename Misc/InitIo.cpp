@@ -177,7 +177,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
 
-    InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, NPES, pct.gridpe, pct.grid_comm);
+    InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
 
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)

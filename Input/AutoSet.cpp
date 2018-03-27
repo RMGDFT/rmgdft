@@ -85,7 +85,7 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
     int NZ_GRID = WavefunctionGrid.vals.at(2);
 
     int ReqNPES = pelc.pe_x * pelc.pe_y * pelc.pe_z; 
-    bool autoset_processor_grid = ((NPES != ReqNPES));
+    bool autoset_processor_grid = ((pct.grid_npes != ReqNPES));
 
     // if this is equal to 1 then user did not try to manually set the
     // wavefunction grid so we have to set it ourselves which this test
@@ -95,19 +95,19 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
     // We take this path if wavefunction grid is specified but processor grid is not
     if(autoset_processor_grid && (!autoset_wavefunction_grid)) {
 
-        SetupProcessorGrid(NPES, NX_GRID, NY_GRID, NZ_GRID, pelc);
+        SetupProcessorGrid(pct.grid_npes, NX_GRID, NY_GRID, NZ_GRID, pelc);
 
     }
     else if(autoset_processor_grid && autoset_wavefunction_grid) {
 
         // Neither the wavefunction grid or the processor grid was set so we do them both here.
-        SetupGrids(NPES, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing, pelc);
+        SetupGrids(pct.grid_npes, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing, pelc);
 
     }
     else if (autoset_wavefunction_grid) {
 
         // Processor grid specified but wavefunction grid was not
-        SetupWavefunctionGrid(NPES, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing);
+        SetupWavefunctionGrid(pct.grid_npes, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing);
 
     }
 
