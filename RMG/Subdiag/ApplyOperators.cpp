@@ -58,7 +58,6 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
     int pbasis = dimx * dimy * dimz;
-    int sbasis = (dimx + 5) * (dimy + 5) * (dimz + 5);  // large enough for up to 10th order central FD operator
 
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     potential_acceleration = potential_acceleration & (ct.scf_steps > 0);
@@ -98,7 +97,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
 
     // Generate 2*V*psi
-    KpointType *sg_twovpsi_t = new KpointType[sbasis];
+    KpointType *sg_twovpsi_t = new KpointType[pbasis];
     if(potential_acceleration) {
         int offset = (sp->istate / kptr->dvh_skip) * pbasis;
         CPP_genvpsi (psi, sg_twovpsi_t, &kptr->dvh[offset], (void *)kdr, kptr->kmag, dimx, dimy, dimz);
@@ -108,41 +107,28 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     }
 
     // B operating on 2*V*psi stored in work
-    KpointType *work_t = new KpointType[sbasis];
-    ApplyBOperator (sg_twovpsi_t, work_t, "Coarse");
-
-    for(int idx = 0; idx < pbasis; idx++) {
-
-        a_psi[idx] = work_t[idx] - a_psi[idx];
-
+    if(ct.discretization == CENTRAL_DISCRETIZATION)
+    {
+        // For central FD B is just the identity
+        for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = sg_twovpsi_t[idx] - a_psi[idx];
+    }
+    else
+    {
+        KpointType *work_t = new KpointType[pbasis];
+        ApplyBOperator (sg_twovpsi_t, work_t, "Coarse");
+        for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = work_t[idx] - a_psi[idx];
+        delete [] work_t;
     }
 
     // Add in non-local which has already had B applied in AppNls
-    for(int idx = 0; idx < pbasis; idx++) {
-
-        a_psi[idx] += TWO * nv[idx];
-
-    }
-
-    for (int idx = 0; idx < pbasis; idx++) {
-
-        a_psi[idx] = 0.5 * vel * a_psi[idx];
-
-    }
+    for(int idx = 0; idx < pbasis; idx++) a_psi[idx] += TWO * nv[idx];
+    // Scale correctly.
+    for (int idx = 0; idx < pbasis; idx++) a_psi[idx] = 0.5 * vel * a_psi[idx];
 
     // Add in already applied Bns to b_psi for US
-    if(!ct.norm_conserving_pp) {
-
-        for(int idx = 0; idx < pbasis; idx++) {
-
-            b_psi[idx] += Bns[idx];
-
-        }
-
-    }
+    if(!ct.norm_conserving_pp) for(int idx = 0; idx < pbasis; idx++) b_psi[idx] += Bns[idx];
 
     if(kdr) delete [] kdr;
-    delete [] work_t;
     delete [] sg_twovpsi_t;
 
 } // end ApplyOperators
