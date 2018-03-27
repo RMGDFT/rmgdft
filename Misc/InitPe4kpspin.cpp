@@ -4,19 +4,18 @@
 /*   init  processor topology for multiple images, spin/no spin, kpoint
  *   , and grid
  *   MPI_COMM_WORLD  :   first level
- *   pct.img_comm :      second level: number of proc: NPES=pct.npes_images[pct.thisimag]
+ *   pct.img_comm :      second level: number of proc: pct.npes_images[pct.thisimag]
  *                               it split into the following
  *                               3dimensional cartesian group
- *                       (ct.spin_flag +1) * pct.pe_kpoint *
- *                       numpeforgrid = npes of pct.img_comm
+ *                       (ct.spin_flag +1) * pct.pe_kpoint * numpeforgrid = npes of pct.img_comm
  *                 
  *   pct.spin_comm:      third level:  2 proc for spin-polarized, 1 for  nonspin
- *                           this one contains NPES/(ct.spin_flag+1)
+ *                           this one contains pct.npes_images[pct.thisimag]/(ct.spin_flag+1)
  *                           communicators
  *                                  this will split into two car groups
  *  pct.kpsub_comm:      third level:   num_proc is pct.pe_kpoint, this comm should be used for sum over kpoint    
- *                                      it contains NPES/pct.pe_kpoint communicators 
- *  pct.grid_comm:       third level:   NPES/(ct.spinflag+1)/pct.pe_kpoint     
+ *                           this one contains pct.npes_images[pct.thisimag]/(ct.spin_flag+1)/pct.pe_kpoint communicators 
+ *  pct.grid_comm:       third level:   pct.npes_images[pct.thisimag]/(ct.spinflag+1)/pct.pe_kpoint     
  *                                       must be divisible 
  *                                  this is the grid communicator, size
  *                                  should be pex * pey * pez from
@@ -132,5 +131,4 @@ void InitPe4kpspin()
     //set_rank(pct.gridpe);
 
 }                               /* end init_pe */
-
 
