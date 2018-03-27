@@ -182,7 +182,7 @@ void get_dos (STATE * states)
 
     idx_e = 0;
 
-    /*for (iene = pct.gridpe; iene < E_POINTS; iene += NPES)*/
+    /*for (iene = pct.gridpe; iene < E_POINTS; iene += pct.grid_npes)*/
     for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)
     {
         ene = emin + iene * de + I * E_imag;

@@ -5,7 +5,7 @@
 /*
 
 	Requires the predefined parameters:
-		NPES:	number of processors (CFLAGS)
+		pct.grid_npes:	number of processors (CFLAGS)
 
 Documentation:
 

@@ -6,7 +6,7 @@
 
 init_comm.c
 
-(1) we build up a matrix pct.grid_npes * NPES and see which pairs need communications
+(1) we build up a matrix pct.grid_npes * pct.grid_npes and see which pairs need communications
     and how many orbits we need send
 (2) pick up the smallest number first, build up a sendrecv pairs.
 (3) pick up the smallest number again, and build up another sendrecv pairs.
@@ -55,7 +55,7 @@ void init_comm_res(STATE * states)
     int st11;
 
     state_per_proc = ct.state_per_proc + 2;
-    my_calloc( matrix_pairs, pct.grid_npes * NPES, int );
+    my_calloc( matrix_pairs, pct.grid_npes * pct.grid_npes, int );
     my_calloc( proc_recv, pct.grid_npes, int );
     recv_proc = MPI_PROC_NULL;
 
@@ -75,7 +75,7 @@ void init_comm_res(STATE * states)
         recv_from1[loop * state_per_proc + 1] = 0;
     }
 
-    for (proc1 = 0; proc1 < pct.grid_npes * NPES; proc1++)
+    for (proc1 = 0; proc1 < pct.grid_npes * pct.grid_npes; proc1++)
         matrix_pairs[proc1] = 0;
 
 proc1 = pct.gridpe;
@@ -96,7 +96,7 @@ proc1 = pct.gridpe;
             matrix_pairs[proc1 * pct.grid_npes + proc2] = num_overlap;
         }
 
-        idx = pct.grid_npes * NPES;
+        idx = pct.grid_npes * pct.grid_npes;
         global_sums_int(matrix_pairs, &idx);
 
         /*

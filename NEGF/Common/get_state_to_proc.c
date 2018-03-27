@@ -26,14 +26,14 @@ void get_state_to_proc (STATE * states)
     int st_local;
     int ion_mode;
 
-    assert (ct.num_ions >= NPES);
+    assert (ct.num_ions >= pct.grid_npes);
 
-    my_malloc(state_begin, NPES, int);
-    my_malloc(state_end, NPES, int);
+    my_malloc(state_begin, pct.grid_npes, int);
+    my_malloc(state_end, pct.grid_npes, int);
 
 
-    ion_per_proc = ct.num_ions / NPES;
-    ion_mode = ct.num_ions - ion_per_proc * NPES;
+    ion_per_proc = ct.num_ions / pct.grid_npes;
+    ion_mode = ct.num_ions - ion_per_proc * pct.grid_npes;
 
     if (ion_mode > 0)
     {
@@ -102,7 +102,7 @@ void get_state_to_proc (STATE * states)
         }
     }
 
-    for (st = 0; st < NPES; st++)
+    for (st = 0; st < pct.grid_npes; st++)
     {
         state_begin[st] = 0;
         state_end[st] = 0;
@@ -112,7 +112,7 @@ void get_state_to_proc (STATE * states)
     state_begin[st] = ct.state_begin;
     state_end[st] = ct.state_end;
 
-    st = NPES;
+    st = pct.grid_npes;
     global_sums_int (state_begin, &st);
     global_sums_int (state_end, &st);
 

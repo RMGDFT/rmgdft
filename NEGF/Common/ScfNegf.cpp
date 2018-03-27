@@ -210,7 +210,7 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
 
     if (pct.imgpe == 0)
         rmg_printf (" \nSCF CHECKS: <drho>/ion = %12.6e RMS[drho/GRID] = %12.6e\n",
-                tem / ct.num_ions, tem / get_FP0_BASIS() / NPES);
+                tem / ct.num_ions, tem / get_FP0_BASIS() / pct.grid_npes);
 
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++)

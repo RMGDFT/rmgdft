@@ -31,13 +31,13 @@ void pmo_init ()
     MPI_Group grp_world, grp_this;
    
  
-    pmo.npe_energy = NPES/pmo.nrow/pmo.ncol; 
+    pmo.npe_energy = pct.grid_npes/pmo.nrow/pmo.ncol; 
 
 
-    if(pmo.npe_energy * pmo.nrow * pmo.ncol != NPES)
+    if(pmo.npe_energy * pmo.nrow * pmo.ncol != pct.grid_npes)
     {
         printf("\n parallel matrix grid no good");
-        printf("\n pmo.nrow, ncol, NPES %d %d %d \n", pmo.nrow, pmo.ncol, NPES);
+        printf("\n pmo.nrow, ncol, pct.grid_npes %d %d %d \n", pmo.nrow, pmo.ncol, pct.grid_npes);
         exit(0);
     }
     pmo.mblock = ct.scalapack_block_factor;
@@ -72,7 +72,7 @@ void pmo_init ()
     my_malloc(pmap, pmo.nrow * pmo.ncol, int);
     my_malloc(tgmap, pmo.nrow * pmo.ncol, int);
 
-    if( dims[1] * dims[0] != NPES) 
+    if( dims[1] * dims[0] != pct.grid_npes) 
     {
         printf("\n processor array not right in pmo_init.c");
         printf("\n npe_energy %d nrow %d, rcol %d\n", pmo.npe_energy, pmo.nrow, pmo.ncol);

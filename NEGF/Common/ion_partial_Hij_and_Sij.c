@@ -116,15 +116,15 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
 
     /* Now calculate the part that kbpsi is stored in other processors */
 
-    for (idx = 1; idx < NPES; idx++)
+    for (idx = 1; idx < pct.grid_npes; idx++)
     {
 
         proc1 = pct.gridpe + idx;
-        if (proc1 >= NPES)
-            proc1 = proc1 - NPES;
+        if (proc1 >= pct.grid_npes)
+            proc1 = proc1 - pct.grid_npes;
         proc2 = pct.gridpe - idx;
         if (proc2 < 0)
-            proc2 += NPES;
+            proc2 += pct.grid_npes;
 
 
         MPI_Sendrecv (kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,

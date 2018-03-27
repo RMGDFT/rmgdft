@@ -73,15 +73,15 @@ void rho_nm_mat (double *Aij, double * global_mat_X)
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
 
-    for (idx = 1; idx < NPES; idx++)
+    for (idx = 1; idx < pct.grid_npes; idx++)
     {
 
         proc1 = pct.gridpe + idx;
-        if (proc1 >= NPES)
-            proc1 = proc1 - NPES;
+        if (proc1 >= pct.grid_npes)
+            proc1 = proc1 - pct.grid_npes;
         proc2 = pct.gridpe - idx;
         if (proc2 < 0)
-            proc2 += NPES;
+            proc2 += pct.grid_npes;
 
 
         MPI_Sendrecv (kbpsi, size, MPI_DOUBLE, proc1, idx, kbpsi_comm, size,

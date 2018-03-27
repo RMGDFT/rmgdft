@@ -42,7 +42,7 @@ void allocate_matrix_soft ()
     int ispin, sizeofmatrix, item, item1, item2, lwork;
     int ictxt, nproc, myrow, mycol, icrow, iccol;
     int izero = 0, ione = 1, itwo = 2, nb = ct.scalapack_block_factor, nn = ct.num_states;
-    int nprow = pct.scalapack_nprow, npcol = pct.scalapack_npcol, npes = NPES;
+    int nprow = pct.scalapack_nprow, npcol = pct.scalapack_npcol, npes = pct.grid_npes;
     int locr, qrmem, sizemqrleft, ldc, mpc0, nqc0, nrc;
     
 

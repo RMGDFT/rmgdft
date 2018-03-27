@@ -153,7 +153,7 @@ void get_cond_dos_test (STATE * states)
 
     my_malloc_init( green_tem, 2 * idx, double );
     my_malloc_init( green_C, 2 * ntot, double );
-    st1 = (E_POINTS + NPES - 1) / NPES;
+    st1 = (E_POINTS + pct.grid_npes - 1) / pct.grid_npes;
     my_malloc_init( Green_store, st1 * ntot, double );
 
 /*===================================================================*/
@@ -169,7 +169,7 @@ void get_cond_dos_test (STATE * states)
 
 
     idx = 0;
-    for (iene = pct.gridpe; iene < E_POINTS; iene += NPES)
+    for (iene = pct.gridpe; iene < E_POINTS; iene += pct.grid_npes)
     {
         eneR = emin + iene * de;
         eneI = 0.0005;
@@ -234,8 +234,8 @@ void get_cond_dos_test (STATE * states)
     xoff = ii * get_FPX0_GRID();
     for (iene = 0; iene < E_POINTS; iene++)
     {
-        root_pe = iene % NPES;
-        idx = iene / NPES;
+        root_pe = iene % pct.grid_npes;
+        idx = iene / pct.grid_npes;
         if (pct.gridpe == 0)
         {
             printf ("root_pe, iene idx %d %d %d\n", root_pe, iene, idx);
@@ -293,7 +293,7 @@ void get_cond_dos_test (STATE * states)
     my_free(ener1);
     my_free(dos);
 
-    st1 = (E_POINTS + NPES - 1) / NPES;
+    st1 = (E_POINTS + pct.grid_npes - 1) / pct.grid_npes;
     my_free(tot);
     my_free(tott);
     my_free(g);

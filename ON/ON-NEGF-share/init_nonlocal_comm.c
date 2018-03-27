@@ -94,14 +94,14 @@ void init_nonlocal_comm(void)
     int loop;
     int *matrix_pairs, *proc_mark;
 
-    my_calloc( matrix_pairs, pct.grid_npes * NPES, int );
+    my_calloc( matrix_pairs, pct.grid_npes * pct.grid_npes, int );
     my_calloc( proc_mark, pct.grid_npes, int );
 
     my_calloc( kbpsi_comm_send, 2*pct.grid_npes, int );
     my_calloc( kbpsi_comm_recv, 2*pct.grid_npes, int );
 
 
-    for (proc1 = 0; proc1 < pct.grid_npes * NPES; proc1++)
+    for (proc1 = 0; proc1 < pct.grid_npes * pct.grid_npes; proc1++)
         matrix_pairs[proc1] = 0;
 
     proc1 = pct.gridpe;
@@ -121,7 +121,7 @@ void init_nonlocal_comm(void)
             }
     }
 
-    item = pct.grid_npes * NPES;
+    item = pct.grid_npes * pct.grid_npes;
     global_sums_int(matrix_pairs, &item);
 
 
