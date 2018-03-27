@@ -100,8 +100,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
     // If folded spectrum is selected we only want the local master to participate on each node as
     // long as there are at least 12 nodes.
-    int NPES = Rmg_G->get_PE_X() * Rmg_G->get_PE_Y() * Rmg_G->get_PE_Z();
-    int nodes = NPES / pct.procs_per_host;
+    int nodes = pct.grid_npes / pct.procs_per_host;
 
 //    if(pct.is_local_master || (use_folded && (nodes < 12))) {
 if(1){

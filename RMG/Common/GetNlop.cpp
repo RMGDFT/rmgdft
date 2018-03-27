@@ -79,9 +79,9 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     pct.num_owners = 0;
 
     // Allocate memory for some lists
-    if(!pct.owned_pe_list) pct.owned_pe_list = new int[NPES]();
-    if(!pct.num_owned_ions_per_pe) pct.num_owned_ions_per_pe = new int[NPES]();
-    if(!pct.owners_list) pct.owners_list = new int[NPES]();
+    if(!pct.owned_pe_list) pct.owned_pe_list = new int[pct.grid_npes]();
+    if(!pct.num_owned_ions_per_pe) pct.num_owned_ions_per_pe = new int[pct.grid_npes]();
+    if(!pct.owners_list) pct.owners_list = new int[pct.grid_npes]();
     if(!pct.num_nonowned_ions_per_pe) pct.num_nonowned_ions_per_pe = new int[ct.num_ions]();
     if(!pct.nonloc_ions_list) pct.nonloc_ions_list = new int[ct.num_ions]();
     if(!pct.nonloc_ion_ownflag) pct.nonloc_ion_ownflag = new int[ct.num_ions]();
@@ -448,7 +448,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
 	    
 	    /*Loop over all processors in caculation to determine if it overlaps with current ion */
 	    /* This should only loop over processors in a grid */
-	    for (int pe = 0; pe < NPES; pe++)
+	    for (int pe = 0; pe < pct.grid_npes; pe++)
 	    {
 		
 		/*Skip the case when pe is equal to the rank of current processor, in that case no send or
@@ -526,7 +526,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
                     }
                 }
 
-            }  /* End of for (pe=0; pe < NPES; pe++) */
+            }  /* End of for (pe=0; pe < pct.grid_npes; pe++) */
 
         }            
 

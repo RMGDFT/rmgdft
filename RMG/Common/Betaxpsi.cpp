@@ -79,7 +79,7 @@ void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointTyp
 {
 
 
-    if((ct.localize_projectors == false) || (Rmg_G->get_NPES() == 1))
+    if((ct.localize_projectors == false) || (pct.grid_npes == 1))
     {
 
         /*Loop over ions and calculate local projection between beta functions and wave functions */
@@ -99,7 +99,7 @@ void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointTyp
             rzero, sint_local, pct.num_tot_proj);
 
 
-        if(Rmg_G->get_NPES() != 1)
+        if(pct.grid_npes != 1)
             MPI_Allreduce(MPI_IN_PLACE, (double *)sint_local, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
         return;
@@ -297,7 +297,7 @@ void betaxpsi_receive (KpointType * recv_buff, int num_pes,
     for (pe = 0; pe < num_pes; pe++)
     {
         source = pe_list[pe];
-        /*Tag is sender_rank * NPES + receiver_rank */
+        /*Tag is sender_rank * pct.grid_npes + receiver_rank */
         tag = 111;
         size = num_ions_per_pe[pe] * num_states * ct.max_nl;
         int transfer_size = size;
@@ -324,7 +324,7 @@ void betaxpsi_send (KpointType * send_buff, int num_pes,
     {
 
         target = pe_list[pe];
-        /*Tag is sender_rank * NPES + receiver_rank */
+        /*Tag is sender_rank * pct.grid_npes + receiver_rank */
         tag = 111;
         num_ions = num_ions_per_pe[pe];
         size = num_ions * num_states * ct.max_nl;
