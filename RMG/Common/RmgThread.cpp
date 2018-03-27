@@ -161,6 +161,7 @@ void *run_threads(void *v) {
 #endif
     
 #if GPU_ENABLED
+    bool dev_set = false;
     cudaError_t cuerr;
 #endif
 
@@ -168,18 +169,19 @@ void *run_threads(void *v) {
     rmg_set_tsd(s);
 
 
-#if GPU_ENABLED
-    cudaSetDevice(ct.cu_dev); 
-#endif
-
     while(1) {
 
         // See if a task if waiting. If not then sleep.
         if(!PopThreadTask(my_tid, ss)) 
         {
             T->thread_sleep();
+
             // When woken go to end of loop then circle around to pick up task
             continue;
+#if GPU_ENABLED
+            if(!dev_set) cudaSetDevice(ct.cu_dev); 
+            dev_set = true;
+#endif
         }
 
         // Set the project specific basetag into the main BaseThreadControl structure.
