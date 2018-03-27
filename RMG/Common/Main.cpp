@@ -98,9 +98,6 @@ double *tau;
 /* may access it.					                 */
 CONTROL ct;
 
-/* Global MPI stuff. Overridden by input params */
-int NPES=1;
-
 /* PE control structure which is also declared extern in main.h */
 PE_CONTROL pct;
 

@@ -86,7 +86,6 @@ int *send_to, *recv_from, num_sendrecv_loop;
 int *send_to1, *recv_from1, num_sendrecv_loop1;
 int *ionidx_allproc;
 int max_ion_nonlocal;
-int NPES;
 STATE *states_tem;
 int *state_to_proc;
 STATE *states;

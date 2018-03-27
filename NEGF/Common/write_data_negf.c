@@ -67,7 +67,7 @@ void write_data_negf (char *name, double *vh, double *vxc, double *vh_old, doubl
 		write (fhand, &i1, sizeof (int));
 		i1 = pct.pe_z;
 		write (fhand, &i1, sizeof (int));
-		i1 = NPES;
+		i1 = pct.grid_npes;
 		write (fhand, &i1, sizeof (int));
 		i1 = get_P0_BASIS();
 		write (fhand, &i1, sizeof (int));

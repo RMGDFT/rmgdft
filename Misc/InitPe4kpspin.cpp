@@ -107,7 +107,6 @@ void InitPe4kpspin()
     int kpsub_rank;
     MPI_Comm_rank (pct.grid_comm, &pct.gridpe);
     MPI_Comm_rank (pct.kpsub_comm, &kpsub_rank);
-    MPI_Comm_size (pct.grid_comm, &NPES);
     MPI_Comm_size (pct.grid_comm, &pct.grid_npes);
 
     ct.num_kpts_pe = ct.num_kpts / pct.pe_kpoint;

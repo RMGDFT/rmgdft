@@ -39,7 +39,7 @@ void allocate_matrix()
     int sizeofmatrix, item, item1, item2, lwork;
     int nproc, myrow, mycol, icrow, iccol;
     int izero = 0, ione = 1, itwo = 2, nb, nn, NN;
-    int nprow = pct.scalapack_nprow, npcol = pct.scalapack_npcol, npes = NPES;
+    int nprow = pct.scalapack_nprow, npcol = pct.scalapack_npcol, npes = pct.grid_npes;
     int locr, qrmem, sizemqrleft, ldc, mpc0, nqc0, nrc;
     int NB;
 

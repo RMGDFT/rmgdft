@@ -14,7 +14,6 @@ extern int *send_to, *recv_from, num_sendrecv_loop;
 extern int *send_to1, *recv_from1, num_sendrecv_loop1;
 extern int *ionidx_allproc;
 extern int max_ion_nonlocal;
-extern int NPES;
 extern STATE *states_tem;
 extern int *state_to_proc;
 extern STATE *states;

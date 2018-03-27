@@ -70,8 +70,8 @@ void init_pe_on(void)
     }
 
     int numst1;
-    numst1 = (ct.num_states + NPES -1)/NPES;
-    sl_init_comm(&ictxt, 1,NPES, pct.grid_comm);
+    numst1 = (ct.num_states + pct.grid_npes -1)/pct.grid_npes;
+    sl_init_comm(&ictxt, 1, pct.grid_npes, pct.grid_comm);
     int nprow, npcol, myrow,mycol;
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 
