@@ -22,14 +22,12 @@ InitQfunct.cpp
 InitLocalObject.cpp
 US_Cbindings.cpp
 lcao_get_rho.c
-#init_nuc.c
 init_efield.c
 weight_shift_center.c
 ylmr2.c
 linint.c
 get_QnmL.c
 radiff.c
-#init_weight.c
 ylm.c
 GetQI.cpp
 get_qqq.c
