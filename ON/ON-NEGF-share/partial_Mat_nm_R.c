@@ -84,15 +84,15 @@ void partial_Mat_nm_R(double *partial_x, double *partial_y, double *partial_z, d
     /* Now calculate the part that kbpsi is stored in other processors */
 
 
-    for (idx = 1; idx < NPES; idx++)
+    for (idx = 1; idx < pct.grid_npes; idx++)
     {
 
         proc1 = pct.gridpe + idx;
-        if (proc1 >= NPES)
-            proc1 = proc1 - NPES;
+        if (proc1 >= pct.grid_npes)
+            proc1 = proc1 - pct.grid_npes;
         proc2 = pct.gridpe - idx;
         if (proc2 < 0)
-            proc2 += NPES;
+            proc2 += pct.grid_npes;
 
 
         MPI_Sendrecv(kbpsi, size, MPI_DOUBLE, proc1, idx,

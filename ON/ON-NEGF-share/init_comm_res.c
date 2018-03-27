@@ -6,7 +6,7 @@
 
 init_comm.c
 
-(1) we build up a matrix NPES * NPES and see which pairs need communications
+(1) we build up a matrix pct.grid_npes * NPES and see which pairs need communications
     and how many orbits we need send
 (2) pick up the smallest number first, build up a sendrecv pairs.
 (3) pick up the smallest number again, and build up another sendrecv pairs.
@@ -55,19 +55,19 @@ void init_comm_res(STATE * states)
     int st11;
 
     state_per_proc = ct.state_per_proc + 2;
-    my_calloc( matrix_pairs, NPES * NPES, int );
-    my_calloc( proc_recv, NPES, int );
+    my_calloc( matrix_pairs, pct.grid_npes * NPES, int );
+    my_calloc( proc_recv, pct.grid_npes, int );
     recv_proc = MPI_PROC_NULL;
 
     if (send_to1 != NULL)
         my_free(send_to1);
-    my_calloc( send_to1, 2 * NPES * state_per_proc, int );
+    my_calloc( send_to1, 2 * pct.grid_npes * state_per_proc, int );
 
     if (recv_from1 != NULL)
         my_free(recv_from1);
-    my_calloc( recv_from1, 2 * NPES * state_per_proc, int );
+    my_calloc( recv_from1, 2 * pct.grid_npes * state_per_proc, int );
 
-    for (loop = 0; loop < 2 * NPES; loop++)
+    for (loop = 0; loop < 2 * pct.grid_npes; loop++)
     {
         send_to1[loop * state_per_proc] = MPI_PROC_NULL;
         send_to1[loop * state_per_proc + 1] = 0;
@@ -75,11 +75,11 @@ void init_comm_res(STATE * states)
         recv_from1[loop * state_per_proc + 1] = 0;
     }
 
-    for (proc1 = 0; proc1 < NPES * NPES; proc1++)
+    for (proc1 = 0; proc1 < pct.grid_npes * NPES; proc1++)
         matrix_pairs[proc1] = 0;
 
 proc1 = pct.gridpe;
-        for (proc2 = 0; proc2 < NPES; proc2++)
+        for (proc2 = 0; proc2 < pct.grid_npes; proc2++)
         {
             num_overlap = 0;
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
@@ -93,41 +93,41 @@ proc1 = pct.gridpe;
                         break;
                     }
             }
-            matrix_pairs[proc1 * NPES + proc2] = num_overlap;
+            matrix_pairs[proc1 * pct.grid_npes + proc2] = num_overlap;
         }
 
-        idx = NPES * NPES;
+        idx = pct.grid_npes * NPES;
         global_sums_int(matrix_pairs, &idx);
 
         /*
          *if (pct.gridpe == 0)
          *{
          *    printf("\n initial communication matrix ");
-         *    for (i = 0; i < NPES; i++)
+         *    for (i = 0; i < pct.grid_npes; i++)
          *    {
          *        printf("\n");
-         *        for (j = 0; j < NPES; j++)
-         *            printf(" %d ", matrix_pairs[i * NPES + j]);
+         *        for (j = 0; j < pct.grid_npes; j++)
+         *            printf(" %d ", matrix_pairs[i * pct.grid_npes + j]);
          *    }
          *}
          */
 
-        for (loop = 0; loop < 2 * NPES; loop++)
+        for (loop = 0; loop < 2 * pct.grid_npes; loop++)
         {
-            for (proc1 = 0; proc1 < NPES; proc1++)
+            for (proc1 = 0; proc1 < pct.grid_npes; proc1++)
                 proc_recv[proc1] = 0;
             communication_pair = 0;
-            for (proc1 = 0; proc1 < NPES; proc1++)
+            for (proc1 = 0; proc1 < pct.grid_npes; proc1++)
             {
                 max_send_states = 0;
-                for (proc3 = proc1 + 1; proc3 < proc1 + NPES; proc3++)
+                for (proc3 = proc1 + 1; proc3 < proc1 + pct.grid_npes; proc3++)
                 {
                     proc2 = proc3;
-                    if (proc2 > NPES - 1)
-                        proc2 = proc2 - NPES;
-                    if (matrix_pairs[proc1 * NPES + proc2] > max_send_states && proc_recv[proc2] == 0)
+                    if (proc2 > pct.grid_npes - 1)
+                        proc2 = proc2 - pct.grid_npes;
+                    if (matrix_pairs[proc1 * pct.grid_npes + proc2] > max_send_states && proc_recv[proc2] == 0)
                     {
-                        max_send_states = matrix_pairs[proc1 * NPES + proc2];
+                        max_send_states = matrix_pairs[proc1 * pct.grid_npes + proc2];
                         recv_proc = proc2;
                     }
                 }
@@ -145,14 +145,14 @@ proc1 = pct.gridpe;
                         recv_from1[loop * state_per_proc] = proc1;
                         recv_from1[loop * state_per_proc + 1] = max_send_states;
                     }
-                    matrix_pairs[proc1 * NPES + recv_proc] = 0;
+                    matrix_pairs[proc1 * pct.grid_npes + recv_proc] = 0;
                     communication_pair++;
                 }
             }
             if (communication_pair == 0)
             {
                 num_sendrecv_loop1 = loop;
-                loop += 2 * NPES;   /* break; */
+                loop += 2 * pct.grid_npes;   /* break; */
             }
         }
 

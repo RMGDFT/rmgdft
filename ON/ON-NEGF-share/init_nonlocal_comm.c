@@ -38,14 +38,14 @@ void init_nonlocal_comm(void)
     int ion1, ion2, ion_global1, ion_global2;
 
 
-    my_malloc(num_nonlocal_ion, NPES, int);
-    for (idx = 0; idx < NPES; idx++)
+    my_malloc(num_nonlocal_ion, pct.grid_npes, int);
+    for (idx = 0; idx < pct.grid_npes; idx++)
         num_nonlocal_ion[idx] = 0;
     num_nonlocal_ion[pct.gridpe] = pct.n_ion_center;
-    global_sums_int(num_nonlocal_ion, &NPES);
+    global_sums_int(num_nonlocal_ion, &pct.grid_npes);
 
     max_ion_nonlocal = 0;
-    for (idx = 0; idx < NPES; idx++)
+    for (idx = 0; idx < pct.grid_npes; idx++)
     {
         if (max_ion_nonlocal < num_nonlocal_ion[idx])
             max_ion_nonlocal = num_nonlocal_ion[idx];
@@ -57,14 +57,14 @@ void init_nonlocal_comm(void)
 
     if (ionidx_allproc != NULL)
         my_free(ionidx_allproc);
-    my_malloc( ionidx_allproc, max_ion_nonlocal * NPES, int );
-    for (idx = 0; idx < max_ion_nonlocal * NPES; idx++)
+    my_malloc( ionidx_allproc, max_ion_nonlocal * pct.grid_npes, int );
+    for (idx = 0; idx < max_ion_nonlocal * pct.grid_npes; idx++)
         ionidx_allproc[idx] = 0.0;
 
     for (ion = 0; ion < pct.n_ion_center; ion++)
         ionidx_allproc[pct.gridpe * max_ion_nonlocal + ion] = pct.ionidx[ion];
 
-    item = max_ion_nonlocal * NPES;
+    item = max_ion_nonlocal * pct.grid_npes;
     global_sums_int(ionidx_allproc, &item);
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
@@ -94,18 +94,18 @@ void init_nonlocal_comm(void)
     int loop;
     int *matrix_pairs, *proc_mark;
 
-    my_calloc( matrix_pairs, NPES * NPES, int );
-    my_calloc( proc_mark, NPES, int );
+    my_calloc( matrix_pairs, pct.grid_npes * NPES, int );
+    my_calloc( proc_mark, pct.grid_npes, int );
 
-    my_calloc( kbpsi_comm_send, 2*NPES, int );
-    my_calloc( kbpsi_comm_recv, 2*NPES, int );
+    my_calloc( kbpsi_comm_send, 2*pct.grid_npes, int );
+    my_calloc( kbpsi_comm_recv, 2*pct.grid_npes, int );
 
 
-    for (proc1 = 0; proc1 < NPES * NPES; proc1++)
+    for (proc1 = 0; proc1 < pct.grid_npes * NPES; proc1++)
         matrix_pairs[proc1] = 0;
 
     proc1 = pct.gridpe;
-    for (proc2 = proc1 + 1; proc2 < NPES; proc2++)
+    for (proc2 = proc1 + 1; proc2 < pct.grid_npes; proc2++)
     {
         for (ion1 = 0; ion1 <num_nonlocal_ion[proc1]; ion1++)
             for (ion2 = 0; ion2 <num_nonlocal_ion[proc2]; ion2++)
@@ -114,52 +114,52 @@ void init_nonlocal_comm(void)
                 ion_global2 = ionidx_allproc[proc2 * max_ion_nonlocal + ion2] ;
                 if(ion_global1 == ion_global2) 
                 {
-                    matrix_pairs[proc1 * NPES + proc2] = 1;
-                    matrix_pairs[proc2 * NPES + proc1] = 1;
+                    matrix_pairs[proc1 * pct.grid_npes + proc2] = 1;
+                    matrix_pairs[proc2 * pct.grid_npes + proc1] = 1;
                     break;
                 }
             }
     }
 
-    item = NPES * NPES;
+    item = pct.grid_npes * NPES;
     global_sums_int(matrix_pairs, &item);
 
 
     //   if (pct.gridpe == 0)
     //   {
     //       printf("\n initial communication matrix ");
-    //       for (i = 0; i < NPES; i++)
+    //       for (i = 0; i < pct.grid_npes; i++)
     //       {
     //           printf("\n");
-    //           for (j = 0; j < NPES; j++)
-    //               printf(" %d ", matrix_pairs[i * NPES + j]);
+    //           for (j = 0; j < pct.grid_npes; j++)
+    //               printf(" %d ", matrix_pairs[i * pct.grid_npes + j]);
     //       }
     //   }
 
     kbpsi_num_loop = 0;
     int proc0;
-    for (loop = 0; loop < 2*NPES; loop++)
+    for (loop = 0; loop < 2*pct.grid_npes; loop++)
     {
 
 
-        //  search pairs from 0 to NPES
+        //  search pairs from 0 to pct.grid_npes
         kbpsi_comm_send[loop] = -1;
         kbpsi_comm_recv[loop] = -1;
-        for (proc1 = 0; proc1 < NPES; proc1++)
+        for (proc1 = 0; proc1 < pct.grid_npes; proc1++)
             proc_mark[proc1] = 1;
         pair_find = 0;
-        for (proc0 = loop; proc0 < NPES+loop; proc0++)
+        for (proc0 = loop; proc0 < pct.grid_npes+loop; proc0++)
         {
-            proc1 = proc0%NPES;
-            for (proc3 = proc1+1; proc3 < NPES + proc1 + 1; proc3++)
+            proc1 = proc0%pct.grid_npes;
+            for (proc3 = proc1+1; proc3 < pct.grid_npes + proc1 + 1; proc3++)
             {
-                proc2 = proc3%NPES;
-                if (proc_mark[proc2] && matrix_pairs[proc1 * NPES + proc2]) 
+                proc2 = proc3%pct.grid_npes;
+                if (proc_mark[proc2] && matrix_pairs[proc1 * pct.grid_npes + proc2]) 
                 {
                     pair_find++;
                     if(pct.gridpe == proc1) kbpsi_comm_send[loop] = proc2;
                     if(pct.gridpe == proc2) kbpsi_comm_recv[loop] = proc1;
-                    matrix_pairs[proc1 * NPES + proc2]=0;
+                    matrix_pairs[proc1 * pct.grid_npes + proc2]=0;
                     proc_mark[proc2] = 0;
                     break;
                 }
@@ -170,11 +170,11 @@ void init_nonlocal_comm(void)
 //      if(pct.gridpe==0)
 //              printf("\n  matrix_pairs");
 //      if(pct.gridpe==0)
-//          for(proc1=0; proc1<NPES; proc1++)
+//          for(proc1=0; proc1<pct.grid_npes; proc1++)
 //          {
 //              printf("\n");
-//              for(proc2=0; proc2<NPES; proc2++)
-//                  printf("%d", matrix_pairs[proc1 * NPES + proc2]);
+//              for(proc2=0; proc2<pct.grid_npes; proc2++)
+//                  printf("%d", matrix_pairs[proc1 * pct.grid_npes + proc2]);
 //          }
 
 //      fflush(NULL);
@@ -186,7 +186,7 @@ void init_nonlocal_comm(void)
     kbpsi_num_loop = loop;
 
     dprintf("\n kbpsi_num_loop %d", kbpsi_num_loop);
-    //    for (loop = 0; loop < NPES; loop++)
+    //    for (loop = 0; loop < pct.grid_npes; loop++)
     //      dprintf("\n\n %d  %d  %d  %d   loooop\n\n", pct.gridpe, loop,
     //kbpsi_comm_send[loop], kbpsi_comm_recv[loop]);
 

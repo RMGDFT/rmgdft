@@ -83,8 +83,8 @@ int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc)
         proc1 = kbpsi_comm_send[idx];
         proc2 = kbpsi_comm_recv[idx];
 
-        int tag1 = idx * NPES  + pct.gridpe;
-        int tag2 = idx * NPES  + proc2;
+        int tag1 = idx * pct.grid_npes  + pct.gridpe;
+        int tag2 = idx * pct.grid_npes  + proc2;
         MPI_Request request;
 
         if(proc1 >=0)

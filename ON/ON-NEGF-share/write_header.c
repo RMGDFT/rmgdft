@@ -118,7 +118,7 @@ void write_header(void)
     printf("\n    Cell volume      = %16.8f", get_vel() * ct.psi_nbasis);
     printf("\n    Grid anisotropy  = %16.8f", get_anisotropy());
 
-    printf("\n\n    PROCESSOR TOPOLOGY:  Total PE's = %d", NPES);
+    printf("\n\n    PROCESSOR TOPOLOGY:  Total PE's = %d", pct.grid_npes);
     printf("\n       PE_KPOINT  = %d", pct.pe_kpoint);
     printf("\n       pct.pe_x  = %d", pct.pe_x);
     printf("\n       pct.pe_y  = %d", pct.pe_y);
