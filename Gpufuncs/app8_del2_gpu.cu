@@ -50,7 +50,6 @@ __global__ void app8_del2_kernel(const double * __restrict__ a,
     double c2x = -1.0 * h2x / 5.0;
     double c3x = 8.0 * h2x / 315.0;
     double c4x = -1.0 * h2x / 560.0;
-
     double c1y = 8.0 * h2y / 5.0;
     double c2y = -1.0 * h2y / 5.0;
     double c3y = 8.0 * h2y / 315.0;
@@ -159,13 +158,22 @@ double app8_del2_gpu(const double * __restrict__ a,
     dim3 Grid, Block;
     double retval = -(205.0 / 72.0) * (h2x + h2y + h2z);
 
+    if(!(dimy % 16) && !(dimz % 32))
+    {
+        Grid.x = dimy / 16;
+        Block.x = 16;
+        Grid.y = dimz / 32;
+        Block.y = 32;
+        app8_del2_kernel<16, 32><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        return retval;
+    }
     if(!(dimy % 4) && !(dimz % 64))
     {
         Grid.x = dimy / 4;
         Block.x = 4;
         Grid.y = dimz / 64;
         Block.y = 64;
-        app8_del2_kernel<4, 64><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<4, 64><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
     if(!(dimy % 8) && !(dimz % 64))
@@ -174,7 +182,7 @@ double app8_del2_gpu(const double * __restrict__ a,
         Block.x = 8;
         Grid.y = dimz / 64;
         Block.y = 64;
-        app8_del2_kernel<8, 64><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<8, 64><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
     if(!(dimy % 8) && !(dimz % 32))
@@ -183,7 +191,7 @@ double app8_del2_gpu(const double * __restrict__ a,
         Block.x = 8;
         Grid.y = dimz / 32;
         Block.y = 32;
-        app8_del2_kernel<8, 32><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<8, 32><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
     if(!(dimy % 16) && !(dimz % 16))
@@ -192,7 +200,7 @@ double app8_del2_gpu(const double * __restrict__ a,
         Block.x = 16;
         Grid.y = dimz / 16;
         Block.y = 16;
-        app8_del2_kernel<16, 16><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<16, 16><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
     if(!(dimy % 16) && !(dimz % 24))
@@ -201,7 +209,7 @@ double app8_del2_gpu(const double * __restrict__ a,
         Block.x = 16;
         Grid.y = dimz / 24;
         Block.y = 24;
-        app8_del2_kernel<16, 24><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<16, 24><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
     if(!(dimy % 24) && !(dimz % 16))
@@ -210,7 +218,7 @@ double app8_del2_gpu(const double * __restrict__ a,
         Block.x = 24;
         Grid.y = dimz / 16;
         Block.y = 16;
-        app8_del2_kernel<24, 16><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<24, 16><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
     if(!(dimy % 24) && !(dimz % 24))
@@ -219,7 +227,7 @@ double app8_del2_gpu(const double * __restrict__ a,
         Block.x = 24;
         Grid.y = dimz / 24;
         Block.y = 24;
-        app8_del2_kernel<24, 24><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<24, 24><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
     if(!(dimy % 10) && !(dimz % 10))
@@ -228,7 +236,7 @@ double app8_del2_gpu(const double * __restrict__ a,
         Block.x = 10;
         Grid.y = dimz / 10;
         Block.y = 10;
-        app8_del2_kernel<10, 10><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<10, 10><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
     if(!(dimy % 8) && !(dimz % 8))
@@ -237,7 +245,7 @@ double app8_del2_gpu(const double * __restrict__ a,
         Block.x = 8;
         Grid.y = dimz / 8;
         Block.y = 8;
-        app8_del2_kernel<8, 8><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<8, 8><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
     if(!(dimy % 12) && !(dimz % 12))
@@ -246,11 +254,10 @@ double app8_del2_gpu(const double * __restrict__ a,
         Block.x = 12;
         Grid.y = dimz / 12;
         Block.y = 12;
-        app8_del2_kernel<12, 12><<<Grid, Block, 0>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
+        app8_del2_kernel<12, 12><<<Grid, Block, 0, cstream>>>(a, b, dimx, dimy, dimz, h2x, h2y, h2z);
         return retval;
     }
 
-//printf("EEEE %s\n",cudaGetErrorString(cudaGetLastError()));
     return retval;
 }
 #endif
