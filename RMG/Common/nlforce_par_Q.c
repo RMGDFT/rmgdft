@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
-#include "grid.h"
+
 #include "main.h"
 #include "common_prototypes.h"
 

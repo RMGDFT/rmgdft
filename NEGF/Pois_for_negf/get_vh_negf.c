@@ -44,7 +44,7 @@
 #include <stdlib.h>
 //#include "main.h"
 
-#include "grid.h"
+
 #include "const.h"
 #include "params.h"
 #include "rmg_alloc.h"

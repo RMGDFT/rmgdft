@@ -33,7 +33,7 @@
     #include <unistd.h>
 #endif
 #include <unordered_map>
-#include "grid.h"
+
 #include "const.h"
 #include "RmgTimer.h"
 #include "RmgException.h"

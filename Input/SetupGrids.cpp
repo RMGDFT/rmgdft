@@ -23,7 +23,7 @@ void fix_anisotropy(int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm);
 #include "RmgException.h"
 #include "RmgInputFile.h"
 #include "InputOpts.h"
-#include "grid.h"
+
 
 /*Check and fix anisotropy*/
 void fix_anisotropy(int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm)

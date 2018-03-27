@@ -24,12 +24,12 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "grid.h"
+
 
 
 #include "const.h"
 #include "params.h"
-#include "grid.h"
+
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 //#include <complex>

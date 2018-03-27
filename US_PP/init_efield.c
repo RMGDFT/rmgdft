@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "common_prototypes.h"
-#include "grid.h"
+
 #include "main.h"
 
 #define SMALL_EFIELD 1.0e-20

@@ -32,7 +32,7 @@
  */
 
 
-#include "grid.h"
+
 #include "common_prototypes.h"
 #include "main.h"
 #include <math.h>

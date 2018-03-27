@@ -23,7 +23,7 @@
 #include "portability.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "grid.h"
+
 #include "common_prototypes.h"
 #include "main.h"
 #include <float.h>

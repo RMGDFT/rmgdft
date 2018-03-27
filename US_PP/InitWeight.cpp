@@ -14,7 +14,7 @@
 
 
 #include "const.h"
-#include "grid.h"
+
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "Kpoint.h"

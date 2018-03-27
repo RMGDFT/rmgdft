@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "grid.h"
+
 #include "common_prototypes.h"
 #include "main.h"
 #include "Functional.h"

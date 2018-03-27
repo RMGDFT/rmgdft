@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "grid.h"
+
 #include "main.h"
 #include "common_prototypes.h"
 

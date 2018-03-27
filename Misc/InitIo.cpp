@@ -37,7 +37,7 @@
 #endif
 
 
-#include "grid.h"
+
 #include "const.h"
 #include "params.h"
 #include "rmg_alloc.h"

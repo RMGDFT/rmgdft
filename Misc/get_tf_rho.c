@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "grid.h"
+
 #include "rmg_error.h"
 #include "common_prototypes.h"
 #include "main.h"

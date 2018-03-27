@@ -51,7 +51,7 @@ namespace po = boost::program_options;
 #include "RmgException.h"
 #include "RmgInputFile.h"
 #include "InputOpts.h"
-#include "grid.h"
+
 
 
 /**********************************************************************

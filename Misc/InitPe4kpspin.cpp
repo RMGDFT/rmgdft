@@ -24,7 +24,7 @@
  */
     
 
-#include "grid.h"
+
 #include "const.h"
 #include "params.h"
 #include "rmgtypedefs.h"

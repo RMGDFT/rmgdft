@@ -27,7 +27,7 @@ namespace po = boost::program_options;
 #include "RmgException.h"
 #include "RmgInputFile.h"
 #include "InputOpts.h"
-#include "grid.h"
+
 
 
 void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)

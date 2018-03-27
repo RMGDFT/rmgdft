@@ -34,7 +34,7 @@
 #endif
 #include <unordered_map>
 #include <csignal>
-#include "grid.h"
+
 #include "const.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
