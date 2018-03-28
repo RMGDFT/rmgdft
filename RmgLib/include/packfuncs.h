@@ -31,6 +31,7 @@
 #ifndef RMG_packfuncs_H
 #define RMG_packfuncs_H 1
 
+#include <complex>
 #include "BaseGrid.h"
 
 template <typename RmgType>
@@ -49,5 +50,9 @@ void CPP_pack_stod (BaseGrid *G, double * s, double * d, int dimx, int dimy, int
 void CPP_pack_ptos_convert(float * sg, double * pg, int dimx, int dimy, int dimz);
 
 void CPP_pack_stop_convert(float * sg, double * pg, int dimx, int dimy, int dimz);
+
+void CPP_pack_ptos_convert(std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz);
+
+void CPP_pack_stop_convert (std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz);
 
 #endif

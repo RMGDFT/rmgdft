@@ -418,7 +418,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                                 G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
                 
                     MG.mg_prolong<std::complex<float>> (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-                    for(int idx = 0;idx < sbasis;idx++) sg_twovpsi_t[idx] = std::real(twork_tf[idx]);
+                    CopyAndConvert(sbasis, (std::complex<float> *)twork_tf, (std::complex<double> *)sg_twovpsi_t);
                 }
                 else
                 {

@@ -99,6 +99,35 @@ void CPP_pack_stop_convert (float * sg, double * pg, int dimx, int dimy, int dim
 
 }                               /* end pack_stop */
 
+void CPP_pack_stop_convert (std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz)
+{
+
+    int ix, iy, ixh, iyh;
+    int incx, incy, incxs, incys;
+    incy = dimz;
+    incx = dimy * dimz;
+    incys = dimz + 2;
+    incxs = (dimy + 2) * (dimz + 2);
+
+
+    /* Transfer pg into smoothing grid */
+    for (ix = 0; ix < dimx; ix++)
+    {
+
+        ixh = ix + 1;
+        for (iy = 0; iy < dimy; iy++)
+        {
+
+            iyh = iy + 1;
+            for(int idx = 0;idx < dimz;idx++) pg[ix * incx + iy * incy + idx] = (std::complex<double>)sg[ixh * incxs + iyh * incys + 1 + idx];
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+}                               /* end pack_stop */
+
+
 template <typename RmgType>
 void CPP_pack_ptos(RmgType * sg, RmgType * pg, int dimx, int dimy, int dimz)
 {
@@ -153,6 +182,36 @@ void CPP_pack_ptos_convert(float * sg, double * pg, int dimx, int dimy, int dimz
 
             iyh = iy + 1;
             for(int idx = 0;idx < dimz;idx++) sg[ixh * incxs + iyh * incys + 1 + idx] = (float)pg[ix * incx + iy * incy + idx];
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+}                               /* end pack_ptos_f */
+
+void CPP_pack_ptos_convert(std::complex<float> * sg, std::complex<double> * pg, int dimx, int dimy, int dimz)
+{
+
+    int ix, iy, ixh, iyh;
+    int incx, incy, incxs, incys;
+    incy = dimz;
+    incx = dimy * dimz;
+    incys = dimz + 2;
+    incxs = (dimy + 2) * (dimz + 2);
+
+    for (ix = 0; ix < (dimx + 2) * (dimy + 2) * (dimz + 2); ix++)
+        sg[ix] = 0.0;
+
+    /* Transfer pg into smoothing grid */
+    for (ix = 0; ix < dimx; ix++)
+    {
+
+        ixh = ix + 1;
+        for (iy = 0; iy < dimy; iy++)
+        {
+
+            iyh = iy + 1;
+            for(int idx = 0;idx < dimz;idx++) sg[ixh * incxs + iyh * incys + 1 + idx] = (std::complex<float>)pg[ix * incx + iy * incy + idx];
 
         }                       /* end for */
 
