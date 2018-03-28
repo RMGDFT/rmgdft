@@ -401,6 +401,25 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                     for(int idx = 0;idx < sbasis;idx++) sg_twovpsi_t[idx] = std::real(twork_tf[idx]);
 
                 }
+                else if(typeid(CalcType) == typeid(std::complex<double>))
+                {
+                    std::complex<float> *v_mat = (std::complex<float> *)&sg_twovpsi_t[sbasis];
+                    std::complex<float> *f_mat = (std::complex<float> *)&work1_t[sbasis];
+                    std::complex<float> *twork_tf = (std::complex<float> *)twork_t;
+                    for(int idx = 0;idx < sbasis;idx++) twork_tf[idx] = work1_t[idx];
+                    MG.mg_restrict<std::complex<float>> (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+
+                    MG.mgrid_solv<std::complex<float>> (v_mat, f_mat, (std::complex<float> *)work2_t,
+                                dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
+                                1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
+                                ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
+                                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+                
+                    MG.mg_prolong<std::complex<float>> (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                    for(int idx = 0;idx < sbasis;idx++) sg_twovpsi_t[idx] = std::real(twork_tf[idx]);
+                }
                 else
                 {
                     CalcType *v_mat = &sg_twovpsi_t[sbasis];
