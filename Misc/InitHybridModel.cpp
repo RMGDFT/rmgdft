@@ -28,6 +28,7 @@
 #include <omp.h>
 #include <transition.h>
 #include <BaseThread.h>
+#include <unordered_set>
 
 #ifdef USE_NUMA
     #include <numa.h>
@@ -67,6 +68,7 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
     MPI_Allgather(MPI_IN_PLACE, 1, MPI_INT, ranks, 1, MPI_INT, comm);
 
     pct.procs_per_host = 0;
+    std::unordered_set<std::string> vhnames;
     for(int i = 0;i < npes;i++) {
         if(!std::strcmp(&hnames[thispe * stride], &hnames[i * stride])) {
             pct.procs_per_host++;
@@ -74,9 +76,9 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
         else {
             ranks[i] = -1;
         }
+        vhnames.insert(std::string(&hnames[i * stride]));
     }
-
-
+    pct.total_hosts = vhnames.size();
 
 
     pct.mpi_local_ranks = new int[pct.procs_per_host];
@@ -305,7 +307,7 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
     if(tptr) mg_nthreads = atoi(tptr);
     bool omp_numthreads_set = true;
 
-    // If user has not set omp_nthreads manually then we 
+    // If user has not set omp_nthreads manually then we try to autoset it
     if(omp_nthreads == 0) {
 
         if(pct.ncpus >= pct.procs_per_host) {
@@ -314,6 +316,8 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
         else {
             omp_nthreads = 1;
         }
+        if(omp_nthreads > (pct.total_hosts * pct.ncpus / pct.total_npes)) omp_nthreads = (pct.total_hosts * pct.ncpus / pct.total_npes);
+        if(omp_nthreads < 1) omp_nthreads = 1;
         omp_numthreads_set = false;
 
     }
@@ -333,11 +337,12 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
             else {
                 mg_nthreads = 1;
             }
+            if(mg_nthreads > (pct.total_hosts * pct.ncpus / pct.total_npes)) mg_nthreads = (pct.total_hosts * pct.ncpus / pct.total_npes);
+            if(mg_nthreads < 1) mg_nthreads = 1;
         }
     }
     ct.OMP_THREADS_PER_NODE = omp_nthreads;
     ct.MG_THREADS_PER_NODE = mg_nthreads;
-
 
     if(ct.OMP_THREADS_PER_NODE < 1)
     {

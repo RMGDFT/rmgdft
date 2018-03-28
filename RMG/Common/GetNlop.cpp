@@ -23,7 +23,7 @@
 
 
 #include "const.h"
-
+#include "grid.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include <complex> 
@@ -399,6 +399,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     if(ct.is_gamma) factor = 1; 
     size_t sint_alloc = (size_t)(factor * ct.num_kpts_pe * pct.num_nonloc_ions * ct.max_nl);
     sint_alloc *= (size_t)ct.max_states;
+    sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
 #if GPU_ENABLED
     pct.newsintR_local = (double *)GpuMallocManaged(sint_alloc * sizeof(double));
 #else

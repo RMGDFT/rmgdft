@@ -44,6 +44,9 @@ typedef struct
     // coalesce factors in each coordinate direction
     int coalesce_factors[3];
 
+    // Number of physical hosts
+    int total_hosts;
+
     // Number of MPI procs per physical host
     int procs_per_host;
 
