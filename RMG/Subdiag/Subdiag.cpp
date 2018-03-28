@@ -321,12 +321,11 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     int istart = 0;
     if(Verify ("freeze_occupied", true, kptr->ControlMap)) istart = (kptr->highest_occupied + 1)*pbasis;
     istop = num_states * pbasis - istart * pbasis;
-    //for(int idx = istart;idx < num_states * pbasis;idx++) kptr->orbital_storage[idx] = tmp_arrayT[idx];
 #if GPU_ENABLED
-    cudaMemcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], istop*sizeof(double), cudaMemcpyDefault);
+    cudaMemcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], istop*sizeof(KpointType), cudaMemcpyDefault);
     //cudaMemPrefetchAsync (kptr->orbital_storage , num_states*sizeof(double), cudaCpuDeviceId, NULL);
 #else
-    memcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], istop*sizeof(double));
+    memcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], istop*sizeof(KpointType));
 #endif
 
     delete(RT1);
