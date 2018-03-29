@@ -32,6 +32,7 @@
 #include "Kpoint.h"
 #include "Subdiag.h"
 #include "RmgGemm.h"
+#include "RmgMatrix.h"
 #include "GpuAlloc.h"
 #include "blas.h"
 
@@ -76,8 +77,6 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         if((pct.procs_per_host > 1) && !use_folded) nthreads = pct.ncpus;
         omp_set_num_threads(nthreads);
 
-
-        KpointType ONE_t(1.0);
     #if GPU_ENABLED
         KpointType ZERO_t(0.0);
         KpointType *Cij = (KpointType *)GpuMallocManaged(num_states * num_states * sizeof(KpointType));
@@ -86,42 +85,19 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         KpointType *Cij = new KpointType[num_states * num_states]();
     #endif
 
-        // Create unitary matrix
-        for (int idx = 0; idx < num_states; idx++) {
-            Cij[idx * num_states + idx] = ONE_t;
-        }
-
         if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
-            // Invert Bij
-            int *ipiv = new int[2*num_states]();
-            if(ct.is_gamma) {
 
-                // Inverse of B should be in Cij
-                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-                dgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
-                delete(RT1);
-
-            }
-            else {
-
-                // Inverse of B should be in Cij
-                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-                zgesv (&num_states, &num_states, (double *)eigvectors, &num_states, ipiv, (double *)Cij, &num_states, &info);
-                delete(RT1);
-
-            }
-            if (info) {
-                rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
-                rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
-            }
-            delete [] ipiv;
+            // Inverse of eigvectors should be in Cij
+            RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
+            InvertMatrix(eigvectors, Cij, num_states);
+            delete(RT1);
 
             /*Multiply inverse of B and and A */
             /*B^-1*A */
             KpointType alpha(1.0);
             KpointType beta(0.0);;
 
-            RmgTimer *RT1 = new RmgTimer("4-Diagonalization: matrix setup");
+            RmgTimer *RT2 = new RmgTimer("4-Diagonalization: matrix setup");
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
                             Cij, num_states, Aij, num_states, beta, Bij,
                             num_states);
@@ -130,7 +106,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
                             Sij, num_states, Bij, num_states, beta, Cij,
                             num_states);
-            delete(RT1);
+            delete(RT2);
 
         }
         else {

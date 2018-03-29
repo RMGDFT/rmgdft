@@ -46,6 +46,7 @@ GpuAllocHost.cpp
 #RmgTimer_Cbindings.cpp
 GlobalSums.cpp
 GlobalSums_Cbindings.cpp
+InvertMatrix.cpp
 BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp

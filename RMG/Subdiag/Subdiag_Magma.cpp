@@ -40,11 +40,11 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
+#include "RmgMatrix.h"
 
 #if GPU_ENABLED
     #if MAGMA_LIBS
         #include <magma.h>
-        //#include <magmablas.h>
     #endif
 
     #include <cuda.h>
@@ -82,9 +82,6 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
 #if MAGMA_LIBS
 #if GPU_ENABLED
-    KpointType ONE_t(1.0);
-    KpointType ZERO_t(1.0);
-
 
     static char *trans_t = "t";
     static char *trans_n = "n";
@@ -105,60 +102,27 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 //    if(pct.is_local_master || (use_folded && (nodes < 12))) {
 if(1){
 
-        if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
+        if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION))
+        {
 
-            // Invert Bij
-            int info = 0;
-            int *ipiv = new int[2*num_states]();
-            if(ct.is_gamma) {
-
-                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-                // Create unitary matrix
-                GpuFill((double *)eigvectors, num_states*num_states, 0.0);
-                double *unitvector = (double *)GpuMallocManaged(num_states*sizeof(double));
-                GpuFill((double *)unitvector, num_states, 1.0);
-                cublasDcopy(ct.cublas_handle, num_states, unitvector, 1, (double *)eigvectors, num_states+1);
-
-                // Inverse of B should be in eigvectors after this call
-                magma_dgesv_gpu(num_states, num_states, (double *)Bij, num_states, ipiv, (double *)eigvectors, num_states, &info);
-                GpuFreeManaged(unitvector);
-                delete(RT1);
-
-            }
-            else {
-
-                // Create unitary matrix
-                KpointType Zero(0.0);
-                KpointType One(0.0);
-                for(int i = 0;i < num_states*num_states;i++) eigvectors[i] = Zero;
-                for(int i = 0;i < num_states;i++) eigvectors[i + i*num_states] = One;
-
-                // Inverse of B should be in eigvectors after this call
-                RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-                magma_zgesv (num_states, num_states, (magmaDoubleComplex *)Bij, num_states, ipiv, (magmaDoubleComplex *)eigvectors, num_states, &info);
-                delete(RT1);
-
-            }
-            if (info) {
-                rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
-                rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
-            }
-            delete [] ipiv;
-
+            // Inverse of B should be in eigvectors after this call
+            RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
+            InvertMatrix(Bij, eigvectors, num_states);
+            delete(RT1);
 
             /*Multiply inverse of B and and A */
             /*B^-1*A */
             KpointType alpha(1.0);
             KpointType beta(0.0);;
 
-            RmgTimer *RT1 = new RmgTimer("4-Diagonalization: matrix setup");
+            RmgTimer *RT2 = new RmgTimer("4-Diagonalization: matrix setup");
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha, eigvectors,
                       num_states, Aij, num_states, beta, Bij, num_states);
 
             /*Multiply the result with Sij, result is in eigvectors */
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha, Sij, 
                       num_states, Bij, num_states, beta, eigvectors, num_states);
-            delete(RT1);
+            delete(RT2);
 
         }
         else {
