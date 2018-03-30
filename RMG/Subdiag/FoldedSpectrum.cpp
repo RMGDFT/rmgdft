@@ -32,6 +32,7 @@
 #include "Kpoint.h"
 #include "Subdiag.h"
 #include "RmgGemm.h"
+#include "RmgMatrix.h"
 #include "GpuAlloc.h"
 #include "Gpufuncs.h"
 #include "ErrorFuncs.h"
@@ -167,26 +168,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #endif
 
 
-#if (GPU_ENABLED && MAGMA_LIBS)
-//    magma_dsyevd(MagmaVec, MagmaLower, n_win, A, n_win, &eigs[n_start],
-//                    work, lwork,
-//                    iwork, liwork,
-//                    &info);
-    double vl=0.0, vu=0.0;
-    magma_int_t eigs_found;
-    int il=1;
-    int iu = eig_stop-n_start+1;
-    if(iu > n_win)iu=n_win;
-    int device = -1;
+#if GPU_ENABLED
+    //int device = -1;
     //cudaGetDevice(&device);
     //cudaMemPrefetchAsync ( A, n_win*n_win*sizeof(double), device, NULL);
     cudaDeviceSynchronize();
-    magma_dsyevdx(MagmaVec, MagmaRangeI, MagmaLower, n_win, G, n_win, vl, vu,
-                      il, iu, &eigs_found, &eigs[n_start], work, lwork, iwork, liwork, &info);
-    //magma_dsyevd(MagmaVec, MagmaLower, n_win, A, n_win, &eigs[n_start],
-    //                work, lwork,
-    //                iwork, liwork,
-    //                &info);
+    DsyevjDriver(G, &eigs[n_start], work, lwork, n_win);
+
 #else
     dsyevd(jobz, cuplo, &n_win, G, &n_win, &eigs[n_start],
                     work, &lwork,
