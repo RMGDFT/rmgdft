@@ -46,10 +46,6 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
-    #if MAGMA_LIBS
-        #include <magma.h>
-    #endif
-
 #endif
 
 
