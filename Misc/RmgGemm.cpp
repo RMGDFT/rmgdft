@@ -73,54 +73,27 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     if(!strcmp("n", transb)) kb = n;
     if(!strcmp("N", transb)) kb = n;
 
-    if(1){
-
-            cudaDeviceSynchronize();
-            if(typeid(DataType) == typeid(std::complex<double>)) {
-                custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
-                                    (cuDoubleComplex *)&alpha,
-                                    (cuDoubleComplex*)A, lda,
-                                    (cuDoubleComplex*)B, ldb,
-                                    (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
-                ProcessCublasError(custat);
-                RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
-            }
-            else {
-                custat = cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
-                                    (double*)&alpha,
-                                    (double*)A, lda,
-                                    (double*)B, ldb,
-                                    (double*)&beta, (double*)C, ldc );
-                ProcessCublasError(custat);
-                RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
-            }
-            cudaDeviceSynchronize();
-            return;
-
+    cudaDeviceSynchronize();
+    if(typeid(DataType) == typeid(std::complex<double>)) {
+        custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+                            (cuDoubleComplex *)&alpha,
+                            (cuDoubleComplex*)A, lda,
+                            (cuDoubleComplex*)B, ldb,
+                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+        ProcessCublasError(custat);
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
     }
-    else
-    {
-            if(typeid(DataType) == typeid(std::complex<double>)) {
-                custat = cublasXtZgemm(ct.cublasXt_handle, cu_transA, cu_transB, m, n, k,
-                                    (cuDoubleComplex *)&alpha,
-                                    (cuDoubleComplex*)A, lda,
-                                    (cuDoubleComplex*)B, ldb,
-                                    (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
-                ProcessCublasError(custat);
-                RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasXtZgemm");
-            }
-            else {
-                custat = cublasXtDgemm(ct.cublasXt_handle, cu_transA, cu_transB, m, n, k,
-                                    (double*)&alpha,
-                                    (double*)A, lda,
-                                    (double*)B, ldb,
-                                    (double*)&beta, (double*)C, ldc );
-                ProcessCublasError(custat);
-                RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasXtDgemm");
-            }
-            return;
+    else {
+        custat = cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
+                            (double*)&alpha,
+                            (double*)A, lda,
+                            (double*)B, ldb,
+                            (double*)&beta, (double*)C, ldc );
+        ProcessCublasError(custat);
+        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
     }
-
+    cudaDeviceSynchronize();
+    return;
 
 #else
 

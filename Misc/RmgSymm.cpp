@@ -63,6 +63,8 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
     DataType ZERO_t(0.0);
 
+    cudaDeviceSynchronize();
+
     if(!strcmp(side, "l")) cu_side = CUBLAS_SIDE_LEFT;
     if(!strcmp(side, "L")) cu_side = CUBLAS_SIDE_LEFT;
     if(!strcmp(side, "r")) cu_side = CUBLAS_SIDE_RIGHT;

@@ -35,6 +35,7 @@
 #include <complex>
 template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n);
 void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n);
+void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n);
 
 #endif
 #endif
