@@ -56,4 +56,24 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n)
     cudaFree(devInfo);
 }
 
+#else
+
+void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n)
+{
+    char *cuplo = "l", *jobz="V";
+    int lwork, info=0, *iwork, liwork;
+
+    liwork = 6*n;
+    iwork = new int[liwork];
+
+    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsyevdDriver: provided workspace too small.");
+    lwork = worksize;
+
+    dsyevd(jobz, cuplo, &n, A, &n, eigs, work, &lwork, iwork, &liwork, &info);
+
+    if(info)
+        rmg_error_handler (__FILE__, __LINE__, " dsyevd failed.");
+
+    delete [] iwork;
+}
 #endif
