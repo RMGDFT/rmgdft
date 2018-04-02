@@ -50,8 +50,6 @@
 
 
 
-
-
 // Communicator for PE's participating in folded spectrum operations
 MPI_Comm fs_comm;
 
@@ -70,7 +68,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     RmgTimer RT0("4-Diagonalization: fs");
     RmgTimer *RT1;
-
     KpointType ONE_t(1.0);
     char *cuplo = "l", *jobz="V";
     int info=0;
@@ -78,7 +75,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     // For mpi routines. Transfer twice as much data for complex orbitals
     int factor = 2;
     if(ct.is_gamma) factor = 1;
-
 
     // Initialize some bookkeeping stuff
     if(!FS_NPES) {
@@ -102,20 +98,16 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 
 #if GPU_ENABLED
-    double *Vdiag = (double *)GpuMallocManaged(n * sizeof(double));
-    double *tarr = (double *)GpuMallocManaged(n * sizeof(double));
-    cudaDeviceSynchronize();
-    cudaMemcpy(Bsave, B, n*n*sizeof(double), cudaMemcpyDefault);
-    //memcpy(Bsave, B, n*n*sizeof(double));
     cudaDeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
+    double *Vdiag = (double *)GpuMallocManaged(n * sizeof(double));
+    double *tarr = (double *)GpuMallocManaged(n * sizeof(double));
+    cudaMemcpy(Bsave, B, n*n*sizeof(double), cudaMemcpyDefault);
 
     //  Transform problem to standard eigenvalue problem
     RmgTimer *RT2 = new RmgTimer("4-Diagonalization: fs: transform");
     int its=7;
-    cudaDeviceSynchronize();
     cudaMemcpy(Asave, A, n*n*sizeof(double), cudaMemcpyDefault);
-    //memcpy(Asave, A, n*n*sizeof(double));
     cudaDeviceSynchronize();
     FoldedSpectrumGSE<double> (Asave, Bsave, A, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver, fs_comm);
     delete(RT2);
@@ -132,7 +124,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     //--------------------------------------------------------------------
     RT2 = new RmgTimer("4-Diagonalization: fs: submatrix");
     cudaMemcpy2D ( G, n_win*sizeof(double), &A[n_start*n + n_start], n*sizeof(double), n_win*sizeof(double), n_win, cudaMemcpyDefault); 
-    cudaDeviceSynchronize();
 
 #else
     double *Vdiag = new double[n];
@@ -169,16 +160,9 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     //cudaGetDevice(&device);
     //cudaMemPrefetchAsync ( A, n_win*n_win*sizeof(double), device, NULL);
     cudaDeviceSynchronize();
-    DsyevdDriver(G, &eigs[n_start], work, lwork, n_win);
-
-#else
-    dsyevd(jobz, cuplo, &n_win, G, &n_win, &eigs[n_start],
-                    work, &lwork,
-                    iwork, &liwork,
-                    &info);
 #endif
-    if( info != 0 ) 
-            rmg_error_handler(__FILE__, __LINE__, "dsyevd failure");
+
+    DsyevjDriver(G, &eigs[n_start], work, lwork, n_win);
 
     //--------------------------------------------------------------------
 
@@ -226,9 +210,11 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 
     // Apply folded spectrum to this PE's range of eigenvectors
+    cudaDeviceSynchronize();
     RT2 = new RmgTimer("4-Diagonalization: fs: iteration");
     if(ct.folded_spectrum_iterations)
         FoldedSpectrumIterator(A, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, ct.folded_spectrum_iterations, driver);
+    cudaDeviceSynchronize();
     delete(RT2);
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -251,6 +237,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #endif
 
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, Asave, Bsave, driver, fs_comm);
+
 #if GPU_ENABLED
     cudaDeviceSynchronize();
     cudaMemcpy(A, V, n*n*sizeof(double), cudaMemcpyDefault);

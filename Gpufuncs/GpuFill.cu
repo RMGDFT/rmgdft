@@ -34,8 +34,10 @@
 // Fills a device pointer with a floating point value
 void GpuFill(double *dptr, int n, double fillval)
 {
+    cudaDeviceSynchronize();
     thrust::device_ptr<double> wptr = thrust::device_pointer_cast(dptr);
     thrust::fill(wptr, wptr + n, (double) fillval); 
+    cudaDeviceSynchronize();
 }
 
 #endif

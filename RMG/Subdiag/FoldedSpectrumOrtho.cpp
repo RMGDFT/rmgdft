@@ -78,7 +78,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: Gram-overlaps");
     if(!B) {
 #if GPU_ENABLED
-        cublasXtDsyrk(ct.cublasXt_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C, n);
+        cublasDsyrk(ct.cublas_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C, n);
 #else
         dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
 #endif

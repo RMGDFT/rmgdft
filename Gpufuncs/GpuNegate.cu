@@ -96,6 +96,7 @@ struct is_negative
 
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n)
 {
+    cudaDeviceSynchronize();
     thrust::negate<double> neg_op;
     thrust::device_ptr<double> dxptr = thrust::device_pointer_cast(dx);
     thrust::device_ptr<double> dyptr = thrust::device_pointer_cast(dy);
@@ -103,6 +104,7 @@ void GpuNegate(double *dx, int incx, double *dy, int incy, int n)
     strided_range<Iterator> pos(dxptr, dxptr + n, incx);
     //thrust::transform_if(dxptr, dxptr + n, dyptr, neg_op, is_negative());
     thrust::transform_if(pos.begin(), pos.end(), dyptr, neg_op, is_negative());
+    cudaDeviceSynchronize();
 }
 
 #endif

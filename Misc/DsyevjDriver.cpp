@@ -58,6 +58,7 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n)
 
     cudaFree(devInfo);
     if (dsyevj_params) cusolverDnDestroySyevjInfo(dsyevj_params);
+    cudaDeviceSynchronize();
 }
 
 #endif

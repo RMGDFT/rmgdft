@@ -238,7 +238,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                     ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, pct.num_tot_proj,
                     ZERO_t,  nv, P0_BASIS);
 
-        //for(int idx = 0;idx < num_states * P0_BASIS;idx++) ns[idx] = psi[idx];
 #if GPU_ENABLED
         cudaMemcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType), cudaMemcpyDefault);
 #else
