@@ -136,12 +136,9 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
             }
             else {
 
-//                dsygvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
-//                                &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
-//                                &lwork, iwork, ifail, &info);
-//
-                  dsygvd(&ione, "V", "L", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
-                         eigs, work2, &lwork, iwork, &liwork, &info);
+                  //dsygvd(&ione, "V", "L", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
+                  //       eigs, work2, &lwork, iwork, &liwork, &info);
+                  DsygvdDriver((double *)Cij, (double *)Sij, eigs, work2, lwork, num_states);
                   for(int i=0;i<num_states*num_states;i++)eigvectors[i] = Cij[i];
 
             }

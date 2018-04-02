@@ -153,11 +153,10 @@ if(1){
             }
             else {
 
-                int info;
                 int itype = 1;
                 int lwork = 3 * num_states * num_states + 8 * num_states;
                 double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
-                magma_dsygvd(itype, MagmaVec, MagmaLower, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, eigs, work, lwork, iwork, liwork, &info);
+                DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
                 GpuFreeManaged(work);
 
             }

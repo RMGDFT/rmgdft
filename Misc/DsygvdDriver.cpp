@@ -33,42 +33,43 @@
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 
-void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n)
+void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n)
 {
 
     cusolverStatus_t cu_status;
     int lwork, *devInfo;
+    const cusolverEigType_t itype = CUSOLVER_EIG_TYPE_1;
     const cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VECTOR; // compute eigenvectors.
     const cublasFillMode_t  uplo = CUBLAS_FILL_MODE_LOWER;
 
 
-    cu_status = cusolverDnDsyevd_bufferSize(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, &lwork);
+    cu_status = cusolverDnDsygvd_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, &lwork);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevd_bufferSize failed.");
-    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsyevdDriver: provided workspace too small.");
+    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsygvdDriver: provided workspace too small.");
 
     RmgCudaError(__FILE__, __LINE__, cudaMalloc((void **)&devInfo, sizeof(int) ), "Problem with cudaMalloc");
 
-    cu_status = cusolverDnDsyevd(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, work, lwork, devInfo);
+    cu_status = cusolverDnDsygvd(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, lwork, devInfo);
     int info;
     cudaMemcpy(&info, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevd failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsygvd failed.");
 
     cudaFree(devInfo);
 }
 
 #else
 
-void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n)
+void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n)
 {
     char *cuplo = "l", *jobz="V";
-    int lwork, info=0, *iwork, liwork;
+    int lwork, info=0, *iwork, liwork, ione=1;
 
     liwork = 6*n;
     iwork = new int[liwork];
 
     lwork = worksize;
 
-    dsyevd(jobz, cuplo, &n, A, &n, eigs, work, &lwork, iwork, &liwork, &info);
+    dsygvd(&ione, jobz, cuplo, &n, A, &n, B, &n, eigs, work, &lwork, iwork, &liwork, &info);
 
     if(info)
         rmg_error_handler (__FILE__, __LINE__, " dsyevd failed.");
