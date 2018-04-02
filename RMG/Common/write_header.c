@@ -372,7 +372,11 @@ void write_header (void)
             printf ("ScaLapack\n");
             break;
         case SUBDIAG_LAPACK:
+#if GPU_ENABLED
+            printf ("Lapack changed to MAGMA\n");
+#else
             printf ("Lapack\n");
+#endif
             break;
         case SUBDIAG_MAGMA:
             printf ("MAGMA\n");
