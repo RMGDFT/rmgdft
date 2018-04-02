@@ -160,9 +160,9 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     //cudaGetDevice(&device);
     //cudaMemPrefetchAsync ( A, n_win*n_win*sizeof(double), device, NULL);
     cudaDeviceSynchronize();
+    DsyevjDriver(G, &eigs[n_start], work, lwork, n_win);
 #endif
 
-    DsyevjDriver(G, &eigs[n_start], work, lwork, n_win);
 
     //--------------------------------------------------------------------
 
@@ -210,11 +210,15 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 
     // Apply folded spectrum to this PE's range of eigenvectors
+#if GPU_ENABLED
     cudaDeviceSynchronize();
+#endif
     RT2 = new RmgTimer("4-Diagonalization: fs: iteration");
     if(ct.folded_spectrum_iterations)
         FoldedSpectrumIterator(A, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, ct.folded_spectrum_iterations, driver);
+#if GPU_ENABLED
     cudaDeviceSynchronize();
+#endif
     delete(RT2);
 
 #if HAVE_ASYNC_ALLREDUCE
@@ -269,3 +273,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     return 0;
 } 
+
+
+
