@@ -91,6 +91,12 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     int ione = 1;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
+#if SCALAPACK_LIBS
+    // For folded spectrum start with scalapack if available since magma is so slow on larger problems
+    if(ct.use_folded_spectrum && (ct.scf_steps < 6)  && (ct.runflag != RESTART))
+        return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
+#endif
+
     cublasStatus_t custat;
 
     // Magma is not parallel across MPI procs so only have the local master proc on a node perform

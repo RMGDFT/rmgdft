@@ -44,6 +44,7 @@ RmgSymm.cpp
 RmgSyrkx.cpp
 GpuAlloc.cpp
 GpuAllocHost.cpp
+GpuAllocManaged.cpp
 #RmgTimer_Cbindings.cpp
 GlobalSums.cpp
 GlobalSums_Cbindings.cpp

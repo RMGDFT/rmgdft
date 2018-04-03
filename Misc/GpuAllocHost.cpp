@@ -44,21 +44,6 @@
 #define         GPU_ALIGNMENT   1024  
 #define         MAX_HOSTGPU_BLOCKS  20
 
-void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
-{
-    void *ptr;
-    cudaError_t custat;
-    custat = cudaMallocManaged ( &ptr, size, cudaMemAttachGlobal );
-    RmgCudaError(fname, line, custat, "Error: cudaMallocManaged failed.\n");
-    return ptr;
-
-}
-
-void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
-{
-    cudaFree(ptr);
-}
-
 
 static void *host_gpubuffer;
 static unsigned char *host_curptr;
