@@ -295,19 +295,19 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     switch(subdiag_driver) {
 
         case SUBDIAG_LAPACK:
-            trans_b = Subdiag_Lapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
+            trans_b = Subdiag_Lapack (kptr, Aij, Bij, Sij, eigs, global_matrix1);
             break;
         case SUBDIAG_SCALAPACK:
-            trans_b = Subdiag_Scalapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
+            trans_b = Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, global_matrix1);
             break;
         case SUBDIAG_ELPA:
-            trans_b = Subdiag_Elpa (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
+            trans_b = Subdiag_Elpa (kptr, Aij, Bij, Sij, eigs, global_matrix1);
             break;
         case SUBDIAG_MAGMA:
 #if GPU_ENABLED && MAGMA_LIBS
-            trans_b = Subdiag_Magma (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
+            trans_b = Subdiag_Magma (kptr, Aij, Bij, Sij, eigs, global_matrix1);
 #else
-            trans_b = Subdiag_Lapack (kptr, (KpointType *)Aij, (KpointType *)Bij, (KpointType *)Sij, eigs, (KpointType *)global_matrix1);
+            trans_b = Subdiag_Lapack (kptr, Aij, Bij, Sij, eigs, global_matrix1);
 #endif
             break;
         default:
