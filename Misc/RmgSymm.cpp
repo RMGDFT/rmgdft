@@ -14,7 +14,6 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
-void ProcessCublasError(cublasStatus_t custat);
 #endif
 
 #define         dsymm   dsymm_

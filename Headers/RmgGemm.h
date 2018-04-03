@@ -41,6 +41,10 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
                              DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
                              DataType *C, int ldc);
 
+template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k,
+                             DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
+                             DataType *C, int ldc);
+
 #endif
 #endif
 

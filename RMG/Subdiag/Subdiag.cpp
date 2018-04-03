@@ -33,6 +33,7 @@
 #include "GlobalSums.h"
 #include "Kpoint.h"
 #include "RmgGemm.h"
+#include "Gpufuncs.h"
 #include "Subdiag.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
@@ -87,8 +88,11 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     KpointType *tmp_array2T = (KpointType *)GpuMallocManaged(pbasis * kptr->nstates * sizeof(KpointType));     
     if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));     
     double *eigs = (double *)GpuMallocManaged(2*kptr->nstates * sizeof(double));
+    GpuFill((double *)Aij, factor*kptr->nstates * kptr->nstates, 0.0);
+    GpuFill((double *)global_matrix1, factor*kptr->nstates * kptr->nstates, 0.0);
+
 #else
-    KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates];
+    KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates]();
     KpointType *Bij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *Sij = new KpointType[kptr->nstates * kptr->nstates];
     KpointType *tmp_array2T = new KpointType[pbasis * kptr->nstates];
@@ -96,6 +100,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
         int retval1 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
         if(retval1 != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
     }
+    for(int ix=0;ix < num_states*num_states;ix++)global_matrix1[ix] = 0.0;
     double *eigs = new double[2*kptr->nstates];
 #endif
 
@@ -211,7 +216,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, num_states);
+
+    RmgSyrkx("L", "T", num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, num_states);
+    //RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, num_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -226,7 +233,14 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     // Compute S matrix
     KpointType alpha1(vel);
-    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, Sij, num_states);
+    if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION))
+    {
+        RmgSyrkx("L", "T", num_states, pbasis, alpha1, kptr->orbital_storage, pbasis,  kptr->ns, pbasis, beta, Sij, num_states);
+    }
+    else
+    {
+        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, Sij, num_states);
+    }
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish

@@ -41,6 +41,7 @@ DeleteNvmeArrays.cpp
 RmgCudaError.cpp
 RmgGemm.cpp
 RmgSymm.cpp
+RmgSyrkx.cpp
 GpuAlloc.cpp
 GpuAllocHost.cpp
 #RmgTimer_Cbindings.cpp
@@ -50,6 +51,7 @@ InvertMatrix.cpp
 DsyevjDriver.cpp
 DsyevdDriver.cpp
 DsygvdDriver.cpp
+ZhegvdDriver.cpp
 BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp

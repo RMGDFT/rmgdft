@@ -55,7 +55,8 @@
 #define		ddot		RMG_FC_GLOBAL(ddot, DDOT)
 #define		dscal		RMG_FC_GLOBAL(dscal, DSCAL)
 #define		dsyrk		RMG_FC_GLOBAL(dsyrk, DSYRK)
-#define		zsyrk		RMG_FC_GLOBAL(zsyrk, ZSYRK)
+#define		dsyr2k		RMG_FC_GLOBAL(dsyr2k, DSYR2K)
+#define		zsyr2k		RMG_FC_GLOBAL(zsyr2k, ZSYR2K)
 #define		dpotrf		RMG_FC_GLOBAL(dpotrf, DPOTRF)
 #define		zpotrf		RMG_FC_GLOBAL(zpotrf, ZPOTRF)
 #define		dswap		RMG_FC_GLOBAL(dswap, DSWAP)
@@ -121,6 +122,8 @@ double ddot (int *n, double * x, int *incx, double * y, int *incy);
 double dnrm2 (int *n, double * x, int *incx);
 void dsyrk (const char *uplo, const char *trans, int *n, int *k, double * alpha, double * A,
             int *lda, double * beta, double * c, int *ldc);
+void dsyr2k (const char *uplo, const char *trans, int *n, int *k, double * alpha, double * A,
+            int *lda, double *b, int *ldb, double * beta, double * c, int *ldc);
 void dswap (int *n, double * x, int *incx, double * y, int *incy);
 void xbecke (double * d, double * s, double * u, double * v, double * ex, double * vx);
 void corlyp_f90 (double * dp, double * dm, double * dp1, double * dm1, double * dp2,

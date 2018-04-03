@@ -33,41 +33,47 @@
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 
-void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n)
+void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs, double *work, int worksize, int n)
 {
 
     cusolverStatus_t cu_status;
     int lwork, *devInfo;
+    const cusolverEigType_t itype = CUSOLVER_EIG_TYPE_1;
     const cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VECTOR; // compute eigenvectors.
     const cublasFillMode_t  uplo = CUBLAS_FILL_MODE_LOWER;
-    syevjInfo_t dsyevj_params = NULL;
 
-    cu_status = cusolverDnCreateSyevjInfo(&dsyevj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnCreateDsyevjInfo failed.");
 
-    cu_status = cusolverDnDsyevj_bufferSize(ct.cusolver_handle, jobz, uplo, n, A, n, work, &lwork, dsyevj_params);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevj_bufferSize failed.");
-    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsyevjDriver: provided workspace too small.");
+    cu_status = cusolverDnZhegvd_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, &lwork);
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZheevd_bufferSize failed.");
+    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " ZhegvdDriver: provided workspace too small.");
 
     RmgCudaError(__FILE__, __LINE__, cudaMalloc((void **)&devInfo, sizeof(int) ), "Problem with cudaMalloc");
 
-    cu_status = cusolverDnDsyevj(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, work, lwork, devInfo, dsyevj_params);
+    cu_status = cusolverDnZhegvd(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, (cuDoubleComplex *)work, lwork, devInfo);
     int info;
     cudaMemcpy(&info, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
-    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevj failed.");
+    if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZhegvd failed.");
 
     cudaFree(devInfo);
-    if (dsyevj_params) cusolverDnDestroySyevjInfo(dsyevj_params);
-    cudaDeviceSynchronize();
 }
 
 #else
 
-void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n)
+void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs, double *work, int worksize, int n)
 {
-    // Redirect to Dsyevd since the Jacobi driver is not standard in CPU libraries
-    DsyevdDriver(A, eigs, work, worksize, n);
+    char *cuplo = "l", *jobz="V";
+    int lwork, info=0, *iwork, liwork, ione=1;
 
+    liwork = 6*n;
+    iwork = new int[liwork];
+
+    lwork = worksize;
+
+//    dsygvd(&ione, jobz, cuplo, &n, A, &n, B, &n, eigs, work, &lwork, iwork, &liwork, &info);
+
+    if(info)
+        rmg_error_handler (__FILE__, __LINE__, " dsyevd failed.");
+
+    delete [] iwork;
 }
-
 #endif
