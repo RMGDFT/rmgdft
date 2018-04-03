@@ -93,7 +93,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
 #if SCALAPACK_LIBS
     // For folded spectrum start with scalapack if available since magma is so slow on larger problems
-    if(ct.use_folded_spectrum && (ct.scf_steps < 6)  && (ct.runflag != RESTART))
+    if(ct.use_folded_spectrum && (ct.scf_steps <= 6)  && (ct.runflag != RESTART))
         return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
