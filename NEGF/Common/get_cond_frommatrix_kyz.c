@@ -72,7 +72,15 @@ void get_cond_frommatrix_kyz ()
     { 
         E_POINTS = (E_POINTS +2)/4 *4 +1;
     }
-    
+   // if E_POINTS set to 1 in cond.input, use emin and emax as energy for 3D dos calculation 
+    if (E_POINTS == 1)
+    {
+        peakNum=2; 
+        peaks[0]=emin ;
+        peaks[1]=emax ;
+        return 0;
+    }
+   // 
 	de = (emax - emin) / (E_POINTS - 1);
     int EP;
 
@@ -395,7 +403,8 @@ void get_cond_frommatrix_kyz ()
 
             fclose (file);
         }
-        /* find peaks of conductance, max 100 peaks, */
+/* if peaks are set in input, use them */
+/* if peaks aren't set in input,find peaks of conductance, max 100 peaks, */
         int peaki=0; 
         peakNum=0; 
         for (iene = 0; iene < tot_energy_point; iene++)
