@@ -162,7 +162,7 @@ if(1){
                 int itype = 1;
                 int lwork = 3 * num_states * num_states + 8 * num_states;
                 double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
-                DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
+                DsygvjDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
                 GpuFreeManaged(work);
 
             }

@@ -66,19 +66,8 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
 
 void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n)
 {
-    char *cuplo = "l", *jobz="V";
-    int lwork, info=0, *iwork, liwork, ione=1;
+    // Redirect to Dsygvd since the Jacobi driver is not standard in CPU libraries
+    DsygvdDriver(A, B, eigs, work, worksize, n);
 
-    liwork = 6*n;
-    iwork = new int[liwork];
-
-    lwork = worksize;
-
-    dsygvj(&ione, jobz, cuplo, &n, A, &n, B, &n, eigs, work, &lwork, iwork, &liwork, &info);
-
-    if(info)
-        rmg_error_handler (__FILE__, __LINE__, " dsyevd failed.");
-
-    delete [] iwork;
 }
 #endif
