@@ -70,7 +70,7 @@ template double Fill (Kpoint<std::complex<double> > **, double, double, double, 
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag, int mp_order)
 {
 
-    const int maxit = 50;
+    const int maxit = 100;
     const double charge_tol = 1.0e-10;
 
     int iter, st, st1, idx, nks, nspin = (ct.spin_flag + 1);
