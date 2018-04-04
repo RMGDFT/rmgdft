@@ -89,6 +89,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));     
     double *eigs = (double *)GpuMallocManaged(2*kptr->nstates * sizeof(double));
     GpuFill((double *)Aij, factor*kptr->nstates * kptr->nstates, 0.0);
+    GpuFill((double *)Sij, factor*kptr->nstates * kptr->nstates, 0.0);
     GpuFill((double *)global_matrix1, factor*kptr->nstates * kptr->nstates, 0.0);
 
 #else
