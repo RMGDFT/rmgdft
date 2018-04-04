@@ -175,6 +175,9 @@ void zheev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
             double * work1, double * work2, int *lwork, double *rwork, int *info);
 void dsyevx (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, double *, int *, int *, int *, int *);
 void dsyevr (char *, char *, char *, int *, double *, int *, double *, double *, int *, int *, double *, int *, double *, double *, int *, int *, double *, int *, int *, int *, int *);
+
+void dsygvj(int *, char *, char *, int *, double *, int *, double *, int *, double *, double *, int*, int *, int*, int*);
+
 void dtrsm(char *side, char *uplo, char *transa, char *diag, int *M, int *N, double *alpha, double *A, int *lda, double *B, int *ldb);
 void dsygst( int *itype, char *uplo, int *N, double *A, int *LDA, double *B, int *LDB, int *INFO );
 double dzasum(int *, double *A, int *);
