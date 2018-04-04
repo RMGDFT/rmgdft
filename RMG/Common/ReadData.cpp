@@ -378,6 +378,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
 
     /* read state eigenvalues, not needed really */
+    if (ct.forceflag != BAND_STRUCTURE)
     {
 
         /* Read eigenvalue in pairwised case, while in polarized case, 
