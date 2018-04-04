@@ -52,6 +52,7 @@ InvertMatrix.cpp
 DsyevjDriver.cpp
 DsyevdDriver.cpp
 DsygvdDriver.cpp
+DsygvjDriver.cpp
 ZhegvdDriver.cpp
 BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
