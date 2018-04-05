@@ -43,16 +43,11 @@
 #include "RmgMatrix.h"
 
 #if GPU_ENABLED
-    #if MAGMA_LIBS
-        #include <magma.h>
-    #endif
-
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
     #include <thrust/fill.h>
     #include <thrust/device_vector.h>
-
 #endif
 
 
@@ -82,7 +77,6 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
 
 
     int num_states = kptr->nstates;
-    int ione = 1;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
 #if SCALAPACK_LIBS
@@ -91,7 +85,6 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
         return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
-    cublasStatus_t custat;
 
     // Magma is not parallel across MPI procs so only have the local master proc on a node perform
     // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
@@ -138,8 +131,6 @@ if(1){
         int liwork = 6 * num_states + 4;
         int eigs_found;
         int *iwork = new int[2*liwork];
-        double vx = 0.0;
-        double tol = 1e-15;
 
         if(ct.is_gamma) {
 
@@ -153,7 +144,6 @@ if(1){
             }
             else {
 
-                int itype = 1;
                 int lwork = 3 * num_states * num_states + 8 * num_states;
                 double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
                 DsygvjDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
