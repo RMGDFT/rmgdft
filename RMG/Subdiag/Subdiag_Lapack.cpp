@@ -123,14 +123,10 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
 
         RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
-        int *ifail = new int[num_states];
         int lwork = 2 * num_states * num_states + 6 * num_states + 2;
         int liwork = 6*num_states;
-        int eigs_found;
         double *work2 = new double[2*lwork];
         int *iwork = new int[liwork];
-        double vx = 0.0;
-        double tol = 1e-15;
 
         if(ct.is_gamma) {
 
@@ -152,18 +148,12 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         else {
 
             ZhegvdDriver((std::complex<double> *)Cij, (std::complex<double> *)Sij, eigs, work2, lwork, num_states);
-
-//            double *rwork = new double[8 * num_states];
-//            zhegvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
-//                            &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
-//                            &lwork, rwork, iwork, ifail, &info);
-//            delete [] rwork;
+            for(int i=0;i<num_states*num_states;i++)eigvectors[i] = Cij[i];
 
         }
 
         delete [] iwork;
         delete [] work2;
-        delete [] ifail;
 
         delete(RT1);
     #if GPU_ENABLED
