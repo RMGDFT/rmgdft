@@ -38,6 +38,8 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n);
 void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n);
 void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n);
 void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n);
+void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs, double *work, int worksize, int n);
+
 
 #endif
 #endif

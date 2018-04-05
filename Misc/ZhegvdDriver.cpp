@@ -62,18 +62,20 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
 void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs, double *work, int worksize, int n)
 {
     char *cuplo = "l", *jobz="V";
-    int lwork, info=0, *iwork, liwork, ione=1;
+    int lwork, info=0, *iwork, liwork, itype=1;
 
     liwork = 6*n;
     iwork = new int[liwork];
-
     lwork = worksize;
+    int lrwork = 2*n*n + 6*n; 
+    double *rwork = new double[lrwork];
 
-//    dsygvd(&ione, jobz, cuplo, &n, A, &n, B, &n, eigs, work, &lwork, iwork, &liwork, &info);
+    zhegvd(&itype, jobz, cuplo, &n, A, &n, B, &n, eigs, work, &lwork, rwork, &lrwork, iwork, &liwork, &info);
 
     if(info)
-        rmg_error_handler (__FILE__, __LINE__, " dsyevd failed.");
+        rmg_error_handler (__FILE__, __LINE__, " zhegvd failed.");
 
+    delete [] rwork;
     delete [] iwork;
 }
 #endif

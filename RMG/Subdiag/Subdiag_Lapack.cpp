@@ -151,11 +151,13 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         }
         else {
 
-            double *rwork = new double[8 * num_states];
-            zhegvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
-                            &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
-                            &lwork, rwork, iwork, ifail, &info);
-            delete [] rwork;
+            ZhegvdDriver((std::complex<double> *)Cij, (std::complex<double> *)Sij, eigs, work2, lwork, num_states);
+
+//            double *rwork = new double[8 * num_states];
+//            zhegvx (&ione, "v", "A", "l", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
+//                            &vx, &vx, &ione, &ione,  &tol, &eigs_found, eigs, (double *)eigvectors, &num_states, work2,
+//                            &lwork, rwork, iwork, ifail, &info);
+//            delete [] rwork;
 
         }
 

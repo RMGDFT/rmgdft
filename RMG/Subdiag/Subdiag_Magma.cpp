@@ -55,12 +55,6 @@
 
 #endif
 
-int rmg_dsygvd_gpu(int n, double *a, int lda, double *b, int ldb,
-                double *w, double *work, int lwork, int *iwork, int liwork, double *wa);
-int rmg_zhegvd_gpu(int n, std::complex<double> *a, int lda, std::complex<double> *b, int ldb,
-                double *eigs, double *work, int lwork, double *rwork, int lrwork, int *iwork, int liwork, double *wa);
-
-
 
 template char * Subdiag_Magma<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
 template char * Subdiag_Magma<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors);
@@ -170,15 +164,9 @@ if(1){
         }
         else {
 
-            int info;
-            int itype = 1;
             int lwork = 3 * num_states * num_states + 8 * num_states;
             double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
-            int lrwork = 2 * num_states * num_states + 6 * num_states;
-            double *rwork = new double[2 * lrwork];
-            magma_zhegvd(itype, MagmaVec, MagmaLower, num_states, (cuDoubleComplex *)eigvectors, num_states, (cuDoubleComplex *)Sij, num_states,
-                                  eigs, (cuDoubleComplex *)work, lwork, rwork, lrwork, iwork, liwork, &info);
-
+            ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, work, lwork, num_states);
             GpuFreeManaged(work);
         }
 
