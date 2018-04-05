@@ -218,8 +218,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     KpointType alpha(1.0);
     KpointType beta(0.0);
 
-    RmgSyrkx("L", "T", num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, num_states);
-    //RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, num_states);
+    if(ct.is_gamma)
+        RmgSyrkx("L", "T", num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, num_states);
+    else
+        RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, num_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -234,7 +236,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     // Compute S matrix
     KpointType alpha1(vel);
-    if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION))
+    if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION) && ct.is_gamma)
     {
         RmgSyrkx("L", "T", num_states, pbasis, alpha1, kptr->orbital_storage, pbasis,  kptr->ns, pbasis, beta, Sij, num_states);
     }
