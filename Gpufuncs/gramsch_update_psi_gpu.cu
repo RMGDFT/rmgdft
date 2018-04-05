@@ -28,7 +28,6 @@
 #include <cuda_device_runtime_api.h>
 #include <crt/host_runtime.h>
 #include <cublas_v2.h>
-#include <cublasXt.h>
 #include "ErrorFuncs.h"
 
 __global__ void gramsch_update_psi_kernel(

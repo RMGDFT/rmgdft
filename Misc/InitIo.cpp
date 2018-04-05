@@ -59,7 +59,6 @@
 
     #include <cuda.h>
     #include <cuda_runtime_api.h>
-    #include <cublasXt.h>
     #include <cublas_v2.h>
 
 #endif
@@ -265,13 +264,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
             fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
         }
-        if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
-            fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
-        }
-        if(cublasXtDeviceSelect(ct.cublasXt_handle, 1, &ct.gpu_device_ids[pct.local_rank]) != CUBLAS_STATUS_SUCCESS) {
-            fprintf(stderr, "XT set devices fail\n"); exit(-1);
-        }
-        cublasXtSetBlockDim(ct.cublasXt_handle, ct.cublasxt_block_size);
     }
     else if(pct.procs_per_host > ct.num_usable_gpu_devices)
     {
@@ -285,13 +277,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
                     fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
                 }
-                if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
-                    fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
-                }
-                if(cublasXtDeviceSelect(ct.cublasXt_handle, 1, &ct.gpu_device_ids[next_gpu]) != CUBLAS_STATUS_SUCCESS) {
-                    fprintf(stderr, "XT set devices fail\n"); exit(-1);
-                }
-                cublasXtSetBlockDim(ct.cublasXt_handle, ct.cublasxt_block_size);
             }
             next_gpu++;
             next_gpu = next_gpu % ct.num_usable_gpu_devices;
@@ -307,13 +292,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
             fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
         }
-        if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasXt_handle) ) {
-            fprintf(stderr, "CUBLASXT: Handle not created\n"); exit(-1);
-        }
-        if(cublasXtDeviceSelect(ct.cublasXt_handle, ct.num_usable_gpu_devices, ct.gpu_device_ids) != CUBLAS_STATUS_SUCCESS) {
-            fprintf(stderr, "XT set devices fail\n"); exit(-1);
-        } //
-        cublasXtSetBlockDim(ct.cublasXt_handle, ct.cublasxt_block_size);
     }
 
     cusolverStatus_t cusolver_status = cusolverDnCreate(&ct.cusolver_handle);

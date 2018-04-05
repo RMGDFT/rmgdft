@@ -12,7 +12,6 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
-    #include <cublasXt.h>
     #include <cusolverDn.h>
     #if MAGMA_LIBS
         #include <magma.h>

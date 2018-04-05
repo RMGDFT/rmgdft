@@ -474,9 +474,6 @@ typedef struct
     /* scalapack block size */
     int scalapack_block_factor;
 
-    /* cublasxt block size */
-    int cublasxt_block_size;
-
     /* How many steps between writeout of eigenvalues*/
     int write_eigvals_period;
 
@@ -627,7 +624,6 @@ typedef struct
 
     // CUBLAS library handles
     cublasHandle_t cublas_handle;
-    cublasXtHandle_t cublasXt_handle;
     cusolverDnHandle_t cusolver_handle;
     cudaStream_t cusolver_stream;
 

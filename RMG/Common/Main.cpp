@@ -110,7 +110,6 @@ extern "C" void term_handler(int signal)
 
 #if GPU_ENABLED
     cublasDestroy(ct.cublas_handle);
-    cublasXtDestroy(ct.cublasXt_handle);
     cudaDeviceReset();
 #endif
     DeleteNvmeArrays();
@@ -421,7 +420,6 @@ void finish ()
 
 #if GPU_ENABLED
     cublasDestroy(ct.cublas_handle);
-    cublasXtDestroy(ct.cublasXt_handle);
     cudaDeviceReset();
 #endif
 
