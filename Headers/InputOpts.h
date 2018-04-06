@@ -82,11 +82,12 @@ static std::unordered_map<std::string, int> occupations_type = {
         };
 
 static std::unordered_map<std::string, int> subdiag_driver = {
-        {"lapack", 0},
-        {"scalapack", 1},
-        {"magma", 2},
-        {"auto", 3},
-        {"elpa", 6}};
+        {"lapack", SUBDIAG_LAPACK},
+        {"scalapack", SUBDIAG_SCALAPACK},
+        {"magma", SUBDIAG_MAGMA},
+        {"cusolver", SUBDIAG_CUSOLVER},
+        {"elpa", SUBDIAG_ELPA},
+        {"auto", SUBDIAG_AUTO}};
 
 static std::unordered_map<std::string, int> kohn_sham_solver = {
         {"multigrid", MULTIGRID_SOLVER},

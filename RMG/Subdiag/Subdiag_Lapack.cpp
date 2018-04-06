@@ -54,12 +54,11 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
     static char *trans_n = "n";
     int info = 0;
     int num_states = kptr->nstates;
-    int ione = 1;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
 #if GPU_ENABLED
     // If GPU run redirect to GPU routines.
-    return Subdiag_Magma(kptr, Aij, Bij, Sij, eigs, eigvectors);
+    return Subdiag_Cusolver(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
 #if SCALAPACK_LIBS
@@ -137,8 +136,6 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
             }
             else {
 
-                  //dsygvd(&ione, "V", "L", &num_states, (double *)Cij, &num_states, (double *)Sij, &num_states,
-                  //       eigs, work2, &lwork, iwork, &liwork, &info);
                   DsygvdDriver((double *)Cij, (double *)Sij, eigs, work2, lwork, num_states);
                   for(int i=0;i<num_states*num_states;i++)eigvectors[i] = Cij[i];
 

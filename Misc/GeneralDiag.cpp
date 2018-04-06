@@ -90,8 +90,9 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
                 info = GeneralDiagScaLapack((double *)A, (double *)B, eigs, (double *)V, N, M, ld);
             }
             break;
-#if MAGMA_LIBS
+#if MAGMA_LIBS && GPU_ENABLED
         case SUBDIAG_MAGMA:
+        case SUBDIAG_CUSOLVER:
                 info = GeneralDiagMagma(A, B, eigs, V, N, M, ld);
             break;
 #endif
@@ -111,7 +112,6 @@ template <typename KpointType>
 int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld)
 {
     int info = 0;
-    //bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
     if(pct.is_local_master) {
 
@@ -333,7 +333,6 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
 {
 
     int info = 0;
-    //bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
     if(N < M) throw RmgFatalException() << "M must be >= N in " << __FILE__ << " at line " << __LINE__ << "\n";
     if(pct.is_local_master) {
@@ -343,7 +342,6 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
         int *iwork = new int[liwork];
         int eigs_found;
         double vx = 0.0;
-        double tol = 1.0e-15;
 
         KpointType *Asave = new KpointType[N*ld];
         KpointType *Bsave = new KpointType[N*ld];

@@ -381,6 +381,9 @@ void write_header (void)
         case SUBDIAG_MAGMA:
             printf ("MAGMA\n");
             break;
+        case SUBDIAG_CUSOLVER:
+            printf ("Cusolver\n");
+            break;
         default:
             printf ("Unknown diagonalization method");
     }

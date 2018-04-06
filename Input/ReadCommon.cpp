@@ -234,7 +234,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "auto",
                      CHECK_AND_FIX, OPTIONAL, subdiag_driver,
                      "Driver type used for subspace diagonalization of the eigenvectors.\n", 
-                     "subdiag_driver must be lapack, scalapack, magma or auto. Resetting to auto.\n");
+                     "subdiag_driver must be lapack, scalapack, cusolver, magma or auto. Resetting to auto.\n");
 
     If.RegisterInputKey("kohn_sham_solver", NULL, &lc.kohn_sham_solver, "multigrid",
                      CHECK_AND_FIX, OPTIONAL, kohn_sham_solver,

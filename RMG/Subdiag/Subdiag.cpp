@@ -307,8 +307,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
             trans_b = Subdiag_Elpa (kptr, Aij, Bij, Sij, eigs, global_matrix1);
             break;
         case SUBDIAG_MAGMA:
-#if GPU_ENABLED && MAGMA_LIBS
-            trans_b = Subdiag_Magma (kptr, Aij, Bij, Sij, eigs, global_matrix1);
+        case SUBDIAG_CUSOLVER:
+#if GPU_ENABLED
+            trans_b = Subdiag_Cusolver (kptr, Aij, Bij, Sij, eigs, global_matrix1);
 #else
             trans_b = Subdiag_Lapack (kptr, Aij, Bij, Sij, eigs, global_matrix1);
 #endif
