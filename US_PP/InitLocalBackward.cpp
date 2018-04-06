@@ -313,9 +313,6 @@ void InitLocalBackward (double * vnuc_f, double * rhoc_f, double * rhocore_f)
     }
 
 
-    /* Wait until everyone gets here */
-    /*my_barrier(); */
-
     /*   add the saw-tooth potential induced by applied electric field  */
     if(ct.runflag == 5 || ct.runflag == 6 || ct.forceflag == TDDFT) return;
     init_efield (vnuc_f);

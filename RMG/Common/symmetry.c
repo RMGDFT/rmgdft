@@ -284,8 +284,6 @@ void symmetrize_rho (double * rho)
     int FNZ_GRID = get_FNZ_GRID();
     int FN_BASIS = FNX_GRID * FNY_GRID * FNZ_GRID;
 
-    /* Wait until all processors arrive at this point */
-    /*my_barrier(); */
 
     if(!ct.is_use_symmetry) return;
 

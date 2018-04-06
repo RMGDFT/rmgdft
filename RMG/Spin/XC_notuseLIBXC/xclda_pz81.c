@@ -157,8 +157,6 @@ void xclda_pz81 (double * rho, double * vxc_f, int n)
 
     }                           /* end for */
 
-    /*my_barrier(); */
-
 
 }                               /* end xclda_pz81 */
 
@@ -176,8 +174,6 @@ void exclda_pz81 (double * rho, double * exc, int n)
         exc[i] = e_pz (rho[i]);
 
     }                           /* end for */
-
-    /*my_barrier(); */
 
 
 }                               /* end exclda_pz81 */

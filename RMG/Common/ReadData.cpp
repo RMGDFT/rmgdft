@@ -76,7 +76,6 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     fpgrid[2] = Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO);
 
     /* wait until everybody gets here */
-    /* my_barrier (); */
     MPI_Barrier(pct.img_comm);	
 
     /* Make the new output file name */
