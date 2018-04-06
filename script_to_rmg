@@ -15,9 +15,12 @@ cp -r cmake ../rmg-release
 cp -r Finite_diff ../rmg-release
 cp -r Force ../rmg-release
 cp -r Headers ../rmg-release
+cp -r Gpufuncs ../rmg-release
 cp -r Input ../rmg-release
 cp -r InternalPseudo ../rmg-release
 cp -r lib ../rmg-release
+cp -r spglib ../rmg-release
+cp -r zfp ../rmg-release
 cp -r XC ../rmg-release
 cp -r MG ../rmg-release
 cp -r Misc ../rmg-release
@@ -27,7 +30,6 @@ cp -r US_PP ../rmg-release
 cp -r XC_useLIBXC ../rmg-release
 cp -r Examples ../rmg-release
 cp -r PlatformChecks ../rmg-release
-cp svnrev.h.in ../rmg-release
 cp COPYING ../rmg-release
 cp COPYRIGHT ../rmg-release
 cp CREDITS ../rmg-release
@@ -36,3 +38,4 @@ cp CMakeCPackOptions.cmake.in ../rmg-release/
 cp rmgwin.bat ../rmg-release/
 cp CMakeFindRootPath.inc ../rmg-release/
 cp SubprojectIncludes/CMakeLists.txt.rmg.inc ../rmg-release/SubprojectIncludes
+cp rmg_mangling.h.in ../rmg-release/
