@@ -307,8 +307,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             vh[idx] = 0.0;
     }
 
-    /* Set initial states to random start */
 
+    //Dprintf ("Initialize the radial potential stuff");
+    RmgTimer *RT1 = new RmgTimer("2-Init: radial potentials");
+    InitPseudo (Kptr[0]->ControlMap);
+    delete(RT1);
+
+    /* Initialize orbitals */
     if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE))
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
@@ -337,13 +342,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
     }
 
-
-
-
-    //Dprintf ("Initialize the radial potential stuff");
-    RmgTimer *RT1 = new RmgTimer("2-Init: radial potentials");
-    InitPseudo (Kptr[0]->ControlMap);
-    delete(RT1);
 
     /* Initialize symmetry stuff */
     if(ct.is_use_symmetry)
