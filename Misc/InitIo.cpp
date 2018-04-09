@@ -67,11 +67,8 @@
 void get_topology(void)
 {
   int rank,nproc;
-  int i,core;
-  MPI_Status status;
-  pid_t pid = getpid();
+  int core;
   cpu_set_t my_set;
-  int ret;
   char hostname[256];
 
   setbuf(stdout, NULL);
@@ -83,7 +80,7 @@ void get_topology(void)
   gethostname(hostname,255);
 
   CPU_ZERO(&my_set);
-  ret = sched_getaffinity(0, sizeof(my_set), &my_set);
+  sched_getaffinity(0, sizeof(my_set), &my_set);
   char str[1024];
   strcpy(str," ");
   int count = 0;
@@ -256,13 +253,16 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         idevice++;
     }
 
+    if(ct.num_usable_gpu_devices == 0)
+        rmg_error_handler (__FILE__, __LINE__, "No usable GPU devices were found on the system. Exiting.\n");
+
     // Now we have to decide how to allocate the GPU's to MPI procs if we have more than
     // one GPU/node.
     if((ct.num_usable_gpu_devices == pct.numa_nodes_per_host) && (pct.numa_nodes_per_host == pct.procs_per_host))
     {
         cudaSetDevice(ct.gpu_device_ids[pct.local_rank]);
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-            fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
+            rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
         }
     }
     else if(pct.procs_per_host > ct.num_usable_gpu_devices)
@@ -275,7 +275,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             {
                 cudaSetDevice(ct.gpu_device_ids[next_gpu]);
                 if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-                    fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
+                    rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
                 }
             }
             next_gpu++;
@@ -286,24 +286,24 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     else
     {
         if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
-            fprintf(stderr, "CUDA: Cannot get the device\n"); exit(-1);
+            rmg_error_handler (__FILE__, __LINE__, "CUDA: Cannot get the device\n");
         }
         cudaSetDevice(ct.cu_dev);
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-            fprintf(stderr, "CUBLAS: Handle not created\n"); exit(-1);
+            rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
         }
     }
 
     cusolverStatus_t cusolver_status = cusolverDnCreate(&ct.cusolver_handle);
     if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
     {
-        fprintf(stderr, "cusolver initialization failed.\n"); exit(-1);
+        rmg_error_handler (__FILE__, __LINE__, "cusolver initialization failed.\n");
     }
     cudaStreamCreateWithFlags(&ct.cusolver_stream, cudaStreamNonBlocking);
     cusolver_status = cusolverDnSetStream(ct.cusolver_handle, ct.cusolver_stream);
     if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
     {
-        fprintf(stderr, "cusolver stream initialization failed.\n"); exit(-1);
+        rmg_error_handler (__FILE__, __LINE__, "cusolver stream initialization failed.\n");
     }
 
 
