@@ -130,7 +130,7 @@ void LcaoGetPsi (State<StateType> * states)
 
         //StateType *aidum = new StateType[ct.num_states];
         //StateType *apsi = new StateType [P0_BASIS];
-        StateType *npsi = &states[0].psi[P0_BASIS * ct.num_states];      // The array for orbital storage is 4x run_state which should be big enough
+        StateType *npsi = new StateType[P0_BASIS * state_count];      // The array for orbital storage is 4x run_state which should be big enough
 
         long *aidum = new long[state_count];
         for(int st = 0;st < state_count;st++) {
@@ -199,6 +199,7 @@ void LcaoGetPsi (State<StateType> * states)
 #endif
 
 
+        delete [] npsi;
         delete [] aidum;
 
     }

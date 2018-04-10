@@ -444,7 +444,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         write_header (); 
     }
 
-    if (ct.forceflag == BAND_STRUCTURE) return;
+    if (ct.forceflag == BAND_STRUCTURE) 
+    {
+        ct.num_states = ct.run_states;
+        return;
+    }
 
     // Normalize orbitals if not an initial run
     if (ct.runflag != RESTART) /* Initial run */
