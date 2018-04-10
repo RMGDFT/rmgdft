@@ -65,6 +65,9 @@
 #define         MAX_NL  	38
 #define         MAX_NB  	9
 
+/* Maximum number of atomic pseudo orbitals with unique n,l values for LCAO
+ * init purposes. A of of 16 should be sufficent for any atomic species */
+#define         MAX_INITWF      16
 
 /* Maximum number of species -- just an upper limit on
  * dynamically allocated data structures. */
