@@ -68,9 +68,6 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     RmgTimer RT0("4-Diagonalization: fs");
     RmgTimer *RT1;
-    KpointType ONE_t(1.0);
-    char *cuplo = "l", *jobz="V";
-    int info=0;
 
     // For mpi routines. Transfer twice as much data for complex orbitals
     int factor = 2;
@@ -162,7 +159,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     cudaDeviceSynchronize();
 #endif
 
-    DsyevjDriver(G, &eigs[n_start], work, lwork, n_win);
+    DsyevdDriver(G, &eigs[n_start], work, lwork, n_win);
 
     // Store the eigen vector from the submatrix
 #if GPU_ENABLED
