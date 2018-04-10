@@ -127,7 +127,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     cudaDeviceSynchronize();
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
     cudaFree(dev_info);
-    cudaDeviceSynchronize();
     delete(RT1);
 #else
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
@@ -148,7 +147,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
         for(int st2=0;st2 < n;st2++)G[st1*n + st2] = V[st1 + st2*n];
     }
 //    cublasDgeam(ct.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, n, eig_step, &alpha, &V[eig_start], n, &beta, C, n, G, n);
-    cudaDeviceSynchronize();
+//    cudaDeviceSynchronize();
     memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
     delete(RT1);
 #else
