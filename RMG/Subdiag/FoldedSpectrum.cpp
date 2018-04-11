@@ -175,8 +175,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #else
     // Make sure same sign convention is followed by all eigenvectors
     for(int ix = 0;ix < n_win;ix++) {
-        Vdiag[ix] = ONE_t;
-        if(G[ix*n_win + ix] < 0.0) Vdiag[ix] = -ONE_t;
+        Vdiag[ix] = 1.0;
+        if(G[ix*n_win + ix] < 0.0) Vdiag[ix] = -1.0;
     }
     for(int ix = 0;ix < n_win;ix++) {
         if(((n_start+ix) >= eig_start) && ((n_start+ix) < eig_stop)) 
