@@ -32,9 +32,7 @@ extern "C" void GetNewRho_on_c(STATE * states, double *rho, double *rho_matrix)
 }
 void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 {
-    int idx, ione = 1;
-    double t2;
-    register double tcharge;
+    int idx;
 
     /* for parallel libraries */
 
@@ -58,34 +56,22 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
         rho_global[idx] = 0.;
 
     RmgTimer *RT1 = new RmgTimer("3-get_new_rho: states in this proc");
-    #pragma omp parallel private(st1)
-    {
-        double *rho_global_private = new double[global_basis]();
-        double scale;
-        #pragma omp barrier
-        #pragma omp for schedule(dynamic) nowait
-        for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+        for (st2 = st1; st2 < ct.state_end; st2++)
         {
-            for (int st2 = st1; st2 < ct.state_end; st2++)
-            {
-                int st11 = st1 - ct.state_begin;
-                if (st1 == st2)
-                    scale =  rho_matrix[st11 * ct.num_states + st2];
-                if (st1 != st2) scale = 2.0 * rho_matrix[st11 * ct.num_states + st2];
-                double *psi1 = states[st1].psiR;
-                double *psi2 = states[st2].psiR;
+            st11 = st1 - ct.state_begin;
+            if (st1 == st2)
+                scale =  rho_matrix[st11 * ct.num_states + st2];
+            if (st1 != st2) scale = 2.0 * rho_matrix[st11 * ct.num_states + st2];
+            psi1 = states[st1].psiR;
+            psi2 = states[st2].psiR;
 
-                if (state_overlap_or_not[st11 * ct.num_states + st2 ] == 1)
-                    density_orbit_X_orbit(st1, st2, scale, psi1, psi2,
-                            rho_global, 0, states, orbit_overlap_region);
+            if (state_overlap_or_not[st11 * ct.num_states + st2 ] == 1)
+                density_orbit_X_orbit(st1, st2, scale, psi1, psi2,
+                        rho_global, 0, states, orbit_overlap_region);
 
-            }
         }
-        #pragma omp critical
-        {
-            for(int idx=0;idx < global_basis; idx++) rho_global[idx] += rho_global_private[idx];
-        }
-    }
+
     delete(RT1);
 
     RmgTimer *RT2 = new RmgTimer("3-get_new_rho: states other proc");
