@@ -200,11 +200,8 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 {
     int i;
     int idx, st1, st2;
-    double theta_ion;
     int loop, state_per_proc;
     int num_recv;
-    double temp;
-    int st11;
 
     state_per_proc = ct.state_per_proc + 2;
 
@@ -212,16 +209,20 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
         for (idx = 0; idx < states[st1].size; idx++)
             states1[st1].psiR[idx] = 0.0;
 
+#pragma omp parallel private(st1)
+{
+#pragma omp for schedule(dynamic) nowait
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
-        st11 = st1-ct.state_begin;
-        for (st2 = ct.state_begin; st2 < ct.state_end; st2++)
+        int st11 = st1-ct.state_begin;
+        for (int st2 = ct.state_begin; st2 < ct.state_end; st2++)
             if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
             {
-                temp = work_theta[st11 * ct.num_states + st2];
+                double temp = work_theta[st11 * ct.num_states + st2];
                 theta_phi_new(st1, st2, temp, states[st2].psiR, states1[st1].psiR, 0, states);
             }
     }
+}
 
     /*  send overlaped orbitals to other PEs */
     my_barrier();
@@ -237,17 +238,20 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
         for (i = 0; i < num_recv; i++)
         {
             st2 = recv_from1[loop * state_per_proc + i + 2];
+#pragma omp parallel private(st1)
+{
+#pragma omp for schedule(dynamic) nowait
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
             {
-                st11 = st1-ct.state_begin;
+                int st11 = st1-ct.state_begin;
                 if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
                 {
-                    theta_ion = work_theta[st11 * ct.num_states + st2];
+                    double theta_ion = work_theta[st11 * ct.num_states + st2];
                     theta_phi_new(st1, st2, theta_ion, states[st2].psiR, states1[st1].psiR, 0, states);
                 }
             }
+}
         }
-
     }
 
 }
