@@ -205,15 +205,19 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1)
 {
     int i;
-    int idx, st1, st2;
+    int st1, st2;
     int loop, state_per_proc;
     int num_recv;
 
     state_per_proc = ct.state_per_proc + 2;
 
+#pragma omp parallel private(st1)
+{
+#pragma omp for schedule(dynamic) nowait
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-        for (idx = 0; idx < states[st1].size; idx++)
+        for (int idx = 0; idx < states[st1].size; idx++)
             states1[st1].psiR[idx] = 0.0;
+}
 
 #pragma omp parallel private(st1)
 {
@@ -265,10 +269,9 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 void get_qnm_res(double *work_theta)
 {
 
-    int st1, st2;
+    int idx1;
     int ion1;
-    int st11;
-    int num_prj, num_orb, tot_orb, idx1, idx2;
+    int num_prj, num_orb, tot_orb;
     int max_orb;
     double one = 1.0, zero = 0.0, *work_mat;
 
@@ -291,17 +294,21 @@ void get_qnm_res(double *work_theta)
         num_orb = Kbpsi_str.num_orbital_thision[ion1]; 
         tot_orb = Kbpsi_str.orbital_index[ion1].size();
 
+#pragma omp parallel private(idx1)
+{
+#pragma omp for schedule(dynamic) nowait
         for(idx1 = 0; idx1 < num_orb; idx1++)
         {
-            st1 = Kbpsi_str.orbital_index[ion1][idx1];
-            st11 = st1 - ct.state_begin;
+            int st1 = Kbpsi_str.orbital_index[ion1][idx1];
+            int st11 = st1 - ct.state_begin;
 
-            for(idx2 = 0; idx2 < tot_orb; idx2++)
+            for(int idx2 = 0; idx2 < tot_orb; idx2++)
             {
-                st2 = Kbpsi_str.orbital_index[ion1][idx2];
+                int st2 = Kbpsi_str.orbital_index[ion1][idx2];
                 work_mat[idx1 * tot_orb + idx2] = work_theta[st11 *ct.num_states + st2];
             }
         }
+}
 
         //  set the length of vector and set their value to 0.0
         Kbpsi_str.kbpsi_res_ion[ion1].resize(num_orb * num_prj);
