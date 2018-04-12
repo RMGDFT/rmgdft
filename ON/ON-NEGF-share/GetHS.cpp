@@ -36,26 +36,27 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
     int order = ct.kohn_sham_fd_order;
     int item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
-    double *orbital_border = new double[2*item];
-
-    FiniteDiff FD(&Rmg_L);
-
 
 
     RmgTimer *RT = new RmgTimer("4-get_HS");
-
-
     distribute_to_global(vtot_c, vtot_global);
 
-    for (int st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++)
-    {
-        Hij_00[st1] = 0.;
-        Bij_00[st1] = 0.;
-    }
+    for (int st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++) Hij_00[st1] = 0.0;
+    for (int st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++) Bij_00[st1] = 0.0;
+
 
     /* Loop over states */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
-    for (int st1 = ct.state_begin; st1 < ct.state_end; st1++)
+
+    FiniteDiff FD(&Rmg_L);
+    int st1;
+#pragma omp parallel private(st1)
+{
+    double *orbital_border = new double[2*item];
+    double *orbit_tem = new double[2*item];
+#pragma omp barrier
+#pragma omp for schedule(static,1) nowait
+    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         STATE *sp = &states[st1];
         if(sp->radius > 0) app_mask(st1, sp->psiR, 0);
@@ -89,6 +90,10 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
     }                           /* end for st1 = .. */
 
+    delete [] orbit_tem;
+    delete [] orbital_border;
+}
+
     /* print_sum(pct.psi_size, states1[ct.state_begin].psiR, "states1 sum get_Hij");
      * print_state_sum(states1); 
      */
@@ -120,7 +125,6 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
         print_matrix(Bij_00, 6, maxst);
     }
 
-    delete [] orbital_border;
     delete(RT);
 
 }
