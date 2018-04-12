@@ -40,11 +40,15 @@ void get_all_kbpsi (STATE *states1, STATE * states,
         kbpsi[idx] = 0.;
     }
 
+#pragma omp parallel private(st1)
+{
+#pragma omp for schedule(dynamic) nowait
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         idx = (st1 - ct.state_begin) * pct.n_ion_center * ct.max_nl;
         get_kbpsi (&states1[st1], &kbpsi[idx], ion_orbit_overlap_region_nl, projectors);
     }
+}
 
 /*  print_sum(size, kbpsi, "kbpsi sum get_all_kbpsi "); 
 */
