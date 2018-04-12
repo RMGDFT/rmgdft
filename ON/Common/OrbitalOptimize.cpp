@@ -41,9 +41,6 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     double hzgrid = Rmg_G->get_hzgrid(1);
 
     int item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
-    double *orbital_border = new double[2*item];
-    double *orbit_tem = new double[2*item];
-
     FiniteDiff FD(&Rmg_L);
 
     RmgTimer *RT = new RmgTimer("3-OrbitalOptimize");
@@ -79,7 +76,14 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
 
     RmgTimer *RTa = new RmgTimer("3-OrbitalOptimize: Hpsi");
-    for (int st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    int st1;
+#pragma omp parallel private(st1)
+{
+    double *orbital_border = new double[2*item];
+    double *orbit_tem = new double[2*item];
+#pragma omp barrier
+#pragma omp for schedule(dynamic) nowait
+    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         STATE *sp = &states[st1];
         STATE *sp1 = &states1[st1];
@@ -90,7 +94,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         /* Generate 2*V*psi and store it  in orbit_tem */
         genvlocpsi(sp->psiR, st1, orbit_tem, vtot_global, states);
 
-        t1 = -1.0;
+        double t1 = -1.0;
         daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
 
         /* A operating on psi stored in orbit_tem */
@@ -108,6 +112,10 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
 
     }                           /* end for st1 = .. */
+    delete [] orbit_tem;
+    delete [] orbital_border;
+}
+
     RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: dnm");
     get_dnmpsi(states1);
     delete(RT5);
@@ -188,8 +196,6 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     print_status(states, vh, vxc, vnuc, vh_old, "before leaving OrbitalOptimize.c  ");
     print_state_sum(states1);
 #endif
-    delete [] orbit_tem;
-    delete [] orbital_border;
     delete(RT);
 
 } 
