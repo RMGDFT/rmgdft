@@ -57,21 +57,33 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 
     RmgTimer *RT1 = new RmgTimer("3-get_new_rho: states in this proc");
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    {
+#pragma omp parallel private(st2)
+{
+    double *rho_global_private = new double[global_basis]();
+#pragma omp barrier
+#pragma omp for schedule(dynamic) nowait
         for (st2 = st1; st2 < ct.state_end; st2++)
         {
-            st11 = st1 - ct.state_begin;
+            double scale;
+            int st11 = st1 - ct.state_begin;
             if (st1 == st2)
                 scale =  rho_matrix[st11 * ct.num_states + st2];
             if (st1 != st2) scale = 2.0 * rho_matrix[st11 * ct.num_states + st2];
-            psi1 = states[st1].psiR;
-            psi2 = states[st2].psiR;
+            double *psi1 = states[st1].psiR;
+            double *psi2 = states[st2].psiR;
 
             if (state_overlap_or_not[st11 * ct.num_states + st2 ] == 1)
                 density_orbit_X_orbit(st1, st2, scale, psi1, psi2,
-                        rho_global, 0, states, orbit_overlap_region);
+                        rho_global_private, 0, states, orbit_overlap_region);
 
         }
+#pragma omp critical
+        for(int idx = 0;idx < global_basis;idx++)rho_global[idx] += rho_global_private[idx];
 
+    delete [] rho_global_private;
+}
+    }
     delete(RT1);
 
     RmgTimer *RT2 = new RmgTimer("3-get_new_rho: states other proc");
