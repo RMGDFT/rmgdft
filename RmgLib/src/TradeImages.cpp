@@ -239,8 +239,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
         else {
             if(this->queue_mode && T->is_loop_over_states() && (testsize >= 0))
             {
-                //TradeImages::trade_imagesx_async_managed (f, w, dimx, dimy, dimz, images);
-                printf("Variant not programmed yet.\n");fflush(NULL);exit(0);
+                TradeImages::trade_imagesx_async_managed (f, w, dimx, dimy, dimz, images);
             }
             else
             {
@@ -4323,3 +4322,378 @@ void TradeImages::trade_images_async_managed (RmgType * mat, int dimx, int dimy,
 
     this->queue->waitgroup(group_count);
 }
+
+
+
+template <typename RmgType>
+void TradeImages::trade_imagesx_async_managed (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images)
+{
+
+    if(images > MAX_TRADE_IMAGES) {
+       rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
+    }
+
+    int incx, incy, incx0, incy0, tim;
+    int c1, c2;
+    int xlen, ylen, zlen;
+    RmgType *frdx1_f, *frdx2_f, *frdy1_f, *frdy2_f, *frdz1_f, *frdz2_f;
+    RmgType *frdx1n_f, *frdx2n_f, *frdy1n_f, *frdy2n_f, *frdz1n_f, *frdz2n_f;
+    BaseThread *T = BaseThread::getBaseThread(0);
+
+    int tid = T->get_thread_tid();
+    int istate = T->get_thread_basetag();
+    MPI_Comm grid_comm = T->get_unique_comm(istate);
+    if(tid < 0) tid = 0;
+
+    std::atomic_bool is_completed_r[6];
+    std::atomic_bool is_completed_s[6];
+    std::atomic_int group_count{12};
+//    if(this->G->get_PE_X() == 1)group_count.fetch_sub(4, std::memory_order_seq_cst);
+//    if(this->G->get_PE_Y() == 1)group_count.fetch_sub(4, std::memory_order_seq_cst);
+//    if(this->G->get_PE_Z() == 1)group_count.fetch_sub(4, std::memory_order_seq_cst);
+
+    mpi_queue_item_t qitems_r[6];
+    mpi_queue_item_t qitems_s[6];
+
+    for(int it = 0;it < 6;it++)
+    {
+        qitems_r[it].is_completed = &is_completed_r[it];
+        qitems_s[it].is_completed = &is_completed_s[it];
+        qitems_r[it].group_count = &group_count;
+        qitems_s[it].group_count = &group_count;
+    }
+
+    frdx1_f = (RmgType *)TradeImages::frdx1[tid];
+    frdx2_f = (RmgType *)TradeImages::frdx2[tid];
+    frdy1_f = (RmgType *)TradeImages::frdy1[tid];
+    frdy2_f = (RmgType *)TradeImages::frdy2[tid];
+    frdz1_f = (RmgType *)TradeImages::frdz1[tid];
+    frdz2_f = (RmgType *)TradeImages::frdz2[tid];
+    frdx1n_f = (RmgType *)TradeImages::frdx1n[tid];
+    frdx2n_f = (RmgType *)TradeImages::frdx2n[tid];
+    frdy1n_f = (RmgType *)TradeImages::frdy1n[tid];
+    frdy2n_f = (RmgType *)TradeImages::frdy2n[tid];
+    frdz1n_f = (RmgType *)TradeImages::frdz1n[tid];
+    frdz2n_f = (RmgType *)TradeImages::frdz2n[tid];
+
+    tim = 2 * images;
+
+    incx = (dimy + tim) * (dimz + tim);
+    incy = dimz + tim;
+    incx0 = dimy * dimz;
+    incy0 = dimz;
+
+    zlen = dimx * dimy * images;
+    ylen = dimx * images * (dimz + tim);
+    xlen = images * (dimy + tim) * (dimz + tim);
+
+    TradeImages::RMG_MPI_queue_trade(frdz2n_f, zlen, RMG_MPI_IRECV, 0, 0, 1, grid_comm, 0, istate, qitems_r[0]);
+    TradeImages::RMG_MPI_queue_trade(frdz1n_f, zlen, RMG_MPI_IRECV, 0, 0, -1, grid_comm, 1, istate, qitems_r[1]);
+    TradeImages::RMG_MPI_queue_trade(frdy2n_f, ylen, RMG_MPI_IRECV, 0, 1, 0, grid_comm, 2, istate, qitems_r[2]);
+    TradeImages::RMG_MPI_queue_trade(frdy1n_f, ylen, RMG_MPI_IRECV, 0, -1, 0, grid_comm, 3, istate, qitems_r[3]);
+    TradeImages::RMG_MPI_queue_trade(frdx2n_f, xlen, RMG_MPI_IRECV, 1, 0, 0, grid_comm, 4, istate, qitems_r[4]);
+    TradeImages::RMG_MPI_queue_trade(frdx1n_f, xlen, RMG_MPI_IRECV, -1, 0, 0, grid_comm, 5, istate, qitems_r[5]);
+
+    /* Load up w with the basic stuff */
+    for (int ix = 0; ix < dimx; ix++)
+    {
+        int ixs = ix * incx0;
+        int ixs2 = (ix + images) * incx;
+
+        for (int iy = 0; iy < dimy; iy++)
+        {
+            int iys = ixs + iy * incy0;
+            int iys2 = ixs2 + (iy + images) * incy;
+
+            for(int idx = 0;idx < dimz;idx++)
+                  w[iys2 + images + idx] = f[iys + idx];
+
+        }                       /* end for */
+
+    }                           /* end for */
+
+
+    /* Collect the positive z-plane and negative z-planes */
+    for (int ix = 0; ix < dimx; ix++)
+    {
+        int ixs = ix * dimy * images;
+        int ixs2 = (ix + images) * incx;
+        for (int iy = 0; iy < dimy; iy++)
+        {
+            int iys = ixs + iy * images;
+            int iys2 = ixs2 + (iy + images) * incy;
+            for (int iz = 0; iz < images; iz++)
+            {
+
+                int index = iys2 + iz;
+
+                frdz1_f[iys + iz] = w[index + images];
+                frdz2_f[iys + iz] = w[index + dimz];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+    // Send z planes
+    TradeImages::RMG_MPI_queue_trade(frdz1_f, zlen, RMG_MPI_ISEND, 0, 0, -1, grid_comm, 0, istate, qitems_s[0]);
+    TradeImages::RMG_MPI_queue_trade(frdz2_f, zlen, RMG_MPI_ISEND, 0, 0, 1, grid_comm, 1, istate, qitems_s[1]);
+
+    this->queue->waitall(is_completed_r, 2);
+    // Loop and unpack items as they become available
+    int items_completed = 0;
+    while(items_completed < 2)
+    {
+
+        if(!qitems_r[0].is_unpacked)
+        {
+            if(is_completed_r[0].load(std::memory_order_acquire))
+            {
+
+                /* Unpack them */
+                c1 = dimz + images;
+                for (int ix = 0; ix < dimx; ix++)
+                {
+
+                    int ixs = ix * dimy * images;
+                    int ixs2 = (ix + images) * incx;
+                    for (int iy = 0; iy < dimy; iy++)
+                    {
+                        int iys = ixs + iy * images;
+                        int iys2 = ixs2 + (iy + images) * incy;
+                        for (int iz = 0; iz < images; iz++)
+                        {
+                            int index = iys2 + iz;
+                            w[index] = frdz1n_f[iys + iz];
+                        }                   /* end for */
+
+                    }                       /* end for */
+
+                }                           /* end for */
+                items_completed++;
+                qitems_r[0].is_unpacked = true;
+            }
+        }
+
+        if(!qitems_r[1].is_unpacked)
+        {
+            if(is_completed_r[1].load(std::memory_order_acquire))
+            {
+
+                /* Unpack them */
+                c1 = dimz + images;
+                for (int ix = 0; ix < dimx; ix++)
+                {
+
+                    int ixs = ix * dimy * images;
+                    int ixs2 = (ix + images) * incx;
+                    for (int iy = 0; iy < dimy; iy++)
+                    {
+                        int iys = ixs + iy * images;
+                        int iys2 = ixs2 + (iy + images) * incy;
+                        for (int iz = 0; iz < images; iz++)
+                        {
+                            int index = iys2 + iz;
+                            w[index + c1] = frdz2n_f[iys + iz];
+                        }                   /* end for */
+
+                    }                       /* end for */
+
+                }                           /* end for */
+                items_completed++;
+                qitems_r[1].is_unpacked = true;
+            }
+        }
+    }
+
+    /* Collect the north and south planes */
+    c1 = images * incy;
+    c2 = dimy * incy;
+    for (int ix = 0; ix < dimx; ix++)
+    {
+        int ixs = ix * images * (dimz + tim);
+        int ixs2 = (ix + images) * incx;
+        for (int iy = 0; iy < images; iy++)
+        {
+
+            int iys = ixs + iy * (dimz + tim);
+            int iys2 = ixs2 + iy * incy;
+            for (int iz = 0; iz < dimz + tim; iz++)
+            {
+
+                int index = iys2 + iz;
+
+                frdy1_f[iys + iz] = w[index + c1];
+                frdy2_f[iys + iz] = w[index + c2];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+    // Send the north and south planes
+    TradeImages::RMG_MPI_queue_trade(frdy1_f, ylen, RMG_MPI_ISEND, 0, -1, 0, grid_comm, 2, istate, qitems_s[2]);
+    TradeImages::RMG_MPI_queue_trade(frdy2_f, ylen, RMG_MPI_ISEND, 0, 1, 0, grid_comm, 3, istate, qitems_s[3]);
+
+    this->queue->waitall(&is_completed_r[2], 2);
+    // Loop and unpack items as they become available
+    items_completed = 0;
+    while(items_completed < 2)
+    {
+
+        if(!qitems_r[2].is_unpacked)
+        {
+            if(is_completed_r[2].load(std::memory_order_acquire))
+            {
+
+                /* Unpack them */
+                c1 = (dimy + images) * incy;
+                for (int ix = 0; ix < dimx; ix++)
+                {
+                    int ixs = ix * images * (dimz + tim);
+                    int ixs2 = (ix + images) * incx;
+                    for (int iy = 0; iy < images; iy++)
+                    {
+                        int iys = ixs + iy * (dimz + tim);
+                        int iys2 = ixs2 + iy * incy;
+                        for (int iz = 0; iz < dimz + tim; iz++)
+                        {
+                            int index = iys2 + iz;
+                            w[index] = frdy1n_f[iys + iz];
+                        }                   /* end for */
+
+                    }                       /* end for */
+
+                }                           /* end for */
+                items_completed++;
+                qitems_r[2].is_unpacked = true;
+            }
+        }
+
+        if(!qitems_r[3].is_unpacked)
+        {
+            if(is_completed_r[3].load(std::memory_order_acquire))
+            {
+
+                /* Unpack them */
+                c1 = (dimy + images) * incy;
+                for (int ix = 0; ix < dimx; ix++)
+                {
+                    int ixs = ix * images * (dimz + tim);
+                    int ixs2 = (ix + images) * incx;
+                    for (int iy = 0; iy < images; iy++)
+                    {
+                        int iys = ixs + iy * (dimz + tim);
+                        int iys2 = ixs2 + iy * incy;
+                        for (int iz = 0; iz < dimz + tim; iz++)
+                        {
+                            int index = iys2 + iz;
+                            w[index + c1] = frdy2n_f[iys + iz];
+                        }                   /* end for */
+
+                    }                       /* end for */
+
+                }                           /* end for */
+                items_completed++;
+                qitems_r[3].is_unpacked = true;
+            }
+        }
+    }
+
+    /* Collect the east and west planes */
+    c1 = images * incx;
+    c2 = dimx * incx;
+    for (int ix = 0; ix < images; ix++)
+    {
+        int ixs = ix * (dimy + tim) * (dimz + tim);
+        int ixs2 = ix * incx;
+        for (int iy = 0; iy < dimy + tim; iy++)
+        {
+            int iys = ixs + iy * (dimz + tim);
+            int iys2 = ixs2 + iy * incy;
+            for (int iz = 0; iz < dimz + tim; iz++)
+            {
+
+                int index = iys2 + iz;
+
+                frdx1_f[iys + iz] = w[index + c1];
+                frdx2_f[iys + iz] = w[index + c2];
+
+            }                   /* end for */
+
+        }                       /* end for */
+
+    }                           /* end for */
+    // Send the east and west planes
+    TradeImages::RMG_MPI_queue_trade(frdx1_f, xlen, RMG_MPI_ISEND, -1, 0, 0, grid_comm, 4, istate, qitems_s[4]);
+    TradeImages::RMG_MPI_queue_trade(frdx2_f, xlen, RMG_MPI_ISEND, 1, 0, 0, grid_comm, 5, istate, qitems_s[5]);
+
+
+    this->queue->waitall(&is_completed_r[4], 2);
+    items_completed = 0;
+    while(items_completed < 2)
+    {
+
+        if(!qitems_r[4].is_unpacked)
+        {
+            if(is_completed_r[4].load(std::memory_order_acquire))
+            {
+
+                /* Unpack them */
+                c1 = (dimx + images) * incx;
+                for (int ix = 0; ix < images; ix++)
+                {
+                    int ixs = ix * (dimy + tim) * (dimz + tim);
+                    int ixs2 = ix * incx;
+                    for (int iy = 0; iy < dimy + tim; iy++)
+                    {
+                        int iys = ixs + iy * (dimz + tim);
+                        int iys2 = ixs2 + iy * incy;
+                        for (int iz = 0; iz < dimz + tim; iz++)
+                        {
+                            int index = iys2 + iz;
+                            w[index] = frdx1n_f[iys + iz];
+                        }                   /* end for */
+
+                    }                       /* end for */
+
+                }                           /* end for */
+            }
+            items_completed++;
+            qitems_r[4].is_unpacked = true;
+        }
+        if(!qitems_r[5].is_unpacked)
+        {
+            if(is_completed_r[5].load(std::memory_order_acquire))
+            {
+
+                /* Unpack them */
+                c1 = (dimx + images) * incx;
+                for (int ix = 0; ix < images; ix++)
+                {
+                    int ixs = ix * (dimy + tim) * (dimz + tim);
+                    int ixs2 = ix * incx;
+                    for (int iy = 0; iy < dimy + tim; iy++)
+                    {
+                        int iys = ixs + iy * (dimz + tim);
+                        int iys2 = ixs2 + iy * incy;
+                        for (int iz = 0; iz < dimz + tim; iz++)
+                        {
+                            int index = iys2 + iz;
+                            w[index + c1] = frdx2n_f[iys + iz];
+                        }                   /* end for */
+
+                    }                       /* end for */
+
+                }                           /* end for */
+            }
+            items_completed++;
+            qitems_r[5].is_unpacked = true;
+        }
+    }
+
+    this->queue->waitgroup(group_count);
+
+
+} // end trade_imagesx_async_managed
+

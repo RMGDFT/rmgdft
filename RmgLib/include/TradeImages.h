@@ -48,7 +48,7 @@
 #define CENTRAL_TRADE 2
 
 /* Maximum number of images for finite difference routines */
-#define MAX_TRADE_IMAGES 6
+#define MAX_TRADE_IMAGES 8
 
 #if __cplusplus
 
@@ -109,6 +109,7 @@ private:
     template <typename RmgType> void RMG_MPI_queue_allreduce(RmgType *buf, int count, MPI_Datatype type, MPI_Comm comm, mpi_queue_item_t &qitem);
 
     template <typename RmgType> void trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
+    template <typename RmgType> void trade_imagesx_async_managed (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_imagesx_central_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_imagesx_central_async_managed (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
     template <typename RmgType> void trade_images1_central_async (RmgType * f, int dimx, int dimy, int dimz);
