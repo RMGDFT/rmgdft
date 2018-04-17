@@ -211,11 +211,11 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Boost pool only makes a single call to system allocation routines and manages the blocks
     // after that which reduces contention when many threads are running. Automatically frees
     // the allocated memory when it goes out of scope.
-    boost::pool<> p(sbasis*aratio*sizeof(CalcType), 18);
+    boost::pool<> p(sbasis*aratio*sizeof(CalcType), 24);
     CalcType *res2_t = (CalcType *)p.ordered_malloc(1);
-    CalcType *work2_t = (CalcType *)p.ordered_malloc(2);
-    CalcType *work1_t = (CalcType *)p.ordered_malloc(2);
-    CalcType *sg_twovpsi_t  =  (CalcType *)p.ordered_malloc(2);
+    CalcType *work2_t = (CalcType *)p.ordered_malloc(4);
+    CalcType *work1_t = (CalcType *)p.ordered_malloc(4);
+    CalcType *sg_twovpsi_t  =  (CalcType *)p.ordered_malloc(4);
     OrbitalType *saved_psi  = (OrbitalType *)p.ordered_malloc(aratio);
     double *nvtot_psi = (double *)p.ordered_malloc(aratio);
     CalcType *tmp_psi_t  = (CalcType *)p.ordered_malloc(1);
