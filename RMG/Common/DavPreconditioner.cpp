@@ -79,7 +79,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
     int dimy = kptr->G->get_PY0_GRID(1);
     int dimz = kptr->G->get_PZ0_GRID(1);
 
-    double *nvtot = new double[2*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    double *nvtot = new double[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     CPP_pack_ptos (nvtot, vtot, dimx, dimy, dimz);
     for(int idx = 0;idx <(dimx + 2)*(dimy + 2)*(dimz + 2);idx++) nvtot[idx] = -nvtot[idx];
 
@@ -141,8 +141,8 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     double hzgrid = G->get_hzgrid(1);
 
     OrbitalType *work_t = (OrbitalType *)malloc(8*(dimx + 2)*(dimy + 2)*(dimz + 2) * sizeof(OrbitalType));
-    OrbitalType *work1_t = &work_t[2*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    OrbitalType *work2_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    OrbitalType *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    OrbitalType *work2_t = &work_t[6*(dimx + 2)*(dimy + 2)*(dimz + 2)];
 
 
     // Apply preconditioner

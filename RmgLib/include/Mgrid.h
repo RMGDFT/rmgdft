@@ -67,6 +67,9 @@ public:
     template <typename RmgType> void solv_pois (RmgType * vmat, RmgType * fmat, RmgType * work,
                 int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double Zfac, double k, double *pot);
 
+    template <typename RmgType> void solv_pois_offset (RmgType * vmat, RmgType * fmat, RmgType * work,
+                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double Zfac, int offset, int foffset);
+
     int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype);
 
     template <typename RmgType> void mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,

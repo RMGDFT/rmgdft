@@ -43,6 +43,7 @@
 #include "FiniteDiff.h"
 #include "TradeImages.h"
 #include "RmgTimer.h"
+#include "packfuncs.h"
 #include "boundary_conditions.h"
 
 
@@ -166,66 +167,73 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         RT = new RmgTimer(timername.c_str());
     }
 
-    int i;
-    int cycl;
-    int size, idx;
-    double scale;
-    int dx2, dy2, dz2, siz2;
     int ixoff, iyoff, izoff;
-    RmgType *resid, *newf, *newv, *newwork;
-    double *newpot=NULL;
+    int mindim = std::min(dimx, dimy);
+    mindim = std::min(mindim, dimz);
 
 /* precalc some boundaries */
-    size = (dimx + 2) * (dimy + 2) * (dimz + 2);
-    resid = work + 2 * size;
+    int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
+    RmgType *resid = work + 2 * size;
 
-    scale = 2.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
+    double scale = 2.0 / (gridhx * gridhx * L->get_xside() * L->get_xside());
     scale = scale + (2.0 / (gridhy * gridhy * L->get_yside() * L->get_yside()));
     scale = scale + (2.0 / (gridhz * gridhz * L->get_zside() * L->get_zside()));
     scale = 1.0 / (scale + Zfac);
     scale = step * scale;
 
+    RmgType *f_mat_t = (RmgType *)alloca(size*sizeof(RmgType));
+    for(int idx=0;idx<size;idx++)f_mat_t[idx] = f_mat[idx];
 
-//    T.trade_images (f_mat, dimx, dimy, dimz, nb_ids, CENTRAL_TRADE);
-    T->trade_images (f_mat, dimx, dimy, dimz, FULL_TRADE);
-
-
-    if(pot) 
-    {
-        T->trade_images (pot, dimx, dimy, dimz, FULL_TRADE);
-        for (idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * (f_mat[idx] + (RmgType)pot[idx]*v_mat[idx]);
-    }
-    for (idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * f_mat[idx];
-
-
-/*
- * solve on this grid level 
- */
-
-
-    for (cycl = 0; cycl < pre_cyc[level]; cycl++)
+    bool check = (dimx >= 4) && (dimy >= 4) && (dimz >= 4);
+    if(pot || (k != 0.0) || (pre_cyc[level] > MAX_TRADE_IMAGES) || !check)
     {
 
-        /* solve once */
-        solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
+        T->trade_images (f_mat, dimx, dimy, dimz, FULL_TRADE);
+        if(pot) T->trade_images (pot, dimx, dimy, dimz, FULL_TRADE);
+        for (int idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * f_mat[idx];
 
+        // solve on this grid level 
+        for (int cycl = 0; cycl < pre_cyc[level]; cycl++)
+        {
+            /* solve once */
+            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
 
-        /* trade boundary info */
-        if ((level == max_levels) && (cycl == pre_cyc[level]-1)) {
-            T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
+            /* trade boundary info */
+            if ((level >= max_levels) && (cycl == pre_cyc[level]-1)) {
+                T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
+            }
+            else {
+                T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+            }
         }
-        else {
-            T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
-        }
-
     }
-
+    else
+    {
+        // Convert f_mat into p-type work grid then trade images up to 4
+        CPP_pack_stop (f_mat, work, dimx, dimy, dimz);
+        T->trade_imagesx (work, f_mat, dimx, dimy, dimz, 4, FULL_TRADE);
+        size = (dimx + 2*4)*(dimy + 2*4)*(dimz + 2*4);
+        for(int chunks=0;chunks < 2;chunks++)
+        {
+            if(chunks == 0) 
+            {
+                for (int idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * f_mat[idx];
+            }
+            else
+            {
+                CPP_pack_stop (v_mat, work, dimx, dimy, dimz);
+                T->trade_imagesx (work, v_mat, dimx, dimy, dimz, 4, FULL_TRADE);
+            }
+            solv_pois_offset (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, 4, 4);
+        }
+        T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
+    }
 
 /*
  * on coarsest grid, we are finished
  */
 
-    if (level == max_levels)
+    if (level >= max_levels)
     {
         if(this->timer_mode) delete RT;
         return;
@@ -233,10 +241,9 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     }                           /* end if */
 
 /* size for next smaller grid */
-    dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, boundaryflag);
-    dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundaryflag);
-    dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundaryflag);
-    siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
+    int dx2 = MG_SIZE (dimx, level, gxsize, gxoffset, pxdim, &ixoff, boundaryflag);
+    int dy2 = MG_SIZE (dimy, level, gysize, gyoffset, pydim, &iyoff, boundaryflag);
+    int dz2 = MG_SIZE (dimz, level, gzsize, gzoffset, pzdim, &izoff, boundaryflag);
 
     // If dx2, dy2 or dz2 is negative then it means that too many multigrid levels were requested so we just return and continue processing.
     // Since this is normally called inside loops we don't print an error message each time but wait until the destructor is called.
@@ -246,25 +253,21 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         return;
     }
 
+
 /* evaluate residual */
-    eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
+    eval_residual (v_mat, f_mat_t, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
     T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
 
-
 /* set storage pointers in the current workspace */
-    newv = &work[0];
-    newf = &work[siz2];
-    if(pot) {
-        newpot = &pot[siz2];
-    }
-    else {
-        newpot = NULL;
-    }
-    newwork = &work[2 * siz2];
+    RmgType *newv = &work[0];
+    RmgType *newf = &work[size];
+    RmgType *newwork = &work[2 * size];
+    double *newpot=NULL;
+    if(pot) newpot = &pot[size];
 
 
-    for (i = 0; i < mu_cyc; i++)
+    for (int i = 0; i < mu_cyc; i++)
     {
 
         mg_restrict (resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
@@ -290,27 +293,41 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
         /* re-solve on this grid level */
 
-        T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
 
-        for (cycl = 0; cycl < post_cyc[level]; cycl++)
+        if(pot || (k != 0.0) || (pre_cyc[level] > MAX_TRADE_IMAGES) || !check)
         {
+            T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+            for (int cycl = 0; cycl < post_cyc[level]; cycl++)
+            {
 
-            /* solve once */
-            solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
+                /* solve once */
+                solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
 
-            /* trade boundary info */
-            if(cycl < (post_cyc[level] - 1))
-                T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
-            else
-                T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
+                /* trade boundary info */
+                if(cycl < (post_cyc[level] - 1))
+                    T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
+                else
+                    T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
 
-        }                       /* end for */
+            }                       /* end for */
+        }
+        else
+        {
+            size = (dimx + 2*4)*(dimy + 2*4)*(dimz + 2*4);
+            for(int chunks=0;chunks < 1;chunks++)
+            {
+                CPP_pack_stop (v_mat, work, dimx, dimy, dimz);
+                T->trade_imagesx (work, v_mat, dimx, dimy, dimz, 4, FULL_TRADE);
+                solv_pois_offset (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, 4, 4);
+            }
+            T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
+        }
 
         /* evaluate max residual */
         if (i < (mu_cyc - 1))
         {
 
-            eval_residual (v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
+            eval_residual (v_mat, f_mat_t, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid, pot);
             T->trade_images (resid, dimx, dimy, dimz, FULL_TRADE);
 
         }                       /* end if */
@@ -1028,8 +1045,7 @@ void Mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat,
     FiniteDiff FD(L);
 
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
-    for (idx = 0; idx < size; idx++)
-        work[idx] = 0.0;
+//    for (idx = 0; idx < size; idx++) work[idx] = 0.0;
     diag = -FD.app2_del2 (vmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     scale = 1.0 / (diag + Zfac);
@@ -1061,6 +1077,45 @@ void Mgrid::solv_pois (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat,
 
 }                               /* end solv_pois */
 
+
+// Used to handle multiple sweeps case. By using a higher level trade images once latency is reduced
+// at the cost of doing more local work.
+//
+// vmat is shrunk on each step while fmat is kept fixed
+template <typename RmgType>
+void Mgrid::solv_pois_offset (RmgType * __restrict__ vmat, RmgType * __restrict__ fmat, RmgType * work,
+                int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double Zfac, int offset, int foffset)
+{
+    FiniteDiff FD(L);
+    int incy = (dimz + 2*foffset);
+    int incx = (dimy + 2*foffset)*(dimz + 2*foffset);
+
+    while(offset > 0)
+    {
+        offset--;
+        double diag = -FD.app2_del2 (vmat, work, dimx+2*offset, dimy+2*offset, dimz+2*offset, gridhx, gridhy, gridhz);
+        double scale = 1.0 / (diag + Zfac);
+        scale = step * scale;
+        int idx = 0;
+        int sidx = foffset - offset - 1;
+        int eidx = foffset + offset + 1;
+        for(int ix=sidx;ix<eidx+dimx;ix++)
+        {
+            for(int iy=sidx;iy<eidx+dimy;iy++)
+            {
+                for(int iz=sidx;iz<eidx+dimz;iz++)
+                {
+                    vmat[idx] += (RmgType)scale * (work[idx] - fmat[ix*incx + iy*incy + iz]);
+                    idx++;
+                }
+            }
+        }
+        if(offset)
+        {
+            CPP_pack_stop (vmat, vmat, dimx+2*offset, dimy+2*offset, dimz+2*offset);
+        }
+    }
+}                               /* end solv_pois_offset */
 
 
 /** Compute 1-D grid sizes for the next multigrid level 
