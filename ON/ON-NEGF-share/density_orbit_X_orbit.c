@@ -17,7 +17,7 @@
 #include "prototypes_on.h"
 
 
-int inline fold_to_unitcell(int ix, int NX)
+static int inline fold_to_unitcell(int ix, int NX)
 {
 
     int item;

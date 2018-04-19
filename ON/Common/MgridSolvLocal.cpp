@@ -106,7 +106,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
  * on coarsest grid, we are finished
  */
 
-    if (level == max_levels)
+    if (level >= max_levels)
     {
         delete FD;
         delete OG;
