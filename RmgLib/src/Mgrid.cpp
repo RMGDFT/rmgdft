@@ -161,6 +161,8 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
                  int pxdim, int pydim, int pzdim, int boundaryflag)
 {
     RmgTimer *RT = NULL;
+    BaseThread *Threads = BaseThread::getBaseThread(0);
+
     std::string timername;
     if(this->timer_mode) {
         timername = "Mgrid_solv: level " + boost::to_string(level);
@@ -185,6 +187,8 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     for(int idx=0;idx<size;idx++)f_mat_t[idx] = f_mat[idx];
 
     bool check = (dimx >= 3) && (dimy >= 3) && (dimz >= 3);
+    int active_threads = Threads->barrier->barrier_count();
+    if(active_threads < 2) check = false;
     if(pot || (k != 0.0) || (pre_cyc[level] > MAX_TRADE_IMAGES) || !check)
     {
 
