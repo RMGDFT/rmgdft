@@ -44,6 +44,11 @@ template void ApplyBOperator<double>(double *, double *, char *grid);
 template void ApplyBOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, char *grid);
 template void ApplyBOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, char *grid);
 
+template void ApplyBOperator<float>(float *, float *, char *grid, BaseGrid *, TradeImages *);
+template void ApplyBOperator<double>(double *, double*, char *grid, BaseGrid *, TradeImages *);
+template void ApplyBOperator<std::complex<float>>(std::complex<float> *, std::complex<float> *, char *grid, BaseGrid *, TradeImages *);
+template void ApplyBOperator<std::complex<double>>(std::complex<double> *, std::complex<double> *, char *grid, BaseGrid *, TradeImages *);
+
 template void ApplyBOperator<float>(Lattice *, TradeImages *, float *, float *, int, int, int, int);
 template void ApplyBOperator<double>(Lattice *, TradeImages *, double *, double *, int, int, int, int);
 template void ApplyBOperator<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, int, int, int, int);
@@ -73,6 +78,32 @@ void ApplyBOperator (RmgType * a, RmgType * b, char *grid)
     int dimz = Rmg_G->get_PZ0_GRID(density);
 
     ApplyBOperator(&Rmg_L, Rmg_T, a, b, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+
+}
+
+template <typename DataType>
+void ApplyBOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T)
+{
+    int density;
+    const char *coarse = "Coarse";
+    const char *fine = "Fine";
+    
+    if(!strcmp(grid, coarse)) {
+        density = 1;
+    }
+    else if(!strcmp(grid, fine)) {
+        density = Rmg_G->default_FG_RATIO;
+    }
+    else {
+        throw RmgFatalException() << "Error! Grid type " << grid << " not defined in "
+                                 << __FILE__ << " at line " << __LINE__ << "\n";
+    }
+    
+    int dimx = Rmg_G->get_PX0_GRID(density);
+    int dimy = Rmg_G->get_PY0_GRID(density);
+    int dimz = Rmg_G->get_PZ0_GRID(density);
+    
+    ApplyBOperator(&Rmg_L, T, a, b, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
 }
 

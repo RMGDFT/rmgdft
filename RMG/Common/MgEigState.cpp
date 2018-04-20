@@ -232,7 +232,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     {
         RmgTimer RT1("Mg_eig: apply B operator");
-        ApplyBOperator<CalcType> (work1_t, res2_t, "Coarse");
+        ApplyBOperator<CalcType> (work1_t, res2_t, "Coarse", G, T);
     }
 
     // Copy double precision psi into single precison array
@@ -254,7 +254,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         /* Apply Mehrstellen left hand operators */
         {
             RmgTimer RT1("Mg_eig: apply A operator");
-            diag = ApplyAOperator<CalcType> (tmp_psi_t, work2_t, "Coarse");
+            diag = ApplyAOperator<CalcType> (tmp_psi_t, work2_t, "Coarse", G, T);
         }
 
         // if complex orbitals apply gradient to psi and compute dot products
@@ -296,7 +296,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         /* B operating on 2*V*psi stored in work1 */
         {
             RmgTimer RT1("Mg_eig: apply B operator");
-            ApplyBOperator<CalcType> (sg_twovpsi_t, work1_t, "Coarse");
+            ApplyBOperator<CalcType> (sg_twovpsi_t, work1_t, "Coarse", G, T);
         }
 
         // Add in non-local which has already had B applied in AppNls
