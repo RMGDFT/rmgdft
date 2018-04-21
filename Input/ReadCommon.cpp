@@ -672,6 +672,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "");
 
+    If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 8, 4,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "",
+                     "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.");
+
     If.RegisterInputKey("b_spline_order", &lc.interp_order, 0, 7, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "Order of interpolation to use if b-spline is the selected method.\n",

@@ -67,6 +67,9 @@ private:
     void allocate_buffers(double ** &P, int nthreads, int length_per_thread, size_t elem_len);
     bool queue_mode;
 
+    // x-coalesce factor
+    int cfactor;
+
     /// Synchronous/asynchronous mode. 0=asnychronous (default) 1=synchronous
     int mode;
 
@@ -132,6 +135,7 @@ public:
     void set_queue_mode(bool mode);
     void set_timer_mode(bool verbose);
     void set_MPI_comm(MPI_Comm comm);
+    void set_coalesce_factor(int factor);
     MPI_Comm get_MPI_comm(void);
     void set_gridpe(int gridpe);
     template <typename RmgType> void trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type);

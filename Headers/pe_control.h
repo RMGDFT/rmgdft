@@ -41,8 +41,8 @@ typedef struct
     // Coalesced grid MPI communicator
     MPI_Comm grid_comm_coalesced;
 
-    // coalesce factors in each coordinate direction
-    int coalesce_factors[3];
+    // coalesce factor
+    int coalesce_factor;
 
     // Number of physical hosts
     int total_hosts;
