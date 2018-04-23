@@ -672,10 +672,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "");
 
-    If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 8, 4,
+    If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 16, 4,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.");
+                     "coalesce_factor must lie in the range (1,16). Resetting to default value of 4.");
 
     If.RegisterInputKey("b_spline_order", &lc.interp_order, 0, 7, 5,
                      CHECK_AND_FIX, OPTIONAL,
@@ -759,8 +759,16 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("filter_dpot", &lc.filter_dpot, true,
                         "Flag indicating whether or not to filter density depenedent potentials.");
 
-    If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, false,
-                        "Flag indicating whether or not to use square root technique for density interpolation.");
+    if(ct.rmg_branch == RMG_NEGF)
+    {
+        If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, false,
+                            "Flag indicating whether or not to use square root technique for density interpolation.");
+    }
+    else
+    {
+        If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, true,
+                            "Flag indicating whether or not to use square root technique for density interpolation.");
+    }
 
     If.RegisterInputKey("renormalize_forces", &lc.renormalize_forces, true,
                         "Flag indicating whether or not to renormalize forces.");
