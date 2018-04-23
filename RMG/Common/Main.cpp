@@ -119,6 +119,9 @@ extern "C" void term_handler(int signal)
 int main (int argc, char **argv)
 {
 
+    // Set branch type
+    ct.rmg_branch = RMG_BASE;
+
     // Signal handlers to cleanup in case user terminates
     std::signal(SIGTERM, term_handler);
     std::signal(SIGINT, term_handler);

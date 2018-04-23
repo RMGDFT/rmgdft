@@ -168,6 +168,8 @@ int main (int argc, char **argv)
 
     RmgTimer *RT = new RmgTimer("1-TOTAL");
 
+    // Set branch type
+    ct.rmg_branch = RMG_NEGF;
 
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;

@@ -140,8 +140,8 @@ static void dipole_calculation(double *rhooo, double *dipole);
 int main(int argc, char **argv)
 {
 
-
-
+    // Set branch type
+    ct.rmg_branch = RMG_ON;
 
     // double a[4], b[4];
     // MPI_Init_thread(&argc, &argv, ct.mpi_threadlevel, &provided);

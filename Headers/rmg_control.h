@@ -51,6 +51,9 @@ typedef struct
 typedef struct
 {
 
+    // Branch type
+    int rmg_branch;
+
     // Energy output units 0=Hartrees, 1=Rydbergs
     int energy_output_units;
     double energy_output_conversion[2];
