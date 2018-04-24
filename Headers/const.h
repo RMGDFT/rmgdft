@@ -39,6 +39,11 @@
 #define FALSE 0
 #endif
 
+// Branch types
+#define         RMG_BASE    0
+#define         RMG_NEGF    1
+#define         RMG_ON      2
+
 // Discretization types
 #define         MEHRSTELLEN_DISCRETIZATION      0
 #define         CENTRAL_DISCRETIZATION          1
