@@ -241,7 +241,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 #if GPU_ENABLED
         cudaMemcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType), cudaMemcpyDefault);
 #else
-        memcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType));
+//        memcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType));
 #endif
 
     }

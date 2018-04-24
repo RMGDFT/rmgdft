@@ -134,6 +134,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot); 
     delete RT1;
     OrbitalType *s_psi = kptr->ns;
+    if(ct.norm_conserving_pp) s_psi = kptr->orbital_storage;
 
     // Copy current eigs into compact array
     for(int st1 = 0;st1 < nstates;st1++) eigs[st1] = kptr->Kstates[st1].eig[0];

@@ -238,7 +238,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     KpointType alpha1(vel);
     if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION) && ct.is_gamma)
     {
-        RmgSyrkx("L", "T", num_states, pbasis, alpha1, kptr->orbital_storage, pbasis,  kptr->ns, pbasis, beta, Sij, num_states);
+        RmgSyrkx("L", "T", num_states, pbasis, alpha1, kptr->orbital_storage, pbasis,  kptr->orbital_storage, pbasis, beta, Sij, num_states);
     }
     else
     {

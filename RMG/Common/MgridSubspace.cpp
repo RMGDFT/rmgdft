@@ -73,6 +73,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     if(ct.mpi_queue_mode) active_threads--;
     if(active_threads < 1) active_threads = 1;
 
+
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
 
         // Update betaxpsi        

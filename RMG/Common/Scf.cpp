@@ -97,7 +97,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     new_rho = new double[nspin * FP0_BASIS];
     new_rho_oppo = &new_rho[FP0_BASIS];
     vtot = new double[FP0_BASIS];
-    vtot_psi = new double[P0_BASIS];
+    vtot_psi = new double[P0_BASIS * pct.coalesce_factor];
 
     /* save old vhxc + vnuc */
     for (int idx = 0; idx < FP0_BASIS; idx++) {

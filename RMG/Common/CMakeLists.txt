@@ -21,6 +21,7 @@ ReadData.cpp
 OutputBandPlot.cpp
 AppCirDriverBeta.cpp
 AssignWeight.cpp
+GatherScatter.cpp
 GetWeight.cpp
 GetWeightLocal.cpp
 GetNlop.cpp

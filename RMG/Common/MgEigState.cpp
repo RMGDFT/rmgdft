@@ -39,44 +39,10 @@
 #include "Kpoint.h"
 #include "packfuncs.h"
 #include "transition.h"
-#include "RmgParallelFft.h"
 #include "BaseThread.h"
+#include "MpiQueue.h"
+#include "GatherScatter.h"
 
-
-void CopyAndConvert(int n, double *A, float *B)
-{
-    for(int idx = 0;idx < n;idx++)
-        B[idx] = (float)A[idx];
-}
-
-void CopyAndConvert(int n, double *A, double *B)
-{
-    for(int idx = 0;idx < n;idx++)
-        B[idx] = A[idx];
-}
-
-void CopyAndConvert(int n, std::complex<double> *A, std::complex<float> *B)
-{
-    for(int idx = 0;idx < n;idx++)
-        B[idx] = (std::complex<float>)A[idx];
-}
-void CopyAndConvert(int n, std::complex<double> *A, std::complex<double> *B)
-{
-    for(int idx = 0;idx < n;idx++)
-        B[idx] = (std::complex<double>)A[idx];
-}
-
-void CopyAndConvert(int n, float *A, double *B)
-{
-    for(int idx = 0;idx < n;idx++)
-        B[idx] = (double)A[idx];
-}
-
-void CopyAndConvert(int n, std::complex<float> *A, std::complex<double> *B)
-{
-    for(int idx = 0;idx < n;idx++)
-        B[idx] = (std::complex<double>)A[idx];
-}
 
 void ComputeEig(int n, float *A, float *B, float *D, double *rval)
 {
@@ -90,7 +56,7 @@ void ComputeEig(int n, float *A, float *B, float *D, double *rval)
     }
 
     int length = 2;
-    GlobalSums (s1, length, pct.grid_comm);
+    GlobalSums (s1, length, pct.coalesced_grid_comm);
 
     *rval = (s1[0] / (2.0 * s1[1]));
 
@@ -108,7 +74,7 @@ void ComputeEig(int n, double *A, double *B, double *D, double *rval)
     }
 
     int length = 2;
-    GlobalSums (s1, length, pct.grid_comm);
+    GlobalSums (s1, length, pct.coalesced_grid_comm);
 
     *rval = (s1[0] / (2.0 * s1[1]));
 
@@ -130,7 +96,7 @@ void ComputeEig(int n, std::complex<float> *A, std::complex<float> *B, std::comp
     }
 
     int length = 4;
-    GlobalSums (s1, length, pct.grid_comm);
+    GlobalSums (s1, length, pct.coalesced_grid_comm);
     *rval = ((s1[0] + s1[1]) / (2.0 * (s1[2] + s1[3])));
 
 }
@@ -150,7 +116,7 @@ void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::co
     }
 
     int length = 4;
-    GlobalSums (s1, length, pct.grid_comm);
+    GlobalSums (s1, length, pct.coalesced_grid_comm);
     *rval = ((s1[0] + s1[1]) / (2.0 * (s1[2] + s1[3])));
 
 }
@@ -195,6 +161,10 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     int dimx = G->get_PX0_GRID(1) * pct.coalesce_factor;
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
+    int NX_GRID = G->get_NX_GRID(1);
+    int NY_GRID = G->get_NY_GRID(1);
+    int NZ_GRID = G->get_NZ_GRID(1);
+
     double hxgrid = G->get_hxgrid(1);
     double hygrid = G->get_hygrid(1);
     double hzgrid = G->get_hzgrid(1);
@@ -226,8 +196,18 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     std::complex<double> *kdr = NULL;
     if(typeid(OrbitalType) == typeid(std::complex<double>)) kdr = new std::complex<double>[2*sbasis]();
 
-    // Copy double precision ns into temp single precision array */
-    CopyAndConvert(pbasis, ns, work1_t);
+    // Copy double precision psi into correct precison array
+    GatherGrid(G, pbasis, sp->istate, tmp_psi, tmp_psi_t);
+
+    // For USPP copy double precision ns into correct precision temp array. For NCPP ns=psi. */
+    if(ct.norm_conserving_pp)
+    {
+        for(int ix=0;ix < pbasis;ix++) work1_t[ix] = tmp_psi_t[ix];
+    }
+    else
+    {
+        GatherGrid(G, pbasis, sp->istate, ns, work1_t);
+    }
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     {
@@ -235,8 +215,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         ApplyBOperator<CalcType> (work1_t, res2_t, "Coarse", G, T);
     }
 
-    // Copy double precision psi into single precison array
-    CopyAndConvert(pbasis, tmp_psi, tmp_psi_t);
 
     // Setup some potential acceleration stuff
     potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
@@ -368,12 +346,12 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             {
                 RmgTimer RT1("Mg_eig: mgrid_solv");
                 int ixoff, iyoff, izoff;
-                int dx2 = MG.MG_SIZE (dimx, 0, G->get_NX_GRID(1), G->get_PX_OFFSET(1), G->get_PX0_GRID(1), &ixoff, ct.boundaryflag);
-                int dy2 = MG.MG_SIZE (dimy, 0, G->get_NY_GRID(1), G->get_PY_OFFSET(1), G->get_PY0_GRID(1), &iyoff, ct.boundaryflag);
-                int dz2 = MG.MG_SIZE (dimz, 0, G->get_NZ_GRID(1), G->get_PZ_OFFSET(1), G->get_PZ0_GRID(1), &izoff, ct.boundaryflag);
+                int dx2 = MG.MG_SIZE (dimx, 0, NX_GRID, G->get_PX_OFFSET(1), dimx, &ixoff, ct.boundaryflag);
+                int dy2 = MG.MG_SIZE (dimy, 0, NY_GRID, G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
+                int dz2 = MG.MG_SIZE (dimz, 0, NZ_GRID, G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
     
 		if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
-		    printf("Multigrid error: Grid cannot be coarsened. Most likely the current grid is not divisable by 2 or 4. It is recommended to use grid that is, at minimum, divisable by 4. The current grid is %d %d %d" , G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1));
+		    printf("Multigrid error: Grid cannot be coarsened. Most likely the current grid is not divisable by 2 or 4. It is recommended to use grid that is, at minimum, divisable by 4. The current grid is %d %d %d" , NX_GRID, NY_GRID, NZ_GRID);
                     exit(0);
 		}
 
@@ -393,9 +371,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                                 dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
                                 1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
                                 ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
-                                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                                NX_GRID, NY_GRID, NZ_GRID,
                                 G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+                                dimx, dimy, dimz, ct.boundaryflag);
                 
                     MG.mg_prolong<float> (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
                     for(int idx = 0;idx < sbasis;idx++) sg_twovpsi_t[idx] = std::real(twork_tf[idx]);
@@ -413,9 +391,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                                 dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
                                 1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
                                 ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
-                                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                                NX_GRID, NY_GRID, NZ_GRID,
                                 G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+                                dimx, dimy, dimz, ct.boundaryflag);
                 
                     MG.mg_prolong<std::complex<float>> (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
                     CopyAndConvert(sbasis, (std::complex<float> *)twork_tf, (std::complex<double> *)sg_twovpsi_t);
@@ -430,9 +408,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                                 dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
                                 1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
                                 ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
-                                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                                NX_GRID, NY_GRID, NZ_GRID,
                                 G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+                                dimx, dimy, dimz, ct.boundaryflag);
                 
                     MG.mg_prolong (sg_twovpsi_t, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
                 }
@@ -466,8 +444,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                 // If occupied orbitals are frozen we compute residuals 
                 if(freeze_occupied) {
-                    //GlobalSums (&t2, 1, pct.grid_comm);
-                    //t2 = RmgSumAll (t2, pct.grid_comm);
+                    //GlobalSums (&t2, 1, pct.coalesced_grid_comm);
+                    //t2 = RmgSumAll (t2, pct.coalesced_grid_comm);
                     //t1 = (double) (ct.psi_nbasis);
                     //sp->res = sqrt (t2 / t1);
 //                    if(pct.imgpe == 0) std::cout << "Orbital " << sp->istate << " residual = " << sp->res << std::endl;
@@ -484,7 +462,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     // Copy single precision orbital back to double precision
     if(freeze_occupied)
-        CopyAndConvert(pbasis, tmp_psi_t, tmp_psi);
+        ScatterGrid(G, pbasis, sp->istate, tmp_psi_t, tmp_psi);
 
     /* Release our memory */
     if(typeid(OrbitalType) == typeid(std::complex<double>)) delete [] kdr;

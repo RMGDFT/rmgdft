@@ -39,7 +39,13 @@ typedef struct
     MPI_Comm kpsub_comm, allkp_comm;
 
     // Coalesced grid MPI communicator
-    MPI_Comm grid_comm_coalesced;
+    MPI_Comm coalesced_grid_comm;
+
+    // MPI window for states, nv and ns arrays
+    MPI_Win state_win;
+    MPI_Win nv_win;
+    MPI_Win ns_win;
+    MPI_Win vtot_win;
 
     // coalesce factor
     int coalesce_factor;
