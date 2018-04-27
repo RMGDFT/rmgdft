@@ -66,23 +66,23 @@ void init_gpu (void)
 {
 
 	cublasStatus_t custat;
-	int alloc;
+	size_t alloc;
 	int i, ntot_row, maxrow;
 
 	rmg_printout_devices( );
 
 
 	alloc = pmo.ntot_low * sizeof(complex double);
+    printf("\n alloc size for gpu_Htri %zu \n", alloc);
 	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Htri , alloc, cudaMemAttachGlobal )){
-		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %d\n", alloc);
+		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %zu\n", alloc);
 		exit(-1);
 	}
 	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Gtri , alloc, cudaMemAttachGlobal )){
-		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %d\n", alloc);
+		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %zu\n", alloc);
 		exit(-1);
 	}
 
-    printf("\n bbb %e %e", ct.gpu_Htri[0]);
 
     int size;
     size = 0;
@@ -92,7 +92,7 @@ void init_gpu (void)
     }
 	alloc = size * sizeof(complex double);
 	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_GdiagBlocks , alloc, cudaMemAttachGlobal )){
-		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %d\n", alloc);
+		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %zu\n", alloc);
         
 		exit(-1);
 	}
