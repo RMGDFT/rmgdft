@@ -191,13 +191,21 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *tmp_psi_t  = (CalcType *)p.ordered_malloc(1);
     CalcType *res_t  =  (CalcType *)p.ordered_malloc(1);
     CalcType *twork_t  = (CalcType *)p.ordered_malloc(1);
+    OrbitalType *nv_t  = (OrbitalType *)p.ordered_malloc(aratio);
 
     OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
     std::complex<double> *kdr = NULL;
     if(typeid(OrbitalType) == typeid(std::complex<double>)) kdr = new std::complex<double>[2*sbasis]();
 
+
     // Copy double precision psi into correct precison array
-    GatherGrid(G, pbasis, sp->istate, tmp_psi, tmp_psi_t);
+    GatherPsi(G, pbasis, sp->istate, kptr->orbital_storage, tmp_psi_t);
+
+    // Copy nv into local array
+    if(ct.coalesce_states)
+        GatherPsi(G, pbasis, sp->istate, kptr->nv, nv_t);
+    else
+        GatherPsi(G, pbasis, 0, nv, nv_t);
 
     // For USPP copy double precision ns into correct precision temp array. For NCPP ns=psi. */
     if(ct.norm_conserving_pp)
@@ -206,13 +214,13 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     }
     else
     {
-        GatherGrid(G, pbasis, sp->istate, ns, work1_t);
+        GatherPsi(G, pbasis, sp->istate, kptr->ns, work1_t);
     }
 
     /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
     {
         RmgTimer RT1("Mg_eig: apply B operator");
-        ApplyBOperator<CalcType> (work1_t, res2_t, "Coarse", G, T);
+        ApplyBOperator<CalcType>(L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
     }
 
 
@@ -232,7 +240,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         /* Apply Mehrstellen left hand operators */
         {
             RmgTimer RT1("Mg_eig: apply A operator");
-            diag = ApplyAOperator<CalcType> (tmp_psi_t, work2_t, "Coarse", G, T);
+            diag = ApplyAOperator<CalcType>(L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
         }
 
         // if complex orbitals apply gradient to psi and compute dot products
@@ -274,15 +282,14 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         /* B operating on 2*V*psi stored in work1 */
         {
             RmgTimer RT1("Mg_eig: apply B operator");
-            ApplyBOperator<CalcType> (sg_twovpsi_t, work1_t, "Coarse", G, T);
+            ApplyBOperator<CalcType>(L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
+
         }
 
         // Add in non-local which has already had B applied in AppNls
-        for(int idx=0;idx < pbasis;idx++) work1_t[idx] += 2.0 * nv[idx];
+        for(int idx=0;idx < pbasis;idx++) work1_t[idx] += 2.0 * nv_t[idx];
 
-        for(int idx=0;idx < pbasis;idx++) {
-            work1_t[idx] = work1_t[idx] - work2_t[idx];
-        }
+        for(int idx=0;idx < pbasis;idx++) work1_t[idx] = work1_t[idx] - work2_t[idx];
 
 
         /* If this is the first time through compute the eigenvalue */
@@ -462,7 +469,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     // Copy single precision orbital back to double precision
     if(freeze_occupied)
-        ScatterGrid(G, pbasis, sp->istate, tmp_psi_t, tmp_psi);
+        ScatterPsi(G, pbasis, sp->istate, tmp_psi_t, kptr->orbital_storage);
 
     /* Release our memory */
     if(typeid(OrbitalType) == typeid(std::complex<double>)) delete [] kdr;

@@ -259,14 +259,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.nv = (double *)nv;
     pct.ns = (double *)ns;
 
-    if(!ct.coalesce_states)
-    {
-        MPI_Win_create(rptr, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType), sizeof(OrbitalType), MPI_INFO_NULL, pct.grid_comm, &pct.state_win);
-        MPI_Win_create(nv, ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType), sizeof(OrbitalType), MPI_INFO_NULL, pct.grid_comm, &pct.nv_win);
-        if(ns) MPI_Win_create(ns, ct.max_states * P0_BASIS * sizeof(OrbitalType), sizeof(OrbitalType), MPI_INFO_NULL, pct.grid_comm, &pct.ns_win);
-    
-    }
-
     OrbitalType *rptr_k;
     rptr_k = rptr;
     for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)

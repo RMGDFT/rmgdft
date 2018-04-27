@@ -93,6 +93,7 @@ private:
 
     boost::thread QueueManager;
     static void manager_thread(MpiQueue *Q);
+    boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> **queue;
     std::atomic<bool> running;
     std::atomic<bool> exitflag;
     int max_threads;
@@ -123,7 +124,6 @@ public:
     void stop_manager(void);
     void set_exitflag(void);
     void waitgroup(std::atomic_int &count);
-    boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> **queue;
 };
 
 #endif

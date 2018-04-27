@@ -173,6 +173,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
 
+    InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
+
     /* Next address grid coalescence. Grids are only coalesced in the x-coordinate. For example if the
        global grid is (96,96,96) and there are 512 MPI process's then a non-coalesced arrangment would
        be to have an (8,8,8) processor grid with the wavefunctions defined on each MPI process in a
@@ -191,11 +193,14 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
        implementation is limited to the x-direction.
 
        Implementation details.
-       The standard global TradeImages object can be used. The only difference is that the offset of the
-       neighboring PE's in the x-direction is multiplied by the coalesce factor.
-       We have to perform an MPI reduction in MgEigState in order to compute the eigenvalue for a given
-       orbital so we need another communicator that only spans the required subset of MPI procs.
+         The standard global TradeImages object can be used. The only difference is that the offset of the
+         neighboring PE's in the x-direction is multiplied by the coalesce factor.
 
+         We have to perform an MPI reduction in MgEigState in order to compute the eigenvalue for a given
+         orbital so we need another communicator that only spans the required subset of MPI procs.
+
+         The Gather and Scatter grid functions also need to pass data back and forth between MPI procs
+         with the same y and z proc coordinates so we create a local coalesced communicator for that.
 */
 
     // processors in x must be an integral multiple of coalesce factor and grid points in x must be evenly
@@ -203,17 +208,22 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // number of coalesced grids so we adjust the orbital count later if required.
     int rem1 = pct.pe_x % pct.coalesce_factor;
     int rem2 = Rmg_G->get_NX_GRID(1) % pct.pe_x;
-    if(ct.coalesce_states && !rem1 && !rem2)
+    if(ct.coalesce_states && !rem1 && !rem2 && ct.mpi_queue_mode && (ct.MG_THREADS_PER_NODE > 1))
     {
-
         if(pct.gridpe == 0)
             std::cout << "Coalescing states in X with factor " << pct.coalesce_factor << "." << std::endl;
 
-        // Set up our coalesced communicator next
+        // Set up our coalesced grid communicator next
         int px, py, pz;
         Rmg_G->pe2xyz(pct.gridpe, &px, &py, &pz);
-        MPI_Comm_split(Rmg_G->comm, px + 1, pct.gridpe, &pct.coalesced_grid_comm);
+        int base_px = (px / pct.coalesce_factor) * pct.coalesce_factor;
+        px = px % pct.coalesce_factor;
+        MPI_Comm_split(pct.grid_comm, px + 1, pct.gridpe, &pct.coalesced_grid_comm);
 
+        // And now our coalesced local communicator
+        int color = Rmg_G->xyz2pe(0, py, pz);
+        color += (base_px + 1)*100000;
+        MPI_Comm_split(Rmg_G->comm, color, pct.gridpe, &pct.coalesced_local_comm);
     }
     else
     {
@@ -222,11 +232,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             std::cout << "Warning: Coalesced grids cannot be used with these global and processor grids. " << std::endl;
         }
         ct.coalesce_states = false;
+        pct.coalesce_factor = 1;
         pct.coalesced_grid_comm = pct.grid_comm;
     }
 
 
-    InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
 
     /* if logname exists, increment until unique filename found */
     if (pct.imgpe == 0)

@@ -43,6 +43,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "GatherScatter.h"
 #include "../Headers/prototypes.h"
 
 
@@ -59,6 +60,9 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 {
     RmgTimer RT0("3-MgridSubspace"), *RT1;
     BaseThread *T = BaseThread::getBaseThread(0);
+    int my_pe_x, my_pe_y, my_pe_z;
+    kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+    int my_pe_offset = my_pe_x % pct.coalesce_factor;
 
     double mean_occ_res = DBL_MAX;
     double mean_unocc_res = DBL_MAX;
@@ -74,16 +78,25 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     if(active_threads < 1) active_threads = 1;
 
 
-    for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++) {
+    double *nvtot_psi = vtot_psi;;
+    if(pct.coalesce_factor > 1)
+    {
+        nvtot_psi = new double[pbasis * pct.coalesce_factor];
+        GatherGrid(kptr->G, pbasis, vtot_psi, nvtot_psi);
+    }
+    
+    for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
+    {
 
+        kptr->T->set_coalesce_factor(pct.coalesce_factor);
         // Update betaxpsi        
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
 
         /* Update the wavefunctions */
-        int istop = kptr->nstates / active_threads;
-        istop = istop * active_threads;
+        int istop = kptr->nstates / (active_threads * pct.coalesce_factor);
+        istop = istop * active_threads * pct.coalesce_factor;
 
         // Apply the non-local operators to a block of orbitals
         RT1 = new RmgTimer("3-MgridSubspace: AppNls");
@@ -92,11 +105,11 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         delete(RT1);
         int first_nls = 0;
 
-        for(int st1=0;st1 < istop;st1+=active_threads) {
+        for(int st1=0;st1 < istop;st1+=active_threads*pct.coalesce_factor) {
           SCF_THREAD_CONTROL thread_control;
 
           // Make sure the non-local operators are applied for the next block if needed
-          int check = first_nls + active_threads;
+          int check = first_nls + active_threads*pct.coalesce_factor;
           if(check > ct.non_local_block_size) {
               RT1 = new RmgTimer("3-MgridSubspace: AppNls");
               AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
@@ -106,15 +119,16 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
           }
         
           RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
+          int istart = my_pe_offset*active_threads;
           for(int ist = 0;ist < active_threads;ist++) {
               thread_control.job = HYBRID_EIG;
-              thread_control.vtot = vtot_psi;
+              thread_control.vtot = nvtot_psi;
               thread_control.vcycle = vcycle;
-              thread_control.sp = &kptr->Kstates[st1 + ist];
+              thread_control.sp = &kptr->Kstates[st1 + ist + istart];
               thread_control.p3 = (void *)kptr;
-              thread_control.nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
-              thread_control.ns = (void *)&kptr->ns[(st1 + ist) * pbasis];  // ns is not blocked!
-              thread_control.basetag = kptr->Kstates[st1 + ist].istate;
+              thread_control.nv = (void *)&kptr->nv[(first_nls + ist + istart) * pbasis];
+              thread_control.ns = (void *)&kptr->ns[(st1 + ist + istart) * pbasis];  // ns is not blocked!
+              thread_control.basetag = kptr->Kstates[st1 + ist + istart].istate;
               QueueThreadTask(ist, thread_control);
           }
 
@@ -122,7 +136,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
           if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
 
           // Increment index into non-local block
-          first_nls += active_threads;
+          first_nls += active_threads*pct.coalesce_factor;
           delete RT1;
 
         }
@@ -131,6 +145,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
         // Process any remaining states in serial fashion
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
+        kptr->T->set_coalesce_factor(1);
         for(int st1 = istop;st1 < kptr->nstates;st1++) {
             // Make sure the non-local operators are applied for the next state if needed
             int check = first_nls + 1;
@@ -161,6 +176,13 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         }
         delete(RT1);
 
+    }
+
+    if(pct.coalesce_factor > 1)
+    {
+        delete [] nvtot_psi;
+        // Eigenvalues are not copied to all nodes in MgEigState when using coalesced grids.
+        GatherEigs(kptr);
     }
 
     if(Verify ("freeze_occupied", true, kptr->ControlMap)) {

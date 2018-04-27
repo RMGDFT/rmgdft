@@ -39,6 +39,7 @@ static double *fixed_vector2 = NULL;
 #define MAX_FIXED_VECTOR 2048
 
 
+static MPI_Comm *coalesced_comm_pool;
 
 
 void GlobalSumsInit(void) {
@@ -53,6 +54,13 @@ void GlobalSumsInit(void) {
     if(retval != MPI_SUCCESS) {
         rmg_error_handler(__FILE__, __LINE__, "Error in MPI_Alloc_mem.\n");
     }
+
+    coalesced_comm_pool = new MPI_Comm[20*ct.MG_THREADS_PER_NODE + 1];
+    for(int thread = 0;thread < 20*ct.MG_THREADS_PER_NODE + 1;thread++)
+    {
+        MPI_Comm_dup(pct.coalesced_grid_comm, &coalesced_comm_pool[thread]);
+    }
+
 }
 
 
@@ -77,7 +85,16 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
         mpi_queue_item_t qi;
         qi.is_completed = &is_completed;
         qi.type = RMG_MPI_SUM;
-        qi.comm = T->get_unique_comm(istate);
+        if(ct.coalesce_states && (pct.coalesce_factor > 1))
+        {
+            int comm_index = istate % (20*ct.MG_THREADS_PER_NODE + 1);
+            qi.comm = coalesced_comm_pool[comm_index];
+        }
+        else
+        {
+            qi.comm = T->get_unique_comm(istate);
+        }
+
         qi.buflen = length;
         qi.buf = (void *)vect;
 
@@ -85,7 +102,7 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
         if(typeid(RmgType) == typeid(float)) qi.datatype = MPI_FLOAT;
         if(typeid(RmgType) == typeid(double)) qi.datatype = MPI_DOUBLE;
 //        std::atomic_thread_fence(std::memory_order_seq_cst);
-        Rmg_Q->queue[tid]->push(qi);
+        Rmg_Q->push(tid, qi);
         while(!is_completed.load(std::memory_order_acquire)){;}
 //        std::atomic_thread_fence(std::memory_order_seq_cst);
         return;

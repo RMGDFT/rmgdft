@@ -49,6 +49,7 @@
 
 /* Maximum number of images for finite difference routines */
 #define MAX_TRADE_IMAGES 8
+#define MAX_CFACTOR 8
 
 #if __cplusplus
 
@@ -81,9 +82,6 @@ private:
 
     // rank of this node in comm
     int gridpe;
-
-    /// Rank of target node based on offsets from current node. Used by asynchronous comm routines.
-    int target_node[3][3][3];
 
     int max_alloc;
 
@@ -141,6 +139,9 @@ public:
     template <typename RmgType> void trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type);
     template <typename RmgType> void trade_images (RmgType * mat, int dimx, int dimy, int dimz, int type);
     template <typename RmgType> void trade_imagesx_central_local (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images);
+
+    /// Rank of target node based on offsets from current node. Used by asynchronous comm routines.
+    int target_node[2*MAX_CFACTOR+1][3][3];
 
 };
 

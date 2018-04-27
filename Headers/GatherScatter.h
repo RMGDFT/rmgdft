@@ -33,8 +33,10 @@
 #if __cplusplus
 
 #include <complex>
-template <typename OrbitalType, typename CalcType> void GatherGrid(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B);
-template <typename OrbitalType, typename CalcType> void ScatterGrid(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B);
+template <typename OrbitalType, typename CalcType> void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B);
+template <typename CalcType, typename OrbitalType> void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B);
+template <typename DataType> void GatherGrid(BaseGrid *G, int n, DataType *A, DataType *B);
+template <typename OrbitalType> void GatherEigs (Kpoint<OrbitalType> *kptr);
 
 void CopyAndConvert(int n, double *A, float *B);
 void CopyAndConvert(int n, double *A, double *B);

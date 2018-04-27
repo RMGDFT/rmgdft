@@ -922,18 +922,13 @@ void TradeImages::RMG_MPI_trade(RmgType *buf, int count, int type, int pe_x_offs
 
     factor = sizeof(RmgType);
 
-    // Incement offsets so they can act as array indices into send and recv lists
-    pe_x_offset++;
-    pe_y_offset++;
-    pe_z_offset++;
-
     // The actual tag passed to mpi consists of the state index shifted left 5 bits and
     // the passed tag parameter. Most MPI implementations use 32 bits for the tag so this
     // gives 2^27 bits for the state index. Crays use 2^21 bits for the tag which gives
     // 2^16 states while the MPI spec only requires 2^16 bits which gives 2^11 states.
     ntag = (istate<<5) + tag;
 
-    target = TradeImages::target_node[pe_x_offset][pe_y_offset][pe_z_offset];
+    target = TradeImages::target_node[pe_x_offset+MAX_CFACTOR][pe_y_offset+1][pe_z_offset+1];
 
     if(type == RMG_MPI_IRECV) {
         MPI_Irecv(buf, factor*count, MPI_BYTE, target,
@@ -961,7 +956,7 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
     // gives 2^27 bits for the state index. Crays use 2^21 bits for the tag which gives
     // 2^16 states while the MPI spec only requires 2^16 bits which gives 2^11 states.
     qitem.mpi_tag = (istate<<5) + tag;
-    qitem.target = TradeImages::target_node[pe_x_offset+1][pe_y_offset+1][pe_z_offset+1];
+    qitem.target = TradeImages::target_node[pe_x_offset+MAX_CFACTOR][pe_y_offset+1][pe_z_offset+1];
     qitem.type = type;
     qitem.buf = (void *)buf;
     qitem.buflen = sizeof(RmgType)*count;
@@ -1054,7 +1049,7 @@ void TradeImages::init_trade_imagesx_async(size_t elem_len)
 
     // Set up the target node array
     this->G->pe2xyz(this->G->get_rank(), &pe_x, &pe_y, &pe_z);
-    for(ix = -1;ix <= 1;ix++) {
+    for(ix = -MAX_CFACTOR;ix <= MAX_CFACTOR;ix++) {
 
         t_pe_x = (pe_x + ix + this->G->get_PE_X()) % this->G->get_PE_X();
 
@@ -1065,8 +1060,7 @@ void TradeImages::init_trade_imagesx_async(size_t elem_len)
             for(iz = -1;iz <= 1;iz++) {
 
                 t_pe_z = (pe_z + iz + this->G->get_PE_Z()) % this->G->get_PE_Z();
-                TradeImages::target_node[ix+1][iy+1][iz+1] = t_pe_x*this->G->get_PE_Y()*this->G->get_PE_Z() + t_pe_y*this->G->get_PE_Z() + t_pe_z;
-
+                TradeImages::target_node[ix+MAX_CFACTOR][iy+1][iz+1] = t_pe_x*this->G->get_PE_Y()*this->G->get_PE_Z() + t_pe_y*this->G->get_PE_Z() + t_pe_z;
             }
         }
     } // end for
