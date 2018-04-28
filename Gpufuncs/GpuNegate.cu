@@ -93,9 +93,19 @@ struct is_negative
   }
 };
 
+__global__ void NegateDiag(double *dx, int incx, double *dy, int incy, int n)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    for (int i = idx; i < n; i += gridDim.x * blockDim.x) 
+    {
+        if(dx[i*incx + i] < 0.0) dy[i*incy] = -dy[i*incy];
+    }
+}
+
 
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n)
 {
+#if 0
     cudaDeviceSynchronize();
     thrust::negate<double> neg_op;
     thrust::device_ptr<double> dxptr = thrust::device_pointer_cast(dx);
@@ -105,6 +115,11 @@ void GpuNegate(double *dx, int incx, double *dy, int incy, int n)
     //thrust::transform_if(dxptr, dxptr + n, dyptr, neg_op, is_negative());
     thrust::transform_if(pos.begin(), pos.end(), dyptr, neg_op, is_negative());
     cudaDeviceSynchronize();
+#endif
+    int blockSize = 256;
+    int numBlocks = (n + blockSize - 1) / n;
+    NegateDiag<<<numBlocks, blockSize>>>(dx, incx, dy, incy, n);
+
 }
 
 #endif
