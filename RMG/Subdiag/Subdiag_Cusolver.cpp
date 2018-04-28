@@ -130,6 +130,7 @@ if(1){
             if(use_folded) {
 
                 int lwork = num_states * num_states / 3 + num_states;
+                lwork = std::max(lwork, 128000);
                 double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));        
                 FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, (double *)Aij, (double *)Bij, eigs, work, lwork, iwork, liwork, SUBDIAG_CUSOLVER);
                 GpuFreeManaged(work);
@@ -138,7 +139,7 @@ if(1){
             else {
 
                 int lwork = 3 * num_states * num_states + 8 * num_states;
-                lwork = std::max(lwork, 32768);
+                lwork = std::max(lwork, 128000);
                 double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
                 DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
                 GpuFreeManaged(work);
