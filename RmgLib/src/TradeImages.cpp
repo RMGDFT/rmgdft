@@ -962,7 +962,7 @@ void TradeImages::RMG_MPI_queue_trade(RmgType *buf, int count, int type, int pe_
     qitem.buflen = sizeof(RmgType)*count;
 
     // Push it onto the queue
-    this->queue->push(tid, qitem);
+    this->queue->queue[tid]->push(qitem);
 
 }
 

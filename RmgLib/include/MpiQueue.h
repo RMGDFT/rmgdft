@@ -93,7 +93,6 @@ private:
 
     boost::thread QueueManager;
     static void manager_thread(MpiQueue *Q);
-    boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> **queue;
     std::atomic<bool> running;
     std::atomic<bool> exitflag;
     int max_threads;
@@ -113,6 +112,7 @@ public:
     MpiQueue(int max_size, int max_threads, void *mask, void *topology, bool spin_manager_thread, bool spin_worker_threads);
     ~MpiQueue(void);
 
+    boost::lockfree::spsc_queue<mpi_queue_item_t, boost::lockfree::fixed_sized<true>> **queue;
     bool push(int tid, mpi_queue_item_t &item);
     bool pop(int tid, mpi_queue_item_t &item);
     void cvwait(std::mutex &mut, std::condition_variable &cv, std::atomic_int &var);

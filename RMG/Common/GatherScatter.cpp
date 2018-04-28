@@ -142,7 +142,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
                 qitems_r[i].buflen = sizeof(CalcType)*chunksize;
 
                 // Push it onto the queue
-                Rmg_Q->push(tid, qitems_r[i]);
+                Rmg_Q->queue[tid]->push(qitems_r[i]);
 
             }
             else
@@ -169,7 +169,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
                 qitems_s[i].buflen = sizeof(OrbitalType)*chunksize;
 
                 // Push it onto the queue
-                Rmg_Q->push(tid, qitems_s[i]);
+                Rmg_Q->queue[tid]->push(qitems_s[i]);
             } 
             else
             {
@@ -238,7 +238,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
                 qitems_r[i].buflen = sizeof(CalcType)*chunksize;
 
                 // Push it onto the queue
-                Rmg_Q->push(tid, qitems_r[i]);
+                Rmg_Q->queue[tid]->push(qitems_r[i]);
 
             }
             else
@@ -264,7 +264,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
                 qitems_s[i].buflen = sizeof(OrbitalType)*chunksize;
 
                 // Push it onto the queue
-                Rmg_Q->push(tid, qitems_s[i]);
+                Rmg_Q->queue[tid]->push(qitems_s[i]);
             }
             else
             {

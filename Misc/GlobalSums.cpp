@@ -102,7 +102,8 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
         if(typeid(RmgType) == typeid(float)) qi.datatype = MPI_FLOAT;
         if(typeid(RmgType) == typeid(double)) qi.datatype = MPI_DOUBLE;
 //        std::atomic_thread_fence(std::memory_order_seq_cst);
-        Rmg_Q->push(tid, qi);
+        //Rmg_Q->push(tid, qi);
+        Rmg_Q->queue[tid]->push(qi);
         while(!is_completed.load(std::memory_order_acquire)){;}
 //        std::atomic_thread_fence(std::memory_order_seq_cst);
         return;
