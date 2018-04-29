@@ -239,7 +239,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                     ZERO_t,  nv, P0_BASIS);
 
 #if GPU_ENABLED
-        cudaMemcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType), cudaMemcpyDefault);
+// For norm conserving ns=psi so other parts of code were updated to not require this
+//        cudaMemcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType), cudaMemcpyDefault);
 #else
 //        memcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType));
 #endif
