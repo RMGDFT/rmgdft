@@ -78,7 +78,7 @@ void set_energy_weight_ne (complex double * ene, complex double * weight, double
         distri_fermi (ctem, EF1, &distri1);
         distri_fermi (ctem, EF2, &distri2);
         tem = cabs(distri1 - distri2) ;
-        if (tem > 0.000001)
+    //    if (tem > 0.000001)
         {
 
             ene[nen] = xc[i] + I * DELTA;
