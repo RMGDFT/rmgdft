@@ -77,6 +77,9 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     if(ct.mpi_queue_mode) active_threads--;
     if(active_threads < 1) active_threads = 1;
 
+    // Save coalesce factor
+    int saved_coalesce_factor = pct.coalesce_factor;
+
 
     double *nvtot_psi = vtot_psi;;
     if(pct.coalesce_factor > 1)
@@ -143,6 +146,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
         if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
+        pct.coalesce_factor = 1;
         // Process any remaining states in serial fashion
         RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
         kptr->T->set_coalesce_factor(1);
@@ -177,6 +181,9 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         delete(RT1);
 
     }
+
+    // Restore coalesce factor
+    pct.coalesce_factor = saved_coalesce_factor;
 
     if(pct.coalesce_factor > 1)
     {
