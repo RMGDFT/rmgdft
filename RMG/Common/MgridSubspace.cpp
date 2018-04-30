@@ -180,10 +180,10 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         }
         delete(RT1);
 
-    }
+        // Restore coalesce factor
+        pct.coalesce_factor = saved_coalesce_factor;
 
-    // Restore coalesce factor
-    pct.coalesce_factor = saved_coalesce_factor;
+    }
 
     if(pct.coalesce_factor > 1)
     {
