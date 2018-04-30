@@ -548,6 +548,9 @@ typedef struct
     /*Maximum value of nldim for any species */
     int max_nldim;
 
+    double max_nlradius, min_nlradius, max_qradius, min_qradius;
+
+
     /* Whether or not Bweight is required (not needed for Central FD operator with NCPP */
     bool need_Bweight;
 

@@ -85,6 +85,8 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                 work[k] = get_QnmL (0, 0, sp->r[k], sp);
         }
         sp->qradius = 2.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
+        sp->qradius = std::min(sp->qradius, ct.max_qradius);
+        sp->qradius = std::max(sp->qradius, ct.min_qradius);
 
         // Make adjustments so radii terminates on a grid point
         sp->qdim = Radius2grid (sp->qradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);

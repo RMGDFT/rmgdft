@@ -730,6 +730,22 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "Maximum band index for diagonal Vxc matrix elements.\n ",
                      "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
+    If.RegisterInputKey("max_nlradius", &lc.max_nlradius, 2.0, 10000.0, 10000.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "maximum radius for non-local projectors\n",
+                     "\n");
+    If.RegisterInputKey("min_nlradius", &lc.min_nlradius, 1.0, 10000.0, 2.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "minimum radius for non-local projectors\n",
+                     "\n");
+    If.RegisterInputKey("max_qradius", &lc.max_qradius, 2.0, 10000.0, 10000.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "maximum radius for qfunc in ultra-pseudopotential\n",
+                     "\n");
+    If.RegisterInputKey("min_qradius", &lc.min_qradius, 1.0, 10000.0, 2.0,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "minimum radius for qfunc in ultra-pseudopotential\n",
+                     "\n");
 
     // Booleans next. Booleans are never required.
 #if GPU_ENABLED
