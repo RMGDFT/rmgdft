@@ -77,12 +77,13 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RTa = new RmgTimer("3-OrbitalOptimize: Hpsi");
     int st1;
-#pragma omp parallel private(st1)
+    double *orbital_border;
+    double *orbit_tem;
+#pragma omp parallel private(st1,orbital_border,orbit_tem)
 {
-    double *orbital_border = new double[2*item];
-    double *orbit_tem = new double[2*item];
-#pragma omp barrier
-#pragma omp for schedule(dynamic) nowait
+    orbital_border = new double[2*item];
+    orbit_tem = new double[2*item];
+#pragma omp for schedule(static,1) nowait
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         STATE *sp = &states[st1];
@@ -213,7 +214,7 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 
 #pragma omp parallel private(st1)
 {
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(static,1) nowait
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
         for (int idx = 0; idx < states[st1].size; idx++)
             states1[st1].psiR[idx] = 0.0;
@@ -221,7 +222,7 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 
 #pragma omp parallel private(st1)
 {
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(static,1) nowait
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         int st11 = st1-ct.state_begin;
@@ -250,7 +251,7 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
             st2 = recv_from1[loop * state_per_proc + i + 2];
 #pragma omp parallel private(st1)
 {
-#pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(guided) nowait
             for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
             {
                 int st11 = st1-ct.state_begin;

@@ -50,11 +50,12 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
     FiniteDiff FD(&Rmg_L);
     int st1;
-#pragma omp parallel private(st1)
+    double *orbital_border, *orbit_tem;
+    RmgTimer *RT0 = new RmgTimer("4-get_HS: apply fd");
+#pragma omp parallel private(st1,orbital_border,orbit_tem)
 {
-    double *orbital_border = new double[2*item];
-    double *orbit_tem = new double[2*item];
-#pragma omp barrier
+    orbital_border = new double[2*item];
+    orbit_tem = new double[2*item];
 #pragma omp for schedule(static,1) nowait
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
@@ -93,6 +94,7 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
     delete [] orbit_tem;
     delete [] orbital_border;
 }
+    delete RT0;
 
     /* print_sum(pct.psi_size, states1[ct.state_begin].psiR, "states1 sum get_Hij");
      * print_state_sum(states1); 
