@@ -102,6 +102,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
     if(active_threads < 1) active_threads = 1;
     int base_istate = istate / (active_threads * pct.coalesce_factor);
     base_istate *= (active_threads * pct.coalesce_factor);
+    CalcType *sbuf = new CalcType[n];
 
     std::atomic_bool is_completed_r[MAX_CFACTOR];
     std::atomic_bool is_completed_s[MAX_CFACTOR];
@@ -120,67 +121,74 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
 
     }
 
-    if(typeid(OrbitalType) == typeid(CalcType))
+
+    // States are coalesced so we have to get the remote parts of istate
+    for(int i=0;i < pct.coalesce_factor;i++)
     {
-        // States are coalesced so we have to get the remote parts of istate
-        for(int i=0;i < pct.coalesce_factor;i++)
+        // Queue receives
+        if(i != pe_offset)
         {
-            // Queue receives
-            if(i != pe_offset)
-            {
-                qitems_r[i].comm = T->get_unique_comm(istate);
-                qitems_r[i].is_unpacked = false;
-                qitems_r[i].is_completed->store(false);
-                // The actual tag passed to mpi consists of the state index shifted left 5 bits and
-                // the passed tag parameter. Most MPI implementations use 32 bits for the tag so this
-                // gives 2^27 bits for the state index. Crays use 2^21 bits for the tag which gives
-                // 2^16 states while the MPI spec only requires 2^16 bits which gives 2^11 states.
-                qitems_r[i].mpi_tag = (istate<<5);
-                qitems_r[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
-                qitems_r[i].type = RMG_MPI_IRECV;
-                qitems_r[i].buf = (void *)&B[i*chunksize];
-                qitems_r[i].buflen = sizeof(CalcType)*chunksize;
+            qitems_r[i].comm = T->get_unique_comm(istate);
+            qitems_r[i].is_unpacked = false;
+            qitems_r[i].is_completed->store(false);
+            // The actual tag passed to mpi consists of the state index shifted left 5 bits and
+            // the passed tag parameter. Most MPI implementations use 32 bits for the tag so this
+            // gives 2^27 bits for the state index. Crays use 2^21 bits for the tag which gives
+            // 2^16 states while the MPI spec only requires 2^16 bits which gives 2^11 states.
+            qitems_r[i].mpi_tag = (istate<<5);
+            qitems_r[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
+            qitems_r[i].type = RMG_MPI_IRECV;
+            qitems_r[i].buf = (void *)&B[i*chunksize];
+            qitems_r[i].buflen = sizeof(CalcType)*chunksize;
 
-                // Push it onto the queue
-                Rmg_Q->queue[tid]->push(qitems_r[i]);
+            // Push it onto the queue
+            Rmg_Q->queue[tid]->push(qitems_r[i]);
 
-            }
-            else
-            {
-                qitems_r[i].is_unpacked = true;
-                qitems_r[i].is_completed->store(true);
-            } 
         }
-
-        // Next we send the parts of states that other MPI procs require
-        for(int i=0;i < pct.coalesce_factor;i++)
+        else
         {
-            // Queue sends
-            int remote_istate = base_istate + i * active_threads + istate % active_threads;
-            if(istate != remote_istate)
-            {
-                qitems_s[i].comm = T->get_unique_comm(remote_istate);
-                qitems_s[i].is_unpacked = false;
-                qitems_s[i].is_completed->store(false);
-                qitems_s[i].mpi_tag = (remote_istate<<5);
-                qitems_s[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
-                qitems_s[i].type = RMG_MPI_ISEND;
-                qitems_s[i].buf = (void *)&A[remote_istate*chunksize];
-                qitems_s[i].buflen = sizeof(OrbitalType)*chunksize;
-
-                // Push it onto the queue
-                Rmg_Q->queue[tid]->push(qitems_s[i]);
-            } 
-            else
-            {
-                qitems_s[i].is_unpacked = true;
-                qitems_s[i].is_completed->store(true);
-            } 
-        }
-
-        Rmg_Q->waitgroup(group_count);
-
+            qitems_r[i].is_unpacked = true;
+            qitems_r[i].is_completed->store(true);
+        } 
     }
+
+    // Next we send the parts of states that other MPI procs require
+    for(int i=0;i < pct.coalesce_factor;i++)
+    {
+        // Queue sends
+        int remote_istate = base_istate + i * active_threads + istate % active_threads;
+        if(istate != remote_istate)
+        {
+            qitems_s[i].comm = T->get_unique_comm(remote_istate);
+            qitems_s[i].is_unpacked = false;
+            qitems_s[i].is_completed->store(false);
+            qitems_s[i].mpi_tag = (remote_istate<<5);
+            qitems_s[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
+            qitems_s[i].type = RMG_MPI_ISEND;
+#if GPU_ENABLED
+            if(typeid(OrbitalType) == typeid(CalcType))
+                cudaMemcpy(&sbuf[i*chunksize], &A[remote_istate*chunksize], chunksize*sizeof(OrbitalType), cudaMemcpyDefault);
+            else
+                CopyAndConvert(chunksize, &A[remote_istate*chunksize], &sbuf[i*chunksize]);
+#else
+            CopyAndConvert(chunksize, &A[remote_istate*chunksize], &sbuf[i*chunksize]);
+#endif
+//            qitems_s[i].buf = (void *)&A[remote_istate*chunksize];
+            qitems_s[i].buf = (void *)&sbuf[i*chunksize];
+            qitems_s[i].buflen = sizeof(CalcType)*chunksize;
+
+            // Push it onto the queue
+            Rmg_Q->queue[tid]->push(qitems_s[i]);
+        } 
+        else
+        {
+            qitems_s[i].is_unpacked = true;
+            qitems_s[i].is_completed->store(true);
+        } 
+    }
+
+    Rmg_Q->waitgroup(group_count);
+    delete [] sbuf;
 
 }
 
@@ -201,6 +209,8 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
     if(active_threads < 1) active_threads = 1;
     int base_istate = istate / (active_threads * pct.coalesce_factor);
     base_istate *= (active_threads * pct.coalesce_factor);
+    CalcType *rbuf = new CalcType[n];
+
 
     std::atomic_bool is_completed_r[MAX_CFACTOR];
     std::atomic_bool is_completed_s[MAX_CFACTOR];
@@ -219,62 +229,75 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
 
     }
 
-    if(typeid(OrbitalType) == typeid(CalcType))
+    // States are coalesced so we have to get the remote parts of istate
+    for(int i=0;i < pct.coalesce_factor;i++)
     {
-        // States are coalesced so we have to get the remote parts of istate
-        for(int i=0;i < pct.coalesce_factor;i++)
+        // Queue receives
+        int remote_istate = base_istate + i * active_threads + istate % active_threads;
+        if(istate != remote_istate)
         {
-            // Queue receives
-            int remote_istate = base_istate + i * active_threads + istate % active_threads;
-            if(istate != remote_istate)
-            {
-                qitems_r[i].comm = T->get_unique_comm(remote_istate);
-                qitems_r[i].is_unpacked = false;
-                qitems_r[i].is_completed->store(false);
-                qitems_r[i].mpi_tag = (remote_istate<<5);
-                qitems_r[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
-                qitems_r[i].type = RMG_MPI_IRECV;
-                qitems_r[i].buf = (void *)&B[remote_istate*chunksize];
-                qitems_r[i].buflen = sizeof(CalcType)*chunksize;
+            qitems_r[i].comm = T->get_unique_comm(remote_istate);
+            qitems_r[i].is_unpacked = false;
+            qitems_r[i].is_completed->store(false);
+            qitems_r[i].mpi_tag = (remote_istate<<5);
+            qitems_r[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
+            qitems_r[i].type = RMG_MPI_IRECV;
+//            qitems_r[i].buf = (void *)&B[remote_istate*chunksize];
+            qitems_r[i].buf = (void *)&rbuf[i*chunksize];
+            qitems_r[i].buflen = sizeof(CalcType)*chunksize;
 
-                // Push it onto the queue
-                Rmg_Q->queue[tid]->push(qitems_r[i]);
+            // Push it onto the queue
+            Rmg_Q->queue[tid]->push(qitems_r[i]);
 
-            }
-            else
-            {
-                qitems_r[i].is_unpacked = true;
-                qitems_r[i].is_completed->store(true);
-            }
         }
-
-        // Next we send the parts of states that other MPI procs require
-        for(int i=0;i < pct.coalesce_factor;i++)
+        else
         {
-            // Queue sends
-            if(i != pe_offset)
-            {
-                qitems_s[i].comm = T->get_unique_comm(istate);
-                qitems_s[i].is_unpacked = false;
-                qitems_s[i].is_completed->store(false);
-                qitems_s[i].mpi_tag = (istate<<5);
-                qitems_s[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
-                qitems_s[i].type = RMG_MPI_ISEND;
-                qitems_s[i].buf = (void *)&A[i*chunksize];
-                qitems_s[i].buflen = sizeof(OrbitalType)*chunksize;
-
-                // Push it onto the queue
-                Rmg_Q->queue[tid]->push(qitems_s[i]);
-            }
-            else
-            {
-                qitems_s[i].is_unpacked = true;
-                qitems_s[i].is_completed->store(true);
-            }
+            qitems_r[i].is_unpacked = true;
+            qitems_r[i].is_completed->store(true);
         }
-
-        Rmg_Q->waitgroup(group_count);
     }
+
+    // Next we send the parts of states that other MPI procs require
+    for(int i=0;i < pct.coalesce_factor;i++)
+    {
+        // Queue sends
+        if(i != pe_offset)
+        {
+            qitems_s[i].comm = T->get_unique_comm(istate);
+            qitems_s[i].is_unpacked = false;
+            qitems_s[i].is_completed->store(false);
+            qitems_s[i].mpi_tag = (istate<<5);
+            qitems_s[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
+            qitems_s[i].type = RMG_MPI_ISEND;
+            qitems_s[i].buf = (void *)&A[i*chunksize];
+            qitems_s[i].buflen = sizeof(CalcType)*chunksize;
+
+            // Push it onto the queue
+            Rmg_Q->queue[tid]->push(qitems_s[i]);
+        }
+        else
+        {
+            qitems_s[i].is_unpacked = true;
+            qitems_s[i].is_completed->store(true);
+        }
+    }
+
+    Rmg_Q->waitgroup(group_count);
+
+    for(int i=0;i < pct.coalesce_factor;i++)
+    {
+
+        int remote_istate = base_istate + i * active_threads + istate % active_threads;
+        if(istate != remote_istate)
+        {
+
+            CopyAndConvert(chunksize, &rbuf[i*chunksize], &B[remote_istate*chunksize]);
+
+        }
+    }
+
+    delete [] rbuf;
+
 }
 
 // This is used to generate an array that represents a coalesced common domain. A good
