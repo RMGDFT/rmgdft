@@ -165,14 +165,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
             qitems_s[i].mpi_tag = (remote_istate<<5);
             qitems_s[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_s[i].type = RMG_MPI_ISEND;
-#if GPU_ENABLED
-            if(typeid(OrbitalType) == typeid(CalcType))
-                cudaMemcpy(&sbuf[i*chunksize], &A[remote_istate*chunksize], chunksize*sizeof(OrbitalType), cudaMemcpyDefault);
-            else
-                CopyAndConvert(chunksize, &A[remote_istate*chunksize], &sbuf[i*chunksize]);
-#else
             CopyAndConvert(chunksize, &A[remote_istate*chunksize], &sbuf[i*chunksize]);
-#endif
 //            qitems_s[i].buf = (void *)&A[remote_istate*chunksize];
             qitems_s[i].buf = (void *)&sbuf[i*chunksize];
             qitems_s[i].buflen = sizeof(CalcType)*chunksize;
@@ -297,7 +290,6 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
     }
 
     delete [] rbuf;
-
 }
 
 // This is used to generate an array that represents a coalesced common domain. A good
