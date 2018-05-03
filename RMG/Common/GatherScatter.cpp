@@ -93,7 +93,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
     G->pe2xyz(pct.gridpe, &my_pe_x, &pe_y, &pe_z);
     int pe_offset = my_pe_x % pct.coalesce_factor;
     CopyAndConvert(chunksize, &A[istate*chunksize], &B[pe_offset*chunksize]);
-    if(!ct.coalesce_states) return;
+    if(!ct.coalesce_states || (pct.coalesce_factor == 1)) return;
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
@@ -200,7 +200,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
     G->pe2xyz(pct.gridpe, &my_pe_x, &pe_y, &pe_z);
     int pe_offset = my_pe_x % pct.coalesce_factor;
     CopyAndConvert(chunksize, &A[pe_offset*chunksize], &B[istate*chunksize]);
-    if(!ct.coalesce_states) return;
+    if(!ct.coalesce_states || (pct.coalesce_factor == 1)) return;
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
