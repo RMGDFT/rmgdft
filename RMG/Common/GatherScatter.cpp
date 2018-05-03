@@ -275,8 +275,29 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
         }
     }
 
-    Rmg_Q->waitgroup(group_count);
+    int items_completed = pct.coalesce_factor - 1;
+    while(items_completed)
+    {
+        for(int i=0;i < pct.coalesce_factor;i++)
+        {
+            int remote_istate = base_istate + i * active_threads + istate % active_threads;
+            if(istate != remote_istate)
+            {
+                if(!qitems_r[i].is_unpacked)
+                {
+                    if(is_completed_r[i].load(std::memory_order_acquire))
+                    {
+                        CopyAndConvert(chunksize, &rbuf[i*chunksize], &B[remote_istate*chunksize]);
+                        qitems_r[i].is_unpacked = true;
+                        items_completed--;
+                    }
+                }
+            }
+        }
+    }
 
+    Rmg_Q->waitgroup(group_count);
+#if 0
     for(int i=0;i < pct.coalesce_factor;i++)
     {
 
@@ -288,7 +309,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
 
         }
     }
-
+#endif
     delete [] rbuf;
 }
 

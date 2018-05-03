@@ -71,6 +71,9 @@ private:
     // x-coalesce factor
     int cfactor;
 
+    // neighbor ids
+    int nb_ids[MAX_CFACTOR+1][6];
+
     /// Synchronous/asynchronous mode. 0=asnychronous (default) 1=synchronous
     int mode;
 
