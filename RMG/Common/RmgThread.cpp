@@ -186,7 +186,7 @@ void *run_threads(void *v) {
 
         // Set the project specific basetag into the main BaseThreadControl structure.
         T->set_thread_basetag(my_tid, ss.basetag);
-
+        T->set_pptr(my_tid, (void *)&ss);
 
         // Switch that controls what we do
         switch(ss.job) {

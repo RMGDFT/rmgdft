@@ -186,6 +186,24 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     /* re-assign the number of states for global variables */
     if(ct.num_states <= 0 ) ct.num_states = num_states_spf[0];
 
+    if(pct.coalesce_factor > 1)
+    {
+        // Adjust num_states to be an integral multiple of pct.coalesce_factor. Whatever value is used for active threads here
+        // must match the value used in MgridSubspace
+        int active_threads = ct.MG_THREADS_PER_NODE;
+        if(ct.mpi_queue_mode) active_threads--;
+        if(active_threads < 1) active_threads = 1;
+        int states_div = (ct.num_states / (active_threads*pct.coalesce_factor)) * active_threads*pct.coalesce_factor;
+        int states_rem = ct.num_states % (active_threads*pct.coalesce_factor);
+        if(states_rem)
+        {
+            while(states_div < ct.num_states) states_div += pct.coalesce_factor;
+            if(pct.gridpe == 0)
+                std::cout << "Notice: Numstates adjusted from " << ct.num_states << " to " << states_div <<  " to satisfy coalesce conditions." << std::endl;
+            ct.num_states = states_div;
+        }
+    }
+
     // When LCAO init is selected we may use more orbitals during the initialization
     // than during the rest of the run so we need to count the number of atomic orbitals
     // here and allocate state structures for the largest possible number of states

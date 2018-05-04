@@ -27,6 +27,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "rmg_error.h"
+#include "rmgthreads.h"
 #include "RmgTimer.h"
 #include "transition.h"
 #include "BaseThread.h"
@@ -97,9 +98,11 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
+    SCF_THREAD_CONTROL *s = (SCF_THREAD_CONTROL *)T->get_pptr(tid);
+    int active_threads = s->extratag;
+//    int active_threads = ct.MG_THREADS_PER_NODE;
+//    if(ct.mpi_queue_mode) active_threads--;
+//    if(active_threads < 1) active_threads = 1;
     int base_istate = istate / (active_threads * pct.coalesce_factor);
     base_istate *= (active_threads * pct.coalesce_factor);
     CalcType *sbuf = new CalcType[n];
@@ -197,9 +200,12 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
+    SCF_THREAD_CONTROL *s = (SCF_THREAD_CONTROL *)T->get_pptr(tid);
+    int active_threads = s->extratag;
+
+//    int active_threads = ct.MG_THREADS_PER_NODE;
+//    if(ct.mpi_queue_mode) active_threads--;
+//    if(active_threads < 1) active_threads = 1;
     int base_istate = istate / (active_threads * pct.coalesce_factor);
     base_istate *= (active_threads * pct.coalesce_factor);
     CalcType *rbuf = new CalcType[n];

@@ -18,6 +18,9 @@ typedef struct
     // into the BaseThreadControl structure.
     int basetag;
 
+    // extra tag for transferring additional info
+    int extratag;
+
     // vcycle during multigrid iterations
     int vcycle;
 

@@ -211,7 +211,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(ct.coalesce_states && !rem1 && !rem2 && ct.mpi_queue_mode && (ct.MG_THREADS_PER_NODE > 1))
     {
         if(pct.gridpe == 0)
-            std::cout << "Coalescing states in X with factor " << pct.coalesce_factor << "." << std::endl;
+            std::cout << "Notice: Coalescing states in X with factor " << pct.coalesce_factor << "." << std::endl;
 
         // Set up our coalesced grid communicator next
         int px, py, pz;
