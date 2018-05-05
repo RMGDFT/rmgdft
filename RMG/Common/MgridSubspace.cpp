@@ -73,10 +73,6 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     int pbasis = kptr->pbasis;
 
-    int active_threads = ct.MG_THREADS_PER_NODE;
-    if(ct.mpi_queue_mode) active_threads--;
-    if(active_threads < 1) active_threads = 1;
-
 
     double *nvtot_psi = vtot_psi;;
     if(pct.coalesce_factor > 1)
@@ -90,6 +86,10 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
+
+        int active_threads = ct.MG_THREADS_PER_NODE;
+        if(ct.mpi_queue_mode) active_threads--;
+        if(active_threads < 1) active_threads = 1;
 
         // Update betaxpsi        
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
@@ -111,8 +111,17 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         while(st1 < kptr->nstates)
         {
 
-            int icheck = st1 + active_threads*pct.coalesce_factor;
-            if(icheck > kptr->nstates) active_threads = 1;
+            // Adjust thread count in case num_states is not evenly divisible by the number of threads
+            while(active_threads > 1)
+            {
+                int icheck = st1 + active_threads*pct.coalesce_factor;
+                if(icheck > kptr->nstates) 
+                    active_threads--;
+                else
+                {
+                    break;
+                }
+            }
 
             SCF_THREAD_CONTROL thread_control;
 
