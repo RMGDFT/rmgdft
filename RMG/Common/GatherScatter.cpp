@@ -84,6 +84,7 @@ void CopyAndConvert(int n, std::complex<float> *A, std::complex<double> *B)
 }
 
 
+std::mutex GatherScatterMutex;
 
 
 template <typename OrbitalType, typename CalcType>
@@ -99,10 +100,9 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
     SCF_THREAD_CONTROL *s = (SCF_THREAD_CONTROL *)T->get_pptr(tid);
-    int active_threads = s->extratag;
-//    int active_threads = ct.MG_THREADS_PER_NODE;
-//    if(ct.mpi_queue_mode) active_threads--;
-//    if(active_threads < 1) active_threads = 1;
+    int active_threads = 1;
+    if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag;
+
     int base_istate = istate / (active_threads * pct.coalesce_factor);
     base_istate *= (active_threads * pct.coalesce_factor);
     CalcType *sbuf = new CalcType[n];
@@ -145,7 +145,10 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
             qitems_r[i].buflen = sizeof(CalcType)*chunksize;
 
             // Push it onto the queue
-            Rmg_Q->queue[tid]->push(qitems_r[i]);
+            if(ct.mpi_queue_mode)
+                Rmg_Q->queue[tid]->push(qitems_r[i]);
+            else
+                MPI_Irecv(qitems_r[i].buf, qitems_r[i].buflen, MPI_BYTE, qitems_r[i].target, qitems_r[i].mpi_tag, qitems_r[i].comm, &qitems_r[i].req);
 
         }
         else
@@ -174,7 +177,11 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
             qitems_s[i].buflen = sizeof(CalcType)*chunksize;
 
             // Push it onto the queue
-            Rmg_Q->queue[tid]->push(qitems_s[i]);
+            if(ct.mpi_queue_mode)
+                Rmg_Q->queue[tid]->push(qitems_s[i]);
+            else
+                MPI_Isend(qitems_s[i].buf, qitems_s[i].buflen, MPI_BYTE, qitems_s[i].target, qitems_s[i].mpi_tag, qitems_s[i].comm, &qitems_s[i].req);
+
         } 
         else
         {
@@ -183,7 +190,25 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
         } 
     }
 
-    Rmg_Q->waitgroup(group_count);
+    if(ct.mpi_queue_mode)
+    {
+        Rmg_Q->waitgroup(group_count);
+    }
+    else
+    {
+        for(int i=0;i < pct.coalesce_factor;i++)
+        {
+            if(i != pe_offset)
+            {
+                MPI_Wait(&qitems_r[i].req, MPI_STATUS_IGNORE);
+            }
+            int remote_istate = base_istate + i * active_threads + istate % active_threads;
+            if(istate != remote_istate)
+            {
+                MPI_Wait(&qitems_s[i].req, MPI_STATUS_IGNORE);
+            }
+        }
+    }
     delete [] sbuf;
 
 }
@@ -201,11 +226,9 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
     SCF_THREAD_CONTROL *s = (SCF_THREAD_CONTROL *)T->get_pptr(tid);
-    int active_threads = s->extratag;
+    int active_threads = 1;
+    if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag;
 
-//    int active_threads = ct.MG_THREADS_PER_NODE;
-//    if(ct.mpi_queue_mode) active_threads--;
-//    if(active_threads < 1) active_threads = 1;
     int base_istate = istate / (active_threads * pct.coalesce_factor);
     base_istate *= (active_threads * pct.coalesce_factor);
     CalcType *rbuf = new CalcType[n];
@@ -246,7 +269,10 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
             qitems_r[i].buflen = sizeof(CalcType)*chunksize;
 
             // Push it onto the queue
-            Rmg_Q->queue[tid]->push(qitems_r[i]);
+            if(ct.mpi_queue_mode)
+                Rmg_Q->queue[tid]->push(qitems_r[i]);
+            else
+                MPI_Irecv(qitems_r[i].buf, qitems_r[i].buflen, MPI_BYTE, qitems_r[i].target, qitems_r[i].mpi_tag, qitems_r[i].comm, &qitems_r[i].req);
 
         }
         else
@@ -272,7 +298,11 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
             qitems_s[i].buflen = sizeof(CalcType)*chunksize;
 
             // Push it onto the queue
-            Rmg_Q->queue[tid]->push(qitems_s[i]);
+            if(ct.mpi_queue_mode)
+                Rmg_Q->queue[tid]->push(qitems_s[i]);
+            else
+                MPI_Isend(qitems_s[i].buf, qitems_s[i].buflen, MPI_BYTE, qitems_s[i].target, qitems_s[i].mpi_tag, qitems_s[i].comm, &qitems_s[i].req);
+
         }
         else
         {
@@ -281,28 +311,47 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
         }
     }
 
-    int items_completed = pct.coalesce_factor - 1;
-    while(items_completed)
+
+    if(ct.mpi_queue_mode)
     {
-        for(int i=0;i < pct.coalesce_factor;i++)
+        int items_completed = pct.coalesce_factor - 1;
+        while(items_completed)
         {
-            int remote_istate = base_istate + i * active_threads + istate % active_threads;
-            if(istate != remote_istate)
+            for(int i=0;i < pct.coalesce_factor;i++)
             {
-                if(!qitems_r[i].is_unpacked)
+                int remote_istate = base_istate + i * active_threads + istate % active_threads;
+                if(istate != remote_istate)
                 {
-                    if(is_completed_r[i].load(std::memory_order_acquire))
+                    if(!qitems_r[i].is_unpacked)
                     {
-                        CopyAndConvert(chunksize, &rbuf[i*chunksize], &B[remote_istate*chunksize]);
-                        qitems_r[i].is_unpacked = true;
-                        items_completed--;
+                        if(is_completed_r[i].load(std::memory_order_acquire))
+                        {
+                            CopyAndConvert(chunksize, &rbuf[i*chunksize], &B[remote_istate*chunksize]);
+                            qitems_r[i].is_unpacked = true;
+                            items_completed--;
+                        }
                     }
                 }
             }
         }
+        Rmg_Q->waitgroup(group_count);
     }
-
-    Rmg_Q->waitgroup(group_count);
+    else
+    {
+        for(int i=0;i < pct.coalesce_factor;i++)
+        {
+            if(i != pe_offset)
+            {
+                MPI_Wait(&qitems_s[i].req, MPI_STATUS_IGNORE);
+            }
+            int remote_istate = base_istate + i * active_threads + istate % active_threads;
+            if(istate != remote_istate)
+            {
+                MPI_Wait(&qitems_r[i].req, MPI_STATUS_IGNORE);
+                CopyAndConvert(chunksize, &rbuf[i*chunksize], &B[remote_istate*chunksize]);
+            }
+        }
+    }
 #if 0
     for(int i=0;i < pct.coalesce_factor;i++)
     {
