@@ -139,6 +139,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
             RT1 = new RmgTimer("3-MgridSubspace: Mg_eig");
             int istart = my_pe_offset*active_threads;
             for(int ist = 0;ist < active_threads;ist++) {
+                if((st1 + ist + istart) >= kptr->nstates) break;
                 thread_control.job = HYBRID_EIG;
                 thread_control.vtot = nvtot_psi;
                 thread_control.vcycle = vcycle;
@@ -147,7 +148,8 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
                 thread_control.nv = (void *)&kptr->nv[(first_nls + ist + istart) * pbasis];
                 thread_control.ns = (void *)&kptr->ns[(st1 + ist + istart) * pbasis];  // ns is not blocked!
                 thread_control.basetag = kptr->Kstates[st1 + ist + istart].istate;
-                thread_control.extratag = active_threads;
+                thread_control.extratag1 = active_threads;
+                thread_control.extratag2 = st1;
                 QueueThreadTask(ist, thread_control);
             }
 

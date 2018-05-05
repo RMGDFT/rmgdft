@@ -198,7 +198,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         if(states_rem)
         {
             while(states_div < ct.num_states) states_div += pct.coalesce_factor;
-            if(pct.gridpe == 0)
+            if((pct.gridpe == 0) && (states_div != ct.num_states))
                 std::cout << "Notice: Numstates adjusted from " << ct.num_states << " to " << states_div <<  " to satisfy coalesce conditions." << std::endl;
             ct.num_states = states_div;
         }

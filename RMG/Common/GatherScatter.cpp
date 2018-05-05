@@ -84,9 +84,6 @@ void CopyAndConvert(int n, std::complex<float> *A, std::complex<double> *B)
 }
 
 
-std::mutex GatherScatterMutex;
-
-
 template <typename OrbitalType, typename CalcType>
 void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
 {
@@ -101,10 +98,8 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
     int tid = T->get_thread_tid();
     SCF_THREAD_CONTROL *s = (SCF_THREAD_CONTROL *)T->get_pptr(tid);
     int active_threads = 1;
-    if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag;
-
-    int base_istate = istate / (active_threads * pct.coalesce_factor);
-    base_istate *= (active_threads * pct.coalesce_factor);
+    if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag1;
+    int base_istate = s->extratag2;
     CalcType *sbuf = new CalcType[n];
 
     std::atomic_bool is_completed_r[MAX_CFACTOR];
@@ -165,6 +160,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
         int remote_istate = base_istate + i * active_threads + istate % active_threads;
         if(istate != remote_istate)
         {
+//if(remote_istate >=140)printf("REMOTE ERROR %d  %d  %d  %d\n",istate, base_istate, remote_istate, active_threads);
             qitems_s[i].comm = T->get_unique_comm(remote_istate);
             qitems_s[i].is_unpacked = false;
             qitems_s[i].is_completed->store(false);
@@ -227,10 +223,8 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
     int tid = T->get_thread_tid();
     SCF_THREAD_CONTROL *s = (SCF_THREAD_CONTROL *)T->get_pptr(tid);
     int active_threads = 1;
-    if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag;
-
-    int base_istate = istate / (active_threads * pct.coalesce_factor);
-    base_istate *= (active_threads * pct.coalesce_factor);
+    if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag1;
+    int base_istate = s->extratag2;
     CalcType *rbuf = new CalcType[n];
 
 
