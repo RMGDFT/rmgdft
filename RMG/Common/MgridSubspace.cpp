@@ -88,8 +88,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     {
 
         int active_threads = ct.MG_THREADS_PER_NODE;
-        if(ct.mpi_queue_mode) active_threads--;
-        if(active_threads < 1) active_threads = 1;
+        if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
         // Update betaxpsi        
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");

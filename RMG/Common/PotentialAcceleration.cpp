@@ -59,7 +59,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
     if(!(sp->istate % kptr->dvh_skip)) {
         int offset = (sp->istate / kptr->dvh_skip) * pbasis;
         for(int i = 0;i <pbasis;i++) {
-            kptr->dvh[i + offset] = nvtot_psi[i];
+            kptr->dvh[i + offset] = vtot_psi[i];
         }
     }
 

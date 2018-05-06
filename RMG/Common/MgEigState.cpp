@@ -187,7 +187,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *work1_t = (CalcType *)p.ordered_malloc(4);
     CalcType *sg_twovpsi_t  =  (CalcType *)p.ordered_malloc(4);
     OrbitalType *saved_psi  = (OrbitalType *)p.ordered_malloc(aratio);
-    double *nvtot_psi = (double *)p.ordered_malloc(aratio);
+    double *dvtot_psi = (double *)p.ordered_malloc(aratio);
     CalcType *tmp_psi_t  = (CalcType *)p.ordered_malloc(1);
     CalcType *res_t  =  (CalcType *)p.ordered_malloc(1);
     CalcType *twork_t  = (CalcType *)p.ordered_malloc(1);
@@ -227,9 +227,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Setup some potential acceleration stuff
     potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
     if(potential_acceleration) {
-        vtot_sync_mutex.lock();
-        for(int idx = 0;idx <pbasis;idx++) nvtot_psi[idx] = vtot_psi[idx];
-        vtot_sync_mutex.unlock();
         for(int idx = 0;idx <pbasis;idx++) saved_psi[idx] = tmp_psi[idx];
     }
 
@@ -271,13 +268,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         // Copy saved application to ns to res
         for(int idx=0;idx < pbasis;idx++) res_t[idx] = res2_t[idx];
 
-        if(potential_acceleration) {
-            /* Generate 2 * V * psi */
-            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, nvtot_psi, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
-        }
-        else {
-            CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
-        }
+        /* Generate 2 * V * psi */
+        CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
 
         /* B operating on 2*V*psi stored in work1 */
         {
@@ -465,7 +457,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     }                           /* end for */
 
     if(potential_acceleration)
-        PotentialAcceleration(kptr, sp, vtot_psi, nvtot_psi, tmp_psi_t, saved_psi);
+        PotentialAcceleration(kptr, sp, vtot_psi, dvtot_psi, tmp_psi_t, saved_psi);
 
     // Copy single precision orbital back to double precision
     if(freeze_occupied)
