@@ -99,8 +99,13 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     // Generate 2*V*psi
     KpointType *sg_twovpsi_t = new KpointType[pbasis];
     if(potential_acceleration) {
+        int active_threads = ct.MG_THREADS_PER_NODE;
+        if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
         int offset = (sp->istate / kptr->dvh_skip) * pbasis;
-        CPP_genvpsi (psi, sg_twovpsi_t, &kptr->dvh[offset], (void *)kdr, kptr->kmag, dimx, dimy, dimz);
+        int my_pe_x, my_pe_y, my_pe_z;
+        kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+        int my_pe_offset = my_pe_x % pct.coalesce_factor;
+        CPP_genvpsi (psi, sg_twovpsi_t, &kptr->dvh[offset*pct.coalesce_factor + my_pe_offset*pbasis], (void *)kdr, kptr->kmag, dimx, dimy, dimz);
     }
     else {
         CPP_genvpsi (psi, sg_twovpsi_t, vtot, (void *)kdr, kptr->kmag, dimx, dimy, dimz);

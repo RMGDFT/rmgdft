@@ -636,7 +636,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             }
 
             Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
-            Kptr[kpt]->dvh = new double[ Kptr[kpt]->ndvh * P0_BASIS ];
+            Kptr[kpt]->dvh = new double[ Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor ]();
         }
     }
 

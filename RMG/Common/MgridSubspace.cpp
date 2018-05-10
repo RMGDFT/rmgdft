@@ -90,6 +90,14 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         int active_threads = ct.MG_THREADS_PER_NODE;
         if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
+        // Zero out dvh array if potential acceleration is enabled
+        if(potential_acceleration)
+        {
+           int stop = kptr->ndvh * kptr->pbasis * pct.coalesce_factor;
+           for(int i=0;i < stop;i++) kptr->dvh[i] = 0.0;
+           PotentialAccelerationReset(my_pe_offset*active_threads + kptr->dvh_skip/pct.coalesce_factor);
+        }
+
         // Update betaxpsi        
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);

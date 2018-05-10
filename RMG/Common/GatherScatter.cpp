@@ -116,7 +116,6 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
         qitems_s[it].is_completed = &is_completed_s[it];
         qitems_r[it].group_count = &group_count;
         qitems_s[it].group_count = &group_count;
-
     }
 
 
@@ -363,7 +362,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
 }
 
 // This is used to generate an array that represents a coalesced common domain. A good
-// example being vtot_psi.
+// example being vtot_psi. Should not be called from multiple threads at the same time.
 // n = non coalesced matrix size
 // A = non coalesced matrix
 // B = coalesced matrix (size = pct.coalesce_factor*n)
