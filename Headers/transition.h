@@ -141,7 +141,7 @@ template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, Orbital
 template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 template <typename OrbitalType, typename CalcType>
 void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *nvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi);
-void PotentialAccelerationWait(int istate);
+void PotentialAccelerationWait(int istate, int nstates, int skip);
 void PotentialAccelerationReset(int skip);
 
 // Print function

@@ -59,16 +59,27 @@ void PotentialAccelerationReset(int skip)
     counter.store(skip);
 }
 
-void PotentialAccelerationWait(int istate)
+void PotentialAccelerationWait(int istate, int nstates, int skip)
 {
-//if(pct.gridpe==0)printf("HHH0 %d  %d  %d  %d\n",pct.gridpe,istate,counter.load(),start);
+    if(!ct.coalesce_states)
+    {   
+        int check = (nstates / skip)*skip;
+        if(istate >= check) {;return;}
+    }
     while(istate >= counter.load()){;}
-//if(pct.gridpe==0)printf("HHH1 %d  %d  %d  %d\n",pct.gridpe,istate,counter.load(),start);
 }
 
 template <typename OrbitalType, typename CalcType>
 void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *dvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi)
 {
+
+    // For non-coalesced case return if we are in the last slot
+    if(!ct.coalesce_states)
+    {
+        int check = (kptr->nstates / kptr->dvh_skip)*kptr->dvh_skip;
+        if(sp->istate >= check) return;
+    }
+
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
     SCF_THREAD_CONTROL *s = (SCF_THREAD_CONTROL *)T->get_pptr(tid);
@@ -88,7 +99,6 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
        kptr->dvh[idx + offset] += t1 * PI * sp->occupation[0] * std::real(tmp_psi_t[idx] * std::conj((tmp_psi_t[idx] - (CalcType)saved_psi[idx])));
     }
     vtot_sync_mutex.unlock();
-
     if(sp->istate == (counter.load() - 1))
     {
         while(skipper.load() != skip/pct.coalesce_factor-1) {;}
@@ -108,7 +118,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
         if(pct.coalesce_factor > 1)
         {
             int tthreads = active_threads;
-            while(tthreads > 1)
+            while(tthreads >= 1)
             {
                 int icheck = base_state + 2*tthreads*pct.coalesce_factor;
                 if(icheck > kptr->nstates)
