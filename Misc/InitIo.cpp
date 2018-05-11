@@ -188,6 +188,19 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
          PE_X = 2,6  handles orbitals 2,6,10,14,18 ...
          PE_X = 3,7  handles orbitals 3,7,11,15,19 ...
     
+       Threads introduce an additional complication. With non-coalesced grids individual orbitals are assigned
+       to a separate thread with each orbital having a thread assigned on each PE. Since orbitals are only assigned
+       to a subset of the PE's using coalesced grids some convention needs to be followed. The chosen convention is
+       illustrated below where there are 8 PEs in an (8,1,1) arrangement with 4 threads/PE and a coalesce factor of 2.
+       Threads increment vertically and PE's horizontally in the diagram.
+
+       PE/Thread|  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7
+       ----------------------------------------------------------
+          0     | S0  | S4  | S0  | S4  | S0  | S4  | S0  | S4
+          1     | S1  | S5  | S1  | S5  | S1  | S5  | S1  | S5
+          2     | S2  | S6  | S2  | S6  | S2  | S6  | S2  | S6
+          3     | S3  | S7  | S3  | S7  | S3  | S7  | S3  | S7
+
        The current implementation only handles coalesce factors up to 16. While it is possible to coalesce
        in more than one coordinate dimension that would require repacking the orbitals so for now this
        implementation is limited to the x-direction.
@@ -201,6 +214,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
          The Gather and Scatter grid functions also need to pass data back and forth between MPI procs
          with the same y and z proc coordinates so we create a local coalesced communicator for that.
+
+         The number of states must be an integral multiple of the coalesce factor.
+
+         The numer of PE's in the x-direction must be evenly divisible by the coalesce factor.
+
 */
 
     // processors in x must be an integral multiple of coalesce factor and grid points in x must be evenly
