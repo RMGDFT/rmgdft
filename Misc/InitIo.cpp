@@ -111,6 +111,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     MPI_Comm_rank (MPI_COMM_WORLD, &worldpe);
     pct.worldrank = worldpe;
 
+    // Set error handler to only print to rank 0
+    RmgErrorSetPrint(pct.worldrank == 0);
+
     /* get total mpi core count */
     MPI_Comm_size (MPI_COMM_WORLD, &npes);
     pct.total_npes = npes;
@@ -260,6 +263,41 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         pct.coalesce_factor = 1;
         pct.coalesced_grid_comm = pct.grid_comm;
     }
+
+    // Now that coalescing is sorted out we need to check valid MG levels on the PE level (as opposed to
+    // on the global level which was done in Autoset.cpp
+    // Next check if the PE grids allow these levels
+    int PX0_GRID = pct.coalesce_factor * Rmg_G->get_PX0_GRID(1);
+    int PY0_GRID = Rmg_G->get_PY0_GRID(1);
+    int PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
+    for(int checklevel = 1;checklevel < ct.eig_parm.levels;checklevel++)
+    {
+        int eig_level_err = false;
+        if ((PX0_GRID / (1 << checklevel)) < 1) eig_level_err = true;
+        if ((PY0_GRID / (1 << checklevel)) < 1) eig_level_err = true;
+        if ((PZ0_GRID / (1 << checklevel)) < 1) eig_level_err = true;
+        MPI_Allreduce(MPI_IN_PLACE, &eig_level_err, 1, MPI_INT, MPI_SUM, pct.grid_comm);
+        if (eig_level_err) {
+            ct.eig_parm.levels = checklevel - 1;
+            if(pct.imgpe == 0) std::cout << "Too many eigenvalue multigrid levels specified. Resetting to " << ct.eig_parm.levels << std::endl;
+            break;
+        }
+    }
+
+
+    // We do not (currently) coalesce outside of the multigrid solver so the number of grid points on a PE in any
+    // coordinate direction (non-coalesced) must be greater than or equal to the number of points used in the global FD routines.
+    int fd_check_err = false;
+    PX0_GRID = Rmg_G->get_PX0_GRID(1);
+    if(PX0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
+    if(PY0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
+    if(PZ0_GRID < ct.kohn_sham_fd_order/2) fd_check_err = true;
+    MPI_Allreduce(MPI_IN_PLACE, &fd_check_err, 1, MPI_INT, MPI_SUM, pct.grid_comm);
+    if(fd_check_err) 
+        rmg_error_handler (__FILE__, __LINE__, "The Number of grid points per PE must be >= kohn_sham_fd_order/2.\n");
+
+    
+
 
 
 

@@ -36,6 +36,7 @@
 #include <mpi.h>
 
 void rmg_error_handler(const char *filename, int line, char const *message);
+void RmgErrorSetPrint(int doprint);
 void RmgRegisterErrorHandler(void *(*func)(const char *filename, int line, char const *message));
 
 #else

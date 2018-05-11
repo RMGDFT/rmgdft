@@ -29,21 +29,27 @@
 
 
 #include "rmg_error.h"
+#include <signal.h>
 
 static void *(*rmgerrfunc)(const char *filename, int line, char const *message) = NULL;
+static int do_print=true;
 
 void RmgRegisterErrorHandler(void *(*func)(const char *filename, int line, char const *message))
 {
     rmgerrfunc = func;
 }
 
+void RmgErrorSetPrint(int doprint)
+{
+    do_print = doprint;
+}
+
 void rmg_error_handler(const char *filename, int line, char const *message)
 {
     if(!rmgerrfunc) {
-        printf("%s at LINE %d in %s.\n", message, line, filename);
+        if(do_print) printf("%s at LINE %d in %s.\n", message, line, filename);
         fflush (NULL);
-        //sleep (2);
-        MPI_Abort( MPI_COMM_WORLD, 0 );
+        raise(SIGTERM);
     }
     rmgerrfunc(filename, line, message);
 }
