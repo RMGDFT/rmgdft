@@ -193,7 +193,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *twork_t  = (CalcType *)p.ordered_malloc(1);
     OrbitalType *nv_t  = (OrbitalType *)p.ordered_malloc(aratio);
 
-    OrbitalType *tmp_psi = (OrbitalType *)sp->psi;
     std::complex<double> *kdr = NULL;
     if(typeid(OrbitalType) == typeid(std::complex<double>)) kdr = new std::complex<double>[2*sbasis]();
 
@@ -368,7 +367,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                     MG.mgrid_solv<float> (v_mat, f_mat, (float *)work2_t,
                                 dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                                1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
+                                1, levels, eig_pre, eig_post, 1, 
                                 ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
                                 NX_GRID, NY_GRID, NZ_GRID,
                                 G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
@@ -388,7 +387,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                     MG.mgrid_solv<std::complex<float>> (v_mat, f_mat, (std::complex<float> *)work2_t,
                                 dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                                1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
+                                1, levels, eig_pre, eig_post, 1, 
                                 ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
                                 NX_GRID, NY_GRID, NZ_GRID,
                                 G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
@@ -405,7 +404,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                     MG.mgrid_solv<CalcType> (v_mat, f_mat, work2_t,
                                 dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                                1, G->get_neighbors(), levels, eig_pre, eig_post, 1, 
+                                1, levels, eig_pre, eig_post, 1, 
                                 ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
                                 NX_GRID, NY_GRID, NZ_GRID,
                                 G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),

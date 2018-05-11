@@ -21,7 +21,7 @@
 extern "C" void mgrid_solv (double * v_mat, double * f_mat, double * work,
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
-                 int level, int *nb_ids, int max_levels, int *pre_cyc,
+                 int level, int max_levels, int *pre_cyc,
                  int *post_cyc, int mu_cyc, double step, double k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
@@ -29,7 +29,7 @@ extern "C" void mgrid_solv (double * v_mat, double * f_mat, double * work,
 {
     Mgrid MG(&Rmg_L, Rmg_T);
     MG.mgrid_solv<double>( v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz,
-                   level, nb_ids, max_levels, pre_cyc, post_cyc, mu_cyc, step, 0.0, k, NULL,
+                   level, max_levels, pre_cyc, post_cyc, mu_cyc, step, 0.0, k, NULL,
                    gxsize, gysize, gzsize,
                    gxoffset, gyoffset, gzoffset,
                    pxdim, pydim, pzdim, boundary_flag);

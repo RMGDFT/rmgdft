@@ -151,7 +151,7 @@ double CPP_get_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double
                 MG.mgrid_solv_pois<double> (mglhsarr, sg_res, work,
                             dimx, dimy, dimz,
                             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
-                            0, G->get_neighbors(), maxlevel, poi_pre,
+                            0, maxlevel, poi_pre,
                             poi_post, mucycles, coarse_step,
                             G->get_NX_GRID(density), G->get_NY_GRID(density), G->get_NZ_GRID(density),
                             G->get_PX_OFFSET(density), G->get_PY_OFFSET(density), G->get_PZ_OFFSET(density),

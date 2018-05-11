@@ -159,7 +159,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
         CPP_pack_ptos_convert ((float *)work1_t, (double *)res, dimx, dimy, dimz);
         MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                    0, G->get_neighbors(), levels, pre, post, 1,
+                    0, levels, pre, post, 1,
                     //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
                     tstep, 1.0, 0.0, vtot,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
@@ -172,7 +172,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
         CPP_pack_ptos_convert ((std::complex<float> *)work1_t, (std::complex<double> *)res, dimx, dimy, dimz);
         MG.mgrid_solv<std::complex<float>>((std::complex<float> *)work2_t, (std::complex<float> *)work1_t, (std::complex<float> *)work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                    0, G->get_neighbors(), levels, pre, post, 1,
+                    0, levels, pre, post, 1,
                     //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
                     tstep, 1.0, 0.0, vtot,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
@@ -185,7 +185,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
         CPP_pack_ptos (work1_t, res, dimx, dimy, dimz);
         MG.mgrid_solv (work2_t, work1_t, work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                    0, G->get_neighbors(), levels, pre, post, 1,
+                    0, levels, pre, post, 1,
                     tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
                     //tstep, 1.0*Zfac, 0.0, nvtot,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),

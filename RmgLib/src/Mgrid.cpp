@@ -47,29 +47,29 @@
 #include "boundary_conditions.h"
 
 
-template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv_pois<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv_pois<float>(float*, float*, float*, int, int, int, double, double, double, int, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv_pois<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv_pois<double>(double*, double*, double*, int, int, int, double, double, double, int, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv_pois<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv_pois<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv_pois<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv_pois<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv_schrodinger<float>(float*, float*, float*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv_schrodinger<float>(float*, float*, float*, int, int, int, double, double, double, int, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv_schrodinger<double>(double*, double*, double*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv_schrodinger<double>(double*, double*, double*, int, int, int, double, double, double, int, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv_schrodinger<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv_schrodinger<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
 
-template void Mgrid::mgrid_solv_schrodinger<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mgrid_solv_schrodinger<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int, int*, int*, int, double, double *, int, int, int, int, int, int, int, int, int, int);
 
 
 template void Mgrid::eval_residual (double *, double *, int, int, int, double, double, double, double *, double *);
@@ -110,7 +110,7 @@ template <typename RmgType>
 void Mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
-                 int level, int *nb_ids, int max_levels, int *pre_cyc,
+                 int level, int max_levels, int *pre_cyc,
                  int *post_cyc, int mu_cyc, double step, 
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
@@ -119,7 +119,7 @@ void Mgrid::mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
     Mgrid::mgrid_solv (v_mat, f_mat, work,
                  dimx, dimy, dimz,
                  gridhx, gridhy, gridhz,
-                 level, nb_ids, max_levels, pre_cyc,
+                 level, max_levels, pre_cyc,
                  post_cyc, mu_cyc, step, 0.0, 0.0, NULL,
                  gxsize, gysize, gzsize,
                  gxoffset, gyoffset, gzoffset,
@@ -132,7 +132,7 @@ template <typename RmgType>
 void Mgrid::mgrid_solv_schrodinger (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
-                 int level, int *nb_ids, int max_levels, int *pre_cyc,
+                 int level, int max_levels, int *pre_cyc,
                  int *post_cyc, int mu_cyc, double step, double *pot,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
@@ -141,7 +141,7 @@ void Mgrid::mgrid_solv_schrodinger (RmgType * v_mat, RmgType * f_mat, RmgType * 
     Mgrid::mgrid_solv (v_mat, f_mat, work,
                  dimx, dimy, dimz,
                  gridhx, gridhy, gridhz,
-                 level, nb_ids, max_levels, pre_cyc,
+                 level, max_levels, pre_cyc,
                  post_cyc, mu_cyc, step, 0.0, 0.0, pot,
                  gxsize, gysize, gzsize,
                  gxoffset, gyoffset, gzoffset,
@@ -154,7 +154,7 @@ template <typename RmgType>
 void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
-                 int level, int *nb_ids, int max_levels, int *pre_cyc,
+                 int level, int max_levels, int *pre_cyc,
                  int *post_cyc, int mu_cyc, double step, double Zfac, double k, double *pot,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
@@ -288,7 +288,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
         /* call mgrid solver on new level */
         mgrid_solv(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
-                    gridhy * 2.0, gridhz * 2.0, level + 1, nb_ids,
+                    gridhy * 2.0, gridhz * 2.0, level + 1,
                     max_levels, pre_cyc, post_cyc, mu_cyc, step, 2.0*Zfac, k, newpot,
                     gxsize, gysize, gzsize,
                     gxoffset, gyoffset, gzoffset,

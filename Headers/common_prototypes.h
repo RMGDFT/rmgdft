@@ -35,7 +35,7 @@ float QMD_sdot (int n, float *x, int incx, float *y, int incy);
 int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype);
 void mgrid_solv (double *v_mat, double *f_mat, double *work,
                  int dimx, int dimy, int dimz, double gridhx, double gridhy,
-                 double gridhz, int level, int *nb_ids, int max_levels,
+                 double gridhz, int level, int max_levels,
                  int *pre_cyc, int *post_cyc, int mu_cyc, double step, double k,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
