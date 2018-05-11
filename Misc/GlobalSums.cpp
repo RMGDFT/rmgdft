@@ -40,6 +40,7 @@ static double *fixed_vector2 = NULL;
 
 
 static MPI_Comm *coalesced_comm_pool;
+static MPI_Comm *coalesced_local_comm_pool;
 
 
 void GlobalSumsInit(void) {
@@ -56,13 +57,26 @@ void GlobalSumsInit(void) {
     }
 
     coalesced_comm_pool = new MPI_Comm[20*ct.MG_THREADS_PER_NODE + 1];
+    coalesced_local_comm_pool = new MPI_Comm[20*ct.MG_THREADS_PER_NODE + 1];
     for(int thread = 0;thread < 20*ct.MG_THREADS_PER_NODE + 1;thread++)
     {
         MPI_Comm_dup(pct.coalesced_grid_comm, &coalesced_comm_pool[thread]);
+        MPI_Comm_dup(pct.coalesced_local_comm, &coalesced_local_comm_pool[thread]);
     }
 
 }
 
+MPI_Comm get_unique_coalesced_comm(int istate)
+{
+   int comm_index = istate % (20*ct.MG_THREADS_PER_NODE + 1);
+   return coalesced_comm_pool[comm_index];
+}
+
+MPI_Comm get_unique_coalesced_local_comm(int istate)
+{
+   int comm_index = istate % (20*ct.MG_THREADS_PER_NODE + 1);
+   return coalesced_local_comm_pool[comm_index];
+}
 
 template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Comm comm)
 {

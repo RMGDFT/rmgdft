@@ -82,6 +82,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
+    if(tid < 0) tid = 0;
     SCF_THREAD_CONTROL *s = (SCF_THREAD_CONTROL *)T->get_pptr(tid);
     int active_threads = 1;
     if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag1;
@@ -104,8 +105,24 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
         while(skipper.load() != skip/pct.coalesce_factor-1) {;}
         if(pct.coalesce_factor > 1)
         {
-//          GlobalSums (&kptr->dvh[offset], pbasis, pct.coalesced_local_comm);
-            MPI_Allreduce(MPI_IN_PLACE, &kptr->dvh[offset], pbasis, MPI_DOUBLE, MPI_SUM, pct.coalesced_local_comm);
+            if(ct.mpi_queue_mode)
+            {
+                std::atomic_bool is_completed;
+                is_completed.store(false);
+                mpi_queue_item_t qi;
+                qi.is_completed = &is_completed;
+                qi.type = RMG_MPI_SUM;
+                qi.buflen = pbasis;
+                qi.buf = (void *)&kptr->dvh[offset];
+                qi.datatype = MPI_DOUBLE;
+                qi.comm = get_unique_coalesced_local_comm(base_state);
+                Rmg_Q->queue[tid]->push(qi);
+                while(!is_completed.load(std::memory_order_acquire)){;}
+           }
+           else
+           {
+               MPI_Allreduce(MPI_IN_PLACE, &kptr->dvh[offset], pbasis, MPI_DOUBLE, MPI_SUM, pct.coalesced_local_comm);
+           }
         }
         for(int i = 0;i <pbasis;i++)
         {
