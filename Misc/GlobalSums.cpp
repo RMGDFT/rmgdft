@@ -60,10 +60,16 @@ void GlobalSumsInit(void) {
     coalesced_local_comm_pool = new MPI_Comm[20*ct.MG_THREADS_PER_NODE + 1];
     for(int thread = 0;thread < 20*ct.MG_THREADS_PER_NODE + 1;thread++)
     {
-        MPI_Comm_dup(pct.coalesced_grid_comm, &coalesced_comm_pool[thread]);
-        MPI_Comm_dup(pct.coalesced_local_comm, &coalesced_local_comm_pool[thread]);
     }
 
+    if(ct.coalesce_states)
+    {
+        for(int thread = 0;thread < 20*ct.MG_THREADS_PER_NODE + 1;thread++)
+        {
+            MPI_Comm_dup(pct.coalesced_local_comm, &coalesced_local_comm_pool[thread]);
+        MPI_Comm_dup(pct.coalesced_grid_comm, &coalesced_comm_pool[thread]);
+        }
+    }
 }
 
 MPI_Comm get_unique_coalesced_comm(int istate)

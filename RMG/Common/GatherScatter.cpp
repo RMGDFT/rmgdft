@@ -159,7 +159,6 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
         int remote_istate = base_istate + i * active_threads + istate % active_threads;
         if(istate != remote_istate)
         {
-//if(remote_istate >=140)printf("REMOTE ERROR %d  %d  %d  %d\n",istate, base_istate, remote_istate, active_threads);
             qitems_s[i].comm = T->get_unique_comm(remote_istate);
             qitems_s[i].is_unpacked = false;
             qitems_s[i].is_completed->store(false);
@@ -345,19 +344,6 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
             }
         }
     }
-#if 0
-    for(int i=0;i < pct.coalesce_factor;i++)
-    {
-
-        int remote_istate = base_istate + i * active_threads + istate % active_threads;
-        if(istate != remote_istate)
-        {
-
-            CopyAndConvert(chunksize, &rbuf[i*chunksize], &B[remote_istate*chunksize]);
-
-        }
-    }
-#endif
     delete [] rbuf;
 }
 
