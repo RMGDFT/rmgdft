@@ -181,7 +181,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Boost pool only makes a single call to system allocation routines and manages the blocks
     // after that which reduces contention when many threads are running. Automatically frees
     // the allocated memory when it goes out of scope.
-    boost::pool<> p(sbasis*aratio*sizeof(CalcType), 24);
+    int pool_blocks = 24;
+    if(!ct.is_gamma) pool_blocks += 3;
+    boost::pool<> p(sbasis*aratio*sizeof(CalcType), pool_blocks);
     CalcType *res2_t = (CalcType *)p.ordered_malloc(1);
     CalcType *work2_t = (CalcType *)p.ordered_malloc(4);
     CalcType *work1_t = (CalcType *)p.ordered_malloc(4);
@@ -192,6 +194,13 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *res_t  =  (CalcType *)p.ordered_malloc(1);
     CalcType *twork_t  = (CalcType *)p.ordered_malloc(1);
     OrbitalType *nv_t  = (OrbitalType *)p.ordered_malloc(aratio);
+    CalcType *gx=NULL, *gy=NULL, *gz=NULL;
+    if(!ct.is_gamma)
+    {
+        gx = (CalcType *)p.ordered_malloc(1);
+        gy = (CalcType *)p.ordered_malloc(1);
+        gz = (CalcType *)p.ordered_malloc(1);
+    }
 
     std::complex<double> *kdr = NULL;
     if(typeid(OrbitalType) == typeid(std::complex<double>)) kdr = new std::complex<double>[2*sbasis]();
@@ -244,10 +253,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             RmgTimer RT1("Mg_eig: apply grad");
             if(typeid(OrbitalType) == typeid(std::complex<double>)) {
 
-                CalcType *gx = new CalcType[pbasis];
-                CalcType *gy = new CalcType[pbasis];
-                CalcType *gz = new CalcType[pbasis];
-
                 ApplyGradient (tmp_psi_t, gx, gy, gz, APP_CI_EIGHT, "Coarse");
 
                 std::complex<double> I_t(0.0, 1.0);
@@ -258,9 +263,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                                                    kptr->kvec[2] * (std::complex<double>)gz[idx]);
                 }
 
-                delete [] gz;
-                delete [] gy;
-                delete [] gx;
             }
         }
 

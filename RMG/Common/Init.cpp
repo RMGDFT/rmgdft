@@ -89,7 +89,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     double *vtot;
     double time2=0.0, fac;
     bool need_ns = true;
-    if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION)) need_ns = false;
+    if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION) && ct.is_gamma) need_ns = false;
 
 
     if (pct.imgpe == 0)

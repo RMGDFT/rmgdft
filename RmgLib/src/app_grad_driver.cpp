@@ -46,66 +46,57 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     RmgTimer RT("App_gradient");
     int sbasis;
     FiniteDiff FD(L);
+    RmgType *rptr;
     sbasis = (dimx + order) * (dimy + order) * (dimz + order);
-    RmgType *rptr = new RmgType[sbasis + 64];
+    size_t alloc = (sbasis + 64) * sizeof(RmgType);
+
+
+    // while alloca is dangerous it's very fast for small arrays and the 110k limit
+    // is fine for linux and 64bit power
+    if(alloc <= 110592)
+    {
+        rptr = (RmgType *)alloca(alloc);
+    }
+    else
+    {
+        rptr = new RmgType[sbasis + 64];
+    }
 
     if(order == APP_CI_FOURTH) {
 
-        RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 2, CENTRAL_TRADE);
-        delete(RT1);
-        RT1 = new RmgTimer("App_gradient: computation");
         FD.app_gradient_fourth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        delete(RT1);
 
     }
     else if(order == APP_CI_SIXTH) {
 
-        RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 3, CENTRAL_TRADE);
-        delete(RT1);
-        RT1 = new RmgTimer("App_gradient: computation");
         FD.app_gradient_sixth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        delete(RT1);
 
     }
     else if(order == APP_CI_EIGHT) {
 
-        RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 4, CENTRAL_TRADE);
-        delete(RT1);
-        RT1 = new RmgTimer("App_gradient: computation");
         FD.app_gradient_eighth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        delete(RT1);
 
     }
     else if(order == APP_CI_TEN) {
 
-        RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 5, CENTRAL_TRADE);
-        delete(RT1);
-        RT1 = new RmgTimer("App_gradient: computation");
         FD.app_gradient_tenth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        delete(RT1);
 
     }
     else if(order == APP_CI_TWELVE) {
 
-        RmgTimer *RT1 = new RmgTimer("App_gradient: trade images");
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, 6, CENTRAL_TRADE);
-        delete(RT1);
-        RT1 = new RmgTimer("App_gradient: computation");
         FD.app_gradient_twelfth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        delete(RT1);
 
     }
     else {
         rmg_error_handler (__FILE__, __LINE__, "Finite difference order not programmed yet in app_gradient_driver.\n");
     }
 
-
-
-    delete [] rptr;
+    if(alloc > 110592) delete [] rptr;
 
 }
 
