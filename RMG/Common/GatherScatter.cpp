@@ -34,6 +34,10 @@
 #include "GatherScatter.h"
 #include "MpiQueue.h"
 
+
+static void *bufptr_r[MAX_RMG_THREADS];
+static void *bufptr_s[MAX_RMG_THREADS];
+
 template void GatherPsi<double, float>(BaseGrid *, int, int, double *, float *);
 template void GatherPsi<double, double>(BaseGrid *, int, int, double *, double *);
 template void GatherPsi<std::complex<double>, std::complex<float> >(BaseGrid *, int, int, std::complex<double> *, std::complex<float> *);
@@ -83,6 +87,17 @@ void CopyAndConvert(int n, std::complex<float> *A, std::complex<double> *B)
         B[idx] = (std::complex<double>)A[idx];
 }
 
+void GatherScatterInit(size_t n)
+{
+    size_t sizr = sizeof(double);
+    if(!ct.is_gamma) sizr *= 2;
+    for(int tid=0;tid < ct.MG_THREADS_PER_NODE;tid++)
+    {
+        MPI_Alloc_mem(n*sizr, MPI_INFO_NULL, &bufptr_r[tid]);
+        MPI_Alloc_mem(n*sizr, MPI_INFO_NULL, &bufptr_s[tid]);
+    }
+}
+
 
 template <typename OrbitalType, typename CalcType>
 void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
@@ -100,7 +115,9 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
     int active_threads = 1;
     if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag1;
     int base_istate = s->extratag2;
-    CalcType *sbuf = new CalcType[n];
+    //CalcType *sbuf = new CalcType[n];
+    CalcType *sbuf = (CalcType *)bufptr_s[tid];
+    CalcType *rbuf = (CalcType *)bufptr_r[tid];
 
     std::atomic_bool is_completed_r[MAX_CFACTOR];
     std::atomic_bool is_completed_s[MAX_CFACTOR];
@@ -135,7 +152,8 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
             qitems_r[i].mpi_tag = (istate<<5);
             qitems_r[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_r[i].type = RMG_MPI_IRECV;
-            qitems_r[i].buf = (void *)&B[i*chunksize];
+            //qitems_r[i].buf = (void *)&B[i*chunksize];
+qitems_r[i].buf = (void *)&rbuf[i*chunksize];
             qitems_r[i].buflen = sizeof(CalcType)*chunksize;
 
             // Push it onto the queue
@@ -203,7 +221,16 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
             }
         }
     }
-    delete [] sbuf;
+    //delete [] sbuf;
+    for(int i=0;i < pct.coalesce_factor;i++)
+    {
+        // Queue receives
+        if(i != pe_offset)
+        {
+            qitems_r[i].buf = (void *)&B[i*chunksize];
+            memcpy(&B[i*chunksize], &rbuf[i*chunksize], chunksize * sizeof(CalcType));
+        }
+    }    
 
 }
 
@@ -223,8 +250,9 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
     int active_threads = 1;
     if(ct.MG_THREADS_PER_NODE > 1) active_threads = s->extratag1;
     int base_istate = s->extratag2;
-    CalcType *rbuf = new CalcType[n];
-
+    //CalcType *rbuf = new CalcType[n];
+    CalcType *sbuf = (CalcType *)bufptr_s[tid];
+    CalcType *rbuf = (CalcType *)bufptr_r[tid];
 
     std::atomic_bool is_completed_r[MAX_CFACTOR];
     std::atomic_bool is_completed_s[MAX_CFACTOR];
@@ -286,7 +314,9 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
             qitems_s[i].mpi_tag = (istate<<5);
             qitems_s[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_s[i].type = RMG_MPI_ISEND;
-            qitems_s[i].buf = (void *)&A[i*chunksize];
+//            qitems_s[i].buf = (void *)&A[i*chunksize];
+memcpy(&sbuf[i*chunksize], &A[i*chunksize], chunksize * sizeof(CalcType));
+            qitems_s[i].buf = (void *)&sbuf[i*chunksize];
             qitems_s[i].buflen = sizeof(CalcType)*chunksize;
 
             // Push it onto the queue
@@ -344,7 +374,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
             }
         }
     }
-    delete [] rbuf;
+    //delete [] rbuf;
 }
 
 // This is used to generate an array that represents a coalesced common domain. A good

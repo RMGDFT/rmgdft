@@ -41,9 +41,27 @@
 #include "rmgthreads.h"
 #include <boost/atomic.hpp>
 
+class SpinLock
+{
+public:
+    void lock()
+    {
+        while(lck.test_and_set(std::memory_order_acquire))
+        {}
+    }
+ 
+    void unlock()
+    {
+        lck.clear(std::memory_order_release);
+    }
+ 
+private:
+    std::atomic_flag lck = ATOMIC_FLAG_INIT;
+};
+
 
 std::mutex vtot_sync_mutex;
-std::mutex dvtot_sync_mutex;
+SpinLock vtot_sync_lock;
 
 template void PotentialAcceleration<double,float>(Kpoint<double> *, State<double> *, double *, double *, float *, double *);
 template void PotentialAcceleration<double,double>(Kpoint<double> *, State<double> *, double *, double *, double *, double *);
@@ -66,13 +84,13 @@ void PotentialAccelerationWait(int istate, int nstates, int skip)
         int check = (nstates / skip)*skip;
         if(istate >= check) {;return;}
     }
-    while(istate >= counter.load()){;}
+//    while(istate >= counter.load(std::memory_order_acquire)){Rmg_Q->spin(500);}
+    while(istate >= counter.load(std::memory_order_acquire)){std::this_thread::yield();}
 }
 
 template <typename OrbitalType, typename CalcType>
 void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *dvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi)
 {
-
     // For non-coalesced case return if we are in the last slot
     if(!ct.coalesce_states)
     {
@@ -100,15 +118,16 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
        kptr->dvh[idx + offset] += t1 * PI * sp->occupation[0] * std::real(tmp_psi_t[idx] * std::conj((tmp_psi_t[idx] - (CalcType)saved_psi[idx])));
     }
     vtot_sync_mutex.unlock();
-    if(sp->istate == (counter.load() - 1))
+
+    if(sp->istate == (counter.load(std::memory_order_acquire) - 1))
     {
-        while(skipper.load() != skip/pct.coalesce_factor-1) {;}
+        while(skipper.load(std::memory_order_acquire) != skip/pct.coalesce_factor-1) {Rmg_Q->spin(500);}
         if(pct.coalesce_factor > 1)
         {
             if(ct.mpi_queue_mode)
             {
                 std::atomic_bool is_completed;
-                is_completed.store(false);
+                is_completed.store(false, std::memory_order_release);
                 mpi_queue_item_t qi;
                 qi.is_completed = &is_completed;
                 qi.type = RMG_MPI_SUM;
@@ -117,7 +136,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
                 qi.datatype = MPI_DOUBLE;
                 qi.comm = get_unique_coalesced_local_comm(base_state);
                 Rmg_Q->queue[tid]->push(qi);
-                while(!is_completed.load(std::memory_order_acquire)){;}
+                while(!is_completed.load(std::memory_order_acquire)){Rmg_Q->spin(500);}
            }
            else
            {
@@ -129,7 +148,7 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
             kptr->dvh[i + offset] += vtot_psi[i];
             vtot_psi[i] = kptr->dvh[i + offset];
         }
-        skipper.store(0);
+        skipper.store(0, std::memory_order_release);
 
         // Adjust for end point boundary when coalescing is true
         if(pct.coalesce_factor > 1)
@@ -149,11 +168,12 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
                 }
             }
         }
-        counter.fetch_add(skip);
+        counter.fetch_add(skip, std::memory_order_release);
     }
     else
     {
-        skipper++;
+        //skipper++;
+        skipper.fetch_add(1, std::memory_order_release);
     }
 
 }

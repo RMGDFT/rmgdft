@@ -55,6 +55,7 @@
 #include "FiniteDiff.h"
 #include "Scalapack.h"
 #include "Elpa.h"
+#include "GatherScatter.h"
 extern Scalapack *MainSp;
 #if USE_ELPA
 extern Elpa *MainElpa;
@@ -109,6 +110,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
     FPY0_GRID = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
     FPZ0_GRID = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
+
+    // Initialize buffers for gather scatter
+    GatherScatterInit(P0_BASIS * pct.coalesce_factor);
 
     ct.fftw_wisdom_setup = 0;
 
@@ -636,7 +640,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             }
 
             Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
-            Kptr[kpt]->dvh = new double[ Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor ]();
+            size_t sizr = Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor * sizeof(double);
+            MPI_Alloc_mem(sizr , MPI_INFO_NULL, &Kptr[kpt]->dvh);
+
         }
     }
 
