@@ -44,8 +44,14 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n,
 template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k,
                              DataType alpha, DataType *A, int lda, DataType *B, int ldb, DataType beta,
                              DataType *C, int ldc);
+void MyZgemm(char *transa, char *transb, int m, int n, int k, std::complex<double> *alpha, 
+        std::complex<double> *A, int lda, std::complex<double> *B, int ldb,
+        std::complex<double> *beta, std::complex<double> *C, int ldc);
 
 #endif
 #endif
+
+
+
 
 

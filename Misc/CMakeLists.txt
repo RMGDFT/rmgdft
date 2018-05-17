@@ -39,6 +39,7 @@ FileOpenAndCreate.cpp
 CreateMmapArray.cpp
 DeleteNvmeArrays.cpp
 RmgCudaError.cpp
+MyZgemm.cpp
 RmgGemm.cpp
 RmgSymm.cpp
 RmgSyrkx.cpp
