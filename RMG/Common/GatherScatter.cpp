@@ -153,7 +153,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
             qitems_r[i].target = Rmg_T->target_node[i - pe_offset + MAX_CFACTOR][1][1];
             qitems_r[i].type = RMG_MPI_IRECV;
             //qitems_r[i].buf = (void *)&B[i*chunksize];
-qitems_r[i].buf = (void *)&rbuf[i*chunksize];
+            qitems_r[i].buf = (void *)&rbuf[i*chunksize];
             qitems_r[i].buflen = sizeof(CalcType)*chunksize;
 
             // Push it onto the queue
@@ -224,10 +224,9 @@ qitems_r[i].buf = (void *)&rbuf[i*chunksize];
     //delete [] sbuf;
     for(int i=0;i < pct.coalesce_factor;i++)
     {
-        // Queue receives
+        // Unpack
         if(i != pe_offset)
         {
-            qitems_r[i].buf = (void *)&B[i*chunksize];
             memcpy(&B[i*chunksize], &rbuf[i*chunksize], chunksize * sizeof(CalcType));
         }
     }    
