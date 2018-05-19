@@ -471,7 +471,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         ct.mpi_queue_mode = false;
     }
 
-    Rmg_T = new TradeImages(Rmg_G, elem_len, ct.mpi_queue_mode, Rmg_Q);
+    Rmg_T = new TradeImages(Rmg_G, elem_len, ct.mpi_queue_mode, Rmg_Q, pct.coalesce_factor);
     if(ct.verbose) Rmg_T->set_timer_mode(true);
     Rmg_T->set_MPI_comm(pct.grid_comm);
 

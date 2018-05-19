@@ -70,6 +70,7 @@ private:
 
     // x-coalesce factor
     int cfactor;
+    int max_cfactor;
 
     // neighbor ids
     int nb_ids[MAX_CFACTOR+1][6];
@@ -129,7 +130,7 @@ public:
     /// MPI communicator to use
     MPI_Comm comm;
 
-    TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM);
+    TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor);
     ~TradeImages(void);
     void set_synchronous_mode(void);
     void set_asynchronous_mode(void);

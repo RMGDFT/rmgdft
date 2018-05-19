@@ -72,17 +72,18 @@ template void TradeImages::trade_imagesx<std::complex<double> >(std::complex <do
 
 
 // Constructor
-TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM)
+TradeImages::TradeImages(BaseGrid *BG, size_t elem_len, bool new_queue_mode, MpiQueue *newQM, int max_coalesce_factor)
 {
 
     BaseThread *T = BaseThread::getBaseThread(0);
     this->G = BG;
     this->queue_mode = new_queue_mode;
     this->queue = newQM;
+    this->max_cfactor = max_coalesce_factor;
 
     int grid_xp, grid_yp, grid_zp, grid_max1, grid_max2;
 
-    grid_xp = this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_xp = this->max_cfactor * this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
     grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
     grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
     if(grid_xp > grid_yp) {
@@ -1013,7 +1014,7 @@ void TradeImages::init_trade_imagesx_async(size_t elem_len)
 
     //printf("Using Async trade_images with max images = %d.\n", MAX_TRADE_IMAGES);
 
-    grid_xp = this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
+    grid_xp = this->max_cfactor * this->G->get_PX0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
     grid_yp = this->G->get_PY0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
     grid_zp = this->G->get_PZ0_GRID(this->G->get_default_FG_RATIO()) + 2*MAX_TRADE_IMAGES;
     if(grid_xp > grid_yp) {
@@ -1061,7 +1062,7 @@ void TradeImages::init_trade_imagesx_async(size_t elem_len)
     } // end for
 
     // Set up the neighbor arrays used by the older non-queued routines
-    for(int ix = 1;ix < MAX_CFACTOR;ix++)
+    for(int ix = 1;ix <= MAX_CFACTOR;ix++)
     {
         TradeImages::nb_ids[ix][NB_E] = this->G->xyz2pe ((pe_x + ix) % this->G->get_PE_X(), pe_y, pe_z);
         TradeImages::nb_ids[ix][NB_W] = this->G->xyz2pe ((pe_x - ix + this->G->get_PE_X()) % this->G->get_PE_X(), pe_y, pe_z);
