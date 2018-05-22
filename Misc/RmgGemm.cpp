@@ -97,7 +97,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 #else
 
     
-    RmgTimer *RT = new RmgTimer("gemmmmm ");
+//    RmgTimer *RT = new RmgTimer("gemmmmm ");
     if(typeid(DataType) == typeid(std::complex<double>)) {
         MyZgemm(transa, transb, m, n, k, (std::complex<double> *)(&alpha), (std::complex<double> *)A, lda, 
              (std::complex<double> *)B, ldb, (std::complex<double> *)(&beta), (std::complex<double> *)C, ldc);
@@ -110,7 +110,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         dgemm(transa, transb, &m, &n, &k, (double *)&alpha, (double *)A, &lda, 
         (double *)B, &ldb, (double *)&beta, (double *)C, &ldc);
     }
-    delete RT;
+//    delete RT;
 
 #endif
 }
