@@ -51,6 +51,8 @@ public:
 
     template <typename RmgType> size_t compress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
     template <typename RmgType> size_t decompress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
+    template <typename RmgType> size_t compress_buffer_fixed_rate(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
+    template <typename RmgType> size_t decompress_buffer_fixed_rate(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, int precision, size_t outbufsize);
     template <typename RmgType> size_t compress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, double tolerance, size_t outbufsize);
     template <typename RmgType> size_t decompress_buffer(RmgType *in, RmgType *out, int xdim, int ydim, int zdim, double tolerance, size_t outbufsize);
 
