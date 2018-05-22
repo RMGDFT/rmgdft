@@ -70,7 +70,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     double max_unocc_res = 0.0;
     double min_occ_res = DBL_MAX;
     double min_unocc_res = DBL_MAX;
-    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     int pbasis = kptr->pbasis;
 
 

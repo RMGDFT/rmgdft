@@ -600,9 +600,6 @@ typedef struct
     /* Potential acceleration constant step factor */
     double potential_acceleration_constant_step;
 
-    /* Potential acceleration constant step factor */
-    double potential_acceleration_poisson_step;
-
     // Some GPU information. Currently we use at most one device per MPI process
 #if GPU_ENABLED
 

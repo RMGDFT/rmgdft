@@ -398,11 +398,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Time step used for constant potential acceleration.\n",
                      "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 0.0.\n");
 
-    If.RegisterInputKey("potential_acceleration_poisson_step", &lc.potential_acceleration_poisson_step, 0.0, 3.0, 0.0, 
-                      CHECK_AND_FIX, OPTIONAL, 
-                     "Time step used for poisson potential acceleration.\n",
-                     "potential_acceleration_poisson_step must lie in the range (0.0, 3.0). Resetting to the default value of 0.0.\n");
-
     If.RegisterInputKey("ionic_time_step", &lc.iondt, 0.0, DBL_MAX, 50.0, 
                      CHECK_AND_TERMINATE, OPTIONAL,
                      "Ionic time step for use in molecular dynamics and structure optimizations.\n",
@@ -1104,7 +1099,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // Potential acceleration must be disabled if freeze_occupied is true
     if(Verify ("freeze_occupied", true, InputMap) ) {
         lc.potential_acceleration_constant_step = 0.0;
-        lc.potential_acceleration_poisson_step = 0.0;
         std::cout << "You have set freeze_occupied=true so potential acceleration is disabled." << std::endl;
     }
 

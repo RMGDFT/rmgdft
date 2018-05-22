@@ -199,7 +199,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //    the initialization even if an LCAO start is selected. Finally if Davidson diagonalization is
     //    requested we need to allocate memory for the expanded basis including the diagonalization arrays.
 
-    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
 
 
     int kpt_storage = ct.num_kpts_pe;

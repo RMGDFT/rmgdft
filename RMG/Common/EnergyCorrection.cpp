@@ -70,7 +70,7 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
 
     int nspin = ct.spin_flag + 1;
     double ec = 0.0;
-    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
 
     for (int is = 0; is < nspin; is++)
     {

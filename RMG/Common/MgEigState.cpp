@@ -232,7 +232,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
 
     // Setup some potential acceleration stuff
-    potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     if(potential_acceleration) {
         for(int idx = 0;idx <pbasis;idx++) saved_psi[idx] = (OrbitalType)tmp_psi_t[idx];
         PotentialAccelerationWait(sp->istate, kptr->nstates, kptr->dvh_skip);

@@ -59,7 +59,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     int dimz = G->get_PZ0_GRID(1);
     int pbasis = dimx * dimy * dimz;
 
-    bool potential_acceleration = ((ct.potential_acceleration_constant_step > 0.0) || (ct.potential_acceleration_poisson_step > 0.0));
+    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     potential_acceleration = potential_acceleration & (ct.scf_steps > 0);
 
 
