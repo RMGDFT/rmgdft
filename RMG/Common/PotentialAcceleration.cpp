@@ -79,11 +79,10 @@ void PotentialAccelerationReset(int skip)
 
 void PotentialAccelerationWait(int istate, int nstates, int skip)
 {
-    if(!ct.coalesce_states)
-    {   
-        int check = (nstates / skip)*skip;
-        if(istate >= check) {;return;}
-    }
+    // Return if we are in the last slot
+    int check = (nstates / skip)*skip;
+    if(istate >= check) return;
+
 //    while(istate >= counter.load(std::memory_order_acquire)){Rmg_Q->spin(500);}
     while(istate >= counter.load(std::memory_order_acquire)){std::this_thread::yield();}
 }
@@ -91,12 +90,9 @@ void PotentialAccelerationWait(int istate, int nstates, int skip)
 template <typename OrbitalType, typename CalcType>
 void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *dvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi)
 {
-    // For non-coalesced case return if we are in the last slot
-    if(!ct.coalesce_states)
-    {
-        int check = (kptr->nstates / kptr->dvh_skip)*kptr->dvh_skip;
-        if(sp->istate >= check) return;
-    }
+    // Return if we are in the last slot
+    int check = (kptr->nstates / kptr->dvh_skip)*kptr->dvh_skip;
+    if(sp->istate >= check) return;
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();

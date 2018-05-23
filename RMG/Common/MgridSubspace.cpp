@@ -124,8 +124,7 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
                 int icheck = st1 + active_threads*pct.coalesce_factor;
                 if(icheck > kptr->nstates) 
                 {
-                    //active_threads--;
-                    active_threads = 1;   // Graduated stepdown would be more efficient but still buggy
+                    active_threads--;
                 }
                 else
                 {

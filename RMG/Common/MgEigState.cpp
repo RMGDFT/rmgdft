@@ -267,7 +267,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         }
 
         // Copy saved application to ns to res
-        for(int idx=0;idx < pbasis;idx++) res_t[idx] = res2_t[idx];
+        memcpy(res_t, res2_t, pbasis * sizeof(CalcType));
 
         /* Generate 2 * V * psi */
         CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, (void *)kdr, kptr->kmag, dimx, dimy, dimz);
