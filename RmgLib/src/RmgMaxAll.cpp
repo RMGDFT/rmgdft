@@ -81,7 +81,7 @@ RmgType RmgMaxAll (RmgType x, MPI_Comm comm)
     RmgMaxAllLock.unlock();
 
     // Wait until everyone gets here
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
     RmgMaxAllLock.lock();
         if(vector_state_MaxAll == 1) {

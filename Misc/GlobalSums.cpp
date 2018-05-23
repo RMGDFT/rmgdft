@@ -149,12 +149,12 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
 
             for(int idx = 0;idx < length;idx++)
                 v1[length * tid + idx] = vect[idx];
-            T->thread_barrier_wait(true);
+            T->thread_barrier_wait(false);
 
             if(tid == 0)
                 MPI_Allreduce(v1, v2, length * T->get_threads_per_node(), MPI_DOUBLE, MPI_SUM, comm);
 
-            T->thread_barrier_wait(true);
+            T->thread_barrier_wait(false);
             for(int idx = 0;idx < length;idx++) vect[idx] = v2[length * tid + idx];
 
             return;

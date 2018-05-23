@@ -330,7 +330,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 
     stop = zlen * ACTIVE_THREADS;
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_D], (1<<16),
                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_U], (1<<16), TradeImages::comm, &mrstatus);
@@ -338,7 +338,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
         MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_U], (2<<16),
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_D], (2<<16), TradeImages::comm, &mrstatus);
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
     /* Unpack them */
     c1 = dimz + images;
@@ -399,7 +399,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 
     stop = ylen * ACTIVE_THREADS;
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_S], (3<<16),
                   &swbuf2x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_N], (3<<16), TradeImages::comm, &mrstatus);
@@ -407,7 +407,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
         MPI_Sendrecv (&swbuf1x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_N], (4<<16),
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_S], (4<<16), TradeImages::comm, &mrstatus);
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
     /* Unpack them */
     c1 = (dimy + images) * incy;
@@ -465,7 +465,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 
     stop = xlen * ACTIVE_THREADS;
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
 
         MPI_Sendrecv (&swbuf1x_f[0], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_W], (5<<16),
@@ -475,7 +475,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
                   &swbuf2x_f[stop], factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_W], (6<<16), TradeImages::comm, &mrstatus);
 
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 
     /* Unpack them */
@@ -706,12 +706,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
     // We only want one thread to do the MPI call here.
     stop = dimx * dimy * ACTIVE_THREADS;
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_U], (1<<16), swbuf2x_f, factor*stop,
 		  MPI_BYTE, nb_ids[this->cfactor][NB_D], (1<<16), TradeImages::comm, &mstatus);
     } 
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
     idx = 0;
     for (i = incx; i <= incx * dimx; i += incx)
@@ -737,12 +737,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
 
     stop = dimx * dimy * ACTIVE_THREADS;
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
    if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop, MPI_BYTE, nb_ids[this->cfactor][NB_D], (2<<16), swbuf2x_f, factor*stop,
                       MPI_BYTE, nb_ids[this->cfactor][NB_U], (2<<16), TradeImages::comm, &mstatus);
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 
     idx = 0;
@@ -771,12 +771,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
         }
     }
 
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_N], (3<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[this->cfactor][NB_S], (3<<16), TradeImages::comm, &mstatus);
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
     idx = 0;
     for (ix = 0; ix < dimx; ix++) {
@@ -797,12 +797,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     }
 
 
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_S], (4<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[this->cfactor][NB_N], (4<<16), TradeImages::comm, &mstatus);
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 
     idx = 0;
@@ -827,12 +827,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
 
 
 
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_E], (5<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[this->cfactor][NB_W], (5<<16), TradeImages::comm, &mstatus);
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
     for(int idx = 0;idx < stop;idx++)
         mat[idx] = swbuf2x_f[tid * stop + idx];
@@ -840,12 +840,12 @@ void TradeImages::trade_images (RmgType * mat, int dimx, int dimy, int dimz, int
     for(int idx = 0;idx < stop;idx++)
        swbuf1x_f[tid * stop + idx] = mat[incx + idx];
 
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
         MPI_Sendrecv (swbuf1x_f, factor*stop * ACTIVE_THREADS, MPI_BYTE, nb_ids[this->cfactor][NB_W], (6<<16), swbuf2x_f, factor*stop * ACTIVE_THREADS,
                   MPI_BYTE, nb_ids[this->cfactor][NB_E], (6<<16), TradeImages::comm, &mstatus);
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     for(int idx = 0;idx < stop;idx++)
         mat[xmax + incx + idx] = swbuf2x_f[tid * stop + idx];
 
@@ -1300,7 +1300,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
 
 
     // Send them
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
 
         // Corners
@@ -1417,7 +1417,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
     }                           /* end for */
 
 
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
 
         // Send z planes
@@ -1499,7 +1499,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
 
 
     // Send them
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
 
         // Send yz-plane edges
@@ -1546,7 +1546,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
         retval = MPI_Waitall(26, TradeImages::rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 
     // Unpack yz-plane edges
@@ -1750,7 +1750,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
         retval = MPI_Waitall(26, TradeImages::sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 } // end trade_imagesx_async
 
@@ -1902,7 +1902,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
     }                           /* end for */
 
 
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
 
         // Send z planes
@@ -1945,7 +1945,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
         retval = MPI_Waitall(6, TradeImages::rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 
     /* Unpack z-planes */
@@ -2024,7 +2024,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
         retval = MPI_Waitall(6, TradeImages::sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 } // end trade_imagesx_central_async
 
@@ -2610,7 +2610,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
 
 
     // Send them
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
 
         // Corners
@@ -2702,7 +2702,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
     }                           /* end for */
 
 
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
 
         // Send z planes
@@ -2784,7 +2784,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
 
 
     // Send them
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
 
         // Send yz-plane edges
@@ -2812,7 +2812,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
         retval = MPI_Waitall(26, TradeImages::rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 
     // Unpack yz-plane edges
@@ -2979,7 +2979,7 @@ void TradeImages::trade_images1_async (RmgType * f, int dimx, int dimy, int dimz
         retval = MPI_Waitall(26, TradeImages::sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 } // end trade_images1_async
 
@@ -3123,7 +3123,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
     }                           /* end for */
 
 
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
     if(tid == 0) {
 
         // Send z planes
@@ -3145,7 +3145,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
         retval = MPI_Waitall(6, TradeImages::rreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 
     /* Unpack z-planes */
@@ -3224,7 +3224,7 @@ void TradeImages::trade_images1_central_async (RmgType * f, int dimx, int dimy, 
         retval = MPI_Waitall(6, TradeImages::sreqs, MPI_STATUSES_IGNORE);
         if(retval != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Error in MPI_Waitall.\n");
     }
-    T->thread_barrier_wait(true);
+    T->thread_barrier_wait(false);
 
 } // end trade_images1_central_async
 
