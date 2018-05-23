@@ -63,9 +63,9 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     //static char *trans_t = "t";
     static char *trans_n = "n";
 
-//  folded spectrum with scalapack is experimental. Uncomment the second line if you want to try it.
+//  folded spectrum with scalapack is experimental. Comment out the second line if you want to try it.
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
-    //use_folded = false;
+    use_folded = false;
 
     int ione=1;
     int num_states = kptr->nstates;
