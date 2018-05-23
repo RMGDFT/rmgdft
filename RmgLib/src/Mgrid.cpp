@@ -187,7 +187,9 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     for(int idx=0;idx<size;idx++)f_mat_t[idx] = f_mat[idx];
 
     bool check = (dimx >= 3) && (dimy >= 3) && (dimz >= 3);
-    int active_threads = Threads->barrier->barrier_count();
+    int tid = Threads->get_thread_tid();
+    int active_threads = 1;
+    if(tid >= 0) active_threads = Threads->barrier->barrier_count();
     if(active_threads < 2) check = false;
     if(pot || (k != 0.0) || (pre_cyc[level] > MAX_TRADE_IMAGES) || !check)
     {
