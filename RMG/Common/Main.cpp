@@ -106,13 +106,13 @@ std::unordered_map<std::string, InputKey *> ControlMap;
 extern "C" void term_handler(int signal)
 {
     FreeAllSharedMemory();
+    DeleteNvmeArrays();
     MPI_Finalize ();
 
 #if GPU_ENABLED
-    cublasDestroy(ct.cublas_handle);
-    cudaDeviceReset();
+    //cublasDestroy(ct.cublas_handle);
+    //cudaDeviceReset();
 #endif
-    DeleteNvmeArrays();
     kill(getpid(), SIGKILL);
 }
 

@@ -919,28 +919,22 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     std::string Occup, Occdown;
     std::string Occ;
-//    if(lc.spin_flag) {
 
-        If.RegisterInputKey("states_count_and_occupation_spin_up", &Occup, "",
-                         CHECK_AND_FIX, OPTIONAL,
-                         "Occupation string for spin up states.\n",
-                         "");
+    If.RegisterInputKey("states_count_and_occupation_spin_up", &Occup, "",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Occupation string for spin up states.\n",
+                     "");
 
-        If.RegisterInputKey("states_count_and_occupation_spin_down", &Occdown, "",
-                         CHECK_AND_FIX, OPTIONAL,
-                         "Occupation string for spin down states.\n",
-                         "");
+    If.RegisterInputKey("states_count_and_occupation_spin_down", &Occdown, "",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Occupation string for spin down states.\n",
+                     "");
 
-        
-//    }
-//    else {
-
-        If.RegisterInputKey("states_count_and_occupation", &Occ, "",
-                         CHECK_AND_FIX, OPTIONAL,
-                         "Occupation string for states.\n",
-                         "");
-
-//    }
+    
+    If.RegisterInputKey("states_count_and_occupation", &Occ, "",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Occupation string for states.\n",
+                     "");
 
     If.RegisterInputKey("kpoint_distribution", &pelc.pe_kpoint, -INT_MAX, INT_MAX, -1,
                      CHECK_AND_FIX, OPTIONAL,
@@ -982,6 +976,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::strncpy(lc.outfile_tddft, Outfile_tddft.c_str(), sizeof(lc.outfile_tddft));
     MakeFullPath(lc.outfile_tddft, pelc);
 
+    if((Occup.length() != 0) && (Occdown.length() != 0) && (Occ.length() == 0)) lc.spin_flag = 1;
+
+    if((Occup.length() != 0) && (Occdown.length() != 0) && (Occ.length() != 0))
+    {
+        rmg_error_handler (__FILE__, __LINE__, "You have specified occupations for spin-up spin-down and non-spin cases which is ambiguous. Terminating.");
+    }
 
     if(lc.spin_flag) {
 
