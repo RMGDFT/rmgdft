@@ -62,6 +62,7 @@ template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char 
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, BaseGrid *G, TradeImages *T);
+template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int dimx, int dimy, int dimz, int order);
 template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid);
 template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, BaseGrid *G, TradeImages *T);
 

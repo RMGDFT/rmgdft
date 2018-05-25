@@ -253,7 +253,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             RmgTimer RT1("Mg_eig: apply grad");
             if(typeid(OrbitalType) == typeid(std::complex<double>)) {
 
-                ApplyGradient (tmp_psi_t, gx, gy, gz, APP_CI_EIGHT, "Coarse");
+                ApplyGradient (tmp_psi_t, gx, gy, gz, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
                 std::complex<double> I_t(0.0, 1.0);
                 for(int idx = 0;idx < pbasis;idx++) {

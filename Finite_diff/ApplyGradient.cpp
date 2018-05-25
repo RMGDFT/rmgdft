@@ -36,6 +36,11 @@
 // IN:    grid = "Coarse" or "Fine" for grid type
 
 
+template void ApplyGradient<float>(float *, float *, float *, float *, int, int, int, int);
+template void ApplyGradient<double>(double *, double *, double *, double *, int, int, int, int);
+template void ApplyGradient<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, int, int, int, int);
+template void ApplyGradient<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int, int, int);
+
 template void ApplyGradient<float>(float *, float *, float *, float *, int, const char *grid);
 template void ApplyGradient<double>(double *, double *, double *, double *, int, const char *grid);
 template void ApplyGradient<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, int, const char *grid);
@@ -47,6 +52,15 @@ template void ApplyGradient<std::complex<float> >(std::complex<float> *, std::co
 template void ApplyGradient<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, const char *grid, BaseGrid *G, TradeImages *T);
 
 
+// Version required for coalesced grids and complex wavefunctions
+template <typename DataType>
+void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int dimx, int dimy, int dimz, int order)
+{
+    double gridhx = Rmg_G->get_hxgrid(1);
+    double gridhy = Rmg_G->get_hygrid(1);
+    double gridhz = Rmg_G->get_hzgrid(1);
+    CPP_app_grad_driver (&Rmg_L, Rmg_T, a, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
+}
 
 template <typename DataType>
 void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid)
