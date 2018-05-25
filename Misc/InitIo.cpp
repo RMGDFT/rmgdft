@@ -229,8 +229,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // number of coalesced grids so we adjust the orbital count later if required.
     int rem1 = pct.pe_x % pct.coalesce_factor;
     int rem2 = Rmg_G->get_NX_GRID(1) % pct.pe_x;
-    //if(ct.coalesce_states && !rem1 && !rem2 && ct.mpi_queue_mode && (ct.MG_THREADS_PER_NODE > 1))
-    if(ct.coalesce_states && !rem1 && !rem2 && (ct.MG_THREADS_PER_NODE >= 1))
+    if(ct.coalesce_states && !rem1 && !rem2)
     {
         if(pct.gridpe == 0)
             std::cout << "Notice: Coalescing states in X with factor " << pct.coalesce_factor << "." << std::endl;
