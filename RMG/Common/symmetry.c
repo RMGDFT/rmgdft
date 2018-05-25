@@ -25,6 +25,7 @@
 #include <assert.h>
 
 #include "main.h"
+#include "RmgTimer.h"
 
 
 static int *s;
@@ -32,6 +33,7 @@ static int *s;
 static int *sym_atom;  //  atom B = sym(atom A)
 static int *ftau;
 static int nsym;
+static int *sym_index_x, *sym_index_y, *sym_index_z ;
 
 
 int spg_get_multiplicity(const double *lattice,
@@ -253,6 +255,7 @@ void init_sym (void)
     my_free (sa);
     my_free (translation);
 
+    init_symm_ijk();
     //    if (ct.boundaryflag != CLUSTER)
     //    {
     //       /* Call the symmetry routine */
@@ -285,6 +288,7 @@ void symmetrize_rho (double * rho)
     int FN_BASIS = FNX_GRID * FNY_GRID * FNZ_GRID;
 
 
+    void *RT1 = BeginRmgTimer("GetNewRHO: symmetrize ");
     if(!ct.is_use_symmetry) return;
 
 
@@ -331,30 +335,32 @@ void symmetrize_rho (double * rho)
     t1 = (double) nsym;
     t1 = 1.0 / t1;
 
-    for (ix = 0; ix < FPX0_GRID; ix++) {
-        for (iy = 0; iy < FPY0_GRID; iy++) {
-            for (iz = 0; iz < FPZ0_GRID; iz++) {
-                tem = 0.0;
-                for(isy = 0; isy < nsym; isy++)
-                {
-                    ix1 = ix + xoff;
-                    iy1 = iy + yoff;
-                    iz1 = iz + zoff;
+    for(ix = 0; ix < FPX0_GRID * FPY0_GRID * FPZ0_GRID; ix++) rho[ix] = 0.0;
 
-                    symm_ijk(&s[isy *9], &ftau[isy*3], ix1, iy1, iz1, &ixx, &iyy, &izz, 
-                            FNX_GRID, FNY_GRID, FNZ_GRID);
-                    tem += da[izz *incz1 + iyy *incy1 + ixx *incx1];
+                    
+    for(isy = 0; isy < nsym; isy++)
+    {
+        for (ix = 0; ix < FPX0_GRID; ix++) {
+            for (iy = 0; iy < FPY0_GRID; iy++) {
+                for (iz = 0; iz < FPZ0_GRID; iz++) {
+
+                  ixx =   sym_index_x[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] ;
+                  iyy =   sym_index_y[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] ;
+                  izz =   sym_index_z[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] ;
+            
+                rho[ix * incx + iy*incy + iz] += da[izz *incz1 + iyy *incy1 + ixx *incx1];
                 }
-                rho[ix * incx + iy*incy + iz] = tem *t1;
-
             }
         }
     }
+
+    for(ix = 0; ix < FPX0_GRID * FPY0_GRID * FPZ0_GRID; ix++) rho[ix] = rho[ix] * t1;
 
 
     /* Release our memory */
     my_free (da);
 
+    EndRmgTimer(RT1);
 
 }                               /* end symmetrize_rho */
 
@@ -391,7 +397,55 @@ void symforce ()
     my_free(force);
 }                               /* end symforce */
 
-void  symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx, int *iyy, int *izz,
+void init_symm_ijk()
+{
+    int idx, ix, iy, iz, xoff, yoff, zoff;
+    int ix1, iy1, iz1;
+    int isy, ixx, iyy, izz;
+    double *da;
+    double t1, tem;
+
+    int FPX0_GRID = get_FPX0_GRID();
+    int FPY0_GRID = get_FPY0_GRID();
+    int FPZ0_GRID = get_FPZ0_GRID();
+    int FNX_GRID = get_FNX_GRID();
+    int FNY_GRID = get_FNY_GRID();
+    int FNZ_GRID = get_FNZ_GRID();
+
+    xoff = get_FPX_OFFSET();
+    yoff = get_FPY_OFFSET();
+    zoff = get_FPZ_OFFSET();
+
+    int incx = FPY0_GRID * FPZ0_GRID;
+    int incy = FPZ0_GRID;
+
+
+    my_malloc (sym_index_x, nsym * FPX0_GRID * FPY0_GRID * FPZ0_GRID, int);
+    my_malloc (sym_index_y, nsym * FPX0_GRID * FPY0_GRID * FPZ0_GRID, int);
+    my_malloc (sym_index_z, nsym * FPX0_GRID * FPY0_GRID * FPZ0_GRID, int);
+
+    for(isy = 0; isy < nsym; isy++)
+    {
+        for (ix = 0; ix < FPX0_GRID; ix++) {
+            for (iy = 0; iy < FPY0_GRID; iy++) {
+                for (iz = 0; iz < FPZ0_GRID; iz++) {
+                    ix1 = ix + xoff;
+                    iy1 = iy + yoff;
+                    iz1 = iz + zoff;
+
+                    symm_ijk(&s[isy *9], &ftau[isy*3], ix1, iy1, iz1, &ixx, &iyy, &izz, 
+                            FNX_GRID, FNY_GRID, FNZ_GRID);
+                    sym_index_x[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] = ixx;
+                    sym_index_y[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] = iyy;
+                    sym_index_z[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] = izz;
+                }
+            }
+        }
+    }
+}
+
+
+void inline symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx, int *iyy, int *izz,
         int nx, int ny, int nz)
 {
 
