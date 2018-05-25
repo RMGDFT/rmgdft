@@ -165,7 +165,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (Rmg_L.get_zside() * Rmg_G->get_hzgrid(1) > ct.hmaxgrid)
         ct.hmaxgrid = Rmg_L.get_zside() * Rmg_G->get_hzgrid(1);
 
-    if(ct.ecutrho < 0.0) ct.ecutrho = (2.0 *PI/ct.hmaxgrid) *(2.0 *PI/ct.hmaxgrid);
+    if(ct.ecutrho <= 0.0) ct.ecutrho = (2.0 *PI/ct.hmaxgrid) *(2.0 *PI/ct.hmaxgrid);
     ct.hmingrid = Rmg_L.get_xside() * Rmg_G->get_hxgrid(1);
     if (Rmg_L.get_yside() * Rmg_G->get_hygrid(1) < ct.hmingrid)
         ct.hmingrid = Rmg_L.get_yside() * Rmg_G->get_hygrid(1);
