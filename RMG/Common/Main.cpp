@@ -422,8 +422,8 @@ void finish ()
     MPI_Finalize ();
 
 #if GPU_ENABLED
-    cublasDestroy(ct.cublas_handle);
-    cudaDeviceReset();
+    //cublasDestroy(ct.cublas_handle);
+    //cudaDeviceReset();
 #endif
 
 }                               /* end finish */

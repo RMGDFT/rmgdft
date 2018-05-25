@@ -212,6 +212,12 @@ void write_header (void)
     printf ("    Y:  Total: %d   Per PE: %d   Spacing:%5.3f a0  \n", get_NY_GRID(), get_PY0_GRID(),   get_hygrid() * get_yside());
     printf ("    Z:  Total: %d   Per PE: %d   Spacing:%5.3f a0  \n", get_NZ_GRID(), get_PZ0_GRID(),   get_hzgrid() * get_zside());
     printf ("\n");
+
+    if(ct.coalesce_states)
+    {
+        printf ("   Coalescing states in X with factor %d\n", pct.coalesce_factor);
+    }
+
     /* We compute the equivalent energy cutoff using the density of grid
      * points in the cell with a correction for the grid anisotropy.
      */
