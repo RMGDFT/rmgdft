@@ -215,7 +215,7 @@ void write_header (void)
 
     if(ct.coalesce_states)
     {
-        printf ("   Coalescing states in X with factor %d\n", pct.coalesce_factor);
+        printf ("    Coalescing states in X with factor %d\n", pct.coalesce_factor);
     }
 
     /* We compute the equivalent energy cutoff using the density of grid
