@@ -61,25 +61,33 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-
-        /* Loop over states and accumulate charge */
-        for (int istate = 0; istate < nstates; istate++)
+#pragma omp parallel
         {
+            double *tarr = new double[pbasis]();
+#pragma omp barrier
 
-            double scale = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kweight;
-
-            OrbitalType *psi = Kpts[kpt]->Kstates[istate].psi;
-
-            for (int idx = 0; idx < pbasis; idx++)
+            /* Loop over states and accumulate charge */
+#pragma omp for schedule(static, 1) nowait
+            for (int istate = 0; istate < nstates; istate++)
             {
-                work[idx] += scale * std::norm(psi[idx]);
-            }                   /* end for */
 
-        }                       /*end for istate */
+                double scale = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kweight;
 
+                OrbitalType *psi = Kpts[kpt]->Kstates[istate].psi;
+
+                for (int idx = 0; idx < pbasis; idx++)
+                {
+                    tarr[idx] += scale * std::norm(psi[idx]);
+                }                   /* end for */
+
+            }                       /*end for istate */
+#pragma omp critical
+            for(int idx = 0; idx < pbasis; idx++) work[idx] += tarr[idx];
+            delete [] tarr;
+        }
     }                           /*end for kpt */
 
-    GlobalSums(work, pbasis, pct.kpsub_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)work, pbasis, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
     /* Interpolate onto fine grid, result will be stored in rho*/
     switch (ct.interp_flag)
