@@ -349,8 +349,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     }
 
 #if GPU_ENABLED
-    cudaMemcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], tlen, cudaMemcpyDefault);
+    //cudaMemcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], tlen, cudaMemcpyDefault);
     //cudaMemPrefetchAsync (kptr->orbital_storage , num_states*sizeof(double), cudaCpuDeviceId, NULL);
+    // Not sure why but the cudaMemcpy behaves strangely here sometimes.
+    for(int idx=0;idx<num_states*pbasis;idx++) kptr->orbital_storage[istart+idx] = tmp_arrayT[istart+idx];
 #else
     memcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], tlen);
 #endif

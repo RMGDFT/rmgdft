@@ -50,15 +50,11 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     int pbasis = Kpts[0]->pbasis;
     int nstates = Kpts[0]->nstates;
-    int max_product = (ct.max_nl + 1) * ct.max_nl / 2;
     double nspin = (ct.spin_flag + 1.0);
 
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
 
     double *work = new double[pbasis];
-    double *product = new double[max_product];
-    OrbitalType *sint = new OrbitalType[2 * ct.max_nl];
-
 
     for(int idx = 0;idx < pbasis;idx++)
         work[idx] = 0.0;
@@ -143,7 +139,5 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
 
 
-    delete [] sint;
-    delete [] product;
     delete [] work;
 }
