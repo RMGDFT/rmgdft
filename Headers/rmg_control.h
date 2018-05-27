@@ -471,9 +471,6 @@ typedef struct
     /* Expansion factor for non-local projectors */
     double projector_expansion_factor;
 
-    /* Flag indicating whether to use MPI_Allreduce operations or point to point in subdiag */
-    bool scalapack_global_sums;
-
     /* scalapack block size */
     int scalapack_block_factor;
 

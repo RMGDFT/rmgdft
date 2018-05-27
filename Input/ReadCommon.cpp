@@ -849,9 +849,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("md_randomize_velocity", &lc.nose.randomvel, true,
                         "");
 
-    If.RegisterInputKey("scalapack_global_sums", &lc.scalapack_global_sums, true,
-                        "");
-
     If.RegisterInputKey("output_rho_xsf", NULL, false,
                         "Generate xsf format for electronic density.");
 
