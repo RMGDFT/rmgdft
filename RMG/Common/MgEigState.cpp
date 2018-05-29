@@ -241,28 +241,21 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     /* Smoothing cycles */
     for (int cycles = 0; cycles <= nits; cycles++)
     {
-
-        /* Apply Mehrstellen left hand operators */
+        /* Apply left hand operators */
         {
             RmgTimer RT1("Mg_eig: apply A operator");
-            diag = ApplyAOperator<CalcType>(L, T, tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
-        }
+            diag = ApplyAOperator<CalcType>(tmp_psi_t, work2_t, gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
 
-        // if complex orbitals apply gradient to psi and compute dot products
-        {
-            RmgTimer RT1("Mg_eig: apply grad");
+            // if complex orbitals compute dot products as well
             if(typeid(OrbitalType) == typeid(std::complex<double>)) {
-
-                ApplyGradient (tmp_psi_t, gx, gy, gz, dimx, dimy, dimz, ct.kohn_sham_fd_order);
 
                 std::complex<double> I_t(0.0, 1.0);
                 for(int idx = 0;idx < pbasis;idx++) {
 
                     kdr[idx] = -I_t * (kptr->kvec[0] * (std::complex<double>)gx[idx] +
-                                                   kptr->kvec[1] * (std::complex<double>)gy[idx] +
-                                                   kptr->kvec[2] * (std::complex<double>)gz[idx]);
+                                       kptr->kvec[1] * (std::complex<double>)gy[idx] +
+                                       kptr->kvec[2] * (std::complex<double>)gz[idx]);
                 }
-
             }
         }
 

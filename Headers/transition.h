@@ -58,6 +58,7 @@ template <typename RmgType> void AppCir (RmgType * a, RmgType * b, char * grid);
 template <typename RmgType> double AppCil (RmgType * a, RmgType * b, char * grid);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T);
+template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, DataType *gz, int, int, int, double, double, double, int);
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid);
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid);

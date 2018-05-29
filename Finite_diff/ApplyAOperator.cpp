@@ -36,6 +36,11 @@
 // IN:    grid = "Coarse" or "Fine" for grid type
 
 
+template double ApplyAOperator<float>(float *, float *, float *, float *, float *, int, int, int, double, double, double, int);
+template double ApplyAOperator<double>(double *, double *, double *, double *, double *,int, int, int, double, double, double, int);
+template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *,int, int, int, double, double, double, int);
+template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *,int, int, int, double, double, double, int);
+
 template double ApplyAOperator<float>(float *, float *, char *grid);
 template double ApplyAOperator<double>(double *, double *, char *grid);
 template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, char *grid);
@@ -51,6 +56,65 @@ template double ApplyAOperator<double>(Lattice *, TradeImages *, double *, doubl
 template double ApplyAOperator<std::complex<float> >(Lattice *, TradeImages *, std::complex<float> *, std::complex<float> *, int, int, int, double, double, double, int);
 template double ApplyAOperator<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, int);
 
+
+template <typename DataType>
+double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, DataType *gz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
+{
+    
+    double cc = 0.0;
+    FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+    int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
+    int images = order / 2;
+    size_t alloc = (sbasis + 64) * sizeof(DataType);
+    DataType *rptr;
+
+    // while alloca is dangerous it's very fast for small arrays and the 110k limit
+    // is fine for linux and 64bit power
+    if(alloc <= 110592)
+    {
+        rptr = (DataType *)alloca(alloc);
+    }
+    else
+    {
+        rptr = new DataType[sbasis + 64];
+    }
+
+
+    Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
+
+    // First apply the laplacian
+    if(order == APP_CI_FOURTH) {
+        cc = FD.app4_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!ct.is_gamma) FD.app_gradient_fourth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else if(order == APP_CI_SIXTH) {
+        cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!ct.is_gamma) FD.app_gradient_sixth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else if(order == APP_CI_EIGHT) {
+        cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!ct.is_gamma) FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else if(order == APP_CI_TEN) {
+        cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!ct.is_gamma) FD.app_gradient_tenth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else if(order == APP_CI_TWELVE) {
+        cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!ct.is_gamma) FD.app_gradient_twelfth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else {
+
+        rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
+        return 0;   // Just to keep the compiler from complaining
+
+    }
+
+    if(alloc > 110592) delete [] rptr;
+
+    return cc;
+
+}
 
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, char *grid)
