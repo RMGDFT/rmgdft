@@ -86,7 +86,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     KpointType *Bij = (KpointType *)GpuMallocManaged(kptr->nstates * kptr->nstates * sizeof(KpointType));
     KpointType *Sij = (KpointType *)GpuMallocManaged(kptr->nstates * kptr->nstates * sizeof(KpointType));
     KpointType *tmp_array2T = (KpointType *)GpuMallocManaged(pbasis * kptr->nstates * sizeof(KpointType));     
-    if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));     
+    if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(kptr->nstates * kptr->nstates * sizeof(KpointType));     
     double *eigs = (double *)GpuMallocManaged(2*kptr->nstates * sizeof(double));
     GpuFill((double *)Aij, factor*kptr->nstates * kptr->nstates, 0.0);
     GpuFill((double *)Sij, factor*kptr->nstates * kptr->nstates, 0.0);
@@ -329,6 +329,18 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
         }
     }
 
+    // free memory
+#if GPU_ENABLED
+    GpuFreeManaged(Sij);
+    GpuFreeManaged(Bij);
+    GpuFreeManaged(Aij);
+#else
+    delete [] Sij;
+    delete [] Bij;
+    delete [] Aij;
+#endif
+
+
     // Update the orbitals
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
 
@@ -359,17 +371,12 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
     delete(RT1);
 
-    // free memory
 #if GPU_ENABLED
+    // After the first step this matrix does not need to be as large
+    if(ct.scf_steps == 0) {GpuFreeManaged(global_matrix1);global_matrix1 = NULL;}
     GpuFreeManaged(eigs);
-    GpuFreeManaged(Sij);
-    GpuFreeManaged(Bij);
-    GpuFreeManaged(Aij);
 #else
     delete [] eigs;
-    delete [] Sij;
-    delete [] Bij;
-    delete [] Aij;
 #endif
 
 }
