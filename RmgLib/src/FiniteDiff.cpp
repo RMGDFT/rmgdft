@@ -2669,38 +2669,36 @@ void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wy
                 for (int iy = 4; iy < dimy + 4; iy++)
                 {
 
+                    RmgType *A = &wxr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    RmgType *B = &rptr[ix * ixs + iy * iys];
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
+                        A[iz] =
+                            t4x * ( B[iz + 4*ixs] - B[iz - 4*ixs]) +
+                            t3x * ( B[iz + 3*ixs] - B[iz - 3*ixs]) +
+                            t2x * ( B[iz + 2*ixs] - B[iz - 2*ixs]) +
+                            t1x * ( B[iz + ixs] - B[iz - ixs]);
+                    }
 
-                        wxr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
-                            t4x * ( rptr[(ix + 4) * ixs + iy * iys + iz] -
-                                    rptr[(ix - 4) * ixs + iy * iys + iz]) +
-                            t3x * ( rptr[(ix + 3) * ixs + iy * iys + iz] -
-                                    rptr[(ix - 3) * ixs + iy * iys + iz]) +
-                            t2x * ( rptr[(ix + 2) * ixs + iy * iys + iz] -
-                                    rptr[(ix - 2) * ixs + iy * iys + iz]) +
-                            t1x * ( rptr[(ix + 1) * ixs + iy * iys + iz] -
-                                    rptr[(ix - 1) * ixs + iy * iys + iz]);
+                    A = &wyr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        A[iz] =
+                            t4y * ( B[iz + 4*iys] - B[iz - 4*iys]) +
+                            t3y * ( B[iz + 3*iys] - B[iz - 3*iys]) +
+                            t2y * ( B[iz + 2*iys] - B[iz - 2*iys]) +
+                            t1y * ( B[iz + iys] - B[iz - iys]);
+                    
+                    }
 
-                        wyr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
-                            t4y * ( rptr[ix * ixs + (iy + 4)* iys + iz] -
-                                    rptr[ix * ixs + (iy - 4)* iys + iz]) +
-                            t3y * ( rptr[ix * ixs + (iy + 3)* iys + iz] -
-                                    rptr[ix * ixs + (iy - 3)* iys + iz]) +
-                            t2y * ( rptr[ix * ixs + (iy + 2)* iys + iz] -
-                                    rptr[ix * ixs + (iy - 2)* iys + iz]) +
-                            t1y * ( rptr[ix * ixs + (iy + 1)* iys + iz] -
-                                    rptr[ix * ixs + (iy - 1)* iys + iz]);
-
-                            wzr[(ix - 4) * ix1 + (iy - 4) * iy1 + iz - 4] =
-                            t4z * ( rptr[ix * ixs + iy * iys + iz+ 4] -
-                                    rptr[ix * ixs + iy * iys + iz- 4]) +
-                            t3z * ( rptr[ix * ixs + iy * iys + iz+ 3] -
-                                    rptr[ix * ixs + iy * iys + iz- 3]) +
-                            t2z * ( rptr[ix * ixs + iy * iys + iz+ 2] -
-                                    rptr[ix * ixs + iy * iys + iz- 2]) +
-                            t1z * ( rptr[ix * ixs + iy * iys + iz+ 1] -
-                                    rptr[ix * ixs + iy * iys + iz- 1]);
+                    A = &wzr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        A[iz] =
+                            t4z * ( B[iz + 4] - B[iz - 4]) +
+                            t3z * ( B[iz + 3] - B[iz - 3]) +
+                            t2z * ( B[iz + 2] - B[iz - 2]) +
+                            t1z * ( B[iz + 1] - B[iz - 1]);
 
                     }               /* end for */
                 }                   /* end for */
