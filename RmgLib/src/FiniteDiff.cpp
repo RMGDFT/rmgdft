@@ -1291,7 +1291,7 @@ double FiniteDiff::app2_del2_offset (RmgType * a, RmgType * b, int dimx, int dim
                 double gridhx, double gridhy, double gridhz, int offset)
 {
 
-    int ibrav, idx;
+    int ibrav;
     int incy, incx;
     RmgType cc=0.0, fcx, fcy, fcz, fc, fc1, fc2;
     int ixs, iys, ixms, ixps, iyms, iyps;
