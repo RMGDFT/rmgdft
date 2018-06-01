@@ -136,7 +136,9 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
            }
            else
            {
-               MPI_Allreduce(MPI_IN_PLACE, &kptr->dvh[offset], pbasis, MPI_DOUBLE, MPI_SUM, pct.coalesced_local_comm);
+               T->thread_barrier_wait(false);
+               if(tid == 0) MPI_Allreduce(MPI_IN_PLACE, &kptr->dvh[offset], pbasis, MPI_DOUBLE, MPI_SUM, pct.coalesced_local_comm);
+               T->thread_barrier_wait(false);
            }
         }
         for(int i = 0;i <pbasis;i++)
