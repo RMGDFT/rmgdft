@@ -576,7 +576,7 @@ void write_header (void)
 #endif
 
     crho_fract = ct.crho - ct.ionic_charge;
-    if(fabs(crho_fract) > 1.0e-08) {
+    if((fabs(crho_fract) > 1.0e-08) && ct.localize_localpp) {
         printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         printf ("    crho %e  %e", crho_fract, ct.crho - ct.nel);
          
