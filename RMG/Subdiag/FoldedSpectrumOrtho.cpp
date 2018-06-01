@@ -60,7 +60,6 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
-    KpointType *NULLptr = NULL;
     KpointType alpha(1.0);
     KpointType beta(0.0);
 
