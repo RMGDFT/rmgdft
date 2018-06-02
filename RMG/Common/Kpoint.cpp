@@ -244,13 +244,9 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 
     if(ct.init_states > ct.non_local_block_size)
     {
-        if(ct.mpi_queue_mode)
-            printf("Warning: you have selected mpi_queue_mode but non_local_block_size is too small. Try using %d.\n",ct.init_states);
         if(ct.coalesce_states)
             printf("Warning: you have selected state coalescing but non_local_block_size is too small. Try using %d.\n",ct.init_states);
-        ct.mpi_queue_mode = false;
         ct.coalesce_states = false;
-        this->T->set_queue_mode(false);
     }
 
 
