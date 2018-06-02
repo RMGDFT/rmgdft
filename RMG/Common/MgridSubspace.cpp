@@ -164,6 +164,8 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
             // Thread tasks are set up so run them
             if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
+            if((check >= ct.non_local_block_size) && ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
+
             delete RT1;
 
             // Increment index into non-local block and state index

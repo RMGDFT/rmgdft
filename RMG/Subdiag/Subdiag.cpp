@@ -175,6 +175,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 
         // Thread tasks are set up so wake them
         if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
+        if((check >= ct.non_local_block_size) && ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
         // Increment index into non-local block
         first_nls += active_threads;
