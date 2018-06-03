@@ -62,8 +62,6 @@ void InitDelocalizedWeight (void)
 
 
     std::complex<double> *weptr = new std::complex<double>[pbasis];
-    std::complex<double> *work1 = new std::complex<double>[(dimx+2)*(dimy+2)*(dimz+2)];
-    std::complex<double> *work2 = new std::complex<double>[(dimx+2)*(dimy+2)*(dimz+2)];
 
     RmgTimer *RT1= new RmgTimer("Weight: phase and set");
     for (int isp = 0; isp < ct.num_species; isp++)
@@ -150,8 +148,6 @@ void InitDelocalizedWeight (void)
     delete RT3;
 
     delete RT1;
-    delete [] work2;
-    delete [] work1;
     delete [] weptr;
 
 } /* end InitDelocalizedWeight */
