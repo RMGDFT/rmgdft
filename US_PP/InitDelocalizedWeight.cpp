@@ -112,8 +112,8 @@ void InitDelocalizedWeight (void)
             for(int idx = 0;idx < pbasis;idx++)
             {
                 ax[0] = 2.0*PI*coarse_pwaves->g[idx].a[0] / (hxx * NX_GRID);
-                ax[1] = 2.0*PI*coarse_pwaves->g[idx].a[1] / (hyy * NY_GRID);
-                ax[2] = 2.0*PI*coarse_pwaves->g[idx].a[2] / (hzz * NZ_GRID);
+                ax[1] = 2.0*PI*coarse_pwaves->g[idx].a[1] / (hxx * NX_GRID);
+                ax[2] = 2.0*PI*coarse_pwaves->g[idx].a[2] / (hxx * NX_GRID);
 
                // printf("\n %d %e  %e %e  %e %e %e", ax[0], ax[1], ax[2], ct.kp[kpt1].kvec[0], ct.kp[kpt1].kvec[1],  ct.kp[kpt1].kvec[2]);
 
