@@ -198,7 +198,7 @@ void dger(int *, int *, double *, double *, int *, double *, int *, double *, in
 
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
 
-
+void openblas_set_num_threads(int nthreads);
 
 #if __cplusplus
 }

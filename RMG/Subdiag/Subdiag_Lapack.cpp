@@ -80,6 +80,10 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         int nthreads = ct.OMP_THREADS_PER_NODE;
         if((pct.procs_per_host > 1) && !use_folded) nthreads = pct.ncpus;
         omp_set_num_threads(nthreads);
+#if OPENBLAS_SET_NUM_THREADS
+        openblas_set_num_threads(nthreads);
+#endif
+
 
     #if GPU_ENABLED
         KpointType ZERO_t(0.0);
@@ -168,6 +172,10 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
         // Reset omp_num_threads
         omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
+#if OPENBLAS_SET_NUM_THREADS
+        openblas_set_num_threads(ct.OMP_THREADS_PER_NODE);
+#endif
+
 
     } // end if is_local_master
 

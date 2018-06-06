@@ -120,6 +120,10 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
         int nthreads = ct.OMP_THREADS_PER_NODE;
         if(pct.procs_per_host > 1) nthreads = pct.ncpus;
         omp_set_num_threads(nthreads);
+#if OPENBLAS_SET_NUM_THREADS
+        openblas_set_num_threads(nthreads);
+#endif
+
 
 
         {
@@ -183,6 +187,10 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
 
         // Reset omp_num_threads
         omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
+#if OPENBLAS_SET_NUM_THREADS
+        openblas_set_num_threads(ct.OMP_THREADS_PER_NODE);
+#endif
+
 
     } // end if pct.is_local_master
 

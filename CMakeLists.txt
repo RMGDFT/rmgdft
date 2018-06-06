@@ -606,6 +606,15 @@ if(NOT RMG_MATH_LIBS)
 endif(NOT RMG_MATH_LIBS)
 
 
+# Check for openblas library supporting changing threads
+include("PlatformChecks/CheckOpenBlasSetNumThreads.inc")
+if(RMG_OPENBLAS_SET_NUM_THREADS_INTERNAL)
+    add_definitions(-DOPENBLAS_SET_NUM_THREADS=1)
+else(RMG_OPENBLAS_SET_NUM_THREADS_INTERNAL)
+    add_definitions(-DOPENBLAS_SET_NUM_THREADS=0)
+endif(RMG_OPENBLAS_SET_NUM_THREADS_INTERNAL)
+
+
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_GPU_ENABLED)
   find_package(CUDA REQUIRED)

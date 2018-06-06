@@ -21,6 +21,7 @@
 */
 
 #include "portability.h"
+#include "blas.h"
 #include <stdlib.h>
 #include <limits.h>
 #include <cstring>
@@ -375,7 +376,9 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
     }
 
     omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
-
+#if OPENBLAS_SET_NUM_THREADS
+    openblas_set_num_threads(ct.OMP_THREADS_PER_NODE);
+#endif
     B = BaseThread::getBaseThread(ct.MG_THREADS_PER_NODE);
     B->RegisterThreadFunction(run_threads, pct.grid_comm);
 
