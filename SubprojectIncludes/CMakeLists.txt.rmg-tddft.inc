@@ -8,7 +8,7 @@ endif(USE_LIBXC)
 target_link_libraries( ${rmg-tddft} symspg_static)
 # static libraries are created for the object files in each subdir. Duplicates
 # are needed to handle circular references
-target_link_libraries( ${rmg-tddft} RmgLib)
+target_link_libraries( ${rmg-tddft} RmgLib zfp)
 if(USE_NUMA_INTERNAL)
 target_link_libraries( ${rmg-tddft} RMG_Common ${NUMA_LIBRARIES})
 endif(USE_NUMA_INTERNAL)

@@ -3,7 +3,7 @@
 option (SEPARATE_BUILD OFF)
 
 if (SEPARATE_BUILD)
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1)
 project(RmgLib)
 set (PROJECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include})
 include_directories("${PROJECT_INCLUDE_DIR}")
@@ -57,20 +57,20 @@ src/packfuncs.cpp
 src/ZfpCompress.cpp
 )
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    add_library (RmgLibShared SHARED ${RmgLibSources})
-endif()
+#if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+#    add_library (RmgLibShared SHARED ${RmgLibSources})
+#endif()
 add_library (RmgLib STATIC ${RmgLibSources})
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
-    add_executable (poisson_pbc examples/Poisson/poisson_pbc.cpp)
-    target_link_libraries (poisson_pbc ${Boost_LIBRARIES} RmgLibShared)
-    if(DEFINED ENV{CRAY_LIBSCI_VERSION})
-        target_link_libraries (poisson_pbc ${Boost_LIBRARIES} RmgLibShared)
-    else(DEFINED ENV{CRAY_LIBSCI_VERSION})
-        target_link_libraries (poisson_pbc ${Boost_LIBRARIES} ${MPI_CXX_LIBRARIES} RmgLibShared)
-    endif()
-
-endif()
+#if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+#
+#    add_executable (poisson_pbc examples/Poisson/poisson_pbc.cpp)
+#    target_link_libraries (poisson_pbc ${Boost_LIBRARIES} RmgLibShared)
+#    if(DEFINED ENV{CRAY_LIBSCI_VERSION})
+#        target_link_libraries (poisson_pbc ${Boost_LIBRARIES} RmgLibShared)
+#    else(DEFINED ENV{CRAY_LIBSCI_VERSION})
+#        target_link_libraries (poisson_pbc ${Boost_LIBRARIES} ${MPI_CXX_LIBRARIES} RmgLibShared)
+#    endif()
+#
+#endif()
 
 

@@ -263,7 +263,7 @@ vh_old, vxc_old, ControlMap);
             pct.desca, pct.desca[1]);
     n2 = MXLLDA * MXLCOL;
     dcopy(&n2, Hij, &ione, matB, &ione);
-    PDTRAN(&numst, &numst, &half, matB, &ione, &ione, pct.desca,
+    pdtran(&numst, &numst, &half, matB, &ione, &ione, pct.desca,
                 &half, Hij, &ione, &ione, pct.desca);
 
     Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,

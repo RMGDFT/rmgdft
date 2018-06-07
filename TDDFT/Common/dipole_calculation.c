@@ -13,7 +13,7 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
-#include "svnrev.h"
+//#include "svnrev.h"
 
 
 
