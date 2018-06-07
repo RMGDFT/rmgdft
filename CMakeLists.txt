@@ -40,18 +40,6 @@ endif()
 enable_language(Fortran)
 project (RMG CXX C Fortran) 
 
-# Build date and time revisions
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    execute_process (COMMAND "cmd" " /C date /T" OUTPUT_VARIABLE foo1)
-    execute_process (COMMAND "cmd" " /C time /T" OUTPUT_VARIABLE foo2)
-    string(CONCAT foo3 ${foo1} ${foo2})
-    string(REPLACE "\n" "" BuildDate ${foo3})
-else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    execute_process (COMMAND date OUTPUT_VARIABLE foo5)
-    string(REPLACE "\n" "" BuildDate ${foo5})
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-
 include(FindSubversion)
 if(Subversion_FOUND AND USE_SVN)
     execute_process (
@@ -67,16 +55,15 @@ if(Subversion_FOUND AND USE_SVN)
         string(REPLACE " " ";" foo4 ${foo3})
         list(GET foo4 2 LastChangeDate)
     elseif()
-        set(CodeRevision "release 3.0 beta1")
+        set(CodeRevision "release 3.0")
         set(LastChangeDate "Unknown")
     endif()
 else(Subversion_FOUND AND USE_SVN)
-    set(CodeRevision "3.0 beta1")
+    set(CodeRevision "3.0")
     set(LastChangeDate "Unknown")
 endif(Subversion_FOUND AND USE_SVN)
 add_definitions(-DSVN_REV="${CodeRevision}")
 add_definitions(-DSVN_REVDATE="${LastChangeDate}")
-add_definitions(-DBUILD_DATE="${BuildDate}")
 
 
 # Require a 64 bit system
@@ -757,17 +744,6 @@ link_directories (${RMG_BINARY_DIR}/RMG/Input)
 link_directories (${RMG_BINARY_DIR}/RMG/Spin)
 link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
 link_directories (${RMG_BINARY_DIR}/RMG/Subdiag)
-
-# Build date and time revisions
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    execute_process (COMMAND "cmd" " /C date /T" OUTPUT_VARIABLE foo1) 
-    execute_process (COMMAND "cmd" " /C time /T" OUTPUT_VARIABLE foo2) 
-    string(CONCAT foo3 ${foo1} ${foo2})
-    string(REPLACE "\n" "" BuildDate ${foo3})
-else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    execute_process (COMMAND date OUTPUT_VARIABLE foo5) 
-    string(REPLACE "\n" "" BuildDate ${foo5})
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 
 # These include files include some subproject specific stuff
