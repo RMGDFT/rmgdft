@@ -63,6 +63,7 @@
 #include "transition.h"
 #include "prototypes_on.h"
 #include "Kbpsi.h"
+#include "Scalapack.h"
 
 
 #include "../Headers/common_prototypes.h"

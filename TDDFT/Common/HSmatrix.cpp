@@ -77,8 +77,6 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, Kpoi
     static KpointType *global_matrix1;
     static KpointType *global_matrix2;
 
-    KpointType *Agpu = NULL;
-    KpointType *NULLptr = NULL;
 
 #if GPU_ENABLED
 
@@ -150,7 +148,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, Kpoi
             first_nls = 0;
         }
 
-        for(int ist = 0;ist < ct.THREADS_PER_NODE;ist++) {
+        for(int ist = 0;ist < ct.MG_THREADS_PER_NODE;ist++) {
             thread_control[ist].job = HYBRID_SUBDIAG_APP_AB;
             thread_control[ist].sp = &kptr->Kstates[st1 + ist];
             thread_control[ist].p1 = (void *)&a_psi[(st1 + ist) * pbasis];
@@ -187,7 +185,8 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
     RT1 = new RmgTimer("Diagonalization: matrix setup/reduce");
     KpointType alpha(1.0);
     KpointType beta(0.0);
-    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1,
+num_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -199,7 +198,8 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
     // Compute S matrix
     KpointType alpha1(vel);
-    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, global_matrix2,
+num_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish

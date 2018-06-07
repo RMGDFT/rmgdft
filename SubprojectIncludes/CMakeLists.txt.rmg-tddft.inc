@@ -1,3 +1,5 @@
+target_link_libraries( ${rmg-tddft} RmgTddft)
+target_link_libraries (${rmg-tddft} Eldyn)
 if(USE_NUMA_INTERNAL)
 target_link_libraries(${rmg-tddft} ${NUMA_LIBRARIES})
 endif(USE_NUMA_INTERNAL)
@@ -10,7 +12,7 @@ target_link_libraries( ${rmg-tddft} symspg_static)
 # are needed to handle circular references
 target_link_libraries( ${rmg-tddft} RmgLib zfp)
 if(USE_NUMA_INTERNAL)
-target_link_libraries( ${rmg-tddft} RMG_Common ${NUMA_LIBRARIES})
+target_link_libraries( ${rmg-tddft} RMG_Common ${NUMA_LIBRARIES} zfp)
 endif(USE_NUMA_INTERNAL)
 target_link_libraries( ${rmg-tddft} InternalPseudo)
 target_link_libraries( ${rmg-tddft} Finite_diff RMG_Common RmgLib ${ZLIB} ${FFTW_LIBRARIES})
@@ -56,8 +58,5 @@ endif(CRAY_XK)
 target_link_libraries( ${rmg-tddft} ${Boost_LIBRARIES})
 if(USE_OPENBABEL_LIBS)
     target_link_libraries( ${rmg-tddft} ${OPENBABEL_LIBRARIES})
-
-target_link_libraries( ${rmg-tddft} RmgTddft)
-target_link_libraries (${rmg-tddft} Eldyn)
 endif(USE_OPENBABEL_LIBS)
 

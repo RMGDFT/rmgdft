@@ -69,8 +69,6 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
     static KpointType *tmp_arrayT;
     static KpointType *global_matrix1;
 
-    KpointType *Agpu = NULL;
-    KpointType *NULLptr = NULL;
     int factor = 1;
     if(!ct.is_gamma) factor = 2;
 
@@ -116,7 +114,8 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
     // Compute A matrix
     KpointType alpha(vel);
     KpointType beta(0.0);
-    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, pbasis, beta, global_matrix1, num_states, Agpu, NULLptr, NULLptr, false, true, false, true);
+    RmgGemm(trans_a, trans_n, num_states, num_states, pbasis, alpha, kptr->orbital_storage, pbasis, tmp_arrayT, 
+            pbasis, beta, global_matrix1, num_states);
 
     MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
