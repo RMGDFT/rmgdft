@@ -4,18 +4,14 @@ description="Carbon Nanotube"
 
 wavefunction_grid="72 72 20"
 
-subdiag_driver = "lapack"
-kohn_sham_mg_levels = "2"
-kohn_sham_time_step = "0.66000000"
+subdiag_driver = "scalapack"
 potential_grid_refinement="2"
-fine_grid_non_local_pp = "4"
-
 
 occupations_type=
 "Fixed" 
 #"Fermi Dirac"
 
-#potential_acceleration_constant_step = "1.0"
+potential_acceleration_constant_step = "1.0"
 unoccupied_states_per_kpoint="64"
 system_charge="0"
 
@@ -25,7 +21,6 @@ occupation_number_mixing="1.00"
 kpoint_mesh="1 1 4"
 kpoint_is_shift="0 0 0"
 
-kpoint_distribution="2"
 
 length_units=
 "Bohr"
@@ -43,7 +38,51 @@ atomic_coordinate_type=
 "Absolute"
 #"Cell Relative"
 
-initial_diagonalization="true"
+start_mode=
+#"Random Start"
+#"Restart From File"
+"LCAO Start"
+
+calculation_mode=
+"Quench Electrons"
+#"Band Structure Only"
+
+exchange_correlation_type=
+"LDA"
+
+rms_convergence_criterion="1e-7"
+
+charge_density_mixing="0.5"
+kohn_sham_mucycles = "2"
+kohn_sham_mg_levels = "2"
+
+charge_mixing_type=
+"Linear"
+#"Pulay"
+
+max_scf_steps="50"
+
+#freeze_occupied="true"
+#gw_residual_convergence_criterion="1e-6"
+
+##RMG2BGW options
+
+#wfng_flag="true"
+#wfng_file="wfn.complex"
+
+#rhog_flag="true"
+#rhog_file="rho.complex"
+
+#vxc_flag="true"
+#vxc_file="vxc.dat"
+
+#vxc_diag_nmin="1"
+#vxc_diag_nmax="47"
+
+#pseudopotential="
+#	C   ./C.UPF
+#"
+
 
 atoms =
 "
@@ -80,51 +119,3 @@ atoms =
  C 1.95570199e+01 1.11829581e+01 2.68503465e+00  1
  C 2.08405984e+01 1.31039915e+01 1.34252135e+00  1
 "
-
-#pseudopotential="
-#	C   ./C.UPF
-#"
-
-start_mode=
-#"Random Start"
-#"Restart From File"
-"LCAO Start"
-
-calculation_mode=
-"Quench Electrons"
-#"Band Structure Only"
-
-exchange_correlation_type=
-"LDA"
-
-rms_convergence_criterion="1e-7"
-
-charge_density_mixing="0.2"
-projector_mixing="0.4"
-
-charge_mixing_type=
-#"Linear"
-"Pulay"
-
-charge_pulay_order="5"
-charge_pulay_scale="0.2"
-
-max_scf_steps="50"
-
-
-#freeze_occupied="true"
-#gw_residual_convergence_criterion="1e-6"
-
-##RMG2BGW options
-
-#wfng_flag="true"
-#wfng_file="wfn.complex"
-
-#rhog_flag="true"
-#rhog_file="rho.complex"
-
-#vxc_flag="true"
-#vxc_file="vxc.dat"
-
-#vxc_diag_nmin="1"
-#vxc_diag_nmax="47"
