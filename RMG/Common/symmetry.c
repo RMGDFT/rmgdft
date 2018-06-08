@@ -53,6 +53,7 @@ int spg_get_symmetry(int *rotation,
 
 void  symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx, int *iyy, int *izz,
               int nx, int ny, int nz);
+void init_symm_ijk(void);
 
 /* This routine is used to initialize the symmetry structures */
 void init_sym (void)
@@ -274,10 +275,9 @@ void symmetrize_rho (double * rho)
 {
 
     int idx, ix, iy, iz, xoff, yoff, zoff;
-    int ix1, iy1, iz1;
     int isy, ixx, iyy, izz;
     double *da;
-    double t1, tem;
+    double t1;
 
     int FPX0_GRID = get_FPX0_GRID();
     int FPY0_GRID = get_FPY0_GRID();
@@ -397,13 +397,11 @@ void symforce ()
     my_free(force);
 }                               /* end symforce */
 
-void init_symm_ijk()
+void init_symm_ijk(void)
 {
-    int idx, ix, iy, iz, xoff, yoff, zoff;
+    int ix, iy, iz, xoff, yoff, zoff;
     int ix1, iy1, iz1;
     int isy, ixx, iyy, izz;
-    double *da;
-    double t1, tem;
 
     int FPX0_GRID = get_FPX0_GRID();
     int FPY0_GRID = get_FPY0_GRID();
