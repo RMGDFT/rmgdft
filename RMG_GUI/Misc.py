@@ -100,6 +100,12 @@ class Misc(QtGui.QWidget):
                             ])
         form_layout.addRow(label, self.VH_solver)
 
+        self.local_pp_delocalization = QtGui.QCheckBox('local pseudopotentials extended to whole cell(delocalization)')
+        form_layout.addRow(self.local_pp_delocalization)
+        self.proj_delocalization = QtGui.QCheckBox('non-local projectors extended to whole cell(delocalization)')
+        form_layout.addRow(self.proj_delocalization)
+
+
     def state(self):
         """
            @return A dictionary containing the widget state.
@@ -111,6 +117,12 @@ class Misc(QtGui.QWidget):
         input_misc_lines +=   'poisson_time_step    = "'               + str(self._poissonstep.text()) +'"\n'
         input_misc_lines +=   'kohn_sham_solver  = "'               + (self.KS_solver.currentText()) +'"\n'
         input_misc_lines +=   'poisson_solver  = "'               + (self.VH_solver.currentText()) +'"\n'
+
+        if(self.local_pp_delocalization.isChecked()):
+            input_misc_lines += 'localize_localpp = "false"\n'
+        if(self.proj_delocalization.isChecked()):
+            input_misc_lines += 'localize_projectors = "false"\n'
+
 
         state={ 'input_misc_lines': input_misc_lines }
         return state
