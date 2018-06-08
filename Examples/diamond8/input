@@ -62,8 +62,8 @@ C       0.875000      0.875000      0.375000   1
 
 
 poisson_solver = "pfft"
-potential_acceleration_constant_step = "0.00000000"
-#poisson_solver = "multigrid"
+potential_acceleration_constant_step = "1.00000000"
+
 start_mode=
 "LCAO Start"
 #"Restart From File"
@@ -72,7 +72,6 @@ start_mode=
 calculation_mode= "Quench Electrons"
 kpoint_mesh = "2 2 2 "
 kpoint_distribution = "4"
-
 
 
 # Criterion used to judge SCF convergency 
@@ -88,11 +87,10 @@ initial_diagonalization = "true"
 subdiag_driver="lapack"
 
 # Potential acceleration options
-# By default poisson is set to zero but it may work better for some systems
-# Setting it to 1.0 is a good option.
 potential_acceleration_constant_step="1.0"
-potential_acceleration_poisson_step="0.0"
 
 kohn_sham_mucycles = "3"
-#localize_projectors = "true"
+
+# For small cells it is usually better to let the projectors span
+# all space instead of localizing them so set this to false.
 localize_projectors = "false"
