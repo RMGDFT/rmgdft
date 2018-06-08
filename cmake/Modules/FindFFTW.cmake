@@ -17,11 +17,11 @@ endif(NOT FFTW_INCLUDES)
 
 find_library (FFTW_LIBRARIES NAMES dfftw3)
 if(NOT FFTW_LIBRARIES)
-	find_library (FFTW_LIBRARIES NAMES libfftw3.a HINTS "$ENV{FFTW_LIB}")
+	find_library (FFTW_LIBRARIES NAMES libfftw3.a HINTS "$ENV{FFTW_LIB}" "$ENV{FFTW_DIR}")
 endif(NOT FFTW_LIBRARIES)
 
 if(NOT FFTW_LIBRARIES)
-    find_library (FFTW_LIBRARIES NAMES fftw3 HINTS "$ENV{FFTW_LIB}")
+    find_library (FFTW_LIBRARIES NAMES fftw3 HINTS "$ENV{FFTW_LIB}" "$ENV{FFTW_DIR}")
 endif(NOT FFTW_LIBRARIES)
 
 # use libfftw3_mpi.so if you have errors like "fftw_mktensor_4d"
