@@ -15,9 +15,8 @@ find_library (SCALAPACK_LIBRARIES NAMES scalapack)
 if(NOT SCALAPACK_LIBRARIES)
     get_filename_component(RMG_MPI_LIB_PATH ${MPI_C_LIBRARIES} PATH CACHE)
 endif()
-
 find_library (SCALAPACK_LIBRARIES NAMES scalapack
-HINTS "${RMG_MPI_LIB_PATH}"
+    HINTS "${RMG_MPI_LIB_PATH}" "$ENV{SCALAPACK_LIB}"
 )
 
 # handle the QUIETLY and REQUIRED arguments and set SCALAPACK_FOUND to TRUE if
