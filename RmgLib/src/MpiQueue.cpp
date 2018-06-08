@@ -248,7 +248,14 @@ void MpiQueue::waitgroup(std::atomic_int &count)
 {
     while(count.load(std::memory_order_acquire))
     {
-        MpiQueue::spin(5);
+        if(this->spin_workers)
+        {
+            MpiQueue::spin(5);
+        }
+        else
+        {
+            std::this_thread::yield();
+        }
     }
 }
 
