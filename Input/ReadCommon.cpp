@@ -542,10 +542,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of global grid post-smoothing steps to perform after a multigrid preconditioner iteration.\n",
                      "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2.\n");
 
-    If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 1,
+    If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 2,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_mucycles must lie in the range (1,3). Resetting to the default value of 1.\n");
+                     "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 2.\n");
 
     If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 4, 12, 8,
                      CHECK_AND_FIX, OPTIONAL,
