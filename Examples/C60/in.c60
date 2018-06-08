@@ -1,11 +1,14 @@
 # Description of run.
 description="C60 example using Davidson diagonalization"
 
+
 # Wavefunction grid
 wavefunction_grid="48 48 48"
+potential_grid_refinement = "2"
 
 # number of unoccupied states
 unoccupied_states_per_kpoint="18"
+preconditioner_threshold = "0.0001"
 
 # Units for bravais_lattice_type and atoms
 #crds_units=
@@ -13,8 +16,6 @@ unoccupied_states_per_kpoint="18"
 #"Angstrom"
 
 bravais_lattice_type="Cubic Primitive"
-
-state_block_size="64"
 
 # Lattice constants 
 a_length="18.0"
@@ -27,7 +28,6 @@ gamma="0.0"
 start_mode="LCAO Start"
 #start_mode="Restart From File"
 
-
 calculation_mode="Quench Electrons"
 #calculation_mode="Relax Structure"
 
@@ -36,11 +36,14 @@ subdiag_driver="scalapack"
 charge_mixing_type = "Broyden"
 charge_density_mixing = "0.7"
 kohn_sham_mucycles = "3"
-
+max_scf_steps="20"
 potential_acceleration_constant_step="1.0"
+write_data_period="50"
 
 # Criterion used to judge SCF convergency 
 energy_convergence_criterion="1.0e-9"
+#rms_convergence_criterion = "1.0e-10"
+
 atomic_coordinate_type="Absolute"
 
 # List  atomic symbol, coordinates, and movable flag (1 == movable) 
