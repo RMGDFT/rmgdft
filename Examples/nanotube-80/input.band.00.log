@@ -1,0 +1,256 @@
+RMG initialization ... 1 image(s) total, 1 per node. 16 MPI processes/image. Thread level 2.
+
+spin flag =0
+read_data: psi grid = 72 72 20
+read_data: pe grid = 4 2 2
+read_data: grid_size  = 6480
+read_data: fine = 2 2 2
+read_data: fgrid_size = 51840
+read_data: gamma = 0
+read_data: nk = 26
+read_data: ns = 128
+read_data: read 'vh'
+read_data: read 'rho'
+read_data: read 'vxc'
+read_data: read 'wfns'
+read_data: read 'occupations'
+
+
+                     * * * * * * * * * *
+                     *    R   M   G    *
+                     * * * * * * * * * *
+
+     -- A Real Space Multigrid Electronic structure code --
+     --      More information at www.rmgdft.org          --
+
+Code Revision 4433, Last change on 2018-06-07
+Build Date: Jun  8 2018  10:45:31
+Start time: Fri Jun  8 14:31:28 2018
+
+Files
+   Control input file:        input.band
+   Data output file:          Waves/wave.out
+
+Run Setup
+    Calculation type:         Band structure calculation.
+    Description:              Carbon Nanotube
+    Orbital Initialization:   LCAO (128 LCAO and 0 random orbitals)
+    Exchange Correlation:     pz
+    Spin Polarization:        OFF
+    System charge:            Neutral
+
+Processor Topology
+   Total PEs:                 16
+   X direction:               4
+   Y direction:               2
+   Z direction:               2
+   MG Threads/PE:             1
+   OMP Threads/PE:            1
+
+Grid Points
+    X:  Total: 72   Per PE: 18   Spacing:0.402 a0  
+    Y:  Total: 72   Per PE: 36   Spacing:0.402 a0  
+    Z:  Total: 20   Per PE: 10   Spacing:0.402 a0  
+
+    Equivalent energy cutoff:    30.548 Ry
+
+    Charge density grid:         2 times finer
+    Non-local projectors grid:   4 times finer
+
+
+Lattice (Cell) Setup
+    Type:                       Orthorhombic_primitive
+    Volume (a0^3):               6731.69
+    Boundary conditions:        Periodic
+
+    X Basis Vector:      28.938       0.000       0.000 a0
+    Y Basis Vector:       0.000      28.938       0.000 a0
+    Z Basis Vector:       0.000       0.000       8.038 a0
+
+K-points
+    Brillouin Zone sampling with 26 K-points (orbitals are complex)
+
+         Kx      Ky        Kz     Weight
+      0.0000     0.0000     0.0000   1.000
+      0.0000     0.0000     0.0200   1.000
+      0.0000     0.0000     0.0400   1.000
+      0.0000     0.0000     0.0600   1.000
+      0.0000     0.0000     0.0800   1.000
+      0.0000     0.0000     0.1000   1.000
+      0.0000     0.0000     0.1200   1.000
+      0.0000     0.0000     0.1400   1.000
+      0.0000     0.0000     0.1600   1.000
+      0.0000     0.0000     0.1800   1.000
+      0.0000     0.0000     0.2000   1.000
+      0.0000     0.0000     0.2200   1.000
+      0.0000     0.0000     0.2400   1.000
+      0.0000     0.0000     0.2600   1.000
+      0.0000     0.0000     0.2800   1.000
+      0.0000     0.0000     0.3000   1.000
+      0.0000     0.0000     0.3200   1.000
+      0.0000     0.0000     0.3400   1.000
+      0.0000     0.0000     0.3600   1.000
+      0.0000     0.0000     0.3800   1.000
+      0.0000     0.0000     0.4000   1.000
+      0.0000     0.0000     0.4200   1.000
+      0.0000     0.0000     0.4400   1.000
+      0.0000     0.0000     0.4600   1.000
+      0.0000     0.0000     0.4800   1.000
+      0.0000     0.0000     0.5000   1.000
+
+Ions and States
+    Number of ions:                          32
+    Number of species:                       1
+    Number of states:                        128
+
+Run Parameters
+    SCF Convergence criterion (potential):   1.00e-07
+    SCF Convergence criterion (energy):      1.00e-13
+    Max SCF steps:                           5
+    Max MD steps                             100
+    Timestep for molecular dynamics:          50.00000000
+    Restart data write frequency:            5 MD steps
+
+SCF Cycle Settings
+    Charge density mixing:                   Linear  (Mixing constant 0.20)
+    Hartree Solver:                          PFFT
+    Interpolation type:                      FFT
+    Projector mixing:                        Linear, mixing constant 0.00
+
+Subspace Diagonalization Options
+    Frequency:                               every 1 SCF step(s)
+    Driver:                                  Lapack
+    Initial diagonalization:                 ON
+    Folded spectrum:                         OFF
+
+Filtering Cutoff  Parameters
+    Wavefunction grid (cparm):               0.800
+    Charge density grid (rhocparm):          0.800
+    NL projectors grid (betacparm):          2.400
+
+Multigrid (MG) Parameters
+    Psi MG levels:                           2
+    Psi global step:                         0.660 
+    Psi pre:                                 2
+    Psi post:                                2
+
+
+Atomic Species Information
+(PP = Pseudopotential, US = Ultrasoft, NC = Norm Conserving)
+----------------------------------------------------------------------------------------
+|Index|Symbol| Mass|Valence| PP |  Comp  |Local| Local|Nlocal|  LCAO|        PP        |
+|     |      |     |       |Type|Gaussian|  l  |Radius|Radius|Radius|    Functional    |
+----------------------------------------------------------------------------------------
+|    1|     C| 12.0|   4.00|  US|    0.62|    0|  8.34|  7.00|  9.00|SLA  PW   PBE  PBE|
+----------------------------------------------------------------------------------------
+
+
+Initial Ionic Positions And Displacements
+Species      X           Y           Z           dX          dY          dZ
+  C       21.2913     15.3700      5.3701      0.0000      0.0000      0.0000
+  C       20.8406     17.6360      6.7126      0.0000      0.0000      0.0000
+  C       21.2913     15.3700      2.6850      0.0000      0.0000      0.0000
+  C       19.5570     19.5570      5.3701      0.0000      0.0000      0.0000
+  C       17.6360     20.8406      6.7126      0.0000      0.0000      0.0000
+  C       20.8406     17.6360      1.3425      0.0000      0.0000      0.0000
+  C       19.5570     19.5570      2.6850      0.0000      0.0000      0.0000
+  C       15.3700     21.2913      5.3701      0.0000      0.0000      0.0000
+  C       13.1040     20.8406      6.7126      0.0000      0.0000      0.0000
+  C       17.6360     20.8406      1.3425      0.0000      0.0000      0.0000
+  C       15.3700     21.2913      2.6850      0.0000      0.0000      0.0000
+  C       11.1830     19.5570      5.3701      0.0000      0.0000      0.0000
+  C        9.8994     17.6360      6.7126      0.0000      0.0000      0.0000
+  C       13.1040     20.8406      1.3425      0.0000      0.0000      0.0000
+  C       11.1830     19.5570      2.6850      0.0000      0.0000      0.0000
+  C        9.4486     15.3700      5.3701      0.0000      0.0000      0.0000
+  C        9.8994     13.1040      6.7126      0.0000      0.0000      0.0000
+  C        9.8994     17.6360      1.3425      0.0000      0.0000      0.0000
+  C        9.4486     15.3700      2.6850      0.0000      0.0000      0.0000
+  C       11.1830     11.1830      5.3701      0.0000      0.0000      0.0000
+  C       13.1040      9.8994      6.7126      0.0000      0.0000      0.0000
+  C        9.8994     13.1040      1.3425      0.0000      0.0000      0.0000
+  C       11.1830     11.1830      2.6850      0.0000      0.0000      0.0000
+  C       15.3700      9.4486      5.3701      0.0000      0.0000      0.0000
+  C       17.6360      9.8994      6.7126      0.0000      0.0000      0.0000
+  C       13.1040      9.8994      1.3425      0.0000      0.0000      0.0000
+  C       15.3700      9.4486      2.6850      0.0000      0.0000      0.0000
+  C       19.5570     11.1830      5.3701      0.0000      0.0000      0.0000
+  C       20.8406     13.1040      6.7126      0.0000      0.0000      0.0000
+  C       17.6360      9.8994      1.3425      0.0000      0.0000      0.0000
+  C       19.5570     11.1830      2.6850      0.0000      0.0000      0.0000
+  C       20.8406     13.1040      1.3425      0.0000      0.0000      0.0000
+
+
+--------TIMING INFORMATION FOR Processor owned the most atoms----------------
+                                        Total time               Per SCF/step
+
+1-TOTAL                                           594.38              118.88
+-----------------------------------------------------------------------------
+  1-TOTAL: Init                                     7.07                1.41
+  1-TOTAL: run                                    587.31              117.46
+
+2-Init                                              7.07                1.41
+-----------------------------------------------------------------------------
+  2-Init: KpointClass                               0.58                0.12
+  2-Init: ReinitIonicPotentials                     5.78                1.16
+  2-Init: qfunct                                    0.26                0.05
+  2-Init: radial potentials                         0.19                0.04
+  2-Init: symmetry                                  0.00                0.00
+  2-Init: weights                                   0.07                0.01
+
+3-MgridSubspace                                   587.26              117.45
+-----------------------------------------------------------------------------
+  3-MgridSubspace: AppNls                          87.58               17.52
+  3-MgridSubspace: Beta x psi                      94.99               19.00
+  3-MgridSubspace: Diagonalization                262.19               52.44
+  3-MgridSubspace: Mg_eig                         142.42               28.48
+
+3-ReinitIonicPotentials                             5.78                1.16
+-----------------------------------------------------------------------------
+  3-ReinitIonicPotentials: GetNlop                  0.10                0.02
+  3-ReinitIonicPotentials: GetWeight                4.51                0.90
+  3-ReinitIonicPotentials: get_QI                   0.00                0.00
+  3-ReinitIonicPotentials: get_qqq                  0.02                0.00
+  3-ReinitIonicPotentials: init_nuc                 0.19                0.04
+
+4-Diagonalization                                 262.19               52.44
+-----------------------------------------------------------------------------
+  4-Diagonalization: AppNls                        90.20               18.04
+  4-Diagonalization: Eigensolver                    6.60                1.32
+  4-Diagonalization: Invert Bij                     1.22                0.24
+  4-Diagonalization: Update orbitals               30.80                6.16
+  4-Diagonalization: apply operators              124.49               24.90
+  4-Diagonalization: dsygvx/zhegvx/folded           3.65                0.73
+  4-Diagonalization: matrix setup                   1.52                0.30
+  4-Diagonalization: matrix setup/reduce           97.94               19.59
+
+5-Functional                                        0.00                0.00
+
+GlobalSums                                          0.03                0.01
+
+Init                                                6.48                1.30
+
+MgridSub in band                                  587.26              117.45
+
+Weight                                              0.07                0.01
+-----------------------------------------------------------------------------
+  Weight: phase and set                             0.07                0.01
+  Weight: proj cal                                  0.07                0.01
+
+radial beta                                         0.04                0.01
+
+
+------------------------- TIMING INFORMATION FOR THREADS  -------------------
+
+                                           Min            Max            Avg
+App_gradient                           12.39          12.39          12.39
+-----------------------------------------------------------------------------
+
+GlobalSums                             15.38          15.38          15.38
+-----------------------------------------------------------------------------
+
+Mg_eig                                141.20         141.20         141.20
+-----------------------------------------------------------------------------
+  Mg_eig: apply A operator             77.35          77.35          77.35
+  Mg_eig: apply B operator              2.97           2.97           2.97
+  Mg_eig: mgrid_solv                   15.20          15.20          15.20

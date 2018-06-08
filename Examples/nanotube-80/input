@@ -7,6 +7,9 @@ wavefunction_grid="72 72 20"
 subdiag_driver = "scalapack"
 potential_grid_refinement="2"
 
+localize_localpp = "false"
+localize_projectors = "false"
+
 occupations_type=
 "Fixed" 
 #"Fermi Dirac"
