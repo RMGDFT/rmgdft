@@ -149,7 +149,7 @@ void init_sym (void)
         if(frac1 < symprec && frac2 < symprec &&frac3 < symprec)
         {
 
-            printf("\n sym operation after considering real space grid # %d",nsym);
+            if(ct.verbose) printf("\n sym operation after considering real space grid # %d",nsym);
             for(i = 0; i < 3; i++)
                 for(j = 0; j < 3; j++)
                 {
@@ -169,9 +169,9 @@ void init_sym (void)
 
             for(i = 0; i < 3; i++)
             {
-                printf("\n      %3d  %3d  %3d", s[nsym * 9 + i *3 + 0],s[nsym * 9 + i *3 + 1],s[nsym * 9 + i *3 + 2]);
+                if(ct.verbose) printf("\n      %3d  %3d  %3d", s[nsym * 9 + i *3 + 0],s[nsym * 9 + i *3 + 1],s[nsym * 9 + i *3 + 2]);
             }
-            printf("  with translation of (%d %d %d) grids ", ftau[nsym*3 + 0],ftau[nsym*3 + 1],ftau[nsym*3 + 2]);
+            if(ct.verbose) printf("  with translation of (%d %d %d) grids ", ftau[nsym*3 + 0],ftau[nsym*3 + 1],ftau[nsym*3 + 2]);
             nsym++;
         }
         else
@@ -186,8 +186,8 @@ void init_sym (void)
     }
 
     ct.nsym = nsym;
-    printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
-    printf("\n number of sym operation  after considering real space grid: %d",nsym);
+    if(ct.verbose) printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
+    if(ct.verbose) printf("\n number of sym operation  after considering real space grid: %d",nsym);
     assert(nsym >0);
     if(nsym == 1) ct.is_use_symmetry = 0;
 
