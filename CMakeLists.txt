@@ -765,8 +765,8 @@ endif(USE_LINUX_MKL_LIBS)
 install(TARGETS ${rmg} 
 DESTINATION bin)
 
-install(FILES RmgLib/libRmgLibShared.so RmgLib/libRmgLib.a
-DESTINATION lib)
+#install(FILES RmgLib/libRmgLibShared.so RmgLib/libRmgLib.a
+#DESTINATION lib)
 
 install(DIRECTORY Examples DESTINATION share/rmg)
 
