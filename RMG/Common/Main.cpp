@@ -107,7 +107,7 @@ extern "C" void term_handler(int signal)
 {
     FreeAllSharedMemory();
     DeleteNvmeArrays();
-    MPI_Finalize ();
+    MPI_Abort( MPI_COMM_WORLD, 0 );
 
 #if GPU_ENABLED
     //cublasDestroy(ct.cublas_handle);
