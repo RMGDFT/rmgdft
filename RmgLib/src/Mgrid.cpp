@@ -80,6 +80,17 @@ template void Mgrid::solv_pois (double *, double *, double *, int, int, int, dou
 
 template void Mgrid::solv_pois (float *, float *, float *, int, int, int, double, double, double, double, double, double, double *);
 
+template void Mgrid::mg_restrict(float*, float*, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mg_restrict(double*, double*, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mg_restrict(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mg_restrict(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
+
+template void Mgrid::mg_prolong(float*, float*, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mg_prolong(double*, double*, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mg_prolong(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mg_prolong(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
+
+
 //template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
 int Mgrid::level_warning;
