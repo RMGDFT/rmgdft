@@ -54,7 +54,7 @@ void InitDelocalizedWeight (void)
     double hxx = get_hxgrid() * get_xside();
     double hyy = get_hygrid() * get_yside();
     double hzz = get_hzgrid() * get_zside();
-    double vol = hxx * hyy * hzz * global_basis;
+    double vol = Rmg_L.get_omega();
 
     std::complex<double> I_t(0.0, 1.0);
     std::complex<double> phase = PI * I_t;
