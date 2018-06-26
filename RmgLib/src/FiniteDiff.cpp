@@ -1706,19 +1706,18 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
 {
 
     int ibrav = L->get_ibrav_type();
-    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
-    }
 
     int ixs = (dimy + 8) * (dimz + 8);
     int iys = (dimz + 8);
 
+    double hf = 1.0;
+    if(ibrav == HEXAGONAL) hf = 2.0/3.0;
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
     double th2 (-205.0 / (72.0 * h2));
-    RmgType t1x (8.0 / ( 5.0 * h2));
-    RmgType t2x (-1.0 / (5.0 * h2));
-    RmgType t3x (8.0 / (315.0 * h2));
-    RmgType t4x (-1.0 / (560.0 * h2));
+    RmgType t1x (8.0 * hf / ( 5.0 * h2));
+    RmgType t2x (-1.0 * hf / (5.0 * h2));
+    RmgType t3x (8.0 * hf / (315.0 * h2));
+    RmgType t4x (-1.0 * hf / (560.0 * h2));
 
     h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
     th2 -= (205.0 / (72.0 * h2));
@@ -1733,6 +1732,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     RmgType t2z (-1.0 / (5.0 * h2));
     RmgType t3z (8.0 / (315.0 * h2));
     RmgType t4z (-1.0 / (560.0 * h2));
+
     RmgType t0 (th2);
 
     if(this->alt_laplacian)
@@ -1760,44 +1760,106 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
         t0 = (th2);
     }
 
-    for (int ix = 4; ix < dimx + 4; ix++)
+    switch(ibrav)
     {
+        case CUBIC_PRIMITIVE:
+        case ORTHORHOMBIC_PRIMITIVE:
 
-        for (int iy = 4; iy < dimy + 4; iy++)
-        {
-
-            RmgType *A = &a[iy*iys + ix*ixs];
-            RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
-
-            for (int iz = 4; iz < dimz + 4; iz++)
+            for (int ix = 4; ix < dimx + 4; ix++)
             {
-                B[iz] = t0 * A[iz] +
-                        t1z * (A[iz + 1] + A[iz - 1]) +
-                        t2z * (A[iz + 2] + A[iz - 2]) +
-                        t3z * (A[iz + 3] + A[iz - 3]) +
-                        t4z * (A[iz + 4] + A[iz - 4]);
+
+                for (int iy = 4; iy < dimy + 4; iy++)
+                {
+
+                    RmgType *A = &a[iy*iys + ix*ixs];
+                    RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] = t0 * A[iz] +
+                                t1z * (A[iz + 1] + A[iz - 1]) +
+                                t2z * (A[iz + 2] + A[iz - 2]) +
+                                t3z * (A[iz + 3] + A[iz - 3]) +
+                                t4z * (A[iz + 4] + A[iz - 4]);
+                    }
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1y * (A[iz + iys] + A[iz - iys]) +
+                                t2y * (A[iz + 2*iys] + A[iz - 2*iys]) +
+                                t3y * (A[iz + 3*iys] + A[iz - 3*iys]) +
+                                t4y * (A[iz + 4*iys] + A[iz - 4*iys]);
+                    }
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1x * (A[iz + ixs] + A[iz - ixs]) +
+                                t2x * (A[iz + 2*ixs] + A[iz - 2*ixs]) +
+                                t3x * (A[iz + 3*ixs] + A[iz - 3*ixs]) +
+                                t4x * (A[iz + 4*ixs] + A[iz - 4*ixs]);
+                    }                   /* end for */
+
+                }                       /* end for */
+            }                           /* end for */
+            break;
+
+        case HEXAGONAL:
+
+            for (int ix = 4; ix < dimx + 4; ix++)
+            {
+
+                for (int iy = 4; iy < dimy + 4; iy++)
+                {
+
+                    RmgType *A = &a[iy*iys + ix*ixs];
+                    RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
+                    // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] = t0 * A[iz] +
+                                t1z * (A[iz + 1] + A[iz - 1]) +
+                                t2z * (A[iz + 2] + A[iz - 2]) +
+                                t3z * (A[iz + 3] + A[iz - 3]) +
+                                t4z * (A[iz + 4] + A[iz - 4]);
+                    }
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1x * (A[iz + iys] + A[iz - iys]) +
+                                t2x * (A[iz + 2*iys] + A[iz - 2*iys]) +
+                                t3x * (A[iz + 3*iys] + A[iz - 3*iys]) +
+                                t4x * (A[iz + 4*iys] + A[iz - 4*iys]);
+                    }
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1x * (A[iz + ixs] + A[iz - ixs]) +
+                                t2x * (A[iz + 2*ixs] + A[iz - 2*ixs]) +
+                                t3x * (A[iz + 3*ixs] + A[iz - 3*ixs]) +
+                                t4x * (A[iz + 4*ixs] + A[iz - 4*ixs]);
+                    }                   /* end for */
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                                t1x * (A[iz - ixs + iys] + A[iz + ixs - iys]) +
+                                t2x * (A[iz - 2*ixs + 2*iys] + A[iz + 2*ixs - 2*iys]) +
+                                t3x * (A[iz - 3*ixs + 3*iys] + A[iz + 3*ixs - 3*iys]) +
+                                t4x * (A[iz - 4*ixs + 4*iys] + A[iz + 4*ixs - 4*iys]);
+                    }                   /* end for */
+
+                }
             }
 
-            for (int iz = 4; iz < dimz + 4; iz++)
-            {
-                B[iz] +=
-                        t1y * (A[iz + iys] + A[iz - iys]) +
-                        t2y * (A[iz + 2*iys] + A[iz - 2*iys]) +
-                        t3y * (A[iz + 3*iys] + A[iz - 3*iys]) +
-                        t4y * (A[iz + 4*iys] + A[iz - 4*iys]);
-            }
+            break;
+        default:
+            rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
 
-            for (int iz = 4; iz < dimz + 4; iz++)
-            {
-                B[iz] +=
-                        t1x * (A[iz + ixs] + A[iz - ixs]) +
-                        t2x * (A[iz + 2*ixs] + A[iz - 2*ixs]) +
-                        t3x * (A[iz + 3*ixs] + A[iz - 3*ixs]) +
-                        t4x * (A[iz + 4*ixs] + A[iz - 4*ixs]);
-            }                   /* end for */
-
-        }                       /* end for */
-    }                           /* end for */
+    }
 
     /* Return the diagonal component of the operator */
     return (double)std::real(t0);
@@ -1806,7 +1868,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
 }                               /* end app8_del2 */
 
 
-    template <typename RmgType>
+template <typename RmgType>
 double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
         double gridhx, double gridhy, double gridhz)
 {
