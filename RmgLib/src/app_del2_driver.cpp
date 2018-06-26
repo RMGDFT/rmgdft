@@ -68,6 +68,7 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
 
     double cc = 0.0;
     FiniteDiff FD(L, alt_flag);
+    int ibrav = L->get_ibrav_type();
     int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
     int images = order / 2;
     size_t alloc = (sbasis + 64) * sizeof(RmgType);
@@ -85,7 +86,10 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
     }
     
 
-    T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
+    if(ibrav == HEXAGONAL)
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
+    else
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
     if(order == APP_CI_SECOND) {
         cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
