@@ -25,6 +25,7 @@
 #include "Lattice.h"
 #include "FiniteDiff.h"
 #include "transition.h"
+#include "RmgParallelFft.h"
 
 // Applies Mehrstellen left hand side operator to a and returns result in b
 // The first set of functions takes the input and output grids and a char string that defines
@@ -60,7 +61,9 @@ template double ApplyAOperator<std::complex<double> >(Lattice *, TradeImages *, 
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, DataType *gz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
 {
-    
+//FftLaplacianCoarse((double *)a, (double *)b);    
+//return -136.666667;
+
     double cc = 0.0;
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
     int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
@@ -80,7 +83,10 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
     }
 
 
-    Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
+    if(Rmg_L.get_ibrav_type() == HEXAGONAL)
+        Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
+    else
+       Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
     // First apply the laplacian
     if(order == APP_CI_FOURTH) {
@@ -111,7 +117,6 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
     }
 
     if(alloc > 110592) delete [] rptr;
-
     return cc;
 
 }
@@ -188,6 +193,8 @@ double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int
     }
     else if(ct.discretization == CENTRAL_DISCRETIZATION) {
 
+//FftLaplacianCoarse((double *)a, (double *)b);    
+//return -136.666667;
         double cc = CPP_app_del2_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, ct.alt_laplacian);
         return cc;
 
