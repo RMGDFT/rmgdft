@@ -63,8 +63,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     gcut = PI/hxx + 1.0e-6;
 gcut = (xdim/2) * 2.0 * PI/(hxx * xdim) + 1.0e-6;
 
-
-    double vol = hxx * hyy * hzz * xdim * ydim * zdim;
+    double vol = Rmg_L.get_omega() * xdim * ydim * zdim / (get_NX_GRID() * get_NY_GRID() * get_NZ_GRID()); 
 
     std::complex<double> I_t(0.0, 1.0);
     std::complex<double> IL = std::pow(-I_t, l);
