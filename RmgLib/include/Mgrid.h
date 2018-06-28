@@ -45,6 +45,7 @@ class Mgrid {
 private:
     Lattice *L;
     TradeImages *T;
+    int ibrav;
     int level_flag;
 
     static int level_warning;

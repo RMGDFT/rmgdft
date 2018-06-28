@@ -35,7 +35,7 @@ void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double *
 {
 
     int i1, j1, k1;
-
+    double tpiba = 2.0*PI / Rmg_L.celldm[0];
 
     // If we are running with localized projectors then nxldim,nlydim and nlzdim
     // are odd numbers so the loop from (-nlxdim / 2) to (nlxdim / 2) is correct but
@@ -47,11 +47,6 @@ void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double *
     if(nlxdim % 2) ixadj = 0;
     if(nlydim % 2) iyadj = 0;
     if(nlzdim % 2) izadj = 0;
-
-    /*Reciprocal grid spacings in x, y and z directions */
-    double rgs_x = 2.0 * PI / (Rmg_G->get_hxgrid(1) * Rmg_L.get_xside());
-    double rgs_y = 2.0 * PI / (Rmg_G->get_hygrid(1) * Rmg_L.get_yside());
-    double rgs_z = 2.0 * PI / (Rmg_G->get_hzgrid(1) * Rmg_L.get_zside());
 
     int ilo = 0;
     int jlo = 0;
@@ -95,13 +90,10 @@ void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double *
                 if(map) 
                 {
                     /* Phase factor */
-                    double theta = 
-                        nlcdrs[0] * (( (double) i) * rgs_x / (double)nlxdim + kvec[0]) +
-                        nlcdrs[1] * (( (double) j) * rgs_y / (double)nlydim + kvec[1]) + 
-                        nlcdrs[2] * (( (double) k) * rgs_z / (double)nlzdim + kvec[2]);
-
                     int idx1 = (i1 - ilo) * (jhi - jlo) * (khi - klo) + (j1 - jlo) * (khi - klo) + (k1 - klo);
-
+                    double theta = nlcdrs[0] * (tpiba*coarse_pwaves->g[idx1].a[0] + kvec[0]) +
+                                   nlcdrs[1] * (tpiba*coarse_pwaves->g[idx1].a[1] + kvec[1]) +
+                                   nlcdrs[2] * (tpiba*coarse_pwaves->g[idx1].a[2] + kvec[2]);
 
                     phase_fftw[idx1] = exp(std::complex<double>(0.0, theta));
                 }
