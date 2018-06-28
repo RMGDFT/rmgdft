@@ -2717,7 +2717,7 @@ void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wy
     RmgType t2z (-1.0 / (5.0 * gridhz * L->get_zside()));
     RmgType t3z (4.0 / (105.0 * gridhz * L->get_zside()));
     RmgType t4z (-1.0 / (280.0 * gridhz * L->get_zside()));
-
+    RmgType hex_t(0.5*1.154700538379);
 
     switch (ibrav)
     {
@@ -2765,6 +2765,58 @@ void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wy
                     }               /* end for */
                 }                   /* end for */
             }                       /* end for */
+
+            break;
+
+        case HEXAGONAL:
+
+            for (int ix = 4; ix < dimx + 4; ix++)
+            {
+
+                for (int iy = 4; iy < dimy + 4; iy++)
+                {
+
+                    RmgType *A = &wxr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    RmgType *B = &rptr[ix * ixs + iy * iys];
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        A[iz] =
+                            t4x * ( B[iz + 4*ixs] - B[iz - 4*ixs]) +
+                            t3x * ( B[iz + 3*ixs] - B[iz - 3*ixs]) +
+                            t2x * ( B[iz + 2*ixs] - B[iz - 2*ixs]) +
+                            t1x * ( B[iz + ixs] - B[iz - ixs]);
+                    }
+
+                    A = &wyr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        A[iz] =
+                            hex_t * t4y * ( B[iz + 4*iys] - B[iz - 4*iys]) +
+                            hex_t * t3y * ( B[iz + 3*iys] - B[iz - 3*iys]) +
+                            hex_t * t2y * ( B[iz + 2*iys] - B[iz - 2*iys]) +
+                            hex_t * t1y * ( B[iz + iys] - B[iz - iys]) +
+                            hex_t * t4y * ( B[iz - 4*ixs + 4*iys] - B[iz + 4*ixs - 4*iys]) +
+                            hex_t * t3y * ( B[iz - 3*ixs + 3*iys] - B[iz + 3*ixs - 3*iys]) +
+                            hex_t * t2y * ( B[iz - 2*ixs + 2*iys] - B[iz + 2*ixs - 2*iys]) +
+                            hex_t * t1y * ( B[iz - ixs + iys] - B[iz + ixs - iys]);
+
+                    
+                    }
+
+                    A = &wzr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        A[iz] =
+                            t4z * ( B[iz + 4] - B[iz - 4]) +
+                            t3z * ( B[iz + 3] - B[iz - 3]) +
+                            t2z * ( B[iz + 2] - B[iz - 2]) +
+                            t1z * ( B[iz + 1] - B[iz - 1]);
+
+                    }               /* end for */
+                }                   /* end for */
+            }                       /* end for */
+
+            break;
 
             break;
 

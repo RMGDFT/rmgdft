@@ -48,8 +48,9 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     FiniteDiff FD(L);
     RmgType *rptr;
     sbasis = (dimx + order) * (dimy + order) * (dimz + order);
+    int images = order / 2;
+    int ibrav = L->get_ibrav_type();
     size_t alloc = (sbasis + 64) * sizeof(RmgType);
-
 
     // while alloca is dangerous it's very fast for small arrays and the 110k limit
     // is fine for linux and 64bit power
@@ -62,33 +63,33 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
         rptr = new RmgType[sbasis + 64];
     }
 
+    if(ibrav == HEXAGONAL)
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
+    else
+        T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
+
     if(order == APP_CI_FOURTH) {
 
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 2, CENTRAL_TRADE);
         FD.app_gradient_fourth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     }
     else if(order == APP_CI_SIXTH) {
 
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 3, CENTRAL_TRADE);
         FD.app_gradient_sixth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     }
     else if(order == APP_CI_EIGHT) {
 
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 4, CENTRAL_TRADE);
         FD.app_gradient_eighth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     }
     else if(order == APP_CI_TEN) {
 
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 5, CENTRAL_TRADE);
         FD.app_gradient_tenth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     }
     else if(order == APP_CI_TWELVE) {
 
-        T->trade_imagesx (a, rptr, dimx, dimy, dimz, 6, CENTRAL_TRADE);
         FD.app_gradient_twelfth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     }
