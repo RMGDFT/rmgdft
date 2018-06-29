@@ -35,7 +35,7 @@ calculation_mode="Quench Electrons"
 
 kohn_sham_solver="davidson"
 subdiag_driver="scalapack"
-charge_mixing_type = "Linear"
+charge_mixing_type = "Broyden"
 charge_density_mixing = "0.5"
 kohn_sham_mucycles = "3"
 #kohn_sham_mg_levels = "0"
