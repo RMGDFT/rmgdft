@@ -1739,10 +1739,10 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     {
         h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
         th2 = (-2.97581692 / h2);
-        t1x = (1.70664680 / h2);
-        t2x = (-0.25959423 / h2);
-        t3x = (0.04618682 / h2);
-        t4x = (-0.00533093 / h2);
+        t1x = (1.70664680 * hf / h2);
+        t2x = (-0.25959423 * hf / h2);
+        t3x = (0.04618682 * hf / h2);
+        t4x = (-0.00533093 * hf / h2);
 
         h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
         th2 -= (2.97581692 / h2);
