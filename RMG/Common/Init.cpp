@@ -211,11 +211,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Wavefunctions are actually stored here
     ct.non_local_block_size = std::min(ct.non_local_block_size, ct.max_states);
 
-    rptr = (OrbitalType *)GpuMallocManaged((kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
-    nv = (OrbitalType *)GpuMallocManaged(ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
-    if(need_ns) ns = (OrbitalType *)GpuMallocManaged(ct.max_states * P0_BASIS * sizeof(OrbitalType));
+    rptr = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024) * sizeof(OrbitalType));
+    nv = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * sizeof(OrbitalType));
+    if(need_ns) ns = (OrbitalType *)GpuMallocManaged((size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType));
     if(!ct.norm_conserving_pp) {
-        Bns = (OrbitalType *)GpuMallocManaged(ct.non_local_block_size * P0_BASIS * sizeof(OrbitalType));
+        Bns = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * sizeof(OrbitalType));
         pct.Bns = (double *)Bns;
     }
 #else
@@ -231,11 +231,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
         if(!rptr) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
-        madvise(rptr, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType), MADV_SEQUENTIAL);
+        madvise(rptr, ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024) * sizeof(OrbitalType), MADV_SEQUENTIAL);
     }
     else
     {
-        rptr = new OrbitalType[kpt_storage * ct.alloc_states * P0_BASIS + 1024]();
+        rptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024]();
     }
 
     if(ct.nvme_work)
@@ -245,18 +245,18 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         newpath = ct.nvme_work_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
         ct.nvme_work_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        if(need_ns) ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, ct.max_states * P0_BASIS * sizeof(OrbitalType));
+        if(need_ns) ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType));
         if(!ns) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
-        madvise(ns, ct.max_states * P0_BASIS * sizeof(OrbitalType), MADV_SEQUENTIAL);
+        madvise(ns, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType), MADV_SEQUENTIAL);
     }
     else
     {
-        if(need_ns) ns = new OrbitalType[ct.max_states * P0_BASIS]();
+        if(need_ns) ns = new OrbitalType[(size_t)ct.max_states * (size_t)P0_BASIS]();
     }
 
-    nv = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
+    nv = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS]();
     if(!ct.norm_conserving_pp) {
-        Bns = new OrbitalType[ct.non_local_block_size * P0_BASIS]();
+        Bns = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS]();
         pct.Bns = (double *)Bns;
     }
 #endif

@@ -71,6 +71,7 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     // Number of total projectors required is computed in GetNlop so we allocate per
     // k-point storage for the weights here.
+    size_t alloc = (size_t)pbasis * (size_t)pct.num_tot_proj;
     for(int kpt=0; kpt < ct.num_kpts_pe; kpt++)
     {
 
@@ -91,10 +92,10 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             if(pct.num_tot_proj) 
             {
 
-                Kptr[kpt]->nl_weight = (KpointType *)GpuMallocManaged(pbasis * pct.num_tot_proj * sizeof(KpointType));
+                Kptr[kpt]->nl_weight = (KpointType *)GpuMallocManaged(alloc * sizeof(KpointType));
                 if(ct.need_Bweight) 
                 {
-                    Kptr[kpt]->nl_Bweight = (KpointType *)GpuMallocManaged(pbasis * pct.num_tot_proj * sizeof(KpointType));
+                    Kptr[kpt]->nl_Bweight = (KpointType *)GpuMallocManaged(alloc * sizeof(KpointType));
                 }
                 else 
                 {
@@ -110,10 +111,10 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             // Allocate new storage
             if(pct.num_tot_proj) 
             {
-                Kptr[kpt]->nl_weight = new KpointType[pct.num_tot_proj * pbasis]();
+                Kptr[kpt]->nl_weight = new KpointType[alloc]();
                 if(ct.need_Bweight) 
                 {
-                    Kptr[kpt]->nl_Bweight = new KpointType[pct.num_tot_proj * pbasis]();
+                    Kptr[kpt]->nl_Bweight = new KpointType[alloc]();
                 }
                 else
                 {

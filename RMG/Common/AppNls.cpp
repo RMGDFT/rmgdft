@@ -97,10 +97,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     }
 
 
-    int alloc = pct.num_tot_proj * num_states;
-    int M_cols = 1;
-    if(ct.is_ddd_non_diagonal) M_cols = pct.num_tot_proj;
-    int alloc1 = pct.num_tot_proj * M_cols;
+    size_t alloc = (size_t)pct.num_tot_proj * (size_t)num_states;
+    size_t M_cols = 1;
+    if(ct.is_ddd_non_diagonal) M_cols = (size_t)pct.num_tot_proj;
+    size_t alloc1 = (size_t)pct.num_tot_proj * (size_t)M_cols;
 
 #if GPU_ENABLED
     KpointType *sint_compack = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc);
@@ -136,7 +136,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         }
     }
 
-    for (int i = 0; i < alloc1; i++)
+    for (size_t i = 0; i < alloc1; i++)
     {
         M_dnm[i] = ZERO_t;
         M_qqq[i] = ZERO_t;

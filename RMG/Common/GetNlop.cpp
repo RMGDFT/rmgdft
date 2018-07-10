@@ -315,7 +315,7 @@ void GetNlop (Kpoint<KpointType> **Kptr)
         cudaGetDevice(&device);
         cudaMemAdvise ( pct.weight, pct.weight_size * sizeof(double), cudaMemAdviseSetReadMostly, device);
     }
-    for(int idx = 0;idx < pct.weight_size;idx++) pct.weight[idx] = 0.0;
+    for(size_t idx = 0;idx < pct.weight_size;idx++) pct.weight[idx] = 0.0;
 
     if(ct.need_Bweight) 
     {
