@@ -81,6 +81,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     double *dnmI;
     double *qqq;
     KpointType *psintR;
+    size_t stop = (size_t)num_states * (size_t)P0_BASIS;
 
 //    KpointType *psi = kpoint->Kstates[first_state].psi;
 //    KpointType *nv = kpoint->nv;
@@ -89,9 +90,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     if(pct.num_tot_proj == 0)
     {
-        for(int i = 0; i < num_states * P0_BASIS; i++) nv[i] = ZERO_t;
-        if(!ct.norm_conserving_pp) for(int i = 0; i < num_states * P0_BASIS; i++) Bns[i] = ZERO_t;
-        for(int idx = 0;idx < num_states * P0_BASIS;idx++) ns[idx] = psi[idx];
+        for(size_t i = 0; i < stop; i++) nv[i] = ZERO_t;
+        if(!ct.norm_conserving_pp) for(size_t i = 0; i < stop; i++) Bns[i] = ZERO_t;
+        for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
 
         return;
     }
@@ -196,9 +197,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                     ZERO_t,  nv, P0_BASIS);
 
 #if GPU_ENABLED
-        cudaMemcpy(ns, psi, num_states*P0_BASIS*sizeof(KpointType), cudaMemcpyDefault);
+        cudaMemcpy(ns, psi, stop*sizeof(KpointType), cudaMemcpyDefault);
 #else
-        memcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType));
+        memcpy(ns, psi, stop*sizeof(KpointType));
 #endif
 
         RmgGemm (transa, transa, pct.num_tot_proj, num_states, pct.num_tot_proj, 
@@ -241,10 +242,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 #if GPU_ENABLED
 // For norm conserving and gamma ns=psi so other parts of code were updated to not require this
         if(!ct.is_gamma)
-            cudaMemcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType), cudaMemcpyDefault);
+            cudaMemcpy(ns, psi, stop*sizeof(KpointType), cudaMemcpyDefault);
 #else
         if(!ct.is_gamma)
-            memcpy(ns, psi, num_states * P0_BASIS*sizeof(KpointType));
+            memcpy(ns, psi, stop*sizeof(KpointType));
 #endif
 
     }
