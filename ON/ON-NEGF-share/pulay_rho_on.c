@@ -37,7 +37,6 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
 {
     static double *x;
     static double *f;
-    static int step_effect = 0;
     double A[MAX_STEPS * MAX_STEPS];
     double b[MAX_STEPS];
     double b0[MAX_STEPS], bmin, bmax;
@@ -130,9 +129,8 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
      
     pack_stop(res_s, fm, dimx, dimy, dimz);
 
-    step = step_effect % Nrefresh;
+    step = step0 % Nrefresh;
 
-    printf("\n  step_effect  %d  %d ", step_effect, step);
     if (NsavedSteps == 1)
     {
         alpha = -ct.mix;
@@ -320,5 +318,4 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
         }
 
     }
-    step_effect++;
 }
