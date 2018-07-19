@@ -116,7 +116,6 @@ whole_to_tri_complex.c
 row_to_tri_p.c
 whole_to_tri_real.c
 whole_to_tri_update.c
-write_data_negf.c
 write_data_lead.c
 write_global_data.c
 writeout_matrix_p.c

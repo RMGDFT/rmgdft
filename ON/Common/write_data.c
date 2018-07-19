@@ -142,6 +142,17 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	time(&tt);
 	timeptr = ctime(&tt);
 
+
+	if(pct.gridpe == 0) 
+    {
+        FILE *fhand_EF;
+		sprintf (newname, "%s%s", name, ".EF");
+        fhand_EF = fopen (newname, "w");
+        fprintf(fhand_EF, "%15.8f\n", ct.efermi * Ha_eV);
+        fclose(fhand_EF);
+    }
+        
+
 	if(pct.gridpe == 0) fflush(NULL);
 
 
@@ -328,3 +339,5 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 #endif
 	my_barrier();
 }
+
+

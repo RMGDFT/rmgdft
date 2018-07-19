@@ -39,6 +39,7 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 	int amode;
 	char newname[MAX_PATH + 20];
 	int fhand_rho, fhand_vxc, fhand_vh;
+    FILE *fhand_EF;
 
 	int size, rank, ndims, gsizes[2], distribs[2];
 	int order,  dargs[2], psizes[2];
@@ -71,12 +72,20 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 		fhand_vxc = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand_vxc < 0)
 			error_handler (" Unable to write file for vxc ");
+
 		sprintf (newname, "%s%s", name, ".rho");
 		amode = S_IREAD | S_IWRITE;
 
 		fhand_rho = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand_rho < 0)
 			error_handler (" Unable to write file for rho ");
+
+		sprintf (newname, "%s%s", name, ".EF");
+        fhand_EF = fopen (newname, "w");
+        fprintf(fhand_EF, "%15.8f\n", lcr[1].EF_new);
+        fclose(fhand_EF);
+
+
 	}
 
 	if (lcr[1].NY_GRID != get_NY_GRID())

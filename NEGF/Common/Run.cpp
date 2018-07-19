@@ -260,7 +260,6 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
                 /* Save data to output file */
                 RmgTimer *RT5 = new RmgTimer("1-TOTAL: Write_data");
-                write_data_negf (ct.outfile, vh, vxc, vh_old, vxc_old, rho, vbias, &states[0]);
 
                 if (ct.runflag == 111)
                     write_data_lead (ct.outfile, vh, vxc, vh_old, vxc_old, rho);
