@@ -166,11 +166,11 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
     delete [] pmap;
 
     // Do we need to create any groups under this level
-    if(!last) {
-        this->ngroups_next = 12;
-        this->next = new Scalapack(this->ngroups_next, thisimg, images_per_node, N, NB, true, this->root_comm);
-
-    }
+  //  if(!last) {
+  //      this->ngroups_next = 12;
+  //      this->next = new Scalapack(this->ngroups_next, thisimg, images_per_node, N, NB, true, this->root_comm);
+  //
+  //   }
 }
 
 MPI_Comm Scalapack::GetRootComm(void)
