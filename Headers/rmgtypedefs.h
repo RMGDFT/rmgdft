@@ -185,6 +185,7 @@ typedef struct
     int num_orbitals;
 
     double partial_charge;
+    double init_spin_rho;
 
 
 } ION;

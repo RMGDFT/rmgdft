@@ -278,7 +278,17 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         
                                 }
 
-                                sumobject[idx] += t1;
+                                if( (ct.spin_flag == 1) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                { 
+                                    if (pct.spinpe == 0)
+                                        sumobject[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
+                                    else
+                                        sumobject[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
+                                }
+                                else
+                                {
+                                    sumobject[idx] += t1;
+                                }
                                 if(compute_lobject) lobject[(size_t)ion1 * (size_t)FP0_BASIS + idx] += t1;
 
                             }                           /* end for */
@@ -295,7 +305,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     if(object_type == ATOMIC_RHO) {
         double t2 = 0.0;
         for (int idx = 0; idx < FP0_BASIS; idx++) t2 += sumobject[idx];
-        t2 = get_vel_f() *  real_sum_all (t2, pct.grid_comm);
+        t2 = get_vel_f() *  real_sum_all (t2, pct.img_comm);
         double t1 = ct.nel / t2;
         double difference = fabs(t1 - 1.0);
         if ((ct.verbose == 1) || (difference > 0.05))

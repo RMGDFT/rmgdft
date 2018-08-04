@@ -216,7 +216,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         boost::algorithm::split( AtomComponents, Atom, boost::is_any_of(whitespace_delims), boost::token_compress_on );
 
         size_t ncomp = AtomComponents.size();
-        if((ncomp < 4) || (ncomp > 5)) throw RmgFatalException() << "Synax error in ionic information near " << Atom << "\n";
+        if((ncomp < 4) || (ncomp > 6)) throw RmgFatalException() << "Synax error in ionic information near " << Atom << "\n";
 
         // First field should be an atomic symbol
         it1 = AtomComponents.begin();
@@ -242,9 +242,11 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         std::string zstr = *it1;
         lc.ions[nions].crds[2] = std::atof(zstr.c_str());
 
+
+
         int movable = 1;
         std::string smov;
-        if(ncomp == 5) {
+        if(ncomp > 4) {
             it1++;
             smov = *it1;
             boost::trim(smov);
@@ -255,6 +257,16 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         }
 
         lc.ions[nions].movable = movable;
+
+        if(lc.spin_flag == 1 && ncomp <6) throw RmgFatalException() << "for spin-polarization, one needs to have init_spin density setup near " << Atom << "\n";
+        else
+        {
+            it1++;
+            std::string rho_updown_diff = *it1;
+            double tem = std::atof(rho_updown_diff.c_str());
+            if(tem > 0.5 || tem < -0.5) throw RmgFatalException() << "for spin-polarization, the spin updown difference must be -0.5 to 0.5" << Atom << "\n"; 
+            lc.ions[nions].init_spin_rho = tem;
+        }
 
         nions++;
 

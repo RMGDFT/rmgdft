@@ -506,12 +506,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             InitDelocalizedObject (rho, pct.localatomicrho, ATOMIC_RHO, false);
 
         if(ct.spin_flag) {
-            if(pct.spinpe==0){
-                for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] *= ct.nel_up / ct.nel;
-            }
-            else {
-                for(int idx = 0; idx < FP0_BASIS; idx++) rho[idx] *= ct.nel_down / ct.nel;
-            }
             get_rho_oppo (rho,  rho_oppo);
         }
 
