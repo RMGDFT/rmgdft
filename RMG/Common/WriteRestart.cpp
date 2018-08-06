@@ -91,8 +91,8 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 	    iptr = &ct.ions[ion];
 	    sp = &ct.sp[iptr->species];
 
-        fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %f %d", sp->atomic_symbol, iptr->crds[0], iptr->crds[1], 
-                iptr->crds[2], iptr->init_spin_rho,  iptr->movable);
+        fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %d  %f", sp->atomic_symbol, iptr->crds[0], iptr->crds[1], 
+                iptr->crds[2],  iptr->movable, iptr->init_spin_rho);
 	}
 
 	fprintf(fhandle,"\n\"\n");
