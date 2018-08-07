@@ -81,8 +81,8 @@ void app_grad (double  * rho, double *wx, double *wy, double *wz, int dimx, int 
 //void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
 void constrain( void );
 void cross_product (double *a, double *b, double *c);
-double fill_on (STATE *states, double width, double nel, double mix,
-           int num_st, int occ_flag);
+double Fill_on (STATE *states, double width, double nel, double mix,
+           int num_st, int occ_flag, int mp_order);
 
 void find_phase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double ** phase_sin, double ** phase_cos);
 //void genvpsi (double *psi, double *twovpsi, double *pvtot, 

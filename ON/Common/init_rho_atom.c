@@ -165,7 +165,9 @@ void init_rho_atom(double *rho)
         {
             species = ct.ions[ion].species;
             crds1 = &ct.ions[ion].crds[0];
-
+            ION *iptr;
+            iptr = &ct.ions[ion];
+            
             sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species], ".rho_firstatom");
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
@@ -244,7 +246,15 @@ void init_rho_atom(double *rho)
                                 (ixx - ix0) * get_FPY0_GRID() * get_FPZ0_GRID() + (iyy -
                                         iy0) * get_FPZ0_GRID() + izz - iz0;
 
-                            rho[idx1] += rho_out[idx];
+                            if (ct.spin_flag == 1) 
+                            { 
+                                if (pct.spinpe == 0)
+                                    rho[idx1] += rho_out[idx] * (0.5 + iptr->init_spin_rho) ;
+                                else
+                                    rho[idx1] += rho_out[idx] * (0.5 - iptr->init_spin_rho) ;
+                            }
+                            else
+                                rho[idx1] += rho_out[idx];
 
 
                         }
@@ -267,6 +277,5 @@ void init_rho_atom(double *rho)
     EndRmgTimer(RT);
 
 }                               /* end init_rho_atom */
-
 
 

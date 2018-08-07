@@ -90,13 +90,11 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     if(ct.spin_flag)
     {
-        printf("\n need to split Diag* to take care of fill for spin_polarized");
-        fflush(NULL);
-        exit(0);
         get_opposite_eigvals( states );
     }
     /* Generate new density */
-    //    ct.efermi = fill(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
+
+    ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);
 
     if(pct.gridpe == 0) write_eigs(states);
 

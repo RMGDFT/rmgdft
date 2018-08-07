@@ -132,23 +132,23 @@ void init_parameter(STATE * states)
      
     part_occ = ct.nel - full_occ *2.0;
 
-    for (ispin = 0; ispin <= (int)ct.spin_polarization; ispin++)
+    for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-        for (kpt = pct.kstart; kpt < ct.num_kpts; kpt+=pct.pe_kpoint)
+        for (st1 = 0; st1 < ct.num_states; st1++)
         {
-            for (st1 = 0; st1 < ct.num_states; st1++)
-            {
-                kst1 = ispin * ct.num_states * ct.num_kpts + kpt * ct.num_states + st1;
-                states[kst1].kidx = kpt;
-                states[kst1].istate = st1;
-                states[kst1].firstflag = 0;
-                states[kst1].occupation[0] = 0.0;
-                if(st1 < full_occ)  states[kst1].occupation[0] = 2.0/(1.0 + ct.spin_flag);
-                if(st1 == full_occ)  states[kst1].occupation[0] = part_occ/(1.0+ ct.spin_flag);
-            }                   /* end for */
+            kst1 = ispin * ct.num_states * ct.num_kpts + kpt * ct.num_states + st1;
+            states[kst1].kidx = kpt;
+            states[kst1].istate = st1;
+            states[kst1].firstflag = 0;
+            states[kst1].occupation[0] = 0.0;
+            if(st1 < full_occ)  states[kst1].occupation[0] = 2.0/(1.0 + ct.spin_flag);
+            if(st1 == full_occ)  states[kst1].occupation[0] = part_occ/(1.0+ ct.spin_flag);
+            states[kst1].occupation[1] = 0.0;
+            if(st1 < full_occ)  states[kst1].occupation[1] = 2.0/(1.0 + ct.spin_flag);
+            if(st1 == full_occ)  states[kst1].occupation[1] = part_occ/(1.0+ ct.spin_flag);
+        }                   /* end for */
 
-        }                       /* end for */
-    }                           /* end for ispin */
+    }                       /* end for */
 
 
 

@@ -135,7 +135,6 @@ void DiagElemental(STATE *states, int n, double *H, double *S,
         states[st1].eig[0] = w.Get(st1, 0);
     }
 
-    ct.efermi = fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, n, ct.occ_flag);
 
 
     //overwrite B with X[i,j] * occ[j]

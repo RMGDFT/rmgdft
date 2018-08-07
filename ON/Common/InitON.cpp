@@ -158,7 +158,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
 
 
-
     /* Initialize Non-local operators */
     init_nl_xyz();
     get_ion_orbit_overlap_nl(states);
@@ -212,20 +211,11 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
 
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
-    double fac;
-    fac = 1.0 - ct.spin_flag * 2.0/3.0 /(1.0 + pct.spinpe);
-    if(ct.init_equal_density_flag) fac = 0.5; 
     switch(ct.runflag)
     {
         case 0:
             init_wf(states);
 
-            for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            {
-                rho[idx] = rhoc[idx] * fac;
-                rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
-
-            }
             break;
         case LCAO_START:
             init_wf_lcao(states);
@@ -236,20 +226,10 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             init_wf_atom(states);
             init_rho_atom(rho);
 
-            for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            {
-                rho_oppo[idx] = rho[idx] * (1.0 - fac);
-                rho[idx] = rho[idx] * fac;
-            }
             break;
 
         case INIT_GAUSSIAN:
             init_wf_gaussian(states);
-            for (idx = 0; idx < get_FP0_BASIS(); idx++)
-            {
-                rho[idx] = rhoc[idx] * fac;
-                rho_oppo[idx] = rhoc[idx] * (1.0 - fac);
-            }
 
             break;
 
@@ -262,6 +242,15 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     }
 
+    if(ct.spin_flag) 
+        get_rho_oppo (rho,  rho_oppo);
+    else
+        for (idx = 0; idx < get_FP0_BASIS(); idx++)
+        {
+            rho_oppo[idx] = 0.0;
+        }
+
+
     switch(ct.runflag)
     {
         case 0:
@@ -271,6 +260,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             double tcharge = 0.0;
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
                 tcharge += rho[idx];
+
+
             ct.tcharge = real_sum_all(tcharge, pct.grid_comm);
             ct.tcharge = real_sum_all(ct.tcharge, pct.spin_comm);
 
@@ -291,12 +282,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             delete RT1;
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
-            for (idx = 0; idx < get_FP0_BASIS(); idx++)
-                rho_tot[idx] = rho[idx] + rho_oppo[idx];
-
-            //get_vh (rho_tot, rhoc, vh, ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, 0.0, ct.boundaryflag);
             double rms_target = ct.rms/ct.hartree_rms_ratio;
-            VhDriver(rho_tot, rhoc, vh, ct.vh_ext, rms_target);
+            VhDriver(rho, rhoc, vh, ct.vh_ext, rms_target);
 
             for (idx = 0; idx < get_FP0_BASIS(); idx++)
             {

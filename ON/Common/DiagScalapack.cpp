@@ -172,7 +172,6 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
     delete [] iwork;
     delete [] eigs;
 
-    ct.efermi = fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag);
     delete(RT1);
 
     RmgTimer *RT5 = new RmgTimer("3-DiagScalapack: pscal occ ");

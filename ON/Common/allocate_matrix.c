@@ -54,7 +54,7 @@ void allocate_matrix()
     rho_oppo = rho + get_FP0_BASIS() ;
     my_malloc_init( rho_tot, get_FP0_BASIS(), double );
     my_malloc_init( rhoc, get_FP0_BASIS(), double );
-    my_malloc_init( vh, 2*get_FP0_BASIS(), double );
+    my_malloc_init( vh, 3*get_FP0_BASIS(), double );
     vxc = vh + get_FP0_BASIS();
     my_malloc_init( vnuc, get_FP0_BASIS(), double );
     my_malloc_init( vtot, get_FP0_BASIS(), double );
