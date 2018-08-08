@@ -133,6 +133,8 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     if(ct.charge_mixing_type == 0)
     {
+        if(ct.spin_flag)
+            get_rho_oppo(rho, rho_oppo);
         get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
         for(int idx=0;idx < nfp0;idx++)rho[idx] = ct.mix*rho[idx] + (1.0-ct.mix)*trho[idx];
     }
@@ -153,6 +155,9 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
             rho_old[idx] = -rho[idx] + rho_old[idx];
             rho[idx] = tem;
         }
+
+        if(ct.spin_flag)
+            get_rho_oppo(rho, rho_oppo);
         get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
         pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
     }

@@ -70,7 +70,7 @@
 void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, STATE * states, int ii_flag)
 {
     int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1), FP0_BASIS;
-    double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag;
+    double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag, absmag;
     double vel, loc_sum;
     double *exc, *nrho, *nrho_oppo=NULL;
     ION *iptr1, *iptr2;
@@ -155,10 +155,12 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     if (ct.spin_flag)
     {
         mag = 0.0;    
+        absmag = 0.0;    
         for (idx = 0; idx < FP0_BASIS; idx++)
         {
             esum[1] += (rho[idx] + rho_oppo[idx] + rhocore[idx]) * (exc[idx]);
             mag += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
+            absmag += fabs( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
         }
     }
     else
@@ -179,6 +181,7 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
         global_sums (esum, &two, pct.grid_comm);
         global_sums (&esum[2], &one, pct.img_comm);  
         global_sums (&mag, &one, pct.grid_comm); 
+        global_sums (&absmag, &one, pct.grid_comm); 
     }
     else
         global_sums (esum, &three, pct.grid_comm);
@@ -194,6 +197,7 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     /*XC potential energy */
     xcstate = vel * esum[2];
     mag *= vel;
+    absmag *= vel;
 
     if(ii_flag) {
 
@@ -256,7 +260,7 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
         progress_tag ();
         printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
         progress_tag ();
-        printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", fabs(mag) );
+        printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", absmag );
     }
 
 
