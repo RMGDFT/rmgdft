@@ -122,10 +122,11 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     double t2 = ct.nel / ct.tcharge;
     dscal(&iii, &t2, &rho[0], &ione);
 
-    get_rho_oppo(rho, rho_oppo);
+    if(ct.spin_flag)
+        get_rho_oppo(rho, rho_oppo);
 
-//    if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
-        printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2);
+    //    if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
+    printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2);
     delete(RT2);
 
     RmgTimer *RT3 = new RmgTimer("2-SCF: pulay mix");
@@ -200,14 +201,14 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
     for (idx = 0; idx < nfp0; idx++)
         rho_old[idx] = fabs(rho[idx] - rho_pre[idx]);
     drho_max = *std::max_element(rho_old, rho_old+nfp0);
-//    idx = idamax(&nfp0, rho_old, &ione);
-//    drho_max = fabs(rho_old[idx]);
+    //    idx = idamax(&nfp0, rho_old, &ione);
+    //    drho_max = fabs(rho_old[idx]);
 
     for (idx = 0; idx < nfp0; idx++)
         rho_old[idx] = fabs(vh[idx] - vh_old[idx]);
     dvh_max = *std::max_element(rho_old, rho_old+nfp0);
-//    idx = idamax(&nfp0, rho_old, &ione);
-//    dvh_max = fabs(rho_old[idx]);
+    //    idx = idamax(&nfp0, rho_old, &ione);
+    //    dvh_max = fabs(rho_old[idx]);
 
     dvxc_max = 0.0;
     int idx_max = -100;
@@ -221,17 +222,17 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
         }
     }
     //dvxc_max = *std::max_element(rho_old, rho_old+nfp0);
-//    idx = idamax(&nfp0, rho_old, &ione);
-//    dvxc_max = fabs(rho_old[idx]);
+    //    idx = idamax(&nfp0, rho_old, &ione);
+    //    dvxc_max = fabs(rho_old[idx]);
 
-    
+
     drho_max = RmgMaxAll<double>(drho_max, pct.grid_comm); 
     dvh_max = RmgMaxAll<double>(dvh_max, pct.grid_comm); 
     dvxc_max = RmgMaxAll<double>(dvxc_max, pct.grid_comm); 
 
 
     ct.rms = fabs(dvh_max) + fabs(dvxc_max);
-    
+
     *CONVERGENCE = FALSE;
     if (pct.gridpe == 0)
     {
