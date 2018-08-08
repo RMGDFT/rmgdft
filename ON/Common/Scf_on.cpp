@@ -122,6 +122,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     double t2 = ct.nel / ct.tcharge;
     dscal(&iii, &t2, &rho[0], &ione);
 
+    get_rho_oppo(rho, rho_oppo);
 
 //    if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
         printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2);

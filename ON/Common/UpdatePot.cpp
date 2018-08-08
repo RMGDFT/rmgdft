@@ -44,18 +44,6 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     pack_vhstod(vh, ct.vh_ext, FPX0_GRID, FPY0_GRID, FPZ0_GRID, ct.boundaryflag);
 
     /* Generate hartree potential */
-    //    get_vh1(rho, rhoc, vh, 15, ct.poi_parm.levels);
-
-    if(ct.spin_flag == 1)
-    {
-        for (idx = 0; idx < nfp0; idx++) 
-            rho_tot[idx] = rho[idx] + rho_oppo[idx];
-    }
-    else
-    {
-        for (idx = 0; idx < nfp0; idx++) 
-            rho_tot[idx] = rho[idx] ;
-    }
 
     /* Generate exchange-correlation potential */
 //double *rho_temp=new double[4*nfp0]();
@@ -65,13 +53,13 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 //delete F;
 //delete [] rho_temp;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho_tot, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
+    F->v_xc(rho, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
     delete F;
 
 
     double rms_target = ct.rms/ct.hartree_rms_ratio;
     // And new hartree potential
-    VhDriver(rho_tot, rhoc, vh, ct.vh_ext, rms_target);
+    VhDriver(rho, rhoc, vh, ct.vh_ext, rms_target);
 
 
     /* evaluate correction vh+vxc */
