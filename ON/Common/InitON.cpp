@@ -61,6 +61,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     int ic, idx, ion;
     int level;
+    int ione = 1;
 
 
     /* initialize the lattice basis vectors */
@@ -210,11 +211,14 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     }
 
 
+    int FP0_BASIS = get_FP0_BASIS();
     for (idx = 0; idx < get_FP0_BASIS(); idx++) vh[idx] = ZERO;
     switch(ct.runflag)
     {
         case 0:
             init_wf(states);
+
+            dcopy(&FP0_BASIS, rhoc, &ione, rho, &ione);
 
             break;
         case LCAO_START:
@@ -230,6 +234,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
         case INIT_GAUSSIAN:
             init_wf_gaussian(states);
+            dcopy(&FP0_BASIS, rhoc, &ione, rho, &ione);
 
             break;
 
@@ -270,7 +275,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
             double t2 = ct.nel / ct.tcharge;
             int iii = get_FP0_BASIS();
-            int ione = 1;
             dscal(&iii, &t2, &rho[0], &ione);
 
             //    get_vxc(rho, rho_oppo, rhocore, vxc);

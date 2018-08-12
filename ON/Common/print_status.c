@@ -95,7 +95,7 @@ void print_state(STATE * state)
     temp = 0.0;
     for (i = 0; i < state->size; i++)
         temp += state->psiR[i];
-    printf("\n PE: %d.STATE: %d---sum---: %22.16f", pct.gridpe, state->istate, temp);
+    printf("\n PE: %d.STATE: %d ---sum---: %22.16f", pct.gridpe, state->istate, temp);
     fflush(NULL);
 }
 
@@ -129,7 +129,7 @@ void print_sum_square(int size, double *data, char *msg)
 
     for (idx = 0; idx < size; idx++)
         sum += data[idx] * data[idx];
-    printf("\n %s  ----  %22.16f", msg, sum);
+    dprintf("\n spin%d %d %s  ----  %22.16f", pct.spinpe, pct.gridpe, msg, sum);
 
 }
 

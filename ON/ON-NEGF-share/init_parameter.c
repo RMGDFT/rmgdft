@@ -38,7 +38,6 @@ void init_parameter(STATE * states)
     int kpt, kst1, ion, st1;
     ION *iptr;
     double v1, v2, v3;
-    int ispin;
 
     ct.psi_nbasis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
@@ -136,7 +135,7 @@ void init_parameter(STATE * states)
     {
         for (st1 = 0; st1 < ct.num_states; st1++)
         {
-            kst1 = ispin * ct.num_states * ct.num_kpts + kpt * ct.num_states + st1;
+            kst1 = kpt * ct.num_states + st1;
             states[kst1].kidx = kpt;
             states[kst1].istate = st1;
             states[kst1].firstflag = 0;
