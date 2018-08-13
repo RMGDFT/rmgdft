@@ -500,10 +500,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE)) {
         RT1 = new RmgTimer("2-Init: LcaoGetRho");
-        if(ct.localize_localpp)
-            InitLocalObject (rho, pct.localatomicrho, ATOMIC_RHO, false);
-        else
-            InitDelocalizedObject (rho, pct.localatomicrho, ATOMIC_RHO, false);
+        InitLocalObject (rho, pct.localatomicrho, ATOMIC_RHO, false);
 
         if(ct.spin_flag) {
             get_rho_oppo (rho,  rho_oppo);
