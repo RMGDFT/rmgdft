@@ -1,4 +1,5 @@
 add_library (ON_Common
+ ReadDataFromRMG.cpp
  VhcorrDipoleInit.cpp
  VhcorrPeriodicPart.cpp
  DipoleCorrection.cpp

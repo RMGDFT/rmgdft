@@ -247,6 +247,9 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     }
 
+    if(ct.ON_read_from_RMG)
+        ReadDataFromRMG(ct.infile_ON_from_RMG, vh, rho, vxc);
+
     if(ct.spin_flag) 
         get_rho_oppo (rho,  rho_oppo);
     else

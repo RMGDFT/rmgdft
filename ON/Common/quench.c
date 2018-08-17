@@ -60,11 +60,11 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             printf("\n\n\n ITERATION     %d\n", ct.scf_steps);
 
         /* Perform a single self-consistent step */
-        if (!CONVERGENCE)
+        if (!CONVERGENCE || ct.scf_steps <= ct.freeze_rho_steps)
             Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore, vxc_old, vh_old, &CONVERGENCE);
 
 
-        if (CONVERGENCE)
+        if (CONVERGENCE && ct.scf_steps > ct.freeze_rho_steps)
         {
             if (pct.gridpe == 0)
                 printf ("\n\n Convergence has been achieved. stopping ...\n");

@@ -21,6 +21,8 @@ void DipoleCorrection(double *rho, double *rhoc, double *vcorr, double *vhx, dou
 void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, double *r0);
 void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc);
 void GetNlop_on(void);
+void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc);
+
 
 
 #ifdef __cplusplus

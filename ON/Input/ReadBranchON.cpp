@@ -49,6 +49,8 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     std::vector<std::string> Kpoints;
     std::unordered_map<std::string, InputKey *> NewMap;
 
+    std::string RMGfile;
+
     RmgInputFile If(cfile, NewMap, pct.img_comm);
 
     
@@ -63,6 +65,9 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                      CHECK_AND_FIX, OPTIONAL, 
                      "freeze orbital after this step", 
                      "");
+    If.RegisterInputKey("freeze_rho_steps", &lc.freeze_rho_steps, 0, 100, 10, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "freeze rho which read from RMG for a number of steps",""); 
 
     If.RegisterInputKey("mg_method", NULL, &lc.mg_method, "Pulay",
                      CHECK_AND_TERMINATE, REQUIRED, mg_method,
@@ -83,9 +88,27 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     If.RegisterInputKey("number_of_atoms", &lc.num_ions, 1, INT_MAX, 1, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
     If.RegisterInputKey("atomic_orbital_files", NULL, "", CHECK_AND_FIX, OPTIONAL, "","");
+    If.RegisterInputKey("ReadFromRMG", &lc.ON_read_from_RMG, false, "");
+
+    If.RegisterInputKey("InputFileFromRMG", &RMGfile, "RMG/Waves/wave.out",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Output file/path to store wavefunctions and other binary data.\n",
+                     "");
+
 
 
     If.LoadInputKeys();
+
+    if( (!RMGfile.length() ) && lc.ON_read_from_RMG ) 
+    {
+        printf(" \nNeed a file name and path from RMG run, so we can read potentials and charge density as initial ones\n");
+        fflush(NULL);
+        exit(0);
+    }
+    else
+    {
+        std::strncpy(lc.infile_ON_from_RMG, RMGfile.c_str(), sizeof(lc.infile_ON_from_RMG));
+    }
 
     InputKey *Key;
     std::vector<std::string> lines;
@@ -114,3 +137,4 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     }
 
 }
+

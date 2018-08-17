@@ -107,7 +107,8 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     RmgTimer *RT2 = new RmgTimer("2-SCF: get_new_rho");
     for (idx = 0; idx < nfp0; idx++)trho[idx] = rho[idx];
 
-    GetNewRho_on(states, rho, work_matrix_row);
+    if(ct.scf_steps >= ct.freeze_rho_steps)
+        GetNewRho_on(states, rho, work_matrix_row);
     //BroydenPotential(rho_old, rho, rhoc, vh_old, vh, ct.charge_broyden_order, false);
 
     int iii = get_FP0_BASIS();
@@ -142,7 +143,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     {
         if(ct.scf_steps <ct.freeze_orbital_step)
         {
-            steps = ct.scf_steps;
+            steps = ct.scf_steps - ct.freeze_rho_steps;
         }
         else
         {
@@ -159,7 +160,8 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         if(ct.spin_flag)
             get_rho_oppo(rho, rho_oppo);
         get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
-        pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
+        if(ct.scf_steps >= ct.freeze_rho_steps)
+            pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
     }
     delete(RT3);
 
@@ -167,7 +169,8 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     /* Update potential */
     RmgTimer *RT4 = new RmgTimer("2-SCF: update_pot");
-    UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
+    if(ct.scf_steps >= ct.freeze_rho_steps)
+        UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
     delete(RT4);
 
     CheckConvergence(vxc, vh, vxc_old, vh_old, rho, rho_pre, CONVERGENCE);
@@ -179,6 +182,11 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     if(ct.scf_steps < ct.freeze_orbital_step)
     {
         steps = ct.scf_steps;
+        if(ct.scf_steps == ct.freeze_rho_steps ) 
+            ct.restart_mix = 1;
+        else
+            ct.restart_mix = 0;
+
         RmgTimer *RT6 = new RmgTimer("2-SCF: OrbitalOptimize");
         OrbitalOptimize(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
         delete(RT6);

@@ -844,6 +844,11 @@ typedef struct
     // on CPU's only you want to set this to false.
     bool use_async_allreduce;
 
+    bool ON_read_from_RMG;
+    char infile_ON_from_RMG[2*MAX_PATH];
+    int freeze_rho_steps;
+    
+
 } CONTROL;
 
 
