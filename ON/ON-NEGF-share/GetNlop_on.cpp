@@ -36,7 +36,8 @@ void GetNlop_on(void)
 {
     int ion, idx, ip;
     int tot_prj, ion1, index;
-    int PROJECTOR_SPACE, prjcount;
+    size_t PROJECTOR_SPACE;
+    int prjcount;
     double *beta;
     SPECIES *sp;
     ION *iptr;
@@ -95,7 +96,8 @@ void GetNlop_on(void)
         }
     }
 
-    PROJECTOR_SPACE = ct.max_nlpoints * tot_prj;
+    PROJECTOR_SPACE = (size_t)ct.max_nlpoints * (size_t)tot_prj;
+//    printf("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
     if (projectors != NULL)
         delete []projectors;
     projectors = new double[PROJECTOR_SPACE];

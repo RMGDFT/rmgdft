@@ -37,7 +37,8 @@
 void allocate_psi(STATE * states, STATE * states1)
 {
 
-    int st1, item;
+    int st1 ;
+    size_t item;
     double *rptr, *rptr1, *rptr2, *rptr3;
 
 
@@ -46,9 +47,16 @@ void allocate_psi(STATE * states, STATE * states1)
     my_malloc_init( sg_orbit_res, item, double );
     my_malloc_init( orbit_tem, ct.max_orbit_size, double );
 
-    int size;
+    size_t size, alloc_size;
     size = rmg_max(pct.psi_size, ct.state_per_proc * states[0].size);
-    my_malloc_init( rptr, 3*size, double );
+    alloc_size = 3 * size * sizeof(double);
+    rptr = (double *) malloc(alloc_size);
+    if(NULL == rptr) 
+    {
+        dprintf("\n cannot locate memory for psi %lu %lu \n", size, alloc_size);
+        exit(0);
+    }
+
     rptr1 = rptr + size;
     rptr2 = rptr + 2 *size;
 
@@ -70,7 +78,8 @@ void allocate_psi(STATE * states, STATE * states1)
 
     int state_per_proc = ct.state_per_proc + 2;
 
-    int i, loop, num_recv, tot_recv;
+    int i, loop, num_recv;
+    size_t tot_recv;
     
     tot_recv = 0;
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
@@ -79,10 +88,17 @@ void allocate_psi(STATE * states, STATE * states1)
         tot_recv += num_recv;
     }
 
-    dprintf("\n total recv orbitals %d", tot_recv);
     item = ct.max_orbit_nx  * ct.max_orbit_ny  * ct.max_orbit_nz;
-    my_malloc_init(rptr3, tot_recv * item, double);
-    dprintf("\n tot_recv  %d", tot_recv);
+
+    alloc_size =  tot_recv * item * sizeof(double);
+    rptr3 = malloc(alloc_size);
+    if(NULL == rptr3) 
+    {
+        dprintf("\n cannot locate memory for recv %lu %lu %lu \n", item, tot_recv, alloc_size);
+        exit(0);
+    }
+
+    //dprintf("\n tot_recv  %d", tot_recv);
 
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
     {
