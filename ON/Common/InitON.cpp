@@ -131,7 +131,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     init_comm_res(states);
     delete(RT1);
     RmgTimer *RT2 = new RmgTimer("1-TOTAL: init: init_nuc");
-    allocate_psi(states, states1);
+    AllocatePsi(states, states1);
 
     duplicate_states_info(states, states1);
     duplicate_states_info(states, states_tem);

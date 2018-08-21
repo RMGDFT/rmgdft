@@ -10,7 +10,11 @@
  */
 
 
+//#include <sys/types.h>
+//#include <sys/stat.h>
 
+#include <fcntl.h>
+//#include <libgen.h>
 
 #include <float.h>
 #include <math.h>
@@ -19,6 +23,7 @@
 #include <assert.h>
 #include <complex>
 #include <fftw3.h>
+#include <sys/mman.h>
 
 #include "params.h"
 #include "rmgtypedefs.h"
@@ -97,10 +102,30 @@ void GetNlop_on(void)
     }
 
     PROJECTOR_SPACE = (size_t)ct.max_nlpoints * (size_t)tot_prj;
+
+
 //    printf("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
-    if (projectors != NULL)
-        delete []projectors;
-    projectors = new double[PROJECTOR_SPACE];
+    std::string newpath;
+
+    if(ct.nvme_weights)
+    {
+        if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
+
+        newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) +
+                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
+        ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+
+        projectors = (double *)CreateMmapArray(ct.nvme_weight_fd, PROJECTOR_SPACE*sizeof(double));
+        if(!projectors) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        madvise(projectors, PROJECTOR_SPACE*sizeof(double), MADV_SEQUENTIAL);
+        
+    }
+    else
+    {
+        if (projectors != NULL)
+            delete []projectors;
+        projectors = new double[PROJECTOR_SPACE];
+    }
 
     /*allocate memorry for weight factor of partial_beta/partial_x */
 
@@ -244,4 +269,5 @@ static void init_alloc_nonloc_mem (void)
     }                           /*end for(ion=0; ion<ct.num_ions; ion++) */
 
 }                               /*end init_alloc_nonloc_mem */
+
 

@@ -29,12 +29,24 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
 #include <assert.h>
-#include "main.h"
+#include <sys/mman.h>
+
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+#include "transition.h"
+#include "blas.h"
+#include "RmgSumAll.h"
+
 #include "prototypes_on.h"
 #include "init_var.h"
 
-void allocate_psi(STATE * states, STATE * states1)
+
+void AllocatePsi(STATE * states, STATE * states1)
 {
 
     int st1 ;
@@ -43,17 +55,17 @@ void allocate_psi(STATE * states, STATE * states1)
 
 
     item = (ct.max_orbit_nx + 2) * (ct.max_orbit_ny + 2) * (ct.max_orbit_nz + 2);
-    my_malloc_init( sg_orbit, item, double );
-    my_malloc_init( sg_orbit_res, item, double );
-    my_malloc_init( orbit_tem, ct.max_orbit_size, double );
+    sg_orbit = new double[item];
+    sg_orbit_res = new double[item];
+    orbit_tem = new double[ct.max_orbit_size];
 
     size_t size, alloc_size;
-    size = rmg_max(pct.psi_size, ct.state_per_proc * states[0].size);
+    size = std::max(pct.psi_size, ct.state_per_proc * states[0].size);
     alloc_size = 3 * size * sizeof(double);
-    rptr = (double *) malloc(alloc_size);
+    rptr = new double[alloc_size];
     if(NULL == rptr) 
     {
-        dprintf("\n cannot locate memory for psi %lu %lu \n", size, alloc_size);
+        printf("\n cannot locate memory for psi %lu %lu \n", size, alloc_size);
         exit(0);
     }
 
@@ -90,11 +102,34 @@ void allocate_psi(STATE * states, STATE * states1)
 
     item = ct.max_orbit_nx  * ct.max_orbit_ny  * ct.max_orbit_nz;
 
-    alloc_size =  tot_recv * item * sizeof(double);
-    rptr3 = malloc(alloc_size);
+    alloc_size =  tot_recv * item;
+
+
+    ct.nvme_orbital_fd = -1;
+    // orbitals from other proces  are actually stored here
+
+    if(ct.nvme_orbitals)
+    {
+        std::string newpath;
+        if(ct.nvme_orbital_fd != -1) close(ct.nvme_orbital_fd);
+
+        newpath = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) +
+            std::to_string(pct.kstart) + std::to_string(pct.gridpe);
+        ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        rptr3 = (double *)CreateMmapArray(ct.nvme_orbital_fd, alloc_size * sizeof(double));
+        if(!rptr3) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        madvise(rptr3, alloc_size * sizeof(double), MADV_SEQUENTIAL);
+    }
+    else
+    {
+        rptr3 = new double[alloc_size];
+    }
+
+
+
     if(NULL == rptr3) 
     {
-        dprintf("\n cannot locate memory for recv %lu %lu %lu \n", item, tot_recv, alloc_size);
+        printf("\n cannot locate memory for recv %lu %lu %lu \n", item, tot_recv, alloc_size);
         exit(0);
     }
 
@@ -114,3 +149,4 @@ void allocate_psi(STATE * states, STATE * states1)
 
 
 }
+

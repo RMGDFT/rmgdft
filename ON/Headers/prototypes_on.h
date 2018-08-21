@@ -249,7 +249,7 @@ void init_parameter (STATE * states);
 void make_mask_grid (double rcut, int level, STATE * states);
 void make_mask_grid_state (int level, STATE * states);
 void allocate_func (STATE * states, int inist);
-void allocate_psi (STATE * states, STATE * states1);
+void AllocatePsi (STATE * states, STATE * states1);
 void allocate_matrix ();
 void xyz2pe (int x, int y, int z, int *pe);
 void get_normKB (SPECIES * sp, double *pd);

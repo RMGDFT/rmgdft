@@ -12,7 +12,7 @@ GetHvnlij.cpp
 orbital_comm.c
 ReadOrbitals.cpp
 allocate_masks.c
-allocate_psi.c
+AllocatePsi.cpp
 allocate_states.c
 app10_del2.c
 app_grad6.c
