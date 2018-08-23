@@ -61,7 +61,7 @@ void AllocatePsi(STATE * states, STATE * states1)
 
     size_t size, alloc_size;
     size = std::max(pct.psi_size, ct.state_per_proc * states[0].size);
-    alloc_size = 3 * size * sizeof(double);
+    alloc_size = 3 * size;
     rptr = new double[alloc_size];
     if(NULL == rptr) 
     {
@@ -102,7 +102,7 @@ void AllocatePsi(STATE * states, STATE * states1)
 
     item = ct.max_orbit_nx  * ct.max_orbit_ny  * ct.max_orbit_nz;
 
-    alloc_size =  tot_recv * item;
+    alloc_size =  tot_recv * item +1;
 
 
     ct.nvme_orbital_fd = -1;
