@@ -156,7 +156,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     init_comm (states);
     init_comm_res (states);
 
-    allocate_psi (states, states1);
+    AllocatePsi (states, states1);
 
     duplicate_states_info (states, states1);
     my_barrier ();
