@@ -258,8 +258,11 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
 
         lc.ions[nions].movable = movable;
 
-        if(lc.spin_flag == 1 && ncomp <6) throw RmgFatalException() << "for spin-polarization, one needs to have init_spin density setup near " << Atom << "\n";
-        else
+        if((lc.spin_flag == 1) && (ncomp < 6)) 
+        {
+            throw RmgFatalException() << "for spin-polarization, one needs to have init_spin density setup near " << Atom << "\n";
+        }
+        else if((lc.spin_flag == 1) && (ncomp == 6))
         {
             it1++;
             std::string rho_updown_diff = *it1;
