@@ -79,9 +79,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Might need to adjust this depending on filtering changes. Also assumes that all beta have roughly the same range
         sp->nlradius = ct.projector_expansion_factor * 4.5 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points);
-       sp->nlradius = std::max(sp->nlradius, ct.min_nlradius);
-       sp->nlradius = std::min(sp->nlradius, ct.max_nlradius);
-
+        sp->nlradius = std::max(sp->nlradius, ct.min_nlradius);
+        sp->nlradius = std::min(sp->nlradius, ct.max_nlradius);
 
 
         /*Get nldim */
@@ -145,9 +144,20 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         /* Write raw beta function into file if requested*/
         double *bessel_rg = new double[(ct.max_l+1) * RADIAL_GVECS * sp->rg_points];
-            RmgTimer *RT1 = new RmgTimer("radial beta");
+
+        // Reset sp->rg_points to correspond to the closest value to 10.0
+        int ii;
+        for(ii = 0;ii < sp->rg_points;ii++) if(sp->r[ii] >= 10.0) break;
+        double lb = sp->r[ii] - sp->r[ii-1];
+        double ub = sp->r[ii+1] - sp->r[ii];
+        sp->rg_points = ii;
+        if(ub > lb) sp->rg_points--;
+
+
+        RmgTimer *RT1 = new RmgTimer("radial beta");
         A->InitBessel(sp->r, sp->rg_points, ct.max_l, bessel_rg);
-            delete RT1;
+        delete RT1;
+
         // get the local pseudopotential in G space
         sp->localpp_g = new double[RADIAL_GVECS];
         sp->arho_g = new double[RADIAL_GVECS];

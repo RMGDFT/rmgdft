@@ -790,7 +790,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("localize_projectors", &lc.localize_projectors, true,
                         "Flag indicating whether or not the non-local projectors should be localized.");
 
-    If.RegisterInputKey("localize_localpp", &lc.localize_localpp, true,
+    If.RegisterInputKey("localize_localpp", &lc.localize_localpp, false,
                         "Flag indicating whether or not the local pseudopotential should be localized.");
 
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
