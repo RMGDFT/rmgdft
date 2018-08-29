@@ -49,7 +49,7 @@
 void AllocatePsi(STATE * states, STATE * states1)
 {
 
-    int st1 ;
+    int st1, idx ;
     size_t item;
     double *rptr, *rptr1, *rptr2, *rptr3;
 
@@ -61,7 +61,7 @@ void AllocatePsi(STATE * states, STATE * states1)
 
     size_t size, alloc_size;
     size = std::max(pct.psi_size, ct.state_per_proc * states[0].size);
-    alloc_size = 3 * size;
+    alloc_size = 2*size;
     rptr = new double[alloc_size];
     if(NULL == rptr) 
     {
@@ -69,16 +69,13 @@ void AllocatePsi(STATE * states, STATE * states1)
         exit(0);
     }
 
-    rptr1 = rptr + size;
-    rptr2 = rptr + 2 *size;
+    rptr2 = rptr + size;
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
-        states[st1].psiR = rptr;
-        states1[st1].psiR = rptr1;
+        states1[st1].psiR = rptr;
         states_tem[st1].psiR = rptr2;
         rptr += states[st1].size;
-        rptr1 += states[st1].size;
         rptr2 += states[st1].size;
     }
 
@@ -100,10 +97,35 @@ void AllocatePsi(STATE * states, STATE * states1)
         tot_recv += num_recv;
     }
 
+
+    ct.num_orbitals_total = ct.state_end - ct.state_begin + tot_recv;
+
+    ct.orbitals_list = new int[ct.num_orbitals_total];
+
+    idx = 0;
+    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    {
+        ct.orbitals_list[idx] = st1;
+        idx++;
+    }
+
+    for (loop = 0; loop < num_sendrecv_loop1; loop++)
+    {
+        num_recv = recv_from1[loop * state_per_proc + 1];
+        for(i = 0; i< num_recv; i++)
+        {
+            st1 = recv_from1[loop * state_per_proc + i + 2];
+            ct.orbitals_list[idx] = st1;
+            idx++;
+
+        }
+
+    }
+
+    
     item = ct.max_orbit_nx  * ct.max_orbit_ny  * ct.max_orbit_nz;
 
-    alloc_size =  tot_recv * item +1;
-
+    alloc_size =  (size_t)ct.num_orbitals_total * item ;
 
     ct.nvme_orbital_fd = -1;
     // orbitals from other proces  are actually stored here
@@ -135,18 +157,13 @@ void AllocatePsi(STATE * states, STATE * states1)
 
     //dprintf("\n tot_recv  %d", tot_recv);
 
-    for (loop = 0; loop < num_sendrecv_loop1; loop++)
+
+    for (st1 = 0; st1 < ct.num_orbitals_total; st1++)
     {
-        num_recv = recv_from1[loop * state_per_proc + 1];
-        for(i = 0; i< num_recv; i++)
-        {
-            st1 = recv_from1[loop * state_per_proc + i + 2];
-            states[st1].psiR = rptr3;
-            rptr3  += item;
-        }
-
+        idx = ct.orbitals_list[st1];
+        states[idx].psiR = rptr3;
+        rptr3 += item;
     }
-
 
 }
 

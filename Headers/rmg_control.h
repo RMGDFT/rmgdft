@@ -725,7 +725,8 @@ typedef struct
     int state_per_proc;
     int state_begin;
     int state_end;
-
+    int num_orbitals_total; // including the orbitals stored in the process and orbitals overlaped with them.
+    int *orbitals_list;  // dimension of ct.num_orbital_total, sorted.
     int max_orbit_size;
     int max_orbit_nx;
     int max_orbit_ny;

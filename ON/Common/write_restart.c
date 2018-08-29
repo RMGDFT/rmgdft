@@ -144,19 +144,13 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old, double
     /* All processors should wait until 0 is done to make sure that directories are created*/
     MPI_Barrier(pct.img_comm);
 
-    if (ct.spin_flag)
-    {   
-	if (pct.spinpe==0)
-	    sprintf (newname, "%s.up%d", name, pct.gridpe);
-	else if(pct.spinpe==1) 
-	    sprintf (newname, "%s.dw%d", name, pct.gridpe);
-
-    }
+    if(ct.spin_flag)
+	    sprintf (newname, "%s_spin%d", name, pct.spinpe);
     else
-	sprintf (newname, "%s%d", name, pct.gridpe);
+	    sprintf (newname, "%s", name);
 
 
-    write_data (name, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
+    write_data (newname, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
 
     write_time = my_crtc () - time0;
 
