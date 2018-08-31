@@ -131,6 +131,7 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
        }
 
        MPI_Allreduce(MPI_IN_PLACE, betamix, MAX_BROYDEN_ITER*MAX_BROYDEN_ITER, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+       MPI_Allreduce(MPI_IN_PLACE, betamix, MAX_BROYDEN_ITER*MAX_BROYDEN_ITER, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
        double work[MAX_BROYDEN_ITER*MAX_BROYDEN_ITER];
        int ipiv[MAX_BROYDEN_ITER*MAX_BROYDEN_ITER];
@@ -149,6 +150,7 @@ void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in,
            work[i] = 0.0;
            for(int k = 0;k < pbasis;k++) work[i] += dvh[i][k] * rhout[k];
            MPI_Allreduce(MPI_IN_PLACE, &work[i], 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+           MPI_Allreduce(MPI_IN_PLACE, &work[i], 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
        }
 
        for(int i = 0;i < iter_used;i++) {
