@@ -47,7 +47,7 @@ make_mask_grid_state.c
 minimage1.c
 nlforce_par_rho.c
 open_wave_file.c
-orbit_dot_orbit.c
+OrbitDotOrbit.cpp
 partial_Mat_nm_R.c
 print_matrix.c
 pulay_rho_on.c

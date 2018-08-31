@@ -61,7 +61,7 @@ void AllocatePsi(STATE * states, STATE * states1)
 
     size_t size, alloc_size;
     size = std::max(pct.psi_size, ct.state_per_proc * states[0].size);
-    alloc_size = 2*size;
+    alloc_size = 3*size;
     rptr = new double[alloc_size];
     if(NULL == rptr) 
     {
@@ -69,13 +69,16 @@ void AllocatePsi(STATE * states, STATE * states1)
         exit(0);
     }
 
-    rptr2 = rptr + size;
+    rptr1 = rptr + size;
+    rptr2 = rptr + 2*size;
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
-        states1[st1].psiR = rptr;
+        states[st1].psiR = rptr;
+        states1[st1].psiR = rptr1;
         states_tem[st1].psiR = rptr2;
         rptr += states[st1].size;
+        rptr1 += states[st1].size;
         rptr2 += states[st1].size;
     }
 
@@ -125,7 +128,7 @@ void AllocatePsi(STATE * states, STATE * states1)
     
     item = ct.max_orbit_nx  * ct.max_orbit_ny  * ct.max_orbit_nz;
 
-    alloc_size =  (size_t)ct.num_orbitals_total * item ;
+    alloc_size =  (size_t)tot_recv * item ;
 
     ct.nvme_orbital_fd = -1;
     // orbitals from other proces  are actually stored here
@@ -158,11 +161,15 @@ void AllocatePsi(STATE * states, STATE * states1)
     //dprintf("\n tot_recv  %d", tot_recv);
 
 
+    // only assign memory for orbitals on other procs.
     for (st1 = 0; st1 < ct.num_orbitals_total; st1++)
     {
         idx = ct.orbitals_list[st1];
-        states[idx].psiR = rptr3;
-        rptr3 += item;
+        if(idx < ct.state_begin || idx >= ct.state_end)
+        {
+            states[idx].psiR = rptr3;
+            rptr3 += item;
+        }
     }
 
 }
