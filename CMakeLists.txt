@@ -334,7 +334,7 @@ if(USE_ELPA_LIBS)
 endif(USE_ELPA_LIBS)
 
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "^(FreeBSD|DragonFly)$")
     if(CRAY_XK)
         add_definitions(-DHAVE_ASYNC_ALLREDUCE=1)
     else(CRAY_XK)
