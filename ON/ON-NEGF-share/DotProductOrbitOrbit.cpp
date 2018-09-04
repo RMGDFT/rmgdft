@@ -24,8 +24,8 @@ static double inline inline_ddot(int *length, double *p1, int *ione, double *p2,
 }
 
 
-void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
-*orbit3, double *H, double *S)
+void DotProductOrbitOrbit(STATE *orbit1, STATE *orbit2, STATE
+        *orbit3, double *H, double *S, ORBITAL_PAIR onepair)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -44,32 +44,31 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
 
 
     void *RT1 = NULL;
-    if(ct.verbose) RT1 = BeginRmgTimer("4-get_HS: orbit_dot_orbit: dotproduct");
+    if(ct.verbose) RT1 = new RmgTimer("4-get_HS: orbit_dot_orbit: dotproduct");
 
     *H = 0.0;
     *S = 0.0;
 
     if (orbit1->index < ct.state_begin || orbit1->index >= ct.state_end)
         error_handler("orbit1 is not in this PE");
-    index = (orbit1->index - ct.state_begin) * ct.num_states + orbit2->index;
 
-    xlow1 = orbit_overlap_region[index].xlow1;
-    xhigh1 = orbit_overlap_region[index].xhigh1;
-    xlow2 = orbit_overlap_region[index].xlow2;
-    xhigh2 = orbit_overlap_region[index].xhigh2;
-    xshift = orbit_overlap_region[index].xshift;
+    xlow1 = onepair.xlow1;
+    xhigh1 = onepair.xhigh1;
+    xlow2 = onepair.xlow2;
+    xhigh2 = onepair.xhigh2;
+    xshift = onepair.xshift;
 
-    ylow1 = orbit_overlap_region[index].ylow1;
-    yhigh1 = orbit_overlap_region[index].yhigh1;
-    ylow2 = orbit_overlap_region[index].ylow2;
-    yhigh2 = orbit_overlap_region[index].yhigh2;
-    yshift = orbit_overlap_region[index].yshift;
+    ylow1 = onepair.ylow1;
+    yhigh1 = onepair.yhigh1;
+    ylow2 = onepair.ylow2;
+    yhigh2 = onepair.yhigh2;
+    yshift = onepair.yshift;
 
-    zlow1 = orbit_overlap_region[index].zlow1;
-    zhigh1 = orbit_overlap_region[index].zhigh1;
-    zlow2 = orbit_overlap_region[index].zlow2;
-    zhigh2 = orbit_overlap_region[index].zhigh2;
-    zshift = orbit_overlap_region[index].zshift;
+    zlow1 = onepair.zlow1;
+    zhigh1 = onepair.zhigh1;
+    zlow2 = onepair.zlow2;
+    zhigh2 = onepair.zhigh2;
+    zshift = onepair.zshift;
 
 
     zlength1 = zhigh1 - zlow1 + 1;
@@ -382,7 +381,7 @@ void dot_product_orbit_orbit(STATE *orbit1, STATE *orbit2, STATE
 
     }
 
-    if(ct.verbose) EndRmgTimer(RT1);
+    if(ct.verbose) delete(RT1);
 
 }
 

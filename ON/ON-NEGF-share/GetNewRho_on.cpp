@@ -24,7 +24,7 @@
 #include "RmgParallelFft.h"
 #include "BaseGrid.h"
 
-
+extern std::vector<ORBITAL_PAIR> OrbitalPairs;
 
 extern "C" void GetNewRho_on_c(STATE * states, double *rho, double *rho_matrix)
 {
@@ -37,7 +37,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
     /* for parallel libraries */
 
     double *psi1, *psi2, scale;
-    int i, st1, st2;
+    int i;
     int loop, state_per_proc, num_recv;
     double *rho_temp;
     double tem;
@@ -45,6 +45,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
     int global_fbasis = get_FPX0_GRID() *get_FPY0_GRID() *get_FPZ0_GRID();
 
     int st11;
+    int pair;
 
     RmgTimer *RT0 = new RmgTimer("3-get_new_rho");
     state_per_proc = ct.state_per_proc + 2;
@@ -56,68 +57,36 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
         rho_global[idx] = 0.;
 
     RmgTimer *RT1 = new RmgTimer("3-get_new_rho: states in this proc");
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+#pragma omp parallel private(pair)
     {
-#pragma omp parallel private(st2)
-{
-    double *rho_global_private = new double[global_basis]();
+        double *rho_global_private = new double[global_basis]();
 #pragma omp barrier
 #pragma omp for schedule(dynamic) nowait
-        for (st2 = st1; st2 < ct.state_end; st2++)
+        for(pair = 0; pair < OrbitalPairs.size(); pair++)
         {
+            ORBITAL_PAIR onepair;
+            onepair = OrbitalPairs[pair];
+            int st1 = onepair.orbital1;
+            int st2 = onepair.orbital2;
+
             double scale;
             int st11 = st1 - ct.state_begin;
-            if (st1 == st2)
-                scale =  rho_matrix[st11 * ct.num_states + st2];
-            if (st1 != st2) scale = 2.0 * rho_matrix[st11 * ct.num_states + st2];
+            scale =  rho_matrix[st11 * ct.num_states + st2];
             double *psi1 = states[st1].psiR;
             double *psi2 = states[st2].psiR;
 
             if (state_overlap_or_not[st11 * ct.num_states + st2 ] == 1)
                 density_orbit_X_orbit(st1, st2, scale, psi1, psi2,
-                        rho_global_private, 0, states, orbit_overlap_region);
+                        rho_global_private, 0, states, onepair);
 
         }
 #pragma omp critical
         for(int idx = 0;idx < global_basis;idx++)rho_global[idx] += rho_global_private[idx];
 
-    delete [] rho_global_private;
-}
+        delete [] rho_global_private;
     }
+
     delete(RT1);
-
-    RmgTimer *RT2 = new RmgTimer("3-get_new_rho: states other proc");
-
-
-    for (loop = 0; loop < num_sendrecv_loop; loop++)
-    {
-        num_recv = recv_from[loop * state_per_proc + 1];
-
-        for (i = 0; i < num_recv; i++)
-        {
-            st2 = recv_from[loop * state_per_proc + i + 2];
-
-            psi2= states[st2].psiR;
-            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-            {
-                psi1 = states[st1].psiR;
-
-                st11 = st1 - ct.state_begin;
-
-                if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
-                {
-                    psi1 = states[st1].psiR;
-                    scale = 2.0 * rho_matrix[st11 * ct.num_states + st2];
-                    density_orbit_X_orbit(st1, st2, scale, psi1, psi2,
-                            rho_global, 0, states, orbit_overlap_region);
-                }
-            }
-        }
-
-    }                           /* end of loop  */
-
-
-    delete(RT2);
 
 
     RmgTimer *RT3 = new RmgTimer("3-get_new_rho: distribution");
@@ -151,10 +120,6 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
     RmgTimer *RT5 = new RmgTimer("3-get_new_rho: augmented");
 
     RhoAugmented(rho, rho_matrix);
-
-    tem = 0.0;
-    for(st1 = 0; st1 < global_fbasis; st1++)
-        tem += rho[st1];
 
 
     delete(RT5);

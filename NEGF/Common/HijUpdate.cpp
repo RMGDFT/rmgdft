@@ -79,7 +79,7 @@ void HijUpdate (STATE * states, double *vtot_c, double *Aij)
 
 
     RmgTimer *RT1 = new RmgTimer("4-get_HS: orbit_dot_orbit");
-    orbit_dot_orbit(states, states1, Hij_00, Bij_00);
+    OrbitDotOrbit(states, states1, Hij_00, Bij_00);
     delete(RT1);
 
 

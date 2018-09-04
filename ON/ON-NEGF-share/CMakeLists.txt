@@ -20,7 +20,7 @@ app_mask.c
 assign_weight_on.c
 density_orbit_X_orbit.c
 distribute_to_global.c
-dot_product_orbit_orbit.c
+DotProductOrbitOrbit.cpp
 dot_product_orbit_nl.c
 duplicate_states_info.c
 fill_orbit_borders4.c
@@ -30,6 +30,7 @@ get_all_partial_kbpsi.c
 get_Hvnlij.c
 get_ion_orbit_overlap_nl.c
 GetNlop_on.cpp
+GetOrbitalPairs.cpp
 get_orbit_overlap_region.c
 get_start.c
 global_sums_int.c

@@ -122,6 +122,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
 
     get_orbit_overlap_region(states);
+    GetOrbitalPairs(states);
 
     delete(RT);
 

@@ -21,34 +21,29 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 
+extern std::vector<ORBITAL_PAIR> OrbitalPairs;
 
 void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
 {
-    int state_per_proc;
-    int num_recv;
-    int st1;
 
-
-    state_per_proc = ct.state_per_proc + 2;
-
-#pragma omp parallel private(st1)
-{
-#pragma omp for schedule(dynamic) nowait
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    int pair;
+#pragma omp parallel private(pair)
     {
-        int st11 = st1 - ct.state_begin;
-        for (int st22 = 0; st22 < ct.num_orbitals_total; st22++)
+#pragma omp for schedule(dynamic) nowait
+        for(pair = 0; pair < OrbitalPairs.size(); pair++)
         {
-            int st2 = ct.orbitals_list[st22];
-            if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
-            {
-                double H, S;
-                dot_product_orbit_orbit(&states1[st1], &states[st2], &states[st1],  &H, &S);
-                Aij[st11 * ct.num_states + st2] = H;
-                Bij[st11 * ct.num_states + st2] = S;
-            }
+            ORBITAL_PAIR onepair;
+            onepair = OrbitalPairs[pair];
+            int st1 = onepair.orbital1;
+            int st2 = onepair.orbital2;
+            int st11 = st1 - ct.state_begin;
+
+            double H, S;
+            DotProductOrbitOrbit(&states1[st1], &states[st2], &states[st1],  &H, &S, onepair);
+            Aij[st11 * ct.num_states + st2] = H;
+            Bij[st11 * ct.num_states + st2] = S;
         }
     }
 }
 
-}
+

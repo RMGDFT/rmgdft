@@ -153,6 +153,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     is_state_overlap (states, state_overlap_or_not);
     get_orbit_overlap_region (states);
+    GetOrbitalPairs(states);
     init_comm (states);
     init_comm_res (states);
 

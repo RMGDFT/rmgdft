@@ -300,6 +300,7 @@ void dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2, STATE
         *orbit3, double *H, double *S);
 
 void OrbitDotOrbit (STATE * states, STATE * states1, double *Hij_row, double * Bij_row);
+void GetOrbitalPairs(STATE *states);
 
 void app_mask (int istate, double *u, int level);
 void allocate_masks (STATE * states);
@@ -539,6 +540,8 @@ void line_min_three_point (STATE *, STATE *, double, double, double *, double *,
 
 void dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2, STATE
         *orbit3, double *H, double *S);
+void DotProductOrbitOrbit (STATE *orbit1, STATE *orbit2, STATE
+        *orbit3, double *H, double *S, ORBITAL_PAIR onepair);
 
 void orbit_dot_orbit (STATE * states, STATE * states1, double *Hij_row, double * Bij_row);
 
@@ -549,7 +552,7 @@ void state_corner_xyz (STATE * states);
 
 void density_orbit_X_orbit (int st1, int st2, double scale, double * psi1,
         double * psi2, double * rho_global, int mode,
-        STATE * states, ORBIT_ORBIT_OVERLAP *);
+        STATE * states, ORBITAL_PAIR onepair);
 
 char *get_symbol (int atomic_number);
 

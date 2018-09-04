@@ -127,6 +127,7 @@ double *Hij_00, *Bij_00;
 double *work_matrix_row, *coefficient_matrix_row, *nlarray1;
 double *work_dis2, *zz_dis, *cc_dis, *gamma_dis, *uu_dis, *mat_Omega;
 ORBIT_ORBIT_OVERLAP *orbit_overlap_region;
+std::vector<ORBITAL_PAIR> OrbitalPairs;
 char *vloc_state_overlap_or_not;
 double *orbit_tem;
 double *sg_orbit;

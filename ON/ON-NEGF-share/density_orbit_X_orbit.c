@@ -34,7 +34,7 @@ static int inline fold_to_unitcell(int ix, int NX)
 
 void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
                            double * psi2, double * rho_global, int mode, 
-                           STATE * states, ORBIT_ORBIT_OVERLAP *orbit_overlap_region)
+                           STATE * states, ORBITAL_PAIR onepair)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -60,23 +60,23 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
         error_handler(" mode is not right %d", mode);
     }
 
-    xlow1 = orbit_overlap_region[index].xlow1;
-    xhigh1 = orbit_overlap_region[index].xhigh1;
-    xlow2 = orbit_overlap_region[index].xlow2;
-    xhigh2 = orbit_overlap_region[index].xhigh2;
-    xshift = orbit_overlap_region[index].xshift;
+    xlow1 = onepair.xlow1;
+    xhigh1 = onepair.xhigh1;
+    xlow2 = onepair.xlow2;
+    xhigh2 = onepair.xhigh2;
+    xshift = onepair.xshift;
 
-    ylow1 = orbit_overlap_region[index].ylow1;
-    yhigh1 = orbit_overlap_region[index].yhigh1;
-    ylow2 = orbit_overlap_region[index].ylow2;
-    yhigh2 = orbit_overlap_region[index].yhigh2;
-    yshift = orbit_overlap_region[index].yshift;
+    ylow1 = onepair.ylow1;
+    yhigh1 = onepair.yhigh1;
+    ylow2 = onepair.ylow2;
+    yhigh2 = onepair.yhigh2;
+    yshift = onepair.yshift;
 
-    zlow1 = orbit_overlap_region[index].zlow1;
-    zhigh1 = orbit_overlap_region[index].zhigh1;
-    zlow2 = orbit_overlap_region[index].zlow2;
-    zhigh2 = orbit_overlap_region[index].zhigh2;
-    zshift = orbit_overlap_region[index].zshift;
+    zlow1 = onepair.zlow1;
+    zhigh1 = onepair.zhigh1;
+    zlow2 = onepair.zlow2;
+    zhigh2 = onepair.zhigh2;
+    zshift = onepair.zshift;
 
     xshift1 = mode * xshift;
     xshift2 = (1 - mode) * xshift;
