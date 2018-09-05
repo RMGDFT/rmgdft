@@ -49,6 +49,7 @@ minimage1.c
 nlforce_par_rho.c
 open_wave_file.c
 OrbitDotOrbit.cpp
+OrbitDotOrbitBlock.cpp
 partial_Mat_nm_R.c
 print_matrix.c
 pulay_rho_on.c

@@ -25,7 +25,7 @@ static double inline inline_ddot(int *length, double *p1, int *ione, double *p2,
 
 
 void DotProductOrbitOrbit(STATE *orbit1, STATE *orbit2, STATE
-        *orbit3, double *H, double *S, ORBITAL_PAIR onepair)
+        *orbit3, double *H, double *S, ORBITAL_PAIR *onepair)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -52,23 +52,23 @@ void DotProductOrbitOrbit(STATE *orbit1, STATE *orbit2, STATE
     if (orbit1->index < ct.state_begin || orbit1->index >= ct.state_end)
         error_handler("orbit1 is not in this PE");
 
-    xlow1 = onepair.xlow1;
-    xhigh1 = onepair.xhigh1;
-    xlow2 = onepair.xlow2;
-    xhigh2 = onepair.xhigh2;
-    xshift = onepair.xshift;
+    xlow1 = onepair->xlow1;
+    xhigh1 = onepair->xhigh1;
+    xlow2 = onepair->xlow2;
+    xhigh2 = onepair->xhigh2;
+    xshift = onepair->xshift;
 
-    ylow1 = onepair.ylow1;
-    yhigh1 = onepair.yhigh1;
-    ylow2 = onepair.ylow2;
-    yhigh2 = onepair.yhigh2;
-    yshift = onepair.yshift;
+    ylow1 = onepair->ylow1;
+    yhigh1 = onepair->yhigh1;
+    ylow2 = onepair->ylow2;
+    yhigh2 = onepair->yhigh2;
+    yshift = onepair->yshift;
 
-    zlow1 = onepair.zlow1;
-    zhigh1 = onepair.zhigh1;
-    zlow2 = onepair.zlow2;
-    zhigh2 = onepair.zhigh2;
-    zshift = onepair.zshift;
+    zlow1 = onepair->zlow1;
+    zhigh1 = onepair->zhigh1;
+    zlow2 = onepair->zlow2;
+    zhigh2 = onepair->zhigh2;
+    zshift = onepair->zshift;
 
 
     zlength1 = zhigh1 - zlow1 + 1;

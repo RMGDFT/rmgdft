@@ -300,6 +300,7 @@ void dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2, STATE
         *orbit3, double *H, double *S);
 
 void OrbitDotOrbit (STATE * states, STATE * states1, double *Hij_row, double * Bij_row);
+void OrbitDotOrbitBlock (int pair_start, int pair_end, double *Hij_row, double * Bij_row);
 void GetOrbitalPairs(STATE *states);
 
 void app_mask (int istate, double *u, int level);
@@ -541,7 +542,7 @@ void line_min_three_point (STATE *, STATE *, double, double, double *, double *,
 void dot_product_orbit_orbit (STATE *orbit1, STATE *orbit2, STATE
         *orbit3, double *H, double *S);
 void DotProductOrbitOrbit (STATE *orbit1, STATE *orbit2, STATE
-        *orbit3, double *H, double *S, ORBITAL_PAIR onepair);
+        *orbit3, double *H, double *S, ORBITAL_PAIR *onepair);
 
 void orbit_dot_orbit (STATE * states, STATE * states1, double *Hij_row, double * Bij_row);
 

@@ -20,30 +20,56 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "BaseThread.h"
+#include "rmgthreads.h"
+#include "RmgThread.h"
 
 extern std::vector<ORBITAL_PAIR> OrbitalPairs;
 
 void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
 {
 
-    int pair;
-#pragma omp parallel private(pair)
-    {
-#pragma omp for schedule(dynamic) nowait
-        for(pair = 0; pair < OrbitalPairs.size(); pair++)
-        {
-            ORBITAL_PAIR onepair;
-            onepair = OrbitalPairs[pair];
-            int st1 = onepair.orbital1;
-            int st2 = onepair.orbital2;
-            int st11 = st1 - ct.state_begin;
+    BaseThread *T = BaseThread::getBaseThread(0);
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    int pairs_per_thread = (int)OrbitalPairs.size()/active_threads;
+    int pairs_remain = (int)OrbitalPairs.size() % active_threads;
 
-            double H, S;
-            DotProductOrbitOrbit(&states1[st1], &states[st2], &states[st1],  &H, &S, onepair);
-            Aij[st11 * ct.num_states + st2] = H;
-            Bij[st11 * ct.num_states + st2] = S;
-        }
+    SCF_THREAD_CONTROL thread_control;
+
+    for(int ist = 0;ist < active_threads;ist++) {
+
+        int pair_start = ist * pairs_per_thread; 
+        int pair_end = pair_start + pairs_per_thread;
+
+
+        thread_control.job = HYBRID_ORBITALS_DOT_PRODUCT;
+        thread_control.sp = (void *)states1;
+        thread_control.p1 = (void *)states;
+        thread_control.p2 = (void *)states;
+
+        thread_control.nv = (void *)Aij;
+        thread_control.ns = (void *)Bij;
+
+        thread_control.basetag = pair_start;
+        thread_control.extratag1 = active_threads;
+        thread_control.extratag2 = pair_end;
+
+        QueueThreadTask(ist, thread_control);
+
+        //DotProductOrbitOrbit(&states1[st1], &states[st2], &states[st1],  H, S, onepair);
     }
-}
 
+    // Thread tasks are set up so run them
+    T->run_thread_tasks(active_threads);
+
+    // take care if num of pairs not divisble by num_thread
+    if ( pairs_remain >0) 
+    {
+        int pair_start = pairs_per_thread * active_threads;
+        int pair_end = (int)OrbitalPairs.size();
+        OrbitDotOrbitBlock(pair_start, pair_end, Aij, Bij);
+    }
+
+
+}
 

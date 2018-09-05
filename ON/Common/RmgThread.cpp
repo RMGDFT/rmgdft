@@ -32,6 +32,12 @@
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 
+#include "prototypes_on.h"
+#include "init_var.h"
+
+extern std::vector<ORBITAL_PAIR> OrbitalPairs;
+
+
 // Work queue(s). Not sure if thread specific queues or a global queue is best here. With a global queue we can ensure
 // that if one thread is running much slower than the others we will still get the max throughput. Per thread queues
 // will reduce contention on the queue though. Also have to consider how big to make the queue. If it becomes full
@@ -183,68 +189,16 @@ void *run_threads(void *v) {
         T->set_pptr(my_tid, (void *)&ss);
 
         // Switch that controls what we do
-#if 0
         switch(ss.job) {
-            case HYBRID_EIG:       // Performs a single multigrid sweep over an orbital
-                if(ct.is_gamma) {
-                    kptr_d = (Kpoint<double> *)ss.p3;
-                    if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<double,float> (kptr_d, (State<double> *)ss.sp, ss.vtot, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
-                    else
-                        MgEigState<double,double> (kptr_d, (State<double> *)ss.sp, ss.vtot, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
-                }
-                else {
-                    kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
-                    if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<std::complex<double>, std::complex<float> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcycle);
-                    else
-                        MgEigState<std::complex<double>, std::complex<double> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcycle);
-                }
+            case HYBRID_ORBITALS_DOT_PRODUCT:       // Performs dot product for one pair of orbitals
+                OrbitDotOrbitBlock(ss.basetag, ss.extratag2,(double *)ss.nv, (double *)ss.ns);
                 break;
-            case HYBRID_SKIP:
-                break;
-            case HYBRID_SUBDIAG_APP_AB:
-                if(ct.is_gamma) {
-                    kptr_d = (Kpoint<double> *)ss.p3;
-                    State<double> *spd = (State<double> *)ss.sp;
-                    ApplyOperators<double> (kptr_d, spd->istate, (double *)ss.p1, (double *)ss.p2, ss.vtot, 
-                                          (double *)ss.nv, (double *)ss.Bns);
-                }
-                else {
-                    kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
-                    State<std::complex<double> > *spc = (State<std::complex<double> > *)ss.sp;
-                    ApplyOperators<std::complex<double> > (kptr_c, spc->istate, (std::complex<double> *)ss.p1, (std::complex<double> *)ss.p2, ss.vtot,
-                                                          (std::complex<double> *)ss.nv, (std::complex<double> *)ss.Bns);
-                } 
-                break;
-            case HYBRID_APPLY_HAMILTONIAN:
-                if(ct.is_gamma) {
-                    kptr_d = (Kpoint<double> *)ss.p3;
-                    ApplyHamiltonian<double> (kptr_d, (double *)ss.p1, (double *)ss.p2, ss.vtot, (double *)ss.nv);
-                }
-                else {
-                    kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
-                    ApplyHamiltonian<std::complex<double> > (kptr_c, (std::complex<double> *)ss.p1, (std::complex<double> *)ss.p2, ss.vtot, 
-                                          (std::complex<double> *)ss.nv);
-                } 
-                break;
-            case HYBRID_DAV_PRECONDITIONER:
-                if(ct.is_gamma) {
-                    kptr_d = (Kpoint<double> *)ss.p1;
-                    DavPreconditionerOne<double> (kptr_d, (double *)ss.p2, ss.fd_diag, ss.eig, ss.vtot, ss.avg_potential);
-                }
-                else {
-                } 
-                break;
-            case HYBRID_THREAD_EXIT:
-                T->thread_exit();
-                return NULL;
             default:
                 break;
         }
-#endif
 
     }
 
     return NULL;
 }
+
