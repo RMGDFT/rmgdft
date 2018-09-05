@@ -121,7 +121,6 @@ write_global_data.c
 writeout_matrix_p.c
 X_to_distribute_soft.c
 zero_lead_image.c
-RmgThread.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/NEGF/Headers/")
 include_directories("${RMG_BINARY_DIR}/NEGF/Headers/")
