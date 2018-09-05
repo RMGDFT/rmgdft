@@ -390,7 +390,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             // refresh s_psi and h_psi
             RT1 = new RmgTimer("6-Davidson: refresh h_psi and s_psi");
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis);
-            for(int idx=0;idx < nstates*pbasis;idx++)s_psi[idx] = psi[nstates*pbasis + idx];
+            if(!ct.norm_conserving_pp) for(int idx=0;idx < nstates*pbasis;idx++)s_psi[idx] = psi[nstates*pbasis + idx];
 
             RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, h_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis);
             for(int idx=0;idx < nstates*pbasis;idx++)h_psi[idx] = psi[nstates*pbasis + idx];
