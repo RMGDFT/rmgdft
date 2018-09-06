@@ -65,7 +65,6 @@ add_library (ON_Common
  rmg_timings.c
  Scf_on.cpp
  sd.c
- theta_phi_new.c
  tools_submat.c
  update_orbit_centers.c
  write_data.c
@@ -73,6 +72,8 @@ add_library (ON_Common
  write_states_info.c
  xbsmovie.c
  ZeroBoundary.cpp
+ ThetaPhi.cpp
+ ThetaPhiBlock.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
 include_directories("${RMG_BINARY_DIR}/ON/Headers/")

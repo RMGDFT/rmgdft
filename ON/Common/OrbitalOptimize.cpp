@@ -23,6 +23,8 @@
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
 
+extern std::vector<ORBITAL_PAIR> OrbitalPairs;
+
 /* Flag for projector mixing */
 static int mix_steps;
 
@@ -213,59 +215,34 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
     state_per_proc = ct.state_per_proc + 2;
 
 #pragma omp parallel private(st1)
-{
-#pragma omp for schedule(static,1) nowait
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-        for (int idx = 0; idx < states[st1].size; idx++)
-            states1[st1].psiR[idx] = 0.0;
-}
-
-#pragma omp parallel private(st1)
-{
-#pragma omp for schedule(static,1) nowait
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
+#pragma omp for schedule(static,1) nowait
+        for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+            for (int idx = 0; idx < states[st1].size; idx++)
+                states1[st1].psiR[idx] = 0.0;
+    }
+
+
+    int pair_start = 0;
+    int pair_end = (int)OrbitalPairs.size();
+
+    ThetaPhiBlock(pair_start, pair_end, work_theta, states, states1);
+
+#if 0
+    for(int ipair = 0; ipair < (int)OrbitalPairs.size(); ipair++)
+    {
+        ORBITAL_PAIR onepair = OrbitalPairs[ipair];
+        st1 = onepair.orbital1;
+        st2 = onepair.orbital2;
         int st11 = st1-ct.state_begin;
-        for (int st2 = ct.state_begin; st2 < ct.state_end; st2++)
-            if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
-            {
-                double temp = work_theta[st11 * ct.num_states + st2];
-                theta_phi_new(st1, st2, temp, states[st2].psiR, states1[st1].psiR, 0, states);
-            }
+
+
+        double temp = work_theta[st11 * ct.num_states + st2];
+        ThetaPhi(st1, st2, temp, states[st2].psiR, states1[st1].psiR, 0, states, &onepair);
     }
+#endif
 }
 
-    /*  send overlaped orbitals to other PEs */
-    my_barrier();
-
-
-
-
-    for (loop = 0; loop < num_sendrecv_loop1; loop++)
-    {
-
-        num_recv = recv_from1[loop * state_per_proc + 1];
-
-        for (i = 0; i < num_recv; i++)
-        {
-            st2 = recv_from1[loop * state_per_proc + i + 2];
-#pragma omp parallel private(st1)
-{
-#pragma omp for schedule(guided) nowait
-            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-            {
-                int st11 = st1-ct.state_begin;
-                if (state_overlap_or_not[st11 * ct.num_states + st2] == 1)
-                {
-                    double theta_ion = work_theta[st11 * ct.num_states + st2];
-                    theta_phi_new(st1, st2, theta_ion, states[st2].psiR, states1[st1].psiR, 0, states);
-                }
-            }
-}
-        }
-    }
-
-}
 
 void get_qnm_res(double *work_theta)
 {
@@ -296,20 +273,20 @@ void get_qnm_res(double *work_theta)
         tot_orb = Kbpsi_str.orbital_index[ion1].size();
 
 #pragma omp parallel private(idx1)
-{
-#pragma omp for schedule(dynamic) nowait
-        for(idx1 = 0; idx1 < num_orb; idx1++)
         {
-            int st1 = Kbpsi_str.orbital_index[ion1][idx1];
-            int st11 = st1 - ct.state_begin;
-
-            for(int idx2 = 0; idx2 < tot_orb; idx2++)
+#pragma omp for schedule(dynamic) nowait
+            for(idx1 = 0; idx1 < num_orb; idx1++)
             {
-                int st2 = Kbpsi_str.orbital_index[ion1][idx2];
-                work_mat[idx1 * tot_orb + idx2] = work_theta[st11 *ct.num_states + st2];
+                int st1 = Kbpsi_str.orbital_index[ion1][idx1];
+                int st11 = st1 - ct.state_begin;
+
+                for(int idx2 = 0; idx2 < tot_orb; idx2++)
+                {
+                    int st2 = Kbpsi_str.orbital_index[ion1][idx2];
+                    work_mat[idx1 * tot_orb + idx2] = work_theta[st11 *ct.num_states + st2];
+                }
             }
         }
-}
 
         //  set the length of vector and set their value to 0.0
         Kbpsi_str.kbpsi_res_ion[ion1].resize(num_orb * num_prj);
@@ -393,6 +370,6 @@ void get_dnmpsi(STATE *states1)
     delete [] qnm_weight;
     delete [] prj_sum;
     delete [] work_kbpsi;
-    
+
 
 }
