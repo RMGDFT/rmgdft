@@ -102,6 +102,7 @@
 #define		dgels		RMG_FC_GLOBAL(dgels, DGELS)
 #define		dsytrf		RMG_FC_GLOBAL(dsytrf, DSYTRF)
 #define		dsytri		RMG_FC_GLOBAL(dsytri, DSYTRI)
+#define		dlange		RMG_FC_GLOBAL(dlange, DLANGE)
 
 #if __cplusplus
 extern "C" {
@@ -115,6 +116,7 @@ void my_swap(double *vec1, double *vec2, int length);
 
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);
+double dlange(const char *norm, int *m, int *n, double *A, int *lda, double *work);
 void daxpy (int *n, double * alpha, double * x, int *incx, double * y, int *incy);
 void dscal (int *n, double * alpha, double * x, int *incx);
 void dcopy (int *n, double * x, int *incx, double * y, int *incy);
