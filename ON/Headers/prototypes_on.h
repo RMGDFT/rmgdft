@@ -630,7 +630,7 @@ void theta_phi_new (int st1, int st2, double theta_ion, double * st2_psi,
         double * state1_psi, int mode, STATE * states);
 void ThetaPhi (int st1, int st2, double theta_ion, double * st2_psi,
         double * state1_psi, int mode, STATE * states, ORBITAL_PAIR *onepair);
-void ThetaPhiBlock(int pair_start, int pair_end, double *work_theta, STATE *, STATE *);
+void ThetaPhiBlock(int pair_start, int pair_end, double *work_theta);
 
 void print_status (STATE *, double *, double *, double *, double *, char *);
 void print_state_projections (STATE *, char);

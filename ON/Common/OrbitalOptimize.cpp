@@ -23,6 +23,10 @@
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
 
+#include "BaseThread.h"
+#include "rmgthreads.h"
+#include "RmgThread.h"
+
 extern std::vector<ORBITAL_PAIR> OrbitalPairs;
 
 /* Flag for projector mixing */
@@ -212,8 +216,12 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
     int loop, state_per_proc;
     int num_recv;
 
-    state_per_proc = ct.state_per_proc + 2;
+    BaseThread *T = BaseThread::getBaseThread(0);
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    int pairs_per_thread = (int)OrbitalPairs.size()/active_threads;
+    int pairs_remain = (int)OrbitalPairs.size() % active_threads;
 
+    // theta * phi will be stored in states1.psiR, first set to 0.0
 #pragma omp parallel private(st1)
     {
 #pragma omp for schedule(static,1) nowait
@@ -222,26 +230,41 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
                 states1[st1].psiR[idx] = 0.0;
     }
 
+    SCF_THREAD_CONTROL thread_control;
 
-    int pair_start = 0;
-    int pair_end = (int)OrbitalPairs.size();
+    for(int ist = 0;ist < active_threads;ist++) {
 
-    ThetaPhiBlock(pair_start, pair_end, work_theta, states, states1);
-
-#if 0
-    for(int ipair = 0; ipair < (int)OrbitalPairs.size(); ipair++)
-    {
-        ORBITAL_PAIR onepair = OrbitalPairs[ipair];
-        st1 = onepair.orbital1;
-        st2 = onepair.orbital2;
-        int st11 = st1-ct.state_begin;
+        int pair_start = ist * pairs_per_thread; 
+        int pair_end = pair_start + pairs_per_thread;
 
 
-        double temp = work_theta[st11 * ct.num_states + st2];
-        ThetaPhi(st1, st2, temp, states[st2].psiR, states1[st1].psiR, 0, states, &onepair);
+        thread_control.job = HYBRID_THETA_PHI;
+
+        thread_control.nv = (void *)work_theta;
+
+        thread_control.basetag = pair_start;
+        thread_control.extratag1 = active_threads;
+        thread_control.extratag2 = pair_end;
+
+        QueueThreadTask(ist, thread_control);
+
+        //DotProductOrbitOrbit(&states1[st1], &states[st2], &states[st1],  H, S, onepair);
     }
-#endif
+
+    // Thread tasks are set up so run them
+    T->run_thread_tasks(active_threads);
+
+    // take care if num of pairs not divisble by num_thread
+    if ( pairs_remain >0) 
+    {
+        int pair_start = pairs_per_thread * active_threads;
+        int pair_end = (int)OrbitalPairs.size();
+        ThetaPhiBlock(pair_start, pair_end, work_theta);
+    }
+
+
 }
+
 
 
 void get_qnm_res(double *work_theta)
@@ -373,3 +396,7 @@ void get_dnmpsi(STATE *states1)
 
 
 }
+
+
+
+

@@ -193,6 +193,9 @@ void *run_threads(void *v) {
             case HYBRID_ORBITALS_DOT_PRODUCT:       // Performs dot product for one pair of orbitals
                 OrbitDotOrbitBlock(ss.basetag, ss.extratag2,(double *)ss.nv, (double *)ss.ns);
                 break;
+            case HYBRID_THETA_PHI:       // Performs Theta_ij * Phi_j
+                ThetaPhiBlock(ss.basetag, ss.extratag2,(double *)ss.nv);
+                break;
             default:
                 break;
         }

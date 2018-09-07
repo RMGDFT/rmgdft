@@ -23,7 +23,7 @@
 extern std::vector<ORBITAL_PAIR> OrbitalPairs;
 
 
-void ThetaPhiBlock(int pair_start, int pair_end, double *work_theta, STATE *states, STATE *states1)
+void ThetaPhiBlock(int pair_start, int pair_end, double *work_theta)
 {
 
 
