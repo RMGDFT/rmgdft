@@ -31,16 +31,18 @@ void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int active_threads = ct.MG_THREADS_PER_NODE;
-    int pairs_per_thread = (int)OrbitalPairs.size()/active_threads;
-    int pairs_remain = (int)OrbitalPairs.size() % active_threads;
 
     SCF_THREAD_CONTROL thread_control;
+    printf("\n %d num pairs ", (int)OrbitalPairs.size());
+
+    if( (int)OrbitalPairs.size() < active_threads) active_threads = (int)OrbitalPairs.size();
+
+    int pair_start[active_threads];
+    int pair_end[active_threads];
+
+    DistributeTasks(active_threads, (int)OrbitalPairs.size(), pair_start, pair_end);
 
     for(int ist = 0;ist < active_threads;ist++) {
-
-        int pair_start = ist * pairs_per_thread; 
-        int pair_end = pair_start + pairs_per_thread;
-
 
         thread_control.job = HYBRID_ORBITALS_DOT_PRODUCT;
         thread_control.sp = (void *)states1;
@@ -50,9 +52,9 @@ void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
         thread_control.nv = (void *)Aij;
         thread_control.ns = (void *)Bij;
 
-        thread_control.basetag = pair_start;
+        thread_control.basetag = pair_start[ist];
         thread_control.extratag1 = active_threads;
-        thread_control.extratag2 = pair_end;
+        thread_control.extratag2 = pair_end[ist];
 
         QueueThreadTask(ist, thread_control);
 
@@ -61,14 +63,6 @@ void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
 
     // Thread tasks are set up so run them
     T->run_thread_tasks(active_threads);
-
-    // take care if num of pairs not divisble by num_thread
-    if ( pairs_remain >0) 
-    {
-        int pair_start = pairs_per_thread * active_threads;
-        int pair_end = (int)OrbitalPairs.size();
-        OrbitDotOrbitBlock(pair_start, pair_end, Aij, Bij);
-    }
 
 
 }

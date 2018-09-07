@@ -22,6 +22,7 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
 void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc);
 void GetNlop_on(void);
 void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc);
+void DistributeTasks(int active_thread, int num_task, int *task_start, int *task_end);
 
 
 

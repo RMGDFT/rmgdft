@@ -218,8 +218,6 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int active_threads = ct.MG_THREADS_PER_NODE;
-    int pairs_per_thread = (int)OrbitalPairs.size()/active_threads;
-    int pairs_remain = (int)OrbitalPairs.size() % active_threads;
 
     // theta * phi will be stored in states1.psiR, first set to 0.0
 #pragma omp parallel private(st1)
@@ -230,21 +228,25 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
                 states1[st1].psiR[idx] = 0.0;
     }
 
+    if( (int)OrbitalPairs.size() < active_threads) active_threads = (int)OrbitalPairs.size();
+
+    int pair_start[active_threads], pair_end[active_threads];
+
+    DistributeTasks(active_threads, (int)OrbitalPairs.size(), pair_start, pair_end);
+
     SCF_THREAD_CONTROL thread_control;
 
     for(int ist = 0;ist < active_threads;ist++) {
 
-        int pair_start = ist * pairs_per_thread; 
-        int pair_end = pair_start + pairs_per_thread;
 
 
         thread_control.job = HYBRID_THETA_PHI;
 
         thread_control.nv = (void *)work_theta;
 
-        thread_control.basetag = pair_start;
+        thread_control.basetag = pair_start[ist];
         thread_control.extratag1 = active_threads;
-        thread_control.extratag2 = pair_end;
+        thread_control.extratag2 = pair_end[ist];
 
         QueueThreadTask(ist, thread_control);
 
@@ -254,17 +256,7 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
     // Thread tasks are set up so run them
     T->run_thread_tasks(active_threads);
 
-    // take care if num of pairs not divisble by num_thread
-    if ( pairs_remain >0) 
-    {
-        int pair_start = pairs_per_thread * active_threads;
-        int pair_end = (int)OrbitalPairs.size();
-        ThetaPhiBlock(pair_start, pair_end, work_theta);
-    }
-
-
 }
-
 
 
 void get_qnm_res(double *work_theta)

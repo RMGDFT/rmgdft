@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+DistributeTasks.cpp
 RmgThread.cpp
 make_mask_grid_state.c
 GetNewRho_on.cpp
