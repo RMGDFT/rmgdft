@@ -31,7 +31,7 @@
 #define     MAX_STEPS   300
 
 
-void pulay_weighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
+void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
                 int Nrefresh, double scale, int preconditioning)
 {
     static double *x;
@@ -68,11 +68,11 @@ void pulay_weighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
     /*  allocate memory for previous steps */
     if (step0 == 0)
     {
-        my_malloc( f_kai, N, double );
+        f_kai = new double[N];
         if (x == NULL)
-            my_malloc( x, N * (NsavedSteps - 1), double );
+            x = new double[N * (NsavedSteps - 1)];
         if (f == NULL)
-            my_malloc( f, N * (NsavedSteps - 1), double );
+            f = new double[N * (NsavedSteps - 1)];
         if ((x == NULL) || (f == NULL))
         {
             printf("pulay.c ---Could not allocate memory for x or f \n");
@@ -87,7 +87,7 @@ void pulay_weighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
         dcopy(&N, fm, &ione, f, &ione);
 
         if (preconditioning)
-            precond(fm);
+            Precond(fm);
         alpha = -sd_step;
         daxpy(&N, &alpha, fm, &ione, xm, &ione);
 
@@ -176,7 +176,7 @@ void pulay_weighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
             }
 
             if (preconditioning)
-                precond(fm);
+                Precond(fm);
 
             t1 = scale;
             daxpy(&N, &t1, fm, &ione, xm, &ione);
@@ -205,7 +205,7 @@ void pulay_weighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
             daxpy(&N, &t1, fm, &ione, f, &ione);
 
             if (preconditioning)
-                precond(f);
+                Precond(f);
 
             t1 = scale;
             dscal(&N, &t1, f, &ione);

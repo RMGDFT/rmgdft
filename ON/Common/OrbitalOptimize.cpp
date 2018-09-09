@@ -166,15 +166,15 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
             daxpy(&pct.psi_size, &gamma, states1[ct.state_begin].psiR, &ione, states[ct.state_begin].psiR, &ione);
             break;
         case 1:
-            pulay(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
+            Pulay(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
                     states1[ct.state_begin].psiR, ct.mg_steps, 1);
             break;
         case 2:
-            kain(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
+            Kain(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
                     states1[ct.state_begin].psiR, ct.mg_steps);
             break;
         case 3:
-            pulay_weighted(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
+            PulayWeighted(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
                     states1[ct.state_begin].psiR, ct.mg_steps, 100, 0.5, 1);
             break;
         default:
@@ -227,6 +227,8 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
             for (int idx = 0; idx < states[st1].size; idx++)
                 states1[st1].psiR[idx] = 0.0;
     }
+
+    if(OrbitalPairs.size() == 0 ) return;
 
     if( (int)OrbitalPairs.size() < active_threads) active_threads = (int)OrbitalPairs.size();
 

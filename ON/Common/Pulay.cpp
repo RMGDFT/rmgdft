@@ -32,7 +32,7 @@ void precond(double *x);
 
 
 
-void pulay(int step, int N, double *xm, double *fm, int NsavedSteps, int preconditioning)
+void Pulay(int step, int N, double *xm, double *fm, int NsavedSteps, int preconditioning)
 {
     static double *x;
     static double *f;
@@ -56,18 +56,18 @@ void pulay(int step, int N, double *xm, double *fm, int NsavedSteps, int precond
     if (step == 0)
     {
         if (x == NULL)
-            my_malloc( x, N * (NsavedSteps - 1), double );
+            x = new double[N * (NsavedSteps - 1)];
         if (f == NULL)
-            my_malloc( f, N * (NsavedSteps - 1), double );
+            f = new double[N * (NsavedSteps - 1)];
         if (N > 0 && ((x == NULL) || (f == NULL)))
         {
-            printf("pulay.c ---Could not allocate memory for x or f \n");
+            printf("Pulay.cpp ---Could not allocate memory for x or f \n");
             fflush(NULL);
             exit(-1);
         }
     }
     if (preconditioning)
-        precond(fm);
+        Precond(fm);
 
     if (step == 0)
     {

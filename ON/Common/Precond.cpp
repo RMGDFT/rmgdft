@@ -61,7 +61,10 @@ void Precond(double *x)
     }
     rms.push_back(ct.rms);
 
+    beta = 0.5;
+
     double *work1 = new double[4 * ct.max_orbit_size]();
+    double *work2 = new double[4 * ct.max_orbit_size]();
 
     double gamma = get_gamma_precond(vtot_c, states[0].eig[0]);
     int size = 0;
@@ -80,7 +83,7 @@ void Precond(double *x)
         /* compute the preconditioned steepest descent direction
          * -> work1 */
 
-        PrecondMg(psiR, work1, &states[istate]);
+        PrecondMg1(psiR, work1, work2, istate);
 
         for (int idx = 0; idx < states[istate].size; idx++)
         {

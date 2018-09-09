@@ -32,8 +32,10 @@ void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
     BaseThread *T = BaseThread::getBaseThread(0);
     int active_threads = ct.MG_THREADS_PER_NODE;
 
+    if( OrbitalPairs.size() == 0) return;
+
     SCF_THREAD_CONTROL thread_control;
-    printf("\n %d num pairs ", (int)OrbitalPairs.size());
+//    printf("\n %d num pairs ", (int)OrbitalPairs.size());
 
     if( (int)OrbitalPairs.size() < active_threads) active_threads = (int)OrbitalPairs.size();
 

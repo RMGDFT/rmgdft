@@ -39,7 +39,7 @@ add_library (ON_Common
  init_wf.c
  init_wf_gaussian.c
  interpolate_atom_density.c
- kain.c
+ Kain.cpp
  matrix_and_diag.c
  md_fastrelax.c
  mgrid_solv_local.c
@@ -51,12 +51,11 @@ add_library (ON_Common
  ortho_norm_local.c
  Precond.cpp
  PrecondMg.cpp
- precond.c
- precond_mg.c
+ PrecondMg1.cpp
  print_status.c
  print_wave.c
- pulay.c
- pulay_weighted.c
+ Pulay.cpp
+ PulayWeighted.cpp
  qnm_beta_betapsi.c
  quench.c
  rand0.c

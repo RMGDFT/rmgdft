@@ -29,11 +29,10 @@
 
 
 
-void precond(double *x);
 
 
 
-void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
+void Kain(int step, int N, double *xm, double *fm, int NsavedSteps)
 {
     static double *x;
     static double *f;
@@ -58,8 +57,8 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
 
     if (ct.scf_steps == 0)
     {
-        my_malloc( x, N * (NsavedSteps - 1), double );
-        my_malloc( f, N * (NsavedSteps - 1), double );
+        x = new double[N * (NsavedSteps - 1)];
+        f = new double[N * (NsavedSteps - 1)];
         if ((x == NULL) || (f == NULL))
         {
             printf("kain.c ---Could not allocate memory for x or f \n");
@@ -72,7 +71,7 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
         dcopy(&N, xm, &ione, x, &ione);
         dcopy(&N, fm, &ione, f, &ione);
 
-        precond(fm);
+        Precond(fm);
 
         daxpy(&N, &sd_step, fm, &ione, xm, &ione);
     }
@@ -150,7 +149,7 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
                 daxpy(&N, &b[i], f1, &ione, fm, &ione);
             }
 
-            precond(fm);
+            Precond(fm);
             daxpy(&N, &gamma, fm, &ione, xm, &ione);
 
         }
@@ -176,7 +175,7 @@ void kain(int step, int N, double *xm, double *fm, int NsavedSteps)
             t1 = 1.0 - sum_ci;
             daxpy(&N, &t1, fm, &ione, f, &ione);
 
-            precond(f);
+            Precond(f);
             dscal(&N, &gamma, f, &ione);
             daxpy(&N, &one, x, &ione, f, &ione);
 

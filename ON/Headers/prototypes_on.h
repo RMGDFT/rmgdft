@@ -23,7 +23,12 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc);
 void GetNlop_on(void);
 void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc);
 void DistributeTasks(int active_thread, int num_task, int *task_start, int *task_end);
-
+void Pulay (int step, int N, double *xm, double *fm, int NsavedSteps,
+        int preconditioning);
+void Kain (int step, int N, double *xm, double *fm, int NsavedSteps);
+void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
+                int Nrefresh, double scale, int preconditioning);
+void PrecondMg1(double *psiR, double *work1, double *, int istate);
 
 
 #ifdef __cplusplus
@@ -99,8 +104,6 @@ void init_dimension(int *, int* );
 void precond(double *f);
 int int_max_all(int);
 
-void pulay_weighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
-                int Nrefresh, double scale, int preconditioning);
 void get_invmat(double *);
 void distribute_to_global(double *vtot_c, double *vtot_global);
 
@@ -362,9 +365,6 @@ void get_state_to_proc (STATE * states);
 
 
 /* different methods to update orbitals */
-void kain (int step, int N, double *xm, double *fm, int NsavedSteps);
-void pulay (int step, int N, double *xm, double *fm, int NsavedSteps,
-        int preconditioning);
 void sd (int step, int N, double *xm, double *fm);
 void pulay_mixing (int size, double *rho, int NsavedSteps);
 void charge_pulay (int step, int N, double *xm, double *fm, int NsavedSteps);
