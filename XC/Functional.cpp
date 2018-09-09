@@ -358,7 +358,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
     double grho2[2];
-    const double epsr=1.0e-10;
+    const double epsr=1.0e-8;
     const double epsg = 1.0e-16;
     double epsg_guard = sqrt(epsg);
 
@@ -433,12 +433,14 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
 #pragma omp parallel for
     for(int ix=0;ix < this->pbasis;ix++) {
+      double arho = fabs(rhoout[ix]);
+      if(arho > epsr) {
 
         v[ix] -= ( h[ix] * gx[ix] +
                 h[ix+this->pbasis] * gy[ix] + 
                 h[ix+2*this->pbasis] * gz[ix] ) ;
         v[ix] -= vxc2[ix] * d2rho[ix];
-
+      }
     }
 
     //printf("VTXC1 = %18.12f  ETXC1 = %18.12f\n", 
@@ -483,7 +485,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     double vtxcgc = 0.0;
  
     double grho2[2];
-    const double epsr=1.0e-10;
+    const double epsr=1.0e-8;
     const double epsg = 1.0e-16;
     double epsg_guard = sqrt(epsg);
 
