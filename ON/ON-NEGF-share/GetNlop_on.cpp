@@ -42,7 +42,7 @@ void GetNlop_on(void)
     int ion, idx, ip;
     int tot_prj, ion1, index;
     size_t PROJECTOR_SPACE;
-    int prjcount;
+    size_t prjcount;
     double *beta;
     SPECIES *sp;
     ION *iptr;
