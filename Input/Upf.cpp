@@ -169,7 +169,7 @@ void LoadUpf(SPECIES *sp)
 
     // Store UPF functional string for later processing
     std::string PP_FUNC = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.functional");
-    std::strncpy(sp->functional, PP_FUNC.c_str(), sizeof(sp->functional));
+    std::strncpy(sp->functional, PP_FUNC.c_str(), sizeof(sp->functional)-1);
 
 
     // Read in the radial mesh and keep values between 1.0e-05 < r < 50.0
