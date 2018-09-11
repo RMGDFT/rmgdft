@@ -128,8 +128,17 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
         sp->ldim = sp->ldim/2 * 2 +1;
-        sp->lradius = 0.5 * ct.hmingrid * (double)(sp->ldim-1) / (double)Rmg_G->default_FG_RATIO;
-        sp->lradius -= 0.5 * ct.hmingrid / (double)Rmg_G->default_FG_RATIO;
+        if(!ct.localize_localpp)
+        {
+            sp->lradius = 10.0;
+            sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
+            sp->ldim = sp->nldim/2*2 + 1;
+        }
+        else
+        {
+            sp->lradius = 0.5 * ct.hmingrid * (double)(sp->ldim-1) / (double)Rmg_G->default_FG_RATIO;
+            sp->lradius -= 0.5 * ct.hmingrid / (double)Rmg_G->default_FG_RATIO;
+        }
         sp->ldim_fine = sp->ldim ;
 
 
@@ -151,7 +160,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         double lb = sp->r[ii] - sp->r[ii-1];
         double ub = sp->r[ii+1] - sp->r[ii];
         sp->rg_points = ii;
-        if(ub > lb) sp->rg_points--;
 
 
         RmgTimer *RT1 = new RmgTimer("radial beta");
@@ -215,7 +223,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         if(sp->atomic_rho[idx] < 0.0) work[idx] = 0.0;
         else work[idx] = sqrt(sp->atomic_rho[idx]);
         A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.rhocparm, sp->arho_lig,
-                sp->rab, 0, sp->gwidth, 0.66*sp->lradius, sp->rwidth, ct.hmingrid);
+                sp->rab, 0, sp->gwidth, 0.66*sp->lradius, sp->rwidth, ct.hmingrid/(double)ct.FG_RATIO);
        for (int idx = 0; idx < MAX_LOGGRID; idx++)
            sp->arho_lig[idx] *= sp->arho_lig[idx];
 

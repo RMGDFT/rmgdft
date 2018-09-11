@@ -96,7 +96,7 @@ void InitDelocalizedWeight (void)
             throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
     }
-    double gcut = PI / hxx + 1.0e-6;
+
     RmgTimer *RT3= new RmgTimer("Weight: proj cal");
     for(int iproj = 0; iproj < tot_proj; iproj++)
     {
@@ -108,9 +108,9 @@ void InitDelocalizedWeight (void)
         {
             int kpt1 = kpt + pct.kstart;
             std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis];
-            for(int idx = 0;idx < pbasis;idx++) weptr[idx] = std::complex<double>(0.0,0.0);
             for(int idx = 0;idx < pbasis;idx++)
             {
+                weptr[idx] = std::complex<double>(0.0,0.0);
                 ax[0] = 2.0*PI*coarse_pwaves->g[idx].a[0] / Rmg_L.celldm[0];
                 ax[1] = 2.0*PI*coarse_pwaves->g[idx].a[1] / Rmg_L.celldm[0];
                 ax[2] = 2.0*PI*coarse_pwaves->g[idx].a[2] / Rmg_L.celldm[0];
@@ -119,8 +119,8 @@ void InitDelocalizedWeight (void)
                 ax[1] += ct.kp[kpt1].kvec[1];
                 ax[2] += ct.kp[kpt1].kvec[2];
 
+                if(coarse_pwaves->gmask[idx] < 1.0) continue;
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
-                if(gval >= ct.filter_factor*gcut) continue;
                 double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip], gval);
                 weptr[idx] = IL * Ylm(proj.l, proj.m, ax) * t1;
             }

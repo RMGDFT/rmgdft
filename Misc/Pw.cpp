@@ -21,7 +21,14 @@
 */
 
 #include "Pw.h"
+#include "main.h"
 #include <math.h>
+#include "transition.h"
+
+// Save coarse grid values
+int civx;
+int civy;
+int civz;
 
 Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
 {
@@ -66,19 +73,36 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   }
 
   // Get G^2 cutoff.
-  ivec[0] = (this->global_dimx - 1) / 2;
-  ivec[1] = (this->global_dimy - 1) / 2;
-  ivec[2] = (this->global_dimz - 1) / 2;
-  gvec[0] = (double)ivec[0] * L.b0[0] + (double)ivec[1] * L.b1[0] + (double)ivec[2] * L.b2[0];
+  double ivx = (this->global_dimx - 1) / 2;
+  double ivy = (this->global_dimy - 1) / 2;
+  double ivz = (this->global_dimz - 1) / 2;
+  double croot2 = pow(2.0, 1.0/3.0);
+  ivx = ivx / croot2;
+  ivy = ivy / croot2;
+  ivz = ivz / croot2;
+  if(ratio == 1)
+  {
+      civx = ivx;
+      civy = ivy;
+      civz = ivz;
+  }
+  else
+  {
+      ivx = ratio*civx;
+      ivy = ratio*civy;
+      ivz = ratio*civz;
+  }
+
+  gvec[0] = (double)ivx * L.b0[0] + (double)ivy * L.b1[0] + (double)ivz * L.b2[0];
   gvec[0] *= L.celldm[0];
-  gvec[1] = (double)ivec[0] * L.b0[1] + (double)ivec[1] * L.b1[1] + (double)ivec[2] * L.b2[1];
+  gvec[1] = (double)ivx * L.b0[1] + (double)ivy * L.b1[1] + (double)ivz * L.b2[1];
   gvec[1] *= L.celldm[0];
-  gvec[2] = (double)ivec[0] * L.b0[2] + (double)ivec[1] * L.b1[2] + (double)ivec[2] * L.b2[2];
+  gvec[2] = (double)ivx * L.b0[2] + (double)ivy * L.b1[2] + (double)ivz * L.b2[2];
   gvec[2] *= L.celldm[0];
 
   this->gmax = gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
-  this->gcut = this->gmax / 3.0;
-  
+  this->gcut = this->gmax;
+
   int idx = -1;
   for(int ix = 0;ix < this->dimx;ix++) {
       for(int iy = 0;iy < this->dimy;iy++) {
@@ -91,18 +115,23 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
               // On input local index is stored in ivec. On output global index
               // is stored in ivec and the associated g-vector is stored in g
               index_to_gvector(ivec, gvec);
-              // Gamma only exclude volume with x<0
-              if((ivec[0] < 0) && this->is_gamma) continue;
-              // Gamma only exclude plane with x = 0, y < 0
-              if((ivec[0] == 0) && (ivec[1] < 0) && this->is_gamma) continue;
-              // Gamma only exclude line with x = 0, y = 0, z < 0
-              if((ivec[0] == 0) && (ivec[1] == 0) && (ivec[2] < 0) && this->is_gamma) continue;
 
               this->gmags[idx] = gvec[0]*gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
               g[idx].a[0] = gvec[0];
               g[idx].a[1] = gvec[1];
               g[idx].a[2] = gvec[2];
 
+              //if((iy==0)&&(iz==0))printf("DDD  %d  %d  %f\n",ix,ivec[0],gvec[0]);
+              if(abs(ivec[0]) >= ivx) continue;
+              if(abs(ivec[1]) >= ivy) continue;
+              if(abs(ivec[2]) >= ivz) continue;
+
+              // Gamma only exclude volume with x<0
+              if((ivec[0] < 0) && this->is_gamma) continue;
+              // Gamma only exclude plane with x = 0, y < 0
+              if((ivec[0] == 0) && (ivec[1] < 0) && this->is_gamma) continue;
+              // Gamma only exclude line with x = 0, y = 0, z < 0
+              if((ivec[0] == 0) && (ivec[1] == 0) && (ivec[2] < 0) && this->is_gamma) continue;
               if(((int)fabs(round(gvec[0])) == this->global_dimx/2) || 
                  ((int)fabs(round(gvec[1])) == this->global_dimy/2) || 
                  ((int)fabs(round(gvec[2])) == this->global_dimz/2)) continue;
@@ -115,8 +144,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
       }
   }
 
-  //printf("G-vector count  = %d\n", this->ng);
-  //printf("G-vector cutoff = %8.2f\n", this->gcut);
+  int gcount = this->ng;
+  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, pct.grid_comm);
+  printf("G-vector count  = %d\n", gcount);
+  printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
+
 
 }
 
