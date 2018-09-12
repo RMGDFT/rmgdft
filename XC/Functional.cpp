@@ -198,7 +198,7 @@ bool Functional::dft_is_nonlocc_rmg(void)
     return dft_is_nonlocc();
 }
 
-void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
+void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
 {
 
    RmgTimer RT0("5-Functional");
@@ -206,6 +206,15 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
    double rhoneg[2]{0.0,0.0};
    double *rho_up, *rho_down;
    double *v_up, *v_down;
+   double *rho = new double[2*this->pbasis];
+
+   for(int ix=0;ix < this->pbasis;ix++)rho[ix] = rho_in[ix];
+   if(ct.norm_conserving_pp) FftSmoother(rho, *fine_pwaves, 0.5);
+   if(spinflag)
+   {
+       for(int ix=0;ix < this->pbasis;ix++)rho[ix+this->pbasis] = rho_in[ix+this->pbasis];
+       if(ct.norm_conserving_pp) FftSmoother(&rho[this->pbasis], *fine_pwaves, 0.5);
+   }
 
    if(pct.spinpe == 0) {
        rho_up = rho;
@@ -327,6 +336,7 @@ void Functional::v_xc(double *rho, double *rho_core, double &etxc, double &vtxc,
    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
    //printf("GGGGGGGG  %20.12f  %20.12f\n",vtxc,etxc);
 
+delete [] rho;
 }
 
 // Applies non-local corrections for the correlation
@@ -358,8 +368,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
     double grho2[2];
-    const double epsr=1.0e-8;
-    const double epsg = 1.0e-16;
+    const double epsr=1.0e-6;
+    const double epsg = 1.0e-10;
     double epsg_guard = sqrt(epsg);
 
 

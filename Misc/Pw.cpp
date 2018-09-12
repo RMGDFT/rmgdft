@@ -76,10 +76,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   double ivx = (this->global_dimx - 1) / 2;
   double ivy = (this->global_dimy - 1) / 2;
   double ivz = (this->global_dimz - 1) / 2;
-  double croot2 = pow(2.0, 1.0/3.0);
-  ivx = ivx / croot2;
-  ivy = ivy / croot2;
-  ivz = ivz / croot2;
+
   if(ratio == 1)
   {
       civx = ivx;
