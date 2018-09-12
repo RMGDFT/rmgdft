@@ -59,5 +59,7 @@ void PfftInverse(std::complex<double> *, std::complex<double> *, Pw &pwaves);
 
 void PfftInverse(std::complex<double> *, double *, Pw &pwaves);
 
+void FftSmoother(double *x, Pw &pwaves, double factor);
+
 #endif
 #endif

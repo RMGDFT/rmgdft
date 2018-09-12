@@ -19,6 +19,7 @@ FftLaplacian.cpp
 FftGradient.cpp
 FftInterpolation.cpp
 FftRestrict.cpp
+FftSmoother.cpp
 fft3d.cpp
 CountAtomicOrbitals.cpp
 FilenameIncrement.cpp
