@@ -52,9 +52,10 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   // Magnitudes of the g-vectors
   this->gmags = new double[this->pbasis]();
 
-  // Mask array which is set to 1.0 for g-vectors with frequencies below the cutoff
-  // and 0.0 otherwise.
-  this->gmask = new double[this->pbasis]();
+  // Mask array which is set to true for g-vectors with frequencies below the cutoff
+  // and false otherwise.
+  this->gmask = new bool[this->pbasis]();
+  for(int i = 0;i < this->pbasis;i++) this->gmask[i] = false;
 
   // G-vector storage. Vectors with frequencies above the cutoff are stored as zeros
   this->g = new gvector[this->pbasis];
@@ -134,7 +135,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
                  ((int)fabs(round(gvec[2])) == this->global_dimz/2)) continue;
 
               if(this->gmags[idx] <= this->gcut) {
-                  this->gmask[idx] = 1.0;
+                  this->gmask[idx] = true;
                   this->ng++;
               }
           }

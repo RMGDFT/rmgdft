@@ -368,8 +368,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
     double grho2[2];
-    const double epsr=1.0e-6;
-    const double epsg = 1.0e-10;
+    const double epsr=1.0e-8;
+    const double epsg = 1.0e-16;
     double epsg_guard = sqrt(epsg);
 
 

@@ -92,7 +92,7 @@ public:
     int ng;
     gvector *g;
     double *gmags;
-    double *gmask;
+    bool *gmask;
 
 };
 

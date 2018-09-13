@@ -583,7 +583,7 @@ double Vdw::vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int
   for(int ig=0;ig < ibasis;ig++) {
 
 
-      if(pwaves->gmask[ig] == 1.0){
+      if(pwaves->gmask[ig]){
 
           double g = sqrt(pwaves->gmags[ig]) * tpiba;
 
@@ -722,7 +722,7 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
      fft_3d((FFT_DATA *)h, (FFT_DATA *)h, -1, plan_forward);
 
      for(int ix=0;ix < ibasis;ix++) {
-         if(pwaves->gmask[ix] == 1.0) {
+         if(pwaves->gmask[ix]) {
              h[ix] = i * tpiba * pwaves->g[ix].a[icar] * h[ix];
          }
          else {

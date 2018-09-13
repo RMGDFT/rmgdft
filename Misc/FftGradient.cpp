@@ -70,7 +70,7 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
         for(int ix=0;ix < isize;ix++) cgx[ix] = czero;
 
         for(int ig=0;ig < isize;ig++) {
-            if(pwaves.gmask[ig] == 1.0) {
+            if(pwaves.gmask[ig]) {
                 cgx[ig] = ci * tpiba * pwaves.g[ig].a[icar] * tx[ig];
             }
             else {

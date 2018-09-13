@@ -81,7 +81,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
         rc2 = rc * rc;
         for(int ig=0;ig < fine_pwaves->pbasis;ig++) 
         {
-            if(fine_pwaves->gmask[ig] < 1.0) continue;
+            if(!fine_pwaves->gmask[ig]) continue;
             {
                 gsquare = fine_pwaves->gmags[ig] * tpiba2;
                 gval = sqrt(gsquare);

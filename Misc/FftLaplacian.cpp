@@ -64,7 +64,7 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
     PfftForward(tx, tx, pwaves);
 
     for(int ig=0;ig < isize;ig++) {
-        if(pwaves.gmask[ig] == 1.0) {
+        if(pwaves.gmask[ig]) {
             tx[ig] = -pwaves.gmags[ig] * tx[ig];
         }
         else {

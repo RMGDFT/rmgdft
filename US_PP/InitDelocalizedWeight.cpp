@@ -119,7 +119,7 @@ void InitDelocalizedWeight (void)
                 ax[1] += ct.kp[kpt1].kvec[1];
                 ax[2] += ct.kp[kpt1].kvec[2];
 
-                if(coarse_pwaves->gmask[idx] < 1.0) continue;
+                if(!coarse_pwaves->gmask[idx]) continue;
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
                 double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip], gval);
                 weptr[idx] = IL * Ylm(proj.l, proj.m, ax) * t1;
