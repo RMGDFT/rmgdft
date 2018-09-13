@@ -92,7 +92,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
         sp->qdim = Radius2grid (sp->qradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
         sp->qdim = sp->qdim/2*2 + 1;
 
-        sp->qcut = 0.66 * sp->qradius;
+        sp->qcut = 0.5 * sp->qradius;
 
         if (sp->qdim >= get_FNX_GRID()) sp->qdim = get_FNX_GRID();
         if (sp->qdim >= get_FNY_GRID()) sp->qdim = get_FNY_GRID();
@@ -136,8 +136,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                     }
 
                     A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
-//                                        sp->rab, ll, sp->gwidth, sp->qcut, 10.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
-                                        sp->rab, ll, sp->gwidth, sp->qcut, 10.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
+                                       sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
 
 
                     /*Write final filtered Q function if requested*/
