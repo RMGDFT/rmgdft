@@ -122,18 +122,18 @@ double IonIonEnergy_Ewald ()
         double gsquare, k[3];
         std::complex<double> S;
 
-        for(int ig=0;ig < fine_pwaves->pbasis;ig++)
+        for(int ig=0;ig < ewald_pwaves->pbasis;ig++)
         {
-            if(fine_pwaves->gmags[ig] > 1.0e-6)
+            if(ewald_pwaves->gmags[ig] > 1.0e-6)
             {
-                gsquare = fine_pwaves->gmags[ig] * tpiba2;
-                k[0] = fine_pwaves->g[ig].a[0] * tpiba;
-                k[1] = fine_pwaves->g[ig].a[1] * tpiba;
-                k[2] = fine_pwaves->g[ig].a[2] * tpiba;
+                gsquare = ewald_pwaves->gmags[ig] * tpiba2;
+                k[0] = ewald_pwaves->g[ig].a[0] * tpiba;
+                k[1] = ewald_pwaves->g[ig].a[1] * tpiba;
+                k[2] = ewald_pwaves->g[ig].a[2] * tpiba;
 
                 S = structure_factor(k);
 
-                ii_kspace += std::norm(S) * exp(-gsquare/sigma/4.0)/ fine_pwaves->gmags[ig] / tpiba2;
+                ii_kspace += std::norm(S) * exp(-gsquare/sigma/4.0)/ ewald_pwaves->gmags[ig] / tpiba2;
             }
          }
          ii_kspace = 4.0*PI/Rmg_L.omega * ii_kspace;

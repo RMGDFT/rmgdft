@@ -38,8 +38,9 @@
 #include "RmgParallelFft.h"
 
 // Declared here with extern declarations in transition.h
-Pw *coarse_pwaves, *fine_pwaves;
+Pw *coarse_pwaves, *fine_pwaves, *ewald_pwaves;
 struct fft_plan_3d *fft_forward_coarse, *fft_backward_coarse, *fft_forward_fine, *fft_backward_fine;
+struct fft_plan_3d *fft_forward_ewald, *fft_backward_ewald;
 
 // Initializes common plans and plane wave objects for reuse.
 void FftInitPlans(void)
@@ -99,6 +100,39 @@ void FftInitPlans(void)
     fine_pwaves->fft_forward_plan = fft_forward_fine;
     fine_pwaves->fft_backward_plan = fft_forward_fine;
 
+    if(Rmg_G->default_FG_RATIO > 1)
+    {
+        ewald_pwaves = fine_pwaves;
+        fft_forward_ewald = fft_forward_fine;
+        fft_backward_ewald = fft_forward_fine;
+    }
+    else
+    {
+        grid[0] = Rmg_G->get_NX_GRID(2);
+        grid[1] = Rmg_G->get_NY_GRID(2);
+        grid[2] = Rmg_G->get_NZ_GRID(2);
+        dimx = Rmg_G->get_PX0_GRID(2);
+        dimy = Rmg_G->get_PY0_GRID(2);
+        dimz = Rmg_G->get_PZ0_GRID(2);
+
+        ewald_pwaves = new Pw(*Rmg_G, Rmg_L, 2, false, pct.grid_comm);
+
+        Rmg_G->find_node_offsets(pct.gridpe, grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);    
+        fft_forward_ewald = fft_3d_create_plan(pct.grid_comm,
+                               grid[2], grid[1], grid[0],
+                               pzoffset, pzoffset + dimz - 1,
+                               pyoffset, pyoffset + dimy - 1,
+                               pxoffset, pxoffset + dimx - 1,
+                               pzoffset, pzoffset + dimz - 1,
+                               pyoffset, pyoffset + dimy - 1,
+                               pxoffset, pxoffset + dimx - 1,
+                               scaled, permute, &nbuf, usecollective);
+
+        fft_backward_ewald = fft_forward_ewald;
+        ewald_pwaves->fft_forward_plan = fft_forward_ewald;
+        ewald_pwaves->fft_backward_plan = fft_forward_ewald;
+
+    }
 }
 
 /* ----------------------------------------------------------------------
