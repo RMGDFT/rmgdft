@@ -74,18 +74,35 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   }
 
   // Get G^2 cutoff.
-  double ivx = (this->global_dimx - 1) / 2;
-  double ivy = (this->global_dimy - 1) / 2;
-  double ivz = (this->global_dimz - 1) / 2;
-
+  int ivx = (this->global_dimx - 1) / 2;
+  int ivy = (this->global_dimy - 1) / 2;
+  int ivz = (this->global_dimz - 1) / 2;
+  
+  // We create our pw objects coarse grid first and then
+  // the fine grid. If ratio==1 though then the grids are
+  // the same but the plane wave object is different for
+  // the fine grid when using norm conserving pseudopotentials.
+  // With ultrasoft one should never run with ratio==1.
   if(ratio == 1)
   {
-      civx = ivx;
-      civy = ivy;
-      civz = ivz;
+    if(!civx)
+    {
+        if(ct.norm_conserving_pp)
+        {
+              ivx = (this->global_dimx - 1) / 3 - 1;
+              ivy = (this->global_dimy - 1) / 3 - 1;
+              ivz = (this->global_dimz - 1) / 3 - 1;
+        }
+        // save coarse grid values
+        civx = ivx;
+        civy = ivy;
+        civz = ivz;
+    }
   }
   else
   {
+      // Make sure max g-vector on fine grid is an integral multiple
+      // of coarse grid.
       ivx = ratio*civx;
       ivy = ratio*civy;
       ivz = ratio*civz;
@@ -119,10 +136,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
               g[idx].a[1] = gvec[1];
               g[idx].a[2] = gvec[2];
 
-              //if((iy==0)&&(iz==0))printf("DDD  %d  %d  %f\n",ix,ivec[0],gvec[0]);
-              if(abs(ivec[0]) >= ivx) continue;
-              if(abs(ivec[1]) >= ivy) continue;
-              if(abs(ivec[2]) >= ivz) continue;
+              if(abs(ivec[0]) > ivx) continue;
+              if(abs(ivec[1]) > ivy) continue;
+              if(abs(ivec[2]) > ivz) continue;
 
               // Gamma only exclude volume with x<0
               if((ivec[0] < 0) && this->is_gamma) continue;
@@ -130,10 +146,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
               if((ivec[0] == 0) && (ivec[1] < 0) && this->is_gamma) continue;
               // Gamma only exclude line with x = 0, y = 0, z < 0
               if((ivec[0] == 0) && (ivec[1] == 0) && (ivec[2] < 0) && this->is_gamma) continue;
-              if(((int)fabs(round(gvec[0])) == this->global_dimx/2) || 
-                 ((int)fabs(round(gvec[1])) == this->global_dimy/2) || 
-                 ((int)fabs(round(gvec[2])) == this->global_dimz/2)) continue;
+              if((abs(ivec[0]) == this->global_dimx/2) || 
+                 (abs(ivec[1]) == this->global_dimy/2) || 
+                 (abs(ivec[2]) == this->global_dimz/2)) continue;
 
+              //if((iy==0)&&(iz==0))printf("DDD  %d  %d  %d  %f\n",ivx,ix,ivec[0],gvec[0]);
               if(this->gmags[idx] <= this->gcut) {
                   this->gmask[idx] = true;
                   this->ng++;
@@ -143,9 +160,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   }
 
   int gcount = this->ng;
-  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, pct.grid_comm);
-  printf("G-vector count  = %d\n", gcount);
-  printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
+//  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, pct.grid_comm);
+//  printf("G-vector count  = %d\n", gcount);
+//  printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
 
 
 }

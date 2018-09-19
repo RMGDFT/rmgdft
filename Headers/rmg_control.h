@@ -518,6 +518,7 @@ typedef struct
     double NUC;
     double KE;
     double XC;
+    double vtxc;
     double NL;
     double II;
     double TOTAL;

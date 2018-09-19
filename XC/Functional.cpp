@@ -209,11 +209,11 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
    double *rho = new double[2*this->pbasis];
 
    for(int ix=0;ix < this->pbasis;ix++)rho[ix] = rho_in[ix];
-   if(ct.norm_conserving_pp) FftSmoother(rho, *fine_pwaves, 0.5);
+//   if(ct.norm_conserving_pp) FftSmoother(rho, *fine_pwaves, 1.0);
    if(spinflag)
    {
        for(int ix=0;ix < this->pbasis;ix++)rho[ix+this->pbasis] = rho_in[ix+this->pbasis];
-       if(ct.norm_conserving_pp) FftSmoother(&rho[this->pbasis], *fine_pwaves, 0.5);
+//       if(ct.norm_conserving_pp) FftSmoother(&rho[this->pbasis], *fine_pwaves, 0.5);
    }
 
    if(pct.spinpe == 0) {
@@ -368,9 +368,9 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
     double grho2[2];
-    const double epsr=1.0e-8;
-    const double epsg = 1.0e-16;
-    double epsg_guard = sqrt(epsg);
+    const double epsr=1.0e-6;
+    const double epsg = 1.0e-8;
+    double epsg_guard = epsg;
 
 
     double *rhoout = new double[this->pbasis];
@@ -446,10 +446,12 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
       double arho = fabs(rhoout[ix]);
       if(arho > epsr) {
 
-        v[ix] -= ( h[ix] * gx[ix] +
-                h[ix+this->pbasis] * gy[ix] + 
-                h[ix+2*this->pbasis] * gz[ix] ) ;
+        double gdot =  ( h[ix] * gx[ix] +
+                         h[ix+this->pbasis] * gy[ix] + 
+                         h[ix+2*this->pbasis] * gz[ix] ) ;
+        v[ix] -= gdot;
         v[ix] -= vxc2[ix] * d2rho[ix];
+        vtxcgc -= arho*gdot;
       }
     }
 

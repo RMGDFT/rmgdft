@@ -83,6 +83,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double vel;
     double *exc, *nrho, *nrho_oppo=NULL;
     Kpoint<KpointType> *kptr;
+    int ratio = Rmg_G->default_FG_RATIO;
 
     FP0_BASIS = get_FP0_BASIS();
 
@@ -90,8 +91,11 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double *vxc = new double[FP0_BASIS];
     for(int i=0;i < FP0_BASIS;i++)vh[i] = vh_in[i];
     for(int i=0;i < FP0_BASIS;i++)vxc[i] = vxc_in[i];
-    if(ct.filter_dpot) FftFilter(vh, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
-    if(ct.filter_dpot) FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+
+    // If the coarse/fine grid ratio is not equal to 1 then we filter to be consistent
+    // with what is done in the scf loop.
+    if(ct.filter_dpot && (ratio > 1)) FftFilter(vh, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+    if(ct.filter_dpot && (ratio > 1)) FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
 
 
     vel = get_vel_f();
