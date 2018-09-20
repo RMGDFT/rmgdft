@@ -388,10 +388,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of Multigrid threads each MPI process will use. A value of 0 selects automatic setting.\n", 
                      "threads_per_node cannnot be a negative number and must be less than 64.\n");
 
-    If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 5, 2, 
+    If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 4, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Ratio of the fine grid to the wavefunction grid.", 
-                     "potential_grid_refinement must be in the range (1 <= ratio <= 4). Resetting to the default value of 2.\n");
+                     "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset.\n");
 
     If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 0.0, 
                       CHECK_AND_FIX, OPTIONAL, 

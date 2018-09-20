@@ -138,7 +138,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     ReadCommon(argc, argv, ct.cfile, ct, pct, ControlMap);
 
-
     if(Verify("start_mode", "Restart From File", ControlMap) 
             || Verify("calculation_mode", "Band Structure Only", ControlMap) ) {
         std::string dynfile(ct.infile);
@@ -153,6 +152,19 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
     else {
         ReadDynamics(ct.cfile, ct, ControlMap);
+    }
+
+    // If fine/coarse grid ratio is not set then autoset it. By default we
+    // use 1 for norm conserving pseudopotentials and 2 for ultrasoft.
+    ct.norm_conserving_pp = true;
+    for(int isp = 0;isp < ct.num_species;isp++) {
+        SPECIES *sp = &ct.sp[isp];
+        if(!sp->is_norm_conserving) ct.norm_conserving_pp = false;
+    }
+    if(!ct.FG_RATIO)
+    {
+        ct.FG_RATIO = 2;
+        if(ct.norm_conserving_pp) ct.FG_RATIO = 1;
     }
 
     if(ct.forceflag == BAND_STRUCTURE)
@@ -324,9 +336,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     rmg_printf ("RMG initialization ...");
     rmg_printf (" %d image(s) total, %d per node.", pct.images, ct.images_per_node);
     rmg_printf (" %d MPI processes/image. ", status);
-
-    /* Read in our pseudopotential information */
-    ReadPseudo(ct.num_species, ct, ControlMap);
 
 
 #if GPU_ENABLED
