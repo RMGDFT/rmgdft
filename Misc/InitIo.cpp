@@ -153,6 +153,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     else {
         ReadDynamics(ct.cfile, ct, ControlMap);
     }
+    ReadPseudo(ct.num_species, ct, ControlMap);
 
     // If fine/coarse grid ratio is not set then autoset it. By default we
     // use 1 for norm conserving pseudopotentials and 2 for ultrasoft.
