@@ -25,6 +25,7 @@
 #include <math.h>
 #include "transition.h"
 
+
 // Save coarse grid values
 int civx;
 int civy;
