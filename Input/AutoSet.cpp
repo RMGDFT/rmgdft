@@ -159,7 +159,7 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
     }
 
     // Cutoff parameter -- do we want separate settings for each of these?
-    lc.rhocparm = lc.cparm;
+    lc.rhocparm = 1.0;
     ct.betacparm = ct.cparm * (ct.nxfgrid - 1);
 
 

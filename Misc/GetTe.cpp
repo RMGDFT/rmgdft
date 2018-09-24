@@ -94,8 +94,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     // If the coarse/fine grid ratio is not equal to 1 then we filter to be consistent
     // with what is done in the scf loop.
-    if(ct.filter_dpot && (ratio > 1)) FftFilter(vh, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
-    if(ct.filter_dpot && (ratio > 1)) FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+//    if(ct.filter_dpot && (ratio > 1)) FftFilter(vh, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+//    if(ct.filter_dpot && (ratio > 1)) FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
 
 
     vel = get_vel_f();

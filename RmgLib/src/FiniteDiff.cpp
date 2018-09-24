@@ -1710,28 +1710,40 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     int ixs = (dimy + 8) * (dimz + 8);
     int iys = (dimz + 8);
 
-    double hf = 1.0;
+    // nine and seven point stencils, 2nd derivative, extrapolated
+    int ic = 4;
+    double x[9], w1[9], w2[9];
+    for(int i=0;i<9;i++) x[i] = (double)i;
+    gen_weights(9, 2, (double)ic, x, w1);
+    gen_weights(7, 2, (double)(ic-1), x, w2);
+    double hf = 1.0, c1, c2, beta = 3.0;
     if(ibrav == HEXAGONAL) hf = 2.0/3.0;
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-    double th2 (-205.0 / (72.0 * h2));
-    RmgType t1x (8.0 * hf / ( 5.0 * h2));
-    RmgType t2x (-1.0 * hf / (5.0 * h2));
-    RmgType t3x (8.0 * hf / (315.0 * h2));
-    RmgType t4x (-1.0 * hf / (560.0 * h2));
+    c1 = 1.0 + beta;
+    c2 = beta;
+    double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2;
+    RmgType t1x ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
+    RmgType t2x ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
+    RmgType t3x ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2);
+    RmgType t4x (c1*w1[ic+4]*hf / h2);
 
     h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-    th2 -= (205.0 / (72.0 * h2));
-    RmgType t1y (8.0 / ( 5.0 * h2));
-    RmgType t2y (-1.0 / (5.0 * h2));
-    RmgType t3y (8.0 / (315.0 * h2));
-    RmgType t4y (-1.0 / (560.0 * h2));
+    c1 = 1.0 + beta;
+    c2 = beta;
+    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
+    RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
+    RmgType t2y ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
+    RmgType t3y ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2);
+    RmgType t4y (c1*w1[ic+4]*hf / h2);
 
     h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-    th2 -= (205.0 / (72.0 * h2));
-    RmgType t1z (8.0 / ( 5.0 * h2));
-    RmgType t2z (-1.0 / (5.0 * h2));
-    RmgType t3z (8.0 / (315.0 * h2));
-    RmgType t4z (-1.0 / (560.0 * h2));
+    c1 = 1.0 + beta;
+    c2 = beta;
+    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
+    RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
+    RmgType t2z ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
+    RmgType t3z ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2);
+    RmgType t4z (c1*w1[ic+4]*hf / h2);
 
     RmgType t0 (th2);
 
@@ -1886,31 +1898,44 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     ix1 = dimy * dimz;
     iy1 = dimz;
 
+    // nine and seven point stencils, 2nd derivative, extrapolated
+    int ic = 5;
+    double x[11], w1[11], w2[11];
+    for(int i=0;i<11;i++) x[i] = (double)i;
+    gen_weights(11, 2, (double)ic, x, w1);
+    gen_weights(9, 2, (double)(ic-1), x, w2);
+    double hf = 1.0, c1, c2, beta = 3.0;
+    if(ibrav == HEXAGONAL) hf = 2.0/3.0;
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-    double th2 (-2.927222222222221948 / (h2));
-    RmgType t1x (5.0 / ( 3.0 * h2));
-    RmgType t2x (-0.238095238095238138 / (h2));
-    RmgType t3x (0.039682539682539694 / (h2));
-    RmgType t4x (-0.004960317460317462 / (h2));
-    RmgType t5x (0.000317460317460317 / (h2));
+    c1 = 1.0 + beta;
+    c2 = beta;
+    double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2;
+    RmgType t1x ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
+    RmgType t2x ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
+    RmgType t3x ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2);
+    RmgType t4x ((c1*w1[ic+4] - c2*w2[ic+3])*hf / h2);
+    RmgType t5x (c1*w1[ic+5]*hf / h2);
 
     h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-    th2 -= (2.927222222222221948 / (h2));
-    RmgType t1y (5.0 / ( 3.0 * h2));
-    RmgType t2y (-0.238095238095238138 / (h2));
-    RmgType t3y (0.039682539682539694 / (h2));
-    RmgType t4y (-0.004960317460317462 / (h2));
-    RmgType t5y (0.000317460317460317 / (h2));
+    c1 = 1.0 + beta;
+    c2 = beta;
+    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
+    RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
+    RmgType t2y ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
+    RmgType t3y ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2);
+    RmgType t4y ((c1*w1[ic+4] - c2*w2[ic+3])*hf / h2);
+    RmgType t5y (c1*w1[ic+5]*hf / h2);
 
     h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-    th2 -= (2.927222222222221948 / (h2));
-    RmgType t1z (5.0 / ( 3.0 * h2));
-    RmgType t2z (-0.238095238095238138 / (h2));
-    RmgType t3z (0.039682539682539694 / (h2));
-    RmgType t4z (-0.004960317460317462 / (h2));
-    RmgType t5z (0.000317460317460317 / (h2));
+    c1 = 1.0 + beta;
+    c2 = beta;
+    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
+    RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
+    RmgType t2z ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
+    RmgType t3z ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2);
+    RmgType t4z ((c1*w1[ic+4] - c2*w2[ic+3])*hf / h2);
+    RmgType t5z (c1*w1[ic+5]*hf / h2);
     RmgType t0 (th2);
-
 
 
     for (ix = 5; ix < dimx + 5; ix++)
@@ -2013,7 +2038,6 @@ double FiniteDiff::app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     RmgType t5z (0.001038961038961037 / (h2));
     RmgType t6z (-0.000060125060125060 / (h2));
     RmgType t0 (th2);
-
 
 
     for (ix = 6; ix < dimx + 6; ix++)
