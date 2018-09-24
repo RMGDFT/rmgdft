@@ -15,6 +15,7 @@
 #include "vhartree.h"
 #include "packfuncs.h"
 #include "blas.h"
+#include "RmgParallelFft.h"
 
 
 double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rms_target)
@@ -64,6 +65,8 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
         /* Pack the portion of the hartree potential used by the wavefunctions
          * back into the wavefunction hartree array. */
         CPP_pack_dtos (Rmg_G, vh, vh_ext, dimx, dimy, dimz, ct.boundaryflag);
+        if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1)) 
+            FftFilter(vh, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
 
         delete(RT1);
     }

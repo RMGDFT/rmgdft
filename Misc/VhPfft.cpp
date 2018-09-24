@@ -41,7 +41,7 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
     int pbasis = fine_pwaves->pbasis;
     int size = pbasis;
     double sum = 0.0;
-
+    std::complex<double> ZERO_t(0.0, 0.0);
     std::complex<double> *crho = new std::complex<double>[size];
 
 
@@ -62,7 +62,10 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
     for(int ig=0;ig < pbasis;ig++) {
-        if(fine_pwaves->gmags[ig] > 1.0e-6 && fine_pwaves->gmask[ig]) crho[ig] = crho[ig]/(fine_pwaves->gmags[ig] *tpiba2);
+        if(fine_pwaves->gmags[ig] > 1.0e-6 && fine_pwaves->gmask[ig]) 
+            crho[ig] = crho[ig]/(fine_pwaves->gmags[ig] *tpiba2);
+        else
+            crho[ig] = ZERO_t;
     }
 
     PfftInverse(crho, crho, *fine_pwaves);

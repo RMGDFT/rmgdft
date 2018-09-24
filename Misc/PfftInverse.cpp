@@ -34,11 +34,18 @@
 void PfftInverse (std::complex<double> * in, std::complex<double> * out, Pw &pwaves)
 {
 
-  std::complex<double> *buf = new std::complex<double>[pwaves.pbasis];
-  for(int i = 0;i < pwaves.pbasis;i++) buf[i] = in[i];
-  fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, pwaves.fft_backward_plan);
+  if(in != out)
+  {
+      std::complex<double> *buf = new std::complex<double>[pwaves.pbasis];
+      for(int i = 0;i < pwaves.pbasis;i++) buf[i] = in[i];
+      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, pwaves.fft_backward_plan);
+      delete [] buf;
+  }
+  else
+  {
+      fft_3d((FFT_DATA *)in, (FFT_DATA *)out, 1, pwaves.fft_backward_plan);
+  }
 
-  delete [] buf;
 }
 
 
