@@ -90,6 +90,10 @@ template void Mgrid::mg_prolong(double*, double*, int, int, int, int, int, int, 
 template void Mgrid::mg_prolong(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
 template void Mgrid::mg_prolong(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
 
+template void Mgrid::mg_prolong_cubic(float*, float*, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mg_prolong_cubic(double*, double*, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mg_prolong_cubic(std::complex<float>*, std::complex<float>*, int, int, int, int, int, int, int, int, int);
+template void Mgrid::mg_prolong_cubic(std::complex<double>*, std::complex<double>*, int, int, int, int, int, int, int, int, int);
 
 //template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int*, int, int*, int*, int, double, double, int, int, int, int, int, int, int, int, int, int);
 
@@ -1046,6 +1050,166 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
 }                               /* end mg_prolong */
 
 
+template <typename RmgType>
+void Mgrid::mg_prolong_cubic (RmgType * __restrict__ full, RmgType * __restrict__ half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+{
+
+    RmgType cc[10][4];
+    double frac;
+
+    size_t alloc = (dx2 + 4)*(dy2 + 4)*(dz2 + 4);
+    RmgType *half_c = new RmgType[alloc];
+    RmgType *rptr = new RmgType[alloc];
+
+    int ifxs = (dimy + 2) * (dimz + 2);
+    int ifys = dimz + 2;
+
+    int icxs = (dy2 + 4) * (dz2 + 4);
+    int icys = dz2 + 4;
+
+
+    for (int i = 0; i < 2; i++)
+    {
+        frac = (double) i / (double) 2;
+        cc[i][0] = -frac * (1.0 - frac) * (2.0 - frac) / 6.0;
+        cc[i][1] = (1.0 + frac) * (1.0 - frac) * (2.0 - frac) / 2.0;
+        cc[i][2] = (1.0 + frac) * frac * (2.0 - frac) / 2.0;
+        cc[i][3] = -(1.0 + frac) * frac * (1.0 - frac) / 6.0;
+    }
+
+
+    CPP_pack_stop (half, rptr, dx2, dy2, dz2);
+    T->trade_imagesx (rptr, half_c, dx2, dy2, dz2, 2, FULL_TRADE);
+
+    for (int i = 2; i < dx2 + 2; i++)
+    {
+        for (int j = 2; j < dy2 + 2; j++)
+        {
+            for (int k = 2; k < dz2 + 2; k++)
+            {
+                full[(2 * (i - 2) + 1)*ifxs + (2 * (j - 2) + 1)*ifys + 2 * (k - 2) + 1] =
+                    half_c[i*icxs + j*icys + k];
+            }
+        }
+    }
+
+    for (int i = 2; i < dx2 + 2; i++)
+    {
+        for (int j = 2; j < dy2 + 2; j++)
+        {
+            for (int k = 2; k < dz2 + 2; k++)
+            {
+
+                for (int in = 1; in < 2; in++)
+                {
+                    RmgType tmp1(0.0);
+                    RmgType tmp2(0.0);
+                    RmgType tmp3(0.0);
+                    int basis1 = -1;
+
+                    for (int ii = 0; ii < 4; ii++)
+                    {
+                        tmp1 += cc[in][ii] * half_c[(i + basis1)*icxs + j*icys + k];
+                        tmp2 += cc[in][ii] * half_c[i*icxs + (j + basis1)*icys + k];
+                        tmp3 += cc[in][ii] * half_c[i*icxs + j*icys + k + basis1];
+                        ++basis1;
+                    }
+
+                    full[(2 * (i - 2) + in + 1)*ifxs + (2 * (j - 2) + 1)*ifys + 2 * (k - 2) + 1] = tmp1;
+                    full[(2 * (i - 2) + 1)*ifxs + (2 * (j - 2) + in + 1)*ifys + 2 * (k - 2) + 1] = tmp2;
+                    full[(2 * (i - 2) + 1)*ifxs + (2 * (j - 2) + 1)*ifys + 2 * (k - 2) + in + 1] = tmp3;
+                }
+
+            }
+        }
+    }
+
+    for (int i = 2; i < dx2 + 2; i++)
+    {
+        for (int j = 2; j < dy2 + 2; j++)
+        {
+            for (int k = 2; k < dz2 + 2; k++)
+            {
+
+                for (int in = 1; in < 2; in++)
+                {
+                    for (int jn = 1; jn < 2; jn++)
+                    {
+
+                        RmgType tmp1(0.0);
+                        RmgType tmp2(0.0);
+                        RmgType tmp3(0.0);
+                        int basis1 = -1;
+
+                        for (int ii = 0; ii < 4; ii++)
+                        {
+                            int basis2 = -1;
+                            for (int jj = 0; jj < 4; jj++)
+                            {
+                                tmp1 +=
+                                    cc[in][ii] * cc[jn][jj] * half_c[(i + basis1)*icxs +(j + basis2)*icys + k];
+                                tmp2 +=
+                                    cc[in][ii] * cc[jn][jj] * half_c[(i + basis1)*icxs + j*icys + k + basis2];
+                                tmp3 +=
+                                    cc[in][ii] * cc[jn][jj] * half_c[i*icxs + (j + basis1)*icys + k + basis2];
+                                ++basis2;
+                            }
+                            ++basis1;
+                        }
+                        full[(2 * (i - 2) + in + 1)*ifxs + (2 * (j - 2) + jn + 1)*ifys + 2 * (k - 2) + 1] = tmp1;
+                        full[(2 * (i - 2) + in + 1)*ifxs + (2 * (j - 2) + 1)*ifys + 2 * (k - 2) + jn + 1] = tmp2;
+                        full[(2 * (i - 2) + 1)*ifxs + (2 * (j - 2) + in + 1)*ifys + 2 * (k - 2) + jn + 1] = tmp3;
+                    }
+                }
+            }
+        }
+    }
+
+
+    for (int i = 2; i < dx2 + 2; i++)
+    {
+        for (int j = 2; j < dy2 + 2; j++)
+        {
+            for (int k = 2; k < dz2 + 2; k++)
+            {
+
+                for (int in = 1; in < 2; in++)
+                {
+                    for (int jn = 1; jn < 2; jn++)
+                    {
+                        for (int kn = 1; kn < 2; kn++)
+                        {
+
+                            RmgType tmp1(0.0);
+                            int basis1 = -1;
+                            for (int ii = 0; ii < 4; ii++)
+                            {
+                                int basis2 = -1;
+                                for (int jj = 0; jj < 4; jj++)
+                                {
+                                    int basis3 = -1;
+                                    for (int kk = 0; kk < 4; kk++)
+                                    {
+                                        tmp1 +=
+                                            cc[in][ii] * cc[jn][jj] * cc[kn][kk] * half_c[(i + basis1)*icxs + (j + basis2)*icys + k + basis3];
+                                        ++basis3;
+                                    }
+                                    ++basis2;
+                                }
+                                ++basis1;
+                            }
+                            full[(2 * (i - 2) + in + 1)*ifxs + (2 * (j - 2) + jn + 1)*ifys + 2 * (k - 2) + kn + 1] = tmp1;
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    delete [] rptr;
+    delete [] half_c;
+}
 
 template <typename RmgType>
 void Mgrid::eval_residual (RmgType * __restrict__ mat, RmgType * __restrict__ f_mat, int dimx, int dimy, int dimz,
