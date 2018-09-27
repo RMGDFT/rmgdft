@@ -64,14 +64,8 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
     PfftForward(tx, tx, pwaves);
 
     for(int ig=0;ig < isize;ig++) {
-        if(pwaves.gmask[ig]) {
-            tx[ig] = -pwaves.gmags[ig] * tx[ig];
-        }
-        else {
-            tx[ig] = czero;
-        }
+        tx[ig] = -pwaves.gmags[ig] * tx[ig];
     }
-    if(pct.gridpe == 0) tx[0] = czero;
 
     PfftInverse(tx, tx, pwaves);
 

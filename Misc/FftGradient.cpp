@@ -67,18 +67,10 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
 
     for(int icar=0;icar < 3;icar++) {
 
-        for(int ix=0;ix < isize;ix++) cgx[ix] = czero;
-
         for(int ig=0;ig < isize;ig++) {
-            if(pwaves.gmask[ig]) {
-                cgx[ig] = ci * tpiba * pwaves.g[ig].a[icar] * tx[ig];
-            }
-            else {
-                cgx[ig] = czero;
-            }
+            cgx[ig] = ci * tpiba * pwaves.g[ig].a[icar] * tx[ig];
         }
 
-        if(pct.gridpe == 0) cgx[0] = czero;
         PfftInverse(cgx, cgx, pwaves);
 
         double *ts;
