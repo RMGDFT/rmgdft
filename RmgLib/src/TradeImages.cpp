@@ -58,7 +58,7 @@ template void TradeImages::trade_imagesx<float>(float*, float*, int, int, int, i
 template void TradeImages::trade_imagesx<double>(double*, double*, int, int, int, int, int);
 template void TradeImages::trade_imagesx<std::complex<float> >(std::complex <float>*, std::complex <float>*, int, int, int, int, int);
 template void TradeImages::trade_imagesx<std::complex<double> >(std::complex <double>*, std::complex <double>*, int, int, int, int, int);
-
+template void TradeImages::trade_imagesx_central_local<double>(double*, double*, int, int, int, int);
 
 
 /*
