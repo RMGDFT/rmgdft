@@ -11,6 +11,7 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "transition.h"
 
 void PrecondMg1(double *res, double *work1, double *work2, int istate)
 {
@@ -19,6 +20,7 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
     STATE *sp;
     double Zfac = 2.0 * ct.max_zvalence;
     int levels = ct.eig_parm.levels;
+    FiniteDiff FD(&Rmg_L);
     if(ct.scf_steps < 2) levels = 0;
 
     int idx;
@@ -32,6 +34,10 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
     double *work3;
 
 //    eig_pre[ct.eig_parm.levels] = 50;
+    double hxgrid = get_hxgrid();
+    double hygrid = get_hygrid();
+    double hzgrid = get_hzgrid();
+
 
     diag = -1. / ct.Ac;
 #if FD4
@@ -49,17 +55,16 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
     stopp0 = ixx * iyy * izz;
 
 
-    idx = (ixx + 4) * (iyy +4) * (izz+4);
+    idx = (ixx + 8) * (iyy +8) * (izz+8);
     work3 = new double[idx];
 
     /* Smoothing cycles */
     for (cycles = 0; cycles <= nits; cycles++)
     {
 
-        pack_ptos(sg_orbit, work1, ixx, iyy, izz);
-        pack_ptos(work3,sg_orbit, ixx+2, iyy+2, izz+2);
+        Rmg_T->trade_imagesx_central_local(work1, work3, ixx, iyy, izz, 2);
+        diag = FD.app_cil_sixth (work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
 
-        diag = app_cil_orbital6(work3, work2, ixx, iyy, izz, get_hxgrid(), get_hygrid(), get_hzgrid());
 
         daxpy(&stopp0, &one, res, &ione, work2, &ione);
 
