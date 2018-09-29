@@ -66,9 +66,9 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     int ione = 1;
     int dx2, dy2, dz2, siz2;
     double *resid, *newf, *newv, *newwork;
-
-    BaseGrid *OG = new BaseGrid(dimx, dimy, dimz, 1, 1, 1, 0, 1);
-    FiniteDiff *FD = new FiniteDiff(&Rmg_L, OG, CLUSTER, CLUSTER, CLUSTER, 1, 2);
+    int ib = 1;
+    if(level == 0) ib = 2;
+    FiniteDiff *FD = new FiniteDiff(&Rmg_L);
 //printf("LLLLLLLLL %d  %d\n",level,max_levels);
     int ixoff = 0;
     int iyoff = 0;
@@ -97,7 +97,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     {
         /* solve once */
         SolvPoisLocal(FD, v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, 0);
-        ZeroBoundary(v_mat, dimx,dimy,dimz, 1);
+        ZeroBoundary(v_mat, dimx,dimy,dimz, ib);
     }
 
 
@@ -109,7 +109,6 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     if (level >= max_levels)
     {
         delete FD;
-        delete OG;
         return;
     }
 
@@ -134,9 +133,9 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     for (i = 0; i < mu_cyc; i++)
     {
 
-        ZeroBoundary(resid, dimx,dimy,dimz, 2);
-        mg_restrict(resid, newf, dimx-2, dimy-2, dimz-2, dx2-2, dy2-2, dz2-2, ixoff, iyoff, izoff);
-        ZeroBoundary(newf, dx2,dy2,dz2, 1);
+        ZeroBoundary(resid, dimx,dimy,dimz, ib);
+        mg_restrict(resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        //ZeroBoundary(newf, dx2,dy2,dz2, 1);
 
         /* call mgrid solver on new level */
         MgridSolvLocal(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
@@ -144,15 +143,15 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
                    max_levels, pre_cyc, post_cyc, step,
                    1, istate, iion, 2.0*Zfac);
 
-        ZeroBoundary(newv, dx2,dy2,dz2, 1);
-        mg_prolong(resid, newv, dimx-2, dimy-2, dimz-2, dx2-2, dy2-2, dz2-2, ixoff, iyoff, izoff);
-        ZeroBoundary(resid, dimx,dimy,dimz, 1);
+        //ZeroBoundary(newv, dx2,dy2,dz2, 1);
+        mg_prolong(resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        ZeroBoundary(resid, dimx,dimy,dimz, ib);
 
 
         scale = ONE;
 
         QMD_daxpy(size, scale, resid, ione, v_mat, ione);
-        ZeroBoundary(v_mat, dimx,dimy,dimz, 1);
+        ZeroBoundary(v_mat, dimx,dimy,dimz, ib);
 
         /* re-solve on this grid level */
 
@@ -160,7 +159,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
         {
             /* solve once */
             SolvPoisLocal(FD, v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, 0);
-            ZeroBoundary(v_mat, dimx,dimy,dimz, 1);
+            ZeroBoundary(v_mat, dimx,dimy,dimz, ib);
         }                       /* end for */
 
         /* evaluate max residual */
@@ -168,7 +167,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
         {
 
             EvalResidualLocal(FD, v_mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, resid);
-            ZeroBoundary(resid, dimx,dimy,dimz, 1);
+            ZeroBoundary(resid, dimx,dimy,dimz, ib);
 
         }                       /* end if */
 
@@ -176,7 +175,6 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     }                           /* for mu_cyc */
 
     delete FD;
-    delete OG;
 }
 
 void EvalResidualLocal (FiniteDiff *FD, double *mat, double *f_mat, int dimx, int dimy, int dimz,
@@ -186,7 +184,7 @@ void EvalResidualLocal (FiniteDiff *FD, double *mat, double *f_mat, int dimx, in
 
     for (int idx = 0; idx < size; idx++) res[idx] = 0.0;
 
-    FD->app_del2_np (mat, res, gridhx, gridhy, gridhz);
+    FD->app2_del2 (mat, res, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     for (int idx = 0; idx < size; idx++) res[idx] = f_mat[idx] - res[idx];
 }
 
@@ -198,7 +196,7 @@ void SolvPoisLocal (FiniteDiff *FD, double *vmat, double *fmat, double *work,
 
     for (int idx = 0; idx < size; idx++) work[idx] = 0.0;
 
-    double diag = -FD->app_del2_np(vmat, work, gridhx, gridhy, gridhz);
+    double diag = -FD->app2_del2(vmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     double scale = 1.0 / (diag + Zfac);
     scale = step * scale;
 
