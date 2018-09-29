@@ -67,7 +67,6 @@ debug_write_rho_z.c
 write_pdb.c
 nlforce_par_omega.c
 neb_relax.c
-app_smooth.cpp
 xbsmovie.c
 write_zstates.c
 symmetry.c

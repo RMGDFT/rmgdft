@@ -1,4 +1,5 @@
 add_library (Misc
+app_smooth.cpp
 IonIonEnergy_Ewald.cpp
 InitPe4image.cpp
 InitPe4kpspin.cpp
