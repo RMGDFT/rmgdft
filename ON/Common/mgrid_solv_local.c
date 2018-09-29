@@ -182,7 +182,7 @@ ZeroBoundaryC(resid, dimx,dimy,dimz);
     dy2 = dimy / 2 + 1;
     dz2 = dimz / 2 + 1;
     siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
-printf("DDDDD  %d  %d  %d  %d  %d  %d  %d\n",dimx,dimy,dimz,dx2,dy2,dz2);
+//printf("DDDDD  %d  %d  %d  %d  %d  %d  %d\n",dimx,dimy,dimz,dx2,dy2,dz2);
 /* set storage pointers in the current workspace */
     newv = &work[0];
     newf = &work[siz2];
