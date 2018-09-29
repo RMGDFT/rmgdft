@@ -62,8 +62,10 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
     for (cycles = 0; cycles <= nits; cycles++)
     {
 
-        Rmg_T->trade_imagesx_central_local(work1, work3, ixx, iyy, izz, 2);
-        diag = FD.app_cil_sixth (work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+        Rmg_T->trade_imagesx_central_local(work1, work3, ixx, iyy, izz, 1);
+        //diag = FD.app_cil_sixth (work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+        diag = FD.app_cil_fourth (work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+        //diag = FD.app8_del2 (work3, work2, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
 
 
         daxpy(&stopp0, &one, res, &ione, work2, &ione);
@@ -76,7 +78,9 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
         {
 
             /* Pack the residual data into multigrid array */
-            pack_ptos(sg_orbit_res, work2, ixx, iyy, izz);
+            //pack_ptos(sg_orbit_res, work2, ixx, iyy, izz);
+            Rmg_T->trade_imagesx_central_local(sg_orbit_res, work3, ixx, iyy, izz, 1);
+            CPP_app_smooth (work3, sg_orbit_res, ixx, iyy, izz);
 
 
             /* Do multigrid step with solution in sg_twovpsi */
@@ -109,9 +113,5 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
 
     }                           /* end for Smoothing cycles */
 
-
-
-    my_free(work3);
-
-
+    delete [] work3;
 }
