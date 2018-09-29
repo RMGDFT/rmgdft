@@ -28,8 +28,8 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
     /* Pre and post smoothings on each level */
 
 
-    int eig_pre[6] = { 0, 6, 6, 6, 6, 6 };
-    int eig_post[6] = { 0, 3, 3, 3, 3, 3 };
+    int eig_pre[6] = { 6, 6, 6, 6, 6, 6 };
+    int eig_post[6] = { 3, 3, 3, 3, 3, 3 };
 
     double *work3;
 
@@ -69,9 +69,7 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
 
 
         daxpy(&stopp0, &one, res, &ione, work2, &ione);
-
-
-        /*app_mask(istate, work2, 0); */
+        /*app_mask(istate, work2, 0);*/
 
         /* Now either smooth the wavefunction or do a multigrid cycle */
         if (cycles == ct.eig_parm.gl_pre)
@@ -86,10 +84,14 @@ void PrecondMg1(double *res, double *work1, double *work2, int istate)
             /* Do multigrid step with solution in sg_twovpsi */
 
 
-            mgrid_solv_local(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,
+//            mgrid_solv_local(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,
+//                       get_hxgrid(), get_hygrid(), get_hzgrid(), 0, get_neighbors(),
+//                       ct.eig_parm.levels, eig_pre, eig_post, ct.eig_parm.sb_step,
+//                       1, istate, &sp->inum, 1, Zfac);
+            MgridSolvLocal(sg_orbit, sg_orbit_res, work2, ixx, iyy, izz,
                        get_hxgrid(), get_hygrid(), get_hzgrid(), 0, get_neighbors(),
-                       ct.eig_parm.levels, eig_pre, eig_post, ct.eig_parm.sb_step,
-                       1, istate, &sp->inum, 1, Zfac);
+                       levels, eig_pre, eig_post, ct.eig_parm.sb_step,
+                       1, sp->istate, &sp->inum, Zfac);
 
 
             pack_stop(sg_orbit, work2, ixx, iyy, izz);

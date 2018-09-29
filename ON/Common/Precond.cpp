@@ -84,6 +84,7 @@ void Precond(double *x)
          * -> work1 */
 
         PrecondMg1(psiR, work1, work2, istate);
+        //PrecondMg(psiR, work1, &states[istate]);
 
         for (int idx = 0; idx < states[istate].size; idx++)
         {
