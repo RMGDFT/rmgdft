@@ -135,6 +135,7 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
     {
         alpha = -ct.mix;
         daxpy (&N, &alpha, fm, &ione, xm, &ione);
+        free(res_s);
         return;
     }
 
@@ -320,4 +321,7 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
         }
 
     }
+
+    free(res_s);
+
 }
