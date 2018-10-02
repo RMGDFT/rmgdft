@@ -111,4 +111,6 @@ void GetHvnlij(double *Aij, double *Bij)
 
     }
 
+    delete [] temB;
+    delete [] temA;
 }
