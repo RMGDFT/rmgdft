@@ -29,6 +29,7 @@ void Kain (int step, int N, double *xm, double *fm, int NsavedSteps);
 void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
                 int Nrefresh, double scale, int preconditioning);
 void PrecondMg1(double *psiR, double *work1, double *, int istate);
+void OrbitalComm(STATE *);
 
 
 #ifdef __cplusplus

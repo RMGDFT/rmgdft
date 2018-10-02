@@ -20,13 +20,12 @@
 #include "init_var.h"
 
 
-void orbital_comm(STATE * states)
+void OrbitalComm(STATE * states)
 {
     int i, ii;
     int st1, st2;
     double *psi1;
     double *psi2;
-    double *psi3;
     MPI_Status mstatus;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_send, num_recv;
@@ -53,10 +52,10 @@ void orbital_comm(STATE * states)
 
     ii = num_sendrecv_loop1 * (max_ii +10) +1;
 
-    my_calloc(mr_recv, ii, MPI_Request);
+    mr_recv = new MPI_Request[ii]();
 
     psi2 = orbit_tem;
-    my_malloc_init(psi3, ct.max_orbit_size, double );
+    double *psi3 = new double[ct.max_orbit_size]();
 
 
     my_barrier();
@@ -125,8 +124,8 @@ void orbital_comm(STATE * states)
 
 
     my_barrier();
-    my_free(psi3);
-    my_free(mr_recv);
+    delete [] psi3;
+    delete [] mr_recv;
 
 
 }

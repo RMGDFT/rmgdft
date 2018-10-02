@@ -67,7 +67,8 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
     RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
-    orbital_comm(states);
+    //orbital_comm(states);
+    OrbitalComm(states);
     delete(RT0);
 
     RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
