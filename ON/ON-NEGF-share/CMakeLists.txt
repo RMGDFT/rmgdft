@@ -12,7 +12,6 @@ KbpsiComm.cpp
 InitNonlocalComm.cpp
 GetHS.cpp
 GetHvnlij.cpp
-orbital_comm.c
 ReadOrbitals.cpp
 allocate_masks.c
 AllocatePsi.cpp
