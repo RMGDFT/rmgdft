@@ -125,6 +125,7 @@ void orbital_comm(STATE * states)
 
 
     my_barrier();
+    my_free(psi3);
     my_free(mr_recv);
 
 
