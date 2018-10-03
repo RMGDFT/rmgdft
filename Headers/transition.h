@@ -19,8 +19,10 @@
 #include "InputKey.h"
 #include "Pw.h"
 #include "typedefs.h"
+#include "LaplacianCoeff.h"
 
 
+extern LaplacianCoeff *LC;
 extern BaseGrid *Rmg_G;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
@@ -294,6 +296,8 @@ void IIforce(double *);
 void InitDelocalizedLocalpp(double *vlocpp_r);
 template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const char *grid);
 
+void SetLaplacian();
+double FiniteDiffLap(double *a, double *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
 #endif
 #endif
 

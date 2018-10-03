@@ -9,6 +9,7 @@
 #include "Subdiag.h"
 #include "MpiQueue.h"
 
+LaplacianCoeff *LC;
 BaseGrid *Rmg_G;
 TradeImages *Rmg_T;
 Lattice Rmg_L;

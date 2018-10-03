@@ -25,6 +25,7 @@
 
 
 
+
 void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, double *Bij_00)
 {
     int ione = 1;
@@ -81,7 +82,11 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
         {
             Rmg_T->trade_imagesx_central_local(sp->psiR, orbital_border, ixx, iyy, izz, order/2);
         }
-        FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+
+        if(ct.laplacian_offdiag || ct.laplacian_autocoeff)
+            FiniteDiffLap (orbital_border, orbit_tem, ixx, iyy, izz, LC);
+        else
+            FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
         /* A |psi > + 0.5 (B V|psi> + V B |psi>) */
 
         for (int idx = 0; idx < ixx * iyy * izz; idx++)

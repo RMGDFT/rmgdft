@@ -1716,7 +1716,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     for(int i=0;i<9;i++) x[i] = (double)i;
     gen_weights(9, 2, (double)ic, x, w1);
     gen_weights(7, 2, (double)(ic-1), x, w2);
-    double hf = 1.0, c1, c2, beta = 3.0;
+    double hf = 1.0, c1, c2, beta = 0.0;
     if(ibrav == HEXAGONAL) hf = 2.0/3.0;
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
     c1 = 1.0 + beta;

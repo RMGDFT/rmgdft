@@ -701,6 +701,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "charge_pulay_special_metrics_weight must be a real number.");
+    If.RegisterInputKey("laplacian_offdiag", &lc.laplacian_offdiag, false, 
+                        "if set to true, we use LaplacianCoeff.cpp to generate coeff");
+    If.RegisterInputKey("laplacian_autocoeff", &lc.laplacian_autocoeff, false, 
+                        "if set to true, we use LaplacianCoeff.cpp to generate coeff");
 
     //RMG2BGW options
     If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, false, 

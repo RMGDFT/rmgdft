@@ -312,6 +312,8 @@ typedef struct
 
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;
+    bool laplacian_offdiag;
+    bool laplacian_autocoeff;
     int force_grad_order;
 
     /* This is the max of nldim for any species cubed */

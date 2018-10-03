@@ -146,9 +146,9 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         {
             for(int j = 0; j < 3; j++){
 
-                dx = i*a[j][0]/Ngrid[0];
-                dy = i*a[j][1]/Ngrid[0];
-                dz = i*a[j][2]/Ngrid[0];
+                dx = i*a[j][0]/Ngrid[j];
+                dy = i*a[j][1]/Ngrid[j];
+                dz = i*a[j][2]/Ngrid[j];
 
                 dist = sqrt(dx * dx  + dy * dy + dz * dz);
                 point.dist = dist;
@@ -175,9 +175,9 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
                 point.coeff = 0.0;
                 points.insert(points.begin(), point);
 
-                dx = -i*a[j][0]/Ngrid[0];
-                dy = -i*a[j][1]/Ngrid[0];
-                dz = -i*a[j][2]/Ngrid[0];
+                dx = -i*a[j][0]/Ngrid[j];
+                dy = -i*a[j][1]/Ngrid[j];
+                dz = -i*a[j][2]/Ngrid[j];
 
                 dist = sqrt(dx * dx  + dy * dy + dz * dz);
                 point.dist = dist;
@@ -425,35 +425,32 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     CoeffList coeff_list;
     coeff_list.coeff = coeff0;
     coeff_list.relative_index.push_back(0);
-    this->coeff_and_index.push_back(coeff_list);
+    coeff_list.i.push_back(0);
+    coeff_list.j.push_back(0);
+    coeff_list.k.push_back(0);
 
-    coeff_list.relative_index.clear();
-    coeff_list.coeff = points[0].coeff;
-
-    index = points[0].i * dim[1] * dim[2] + points[0].j * dim[2] + points[0].k;
-    coeff_list.relative_index.push_back(index);
-
-    for(int ip = 1; ip < point_end; ip++)
+    for(int ip = 0; ip < point_end; ip++)
     {
         if(std::abs(points[ip].coeff) < 1.0e-8) continue;
 
-        if(std::abs(points[ip].coeff - points[ip-1].coeff) < 1.0e-8)
+        if(std::abs(points[ip].coeff - coeff0) > 1.0e-8)
         {
-            index = points[ip].i * dim[1] * dim[2] + points[ip].j * dim[2] + points[ip].k;
-            coeff_list.relative_index.push_back(index);
-        }
-        else
-        {
-
-            std::sort(coeff_list.relative_index.begin(), coeff_list.relative_index.end());
             this->coeff_and_index.push_back(coeff_list);
 
             //start a new coeff and its index(s) 
             coeff_list.relative_index.clear();
+            coeff_list.i.clear();
+            coeff_list.j.clear();
+            coeff_list.k.clear();
             coeff_list.coeff = points[ip].coeff;
-            index = points[ip].i * (dim[1]+Lorder) * (dim[2]+Lorder) + points[ip].j * (dim[2]+Lorder) + points[ip].k;
-            coeff_list.relative_index.push_back(index);
+            coeff0 = coeff_list.coeff;
         }
+
+        index = points[ip].i * (dim[1]+Lorder) * (dim[2]+Lorder) + points[ip].j * (dim[2]+Lorder) + points[ip].k;
+        coeff_list.relative_index.push_back(index);
+        coeff_list.i.push_back(points[ip].i);
+        coeff_list.j.push_back(points[ip].j);
+        coeff_list.k.push_back(points[ip].k);
     }
 
     this->coeff_and_index.push_back(coeff_list);
@@ -464,11 +461,36 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     {
         coeff0 += a.coeff * a.relative_index.size();
         index += a.relative_index.size();
-        // std::cout << a.coeff << "  "<< a.relative_index.size() <<std::endl;
-        // for(auto b:a.relative_index) std::cout <<"            "<< b<<std::endl;
+ //        std::cout << a.coeff << "  "<< a.relative_index.size() <<std::endl;
+ //        for(auto b:a.relative_index) std::cout <<"            "<< b<<std::endl;
     }
 
     std::cout << "total points= " <<index <<std::endl;
     std::cout << "sum of coeffs = " <<coeff0 <<std::endl;
 }
 
+void LaplacianCoeff::UpdateIndex(int dim[3])
+{
+
+    printf("\n dim %d %d %d", dim[0], dim[1], dim[2]);
+    for(int ip = 0; ip < (int)this->coeff_and_index.size(); ip++)
+    {
+        
+        for(int idx = 0; idx < this->coeff_and_index[ip].i.size(); idx++)
+        {
+            
+            this->coeff_and_index[ip].relative_index[idx] =
+                this->coeff_and_index[ip].i[idx] * (dim[1]+this->Lorder) * (dim[2]+this->Lorder)
+                + this->coeff_and_index[ip].j[idx] * (dim[2]+this->Lorder) + this->coeff_and_index[ip].k[idx];
+        }
+
+    }
+
+    this->SetDim(dim);
+    //for(auto a:this->coeff_and_index)
+    //{
+        //printf("\n coff %e ", a.coeff);
+        //for(auto b:a.relative_index) printf("\n    %d ", b);
+    //}
+
+}

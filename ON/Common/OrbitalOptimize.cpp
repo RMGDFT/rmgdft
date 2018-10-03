@@ -113,7 +113,11 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         {
             Rmg_T->trade_imagesx_central_local(sp->psiR, orbital_border, ixx, iyy, izz, order/2);
         }
-        FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+
+        if(ct.laplacian_offdiag || ct.laplacian_autocoeff)
+            FiniteDiffLap (orbital_border, orbit_tem, ixx, iyy, izz, LC);
+        else
+            FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
 
         t1 = 1.0;
         daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);

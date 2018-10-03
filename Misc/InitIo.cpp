@@ -186,8 +186,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     InitPe4kpspin();
 
     AutoSet(ct, pct, ControlMap);
-
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
+    SetLaplacian();
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
 

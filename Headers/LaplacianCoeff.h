@@ -5,7 +5,7 @@
 
 typedef struct {
     double coeff;
-    std::vector<int> relative_index;
+    std::vector<int> i,j,k,relative_index;
 } CoeffList; 
 
 class LaplacianCoeff {
@@ -48,11 +48,17 @@ public:
     void SetOrder(int Lorder){this->Lorder = Lorder;}
     void SetNgrid(int Ngrid[3]){
         for(int i = 0; i < 3; i++) this->Ngrid[i] = Ngrid[i];
-}
+    }
     void SetDim(int dim[3]){
         for(int i = 0; i < 3; i++) this->dim[i] = dim[i];
-}
+    }
 
+    int GetOrder(){return this->Lorder;}
+    void GetDim(int *dim){
+        for(int i = 0; i < 3; i++) dim[i] = this->dim[i];
+    }
+    
+    void UpdateIndex(int dim[3]);
 
 
 
