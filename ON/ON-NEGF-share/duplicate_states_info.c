@@ -36,7 +36,7 @@ void duplicate_states_info(STATE * states, STATE * states1)
         states1[st].iyend = states[st].iyend;
         states1[st].izend = states[st].izend;
         states1[st].orbit_nx = states[st].orbit_nx;
-        states1[st].orbit_ny = states[st].orbit_nx;
+        states1[st].orbit_ny = states[st].orbit_ny;
         states1[st].orbit_nz = states[st].orbit_nz;
         states1[st].size = states[st].size;
     }
