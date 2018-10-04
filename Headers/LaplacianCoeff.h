@@ -74,6 +74,8 @@ public:
 
     void GenerateList(const std::vector<GridPoint>& points);
     void BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list);
+    void GetDerList(std::vector<GridPoint>& der_list, int Lorder, int dimension);
+    void GetPointList3D (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder, int dim[3]);
 
 
 };
