@@ -5,17 +5,6 @@
 #include "LaplacianCoeff.h"
 #include "blas.h"
 
-struct GridPoint{
-    double dist;
-    double dx,dy,dz;
-    int i, j, k, eq_num;
-    int ijk;
-    double weight_factor;
-    double coeff;
-    int relative_address;
-};
-typedef GridPoint GridPoint;
-
 struct {
     bool operator()(GridPoint a, GridPoint b) const
     {   
@@ -50,12 +39,12 @@ struct {
 
 LaplacianCoeff::LaplacianCoeff(double a[3][3], int Ngrid[3], int Lorder, int dim[3]){
     for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 3; j++)
-        this->a[i][j] = a[i][j];
+        for(int j = 0; j < 3; j++)
+            this->a[i][j] = a[i][j];
     for(int i = 0; i < 3; i++){
         this->Ngrid[i] = Ngrid[i];
         this->dim[i] = dim[i];
-    this->Lorder = Lorder;
+        this->Lorder = Lorder;
     }
 }
 void LaplacianCoeff::CalculateCoeff()
@@ -67,7 +56,6 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
 
     std::vector<GridPoint>  points;
     GridPoint point;
-    int index = 0;
 
     std::vector<GridPoint> der_list;  // only i,j,k are needed.
     // for laplacian, 2n order is also 2n+1 order since the odd partianl derivatives cancelled automatically.
@@ -100,18 +88,18 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     std::stable_sort(der_list.begin(), der_list.end(), customLess_ijk);
     std::stable_sort(der_list.begin(), der_list.end(), customLess_dist);
 
-//    printf("\n bbb %d\n", num_derivative);
-//   index = 0;
-//    for(auto a:der_list)
-//    {
-//        std::cout <<index<< "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<a.ijk<<std::endl;
-//        index++;
-//    }
+    //    printf("\n bbb %d\n", num_derivative);
+    //   index = 0;
+    //    for(auto a:der_list)
+    //    {
+    //        std::cout <<index<< "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<a.ijk<<std::endl;
+    //        index++;
+    //    }
 
     double dx, dy,dz, dist;    
-    for(int i = -Lorder/2; i <= Lorder/2; i++){
-        for(int j = -Lorder/2; j <= Lorder/2; j++){
-            for(int k = -Lorder/2; k <= Lorder/2; k++){
+    for(int i = -Lorder; i <= Lorder; i++){
+        for(int j = -Lorder; j <= Lorder; j++){
+            for(int k = -Lorder; k <= Lorder; k++){
                 if(i == 0 && j == 0 && k == 0) continue;
                 if( (this->ibrav == ORTHORHOMBIC_PRIMITIVE || this->ibrav == CUBIC_PRIMITIVE) && 
                         Lorder > 6 && (i +j == 0 || i+k == 0 || j+k  == 0)) continue;
@@ -140,7 +128,7 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     std::stable_sort(points.begin(), points.end(), customLess_x);
     std::stable_sort(points.begin(), points.end(), customLess_ijk);
     std::stable_sort(points.begin(), points.end(), customLess_dist);
-    
+
     if( (this->ibrav == ORTHORHOMBIC_PRIMITIVE || this->ibrav == CUBIC_PRIMITIVE) && Lorder > 6)
         for(int i = Lorder/2; i > 0; i--)
         {
@@ -242,44 +230,20 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         }
     }
 
-    int info;
+    this->BuildSolveLinearEq(points, der_list);
+    this->GenerateList(points);
+}
 
-    dx = points[0].dx;
-    dy = points[0].dy;
-    dz = points[0].dz;
-    points[0].eq_num = 0;
-    int eq_num = 0 ;
-    //  all sane |dx|, |dy| , |dz| give a same equation 
-    //    points.erase(points.begin()+56,points.begin()+80);
-    for(int i = 1; i < (int)points.size(); i++)
-    {
-        if(fabs(fabs(dx) - fabs(points[i].dx)) < 1.0e-3 
-                && fabs(fabs(dy) - fabs(points[i].dy)) <1.0e-3 
-                && fabs(fabs(dz) - fabs(points[i].dz)) < 1.0e-3)
-        {
-            points[i].eq_num = eq_num;
-        }
-        else
-        {
-            dx = points[i].dx;
-            dy = points[i].dy;
-            dz = points[i].dz;
-            eq_num++;
-            points[i].eq_num = eq_num;
-        }
+void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list){
 
-    }
-
+    int num_derivative = der_list.size();
     std::vector<int> num_points;
     for(int i = num_derivative; i < (int)points.size()-1; i++)
     {
-        if(
-                // (points[i].eq_num+1 >= num_derivative)  &&
-                //(points[i].ijk != points[i+1].ijk) )
-            (std::abs(points[i].dist - points[i+1].dist) > 1.0e-3 ))
-            {
-                num_points.push_back(i+1);
-            }
+        if( (std::abs(points[i].dist - points[i+1].dist) > 1.0e-3 ))
+        {
+            num_points.push_back(i+1);
+        }
     }
 
 
@@ -303,11 +267,11 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
         Bm[i] = 0.0;
     }
 
-    double delta_r, delta_c;
+    double dx, dy, dz, delta_r, delta_c;
 
     int point_start = 0, point_end = num_points[0];
     bool Uii = false;
-    index = 0;
+    int index = 0, info;
     while(!Uii)
     {
         for(int ip = point_start; ip < point_end; ip++)
@@ -414,26 +378,31 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     //{   
     //    std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<a.coeff<<std::endl;
     //    index++;
-   // }
+    // }
 
 
     delete []Am;
     delete []Bm;
     delete []ipvt;
 
+}
+void LaplacianCoeff::GenerateList(const std::vector<GridPoint>&  points)
+{
     this->coeff_and_index.clear();
     CoeffList coeff_list;
-    coeff_list.coeff = coeff0;
-    coeff_list.relative_index.push_back(0);
-    coeff_list.i.push_back(0);
-    coeff_list.j.push_back(0);
-    coeff_list.k.push_back(0);
+    int  index;
+    coeff_list.coeff = points[0].coeff;
+    coeff_list.i.push_back(points[0].i);
+    coeff_list.j.push_back(points[0].j);
+    coeff_list.k.push_back(points[0].k);
+    index = points[0].i * (dim[1]+Lorder) * (dim[2]+Lorder) + points[0].j * (dim[2]+Lorder) + points[0].k;
+    coeff_list.relative_index.push_back(index);
 
-    for(int ip = 0; ip < point_end; ip++)
+    for(int ip = 1; ip < (int)points.size(); ip++)
     {
         if(std::abs(points[ip].coeff) < 1.0e-8) continue;
 
-        if(std::abs(points[ip].coeff - coeff0) > 1.0e-8)
+        if(std::abs(points[ip].coeff - points[ip-1].coeff) > 1.0e-8)
         {
             this->coeff_and_index.push_back(coeff_list);
 
@@ -443,7 +412,6 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
             coeff_list.j.clear();
             coeff_list.k.clear();
             coeff_list.coeff = points[ip].coeff;
-            coeff0 = coeff_list.coeff;
         }
 
         index = points[ip].i * (dim[1]+Lorder) * (dim[2]+Lorder) + points[ip].j * (dim[2]+Lorder) + points[ip].k;
@@ -455,17 +423,31 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
 
     this->coeff_and_index.push_back(coeff_list);
 
-    coeff0 = 0;
+    double coeff0 = 0;
     index = 0;
     for(auto a:this->coeff_and_index)
     {
         coeff0 += a.coeff * a.relative_index.size();
         index += a.relative_index.size();
- //        std::cout << a.coeff << "  "<< a.relative_index.size() <<std::endl;
- //        for(auto b:a.relative_index) std::cout <<"            "<< b<<std::endl;
+    //    std::cout << a.coeff << "  "<< a.relative_index.size() <<std::endl;
+    //    for(auto b:a.relative_index) std::cout <<"            "<< b<<std::endl;
     }
 
-    std::cout << "total points= " <<index <<std::endl;
+
+    // add the original (0,0,0) point
+    coeff_list.i.clear();
+    coeff_list.j.clear();
+    coeff_list.k.clear();
+    coeff_list.relative_index.clear();
+
+    coeff_list.coeff = - coeff0;
+    coeff_list.i.push_back(0);
+    coeff_list.j.push_back(0);
+    coeff_list.k.push_back(0);
+    coeff_list.relative_index.push_back(0);
+    this->coeff_and_index.insert(this->coeff_and_index.begin(), coeff_list);
+
+    std::cout << "total points= " <<this->coeff_and_index.size() <<std::endl;
     std::cout << "sum of coeffs = " <<coeff0 <<std::endl;
 }
 
@@ -475,10 +457,10 @@ void LaplacianCoeff::UpdateIndex(int dim[3])
     printf("\n dim %d %d %d", dim[0], dim[1], dim[2]);
     for(int ip = 0; ip < (int)this->coeff_and_index.size(); ip++)
     {
-        
-        for(int idx = 0; idx < this->coeff_and_index[ip].i.size(); idx++)
+
+        for(int idx = 0; idx < (int)this->coeff_and_index[ip].i.size(); idx++)
         {
-            
+
             this->coeff_and_index[ip].relative_index[idx] =
                 this->coeff_and_index[ip].i[idx] * (dim[1]+this->Lorder) * (dim[2]+this->Lorder)
                 + this->coeff_and_index[ip].j[idx] * (dim[2]+this->Lorder) + this->coeff_and_index[ip].k[idx];
@@ -489,8 +471,8 @@ void LaplacianCoeff::UpdateIndex(int dim[3])
     this->SetDim(dim);
     //for(auto a:this->coeff_and_index)
     //{
-        //printf("\n coff %e ", a.coeff);
-        //for(auto b:a.relative_index) printf("\n    %d ", b);
+    //printf("\n coff %e ", a.coeff);
+    //for(auto b:a.relative_index) printf("\n    %d ", b);
     //}
 
 }

@@ -1,12 +1,24 @@
 #ifndef RMG_LaplacianCoeff_H
 #define RMG_LaplacianCoeff_H 1
 #include "const.h"
+#include <vector>
 // with input of base vectors a[3][3] and required order of Lapalacian operator, find needed neighbors and their coefficients. 
 
 typedef struct {
     double coeff;
     std::vector<int> i,j,k,relative_index;
 } CoeffList; 
+
+struct GridPoint{
+    double dist;
+    double dx,dy,dz;
+    int i, j, k, eq_num;
+    int ijk;
+    double weight_factor;
+    double coeff;
+};
+typedef GridPoint GridPoint;
+
 
 class LaplacianCoeff {
 
@@ -60,8 +72,10 @@ public:
     
     void UpdateIndex(int dim[3]);
 
-
+    void GenerateList(const std::vector<GridPoint>& points);
+    void BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list);
 
 
 };
 #endif
+
