@@ -288,10 +288,9 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             dscal(&iii, &t2, &rho[0], &ione);
 
             //    get_vxc(rho, rho_oppo, rhocore, vxc);
-            double vtxc, etxc;
             RT1 = new RmgTimer("2-Init: exchange/correlation");
             Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-            F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+            F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.spin_flag );
             delete F;
             delete RT1;
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);

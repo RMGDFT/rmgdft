@@ -24,7 +24,6 @@
 void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore)
 {
-    double vtxc;
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     int FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     int FPY0_GRID = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
@@ -53,7 +52,7 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 //delete F;
 //delete [] rho_temp;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho, rhocore, ct.XC, vtxc, vxc, ct.spin_flag );
+    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.spin_flag );
     delete F;
 
 

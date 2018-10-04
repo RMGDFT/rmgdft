@@ -64,10 +64,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     flag = 0;
     my_barrier();
 
-
-
     RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
-    //orbital_comm(states);
     OrbitalComm(states);
     delete(RT0);
 
@@ -97,6 +94,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);
 
+get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
     if(pct.gridpe == 0) write_eigs(states);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)
@@ -137,7 +135,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     {
         if(ct.spin_flag)
             get_rho_oppo(rho, rho_oppo);
-        get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
+   //     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
         for(int idx=0;idx < nfp0;idx++)rho[idx] = ct.mix*rho[idx] + (1.0-ct.mix)*trho[idx];
     }
     else
@@ -160,7 +158,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
         if(ct.spin_flag)
             get_rho_oppo(rho, rho_oppo);
-        get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
+        //get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
         if(ct.scf_steps >= ct.freeze_rho_steps)
             pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
     }
