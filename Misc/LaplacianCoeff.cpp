@@ -57,20 +57,102 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
     std::vector<GridPoint>  points;
 
     std::vector<GridPoint> der_list;  // only i,j,k are needed.
+    int dimension;
     // for laplacian, 2n order is also 2n+1 order since the odd partianl derivatives cancelled automatically.
     Lorder = Lorder /2 * 2;
 
-    // determine how many neghbors are needed for this order.
+    if( (this->ibrav == ORTHORHOMBIC_PRIMITIVE || this->ibrav == CUBIC_PRIMITIVE) && !this->offdiag)
+    {
+        std::vector<GridPoint>  points1;
+        GridPoint point;
+        dimension = 1;
+        GetDerList(der_list, Lorder, dimension);
+        GetPointList1D(points1, a[0][0], Ngrid[0], Lorder);
+        this->BuildSolveLinearEq(points1, der_list, dimension);
 
-    int dimention = 3;
-    GetDerList(der_list, Lorder, dimention);
+        for(auto p:points1)
+        {
+            point.i = p.i;
+            point.j = 0;
+            point.k = 0;
+            point.coeff = p.coeff;
+            point.dist = p.dist;
+            points.push_back(point);
+        }
 
-    GetPointList3D(points, a, Ngrid, Lorder, dim);
-    this->BuildSolveLinearEq(points, der_list);
+
+        points1.clear();
+        GetPointList1D(points1, a[1][1], Ngrid[1], Lorder);
+        this->BuildSolveLinearEq(points1, der_list, dimension);
+
+        for(auto p:points1)
+        {
+            point.i = 0;
+            point.j = p.i;
+            point.k = 0;
+            point.coeff = p.coeff;
+            point.dist = p.dist;
+            points.push_back(point);
+        }
+
+
+        points1.clear();
+        GetPointList1D(points1, a[2][2], Ngrid[2], Lorder);
+        this->BuildSolveLinearEq(points1, der_list, dimension);
+
+        for(auto p:points1)
+        {
+            point.i = 0;
+            point.j = 0;
+            point.k = p.i;
+            point.coeff = p.coeff;
+            point.dist = p.dist;
+            points.push_back(point);
+        }
+
+        std::stable_sort(points.begin(), points.end(), customLess_dist);
+
+    }
+
+    else
+    {
+        dimension = 3;
+        GetDerList(der_list, Lorder, dimension);
+
+        GetPointList3D(points, a, Ngrid, Lorder);
+
+        this->BuildSolveLinearEq(points, der_list, dimension);
+    }
+
     this->GenerateList(points);
 }
 
-void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder, int dim[3]){
+void LaplacianCoeff::GetPointList1D(std::vector<GridPoint>& points, double a, int Ngrid, int Lorder){
+    GridPoint point;
+    double dx, dy,dz, dist;    
+    for(int i = 1; i <= Lorder/2; i++){
+        dx = i* a/Ngrid;
+        point.dist = dx;
+        point.i = i;
+        point.j = 0;
+        point.k = 0;
+
+        point.dx = dx;
+        point.dy = 0.0;
+        point.dz = 0.0;
+        point.weight_factor = 1.0/std::pow(dx, this->weight_power);
+        point.coeff = 0.0;
+        points.push_back(point);
+
+        point.dx = -dx;
+        point.i = -i;
+        points.push_back(point);
+
+    }
+}
+
+
+void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
     GridPoint point;
     double dx, dy,dz, dist;    
     for(int i = -Lorder; i <= Lorder; i++){
@@ -180,55 +262,33 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
         points.insert(points.begin()+79, points[97]);
     }
 
-    if(!this->offdiag) 
-    {
-        if( (this->ibrav == ORTHORHOMBIC_PRIMITIVE || this->ibrav == CUBIC_PRIMITIVE) )
-            std::stable_sort(points.begin(), points.end(), customLess_ijk);
-
-        if(this->ibrav == HEXAGONAL)
-        {
-
-            std::vector<GridPoint>  points1, points2;
-
-            for(auto point:points)
-            {
-                if((point.i == 0 || point.j == 0 || point.i == -point.j) && point.k == 0)
-                    points1.push_back(point);
-                else if(point.k == 0 || (point.i == 0 && point.j == 0) )
-                    points1.push_back(point);
-                else
-                    points2.push_back(point);
-            }
-
-            points.clear();
-            for(auto point:points1) points.push_back(point);
-            for(auto point:points2) points.push_back(point);
-        }
-    }
 
 }
 
-void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list){
+void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list, int dimension){
 
     int num_derivative = der_list.size();
+    int info, index;
     std::vector<int> num_points;
-    for(int i = num_derivative; i < (int)points.size()-1; i++)
+    
+    for(int i = 2*num_derivative; i < (int)points.size()-1; i++)
     {
         if( (std::abs(points[i].dist - points[i+1].dist) > 1.0e-3 ))
         {
             num_points.push_back(i+1);
         }
     }
+    num_points.push_back((int)points.size());
 
 
-    // for(auto a:num_points) std::cout << "numpoint" << "  " << a<<std::endl;
+   //  for(auto a:num_points) std::cout << "numpoint" << "  " << a<<std::endl;
 
-    //    index  =0;
-    //    for(auto a:points)
-    //    {   
-    //        std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<a.eq_num<<std::endl;
+//        index = 0;
+ //       for(auto a:points)
+  //      {   
+   //         std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<std::endl;
     //        index++;
-    //    }
+     //   }
 
 
 
@@ -245,7 +305,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
 
     int point_start = 0, point_end = num_points[0];
     bool Uii = false;
-    int index = 0, info;
+    index = 0;
     while(!Uii)
     {
         for(int ip = point_start; ip < point_end; ip++)
@@ -281,11 +341,12 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
         dgetrf(&num_derivative, &num_derivative, Am, &num_derivative, ipvt,  &info );
 
         // printf("\n point_end %d", point_end);
+    //  for(int i = 0; i < num_derivative; i++)
+    //  {   printf("\n");
+    //  for(int j = 0; j < num_derivative; j++)
+    //      printf("%d %e", i, Bm[i*num_derivative + j]);
+    //   }
 
-        //for(int i = 0; i < num_derivative; i++)
-        //{   printf("\n");
-        //    printf("%d %e", i, Am[i*num_derivative + i]);
-        // }
         Uii = true;
         for(int i = 0; i < num_derivative; i++)
         {
@@ -337,9 +398,12 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
             double tem;
             //  the Lapalaciation operators in this case is the sum of the first 3 derivatives 
             // factor of 2 is for 1/2!, expand coefficient in Taylor expansion
-            tem  = Am[irow * num_derivative +0] *2;
-            tem += Am[irow * num_derivative +1] *2;
-            tem += Am[irow * num_derivative +2] *2;
+            tem = 0.0;
+            for(int id = 0; id < dimension; id++)
+            {
+                tem += Am[irow * num_derivative +id] *2;
+            }
+
             points[ip].coeff += tem * delta_r;
             coeff0 -= tem * delta_r;
         }
@@ -347,12 +411,12 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
 
     points.resize(point_end);
 
-    //index  =0;
-    //for(auto a:points)
-    //{   
-    //    std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<a.coeff<<std::endl;
-    //    index++;
-    // }
+//    index  =0;
+//    for(auto a:points)
+//    {   
+//        std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<a.coeff<<std::endl;
+//        index++;
+//     }
 
 
     delete []Am;
@@ -403,8 +467,8 @@ void LaplacianCoeff::GenerateList(const std::vector<GridPoint>&  points)
     {
         coeff0 += a.coeff * a.relative_index.size();
         index += a.relative_index.size();
-    //    std::cout << a.coeff << "  "<< a.relative_index.size() <<std::endl;
-    //    for(auto b:a.relative_index) std::cout <<"            "<< b<<std::endl;
+        //    std::cout << a.coeff << "  "<< a.relative_index.size() <<std::endl;
+        //    for(auto b:a.relative_index) std::cout <<"            "<< b<<std::endl;
     }
 
 
@@ -427,8 +491,8 @@ void LaplacianCoeff::GenerateList(const std::vector<GridPoint>&  points)
         for (int ip = 0; ip < (int)a.i.size(); ip++)
             std::cout<<"      " << a.i[ip] <<"  "<<a.j[ip]<<"  "<<a.k[ip]<<std::endl;
     } 
-//    std::cout << "total points= " <<this->coeff_and_index.size() <<std::endl;
-//    std::cout << "sum of coeffs = " <<coeff0 <<std::endl;
+    //    std::cout << "total points= " <<this->coeff_and_index.size() <<std::endl;
+    //    std::cout << "sum of coeffs = " <<coeff0 <<std::endl;
 }
 
 void LaplacianCoeff::UpdateIndex(int dim[3])
@@ -449,11 +513,11 @@ void LaplacianCoeff::UpdateIndex(int dim[3])
     }
 
     this->SetDim(dim);
-  //  for(auto a:this->coeff_and_index)
-  //  {
-  //  printf("\n coff %e ", a.coeff);
-  //  for(auto b:a.relative_index) printf("\n    %d ", b);
-  //  }
+    //  for(auto a:this->coeff_and_index)
+    //  {
+    //  printf("\n coff %e ", a.coeff);
+    //  for(auto b:a.relative_index) printf("\n    %d ", b);
+    //  }
 
 }
 
