@@ -114,6 +114,50 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
 
     }
 
+    else if ( (this->ibrav == HEXAGONAL) && !this->offdiag)
+    {
+        std::vector<GridPoint>  points1;
+        GridPoint point;
+        dimension = 2;
+        GetDerList(der_list, Lorder, dimension);
+        double a2d[2][2];
+        a2d[0][0] = a[0][0];
+        a2d[0][1] = a[0][1];
+        a2d[1][0] = a[1][0];
+        a2d[1][1] = a[1][1];
+
+        GetPointList2D(points1, a2d, Ngrid, Lorder);
+        this->BuildSolveLinearEq(points1, der_list, dimension);
+
+        for(auto p:points1)
+        {
+            point.i = p.i;
+            point.j = p.j;
+            point.k = 0;
+            point.coeff = p.coeff;
+            point.dist = p.dist;
+            points.push_back(point);
+        }
+
+
+        points1.clear();
+        dimension = 1;
+        GetDerList(der_list, Lorder, dimension);
+        GetPointList1D(points1, a[2][2], Ngrid[2], Lorder);
+        this->BuildSolveLinearEq(points1, der_list, dimension);
+
+        for(auto p:points1)
+        {
+            point.i = 0;
+            point.j = 0;
+            point.k = p.i;
+            point.coeff = p.coeff;
+            point.dist = p.dist;
+            points.push_back(point);
+        }
+
+        std::stable_sort(points.begin(), points.end(), customLess_dist);
+    }
     else
     {
         dimension = 3;
@@ -149,6 +193,45 @@ void LaplacianCoeff::GetPointList1D(std::vector<GridPoint>& points, double a, in
         points.push_back(point);
 
     }
+}
+
+void LaplacianCoeff::GetPointList2D(std::vector<GridPoint>& points, double a[2][2], int Ngrid[2], int Lorder){
+    GridPoint point;
+    double dx, dy,dz, dist;    
+    for(int i = -Lorder; i <= Lorder; i++){
+        for(int j = -Lorder; j <= Lorder; j++){
+            if(i == 0 && j == 0) continue;
+
+            dx = i*a[0][0]/Ngrid[0] + j*a[1][0]/Ngrid[1];
+            dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1];
+
+            dist = sqrt(dx * dx  + dy * dy);
+            point.dist = dist;
+            point.dx = dx;
+            point.dy = dy;
+            point.dz = 0.0;
+            point.i = i;
+            point.j = j;
+            point.k = 0;
+            point.ijk = std::abs(i) + std::abs(j) ;
+            point.weight_factor = 1.0/std::pow(dist, this->weight_power);
+            point.coeff = 0.0;
+            points.push_back(point);
+        }
+    }
+    std::stable_sort(points.begin(), points.end(), customLess_dist);
+
+    std::vector<GridPoint> points1, points2;
+    for(auto p:points){
+        if((p.i == 0 || p.j == 0 || p.i+p.j == 0) && p.dist -1.0e-4 < Lorder/2 * a[0][0]/Ngrid[0])  points1.push_back(p);
+        else points2.push_back(p);
+   }
+
+    points.clear();
+    points.insert(points.end(), points1.begin(), points1.end());
+    points.insert(points.end(), points2.begin(), points2.end());
+
+   
 }
 
 
@@ -270,7 +353,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
     int num_derivative = der_list.size();
     int info, index;
     std::vector<int> num_points;
-    
+
     for(int i = 2*num_derivative; i < (int)points.size()-1; i++)
     {
         if( (std::abs(points[i].dist - points[i+1].dist) > 1.0e-3 ))
@@ -281,14 +364,14 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
     num_points.push_back((int)points.size());
 
 
-   //  for(auto a:num_points) std::cout << "numpoint" << "  " << a<<std::endl;
-
-//        index = 0;
- //       for(auto a:points)
-  //      {   
-   //         std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<std::endl;
-    //        index++;
-     //   }
+//      for(auto a:num_points) std::cout << "numpoint" << "  " << a<<std::endl;
+//
+//            index = 0;
+//           for(auto a:points)
+//          {   
+//             std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<std::endl;
+//            index++;
+//       }
 
 
 
@@ -341,11 +424,11 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
         dgetrf(&num_derivative, &num_derivative, Am, &num_derivative, ipvt,  &info );
 
         // printf("\n point_end %d", point_end);
-    //  for(int i = 0; i < num_derivative; i++)
-    //  {   printf("\n");
-    //  for(int j = 0; j < num_derivative; j++)
-    //      printf("%d %e", i, Bm[i*num_derivative + j]);
-    //   }
+        //  for(int i = 0; i < num_derivative; i++)
+        //  {   printf("\n");
+        //  for(int j = 0; j < num_derivative; j++)
+        //      printf("%d %e", i, Bm[i*num_derivative + j]);
+        //   }
 
         Uii = true;
         for(int i = 0; i < num_derivative; i++)
@@ -411,12 +494,12 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
 
     points.resize(point_end);
 
-//    index  =0;
-//    for(auto a:points)
-//    {   
-//        std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<a.coeff<<std::endl;
-//        index++;
-//     }
+//        index  =0;
+//        for(auto a:points)
+//        {   
+//            std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<a.coeff<<std::endl;
+//            index++;
+//         }
 
 
     delete []Am;
@@ -549,7 +632,8 @@ void LaplacianCoeff::GetDerList(std::vector<GridPoint>& der_list, int Lorder, in
     if( dimension == 2){
         for(int j = 0; j <= Lorder; j+=2){
             for(int i = 0; i <= Lorder; i+=2){
-                if(i+j <= Lorder && i+j >0)
+                if(this->ibrav == HEXAGONAL && i !=0 && j !=0) continue;
+                if(i+j <= Lorder && i+j >0  )
                 {
                     point.i = i;
                     point.j = j;
