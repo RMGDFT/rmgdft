@@ -94,14 +94,12 @@ RmgTimer *RT0 = new RmgTimer("Hartree: init");
     int dimx = G->get_PX0_GRID(density), dimy = G->get_PY0_GRID(density), dimz = G->get_PZ0_GRID(density);
 
     // Solve to a high degree of precision on the coarsest level
-    int nits = global_presweeps + global_postsweeps;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     /* Grab some memory for our multigrid structures */
     double *mgrhsarr = new double[2*sbasis];
     double *mglhsarr = new  double[2*sbasis];
-    double *mgresarr = new  double[sbasis];
     double *work = new  double[2*sbasis];
     double *sg_res = new  double[2*sbasis];
 
@@ -111,6 +109,7 @@ RmgTimer *RT0 = new RmgTimer("Hartree: init");
     int ixoff, iyoff, izoff;
     double *mgrhsptr[MAX_MG_LEVELS];
 
+double *vhsav = new double[sbasis];
 
     // Set up RHS on finest level
     /* Multiply through by 4PI */
@@ -148,17 +147,16 @@ RmgTimer *RT1 = new RmgTimer("Hartree: cg solve");
     {
         double lfactor = pow(2.0, (double)(level));
         coarse_vh (G, L, T, mgrhsptr[level], mglhsarr,
-                 min_sweeps, max_sweeps, maxlevel,
+                 3, max_sweeps, maxlevel,
                  global_presweeps, global_postsweeps, level,
                  dx[level], dy[level], dz[level], level,
                  G->get_hxgrid(density)*lfactor, G->get_hygrid(density)*lfactor, G->get_hzgrid(density)*lfactor,
-                 1.0e-14, global_step, coarse_step, boundaryflag, density, false, false);
+                 1.0e-10, global_step, coarse_step, boundaryflag, density, false, false);
         CPP_pack_ptos (work, mglhsarr, dx[level], dy[level], dz[level]);
         T->trade_images (work, dx[level], dy[level], dz[level], FULL_TRADE);
-        MG.mg_prolong_cubic (sg_res, work, dx[level], dy[level], dz[level], dx[level-1], dy[level-1], dz[level-1], ixoff, iyoff, izoff);
+        MG.mg_prolong (sg_res, work, dx[level-1], dy[level-1], dz[level-1], dx[level], dy[level], dz[level], ixoff, iyoff, izoff);
         CPP_pack_stop (sg_res, mglhsarr, dx[level-1], dy[level-1], dz[level-1]);
     }
-
 delete RT1;
 RmgTimer *RT2 = new RmgTimer("Hartree: fg solve");
 
@@ -172,10 +170,10 @@ RmgTimer *RT2 = new RmgTimer("Hartree: fg solve");
 //printf("PPPP  %d  %d  %d\n",dx[0], dy[0], dz[0]);
     for(int idx=0;idx < pbasis;idx++) vhartree[idx] = mglhsarr[idx];
 
+
     /* Release our memory */
     delete [] sg_res;
     delete [] work;
-    delete [] mgresarr;
     delete [] mglhsarr;
     delete [] mgrhsarr;
 
@@ -197,9 +195,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
 {
 
     int idx, its, cycles;
-    double t1, vavgcor, diag=0.0;
-    double *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    double *sg_res, residual = 100.0;
+    double t1, vavgcor, diag=0.0, residual = 100.0;
     Mgrid MG(L, T);
     int global_basis = G->get_GLOBAL_BASIS(density) / pow(8.0, (double)level);
 
@@ -218,11 +214,10 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     /* Grab some memory for our multigrid structures */
-    mgrhsarr = new double[std::max(sbasis, 512)];
-    mglhsarr = new  double[std::max(2*sbasis, 512)];
-    mgresarr = new  double[std::max(sbasis, 512)];
-    work = new  double[std::max(4*sbasis, 512)];
-    sg_res = new  double[std::max(2*sbasis, 512)];
+    double *mgrhsarr = new double[std::max(sbasis, 512)];
+    double *mglhsarr = new  double[std::max(2*sbasis, 512)];
+    double *work = new  double[std::max(4*sbasis, 512)];
+    double *sg_res = new  double[std::max(2*sbasis, 512)];
 
     float *sg_res_f = (float *)sg_res; 
     float *mglhsarr_f = (float *)mglhsarr;
@@ -239,7 +234,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
         for (cycles = 0; cycles < nits; cycles++)
         {
 
-	    /*At the end of this force loop, laplacian operator is reapplied to evalute the residual. Therefore,
+	    /*At the end of this loop, laplacian operator is reapplied to evalute the residual. Therefore,
 	     * there is no need to reapply it, when this loop is called second, third, etc time. */
             if ( (cycles) || (!its))
             {
@@ -271,14 +266,10 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
                             G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density), boundaryflag);
 
 
-                /* Transfer solution back to mgresarr array */
+                /* Transfer solution back to double array */
                 for(int idx=0;idx < sbasis;idx++) work[idx] = (double)mglhsarr_f[idx];
                 int t1 = 1.0;
                 CPP_pack_stop_axpy (work, vhartree, t1, dimx, dimy, dimz);
-
-
-                /* Update vh */
-                //for(int i = 0;i < pbasis;i++) vhartree[i] += mgresarr[i];
 
             }
             else
@@ -318,8 +309,9 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
         for (idx = 0; idx < pbasis; idx++)
         {
 
-            mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
-            residual += mgresarr[idx] * mgresarr[idx];
+            //mgresarr[idx] = mgrhsarr[idx] - mglhsarr[idx];
+            //residual += mgresarr[idx] * mgresarr[idx];
+            residual += (mgrhsarr[idx] - mglhsarr[idx])*(mgrhsarr[idx] - mglhsarr[idx]);
 
         }                   /* end for */
 
@@ -338,7 +330,6 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
     /* Release our memory */
     delete [] sg_res;
     delete [] work;
-    delete [] mgresarr;
     delete [] mglhsarr;
     delete [] mgrhsarr;
 
