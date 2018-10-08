@@ -57,7 +57,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
                  int global_presweeps, int global_postsweeps, int mucycles, 
                  int dimx, int dimy, int dimz, int level,
                  double gridhx, double gridhy, double gridhz,
-                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status);
+                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status, bool setzero);
 
 /// Poisson solver that uses compact implicit (Mehrstellen) and multigrid techniques.
 /// @param G Grid object that defines the layout of the 3-D grid and the MPI domains
@@ -82,8 +82,7 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
 
     int idx, its, cycles;
     double t1, vavgcor, diag=0.0;
-    double *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    double *sg_res, residual = 100.0;
+    double residual = 100.0;
     Mgrid MG(L, T);
     int global_basis = G->get_GLOBAL_BASIS(density);
 
@@ -98,11 +97,11 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     /* Grab some memory for our multigrid structures */
-    mgrhsarr = new double[2*sbasis];
-    mglhsarr = new  double[2*sbasis];
-    mgresarr = new  double[sbasis];
-    work = new  double[4*sbasis];
-    sg_res = new  double[2*sbasis];
+    double *mgrhsarr = new double[2*sbasis];
+    double *mglhsarr = new  double[2*sbasis];
+    double *mgresarr = new  double[sbasis];
+    double *work = new  double[2*sbasis];
+    double *sg_res = new  double[2*sbasis];
 
     int dx[MAX_MG_LEVELS];dx[0] = dimx;
     int dy[MAX_MG_LEVELS];dy[0] = dimy;
@@ -112,10 +111,9 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
 
 
     // Set up RHS on finest level
-    CPP_app_cir_driver<double> (L, T, rho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
     /* Multiply through by 4PI */
     t1 = -4.0 * PI;
-    for(idx = 0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * mgrhsarr[idx];
+    for(idx = 0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * rho[idx];
 
 
     // Restrict right hand side down to coarsest level
@@ -149,23 +147,23 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
     {
         double lfactor = pow(2.0, (double)(level));
         coarse_vh (G, L, T, mgrhsptr[level], mglhsarr,
-                 min_sweeps, max_sweeps, maxlevel,
-                 10, 10, 1,
+                 3, max_sweeps, maxlevel,
+                 global_presweeps, global_postsweeps, level,
                  dx[level], dy[level], dz[level], level,
                  G->get_hxgrid(density)*lfactor, G->get_hygrid(density)*lfactor, G->get_hzgrid(density)*lfactor,
-                 rms_target, global_step, coarse_step, boundaryflag, density, false);
+                 1.0e-10, global_step, coarse_step, boundaryflag, density, false, false);
         CPP_pack_ptos (work, mglhsarr, dx[level], dy[level], dz[level]);
         T->trade_images (work, dx[level], dy[level], dz[level], FULL_TRADE);
-        MG.mg_prolong (sg_res, work, dx[level], dy[level], dz[level], dx[level-1], dy[level-1], dz[level-1], ixoff, iyoff, izoff);
+        MG.mg_prolong_cubic (sg_res, work, dx[level], dy[level], dz[level], dx[level-1], dy[level-1], dz[level-1], ixoff, iyoff, izoff);
         CPP_pack_stop (sg_res, mglhsarr, dx[level-1], dy[level-1], dz[level-1]);
     }
 
     coarse_vh (G, L, T, mgrhsarr, mglhsarr,
-             min_sweeps, max_sweeps, maxlevel,
-             10, 10, 4,
+             3, max_sweeps, maxlevel,
+             2, 2, 2,
              dimx, dimy, dimz, 0,
              G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
-             rms_target, global_step, coarse_step, boundaryflag, density, false);
+             1.0e-10, global_step, coarse_step, boundaryflag, density, false, true);
 
 //printf("PPPP  %d  %d  %d\n",dx[0], dy[0], dz[0]);
     for(int idx=0;idx < pbasis;idx++) vhartree[idx] = mglhsarr[idx];
@@ -191,7 +189,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
                  int global_presweeps, int global_postsweeps, int mucycles, 
                  int dimx, int dimy, int dimz, int level,
                  double gridhx, double gridhy, double gridhz,
-                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status)
+                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status, bool setzero)
 {
 
     int idx, its, cycles;
@@ -200,17 +198,18 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
     double *sg_res, residual = 100.0;
     Mgrid MG(L, T);
 //printf("LLLLL  %d  %d  %d  %d  %d\n",dimx,dimy,dimz,level,maxlevel);
-    int global_basis = G->get_GLOBAL_BASIS(density) / pow(8, level);
+    int global_basis = G->get_GLOBAL_BASIS(density) / pow(8.0, (double)level);
 
     /* Pre and post smoothings on each level */
-    int poi_pre[MAX_MG_LEVELS] = { 8, 16, 16, 16, 16, 16, 16, 16 };
-    int poi_post[MAX_MG_LEVELS] = { 8, 16, 16, 16, 16, 16, 4, 4 };
+    int poi_pre[MAX_MG_LEVELS] = { 0, 4, 4, 4, 4, 4, 4, 4};
+    int poi_post[MAX_MG_LEVELS] = { 0, 2, 2, 2, 2, 2, 2, 2};
 
+    int mu_cycles[MAX_MG_LEVELS] = {2, 2, 2, 2, 2, 2, 2, 2};
     if(maxlevel >= MAX_MG_LEVELS)
        rmg_error_handler(__FILE__, __LINE__, "Too many multigrid levels requested.");
 
     // Solve to a high degree of precision on the coarsest level
-    poi_pre[maxlevel] = 20;
+    poi_pre[maxlevel] = 10;
     int nits = global_presweeps + global_postsweeps;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -264,17 +263,20 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
                             dimx, dimy, dimz,
                             gridhx, gridhy, gridhz,
                             level, maxlevel, poi_pre,
-                            poi_post, mucycles, coarse_step,
+                            poi_post, mu_cycles[level], coarse_step,
                             G->get_NX_GRID(density), G->get_NY_GRID(density), G->get_NZ_GRID(density),
                             G->get_PX_OFFSET(density), G->get_PY_OFFSET(density), G->get_PZ_OFFSET(density),
                             G->get_PX0_GRID(density), G->get_PY0_GRID(density), G->get_PZ0_GRID(density), boundaryflag);
 
 
                 /* Transfer solution back to mgresarr array */
-                CPP_pack_stop<double> (mglhsarr, mgresarr, dimx, dimy, dimz);
+                //CPP_pack_stop<double> (mglhsarr, mgresarr, dimx, dimy, dimz);
+                int t1 = 1.0;
+                CPP_pack_stop_axpy (mglhsarr, vhartree, t1, dimx, dimy, dimz);
+
 
                 /* Update vh */
-                for(int i = 0;i < pbasis;i++) vhartree[i] += mgresarr[i];
+                //for(int i = 0;i < pbasis;i++) vhartree[i] += mgresarr[i];
 
             }
             else
@@ -284,7 +286,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
                 t1 = - global_step * diag;
                 for(int i = 0;i < pbasis;i++) vhartree[i] = vhartree[i] + t1 * mgresarr[i];
 
-                if (boundaryflag == PERIODIC)
+                if ((boundaryflag == PERIODIC) && setzero)
                 {
 
                     /* Evaluate the average potential */
@@ -324,7 +326,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
 
         residual = sqrt (RmgSumAll(residual, T->get_MPI_comm()) / global_basis);
 //        if(G->get_rank() == 0) std::cout << "\n get_vh sweep " << its << " rms residual is " << residual << std::endl;
-	    
+//if(G->get_rank() == 0)printf("LLLL  %d  %d  %14.6e\n",level, its, residual);
         its ++;
     }                           /* end for */
 
