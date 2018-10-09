@@ -101,34 +101,39 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
     double *work = new  double[2*sbasis];
     double *sg_res = new  double[2*sbasis];
 
+    float *mgrhsarr_f = (float *)mgrhsarr;
+    float *mglhsarr_f = (float *)mglhsarr;
+    float *work_f = (float *)work;
+    float *sg_res_f = (float *)sg_res;
+
     int dx[MAX_MG_LEVELS];dx[0] = dimx;
     int dy[MAX_MG_LEVELS];dy[0] = dimy;
     int dz[MAX_MG_LEVELS];dz[0] = dimz;
     int ixoff, iyoff, izoff;
-    double *mgrhsptr[MAX_MG_LEVELS];
+    float *mgrhsptr_f[MAX_MG_LEVELS];
 
 
     // Set up RHS on finest level
     /* Multiply through by 4PI */
     t1 = -4.0 * PI;
-    for(int idx = 0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * rho[idx];
+    for(int idx = 0;idx < pbasis;idx++) mgrhsarr_f[idx] = t1 * rho[idx];
 
     // Restrict right hand side down to coarsest level
     size_t offset=pbasis;
     int dx2, dy2, dz2;
-    mgrhsptr[0] = mgrhsarr;
+    mgrhsptr_f[0] = mgrhsarr_f;
     for(int level=1;level <= maxlevel;level++)
     {
         dx2 = MG.MG_SIZE (dx[level-1], level-1, G->get_NX_GRID(density), G->get_PX_OFFSET(density), dimx, &ixoff, boundaryflag);
         dy2 = MG.MG_SIZE (dy[level-1], level-1, G->get_NY_GRID(density), G->get_PY_OFFSET(density), dimy, &iyoff, boundaryflag);
         dz2 = MG.MG_SIZE (dz[level-1], level-1, G->get_NZ_GRID(density), G->get_PZ_OFFSET(density), dimz, &izoff, boundaryflag);
 
-        CPP_pack_ptos (work, mgrhsptr[level-1], dx[level-1], dy[level-1], dz[level-1]);
-        T->trade_images (work, dx[level-1], dy[level-1], dz[level-1], FULL_TRADE);
-        MG.mg_restrict (work, sg_res, dx[level-1], dy[level-1], dz[level-1], dx2, dy2, dz2, ixoff, iyoff, izoff);
+        CPP_pack_ptos (work_f, mgrhsptr_f[level-1], dx[level-1], dy[level-1], dz[level-1]);
+        T->trade_images (work_f, dx[level-1], dy[level-1], dz[level-1], FULL_TRADE);
+        MG.mg_restrict (work_f, sg_res_f, dx[level-1], dy[level-1], dz[level-1], dx2, dy2, dz2, ixoff, iyoff, izoff);
       
-        mgrhsptr[level] = &mgrhsarr[offset];
-        CPP_pack_stop (sg_res, mgrhsptr[level], dx2, dy2, dz2);
+        mgrhsptr_f[level] = &mgrhsarr_f[offset];
+        CPP_pack_stop (sg_res_f, mgrhsptr_f[level], dx2, dy2, dz2);
         offset += dx2*dy2*dz2;
 
         dx[level] = dx2;
@@ -140,35 +145,46 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
 
     RmgTimer *RT1 = new RmgTimer("Hartree: cg solve");
     // Now solve from coarse grid to fine grid
-    for(int ix=0;ix < dx2*dy2*dz2;ix++) mglhsarr[ix] = 0.0;
+    for(int ix=0;ix < dx2*dy2*dz2;ix++) mglhsarr_f[ix] = 0.0;
     for(int level=maxlevel;level > 0;level--)
     {
         double lfactor = pow(2.0, (double)(level));
-        coarse_vh (G, L, T, mgrhsptr[level], mglhsarr,
+        coarse_vh (G, L, T, mgrhsptr_f[level], mglhsarr_f,
                  2, max_sweeps, maxlevel,
                  global_presweeps, global_postsweeps,
                  dx[level], dy[level], dz[level], level,
                  G->get_hxgrid(density)*lfactor, G->get_hygrid(density)*lfactor, G->get_hzgrid(density)*lfactor,
                  1.0e-12, global_step, coarse_step, boundaryflag, density, false, false);
-        CPP_pack_ptos (work, mglhsarr, dx[level], dy[level], dz[level]);
-        T->trade_images (work, dx[level], dy[level], dz[level], FULL_TRADE);
+        CPP_pack_ptos (work_f, mglhsarr_f, dx[level], dy[level], dz[level]);
+        T->trade_images (work_f, dx[level], dy[level], dz[level], FULL_TRADE);
         if(level == 1)
-            MG.mg_prolong_cubic (sg_res, work, dx[level-1], dy[level-1], dz[level-1], dx[level], dy[level], dz[level], ixoff, iyoff, izoff);
+            MG.mg_prolong_cubic (sg_res_f, work_f, dx[level-1], dy[level-1], dz[level-1], dx[level], dy[level], dz[level], ixoff, iyoff, izoff);
         else
-            MG.mg_prolong (sg_res, work, dx[level-1], dy[level-1], dz[level-1], dx[level], dy[level], dz[level], ixoff, iyoff, izoff);
-        CPP_pack_stop (sg_res, mglhsarr, dx[level-1], dy[level-1], dz[level-1]);
+            MG.mg_prolong (sg_res_f, work_f, dx[level-1], dy[level-1], dz[level-1], dx[level], dy[level], dz[level], ixoff, iyoff, izoff);
+        CPP_pack_stop (sg_res_f, mglhsarr_f, dx[level-1], dy[level-1], dz[level-1]);
     }
     delete RT1;
 
     RmgTimer *RT2 = new RmgTimer("Hartree: fg solve");
-    residual = coarse_vh (G, L, T, mgrhsarr, mglhsarr,
+    residual = coarse_vh (G, L, T, mgrhsarr_f, mglhsarr_f,
              2, 3, maxlevel,
+             global_presweeps, global_postsweeps,
+             dimx, dimy, dimz, 0,
+             G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
+             1.0e-10, global_step, coarse_step, boundaryflag, density, false, true);
+
+    for(int idx=0;idx < pbasis;idx++) work[idx] = (double)mglhsarr_f[idx];
+    t1 = -4.0*PI;
+    for(int idx=0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * rho[idx];
+
+    residual = coarse_vh (G, L, T, mgrhsarr, work,
+             1, 1, maxlevel,
              global_presweeps, global_postsweeps,
              dimx, dimy, dimz, 0,
              G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
              1.0e-12, global_step, coarse_step, boundaryflag, density, false, true);
 
-    for(int idx=0;idx < pbasis;idx++) vhartree[idx] = mglhsarr[idx];
+    for(int idx=0;idx < pbasis;idx++) vhartree[idx] = work[idx];
 
 
     /* Release our memory */
