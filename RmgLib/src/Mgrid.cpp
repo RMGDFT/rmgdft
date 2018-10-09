@@ -178,6 +178,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 {
     RmgTimer *RT = NULL;
     BaseThread *Threads = BaseThread::getBaseThread(0);
+    RmgType half(0.5);
 
     std::string timername;
     if(this->timer_mode) {
@@ -199,7 +200,8 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
     scale = 1.0 / (scale + Zfac);
     scale = step * scale;
 
-    RmgType *f_mat_t = (RmgType *)alloca(size*sizeof(RmgType));
+    //RmgType *f_mat_t = (RmgType *)alloca(size*sizeof(RmgType));
+    RmgType *f_mat_t = (RmgType *)&work[3*size];
     for(int idx=0;idx<size;idx++)f_mat_t[idx] = f_mat[idx];
 
     bool check = (dimx >= 3) && (dimy >= 3) && (dimz >= 3);
@@ -212,7 +214,8 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
 
         T->trade_images (f_mat, dimx, dimy, dimz, FULL_TRADE);
         if(pot) T->trade_images (pot, dimx, dimy, dimz, FULL_TRADE);
-        for (int idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * f_mat[idx];
+//        for (int idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * f_mat[idx];
+        for (int idx = 0; idx < size; idx++) v_mat[idx] = half*(RmgType)scale * f_mat[idx];
 
         // solve on this grid level 
         for (int cycl = 0; cycl < pre_cyc[level]; cycl++)
