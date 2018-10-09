@@ -40,7 +40,6 @@ Relax.cpp
 RmgThread.cpp
 OutputEigenvalues.cpp
 Scf.cpp
-pack_stop_axpy.cpp
 genvpsi.cpp
 MgEigState.cpp
 GetGamma.cpp
