@@ -123,12 +123,6 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
         dy2 = MG.MG_SIZE (dy[level-1], level-1, G->get_NY_GRID(density), G->get_PY_OFFSET(density), dimy, &iyoff, boundaryflag);
         dz2 = MG.MG_SIZE (dz[level-1], level-1, G->get_NZ_GRID(density), G->get_PZ_OFFSET(density), dimz, &izoff, boundaryflag);
 
-        if((dx2 <= 2) || (dy2 <= 2) || (dz2 <= 2)) 
-        {
-            maxlevel = level - 1;
-            break;
-        }
-
         CPP_pack_ptos (work, mgrhsptr[level-1], dx[level-1], dy[level-1], dz[level-1]);
         T->trade_images (work, dx[level-1], dy[level-1], dz[level-1], FULL_TRADE);
         MG.mg_restrict (work, sg_res, dx[level-1], dy[level-1], dz[level-1], dx2, dy2, dz2, ixoff, iyoff, izoff);
@@ -155,7 +149,7 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
                  global_presweeps, global_postsweeps,
                  dx[level], dy[level], dz[level], level,
                  G->get_hxgrid(density)*lfactor, G->get_hygrid(density)*lfactor, G->get_hzgrid(density)*lfactor,
-                 1.0e-8, global_step, coarse_step, boundaryflag, density, false, false);
+                 1.0e-12, global_step, coarse_step, boundaryflag, density, false, false);
         CPP_pack_ptos (work, mglhsarr, dx[level], dy[level], dz[level]);
         T->trade_images (work, dx[level], dy[level], dz[level], FULL_TRADE);
         if(level == 1)
@@ -168,11 +162,11 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
 
     RmgTimer *RT2 = new RmgTimer("Hartree: fg solve");
     residual = coarse_vh (G, L, T, mgrhsarr, mglhsarr,
-             2, max_sweeps, maxlevel,
+             2, 4, maxlevel,
              global_presweeps, global_postsweeps,
              dimx, dimy, dimz, 0,
              G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
-             1.0e-10, global_step, coarse_step, boundaryflag, density, false, true);
+             1.0e-12, global_step, coarse_step, boundaryflag, density, false, true);
 
     for(int idx=0;idx < pbasis;idx++) vhartree[idx] = mglhsarr[idx];
 
@@ -318,7 +312,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
         }                   /* end for */
 
 
-        residual = sqrt (RmgSumAll(residual, T->get_MPI_comm()) / global_basis);
+        residual = sqrt (RmgSumAll(residual, T->get_MPI_comm())) / (double)global_basis;
 //        if(G->get_rank() == 0) std::cout << "\n get_vh sweep " << its << " rms residual is " << residual << std::endl;
 //if(G->get_rank() == 0)printf("Hartree residual:   level=%d    sweep=%d    residual=%14.6e\n",level, its, residual);
         its ++;

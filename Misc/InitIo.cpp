@@ -187,7 +187,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     AutoSet(ct, pct, ControlMap);
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
-    SetLaplacian();
+    //SetLaplacian();
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
 
@@ -485,6 +485,36 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     Rmg_T->set_MPI_comm(pct.grid_comm);
 
     GlobalSumsInit();
+
+    // Check individual node sizes on all levels for poisson mg solver
+    Mgrid MG(&Rmg_L, Rmg_T);
+    int dx[MAX_MG_LEVELS];dx[0] = Rmg_G->get_PX0_GRID(ct.FG_RATIO);
+    int dy[MAX_MG_LEVELS];dy[0] = Rmg_G->get_PY0_GRID(ct.FG_RATIO);
+    int dz[MAX_MG_LEVELS];dz[0] = Rmg_G->get_PZ0_GRID(ct.FG_RATIO);
+    int dimx = dx[0], dimy = dy[0], dimz = dz[0];
+    int ixoff, iyoff, izoff, dx2, dy2, dz2;
+
+    int maxlevel = ct.poi_parm.levels;
+    for(int level=1;level <= ct.poi_parm.levels;level++)
+    {
+        dx2 = MG.MG_SIZE (dx[level-1], level-1, Rmg_G->get_NX_GRID(ct.FG_RATIO), Rmg_G->get_PX_OFFSET(ct.FG_RATIO), dimx, &ixoff, ct.boundaryflag);
+        dy2 = MG.MG_SIZE (dy[level-1], level-1, Rmg_G->get_NY_GRID(ct.FG_RATIO), Rmg_G->get_PY_OFFSET(ct.FG_RATIO), dimy, &iyoff, ct.boundaryflag);
+        dz2 = MG.MG_SIZE (dz[level-1], level-1, Rmg_G->get_NZ_GRID(ct.FG_RATIO), Rmg_G->get_PZ_OFFSET(ct.FG_RATIO), dimz, &izoff, ct.boundaryflag);
+
+        if((dx2 < 2) || (dy2 < 2) || (dz2 < 2))
+        {
+            maxlevel = level - 1;
+            break;
+        }
+
+        dx[level] = dx2;
+        dy[level] = dy2;
+        dz[level] = dz2;
+
+    }
+
+    MPI_Allreduce (MPI_IN_PLACE, &maxlevel, 1, MPI_INT, MPI_MIN, pct.grid_comm);
+    ct.poi_parm.levels = maxlevel;
 
     // Write a copy of the options file
     if(pct.imgpe == 0) {
