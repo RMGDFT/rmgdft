@@ -52,8 +52,8 @@
 
 #define MAX_MG_LEVELS 8
 
-
-double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
+template <typename CalcType>
+double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType *rho, CalcType *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps,
                  int dimx, int dimy, int dimz, int level,
@@ -162,7 +162,7 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
 
     RmgTimer *RT2 = new RmgTimer("Hartree: fg solve");
     residual = coarse_vh (G, L, T, mgrhsarr, mglhsarr,
-             2, 4, maxlevel,
+             2, 3, maxlevel,
              global_presweeps, global_postsweeps,
              dimx, dimy, dimz, 0,
              G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
@@ -185,8 +185,8 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
 
 
 
-
-double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
+template <typename CalcType>
+double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcType *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps,
                  int dimx, int dimy, int dimz, int level,
@@ -214,16 +214,16 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     /* Grab some memory for our multigrid structures */
-    double *mgrhsarr = new double[std::max(2*sbasis, 512)];
-    double *mglhsarr = new  double[std::max(2*sbasis, 512)];
-    double *work = new  double[std::max(4*sbasis, 512)];
-    double *sg_res = new  double[std::max(2*sbasis, 512)];
+    CalcType *mgrhsarr = new CalcType[std::max(2*sbasis, 512)];
+    CalcType *mglhsarr = new CalcType[std::max(2*sbasis, 512)];
+    CalcType *work = new CalcType[std::max(4*sbasis, 512)];
+    CalcType *sg_res = new CalcType[std::max(2*sbasis, 512)];
 
     float *sg_res_f = (float *)sg_res; 
     float *mglhsarr_f = (float *)mglhsarr;
     float *work_f = (float *)work;
 
-    CPP_app_cir_driver<double> (L, T, rho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
+    CPP_app_cir_driver (L, T, rho, mgrhsarr, dimx, dimy, dimz, APP_CI_FOURTH);
 
     its = 0;
     while ( ((its < max_sweeps) && (residual > rms_target))  || (its < min_sweeps))
@@ -254,9 +254,9 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
 
                 /* Generate residual vector and transfer into smoothing grid */
                 for(int idx=0;idx < pbasis;idx++) work_f[idx] = (float)(mgrhsarr[idx] - mglhsarr[idx]);
-                CPP_pack_ptos<float> (sg_res_f, work_f, dimx, dimy, dimz);
+                CPP_pack_ptos (sg_res_f, work_f, dimx, dimy, dimz);
 
-                MG.mgrid_solv_pois<float> ((float *)mglhsarr, sg_res_f, (float *)work,
+                MG.mgrid_solv_pois ((float *)mglhsarr, sg_res_f, (float *)work,
                             dimx, dimy, dimz,
                             gridhx, gridhy, gridhz,
                             level, maxlevel, poi_pre,
@@ -288,19 +288,19 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
 
             /* Evaluate the average potential */
             vavgcor = 0.0;
-            for (idx = 0; idx < pbasis; idx++) vavgcor += vhartree[idx];
+            for (idx = 0; idx < pbasis; idx++) vavgcor += (double)vhartree[idx];
 
             vavgcor =  RmgSumAll(vavgcor, T->get_MPI_comm());
             t1 = (double) global_basis;
             vavgcor = vavgcor / t1;
 
             /* Make sure that the average value is zero */
-            for (idx = 0; idx < pbasis; idx++) vhartree[idx] -= vavgcor;
+            for (idx = 0; idx < pbasis; idx++) vhartree[idx] -= (CalcType)vavgcor;
 
         }                   /* end if */
 
         /*Get residual*/
-        diag = CPP_app_cil_driver<double> (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
+        diag = CPP_app_cil_driver (L, T, vhartree, mglhsarr, dimx, dimy, dimz,
                             gridhx, gridhy, gridhz, APP_CI_FOURTH);
         diag = -1.0 / diag;
         residual = 0.0;
@@ -308,13 +308,12 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double 
         /* Generate residual vector */
         for (idx = 0; idx < pbasis; idx++)
         {
-            residual += (mgrhsarr[idx] - mglhsarr[idx])*(mgrhsarr[idx] - mglhsarr[idx]);
+            residual += (double)(mgrhsarr[idx] - mglhsarr[idx])*(mgrhsarr[idx] - mglhsarr[idx]);
         }                   /* end for */
 
 
         residual = sqrt (RmgSumAll(residual, T->get_MPI_comm())) / (double)global_basis;
-//        if(G->get_rank() == 0) std::cout << "\n get_vh sweep " << its << " rms residual is " << residual << std::endl;
-//if(G->get_rank() == 0)printf("Hartree residual:   level=%d    sweep=%d    residual=%14.6e\n",level, its, residual);
+        //if(G->get_rank() == 0)printf("Hartree residual:   level=%d    sweep=%d    residual=%14.6e\n",level, its, residual);
         its ++;
     }                           /* end for */
 
