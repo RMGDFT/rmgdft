@@ -154,11 +154,11 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
     {
         double lfactor = pow(2.0, (double)(level));
         coarse_vh (G, L, T, mgrhsptr_f[level], mglhsarr_f,
-                 2, 8, maxlevel,
+                 2, 6, maxlevel,
                  global_presweeps, global_postsweeps,
                  dx[level], dy[level], dz[level], level,
                  G->get_hxgrid(density)*lfactor, G->get_hygrid(density)*lfactor, G->get_hzgrid(density)*lfactor,
-                 1.0e-10, global_step, coarse_step, boundaryflag, density, false, false);
+                 1.0e-7, global_step, coarse_step, boundaryflag, density, false, false);
 
         // Save coarse grid starting solution to use next time if vh_init is not null
         if((level == maxlevel) && vh_init) for(int ix=0;ix < dx2*dy2*dz2;ix++) vh_init[ix] = mglhsarr_f[ix];
@@ -215,15 +215,15 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcT
     int global_basis = G->get_GLOBAL_BASIS(density) / pow(8.0, (double)level);
 
     /* Pre and post smoothings on each level */
-    int poi_pre[MAX_MG_LEVELS] = { 0, 4, 4, 4, 4, 4, 4, 4};
+    int poi_pre[MAX_MG_LEVELS] = { 0, 3, 3, 3, 3, 3, 3, 3};
     int poi_post[MAX_MG_LEVELS] = { 0, 2, 2, 2, 2, 2, 2, 2};
 
-    int mu_cycles[MAX_MG_LEVELS] = {2, 2, 2, 2, 2, 2, 2, 2};
+    int mu_cycles[MAX_MG_LEVELS] = {2, 1, 1, 1, 1, 1, 1, 1};
     if(maxlevel >= MAX_MG_LEVELS)
        rmg_error_handler(__FILE__, __LINE__, "Too many multigrid levels requested.");
 
     // Solve to a high degree of precision on the coarsest level
-    poi_pre[maxlevel] = 12;
+    poi_pre[maxlevel] = 8;
     int nits = global_presweeps + global_postsweeps;
     int pbasis = dimx * dimy * dimz;
     int sbasis = (dimx + 2) * (dimy + 2) * (dimz + 2);
@@ -244,7 +244,7 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcT
     while ( ((its < max_sweeps) && (residual > rms_target))  || (its < min_sweeps))
     {
 
-        if(residual > last_residual) break;
+        if(residual > 0.8*last_residual) break;
         last_residual = residual;
 
         /* Mehrstallen smoothings */

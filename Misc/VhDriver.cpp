@@ -64,7 +64,7 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
         RmgTimer *RT1 = new RmgTimer("VhMg");
         residual = vh_fmg (Rmg_G, &Rmg_L, Rmg_T, rho_tot, vh_ext,
                  ct.hartree_min_sweeps, ct.hartree_max_sweeps, ct.poi_parm.levels, ct.poi_parm.gl_pre,
-                 ct.poi_parm.gl_pst, ct.poi_parm.mucycles, ct.rms,
+                 ct.poi_parm.gl_pst, ct.poi_parm.mucycles, rms_target,
                  ct.poi_parm.gl_step, ct.poi_parm.sb_step, ct.boundaryflag, Rmg_G->get_default_FG_RATIO(), vh_init, ct.verbose);
         /* Pack the portion of the hartree potential used by the wavefunctions
          * back into the wavefunction hartree array. */
