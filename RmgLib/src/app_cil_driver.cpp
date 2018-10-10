@@ -48,7 +48,16 @@ double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b,
     double cc = 0.0;
     FiniteDiff FD(L);
     sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-    RmgType *rptr = new RmgType[sbasis + 64];
+    RmgType *rptr;
+    size_t alloc = (sbasis + 64) * sizeof(RmgType);
+    if(alloc <= 110592)
+    {
+        rptr = (RmgType *)alloca(alloc);
+    }
+    else
+    {
+        rptr = new RmgType[sbasis + 64];
+    }
 
     if(order == APP_CI_FOURTH) {
         RmgTimer *RT1 = new RmgTimer("App_cil: trade images");
@@ -66,7 +75,7 @@ double CPP_app_cil_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b,
         rmg_error_handler (__FILE__, __LINE__, "APP_CIL order not programmed yet in app_cil_driver.\n");
     }
 
-    delete [] rptr;
+    if(alloc > 110592) delete [] rptr;
     return cc;
 
 }

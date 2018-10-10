@@ -572,12 +572,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "timestep for multigrid correction.\n",
                      "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 0.66\n");
 
-    If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 3,
+    If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 2,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of global hartree grid pre-smoothing steps to perform before a multigrid iteration.\n",
                      "poisson_pre_smoothing must lie in the range (1,6). Resetting to the default value of 3.\n");
 
-    If.RegisterInputKey("poisson_post_smoothing", &lc.poi_parm.gl_pst, 1, 6, 3,
+    If.RegisterInputKey("poisson_post_smoothing", &lc.poi_parm.gl_pst, 1, 6, 2,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of global hartree grid post-smoothing steps to perform after a multigrid iteration.\n",
                      "");

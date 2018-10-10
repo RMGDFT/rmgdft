@@ -33,6 +33,8 @@
 #include "rmg_error.h"
 #include "RmgTimer.h"
 #include <complex>
+#include <alloca.h>
+
 
 template void CPP_app_cir_driver<float>(Lattice *, TradeImages *, float *, float *, int, int, int, int);
 template void CPP_app_cir_driver<double>(Lattice *, TradeImages *, double *, double *, int, int, int, int);
@@ -47,7 +49,17 @@ void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, i
     int sbasis;
     FiniteDiff FD(L);;
     sbasis = (dimx + 4) * (dimy + 4) * (dimz + 4);
-    RmgType *rptr = new RmgType[sbasis + 64];
+    RmgType *rptr;
+    size_t alloc = (sbasis + 64) * sizeof(RmgType);
+    if(alloc <= 110592)
+    {
+        rptr = (RmgType *)alloca(alloc);
+    }
+    else
+    {
+        rptr = new RmgType[sbasis + 64];
+    }
+
 
     if(order == APP_CI_FOURTH) {
         RmgTimer *RT1 = new RmgTimer("App_cir: trade images");
@@ -65,7 +77,7 @@ void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, i
         rmg_error_handler (__FILE__, __LINE__, "APP_CIR order not programmed yet in CPP_app_cir_driver.\n");
     }
 
-    delete [] rptr;
+   if(alloc > 110592) delete [] rptr;
     return;
 
 }
