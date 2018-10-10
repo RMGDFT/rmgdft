@@ -52,14 +52,6 @@
 
 #define MAX_MG_LEVELS 8
 
-template <typename CalcType>
-double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType *rho, CalcType *vhartree,
-                 int min_sweeps, int max_sweeps, int maxlevel, 
-                 int global_presweeps, int global_postsweeps,
-                 int dimx, int dimy, int dimz, int level,
-                 double gridhx, double gridhy, double gridhz,
-                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status, bool setzero);
-
 /// Poisson solver that uses compact implicit (Mehrstellen) and multigrid techniques.
 /// @param G Grid object that defines the layout of the 3-D grid and the MPI domains
 /// @param rho Charge density. When using periodic boundary conditions the cell must be charge neutral.
@@ -78,7 +70,8 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType *rho, CalcTy
 double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vhartree,
                  int min_sweeps, int max_sweeps, int maxlevel, 
                  int global_presweeps, int global_postsweeps, int mucycles, 
-                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density, bool print_status)
+                 double rms_target, double global_step, double coarse_step, int boundaryflag, int density,
+                 float *vh_init, bool print_status)
 {
 
     RmgTimer *RT0 = new RmgTimer("Hartree: init");
@@ -145,16 +138,31 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
 
     RmgTimer *RT1 = new RmgTimer("Hartree: cg solve");
     // Now solve from coarse grid to fine grid
-    for(int ix=0;ix < dx2*dy2*dz2;ix++) mglhsarr_f[ix] = 0.0;
+    // If the calling routine has passed in an array to use for the coarse grid init
+    // we use that and then save it for the next iteration. Otherwise just use 0.0 for
+    // the coarse grid init.
+    if(vh_init)
+    {
+        for(int ix=0;ix < dx2*dy2*dz2;ix++) mglhsarr_f[ix] = vh_init[ix];
+    }
+    else
+    {
+        for(int ix=0;ix < dx2*dy2*dz2;ix++) mglhsarr_f[ix] = 0.0;
+    }
+
     for(int level=maxlevel;level > 0;level--)
     {
         double lfactor = pow(2.0, (double)(level));
         coarse_vh (G, L, T, mgrhsptr_f[level], mglhsarr_f,
-                 2, max_sweeps, maxlevel,
+                 2, 8, maxlevel,
                  global_presweeps, global_postsweeps,
                  dx[level], dy[level], dz[level], level,
                  G->get_hxgrid(density)*lfactor, G->get_hygrid(density)*lfactor, G->get_hzgrid(density)*lfactor,
-                 1.0e-12, global_step, coarse_step, boundaryflag, density, false, false);
+                 1.0e-6, global_step, coarse_step, boundaryflag, density, false, false);
+
+        // Save coarse grid starting solution to use next time if vh_init is not null
+        if((level == maxlevel) && vh_init) for(int ix=0;ix < dx2*dy2*dz2;ix++) vh_init[ix] = mglhsarr_f[ix];
+
         CPP_pack_ptos (work_f, mglhsarr_f, dx[level], dy[level], dz[level]);
         T->trade_images (work_f, dx[level], dy[level], dz[level], FULL_TRADE);
         if(level == 1)
@@ -165,34 +173,34 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
     }
     delete RT1;
 
-    RmgTimer *RT2 = new RmgTimer("Hartree: fg solve");
+    RmgTimer *RT2 = new RmgTimer("Hartree: fg SP solve");
     residual = coarse_vh (G, L, T, mgrhsarr_f, mglhsarr_f,
-             2, 3, maxlevel,
+             1, 3, maxlevel,
              global_presweeps, global_postsweeps,
              dimx, dimy, dimz, 0,
              G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
              1.0e-10, global_step, coarse_step, boundaryflag, density, false, true);
+    delete RT2;
 
+    RT2 = new RmgTimer("Hartree: fg DP solve");
     for(int idx=0;idx < pbasis;idx++) work[idx] = (double)mglhsarr_f[idx];
     t1 = -4.0*PI;
     for(int idx=0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * rho[idx];
-
     residual = coarse_vh (G, L, T, mgrhsarr, work,
-             1, 1, maxlevel,
+             2, 2, maxlevel,
              global_presweeps, global_postsweeps,
              dimx, dimy, dimz, 0,
              G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
-             1.0e-12, global_step, coarse_step, boundaryflag, density, false, true);
+             rms_target, global_step, coarse_step, boundaryflag, density, false, true);
 
     for(int idx=0;idx < pbasis;idx++) vhartree[idx] = work[idx];
-
+    delete RT2;
 
     /* Release our memory */
     delete [] sg_res;
     delete [] work;
     delete [] mglhsarr;
     delete [] mgrhsarr;
-    delete RT2;
 
     return residual;
 
@@ -328,10 +336,15 @@ double coarse_vh (BaseGrid *G, Lattice *L, TradeImages *T, CalcType * rho, CalcT
         }                   /* end for */
 
 
-        residual = sqrt (RmgSumAll(residual, T->get_MPI_comm())) / (double)global_basis;
-        //if(G->get_rank() == 0)printf("Hartree residual:   level=%d    sweep=%d    residual=%14.6e\n",level, its, residual);
+        residual = sqrt (RmgSumAll(residual, T->get_MPI_comm()) / (double)global_basis);
+        if(G->get_rank() == 0)printf("Hartree residual:   level=%d    sweep=%d    residual=%14.6e\n",level, its, residual);
         its ++;
-    }                           /* end for */
+
+    }   // end while
+
+
+    t1 = - global_step * diag;
+    for(int i = 0;i < pbasis;i++) vhartree[i] = vhartree[i] + t1 * (mgrhsarr[i] - mglhsarr[i]);
 
 
     if((G->get_rank() == 0) && print_status)
