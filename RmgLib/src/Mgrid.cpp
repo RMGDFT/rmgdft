@@ -245,7 +245,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
             size = (dimx + 2*offset)*(dimy + 2*offset)*(dimz + 2*offset);
             if(steps == 0) 
             {
-                for (int idx = 0; idx < size; idx++) v_mat[idx] = -(RmgType)scale * f_mat[idx];
+                for (int idx = 0; idx < size; idx++) v_mat[idx] = half*(RmgType)scale * f_mat[idx];
             }
             else
             {
@@ -314,7 +314,6 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
                     gxsize, gysize, gzsize,
                     gxoffset, gyoffset, gzoffset,
                     pxdim, pydim, pzdim, boundaryflag);
-
 
         mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         for(int idx = 0;idx < size;idx++) v_mat[idx] += resid[idx];
@@ -1081,8 +1080,8 @@ void Mgrid::mg_prolong_cubic (RmgType * __restrict__ full, RmgType * __restrict_
     }
 
 
-    CPP_pack_stop (half, rptr, dx2, dy2, dz2);
-    T->trade_imagesx (rptr, half_c, dx2, dy2, dz2, 2, FULL_TRADE);
+    //CPP_pack_stop (half, rptr, dx2, dy2, dz2);
+    T->trade_imagesx (half, half_c, dx2, dy2, dz2, 2, FULL_TRADE);
 
     for (int i = 2; i < dx2 + 2; i++)
     {
