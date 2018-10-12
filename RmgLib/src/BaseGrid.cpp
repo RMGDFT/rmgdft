@@ -231,15 +231,21 @@
     }
     int BaseGrid::get_PX_OFFSET(int density)
     {
-	return BaseGrid::PX_OFFSET;
+        if(density == 1) return BaseGrid::PX_OFFSET;
+        if(density == 2) return 2*BaseGrid::PX_OFFSET;
+        if(density == 4) return 4*BaseGrid::PX_OFFSET;
     }
     int BaseGrid::get_PY_OFFSET(int density)
     {
-	return BaseGrid::PY_OFFSET;
+	if(density == 1) return BaseGrid::PY_OFFSET;
+	if(density == 2) return 2*BaseGrid::PY_OFFSET;
+	if(density == 4) return 4*BaseGrid::PY_OFFSET;
     }
     int BaseGrid::get_PZ_OFFSET(int density)
     {
-	return BaseGrid::PZ_OFFSET;
+	if(density == 1) return BaseGrid::PZ_OFFSET;
+	if(density == 2) return 2*BaseGrid::PZ_OFFSET;
+	if(density == 4) return 4*BaseGrid::PZ_OFFSET;
     }
     int BaseGrid::get_P0_BASIS(int density)
     {
