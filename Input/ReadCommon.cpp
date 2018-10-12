@@ -587,7 +587,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of mu (also known as W) cycles to use in the hartree multigrid solver.\n",
                      "poisson_mucycles must lie in the range (1,3). Resetting to the default value of 1.\n");
 
-    If.RegisterInputKey("poisson_finest_time_step", &lc.poi_parm.gl_step, 0.4, 1.0, 0.8,
+    If.RegisterInputKey("poisson_finest_time_step", &lc.poi_parm.gl_step, 0.4, 1.0, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Time step to use in the poisson multigrid solver on the finest level.\n",
                      "poisson_finest_time_step must lie in the range (0.4,0.8). Resetting to the default value of 0.6.\n");
