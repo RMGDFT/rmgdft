@@ -575,7 +575,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 2,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of global hartree grid pre-smoothing steps to perform before a multigrid iteration.\n",
-                     "poisson_pre_smoothing must lie in the range (1,6). Resetting to the default value of 3.\n");
+                     "poisson_pre_smoothing must lie in the range (1,6). Resetting to the default value of 2.\n");
 
     If.RegisterInputKey("poisson_post_smoothing", &lc.poi_parm.gl_pst, 1, 6, 2,
                      CHECK_AND_FIX, OPTIONAL,
@@ -590,12 +590,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("poisson_finest_time_step", &lc.poi_parm.gl_step, 0.4, 1.0, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "Time step to use in the poisson multigrid solver on the finest level.\n",
-                     "poisson_finest_time_step must lie in the range (0.4,0.8). Resetting to the default value of 0.6.\n");
+                     "poisson_finest_time_step must lie in the range (0.4,1.0). Resetting to the default value of 1.0.\n");
 
     If.RegisterInputKey("poisson_coarse_time_step", &lc.poi_parm.sb_step, 0.4, 1.0, 0.8,
                      CHECK_AND_FIX, OPTIONAL,
                      "Time step to use in the poisson multigrid solver on the coarse levels.\n",
-                     "poisson_coarse_time_step must lie in the range (0.4,0.8). Resetting to the default value of 0.6.\n");
+                     "poisson_coarse_time_step must lie in the range (0.4,1.0). Resetting to the default value of 0.8.\n");
 
     If.RegisterInputKey("poisson_coarsest_steps", &lc.poi_parm.coarsest_steps, 10, 100, 25,
                      CHECK_AND_FIX, OPTIONAL,
