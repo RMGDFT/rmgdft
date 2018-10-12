@@ -26,9 +26,6 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     int dimy = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
     int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
 
-    size_t coarse_size = FP0_BASIS;
-    if(ct.poi_parm.levels > 0) coarse_size /= 8;
-    if(!vh_init) vh_init = new float[coarse_size]();
 
     double *rho_tot = new double[FP0_BASIS];
     double residual;
@@ -48,7 +45,8 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     double sum = 0.0;
     for(int i = 0;i < FP0_BASIS;i++) sum += rho_tot[i];
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] -= sum / (double)global_basis;
+    sum = sum / (double)global_basis;
+    for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] -= sum;
 
 
     if(ct.poisson_solver == POISSON_PFFT_SOLVER)
@@ -60,6 +58,16 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     }
     else
     {
+
+        size_t coarse_size = FP0_BASIS;
+        if(ct.poi_parm.levels > 0) coarse_size /= 8;
+        if(ct.poi_parm.levels > 1) coarse_size /= 8;
+        if(ct.poi_parm.levels > 2) coarse_size /= 8;
+        if(ct.poi_parm.levels > 3) coarse_size /= 8;
+        if(!vh_init) 
+        {
+            vh_init = new float[coarse_size]();
+        }
 
         RmgTimer *RT1 = new RmgTimer("VhMg");
         residual = vh_fmg (Rmg_G, &Rmg_L, Rmg_T, rho_tot, vh_ext,
