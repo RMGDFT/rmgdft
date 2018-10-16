@@ -152,7 +152,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     double eig=0.0, diag, t1, t2, t4;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
-    int eig_post[MAX_MG_LEVELS] = { 0, 4, 4, 4, 4, 4, 4, 4 };
+    int eig_post[MAX_MG_LEVELS] = { 0, 0, 4, 4, 4, 4, 4, 4 };
 
     int potential_acceleration;
     Mgrid MG(L, T);
