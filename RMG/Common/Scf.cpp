@@ -115,12 +115,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     delete F;
     delete RT1;
 
-
-
-    // Linear mixing does not require such a high degree of hartree convergence
-    double rms_target = 1.0e-13;
-    if (Verify("charge_mixing_type","Linear", Kptr[0]->ControlMap))
-        rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
+    double rms_target = std::min(std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12), 1.0e-6);
 
     /*Simplified solvent model, experimental */
     if (ct.num_tfions > 0)
@@ -282,7 +277,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     }
 
-    rms_target = std::max(ct.rms/ct.hartree_rms_ratio, 1.0e-12);
     double *vh_out = new double[FP0_BASIS];
     RT1 = new RmgTimer("2-Scf steps: Hartree");
     VhDriver(new_rho, rhoc, vh_out, vh_ext, rms_target);
