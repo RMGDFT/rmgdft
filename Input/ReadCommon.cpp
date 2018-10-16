@@ -577,15 +577,15 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of global hartree grid pre-smoothing steps to perform before a multigrid iteration.\n",
                      "poisson_pre_smoothing must lie in the range (1,6). Resetting to the default value of 2.\n");
 
-    If.RegisterInputKey("poisson_post_smoothing", &lc.poi_parm.gl_pst, 1, 6, 2,
+    If.RegisterInputKey("poisson_post_smoothing", &lc.poi_parm.gl_pst, 1, 6, 1,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of global hartree grid post-smoothing steps to perform after a multigrid iteration.\n",
                      "");
 
-    If.RegisterInputKey("poisson_mucycles", &lc.poi_parm.mucycles, 1, 3, 1,
+    If.RegisterInputKey("poisson_mucycles", &lc.poi_parm.mucycles, 1, 4, 3,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of mu (also known as W) cycles to use in the hartree multigrid solver.\n",
-                     "poisson_mucycles must lie in the range (1,3). Resetting to the default value of 1.\n");
+                     "poisson_mucycles must lie in the range (1,4). Resetting to the default value of 3.\n");
 
     If.RegisterInputKey("poisson_finest_time_step", &lc.poi_parm.gl_step, 0.4, 1.0, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
