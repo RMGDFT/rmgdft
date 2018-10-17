@@ -202,7 +202,7 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
     t1 = -4.0*PI;
     for(int idx=0;idx < pbasis;idx++) mgrhsarr[idx] = t1 * rho[idx];
     residual = coarse_vh (G, L, T, mgrhsarr, work,
-             1, 3, maxlevel,
+             1, mucycles, maxlevel,
              global_presweeps, global_postsweeps,
              dimx, dimy, dimz, 0,
              G->get_hxgrid(density), G->get_hygrid(density), G->get_hzgrid(density),
