@@ -93,6 +93,7 @@ void Precond(double *x)
 
     }
 
+    delete [] work2;
     delete [] work1;
 
 }
