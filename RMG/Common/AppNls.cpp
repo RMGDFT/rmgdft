@@ -90,9 +90,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     if(pct.num_tot_proj == 0)
     {
+        bool need_ns = true;
+        if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION) && ct.is_gamma) need_ns = false;
         for(size_t i = 0; i < stop; i++) nv[i] = ZERO_t;
         if(!ct.norm_conserving_pp) for(size_t i = 0; i < stop; i++) Bns[i] = ZERO_t;
-        for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
+        if(need_ns) for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
 
         return;
     }
