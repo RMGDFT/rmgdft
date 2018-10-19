@@ -64,6 +64,8 @@ write_pos.c
 write_rho_x.c
 write_rho_y.c
 write_rho_z.c
+ThetaPhi.cpp
+ThetaPhiBlock.cpp
 xyz2pe.c
 write_TFions.c
 )
