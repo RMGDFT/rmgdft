@@ -137,7 +137,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
         if (ct.runflag == 200)
         {
             RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
-            orbital_comm(states);
+            OrbitalComm(states);
             delete(RT0);
 
             RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
@@ -150,7 +150,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
             if (ct.runflag == 300)
             {
                 RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
-                orbital_comm(states);
+                OrbitalComm(states);
                 delete(RT0);
 
                 RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
