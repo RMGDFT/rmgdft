@@ -61,7 +61,6 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
         STATE *sp = &states[st1];
-        if(sp->radius > 0) app_mask(st1, sp->psiR, 0);
         int ixx = states[st1].orbit_nx;
         int iyy = states[st1].orbit_ny;
         int izz = states[st1].orbit_nz;
@@ -69,8 +68,6 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
         /* Generate 2*V*psi and store it  in orbit_tem */
         genvlocpsi(states[st1].psiR, st1, states1[st1].psiR, vtot_global, states);
-        //ZeroBoundary(states1[st1].psiR, ixx, iyy, izz);
-
 
         /* A operating on psi stored in orbit_tem */
         /* Eighth-order finite-differencing for Laplacian operating on psi stored in orbit_tem */

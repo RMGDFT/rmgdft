@@ -97,6 +97,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         int ixx = states[st1].orbit_nx;
         int iyy = states[st1].orbit_ny;
         int izz = states[st1].orbit_nz;
+//for(int idx=0;idx<ixx;idx++)printf("SSSS  %d   %14.8E    %14.8E\n",st1,sp->psiR[idx*iyy*izz], sp1->psiR[idx*iyy*izz]);
 
         /* Generate 2*V*psi and store it  in orbit_tem */
         genvlocpsi(sp->psiR, st1, orbit_tem, vtot_global, states);

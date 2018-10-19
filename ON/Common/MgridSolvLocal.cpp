@@ -67,14 +67,16 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     int dx2, dy2, dz2, siz2;
     double *resid, *newf, *newv, *newwork;
     int ib = 1;
-    if(level == 0) ib = 2;
+//    if(level == 0) ib = 4;
+//    if(level == 1) ib = 1;
+
     FiniteDiff *FD = new FiniteDiff(&Rmg_L);
 //printf("LLLLLLLLL %d  %d\n",level,max_levels);
     int ixoff = 0;
     int iyoff = 0;
     int izoff = 0;
 /* precalc some boundaries */
-    int size = dimx * dimy * dimz;
+    int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     resid = work + 2 * size;
 
@@ -85,8 +87,9 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
 
     for (int idx = 0; idx < size; idx++)
     {
-        v_mat[idx] = - scale * f_mat[idx];
+        v_mat[idx] = 0.5 * scale * f_mat[idx];
     }
+    ZeroBoundary(v_mat, dimx,dimy,dimz, ib);
 
 
 /*
@@ -97,7 +100,6 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     {
         /* solve once */
         SolvPoisLocal(FD, v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, 0);
-        ZeroBoundary(v_mat, dimx,dimy,dimz, ib);
     }
 
 
@@ -120,7 +122,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     dx2 = dimx / 2 + 1;
     dy2 = dimy / 2 + 1;
     dz2 = dimz / 2 + 1;
-    siz2 = dx2 * dy2 * dz2;
+    siz2 = (dx2 + 2) * (dy2 + 2) * (dz2 + 2);
     if(!(dx2 % 2)) max_levels = 0;
     if(!(dy2 % 2)) max_levels = 0;
     if(!(dz2 % 2)) max_levels = 0;
@@ -133,9 +135,9 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     for (i = 0; i < mu_cyc; i++)
     {
 
-        ZeroBoundary(resid, dimx,dimy,dimz, ib);
+        //ZeroBoundary(resid, dimx,dimy,dimz, ib);
         mg_restrict(resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-        //ZeroBoundary(newf, dx2,dy2,dz2, 1);
+        ////ZeroBoundary(newf, dx2,dy2,dz2, 1);
 
         /* call mgrid solver on new level */
         MgridSolvLocal(newv, newf, newwork, dx2, dy2, dz2, gridhx * 2.0,
@@ -143,7 +145,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
                    max_levels, pre_cyc, post_cyc, step,
                    1, istate, iion, 2.0*Zfac);
 
-        //ZeroBoundary(newv, dx2,dy2,dz2, 1);
+        ////ZeroBoundary(newv, dx2,dy2,dz2, 1);
         mg_prolong(resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         ZeroBoundary(resid, dimx,dimy,dimz, ib);
 
@@ -151,7 +153,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
         scale = ONE;
 
         QMD_daxpy(size, scale, resid, ione, v_mat, ione);
-        ZeroBoundary(v_mat, dimx,dimy,dimz, ib);
+        //ZeroBoundary(v_mat, dimx,dimy,dimz, ib);
 
         /* re-solve on this grid level */
 
@@ -180,7 +182,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
 void EvalResidualLocal (FiniteDiff *FD, double *mat, double *f_mat, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz, double *res)
 {
-    int size = dimx * dimy * dimz;
+    int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     for (int idx = 0; idx < size; idx++) res[idx] = 0.0;
 
@@ -192,7 +194,7 @@ void SolvPoisLocal (FiniteDiff *FD, double *vmat, double *fmat, double *work,
                 int dimx, int dimy, int dimz, double gridhx,
                 double gridhy, double gridhz, double step, double Zfac, double k)
 {
-    int size = dimx * dimy * dimz;
+    int size = (dimx + 2) * (dimy + 2) * (dimz + 2);
 
     for (int idx = 0; idx < size; idx++) work[idx] = 0.0;
 
@@ -214,9 +216,6 @@ void SolvPoisLocal (FiniteDiff *FD, double *vmat, double *fmat, double *work,
         for (int idx = 0; idx < size; idx++) vmat[idx] += scale * (work[idx] - fmat[idx]);
 
      }
-
-
-
 
 }
 
