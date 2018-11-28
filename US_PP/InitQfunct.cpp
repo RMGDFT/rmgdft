@@ -79,10 +79,10 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
         qnm_tpr = sp->qnm;
         for (k = 0; k < sp->rg_points; k++)
         {
-            if (sp->r[k] >= sp->rinner[0])
-                work[k] = qnm_tpr[k];
-            else
-                work[k] = get_QnmL (0, 0, sp->r[k], sp);
+            work[k] = qnm_tpr[k];
+            if(sp->nqf > 0)
+                if (sp->r[k] < sp->rinner[0])
+                    work[k] = get_QnmL (0, 0, sp->r[k], sp);
         }
         sp->qradius = 2.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
         sp->qradius = std::min(sp->qradius, ct.max_qradius);
@@ -120,10 +120,10 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 
                     for (k = 0; k < sp->rg_points; k++)
                     {
-                        if (sp->r[k] >= sp->rinner[ll])
-                            work[k] = qnm_tpr[k]/sp->r[k]/sp->r[k];
-                        else
-                            work[k] = get_QnmL (idx, ll, sp->r[k], sp);
+                        work[k] = qnm_tpr[k]/sp->r[k]/sp->r[k];
+                        if(sp->nqf > 0)
+                            if (sp->r[k] < sp->rinner[ll])
+                                work[k] = get_QnmL (idx, ll, sp->r[k], sp);
                     }
                     qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_LOGGRID;
 
@@ -136,7 +136,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                     }
 
                     A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
-                                       sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
+                            sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
 
 
                     /*Write final filtered Q function if requested*/

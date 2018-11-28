@@ -408,30 +408,30 @@ void LoadUpf(SPECIES *sp)
            }
 
            delete [] tmatrix1;  
-
-           // PP_Q.i.j
-           sp->qnm = new double[tnlc * MAX_RGRID]();
-           for(int i = 0;i < sp->nbeta;i++) {
-               for(int j = i;j < sp->nbeta;j++) {
-                   typedef ptree::path_type path;
-                   std::string pp_qij = "UPF/PP_NONLOCAL/PP_AUGMENTATION/PP_QIJ." + boost::lexical_cast<std::string>(i + 1);
-                   pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(j + 1);
-                   std::string PP_Qij = upf_tree.get<std::string>(path(pp_qij, '/'));
-                   double *tmatrix2 = UPF_read_mesh_array(PP_Qij, r_total, ibegin);
-
-
-                   int nmb = j * (j + 1) / 2 + i;
-                   for (int idx = 0; idx < sp->kkbeta; idx++)
-                   {
-                       sp->qnm[nmb * MAX_RGRID + idx] = tmatrix2[idx];
-                   }
-
-                   delete [] tmatrix2;
-               }
-           }
        }
 
+       // PP_Q.i.j
+       sp->qnm = new double[tnlc * MAX_RGRID]();
+       for(int i = 0;i < sp->nbeta;i++) {
+           for(int j = i;j < sp->nbeta;j++) {
+               typedef ptree::path_type path;
+               std::string pp_qij = "UPF/PP_NONLOCAL/PP_AUGMENTATION/PP_QIJ." + boost::lexical_cast<std::string>(i + 1);
+               pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(j + 1);
+               std::string PP_Qij = upf_tree.get<std::string>(path(pp_qij, '/'));
+               double *tmatrix2 = UPF_read_mesh_array(PP_Qij, r_total, ibegin);
+
+
+               int nmb = j * (j + 1) / 2 + i;
+               for (int idx = 0; idx < sp->kkbeta; idx++)
+               {
+                   sp->qnm[nmb * MAX_RGRID + idx] = tmatrix2[idx];
+               }
+
+               delete [] tmatrix2;
+           }
+       }
     }
+
 
     for (int j = 0; j < MAX_NL; j++)
     {
@@ -484,9 +484,9 @@ void LoadUpf(SPECIES *sp)
     // Set the maximum number of non-local projecters needed
     if(max_nlprojectors > ct.max_nl) 
         ct.max_nl = max_nlprojectors;
-   
+
     // Optional stuff next
-    
+
     std::string description = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.comment", "Pseudopotential");
     sp->description = new char[description.length() + 1]();
     std::strcpy(sp->description, description.c_str());
@@ -499,7 +499,7 @@ void LoadUpf(SPECIES *sp)
     //sp->rc = 1.0;
     sp->lradius = 8.5;
     sp->gwidth = 8.0;
-sp->rwidth = 15.0; 
+    sp->rwidth = 15.0; 
     sp->aradius = 9.0;
     sp->acut = 7.0;
     sp->agwidth = 10.0;
