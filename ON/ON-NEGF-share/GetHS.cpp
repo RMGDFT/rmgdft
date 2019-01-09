@@ -65,6 +65,7 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
         int iyy = states[st1].orbit_ny;
         int izz = states[st1].orbit_nz;
 
+        ZeroBoundary(states[st1].psiR, ixx, iyy, izz);
 
         /* Generate 2*V*psi and store it  in orbit_tem */
         genvlocpsi(states[st1].psiR, st1, states1[st1].psiR, vtot_global, states);
