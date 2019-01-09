@@ -1712,8 +1712,8 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
 
     // nine and seven point stencils, 2nd derivative, extrapolated
     int ic = 4;
-    double x[9], w1[9], w2[9];
-    for(int i=0;i<9;i++) x[i] = (double)i;
+    double x[10], w1[10], w2[10];
+    for(int i=0;i<10;i++) x[i] = (double)i;
     gen_weights(9, 2, (double)ic, x, w1);
     gen_weights(7, 2, (double)(ic-1), x, w2);
     double hf = 1.0, c1, c2, beta = 3.0;
@@ -1900,8 +1900,8 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 
     // nine and seven point stencils, 2nd derivative, extrapolated
     int ic = 5;
-    double x[11], w1[11], w2[11];
-    for(int i=0;i<11;i++) x[i] = (double)i;
+    double x[12], w1[12], w2[12];
+    for(int i=0;i<12;i++) x[i] = (double)i;
     gen_weights(11, 2, (double)ic, x, w1);
     gen_weights(9, 2, (double)(ic-1), x, w2);
     double hf = 1.0, c1, c2, beta = 3.0;
