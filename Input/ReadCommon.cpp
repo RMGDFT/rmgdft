@@ -705,6 +705,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                         "if set to true, we use LaplacianCoeff.cpp to generate coeff");
     If.RegisterInputKey("laplacian_autocoeff", &lc.laplacian_autocoeff, false, 
                         "if set to true, we use LaplacianCoeff.cpp to generate coeff");
+    If.RegisterInputKey("use_cpdgemr2d", &lc.use_cpdgemr2d, true, 
+                        "if set to true, we use Cpdgemr2d to change matrix distribution");
 
     //RMG2BGW options
     If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, false, 

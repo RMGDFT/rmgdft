@@ -1,5 +1,7 @@
 #define GAMMA_PT 1
 //#include "typedefs.h"
+void MyCpdgemr2d(int M,int N, double *A, int *desca, double *B, int *descb);
+
 void KbpsiComm();
 void InitNonlocalComm();
 void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double *Bij);

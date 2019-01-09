@@ -14,6 +14,7 @@
 #include "RmgTimer.h"
 #include "common_prototypes1.h"
 #include "Scalapack.h"
+#include "prototypes_on.h"
 
 //#include "main.h"
 //#include "init_var.h"
@@ -45,40 +46,15 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
 
 
     RmgTimer  *RT2 = new RmgTimer("3-DiagScalapack: cpdgemr2d");
-    Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
-            pct.desca, pct.desca[1]);
-    Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
-            pct.desca, pct.desca[1]);
-
-#if 0
-dcopy(&mxllda2, matB, &ione, l_s, &ione);
-pdtran(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
-            &half, matB, &ione, &ione, pct.desca);
-
     
-    pdlaset_( "A", &numst, &numst, &zero, &one, work1, &ione, &ione, pct.desca );
-    int *ipiv = new int[2*numst]();
-    pdgesv_(&numst, &numst, matB, &ione, &ione, pct.desca, ipiv, work1, &ione, &ione, pct.desca, &info);
-    delete [] ipiv;
+    MyCpdgemr2d(numst,numst, Hij_00, pct.descb, Hij, pct.desca);
+    MyCpdgemr2d(numst,numst, Bij_00, pct.descb, matB, pct.desca);
 
-    pdgemm_("n", "n", &numst, &numst, &numst, &one,
-                            work1, &ione, &ione, pct.desca, Hij, &ione,
-                            &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
-    dcopy(&mxllda2, uu_dis, &ione, Hij, &ione);
-    pdtran(&numst, &numst, &half, Hij, &ione, &ione, pct.desca,
-                &half, uu_dis, &ione, &ione, pct.desca);
+ //   Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
+  //          pct.desca, pct.desca[1]);
+  //  Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
+  //          pct.desca, pct.desca[1]);
 
-    dcopy(&mxllda2, uu_dis, &ione, work1, &ione);
-    delete(RT2);
-
-Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
-            pct.desca, pct.desca[1]);
-Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
-            pct.desca, pct.desca[1]);
-pdgemm_("n", "n", &numst, &numst, &numst, &one,
-                        matB, &ione, &ione, pct.desca, work1, &ione,
-                        &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
-#endif
 
     RmgTimer *RT = new RmgTimer("3-DiagScalapack: pdsygvx ");
     /* If I'm in the process grid, execute the program */
@@ -227,8 +203,9 @@ pdgemm_("n", "n", &numst, &numst, &numst, &one,
     double t1 = 2.0;
     dscal(&mxllda2, &t1, uu_dis, &ione);
 
-    Cpdgemr2d(numst, numst, uu_dis, ione, ione, pct.desca, theta_ptr, ione, ione,
-            pct.descb, pct.desca[1]);
+    MyCpdgemr2d(numst,numst, uu_dis, pct.desca, theta_ptr, pct.descb);
+  //  Cpdgemr2d(numst, numst, uu_dis, ione, ione, pct.desca, theta_ptr, ione, ione,
+  //          pct.descb, pct.desca[1]);
     delete(RT1b);
 
     delete [] work1;

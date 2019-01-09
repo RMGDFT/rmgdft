@@ -851,6 +851,7 @@ typedef struct
     bool ON_read_from_RMG;
     char infile_ON_from_RMG[2*MAX_PATH];
     int freeze_rho_steps;
+    bool use_cpdgemr2d;
     
 
 } CONTROL;
