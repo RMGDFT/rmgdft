@@ -90,9 +90,9 @@ void get_topology(void)
     if (CPU_ISSET(j, &my_set))
     {
       ++count;
-      char cpunum[2];
-      sprintf(cpunum, "%d ", j);
-      strcat(str, cpunum);
+      //char cpunum[2];
+      //sprintf(cpunum, "%d ", j);
+      //strcat(str, cpunum);
     }
   }
   printf("Rank: %4d; NumRanks: %d; RankCore: %3d; Hostname: %s; Affinity: %3d\n", rank, nproc, core, hostname, count);

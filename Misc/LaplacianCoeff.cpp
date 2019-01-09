@@ -570,9 +570,9 @@ void LaplacianCoeff::GenerateList(const std::vector<GridPoint>&  points)
 
     for(auto a:this->coeff_and_index)
     {
-        std::cout << a.coeff << std::endl;
-        for (int ip = 0; ip < (int)a.i.size(); ip++)
-            std::cout<<"      " << a.i[ip] <<"  "<<a.j[ip]<<"  "<<a.k[ip]<<std::endl;
+        //std::cout << a.coeff << std::endl;
+        //for (int ip = 0; ip < (int)a.i.size(); ip++)
+        //    std::cout<<"      " << a.i[ip] <<"  "<<a.j[ip]<<"  "<<a.k[ip]<<std::endl;
     } 
     //    std::cout << "total points= " <<this->coeff_and_index.size() <<std::endl;
     //    std::cout << "sum of coeffs = " <<coeff0 <<std::endl;
