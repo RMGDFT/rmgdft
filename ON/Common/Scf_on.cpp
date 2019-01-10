@@ -65,6 +65,15 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     my_barrier();
 
     RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
+    for (int st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    {
+        STATE *sp = &states[st1];
+        int ixx = states[st1].orbit_nx;
+        int iyy = states[st1].orbit_ny;
+        int izz = states[st1].orbit_nz;
+
+        ZeroBoundary(states[st1].psiR, ixx, iyy, izz);
+    }
     OrbitalComm(states);
     delete(RT0);
 

@@ -45,16 +45,16 @@ void MyCpdgemr2d(int M,int N, double *A, int *desca, double *B, int *descb)
 void mat_global_to_dist(double *a_dist, int *desca, double *a_glob)
 {
     int mycol, myrow, nprow, npcol;
-    int ictxt=desca[1], m = desca[2], n = desca[3], mb=desca[4], nb=desca[5];
+    int ictxt=desca[1], m = desca[2], n = desca[3], mb=desca[4], nb=desca[5], mxllda = desca[8];
 
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 
     int izero = 0;
-    int mxllda = numroc(&m, &mb, &myrow, &izero, &nprow);
+    int mxli = numroc(&m, &mb, &myrow, &izero, &nprow);
     int mxlocc = numroc(&n, &nb, &mycol, &izero, &npcol);
 
 
-    for(int j =0; j < mxllda; j++)
+    for(int j =0; j < mxli; j++)
     {
         for(int k=0; k < mxlocc; k++)
         {
@@ -76,18 +76,18 @@ void mat_global_to_dist(double *a_dist, int *desca, double *a_glob)
 void mat_dist_to_global(double *a_dist, int *desca, double *a_glob)
 {
     int mycol, myrow, nprow, npcol;
-    int ictxt=desca[1], m = desca[2], n = desca[3], mb=desca[4], nb=desca[5];
+    int ictxt=desca[1], m = desca[2], n = desca[3], mb=desca[4], nb=desca[5], mxllda = desca[8];
 
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 
     int izero = 0;
-    int mxllda = numroc(&m, &mb, &myrow, &izero, &nprow);
+    int mxli = numroc(&m, &mb, &myrow, &izero, &nprow);
     int mxlocc = numroc(&n, &nb, &mycol, &izero, &npcol);
 
 
     for(int i = 0; i < m *n; i++) a_glob[i] = 0.0;
 
-    for(int j =0; j < mxllda; j++)
+    for(int j =0; j < mxli; j++)
     {
         for(int k=0; k < mxlocc; k++)
         {
