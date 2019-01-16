@@ -603,6 +603,9 @@ typedef struct
     // Some GPU information. Currently we use at most one device per MPI process
 #if GPU_ENABLED
 
+    // Cuda version
+    int cuda_version;
+
     // Total number of gpu devices present in the node
     int num_gpu_devices;
 

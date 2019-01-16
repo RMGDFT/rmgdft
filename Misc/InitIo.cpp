@@ -357,6 +357,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     int clock;
     char name[1024];
 
+    // Get cuda version
+    cudaError_t cuerr =  cudaDriverGetVersion ( &ct.cuda_version );
+    rmg_printf ("\nCUDA version %d detected.\n", ct.cuda_version);
+
     // Get device list and memory capacities. While this is not ideal under all circumstances
     // we will find the device with the largest memory and use all devices that have just as
     // much memory
