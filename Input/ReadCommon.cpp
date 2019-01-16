@@ -110,7 +110,7 @@ void MakeFullPath(char *fullpath, PE_CONTROL& pelc)
 {
     if(fullpath[0] !='/')
     {
-        char temp[4*MAX_PATH];
+        char temp[MAX_PATH];
         snprintf(temp, sizeof(temp) - 1, "%s%s", pelc.image_path[pelc.thisimg], fullpath);
         std::strncpy(fullpath, temp, MAX_PATH);
     }
@@ -829,6 +829,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("use_hwloc", &lc.use_hwloc, true, 
                          "Use internal hwloc setup if available. If both this and use_numa are true hwloc takes precedence.");
 
+    If.RegisterInputKey("use_async_allreduce", &lc.use_async_allreduce, true, 
+                         "Use asynchronous allreduce if available.");
+
     If.RegisterInputKey("mpi_queue_mode", &lc.mpi_queue_mode, true, 
                          "Use mpi queue mode.");
 
@@ -949,34 +952,34 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     // Check items that require custom handling
     // Some hacks here to deal with code branches that are still in C
     if(!Description.length()) Description = "RMG electronic structure calculation.";
-    std::strncpy(lc.description, Description.c_str(), sizeof(lc.description));
+    std::strncpy(lc.description, Description.c_str(), sizeof(lc.description)-1);
 
     if(!Infile.length()) Infile = "Waves/wave.out";
-    std::strncpy(lc.infile, Infile.c_str(), sizeof(lc.infile));
+    std::strncpy(lc.infile, Infile.c_str(), sizeof(lc.infile)-1);
     MakeFullPath(lc.infile, pelc);
 
     if(!Outfile.length()) Outfile = "Waves/wave.out";
-    std::strncpy(lc.outfile, Outfile.c_str(), sizeof(lc.outfile));
+    std::strncpy(lc.outfile, Outfile.c_str(), sizeof(lc.outfile)-1);
     MakeFullPath(lc.outfile, pelc);
 
     if(!Weightsfile.length()) Weightsfile = "Weights/";
-    std::strncpy(lc.nvme_weights_path, Weightsfile.c_str(), sizeof(lc.nvme_weights_path));
+    std::strncpy(lc.nvme_weights_path, Weightsfile.c_str(), sizeof(lc.nvme_weights_path)-1);
     MakeFullPath(lc.nvme_weights_path, pelc);
 
     if(!Workfile.length()) Workfile = "Work/";
-    std::strncpy(lc.nvme_work_path, Workfile.c_str(), sizeof(lc.nvme_work_path));
+    std::strncpy(lc.nvme_work_path, Workfile.c_str(), sizeof(lc.nvme_work_path)-1);
     MakeFullPath(lc.nvme_work_path, pelc);
 
     if(!Orbitalfile.length()) Orbitalfile = "Orbitals/";
-    std::strncpy(lc.nvme_orbitals_path, Orbitalfile.c_str(), sizeof(lc.nvme_orbitals_path));
+    std::strncpy(lc.nvme_orbitals_path, Orbitalfile.c_str(), sizeof(lc.nvme_orbitals_path)-1);
     MakeFullPath(lc.nvme_orbitals_path, pelc);
 
     if(!Infile_tddft.length()) Infile = "Waves/wave_tddft.out";
-    std::strncpy(lc.infile_tddft, Infile_tddft.c_str(), sizeof(lc.infile_tddft));
+    std::strncpy(lc.infile_tddft, Infile_tddft.c_str(), sizeof(lc.infile_tddft)-1);
     MakeFullPath(lc.infile_tddft, pelc);
 
     if(!Outfile_tddft.length()) Outfile = "Waves/wave_tddft.out";
-    std::strncpy(lc.outfile_tddft, Outfile_tddft.c_str(), sizeof(lc.outfile_tddft));
+    std::strncpy(lc.outfile_tddft, Outfile_tddft.c_str(), sizeof(lc.outfile_tddft)-1);
     MakeFullPath(lc.outfile_tddft, pelc);
 
     if((Occup.length() != 0) && (Occdown.length() != 0) && (Occ.length() == 0)) lc.spin_flag = 1;
@@ -988,13 +991,13 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     if(lc.spin_flag) {
 
-        std::strncpy(lc.occupation_str_spin_up, Occup.c_str(), sizeof(lc.occupation_str_spin_up));
-        std::strncpy(lc.occupation_str_spin_down, Occdown.c_str(), sizeof(lc.occupation_str_spin_down));
+        std::strncpy(lc.occupation_str_spin_up, Occup.c_str(), sizeof(lc.occupation_str_spin_up)-1);
+        std::strncpy(lc.occupation_str_spin_down, Occdown.c_str(), sizeof(lc.occupation_str_spin_down)-1);
 
     }
     else {
 
-        std::strncpy(lc.occupation_str, Occ.c_str(), sizeof(lc.occupation_str));
+        std::strncpy(lc.occupation_str, Occ.c_str(), sizeof(lc.occupation_str)-1);
 
     }
 
