@@ -1,4 +1,4 @@
-add_library (XC1
+add_library (XC
 constants.f90
 funct.f90
 kind.f90

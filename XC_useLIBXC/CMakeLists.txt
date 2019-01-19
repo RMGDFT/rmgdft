@@ -1,5 +1,5 @@
 if(USE_LIBXC)
-add_library (XC
+add_library (XC_useLIBXC
 xclda_libxc.c
 xclsda_spin_libxc.c
 xcgga_libxc.c
