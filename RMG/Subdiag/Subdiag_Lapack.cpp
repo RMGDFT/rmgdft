@@ -97,7 +97,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
             // Inverse of eigvectors should be in Cij
             RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-            InvertMatrix(eigvectors, Cij, num_states);
+            InvertMatrix(Bij, eigvectors, num_states);
             delete(RT1);
 
             /*Multiply inverse of B and and A */
@@ -107,7 +107,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 
             RmgTimer *RT2 = new RmgTimer("4-Diagonalization: matrix setup");
             RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                            Cij, num_states, Aij, num_states, beta, Bij,
+                            eigvectors, num_states, Aij, num_states, beta, Bij,
                             num_states);
 
             /*Multiply the result with Sij, result is in Cij */

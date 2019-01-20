@@ -82,6 +82,7 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     static KpointType *global_matrix1;
 
 #if GPU_ENABLED
+
     KpointType *Aij = (KpointType *)GpuMallocManaged(kptr->nstates * kptr->nstates * sizeof(KpointType));
     KpointType *Bij = (KpointType *)GpuMallocManaged(kptr->nstates * kptr->nstates * sizeof(KpointType));
     KpointType *Sij = (KpointType *)GpuMallocManaged(kptr->nstates * kptr->nstates * sizeof(KpointType));
@@ -90,7 +91,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     double *eigs = (double *)GpuMallocManaged(2*kptr->nstates * sizeof(double));
     GpuFill((double *)Aij, factor*kptr->nstates * kptr->nstates, 0.0);
     GpuFill((double *)Sij, factor*kptr->nstates * kptr->nstates, 0.0);
-    GpuFill((double *)global_matrix1, factor*kptr->nstates * kptr->nstates, 0.0);
 
 #else
     KpointType *Aij = new KpointType[kptr->nstates * kptr->nstates]();
@@ -227,6 +227,8 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqAij;
+    MPI_Request MPI_reqSij;
+    MPI_Request MPI_reqBij;
     if(ct.use_async_allreduce)
        MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
     else
@@ -246,14 +248,9 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
         RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, kptr->ns, pbasis, beta, Sij, num_states);
     }
 
-#if HAVE_ASYNC_ALLREDUCE
-    // Wait for Aij request to finish
-    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
-#endif
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
-    MPI_Request MPI_reqSij;
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (double *)Sij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
     else
@@ -267,19 +264,28 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
 
         // Compute B matrix
-        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, global_matrix1, num_states);
+        RmgGemm (trans_a, trans_n, num_states, num_states, pbasis, alpha1, kptr->orbital_storage, pbasis, tmp_array2T, pbasis, beta, Bij, num_states);
 
         // Reduce matrix and store copy in Bij
-        MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        for(int idx = 0;idx < num_states*num_states;idx++) Bij[idx] = global_matrix1[idx];
+#if HAVE_ASYNC_ALLREDUCE
+        if(ct.use_async_allreduce)
+            MPI_Iallreduce(MPI_IN_PLACE, (double *)Bij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqBij);
+        else
+            MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+#else
+        MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+#endif
 
     }
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for S request to finish and when done store copy in Sij
+    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
+    if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION))
+        if(ct.use_async_allreduce) MPI_Wait(&MPI_reqBij, MPI_STATUS_IGNORE);
 #endif
-//cudaMemPrefetchAsync(Sij, num_states*num_states*sizeof(KpointType), 0);
+
     delete(RT1);
 
     // Free up tmp_array2T
@@ -288,8 +294,6 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
 #else
     delete [] tmp_array2T;
 #endif
-
-    // global_matrix1 holds Bij now, we store a copy in Bij as well and pass Bij to the driver routine in globalmatrix as well
 
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix1 will hold the eigenvectors.
     // The eigenvectors may be stored in row-major or column-major format depending on the type of diagonaliztion method
@@ -362,10 +366,10 @@ void Subdiag (Kpoint<KpointType> *kptr, double *vtot_eig, int subdiag_driver)
     }
 
 #if GPU_ENABLED
-    //cudaMemcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], tlen, cudaMemcpyDefault);
+    cudaMemcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], tlen, cudaMemcpyDefault);
     //cudaMemPrefetchAsync (kptr->orbital_storage , num_states*sizeof(double), cudaCpuDeviceId, NULL);
     // Not sure why but the cudaMemcpy behaves strangely here sometimes.
-    for(int idx=0;idx<num_states*pbasis;idx++) kptr->orbital_storage[istart+idx] = tmp_arrayT[istart+idx];
+    //for(int idx=0;idx<num_states*pbasis;idx++) kptr->orbital_storage[istart+idx] = tmp_arrayT[istart+idx];
 #else
     memcpy(&kptr->orbital_storage[istart], &tmp_arrayT[istart], tlen);
 #endif

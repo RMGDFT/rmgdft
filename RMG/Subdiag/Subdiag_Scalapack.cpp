@@ -129,7 +129,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         RT1 = new RmgTimer("4-Diagonalization: distribute matrices.");
         MainSp->CopySquareMatrixToDistArray(Aij, distAij, num_states, desca);
         MainSp->CopySquareMatrixToDistArray(Sij, distSij, num_states, desca);
-        MainSp->CopySquareMatrixToDistArray(eigvectors, distBij, num_states, desca);
+        MainSp->CopySquareMatrixToDistArray(Bij, distBij, num_states, desca);
         delete(RT1);
 
         // Create unitary matrix
