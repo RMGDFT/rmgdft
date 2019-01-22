@@ -127,12 +127,12 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     delete [] orbital_border;
 }
 
+    delete(RTa);
     RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: dnm");
     get_dnmpsi(states1);
     delete(RT5);
 
 
-    delete(RTa);
 
 
     /*
@@ -162,6 +162,14 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RT6 = new RmgTimer("3-OrbitalOptimize: mixing+precond");
 
+    for (int st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    {
+        int ixx = states[st1].orbit_nx;
+        int iyy = states[st1].orbit_ny;
+        int izz = states[st1].orbit_nz;
+
+        ZeroBoundary(states1[st1].psiR, ixx, iyy, izz);
+    }
     double gamma = -0.5;
     switch (ct.mg_method)
     {
@@ -338,7 +346,7 @@ void get_dnmpsi(STATE *states1)
     int ion;
     double *prjptr;
     int ion2, st0, st1;
-    double *ddd, *qnm_weight;
+    double *ddd;
     double *qqq;
     double *prj_sum;
 
@@ -350,8 +358,13 @@ void get_dnmpsi(STATE *states1)
      * prj_sum(r) = sum_i nm_weight[i] *beta_i(r)  
      */
 
-    qnm_weight = new double[ct.max_nl];
-    prj_sum = new double[ct.max_nlpoints];
+    num_orb = 1;
+    for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    {
+        num_orb = std::max(num_orb,Kbpsi_str.num_orbital_thision[ion2]); 
+    }
+
+    prj_sum = new double[num_orb * ct.max_nlpoints];
     work_kbpsi = new double[ct.max_nl * (ct.state_end-ct.state_begin)];
 
 
@@ -372,14 +385,12 @@ void get_dnmpsi(STATE *states1)
         dgemm("N", "N", &num_prj, &num_orb, &num_prj, &mtwo, ddd, &num_prj, 
                 Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
 
+            dgemm("N", "N", &ct.max_nlpoints, &num_orb, &num_prj, &one, prjptr, &ct.max_nlpoints, 
+                    work_kbpsi, &num_prj, &zero, prj_sum, &ct.max_nlpoints);
 
         for(st0 = 0; st0 < num_orb; st0++)
         {
             st1 = Kbpsi_str.orbital_index[ion2][st0];
-
-
-            dgemv("N", &ct.max_nlpoints, &num_prj, &one, prjptr, &ct.max_nlpoints, 
-                    &work_kbpsi[st0 * num_prj], &ione, &zero, prj_sum, &ione);
 
 
             /*
@@ -387,8 +398,7 @@ void get_dnmpsi(STATE *states1)
              */
 
 
-
-            qnm_beta_betapsi(&states1[st1], ion, prj_sum);
+            qnm_beta_betapsi(&states1[st1], ion, &prj_sum[ct.max_nlpoints * st0]);
 
 
         }
@@ -397,7 +407,6 @@ void get_dnmpsi(STATE *states1)
 
     }                           /* end for ion */
 
-    delete [] qnm_weight;
     delete [] prj_sum;
     delete [] work_kbpsi;
 
