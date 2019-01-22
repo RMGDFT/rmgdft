@@ -40,7 +40,7 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
 
 
     RmgTimer *RT = new RmgTimer("4-get_HS");
-    distribute_to_global(vtot_c, vtot_global);
+    DistributeToGlobal(vtot_c, vtot_global);
 
     for (int st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++) Hij_00[st1] = 0.0;
     for (int st1 = 0; st1 < (ct.state_end-ct.state_begin) * ct.num_states; st1++) Bij_00[st1] = 0.0;
@@ -66,7 +66,7 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
         int izz = states[st1].orbit_nz;
 
         /* Generate 2*V*psi and store it  in orbit_tem */
-        genvlocpsi(states[st1].psiR, st1, states1[st1].psiR, vtot_global, states);
+        GenVxPsi(states[st1].psiR, st1, states1[st1].psiR, vtot_global, states);
 
         /* A operating on psi stored in orbit_tem */
         /* Eighth-order finite-differencing for Laplacian operating on psi stored in orbit_tem */
@@ -108,11 +108,9 @@ void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Hij_00, doub
     OrbitDotOrbit(states, states1, Hij_00, Bij_00);
     delete(RT1);
 
-
     RmgTimer *RT3 = new RmgTimer("4-get_HS: Hvnlij");
     GetHvnlij(Hij_00, Bij_00);
     delete(RT3);
-
 
     int n2 = (ct.state_end-ct.state_begin) * ct.num_states;
 

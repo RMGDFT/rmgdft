@@ -53,7 +53,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
 
     RmgTimer *RT1a = new RmgTimer("3-OrbitalOptimize: distribute");
-    distribute_to_global(vtot_c, vtot_global);
+    DistributeToGlobal(vtot_c, vtot_global);
     delete(RT1a);
 
 
@@ -99,7 +99,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         int izz = states[st1].orbit_nz;
 
         /* Generate 2*V*psi and store it  in orbit_tem */
-        genvlocpsi(sp->psiR, st1, orbit_tem, vtot_global, states);
+        GenVxPsi(sp->psiR, st1, orbit_tem, vtot_global, states);
 
         double t1 = -1.0;
         daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);

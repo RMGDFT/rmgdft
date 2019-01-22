@@ -33,7 +33,8 @@ void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
 void PrecondMg1(double *psiR, double *work1, double *, int istate);
 void OrbitalComm(STATE *);
 void GetAllKbpsi (STATE * states1, STATE * states, ION_ORBIT_OVERLAP *, double *, double *);
-
+void GenVxPsi (double * psi, int st1, double * work1, double * vtot_global, STATE * states);
+void DistributeToGlobal(double *vtot_c, double *vtot_global);
 
 #ifdef __cplusplus
 
@@ -108,7 +109,6 @@ void precond(double *f);
 int int_max_all(int);
 
 void get_invmat(double *);
-void distribute_to_global(double *vtot_c, double *vtot_global);
 
 void init_IO ( int argc, char **argv );
 void get_dm_diag_p(STATE *states, double *l_s, double *mat_X, double *Hij);
@@ -161,8 +161,6 @@ void cholesky (double * a, int n);
 void cross_product (double * a, double * b, double * c);
 double fill (STATE * states, double width, double nel, double mix,
         int num_st, int occ_flag);
-void genvpsi (double * psi, double * twovpsi, double * pvtot, double * pvnl,
-        double * kd, double kmag, int dimx, int dimy, int dimz);
 void get_index_loc (STATE *);
 void get_eig (STATE * states, double * vxc, double * vh, double * vnuc);
 char *get_num (char *str);
@@ -282,7 +280,6 @@ void get_overlap_real (double *aa, int numst, int numpt,
         int lda, double *ss, int lds);
 void get_cholesky_real (double *matS);
 void get_Hvnlij (double *Aij, double *Bij);
-void genvlocpsi (double * psi, int st1, double * work1, double * vtot_global, STATE * states);
 void genvnlpsi (double *sg_twovpsi, double *vnl,
         int dimx, int dimy, int dimz);
 void get_wave(int st, STATE * states);

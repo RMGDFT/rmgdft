@@ -21,12 +21,12 @@ app_grad6.c
 app_mask.c
 assign_weight_on.c
 density_orbit_X_orbit.c
-distribute_to_global.c
+DistributeToGlobal.cpp
 DotProductOrbitOrbit.cpp
 dot_product_orbit_nl.c
 duplicate_states_info.c
 fill_orbit_borders4.c
-genvlocpsi.c
+GenVxPsi.cpp
 GetAllKbpsi.cpp
 get_all_partial_kbpsi.c
 get_Hvnlij.c

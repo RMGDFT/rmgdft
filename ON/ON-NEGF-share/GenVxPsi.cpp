@@ -14,12 +14,19 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-#include "main.h"
+#include "params.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+#include "transition.h"
 #include "prototypes_on.h"
+#include "init_var.h"
+#include "blas.h"
+#include "Kbpsi.h"
 
 
 
-void genvlocpsi(double * psi, int st1, double * work1, double * vtot_global, STATE * states)
+void GenVxPsi(double * psi, int st1, double * work1, double * vtot_global, STATE * states)
 {
 
     int ix, iy, iz, ixstart, iystart, ixstartp, iystartp;

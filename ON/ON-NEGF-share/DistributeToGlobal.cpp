@@ -17,28 +17,37 @@ get  global array  get_NX_GRID() * get_NY_GRID() * get_NZ_GRID()
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+#include "transition.h"
+#include "blas.h"
+#include "RmgSumAll.h"
+
 #include "prototypes_on.h"
+#include "init_var.h"
 
 
-void distribute_to_global(double * distr_array, double * global_array)
+void DistributeToGlobal(double * distr_array, double * global_array)
 {
 
     int ix, iy, iz, ii, jj, kk;
     int idx2, idx1, incx, incx1, incy, incy1;
-    int dimx =  get_PX0_GRID();
-    int dimy =  get_PY0_GRID();
-    int dimz =  get_PZ0_GRID();
-    int global_basis = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
+    int dimx =  Rmg_G->get_PX0_GRID(1);
+    int dimy =  Rmg_G->get_PY0_GRID(1);
+    int dimz =  Rmg_G->get_PZ0_GRID(1);
+    int global_basis = Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1);
 
-    incx = get_PY0_GRID() * get_PZ0_GRID();
-    incy = get_PZ0_GRID();
-    incx1 = get_NY_GRID() * get_NZ_GRID();
-    incy1 = get_NZ_GRID();
+    incx = Rmg_G->get_PY0_GRID(1) * Rmg_G->get_PZ0_GRID(1);
+    incy = Rmg_G->get_PZ0_GRID(1);
+    incx1 = Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1);
+    incy1 = Rmg_G->get_NZ_GRID(1);
 
-    ii =  get_PX_OFFSET();
-    jj =  get_PY_OFFSET();
-    kk =  get_PZ_OFFSET();
+    ii =  Rmg_G->get_PX_OFFSET(1);
+    jj =  Rmg_G->get_PY_OFFSET(1);
+    kk =  Rmg_G->get_PZ_OFFSET(1);
 
     for (idx1 = 0; idx1 < global_basis; idx1++)
         global_array[idx1] = 0.0;
@@ -52,7 +61,7 @@ void distribute_to_global(double * distr_array, double * global_array)
                 global_array[idx2] = distr_array[idx1];
             }
 
-   // global_sums(global_array, &global_basis, pct.grid_comm);
+    // global_sums(global_array, &global_basis, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, global_array, global_basis, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
 
