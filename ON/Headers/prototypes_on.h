@@ -32,6 +32,7 @@ void PulayWeighted (int step0, int N, double *xm, double *fm, int NsavedSteps,
                 int Nrefresh, double scale, int preconditioning);
 void PrecondMg1(double *psiR, double *work1, double *, int istate);
 void OrbitalComm(STATE *);
+void GetAllKbpsi (STATE * states1, STATE * states, ION_ORBIT_OVERLAP *, double *, double *);
 
 
 #ifdef __cplusplus
@@ -280,7 +281,6 @@ void print_matrix (double *b, int n, int ldb);
 void get_overlap_real (double *aa, int numst, int numpt,
         int lda, double *ss, int lds);
 void get_cholesky_real (double *matS);
-void get_all_kbpsi (STATE * states1, STATE * states, ION_ORBIT_OVERLAP *, double *, double *);
 void get_Hvnlij (double *Aij, double *Bij);
 void genvlocpsi (double * psi, int st1, double * work1, double * vtot_global, STATE * states);
 void genvnlpsi (double *sg_twovpsi, double *vnl,

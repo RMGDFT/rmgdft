@@ -34,7 +34,7 @@ void KbpsiUpdate(STATE * states)
     int ip, iip1;
 
     RmgTimer *RT2 = new RmgTimer("2-SCF: kbpsi: calc");
-    get_all_kbpsi(states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
+    GetAllKbpsi(states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
     delete(RT2);
 
     for(ion = 0; ion < pct.n_ion_center; ion++)

@@ -13,8 +13,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "main.h"
+
+#include "params.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+#include "transition.h"
 #include "prototypes_on.h"
+#include "init_var.h"
+#include "blas.h"
+#include "Kbpsi.h"
 
 
 void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi,
@@ -23,7 +31,7 @@ void get_kbpsi (STATE *sp1, double *kbpsi_one_state,
         ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, double *projectors);
 
 
-void get_all_kbpsi (STATE *states1, STATE * states, 
+void GetAllKbpsi (STATE *states1, STATE * states, 
         ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, 
         double *projectors, double *kbpsi)
 {

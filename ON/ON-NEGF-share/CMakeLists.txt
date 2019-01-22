@@ -27,7 +27,7 @@ dot_product_orbit_nl.c
 duplicate_states_info.c
 fill_orbit_borders4.c
 genvlocpsi.c
-get_all_kbpsi.c
+GetAllKbpsi.cpp
 get_all_partial_kbpsi.c
 get_Hvnlij.c
 get_ion_orbit_overlap_nl.c
