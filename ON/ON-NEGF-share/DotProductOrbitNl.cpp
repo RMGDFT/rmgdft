@@ -26,10 +26,22 @@ dot_product of (orbit,  non-local projector )
 #include "blas.h"
 #include "Kbpsi.h"
 
-
+static void inline inline_betapsi(int zlength, int num_proj, double *prj, 
+        double *psi, double *kbpsi)
+{
+    //        for(int i = 0; i < num_proj; i++)
+    //    for(int j = 0; j < zlength; j++)
+     //       kbpsi[i] += prj[i * ct.max_nlpoints + j] * psi[j];
+     
+    double alpha = get_vel();
+    double one = 1.0;
+    int ione = 1;
+    dgemv("T", &zlength, &num_proj, &alpha, prj, &ct.max_nlpoints, 
+            psi, &ione, &one, kbpsi, &ione); 
+}
 void DotProductOrbitNl(STATE *st1, int ion2, double *
-psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl,
-int num_proj, double *kbpsi)
+        psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl,
+        int num_proj, double *kbpsi)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -40,6 +52,7 @@ int num_proj, double *kbpsi)
     int ix, iy, iz, ix1, ix2, iy1, iy2, iz1, iz2;
     int idx1, idx2;
     int index;
+    int zlength1, zlength2;
 
     index = (st1->index - ct.state_begin) * ct.num_ions + ion2;
 
@@ -61,6 +74,9 @@ int num_proj, double *kbpsi)
     zhigh2 = ion_orbit_overlap_region_nl[index].zhigh2;
     zshift = ion_orbit_overlap_region_nl[index].zshift;
 
+    zlength1 = zhigh1 - zlow1 +1;
+    zlength2 = zhigh2 - zlow2 +1;
+
     iyy = st1->iymax - st1->iymin + 1;
     izz = st1->izmax - st1->izmin + 1;
     incx = iyy * izz;
@@ -71,120 +87,124 @@ int num_proj, double *kbpsi)
     incx1 = iyy1 * izz1;
     incy1 = izz1;
 
+    double alpha = get_vel();
+    double one = 1.0;
+    int ione = 1;
 
     for(int i = 0; i < num_proj; i++) kbpsi[i] = 0.0;
 
-    for (ix = xlow1; ix <= xhigh1; ix++)
+    if(zlength1 > 0)
     {
-        ix1 = (ix - st1->ixmin) * incx;
-        ix2 = (ix - ct.ions[ion2].ixstart) * incx1;
-
-        for (iy = ylow1; iy <= yhigh1; iy++)
+        iz1 = zlow1 - st1->izmin;
+        iz2 = zlow1 - ct.ions[ion2].izstart;
+        for (ix = xlow1; ix <= xhigh1; ix++)
         {
-            iy1 = (iy - st1->iymin) * incy;
-            iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+            ix1 = (ix - st1->ixmin) * incx;
+            ix2 = (ix - ct.ions[ion2].ixstart) * incx1;
 
-            for (iz = zlow1; iz <= zhigh1; iz++)
+            for (iy = ylow1; iy <= yhigh1; iy++)
             {
-                iz1 = iz - st1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart;
+                iy1 = (iy - st1->iymin) * incy;
+                iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                for(int i = 0; i < num_proj; i++) 
-                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
+                inline_betapsi(zlength1, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
             }
 
-            for (iz = zlow2; iz <= zhigh2; iz++)
+
+            for (iy = ylow2; iy <= yhigh2; iy++)
             {
-                iz1 = iz - st1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart - zshift;
+                iy1 = (iy - st1->iymin) * incy;
+                iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                for(int i = 0; i < num_proj; i++) 
-                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
+                inline_betapsi(zlength1, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
             }
-        }
+        }                           /* end for ix = xlow1 */
 
-        for (iy = ylow2; iy <= yhigh2; iy++)
+        for (ix = xlow2; ix <= xhigh2; ix++)
         {
-            iy1 = (iy - st1->iymin) * incy;
-            iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+            ix1 = (ix - st1->ixmin) * incx;
+            ix2 = (ix - ct.ions[ion2].ixstart - xshift) * incx1;
 
-            for (iz = zlow1; iz <= zhigh1; iz++)
+            for (iy = ylow1; iy <= yhigh1; iy++)
             {
-                iz1 = iz - st1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart;
+                iy1 = (iy - st1->iymin) * incy;
+                iy2 = (iy - ct.ions[ion2].iystart) * incy1;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                for(int i = 0; i < num_proj; i++) 
-                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
-            }
-            for (iz = zlow2; iz <= zhigh2; iz++)
+                inline_betapsi(zlength1, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
+            }                       /* end for iy = ylow1 */
+
+            for (iy = ylow2; iy <= yhigh2; iy++)
             {
-                iz1 = iz - st1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart - zshift;
+                iy1 = (iy - st1->iymin) * incy;
+                iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                for(int i = 0; i < num_proj; i++) 
-                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
+                inline_betapsi(zlength1, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
             }
-        }
-    }                           /* end for ix = xlow1 */
+        }                           /* end for ix = xlow2 */
 
-    for (ix = xlow2; ix <= xhigh2; ix++)
+
+    }
+
+    if(zlength2 > 0)
     {
-        ix1 = (ix - st1->ixmin) * incx;
-        ix2 = (ix - ct.ions[ion2].ixstart - xshift) * incx1;
-
-        for (iy = ylow1; iy <= yhigh1; iy++)
+        iz1 = zlow2 - st1->izmin;
+        iz2 = zlow2 - ct.ions[ion2].izstart;
+        for (ix = xlow1; ix <= xhigh1; ix++)
         {
-            iy1 = (iy - st1->iymin) * incy;
-            iy2 = (iy - ct.ions[ion2].iystart) * incy1;
-            for (iz = zlow1; iz <= zhigh1; iz++)
-            {
-                iz1 = iz - st1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart;
-                idx1 = ix1 + iy1 + iz1;
-                idx2 = ix2 + iy2 + iz2;
-                for(int i = 0; i < num_proj; i++) 
-                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
-            }
-            for (iz = zlow2; iz <= zhigh2; iz++)
-            {
-                iz1 = iz - st1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart - zshift;
-                idx1 = ix1 + iy1 + iz1;
-                idx2 = ix2 + iy2 + iz2;
-                for(int i = 0; i < num_proj; i++) 
-                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
-            }
-        }                       /* end for iy = ylow1 */
+            ix1 = (ix - st1->ixmin) * incx;
+            ix2 = (ix - ct.ions[ion2].ixstart) * incx1;
 
-        for (iy = ylow2; iy <= yhigh2; iy++)
+            for (iy = ylow1; iy <= yhigh1; iy++)
+            {
+                iy1 = (iy - st1->iymin) * incy;
+                iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+
+                idx1 = ix1 + iy1 + iz1;
+                idx2 = ix2 + iy2 + iz2;
+                inline_betapsi(zlength2, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
+            }
+
+            for (iy = ylow2; iy <= yhigh2; iy++)
+            {
+                iy1 = (iy - st1->iymin) * incy;
+                iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+
+                idx1 = ix1 + iy1 + iz1;
+                idx2 = ix2 + iy2 + iz2;
+                inline_betapsi(zlength2, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
+            }
+        }                           /* end for ix = xlow1 */
+
+        for (ix = xlow2; ix <= xhigh2; ix++)
         {
-            iy1 = (iy - st1->iymin) * incy;
-            iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
-            for (iz = zlow1; iz <= zhigh1; iz++)
-            {
-                iz1 = iz - st1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart;
-                idx1 = ix1 + iy1 + iz1;
-                idx2 = ix2 + iy2 + iz2;
-                for(int i = 0; i < num_proj; i++) 
-                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
-            }
-            for (iz = zlow2; iz <= zhigh2; iz++)
-            {
-                iz1 = iz - st1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart - zshift;
-                idx1 = ix1 + iy1 + iz1;
-                idx2 = ix2 + iy2 + iz2;
-                for(int i = 0; i < num_proj; i++) 
-                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
-            }
-        }
-    }                           /* end for ix = xlow2 */
+            ix1 = (ix - st1->ixmin) * incx;
+            ix2 = (ix - ct.ions[ion2].ixstart - xshift) * incx1;
 
-    for(int i = 0; i < num_proj; i++) kbpsi[i] *= get_vel();
+            for (iy = ylow1; iy <= yhigh1; iy++)
+            {
+                iy1 = (iy - st1->iymin) * incy;
+                iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+                idx1 = ix1 + iy1 + iz1;
+                idx2 = ix2 + iy2 + iz2;
+                inline_betapsi(zlength2, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
+            }                       /* end for iy = ylow1 */
+
+            for (iy = ylow2; iy <= yhigh2; iy++)
+            {
+                iy1 = (iy - st1->iymin) * incy;
+                iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+                idx1 = ix1 + iy1 + iz1;
+                idx2 = ix2 + iy2 + iz2;
+                inline_betapsi(zlength2, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
+            }
+        }                           /* end for ix = xlow2 */
+
+    }
 
 }
