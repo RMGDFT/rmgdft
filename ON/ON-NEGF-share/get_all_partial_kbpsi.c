@@ -60,20 +60,14 @@ void get_all_partial_kbpsi(STATE * states, ION_ORBIT_OVERLAP
 
             /* Loop over projectors for this ion and evaluate */
             /* <KB|psi>                                   */
-            for (ip = 0; ip < pct.prj_per_ion[ion]; ip++)
-            {
-                idx = idx1 + idx2 + ip;
-                partial_kbpsi_x[idx] =
-                    get_vel() * DotProductOrbitNl(&states[st1], ion, psi, prjptr_x, ion_orbit_overlap_region_nl);
-                partial_kbpsi_y[idx] =
-                    get_vel() * DotProductOrbitNl(&states[st1], ion, psi, prjptr_y, ion_orbit_overlap_region_nl);
-                partial_kbpsi_z[idx] =
-                    get_vel() * DotProductOrbitNl(&states[st1], ion, psi, prjptr_z, ion_orbit_overlap_region_nl);
+            idx = idx1 + idx2;
+            DotProductOrbitNl(&states[st1], ion, psi, prjptr_x, ion_orbit_overlap_region_nl, pct.prj_per_ion[ion], &partial_kbpsi_x[idx]);
+            DotProductOrbitNl(&states[st1], ion, psi, prjptr_y, ion_orbit_overlap_region_nl, pct.prj_per_ion[ion], &partial_kbpsi_y[idx]);
+            DotProductOrbitNl(&states[st1], ion, psi, prjptr_z, ion_orbit_overlap_region_nl, pct.prj_per_ion[ion], &partial_kbpsi_z[idx]);
 
-                prjptr_x += ct.max_nlpoints;
-                prjptr_y += ct.max_nlpoints;
-                prjptr_z += ct.max_nlpoints;
-            }
+            prjptr_x += ct.max_nlpoints * pct.prj_per_ion[ion];
+            prjptr_y += ct.max_nlpoints * pct.prj_per_ion[ion];
+            prjptr_z += ct.max_nlpoints * pct.prj_per_ion[ion];
         }
 
     }

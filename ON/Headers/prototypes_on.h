@@ -35,8 +35,8 @@ void OrbitalComm(STATE *);
 void GetAllKbpsi (STATE * states1, STATE * states, ION_ORBIT_OVERLAP *, double *, double *);
 void GenVxPsi (double * psi, int st1, double * work1, double * vtot_global, STATE * states);
 void DistributeToGlobal(double *vtot_c, double *vtot_global);
-double DotProductOrbitNl (STATE *st1, int ion2, double * psi,
-        double * prjptr, ION_ORBIT_OVERLAP *);
+void DotProductOrbitNl (STATE *st1, int ion2, double * psi,
+        double * prjptr, ION_ORBIT_OVERLAP *, int num_proj, double *kbpsi);
 
 #ifdef __cplusplus
 

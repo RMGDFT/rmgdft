@@ -27,8 +27,9 @@ dot_product of (orbit,  non-local projector )
 #include "Kbpsi.h"
 
 
-double DotProductOrbitNl(STATE *st1, int ion2, double *
-psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
+void DotProductOrbitNl(STATE *st1, int ion2, double *
+psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl,
+int num_proj, double *kbpsi)
 {
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
@@ -39,7 +40,6 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
     int ix, iy, iz, ix1, ix2, iy1, iy2, iz1, iz2;
     int idx1, idx2;
     int index;
-    double tem;
 
     index = (st1->index - ct.state_begin) * ct.num_ions + ion2;
 
@@ -72,7 +72,8 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
     incy1 = izz1;
 
 
-    tem = 0.0;
+    for(int i = 0; i < num_proj; i++) kbpsi[i] = 0.0;
+
     for (ix = xlow1; ix <= xhigh1; ix++)
     {
         ix1 = (ix - st1->ixmin) * incx;
@@ -89,7 +90,8 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
                 iz2 = iz - ct.ions[ion2].izstart;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                tem += psi[idx1] * prjptr[idx2];
+                for(int i = 0; i < num_proj; i++) 
+                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
             }
 
             for (iz = zlow2; iz <= zhigh2; iz++)
@@ -98,7 +100,8 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
                 iz2 = iz - ct.ions[ion2].izstart - zshift;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                tem += psi[idx1] * prjptr[idx2];
+                for(int i = 0; i < num_proj; i++) 
+                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
             }
         }
 
@@ -113,7 +116,8 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
                 iz2 = iz - ct.ions[ion2].izstart;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                tem += psi[idx1] * prjptr[idx2];
+                for(int i = 0; i < num_proj; i++) 
+                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
             }
             for (iz = zlow2; iz <= zhigh2; iz++)
             {
@@ -121,7 +125,8 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
                 iz2 = iz - ct.ions[ion2].izstart - zshift;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                tem += psi[idx1] * prjptr[idx2];
+                for(int i = 0; i < num_proj; i++) 
+                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
             }
         }
     }                           /* end for ix = xlow1 */
@@ -141,7 +146,8 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
                 iz2 = iz - ct.ions[ion2].izstart;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                tem += psi[idx1] * prjptr[idx2];
+                for(int i = 0; i < num_proj; i++) 
+                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
             }
             for (iz = zlow2; iz <= zhigh2; iz++)
             {
@@ -149,7 +155,8 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
                 iz2 = iz - ct.ions[ion2].izstart - zshift;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                tem += psi[idx1] * prjptr[idx2];
+                for(int i = 0; i < num_proj; i++) 
+                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
             }
         }                       /* end for iy = ylow1 */
 
@@ -163,7 +170,8 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
                 iz2 = iz - ct.ions[ion2].izstart;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                tem += psi[idx1] * prjptr[idx2];
+                for(int i = 0; i < num_proj; i++) 
+                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
             }
             for (iz = zlow2; iz <= zhigh2; iz++)
             {
@@ -171,11 +179,12 @@ psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
                 iz2 = iz - ct.ions[ion2].izstart - zshift;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
-                tem += psi[idx1] * prjptr[idx2];
+                for(int i = 0; i < num_proj; i++) 
+                    kbpsi[i] += psi[idx1] * prjptr[i* ct.max_nlpoints + idx2];
             }
         }
     }                           /* end for ix = xlow2 */
 
-    return tem;
+    for(int i = 0; i < num_proj; i++) kbpsi[i] *= get_vel();
 
 }

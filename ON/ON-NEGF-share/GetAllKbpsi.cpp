@@ -108,12 +108,8 @@ void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi_one_state,
         ion = pct.ionidx[ion2];
         /* Loop over projectors for this ion and evaluate */
         /* <KB|psi>                                   */
-        for (ip = 0; ip < pct.prj_per_ion[ion]; ip++)
-        {
-            kbpsi_one_state[ion2 * ct.max_nl + ip]
-                = get_vel() * DotProductOrbitNl (st1, ion, psi, prjptr,
-                        ion_orbit_overlap_region_nl);
-            prjptr += ct.max_nlpoints;
-        }
+        DotProductOrbitNl (st1, ion, psi, prjptr, ion_orbit_overlap_region_nl, 
+                pct.prj_per_ion[ion], &kbpsi_one_state[ion2 * ct.max_nl]);
+        prjptr += pct.prj_per_ion[ion] * ct.max_nlpoints;
     }
 }
