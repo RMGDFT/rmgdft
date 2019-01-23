@@ -231,7 +231,6 @@ void GetNlop_on(void)
     //
     
     MPI_Barrier(pct.grid_comm);
-    RmgTimer *RT=new RmgTimer("bbbbbbb");
     prjcount = 0;
     for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
@@ -252,7 +251,6 @@ void GetNlop_on(void)
     }
 
     MPI_Barrier(pct.grid_comm);
-    delete(RT);
     
 
 #if	DEBUG
