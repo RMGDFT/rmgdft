@@ -111,7 +111,7 @@ void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi_one_state,
         for (ip = 0; ip < pct.prj_per_ion[ion]; ip++)
         {
             kbpsi_one_state[ion2 * ct.max_nl + ip]
-                = get_vel() * dot_product_orbit_nl (st1, ion, psi, prjptr,
+                = get_vel() * DotProductOrbitNl (st1, ion, psi, prjptr,
                         ion_orbit_overlap_region_nl);
             prjptr += ct.max_nlpoints;
         }

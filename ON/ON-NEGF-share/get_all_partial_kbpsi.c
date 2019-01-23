@@ -64,11 +64,11 @@ void get_all_partial_kbpsi(STATE * states, ION_ORBIT_OVERLAP
             {
                 idx = idx1 + idx2 + ip;
                 partial_kbpsi_x[idx] =
-                    get_vel() * dot_product_orbit_nl(&states[st1], ion, psi, prjptr_x, ion_orbit_overlap_region_nl);
+                    get_vel() * DotProductOrbitNl(&states[st1], ion, psi, prjptr_x, ion_orbit_overlap_region_nl);
                 partial_kbpsi_y[idx] =
-                    get_vel() * dot_product_orbit_nl(&states[st1], ion, psi, prjptr_y, ion_orbit_overlap_region_nl);
+                    get_vel() * DotProductOrbitNl(&states[st1], ion, psi, prjptr_y, ion_orbit_overlap_region_nl);
                 partial_kbpsi_z[idx] =
-                    get_vel() * dot_product_orbit_nl(&states[st1], ion, psi, prjptr_z, ion_orbit_overlap_region_nl);
+                    get_vel() * DotProductOrbitNl(&states[st1], ion, psi, prjptr_z, ion_orbit_overlap_region_nl);
 
                 prjptr_x += ct.max_nlpoints;
                 prjptr_y += ct.max_nlpoints;

@@ -16,11 +16,18 @@ dot_product of (orbit,  non-local projector )
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+#include "params.h"
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include "RmgTimer.h"
+#include "transition.h"
 #include "prototypes_on.h"
+#include "init_var.h"
+#include "blas.h"
+#include "Kbpsi.h"
 
 
-double dot_product_orbit_nl(STATE *st1, int ion2, double *
+double DotProductOrbitNl(STATE *st1, int ion2, double *
 psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl)
 {
 

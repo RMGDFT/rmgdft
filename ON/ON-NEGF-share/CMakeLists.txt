@@ -23,7 +23,7 @@ assign_weight_on.c
 density_orbit_X_orbit.c
 DistributeToGlobal.cpp
 DotProductOrbitOrbit.cpp
-dot_product_orbit_nl.c
+DotProductOrbitNl.cpp
 duplicate_states_info.c
 fill_orbit_borders4.c
 GenVxPsi.cpp
