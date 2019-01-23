@@ -25,6 +25,13 @@
 #include <fftw3.h>
 #include <sys/mman.h>
 
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+
+
 #include "params.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
@@ -34,6 +41,7 @@
 #include "blas.h"
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
+#include "RmgTimer.h"
 
 static void init_alloc_nonloc_mem (void);
 
@@ -77,6 +85,9 @@ void GetNlop_on(void)
      */
 
     my_barrier();
+
+
+           
 
     /*  get total number of projectors on this processor */
     /*  pct.n_ion_center: number of ions whose nl projector overlap
@@ -135,23 +146,23 @@ void GetNlop_on(void)
 
     /* Loop over all the ions on this processor */
 
+    mkdir("PROJECTORS",S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
     beta = projectors;
 
-    prjcount = 0;
-    for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
+    for (ion = pct.gridpe; ion < ct.num_ions; ion+=pct.grid_npes)
     {
 
-        ion = pct.ionidx[ion1];
         /* Generate ion pointer */
         iptr = &ct.ions[ion];
 
         /* Get species type */
         sp = &ct.sp[iptr->species];
 
-//        fftw_import_wisdom_from_string(sp->backward_wisdom);
+        //        fftw_import_wisdom_from_string(sp->backward_wisdom);
         p2 = fftw_plan_dft_3d(sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(gbptr), 
                 reinterpret_cast<fftw_complex*>(beptr), FFTW_BACKWARD, FFTW_ESTIMATE);
-//        fftw_forget_wisdom();
+        //        fftw_forget_wisdom();
 
         /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
         /*xtal vector between ion and left bottom corner of the box */
@@ -176,11 +187,10 @@ void GetNlop_on(void)
         fptr = (std::complex<double> *)sp->forward_beta;
 
         /* Loop over radial projectors */
+        prjcount = 0;
         for (ip = 0; ip < sp->num_projectors; ip++)
         {
 
-
-            /****************** beta *************/
             /*Apply the phase factor   */
             for (idx = 0; idx < coarse_size; idx++)
             {
@@ -198,18 +208,52 @@ void GetNlop_on(void)
             fptr += coarse_size;
             prjcount += ct.max_nlpoints;
 
-
-
-
         }                       /* end for ip */
 
         fftw_destroy_plan(p2);
+        std::string newname;
+        newname = std::string("PROJECTORS/ion_") + std::to_string(ion);
+        int amode = S_IREAD | S_IWRITE;
+        int fhand = open(newname.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
+        if (fhand < 0) 
+            rmg_error_handler (__FILE__, __LINE__,"error open file");
+
+        ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
+        write(fhand, beta, size);
+        close(fhand);
+
 
     }                           /* end for ion */
 
     delete [] beptr;
     delete [] fftw_phase;
-// Must fix this EMIL
+    // Must fix this EMIL
+    //
+    
+    MPI_Barrier(pct.grid_comm);
+    RmgTimer *RT=new RmgTimer("bbbbbbb");
+    prjcount = 0;
+    for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
+    {
+        ion = pct.ionidx[ion1];
+        /* Generate ion pointer */
+        iptr = &ct.ions[ion];
+
+        /* Get species type */
+        sp = &ct.sp[iptr->species];
+        std::string newname;
+        newname = std::string("PROJECTORS/ion_") + std::to_string(ion);
+        int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
+        ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
+        ssize_t read_size = read(fhand, &beta[prjcount], size);
+        if(read_size != size)
+            rmg_error_handler (__FILE__, __LINE__,"error reading");
+        prjcount += sp->num_projectors * ct.max_nlpoints;
+    }
+
+    MPI_Barrier(pct.grid_comm);
+    delete(RT);
+    
 
 #if	DEBUG
     printf("PE: %d leave  get_nlop ...\n", pct.gridpe);
