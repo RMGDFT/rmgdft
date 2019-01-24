@@ -69,10 +69,12 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     /*  add q_n,m|beta_n><beta_m|psi> on states_res.psiR */
     RmgTimer *RT3 = new RmgTimer("3-OrbitalOptimize: nonortho");
     get_nonortho_res(states, theta, states1);
+    MPI_Barrier(pct.grid_comm);
     delete(RT3);
 
     RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm");
     get_qnm_res(theta);
+    MPI_Barrier(pct.grid_comm);
     delete(RT4);
     /* end shuchun wang */
 
@@ -343,41 +345,45 @@ void get_qnm_res(double *work_theta)
 
 void get_dnmpsi(STATE *states1)
 {
-    int ion;
-    double *prjptr;
+    double *prjptr[pct.n_ion_center];
     int ion2, st0, st1;
-    double *ddd;
-    double *qqq;
     double *prj_sum;
 
     double one=1.0, zero=0.0, mtwo=-2.0, *work_kbpsi; 
-    int ione=1, num_orb, num_prj;
+    int ione=1;
 
     /*
      *  dnm_weght[i] = sum_j dnm[i, j] *<beta_j|phi> 
      * prj_sum(r) = sum_i nm_weight[i] *beta_i(r)  
      */
 
-    num_orb = 1;
+    int num_orb_max = 1;
     for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
-        num_orb = std::max(num_orb,Kbpsi_str.num_orbital_thision[ion2]); 
+        num_orb_max = std::max(num_orb_max,Kbpsi_str.num_orbital_thision[ion2]); 
     }
 
-    prj_sum = new double[num_orb * ct.max_nlpoints];
+    prj_sum = new double[num_orb_max * ct.max_nlpoints];
     work_kbpsi = new double[ct.max_nl * (ct.state_end-ct.state_begin)];
 
 
-    prjptr = projectors;
-
+    int prj_ion_address = 0;
     for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
-        ion = pct.ionidx[ion2];
-        num_prj = pct.prj_per_ion[ion];
+        int ion = pct.ionidx[ion2];
+        prjptr[ion2] = &projectors[prj_ion_address];
+        prj_ion_address += pct.prj_per_ion[ion] * ct.max_nlpoints;       
+    }
+
+    RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm1");
+    for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    {
+        int ion = pct.ionidx[ion2];
+        int num_prj = pct.prj_per_ion[ion];
         if (num_prj == 0) continue;
-        qqq = pct.qqq[ion];
-        ddd = pct.dnmI[ion];
-        num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
+        double *qqq = pct.qqq[ion];
+        double * ddd = pct.dnmI[ion];
+        int num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
 
         dgemm("N", "N", &num_prj, &num_orb, &num_prj, &one, qqq, &num_prj, 
                 Kbpsi_str.kbpsi_res_ion[ion2].data(), &num_prj, &zero, work_kbpsi, &num_prj);
@@ -385,12 +391,13 @@ void get_dnmpsi(STATE *states1)
         dgemm("N", "N", &num_prj, &num_orb, &num_prj, &mtwo, ddd, &num_prj, 
                 Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
 
-            dgemm("N", "N", &ct.max_nlpoints, &num_orb, &num_prj, &one, prjptr, &ct.max_nlpoints, 
-                    work_kbpsi, &num_prj, &zero, prj_sum, &ct.max_nlpoints);
+        dgemm("N", "N", &ct.max_nlpoints, &num_orb, &num_prj, &one, prjptr[ion2], &ct.max_nlpoints, 
+                work_kbpsi, &num_prj, &zero, prj_sum, &ct.max_nlpoints);
 
-        for(st0 = 0; st0 < num_orb; st0++)
+        RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: qnm2");
+        for(int st0 = 0; st0 < num_orb; st0++)
         {
-            st1 = Kbpsi_str.orbital_index[ion2][st0];
+            int st1 = Kbpsi_str.orbital_index[ion2][st0];
 
 
             /*
@@ -402,11 +409,11 @@ void get_dnmpsi(STATE *states1)
 
 
         }
-
-        prjptr += pct.prj_per_ion[ion] * ct.max_nlpoints;       
+        delete(RT5);
 
     }                           /* end for ion */
 
+    delete(RT4);
     delete [] prj_sum;
     delete [] work_kbpsi;
 

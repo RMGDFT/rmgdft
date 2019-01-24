@@ -19,17 +19,7 @@
 
 static int inline fold_to_unitcell(int ix, int NX)
 {
-
-    int item;
-
-    if (ix < 0)
-        item = ix + NX;
-    else if (ix >= NX)
-        item = ix - NX;
-    else
-        item = ix;
-
-    return item;
+    return (ix+NX)%NX;
 }
 
 void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
