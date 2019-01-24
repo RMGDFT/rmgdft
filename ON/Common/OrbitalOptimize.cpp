@@ -375,45 +375,45 @@ void get_dnmpsi(STATE *states1)
         prj_ion_address += pct.prj_per_ion[ion] * ct.max_nlpoints;       
     }
 
-    RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm1");
-    for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+#pragma omp parallel private(ion2)
     {
-        int ion = pct.ionidx[ion2];
-        int num_prj = pct.prj_per_ion[ion];
-        if (num_prj == 0) continue;
-        double *qqq = pct.qqq[ion];
-        double * ddd = pct.dnmI[ion];
-        int num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
-
-        dgemm("N", "N", &num_prj, &num_orb, &num_prj, &one, qqq, &num_prj, 
-                Kbpsi_str.kbpsi_res_ion[ion2].data(), &num_prj, &zero, work_kbpsi, &num_prj);
-
-        dgemm("N", "N", &num_prj, &num_orb, &num_prj, &mtwo, ddd, &num_prj, 
-                Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
-
-        dgemm("N", "N", &ct.max_nlpoints, &num_orb, &num_prj, &one, prjptr[ion2], &ct.max_nlpoints, 
-                work_kbpsi, &num_prj, &zero, prj_sum, &ct.max_nlpoints);
-
-        RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: qnm2");
-        for(int st0 = 0; st0 < num_orb; st0++)
+#pragma omp for schedule(static,1) nowait
+        for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
         {
-            int st1 = Kbpsi_str.orbital_index[ion2][st0];
+            int ion = pct.ionidx[ion2];
+            int num_prj = pct.prj_per_ion[ion];
+            if (num_prj == 0) continue;
+            double *qqq = pct.qqq[ion];
+            double * ddd = pct.dnmI[ion];
+            int num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
+
+            dgemm("N", "N", &num_prj, &num_orb, &num_prj, &one, qqq, &num_prj, 
+                    Kbpsi_str.kbpsi_res_ion[ion2].data(), &num_prj, &zero, work_kbpsi, &num_prj);
+
+            dgemm("N", "N", &num_prj, &num_orb, &num_prj, &mtwo, ddd, &num_prj, 
+                    Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
+
+            dgemm("N", "N", &ct.max_nlpoints, &num_orb, &num_prj, &one, prjptr[ion2], &ct.max_nlpoints, 
+                    work_kbpsi, &num_prj, &zero, prj_sum, &ct.max_nlpoints);
+
+            for(int st0 = 0; st0 < num_orb; st0++)
+            {
+                int st1 = Kbpsi_str.orbital_index[ion2][st0];
 
 
-            /*
-             *  project the prj_sum to the orbital |phi>  and stored in work 
-             */
+                /*
+                 *  project the prj_sum to the orbital |phi>  and stored in work 
+                 */
 
 
-            qnm_beta_betapsi(&states1[st1], ion, &prj_sum[ct.max_nlpoints * st0]);
+                qnm_beta_betapsi(&states1[st1], ion, &prj_sum[ct.max_nlpoints * st0]);
 
 
-        }
-        delete(RT5);
+            }
 
-    }                           /* end for ion */
+        }                           /* end for ion */
 
-    delete(RT4);
+    }
     delete [] prj_sum;
     delete [] work_kbpsi;
 
