@@ -54,7 +54,7 @@ void HijUpdate (STATE * states, double *vtot_c, double *Aij)
         Hij_00[st1] = 0.;
         Bij_00[st1] = 0.;
     }
-    distribute_to_global(vtot_c, vtot_global);
+    DistributeToGlobal(vtot_c, vtot_global);
 
     /* Loop over states */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
@@ -67,7 +67,7 @@ void HijUpdate (STATE * states, double *vtot_c, double *Aij)
         izz = states[st1].izmax - states[st1].izmin + 1;
 
         /* Generate 2*V*psi and store it  in orbit_tem */
-        genvlocpsi(states[st1].psiR, st1, states1[st1].psiR, vtot_global, states);
+        GenVxPsi(states[st1].psiR, st1, states1[st1].psiR, vtot_global, states);
         n2 = ixx * iyy * izz;
         t1 = 0.5;
         dscal(&n2, &t1, states1[st1].psiR, &ione);
