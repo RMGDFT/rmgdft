@@ -46,10 +46,10 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
     int ylow1, yhigh1, ylow2, yhigh2, yshift;
-    int zlow1, zhigh1, zlow2, zhigh2, zshift;
+    int zlow1, zhigh1, zlow2, zhigh2;
     int iyy, izz, iyy1, izz1;
     int incx, incy, incx1, incy1;
-    int ix, iy, iz, ix1, ix2, iy1, iy2, iz1, iz2;
+    int ix, iy, ix1, ix2, iy1, iy2, iz1, iz2;
     int idx1, idx2;
     int index;
     int zlength1, zlength2;
@@ -72,7 +72,6 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
     zhigh1 = ion_orbit_overlap_region_nl[index].zhigh1;
     zlow2 = ion_orbit_overlap_region_nl[index].zlow2;
     zhigh2 = ion_orbit_overlap_region_nl[index].zhigh2;
-    zshift = ion_orbit_overlap_region_nl[index].zshift;
 
     zlength1 = zhigh1 - zlow1 +1;
     zlength2 = zhigh2 - zlow2 +1;
@@ -86,10 +85,6 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
     izz1 = ct.ions[ion2].izend - ct.ions[ion2].izstart + 1;
     incx1 = iyy1 * izz1;
     incy1 = izz1;
-
-    double alpha = get_vel();
-    double one = 1.0;
-    int ione = 1;
 
     for(int i = 0; i < num_proj; i++) kbpsi[i] = 0.0;
 

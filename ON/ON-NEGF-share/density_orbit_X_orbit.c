@@ -40,11 +40,8 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
     int ny_grid = get_NY_GRID();
     int nz_grid = get_NZ_GRID();
 
-    if (mode == 0)
-        index = (st1 - ct.state_begin) * ct.num_states + st2;
-    else if (mode == 1)
-        index = (st2 - ct.state_end) * ct.num_states + st1;
-    else
+    index = (st1 - ct.state_begin) * ct.num_states + st2;
+    if (mode != 0)
     {
         index = 0;
         error_handler(" mode is not right %d", mode);

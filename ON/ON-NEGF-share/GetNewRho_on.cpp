@@ -36,19 +36,12 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
 
     /* for parallel libraries */
 
-    double *psi1, *psi2, scale;
-    int i;
-    int loop, state_per_proc, num_recv;
     double *rho_temp;
-    double tem;
     int global_basis = Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1);
-    int global_fbasis = get_FPX0_GRID() *get_FPY0_GRID() *get_FPZ0_GRID();
 
-    int st11;
     int pair;
 
     RmgTimer *RT0 = new RmgTimer("3-get_new_rho");
-    state_per_proc = ct.state_per_proc + 2;
 
     rho_temp = new double[Rmg_G->get_P0_BASIS(1)];
 
@@ -62,7 +55,7 @@ void GetNewRho_on(STATE * states, double *rho, double *rho_matrix)
         double *rho_global_private = new double[global_basis]();
 #pragma omp barrier
 #pragma omp for schedule(dynamic) nowait
-        for(pair = 0; pair < OrbitalPairs.size(); pair++)
+        for(pair = 0; pair < (int)OrbitalPairs.size(); pair++)
         {
             ORBITAL_PAIR onepair;
             onepair = OrbitalPairs[pair];

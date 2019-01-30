@@ -35,7 +35,7 @@ void DotProductOrbitOrbit(STATE *orbit1, STATE *orbit2, STATE
     int incx, incy, incx1, incy1;
     int zcase, ix, iy;
     int ix1, ix2, iy1, iy2, idx1, idx2;
-    int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
+    int xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;
     double *p1, *p2, *p3;
     double *psi1, *psi2, *psi3;
@@ -43,8 +43,6 @@ void DotProductOrbitOrbit(STATE *orbit1, STATE *orbit2, STATE
     int ione = 1;
 
 
-    void *RT1 = NULL;
-    if(ct.verbose) RT1 = new RmgTimer("4-get_HS: orbit_dot_orbit: dotproduct");
 
     *H = 0.0;
     *S = 0.0;
@@ -380,8 +378,6 @@ void DotProductOrbitOrbit(STATE *orbit1, STATE *orbit2, STATE
             break;
 
     }
-
-    if(ct.verbose) delete(RT1);
 
 }
 

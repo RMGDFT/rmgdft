@@ -24,13 +24,10 @@ void OrbitalComm(STATE * states)
 {
     int i, ii;
     int st1, st2;
-    double *psi1;
-    double *psi2;
     MPI_Status mstatus;
     int loop, proc1, proc2, size1, size2, state_per_proc;
     int num_send, num_recv;
-    MPI_Request mr_send, *mr_recv;
-    int st11, ione = 1;
+    MPI_Request *mr_recv;
 
     int send_size, recv_size, position;
 
@@ -54,7 +51,6 @@ void OrbitalComm(STATE * states)
 
     mr_recv = new MPI_Request[ii]();
 
-    psi2 = orbit_tem;
     double *psi3 = new double[ct.max_orbit_size]();
 
 

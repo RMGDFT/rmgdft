@@ -38,9 +38,8 @@
 
 void InitNonlocalComm(void)
 {
-    int ion, idx, item, nh;
+    int idx;
     MPI_Status mstatus;
-    int size;
     int send_size, recv_size, size_perstate;
     int proc, proc1, proc2, st1, num_proj;
     int ion1, ion2, ion1_global, ion2_global;

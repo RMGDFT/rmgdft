@@ -33,15 +33,12 @@ potential, and add them into Aij.
 
 void KbpsiComm()
 {
-    int loop, nh, ion, ip1, ip2, st1, st2, ist;
     MPI_Status mstatus;
     MPI_Request request;
     int num_proj, num_orbital_thision;
     int send_size, recv_size, position;
     char *send_buff, *recv_buff;
-    int ion1, ion2, ion1_global, ion2_global;
-    int iip1, iip2, iip1a, iip2a;
-    int size, proc, proc1, proc2;
+    int proc1, proc2;
     std::vector<double> kbpsi_recv;
     std::vector<int> orbital_index;
     unsigned int idx;
@@ -51,7 +48,7 @@ void KbpsiComm()
     recv_buff = new char[Kbpsi_str.max_recv_size];
 
 
-    for (loop = 0; loop < Kbpsi_str.kbpsi_comm_loop; loop++)
+    for (int loop = 0; loop < Kbpsi_str.kbpsi_comm_loop; loop++)
     {
 
         proc1 = Kbpsi_str.comm_info[loop].send_to_pe; 
@@ -64,7 +61,7 @@ void KbpsiComm()
             position = 0;
             for(idx=0; idx < Kbpsi_str.comm_info[loop].send_ions.size(); idx++)
             {
-                ion = Kbpsi_str.comm_info[loop].send_ions[idx];
+                int ion = Kbpsi_str.comm_info[loop].send_ions[idx];
                 num_proj = pct.prj_per_ion[pct.ionidx[ion]];
                 num_orbital_thision = Kbpsi_str.num_orbital_thision[ion];
 
@@ -93,7 +90,7 @@ void KbpsiComm()
             position = 0;
             for(idx=0; idx < Kbpsi_str.comm_info[loop].recv_ions.size(); idx++)
             {
-                ion = Kbpsi_str.comm_info[loop].recv_ions[idx];
+                int ion = Kbpsi_str.comm_info[loop].recv_ions[idx];
                 num_proj = pct.prj_per_ion[pct.ionidx[ion]];
 
 

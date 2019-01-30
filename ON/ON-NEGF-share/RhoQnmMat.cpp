@@ -33,13 +33,9 @@ and add them into Aij.
 void RhoQnmMat(double *Aij, double * global_mat_X)
 {
     int ion, ip1, ip2, st1, st2, ist;
-    MPI_Status mstatus;
-    int ion1, ion2, ion1_global, ion2_global;
-    int iip1, iip2, iip1a, iip2a;
-    int size, proc, proc1, proc2, idx;
+    int ion1;
     int nh;
-    int st11, index;
-    double tem;
+    int st11;
 
     int idx1, idx2, num_orb, tot_orb;
 
