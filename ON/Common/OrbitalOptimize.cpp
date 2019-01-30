@@ -252,34 +252,45 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
     }
 
     if(OrbitalPairs.size() == 0 ) return;
+    for(int ipair = 0; ipair < OrbitalPairs.size(); ipair++)
+    {
+        ORBITAL_PAIR onepair = OrbitalPairs[ipair];
+        int st1 = onepair.orbital1;
+        int st2 = onepair.orbital2;
+        int st11 = st1-ct.state_begin;
 
-    if( (int)OrbitalPairs.size() < active_threads) active_threads = (int)OrbitalPairs.size();
-
-    int pair_start[active_threads], pair_end[active_threads];
-
-    DistributeTasks(active_threads, (int)OrbitalPairs.size(), pair_start, pair_end);
-
-    SCF_THREAD_CONTROL thread_control;
-
-    for(int ist = 0;ist < active_threads;ist++) {
-
-
-
-        thread_control.job = HYBRID_THETA_PHI;
-
-        thread_control.nv = (void *)work_theta;
-
-        thread_control.basetag = pair_start[ist];
-        thread_control.extratag1 = active_threads;
-        thread_control.extratag2 = pair_end[ist];
-
-        QueueThreadTask(ist, thread_control);
-
-        //DotProductOrbitOrbit(&states1[st1], &states[st2], &states[st1],  H, S, onepair);
+        double temp = work_theta[st11 * ct.num_states + st2];
+        ThetaPhi(st1, st2, temp, states[st2].psiR, states1[st1].psiR, 0, states, &onepair);
     }
 
-    // Thread tasks are set up so run them
-    T->run_thread_tasks(active_threads);
+
+    //  if( (int)OrbitalPairs.size() < active_threads) active_threads = (int)OrbitalPairs.size();
+
+    //  int pair_start[active_threads], pair_end[active_threads];
+
+    //  DistributeTasks(active_threads, (int)OrbitalPairs.size(), pair_start, pair_end);
+
+    //  SCF_THREAD_CONTROL thread_control;
+
+    //  for(int ist = 0;ist < active_threads;ist++) {
+
+
+
+    //      thread_control.job = HYBRID_THETA_PHI;
+
+    //      thread_control.nv = (void *)work_theta;
+
+    //      thread_control.basetag = pair_start[ist];
+    //      thread_control.extratag1 = active_threads;
+    //      thread_control.extratag2 = pair_end[ist];
+
+    //      QueueThreadTask(ist, thread_control);
+
+    //      //DotProductOrbitOrbit(&states1[st1], &states[st2], &states[st1],  H, S, onepair);
+    //  }
+
+    //  // Thread tasks are set up so run them
+    //  T->run_thread_tasks(active_threads);
 
 }
 
@@ -375,27 +386,28 @@ void get_dnmpsi(STATE *states1)
         prj_ion_address += pct.prj_per_ion[ion] * ct.max_nlpoints;       
     }
 
-#pragma omp parallel private(ion2)
+    for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
-#pragma omp for schedule(static,1) nowait
-        for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+        int ion = pct.ionidx[ion2];
+        int num_prj = pct.prj_per_ion[ion];
+        if (num_prj == 0) continue;
+        double *qqq = pct.qqq[ion];
+        double * ddd = pct.dnmI[ion];
+        int num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
+
+        dgemm("N", "N", &num_prj, &num_orb, &num_prj, &one, qqq, &num_prj, 
+                Kbpsi_str.kbpsi_res_ion[ion2].data(), &num_prj, &zero, work_kbpsi, &num_prj);
+
+        dgemm("N", "N", &num_prj, &num_orb, &num_prj, &mtwo, ddd, &num_prj, 
+                Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
+
+        dgemm("N", "N", &ct.max_nlpoints, &num_orb, &num_prj, &one, prjptr[ion2], &ct.max_nlpoints, 
+                work_kbpsi, &num_prj, &zero, prj_sum, &ct.max_nlpoints);
+
+#pragma omp parallel private(st0)
         {
-            int ion = pct.ionidx[ion2];
-            int num_prj = pct.prj_per_ion[ion];
-            if (num_prj == 0) continue;
-            double *qqq = pct.qqq[ion];
-            double * ddd = pct.dnmI[ion];
-            int num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
-
-            dgemm("N", "N", &num_prj, &num_orb, &num_prj, &one, qqq, &num_prj, 
-                    Kbpsi_str.kbpsi_res_ion[ion2].data(), &num_prj, &zero, work_kbpsi, &num_prj);
-
-            dgemm("N", "N", &num_prj, &num_orb, &num_prj, &mtwo, ddd, &num_prj, 
-                    Kbpsi_str.kbpsi_ion[ion2].data(), &num_prj, &one, work_kbpsi, &num_prj);
-
-            dgemm("N", "N", &ct.max_nlpoints, &num_orb, &num_prj, &one, prjptr[ion2], &ct.max_nlpoints, 
-                    work_kbpsi, &num_prj, &zero, prj_sum, &ct.max_nlpoints);
-
+//#pragma omp for schedule(static,1) nowait
+#pragma omp for schedule(dynamic,1) nowait
             for(int st0 = 0; st0 < num_orb; st0++)
             {
                 int st1 = Kbpsi_str.orbital_index[ion2][st0];

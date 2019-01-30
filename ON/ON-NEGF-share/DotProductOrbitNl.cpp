@@ -29,15 +29,15 @@ dot_product of (orbit,  non-local projector )
 static void inline inline_betapsi(int zlength, int num_proj, double *prj, 
         double *psi, double *kbpsi)
 {
-    //        for(int i = 0; i < num_proj; i++)
-    //    for(int j = 0; j < zlength; j++)
-     //       kbpsi[i] += prj[i * ct.max_nlpoints + j] * psi[j];
-     
-    double alpha = get_vel();
-    double one = 1.0;
-    int ione = 1;
-    dgemv("T", &zlength, &num_proj, &alpha, prj, &ct.max_nlpoints, 
-            psi, &ione, &one, kbpsi, &ione); 
+    for(int i = 0; i < num_proj; i++)
+        for(int j = 0; j < zlength; j++)
+            kbpsi[i] += get_vel() * prj[i * ct.max_nlpoints + j] * psi[j];
+
+    //double alpha = get_vel();
+    //double one = 1.0;
+    //int ione = 1;
+    //dgemv("T", &zlength, &num_proj, &alpha, prj, &ct.max_nlpoints, 
+    //        psi, &ione, &one, kbpsi, &ione); 
 }
 void DotProductOrbitNl(STATE *st1, int ion2, double *
         psi, double * prjptr, ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl,
