@@ -39,7 +39,7 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
     static double *f;
     double A[MAX_STEPS * MAX_STEPS];
     double b[MAX_STEPS];
-    double b0[MAX_STEPS], bmin, bmax;
+    double bmin, bmax;
     int ipvt[MAX_STEPS];
     int i, j;
     int ione = 1;
@@ -216,24 +216,6 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
             bmax = rmg_max(bmax, b[i]);
         }
             
-
-
-#if 0
-        bmin = -1.5;
-        for (i = 0; i < size; i++) 
-        {
-            if(b[i] < bmin)
-            {
-                for(j = 0; j <size; j++)
-                {
-                    b[j] = b[j] * (1.0 + (b0[i]-bmin)/(1.0-b0[i]));
-                }
-                b[i] = bmin;
-                break;
-            }
-        }
-#endif
-
 
         if (pct.gridpe == 0)
         {

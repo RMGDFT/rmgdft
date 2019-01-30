@@ -21,7 +21,6 @@
 
 void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc)
 {
-    int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     int FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     int FPY0_GRID = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
     int FPZ0_GRID = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);

@@ -25,9 +25,7 @@ add_library (ON_Common
  diag_eig_matrix.c
  genvpsi.c
  get_cholesky_real.c
- get_dm_diag_p.c
  get_gamma_precond.c
- get_invmat.c
  get_mat_Omega.c
  get_orbit_center.c
  get_state_to_proc.c
@@ -41,7 +39,6 @@ add_library (ON_Common
  init_wf_gaussian.c
  interpolate_atom_density.c
  Kain.cpp
- matrix_and_diag.c
  md_fastrelax.c
  mgrid_solv_local.c
  MgridSolvLocal.cpp

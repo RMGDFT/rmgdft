@@ -234,13 +234,11 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
 static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1)
 {
-    int i;
-    int st1, st2;
-    int loop, state_per_proc;
-    int num_recv;
+    int st1;
 
-    BaseThread *T = BaseThread::getBaseThread(0);
-    int active_threads = ct.MG_THREADS_PER_NODE;
+    //BaseThread *T = BaseThread::getBaseThread(0);
+
+    //int active_threads = ct.MG_THREADS_PER_NODE;
 
     // theta * phi will be stored in states1.psiR, first set to 0.0
 #pragma omp parallel private(st1)
@@ -252,7 +250,7 @@ static void get_nonortho_res(STATE * states, double *work_theta, STATE * states1
     }
 
     if(OrbitalPairs.size() == 0 ) return;
-    for(int ipair = 0; ipair < OrbitalPairs.size(); ipair++)
+    for(unsigned int ipair = 0; ipair < OrbitalPairs.size(); ipair++)
     {
         ORBITAL_PAIR onepair = OrbitalPairs[ipair];
         int st1 = onepair.orbital1;
@@ -357,11 +355,10 @@ void get_qnm_res(double *work_theta)
 void get_dnmpsi(STATE *states1)
 {
     double *prjptr[pct.n_ion_center];
-    int ion2, st0, st1;
+    int ion2;
     double *prj_sum;
 
     double one=1.0, zero=0.0, mtwo=-2.0, *work_kbpsi; 
-    int ione=1;
 
     /*
      *  dnm_weght[i] = sum_j dnm[i, j] *<beta_j|phi> 

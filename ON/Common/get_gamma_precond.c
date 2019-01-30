@@ -15,7 +15,7 @@ double get_gamma_precond(double *vtot, double small_eig)
 {
     int idx, nits;
     double vmax, gamma;
-    double Zfac = 2.0 * ct.max_zvalence;
+    //double Zfac = 2.0 * ct.max_zvalence;
 
 
     double ihx = 1. / (get_hxgrid() * get_hxgrid() * get_xside() * get_xside());

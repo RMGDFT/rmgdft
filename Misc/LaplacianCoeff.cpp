@@ -197,7 +197,7 @@ void LaplacianCoeff::GetPointList1D(std::vector<GridPoint>& points, double a, in
 
 void LaplacianCoeff::GetPointList2D(std::vector<GridPoint>& points, double a[2][2], int Ngrid[2], int Lorder){
     GridPoint point;
-    double dx, dy,dz, dist;    
+    double dx, dy, dist;    
     for(int i = -Lorder; i <= Lorder; i++){
         for(int j = -Lorder; j <= Lorder; j++){
             if(i == 0 && j == 0) continue;

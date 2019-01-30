@@ -44,7 +44,7 @@
 /* compensating charges and various other things to a file. */
 void ReadPermInfo(char *name, unsigned int *perm_index)
 {
-    int fhand, nbytes;
+    int fhand;
     char newname[MAX_PATH + 20];
 
     sprintf (newname, "%s%s", name, ".perm");
@@ -56,7 +56,7 @@ void ReadPermInfo(char *name, unsigned int *perm_index)
         exit(0);
     }
 
-    nbytes = read(fhand, perm_index, ct.num_ions * sizeof(unsigned int));
+    unsigned int nbytes = read(fhand, perm_index, ct.num_ions * sizeof(unsigned int));
 
     if(nbytes != ct.num_ions * sizeof(unsigned int))
     {

@@ -30,12 +30,11 @@ extern std::vector<ORBITAL_PAIR> OrbitalPairs;
 void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
 {
 
-    BaseThread *T = BaseThread::getBaseThread(0);
+    //BaseThread *T = BaseThread::getBaseThread(0);
     int active_threads = ct.MG_THREADS_PER_NODE;
 
     if( OrbitalPairs.size() == 0) return;
 
-    SCF_THREAD_CONTROL thread_control;
 //    printf("\n %d num pairs ", (int)OrbitalPairs.size());
 
     if( (int)OrbitalPairs.size() < active_threads) active_threads = (int)OrbitalPairs.size();
@@ -44,18 +43,19 @@ void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
     int pair_end[active_threads];
 
     DistributeTasks(active_threads, (int)OrbitalPairs.size(), pair_start, pair_end);
-int ist;
+    int ist;
 #pragma omp parallel private(ist)
-{
+    {
 #pragma omp for schedule(static,1) nowait
-    for(int ist = 0;ist < active_threads;ist++) {
-        OrbitDotOrbitBlock(pair_start[ist], pair_end[ist], Aij, Bij); 
+        for(int ist = 0;ist < active_threads;ist++) {
+            OrbitDotOrbitBlock(pair_start[ist], pair_end[ist], Aij, Bij); 
+        }
+
+
     }
-    
+#if 0
 
-}
-    #if 0
-
+    SCF_THREAD_CONTROL thread_control;
     //for(int ist = 0;ist < active_threads;ist++) {
     for(int ist = 0;ist < (int)OrbitalPairs.size();ist++) {
 
@@ -78,7 +78,7 @@ int ist;
 
     // Thread tasks are set up so run them
     T->run_thread_tasks(active_threads, Rmg_Q);
-    #endif
+#endif
 
 
 }

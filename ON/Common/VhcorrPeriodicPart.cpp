@@ -43,13 +43,9 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
 
     double gsquare, gx, g_r0;
     std::complex<double> phase_r0;
-    ptrdiff_t densgrid[3];
-    densgrid[0] = fine_pwaves->global_dimx;
-    densgrid[1] = fine_pwaves->global_dimy;
-    densgrid[2] = fine_pwaves->global_dimz;
 
-    double g2cut = (sqrt(fine_pwaves->gmax))*(sqrt(fine_pwaves->gmax));
-    int global_basis = fine_pwaves->global_basis;
+    //double g2cut = (sqrt(fine_pwaves->gmax))*(sqrt(fine_pwaves->gmax));
+    //int global_basis = fine_pwaves->global_basis;
     int pbasis = fine_pwaves->pbasis;
 
     std::complex<double> *crho = new std::complex<double>[pbasis];

@@ -26,7 +26,6 @@ double FiniteDiffLap(RmgType * __restrict__ a, RmgType * __restrict__ b, int dim
     }
 
 
-    int ione = 1;
     for(int idx = 0; idx < dim[0] * dim[1] * dim[2]; idx++) b[idx] = 0.0;
     for(auto coeff:LC->coeff_and_index)
     {

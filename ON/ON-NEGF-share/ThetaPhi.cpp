@@ -28,11 +28,8 @@ void ThetaPhi(int st1, int st2, double theta_ion, double * st2_psi,
     int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int zlength1, zlength2;
 
-    if (mode == 0)
-        index = (st1 - ct.state_begin) * ct.num_states + st2;
-    else if (mode == 1)
-        index = (st2 - ct.state_begin) * ct.num_states + st1;
-    else
+    index = (st1 - ct.state_begin) * ct.num_states + st2;
+    if (mode != 0)
     {
         index = 0;
         error_handler(" mode is not right %d", mode);

@@ -293,7 +293,6 @@ static void init_alloc_nonloc_mem (void)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        ION *iptr = &ct.ions[ion];
 
         pct.Qidxptrlen[ion] = 0;
         pct.lptrlen[ion] = 0;

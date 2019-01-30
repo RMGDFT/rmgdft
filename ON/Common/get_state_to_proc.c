@@ -21,7 +21,7 @@ get_state_to_proc.c
 
 void get_state_to_proc(STATE * states)
 {
-    int st, pe, proc_extra;
+    int st, pe;
 
     assert(ct.num_states >= pct.grid_npes);
     /* determing how many orbitals one processor should have */

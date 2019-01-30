@@ -34,7 +34,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     char *uplo = "u", *jobz = "v";
 
     int info;
-    double zero = 0., one = 1.,half = 0.5,  alpha;
+    double zero = 0., one = 1., alpha;
     int st1, st_g;
     double *eigs;
 
@@ -49,6 +49,7 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     
     MyCpdgemr2d(numst,numst, Hij_00, pct.descb, Hij, pct.desca);
     MyCpdgemr2d(numst,numst, Bij_00, pct.descb, matB, pct.desca);
+    delete(RT2);
 
  //   Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
   //          pct.desca, pct.desca[1]);

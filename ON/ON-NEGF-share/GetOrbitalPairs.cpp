@@ -23,10 +23,7 @@ void GetOrbitalPairs(STATE * states)
 
 
     int i1, i2, i3, i4, i5, i6;
-    int size;
-    int index;
     int st1, st2;
-    int num_state_gridpe;
     ORBITAL_PAIR onepair;
 
     int ixcenter1, iycenter1, izcenter1;

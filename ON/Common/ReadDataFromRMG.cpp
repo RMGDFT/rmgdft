@@ -52,18 +52,14 @@ void ReadDataFromRMG (char *name, double * vh, double * rho, double * vxc)
     char newname[MAX_PATH + 200];
     int grid[3];
     int fine[3];
-    int pgrid[3];
     int fpgrid[3];
     int pe[3];
     int grid_size;
     int fgrid_size;
     int gamma;
-    int nk, ik;
-    int ns, is;
+    int nk;
+    int ns;
 
-    pgrid[0] = Rmg_G->get_PX0_GRID(1);
-    pgrid[1] = Rmg_G->get_PY0_GRID(1);
-    pgrid[2] = Rmg_G->get_PZ0_GRID(1);
     fpgrid[0] = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     fpgrid[1] = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
     fpgrid[2] = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
