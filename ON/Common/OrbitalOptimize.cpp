@@ -297,14 +297,13 @@ void get_qnm_res(double *work_theta)
 {
 
     int idx1;
-    int ion1;
     int num_prj, num_orb, tot_orb;
     int max_orb;
     double one = 1.0, zero = 0.0, *work_mat;
 
     max_orb = 0;
 
-    for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
+    for (unsigned int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
         tot_orb = Kbpsi_str.orbital_index[ion1].size();
         max_orb = std::max(max_orb, tot_orb);
@@ -313,7 +312,7 @@ void get_qnm_res(double *work_theta)
     work_mat = new double[(ct.state_end-ct.state_begin) *max_orb];
 
 
-    for (ion1 = 0; ion1 < pct.n_ion_center; ion1++)
+    for (unsigned int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
 
         num_prj = pct.prj_per_ion[pct.ionidx[ion1]];
@@ -355,7 +354,6 @@ void get_qnm_res(double *work_theta)
 void get_dnmpsi(STATE *states1)
 {
     double *prjptr[pct.n_ion_center];
-    int ion2;
     double *prj_sum;
 
     double one=1.0, zero=0.0, mtwo=-2.0, *work_kbpsi; 
@@ -366,7 +364,7 @@ void get_dnmpsi(STATE *states1)
      */
 
     int num_orb_max = 1;
-    for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    for (unsigned int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         num_orb_max = std::max(num_orb_max,Kbpsi_str.num_orbital_thision[ion2]); 
     }
@@ -376,14 +374,14 @@ void get_dnmpsi(STATE *states1)
 
 
     int prj_ion_address = 0;
-    for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    for (unsigned int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         int ion = pct.ionidx[ion2];
         prjptr[ion2] = &projectors[prj_ion_address];
         prj_ion_address += pct.prj_per_ion[ion] * ct.max_nlpoints;       
     }
 
-    for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    for (unsigned int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         int ion = pct.ionidx[ion2];
         int num_prj = pct.prj_per_ion[ion];
@@ -400,12 +398,12 @@ void get_dnmpsi(STATE *states1)
 
         dgemm("N", "N", &ct.max_nlpoints, &num_orb, &num_prj, &one, prjptr[ion2], &ct.max_nlpoints, 
                 work_kbpsi, &num_prj, &zero, prj_sum, &ct.max_nlpoints);
-
+        int st0;
 #pragma omp parallel private(st0)
         {
 //#pragma omp for schedule(static,1) nowait
 #pragma omp for schedule(dynamic,1) nowait
-            for(int st0 = 0; st0 < num_orb; st0++)
+            for(st0 = 0; st0 < num_orb; st0++)
             {
                 int st1 = Kbpsi_str.orbital_index[ion2][st0];
 

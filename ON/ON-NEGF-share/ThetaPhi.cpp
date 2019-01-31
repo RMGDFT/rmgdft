@@ -25,15 +25,9 @@ void ThetaPhi(int st1, int st2, double theta_ion, double * st2_psi,
     int incx, incy, incx1, incy1;
     int ix, iy, iz, ix1, ix2, iy1, iy2;
     int idx1, idx2;
-    int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
-    int zlength1, zlength2;
+    int xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
 
-    index = (st1 - ct.state_begin) * ct.num_states + st2;
-    if (mode != 0)
-    {
-        index = 0;
-        error_handler(" mode is not right %d", mode);
-    }
+    int zlength1, zlength2;
 
     xlow1 = onepair->xlow1;
     xhigh1 = onepair->xhigh1;

@@ -30,7 +30,7 @@ potential, and add them into Aij.
 
 void GetHvnlij(double *Aij, double *Bij)
 {
-    int nh, ion, st1, st2, ist;
+    int nh, st1, st2, ist;
     double alpha, zero = 0.0, one = 1.0;
     int ion1;
     double *dnmI, *qnmI;
@@ -47,7 +47,7 @@ void GetHvnlij(double *Aij, double *Bij)
 
     max_state = 0;
     max_nl = 0;
-    for (ion = 0; ion < pct.n_ion_center; ion++)
+    for (unsigned int ion = 0; ion < pct.n_ion_center; ion++)
     {
         nh = pct.prj_per_ion[pct.ionidx[ion]];
         tot_orb = Kbpsi_str.orbital_index[ion].size();
@@ -58,7 +58,7 @@ void GetHvnlij(double *Aij, double *Bij)
     temA = new double[(ct.state_end-ct.state_begin) * max_nl];
     temB = new double[(ct.state_end-ct.state_begin) * max_state];
 
-    for (ion = 0; ion < pct.n_ion_center; ion++)
+    for (unsigned int ion = 0; ion < pct.n_ion_center; ion++)
     {
         /* begin shuchun wang */
         ion1 = pct.ionidx[ion];

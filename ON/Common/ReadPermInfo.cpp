@@ -60,7 +60,7 @@ void ReadPermInfo(char *name, unsigned int *perm_index)
 
     if(nbytes != ct.num_ions * sizeof(unsigned int))
     {
-        printf("read perminfo failed: read %d != %d", nbytes, ct.num_ions*sizeof(unsigned int));
+        printf("read perminfo failed: read %u != %u", nbytes, ct.num_ions*sizeof(unsigned int));
         exit(0);
     }
 

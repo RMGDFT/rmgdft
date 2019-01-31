@@ -132,7 +132,7 @@ void mgrid_solv_local(double * v_mat, double * f_mat, double * work,
             /* Localization the work array */
             //app_mask(istate, work, level);
 //            ZeroBoundaryC(work, dimx,dimy,dimz);
-ZeroBoundaryC(v_mat, dimx,dimy,dimz);
+            ZeroBoundaryC(v_mat, dimx,dimy,dimz);
 
 //            pack_ptos(v_mat, work, dimx, dimy, dimz);
 

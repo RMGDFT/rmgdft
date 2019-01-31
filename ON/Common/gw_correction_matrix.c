@@ -15,6 +15,8 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "Scalapack.h"
+#include "blacs.h"
 
 
 
@@ -52,20 +54,20 @@ void gw_correction_matrix(double *matS, double *Cij)
 
 
     /* work_dis = C * gamma_dis * C^*  */
-    PSSYMM("r", "l", &numst, &numst, &one,
+    pdsymm("r", "l", &numst, &numst, &one,
             gamma_dis, &ione, &ione, pct.desca,
             Cij, &ione, &ione, pct.desca, &zero, uu_dis, &ione, &ione, pct.desca);
 
-    PSGEMM("N", "T", &numst, &numst, &numst, &one,
+    pdgemm("N", "T", &numst, &numst, &numst, &one,
             uu_dis, &ione, &ione, pct.desca,
             Cij, &ione, &ione, pct.desca, &zero, work_dis, &ione, &ione, pct.desca);
 
     //work_dis2 = work_dis * S
-    PSGEMM("N", "N", &numst, &numst, &numst, &one,
+    pdgemm("N", "N", &numst, &numst, &numst, &one,
             work_dis, &ione, &ione, pct.desca,
             matS, &ione, &ione, pct.desca, &zero, work_dis2, &ione, &ione, pct.desca);
     // work_dis = S * work_dis1 , the final correction matrix 
-    PSGEMM("N", "N", &numst, &numst, &numst, &one,
+    pdgemm("N", "N", &numst, &numst, &numst, &one,
             matS, &ione, &ione, pct.desca,
             work_dis2, &ione, &ione, pct.desca, &zero, work_dis, &ione, &ione, pct.desca);
 

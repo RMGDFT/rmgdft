@@ -25,7 +25,7 @@
 
 void KbpsiUpdate(STATE * states)
 {
-    int idx, st1;
+    int st1;
     unsigned int ion, num_orbital_thision, num_proj;
     unsigned int ip, iip1;
 
@@ -42,7 +42,7 @@ void KbpsiUpdate(STATE * states)
 
 
         // uopdate values from this process
-        for(idx = 0; idx < num_orbital_thision; idx++)
+        for(unsigned int idx = 0; idx < num_orbital_thision; idx++)
         {
             st1 =Kbpsi_str.orbital_index[ion][idx];
             iip1 = (st1-ct.state_begin) * pct.n_ion_center * ct.max_nl + ion * ct.max_nl;

@@ -32,7 +32,7 @@ and add them into Aij.
 
 void RhoQnmMat(double *Aij, double * global_mat_X)
 {
-    int ion, ip1, ip2, st1, st2, ist;
+    int ip1, ip2, st1, st2, ist;
     int ion1;
     int nh;
     int st11;
@@ -41,7 +41,7 @@ void RhoQnmMat(double *Aij, double * global_mat_X)
 
     double *mat_kbpsi = new double[ct.max_nl];
 
-    for (ion = 0; ion < pct.n_ion_center; ion++)
+    for (unsigned int ion = 0; ion < pct.n_ion_center; ion++)
     {
         ion1 = pct.ionidx[ion];
         nh = pct.prj_per_ion[ion1];

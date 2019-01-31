@@ -47,7 +47,7 @@ void OrbitDotOrbit(STATE * states, STATE * states1, double *Aij, double *Bij)
 #pragma omp parallel private(ist)
     {
 #pragma omp for schedule(static,1) nowait
-        for(int ist = 0;ist < active_threads;ist++) {
+        for(ist = 0;ist < active_threads;ist++) {
             OrbitDotOrbitBlock(pair_start[ist], pair_end[ist], Aij, Bij); 
         }
 

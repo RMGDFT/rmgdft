@@ -194,15 +194,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     delete(RT6);
     fflush(NULL);
 
-    int np[3];
-    ptrdiff_t densgrid[3];
-    np[0] = Rmg_G->get_PE_X();
-    np[1] = Rmg_G->get_PE_Y();
-    np[2] = Rmg_G->get_PE_Z();
-    densgrid[0] =  Rmg_G->get_NX_GRID(Rmg_G->default_FG_RATIO);
-    densgrid[1] =  Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO);
-    densgrid[2] =  Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO);
-
     // Initialize some commonly used plans
     FftInitPlans();
 

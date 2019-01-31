@@ -40,7 +40,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     int state;
     char newname[MAX_PATH + 20];
     int idx, idx1;
-    int fhand;
     double hxgrid, hygrid, hzgrid;
     double *rho_tem;
     int ix, iy, iz, ixdim, iydim, izdim;
@@ -49,19 +48,11 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     int PNX0, PNY0, PNZ0;
     int pex, pey, pez;
 
-    time_t tt;
-
-    char *timeptr;
-
-
 
     /* Wait until everyone gets here */
     my_barrier();
 
     /* Make the new output file name */
-
-	time(&tt);
-	timeptr = ctime(&tt);
 
 	if(pct.gridpe == 0) fflush(NULL);
 
@@ -139,9 +130,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
 	my_barrier();
 
-	time(&tt);
-	timeptr = ctime(&tt);
-
 
 	if(pct.gridpe == 0) 
     {
@@ -161,8 +149,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	amode = S_IREAD | S_IWRITE;
 	if (pct.gridpe == 0)
 		chmod(newname, amode);
-	if (pct.gridpe == 0)
-		close(fhand);
 
 	hxgrid = get_hxgrid() * get_xside();
 	hygrid = get_hygrid() * get_yside();
@@ -173,7 +159,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
         int state_permuted = perm_state_index[state];
 		sprintf(newname, "%s%s%d", name, ".orbit_", state_permuted);
 		amode = S_IREAD | S_IWRITE;
-		fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+		int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand < 0)
 			error_handler(" Unable to write file ");
 
@@ -273,7 +259,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 		sprintf(newname, "%s%s", name, ".rho_firstatom");
 		amode = S_IREAD | S_IWRITE;
 
-		fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+		int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand < 0)
 			error_handler(" Unable to write file ");
 

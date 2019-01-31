@@ -69,8 +69,6 @@ add_library (ON_Common
  write_states_info.c
  xbsmovie.c
  ZeroBoundary.cpp
- ThetaPhi.cpp
- ThetaPhiBlock.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
 include_directories("${RMG_BINARY_DIR}/ON/Headers/")

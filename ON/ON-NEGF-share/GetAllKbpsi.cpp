@@ -96,14 +96,13 @@ void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi_one_state,
         ION_ORBIT_OVERLAP *ion_orbit_overlap_region_nl, double *projectors)
 {
 
-    int ip;
     double *prjptr;
-    int ion, ion2;
+    int ion;
 
 
     prjptr = projectors;
 
-    for (ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    for (unsigned int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         ion = pct.ionidx[ion2];
         /* Loop over projectors for this ion and evaluate */

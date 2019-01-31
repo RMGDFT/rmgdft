@@ -72,9 +72,6 @@ void Precond(double *x)
     {
         double *psiR = x + size;
         size += states[istate].size;
-        int ixx = states[istate].ixmax - states[istate].ixmin + 1;
-        int iyy = states[istate].iymax - states[istate].iymin + 1;
-        int izz = states[istate].izmax - states[istate].izmin + 1;
 
         for (int idx = 0; idx < states[istate].size; idx++)
         {

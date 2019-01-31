@@ -35,17 +35,10 @@ void density_orbit_X_orbit(int st1, int st2, double scale, double * psi1,
     int ix, iy, iz;
     int ix1, ix2, iy1, iy2, iz1, iz2, idx1, idx2;
     int ix3, iy3, iz3, idx3;
-    int index, xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
+    int xshift1, xshift2, yshift1, yshift2, zshift1, zshift2;
     int nx_grid = get_NX_GRID();
     int ny_grid = get_NY_GRID();
     int nz_grid = get_NZ_GRID();
-
-    index = (st1 - ct.state_begin) * ct.num_states + st2;
-    if (mode != 0)
-    {
-        index = 0;
-        error_handler(" mode is not right %d", mode);
-    }
 
     xlow1 = onepair.xlow1;
     xhigh1 = onepair.xhigh1;

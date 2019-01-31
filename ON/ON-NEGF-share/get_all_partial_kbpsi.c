@@ -29,7 +29,7 @@ void get_all_partial_kbpsi(STATE * states, ION_ORBIT_OVERLAP
 {
     int st1, idx1, idx2, idx;
     int size;
-    int ion, ion1, ip;
+    int ion, ion1;
     double *psi, *prjptr_x, *prjptr_y, *prjptr_z;
 
 

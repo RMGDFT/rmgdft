@@ -36,13 +36,10 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double * vxc_old, double * vh_old, int *CONVERGENCE)
 {
     int numst = ct.num_states;
-    int  kpt;
     int idx, ione = 1;
     double tem;
-    int flag;
     int steps;
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-    int px0_grid = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     double *rho_pre;
 
     rho_pre = new double[nfp0];
@@ -61,13 +58,11 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
 
-    flag = 0;
     my_barrier();
 
     RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
     for (int st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
-        STATE *sp = &states[st1];
         int ixx = states[st1].orbit_nx;
         int iyy = states[st1].orbit_ny;
         int izz = states[st1].orbit_nz;
@@ -211,10 +206,7 @@ get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
 void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old, double *rho, double *rho_pre, int *CONVERGENCE)
 {
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-    int FPX0_GRID = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
-    int FPY0_GRID = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
-    int FPZ0_GRID = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
-    int idx, ione = 1;
+    int idx;
     double drho_max, dvh_max, dvxc_max;
 
 
@@ -232,14 +224,12 @@ void CheckConvergence(double *vxc, double *vh, double * vxc_old, double * vh_old
     //    dvh_max = fabs(rho_old[idx]);
 
     dvxc_max = 0.0;
-    int idx_max = -100;
 
     for (idx = 0; idx < nfp0; idx++)
     {
         rho_old[idx] = fabs(vxc[idx] - vxc_old[idx]);
         if(rho_old[idx] > dvxc_max ) {
             dvxc_max = rho_old[idx];
-            idx_max = idx;
         }
     }
     //dvxc_max = *std::max_element(rho_old, rho_old+nfp0);
