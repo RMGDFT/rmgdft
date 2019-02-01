@@ -33,7 +33,7 @@ This should be called after get_nlop.c
 void init_nonlocal_comm(void)
 {
     int ion, idx, item;
-    int size;
+    size_t size;
     int pair_find;
     int ion1, ion2, ion_global1, ion_global2;
 
@@ -67,7 +67,7 @@ void init_nonlocal_comm(void)
     item = max_ion_nonlocal * pct.grid_npes;
     global_sums_int(ionidx_allproc, &item);
 
-    size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
+    size = (size_t)ct.state_per_proc * (size_t)max_ion_nonlocal * (size_t)ct.max_nl;
 
     /* allocate mem for kbpsi <psi|kb>  */
 

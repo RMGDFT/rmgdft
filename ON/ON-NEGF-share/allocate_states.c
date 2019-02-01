@@ -35,8 +35,8 @@
 
 void allocate_states()
 {
-    int size;
-    size = ct.num_states * ct.num_kpts * (ct.spin_flag +1);
+    size_t size;
+    size = (size_t)ct.num_states * (size_t)ct.num_kpts * (size_t)(ct.spin_flag +1);
     //dprintf("\n dsdsd %d %d %d", ct.num_states, ct.num_kpts, ct.spin_flag);
     my_malloc(states, size, STATE);
     my_malloc(states1, size,  STATE);

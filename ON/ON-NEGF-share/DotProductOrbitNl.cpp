@@ -46,7 +46,7 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
 
     int xlow1, xhigh1, xlow2, xhigh2, xshift;
     int ylow1, yhigh1, ylow2, yhigh2, yshift;
-    int zlow1, zhigh1, zlow2, zhigh2;
+    int zlow1, zhigh1, zlow2, zhigh2, zshift;
     int iyy, izz, iyy1, izz1;
     int incx, incy, incx1, incy1;
     int ix, iy, ix1, ix2, iy1, iy2, iz1, iz2;
@@ -72,6 +72,7 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
     zhigh1 = ion_orbit_overlap_region_nl[index].zhigh1;
     zlow2 = ion_orbit_overlap_region_nl[index].zlow2;
     zhigh2 = ion_orbit_overlap_region_nl[index].zhigh2;
+    zshift = ion_orbit_overlap_region_nl[index].zshift;
 
     zlength1 = zhigh1 - zlow1 +1;
     zlength2 = zhigh2 - zlow2 +1;
@@ -149,7 +150,7 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
     if(zlength2 > 0)
     {
         iz1 = zlow2 - st1->izmin;
-        iz2 = zlow2 - ct.ions[ion2].izstart;
+        iz2 = zlow2 - ct.ions[ion2].izstart-zshift;
         for (ix = xlow1; ix <= xhigh1; ix++)
         {
             ix1 = (ix - st1->ixmin) * incx;
