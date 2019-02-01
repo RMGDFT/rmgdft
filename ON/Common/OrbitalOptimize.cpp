@@ -1,7 +1,7 @@
 /************************** SVN Revision Information **************************
  **    $Id$    **
-******************************************************************************/
- 
+ ******************************************************************************/
+
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -37,7 +37,7 @@ static void get_nonortho_res(STATE *, double *, STATE *);
 static void get_dnmpsi(STATE *);
 
 void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
-            double *vnuc, double *rho, double *rhoc, double * vxc_old, double * vh_old)
+        double *vnuc, double *rho, double *rhoc, double * vxc_old, double * vh_old)
 {
     int ione = 1;
     double t1;
@@ -88,46 +88,46 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     double *orbital_border;
     double *orbit_tem;
 #pragma omp parallel private(st1,orbital_border,orbit_tem)
-{
-    orbital_border = new double[2*item];
-    orbit_tem = new double[2*item];
-#pragma omp for schedule(static,1) nowait
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
-        STATE *sp = &states[st1];
-        STATE *sp1 = &states1[st1];
-        int ixx = states[st1].orbit_nx;
-        int iyy = states[st1].orbit_ny;
-        int izz = states[st1].orbit_nz;
-
-        /* Generate 2*V*psi and store it  in orbit_tem */
-        GenVxPsi(sp->psiR, st1, orbit_tem, vtot_global, states);
-
-        double t1 = -1.0;
-        daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
-
-        /* A operating on psi stored in orbit_tem */
-        if(sp->radius > 0)
+        orbital_border = new double[2*item];
+        orbit_tem = new double[2*item];
+#pragma omp for schedule(static,1) nowait
+        for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
         {
-            FillOrbitalBorders(orbital_border, sp->psiR, ixx, iyy, izz, order);
-        }
-        else
-        {
-            Rmg_T->trade_imagesx_central_local(sp->psiR, orbital_border, ixx, iyy, izz, order/2);
-        }
+            STATE *sp = &states[st1];
+            STATE *sp1 = &states1[st1];
+            int ixx = states[st1].orbit_nx;
+            int iyy = states[st1].orbit_ny;
+            int izz = states[st1].orbit_nz;
 
-        if(ct.laplacian_offdiag || ct.laplacian_autocoeff)
-            FiniteDiffLap (orbital_border, orbit_tem, ixx, iyy, izz, LC);
-        else
-            FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+            /* Generate 2*V*psi and store it  in orbit_tem */
+            GenVxPsi(sp->psiR, st1, orbit_tem, vtot_global, states);
 
-        t1 = 1.0;
-        daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
+            double t1 = -1.0;
+            daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
 
-    }                           /* end for st1 = .. */
-    delete [] orbit_tem;
-    delete [] orbital_border;
-}
+            /* A operating on psi stored in orbit_tem */
+            if(sp->radius > 0)
+            {
+                FillOrbitalBorders(orbital_border, sp->psiR, ixx, iyy, izz, order);
+            }
+            else
+            {
+                Rmg_T->trade_imagesx_central_local(sp->psiR, orbital_border, ixx, iyy, izz, order/2);
+            }
+
+            if(ct.laplacian_offdiag || ct.laplacian_autocoeff)
+                FiniteDiffLap (orbital_border, orbit_tem, ixx, iyy, izz, LC);
+            else
+                FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+
+            t1 = 1.0;
+            daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
+
+        }                           /* end for st1 = .. */
+        delete [] orbit_tem;
+        delete [] orbital_border;
+    }
 
     delete(RTa);
     RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: dnm");
@@ -373,7 +373,7 @@ void get_dnmpsi(STATE *states1)
     work_kbpsi = new double[ct.max_nl * (ct.state_end-ct.state_begin)];
 
 
-    int prj_ion_address = 0;
+    size_t prj_ion_address = 0;
     for (unsigned int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         int ion = pct.ionidx[ion2];
@@ -401,7 +401,7 @@ void get_dnmpsi(STATE *states1)
         int st0;
 #pragma omp parallel private(st0)
         {
-//#pragma omp for schedule(static,1) nowait
+            //#pragma omp for schedule(static,1) nowait
 #pragma omp for schedule(dynamic,1) nowait
             for(st0 = 0; st0 < num_orb; st0++)
             {
