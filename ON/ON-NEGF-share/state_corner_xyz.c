@@ -30,15 +30,16 @@ void state_corner_xyz(STATE * states)
         /* find the minmum and maximum grid point of the orbit on ion */
         /* x direction */
 
-        ixx = states[state].crds[0]/hgrid[0];
+        ixx = (int)(states[state].crds[0]/hgrid[0]+0.5);
+
         states[state].ixmin = ixx - states[state].orbit_nx/2;
         states[state].ixmax = ixx + states[state].orbit_nx/2;
 
-        iyy = states[state].crds[1]/hgrid[1];
+        iyy = (int)(states[state].crds[1]/hgrid[1]+0.5);
         states[state].iymin = iyy - states[state].orbit_ny/2;
         states[state].iymax = iyy + states[state].orbit_ny/2;
 
-        izz = states[state].crds[2]/hgrid[2];
+        izz = (int)(states[state].crds[2]/hgrid[2]+0.5);
         states[state].izmin = izz - states[state].orbit_nz/2;
         states[state].izmax = izz + states[state].orbit_nz/2;
     }
