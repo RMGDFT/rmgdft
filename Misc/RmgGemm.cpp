@@ -149,8 +149,10 @@ void ProcessCublasError(cublasStatus_t custat)
     {
         printf("CUBLAS_STATUS_INTERNAL_ERROR");
     }
-
-    printf("UNKNOWN CUBLAS ERROR");
+    else
+    {
+        printf("UNKNOWN CUBLAS ERROR");
+    }
 
 }
 #endif
