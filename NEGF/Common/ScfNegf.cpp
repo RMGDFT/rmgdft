@@ -220,11 +220,10 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
         rho[idx] = tem;
     }
 
-    pulay_rho_on (ct.scf_steps, fpbasis, rho, rho_old, cei.Npulaysave, cei.Npulayrefresh, cei.pulaymix,
-            0);
+    if(ct.charge_mixing_type == 0) ct.charge_pulay_order = 1;
+    pulay_rho_on (ct.scf_steps, fpbasis, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0);
 
 
-    /* mix_rho(rho, rho_old, ct.mix, ct.steps, 1); */
 
     my_barrier ();
 

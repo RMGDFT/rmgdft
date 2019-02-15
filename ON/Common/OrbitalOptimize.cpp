@@ -171,6 +171,10 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         int izz = states[st1].orbit_nz;
 
         ZeroBoundary(states1[st1].psiR, ixx, iyy, izz);
+        double residual = 0.0;
+        for(int i = 0; i < ixx * iyy *izz; i++) residual += states1[st1].psiR[i] * states1[st1].psiR[i];
+        printf("\n state residual %d %e", st1, residual);  
+
     }
     double gamma = -0.5;
     switch (ct.mg_method)
