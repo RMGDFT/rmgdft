@@ -47,6 +47,9 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     {
         Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
                 ct.mix, ct.charge_pulay_scale, pct.grid_comm); 
+        Pulay_orbital = new PulayMixing(pct.psi_size, ct.orbital_pulay_order, ct.orbital_pulay_refresh, 
+                ct.orbital_pulay_mixfirst, ct.orbital_pulay_scale, pct.grid_comm); 
+        Pulay_orbital->SetPrecond(Precond);
     }
     rho_pre = new double[nfp0];
     double *trho = new double[nfp0];

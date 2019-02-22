@@ -25,6 +25,7 @@
 
 extern LaplacianCoeff *LC;
 extern PulayMixing *Pulay_rho;
+extern PulayMixing *Pulay_orbital;
 extern BaseGrid *Rmg_G;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;

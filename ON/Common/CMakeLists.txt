@@ -52,7 +52,6 @@ add_library (ON_Common
  PrecondMg1.cpp
  print_status.c
  print_wave.c
- Pulay.cpp
  PulayWeighted.cpp
  qnm_beta_betapsi.c
  quench.c

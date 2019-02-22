@@ -148,16 +148,12 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     /*  SD, Pulay or KAIN method for Linear and Nonlinear equations */
 
     RmgTimer *RT6a = new RmgTimer("3-OrbitalOptimize: scale");
-    for (int istate = ct.state_begin; istate < ct.state_end; istate++)
-    {
-        t1 = -1.0;
-        dscal(&states1[istate].size, &t1, states1[istate].psiR, &ione);
-    }
 
     delete(RT6a);
     if (ct.restart_mix == 1 || ct.move_centers_at_this_step == 1)
     {
         mix_steps = 0;
+        Pulay_orbital->Refresh();
         if (pct.gridpe == 0)
             printf("\n restart the orbital mixing at step %d \n", ct.scf_steps);
     }
@@ -185,8 +181,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
             daxpy(&pct.psi_size, &gamma, states1[ct.state_begin].psiR, &ione, states[ct.state_begin].psiR, &ione);
             break;
         case 1:
-            Pulay(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
-                    states1[ct.state_begin].psiR, ct.orbital_pulay_order, 1);
+            Pulay_orbital->Mixing(states[ct.state_begin].psiR, states1[ct.state_begin].psiR);
             break;
         case 2:
             Kain(mix_steps, pct.psi_size, states[ct.state_begin].psiR,

@@ -46,7 +46,7 @@ PulayMixing::~PulayMixing(void)
 
 void PulayMixing::SetPrecond(std::function<void(double*)> precond)
 { 
-    this->need_precond = "true";
+    this->need_precond = 1;
     this->Precond = precond;
 }
 
