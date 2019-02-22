@@ -22,6 +22,7 @@
 
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "PulayMixing.h"
 #define DELTA_V_MAX 1.0
 
 void update_pot(double *, double *, double *, double *, double *, double *, double *,
@@ -42,6 +43,11 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     double *rho_pre;
 
+    if(ct.scf_steps == 0)
+    {
+        Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
+                ct.mix, ct.charge_pulay_scale, pct.grid_comm); 
+    }
     rho_pre = new double[nfp0];
     double *trho = new double[nfp0];
     RmgTimer *RT = new RmgTimer("2-SCF");
@@ -153,10 +159,11 @@ get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
             if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
             steps = ct.scf_steps - ct.freeze_orbital_step;
         }
+
         for (idx = 0; idx < nfp0; idx++)
         {
             tem = rho_old[idx];
-            rho_old[idx] = -rho[idx] + rho_old[idx];
+            rho_old[idx] = rho[idx] - rho_old[idx];
             rho[idx] = tem;
         }
 
@@ -164,7 +171,8 @@ get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
             get_rho_oppo(rho, rho_oppo);
         //get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
         if(ct.scf_steps >= ct.freeze_rho_steps)
-            pulay_rho_on (steps, nfp0, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0); 
+            Pulay_rho->Mixing(rho, rho_old);
+
     }
     delete(RT3);
 

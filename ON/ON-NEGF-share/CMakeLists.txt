@@ -54,7 +54,6 @@ OrbitDotOrbit.cpp
 OrbitDotOrbitBlock.cpp
 partial_Mat_nm_R.c
 print_matrix.c
-pulay_rho_on.c
 rho_augmented.c
 rho_Qnm_mat.c
 state_corner_xyz.c

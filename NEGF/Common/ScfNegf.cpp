@@ -38,6 +38,8 @@
 #include "method.h"
 #include "pmo.h"
 #include "Functional.h"
+#include "PulayMixing.h"
+
 
 
 static double t[2];
@@ -65,6 +67,14 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
 
     int fpbasis;
     fpbasis = get_FP0_BASIS();
+
+    if(ct.scf_steps == 0)
+    {
+        if(ct.charge_mixing_type == 0) ct.charge_pulay_order = 1;
+        Pulay_rho = new PulayMixing(fpbasis, ct.charge_pulay_order, ct.charge_pulay_refresh, 
+                ct.mix, ct.charge_pulay_scale, pct.grid_comm); 
+
+    }
 
     RmgTimer *RT = new RmgTimer("3-SCF");
 
@@ -216,14 +226,14 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
     {
         tem = rho_old[idx];
-        rho_old[idx] = -rho[idx] + rho_old[idx];
+        rho_old[idx] = rho[idx] - rho_old[idx];
         rho[idx] = tem;
     }
 
-    if(ct.charge_mixing_type == 0) ct.charge_pulay_order = 1;
-    pulay_rho_on (ct.scf_steps, fpbasis, rho, rho_old, ct.charge_pulay_order, ct.charge_pulay_refresh, ct.mix, 0);
+    Pulay_rho->Mixing(rho, rho_old);
 
 
+    /* mix_rho(rho, rho_old, ct.mix, ct.steps, 1); */
 
     my_barrier ();
 
@@ -340,3 +350,4 @@ void update_pot (double *vxc, double *vh, double * vxc_old, double * vh_old, dou
 
 
 }
+

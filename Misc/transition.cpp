@@ -14,3 +14,4 @@ BaseGrid *Rmg_G;
 TradeImages *Rmg_T;
 Lattice Rmg_L;
 MpiQueue *Rmg_Q;
+PulayMixing *Pulay_rho;

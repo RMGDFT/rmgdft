@@ -1,4 +1,5 @@
 add_library (Misc
+PulayMixing.cpp
 LaplacianCoeff.cpp
 FiniteDiffLap.cpp
 SetLaplacian.cpp
