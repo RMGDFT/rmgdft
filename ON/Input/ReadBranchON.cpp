@@ -69,13 +69,25 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                      CHECK_AND_FIX, OPTIONAL, 
                      "freeze rho which read from RMG for a number of steps",""); 
 
-    If.RegisterInputKey("mg_method", NULL, &lc.mg_method, "Pulay",
+    If.RegisterInputKey("orbital_mixing_method", NULL, &lc.orbital_mixing_method, "Pulay",
                      CHECK_AND_TERMINATE, REQUIRED, mg_method,
                      "mixing type for orbitals  \"Steepest Descent\", \"Pulay\", or \"KAIN\".\n", 
                      "start_mode must be one of \"Steepest Descent\", \"Pulay\", or \"KAIN\". Terminating.\n");
 
-    If.RegisterInputKey("mg_steps", &lc.mg_steps, 0, 100, 2, 
+    If.RegisterInputKey("orbital_pulay_order", &lc.orbital_pulay_order, 0, 10, 2, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
+
+    If.RegisterInputKey("orbital_pulay_refresh", &lc.orbital_pulay_refresh, 0, 100, 100, 
+                     CHECK_AND_FIX, OPTIONAL, "", "");
+    If.RegisterInputKey("orbital_mixing", &lc.orbital_pulay_mixfirst, 0.0, 1.0, 0.5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "mixing parameter when linear mixing is used or first step in Pulay mixing.\n",
+                     "must lie in the range (0.0, 1.0) Resetting to the default value of 0.5.\n");
+    If.RegisterInputKey("orbital_pulay_scale", &lc.orbital_pulay_scale, 0.0, 1.0, 0.5,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "mix orbitals and their residuals in Pulay mixing.\n",
+                     "must lie in the range (0.0, 1.0) Resetting to the default value of 0.5.\n");
+
 
     If.RegisterInputKey("do_movable_orbital_centers", &lc.movingCenter, false, "");
     If.RegisterInputKey("band_width_reduction", &lc.bandwidthreduction, false, "");

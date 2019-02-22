@@ -26,6 +26,7 @@
 #include "BaseThread.h"
 #include "rmgthreads.h"
 #include "RmgThread.h"
+#include "PulayMixing.h"
 
 extern std::vector<ORBITAL_PAIR> OrbitalPairs;
 
@@ -173,11 +174,11 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         ZeroBoundary(states1[st1].psiR, ixx, iyy, izz);
         double residual = 0.0;
         for(int i = 0; i < ixx * iyy *izz; i++) residual += states1[st1].psiR[i] * states1[st1].psiR[i];
-        printf("\n state residual %d %e", st1, residual);  
+     //   printf("\n state residual %d %e", st1, residual);  
 
     }
     double gamma = -0.5;
-    switch (ct.mg_method)
+    switch (ct.orbital_mixing_method)
     {
         case 0:
             Precond(states1[ct.state_begin].psiR);
@@ -185,15 +186,15 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
             break;
         case 1:
             Pulay(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
-                    states1[ct.state_begin].psiR, ct.mg_steps, 1);
+                    states1[ct.state_begin].psiR, ct.orbital_pulay_order, 1);
             break;
         case 2:
             Kain(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
-                    states1[ct.state_begin].psiR, ct.mg_steps);
+                    states1[ct.state_begin].psiR, ct.orbital_pulay_order);
             break;
         case 3:
             PulayWeighted(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
-                    states1[ct.state_begin].psiR, ct.mg_steps, 100, 0.5, 1);
+                    states1[ct.state_begin].psiR, ct.orbital_pulay_order, 100, 0.5, 1);
             break;
         default:
             printf("\n Undefined mg_method \n ");

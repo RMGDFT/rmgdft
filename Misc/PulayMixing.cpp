@@ -7,7 +7,8 @@
 #include "blas.h"
 #include "GlobalSums.h"
 
-PulayMixing::PulayMixing(size_t Nsize, int pulay_order, int refresh_steps, double mix_first, double beta, MPI_Comm comm)
+PulayMixing::PulayMixing(size_t Nsize, int pulay_order, int refresh_steps, double mix_first, 
+        double beta, MPI_Comm comm)
 {
     this->Nsize = Nsize;
     this->pulay_order = pulay_order;
@@ -34,6 +35,7 @@ PulayMixing::PulayMixing(size_t Nsize, int pulay_order, int refresh_steps, doubl
 
     this->step = 0;
 
+    this->need_precond = 0;
 }
 
 PulayMixing::~PulayMixing(void)
@@ -42,6 +44,13 @@ PulayMixing::~PulayMixing(void)
     delete [] this->res_hist;
 }
 
+void PulayMixing::SetPrecond(std::function<void(double*)> precond)
+{ 
+    this->need_precond = "true";
+    this->Precond = precond;
+}
+
+void PulayMixing::Refresh(){ this->step = 0;}
 
 void PulayMixing::Mixing(double *xm, double *fm)
 {
@@ -135,6 +144,8 @@ void PulayMixing::Mixing(double *xm, double *fm)
     {
         daxpy(&N, &b[i], this->res_hist_ptr[i], &ione, fm, &ione);
     }
+
+    if(this->need_precond) this->Precond(fm);
 
     daxpy(&N, &this->beta, fm, &ione, xm, &ione);
 

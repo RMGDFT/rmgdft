@@ -741,8 +741,6 @@ typedef struct
     bool movingCenter;
     bool bandwidthreduction;
     int movingSteps;
-    int mg_method;
-    int mg_steps;
     STATE *states;
 
 
@@ -856,6 +854,17 @@ typedef struct
     int freeze_rho_steps;
     bool use_cpdgemr2d;
     
+    int orbital_mixing_method;
+    /*Order of Pulay mixing for orbital*/
+    int orbital_pulay_order;
+
+    /*How often to refresh Pulay history for orbital mixing*/
+    int orbital_pulay_refresh;
+
+    /*Scale parameter for residuals in Pulay orbital mixing*/
+    double orbital_pulay_scale;
+
+    double orbital_pulay_mixfirst;
 
 } CONTROL;
 
