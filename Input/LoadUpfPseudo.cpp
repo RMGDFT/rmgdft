@@ -68,7 +68,7 @@ double * UPF_read_mesh_array(std::string str, int count, int start)
 using boost::property_tree::ptree;
 
 // Reads a pseudopotential stored in UPF format into our internal data structures.
-void LoadUpf(SPECIES *sp)
+void LoadUpfPseudo(SPECIES *sp)
 {
 
     int ibegin=0, iend=0;
@@ -517,6 +517,6 @@ void LoadUpf(SPECIES *sp)
 // C binding
 extern "C" void LoadUpf_C(SPECIES *sp)
 {
-    LoadUpf(sp);
+    LoadUpfPseudo(sp);
 }
 

@@ -144,7 +144,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     // Load pseudopotentials
     for(int isp = 0;isp < lc.num_species;isp++) {
-        LoadUpf(&ct.sp[isp]);
+        LoadUpfPseudo(&ct.sp[isp]);
     }
 
     // Assign species type for each ion
