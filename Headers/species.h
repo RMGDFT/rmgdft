@@ -29,11 +29,17 @@ typedef struct
     /** Norm conserving pp flag */
     int is_norm_conserving;
 
+    /** semi-local pp flag */
+    int is_semi_local;
+
     /** Number of valence electrons */
     double zvalence;
 
-    // Exchange correlation string as read from UPF pseudopotential format
-    char functional[24];
+    // Exchange correlation string as read from UPF or XML pseudopotential format
+    char functional[256];
+
+    // Exchange correlation type string as read from XML pseudopotential format
+    char functional_type[256];
 
     /** Gaussian charge parameter used for compensating the 1/r Coulomb
      * tail of the pseudopotentials

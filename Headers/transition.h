@@ -173,7 +173,9 @@ template <typename DataType>
 double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
 void ApplyBOperator (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
-void LoadUpf(SPECIES *sp);
+void LoadPseudo(SPECIES *sp);
+void LoadUpfPseudo(SPECIES *sp);
+void LoadXmlPseudo(SPECIES *sp);
 extern "C" void LoadUpf_C(SPECIES *sp);
 extern "C" bool verify( char *tagname, const void *optvalue );
 void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);

@@ -15,7 +15,9 @@ CheckValue.cpp
 RmgInputFile.cpp
 ReadCommon.cpp
 MapElements.cpp
+LoadPseudo.cpp
 LoadUpfPseudo.cpp
+LoadXmlPseudo.cpp
 ReadPseudo.cpp
 ReadTFAtoms.cpp
 )

@@ -301,6 +301,9 @@ typedef struct
     /** Norm conserving pseudo potential flag */
     int norm_conserving_pp;
 
+    /** Semi local pseudo potential flag */
+    int semilocal_pp;
+
     /** Species structure 
      * @see SPECIES */
     SPECIES *sp;

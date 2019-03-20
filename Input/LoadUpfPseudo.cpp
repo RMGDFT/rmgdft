@@ -82,15 +82,7 @@ void LoadUpfPseudo(SPECIES *sp)
     double qqq[MAX_NL][MAX_NL];    // Used to read in the norms of the augmentation functions (PP_Q)
 
     std::string Msg;
-    if(!std::strcmp(sp->atomic_symbol, "DLO")) {
-
-        sp->zvalence = 0.0;
-        sp->nbeta = 0;
-        sp->rg_points = 0;
-        return;
-
-    }
-    else if(!std::strcmp(sp->pseudo_filename, "./@Internal") || !strlen(sp->pseudo_filename)) {
+    if(!std::strcmp(sp->pseudo_filename, "./@Internal") || !strlen(sp->pseudo_filename)) {
 
 #if INTERNAL_PP
         std::string pp_string = GetInternalPseudo(&sp->atomic_symbol[0]);

@@ -36,7 +36,6 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
 
     for(int isp = 0;isp < nspecies;isp++) {
         SPECIES *sp = &lc.sp[isp];
-        LoadUpfPseudo(sp);
         if(!sp->is_norm_conserving) lc.norm_conserving_pp = false;
         sp++; 
     } 
