@@ -11,6 +11,8 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+
 
 
 #include "const.h"
@@ -22,6 +24,12 @@
 #include "transition.h"
 #include "InternalPseudo.h"
 
+static std::unordered_map<std::string, int> atomic_map = {
+        {"s", 0},
+        {"p", 1},
+        {"d", 2},
+        {"f", 3},
+        {"g", 4}};
 
 using boost::property_tree::ptree;
 
@@ -34,13 +42,14 @@ void LoadXmlPseudo(SPECIES *sp)
     char *pp_buffer = NULL;
     int pp_buffer_len;
     int max_nlprojectors = 0;
-    int l_max;
     std::stringstream ss; 
     double  ddd0[MAX_NL][MAX_NL];  // Used to read in the PP_DIJ
     double qqq[MAX_NL][MAX_NL];    // Used to read in the norms of the augmentation functions (PP_Q)
-
     std::string Msg;
 
+    // PP format places occupations in the xml attributes of the potentials but we need
+    // them in the wavefunctions so we use this map to associate them.
+    std::unordered_map<int, double> occupation_map;
 
     // Open on one pe and read entire file into a character buffer
     if(pct.imgpe == 0) {
@@ -112,8 +121,7 @@ void LoadXmlPseudo(SPECIES *sp)
     std::strncpy(sp->functional, PP_FUNC.c_str(), sizeof(sp->functional)-1);
 
 
-    // Read in the radial mesh and keep values between 1.0e-05 < r < 50.0
-    // adjusting mesh size accordingly
+    // Setup the radial mesh
     std::string grid_type = xml_tree.get<std::string>("pseudo.grid.<xmlattr>.type");
     int r_total = xml_tree.get<int>("pseudo.grid.<xmlattr>.npts");
     double r_i = xml_tree.get<double>("pseudo.grid.<xmlattr>.ri");
@@ -121,13 +129,20 @@ void LoadXmlPseudo(SPECIES *sp)
 
     if(grid_type == std::string("linear"))
     {
-        sp->rg_points = r_total;
-        double delta_r = (r_f - r_i) / (double)(r_total - 1);
+        sp->rg_points = r_total - 1;
+        sp->gtype = LINEAR_GRID;
+        double delta_r = (r_f - r_i) / (double)sp->rg_points;
         sp->r = new double[sp->rg_points];
-        for(int i = 0;i < r_total;i++) {
-            sp->r[i] = delta_r * (double)i;
+        sp->rab = new double[sp->rg_points];
+        for(int i = 0;i < sp->rg_points;i++) {
+            sp->r[i] = delta_r * (double)(i + 1);
+            sp->rab[i] = delta_r;
         }
     }
+
+    // Determine log mesh parameters directly from the mesh
+    sp->aa = (sp->r[0] * sp->r[0]) / (sp->r[1] - 2 * sp->r[0]);
+    sp->bb = log (sp->r[1] / sp->r[0] - 1);
 
     // Only norm-conserving supported
     sp->is_norm_conserving = true;
@@ -138,9 +153,129 @@ void LoadXmlPseudo(SPECIES *sp)
     if(!s_core_correction.compare(0,2,"NO")) sp->nlccflag = false;
     if(!s_core_correction.compare(0,3,"YES")) sp->nlccflag = true;
 
+    // First pass for semi-local find the local potential
+    int npots = 0;
+    BOOST_FOREACH( ptree::value_type const& s, xml_tree.get_child("pseudo.semilocal") ) 
+    {
+        int lval = 0;
+        sp->local = xml_tree.get<int>("pseudo.semilocal.<xmlattr>.l-local", -3);
+        sp->is_semi_local = true;
+        if( s.first == "vps" ) 
+        {
+            std::string l = s.second.get("<xmlattr>.l", "s");
+            lval = atomic_map[l];
+            // Get occupation here needed for wavefunctions below
+            occupation_map[lval] = s.second.get<double>("<xmlattr>.occupation", 2.0);
+            if(lval == sp->local)
+            {
+                std::string vdata = s.second.get<std::string>("radfunc.data");
+                sp->vloc0 = UPF_str_to_double_array(vdata, r_total, 1);
+                for(int idx = 0;idx < sp->rg_points;idx++) sp->vloc0[idx] /= sp->r[idx];
+            } 
+            npots++;
+        }
+    }
+
+    // Second pass for semi-local to take care of the rest
+    if(sp->is_semi_local)
+    {
+        sp->kkbeta = sp->rg_points;
+        sp->nbeta = 0;
+        sp->is_ddd_diagonal = true;
+        BOOST_FOREACH( ptree::value_type const& s, xml_tree.get_child("pseudo.semilocal") )
+        {
+            int lval = 0;
+            if( s.first == "vps" )
+            {
+                std::string l = s.second.get("<xmlattr>.l", "s");
+                lval = atomic_map[l];
+                if(lval != sp->local)
+                {
+
+                    // Generate the difference potentials.
+                    std::string vdata = s.second.get<std::string>("radfunc.data");
+                    sp->dVl[sp->nbeta] = UPF_str_to_double_array(vdata, r_total, 1);
+                    sp->dVl_l[sp->nbeta] = lval;
+                    for(int idx=0;idx < sp->rg_points;idx++)
+                    {
+                        sp->dVl[sp->nbeta][idx] = sp->dVl[sp->nbeta][idx] / sp->r[idx] - sp->vloc0[idx];
+                    }
+                    sp->nbeta++;
+                }
+            }
+        }
+    }
+
+    int iwf = 0;
+    sp->num_atomic_waves_m = 0;
+    sp->atomic_wave = new double *[MAX_INITWF];
+    sp->awave_lig = new double *[MAX_INITWF];
+    sp->atomic_wave_l = new int [MAX_INITWF];
+    sp->atomic_wave_oc = new double [MAX_INITWF]();
+    sp->atomic_rho = new double[sp->rg_points]();
+
+    BOOST_FOREACH( ptree::value_type const& s, xml_tree.get_child("pseudo.pseudowave-functions") )
+    {
+        int lval=0;
+        if( s.first == "pswf" )
+        {
+            std::string l = s.second.get<std::string>("<xmlattr>.l", "s");
+            lval = atomic_map[l];
+            sp->atomic_wave_l[iwf] = lval;
+            sp->num_atomic_waves_m += 2*sp->atomic_wave_l[iwf] + 1;
+            std::string vdata = s.second.get<std::string>("radfunc.data");
+            sp->atomic_wave[iwf] = UPF_str_to_double_array(vdata, r_total, 1);
+            sp->awave_lig[iwf] = new double[MAX_LOCAL_LIG]();
+
+            // Remove extra factors of r
+            for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
+
+            sp->atomic_wave_oc[iwf] = occupation_map[lval];
+            // Accumulate charge for atomic rho
+            for(int idx=0;idx < sp->rg_points;idx++)
+            {
+                sp->atomic_rho[idx] += sp->atomic_wave[iwf][idx]*sp->atomic_wave[iwf][idx] * sp->atomic_wave_oc[iwf]/4.0/PI;
+            }
+            iwf++;
+        }
+    }
+    sp->num_atomic_waves = iwf;
+
+    // Next generate the Kleinman-Bylander projectors
+    // zero out norm array
+    for (int j = 0; j < sp->nbeta; j++)
+    {
+        for (int k = 0; k < sp->nbeta; k++) ddd0[j][k] = 0.0;
+    }
+
+    int nb = 0;
+    for(int ip=0;ip < sp->num_atomic_waves;ip++)
+    {
+        if(sp->atomic_wave_l[ip] == sp->local) continue; 
+
+        int vl = 0;
+        for(vl=0;vl <= MAX_L;vl++) if(sp->atomic_wave_l[ip] == sp->dVl_l[vl]) break;
+        if(vl > MAX_L)
+            throw RmgFatalException() << "Problem detected with pseudopotential file. MAX_L too large. Terminating.\n";
+
+        sp->beta[ip] = new double[sp->rg_points];
+
+        for(int idx=0;idx < sp->rg_points;idx++) sp->beta[ip][idx] = sp->atomic_wave[ip][idx] * sp->dVl[vl][idx];
+        sp->llbeta[ip] = sp->atomic_wave_l[ip];
+        if(sp->llbeta[ip] > ct.max_l) ct.max_l = sp->llbeta[ip];  // For all species
+
+        // Evaluate the normalization constant
+        double *work = new double[sp->rg_points]();
+        for(int idx=0;idx<sp->rg_points;idx++) 
+            work[idx] = FOUR*PI *sp->beta[ip][idx]*sp->atomic_wave[ip][idx];
+
+        double sum = radint1 (work, sp->r, sp->rab, sp->rg_points);
+        ddd0[nb][nb] = sum;
+        delete [] work;
+        nb++;
+    }
+
 #if 0
-    l_max = xml_tree.get<int>("pseudo.header.<xmlattr>.l_max");
-    sp->kkbeta = sp->rg_points;
    
     // Check for full relativistic and thrown an error if found
     std::string s_is_relativistic = xml_tree.get<std::string>("pseudo.header.<xmlattr>.relativistic");
@@ -149,113 +284,13 @@ void LoadXmlPseudo(SPECIES *sp)
         throw RmgFatalException() << "RMG does not support fully relativistic pseudopotentials. Terminating.\n";
     }
 
-
-    // Determine log mesh parameters directly from the mesh
-    sp->aa = (sp->r[0] * sp->r[0]) / (sp->r[1] - 2 * sp->r[0]);
-    sp->bb = log (sp->r[1] / sp->r[0] - 1);
-
-    // Read in rab and convert it into a C style array
-    std::string PP_RAB = xml_tree.get<std::string>("UPF.PP_MESH.PP_RAB");
-    sp->rab = UPF_read_mesh_array(PP_RAB, r_total, ibegin);
-
-    // Local potential
-    std::string PP_LOCAL = xml_tree.get<std::string>("UPF.PP_LOCAL");
-    sp->vloc0 = UPF_read_mesh_array(PP_LOCAL, r_total, ibegin);
-
-    // Get into our internal units
-    for(int ix = 0;ix < sp->rg_points;ix++) sp->vloc0[ix] /= 2.0;
-
-    // Get the l-value for the local potential if present
-    sp->local = xml_tree.get<int>("pseudo.header.<xmlattr>.l_local", -3);
-
-    // Atomic charge density
-    std::string PP_RHOATOM = xml_tree.get<std::string>("UPF.PP_RHOATOM");
-    sp->atomic_rho = UPF_read_mesh_array(PP_RHOATOM, r_total, ibegin);
-
-    // UPF stores rhoatom * r^2 so rescale
-    for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_rho[ix] = sp->atomic_rho[ix] / (4.0 * PI * sp->r[ix] * sp->r[ix]);
-
     if(sp->nlccflag) {
         std::string PP_NLCC = xml_tree.get<std::string>("UPF.PP_NLCC");
         sp->rspsco = UPF_read_mesh_array(PP_NLCC, r_total, ibegin);
         for(int ix = 0;ix < sp->rg_points;ix++) sp->rspsco[ix] = sp->rspsco[ix] * 4.0 * PI;
     }
+#endif
 
-    // Number of atomic orbitals
-    sp->num_atomic_waves = xml_tree.get<double>("pseudo.header.<xmlattr>.number_of_wfc", 0);
-    sp->num_atomic_waves_m = 0;
-    if(sp->num_atomic_waves  > 0) {
-
-        sp->atomic_wave = new double *[MAX_INITWF];
-        sp->awave_lig = new double *[MAX_INITWF];
-        sp->atomic_wave_l = new int [MAX_INITWF];
-        sp->atomic_wave_oc = new double [MAX_INITWF]();
-
-        for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++) {
-            // Ugh. UPF format has embedded .s so use / as a separator
-            typedef ptree::path_type path;
-            std::string chi = "UPF/PP_PSWFC/PP_CHI." + boost::lexical_cast<std::string>(iwf + 1);
-            std::string PP_CHI = xml_tree.get<std::string>(path(chi, '/'));
-            sp->atomic_wave[iwf] = UPF_read_mesh_array(PP_CHI, r_total, ibegin);
-
-            sp->atomic_wave_l[iwf] = xml_tree.get<int>(path(chi + "/<xmlattr>/l", '/'));
-            if(sp->atomic_wave_l[iwf] == 0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 1;
-            if(sp->atomic_wave_l[iwf] == 1) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 3;
-            if(sp->atomic_wave_l[iwf] == 2) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 5;
-            if(sp->atomic_wave_l[iwf] == 3) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 7;
-
-            //sp->atomic_wave_label[j][0] =
-            sp->atomic_wave_oc[iwf] = xml_tree.get<double>(path(chi + "/<xmlattr>/occupation", '/'));
-
-            // UPF stores atomic wavefunctions * r so divide through
-            for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
-            sp->awave_lig[iwf] = new double[MAX_LOCAL_LIG]();
-            
-        }
-
-    }
-    else {
-       throw RmgFatalException() << "RMG requires pseudopotentials with pseudo atomic wfs. Terminating.\n";  
-    }
-
-    // Number of projectors
-    sp->nbeta = xml_tree.get<double>("pseudo.header.<xmlattr>.number_of_proj");
-    if(sp->nbeta > MAX_NB)
-        throw RmgFatalException() << "Pseudopotential has " << sp->nbeta << " projectors but this version of RMG only supports s,p and d proejectors with a limit of " << MAX_NB << " projectors.\n";
-
-    sp->is_ddd_diagonal = true;
-    if(sp->nbeta > 0) {
-
-        for(int ip = 0;ip < sp->nbeta;ip++) {
-            // Ugh. UPF format has embedded .s so use / as a separator
-            typedef ptree::path_type path;
-            std::string betapath = "UPF/PP_NONLOCAL/PP_BETA." + boost::lexical_cast<std::string>(ip + 1);
-            std::string PP_BETA = xml_tree.get<std::string>(path(betapath, '/'));
-            sp->beta[ip] = UPF_read_mesh_array(PP_BETA, r_total, ibegin);
-
-            for(int ix = 0;ix < sp->rg_points;ix++) sp->beta[ip][ix] /= sp->r[ix];
-            sp->llbeta[ip] =  xml_tree.get<int>(path(betapath + "/<xmlattr>/angular_momentum", '/'));
-            if(sp->llbeta[ip] > ct.max_l) ct.max_l = sp->llbeta[ip];  // For all species
-            if(sp->llbeta[ip] > l_max) l_max = sp->llbeta[ip];        // For this species
-//               double cutoff_radius = xml_tree.get<int>(betapath + ".<xmlattr>.cutoff_radius");
-            
-        }
-
-        /*read in the Matrix ddd0(nbeta,nbeta) */
-        std::string PP_DIJ = xml_tree.get<std::string>("UPF.PP_NONLOCAL.PP_DIJ");
-        double *tmatrix = UPF_str_to_double_array(PP_DIJ, sp->nbeta*sp->nbeta, 0);
-        double offd_sum = 0.0;
-        for (int j = 0; j < sp->nbeta; j++)
-        {
-            for (int k = 0; k < sp->nbeta; k++)
-            {
-                ddd0[j][k] = tmatrix[j*sp->nbeta + k] / 2.0;
-                if(j != k) offd_sum += ddd0[j][k]*ddd0[j][k];
-            }
-        }
-        delete [] tmatrix;
-        if(offd_sum > 1.0e-20) sp->is_ddd_diagonal = false; 
-    }
 
     sp->nqf=0;
     sp->nlc=0;
@@ -336,11 +371,7 @@ void LoadXmlPseudo(SPECIES *sp)
     // Leftover initializations
     sp->mill_radius = 9.0;
 
-    // Finally adjust sp->rg_points to skip the high end
-    sp->rg_points = iend - ibegin + 1;
     if(pp_buffer) delete [] pp_buffer;
-    if(!sp->is_ddd_diagonal) ct.is_ddd_non_diagonal = true;
-#endif
 }
 
 

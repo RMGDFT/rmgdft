@@ -179,6 +179,7 @@ void LoadUpfPseudo(SPECIES *sp)
         if(t_r[i] > 50.0) break;
     }
 
+    sp->gtype = LOG_GRID;
     sp->rg_points = r_total - ibegin;
     sp->r = new double[sp->rg_points];
     for(int i = ibegin;i < r_total;i++) {

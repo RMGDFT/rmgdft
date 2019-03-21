@@ -54,7 +54,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
     Atomic *A = new Atomic();
     double *rgrid = A->GetRgrid();
 
-    double *work = new double[MAX_LOGGRID];
 
     bool write_flag = Verify ("write_pseudopotential_plots", true, ControlMap);
 
@@ -67,6 +66,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
     for (isp = 0; isp < ct.num_species; isp++)
     {
         SPECIES *sp = &ct.sp[isp];
+        double *work = new double[std::max(MAX_LOGGRID, sp->rg_points)];
         if(!std::strcmp(sp->atomic_symbol, "DLO")) continue;
         if (pct.gridpe == 0 && write_flag)
         {
@@ -310,11 +310,11 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         }
 
         delete [] bessel_rg;
+        delete [] work;
 
     }                           /* end for */
 
 
     delete A;
-    delete [] work;
 
 } // end InitPseudo

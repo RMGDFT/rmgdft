@@ -107,10 +107,11 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
     // r[i] = a exp[(i*b] -c
     // for norm-conserving in FHI, c= 0
     // for ultrasoft with Vanderbilt code, c != 0.0
-
     b = log((sp->r[2] - sp->r[1])/(sp->r[1] - sp->r[0]));
     c = (sp->r[0] * exp(b) - sp->r[1])/(1.0 -exp(b) );
     a = sp->r[0] + c;
+    // set dr for linear grid
+    double dr = sp->r[1] - sp->r[0];
 
 
 
@@ -166,7 +167,15 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
                             }
                             else
                             {
+if(sp->gtype)
+{
+    i_r = (int)(r/dr);
+    if(i_r >= sp->rg_points) i_r = sp->rg_points - 1;
+}
+else
+{
                                 i_r = (int)(fasterlog ( (r+c)/a) /b);
+}
 
                                 r1 = sp->r[i_r];
                                 r2 = sp->r[i_r+1];

@@ -53,6 +53,7 @@ void LoadPseudo(SPECIES *sp)
     std::string check = ".UPF";
     if(extension == check)
     {
+        sp->ftype = UPF_FORMAT;
         LoadUpfPseudo(sp);
         return;
     }
@@ -60,6 +61,7 @@ void LoadPseudo(SPECIES *sp)
     check = ".XML";
     if(extension == check)
     {
+        sp->ftype = QMC_FORMAT;
         LoadXmlPseudo(sp);
         return;
     }

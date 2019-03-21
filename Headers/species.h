@@ -12,6 +12,12 @@ typedef struct
     /* pseudopotential filename */
     char pseudo_filename[MAX_PATH];
 
+    /* Pseudopotential file format. Types are UPF (0) and XML (QMC) (1) */
+    int ftype;
+
+    /* Grid type, 0=log, 1=linear */
+    int gtype;
+
     /** Description of the species (e.g Atomic carbon generated using 
      * hamann's code with  rcs=0.80 rcp=0.85 bohr
      */
@@ -166,9 +172,14 @@ typedef struct
     /*the L-value for the beta function */
     int llbeta[MAX_NB];
 
-    /*utrosoft Vanderbilt beta_n(r) function on radial grid */
+    /* Projectors on radial grid. KB for norm-conserving and beta_n(r) for Vanderbilt Ultrasoft. */
     double *beta[MAX_NB];
 
+    /* Difference potentials for semi-local dVl = V_l - V_local */
+    double *dVl[MAX_L];
+
+    /* l-value associated with each difference potential */
+    int dVl_l[MAX_L];
 
     /* Total number of projectors */
     int nbeta;

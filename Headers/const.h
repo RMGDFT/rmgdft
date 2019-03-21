@@ -251,4 +251,11 @@
 #define ATOMIC_RHOCOMP   2
 #define ATOMIC_RHOCORE   3
 
+// Pseudopotential file formats
+#define UPF_FORMAT  0
+#define QMC_FORMAT  1
+
+// Atomic grid types
+#define LOG_GRID 0
+#define LINEAR_GRID 1
 #endif /* CONST_H_INCLUDED */

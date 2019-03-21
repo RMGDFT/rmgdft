@@ -176,6 +176,7 @@ void ApplyBOperator (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int d
 void LoadPseudo(SPECIES *sp);
 void LoadUpfPseudo(SPECIES *sp);
 void LoadXmlPseudo(SPECIES *sp);
+double * UPF_str_to_double_array(std::string str, int max_count, int start);
 extern "C" void LoadUpf_C(SPECIES *sp);
 extern "C" bool verify( char *tagname, const void *optvalue );
 void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
