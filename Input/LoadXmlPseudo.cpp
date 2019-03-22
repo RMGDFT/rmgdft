@@ -37,7 +37,6 @@ using boost::property_tree::ptree;
 void LoadXmlPseudo(SPECIES *sp)
 {
 
-    int ibegin=0, iend=0;
     ptree xml_tree;
     char *pp_buffer = NULL;
     int pp_buffer_len;
@@ -104,6 +103,12 @@ void LoadXmlPseudo(SPECIES *sp)
     sp->INFO = new char[PP_INFO.size() + 1]();
     std::strncpy(sp->INFO, PP_INFO.c_str(), PP_INFO.size());
 
+    // Check for relativistic and thrown an error if found
+    std::string s_is_relativistic = xml_tree.get<std::string>("pseudo.header.<xmlattr>.relativistic");
+    boost::to_upper(s_is_relativistic);
+    if(s_is_relativistic == "YES")
+        throw RmgFatalException() << "RMG does not support fully relativistic pseudopotentials. Terminating.\n";
+
     // Atomic symbol, mass, number and zvalence and mesh size
     std::string atomic_symbol = xml_tree.get<std::string>("pseudo.header.<xmlattr>.symbol");
     boost::trim(atomic_symbol);
@@ -154,7 +159,7 @@ void LoadXmlPseudo(SPECIES *sp)
     if(!s_core_correction.compare(0,3,"YES")) sp->nlccflag = true;
 
     // First pass for semi-local find the local potential
-    int npots = 0;
+
     BOOST_FOREACH( ptree::value_type const& s, xml_tree.get_child("pseudo.semilocal") ) 
     {
         int lval = 0;
@@ -164,6 +169,7 @@ void LoadXmlPseudo(SPECIES *sp)
         {
             std::string l = s.second.get("<xmlattr>.l", "s");
             lval = atomic_map[l];
+
             // Get occupation here needed for wavefunctions below
             occupation_map[lval] = s.second.get<double>("<xmlattr>.occupation", 2.0);
             if(lval == sp->local)
@@ -172,7 +178,6 @@ void LoadXmlPseudo(SPECIES *sp)
                 sp->vloc0 = UPF_str_to_double_array(vdata, r_total, 1);
                 for(int idx = 0;idx < sp->rg_points;idx++) sp->vloc0[idx] /= sp->r[idx];
             } 
-            npots++;
         }
     }
 
@@ -241,8 +246,8 @@ void LoadXmlPseudo(SPECIES *sp)
     }
     sp->num_atomic_waves = iwf;
 
-    // Next generate the Kleinman-Bylander projectors
-    // zero out norm array
+    // Next generate the Kleinman-Bylander projectors.
+    // Diagonals of ddd0 array are the KB normalization coefficients.
     for (int j = 0; j < sp->nbeta; j++)
     {
         for (int k = 0; k < sp->nbeta; k++) ddd0[j][k] = 0.0;
@@ -267,23 +272,16 @@ void LoadXmlPseudo(SPECIES *sp)
         // Evaluate the normalization constant
         double *work = new double[sp->rg_points]();
         for(int idx=0;idx<sp->rg_points;idx++) 
-            work[idx] = FOUR*PI *sp->beta[ip][idx]*sp->atomic_wave[ip][idx];
+            work[idx] = sp->beta[ip][idx]*sp->atomic_wave[ip][idx];
 
-        double sum = radint1 (work, sp->r, sp->rab, sp->rg_points);
-        ddd0[nb][nb] = sum;
+        double sum = FOUR * PI * radint1 (work, sp->r, sp->rab, sp->rg_points);
+        ddd0[nb][nb] = FOUR * PI / sum;
         delete [] work;
         nb++;
     }
 
 #if 0
    
-    // Check for full relativistic and thrown an error if found
-    std::string s_is_relativistic = xml_tree.get<std::string>("pseudo.header.<xmlattr>.relativistic");
-    boost::to_upper(s_is_relativistic);
-    if(!s_is_relativistic.compare(0,4,"FULL")) {
-        throw RmgFatalException() << "RMG does not support fully relativistic pseudopotentials. Terminating.\n";
-    }
-
     if(sp->nlccflag) {
         std::string PP_NLCC = xml_tree.get<std::string>("UPF.PP_NLCC");
         sp->rspsco = UPF_read_mesh_array(PP_NLCC, r_total, ibegin);
