@@ -209,7 +209,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 #if GPU_ENABLED
 
     // Wavefunctions are actually stored here
-    ct.non_local_block_size = std::min(ct.non_local_block_size, ct.max_states);
+    ct.non_local_block_size = std::max(ct.non_local_block_size, ct.max_states);
 
     rptr = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024) * sizeof(OrbitalType));
     nv = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * sizeof(OrbitalType));
