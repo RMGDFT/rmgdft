@@ -52,7 +52,6 @@ getpoi_bc.c
 nlforce_par_gamma.c
 app_smooth1.cpp
 rand0.c
-get_extrapolation_constants.c
 write_header.c
 #get_pdos.c
 BandStructure.cpp

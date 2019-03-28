@@ -403,7 +403,6 @@ void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_m
 void fire (double *step, double step_max, double f_inc, double f_dec, int n_min, int *n_count );
 int int_sum_all (int x, MPI_Comm comm);
 void move_ions (double dt);
-void get_extrapolation_constants (double *alpha, double *beta);
 void lcao_init (void);
 void init_atomic_rho_wf (void);
 void lcao_get_rho (double * arho_f);
