@@ -51,20 +51,8 @@ void app_cir_fourth_f (float * a, float * b, int dimx, int dimy, int dimz);
 void app_cir_sixth (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir_sixth_f (float *a, float *b, int dimx, int dimy, int dimz);
 void app_cir (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_ortho (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_bcc (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_fcc (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_hex (double *a, double *b, int dimx, int dimy, int dimz);
 double app_cilr (double *a, double *b, double *c, int dimx, int dimy, int dimz,
                double gridhx, double gridhy, double gridhz);
-double app_cilr_bcc (double *a, double *b, double *c, int dimx, int dimy, int dimz,
-                   double gridhx, double gridhy, double gridhz);
-double app_cilr_fcc (double *a, double *b, double *c, int dimx, int dimy, int dimz,
-                   double gridhx, double gridhy, double gridhz);
-double app_cilr_hex (double *a, double *b, double *c, int dimx, int dimy, int dimz,
-                   double gridhx, double gridhy, double gridhz);
-double app_cilr_ortho (double *a, double *b, double *c, int dimx, int dimy,
-                     int dimz, double gridhx, double gridhy, double gridhz);
 double app_cil (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
               double gridhy, double gridhz);
 double app_cil_driver (double * a, double * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
