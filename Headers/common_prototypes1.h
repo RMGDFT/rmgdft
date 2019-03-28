@@ -186,30 +186,11 @@ int get_input (FILE *fh, char *id, void *dest, unsigned int flag, char *def);
 double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
 char *get_symbol (int atomic_number);
 void global_sums (double *vect, int *length, MPI_Comm comm);
-void init_derweight (void);
-void init_derweight_s (SPECIES *sp, fftw_complex *rtptr_x,
-                       fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
-                       fftw_plan p1);
-void init_derweight_p (SPECIES *sp, fftw_complex *rtptr_x,
-                       fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
-                       fftw_plan p1);
-void init_derweight_d (SPECIES *sp, fftw_complex *rtptr_x,
-                       fftw_complex *rtptr_y, fftw_complex *rtptr_z, int ip,
-                       fftw_plan p1);
 void init_pe ( int image );
-void init_img_topo ( int dimensionality );
 void init_pegrid (void);
 STATE *init_states (void);
 void init_weight (void);
 void weight_shift_center(SPECIES * sp, fftw_complex * weptr);
-void init_weight_s (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftw_plan p1, bool use_shared);
-void init_weight_p (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftw_plan p1, bool use_shared);
-void init_weight_d (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftw_plan p1, bool use_shared);
-void init_weight_f (SPECIES *sp, fftw_complex *rtptr, int ip,
-                    fftw_plan p1, bool use_shared);
 void init_wf (STATE *states);
 void init_nuc (double *vnuc, double *rhoc, double *rhocore);
 void init_pos (void);
@@ -420,7 +401,6 @@ void find_grid_owner(int igridx, int igridy, int igridz, int nxgrid, int nygrid,
 int is_loop_over_states(void);
 void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_min, int *n_count);
 void fire (double *step, double step_max, double f_inc, double f_dec, int n_min, int *n_count );
-void quick_min (void);
 int int_sum_all (int x, MPI_Comm comm);
 void move_ions (double dt);
 void get_extrapolation_constants (double *alpha, double *beta);

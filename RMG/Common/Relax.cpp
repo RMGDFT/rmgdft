@@ -110,11 +110,9 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
                 break;
             case QUICK_MIN:
                 fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay, &ct.relax_steps_counter);
-                //quick_min ();
                 break;
             case MD_MIN:
                 fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay, &ct.relax_steps_counter);
-                //md_min ();
                 break;
             case LBFGS:
                 rmg_lbfgs();

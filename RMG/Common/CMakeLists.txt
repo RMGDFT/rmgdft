@@ -57,7 +57,6 @@ write_header.c
 #get_pdos.c
 BandStructure.cpp
 wvfn_residual.c
-#init_img_topo.c
 #mulliken.c
 write_avgd.c
 bsplines.c
