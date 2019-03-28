@@ -80,7 +80,6 @@ blaswrappers.c
 set_bc.c
 cgen_prolong.c
 mg_restrict_6.c
-ATL_assert.c
 mg_prolong_MAX10.c
 init_pos.c
 rmg_error.c
