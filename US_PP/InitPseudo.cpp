@@ -47,7 +47,7 @@ typedef policy<promote_double<false> > bessel_policy;
 void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
-    int isp, ip;
+    int isp;
     double Zv, rc;
     char newname[MAX_PATH];
     FILE *psp = NULL;
@@ -201,7 +201,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             fclose (psp);
         }
 
-#if 1
         // Get the G=0 component
         double fac = Zv * 4.0 * PI;
         for (int idx = 0; idx < sp->rg_points; idx++)
@@ -215,17 +214,19 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             double gval = A->gvec[idx]*A->gvec[idx];
             sp->localpp_g[idx] -= fac * exp ( - 0.25*gval*rc*rc) / gval;
         }
-#endif
+
         // Next we want to fourier filter the input atomic charge density and transfer
         // it to the interpolation grid for use by LCAO starts and force correction routines
-        
         for (int idx = 0; idx < sp->rg_points; idx++)
-        if(sp->atomic_rho[idx] < 0.0) work[idx] = 0.0;
-        else work[idx] = sqrt(sp->atomic_rho[idx]);
+        {
+            if(sp->atomic_rho[idx] < 0.0)
+                work[idx] = 0.0;
+            else 
+                work[idx] = sqrt(sp->atomic_rho[idx]);
+        }
         A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.rhocparm, sp->arho_lig,
                 sp->rab, 0, sp->gwidth, 0.66*sp->lradius, sp->rwidth, ct.hmingrid/(double)ct.FG_RATIO);
-       for (int idx = 0; idx < MAX_LOGGRID; idx++)
-           sp->arho_lig[idx] *= sp->arho_lig[idx];
+        for (int idx = 0; idx < MAX_LOGGRID; idx++) sp->arho_lig[idx] *= sp->arho_lig[idx];
 
 
         /*Open file for writing beta function*/
@@ -236,7 +237,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 throw RmgFatalException() << "Unable to open beta function graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
 
-        for (ip = 0; ip < sp->nbeta; ip++)
+        for (int ip = 0; ip < sp->nbeta; ip++)
         {
 
             if (pct.gridpe == 0 && write_flag)
@@ -303,11 +304,32 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         }                       /* end if */
 
+        if (pct.gridpe == 0 && write_flag) fclose (psp);
 
+        /*Open file for writing atomic orbitals */
         if (pct.gridpe == 0 && write_flag)
         {
-            fclose (psp);
+            snprintf (newname, MAX_PATH, "atomicwf_%s.xmgr", sp->atomic_symbol);
+            if(NULL == (psp = fopen (newname, "w+")))
+                throw RmgFatalException() << "Unable to open atomic orbital graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
         }
+
+
+        for (int ip = 0; ip < sp->num_atomic_waves; ip++)
+        {
+            if (pct.gridpe == 0 && write_flag)
+            {
+                for (int idx = 0; idx < sp->rg_points; idx++) fprintf (psp, "%e  %e\n", sp->r[idx], sp->atomic_wave[ip][idx]);
+                fprintf (psp, "\n&&\n");
+            }
+
+            sp->atomic_wave_g[ip] = new double[RADIAL_GVECS];
+            A->RLogGridToGLogGrid(&sp->atomic_wave[ip][0], sp->r, sp->rab, sp->atomic_wave_g[ip],
+                    sp->rg_points, sp->atomic_wave_l[ip], bessel_rg);
+
+        }
+        if (pct.gridpe == 0 && write_flag) fclose (psp);
 
         delete [] bessel_rg;
         delete [] work;

@@ -95,8 +95,12 @@ typedef struct
 
     double *atomic_rho;
     
-    /* Pseudo atomic valence density read from PP file in log grid*/
+    /* Pseudo atomic wavefunctions read from PP file in log grid*/
     double **atomic_wave;
+
+    /* Pseudo atomic wavefunctions on G-space log grid */
+    double *atomic_wave_g[MAX_INITWF];
+
     /* Pseudo atomic valence density on linear grid*/
     double **awave_lig;
 
