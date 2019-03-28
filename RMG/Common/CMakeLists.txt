@@ -75,7 +75,6 @@ rmg_lbfgs.c
 test_overlap.c
 write_avgv.c
 move_ions.c
-ranv.c
 print_density_z_direction.c
 set_pbc.c
 pulay_rho.c

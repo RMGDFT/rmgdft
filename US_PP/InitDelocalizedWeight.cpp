@@ -46,14 +46,7 @@ void InitDelocalizedWeight (void)
     int ixstart = Rmg_G->get_PX_OFFSET(1);
     int iystart = Rmg_G->get_PY_OFFSET(1);
     int izstart = Rmg_G->get_PZ_OFFSET(1);
-    int NX_GRID = Rmg_G->get_NX_GRID(1);
-    int NY_GRID = Rmg_G->get_NY_GRID(1);
-    int NZ_GRID = Rmg_G->get_NZ_GRID(1);
-    int global_basis = NX_GRID * NY_GRID * NZ_GRID;
     int pbasis = Rmg_G->get_P0_BASIS(1);
-    double hxx = get_hxgrid() * get_xside();
-    double hyy = get_hygrid() * get_yside();
-    double hzz = get_hzgrid() * get_zside();
     double vol = Rmg_L.get_omega();
 
     std::complex<double> I_t(0.0, 1.0);
