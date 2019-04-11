@@ -73,7 +73,6 @@ void init_global_sums(void);
 void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
 void app_cir_driver (double *a, double *b, int dimx, int dimy, int dimz, int order);
-void app_cir_driver_f (float * a, float * b, int dimx, int dimy, int dimz, int order);
 void app_cir_fourth (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir_fourth_f (float * a, float * b, int dimx, int dimy, int dimz);
 void app_cir_sixth (double *a, double *b, int dimx, int dimy, int dimz);
@@ -81,20 +80,12 @@ void app_cir (double *a, double *b, int dimx, int dimy, int dimz);
 double app_cil (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
               double gridhy, double gridhz);
 double app_cil_driver (double * a, double * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
-double app_cil_driver_f (float * a, float * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 double app_cil_fourth (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
-              double gridhy, double gridhz);
-double app_cil_fourth_f (float * a, float * b, int dimx, int dimy, int dimz, double gridhx, 
               double gridhy, double gridhz);
 double app_cil_sixth (double *psi, double *b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz);
 void app_cir_beta_driver (double * a, double * b, int dimx, int dimy, int dimz, int order);
 
-void trade_imagesx_f (float *f, float *w, int dimx, int dimy, int dimz, int images, int type);
-
-
-void app_cir_beta_fourth (double * a, double * b, int dimx, int dimy, int dimz);
-void app_cir_beta_sixth (double * a, double * b, int dimx, int dimy, int dimz);
 
 void find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
                       int *pxoffset, int *pyoffset, int *pzoffset);
@@ -161,11 +152,8 @@ double get_omega(void);
 void trade_images (double *mat, int dimx, int dimy, int dimz, int type);
 void trade_images_f (float *mat, int dimx, int dimy, int dimz, int type);
 void trade_imagesx (double *f, double *w, int dimx, int dimy, int dimz, int images, int type);
-void trade_imagesx_f (float *f, float *w, int dimx, int dimy, int dimz, int images, int type);
 void trade_imagesx_async (double *f, double *w, int dimx, int dimy, int dimz, int images);
-void trade_imagesx_async_f (float *f, float *w, int dimx, int dimy, int dimz, int images);
 void trade_images1_async (double * f, int dimx, int dimy, int dimz);
-void trade_images1_async_f (float * f, int dimx, int dimy, int dimz);
 void trade_images1_central_async_f (float * f, int dimx, int dimy, int dimz);
 void trade_images1_central_async (double * f, int dimx, int dimy, int dimz);
 void trade_imagesx_central_async_f (float * f, float * w, int dimx, int dimy, int dimz, int images);

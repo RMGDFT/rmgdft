@@ -45,7 +45,6 @@ void app_smooth_f (float * f, float * work, int dimx, int dimy, int dimz);
 void app_smooth1 (double *f, double *work, int dimx, int dimy, int dimz);
 void app_smooth1_f (float *f, float *work, int dimx, int dimy, int dimz);
 void app_cir_driver (double *a, double *b, int dimx, int dimy, int dimz, int order);
-void app_cir_driver_f (float * a, float * b, int dimx, int dimy, int dimz, int order);
 void app_cir_fourth (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir_fourth_f (float * a, float * b, int dimx, int dimy, int dimz);
 void app_cir_sixth (double *a, double *b, int dimx, int dimy, int dimz);
@@ -53,10 +52,7 @@ void app_cir (double *a, double *b, int dimx, int dimy, int dimz);
 double app_cil (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
               double gridhy, double gridhz);
 double app_cil_driver (double * a, double * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
-double app_cil_driver_f (float * a, float * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 double app_cil_fourth (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
-              double gridhy, double gridhz);
-double app_cil_fourth_f (float * a, float * b, int dimx, int dimy, int dimz, double gridhx, 
               double gridhy, double gridhz);
 double app_cil_sixth (double *psi, double *b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz);
@@ -216,23 +212,9 @@ void FftFilterFine(double *x,  double factor);
 
 
 void sortpsi (STATE *states);
-/*
-void trade_images (double *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
-void trade_images_f (float *mat, int dimx, int dimy, int dimz, int *nb_ids, int type);
-void trade_imagesx (double *f, double *w, int dimx, int dimy, int dimz, int images, int type);
-void trade_imagesx_f (float *f, float *w, int dimx, int dimy, int dimz, int images, int type);
-void trade_imagesx_async (double *f, double *w, int dimx, int dimy, int dimz, int images);
-void trade_imagesx_async_f (float *f, float *w, int dimx, int dimy, int dimz, int images);
-void trade_images1_async (double * f, int dimx, int dimy, int dimz);
-*/
-void trade_images1_async_f (float * f, int dimx, int dimy, int dimz);
 void set_bc (double *mat, int dimx, int dimy, int dimz, int images, double val);
 void set_bcx (double *mat, int dimx, int dimy, int dimz, int images, double val);
 void getpoi_bc (double *rho, double *vh_bc, int dimx, int dimy, int dimz);
-/*void trade_images2(S0_GRID *f, SS0_GRID *w);
-//void trade_images2f(FS0_GRID *f, FSS0_GRID *w);
-//void trade_images3(S0_GRID *f, S30_GRID *w);
-//void trade_images5(S0_GRID *f, S50_GRID *w);*/
 void vol_wf (STATE *states, int state, int step);
 void write_avgd (double *rho);
 void write_avgv (double *vh, double *vnuc);
