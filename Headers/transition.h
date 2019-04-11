@@ -141,9 +141,6 @@ void DeleteNvmeArrays(void);
 
 
 
-extern "C" void app_cilr_driver (double * psi, double * a_psi, double *b_psi, double *vtot_eig_s,
-    int dimx, int dimy, int dimz, double hx, double hy, double hz, int order);
-
 template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 template <typename OrbitalType, typename CalcType>

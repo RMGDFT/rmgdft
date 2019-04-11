@@ -77,7 +77,6 @@ void app_cir_driver_f (float * a, float * b, int dimx, int dimy, int dimz, int o
 void app_cir_fourth (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir_fourth_f (float * a, float * b, int dimx, int dimy, int dimz);
 void app_cir_sixth (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_sixth_f (float *a, float *b, int dimx, int dimy, int dimz);
 void app_cir (double *a, double *b, int dimx, int dimy, int dimz);
 double app_cil (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
               double gridhy, double gridhz);
@@ -88,8 +87,6 @@ double app_cil_fourth (double *a, double *b, int dimx, int dimy, int dimz, doubl
 double app_cil_fourth_f (float * a, float * b, int dimx, int dimy, int dimz, double gridhx, 
               double gridhy, double gridhz);
 double app_cil_sixth (double *psi, double *b, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz);
-double app_cil_sixth_f (float *psi, float *b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz);
 void app_cir_beta_driver (double * a, double * b, int dimx, int dimy, int dimz, int order);
 
@@ -183,76 +180,6 @@ void WriteChargeAnalysis(void);
 #if GPU_ENABLED
 void init_gpu (void);
 void finalize_gpu (void);
-double app_cil_sixth_f_gpu(const float *psi,
-                        float *b,
-                        const int dimx,
-                        const int dimy,
-                        const int dimz,
-                        const double gridhx,
-                        const double gridhy,
-                        const double gridhz,
-                        const double xside,
-                        const double yside,
-                        const double zside,
-                        cudaStream_t cstream);
-void app_cir_sixth_f_gpu(const float *psi,
-                        float *b,
-                        const int dimx,
-                        const int dimy,
-                        const int dimz,
-                        cudaStream_t cstream);
-
-double app_cil_sixth_gpu(const double *psi,
-                        double *b,
-                        const int dimx,
-                        const int dimy,
-                        const int dimz,
-                        const double gridhx,
-                        const double gridhy,
-                        const double gridhz,
-                        const double xside,
-                        const double yside,
-                        const double zside,
-                        cudaStream_t cstream);
-void app_cir_sixth_gpu(const double *psi,
-                        double *b,
-                        const int dimx,
-                        const int dimy,
-                        const int dimz,
-                        cudaStream_t cstream);
-void app_cir_fourth_gpu(const double *psi,
-                        double *b, 
-                        const int dimx,
-                        const int dimy,
-                        const int dimz,
-                        cudaStream_t cstream);
-double app_cil_fourth_gpu(const double *psi,
-                       double *b,
-                       const int dimx,
-                       const int dimy,
-                       const int dimz,
-                       const double gridhx,
-                       const double gridhy,
-                       const double gridhz,
-                       const double xside,
-                       const double yside,
-                       const double zside,
-                       cudaStream_t cstream);
-double app_cil_fourth_f_gpu(const float *psi,
-                       float *b,
-                       const int dimx,
-                       const int dimy,
-                       const int dimz,
-                       const double gridhx,
-                       const double gridhy,
-                       const double gridhz,
-                       const double xside,
-                       const double yside,
-                       const double zside,
-                       cudaStream_t cstream);
-
-
-
 #endif
 
 

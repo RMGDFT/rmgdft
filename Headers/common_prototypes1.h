@@ -49,10 +49,7 @@ void app_cir_driver_f (float * a, float * b, int dimx, int dimy, int dimz, int o
 void app_cir_fourth (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir_fourth_f (float * a, float * b, int dimx, int dimy, int dimz);
 void app_cir_sixth (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_sixth_f (float *a, float *b, int dimx, int dimy, int dimz);
 void app_cir (double *a, double *b, int dimx, int dimy, int dimz);
-double app_cilr (double *a, double *b, double *c, int dimx, int dimy, int dimz,
-               double gridhx, double gridhy, double gridhz);
 double app_cil (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
               double gridhy, double gridhz);
 double app_cil_driver (double * a, double * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
@@ -62,8 +59,6 @@ double app_cil_fourth (double *a, double *b, int dimx, int dimy, int dimz, doubl
 double app_cil_fourth_f (float * a, float * b, int dimx, int dimy, int dimz, double gridhx, 
               double gridhy, double gridhz);
 double app_cil_sixth (double *psi, double *b, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz);
-double app_cil_sixth_f (float *psi, float *b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz);
 void app_grad (double  * rho, double *wx, double *wy, double *wz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 //void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
@@ -381,11 +376,8 @@ int matsum_packbuffer(int row, int col, double *buffer, double *globmat, int siz
 void reduce_and_dist_matrix(int n, double *global_matrix, double *dist_matrix, double *work);
 void init_efield (double * vnuc);
 void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, double ***hist, double ***rhist, int special_metric, double weight);
-void mg_restrict_4th (double * full, double * half, int dimx, int dimy, int dimz);
 void mix_betaxpsi (int mix);
 int claim_ion (double *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid);
-int find_grid_1d_owner(int igrid, int tgrid, int pgrid);
-void find_grid_owner(int igridx, int igridy, int igridz, int nxgrid, int nygrid, int nzgrid, int *xnode, int *ynode, int *znode);
 int is_loop_over_states(void);
 void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_min, int *n_count);
 void fire (double *step, double step_max, double f_inc, double f_dec, int n_min, int *n_count );
