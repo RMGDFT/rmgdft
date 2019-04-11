@@ -217,8 +217,6 @@ void write_eigs (STATE * states);
 void write_timings (void);
 double rand0 (long *idum);
 
-void gather_psi (double * tmp_psiR, double * tmp_psiI, STATE * sp, int tid);
-void scatter_psi (double * tmp_psiR, double * tmp_psiI, STATE * sp, int tid);
 void get_milliken (STATE * states);
 
 void output_wave (STATE * states, int kpt, int fhand);
@@ -450,11 +448,8 @@ void write_eigs (STATE * states);
 void write_occ (STATE * states);
 void write_timings (void);
 double rand0 (long *idum);
-
-void gather_psi (double * tmp_psiR, double * tmp_psiI, STATE * sp, int tid);
-void scatter_psi (double * tmp_psiR, double * tmp_psiI, STATE * sp, int tid);
 void get_milliken (STATE * states);
-
+void allocate_states();
 void output_wave (STATE * states, int kpt, int fhand);
 
 

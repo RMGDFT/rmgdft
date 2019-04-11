@@ -56,17 +56,12 @@ double app_cil_fourth (double *a, double *b, int dimx, int dimy, int dimz, doubl
 double app_cil_sixth (double *psi, double *b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz);
 void app_grad (double  * rho, double *wx, double *wy, double *wz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
-//void app10_gradf (FS0_GRID * f, FP0_GRID * wx, FP0_GRID * wy, FP0_GRID * wz);
 void constrain( void );
 void cross_product (double *a, double *b, double *c);
 double Fill_on (STATE *states, double width, double nel, double mix,
            int num_st, int occ_flag, int mp_order);
 
 void find_phase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double ** phase_sin, double ** phase_cos);
-//void genvpsi (double *psi, double *twovpsi, double *pvtot, 
-//              double *kd, double kmag, int dimx, int dimy, int dimz);
-void genvpsi_f (float * psi, float * sg_twovpsi, double * vtot, double * kd,
-              double kmag, int dimx, int dimy, int dimz);
 void get_nlop (void);
 void get_weight (void);
 void get_phase (ION *iptr, double *rtptr, int icount, int *dvec);
@@ -102,56 +97,49 @@ void xcgga_spin_libxc(double * rho_up, double * rho_dw, double * vxc_up, double 
 
 
 /* exchange correlation functional for PBE */
-
 void gcxcpbe_spin(double rho_up, double rho_dw,
-  double grad_up, double grad_dw, double grad, double *enxc,
-  double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
-  double *vxc2_updw, double *vxc2_dwup);
+double grad_up, double grad_dw, double grad, double *enxc,
+double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
+double *vxc2_updw, double *vxc2_dwup);
 void pbex (double rho, double grho, int iflag, double *sx, double *v1x, double *v2x);
 void pbec_spin (double rho, double zeta, double grho, int iflag, double *sc, double *v1cup, double *v1cdw, double *v2c);
-
 void gcxcpbe (double rho, double grad, double *enxc, double *vxc1, double *vxc2);
-
 void pbec (double rho, double grad, int iflag, double *sc, double *v1c, double *v2c);
 
 
-
 /* becke88 exchange and perdew86 correlation */
-
 void becke88 ( double rho, double grho, double *sx, double *v1x, double *v2x );
 void perdew86 ( double rho, double grho, double *sc, double *v1c, double *v2c );
 void gcxbcp (double rho, double grad, double *enxc, double *vxc1, double *vxc2);
 void perdew86_spin ( double rho, double zeta, double grho, double *sc, double *v1cup, double *v1cdw, double *v2c );
 void becke88_spin ( double rho, double grho, double *sx, double *v1x, double *v2x );
 void gcxbcp_spin (double rho_up, double rho_dw,
-  double grad_up, double grad_dw, double grad, double *enxc,
-  double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
-  double *vxc2_updw, double *vxc2_dwup);
+double grad_up, double grad_dw, double grad, double *enxc,
+double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
+double *vxc2_updw, double *vxc2_dwup);
 
 
 /* PW91 exchange correlation */
-
 void ggax(double rho, double grho, double *sx, double *v1x, double *v2x);
 void ggac (double rho, double grho, double *sc, double *v1c, double *v2c);
 void ggac_spin (double rho, double zeta, double grho, double *sc, double *v1cup, double *v1cdw, double *v2c);
 void gcxcpw91 (double rho, double grad, double *enxc, double *vxc1, double *vxc2);
 void gcxcpw91_spin(double rho_up, double rho_dw,
-  double grad_up, double grad_dw, double grad, double *enxc,
-  double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
-  double *vxc2_updw, double *vxc2_dwup);
+double grad_up, double grad_dw, double grad, double *enxc,
+double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
+double *vxc2_updw, double *vxc2_dwup);
 
 
 /* BLYP exchange correlation */
-
 void lyp ( double rs, double *ec, double *vc );
 void glyp ( double rho, double grho, double *sc, double *v1c, double *v2c );
 void lsd_lyp ( double rho, double zeta, double * elyp, double * valyp, double * vblyp );
 void lsd_glyp ( double rhoa, double rhob, double grhoaa, double grhoab2, double grhobb, double *sc, double *v1ca, double *v2ca, double *v1cb, double *v2cb, double *v2cab );
 void gcxcblyp (double rho, double grad, double *enxc, double *vxc1, double *vxc2);
 void gcxcblyp_spin (double rho_up, double rho_dw,
-  double grad_up, double grad_dw, double grad_updw2, double *enxc,
-  double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
-  double *vxc2_updw, double *vxc2_dwup);
+double grad_up, double grad_dw, double grad_updw2, double *enxc,
+double *vxc1_up, double *vxc1_dw, double *vxc2_upup, double *vxc2_dwdw,
+double *vxc2_updw, double *vxc2_dwup);
 
 void mgga_libxc (double * rho, double * tau, double * vxc, double * exc, int mode);
 void get_mgga_exc_vxc (double * rho, double * rho_oppo, double * tau, double * vxc, double * exc);
@@ -159,9 +147,7 @@ void get_mgga_exc_vxc (double * rho, double * rho_oppo, double * tau, double * v
 
 void gram (KPOINT *kpoint, double h, int numst, int maxst, int numpt,
            int maxpt);
-int get_input (FILE *fh, char *id, void *dest, unsigned int flag, char *def);
 double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
-char *get_symbol (int atomic_number);
 void global_sums (double *vect, int *length, MPI_Comm comm);
 void init_pe ( int image );
 void init_pegrid (void);
@@ -182,11 +168,8 @@ FILE *open_restart_file (char *filename);
 void xbsmovie (FILE *movie);
 void output_eigenvalues( STATE *states, int ikbs, int iscf );
 void pack_ptos (double *sg, double *pg, int dimx, int dimy, int dimz);
-void pack_ptos_f(float * sg, float * pg, int dimx, int dimy, int dimz);
 void pack_stop (double *sg, double *pg, int dimx, int dimy, int dimz);
-void pack_stop_f (float *sg, float *pg, int dimx, int dimy, int dimz);
 void pack_stop_axpy (double *sg, double *pg, double alpha, int dimx, int dimy, int dimz);
-void pack_stop_axpy_f (float * sg, float * pg, double alpha, int dimx, int dimy, int dimz);
 void pack_ptos_trade (double *sg, double *pg, int dimx, int dimy, int dimz);
 void pack_vhstod (double *s, double *d, int dimx, int dimy, int dimz, int boundaryflag);
 void pack_vhdtos (double *s, double *d, int dimx, int dimy, int dimz, int boundaryflag);
@@ -222,8 +205,6 @@ double rand0 (long *idum);
 void cgen_prolong(double coef[], double fraction, int order);
 void mg_restrict_6 (double * full, double * half, int dimx, int dimy, int dimz, int grid_ratio);
 void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz, int grid_ratio, int order);
-void gather_psi (double *tmp_psiR, double *tmp_psiI, STATE *sp, int tid);
-void scatter_psi (double *tmp_psiR, double *tmp_psiI, STATE *sp, int tid);
 void get_milliken (STATE *states);
 
 
@@ -376,7 +357,6 @@ void get_tf_rho (double * tf_rho);
 void get_dipole (double * rho);
 void set_pbc(double *position, int num_ions, int num_images);
 
-void allocate_states();
 #if __cplusplus
 }
 #endif

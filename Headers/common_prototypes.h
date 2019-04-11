@@ -26,10 +26,6 @@ void QMD_daxpy (int n, double alpha, double *x, int incx, double *y, int incy);
 void QMD_dscal (int n, double alpha, double *x, int incx);
 void QMD_dcopy (int n, double *x, int incx, double *y, int incy);
 double QMD_ddot (int n, double *x, int incx, double *y, int incy);
-void QMD_saxpy (int n, float alpha, float *x, int incx, float *y, int incy);
-void QMD_sscal (int n, float alpha, float *x, int incx);
-void QMD_scopy (int n, float *x, int incx, float *y, int incy);
-float QMD_sdot (int n, float *x, int incx, float *y, int incy);
 
 
 int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype);
