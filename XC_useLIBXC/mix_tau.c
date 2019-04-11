@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include "main.h"
 #include "common_prototypes.h"
-#include "input.h"
 
 
 void mix_tau (double * new_tau, double * tau, int length, int length_x, int length_y, int length_z)

@@ -38,7 +38,6 @@
 #include "transition.h"
 #include "blas.h"
 #include "GlobalSums.h"
-#include "rmg_alloc.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>

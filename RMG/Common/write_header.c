@@ -28,7 +28,6 @@
 #include "common_prototypes.h"
 #include "main.h"
 #include "Functional.h"
-#include "input.h"
 
 static void init_write_pos (void);
 

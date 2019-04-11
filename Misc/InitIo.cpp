@@ -40,7 +40,6 @@
 
 #include "const.h"
 #include "params.h"
-#include "rmg_alloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include "common_prototypes.h"

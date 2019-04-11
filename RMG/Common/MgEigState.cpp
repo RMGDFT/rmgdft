@@ -32,7 +32,6 @@
 #include "typedefs.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
-#include "rmg_alloc.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
 #include "GlobalSums.h"

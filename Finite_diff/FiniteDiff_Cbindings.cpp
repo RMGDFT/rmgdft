@@ -1,11 +1,7 @@
 #include "TradeImages.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
-#include "RmgTimer.h"
 #include "common_prototypes.h"
-#include "rmg_alloc.h"
-#include "rmg_error.h"
-
 #include "transition.h"
 
 extern "C" void app_cir_driver (double * a, double * b, int dimx, int dimy, int dimz, int order)

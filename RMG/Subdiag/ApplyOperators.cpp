@@ -25,7 +25,6 @@
 #include "const.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
-#include "rmg_alloc.h"
 #include "rmg_error.h"
 #include "State.h"
 #include "rmgthreads.h"
