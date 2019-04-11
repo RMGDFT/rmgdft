@@ -16,7 +16,6 @@ ReadOrbitals.cpp
 allocate_masks.c
 AllocatePsi.cpp
 allocate_states.c
-app10_del2.c
 app_grad6.c
 app_mask.c
 assign_weight_on.c

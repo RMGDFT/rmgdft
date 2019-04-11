@@ -46,7 +46,6 @@ void app_smooth1 (double *f, double *work, int dimx, int dimy, int dimz);
 void app_smooth1_f (float *f, float *work, int dimx, int dimy, int dimz);
 void app_cir_driver (double *a, double *b, int dimx, int dimy, int dimz, int order);
 void app_cir_fourth (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_fourth_f (float * a, float * b, int dimx, int dimy, int dimz);
 void app_cir_sixth (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir (double *a, double *b, int dimx, int dimy, int dimz);
 double app_cil (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
@@ -71,7 +70,6 @@ void genvpsi_f (float * psi, float * sg_twovpsi, double * vtot, double * kd,
 void get_nlop (void);
 void get_weight (void);
 void get_phase (ION *iptr, double *rtptr, int icount, int *dvec);
-void get_nlop_smp (int tid);
 char *get_num (char *str);
 
 
@@ -182,9 +180,6 @@ double my_crtc (void);
 FILE *open_xbs_movie (char *filename);
 FILE *open_restart_file (char *filename);
 void xbsmovie (FILE *movie);
-void ortho_half (STATE *states);
-void ortho_bcc (STATE *states);
-void ortho_ncpp(STATE *states);
 void output_eigenvalues( STATE *states, int ikbs, int iscf );
 void pack_ptos (double *sg, double *pg, int dimx, int dimy, int dimz);
 void pack_ptos_f(float * sg, float * pg, int dimx, int dimy, int dimz);
@@ -205,7 +200,6 @@ void write_pdb (void);
 int read_atom_line(char *species, double *crds, int *movable, FILE *fhand, char *tbuf, int index);
 int assign_species (CONTROL * c, char *buf);
 
-void read_pseudo (void);
 double real_sum_all (double x, MPI_Comm comm);
 double double_sum_all (double x, MPI_Comm comm);
 void FftFilterFine(double *x,  double factor);
@@ -366,12 +360,7 @@ void fire (double *step, double step_max, double f_inc, double f_dec, int n_min,
 int int_sum_all (int x, MPI_Comm comm);
 void move_ions (double dt);
 void lcao_init (void);
-void init_atomic_rho_wf (void);
 void lcao_get_rho (double * arho_f);
-void lcao_get_awave (double *psi, ION *iptr, int awave_idx, int l, int m, double coeff);
-void lcao_get_psi (STATE * states);
-double mask_function (double x);
-void apply_mask_function (double *f, double * r, int rg_points, double rmax, double offset);
 void filter_potential (double *potential, double *r, int rg_points, double rmax, double offset, double parm, double* potential_lgrid, 
 	double *rab, int l_value, double dr, double  gwidth, int lgrid_points, double rcut, double rwidth, double * drpotential_lgrid);
 int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,

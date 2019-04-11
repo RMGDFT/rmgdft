@@ -63,7 +63,7 @@
  *   false indicates that the operator does not exist in this region
  *   of space.
  * PARENTS
- *   get_nlop_smp.c init_nuc.c lforce.c nlccforce.c nlforce.c
+ *   init_nuc.c lforce.c nlccforce.c nlforce.c
  * CHILDREN
  *   pe2xyz.c
  * SOURCE

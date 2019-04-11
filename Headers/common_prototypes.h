@@ -60,13 +60,8 @@ void solv_pois_f (float *vmat, float *fmat, float *work,
 
 
 void mg_restrict (double *full, double *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
-void mg_restrict_f (float *full, float *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
 void mg_prolong (double *full, double *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
-void mg_prolong_f (float *full, float *half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset);
-
 double app2_del2 (double *a, double *b, int dimx, int dimy, int dimz,
-                double gridhx, double gridhy, double gridhz);
-double app2_del2_f (float *a, float *b, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
 void init_global_sums(void);
 
@@ -74,7 +69,6 @@ void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
 void app_cir_driver (double *a, double *b, int dimx, int dimy, int dimz, int order);
 void app_cir_fourth (double *a, double *b, int dimx, int dimy, int dimz);
-void app_cir_fourth_f (float * a, float * b, int dimx, int dimy, int dimz);
 void app_cir_sixth (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir (double *a, double *b, int dimx, int dimy, int dimz);
 double app_cil (double *a, double *b, int dimx, int dimy, int dimz, double gridhx,
@@ -84,8 +78,6 @@ double app_cil_fourth (double *a, double *b, int dimx, int dimy, int dimz, doubl
               double gridhy, double gridhz);
 double app_cil_sixth (double *psi, double *b, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz);
-void app_cir_beta_driver (double * a, double * b, int dimx, int dimy, int dimz, int order);
-
 
 void find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
                       int *pxoffset, int *pyoffset, int *pzoffset);

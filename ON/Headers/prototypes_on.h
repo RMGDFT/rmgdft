@@ -134,9 +134,6 @@ void global_to_distribute(double * global_array, double * distr_array);
 
 void diag_eig_matrix(double *eig_matrix, double *eig, int *desca);
 
-double mask_function (double x);
-void apply_mask_function (double *f, double * r, int rg_points, double rmax, double offset);
-void backout_mask_function (double *f, double dr, int lg_points, double rmax);
 void thread_barrier_wait(void);
 int is_loop_over_states(void);
 void cgen_prolong(double coef[], double fraction, int order);
@@ -187,9 +184,6 @@ double minimage (ION * ip1, ION * ip2, double * xtal_r);
 double my_crtc (void);
 /* Local function prototypes */
 void norm_psi (STATE * psi, double bv);
-void ortho_full (STATE * states);
-void ortho_half (STATE * states);
-void ortho_bcc (STATE * states);
 void output (STATE * states, int its);
 void pe2xyz (int pe, int *x, int *y, int *z);
 void pack_ptos (double * sg, double * pg, int dimx, int dimy, int dimz);
@@ -423,9 +417,6 @@ double minimage (ION * ip1, ION * ip2, double * xtal_r);
 double my_crtc (void);
 /* Local function prototypes */
 void norm_psi (STATE * psi, double bv);
-void ortho_full (STATE * states);
-void ortho_half (STATE * states);
-void ortho_bcc (STATE * states);
 void output (STATE * states, int its);
 void pe2xyz (int pe, int *x, int *y, int *z);
 void pack_ptos (double * sg, double * pg, int dimx, int dimy, int dimz);
