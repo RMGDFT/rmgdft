@@ -142,7 +142,7 @@ void AllocatePsi(STATE * states, STATE * states1)
             std::to_string(pct.kstart) + std::to_string(pct.gridpe);
         ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         rptr3 = (double *)CreateMmapArray(ct.nvme_orbital_fd, alloc_size * sizeof(double));
-        if(!rptr3) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        if(!rptr3) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for orbitals. \n");
         madvise(rptr3, alloc_size * sizeof(double), MADV_SEQUENTIAL);
     }
     else

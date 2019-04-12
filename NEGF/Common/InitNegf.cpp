@@ -28,7 +28,7 @@
  *   run.c
  * CHILDREN
  *   latgen.c recips.c init_pos.c read_data.c init_wf.c init_kbr.c
- *   init_sys.c get_nlop.c init_nuc.c init_wflcao.c get_vxc.c
+ *   init_sys.c init_nuc.c init_wflcao.c get_vxc.c
  *   pack_vhstod.c 
  * SOURCE
  */

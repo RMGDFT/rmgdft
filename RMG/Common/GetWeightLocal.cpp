@@ -155,4 +155,4 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
     delete [] phase_fftw;
 
 
-}                               /* end get_weight */
+}                               /* end GetWeight */

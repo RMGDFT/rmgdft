@@ -62,8 +62,6 @@ double Fill_on (STATE *states, double width, double nel, double mix,
            int num_st, int occ_flag, int mp_order);
 
 void find_phase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, double ** phase_sin, double ** phase_cos);
-void get_nlop (void);
-void get_weight (void);
 void get_phase (ION *iptr, double *rtptr, int icount, int *dvec);
 char *get_num (char *str);
 
@@ -240,24 +238,7 @@ void cholesky (double *a, int n);
 
 
 /*the function for softpseudopotential*/
-double app_cil1 (double *a, double *b, int dimx, int dimy, int dimz,
-               double gridhx, double gridhy, double gridhz);
-double app_cil1_bcc (double *a, double *b, int dimx, int dimy, int dimz,
-                   double gridhx, double gridhy, double gridhz);
-double app_cil1_fcc (double *a, double *b, int dimx, int dimy, int dimz,
-                   double gridhx, double gridhy, double gridhz);
-double app_cil1_hex (double *a, double *b, int dimx, int dimy, int dimz,
-                   double gridhx, double gridhy, double gridhz);
-double app_cil1_ortho (double *a, double *b, int dimx, int dimy, int dimz,
-                     double gridhx, double gridhy, double gridhz);
-void app_nls (double * psiR, double * psiI, double * workR, double * workI, double *work2R, double *work2I, 
-     double *sintR, double *sintI, int state, int kidx);
-void app_nls_allstates (double * psiR, double * psiI, double * workR, double * workI, double *work2R, double *work2I, 
-     double *Bns, double *BnsI, double *sintR, double *sintI, int kidx);
 void get_ddd (double *veff);
-void get_nlop_d (ION *iptr, double *rtptr, int ip, int icount, int *dvec);
-void get_nlop_p (ION *iptr, double *rtptr, int ip, int icount, int *dvec);
-void get_nlop_s (ION *iptr, double *rtptr, int ip, int icount, int *dvec);
 void get_QI (void);
 void get_qqq (void);
 void get_rho (STATE * states, double * rho, double * rhocore);
@@ -267,9 +248,7 @@ void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int l
 void Output_rho_xsf(double *array_3d, MPI_Comm comm);
 void init_qfunct (void);
 void mg_eig_state (STATE *sp, int tid, double *vtot_psi);
-void mg_eig_state_f (STATE *sp, int tid, double *vtot_psi);
 void ortho (STATE *states, int kpt);
-void reinit_ionic_pp (STATE * states, double * vnuc, double * rhocore, double * rhoc);
 void init_pestr(void);
 void read_init(char *meta);
 int filename_increment(char *filename);
@@ -299,7 +278,6 @@ void partial_betaxpsi (int ion, fftw_plan p2, double *newsintR_x,
                        double *newsintI_z, ION *iptr);
 void partial_QI (int ion, double *QI_R, ION *iptr);
 void nlccforce (double *rho, double *vxc, double *force);
-double get_ve_nl (STATE *sta, int istate);
 void pack_rho_ctof (double *rhoc, double *rhof);
 void bspline_interp_full (double *rho, double *rho_f);
 void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);

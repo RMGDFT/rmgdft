@@ -25,7 +25,7 @@
  * OUTPUT
  *   interpolated value is returned
  * PARENTS
- *   get_nlop_d.c get_nlop_p.c get_nlop_s.c init_nuc.c init_wflcao.c
+ *   init_nuc.c init_wflcao.c
  *   lforce.c nlccforce.c nlforce_d.c nlforce_p.c nlforce_s.c
  * CHILDREN
  *   nothing 

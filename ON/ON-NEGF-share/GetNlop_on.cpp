@@ -127,7 +127,7 @@ void GetNlop_on(void)
         ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
 
         projectors = (double *)CreateMmapArray(ct.nvme_weight_fd, PROJECTOR_SPACE*sizeof(double));
-        if(!projectors) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        if(!projectors) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for GetNlop_on. \n");
         madvise(projectors, PROJECTOR_SPACE*sizeof(double), MADV_SEQUENTIAL);
         
     }

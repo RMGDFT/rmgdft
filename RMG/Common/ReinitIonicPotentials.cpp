@@ -143,5 +143,5 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     delete RT1;
 
 
-}                               /* end reinit_ionic_pp */
+}                               /* end ReinitIonicPotentials */
 

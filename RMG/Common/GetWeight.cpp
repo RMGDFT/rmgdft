@@ -195,4 +195,4 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
     fftw_free (beptr);
 
 
-}                               /* end get_weight */
+}                               /* end GetWeight */

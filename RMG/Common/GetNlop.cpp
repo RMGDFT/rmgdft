@@ -340,12 +340,12 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     if(ct.nvme_weights)
     {
         pct.weight = (double *)CreateMmapArray(ct.nvme_weight_fd, pct.weight_size*sizeof(double));
-        if(!pct.weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        if(!pct.weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
         madvise(pct.weight, pct.weight_size*sizeof(double), MADV_SEQUENTIAL);
 
         if(ct.need_Bweight) {
             pct.Bweight = (double *)CreateMmapArray(ct.nvme_Bweight_fd, pct.weight_size*sizeof(double));
-            if(!pct.Bweight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+            if(!pct.Bweight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for bweights. \n");
         }
         else {
             pct.Bweight = pct.weight;

@@ -230,7 +230,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
         ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
-        if(!rptr) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        if(!rptr) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for orbitals. \n");
         madvise(rptr, ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024) * sizeof(OrbitalType), MADV_SEQUENTIAL);
     }
     else
@@ -246,7 +246,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
         ct.nvme_work_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         if(need_ns) ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType));
-        if(!ns) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for: get_nlop \n");
+        if(!ns) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for work arrays. \n");
         madvise(ns, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType), MADV_SEQUENTIAL);
     }
     else

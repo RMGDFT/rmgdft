@@ -67,7 +67,6 @@ void find_node_offsets(int gridpe, int nxgrid, int nygrid, int nzgrid,
                       int *pxoffset, int *pyoffset, int *pzoffset);
 void find_node_sizes(int gridpe, int nxgrid, int nygrid, int nzgrid,
                       int *pxsize, int *pysize, int *pzsize);
-void read_common();
 void pe2xyz(int pe, int *x, int *y, int *z);
 int radius2grid (double radius, double mingrid_spacing);
 
