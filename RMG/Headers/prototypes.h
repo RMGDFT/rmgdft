@@ -26,19 +26,10 @@
 extern "C" {
 #endif
 
-void CompatRmgTimerPrint(const char *outfile, int steps);
-void betaxpsi1_calculate_one(STATE *st, int ion, int nion, double *sintR, double *sintI, int kpt, double *weiptr_base);
-void get_te (double *rho, double *rho_oppo, double *rhocore, double *rhoc, double *vh, double *vxc,
-             STATE *states, int ii_flag);
-void get_vxc (double *rho, double *rho_oppo, double *rhocore, double *vxc);
 void nlforce_par_gamma (double * par_gamma, int ion, int nh, double *force);
 void nlforce_par_omega (double * par_omega, int ion, int nh, double *force);
 void nlforce_par_Q (double *veff, double *, double *, double *gamma, int ion, ION *iptr, int nh,
                      double *forces);
-void subdiag_app_B_one (STATE *sp, double * b_psi);
-void subdiag_app_A_one (STATE *sp, double * a_psi, double * s_psi, double * vtot_eig);
-void subdiag_app_AB_one (STATE *sp, double * a_psi, double * b_psi, double * vtot_eig_s);
-void subdiag_app_AB (STATE * states, double * a_psi, double * b_psi, double * vtot_eig);
 #if __cplusplus
 }
 #endif

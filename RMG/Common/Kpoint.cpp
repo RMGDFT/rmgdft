@@ -673,7 +673,6 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
             }
             /*Update wavefunctions */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
-                //update_waves (st1, &st[ist2], ist1, ist2, this->kidx, cR[ist2], cI[ist2]);
   
                 KpointType cA(cR[ist2]);
                 for(int idx = 0;idx < this->pbasis;idx++) {
@@ -763,7 +762,6 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
           /*This will calculate cR and cI coefficients */
           for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
-              //ortho_get_coeff (st1, &st[ist2], ist1, ist2, this->kidx, &cR[ist2], &cI[ist2]);
 
               int sidx1 = ist1 * ct.max_nl;
               int sidx2 = ist2 * ct.max_nl;
@@ -833,7 +831,6 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
           }
           /*Update wavefunctions */
           for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
-              //update_waves (st1, &st[ist2], ist1, ist2, this->kidx, cR[ist2], cI[ist2]);
 
               KpointType cA(cR[ist2], cI[ist2]);
               for(int idx = 0;idx < this->pbasis;idx++) {

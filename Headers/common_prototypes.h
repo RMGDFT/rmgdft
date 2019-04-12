@@ -36,21 +36,9 @@ void mgrid_solv (double *v_mat, double *f_mat, double *work,
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundaryflag);
-void mgrid_solv_f (float *v_mat, float *f_mat, float *work,
-                 int dimx, int dimy, int dimz, double gridhx, double gridhy,
-                 double gridhz, int level, int *nb_ids, int max_levels,
-                 int *pre_cyc, int *post_cyc, int mu_cyc, double step, double k,
-                 int gxsize, int gysize, int gzsize,
-                 int gxoffset, int gyoffset, int gzoffset,
-                 int pxdim, int pydim, int pzdim, int boundaryflag);
 void eval_residual (double *mat, double *f_mat, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz, double *res);
-void eval_residual_f (float *mat, float *f_mat, int dimx, int dimy, int dimz,
-                    double gridhx, double gridhy, double gridhz, float *res);
 void solv_pois (double *vmat, double *fmat, double *work,
-                int dimx, int dimy, int dimz, double gridhx,
-                double gridhy, double gridhz, double step, double k);
-void solv_pois_f (float *vmat, float *fmat, float *work,
                 int dimx, int dimy, int dimz, double gridhx,
                 double gridhy, double gridhz, double step, double k);
 
@@ -138,14 +126,7 @@ double get_omega(void);
 
 
 void trade_images (double *mat, int dimx, int dimy, int dimz, int type);
-void trade_images_f (float *mat, int dimx, int dimy, int dimz, int type);
 void trade_imagesx (double *f, double *w, int dimx, int dimy, int dimz, int images, int type);
-void trade_imagesx_async (double *f, double *w, int dimx, int dimy, int dimz, int images);
-void trade_images1_async (double * f, int dimx, int dimy, int dimz);
-void trade_images1_central_async_f (float * f, int dimx, int dimy, int dimz);
-void trade_images1_central_async (double * f, int dimx, int dimy, int dimz);
-void trade_imagesx_central_async_f (float * f, float * w, int dimx, int dimy, int dimz, int images);
-void trade_imagesx_central_async (double * f, double * w, int dimx, int dimy, int dimz, int images);
 double AtomicInterpolate(double *f, double r);
 void lbfgs (double *posion, double *force, int num_ions, int num_images);
 void Vdd(double * rho);

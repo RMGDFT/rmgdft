@@ -26,7 +26,6 @@ GetWeight.cpp
 GetWeightLocal.cpp
 GetNlop.cpp
 ReinitIonicPotentials.cpp
-transition_rmg.cpp
 PotentialAcceleration.cpp
 GetNewRho.cpp
 Betaxpsi.cpp

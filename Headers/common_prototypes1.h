@@ -281,8 +281,6 @@ double gcutoff (double g1, double gcut, double width);
 void rft1 (double cparm, double *f, double *r, double *ffil, double *rab,
            int rg_points, int lval, double dr, double width, int lrg_points);
 void norm_psi1 (STATE *sp, int istate, int kpt);
-void ortho_get_coeff (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, double *cR, double *cI);
-void update_waves (STATE * sp1, STATE * sp2, int ist1, int ist2, int kidx, double cR, double cI);
 double get_QnmL (int idx, int ltot, double r, SPECIES *sp);
 
 void force (double *rho, double *rho_oppo, double *rhoc, double *vh, double *vxc, double *vnuc);
@@ -300,9 +298,6 @@ void partial_betaxpsi (int ion, fftw_plan p2, double *newsintR_x,
                        double *newsintI_x, double *newsintI_y,
                        double *newsintI_z, ION *iptr);
 void partial_QI (int ion, double *QI_R, ION *iptr);
-void ylmr2_x (double *r, double *ylm_x);
-void ylmr2_y (double *r, double *ylm_y);
-void ylmr2_z (double *r, double *ylm_z);
 void nlccforce (double *rho, double *vxc, double *force);
 double get_ve_nl (STATE *sta, int istate);
 void pack_rho_ctof (double *rhoc, double *rhof);
@@ -310,10 +305,6 @@ void bspline_interp_full (double *rho, double *rho_f);
 void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void get_vxc_exc (double * nrho, double * nrho_oppo,  double * vxc, double * exc, int xctype);
 void betaxpsi (STATE *states);
-void betaxpsi1 (STATE *states, int kpt);
-void assign_weight (SPECIES *sp, int ion, fftw_complex *beptr,
-                    double *rtptr, double *Bweight);
-void assign_weight2 (int nldim, int ion, double *beptr, double *rtptr);
 void pack_gftoc (SPECIES *sp, fftw_complex *gwptr, fftw_complex *gbptr);
 void debug_write_rho_z (double *rhoz);
 void print_density_z_direction (int grid_x, int grid_y, double *density,
@@ -347,8 +338,6 @@ void filter_potential (double *potential, double *r, int rg_points, double rmax,
 int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,
                int cdim, int pxgrid, int pygrid, int pzgrid,
                int nxgrid, int nygrid, int nzgrid);
-void RMG_MPI_trade(double *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
-void RMG_MPI_trade_f(float *buf, int count, int type, int pe_x_offset, int pe_y_offset, int pe_z_offset, MPI_Comm comm, int tag, MPI_Request *req);
 void init_trade_imagesx_async(void);
 void  get_rho_oppo (double * rho, double * rho_oppo);
 void get_opposite_eigvals (STATE * states);

@@ -103,6 +103,6 @@ void move_ions (double dt)
     progress_tag ();
     printf ("RMS displacement: %8.5f a0", sqrt(rms_move/count));
 
-}                               /* end rmg_fastrelax */
+}                               /* end move_ions */
 
 /******/
