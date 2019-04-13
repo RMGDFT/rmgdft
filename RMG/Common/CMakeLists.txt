@@ -27,6 +27,7 @@ GetWeightLocal.cpp
 GetNlop.cpp
 ReinitIonicPotentials.cpp
 PotentialAcceleration.cpp
+Projector.cpp
 GetNewRho.cpp
 Betaxpsi.cpp
 Init.cpp

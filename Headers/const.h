@@ -258,4 +258,9 @@
 // Atomic grid types
 #define LOG_GRID 0
 #define LINEAR_GRID 1
+
+// Projector types
+#define LOCALIZED 0
+#define DELOCALIZED 1
+
 #endif /* CONST_H_INCLUDED */
