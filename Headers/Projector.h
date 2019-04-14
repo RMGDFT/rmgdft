@@ -56,7 +56,7 @@ public:
     Kpoint<KpointType> *kptr;
 
     // Number of projectors
-    int np;
+    int num_tot_proj;
 
     // Storage area for the projector
     KpointType *weight;
@@ -109,6 +109,27 @@ private:
 
     int num_loc_ions;
     int loc_ions_list[MAX_NONLOC_IONS];
+
+    void betaxpsi_calculate (Kpoint<KpointType> * kptr, KpointType * sint_ptr, KpointType * psi, int num_states);
+    void betaxpsi_receive (KpointType * recv_buff, int num_pes,
+                               int *pe_list, int *num_ions_per_pe,
+                               MPI_Request * req_recv, int num_states);
+    void betaxpsi_send (KpointType * send_buff, int num_pes,
+                            int *pe_list, int *num_ions_per_pe,
+                            MPI_Request * req_send, int num_states);
+    void betaxpsi_pack (KpointType * sint, KpointType * fill_buff,
+                            int num_pes, int *num_ions_per_pe,
+//                            int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
+                            int_2d_array &list_ions_per_pe, int num_states);
+    void betaxpsi_sum_owned (KpointType * recv_buff, KpointType * sint,
+                                 int num_pes, int *num_ions_per_pe,
+//                                 int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
+                                 int_2d_array &list_ions_per_pe, int num_states);
+    void betaxpsi_write_non_owned (KpointType * sint, KpointType * recv_buff,
+                                       int num_pes,
+                                       int *num_ions_per_pe,
+//                                       int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
+                                       int_2d_array &list_ions_per_pe, int num_states);
 
 };
 

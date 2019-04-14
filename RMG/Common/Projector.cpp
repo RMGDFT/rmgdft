@@ -53,7 +53,7 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
 {
     this->type = projector_type;
     this->kptr = K;
-    this->np = 0;
+    this->num_tot_proj = 0;
     this->num_nonloc_ions = 0;
     this->num_owned_ions = 0;
     this->num_owned_pe = 0;
@@ -243,7 +243,7 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
     int *Aiy2 = new int[FNY_GRID]();
     int *Aiz2 = new int[FNZ_GRID]();
 
-    this->np = this->num_nonloc_ions * ct.max_nl;
+    this->num_tot_proj = this->num_nonloc_ions * ct.max_nl;
 
     int known_nonowner, nonwner_index, known_owner, owner_index, owned_ions_per_pe, nonowned_ions_per_pe; 
     int owned, owner;
@@ -360,7 +360,7 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
                 this->num_nonowned_ions_per_pe[owner_index]++;
             }
         }
-    } // for (nlion = 0; nlion < pct.num_nonloc_ions; nlion++)
+    } // for (nlion = 0; nlion < this->num_nonloc_ions; nlion++)
 
 
     /* Release temporary memory */
@@ -380,8 +380,9 @@ template <class KpointType> void Projector<KpointType>::set_storage(KpointType *
     this->weight = storage;
 }
 
+
 // Applies projectors to orbitals associated with kpoint kptr
-template <class KpointType> void Projector<KpointType>::project(KpointType *p, int offset, int n)
+template <class KpointType> void Projector<KpointType>::project(KpointType *p, int offset, int nstates)
 {
 
     // Do delocalized case first
@@ -411,7 +412,316 @@ template <class KpointType> void Projector<KpointType>::project(KpointType *p, i
     }
 
     // And now localized
+    KpointType *own_buff = NULL, *nown_buff = NULL;
+    KpointType *send_buff, *recv_buff;
+    MPI_Request *req_send, *req_recv;
+    MPI_Request *req_own = NULL, *req_nown = NULL;
+    int size_own, size_nown, pe;
 
+    /*Allocate memory for communication */
+    size_own = 0;
+    for (pe = 0; pe < this->num_owned_pe; pe++)
+        size_own += this->num_owned_ions_per_pe[pe];
+    size_own *= nstates * ct.max_nl;
+
+    size_nown = 0;
+    for (pe = 0; pe < this->num_owners; pe++)
+        size_nown += this->num_nonowned_ions_per_pe[pe];
+    size_nown *= nstates * ct.max_nl;
+
+
+    if (size_own) {
+        own_buff = new KpointType[size_own]();
+    }
+    if (size_nown) {
+        nown_buff = new KpointType[size_nown]();
+    }
+
+    if (this->num_owned_pe) {
+        req_own = new MPI_Request[this->num_owned_pe];
+    }
+    if (this->num_owners) {
+        req_nown = new MPI_Request[this->num_owners];
+    }
+
+    /*First owning cores will receive data from non-owners */
+    send_buff = nown_buff;
+    recv_buff = own_buff;
+
+    req_send = req_nown;
+    req_recv = req_own;
+
+    /*First post non-blocking receives for data about owned ions from cores who do not own the ions */
+    betaxpsi_receive (recv_buff, this->num_owned_pe, this->owned_pe_list,
+                       this->num_owned_ions_per_pe, req_recv, nstates);
+
+
+    // Set sint array
+    //sint = &kptr->newsint_local[offset*this->num_nonloc_ions*ct.max_nl];
+    KpointType *sint = new KpointType[this->num_nonloc_ions * nstates * ct.max_nl]();
+
+
+    /*Loop over ions and calculate local projection between beta functions and wave functions */
+    betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[offset*kptr->pbasis], nstates, this->weight);
+
+
+    /*Pack data for sending */
+    betaxpsi_pack (sint, send_buff, this->num_owners,
+                    this->num_nonowned_ions_per_pe, this->list_ions_per_owner, nstates);
+
+    /*Send <beta|psi> contributions  to the owning PE */
+    betaxpsi_send (send_buff, this->num_owners, this->owners_list,
+                    this->num_nonowned_ions_per_pe, req_send, nstates);
+
+    /*Wait until all data is received */
+    if(this->num_owned_pe)
+        MPI_Waitall (this->num_owned_pe, req_recv, MPI_STATUSES_IGNORE);
+    if(this->num_owners)
+        MPI_Waitall (this->num_owners, req_send, MPI_STATUSES_IGNORE);
+
+
+    /*Unpack received data and sum contributions from all pes for owned ions */
+    betaxpsi_sum_owned (recv_buff, sint, this->num_owned_pe,
+                         this->num_owned_ions_per_pe, this->list_owned_ions_per_pe, nstates);
+
+    /*In the second stage, owning cores will send summed data to non-owners */
+    send_buff = own_buff;
+    recv_buff = nown_buff;
+
+    req_send = req_own;
+    req_recv = req_nown;
+    
+    
+    /*Receive summed data for non-owned ions from owners */
+    betaxpsi_receive (recv_buff, this->num_owners, this->owners_list,
+                       this->num_nonowned_ions_per_pe, req_recv, nstates);
+
+    /*Pack summed data for owned ions to send to non-owners */
+    betaxpsi_pack (sint, send_buff, this->num_owned_pe,
+                    this->num_owned_ions_per_pe, this->list_owned_ions_per_pe, nstates);
+
+    /*Send packed data for owned ions to non-owners */
+    betaxpsi_send (send_buff, this->num_owned_pe, this->owned_pe_list,
+                    this->num_owned_ions_per_pe, req_send, nstates);
+
+    /*Wait until all data is received */
+    if(this->num_owned_pe)
+        MPI_Waitall (this->num_owned_pe, req_send, MPI_STATUSES_IGNORE);
+    if(this->num_owners)
+        MPI_Waitall (this->num_owners, req_recv, MPI_STATUSES_IGNORE);
+
+    /*Finaly, write received data about non-owned ions into sint array */
+    betaxpsi_write_non_owned (sint, recv_buff, this->num_owners,
+                               this->num_nonowned_ions_per_pe, this->list_ions_per_owner, nstates);
+
+
+    if (this->num_owned_pe)
+        delete [] req_own;
+    if (this->num_owners)
+        delete [] req_nown;
+    if (size_nown)
+        delete [] nown_buff;
+    if (size_own)
+        delete [] own_buff;
+
+
+    int idx= 0 ;
+    for(int st = 0;st < nstates;st++) {
+        for(int ion = 0;ion < this->num_nonloc_ions;ion++) {
+            for(int ip = 0;ip < ct.max_nl;ip++) {
+                p[idx] = sint[ion*nstates*ct.max_nl + st*ct.max_nl + ip];
+                idx++;
+            }
+        }
+    }
+    delete [] sint;
+}
+
+
+template <class KpointType>
+void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, KpointType *psi, int num_states)
+{
+    KpointType rzero(0.0);
+    char *transt = "t", *transn = "n", *transc = "c";
+    char *transa;
+   
+    transa = transc;
+    if(ct.is_gamma) transa = transt;
+
+    KpointType alpha(get_vel());
+
+    if(this->num_tot_proj == 0) return;
+    int pbasis = kptr->pbasis;
+
+#if GPU_ENABLED
+    KpointType *nlarray = (KpointType *)GpuMallocManaged(sizeof(KpointType) * this->num_tot_proj * num_states);
+#else
+    KpointType *nlarray = new KpointType[this->num_tot_proj * num_states]();
+#endif
+    RmgGemm (transa, transn, this->num_tot_proj, num_states, pbasis, alpha, 
+            this->weight, pbasis, psi, pbasis, rzero, nlarray, this->num_tot_proj);
+
+    for (int nion = 0; nion < this->num_nonloc_ions; nion++)
+    {
+        for(int istate = 0; istate < num_states; istate++)
+        {
+            for(int ip = 0; ip < ct.max_nl; ip++)
+            {
+                int proj_index = nion * ct.max_nl + ip;
+                int idx1 = nion * num_states * ct.max_nl + istate * ct.max_nl + ip;
+                //idx2 = proj_index * num_states + istate;
+                int idx2 = istate * this->num_tot_proj + proj_index;
+                sint_ptr[idx1] = nlarray[idx2];
+            }
+        }
+    }
+
+#if GPU_ENABLED
+    GpuFreeManaged(nlarray);
+#else
+    delete [] nlarray;
+#endif
+
+}
+
+
+
+/*This receives data from other PEs for ions owned by current PE*/
+template <class KpointType>
+void Projector<KpointType>::betaxpsi_receive (KpointType * recv_buff, int num_pes,
+        int *pe_list, int *num_ions_per_pe,
+        MPI_Request * req_recv, int num_states)
+{
+    KpointType *tpr;
+    int tag, pe, source, size;
+
+    tpr = recv_buff;
+
+    for (pe = 0; pe < num_pes; pe++)
+    {
+        source = pe_list[pe];
+        /*Tag is sender_rank * pct.grid_npes + receiver_rank */
+        tag = 111;
+        size = num_ions_per_pe[pe] * num_states * ct.max_nl;
+        int transfer_size = size;
+        if(!ct.is_gamma) transfer_size *= 2;
+        MPI_Irecv (tpr, transfer_size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recv[pe]);
+        tpr += size;
+    }
+}
+
+template <class KpointType>
+void Projector<KpointType>::betaxpsi_send (KpointType * send_buff, int num_pes,
+        int *pe_list, int *num_ions_per_pe,
+        MPI_Request * req_send, int num_states)
+{
+    KpointType *tpr;
+    int target, num_ions, size, tag, pe;
+
+    tpr = send_buff;
+
+    for (pe = 0; pe < num_pes; pe++)
+    {
+        target = pe_list[pe];
+        /*Tag is sender_rank * pct.grid_npes + receiver_rank */
+        tag = 111;
+        num_ions = num_ions_per_pe[pe];
+        size = num_ions * num_states * ct.max_nl;
+        int transfer_size = size;
+        if(!ct.is_gamma) transfer_size *= 2;
+        MPI_Isend (tpr, transfer_size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_send[pe]);
+        tpr += size;
+    }
+}
+
+
+template <class KpointType>
+void Projector<KpointType>::betaxpsi_pack (KpointType * sint, KpointType * fill_buff, 
+        int num_pes, int *num_ions_per_pe,
+//        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
+        int_2d_array &list_ions_per_pe, int num_states)
+{
+    KpointType *tpr_buff, *sint_tpr;
+    int size, num_ions, ion, nlion, pe;
+
+    tpr_buff = fill_buff;
+
+    size = num_states * ct.max_nl;
+
+    for (pe = 0; pe < num_pes; pe++)
+    {
+        num_ions = num_ions_per_pe[pe];
+
+        /*Loop over ions that need to be sent to pe */
+        for (ion = 0; ion < num_ions; ion++)
+        {
+            nlion = list_ions_per_pe[pe][ion];
+            sint_tpr = &sint[nlion * num_states * ct.max_nl];
+
+            /*Pack data into send array */
+            for(int idx=0;idx < size;idx++) tpr_buff[idx] = sint_tpr[idx];
+            tpr_buff += size;
+        }
+    }
+
+}
+
+
+template <class KpointType>
+void Projector<KpointType>::betaxpsi_sum_owned (KpointType * recv_buff, KpointType * sint,
+        int num_pes, int *num_ions_per_pe,
+//        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
+        int_2d_array &list_ions_per_pe, int num_states)
+{
+    KpointType *tpr1, *tpr2;
+    int size, num_ions, ion_index, pe, ion;
+
+    size = num_states * ct.max_nl;
+    tpr1 = recv_buff;
+
+    for (pe = 0; pe < num_pes; pe++)
+    {
+        num_ions = num_ions_per_pe[pe];
+        for (ion = 0; ion < num_ions; ion++)
+        {
+            ion_index = list_ions_per_pe[pe][ion];
+            tpr2 = &sint[ion_index * num_states * ct.max_nl];
+            for(int idx=0;idx < size;idx++) tpr2[idx] += tpr1[idx];
+            tpr1 += size;
+        }
+    }
+
+
+}
+
+
+
+template <class KpointType>
+void Projector<KpointType>::betaxpsi_write_non_owned (KpointType * sint, KpointType * recv_buff, int num_pes,
+        int *num_ions_per_pe,
+//        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
+        int_2d_array &list_ions_per_pe, int num_states)
+{
+    KpointType *tpr1, *tpr2;
+    int size, num_ions, ion_index, pe, ion;
+
+    size = num_states * ct.max_nl;
+    tpr1 = recv_buff;
+
+    for (pe = 0; pe < num_pes; pe++)
+    {
+        num_ions = num_ions_per_pe[pe];
+
+        for (ion = 0; ion < num_ions; ion++)
+        {
+            ion_index = list_ions_per_pe[pe][ion];
+
+            tpr2 = &sint[ion_index * num_states * ct.max_nl];
+            for(int idx=0;idx < size;idx++) tpr2[idx] = tpr1[idx];
+
+            tpr1 += size;
+        }
+    }
 }
 
 
