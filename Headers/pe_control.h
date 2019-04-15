@@ -139,10 +139,8 @@ typedef struct
 
     /** An index array which indicate whether the grid map on the current pocessor*/
     int **Qdvec;
-    bool *nl_flag;
 
     /** Number of points in the nlindex array for each ion */
-    int *idxptrlen;
     int *Qidxptrlen;
 
     /** Number of points in the circle of local projector for each pocessor*/
@@ -162,42 +160,7 @@ typedef struct
     /** points to start of qqq storage for this ion*/
     double **qqq;
 
-#if 0
     int num_owned_ions;
-    int owned_ions_list[MAX_NONLOC_IONS];
-    
-    int num_nonloc_ions;
-    int *nonloc_ions_list;
-    int *nonloc_ion_ownflag;
-
-
-    int num_nonloc_pes;
-    
-    
-    /*For ions owned by current PE */
-    /* Number of cores to cummunicate with about owned ions*/
-    int num_owned_pe;
-    /*List of ranks of cores to comunicate with about owned ions*/
-    int *owned_pe_list;
-    /* Number of owned ions to communicate about for cores from owned_pe_list */
-    int *num_owned_ions_per_pe;
-    /*List of ion indices to communicate about for core from owned_pe_list 
-     * These are indices within nonloc ions, not absolute ones*/ 
-    int list_owned_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
-    
-    
-    /*For ions NOT owned by current PE*/
-    /* Number of cores to cummunicate with about non-owned ions*/
-    int num_owners;
-    /*Indices of cores to cummunicate with about non-owned ions*/
-    int *owners_list;
-    /* Number of non-owned ions to communicate about for cores from owners_list  */
-    int *num_nonowned_ions_per_pe;
-    /*List of ion indices to communicate about for cores from owners_list
-     * These are indices within nonloc ions, not absolute ones*/ 
-    int list_ions_per_owner[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
-    
-#endif
     int num_loc_ions;
     int loc_ions_list[MAX_NONLOC_IONS];
 

@@ -80,7 +80,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             // Identical for gamma point
             Kptr[kpt]->nl_weight = (KpointType *)pct.weight;
             Kptr[kpt]->nl_Bweight = (KpointType *)pct.Bweight;
-            Kptr[kpt]->BetaProjector->set_storage(((KpointType *)pct.weight));
         }
         else {
 

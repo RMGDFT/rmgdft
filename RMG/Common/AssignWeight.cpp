@@ -40,7 +40,7 @@ template <typename KpointType>
 void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, KpointType *Bweight, KpointType *Nlweight)
 {
 
-    if(!pct.nl_flag[ion]) return ;
+    if(kptr->BetaProjector->idxptrlen[ion] == 0) return;    // No points in the local region map to the processors space
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
     ION *iptr = &ct.ions[ion];
@@ -91,7 +91,6 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     for(int idx = 0; idx < pbasis; idx++) rtptr[idx] = 0.0;
     for(int idx = 0; idx < pbasis; idx++) Bweight[idx] = ZERO_t;
     for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
-    if(pct.idxptrlen[ion] == 0) return;
 
     std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 

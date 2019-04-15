@@ -49,8 +49,7 @@ public:
     typedef boost::multi_array<int, 2> int_2d_array;
     Projector(Kpoint<KpointType> *K, int projector_type, int num_pes, int num_ions);
     ~Projector(void);
-    void set_storage(KpointType *storage);
-    void project(KpointType *p, int offset, int n);
+    void project(KpointType *p, int offset, int n, KpointType *w);
     int get_num_nonloc_ions(void);
     int get_num_owned_ions(void);
     int *get_owned_ions_list(void);
@@ -63,9 +62,6 @@ public:
     // Number of projectors
     int num_tot_proj;
 
-    // Storage area for the projector
-    KpointType *weight;
- 
     // basis size for an individual projector
     int pbasis;
 
@@ -73,10 +69,6 @@ public:
     int type;
 
     int *idxptrlen;
-    double xcstart;
-    double ycstart;
-    double zcstart;
-
 
 private:
     int num_owned_ions;
@@ -114,7 +106,7 @@ private:
     int num_loc_ions;
     int loc_ions_list[MAX_NONLOC_IONS];
 
-    void betaxpsi_calculate (Kpoint<KpointType> * kptr, KpointType * sint_ptr, KpointType * psi, int num_states);
+    void betaxpsi_calculate (Kpoint<KpointType> * kptr, KpointType * sint_ptr, KpointType * psi, int num_states, KpointType *weight);
     void betaxpsi_receive (KpointType * recv_buff, int num_pes,
                                int *pe_list, int *num_ions_per_pe,
                                MPI_Request * req_recv, int num_states);

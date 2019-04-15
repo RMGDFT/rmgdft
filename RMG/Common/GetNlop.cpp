@@ -56,10 +56,10 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     if(ct.localize_projectors) projector_type = LOCALIZED;
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
     {
+       if(Kptr[kpt]->BetaProjector) delete Kptr[kpt]->BetaProjector;
        Kptr[kpt]->BetaProjector = new Projector<KpointType>(Kptr[kpt], projector_type, pct.grid_npes, ct.num_ions);
     }
 pct.num_tot_proj = Kptr[0]->BetaProjector->num_tot_proj;
-pct.idxptrlen = Kptr[0]->BetaProjector->idxptrlen;
 
     int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
 
@@ -193,14 +193,6 @@ pct.idxptrlen = Kptr[0]->BetaProjector->idxptrlen;
 
 static void reset_pct_arrays (int num_ions)
 {
-
-    int ion;
-    for(ion = 0; ion < num_ions; ion++)
-    {
-        pct.idxptrlen[ion] = 0;
-    }
-
-
 
     if (pct.weight != NULL) {
 #if GPU_ENABLED

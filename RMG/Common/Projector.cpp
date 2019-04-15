@@ -51,11 +51,9 @@ template Projector<double>::Projector(Kpoint<double> *, int, int, int);
 template Projector<std::complex<double>>::Projector(Kpoint<std::complex<double>> *, int, int, int);
 template Projector<double>::~Projector(void);
 template Projector<std::complex<double>>::~Projector(void);
-template void Projector<double>::set_storage(double *);
-template void Projector<std::complex<double>>::set_storage(std::complex<double> *);
 
-template void Projector<double>::project(double *, int, int);
-template void Projector<std::complex<double>>::project(std::complex<double> *, int, int);
+template void Projector<double>::project(double *, int, int, double *);
+template void Projector<std::complex<double>>::project(std::complex<double> *, int, int, std::complex<double> *);
 
 template int Projector<double>::get_num_nonloc_ions(void);
 template int Projector<double>::get_num_owned_ions(void);
@@ -151,7 +149,7 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
                 nlxdim = NX_GRID;
                 nlydim = NY_GRID;
                 nlzdim = NZ_GRID;
-                xcstart = ycstart = zcstart = 0.0;
+                iptr->nlxcstart = iptr->nlycstart = iptr->nlzcstart = 0.0;
                 ilow = PX_OFFSET;
                 ihi = ilow + get_PX0_GRID() -1;
                 jlow = PY_OFFSET;
@@ -164,7 +162,6 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
                 map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                              sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID,
                              NX_GRID, NY_GRID, NZ_GRID,
-//                             &this->xcstart, &this->ycstart, &this->zcstart);
                              &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
             }
 
@@ -181,7 +178,6 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
 
             /*The vector we are looking for should be */
             to_cartesian (vect, iptr->nlcrds);
-            pct.nl_flag[ion] = map;
 
             /* If there is a mapping for this ion then we have to generate */
             /* the projector.                                              */
@@ -405,11 +401,6 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
 
 }
 
-template <class KpointType> void Projector<KpointType>::set_storage(KpointType *storage)
-{
-    this->weight = storage;
-}
-
 template <class KpointType> int Projector<KpointType>::get_num_nonloc_ions(void)
 {
     return this->num_nonloc_ions;
@@ -438,7 +429,7 @@ template <class KpointType> int * Projector<KpointType>::get_nonloc_ions_list(vo
 
 
 // Applies projectors to orbitals associated with kpoint kptr
-template <class KpointType> void Projector<KpointType>::project(KpointType *p, int offset, int nstates)
+template <class KpointType> void Projector<KpointType>::project(KpointType *p, int offset, int nstates, KpointType *weight)
 {
 
     // Do delocalized case first
@@ -456,7 +447,7 @@ template <class KpointType> void Projector<KpointType>::project(KpointType *p, i
 
         int length = factor * ct.num_ions * nstates * ct.max_nl;
         RmgGemm (transa, transn, this->num_tot_proj, this->kptr->nstates, this->kptr->pbasis, alpha,
-            this->weight, this->kptr->pbasis, &kptr->orbital_storage[offset*this->kptr->pbasis], this->kptr->pbasis,
+            weight, this->kptr->pbasis, &kptr->orbital_storage[offset*this->kptr->pbasis], this->kptr->pbasis,
             rzero, p, this->num_tot_proj);
 
         if(pct.grid_npes != 1)
@@ -516,7 +507,7 @@ template <class KpointType> void Projector<KpointType>::project(KpointType *p, i
 
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
-    betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[offset*kptr->pbasis], nstates);
+    betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[offset*kptr->pbasis], nstates, weight);
 
 
     /*Pack data for sending */
@@ -593,7 +584,7 @@ template <class KpointType> void Projector<KpointType>::project(KpointType *p, i
 
 
 template <class KpointType>
-void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, KpointType *psi, int num_states)
+void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, KpointType * sint_ptr, KpointType *psi, int num_states, KpointType *weight)
 {
     KpointType rzero(0.0);
     char *transt = "t", *transn = "n", *transc = "c";
@@ -613,7 +604,7 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
     KpointType *nlarray = new KpointType[this->num_tot_proj * num_states]();
 #endif
     RmgGemm (transa, transn, this->num_tot_proj, num_states, pbasis, alpha, 
-            this->weight, pbasis, psi, pbasis, rzero, nlarray, this->num_tot_proj);
+            weight, pbasis, psi, pbasis, rzero, nlarray, this->num_tot_proj);
 
     for (int nion = 0; nion < this->num_nonloc_ions; nion++)
     {
