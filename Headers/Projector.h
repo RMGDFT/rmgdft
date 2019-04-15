@@ -62,9 +62,6 @@ public:
     // Number of projectors
     int num_tot_proj;
 
-    // basis size for an individual projector
-    int pbasis;
-
     // Type LOCALIZED or DELOCALIZED
     int type;
 

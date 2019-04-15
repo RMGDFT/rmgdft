@@ -59,8 +59,8 @@ void GetNlop (Kpoint<KpointType> **Kptr)
        if(Kptr[kpt]->BetaProjector) delete Kptr[kpt]->BetaProjector;
        Kptr[kpt]->BetaProjector = new Projector<KpointType>(Kptr[kpt], projector_type, pct.grid_npes, ct.num_ions);
     }
-pct.num_tot_proj = Kptr[0]->BetaProjector->num_tot_proj;
 
+    pct.num_tot_proj = Kptr[0]->BetaProjector->num_tot_proj;
     int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
 
     std::string newpath;
@@ -87,9 +87,7 @@ pct.num_tot_proj = Kptr[0]->BetaProjector->num_tot_proj;
     if (alloc <get_NX_GRID() * get_NY_GRID() * get_NZ_GRID())
         alloc =get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
-//    pct.num_tot_proj = num_nonloc_ions * ct.max_nl;
-
-    pct.weight_size = pct.num_tot_proj * P0_BASIS + 128;
+    pct.weight_size = (size_t)pct.num_tot_proj * (size_t)P0_BASIS + 128;
 
 #if GPU_ENABLED
     cudaError_t custat;

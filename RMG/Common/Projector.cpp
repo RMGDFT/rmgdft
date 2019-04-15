@@ -243,7 +243,7 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
         ION *iptr = &ct.ions[ion];
 
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
-        if (this->idxptrlen[ion])
+        if (this->idxptrlen[ion] || pct.Qidxptrlen[ion])
         {
             this->nonloc_ions_list[this->num_nonloc_ions] = ion;
 
@@ -261,7 +261,6 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
         }
 
     } // end for (ion = 0; ion < ct.num_ions; ion++)
-
 
     int *Aix = new int[NX_GRID]();
     int *Aiy = new int[NY_GRID]();
@@ -446,7 +445,7 @@ template <class KpointType> void Projector<KpointType>::project(KpointType *p, i
         if(typeid(KpointType) == typeid(double)) transa = transt;
 
         int length = factor * ct.num_ions * nstates * ct.max_nl;
-        RmgGemm (transa, transn, this->num_tot_proj, this->kptr->nstates, this->kptr->pbasis, alpha,
+        RmgGemm (transa, transn, this->num_tot_proj, nstates, this->kptr->pbasis, alpha,
             weight, this->kptr->pbasis, &kptr->orbital_storage[offset*this->kptr->pbasis], this->kptr->pbasis,
             rzero, p, this->num_tot_proj);
 

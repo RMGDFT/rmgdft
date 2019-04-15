@@ -242,7 +242,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         newsint = kptr->newsint_local + nbase*num_nonloc_ions*ct.max_nl;
         Betaxpsi (kptr, nbase, notconv, newsint, kptr->nl_weight);
         delete RT1;
-
         RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
         ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot);
         delete RT1;

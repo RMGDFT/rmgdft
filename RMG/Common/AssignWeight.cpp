@@ -40,7 +40,7 @@ template <typename KpointType>
 void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, KpointType *Bweight, KpointType *Nlweight)
 {
 
-    if(kptr->BetaProjector->idxptrlen[ion] == 0) return;    // No points in the local region map to the processors space
+    if((kptr->BetaProjector->idxptrlen[ion] == 0) && (ct.localize_projectors==true)) return;    // No points in the local region map to the processors space
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
     ION *iptr = &ct.ions[ion];
