@@ -41,7 +41,15 @@
 //
 // Projector objects may include beta functions, atomic orbitals and spherical harmonics.
 //
-
+// The constructor takes as arguments the Kpoint the projectors are associated with
+// as well as the projector type (LOCALIZED or DELOCALIZED) and the number of pes
+// and ions. The last two are needed in order to do a constructor initialization
+// of some 2-d arrays via boost multiarray.
+//
+// The project method takes as an argument the result array of the projections
+// (p) the offset into the wavefunction array the projections start from (offset)
+// and the set of weights that represent the projectors (w).
+//
 
 template <typename KpointType> class Projector {
 
@@ -53,7 +61,6 @@ public:
     int get_num_nonloc_ions(void);
     int get_num_owned_ions(void);
     int *get_owned_ions_list(void);
-    int *get_owned_pe_list(void);
     int *get_nonloc_ions_list(void);
 
     // kpoint this Projector is associated with
@@ -69,11 +76,10 @@ public:
 
 private:
     int num_owned_ions;
-    int owned_ions_list[MAX_NONLOC_IONS];
+    int *owned_ions_list;
 
     int num_nonloc_ions;
     int *nonloc_ions_list;
-    bool *nonloc_ion_ownflag;
     int num_nonloc_pes;
 
     /*For ions owned by current PE */
@@ -85,7 +91,6 @@ private:
     int *num_owned_ions_per_pe;
     /*List of ion indices to communicate about for core from owned_pe_list 
      * These are indices within nonloc ions, not absolute ones*/
-    //int list_owned_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
     int_2d_array list_owned_ions_per_pe;
 
     /*For ions NOT owned by current PE*/
@@ -97,11 +102,9 @@ private:
     int *num_nonowned_ions_per_pe;
     /*List of ion indices to communicate about for cores from owners_list
      * These are indices within nonloc ions, not absolute ones*/
-    //int list_ions_per_owner[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
     int_2d_array list_ions_per_owner;
 
     int num_loc_ions;
-    int loc_ions_list[MAX_NONLOC_IONS];
 
     void betaxpsi_calculate (Kpoint<KpointType> * kptr, KpointType * sint_ptr, KpointType * psi, int num_states, KpointType *weight);
     void betaxpsi_receive (KpointType * recv_buff, int num_pes,

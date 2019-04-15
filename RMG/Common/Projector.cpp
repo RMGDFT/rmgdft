@@ -58,12 +58,10 @@ template void Projector<std::complex<double>>::project(std::complex<double> *, i
 template int Projector<double>::get_num_nonloc_ions(void);
 template int Projector<double>::get_num_owned_ions(void);
 template int * Projector<double>::get_owned_ions_list(void);
-template int * Projector<double>::get_owned_pe_list(void);
 template int * Projector<double>::get_nonloc_ions_list(void);
 template int Projector<std::complex<double>>::get_num_nonloc_ions(void);
 template int Projector<std::complex<double>>::get_num_owned_ions(void);
 template int * Projector<std::complex<double>>::get_owned_ions_list(void);
-template int * Projector<std::complex<double>>::get_owned_pe_list(void);
 template int * Projector<std::complex<double>>::get_nonloc_ions_list(void);
 
 
@@ -80,12 +78,12 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
     this->num_owned_ions = 0;
     this->num_owned_pe = 0;
     this->num_owners = 0;
+    this->owned_ions_list = new int[ct.num_ions]();
     this->owned_pe_list = new int[pct.grid_npes]();
     this->num_owned_ions_per_pe = new int[pct.grid_npes]();
     this->owners_list = new int[pct.grid_npes]();
     this->num_nonowned_ions_per_pe = new int[ct.num_ions]();
     this->nonloc_ions_list = new int[ct.num_ions]();
-    this->nonloc_ion_ownflag = new bool[ct.num_ions]();
     this->idxptrlen = new int[ct.num_ions](); 
     for(int i=0;i < num_pes;i++)
     {
@@ -247,15 +245,11 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
         {
             this->nonloc_ions_list[this->num_nonloc_ions] = ion;
 
-            /*Ownership flag for current ion */
-            this->nonloc_ion_ownflag[this->num_nonloc_ions] = false;
-
             /*See if this processor owns current ion */
             if (pct.gridpe == claim_ion (iptr->xtal, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID))
             {
                 this->owned_ions_list[this->num_owned_ions] = ion;
                 this->num_owned_ions++;
-                this->nonloc_ion_ownflag[this->num_nonloc_ions] = true;
             }
             this->num_nonloc_ions++;
         }
@@ -413,11 +407,6 @@ template <class KpointType> int Projector<KpointType>::get_num_owned_ions(void)
 template <class KpointType> int * Projector<KpointType>::get_owned_ions_list(void)
 {
     return this->owned_ions_list;
-}
-
-template <class KpointType> int * Projector<KpointType>::get_owned_pe_list(void)
-{
-    return this->owned_pe_list;
 }
 
 template <class KpointType> int * Projector<KpointType>::get_nonloc_ions_list(void)
@@ -771,10 +760,10 @@ void Projector<KpointType>::betaxpsi_write_non_owned (KpointType * sint, KpointT
 template <class KpointType> Projector<KpointType>::~Projector(void)
 {
     delete [] this->idxptrlen;
-    delete [] this->nonloc_ion_ownflag;
     delete [] this->nonloc_ions_list;
     delete [] this->num_nonowned_ions_per_pe;
     delete [] this->owners_list;
     delete [] this->num_owned_ions_per_pe;
     delete [] this->owned_pe_list;
+    delete [] this->owned_ions_list;
 }

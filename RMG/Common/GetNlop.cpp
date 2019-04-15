@@ -80,13 +80,6 @@ void GetNlop (Kpoint<KpointType> **Kptr)
     }
 
     int P0_BASIS = get_P0_BASIS();
-
-    /* Grab some memory for temporary storage */
-    int alloc = ct.max_nlpoints;
-
-    if (alloc <get_NX_GRID() * get_NY_GRID() * get_NZ_GRID())
-        alloc =get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-
     pct.weight_size = (size_t)pct.num_tot_proj * (size_t)P0_BASIS + 128;
 
 #if GPU_ENABLED
