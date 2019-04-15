@@ -52,8 +52,10 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
     double *qtpr;
 
     int pbasis = Kpts[0]->G->get_P0_BASIS(Kpts[0]->G->default_FG_RATIO);
-    for(int idx = 0;idx < pbasis;idx++)
-        augrho[idx] = 0.0;
+    int num_nonloc_ions = Kpts[0]->BetaProjector->get_num_nonloc_ions();
+    int *nonloc_ions_list = Kpts[0]->BetaProjector->get_nonloc_ions_list();
+
+    for(int idx = 0;idx < pbasis;idx++) augrho[idx] = 0.0;
 
 
     if(!ct.norm_conserving_pp) {
@@ -61,9 +63,9 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
         double *product = new double[max_product];
         KpointType *sint = new KpointType[2 * ct.max_nl];
 
-        for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
+        for (int ion = 0; ion < num_nonloc_ions; ion++)
         {
-            int gion = pct.nonloc_ions_list[ion];
+            int gion = nonloc_ions_list[ion];
             
             if (pct.Qidxptrlen[gion])
             {
@@ -90,7 +92,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
                         for (int i = 0; i < ct.max_nl; i++)
                         {
-                            sint[i] = Kpts[kpt]->newsint_local[istate*pct.num_nonloc_ions*ct.max_nl + ion * ct.max_nl + i];
+                            sint[i] = Kpts[kpt]->newsint_local[istate*num_nonloc_ions*ct.max_nl + ion * ct.max_nl + i];
                         }               /*end for i */
 
                         int idx = 0;

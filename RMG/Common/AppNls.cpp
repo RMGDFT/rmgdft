@@ -73,6 +73,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
  
     int P0_BASIS = kpoint->pbasis;
+    int num_nonloc_ions = kpoint->BetaProjector->get_num_nonloc_ions();
+    int *nonloc_ions_list = kpoint->BetaProjector->get_nonloc_ions_list();
+
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
@@ -120,14 +123,14 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     for(int istate = 0; istate < num_states; istate++)
     {
-        int sindex = (istate + first_state) * pct.num_nonloc_ions * ct.max_nl;
-        for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
+        int sindex = (istate + first_state) * num_nonloc_ions * ct.max_nl;
+        for (int ion = 0; ion < num_nonloc_ions; ion++)
         {
             int proj_index = ion * ct.max_nl;
             psintR = &sintR[proj_index + sindex];
             //psintI = &sintI[ion * num_states * ct.max_nl + sindex];
             /*Actual index of the ion under consideration*/
-            int gion = pct.nonloc_ions_list[ion];
+            int gion = nonloc_ions_list[ion];
             ION *iptr = &ct.ions[gion];
             SPECIES *sp = &ct.sp[iptr->species];
 
@@ -149,12 +152,12 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     // set up M_qqq and M_dnm, this can be done outside in the
     // init.c or get_ddd get_qqq, we need to check the order
     int proj_index = 0;
-    for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
+    for (int ion = 0; ion < num_nonloc_ions; ion++)
     {
 
         /*Actual index of the ion under consideration*/
         proj_index = ion * ct.max_nl;
-        int gion = pct.nonloc_ions_list[ion];
+        int gion = nonloc_ions_list[ion];
         ION *iptr = &ct.ions[gion];
         SPECIES *sp = &ct.sp[iptr->species];
 

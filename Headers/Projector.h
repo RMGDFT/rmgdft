@@ -47,10 +47,15 @@ template <typename KpointType> class Projector {
 
 public:
     typedef boost::multi_array<int, 2> int_2d_array;
-    Projector(Kpoint<KpointType> *K, int projector_type);
+    Projector(Kpoint<KpointType> *K, int projector_type, int num_pes, int num_ions);
     ~Projector(void);
     void set_storage(KpointType *storage);
     void project(KpointType *p, int offset, int n);
+    int get_num_nonloc_ions(void);
+    int get_num_owned_ions(void);
+    int *get_owned_ions_list(void);
+    int *get_owned_pe_list(void);
+    int *get_nonloc_ions_list(void);
 
     // kpoint this Projector is associated with
     Kpoint<KpointType> *kptr;
@@ -94,7 +99,6 @@ private:
     //int list_owned_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
     int_2d_array list_owned_ions_per_pe;
 
-
     /*For ions NOT owned by current PE*/
     /* Number of cores to cummunicate with about non-owned ions*/
     int num_owners;
@@ -119,16 +123,13 @@ private:
                             MPI_Request * req_send, int num_states);
     void betaxpsi_pack (KpointType * sint, KpointType * fill_buff,
                             int num_pes, int *num_ions_per_pe,
-//                            int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
                             int_2d_array &list_ions_per_pe, int num_states);
     void betaxpsi_sum_owned (KpointType * recv_buff, KpointType * sint,
                                  int num_pes, int *num_ions_per_pe,
-//                                 int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
                                  int_2d_array &list_ions_per_pe, int num_states);
     void betaxpsi_write_non_owned (KpointType * sint, KpointType * recv_buff,
                                        int num_pes,
                                        int *num_ions_per_pe,
-//                                       int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states);
                                        int_2d_array &list_ions_per_pe, int num_states);
 
 };

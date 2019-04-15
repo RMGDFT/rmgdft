@@ -48,6 +48,7 @@ template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh 
     int i, j, idx, kidx, istate;
     double t1;
     OrbitalType sintN, sintM;
+    int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
 
 
     idx = 0;
@@ -61,9 +62,9 @@ template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh 
                 for (istate = 0; istate < ct.num_states; istate++)
                 {
                     t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kweight;
-                    sintN = Kptr[kidx]->newsint_local[istate *pct.num_nonloc_ions * ct.max_nl +
+                    sintN = Kptr[kidx]->newsint_local[istate * num_nonloc_ions * ct.max_nl +
                         ion * ct.max_nl + i];
-                    sintM = Kptr[kidx]->newsint_local[istate *pct.num_nonloc_ions * ct.max_nl +
+                    sintM = Kptr[kidx]->newsint_local[istate * num_nonloc_ions * ct.max_nl +
                         ion * ct.max_nl + j];
 
                     //gammaR[idx] += t1 * (std::real(sintN) * std::real(sintM) + std::imag(sintN) * std::imag(sintM));

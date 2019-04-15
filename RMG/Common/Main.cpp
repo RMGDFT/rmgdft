@@ -405,7 +405,16 @@ void report ()
     if(pct.imgpe == 0) fclose(ct.logfile);
     int override_rank = 0;
     if(pct.imgpe==0) MPI_Comm_rank (pct.img_comm, &override_rank);
-    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe, override_rank);
+    int num_owned_ions;
+    if(ct.is_gamma)
+    {
+        num_owned_ions = Kptr_g[0]->BetaProjector->get_num_owned_ions();
+    }
+    else
+    {
+        num_owned_ions = Kptr_c[0]->BetaProjector->get_num_owned_ions();
+    }
+    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, num_owned_ions * ct.num_kpts_pe, override_rank);
 
 
 }                               /* end report */

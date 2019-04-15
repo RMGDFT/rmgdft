@@ -35,6 +35,7 @@
 #include "TradeImages.h"
 #include "State.h"
 #include "InputKey.h"
+#include "Projector.h"
 #include <mpi.h>
 
 template <typename KpointType> class Kpoint {
@@ -64,6 +65,9 @@ public:
 
     // Lattice object
     Lattice *L;
+
+    // Beta function projectors
+    Projector<KpointType> *BetaProjector;
 
     // MPI communicator to use for trade images and reduction operations
     MPI_Comm comm;

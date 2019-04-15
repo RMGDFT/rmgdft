@@ -60,6 +60,7 @@ template <typename OrbitalType> void PartialGamma (int kidx,
     OrbitalType betaxpsiN, betaxpsiM;
     OrbitalType betaxpsiN_der, betaxpsiM_der;
     double beta_pbeta;
+    int num_nonloc_ions = Kptr[kidx]->BetaProjector->get_num_nonloc_ions();
 
 
     size = (nh * (nh + 1)) / 2;
@@ -84,14 +85,14 @@ template <typename OrbitalType> void PartialGamma (int kidx,
             {
                 for (j = i; j < nh; j++)
                 {
-                    betaxpsiN = Kptr[kidx]->newsint_local[ istate * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiN = Kptr[kidx]->newsint_local[ istate * num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + i];
-                    betaxpsiM = Kptr[kidx]->newsint_local[ istate * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiM = Kptr[kidx]->newsint_local[ istate * num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + j];
 
-                    betaxpsiN_der = sint_derx[ istate_local * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiN_der = sint_derx[ istate_local * num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + i];
-                    betaxpsiM_der = sint_derx[ istate_local * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiM_der = sint_derx[ istate_local * num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + j];
 
 
@@ -100,9 +101,9 @@ template <typename OrbitalType> void PartialGamma (int kidx,
                     gamma_x[idx] += t1 * beta_pbeta;
                     omega_x[idx] += t1 * Kptr[kidx]->Kstates[istate].eig[0] * beta_pbeta;
 
-                    betaxpsiN_der = sint_dery[ istate_local * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiN_der = sint_dery[ istate_local * num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + i];
-                    betaxpsiM_der = sint_dery[ istate_local * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiM_der = sint_dery[ istate_local * num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + j];
 
 
@@ -111,9 +112,9 @@ template <typename OrbitalType> void PartialGamma (int kidx,
                     gamma_y[idx] += t1 * beta_pbeta;
                     omega_y[idx] += t1 * Kptr[kidx]->Kstates[istate].eig[0] * beta_pbeta;
 
-                    betaxpsiN_der = sint_derz[ istate_local * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiN_der = sint_derz[ istate_local * num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + i];
-                    betaxpsiM_der = sint_derz[ istate_local * pct.num_nonloc_ions * ct.max_nl +
+                    betaxpsiM_der = sint_derz[ istate_local * num_nonloc_ions * ct.max_nl +
                         nion * ct.max_nl + j];
 
 

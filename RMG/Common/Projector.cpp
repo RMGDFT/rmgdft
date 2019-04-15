@@ -27,6 +27,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <complex>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <libgen.h>
+
 #include "const.h"
 #include "RmgTimer.h"
 #include "rmgtypedefs.h"
@@ -34,22 +40,40 @@
 #include "typedefs.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
-//#include "rmg_error.h"
 #include "Kpoint.h"
 #include "RmgSumAll.h"
+#include "RmgGemm.h"
 #include "Projector.h"
 
 
 
-template Projector<double>::Projector(Kpoint<double> *, int);
-template Projector<std::complex<double>>::Projector(Kpoint<std::complex<double>> *, int);
+template Projector<double>::Projector(Kpoint<double> *, int, int, int);
+template Projector<std::complex<double>>::Projector(Kpoint<std::complex<double>> *, int, int, int);
 template Projector<double>::~Projector(void);
 template Projector<std::complex<double>>::~Projector(void);
 template void Projector<double>::set_storage(double *);
 template void Projector<std::complex<double>>::set_storage(std::complex<double> *);
 
+template void Projector<double>::project(double *, int, int);
+template void Projector<std::complex<double>>::project(std::complex<double> *, int, int);
 
-template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> *K, int projector_type)
+template int Projector<double>::get_num_nonloc_ions(void);
+template int Projector<double>::get_num_owned_ions(void);
+template int * Projector<double>::get_owned_ions_list(void);
+template int * Projector<double>::get_owned_pe_list(void);
+template int * Projector<double>::get_nonloc_ions_list(void);
+template int Projector<std::complex<double>>::get_num_nonloc_ions(void);
+template int Projector<std::complex<double>>::get_num_owned_ions(void);
+template int * Projector<std::complex<double>>::get_owned_ions_list(void);
+template int * Projector<std::complex<double>>::get_owned_pe_list(void);
+template int * Projector<std::complex<double>>::get_nonloc_ions_list(void);
+
+
+
+template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> *K, int projector_type, int num_pes, int num_ions) : 
+                        list_owned_ions_per_pe(boost::extents[num_pes][num_ions]),
+                        list_ions_per_owner(boost::extents[num_pes][num_ions])
+
 {
     this->type = projector_type;
     this->kptr = K;
@@ -64,9 +88,15 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
     this->num_nonowned_ions_per_pe = new int[ct.num_ions]();
     this->nonloc_ions_list = new int[ct.num_ions]();
     this->nonloc_ion_ownflag = new bool[ct.num_ions]();
-
     this->idxptrlen = new int[ct.num_ions](); 
-
+    for(int i=0;i < num_pes;i++)
+    {
+        for(int j=0;j < num_ions;j++)
+        {
+            list_owned_ions_per_pe[i][j] = 0;
+            list_ions_per_owner[i][j] = 0;
+        }
+    }
     size_t NX_GRID = get_NX_GRID();
     size_t NY_GRID = get_NY_GRID();
     size_t NZ_GRID = get_NZ_GRID();
@@ -134,14 +164,15 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
                 map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                              sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID,
                              NX_GRID, NY_GRID, NZ_GRID,
-                             &this->xcstart, &this->ycstart, &this->zcstart);
+//                             &this->xcstart, &this->ycstart, &this->zcstart);
+                             &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
             }
 
             /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
             /*xtal vector between ion and left bottom corner of the box */
-            vect[0] = iptr->xtal[0] - this->xcstart;
-            vect[1] = iptr->xtal[1] - this->ycstart;
-            vect[2] = iptr->xtal[2] - this->zcstart;
+            vect[0] = iptr->xtal[0] - iptr->nlxcstart;
+            vect[1] = iptr->xtal[1] - iptr->nlycstart;
+            vect[2] = iptr->xtal[2] - iptr->nlzcstart;
 
             /*Substract vector between left bottom corner of the box and center of the box */
             vect[0] -= (nlxdim / 2) / (double) NX_GRID;
@@ -150,6 +181,7 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
 
             /*The vector we are looking for should be */
             to_cartesian (vect, iptr->nlcrds);
+            pct.nl_flag[ion] = map;
 
             /* If there is a mapping for this ion then we have to generate */
             /* the projector.                                              */
@@ -281,11 +313,11 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
 	    {
 		/*Skip the case when pe is equal to the rank of current processor, in that case no send or
 		 * receive is necessary*/
-		if (pe == pct.gridpe)
-		    continue;
+		if (pe == pct.gridpe) continue;
 
 		/* Determine if ion has overlap with a given PE becasue of beta functions */
-                if(!ct.localize_projectors) map = true;
+                if(this->type == DELOCALIZED) 
+                    map = true;
                 else
                     map = test_overlap (pe, iptr, Aix, Aiy, Aiz, sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
 
@@ -371,14 +403,38 @@ template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> 
     delete [] Aiy;
     delete [] Aix;
 
-
-
 }
 
 template <class KpointType> void Projector<KpointType>::set_storage(KpointType *storage)
 {
     this->weight = storage;
 }
+
+template <class KpointType> int Projector<KpointType>::get_num_nonloc_ions(void)
+{
+    return this->num_nonloc_ions;
+}
+
+template <class KpointType> int Projector<KpointType>::get_num_owned_ions(void)
+{
+    return this->num_owned_ions;
+}
+
+template <class KpointType> int * Projector<KpointType>::get_owned_ions_list(void)
+{
+    return this->owned_ions_list;
+}
+
+template <class KpointType> int * Projector<KpointType>::get_owned_pe_list(void)
+{
+    return this->owned_pe_list;
+}
+
+template <class KpointType> int * Projector<KpointType>::get_nonloc_ions_list(void)
+{
+    return this->nonloc_ions_list;
+}
+
 
 
 // Applies projectors to orbitals associated with kpoint kptr
@@ -398,12 +454,10 @@ template <class KpointType> void Projector<KpointType>::project(KpointType *p, i
         transa = transc;
         if(typeid(KpointType) == typeid(double)) transa = transt;
 
-//        int length = factor * ct.num_ions * this->kptr->nstates * ct.max_nl;
-// check this
-        int length = factor * this->np * this->kptr->nstates;
-        RmgGemm (transa, transn, this->np, this->kptr->nstates, this->kptr->pbasis, alpha,
+        int length = factor * ct.num_ions * nstates * ct.max_nl;
+        RmgGemm (transa, transn, this->num_tot_proj, this->kptr->nstates, this->kptr->pbasis, alpha,
             this->weight, this->kptr->pbasis, &kptr->orbital_storage[offset*this->kptr->pbasis], this->kptr->pbasis,
-            rzero, p, this->np);
+            rzero, p, this->num_tot_proj);
 
         if(pct.grid_npes != 1)
             MPI_Allreduce(MPI_IN_PLACE, (double *)p, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
@@ -462,7 +516,7 @@ template <class KpointType> void Projector<KpointType>::project(KpointType *p, i
 
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
-    betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[offset*kptr->pbasis], nstates, this->weight);
+    betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[offset*kptr->pbasis], nstates);
 
 
     /*Pack data for sending */
@@ -638,7 +692,6 @@ void Projector<KpointType>::betaxpsi_send (KpointType * send_buff, int num_pes,
 template <class KpointType>
 void Projector<KpointType>::betaxpsi_pack (KpointType * sint, KpointType * fill_buff, 
         int num_pes, int *num_ions_per_pe,
-//        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
         int_2d_array &list_ions_per_pe, int num_states)
 {
     KpointType *tpr_buff, *sint_tpr;
@@ -670,7 +723,6 @@ void Projector<KpointType>::betaxpsi_pack (KpointType * sint, KpointType * fill_
 template <class KpointType>
 void Projector<KpointType>::betaxpsi_sum_owned (KpointType * recv_buff, KpointType * sint,
         int num_pes, int *num_ions_per_pe,
-//        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
         int_2d_array &list_ions_per_pe, int num_states)
 {
     KpointType *tpr1, *tpr2;
@@ -699,7 +751,6 @@ void Projector<KpointType>::betaxpsi_sum_owned (KpointType * recv_buff, KpointTy
 template <class KpointType>
 void Projector<KpointType>::betaxpsi_write_non_owned (KpointType * sint, KpointType * recv_buff, int num_pes,
         int *num_ions_per_pe,
-//        int list_ions_per_pe[MAX_NONLOC_PROCS][MAX_NONLOC_IONS], int num_states)
         int_2d_array &list_ions_per_pe, int num_states)
 {
     KpointType *tpr1, *tpr2;

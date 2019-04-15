@@ -76,6 +76,14 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
     double vel = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
     vel = Rmg_L.get_omega() / vel;
 
+    int num_nonloc_ions = this->Kptr->BetaProjector->get_num_nonloc_ions();
+    int *owned_ions_list = this->Kptr->BetaProjector->get_owned_ions_list();
+    int num_owned_ions = this->Kptr->BetaProjector->get_num_owned_ions();
+    int *nonloc_ions_list = this->Kptr->BetaProjector->get_nonloc_ions_list();
+
+
+
+
     if(ct.norm_conserving_pp) {
 
         double sum1 = 0.0, sum2;
@@ -100,16 +108,16 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         StateType *sint;
         ION *iptr;
 
-        sidx_local = istate * pct.num_nonloc_ions * ct.max_nl;
+        sidx_local = istate * num_nonloc_ions * ct.max_nl;
 
         sumpsi = 0.0;
         sumbeta = 0.0;
 
         nidx = -1;
-        for (ion = 0; ion < pct.num_owned_ions; ion++)
+        for (ion = 0; ion < num_owned_ions; ion++)
         {
 
-            oion = pct.owned_ions_list[ion];
+            oion = owned_ions_list[ion];
             
             iptr = &ct.ions[oion];
            
@@ -119,11 +127,10 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
             do {
                 
                 nidx++;
-                if (nidx >= pct.num_nonloc_ions)
-                    //error_handler("Could not find matching entry in pct.nonloc_ions_list for owned ion %d", oion);
-                    rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in pct.nonloc_ions_list");
+                if (nidx >= num_nonloc_ions)
+                    rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list");
             
-            } while (pct.nonloc_ions_list[nidx] != oion);
+            } while (nonloc_ions_list[nidx] != oion);
 
             qqq = pct.qqq[oion];
 
@@ -169,7 +176,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
 
         /* update <beta|psi> - Local version*/
         
-        for (ion = 0; ion < pct.num_nonloc_ions; ion++)
+        for (ion = 0; ion < num_nonloc_ions; ion++)
         {
 
             StateType *tsint_ptr = &this->Kptr->newsint_local[sidx_local + ion * ct.max_nl];

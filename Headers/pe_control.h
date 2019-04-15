@@ -162,7 +162,7 @@ typedef struct
     /** points to start of qqq storage for this ion*/
     double **qqq;
 
-
+#if 0
     int num_owned_ions;
     int owned_ions_list[MAX_NONLOC_IONS];
     
@@ -197,6 +197,7 @@ typedef struct
      * These are indices within nonloc ions, not absolute ones*/ 
     int list_ions_per_owner[MAX_NONLOC_PROCS][MAX_NONLOC_IONS];
     
+#endif
     int num_loc_ions;
     int loc_ions_list[MAX_NONLOC_IONS];
 

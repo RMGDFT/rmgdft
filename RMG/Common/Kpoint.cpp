@@ -74,6 +74,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->kweight = kkweight;
     this->nl_weight = NULL;
     this->nl_Bweight = NULL;
+    this->BetaProjector = NULL;
 
     this->G = newG;
     this->T = newT;
@@ -520,6 +521,10 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
 
     double vel = (double) (this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1));
     vel = this->L->get_omega() / vel;
+    int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
+    int num_owned_ions = this->BetaProjector->get_num_owned_ions();
+    int *owned_ions_list = this->BetaProjector->get_owned_ions_list();
+    int *nonloc_ions_list = this->BetaProjector->get_nonloc_ions_list();
 
 
     if(ct.norm_conserving_pp) {
@@ -614,15 +619,15 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
             /* This will calculate cR coefficients */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
 
-                int sidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * pct.num_nonloc_ions * ct.max_nl;
-                int sidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * pct.num_nonloc_ions * ct.max_nl;
+                int sidx1 = this->kidx * num_nonloc_ions * this->nstates * ct.max_nl + ist1 * num_nonloc_ions * ct.max_nl;
+                int sidx2 = this->kidx * num_nonloc_ions * this->nstates * ct.max_nl + ist2 * num_nonloc_ions * ct.max_nl;
                 double sumpsiR = 0.0;
                 double sumbetaR = 0.0;
 
                 int nidx = -1;
-                for (int ion = 0; ion < pct.num_owned_ions; ion++)
+                for (int ion = 0; ion < num_owned_ions; ion++)
                 {
-                    int oion = pct.owned_ions_list[ion];
+                    int oion = owned_ions_list[ion];
 
                     ION *iptr = &ct.ions[oion];
                     SPECIES *sp = &ct.sp[iptr->species];
@@ -633,10 +638,10 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
                     do {
 
                         nidx++;
-                        if (nidx >= pct.num_nonloc_ions)
-                            rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
+                        if (nidx >= num_nonloc_ions)
+                            rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in nonloc_ions_list for owned ion");
 
-                    } while (pct.nonloc_ions_list[nidx] != oion);
+                    } while (nonloc_ions_list[nidx] != oion);
 
                     double *qqq = pct.qqq[oion];
 
@@ -680,11 +685,11 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
                                                   - cA * this->Kstates[ist1].psi[idx]; 
                 }
                 /* update localized <beta|psi2> */
-                for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
+                for (int ion = 0; ion < num_nonloc_ions; ion++)
                 {
 
-                    int lsidx1 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist1 * pct.num_nonloc_ions * ct.max_nl;
-                    int lsidx2 = this->kidx * pct.num_nonloc_ions * this->nstates * ct.max_nl + ist2 * pct.num_nonloc_ions * ct.max_nl;
+                    int lsidx1 = this->kidx * num_nonloc_ions * this->nstates * ct.max_nl + ist1 * num_nonloc_ions * ct.max_nl;
+                    int lsidx2 = this->kidx * num_nonloc_ions * this->nstates * ct.max_nl + ist2 * num_nonloc_ions * ct.max_nl;
 
                     double *ptr1R = &pct.newsintR_local[lsidx1 + ion * ct.max_nl];
                     double *ptr2R = &pct.newsintR_local[lsidx2 + ion * ct.max_nl];
@@ -708,6 +713,10 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
    double vel = (double) (this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1));
    vel = this->L->get_omega() / vel;
+   int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
+   int num_owned_ions = this->BetaProjector->get_num_owned_ions();
+   int *owned_ions_list = this->BetaProjector->get_owned_ions_list();
+    int *nonloc_ions_list = this->BetaProjector->get_nonloc_ions_list();
 
 
 
@@ -771,9 +780,9 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
               double sumbetaI = 0.0;
 
               int nidx = -1;
-              for (int ion = 0; ion < pct.num_owned_ions; ion++)
+              for (int ion = 0; ion < num_owned_ions; ion++)
               {
-                  int oion = pct.owned_ions_list[ion];
+                  int oion = owned_ions_list[ion];
 
                   ION *iptr = &ct.ions[oion];
                   SPECIES *sp = &ct.sp[iptr->species];
@@ -784,10 +793,10 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
                   do {
 
                       nidx++;
-                      if (nidx >= pct.num_nonloc_ions)
+                      if (nidx >= num_nonloc_ions)
                           rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
 
-                  } while (pct.nonloc_ions_list[nidx] != oion);
+                  } while (nonloc_ions_list[nidx] != oion);
 
                   double *qqq = pct.qqq[oion];
 
@@ -838,7 +847,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
                                                 - cA * this->Kstates[ist1].psi[idx]; 
               }
               /* update localized <beta|psi2> */
-              for (int ion = 0; ion < pct.num_nonloc_ions; ion++)
+              for (int ion = 0; ion < num_nonloc_ions; ion++)
               {
 
                   int lsidx1 = ist1 * ct.max_nl;

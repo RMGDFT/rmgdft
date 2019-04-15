@@ -69,6 +69,9 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         occupied_tol = std::min(occupied_tol, 0.1*ct.rms / std::max(1.0, (double)ct.nel));
         occupied_tol = std::min(occupied_tol, 1.0e-4);
     }
+
+    int num_nonloc_ions = kptr->BetaProjector->get_num_nonloc_ions();
+
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 1.0e-13);
 
@@ -236,7 +239,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
         // Apply Hamiltonian to the new vectors
         RT1 = new RmgTimer("6-Davidson: Betaxpsi");
-        newsint = kptr->newsint_local + nbase*pct.num_nonloc_ions*ct.max_nl;
+        newsint = kptr->newsint_local + nbase*num_nonloc_ions*ct.max_nl;
         Betaxpsi (kptr, nbase, notconv, newsint, kptr->nl_weight);
         delete RT1;
 

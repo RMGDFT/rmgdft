@@ -83,6 +83,11 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
     P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
 
+    int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
+    int num_owned_ions = Kptr[0]->BetaProjector->get_num_owned_ions();
+    int *nonloc_ions_list = Kptr[0]->BetaProjector->get_nonloc_ions_list();
+    int *owned_ions_list = Kptr[0]->BetaProjector->get_owned_ions_list();
+
 
     RmgTimer *RT1;
 
@@ -108,16 +113,16 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     gamma = new double[ max_nl2];
 //    par_gamma = new double[ 6 * max_nl2];
 //    par_omega = par_gamma + 3 * max_nl2;
-    double *par_gamma_allions = new double[3 * pct.num_owned_ions * max_nl2];
-    double *par_omega_allions = new double[3 * pct.num_owned_ions * max_nl2];
-    for(int i = 0; i < 3 * pct.num_owned_ions * max_nl2; i++)
+    double *par_gamma_allions = new double[3 * num_owned_ions * max_nl2];
+    double *par_omega_allions = new double[3 * num_owned_ions * max_nl2];
+    for(int i = 0; i < 3 * num_owned_ions * max_nl2; i++)
     {
         par_gamma_allions[i] = 0.0;
         par_omega_allions[i] = 0.0;
     }
 
     
-    size =  pct.num_nonloc_ions * ct.state_block_size * ct.max_nl; 
+    size =  num_nonloc_ions * ct.state_block_size * ct.max_nl; 
 #if GPU_ENABLED
     OrbitalType *sint_der = (OrbitalType *)GpuMallocManaged(3*size * sizeof(OrbitalType));
     OrbitalType *sint_derx = sint_der + 0 * size;
@@ -208,7 +213,7 @@ ct.state_block_size);
             Betaxpsi(Kptr[kpt], ct.num_states+ ct.state_block_size,  num_state_thisblock, sint_dery, Kptr[kpt]->nl_weight);
             Betaxpsi(Kptr[kpt], ct.num_states+2*ct.state_block_size, num_state_thisblock, sint_derz, Kptr[kpt]->nl_weight);
 
-            for(int i = 0; i < pct.num_nonloc_ions * num_state_thisblock * ct.max_nl; i++)
+            for(int i = 0; i < num_nonloc_ions * num_state_thisblock * ct.max_nl; i++)
             {
                 sint_derx[i] *= -1.0;
                 sint_dery[i] *= -1.0;
@@ -218,22 +223,22 @@ ct.state_block_size);
 
             RT1 = new RmgTimer("2-Force: non-local-partial gamma");
             nion = -1;
-            for (ion = 0; ion < pct.num_owned_ions; ion++)
+            for (ion = 0; ion < num_owned_ions; ion++)
             {
                 /*Global index of owned ion*/
-                gion = pct.owned_ions_list[ion];
+                gion = owned_ions_list[ion];
 
                 /* Figure out index of owned ion in nonloc_ions_list array, store it in nion*/
                 do {
 
                     nion++;
-                    if (nion >= pct.num_nonloc_ions)
+                    if (nion >= num_nonloc_ions)
                     {
-                        printf("\n Could not find matching entry in pct.nonloc_ions_list for owned ion %d", gion);
-                        rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in pct.nonloc_ions_list for owned ion ");
+                        printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
+                        rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
                     }
 
-                } while (pct.nonloc_ions_list[nion] != gion);
+                } while (nonloc_ions_list[nion] != gion);
 
                 iptr = &ct.ions[gion];
 
@@ -256,8 +261,8 @@ ct.state_block_size);
     delete [] state_end;
     delete [] state_start;
 
-    GlobalSums(par_gamma_allions, 3*pct.num_owned_ions*max_nl2, pct.kpsub_comm);
-    GlobalSums(par_omega_allions, 3*pct.num_owned_ions*max_nl2, pct.kpsub_comm);
+    GlobalSums(par_gamma_allions, 3*num_owned_ions*max_nl2, pct.kpsub_comm);
+    GlobalSums(par_omega_allions, 3*num_owned_ions*max_nl2, pct.kpsub_comm);
 
     RT1 = new RmgTimer("2-Force: non-local-veff grad");
     OrbitalType *gx = new OrbitalType[FP0_BASIS];
@@ -268,10 +273,10 @@ ct.state_block_size);
     delete RT1;
 
 
-    for (ion = 0; ion < pct.num_nonloc_ions; ion++)
+    for (ion = 0; ion < num_nonloc_ions; ion++)
     {
         /*Actual index of the ion under consideration*/
-        gion = pct.nonloc_ions_list[ion];
+        gion = nonloc_ions_list[ion];
 
         iptr = &ct.ions[gion];
 
@@ -303,22 +308,22 @@ ct.state_block_size);
 
     /*Loop over ions again */
     nion = -1;
-    for (ion = 0; ion < pct.num_owned_ions; ion++)
+    for (ion = 0; ion < num_owned_ions; ion++)
     {
         /*Global index of owned ion*/
-        gion = pct.owned_ions_list[ion];
+        gion = owned_ions_list[ion];
 
         /* Figure out index of owned ion in nonloc_ions_list array, store it in nion*/
         do {
 
             nion++;
-            if (nion >= pct.num_nonloc_ions)
+            if (nion >= num_nonloc_ions)
             {
-                printf("\n Could not find matching entry in pct.nonloc_ions_list for owned ion %d", gion);
-                rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in pct.nonloc_ions_list for owned ion ");
+                printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
+                rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
             }
 
-        } while (pct.nonloc_ions_list[nion] != gion);
+        } while (nonloc_ions_list[nion] != gion);
 
         iptr = &ct.ions[gion];
 

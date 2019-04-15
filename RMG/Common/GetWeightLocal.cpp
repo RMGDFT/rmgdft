@@ -44,6 +44,10 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
     KpointType *Bweight, *Nlweight;
     std::complex<double> I_t(0.0, 1.0);
 
+    int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
+    int *nonloc_ions_list = Kptr[0]->BetaProjector->get_nonloc_ions_list();
+
+
     SPECIES *sp;
     ION *iptr;
     fftw_plan p2;
@@ -77,12 +81,12 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
     for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
         /* Loop over ions */
-        for (ion1 = 0; ion1 < pct.num_nonloc_ions; ion1++)
+        for (ion1 = 0; ion1 < num_nonloc_ions; ion1++)
         {
             rtptr = &pct.weight[ion1 * ct.max_nl * P0_BASIS];
             Bweight = &Kptr[kpt]->nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
             Nlweight = &Kptr[kpt]->nl_weight[ion1 * ct.max_nl * P0_BASIS];
-            ion = pct.nonloc_ions_list[ion1];
+            ion = nonloc_ions_list[ion1];
             /* Generate ion pointer */
             iptr = &ct.ions[ion];
 
