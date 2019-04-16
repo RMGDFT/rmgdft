@@ -165,12 +165,9 @@ void get_eig (STATE * states, double * vxc, double * vh, double * vnuc);
 char *get_num (char *str);
 void get_zdens (STATE * states, int state, double * zvec);
 void xcgga (double * rho, double * vxc, double * exc, int flag);
-void gram (KPOINT * kpoint, double h, int numst, int maxst, int numpt,
-        int maxpt);
 double get_ke (STATE * sp, int tid);
 void global_sums (double * vect, int *length, MPI_Comm comm);
 void init_pe_on (void);
-void init_pegrid (void);
 void init_wf (STATE * states);
 void init_wflcao (STATE * states);
 void init_nuc (double * vnuc, double * rhoc, double * rhocore);
@@ -396,12 +393,9 @@ void get_eig (STATE * states, double * vxc, double * vh, double * vnuc);
 char *get_num (char *str);
 void get_zdens (STATE * states, int state, double * zvec);
 void xcgga (double * rho, double * vxc, double * exc, int flag);
-void gram (KPOINT * kpoint, double h, int numst, int maxst, int numpt,
-        int maxpt);
 double get_ke (STATE * sp, int tid);
 void global_sums (double * vect, int *length, MPI_Comm comm);
 void init_pe_on (void);
-void init_pegrid (void);
 void init_wf (STATE * states);
 void init_wflcao (STATE * states);
 void init_nuc (double * vnuc, double * rhoc, double * rhocore);

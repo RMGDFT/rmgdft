@@ -143,12 +143,9 @@ void mgga_libxc (double * rho, double * tau, double * vxc, double * exc, int mod
 void get_mgga_exc_vxc (double * rho, double * rho_oppo, double * tau, double * vxc, double * exc);
 
 
-void gram (KPOINT *kpoint, double h, int numst, int maxst, int numpt,
-           int maxpt);
 double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
 void global_sums (double *vect, int *length, MPI_Comm comm);
 void init_pe ( int image );
-void init_pegrid (void);
 STATE *init_states (void);
 void init_weight (void);
 void weight_shift_center(SPECIES * sp, fftw_complex * weptr);
