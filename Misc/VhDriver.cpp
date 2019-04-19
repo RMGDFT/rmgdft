@@ -60,7 +60,7 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     {
 
         size_t coarse_size = FP0_BASIS;
-        if(ct.poi_parm.levels > 0) coarse_size /= 8;
+//        if(ct.poi_parm.levels > 0) coarse_size /= 8;
         if(ct.poi_parm.levels > 1) coarse_size /= 8;
         if(ct.poi_parm.levels > 2) coarse_size /= 8;
         if(ct.poi_parm.levels > 3) coarse_size /= 8;
