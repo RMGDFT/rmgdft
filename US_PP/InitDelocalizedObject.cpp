@@ -58,7 +58,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
     ig_storage = fine_pwaves->pbasis;
     if(compute_lobject) ig_storage = ct.num_ions * fine_pwaves->pbasis;
 
-    std::complex<double> *temp_g = new std::complex<double>[ig_storage];
+    std::complex<double> *temp_g = new std::complex<double>[ig_storage]();
 
    // Responsibility for freeing lobject lies in the calling routine
     size_t alloc = (size_t)ct.num_ions * (size_t)FP0_BASIS + 128;
@@ -68,7 +68,6 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
     pct.num_loc_ions = ct.num_ions;
     for(int ion = 0;ion < ct.num_ions;ion++)  pct.loc_ions_list[ion] = ion;
 
-    for(unsigned int ig=0;ig < ig_storage; ig++) temp_g[ig] = 0.0;
 
     // for each type of atoms, initilize localpp in g space
     for (int isp = 0; isp < ct.num_species; isp++)
@@ -158,6 +157,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
     }
 
 
+    double omega = Rmg_L.get_omega();
     if(compute_lobject) 
     {
         for (int ion = 0; ion < ct.num_ions; ion++)
@@ -165,13 +165,13 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
             std::complex<double> *ptr_g = &temp_g[(size_t)ion * (size_t)FP0_BASIS];
             PfftInverse(ptr_g, ptr_g, *fine_pwaves);
             for(int ig = 0; ig < fine_pwaves->pbasis; ig++) 
-                ionobject[(size_t)ion * (size_t)FP0_BASIS + ig] = std::real(ptr_g[ig])/Rmg_L.get_omega();
+                ionobject[(size_t)ion * (size_t)FP0_BASIS + ig] = std::real(ptr_g[ig])/omega;
         }
     }
     else
     {
         PfftInverse(temp_g, temp_g, *fine_pwaves);
-        for(int ig = 0; ig < fine_pwaves->pbasis; ig++) sumobject[ig] = std::real(temp_g[ig])/Rmg_L.get_omega();
+        for(int ig = 0; ig < fine_pwaves->pbasis; ig++) sumobject[ig] = std::real(temp_g[ig])/omega;
     }
 
 

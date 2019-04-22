@@ -88,12 +88,6 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   {
     if(!civx)
     {
-        if(ct.norm_conserving_pp)
-        {
-              ivx = (this->global_dimx - 1) / 3;
-              ivy = (this->global_dimy - 1) / 3;
-              ivz = (this->global_dimz - 1) / 3;
-        }
         // save coarse grid values
         civx = ivx;
         civy = ivy;
@@ -102,11 +96,10 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   }
   else
   {
-      // Make sure max g-vector on fine grid is an integral multiple
-      // of coarse grid.
-      ivx = ratio*civx + ratio % 2;
-      ivy = ratio*civy + ratio % 2;
-      ivz = ratio*civz + ratio % 2;
+      // Make sure max g-vector on fine grid is an integral multiple of coarse grid.
+      ivx = ratio*civx;
+      ivy = ratio*civy;
+      ivz = ratio*civz;
   }
 
   gvec[0] = (double)ivx * L.b0[0] + (double)ivy * L.b1[0] + (double)ivz * L.b2[0];

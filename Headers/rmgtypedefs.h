@@ -124,9 +124,6 @@ typedef struct
     /* Current velocity of the ion */
     double velocity[3];
 
-    /* Kleinman-Bylander normalization coefficients */
-    double pd[(MAX_L + 1) * (MAX_L + 1)];
-
     /* Milliken normalization coefficients */
     double mnorm[(MAX_L + 1) * (MAX_L + 1)];
 
@@ -136,14 +133,14 @@ typedef struct
     /* Movable flag */
     int movable;
 
-        /* Force modifier parameters */
-        struct {
-                double setA_weight;
-                double setA_coord[3];
-                double setB_weight;
-                double setB_coord[3];
+    /* Force modifier parameters */
+    struct {
+        double setA_weight;
+        double setA_coord[3];
+        double setB_weight;
+        double setB_coord[3];
         double forcemask[3];
-        } constraint;
+    } constraint;
 
     /*  number of local orbitals on the ion */
     int n_loc_states;

@@ -65,10 +65,7 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
 
     double *dum_array = new double[FP0_BASIS];
     
-    if(ct.localize_localpp)
-        InitLocalObject (dum_array, pct.localatomicrho, ATOMIC_RHO, true);
-    else
-        InitDelocalizedObject (dum_array, pct.localatomicrho, ATOMIC_RHO, true);
+    InitLocalObject (dum_array, pct.localatomicrho, ATOMIC_RHO, true);
 
     dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
             pct.localatomicrho, &FP0_BASIS, &zero, force_tmp, &ithree); 
