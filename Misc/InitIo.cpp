@@ -166,6 +166,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         ct.FG_RATIO = 2;
         if(ct.norm_conserving_pp) ct.FG_RATIO = 1;
     }
+    // For USPP force a minimum of 2
+    if(!ct.norm_conserving_pp) ct.FG_RATIO = std::max(2, ct.FG_RATIO);
 
     if(ct.forceflag == BAND_STRUCTURE)
     {
