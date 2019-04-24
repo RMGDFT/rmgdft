@@ -63,25 +63,12 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     double *tmp_force_gamma, *tmp_force_omega;
 
     OrbitalType *psi, *psi_x, *psi_y, *psi_z;
-    double hxxgrid, hyygrid, hzzgrid;
 
-    int FPX0_GRID, FPY0_GRID, FPZ0_GRID, FP0_BASIS;
-    int PX0_GRID, PY0_GRID, PZ0_GRID, P0_BASIS;
     int num_occupied;
     std::complex<double> I_t(0.0, 1.0);
 
-    hxxgrid = get_hxxgrid();
-    hyygrid = get_hyygrid();
-    hzzgrid = get_hzzgrid();
-
-    FPX0_GRID = get_FPX0_GRID();
-    FPY0_GRID = get_FPY0_GRID();
-    FPZ0_GRID = get_FPZ0_GRID();
-    PX0_GRID = get_PX0_GRID();
-    PY0_GRID = get_PY0_GRID();
-    PZ0_GRID = get_PZ0_GRID();
-    FP0_BASIS = FPX0_GRID * FPY0_GRID * FPZ0_GRID;
-    P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
     int num_owned_ions = Kptr[0]->BetaProjector->get_num_owned_ions();
@@ -269,7 +256,8 @@ ct.state_block_size);
     OrbitalType *gy = new OrbitalType[FP0_BASIS];
     OrbitalType *gz = new OrbitalType[FP0_BASIS];
 
-    CPP_app_grad_driver (&Rmg_L, Rmg_T, veff, (double *)gx, (double *)gy, (double *)gz, FPX0_GRID, FPY0_GRID, FPZ0_GRID, hxxgrid, hyygrid, hzzgrid, ct.kohn_sham_fd_order);
+    ApplyGradient (veff, (double *)gx, (double *)gy, (double *)gz, ct.force_grad_order, "Fine");
+
     delete RT1;
 
 
