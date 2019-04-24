@@ -152,7 +152,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             work[idx] = sp->vloc0[idx] + Zv * boost::math::erf (sp->r[idx] / rc) / sp->r[idx];
 
         /* Write raw beta function into file if requested*/
-        double *bessel_rg = new double[(ct.max_l+1) * RADIAL_GVECS * sp->rg_points];
+        double *bessel_rg = new double[(ct.max_l+2) * RADIAL_GVECS * sp->rg_points];
 
         // Reset sp->rg_points to correspond to the closest value to 10.0
         int ii;
@@ -325,7 +325,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             sp->atomic_wave_g[ip] = new double[RADIAL_GVECS];
-            A->RLogGridToGLogGrid(&sp->atomic_wave[ip][0], sp->r, sp->rab, sp->atomic_wave_g[ip],
+            A->RLogGridToGLogGrid(sp->atomic_wave[ip], sp->r, sp->rab, sp->atomic_wave_g[ip],
                     sp->rg_points, sp->atomic_wave_l[ip], bessel_rg);
 
         }
@@ -335,7 +335,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         delete [] work;
 
     }                           /* end for */
-
 
     delete A;
 

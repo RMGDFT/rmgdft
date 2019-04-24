@@ -565,22 +565,10 @@ void Atomic::RLogGridToGLogGrid (
     
     }
 
-
-    /* Fourier Filter the transform and store in work2 */
-    for (int idx = 0; idx < gnum; idx++)
-    {
-
-    //    printf("\n %e %e adad", gvec[idx], f_g[idx]);
-        // f_g[idx] = gcof[idx] * Gcutoff (gvec[idx], gcut, width);
-
-    }                           /* end for */
-
-
-
     /* Release memory */
     delete [] work1;
 
-} // end RftToLogGrid
+} // end RLogGridToGLogGrid
 
 void Atomic::InitBessel(
                    double * r,       // IN:  pseudopotential grid dimensioned r[rg_points], logarithmic
