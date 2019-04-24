@@ -226,6 +226,7 @@ void LoadUpfPseudo(SPECIES *sp)
 
     // Core correction flag
     std::string s_core_correction = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.core_correction");
+    boost::to_upper(s_core_correction);
     if(!s_core_correction.compare(0,1,"F")) sp->nlccflag = false;
     if(!s_core_correction.compare(0,5,"FALSE")) sp->nlccflag = false;
     if(!s_core_correction.compare(0,1,"T")) sp->nlccflag = true;
