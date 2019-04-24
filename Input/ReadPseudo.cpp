@@ -94,6 +94,9 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
                 nstr = nstr + *it;
             }
             boost::to_upper(nstr); 
+            if(!nstr.compare("SLA-PZ")) {
+                short_names.push_back("PZ");
+            }
             if(!nstr.compare("SLAPZ")) {
                 short_names.push_back("PZ");
             }
