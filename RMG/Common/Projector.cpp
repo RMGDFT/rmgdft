@@ -43,6 +43,7 @@
 #include "Kpoint.h"
 #include "RmgSumAll.h"
 #include "RmgGemm.h"
+#include "GpuAlloc.h"
 #include "Projector.h"
 
 
