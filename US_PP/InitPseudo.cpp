@@ -186,8 +186,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Transform to g-space and filter it with filtered function returned on standard log grid
-        double parm = ct.rhocparm / ct.FG_RATIO;
-        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, parm, sp->localig,
+        A->FilterPotential(work, sp->r, sp->rg_points, sp->lradius, ct.rhocparm, sp->localig,
                 sp->rab, 0, sp->gwidth, 0.66*sp->lradius, sp->rwidth, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
 
         /*Write local projector into a file if requested*/
