@@ -34,6 +34,7 @@
 #include "RmgTimer.h"
 #include "rmg_error.h"
 
+#define         PI          3.14159265358979323
 
 // Force instantiation of float, double and complex versions.
 template double FiniteDiff::app_cil_sixth<float>(float *, float *, int, int, int, double, double, double);
@@ -1635,28 +1636,6 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
     RmgType t3z  (1.0 / (90.0 * h2));
     RmgType t0 (th2);
 
-    if(this->alt_laplacian)
-    {
-        h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-        th2 = (-2.8215452 / h2);
-        t1x = (1.57663238 / h2);
-        t2x = (-0.18347238 / h2);
-        t3x = (0.01761260 / h2);
-
-        h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-        th2 -= (2.8215452 / h2);
-        t1y = (1.57663238 / h2);
-        t2y = (-0.18347238 / h2);
-        t3y = (0.01761260 / h2);
-
-        h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-        th2 -= (2.8215452 / h2);
-        t1z = (1.57663238 / h2);
-        t2z = (-0.18347238 / h2);
-        t3z = (0.01761260 / h2);
-        t0 = th2;
-    }
-
     for (int ix = 3; ix < dimx + 3; ix++)
     {
 
@@ -1716,11 +1695,17 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     for(int i=0;i<10;i++) x[i] = (double)i;
     gen_weights(9, 2, (double)ic, x, w1);
     gen_weights(7, 2, (double)(ic-1), x, w2);
-    double hf = 1.0, c1, c2, beta = 3.0;
+    double hf = 1.0, c1, c2=0.0;
     if(ibrav == HEXAGONAL) hf = 2.0/3.0;
+
+    double d1 = 6.0/560.0;
+    double d2 = -8.0/3150.0;
+    double dr = d1 / d2;
+    double k2 = PI*PI/4.0;
+
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-    c1 = 1.0 + beta;
-    c2 = beta;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
+    c1 = 1.0 + c2;
     double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2;
     RmgType t1x ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
     RmgType t2x ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
@@ -1728,8 +1713,8 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     RmgType t4x (c1*w1[ic+4]*hf / h2);
 
     h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-    c1 = 1.0 + beta;
-    c2 = beta;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
+    c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
     RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
     RmgType t2y ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
@@ -1737,8 +1722,9 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     RmgType t4y (c1*w1[ic+4]*hf / h2);
 
     h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-    c1 = 1.0 + beta;
-    c2 = beta;
+    c2 = -1.0/(1.0+dr/k2);
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
+    c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
     RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
     RmgType t2z ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
@@ -1746,31 +1732,6 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     RmgType t4z (c1*w1[ic+4]*hf / h2);
 
     RmgType t0 (th2);
-
-    if(this->alt_laplacian)
-    {
-        h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-        th2 = (-2.97581692 / h2);
-        t1x = (1.70664680 * hf / h2);
-        t2x = (-0.25959423 * hf / h2);
-        t3x = (0.04618682 * hf / h2);
-        t4x = (-0.00533093 * hf / h2);
-
-        h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-        th2 -= (2.97581692 / h2);
-        t1y = (1.70664680 / h2);
-        t2y = (-0.25959423 / h2);
-        t3y = (0.04618682 / h2);
-        t4y = (-0.00533093 / h2);
-
-        h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-        th2 -= (2.97581692 / h2);
-        t1z = (1.70664680 / h2);
-        t2z = (-0.25959423 / h2);
-        t3z = (0.04618682 / h2);
-        t4z = (-0.00533093 / h2);
-        t0 = (th2);
-    }
 
     switch(ibrav)
     {
@@ -1904,11 +1865,18 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     for(int i=0;i<12;i++) x[i] = (double)i;
     gen_weights(11, 2, (double)ic, x, w1);
     gen_weights(9, 2, (double)(ic-1), x, w2);
-    double hf = 1.0, c1, c2, beta = 3.0;
+    double hf = 1.0, c1, c2=0.0;
     if(ibrav == HEXAGONAL) hf = 2.0/3.0;
+
+    double d1 = -8.0/3150.0;
+    double d2 = 6.01250601250605e-5;
+    double dr = d1 / d2;
+    double k2 = PI*PI/4.0;
+
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-    c1 = 1.0 + beta;
-    c2 = beta;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
+    c1 = 1.0 + c2;
+
     double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2;
     RmgType t1x ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
     RmgType t2x ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
@@ -1917,8 +1885,9 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     RmgType t5x (c1*w1[ic+5]*hf / h2);
 
     h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-    c1 = 1.0 + beta;
-    c2 = beta;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
+    c1 = 1.0 + c2;
+
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
     RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
     RmgType t2y ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
@@ -1927,8 +1896,9 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     RmgType t5y (c1*w1[ic+5]*hf / h2);
 
     h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-    c1 = 1.0 + beta;
-    c2 = beta;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
+    c1 = 1.0 + c2;
+
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
     RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
     RmgType t2z ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
