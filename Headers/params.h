@@ -136,11 +136,6 @@
 
 
 
-/* Number of k-points -- just an upper limit on
- * dynamically allocated data structures. */
-#define         MAX_KPTS           32
-
-
 /* Size of the linear interpolation grid for the qfunction */
 /* Max. number of states localized on the same ion */
 #define MAX_LOC_ST      20
