@@ -66,7 +66,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     OrbitalType beta(0.0);
     OrbitalType *newsint;
     if(ct.scf_steps > 0) {
-        occupied_tol = std::min(occupied_tol, 0.1*ct.rms / std::max(1.0, (double)ct.nel));
+        occupied_tol = std::min(occupied_tol, 0.1*ct.scf_accuracy / std::max(1.0, (double)ct.nel));
         occupied_tol = std::min(occupied_tol, 1.0e-4);
     }
 
