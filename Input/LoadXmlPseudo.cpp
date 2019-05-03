@@ -361,7 +361,7 @@ void LoadXmlPseudo(SPECIES *sp)
     sp->lradius = 8.5;
     sp->gwidth = 8.0;
     sp->rwidth = 15.0; 
-    sp->aradius = 9.0;
+    sp->aradius =12.0;
     sp->acut = 7.0;
     sp->agwidth = 10.0;
     sp->arwidth = 25.0;

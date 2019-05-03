@@ -321,7 +321,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++){
-            LcaoGetPsi(Kptr[kpt]->Kstates);
+            int kpt1 = kpt + pct.kstart;
+            
+            LcaoGetPsi(Kptr[kpt]->Kstates, ct.kp[kpt1].kvec);
         }
         delete(RT2);
     }

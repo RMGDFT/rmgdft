@@ -156,7 +156,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Reset sp->rg_points to correspond to the closest value to 10.0
         int ii;
-        for(ii = 0;ii < sp->rg_points;ii++) if(sp->r[ii] >= 10.0) break;
+        double max_r = std::max(sp->nlradius, sp->lradius);
+        max_r = std::max(max_r, sp->aradius);
+        max_r = std::max(max_r, 10.0);
+        for(ii = 0;ii < sp->rg_points;ii++) if(sp->r[ii] >= max_r) break;
         double lb = sp->r[ii] - sp->r[ii-1];
         double ub = sp->r[ii+1] - sp->r[ii];
         sp->rg_points = ii;
@@ -317,6 +320,17 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
         {
+            double rcut = 0.8 * sp->aradius;
+            for(int idx = 0; idx < sp->rg_points; idx++)
+            {
+
+                if(sp->r[idx] > rcut) 
+                {
+                    double t1 = (sp->r[idx] - rcut) / (sp->aradius - rcut);
+                    if(t1 > 1.0) t1 = 1.0; 
+                    sp->atomic_wave[ip][idx] *= (1.0-t1);
+                }
+            }
             if (pct.gridpe == 0 && write_flag)
             {
                 for (int idx = 0; idx < sp->rg_points; idx++) fprintf (psp, "%e  %e\n", sp->r[idx], sp->atomic_wave[ip][idx]);

@@ -32,11 +32,11 @@
 #include "GpuAlloc.h"
 #include "transition.h"
 
-template void LcaoGetPsi(State<double> *);
-template void LcaoGetPsi(State<std::complex<double> > *);
+template void LcaoGetPsi(State<double> *, double *kvec);
+template void LcaoGetPsi(State<std::complex<double> > *, double *kvec);
 
 template <typename StateType>
-void LcaoGetPsi (State<StateType> * states)
+void LcaoGetPsi (State<StateType> * states, double *kvec)
 {
 
     int ion, idx, ip, l, m, state_count, st, P0_BASIS;
@@ -116,7 +116,7 @@ void LcaoGetPsi (State<StateType> * states)
                     /*Loop over all m values for given l and get wavefunctions */
                     for (m=0; m < 2*l+1; m++)
                     {
-                        LcaoGetAwave(states[st].psi, iptr, ip, l, m, coeff);
+                        LcaoGetAwave(states[st].psi, iptr, ip, l, m, coeff, kvec);
                         st++;
                     }
 
@@ -163,7 +163,7 @@ void LcaoGetPsi (State<StateType> * states)
                     for (m=0; m < 2*l+1; m++)
                     {
                         for(idx = 0;idx < P0_BASIS;idx++)  npsi[wave_idx * P0_BASIS + idx] = 0.0;
-                        LcaoGetAwave(&npsi[wave_idx * P0_BASIS], iptr, ip, l, m, coeff);
+                        LcaoGetAwave(&npsi[wave_idx * P0_BASIS], iptr, ip, l, m, coeff, kvec);
                         wave_idx++;
                     }
 

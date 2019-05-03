@@ -186,9 +186,9 @@ void GetOppositeEigvals (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
 void GetOppositeOccupancies (Kpoint<KpointType> **Kptr);
 template <typename StateType>
-void LcaoGetPsi (State<StateType> * states);
+void LcaoGetPsi (State<StateType> * states, double *kvec);
 template <typename StateType>
-void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff);
+void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff, double *kvec);
 void LcaoGetRho (double * arho_f);
 template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, Kpoint<KpointType> ** Kptr , int ii_flag);

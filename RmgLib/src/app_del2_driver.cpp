@@ -32,6 +32,7 @@
 #include "FiniteDiff.h"
 #include "rmg_error.h"
 #include "RmgTimer.h"
+#include "transition.h"
 #include <complex>
 #include <alloca.h>
 
@@ -76,14 +77,7 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
 
     // while alloca is dangerous it's very fast for small arrays and the 110k limit
     // is fine for linux and 64bit power
-    if(alloc <= 110592)
-    {
-        rptr = (RmgType *)alloca(alloc);
-    }
-    else
-    {
         rptr = new RmgType[sbasis + 64];
-    }
     
 
     if(ibrav == HEXAGONAL)
@@ -91,6 +85,16 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
     else
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
+
+    int dim[3];
+    LC->GetDim(dim);
+    if(0 && dimx == dim[0] && dimy == dim[1] && dimz == dim[2])
+    {
+        cc = FiniteDiffLap ((double *)rptr, (double *)b, dimx, dimy, dimz, LC);
+        
+    }
+    else
+    {
     if(order == APP_CI_SECOND) {
         cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
@@ -115,8 +119,9 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
         return 0;   // Just to keep the compiler from complaining
 
     }
+    }
 
-    if(alloc > 110592) delete [] rptr;
+    delete [] rptr;
 
     return cc;
 

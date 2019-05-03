@@ -40,11 +40,11 @@
 /*This function calculates atomic wavefunctions using wavefunctions read from PP files
  * with angular part added. The result is in psi, which is assumed to be initialized to zero*/
 
-template void LcaoGetAwave(double *, ION *, int, int, int, double);
-template void LcaoGetAwave(std::complex<double>  *, ION *, int, int, int, double);
+template void LcaoGetAwave(double *, ION *, int, int, int, double, double *);
+template void LcaoGetAwave(std::complex<double>  *, ION *, int, int, int, double, double *);
 
 template <typename StateType>
-void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff)
+void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff, double *kvec)
 {
 
 
@@ -68,7 +68,9 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
     double a, b, c;
     SPECIES *sp;
 
-
+    std::complex<double> *psi_C = (std::complex<double> *)psi;
+    double *psi_R = (double *)psi;
+    std::complex<double> phase_kr;
 
     hxgrid = get_hxgrid();
     hygrid = get_hygrid();
@@ -160,6 +162,9 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
                             r = Rmg_L.metric(x);
 
                             Rmg_L.to_cartesian(x, vector);
+ 
+                            double kr = kvec[0] * vector[0] +kvec[1] * vector[1] + kvec[2] * vector[2];
+                            phase_kr =std::exp( std::complex<double>(0, -kr));
                         
                             if(r < sp->r[0])
                             {
@@ -167,15 +172,15 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
                             }
                             else
                             {
-if(sp->gtype)
-{
-    i_r = (int)(r/dr);
-    if(i_r >= sp->rg_points) i_r = sp->rg_points - 1;
-}
-else
-{
-                                i_r = (int)(fasterlog ( (r+c)/a) /b);
-}
+                                if(sp->gtype)
+                                {
+                                    i_r = (int)(r/dr);
+                                    if(i_r >= sp->rg_points) i_r = sp->rg_points - 1;
+                                }
+                                else
+                                {
+                                    i_r = (int)(fasterlog ( (r+c)/a) /b);
+                                }
 
                                 r1 = sp->r[i_r];
                                 r2 = sp->r[i_r+1];
@@ -186,7 +191,14 @@ else
                                     + coef2 * sp->atomic_wave[awave_idx][i_r+1];
                             }
 
-                            psi[idx] += coeff * fradius * ylm(yindex, vector);
+                            if(ct.is_gamma)
+                            {
+                                psi_R[idx] += coeff * fradius * ylm(yindex, vector);
+                            }
+                            else
+                            {
+                                psi_C[idx] += phase_kr * coeff * fradius * ylm(yindex, vector);
+                            }
 
 
                         }   
@@ -195,6 +207,7 @@ else
             }
         }
     }
+
 }
 
 /******/
