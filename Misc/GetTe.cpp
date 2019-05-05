@@ -79,11 +79,10 @@ template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
 {
     int state, kpt, idx, nspin = (ct.spin_flag + 1), FP0_BASIS;
-    double esum[3], t1, eigsum, xcstate, mag, absmag = 0.0;
+    double esum[3], t1, eigsum, xcstate, mag = 0.0, absmag = 0.0;
     double vel;
     double *exc, *nrho, *nrho_oppo=NULL;
     Kpoint<KpointType> *kptr;
-    int ratio = Rmg_G->default_FG_RATIO;
 
     FP0_BASIS = get_FP0_BASIS();
 
@@ -91,11 +90,6 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double *vxc = new double[FP0_BASIS];
     for(int i=0;i < FP0_BASIS;i++)vh[i] = vh_in[i];
     for(int i=0;i < FP0_BASIS;i++)vxc[i] = vxc_in[i];
-
-    // If the coarse/fine grid ratio is not equal to 1 then we filter to be consistent
-    // with what is done in the scf loop.
-//    if(ct.filter_dpot && (ratio > 1)) FftFilter(vh, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
-//    if(ct.filter_dpot && (ratio > 1)) FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
 
 
     vel = get_vel_f();
@@ -189,15 +183,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /*Sum emergies over all processors */
-    if (ct.spin_flag)
-    {
-    	GlobalSums (esum, 2, pct.grid_comm);
-    	GlobalSums (&esum[2], 1, pct.img_comm);  
-    	GlobalSums (&mag, 1, pct.grid_comm); 
-    	GlobalSums (&absmag, 1, pct.grid_comm); 
-    }
-    else
-    	GlobalSums (esum, 3, pct.grid_comm);
+    GlobalSums (esum, 3, pct.grid_comm);
 
     /*Electrostatic E */
     ct.ES = 0.5 * vel * esum[0];

@@ -332,7 +332,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
    }
    delete RT4;
 
-   vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
+   ct.vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
    //printf("GGGGGGGG  %20.12f  %20.12f\n",vtxc,etxc);
 
