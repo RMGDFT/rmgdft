@@ -420,8 +420,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // The integral of rho(r)*potential(r) for the vtxc output variable.
   vtxc = 0.0;
   for(int ix=0;ix<this->pbasis;ix++) vtxc += rho_valence[ix] * potential[ix];
-//  vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
-  vtxc = vtxc * L.omega / (double)this->N;
   
   for(int ix = 0;ix < this->pbasis;ix++) v[ix] += potential[ix];
 

@@ -70,6 +70,7 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
 
     int nspin = ct.spin_flag + 1;
     double ec = 0.0;
+    if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) return ec;
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
 
     for (int is = 0; is < nspin; is++)

@@ -81,30 +81,18 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     int state, kpt, idx, nspin = (ct.spin_flag + 1), FP0_BASIS;
     double esum[3], t1, eigsum, xcstate, mag = 0.0, absmag = 0.0;
     double vel;
-    double *exc, *nrho, *nrho_oppo=NULL;
     Kpoint<KpointType> *kptr;
 
     FP0_BASIS = get_FP0_BASIS();
 
     double *vh = new double[FP0_BASIS];
-    double *vxc = new double[FP0_BASIS];
+    double *vxc_up = vxc_in;
+    double *vxc_down = vxc_in + FP0_BASIS;
+
     for(int i=0;i < FP0_BASIS;i++)vh[i] = vh_in[i];
-    for(int i=0;i < FP0_BASIS;i++)vxc[i] = vxc_in[i];
 
 
     vel = get_vel_f();
-
-    /* Grab some memory */
-    if (ct.spin_flag)
-    {
-        exc = new double[3 * FP0_BASIS];
-    	nrho_oppo = exc + 2 * FP0_BASIS;
-    }
-    else
-        exc = new double[2 * FP0_BASIS];
-    
-    nrho = exc + FP0_BASIS;
-
 
     /* Loop over states and get sum of the eigenvalues */
     eigsum = 0.0;
@@ -145,22 +133,6 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     }
 
 
-    /* Add the nonlinear core correction charge if there is any */
-    if (ct.spin_flag)
-    {
-    	for (idx = 0; idx < FP0_BASIS; idx++)
-    	{    
-	    	nrho[idx] = rhocore[idx] * 0.5 + rho[idx];
-	    	nrho_oppo[idx] = rhocore[idx] * 0.5 + rho_oppo[idx];
-    	}
-    }
-    else
-    {
-    	for (idx = 0; idx < FP0_BASIS; idx++)
-        	nrho[idx] = rhocore[idx] + rho[idx];
-    }
-
-
     esum[1] = 0.0;
     esum[2] = 0.0;
 
@@ -170,15 +142,15 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
         absmag = 0.0;
     	for (idx = 0; idx < FP0_BASIS; idx++)
 	{
-        	esum[1] += (rho[idx] + rho_oppo[idx] + rhocore[idx]) * (exc[idx]);
+        	esum[2] += rho[idx]*vxc_up[idx] + rho_oppo[idx]*vxc_down[idx];
 		mag += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
                 absmag += fabs(rho[idx] - rho_oppo[idx]);
         }
     }
-
-
-    for (idx = 0; idx < FP0_BASIS; idx++)
-        esum[2] += rho[idx] * vxc[idx];
+    else
+    {
+        for (idx = 0; idx < FP0_BASIS; idx++) esum[2] += rho[idx] * vxc_in[idx];
+    }
 
 
 
@@ -205,6 +177,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     //ct.scf_correction = 0.0;
     //printf("TTT %12.8e  %12.8e  %12.8e  %12.8e  %12.8e  %12.8e\n",eigsum,ct.ES,xcstate,ct.XC,ct.II,ct.scf_correction); 
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.scf_correction;
+//    ct.TOTAL = eigsum - ct.ES - ct.vtxc + ct.XC + ct.II + ct.scf_correction;
     
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
@@ -229,12 +202,10 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
        	rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", absmag );
     }
 
+    //rmg_printf("CHECK  %12.6f  %12.6f\n", xcstate, ct.vtxc);
    
 
     /* Release our memory */
-    delete [] exc;
-
-    delete [] vxc;
     delete [] vh;
 
 }                               /* end get_te */

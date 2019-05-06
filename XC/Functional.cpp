@@ -311,8 +311,6 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
    }
    delete RT2;
 
-   vtxc = vtxc * L->omega / (double)this->N;
-   etxc = etxc * L->omega / (double)this->N;
 
    // Next add in any gradient corrections
    RmgTimer *RT3 = new RmgTimer("5-Functional: vxc grad");
@@ -324,15 +322,21 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
    }
    delete RT3;
 
+
    // And finally any non-local corrections
    RmgTimer *RT4 = new RmgTimer("5-Functional: vxc nonlocal");
    if(this->dft_is_nonlocc_rmg()) {
-       this->nlc_rmg(rho, rho_core, etxc, vtxc, v, spinflag);
-       //nlc( rho, rho_core, &nspin, &etxc, &vtxc, v );
+       double netxc=0.0, nvtxc=0.0;
+       this->nlc_rmg(rho, rho_core, netxc, nvtxc, v, spinflag);
+       vtxc += nvtxc;
+       etxc += netxc;
    }
    delete RT4;
 
-   ct.vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
+   vtxc = vtxc * L->omega / (double)this->N;
+   etxc = etxc * L->omega / (double)this->N;
+
+   vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
    //printf("GGGGGGGG  %20.12f  %20.12f\n",vtxc,etxc);
 
@@ -388,12 +392,14 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     // calculate the gradient of rho + rho_core
     RmgTimer *RT2 = new RmgTimer("5-Functional: apply gradient");
     ApplyGradient (rhoout, gx, gy, gz, APP_CI_EIGHT, "Fine");
+
     delete RT2;
 
 
     // and the Laplacian
     RmgTimer *RT3 = new RmgTimer("5-Functional: apply laplacian");
     ApplyLaplacian (rhoout, d2rho, APP_CI_EIGHT, "Fine");
+
     delete RT3;
 
 
@@ -445,23 +451,17 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     for(int ix=0;ix < this->pbasis;ix++) {
       double arho = fabs(rhoout[ix]);
       if(arho > epsr) {
-
         double gdot =  ( h[ix] * gx[ix] +
                          h[ix+this->pbasis] * gy[ix] + 
                          h[ix+2*this->pbasis] * gz[ix] ) ;
         v[ix] -= gdot;
         v[ix] -= vxc2[ix] * d2rho[ix];
-        vtxcgc -= arho*gdot;
+        vtxcgc -= rhoout[ix]*(gdot + vxc2[ix] * d2rho[ix]);
       }
     }
 
-    //printf("VTXC1 = %18.12f  ETXC1 = %18.12f\n", 
-    //2.0*L->omega*RmgSumAll(vtxcgc, this->T->get_MPI_comm())/(double)this->N,
-    //2.0*L->omega*RmgSumAll(etxcgc, this->T->get_MPI_comm())/(double)this->N);
-
-    vtxc = vtxc + L->omega * vtxcgc / (double)this->N;
-    etxc = etxc + L->omega * etxcgc / (double)this->N;
-
+    vtxc = vtxc + vtxcgc;
+    etxc = etxc + etxcgc;
 
     delete [] h;
     delete [] vxc2;
@@ -661,9 +661,8 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
         v_down[ix] -= v2cud[ix] * d2rho_up[ix];
     }
 
-    vtxc = vtxc + L->omega * vtxcgc / (double)this->N;
-    etxc = etxc + L->omega * etxcgc / (double)this->N;
-
+    vtxc = vtxc + vtxcgc;
+    etxc = etxc + etxcgc;
 
     delete RT4;
 
