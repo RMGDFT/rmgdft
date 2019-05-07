@@ -69,8 +69,8 @@ void InitPe4kpspin()
     {
         printf("\n npes %d for k-parallelization needs to be divisible by pe_kpoint %d", npes, pct.pe_kpoint);
         exit(0);
-
     }
+
     //pct.pe_kpoint = std::min(2, npes);
     //pct.pe_kpoint = 2;
     // set up communicator for spin
@@ -106,6 +106,12 @@ void InitPe4kpspin()
 
     ct.num_kpts_pe = ct.num_kpts / pct.pe_kpoint;
     pct.kstart = ct.num_kpts_pe * kpsub_rank;
+
+    if(ct.num_kpts_pe == 0)
+    {
+        printf("\nnpes=%d is too large for the specified k-parallelization configuration pe_kpoint=%d\n try setting kpoint_distribution to a smaller value\n", npes, pct.pe_kpoint);
+        exit(0);
+    }
 
     int kpt_mode = ct.num_kpts % pct.pe_kpoint;
     if( kpt_mode > 0) 
