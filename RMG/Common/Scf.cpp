@@ -225,6 +225,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	    delete RT1;
 	}
 
+        // Needed to ensure consistency with some types of kpoint parrelization
+        MPI_Barrier(pct.grid_comm);
+
     } // end loop over kpoints
 
 
