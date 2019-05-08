@@ -527,12 +527,15 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         RT1 = new RmgTimer("2-Init: exchange/correlation");
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+        // Initial vxc and vh can be very noisy
+        FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
         delete F;
         delete RT1;
 
         RmgTimer *RT1 = new RmgTimer("2-Init: hartree");
         double rms_target = 1.0e-10;
         VhDriver(rho, rhoc, vh, ct.vh_ext, rms_target);
+        FftFilter(vh, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
         delete RT1;
 
     }
