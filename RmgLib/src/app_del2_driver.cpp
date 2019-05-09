@@ -75,9 +75,17 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
     size_t alloc = (sbasis + 64) * sizeof(RmgType);
     RmgType *rptr;
 
-    // while alloca is dangerous it's very fast for small arrays and the 110k limit
+    // while alloca is dangerous it's very fast for small arrays and the 64k default limit
     // is fine for linux and 64bit power
+    if(alloc <= FiniteDiff::allocation_limit)
+    {
+        rptr = (RmgType *)alloca(alloc);
+    }
+    else
+    {
         rptr = new RmgType[sbasis + 64];
+    }
+
     
 
     if(ibrav == HEXAGONAL)
@@ -121,7 +129,7 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
     }
     }
 
-    delete [] rptr;
+    if(alloc > FiniteDiff::allocation_limit) delete [] rptr;
 
     return cc;
 

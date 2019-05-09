@@ -869,6 +869,8 @@ typedef struct
 
     double orbital_pulay_mixfirst;
 
+    int fd_allocation_limit;
+
 } CONTROL;
 
 

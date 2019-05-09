@@ -144,6 +144,8 @@ int main(int argc, char **argv)
     // Set branch type
     ct.rmg_branch = RMG_ON;
 
+    FiniteDiff::allocation_limit = 0;
+
     // double a[4], b[4];
     // MPI_Init_thread(&argc, &argv, ct.mpi_threadlevel, &provided);
     //MPI_Init(&argc, &argv);

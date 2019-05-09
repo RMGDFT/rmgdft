@@ -383,6 +383,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of Open MP threads each MPI process will use. A value of 0 selects automatic setting.\n", 
                      "threads_per_node cannnot be a negative number and must be less than 64.\n");
 
+    If.RegisterInputKey("fd_allocation_limit", &lc.fd_allocation_limit, 1024, 262144, 65536, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "Allocation sizes in finite difference routines less than this value are stack rather than headp based.\n", 
+                     "fd_allocation_limit must lie in the range 1024 to 262144.\n");
+
     If.RegisterInputKey("rmg_threads_per_node", &lc.MG_THREADS_PER_NODE, 0, 64, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Number of Multigrid threads each MPI process will use. A value of 0 selects automatic setting.\n", 

@@ -36,6 +36,8 @@
 
 #define         PI          3.14159265358979323
 
+int FiniteDiff::allocation_limit = 65536;
+
 // Force instantiation of float, double and complex versions.
 template double FiniteDiff::app_cil_sixth<float>(float *, float *, int, int, int, double, double, double);
 template double FiniteDiff::app_cil_sixth<double>(double *, double *, int, int, int, double, double, double);
@@ -148,6 +150,11 @@ FiniteDiff::FiniteDiff(Lattice *lptr, bool alt_flag)
     this->y_type = PERIODIC;
     this->z_type = PERIODIC;
     this->alt_laplacian = alt_flag;
+}
+
+void FiniteDiff::set_allocation_limit(int lim)
+{
+    FiniteDiff::allocation_limit = lim;
 }
 
 // Constructor for non-periodic boundary conditions. Unlike the case with
@@ -1701,7 +1708,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     double d1 = 6.0/560.0;
     double d2 = -8.0/3150.0;
     double dr = d1 / d2;
-    double k2 = PI*PI/4.0;
+    double k2 = PI*PI/9.0;
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
@@ -1871,7 +1878,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     double d1 = -8.0/3150.0;
     double d2 = 6.01250601250605e-5;
     double dr = d1 / d2;
-    double k2 = PI*PI/4.0;
+    double k2 = PI*PI/9.0;
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
