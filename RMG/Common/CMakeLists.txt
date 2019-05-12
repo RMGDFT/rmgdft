@@ -52,7 +52,6 @@ getpoi_bc.c
 nlforce_par_gamma.c
 app_smooth1.cpp
 rand0.c
-write_header.c
 #get_pdos.c
 BandStructure.cpp
 wvfn_residual.c
@@ -78,6 +77,7 @@ set_pbc.c
 pulay_rho.c
 PartialGamma.cpp
 fire.c
+WriteHeader.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")

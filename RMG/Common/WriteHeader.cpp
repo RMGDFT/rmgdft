@@ -28,6 +28,8 @@
 #include "common_prototypes.h"
 #include "main.h"
 #include "Functional.h"
+#include "RmgParallelFft.h"
+#include "transition.h"
 
 static void init_write_pos (void);
 
@@ -52,7 +54,7 @@ char *lattice_type[] = {
 
 
 /* Writes out header information */
-void write_header (void)
+void WriteHeader (void)
 {
 
     int kpt, idx, i;
@@ -220,13 +222,16 @@ void write_header (void)
     /* We compute the equivalent energy cutoff using the density of grid
      * points in the cell with a correction for the grid anisotropy.
      */
-    t1 = pow (get_vel(), 0.333333333333);
-    t1 = PI / (t1 * get_anisotropy());
-    t1 = t1 * t1 / 2.0;
+    //t1 = pow (get_vel(), 0.333333333333);
+    //t1 = PI / (t1 * get_anisotropy());
+    //t1 = t1 * t1 / 2.0;
+    double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
+    t1 = ct.filter_factor * coarse_pwaves->gcut * tpiba2;
+    //printf("TTTT  %f  %f\n",coarse_pwaves->gcut,tpiba2);
     printf ("    Equivalent energy cutoff:  %8.3f Ry\n", t1);
     printf ("\n");
     printf ("    Charge density grid:         %d times finer\n", get_FG_RATIO());
-    printf ("    Non-local projectors grid:   %d times finer\n", ct.nxfgrid);
+    //printf ("    Non-local projectors grid:   %d times finer\n", ct.nxfgrid);
 
 
 

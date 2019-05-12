@@ -1708,35 +1708,40 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     double d1 = 6.0/560.0;
     double d2 = -8.0/3150.0;
     double dr = d1 / d2;
-    double k2 = PI*PI/9.0;
+    double k2 = PI*PI/16.0;
 
-    double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
-    c1 = 1.0 + c2;
-    double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2;
-    RmgType t1x ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
-    RmgType t2x ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
-    RmgType t3x ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2);
-    RmgType t4x (c1*w1[ic+4]*hf / h2);
+    double h2x = gridhx * gridhx * L->get_xside() * L->get_xside();
+    double h2y = gridhy * gridhy * L->get_yside() * L->get_yside();
+    double h2z = gridhz * gridhz * L->get_zside() * L->get_zside();
+    double maxh = std::max(h2x, h2y);
+    maxh = std::max(maxh, h2z);
 
-    h2 = gridhy * gridhy * L->get_yside() * L->get_yside();
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
+    double hadj = h2x / maxh;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
     c1 = 1.0 + c2;
-    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
-    RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
-    RmgType t2y ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
-    RmgType t3y ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2);
-    RmgType t4y (c1*w1[ic+4]*hf / h2);
+    double th2 = (c1*w1[ic] - c2*w2[ic-1]) / h2x;
+    RmgType t1x ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2x);
+    RmgType t2x ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2x);
+    RmgType t3x ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2x);
+    RmgType t4x (c1*w1[ic+4]*hf / h2x);
 
-    h2 = gridhz * gridhz * L->get_zside() * L->get_zside();
-    c2 = -1.0/(1.0+dr/k2);
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);
+    hadj = h2y / maxh;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
     c1 = 1.0 + c2;
-    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2;
-    RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2);
-    RmgType t2z ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2);
-    RmgType t3z ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2);
-    RmgType t4z (c1*w1[ic+4]*hf / h2);
+    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2y;
+    RmgType t1y ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2y);
+    RmgType t2y ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2y);
+    RmgType t3y ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2y);
+    RmgType t4y (c1*w1[ic+4]*hf / h2y);
+
+    hadj = h2z / maxh;
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    c1 = 1.0 + c2;
+    th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
+    RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) * hf / h2z);
+    RmgType t2z ((c1*w1[ic+2] - c2*w2[ic+1]) * hf / h2z);
+    RmgType t3z ((c1*w1[ic+3] - c2*w2[ic+2]) * hf / h2z);
+    RmgType t4z (c1*w1[ic+4]*hf / h2z);
 
     RmgType t0 (th2);
 
@@ -1878,7 +1883,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     double d1 = -8.0/3150.0;
     double d2 = 6.01250601250605e-5;
     double dr = d1 / d2;
-    double k2 = PI*PI/9.0;
+    double k2 = PI*PI/16.0;
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);

@@ -722,9 +722,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "ecut for rho in unit of Ry.\n",
                      "\n");
-    If.RegisterInputKey("ecutwfc", &lc.ecutwfc, 0.0, 10000.0, 40.0,
+
+    If.RegisterInputKey("ecutwfc", &lc.ecutwfc, 0.0, 10000.0, 0.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "ecut for rho in unit of Ry.\n",
+                     "ecut for wavefunctions in unit of Ry.\n",
                      "\n");
 
     If.RegisterInputKey("vxc_diag_nmin", &lc.vxc_diag_nmin, 1, 10000, 1,
@@ -926,7 +927,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "energy_cutoff_parameter must be in the range (0.6,1.0). Resetting to default value of 0.8.\n");
-
 
     std::string Occup, Occdown;
     std::string Occ;

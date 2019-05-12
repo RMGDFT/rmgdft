@@ -129,6 +129,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Initialize some commonly used plans for our parallel ffts
     FftInitPlans();
 
+    // If ecutwfc was set then adjust filter factor
+    if(ct.ecutwfc > 0.0)
+    {
+        double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
+        ct.filter_factor = ct.ecutwfc / (coarse_pwaves->gcut * tpiba2);
+    }
+
     /* Allocate storage for non-local projectors */
     pct.newsintR_local = NULL;
 
@@ -446,7 +453,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Write header, do it here rather than later, otherwise other information is printed first*/
     if (pct.imgpe == 0)
     {
-        write_header (); 
+        WriteHeader (); 
     }
 
     if (ct.forceflag == BAND_STRUCTURE) 

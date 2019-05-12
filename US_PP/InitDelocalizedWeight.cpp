@@ -90,6 +90,8 @@ void InitDelocalizedWeight (void)
 
     }
 
+
+    double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut);
     RmgTimer *RT3= new RmgTimer("Weight: proj cal");
     for(int iproj = 0; iproj < tot_proj; iproj++)
     {
@@ -114,6 +116,7 @@ void InitDelocalizedWeight (void)
 
                 if(!coarse_pwaves->gmask[idx]) continue;
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
+                if(gval > gcut) continue;
                 double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip], gval);
                 weptr[idx] = IL * Ylm(proj.l, proj.m, ax) * t1;
             }
