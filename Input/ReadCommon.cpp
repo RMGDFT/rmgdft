@@ -779,7 +779,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, false,
                         "Flag indicating whether or not to use alternate laplacian weights for some operators.");
 
-    If.RegisterInputKey("filter_dpot", &lc.filter_dpot, true,
+    If.RegisterInputKey("filter_dpot", &lc.filter_dpot, false,
                         "Flag indicating whether or not to filter density depenedent potentials.");
 
     if(ct.rmg_branch == RMG_NEGF)
