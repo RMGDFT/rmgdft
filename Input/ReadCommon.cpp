@@ -370,7 +370,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Approximate grid spacing (bohr).\n", 
                      "grid_spacing must be a positive number. Terminating.\n");
 
-    If.RegisterInputKey("filter_factor", &lc.filter_factor, 0.1, 1.0, 0.25, 
+    If.RegisterInputKey("filter_factor", &lc.filter_factor, 0.06, 1.0, 0.25, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
                      "Filtering factor.\n", 
                      "filter_factor must lie in the range (0.1, 1.0). Terminating.\n");
