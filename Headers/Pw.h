@@ -64,6 +64,8 @@ private:
 public:
     Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm);
     void index_to_gvector(int *index, double *gvector);
+    int count_filtered_gvectors(double filter_factor);
+
 
     ~Pw(void);
 

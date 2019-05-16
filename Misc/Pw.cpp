@@ -153,10 +153,10 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
       }
   }
 
-//  int gcount = this->ng;
-//  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, pct.grid_comm);
-//  printf("G-vector count  = %d\n", gcount);
-//  printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
+  int gcount = this->ng;
+  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, pct.grid_comm);
+  printf("G-vector count  = %d\n", gcount);
+  printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
 
 
 }
@@ -195,6 +195,18 @@ void Pw::index_to_gvector(int *index, double *gvector)
   index[2] = ivector[2];
 }
 
+int Pw::count_filtered_gvectors(double filter_factor)
+{
+  int pbasis = this->dimx * this->dimy * this->dimz;
+  int gcount = 0;
+  for(int idx=0;idx < pbasis;idx++)
+  {
+      if(this->gmags[idx] < filter_factor*this->gcut) gcount++;
+  }
+  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, pct.grid_comm);
+  return gcount;
+
+}
 
 Pw::~Pw(void)
 {
