@@ -146,6 +146,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
         make_mask_grid_state(level, states);
 
+    // Initialize some commonly used plans
+    FftInitPlans();
     /* Initialize the radial potential stuff */
     InitPseudo(ControlMap);
 
@@ -194,8 +196,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     delete(RT6);
     fflush(NULL);
 
-    // Initialize some commonly used plans
-    FftInitPlans();
 
 
     if(ct.dipole_corr[0] + ct.dipole_corr[1] + ct.dipole_corr[2] > 0)
