@@ -268,6 +268,8 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
         make_mask_grid_state (level, states);
+    // Initialize some commonly used plans
+    FftInitPlans();
 
     RmgTimer *RT4 = new RmgTimer("1-TOTAL: init:  psp");
     /* Initialize the radial potential stuff */
@@ -311,8 +313,6 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     delete(RT5);
 
 
-    // Initialize some commonly used plans
-    FftInitPlans();
 
     if (pct.imgpe == 0) printf ("completed: initnegf \n");
 
