@@ -61,7 +61,7 @@ template void Force<std::complex<double> > (double * rho, double * rho_oppo, dou
 template <typename OrbitalType> void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, double *vh_in,
         double * vxc, double *vxc_in, double * vnuc, Kpoint<OrbitalType> **Kptr)
 {
-//return;
+
     RmgTimer RT0("2-Force");
     RmgTimer RTt("1-TOTAL: run: Force");
     int ion, idx;
