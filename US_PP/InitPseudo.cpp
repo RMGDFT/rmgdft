@@ -255,6 +255,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         }                       /* end for ip */
 
+        if (pct.gridpe == 0 && write_flag) fclose (psp);
 
 
         /* Now take care of the core charge if nlcc is being used */
@@ -270,6 +271,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             /*Write raw (pre-filtered) data to a file if requested */
             if (pct.gridpe == 0 && write_flag)
             {
+                snprintf (newname, MAX_PATH, "nlcc_%s.xmgr", sp->atomic_symbol);
+                if(NULL == (psp = fopen (newname, "w+")))
+                    throw RmgFatalException() << "Unable to open beta function graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
                 for (int idx = 0; idx < sp->rg_points; idx++)
                     fprintf (psp, "%e  %e\n", sp->r[idx], work[idx]);
                 fprintf (psp, "\n&&\n");
