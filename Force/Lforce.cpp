@@ -65,24 +65,14 @@ void Lforce (double * rho, double * vh, double *force)
     if(ct.localize_localpp)
     {
 
-        
-        if(Rmg_G->default_FG_RATIO == 1)
-            FftGradient(vh, gx, gy, gz, *fine_pwaves);
-        else
-            ApplyGradient (vh, gx, gy, gz, ct.force_grad_order, "Fine");
-
+        ApplyGradient (vh, gx, gy, gz, ct.force_grad_order, "Fine");
         InitLocalObject (dum_array, pct.localrhoc, ATOMIC_RHOCOMP, true);
-
         dgemm("T", "N", &ithree, &pct.num_loc_ions, &FP0_BASIS, &alpha, gx, &FP0_BASIS, 
                 pct.localrhoc, &FP0_BASIS, &zero, force_tmp, &ithree); 
         delete [] pct.localrhoc;
     }
 
-    if(Rmg_G->default_FG_RATIO == 1)
-        FftGradient(rho, gx, gy, gz, *fine_pwaves);
-    else
-        ApplyGradient (rho, gx, gy, gz, ct.force_grad_order, "Fine");
-
+    ApplyGradient (rho, gx, gy, gz, ct.force_grad_order, "Fine");
     if(ct.localize_localpp)
         InitLocalObject (dum_array, pct.localpp, ATOMIC_LOCAL_PP, true);
     else

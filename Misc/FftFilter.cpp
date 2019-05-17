@@ -54,7 +54,6 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   double g2cut = factor*factor*pwaves.gcut;
   int global_basis = pwaves.global_basis;
   int pbasis = pwaves.pbasis;
-
   int size = pbasis;
   std::complex<double> *crho = new std::complex<double>[size];
 

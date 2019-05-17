@@ -65,10 +65,13 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
 
     PfftForward(tx, tx, pwaves);
 
+    double gcut = ct.filter_factor*pwaves.gcut;
+
     for(int icar=0;icar < 3;icar++) {
 
         for(int ig=0;ig < isize;ig++) {
-            if(pwaves.gmask[ig]) 
+            //if(pwaves.gmask[ig]) 
+            if(pwaves.gmags[ig] < gcut) 
                 cgx[ig] = ci * tpiba * pwaves.g[ig].a[icar] * tx[ig];
             else
                 cgx[ig] = czero;

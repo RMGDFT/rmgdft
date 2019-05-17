@@ -62,7 +62,7 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
     for(int ig=0;ig < pbasis;ig++) {
-        if(fine_pwaves->gmags[ig] > 1.0e-6 && fine_pwaves->gmask[ig]) 
+        if((fine_pwaves->gmags[ig] > 1.0e-6) && fine_pwaves->gmask[ig]) 
             crho[ig] = crho[ig]/(fine_pwaves->gmags[ig] *tpiba2);
         else
             crho[ig] = ZERO_t;

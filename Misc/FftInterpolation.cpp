@@ -79,7 +79,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
   std::complex<double> *shifted_coarse = new std::complex<double>[pbasis_c];
   std::complex<double> *backshifted_coarse = new std::complex<double>[pbasis_c];
 
-  double g2cut = ct.filter_factor*coarse_pwaves->gcut;
+  double g2cut = coarse_pwaves->gcut;
 
   // Get offset of first grid point on this processor into global grid
   int offset_x, offset_y, offset_z;
@@ -101,7 +101,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
   for(int ix = 0;ix < pbasis_c;ix++)
   {
       //if(!coarse_pwaves->gmask[ix]) base_coarse[ix]=std::complex<double>(0.0, 0.0);
-      if(coarse_pwaves->gmags[ix] > g2cut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
+      if(coarse_pwaves->gmags[ix] >= g2cut) base_coarse[ix]=std::complex<double>(0.0, 0.0);
   }
 
 

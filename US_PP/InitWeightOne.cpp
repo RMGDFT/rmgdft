@@ -30,6 +30,9 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     double t1;
     std::complex<double> *weptr, *gwptr;
     int xdim, ydim, zdim;
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double tpiba2 = tpiba * tpiba;
+
 
 
     double hxx = get_hxgrid() / (double) ct.nxfgrid;
@@ -60,7 +63,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     ydim = sp->nldim;
     zdim = sp->nldim;
 
-    gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut); // pwave structures store the squared magnitude
+    gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2); // pwave structures store the squared magnitude
 
     double vol = Rmg_L.get_omega() * xdim * ydim * zdim / (get_NX_GRID() * get_NY_GRID() * get_NZ_GRID()); 
 
@@ -89,7 +92,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
                 izz = (iz + zdim)%zdim;
 
                 gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
-                if(gval > gcut) continue;
+                if(gval >= gcut) continue;
                 t1 = AtomicInterpolateInline_Ggrid(&sp->beta_g[ip][0], gval);
 
                 idx1 = ixx * ydim * zdim + iyy * zdim + izz;

@@ -29,6 +29,9 @@
 void InitDelocalizedWeight (void)
 {
     RmgTimer RT0("Weight");
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double tpiba2 = tpiba * tpiba;
+
     Mgrid MG(&Rmg_L, Rmg_T);
 
     typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
@@ -91,7 +94,7 @@ void InitDelocalizedWeight (void)
     }
 
 
-    double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut);
+    double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2);
     RmgTimer *RT3= new RmgTimer("Weight: proj cal");
     for(int iproj = 0; iproj < tot_proj; iproj++)
     {
@@ -105,18 +108,18 @@ void InitDelocalizedWeight (void)
             std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis];
             for(int idx = 0;idx < pbasis;idx++)
             {
+                if(!coarse_pwaves->gmask[idx]) continue;
                 weptr[idx] = std::complex<double>(0.0,0.0);
-                ax[0] = 2.0*PI*coarse_pwaves->g[idx].a[0] / Rmg_L.celldm[0];
-                ax[1] = 2.0*PI*coarse_pwaves->g[idx].a[1] / Rmg_L.celldm[0];
-                ax[2] = 2.0*PI*coarse_pwaves->g[idx].a[2] / Rmg_L.celldm[0];
+                ax[0] = coarse_pwaves->g[idx].a[0] * tpiba;
+                ax[1] = coarse_pwaves->g[idx].a[1] * tpiba;
+                ax[2] = coarse_pwaves->g[idx].a[2] * tpiba;
 
                 ax[0] += ct.kp[kpt1].kvec[0];
                 ax[1] += ct.kp[kpt1].kvec[1];
                 ax[2] += ct.kp[kpt1].kvec[2];
 
-                if(!coarse_pwaves->gmask[idx]) continue;
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
-                if(gval > gcut) continue;
+                if(gval >= gcut) continue;
                 double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip], gval);
                 weptr[idx] = IL * Ylm(proj.l, proj.m, ax) * t1;
             }
