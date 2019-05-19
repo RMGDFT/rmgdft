@@ -311,13 +311,13 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             double occ = kptr->Kstates[st].occupation[0];
             if(ct.spin_flag) occ+= kptr->Kstates[st].occupation[1];
             tolerances[st] = fabs(eigs[st] - eigsw[st]);
-            if((tolerances[st] > max_tol) && (occ > 0.002)) {
+            if((tolerances[st] > max_tol) && (fabs(occ) > 0.0002)) {
                 max_tol = tolerances[st];
                 max_tol_state = st;
                 avg_occ_tol += tolerances[st];
                 occ_states++;
             }
-            if((tolerances[st] < min_tol) && (occ <= 0.002)) {
+            if((tolerances[st] < min_tol) && (fabs(occ) <= 0.0002)) {
                 min_tol = tolerances[st];
                 min_tol_state = st;
                 avg_unocc_tol += tolerances[st];
@@ -332,7 +332,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
             //printf("EIGS = %20.12f  %20.12f\n",eigs[st], eigsw[st]);
             double occ = kptr->Kstates[st].occupation[0];
             if(ct.spin_flag) occ+= kptr->Kstates[st].occupation[1];
-            if(occ > 0.002) {
+            if(fabs(occ) > 0.0002) {
                 converged[st] = (tolerances[st] < occupied_tol);
             }
             else {
