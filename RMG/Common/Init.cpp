@@ -133,8 +133,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(ct.ecutwfc > 0.0)
     {
         double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
-        ct.filter_factor = ct.ecutwfc / (coarse_pwaves->gcut * tpiba2);
+        ct.filter_factor = 2.0*ct.ecutwfc / (coarse_pwaves->gmax * tpiba2);
+
+        if(ct.filter_factor > 1.0)
+            rmg_printf("WARNING: The value of ecutwfc you have selected is to large for the specified grid. Reduce by %7.2f\n", ct.filter_factor);
     }
+    //int fgcount = coarse_pwaves->count_filtered_gvectors(ct.filter_factor);
+    //printf("Adjusted filtering factor = %f\n", ct.filter_factor);
+    //printf("Adjusted gcount           = %d\n", fgcount);
 
     /* Allocate storage for non-local projectors */
     pct.newsintR_local = NULL;

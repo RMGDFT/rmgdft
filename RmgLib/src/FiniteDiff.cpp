@@ -1708,7 +1708,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     double d1 = 6.0/560.0;
     double d2 = -8.0/3150.0;
     double dr = d1 / d2;
-    double k2 = PI*PI/16.0;
+    double k2 = PI*PI/8.0;
 
     double h2x = gridhx * gridhx * L->get_xside() * L->get_xside();
     double h2y = gridhy * gridhy * L->get_yside() * L->get_yside();
@@ -1883,7 +1883,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     double d1 = -8.0/3150.0;
     double d2 = 6.01250601250605e-5;
     double dr = d1 / d2;
-    double k2 = PI*PI/16.0;
+    double k2 = PI*PI/8.0;
 
     double h2 = gridhx * gridhx * L->get_xside() * L->get_xside();
     if(this->alt_laplacian) c2 = -1.0/(1.0+dr/k2);

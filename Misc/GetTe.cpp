@@ -79,7 +79,7 @@ template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
 {
     int state, kpt, idx, nspin = (ct.spin_flag + 1), FP0_BASIS;
-    double esum[3], t1, eigsum, xcstate, mag = 0.0, absmag = 0.0;
+    double esum[5], t1, eigsum, xcstate, mag = 0.0, absmag = 0.0;
     double vel;
     Kpoint<KpointType> *kptr;
 
@@ -135,6 +135,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     esum[1] = 0.0;
     esum[2] = 0.0;
+    esum[3] = 0.0;
+    esum[4] = 0.0;
 
     if (ct.spin_flag)
     {
@@ -143,8 +145,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     	for (idx = 0; idx < FP0_BASIS; idx++)
 	{
         	esum[2] += rho[idx]*vxc_up[idx] + rho_oppo[idx]*vxc_down[idx];
-		mag += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
-                absmag += fabs(rho[idx] - rho_oppo[idx]);
+		esum[3] += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
+                esum[4] += fabs(rho[idx] - rho_oppo[idx]);
         }
     }
     else
@@ -155,15 +157,15 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /*Sum emergies over all processors */
-    GlobalSums (esum, 3, pct.grid_comm);
+    GlobalSums (esum, 5, pct.grid_comm);
 
     /*Electrostatic E */
     ct.ES = 0.5 * vel * esum[0];
 
     /*XC potential energy */
     xcstate = vel * esum[2];
-    mag *= vel;
-    absmag *= vel;
+    mag = vel * esum[3];
+    absmag = vel * esum[4];
 
     if(ii_flag) {
 
@@ -174,8 +176,6 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /* Sum them all up */
-    //ct.scf_correction = 0.0;
-    //printf("TTT %12.8e  %12.8e  %12.8e  %12.8e  %12.8e  %12.8e\n",eigsum,ct.ES,xcstate,ct.XC,ct.II,ct.scf_correction); 
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.scf_correction;
 //    ct.TOTAL = eigsum - ct.ES - ct.vtxc + ct.XC + ct.II + ct.scf_correction;
     

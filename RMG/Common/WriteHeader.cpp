@@ -222,17 +222,15 @@ void WriteHeader (void)
     /* We compute the equivalent energy cutoff using the density of grid
      * points in the cell with a correction for the grid anisotropy.
      */
-    //t1 = pow (get_vel(), 0.333333333333);
-    //t1 = PI / (t1 * get_anisotropy());
-    //t1 = t1 * t1 / 2.0;
+    t1 = pow (get_vel(), 0.333333333333);
+    t1 = PI / (t1 * get_anisotropy());
+    t1 = t1 * t1 / 2.0;
     double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
-    t1 = ct.filter_factor * coarse_pwaves->gcut * tpiba2;
+    double t2 = ct.filter_factor*coarse_pwaves->gcut * tpiba2 / 2.0;
     //printf("TTTT  %f  %f\n",coarse_pwaves->gcut,tpiba2);
-    printf ("    Equivalent energy cutoff:  %8.3f Ry\n", t1);
+    printf ("    Equivalent energy cutoff:  %8.3f   %8.3f Ry\n", t1, t2);
     printf ("\n");
     printf ("    Charge density grid:         %d times finer\n", get_FG_RATIO());
-    //printf ("    Non-local projectors grid:   %d times finer\n", ct.nxfgrid);
-
 
 
     printf ("\n");
@@ -365,7 +363,6 @@ void WriteHeader (void)
         default:
             printf ("Cubic\n");
     }
-    printf ("    Projector mixing:                        Linear, mixing constant %4.2f\n", ct.prjmix);
 
     
     printf ("\n");
@@ -417,6 +414,7 @@ void WriteHeader (void)
     printf ("    Wavefunction grid (cparm):               %5.3f\n", ct.cparm);
     printf ("    Charge density grid (rhocparm):          %5.3f\n", ct.rhocparm);
     printf ("    NL projectors grid (betacparm):          %5.3f\n", ct.betacparm);
+    printf ("    Filter factor:                           %5.3f\n", ct.filter_factor);
 
 
 
@@ -444,9 +442,9 @@ void WriteHeader (void)
     t1 = (get_xside() < get_yside()) ? get_xside() : get_yside();
     t1 = (t1 < get_zside()) ? t1 : get_zside();
     t1 = 0.5 * t1;
-    for (i = 0; i < ct.num_species; i++)
+    for (int i = 0; i < ct.num_species; i++)
     {
-        for (j = i; j < ct.num_species; j++)
+        for (int j = i; j < ct.num_species; j++)
         {
             printf ("\n            %2d %2d    %13.7e", i, j,
                     ct.sp[i].zvalence * ct.sp[i].zvalence *
