@@ -619,6 +619,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
         GetNewRho(Kptr, new_rho);
         MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
+        if (ct.spin_flag) get_rho_oppo (rho,  rho_oppo);
+
         delete RT2;
         delete [] new_rho;
 
