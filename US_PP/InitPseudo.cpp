@@ -261,6 +261,13 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         /* Now take care of the core charge if nlcc is being used */
         if (sp->nlccflag)
         {
+            /*Open file for writing core charge */
+            if (pct.gridpe == 0 && write_flag)
+            {
+                snprintf (newname, MAX_PATH, "nlcc_%s.xmgr", sp->atomic_symbol);
+                if(NULL == (psp = fopen (newname, "w+")))
+                    throw RmgFatalException() << "Unable to open core charge graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+            }
 
             for (int idx = 0; idx < sp->rg_points; idx++)
                 work[idx] = sp->rspsco[idx] / (4.0 * PI);
@@ -298,19 +305,17 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 if (sp->rhocorelig[idx] < 0.0)
                     sp->rhocorelig[idx] = 0.0;
 
-
-
             /*Write filtered data to a file if requested */
             if (pct.gridpe == 0 && write_flag)
             {
                 for (int idx = 0; idx < MAX_LOGGRID; idx++)
                     fprintf (psp, "%e  %e\n", rgrid[idx], sp->rhocorelig[idx]);
                 fprintf (psp, "\n&&\n");
+                fclose (psp);
             }
 
         }                       /* end if */
 
-        if (pct.gridpe == 0 && write_flag) fclose (psp);
 
         /*Open file for writing atomic orbitals */
         if (pct.gridpe == 0 && write_flag)
