@@ -45,8 +45,10 @@ namespace po = boost::program_options;
     Column 3: y-coordinate
     Column 4: z-coordinate
     Column 5: boolean value indicating whether the ion is movable or not.
-              can be omitted and the default is movable(1).
-
+              can be omitted for non spin polarized and the default is movable(1).
+    Column 6: starting spin polarization. Required for spin polarized. Each
+              unique <species,spin polarization> pair counts as a seperate
+              atomic species.
 Example:
 
 atoms = "
@@ -226,11 +228,6 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         // Valid atomic symbol? GetAtomicMass will throw a fatal exception if the symbol is not valid.
         GetAtomicMass(sp);
 
-        // Is valid so make an entry in the SpeciesTypes set and in the IonSpecies list. SpeciesTypes set only contains
-        // one entry for each unique species type while IonSpecies contains lc.num_ions entries (one for each ion)
-        SpeciesTypes.emplace(sp);
-        IonSpecies.emplace_back(sp);
-      
         // Look for the coordinates
         it1++;
         std::string xstr = *it1;
@@ -266,10 +263,18 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         {
             it1++;
             std::string rho_updown_diff = *it1;
+            sp += rho_updown_diff;
             double tem = std::atof(rho_updown_diff.c_str());
             if(tem > 0.5 || tem < -0.5) throw RmgFatalException() << "for spin-polarization, the spin updown difference must be -0.5 to 0.5" << Atom << "\n"; 
             lc.ions[nions].init_spin_rho = tem;
         }
+
+        // Everything checks out so make an entry in the SpeciesTypes set and in the IonSpecies list.
+        // SpeciesTypes set only contains one entry for each unique species type while IonSpecies 
+        // contains lc.num_ions entries (one for each ion). A different value of the starting spin
+        // polarization counts as a new species type.
+        SpeciesTypes.emplace(sp);
+        IonSpecies.emplace_back(sp);
 
         nions++;
 

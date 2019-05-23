@@ -97,9 +97,11 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     lc.num_species = SpeciesTypes.size();
     ct.sp = new SPECIES[ct.num_species];
 
+    std::string nums = "-.0123456789";
     int isp = 0;
     for(auto it = SpeciesTypes.begin();it != SpeciesTypes.end(); ++it) {
         std::string AtomicSymbol = *it;
+        for (char c: nums) AtomicSymbol.erase(std::remove(AtomicSymbol.begin(), AtomicSymbol.end(), c), AtomicSymbol.end());
         lc.sp[isp].atomic_symbol = new char[4]();
         std::strncpy(lc.sp[isp].atomic_symbol, AtomicSymbol.c_str(), 3);
         std::strncpy(lc.sp[isp].pseudo_filename, "./@Internal", sizeof(lc.sp[isp].pseudo_filename));
