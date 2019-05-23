@@ -79,7 +79,7 @@ template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
 {
     int state, kpt, idx, nspin = (ct.spin_flag + 1), FP0_BASIS;
-    double esum[5], t1, eigsum, xcstate, mag = 0.0, absmag = 0.0;
+    double t1;
     double vel;
     Kpoint<KpointType> *kptr;
 
@@ -95,7 +95,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     vel = get_vel_f();
 
     /* Loop over states and get sum of the eigenvalues */
-    eigsum = 0.0;
+    double eigsum = 0.0;
 
     for (idx = 0; idx < nspin; idx++)
     {
@@ -118,54 +118,45 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
     /* Evaluate electrostatic energy correction terms */
-    esum[0] = 0.0;
+    ct.ES = 0.0;
     if (ct.spin_flag)
     {
 	/* Add the compensating charge to total charge to calculation electrostatic energy */    
     	for (idx = 0; idx < FP0_BASIS; idx++)
-	    	esum[0] += (rho[idx] + rho_oppo[idx] + rhoc[idx]) * vh[idx];
+	    	ct.ES += (rho[idx] + rho_oppo[idx] + rhoc[idx]) * vh[idx];
 
     }
     else 
     {
     	for (idx = 0; idx < FP0_BASIS; idx++)
-        	esum[0] += (rho[idx] + rhoc[idx]) * vh[idx];
+        	ct.ES += (rho[idx] + rhoc[idx]) * vh[idx];
     }
+    ct.ES = 0.5 * vel * RmgSumAll(ct.ES, pct.grid_comm);
+    
 
-
-    esum[1] = 0.0;
-    esum[2] = 0.0;
-    esum[3] = 0.0;
-    esum[4] = 0.0;
+    double mag = 0.0;    
+    double absmag = 0.0;
+    double xcstate = 0.0;
 
     if (ct.spin_flag)
     {
-	mag = 0.0;    
-        absmag = 0.0;
     	for (idx = 0; idx < FP0_BASIS; idx++)
 	{
-        	esum[2] += rho[idx]*vxc_up[idx] + rho_oppo[idx]*vxc_down[idx];
-		esum[3] += ( rho[idx] - rho_oppo[idx] );       /* calculation the magnetization */
-                esum[4] += fabs(rho[idx] - rho_oppo[idx]);
+        	xcstate += rho[idx]*vxc_up[idx] + rho_oppo[idx]*vxc_down[idx];
+		mag += ( rho[idx] - rho_oppo[idx] );       /* calculate the magnetization */
+                absmag += fabs(rho[idx] - rho_oppo[idx]);
         }
+        mag = vel * RmgSumAll(mag, pct.grid_comm);
+        absmag = vel * RmgSumAll(absmag, pct.grid_comm);
     }
     else
     {
-        for (idx = 0; idx < FP0_BASIS; idx++) esum[2] += rho[idx] * vxc_in[idx];
+        for (idx = 0; idx < FP0_BASIS; idx++) xcstate += rho[idx] * vxc_in[idx];
     }
 
-
-
-    /*Sum emergies over all processors */
-    GlobalSums (esum, 5, pct.grid_comm);
-
-    /*Electrostatic E */
-    ct.ES = 0.5 * vel * esum[0];
-
     /*XC potential energy */
-    xcstate = vel * esum[2];
-    mag = vel * esum[3];
-    absmag = vel * esum[4];
+    xcstate = vel * RmgSumAll(xcstate, pct.grid_comm);
+
 
     if(ii_flag) {
 
@@ -198,8 +189,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     if (ct.spin_flag)
     {
 	/* Print the total magetization and absolute magnetization into output file */
-       	rmg_printf ("@@ TOTAL MAGNETIZATION    = %8.4f Bohr mag/cell\n", mag );
-       	rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %8.4f Bohr mag/cell\n", absmag );
+       	rmg_printf ("@@ TOTAL MAGNETIZATION    = %12.8f Bohr mag/cell\n", mag );
+       	rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %12.8f Bohr mag/cell\n", absmag );
     }
 
     //rmg_printf("CHECK  %12.6f  %12.6f\n", xcstate, ct.vtxc);
