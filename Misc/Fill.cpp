@@ -73,32 +73,32 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     const int maxit = 100;
     const double charge_tol = 1.0e-10;
 
-    int iter, st, st1, idx, nks, nspin = (ct.spin_flag + 1);
+    int iter, st, st1, idx, nspin = (ct.spin_flag + 1);
     State<KpointType> *sp;
     double mu, dmu, mu1, mu2, f, fmid;
 
-    double *occ;
-    double eigs[ct.num_states*ct.num_kpts_pe*nspin];
-    double weight[ct.num_kpts_pe];
-    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) 
-        weight[kpt] = Kptr[kpt]->kweight;
-
-
-
-    nks = ct.num_kpts_pe * ct.num_states;
+    int nks = ct.num_kpts_pe * ct.num_states;
     int ntot_states = nspin * nks;
 
-    for(int idx = 0; idx < ntot_states; idx++) eigs[idx] = 0.0;
+    double *eigs = new double[ct.num_states*ct.num_kpts_pe*nspin]();
+    double *weight = new double[ct.num_kpts_pe];
+    double *occ = new double[nspin * nks]();
+
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) weight[kpt] = Kptr[kpt]->kweight;
+
+
 
     // Fill eigs
     for(int ispin = 0; ispin<nspin; ispin++)
-        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
-            for(int st = 0;st < ct.num_states;st++) {
+    {
+        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+        {
+            for(int st = 0;st < ct.num_states;st++)
+            {
                 eigs[ispin * nks + kpt*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[ispin];
             }
         }
-
-
+    }
 
 
     if(nel == 1 && ct.num_kpts == 1 && ct.spin_flag == 0)
@@ -117,7 +117,6 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 
     if(occ_flag == OCC_NONE ) return 0.0;
 
-    occ = new double[nspin * nks];
 
 
     /* find the root by bisection: this algorithm was adapted
@@ -218,6 +217,8 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     }                           /* end if */
 
     delete [] occ;
+    delete [] weight;
+    delete [] eigs;
 
     return (mu1);
 
@@ -257,7 +258,6 @@ static double occ_allstates (double mu, double * occ, double *eigs, double width
     }    
 
     sumf = RmgSumAll(sumf, pct.kpsub_comm);
-
     return (sumf - nel);
 
 }                               /* fd */

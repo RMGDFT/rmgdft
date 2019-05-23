@@ -209,11 +209,9 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
    double *rho = new double[2*this->pbasis];
 
    for(int ix=0;ix < this->pbasis;ix++)rho[ix] = rho_in[ix];
-//   if(ct.norm_conserving_pp) FftSmoother(rho, *fine_pwaves, 1.0);
    if(spinflag)
    {
        for(int ix=0;ix < this->pbasis;ix++)rho[ix+this->pbasis] = rho_in[ix+this->pbasis];
-//       if(ct.norm_conserving_pp) FftSmoother(&rho[this->pbasis], *fine_pwaves, 0.5);
    }
 
    if(pct.spinpe == 0) {
@@ -340,7 +338,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
    //printf("GGGGGGGG  %20.12f  %20.12f\n",vtxc,etxc);
 
-delete [] rho;
+   delete [] rho;
 }
 
 // Applies non-local corrections for the correlation
