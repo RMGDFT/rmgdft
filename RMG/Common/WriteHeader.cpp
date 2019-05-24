@@ -508,13 +508,13 @@ void WriteHeader (void)
     printf ("Atomic Species Information\n(PP = Pseudopotential, US = Ultrasoft, NC = Norm Conserving)\n");
     
     /*Begin table printout, vertical line first*/
-    printf ("----------------------------------------------------------------------");
+    printf ("---------------------------------------------------------------");
     for (i=0; i < funct_spacing; i++)
 	printf ("-");
     printf("\n");
     
     /*Table legend, line 1*/
-    printf ("|Index|Symbol| Mass|Valence| PP |  Comp  |Local| Local|Nlocal|  LCAO|");
+    printf ("|Index|Symbol| Mass|Valence| PP |  Comp  |Local| Local|Nlocal|");
      
     for (i=0; i < funct_padding_left + 4; i++)
 	printf(" ");
@@ -525,7 +525,7 @@ void WriteHeader (void)
     
     
     /*Table legend, line 2*/
-    printf ("|     |      |     |       |Type|Gaussian|  l  |Radius|Radius|Radius|");
+    printf ("|     |      |     |       |Type|Gaussian|  l  |Radius|Radius|");
     
     for (i=0; i < funct_padding_left; i++)
 	printf(" ");
@@ -534,7 +534,7 @@ void WriteHeader (void)
 	printf(" ");
     printf("|\n");
 
-    printf ("----------------------------------------------------------------------");
+    printf ("---------------------------------------------------------------");
     for (i=0; i < funct_spacing; i++)
 	printf ("-");
     printf("\n");
@@ -556,12 +556,11 @@ void WriteHeader (void)
 	printf("|%5d", sp->local);
 	printf("|%6.2lf", sp->lradius); 
 	printf("|%6.2lf", sp->nlradius); 
-	printf("|%6.2lf", sp->aradius);
 	printf("|%*s", funct_spacing,sp->functional);
 	printf ("|\n");
     }
     
-    printf ("----------------------------------------------------------------------");
+    printf ("---------------------------------------------------------------");
     for (i=0; i < funct_spacing; i++)
 	printf ("-");
     printf("\n");

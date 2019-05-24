@@ -154,11 +154,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         /* Write raw beta function into file if requested*/
         double *bessel_rg = new double[(ct.max_l+2) * RADIAL_GVECS * sp->rg_points];
 
-        // Reset sp->rg_points to correspond to the closest value to 10.0
+        // Reset sp->rg_points to correspond to the closest value to 12.0
         int ii;
         double max_r = std::max(sp->nlradius, sp->lradius);
-        max_r = std::max(max_r, sp->aradius);
-        max_r = std::max(max_r, 10.0);
+        max_r = std::max(max_r, 12.0);
         for(ii = 0;ii < sp->rg_points;ii++) if(sp->r[ii] >= max_r) break;
         double lb = sp->r[ii] - sp->r[ii-1];
         double ub = sp->r[ii+1] - sp->r[ii];
@@ -329,13 +328,25 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
         {
-            double rcut = 0.8 * sp->aradius;
+
+            // The range over which an atomic orbital is non-zero can vary widely so we
+            // compute a range here for use in initialization and the LDA+U stuff.
+            for(int idx = sp->rg_points-1; idx > 0.0;idx--)
+            {
+                if((sp->r[idx] < 6.0) || (fabs(sp->atomic_wave[ip][idx]) > 1.0e-4))
+                {
+                    sp->aradius[ip] = sp->r[idx];
+                    break;
+                } 
+            }
+
+            double rcut = 0.8 * sp->aradius[ip];
             for(int idx = 0; idx < sp->rg_points; idx++)
             {
 
                 if(sp->r[idx] > rcut) 
                 {
-                    double t1 = (sp->r[idx] - rcut) / (sp->aradius - rcut);
+                    double t1 = (sp->r[idx] - rcut) / (sp->aradius[ip] - rcut);
                     if(t1 > 1.0) t1 = 1.0; 
                     sp->atomic_wave[ip][idx] *= (1.0-t1);
                 }

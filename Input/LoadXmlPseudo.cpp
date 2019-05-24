@@ -214,6 +214,7 @@ void LoadXmlPseudo(SPECIES *sp)
     int iwf = 0;
     sp->num_atomic_waves_m = 0;
     sp->atomic_wave = new double *[MAX_INITWF];
+    sp->aradius = new double [MAX_INITWF];
     sp->awave_lig = new double *[MAX_INITWF];
     sp->atomic_wave_l = new int [MAX_INITWF];
     sp->atomic_wave_oc = new double [MAX_INITWF]();
@@ -236,6 +237,8 @@ void LoadXmlPseudo(SPECIES *sp)
             for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
 
             sp->atomic_wave_oc[iwf] = occupation_map[lval];
+            sp->aradius[iwf] = 12.0;
+
             // Accumulate charge for atomic rho
             for(int idx=0;idx < sp->rg_points;idx++)
             {
@@ -361,8 +364,6 @@ void LoadXmlPseudo(SPECIES *sp)
     sp->lradius = 8.5;
     sp->gwidth = 8.0;
     sp->rwidth = 15.0; 
-    sp->aradius =12.0;
-    sp->acut = 7.0;
     sp->agwidth = 10.0;
     sp->arwidth = 25.0;
 

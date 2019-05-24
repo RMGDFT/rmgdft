@@ -229,8 +229,7 @@ typedef struct
     double gwidth;                /* G-space width parameter */
 
     /*Filtering parameters for atomic wavefunctions and charge density*/
-    double acut; 
-    double aradius; 
+    double *aradius; 
     double agwidth;
     double arwidth;
 

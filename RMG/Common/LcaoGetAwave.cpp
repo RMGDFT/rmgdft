@@ -117,9 +117,9 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
 
 
 
-    dimx =  sp->aradius/(hxgrid*xside);
-    dimy =  sp->aradius/(hygrid*yside);
-    dimz =  sp->aradius/(hzgrid*zside);
+    dimx =  sp->aradius[awave_idx] / (hxgrid*xside);
+    dimy =  sp->aradius[awave_idx] / (hygrid*yside);
+    dimz =  sp->aradius[awave_idx] / (hzgrid*zside);
 
     dimx = dimx * 2 + 1;
     dimy = dimy * 2 + 1;
