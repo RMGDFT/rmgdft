@@ -34,7 +34,6 @@ get_qqq.c
 radint1.c
 get_ddd.c
 radint.c
-pack_gftoc.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 

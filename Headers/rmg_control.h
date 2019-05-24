@@ -322,7 +322,6 @@ typedef struct
     /* This is the max of nldim for any species cubed */
     int max_nlpoints;
     int max_lpoints;
-    int max_nlfpoints;
     int max_Qpoints;
 
     /** Maximum grid spacing in any coordinate direction */

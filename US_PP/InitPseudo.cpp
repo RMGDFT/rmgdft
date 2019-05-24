@@ -57,9 +57,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
     bool write_flag = Verify ("write_pseudopotential_plots", true, ControlMap);
 
-    /*Initialize max_nlpoints and max_nlfpoints */
+    /*Initialize max_nlpoints */
     ct.max_nlpoints = 0;
-    ct.max_nlfpoints = 0;
 
 
     /* Loop over species */
@@ -91,7 +90,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
             sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
             sp->nldim = sp->nldim/2*2 + 1;
-            sp->nlfdim = ct.nxfgrid * sp->nldim;
 
             if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID())) {
                 sp->nlradius *= 0.99;
@@ -111,19 +109,14 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             sp->nlradius = 7.0;
             sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
             sp->nldim = sp->nldim/2*2 +1;
-            sp->nlfdim = ct.nxfgrid * sp->nldim;
         }
 
         /*ct.max_nlpoints is max of nldim*nldim*nldim for all species */
         if (ct.max_nlpoints < (sp->nldim * sp->nldim * sp->nldim))
             ct.max_nlpoints = sp->nldim * sp->nldim * sp->nldim;
 
-        if (ct.max_nlfpoints < (sp->nlfdim * sp->nlfdim * sp->nlfdim))
-            ct.max_nlfpoints = sp->nlfdim * sp->nlfdim * sp->nlfdim;
-
         if(!ct.localize_projectors) {
             ct.max_nlpoints = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
-            ct.max_nlfpoints = ct.max_nlpoints * ct.nxfgrid * ct.nxfgrid * ct.nxfgrid;
         }
 
         sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);

@@ -61,7 +61,6 @@ typedef struct
     int ldim;
     int ldim_fine;
     int nldim;
-    int nlfdim;
     int qdim;
 
 
@@ -207,14 +206,6 @@ typedef struct
     double *localpp_g;
     double *arho_g;
     double *rhocore_g;
-
-    /* Array of r and xyz vals used to setup forward fft's for init_weight and init_derweight
-     * the r_index array is dimensioned (nlfdim*nlfdim*nlfdim) while the others are nlfdim
-     */
-    double *r_index;
-    double *x_index;
-    double *y_index;
-    double *z_index;
 
     /*Grid spacing for atomic charge density on linear grid*/
     double drlig_arho;
