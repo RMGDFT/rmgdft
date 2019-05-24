@@ -779,6 +779,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, false,
                         "Flag indicating whether or not to use alternate laplacian weights for some operators.");
 
+    If.RegisterInputKey("use_alt_zgemm", &lc.use_alt_zgemm, false,
+                        "Flag indicating whether or not to use alternate zgemm implementation.");
+
     If.RegisterInputKey("filter_dpot", &lc.filter_dpot, false,
                         "Flag indicating whether or not to filter density depenedent potentials.");
 

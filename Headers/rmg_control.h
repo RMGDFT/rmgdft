@@ -825,6 +825,10 @@ typedef struct
     // In case system has hwloc whether or not to use it
     bool use_hwloc;
 
+    // Some CPU versions of zgemm are very slow because of compiler implementations
+    // of std::complex. In that case setting this flag lets you use an alternate implementation.
+    bool use_alt_zgemm;
+
     // Default is false. RMG will still be able to use transparent huge pages but
     // certain special optimizations will be disabled. If you set this to true then
     // RMG assumes that sufficient huge pages are available to meet all memory

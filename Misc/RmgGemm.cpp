@@ -98,13 +98,14 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 
     
 //    RmgTimer *RT = new RmgTimer("gemmmmm ");
-    if(typeid(DataType) == typeid(std::complex<double>)) {
-        MyZgemm(transa, transb, m, n, k, (std::complex<double> *)(&alpha), (std::complex<double> *)A, lda, 
+    if(typeid(DataType) == typeid(std::complex<double>))
+    {
+        if(ct.use_alt_zgemm)
+            MyZgemm(transa, transb, m, n, k, (std::complex<double> *)(&alpha), (std::complex<double> *)A, lda, 
              (std::complex<double> *)B, ldb, (std::complex<double> *)(&beta), (std::complex<double> *)C, ldc);
-
-    //zgemm(transa, transb, &m, &n, &k, (std::complex<double> *)&alpha, (std::complex<double> *)A, &lda,
-     //        (std::complex<double> *)B, &ldb, (std::complex<double> *)&beta, (std::complex<double> *)C, &ldc);
-
+        else
+            zgemm(transa, transb, &m, &n, &k, (std::complex<double> *)&alpha, (std::complex<double> *)A, &lda,
+            (std::complex<double> *)B, &ldb, (std::complex<double> *)&beta, (std::complex<double> *)C, &ldc);
     }
     else {
         dgemm(transa, transb, &m, &n, &k, (double *)&alpha, (double *)A, &lda, 
