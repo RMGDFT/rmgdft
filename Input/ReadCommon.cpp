@@ -137,6 +137,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::string Weightsfile;
     std::string Workfile;
     std::string Orbitalfile;
+    std::string PseudoPath;
  
     static Ri::ReadVector<int> ProcessorGrid;
     Ri::ReadVector<int> DefProcessorGrid({{1,1,1}});
@@ -187,6 +188,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("nvme_orbitals_filepath", &Orbitalfile, "Orbitals/",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for runtime disk storage of orbitals.\n", 
+                     "");
+
+    If.RegisterInputKey("pseudo_dir", &PseudoPath, "",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Directory where pseudopotentials are stored.\n", 
                      "");
 
     If.RegisterInputKey("output_wave_function_file", &Outfile, "Waves/wave.out",
@@ -989,6 +995,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     if(!Outfile_tddft.length()) Outfile = "Waves/wave_tddft.out";
     std::strncpy(lc.outfile_tddft, Outfile_tddft.c_str(), sizeof(lc.outfile_tddft)-1);
     MakeFullPath(lc.outfile_tddft, pelc);
+
+    if(PseudoPath.length()) std::strncpy(lc.pseudo_dir, PseudoPath.c_str(), sizeof(lc.pseudo_dir)-1);
 
     if((Occup.length() != 0) && (Occdown.length() != 0) && (Occ.length() == 0)) lc.spin_flag = 1;
 

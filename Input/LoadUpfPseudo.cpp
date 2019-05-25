@@ -96,14 +96,18 @@ void LoadUpfPseudo(SPECIES *sp)
     }
     else {
 
+        std::string fq_pseudo_filename(ct.pseudo_dir);
+        fq_pseudo_filename = fq_pseudo_filename + "/" + sp->pseudo_filename;
+        boost::filesystem::path pp_filepath(fq_pseudo_filename);
+
         // Open on one pe and read entire file into a character buffer
-        if(pct.imgpe == 0) {
+        if(pct.imgpe == 0) 
+        {
 
             // Check for file existence
-            boost::filesystem::path pp_filepath(sp->pseudo_filename);
             if( !boost::filesystem::exists(pp_filepath) ) {
 
-                Msg = "Pseudopotential file " + boost::lexical_cast<std::string>(sp->pseudo_filename) + " does not exist.\n";
+                Msg = "Pseudopotential file " + fq_pseudo_filename + " does not exist.\n";
 
             }
             else {
@@ -111,7 +115,7 @@ void LoadUpfPseudo(SPECIES *sp)
                 try {
                     std::ifstream pp_file;
                     pp_file.exceptions ( std::ifstream::failbit | std::ifstream::badbit );
-                    pp_file.open(sp->pseudo_filename);
+                    pp_file.open(fq_pseudo_filename);
                     pp_file.seekg(0, std::ios::end);
                     pp_buffer_len = pp_file.tellg();
                     pp_file.seekg(0, std::ios::beg);
@@ -130,7 +134,7 @@ void LoadUpfPseudo(SPECIES *sp)
         int openfail = Msg.length();
         MPI_Bcast(&openfail, 1, MPI_INT, 0, pct.img_comm);
         if(openfail) 
-            throw RmgFatalException() << Msg << " in " << __FILE__ << " at line " << __LINE__ << " file name: " + boost::lexical_cast<std::string>(sp->pseudo_filename) + "\n";
+            throw RmgFatalException() << Msg << " in " << __FILE__ << " at line " << __LINE__ << " file name: " + fq_pseudo_filename + "\n";
 
 
         // Send it to everyone else

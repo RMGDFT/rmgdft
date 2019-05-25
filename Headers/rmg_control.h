@@ -148,8 +148,8 @@ typedef struct
     char outfile_tddft[2*MAX_PATH];
     bool restart_tddft;
 
-    /** File to read the pseudopotentials from */
-    /*  char pspfile[MAX_PATH]; */
+    /** Prepended to pseudopotential name */
+    char pseudo_dir[2*MAX_PATH];
 
     /** Initial run flag. Read from the input file. 0=initial run otherwise a restart */
     int runflag;
@@ -654,18 +654,14 @@ typedef struct
 #endif
 
     
-   /* RMG2BGW options */
-   bool rmg2bgw;
+    /* RMG2BGW options */
+    bool rmg2bgw;
     double ecutrho, ecutwfc;
 
    
-   int vxc_diag_nmin;
-   int vxc_diag_nmax;
+    int vxc_diag_nmin;
+    int vxc_diag_nmax;
 
-    
-    /** File to read the pseudopotentials from */
-    char pspfile[MAX_PATH];
-    
     int freeze_orbital_step;
 
     /* override occupations */
