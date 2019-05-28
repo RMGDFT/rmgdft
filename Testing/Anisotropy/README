@@ -7,4 +7,5 @@ the x and z axes.
 To run the test execute the shell script run.job which will generate
 the eigenvalue splittings in the files eigs_alt and eigs_standard as
 well as generating the graph anisotropy.png if xmgrace is installed
-on the test platform.
+on the test platform. Depending on the mpi setup on the test platform
+and the location of your rmg binary you may have to edit the script.
