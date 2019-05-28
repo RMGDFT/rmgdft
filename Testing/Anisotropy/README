@@ -1,0 +1,10 @@
+This test checks the impact of an anisotropric grid on the eigenvalues
+of a single carbon atom displaced along a diagonal between grid points.
+The grid used has 20.0 a.u. on a side but has (48,50,52) points in the
+(x.y,z) directions. This gives an anisotrop ration of 1.083 between
+the x and z axes.
+
+To run the test execute the shell script run.job which will generate
+the eigenvalue splittings in the files eigs_alt and eigs_standard as
+well as generating the graph anisotropy.png if xmgrace is installed
+on the test platform.

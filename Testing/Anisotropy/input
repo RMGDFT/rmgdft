@@ -1,0 +1,58 @@
+# Description of run.
+description="C60 example using Davidson diagonalization"
+
+
+# Wavefunction grid
+processor_grid = "4 2 2"
+wavefunction_grid="48 50 52"
+localize_projectors = "false"
+localize_localpp = "false"
+occupations_type = "Fixed"
+potential_grid_refinement="2"
+renormalize_forces = "false"
+#coalesce_states = "true"
+preconditioner_threshold = "0.0001"
+force_grad_order = "0"
+states_count_and_occupation = "1 2.0 3 0.6666666666 5 0.0"
+kohn_sham_fd_order="8"
+
+# Units for bravais_lattice_type and atoms
+#crds_units=
+#"Bohr"
+#"Angstrom"
+
+bravais_lattice_type="Cubic Primitive"
+
+# Lattice constants 
+a_length="18.0"
+b_length="18.0"
+c_length="18.0"
+alpha="0.0"
+beta="0.0"
+gamma="0.0"
+
+start_mode="LCAO Start"
+#start_mode="Restart From File"
+
+calculation_mode="Quench Electrons"
+#calculation_mode="Relax Structure"
+
+kohn_sham_solver="davidson"
+subdiag_driver="scalapack"
+charge_mixing_type = "Broyden"
+charge_density_mixing = "0.7"
+kohn_sham_mucycles = "3"
+max_scf_steps="20"
+potential_acceleration_constant_step="1.0"
+write_data_period="50"
+
+# Criterion used to judge SCF convergency 
+energy_convergence_criterion="1.0e-18"
+rms_convergence_criterion = "1.0e-10"
+
+atomic_coordinate_type="Cell Relative"
+
+# List  atomic symbol, coordinates, and movable flag (1 == movable) 
+# symbol and coordinates are required, moveable is optional, default is 1
+alt_laplacian="false"
+atoms = "C 1.0  1.0  1.0    1"

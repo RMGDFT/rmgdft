@@ -1,0 +1,127 @@
+#!/bin/bash
+/bin/rm input_alt.*
+/bin/rm input_standard.*
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.0  0.0  0.0    1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.00.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' > eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.0020833333333  0.0020000000000  0.0019230769230    1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.01.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.0041666666666  0.0040000000000  0.0038461538460    1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.02.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.00625  0.0060000000000  0.0057692307690    1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.03.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.0083333333332  0.0080000000000  0.0076923076920     1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.04.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.0104166666665  0.0100000000000  0.0096153846150     1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.05.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.0125  0.0120000000000  0.0115384615380     1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.06.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.014583333331  0.0140000000000  0.0134615384610     1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.07.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.016666666664  0.0160000000000  0.0153846153840     1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.08.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.018749999997  0.0180000000000  0.0173076923070    1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.09.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+cat input_alt_template > input_alt
+echo "atoms = \"C 0.0208333333333  0.0200000000000  0.019230769230    1\"" >> input_alt
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_alt
+grep kpt input_alt.10.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_alt
+
+
+
+
+
+
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.0  0.0  0.0    1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.00.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' > eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.0020833333333  0.0020000000000  0.0019230769230    1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.01.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.0041666666666  0.0040000000000  0.0038461538460    1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.02.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.00625  0.0060000000000  0.0057692307690    1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.03.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.0083333333332  0.0080000000000  0.0076923076920     1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.04.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.0104166666665  0.0100000000000  0.0096153846150     1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.05.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.0125  0.0120000000000  0.0115384615380     1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.06.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.014583333331  0.0140000000000  0.0134615384610     1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.07.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.016666666664  0.0160000000000  0.0153846153840     1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.08.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.018749999997  0.0180000000000  0.0173076923070    1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.09.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+cat input_standard_template > input_standard
+echo "atoms = \"C 0.0208333333333  0.0200000000000  0.019230769230    1\"" >> input_standard
+mpirun -np 16 --mca pml ob1 ../rmg-cpu input_standard
+grep kpt input_standard.10.log|tail -2|head -1|awk '{print 1000.0*($11 - $7)}' >> eigs_standard
+
+
+# Use xmgrace to generate plot file
+xmgrace -param eig_splitting.par -autoscale none -hdevice PNG -hardcopy -printfile anisotropy.png eigs_alt eigs_standard
+
+# cleanup
+/bin/rm input_alt.*
+/bin/rm input_standard.*
+/bin/rm q.txt
