@@ -130,5 +130,7 @@ void InitPe4kpspin()
     // Set up grids and neighbors
     //set_rank(pct.gridpe);
 
+    // Create a communicator with only one rank which is self
+    MPI_Comm_split(pct.grid_comm, pct.gridpe+1, pct.gridpe, &pct.my_comm);
 }                               /* end init_pe */
 

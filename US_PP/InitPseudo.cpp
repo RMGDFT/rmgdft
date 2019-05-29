@@ -119,6 +119,15 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             ct.max_nlpoints = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
         }
 
+        if(ct.localize_projectors)
+        {
+            sp->OG = (void *)new BaseGrid(sp->nldim, sp->nldim, sp->nldim, 1, 1, 1, 0, 1);
+            BaseGrid *OG = (BaseGrid *)sp->OG;
+            OG->set_rank(0, pct.my_comm);
+            sp->prj_pwave = (void *)new Pw(*OG, Rmg_L, 1, false, pct.my_comm);
+        }
+
+
         sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
         sp->ldim = sp->ldim/2 * 2 +1;
         if(!ct.localize_localpp)
