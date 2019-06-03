@@ -306,7 +306,9 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         double t2 = 0.0;
         for (int idx = 0; idx < FP0_BASIS; idx++) t2 += sumobject[idx];
         t2 = get_vel_f() *  real_sum_all (t2, pct.grid_comm);
-        double t1 = ct.nel / t2 / (double)(ct.spin_flag + 1);
+        t2 = real_sum_all (t2, pct.spin_comm);
+
+        double t1 = ct.nel / t2;
         double difference = fabs(t1 - 1.0);
         if ((ct.verbose == 1) || (difference > 0.05))
         {
@@ -314,6 +316,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                 printf ("\n LCAO initialization: Normalization constant for initial atomic charge is %f\n", t1);
         }
 
+        t1 = 1.0 / t1;
         for(int idx = 0;idx < FP0_BASIS;idx++) sumobject[idx] *= t1;
 
     }
