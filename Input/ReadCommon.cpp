@@ -782,7 +782,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("nvme_orbitals", &lc.nvme_orbitals, false,
                         "Flag indicating whether or not orbitals should be mapped to disk.");
 
-    If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, false,
+    If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, true,
                         "Flag indicating whether or not to use alternate laplacian weights for some operators.");
 
     If.RegisterInputKey("use_alt_zgemm", &lc.use_alt_zgemm, false,
