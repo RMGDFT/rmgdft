@@ -190,7 +190,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "File/path for runtime disk storage of orbitals.\n", 
                      "");
 
-    If.RegisterInputKey("pseudo_dir", &PseudoPath, "",
+    If.RegisterInputKey("pseudo_dir", &PseudoPath, ".",
                      CHECK_AND_FIX, OPTIONAL,
                      "Directory where pseudopotentials are stored.\n", 
                      "");

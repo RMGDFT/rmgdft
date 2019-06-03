@@ -281,10 +281,23 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         delete RT1;
 
         nbase = nbase + notconv;
+        std::complex<double> *hr_C, *sr_C;
+        hr_C = (std::complex<double> *)hr;
+        sr_C = (std::complex<double> *)sr;
+
         for(int i=0;i < nbase;i++) {
             for(int j=i+1;j < nbase;j++) {
-                hr[j + i*ct.max_states] = hr[i + j*ct.max_states];
-                sr[j + i*ct.max_states] = sr[i + j*ct.max_states];
+
+                if(typeid(OrbitalType) == typeid(std::complex<double>))
+                {
+                    hr_C[j + i*ct.max_states] = std::conj(hr_C[i + j*ct.max_states]);
+                    sr_C[j + i*ct.max_states] = std::conj(sr_C[i + j*ct.max_states]);
+                }
+                else
+                {
+                    hr[j + i*ct.max_states] = hr[i + j*ct.max_states];
+                    sr[j + i*ct.max_states] = sr[i + j*ct.max_states];
+                }
             }
         }
 
@@ -411,7 +424,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
                 vr[st + st*ct.max_states] = OrbitalType(1.0);
             }
             delete RT1;
-            
+
         }
 
     }
@@ -440,6 +453,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
     Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
     delete RT1;
-    
+
 }
 
