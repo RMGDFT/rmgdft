@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+LocalObject.cpp
 OrbitalComm.cpp
 DistributeTasks.cpp
 RmgThread.cpp
