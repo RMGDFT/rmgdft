@@ -243,9 +243,9 @@ void init_sym (void)
 
             }
             if(!find_atom) 
-            {   printf("\n Equivalent atom not found %d %d %d %d %e %e %e \n", ion, ionb,isym, nsym, xtal[0],xtal[1], xtal[2]);
-                fflush(NULL);
-                exit(0);
+            {   
+                printf("\n Equivalent atom not found %d %d %d %d %e %e %e \n", ion, ionb,isym, nsym, xtal[0],xtal[1], xtal[2]);
+                error_handler("Exiting.\n");
             }
         }
     }
