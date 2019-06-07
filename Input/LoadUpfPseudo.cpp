@@ -97,7 +97,11 @@ void LoadUpfPseudo(SPECIES *sp)
     else {
 
         std::string fq_pseudo_filename(ct.pseudo_dir);
-        fq_pseudo_filename = fq_pseudo_filename + "/" + sp->pseudo_filename;
+        if(fq_pseudo_filename.length() > 0)
+            fq_pseudo_filename = fq_pseudo_filename + "/" + sp->pseudo_filename;
+        else
+            fq_pseudo_filename = fq_pseudo_filename + sp->pseudo_filename;
+
         boost::filesystem::path pp_filepath(fq_pseudo_filename);
 
         // Open on one pe and read entire file into a character buffer
