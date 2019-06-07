@@ -285,7 +285,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         case HEXAGONAL:
             cbya = celldm[2];
             Lattice::a0[0] = alat;
-            Lattice::a1[0] = alat / 2.0;
+            Lattice::a1[0] = -alat / 2.0;
             Lattice::a1[1] = alat * SQRT3 / 2.0;
             Lattice::a2[2] = alat * cbya;
             break;

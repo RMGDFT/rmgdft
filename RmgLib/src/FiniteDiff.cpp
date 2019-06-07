@@ -1713,6 +1713,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     double h2x = gridhx * gridhx * L->get_xside() * L->get_xside();
     double h2y = gridhy * gridhy * L->get_yside() * L->get_yside();
     double h2z = gridhz * gridhz * L->get_zside() * L->get_zside();
+
     double maxh = std::max(h2x, h2y);
     maxh = std::max(maxh, h2z);
 
@@ -1831,10 +1832,10 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
-                                t1x * (A[iz - ixs + iys] + A[iz + ixs - iys]) +
-                                t2x * (A[iz - 2*ixs + 2*iys] + A[iz + 2*ixs - 2*iys]) +
-                                t3x * (A[iz - 3*ixs + 3*iys] + A[iz + 3*ixs - 3*iys]) +
-                                t4x * (A[iz - 4*ixs + 4*iys] + A[iz + 4*ixs - 4*iys]);
+                                t1x * (A[iz + ixs + iys] + A[iz - ixs - iys]) +
+                                t2x * (A[iz + 2*ixs + 2*iys] + A[iz - 2*ixs - 2*iys]) +
+                                t3x * (A[iz + 3*ixs + 3*iys] + A[iz - 3*ixs - 3*iys]) +
+                                t4x * (A[iz + 4*ixs + 4*iys] + A[iz - 4*ixs - 4*iys]);
                     }                   /* end for */
 
                 }
@@ -1859,10 +1860,6 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
 {
 
     int ibrav = L->get_ibrav_type();
-    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
-        rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
-    }
-
     int iz, ix, iy;
     int ixs, iys, ix1, iy1;
 
@@ -1921,54 +1918,121 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     RmgType t5z (c1*w1[ic+5] / h2z);
     RmgType t0 (th2);
 
-
-    for (ix = 5; ix < dimx + 5; ix++)
+    switch(ibrav)
     {
+        case CUBIC_PRIMITIVE:
+        case ORTHORHOMBIC_PRIMITIVE:
 
-        for (iy = 5; iy < dimy + 5; iy++)
-        {
-
-            for (iz = 5; iz < dimz + 5; iz++)
+            for (ix = 5; ix < dimx + 5; ix++)
             {
 
-                b[(ix - 5) * ix1 + (iy - 5) * iy1 + iz - 5] =
-                    t0 * a[ix * ixs + iy * iys + iz] +
-                    t1x * a[(ix - 1) * ixs + iy * iys + iz] +
-                    t1x * a[(ix + 1) * ixs + iy * iys + iz] +
-                    t2x * a[(ix - 2) * ixs + iy * iys + iz] +
-                    t2x * a[(ix + 2) * ixs + iy * iys + iz] +
-                    t3x * a[(ix - 3) * ixs + iy * iys + iz] +
-                    t3x * a[(ix + 3) * ixs + iy * iys + iz] +
-                    t4x * a[(ix - 4) * ixs + iy * iys + iz] +
-                    t4x * a[(ix + 4) * ixs + iy * iys + iz] +
-                    t5x * a[(ix - 5) * ixs + iy * iys + iz] +
-                    t5x * a[(ix + 5) * ixs + iy * iys + iz] +
+                for (iy = 5; iy < dimy + 5; iy++)
+                {
 
-                    t1y * a[ix * ixs + (iy - 1) * iys + iz] +
-                    t1y * a[ix * ixs + (iy + 1) * iys + iz] +
-                    t2y * a[ix * ixs + (iy - 2) * iys + iz] +
-                    t2y * a[ix * ixs + (iy + 2) * iys + iz] +
-                    t3y * a[ix * ixs + (iy - 3) * iys + iz] +
-                    t3y * a[ix * ixs + (iy + 3) * iys + iz] +
-                    t4y * a[ix * ixs + (iy - 4) * iys + iz] +
-                    t4y * a[ix * ixs + (iy + 4) * iys + iz] +
-                    t5y * a[ix * ixs + (iy - 5) * iys + iz] +
-                    t5y * a[ix * ixs + (iy + 5) * iys + iz] +
+                    for (iz = 5; iz < dimz + 5; iz++)
+                    {
 
-                    t1z * a[ix * ixs + iy * iys + iz - 1] +
-                    t1z * a[ix * ixs + iy * iys + iz + 1] +
-                    t2z * a[ix * ixs + iy * iys + iz - 2] +
-                    t2z * a[ix * ixs + iy * iys + iz + 2] +
-                    t3z * a[ix * ixs + iy * iys + iz - 3] +
-                    t3z * a[ix * ixs + iy * iys + iz + 3] +
-                    t4z * a[ix * ixs + iy * iys + iz - 4] +
-                    t4z * a[ix * ixs + iy * iys + iz + 4] +
-                    t5z * a[ix * ixs + iy * iys + iz - 5] +
-                    t5z * a[ix * ixs + iy * iys + iz + 5];
+                        b[(ix - 5) * ix1 + (iy - 5) * iy1 + iz - 5] =
+                            t0 * a[ix * ixs + iy * iys + iz] +
+                            t1x * a[(ix - 1) * ixs + iy * iys + iz] +
+                            t1x * a[(ix + 1) * ixs + iy * iys + iz] +
+                            t2x * a[(ix - 2) * ixs + iy * iys + iz] +
+                            t2x * a[(ix + 2) * ixs + iy * iys + iz] +
+                            t3x * a[(ix - 3) * ixs + iy * iys + iz] +
+                            t3x * a[(ix + 3) * ixs + iy * iys + iz] +
+                            t4x * a[(ix - 4) * ixs + iy * iys + iz] +
+                            t4x * a[(ix + 4) * ixs + iy * iys + iz] +
+                            t5x * a[(ix - 5) * ixs + iy * iys + iz] +
+                            t5x * a[(ix + 5) * ixs + iy * iys + iz] +
 
-            }                   /* end for */
-        }                       /* end for */
-    }                           /* end for */
+                            t1y * a[ix * ixs + (iy - 1) * iys + iz] +
+                            t1y * a[ix * ixs + (iy + 1) * iys + iz] +
+                            t2y * a[ix * ixs + (iy - 2) * iys + iz] +
+                            t2y * a[ix * ixs + (iy + 2) * iys + iz] +
+                            t3y * a[ix * ixs + (iy - 3) * iys + iz] +
+                            t3y * a[ix * ixs + (iy + 3) * iys + iz] +
+                            t4y * a[ix * ixs + (iy - 4) * iys + iz] +
+                            t4y * a[ix * ixs + (iy + 4) * iys + iz] +
+                            t5y * a[ix * ixs + (iy - 5) * iys + iz] +
+                            t5y * a[ix * ixs + (iy + 5) * iys + iz] +
+
+                            t1z * a[ix * ixs + iy * iys + iz - 1] +
+                            t1z * a[ix * ixs + iy * iys + iz + 1] +
+                            t2z * a[ix * ixs + iy * iys + iz - 2] +
+                            t2z * a[ix * ixs + iy * iys + iz + 2] +
+                            t3z * a[ix * ixs + iy * iys + iz - 3] +
+                            t3z * a[ix * ixs + iy * iys + iz + 3] +
+                            t4z * a[ix * ixs + iy * iys + iz - 4] +
+                            t4z * a[ix * ixs + iy * iys + iz + 4] +
+                            t5z * a[ix * ixs + iy * iys + iz - 5] +
+                            t5z * a[ix * ixs + iy * iys + iz + 5];
+
+                    }                   /* end for */
+                }                       /* end for */
+            }                           /* end for */
+            break;
+
+        case HEXAGONAL:
+
+            for (int ix = 5; ix < dimx + 5; ix++)
+            {
+
+                for (int iy = 5; iy < dimy + 5; iy++)
+                {
+
+                    RmgType *A = &a[iy*iys + ix*ixs];
+                    RmgType *B = &b[(iy - 5)*dimz + (ix - 5)*dimy*dimz - 5];
+                    // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
+                    for (int iz = 5; iz < dimz + 5; iz++)
+                    {
+                        B[iz] = t0 * A[iz] +
+                                t1z * (A[iz + 1] + A[iz - 1]) +
+                                t2z * (A[iz + 2] + A[iz - 2]) +
+                                t3z * (A[iz + 3] + A[iz - 3]) +
+                                t4z * (A[iz + 4] + A[iz - 4]) +
+                                t5z * (A[iz + 5] + A[iz - 5]);
+                    }
+
+                    for (int iz = 5; iz < dimz + 5; iz++)
+                    {
+                        B[iz] +=
+                                t1x * (A[iz + iys] + A[iz - iys]) +
+                                t2x * (A[iz + 2*iys] + A[iz - 2*iys]) +
+                                t3x * (A[iz + 3*iys] + A[iz - 3*iys]) +
+                                t4x * (A[iz + 4*iys] + A[iz - 4*iys]) +
+                                t5x * (A[iz + 5*iys] + A[iz - 5*iys]);
+                    }
+
+                    for (int iz = 5; iz < dimz + 5; iz++)
+                    {
+                        B[iz] +=
+                                t1x * (A[iz + ixs] + A[iz - ixs]) +
+                                t2x * (A[iz + 2*ixs] + A[iz - 2*ixs]) +
+                                t3x * (A[iz + 3*ixs] + A[iz - 3*ixs]) +
+                                t4x * (A[iz + 4*ixs] + A[iz - 4*ixs]) +
+                                t5x * (A[iz + 5*ixs] + A[iz - 5*ixs]);
+                    }                   /* end for */
+
+                    for (int iz = 5; iz < dimz + 5; iz++)
+                    {
+                        B[iz] +=
+                                t1x * (A[iz + ixs + iys] + A[iz - ixs - iys]) +
+                                t2x * (A[iz + 2*ixs + 2*iys] + A[iz - 2*ixs - 2*iys]) +
+                                t3x * (A[iz + 3*ixs + 3*iys] + A[iz - 3*ixs - 3*iys]) +
+                                t4x * (A[iz + 4*ixs + 4*iys] + A[iz - 4*ixs - 4*iys]) +
+                                t5x * (A[iz + 5*ixs + 5*iys] + A[iz - 5*ixs - 5*iys]);
+                    }                   /* end for */
+
+                }
+            }
+
+            break;
+
+        default:
+            rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
+
+    }
+
 
     /* Return the diagonal component of the operator */
     return (double)std::real(t0);
@@ -2803,10 +2867,11 @@ void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wy
                             hex_t * t3y * ( B[iz + 3*iys] - B[iz - 3*iys]) +
                             hex_t * t2y * ( B[iz + 2*iys] - B[iz - 2*iys]) +
                             hex_t * t1y * ( B[iz + iys] - B[iz - iys]) +
-                            hex_t * t4y * ( B[iz - 4*ixs + 4*iys] - B[iz + 4*ixs - 4*iys]) +
-                            hex_t * t3y * ( B[iz - 3*ixs + 3*iys] - B[iz + 3*ixs - 3*iys]) +
-                            hex_t * t2y * ( B[iz - 2*ixs + 2*iys] - B[iz + 2*ixs - 2*iys]) +
-                            hex_t * t1y * ( B[iz - ixs + iys] - B[iz + ixs - iys]);
+
+                            hex_t * t4y * ( -B[iz - 4*ixs - 4*iys] + B[iz + 4*ixs + 4*iys]) +
+                            hex_t * t3y * ( -B[iz - 3*ixs - 3*iys] + B[iz + 3*ixs + 3*iys]) +
+                            hex_t * t2y * ( -B[iz - 2*ixs - 2*iys] + B[iz + 2*ixs + 2*iys]) +
+                            hex_t * t1y * ( -B[iz - ixs - iys] + B[iz + ixs + iys]);
 
                     
                     }
