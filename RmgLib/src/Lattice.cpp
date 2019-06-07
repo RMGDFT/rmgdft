@@ -137,7 +137,7 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
     if (Lattice::ibrav == HEXAGONAL)
     {
 
-        crystal[0] = (cartesian[0] - cartesian[1] / SQRT3) / Lattice::celldm[0];
+        crystal[0] = (cartesian[0] + cartesian[1] / SQRT3) / Lattice::celldm[0];
         crystal[1] = cartesian[1] / (SQRT3 / 2.0) / Lattice::celldm[0];
         crystal[2] = cartesian[2] * b2[2];
 
