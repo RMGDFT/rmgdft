@@ -51,64 +51,21 @@ void init_pos ()
 
     if (ct.crd_flag)
     {
-
-        /* if positions in cartesian coordinates
-           get crystal coordinates */
-
-        /* add part to bring into supercell (just in case) */
-
+        /* if positions in cartesian coordinates get crystal coordinates */
         for (i = 0; i < ct.num_ions; i++)
         {
-
             iptr = &ct.ions[i];
-
-            for (ir = 0; ir < 3; ir++)
-            {
-                iptr->xtal[ir] = iptr->crds[0] * get_b0(ir)
-                    + iptr->crds[1] * get_b1(ir) + iptr->crds[2] * get_b2(ir);
-            }                   /* end for ir */
-
-            if (ibrav == HEXAGONAL)
-            {
-
-                iptr->xtal[0] = (iptr->crds[0] - iptr->crds[1] / SR3) / get_celldm(0);
-                iptr->xtal[1] = iptr->crds[1] / (SR3 / 2.0) / get_celldm(0);
-                iptr->xtal[2] = iptr->crds[2] * get_b2(2);
-
-
-            }                   /* end if */
-
-            if (iptr->xtal[0] < 0.0)
-                iptr->xtal[0] += 1.0;
-            if (iptr->xtal[1] < 0.0)
-                iptr->xtal[1] += 1.0;
-            if (iptr->xtal[2] < 0.0)
-                iptr->xtal[2] += 1.0;
-            if (iptr->xtal[0] > 1.0)
-                iptr->xtal[0] -= 1.0;
-            if (iptr->xtal[1] > 1.0)
-                iptr->xtal[1] -= 1.0;
-            if (iptr->xtal[2] > 1.0)
-                iptr->xtal[2] -= 1.0;
+            to_crystal(iptr->xtal, iptr->crds);
             to_cartesian (iptr->xtal, iptr->crds);
-
         }                       /* end for i */
     }
     else
     {
-        /* If the positions are in crystal coordinates
-           get cartesian coordinates */
-
-        /* add part to bring into supercell (just in case) */
+        /* If the positions are in crystal coordinates get cartesian coordinates */
         for (i = 0; i < ct.num_ions; i++)
         {
             iptr = &ct.ions[i];
-            for (ir = 0; ir < 3; ir++)
-            {
-                iptr->crds[ir] = iptr->xtal[0] * get_a0(ir)
-                    + iptr->xtal[1] * get_a1(ir) + iptr->xtal[2] * get_a2(ir);
-            }                   /* end for ir */
-
+            to_cartesian (iptr->xtal, iptr->crds);
         }                       /* end for i */
     }                           /* if(ct.crd_flag) */
 
