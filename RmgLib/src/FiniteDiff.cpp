@@ -1736,7 +1736,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     RmgType t4y (c1*w1[ic+4] / h2y);
 
     hadj = sqrt(h2z / maxh);
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hf*hadj/k2);
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
     RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) / h2z);
@@ -1908,7 +1908,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     RmgType t5y (c1*w1[ic+5] / h2y);
 
     hadj = sqrt(h2z / maxh);
-    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hadj/k2);
+    if(this->alt_laplacian) c2 = -1.0/(1.0+dr*hf*hadj/k2);
     c1 = 1.0 + c2;
     th2 += (c1*w1[ic] - c2*w2[ic-1]) /  h2z;
     RmgType t1z ((c1*w1[ic+1] - c2*w2[ic]) / h2z);
