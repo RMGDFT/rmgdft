@@ -39,8 +39,7 @@ template <typename KpointType>
 void GetWeightLocal (Kpoint<KpointType> **Kptr)
 {
 
-    int ion, ion1, ip, coarse_size, max_size, idx, P0_BASIS;
-    double *rtptr;
+    int max_size;
     KpointType *Bweight, *Nlweight;
     std::complex<double> I_t(0.0, 1.0);
 
@@ -56,7 +55,7 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
     std::complex<double> *beptr, *gbptr;
     std::complex<double> *in, *out;
 
-    P0_BASIS = get_P0_BASIS();
+    int P0_BASIS = get_P0_BASIS();
 
     /*maximum of nldim^3 for any species */
     max_size = ct.max_nldim * ct.max_nldim * ct.max_nldim;
@@ -72,27 +71,24 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
 
     gbptr = beptr + max_size;
 
-    for(idx = 0; idx < pct.num_tot_proj * P0_BASIS; idx++)
-    {
-        pct.weight[idx] = 0.0;
-        pct.Bweight[idx] = 0.0;
-    }
-
     for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
         /* Loop over ions */
-        for (ion1 = 0; ion1 < num_nonloc_ions; ion1++)
+        for (int ion1 = 0; ion1 < num_nonloc_ions; ion1++)
         {
-            rtptr = &pct.weight[ion1 * ct.max_nl * P0_BASIS];
-            Bweight = &Kptr[kpt]->nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
-            Nlweight = &Kptr[kpt]->nl_weight[ion1 * ct.max_nl * P0_BASIS];
-            ion = nonloc_ions_list[ion1];
+
+            int ion = nonloc_ions_list[ion1];
             /* Generate ion pointer */
             iptr = &ct.ions[ion];
 
-
             /* Get species type */
             sp = &ct.sp[iptr->species];
+
+            Bweight = &Kptr[kpt]->nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
+            Nlweight = &Kptr[kpt]->nl_weight[ion1 * ct.max_nl * P0_BASIS];
+//            for(int idx = 0;idx < sp->num_projectors*P0_BASIS; idx++) Bweight[idx] = 0.0;
+//            for(int idx = 0;idx < sp->num_projectors*P0_BASIS; idx++) Nlweight[idx] = 0.0;
+
 
             int nlxdim = sp->nldim;
             int nlydim = sp->nldim;
@@ -102,8 +98,8 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
             out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
 
 
-            /*Number of grid points on which fourier transform is done (in the corse grid) */
-            coarse_size = nlxdim * nlydim * nlzdim;
+            /*Number of grid points on which fourier transform is done (in the coarse grid) */
+            int coarse_size = nlxdim * nlydim * nlzdim;
 
 
             //fftw_import_wisdom_from_string (sp->backward_wisdom);
@@ -120,12 +116,12 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
 
 
             /* Loop over radial projectors */
-            for (ip = 0; ip < sp->num_projectors; ip++)
+            for (int ip = 0; ip < sp->num_projectors; ip++)
             {
 
 
                 /*Apply the phase factor */
-                for (idx = 0; idx < coarse_size; idx++)
+                for (int idx = 0; idx < coarse_size; idx++)
                 {
                     gbptr[idx] =fptr[idx] * std::conj(phase_fftw[idx]);
                 }
@@ -134,12 +130,11 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
                 /*Do the backwards transform */
                 fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(gbptr), reinterpret_cast<fftw_complex*>(beptr));
                 /*This takes and stores the part of beta that is useful for this PE */
-                AssignWeight (Kptr[kpt], sp, ion, reinterpret_cast<fftw_complex*>(beptr), rtptr, Bweight, Nlweight);
+                AssignWeight (Kptr[kpt], sp, ion, reinterpret_cast<fftw_complex*>(beptr), Bweight, Nlweight);
 
 
                 /*Advance the temp pointers */
                 fptr += coarse_size;
-                rtptr += P0_BASIS;
                 Bweight += P0_BASIS;
                 Nlweight += P0_BASIS;
 

@@ -41,7 +41,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 {
 
     int max_size;
-    double *rtptr;
     KpointType *Bweight, *Nlweight;
     KpointType ZERO_t(0.0);
     std::complex<double> I_t(0.0, 1.0);
@@ -68,12 +67,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
     // reallocation (if needed) in find_phase
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
-    for(int idx = 0; idx < pct.num_tot_proj * pbasis; idx++)
-    {
-        pct.weight[idx] = 0.0;
-        pct.Bweight[idx] = 0.0;
-    }
-
     for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
         KpointType *tem_array = new KpointType[pbasis];
@@ -88,7 +81,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
         /* Loop over ions */
         for (int ion = 0; ion < ct.num_ions; ion++)
         {
-            rtptr = &pct.weight[ion * ct.max_nl * pbasis];
             Bweight = &Kptr[kpt]->nl_Bweight[ion * ct.max_nl * pbasis];
             Nlweight = &Kptr[kpt]->nl_weight[ion * ct.max_nl * pbasis];
 
@@ -130,7 +122,6 @@ void GetWeight (Kpoint<KpointType> **Kptr)
                 double *Nlweight_R = (double *)Nlweight;
                 double *Bweight_R = (double *)Bweight;
 
-                for(int idx = 0; idx < pbasis; idx++) rtptr[idx] = 0.0;
                 for(int idx = 0; idx < pbasis; idx++) Bweight[idx] = ZERO_t;
                 for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
 
@@ -166,7 +157,6 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
 
                     }
                     else {
-                        rtptr[idx] = std::real(nbeptr[idx]);
                         Nlweight_C[idx] = nbeptr[idx];
                         Bweight_C[idx] = Btem_array_C[idx];
                     }
@@ -176,7 +166,6 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
 
                 /*Advance the temp pointers */
                 fptr += pbasis;
-                rtptr += pbasis;
                 Bweight += pbasis;
                 Nlweight += pbasis;
 

@@ -154,14 +154,12 @@ void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions
 template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **kptr, double * vnuc, double * rhocore, double * rhoc);
 template <typename KpointType>
-void GetNlop (Kpoint<KpointType> **Kptr);
-template <typename KpointType>
 void GetWeight (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
 void GetWeightLocal (Kpoint<KpointType> **Kptr);
 
 template <typename KpointType>
-void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, KpointType *Bweight, KpointType *Nlweight);
+void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Bweight, KpointType *Nlweight);
 template <typename KpointType>
 void Betaxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *, KpointType *);
 template <typename RmgType>
@@ -288,6 +286,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
         fftw_plan p1, fftw_plan p2);
 void InitWeight(void);
 void InitDelocalizedWeight (void);
+void InitDelocalizedOrbital (void);
 double CubicHarmonic(int L, int M, double *r);
 double Ylm(int L, int M, double *r);
 void InitClebschGordan (int lmax, double *ap, int *lpx, int *lpl);

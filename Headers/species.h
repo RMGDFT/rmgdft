@@ -184,7 +184,7 @@ typedef struct
     /* l-value associated with each difference potential */
     int dVl_l[MAX_L];
 
-    /* Total number of projectors */
+    /* Total number of radial projectors */
     int nbeta;
 
 
@@ -229,13 +229,17 @@ typedef struct
     int adim_wave;
 
 
-    /*Total number (of what exactly ???) */
+    /* Total number of 3D projectors for this atomic species */
     int num_projectors;
+
+    /* Total number of 3D atomic orbitals for this atomic species */
+    int num_orbitals;
 
     fftw_complex *phase;
 
     /*This will store results of forward fourier transform on the coarse grid */
     fftw_complex *forward_beta;
+    fftw_complex *forward_orbital;
     fftw_complex *forward_vnuc;
     fftw_complex *forward_rhoc;
     fftw_complex *forward_rhocore;

@@ -24,7 +24,6 @@ AssignWeight.cpp
 GatherScatter.cpp
 GetWeight.cpp
 GetWeightLocal.cpp
-GetNlop.cpp
 ReinitIonicPotentials.cpp
 PotentialAcceleration.cpp
 Projector.cpp

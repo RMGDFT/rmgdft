@@ -55,16 +55,13 @@ template <typename KpointType> class Projector {
 
 public:
     typedef boost::multi_array<int, 2> int_2d_array;
-    Projector(Kpoint<KpointType> *K, int projector_type, int num_pes, int num_ions);
+    Projector(int projector_type, int num_pes, int num_ions);
     ~Projector(void);
-    void project(KpointType *p, int offset, int n, KpointType *w);
+    void project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int n, KpointType *w);
     int get_num_nonloc_ions(void);
     int get_num_owned_ions(void);
     int *get_owned_ions_list(void);
     int *get_nonloc_ions_list(void);
-
-    // kpoint this Projector is associated with
-    Kpoint<KpointType> *kptr;
 
     // Number of projectors
     int num_tot_proj;

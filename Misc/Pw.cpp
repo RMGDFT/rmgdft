@@ -109,9 +109,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   gvec[2] = (double)ivx * L.b0[2] + (double)ivy * L.b1[2] + (double)ivz * L.b2[2];
   gvec[2] *= L.celldm[0];
 
-  this->gmax = gvec[0] * gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
-  this->gcut = this->gmax;
-
+  this->gmax = 0.0;
   int idx = -1;
   for(int ix = 0;ix < this->dimx;ix++) {
       for(int iy = 0;iy < this->dimy;iy++) {
@@ -126,6 +124,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
               index_to_gvector(ivec, gvec);
 
               this->gmags[idx] = gvec[0]*gvec[0] + gvec[1]*gvec[1] + gvec[2]*gvec[2];
+              this->gmax = std::max(this->gmax, this->gmags[idx]);
               g[idx].a[0] = gvec[0];
               g[idx].a[1] = gvec[1];
               g[idx].a[2] = gvec[2];
@@ -144,12 +143,20 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
                  (abs(ivec[1]) == this->global_dimy/2) || 
                  (abs(ivec[2]) == this->global_dimz/2)) continue;
 
+              this->gmask[idx] = true;
+              this->ng++;
               //if((iy==0)&&(iz==0))printf("DDD  %d  %d  %d  %f\n",ivx,ix,ivec[0],gvec[0]);
-              if(this->gmags[idx] <= this->gcut) {
-                  this->gmask[idx] = true;
-                  this->ng++;
-              }
           }
+      }
+  }
+
+  MPI_Allreduce(MPI_IN_PLACE, &this->gmax, 1, MPI_DOUBLE, MPI_MAX, pct.grid_comm);
+  this->gcut = this->gmax;
+  for(int idx = 0;idx < this->dimx*this->dimy*this->dimz;idx++)
+  {
+      if(this->gmags[idx] > this->gcut) {
+          if(this->gmask[idx]) this->ng--;
+          this->gmask[idx] = false;
       }
   }
 

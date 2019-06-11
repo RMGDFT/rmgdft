@@ -34,7 +34,6 @@ void InitDelocalizedOrbital (void)
 
     Mgrid MG(&Rmg_L, Rmg_T);
 
-    typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     PROJ_INFO proj;
     std::vector<PROJ_INFO> proj_iter;
     double ax[3];

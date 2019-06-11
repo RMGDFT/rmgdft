@@ -65,66 +65,21 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     RT1= new RmgTimer("3-ReinitIonicPotentials: get_QI");
     GetQI ();
     delete RT1;
-    RT1= new RmgTimer("3-ReinitIonicPotentials: GetNlop");
-    GetNlop(Kptr);
-    delete RT1;
 
-    // Number of total projectors required is computed in GetNlop so we allocate per
-    // k-point storage for the weights here.
-    size_t alloc = (size_t)pbasis * (size_t)pct.num_tot_proj;
+    static Projector<KpointType> *BetaProjector;
+    int projector_type = DELOCALIZED;
+    if(ct.localize_projectors) projector_type = LOCALIZED;
+    if(BetaProjector) delete BetaProjector;
+    BetaProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions);
+    RT1= new RmgTimer("3-ReinitIonicPotentials: GetNlop");
+
+    // Number of projectors required is computed when the Projector is created.
+    // Beta function weights are created in the calls to get_nlop.
     for(int kpt=0; kpt < ct.num_kpts_pe; kpt++)
     {
-
-        if(ct.is_gamma) {
-
-            // Identical for gamma point
-            Kptr[kpt]->nl_weight = (KpointType *)pct.weight;
-            Kptr[kpt]->nl_Bweight = (KpointType *)pct.Bweight;
-        }
-        else {
-
-#if GPU_ENABLED
-            if(Kptr[kpt]->nl_weight != NULL) GpuFreeManaged(Kptr[kpt]->nl_weight);
-            if((Kptr[kpt]->nl_Bweight != NULL) && ct.need_Bweight) GpuFreeManaged(Kptr[kpt]->nl_Bweight);
-
-            // Allocate new storage
-            if(pct.num_tot_proj) 
-            {
-
-                Kptr[kpt]->nl_weight = (KpointType *)GpuMallocManaged(alloc * sizeof(KpointType));
-                if(ct.need_Bweight) 
-                {
-                    Kptr[kpt]->nl_Bweight = (KpointType *)GpuMallocManaged(alloc * sizeof(KpointType));
-                }
-                else 
-                {
-                    Kptr[kpt]->nl_Bweight = Kptr[kpt]->nl_weight;
-                }
-
-            }
-#else
-            // Release old memory storage for weights
-            if(Kptr[kpt]->nl_weight != NULL) delete [] Kptr[kpt]->nl_weight;
-            if((Kptr[kpt]->nl_Bweight != NULL) && ct.need_Bweight) delete [] Kptr[kpt]->nl_Bweight;
-
-            // Allocate new storage
-            if(pct.num_tot_proj) 
-            {
-                Kptr[kpt]->nl_weight = new KpointType[alloc]();
-                if(ct.need_Bweight) 
-                {
-                    Kptr[kpt]->nl_Bweight = new KpointType[alloc]();
-                }
-                else
-                {
-                    Kptr[kpt]->nl_Bweight = Kptr[kpt]->nl_weight;
-                }
-
-            }
-#endif
-        }
-
+        Kptr[kpt]->get_nlop(BetaProjector);
     } // end loop over kpts
+    delete RT1;
 
 
     /*Other things that need to be recalculated when ionic positions change */

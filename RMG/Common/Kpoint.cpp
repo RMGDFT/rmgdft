@@ -26,6 +26,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <libgen.h>
 #include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"
@@ -62,6 +67,10 @@ template void Kpoint<double>::orthogonalize(double *tpsi);
 template void Kpoint<std::complex <double> >::orthogonalize(std::complex <double> *tpsi);
 template void Kpoint<double>::write_occ(void);
 template void Kpoint<std::complex <double> >::write_occ(void);
+template void Kpoint<double>::get_nlop(Projector<double> *projector);
+template void Kpoint<std::complex <double> >::get_nlop(Projector<std::complex <double>> *projector);
+template void Kpoint<double>::reset_beta_arrays(void);
+template void Kpoint<std::complex <double> >::reset_beta_arrays(void);
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : ControlMap(ControlMap)
 {
@@ -75,6 +84,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->nl_weight = NULL;
     this->nl_Bweight = NULL;
     this->BetaProjector = NULL;
+    this->newsint_local = NULL;
 
     this->G = newG;
     this->T = newT;
@@ -915,6 +925,176 @@ template <class KpointType> void Kpoint<KpointType>::write_occ(void)
 
         rmg_printf ("\n\n");
 
+    }
+
+}
+
+
+// Sets up Projector objects and creates weight and sint arrays for the beta functions
+template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointType> *projector)
+{
+
+    reset_beta_arrays ();
+    int projector_type = DELOCALIZED;
+    if(ct.localize_projectors) projector_type = LOCALIZED;
+    this->BetaProjector = projector;
+    //this->BetaProjector = new Projector<KpointType>(this, projector_type, pct.grid_npes, ct.num_ions);
+
+    pct.num_tot_proj = this->BetaProjector->num_tot_proj;
+    int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
+
+    std::string newpath;
+
+    if(ct.nvme_weights)
+    {
+        if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
+        if(ct.nvme_Bweight_fd != -1) close(ct.nvme_Bweight_fd);
+
+        newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
+                  std::to_string(this->kidx) + "_" + std::to_string(pct.gridpe);
+        ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        
+        newpath = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) + "_" +
+                  std::to_string(this->kidx) + "_" + std::to_string(pct.gridpe);
+        ct.nvme_Bweight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+    }
+
+    this->nl_weight_size = (size_t)pct.num_tot_proj * (size_t)this->pbasis + 128;
+
+#if GPU_ENABLED
+    cudaError_t custat;
+    // Managed memory is faster when gpu memory is not constrained but 
+    // pinned memory works better when it is constrained.
+    if(ct.pin_nonlocal_weights)
+    {
+        custat = cudaMallocHost((void **)&this->nl_weight, this->nl_weight_size * sizeof(KpointType));
+        RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+    }
+    else
+    {
+        Kptr[kpt]->nl_weight = (KpointType *)GpuMallocManaged(this->nl_weight_size * sizeof(KpointType));
+        int device = -1;
+        cudaGetDevice(&device);
+        cudaMemAdvise ( this->nl_weight, this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
+    }
+    for(size_t idx = 0;idx < this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
+
+    if(ct.need_Bweight) 
+    {
+        if(ct.pin_nonlocal_weights)
+        {
+            custat = cudaMallocHost((void **)&this->nl_Bweight , this->nl_weight_size * sizeof(KpointType));
+            RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+        }
+        else
+        {
+            this->nl_Bweight = (KpointType *)GpuMallocManaged(this->nl_weight_size * sizeof(KpointType));
+            int device = -1;
+            cudaGetDevice(&device);
+            cudaMemAdvise ( this->nl_Bweight, this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
+        }
+        for(int idx = 0;idx < this->nl_weight_size;idx++) this->nl_Bweight[idx] = 0.0;
+    }
+    else 
+    {
+        this->nl_Bweight = this->nl_weight;
+    }
+#else
+    if(ct.nvme_weights)
+    {
+        this->nl_weight = (KpointType *)CreateMmapArray(ct.nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
+        if(!this->nl_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
+        madvise(this->nl_weight, this->nl_weight_size*sizeof(KpointType), MADV_SEQUENTIAL);
+
+        if(ct.need_Bweight) {
+            this->nl_Bweight = (KpointType *)CreateMmapArray(ct.nvme_Bweight_fd, this->nl_weight_size*sizeof(KpointType));
+            if(!this->nl_Bweight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for bweights. \n");
+        }
+        else 
+        {
+            this->nl_Bweight = this->nl_weight;
+        }
+    }
+    else
+    {
+        this->nl_weight = new KpointType[this->nl_weight_size]();
+        if(ct.need_Bweight) {
+            this->nl_Bweight = new KpointType[this->nl_weight_size]();
+        }
+        else {
+            this->nl_Bweight = this->nl_weight;
+        }
+    }
+#endif
+
+
+#if GPU_ENABLED
+    if (this->newsint_local)
+        GpuFreeManaged(pct.newsintR_local);
+#else
+    if (this->newsint_local)
+        delete [] this->newsint_local;
+#endif
+   
+    int factor = 2;
+    if(ct.is_gamma) factor = 1; 
+    size_t sint_alloc = (size_t)(factor * num_nonloc_ions * ct.max_nl);
+    sint_alloc *= (size_t)ct.max_states;
+    sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
+#if GPU_ENABLED
+    this->newsint_local = (KpointType *)GpuMallocManaged(sint_alloc * sizeof(KpointType));
+#else
+    this->newsint_local = new KpointType[sint_alloc]();
+#endif
+
+
+} 
+
+
+template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
+{
+
+    if (this->nl_weight != NULL) {
+#if GPU_ENABLED
+        if(ct.pin_nonlocal_weights)
+        {
+            cudaFreeHost(this->nl_weight);
+        }
+        else
+        {
+            cudaFree(this->nl_weight);
+        }
+#else
+        if(ct.nvme_weights)
+        {
+            munmap(this->nl_weight, this->nl_weight_size*sizeof(double));
+        }
+        else
+        {
+            delete [] this->nl_weight;
+        }
+#endif
+    }
+    if ((this->nl_Bweight != NULL) && ct.need_Bweight) {
+#if GPU_ENABLED
+        if(ct.pin_nonlocal_weights)
+        {
+            cudaFreeHost(this->nl_Bweight);
+        }
+        else
+        {
+            cudaFree(this->nl_Bweight);
+        }
+#else
+        if(ct.nvme_weights)
+        {
+            munmap(this->nl_Bweight, this->nl_weight_size*sizeof(double));
+        }
+        else
+        {
+            delete [] this->nl_Bweight;
+        }
+#endif
     }
 
 }

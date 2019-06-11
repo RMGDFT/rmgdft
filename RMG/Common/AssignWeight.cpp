@@ -32,12 +32,12 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-template void AssignWeight<double> (Kpoint<double> *, SPECIES *, int, fftw_complex *, double *, double *, double *);
-template void AssignWeight<std::complex<double> >(Kpoint<std::complex<double>> *, SPECIES *, int, fftw_complex *, double *, std::complex<double> *, std::complex<double> *);
+template void AssignWeight<double> (Kpoint<double> *, SPECIES *, int, fftw_complex *, double *, double *);
+template void AssignWeight<std::complex<double> >(Kpoint<std::complex<double>> *, SPECIES *, int, fftw_complex *, std::complex<double> *, std::complex<double> *);
 
 
 template <typename KpointType>
-void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, double * rtptr, KpointType *Bweight, KpointType *Nlweight)
+void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Bweight, KpointType *Nlweight)
 {
 
     if((kptr->BetaProjector->idxptrlen[ion] == 0) && (ct.localize_projectors==true)) return;    // No points in the local region map to the processors space
@@ -88,7 +88,6 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     double *Bweight_R = (double *)Bweight;
 
 
-    for(int idx = 0; idx < pbasis; idx++) rtptr[idx] = 0.0;
     for(int idx = 0; idx < pbasis; idx++) Bweight[idx] = ZERO_t;
     for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
 
@@ -170,7 +169,6 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
                 int idx1 = ix * nlydim * nlzdim + iy * nlzdim + iz;
                 int idx2 = (igx-ilow) * dimy * dimz +(igy - jlow) * dimz + igz-klow;
-                rtptr[idx2] = std::real(nbeptr[idx1]);
                 if(ct.is_gamma) {
                     Nlweight_R[idx2] = std::real(nbeptr[idx1]);
                     Bweight_R[idx2] = Btem_array_R[idx1];

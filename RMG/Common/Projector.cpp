@@ -48,13 +48,13 @@
 
 
 
-template Projector<double>::Projector(Kpoint<double> *, int, int, int);
-template Projector<std::complex<double>>::Projector(Kpoint<std::complex<double>> *, int, int, int);
+template Projector<double>::Projector(int, int, int);
+template Projector<std::complex<double>>::Projector(int, int, int);
 template Projector<double>::~Projector(void);
 template Projector<std::complex<double>>::~Projector(void);
 
-template void Projector<double>::project(double *, int, int, double *);
-template void Projector<std::complex<double>>::project(std::complex<double> *, int, int, std::complex<double> *);
+template void Projector<double>::project(Kpoint<double> *, double *, int, int, double *);
+template void Projector<std::complex<double>>::project(Kpoint<std::complex<double>> *, std::complex<double> *, int, int, std::complex<double> *);
 
 template int Projector<double>::get_num_nonloc_ions(void);
 template int Projector<double>::get_num_owned_ions(void);
@@ -67,13 +67,12 @@ template int * Projector<std::complex<double>>::get_nonloc_ions_list(void);
 
 
 
-template <class KpointType> Projector<KpointType>::Projector(Kpoint<KpointType> *K, int projector_type, int num_pes, int num_ions) : 
+template <class KpointType> Projector<KpointType>::Projector(int projector_type, int num_pes, int num_ions) : 
                         list_owned_ions_per_pe(boost::extents[num_pes][num_ions]),
                         list_ions_per_owner(boost::extents[num_pes][num_ions])
 
 {
     this->type = projector_type;
-    this->kptr = K;
     this->num_tot_proj = 0;
     this->num_nonloc_ions = 0;
     this->num_owned_ions = 0;
@@ -418,7 +417,7 @@ template <class KpointType> int * Projector<KpointType>::get_nonloc_ions_list(vo
 
 
 // Applies projectors to orbitals associated with kpoint kptr
-template <class KpointType> void Projector<KpointType>::project(KpointType *p, int offset, int nstates, KpointType *weight)
+template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int nstates, KpointType *weight)
 {
 
     // Do delocalized case first
@@ -435,8 +434,8 @@ template <class KpointType> void Projector<KpointType>::project(KpointType *p, i
         if(typeid(KpointType) == typeid(double)) transa = transt;
 
         int length = factor * ct.num_ions * nstates * ct.max_nl;
-        RmgGemm (transa, transn, this->num_tot_proj, nstates, this->kptr->pbasis, alpha,
-            weight, this->kptr->pbasis, &kptr->orbital_storage[offset*this->kptr->pbasis], this->kptr->pbasis,
+        RmgGemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
+            weight, kptr->pbasis, &kptr->orbital_storage[offset*kptr->pbasis], kptr->pbasis,
             rzero, p, this->num_tot_proj);
 
         if(pct.grid_npes != 1)

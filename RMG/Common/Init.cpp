@@ -403,7 +403,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     else
     {
         InitDelocalizedWeight ();
-        //InitWeight();
+        InitDelocalizedOrbital ();
     }
     delete(RT1);
 
@@ -679,7 +679,6 @@ static void init_alloc_nonloc_mem (void)
 
 
     /*Initialize pointer arrays to NULL */
-    pct.weight = NULL;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 

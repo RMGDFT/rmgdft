@@ -53,6 +53,9 @@ public:
     void orthogonalize(std::complex<double> *storage);
     void init_states(void);
     void write_occ(void);
+    void get_nlop(Projector<KpointType> *projector);
+    void reset_beta_arrays(void);
+
 
     // Input file internal map
     std::unordered_map<std::string, InputKey *>& ControlMap;
@@ -68,6 +71,9 @@ public:
 
     // Beta function projectors
     Projector<KpointType> *BetaProjector;
+
+    // Atomic orbital projectors
+    Projector<KpointType> *OrbitalProjector;
 
     // MPI communicator to use for trade images and reduction operations
     MPI_Comm comm;
@@ -116,6 +122,10 @@ public:
     // Pointers to weight and Bweight and gpu versions
     KpointType *nl_weight;
     KpointType *nl_Bweight;
+    size_t nl_weight_size;
+
+    KpointType *orbital;
+    size_t orbital_size;
 
     std::complex<double> *phaseikr;
 

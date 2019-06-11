@@ -220,5 +220,7 @@ typedef struct
     double alpha0;
 } TF_ION;
 
+typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
+
 #endif
 
