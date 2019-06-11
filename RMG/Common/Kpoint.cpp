@@ -629,8 +629,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
             /* This will calculate cR coefficients */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
 
-                int sidx1 = this->kidx * num_nonloc_ions * this->nstates * ct.max_nl + ist1 * num_nonloc_ions * ct.max_nl;
-                int sidx2 = this->kidx * num_nonloc_ions * this->nstates * ct.max_nl + ist2 * num_nonloc_ions * ct.max_nl;
+                int sidx1 = ist1 * num_nonloc_ions * ct.max_nl;
+                int sidx2 = ist2 * num_nonloc_ions * ct.max_nl;
                 double sumpsiR = 0.0;
                 double sumbetaR = 0.0;
 
@@ -656,8 +656,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
                     double *qqq = pct.qqq[oion];
 
                     /* get<beta|psi1> and <beta|psi2> */
-                    double *sint1R = &pct.newsintR_local[sidx1 + nidx * ct.max_nl];
-                    double *sint2R = &pct.newsintR_local[sidx2 + nidx * ct.max_nl];
+                    double *sint1R = &this->newsint_local[sidx1 + nidx * ct.max_nl];
+                    double *sint2R = &this->newsint_local[sidx2 + nidx * ct.max_nl];
 
 
                     for (int i = 0; i < nh; i++)
@@ -698,11 +698,11 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
                 for (int ion = 0; ion < num_nonloc_ions; ion++)
                 {
 
-                    int lsidx1 = this->kidx * num_nonloc_ions * this->nstates * ct.max_nl + ist1 * num_nonloc_ions * ct.max_nl;
-                    int lsidx2 = this->kidx * num_nonloc_ions * this->nstates * ct.max_nl + ist2 * num_nonloc_ions * ct.max_nl;
+                    int lsidx1 = ist1 * num_nonloc_ions * ct.max_nl;
+                    int lsidx2 = ist2 * num_nonloc_ions * ct.max_nl;
 
-                    double *ptr1R = &pct.newsintR_local[lsidx1 + ion * ct.max_nl];
-                    double *ptr2R = &pct.newsintR_local[lsidx2 + ion * ct.max_nl];
+                    double *ptr1R = &this->newsint_local[lsidx1 + ion * ct.max_nl];
+                    double *ptr2R = &this->newsint_local[lsidx2 + ion * ct.max_nl];
 
                     QMD_daxpy (ct.max_nl, -cR[ist2], ptr1R, incx, ptr2R, incx);
 
@@ -935,10 +935,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointTy
 {
 
     reset_beta_arrays ();
-    int projector_type = DELOCALIZED;
-    if(ct.localize_projectors) projector_type = LOCALIZED;
     this->BetaProjector = projector;
-    //this->BetaProjector = new Projector<KpointType>(this, projector_type, pct.grid_npes, ct.num_ions);
 
     pct.num_tot_proj = this->BetaProjector->num_tot_proj;
     int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
@@ -1030,7 +1027,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointTy
 
 #if GPU_ENABLED
     if (this->newsint_local)
-        GpuFreeManaged(pct.newsintR_local);
+        GpuFreeManaged(this->newsint_local);
 #else
     if (this->newsint_local)
         delete [] this->newsint_local;

@@ -42,10 +42,9 @@
 
 void init_pos ()
 {
-    int i, ir, ibrav;
+    int i, ir;
     ION *iptr;
 
-    ibrav = get_ibrav_type();
 
     /* Scale the ion-coordinates by the lattice vectors (if required) */
 

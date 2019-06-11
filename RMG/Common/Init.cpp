@@ -142,9 +142,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //printf("Adjusted filtering factor = %f\n", ct.filter_factor);
     //printf("Adjusted gcount           = %d\n", fgcount);
 
-    /* Allocate storage for non-local projectors */
-    pct.newsintR_local = NULL;
-
     pct.localpp = NULL;
     pct.localrhoc = NULL;
     pct.localrhonlcc = NULL;

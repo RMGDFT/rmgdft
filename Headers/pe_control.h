@@ -163,9 +163,6 @@ typedef struct
     double *localrhonlcc;
     double *localatomicrho;
 
-    double *newsintR_local;
-    double *newsintI_local;
-
     // Holds non-local and S operators acting on psi
     double *nv;
     double *ns;
