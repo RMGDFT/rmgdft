@@ -92,6 +92,72 @@ std::unordered_map<std::string, compressed_pp> USPP_FILES ({
 {"ZN"   , zn_pbe_v1_uspp_F_UPF_bz2},
 {"ZR"   , zr_pbe_v1_uspp_F_UPF_bz2}
 });
+
+std::unordered_map<std::string, unsigned int> USPP_FILES_LEN ({
+{"AG" ,  183881},
+{"AL" ,  76968},
+{"AS" ,  148775},
+{"AU" ,  225819},
+{"BA" ,  210009},
+{"BE" ,  133580},
+{"B" ,  85073},
+{"BR" ,  149334},
+{"CA" ,  152142},
+{"CD" ,  175795},
+{"CL" ,  152017},
+{"CO" ,  158103},
+{"C" ,  76929},
+{"CR" ,  152100},
+{"CS" ,  173991},
+{"CU" ,  159196},
+{"FE" ,  157983},
+{"F" ,  77802},
+{"GA" ,  157154},
+{"GE" ,  154290},
+{"HF" ,  250915},
+{"HG" ,  185080},
+{"H" ,  32685},
+{"IN" ,  174892},
+{"I" ,  171991},
+{"IR" ,  229953},
+{"K" ,  170681},
+{"LA" ,  257695},
+{"LI" ,  104960},
+{"MG" ,  191579},
+{"MN" ,  156358},
+{"MO" ,  167710},
+{"NA" ,  125524},
+{"NB" ,  167829},
+{"NI" ,  158757},
+{"N" ,  77694},
+{"O" ,  99143},
+{"OS" ,  278489},
+{"PB" ,  180288},
+{"PD" ,  181370},
+{"P" ,  152308},
+{"PT" ,  189439},
+{"RB" ,  162046},
+{"RE" ,  280773},
+{"RH" ,  220495},
+{"RU" ,  184186},
+{"SB" ,  174947},
+{"SC" ,  158789},
+{"SE" ,  148512},
+{"SI" ,  152821},
+{"SN" ,  175716},
+{"S" ,  153061},
+{"SR" ,  165425},
+{"TA" ,  212553},
+{"TC" ,  184433},
+{"TE" ,  136023},
+{"TI" ,  150704},
+{"TL" ,  180838},
+{"V" ,  152061},
+{"W" ,  251353},
+{"Y" ,  168179},
+{"ZN" ,  174215},
+{"ZR" ,  167538}
+});
 namespace io = boost::iostreams;
 
 std::string GetInternalPseudo(const char *symbol)
@@ -101,8 +167,9 @@ std::string GetInternalPseudo(const char *symbol)
     std::string lsym(symbol);
     boost::to_upper(lsym);
 
-    std::vector<unsigned char> pp_file_v = USPP_FILES[lsym];
-    char *pptr = (char *)&pp_file_v[0];
+    char *pptr = (char *)USPP_FILES[lsym];
+    unsigned int len = USPP_FILES_LEN[lsym];
+    std::vector<char> pp_file_v(pptr, pptr + len);
 
     io::filtering_ostream os;
     os.push(io::bzip2_decompressor());
