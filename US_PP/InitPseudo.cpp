@@ -77,7 +77,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         // Might need to adjust this depending on filtering changes. Also assumes that all beta have roughly the same range
-        sp->nlradius = ct.projector_expansion_factor * 4.5 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points);
+        sp->nlradius = ct.projector_expansion_factor * 4.5 * A->GetRange(&sp->beta[0][0], sp->r, sp->rab, sp->rg_points, 0.999999999);
         sp->nlradius = std::max(sp->nlradius, ct.min_nlradius);
         sp->nlradius = std::min(sp->nlradius, ct.max_nlradius);
 
@@ -287,7 +287,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            double nlccradius = 3.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
+            double nlccradius = 3.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points, 0.999999999);
 
             // Make adjustments so radii terminates on a grid point
             int nlccdim = Radius2grid (nlccradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
@@ -331,8 +331,15 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
         {
 
+            // First get the g-space representation of the radial part of the atomic wave
+            sp->atomic_wave_g[ip] = new double[RADIAL_GVECS];
+            A->RLogGridToGLogGrid(sp->atomic_wave[ip], sp->r, sp->rab, sp->atomic_wave_g[ip],
+                    sp->rg_points, sp->atomic_wave_l[ip], bessel_rg);
+
+
             // The range over which an atomic orbital is non-zero can vary widely so we
-            // compute a range here for use in initialization and the LDA+U stuff.
+            // compute a range here for when we are using them directly in real space
+            // (e.g. initialization and possibley LDA+U stuff)
             for(int idx = sp->rg_points-1; idx > 0.0;idx--)
             {
                 if((sp->r[idx] < 6.0) || (fabs(sp->atomic_wave[ip][idx]) > 1.0e-4))
@@ -341,6 +348,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                     break;
                 } 
             }
+
+            sp->aradius[ip]  = A->GetRange(sp->atomic_wave[ip], sp->r, sp->rab, sp->rg_points, 0.9999);
+            if(sp->aradius[ip] < 6.0) sp->aradius[ip] = 6.0;
 
             double rcut = 0.8 * sp->aradius[ip];
             for(int idx = 0; idx < sp->rg_points; idx++)
@@ -359,9 +369,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 fprintf (psp, "\n&&\n");
             }
 
-            sp->atomic_wave_g[ip] = new double[RADIAL_GVECS];
-            A->RLogGridToGLogGrid(sp->atomic_wave[ip], sp->r, sp->rab, sp->atomic_wave_g[ip],
-                    sp->rg_points, sp->atomic_wave_l[ip], bessel_rg);
 
         }
         if (pct.gridpe == 0 && write_flag) fclose (psp);

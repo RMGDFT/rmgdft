@@ -68,7 +68,7 @@ public:
                               int l_value, double gwidth, double rcut, double rwidth, double hmin);
     double *GetRgrid(void);
     double Interpolate(double *f, double r);
-    double GetRange(double *f, double *r, double *rab, int rg_points);
+    double GetRange(double *f, double *r, double *rab, int rg_points, double tolerance);
 
 
     static double r_filtered[MAX_LOGGRID];

@@ -84,7 +84,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                 if (sp->r[k] < sp->rinner[0])
                     work[k] = get_QnmL (0, 0, sp->r[k], sp);
         }
-        sp->qradius = 2.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points);
+        sp->qradius = 2.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points, 0.999999999);
         sp->qradius = std::min(sp->qradius, ct.max_qradius);
         sp->qradius = std::max(sp->qradius, ct.min_qradius);
 

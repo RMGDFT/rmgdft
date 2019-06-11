@@ -437,11 +437,16 @@ double Atomic::Interpolate(double *f, double r)
 
 // This function is used to determine the range of the Beta and Q functions in
 // real space. It first computes the integral of the square of the function
-// and then determines what r includes most of the function.
-double Atomic::GetRange(double *f, double *r, double *rab, int rg_points)
+// and then determines what r includes most of the function. Most is defined
+// by the value of tolerance which lies between 0.0 and 1.0
+double Atomic::GetRange(double *f, double *r, double *rab, int rg_points, double tolerance)
 {
 
     int i;
+
+    assert((tolerance < 1.0));
+    assert((tolerance > 0.0));
+
 
     /* Simpson's rule weights */
     //double w0 = 1.0 / 3.0;
@@ -459,7 +464,7 @@ double Atomic::GetRange(double *f, double *r, double *rab, int rg_points)
 
         tsum -= f2[i] * r[i] * r[i] * rab[i] * (( (i) % 2 == 1 ) ? w1 : w2);
         double ratio = tsum/fsum;
-        if(ratio <= 0.999999999) break;
+        if(ratio <= tolerance) break;
     }
 
     //if(pct.gridpe==0)printf("BREAK = %d  %20.12f  %20.12f  %20.12f  %20.12f\n",i, fsum, f[rg_points-1], r[i], f[i]);
