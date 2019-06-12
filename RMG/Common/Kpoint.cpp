@@ -71,8 +71,10 @@ template void Kpoint<double>::get_nlop(Projector<double> *projector);
 template void Kpoint<std::complex <double> >::get_nlop(Projector<std::complex <double>> *projector);
 template void Kpoint<double>::reset_beta_arrays(void);
 template void Kpoint<std::complex <double> >::reset_beta_arrays(void);
-template void Kpoint<double>::get_orbitals(Projector<double> *projector);
-template void Kpoint<std::complex <double> >::get_orbitals(Projector<std::complex <double>> *projector);
+template void Kpoint<double>::get_orbitals(double *orbitals);
+template void Kpoint<std::complex <double> >::get_orbitals(std::complex<double> *orbitals);
+template void Kpoint<double>::get_ion_orbitals(ION *iptr, double *orbitals);
+template void Kpoint<std::complex <double> >::get_ion_orbitals(ION *iptr, std::complex<double> *orbitals);
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : ControlMap(ControlMap)
 {
@@ -932,10 +934,158 @@ template <class KpointType> void Kpoint<KpointType>::write_occ(void)
 }
 
 
-// Sets up weight and sint arrays for the atomic orbitals
-template <class KpointType> void Kpoint<KpointType>::get_orbitals(Projector<KpointType> *projector)
+// Used to generate a set of delocalized atomic orbitals for a specific ion.
+template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr, KpointType *orbitals)
 {
-}
+
+    KpointType ZERO_t(0.0);
+    std::complex<double> I_t(0.0, 1.0);
+
+    int pbasis = this->pbasis;
+    int nlxdim = get_NX_GRID();
+    int nlydim = get_NY_GRID();
+    int nlzdim = get_NZ_GRID();
+
+    /* Pointer to the result of forward transform on the coarse grid */
+    std::complex<double> *fptr;
+    std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+    std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+
+    if ((beptr == NULL) || (gbptr == NULL))
+        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+
+    std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
+    KpointType *tem_array = new KpointType[pbasis];
+
+    /* Get species type */
+    SPECIES *sp = &ct.sp[iptr->species];
+
+    /*Calculate the phase factor */
+    FindPhaseKpoint (this->kvec, nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase);
+
+    /*Temporary pointer to the already calculated forward transform */
+    fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];
+
+
+    KpointType *orbit = orbitals;
+
+    /* Loop over atomic orbitals */
+    for (int ip = 0; ip < sp->num_orbitals; ip++)
+    {
+
+        /*Apply the phase factor */
+        for (int idx = 0; idx < pbasis; idx++) gbptr[idx] = fptr[idx] * std::conj(fftw_phase[idx]);
+
+        /*Do the backwards transform */
+        PfftInverse(gbptr, beptr, *coarse_pwaves);
+
+        std::complex<double> *orbit_C = (std::complex<double> *)orbit;
+        double *orbit_R = (double *)orbit;
+
+        if(ct.is_gamma)
+        {
+            for (int idx = 0; idx < pbasis; idx++) orbit_R[idx] = std::real(beptr[idx]);
+        }
+        else
+        {
+            for (int idx = 0; idx < pbasis; idx++) orbit_C[idx] = beptr[idx];
+        }
+
+        /*Advance the temp pointers */
+        fptr += pbasis;
+        orbit += pbasis;
+
+    } 
+
+
+    delete [] tem_array;
+    delete [] fftw_phase;
+    fftw_free (gbptr);
+    fftw_free (beptr);
+
+
+} // end get_ionic_orbitals
+
+
+// Used to generate a set of atomic orbitals that span the full grid. To use these orbitals
+// as projectors you need to create a projector object with a stride of ct.max_orbitals
+// and use the provided orbitals array. This routine should not be used to create a set
+// of atomic orbitals for LCAO starts since the stride padding is neither needed or desired there.
+template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *orbitals)
+{
+
+    std::complex<double> I_t(0.0, 1.0);
+
+    int pbasis = this->pbasis;
+    int nlxdim = get_NX_GRID();
+    int nlydim = get_NY_GRID();
+    int nlzdim = get_NZ_GRID();
+
+    /* Pointer to the result of forward transform on the coarse grid */
+    std::complex<double> *fptr;
+    std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+    std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+
+    if ((beptr == NULL) || (gbptr == NULL))
+        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+
+    std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
+
+    /* Loop over ions */
+    for (int ion = 0; ion < ct.num_ions; ion++)
+    {
+        KpointType *orbit = &orbitals[ion * ct.max_orbitals * pbasis];
+
+        /* Generate ion pointer */
+        ION *iptr = &ct.ions[ion];
+
+        /* Get species type */
+        SPECIES *sp = &ct.sp[iptr->species];
+
+
+        /*Calculate the phase factor */
+        FindPhaseKpoint (this->kvec, nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase);
+
+        /*Temporary pointer to the already calculated forward transform */
+        fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];
+
+        /* Loop over atomic orbitals */
+        for (int ip = 0; ip < sp->num_orbitals; ip++)
+        {
+
+            /*Apply the phase factor */
+            for (int idx = 0; idx < pbasis; idx++) gbptr[idx] = fptr[idx] * std::conj(fftw_phase[idx]);
+
+            /*Do the backwards transform */
+            PfftInverse(gbptr, beptr, *coarse_pwaves);
+
+            std::complex<double> *orbit_C = (std::complex<double> *)orbit;
+            double *orbit_R = (double *)orbit;
+
+            if(ct.is_gamma)
+            {
+                for (int idx = 0; idx < pbasis; idx++) orbit_R[idx] = std::real(beptr[idx]);
+            }
+            else
+            {
+                for (int idx = 0; idx < pbasis; idx++) orbit_C[idx] = beptr[idx];
+            }
+
+            /*Advance the temp pointers */
+            fptr += pbasis;
+            orbit += pbasis;
+
+        } 
+
+    }                           /* end for */
+
+    delete [] fftw_phase;
+    fftw_free (gbptr);
+    fftw_free (beptr);
+
+
+} // end get_orbitals
+
 
 // Sets up weight and sint arrays for the beta functions
 template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointType> *projector)

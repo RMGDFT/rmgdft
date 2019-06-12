@@ -303,6 +303,8 @@ void LoadUpfPseudo(SPECIES *sp)
             sp->awave_lig[iwf] = new double[MAX_LOCAL_LIG]();
             sp->aradius[iwf] = 12.0;
         }
+        ct.max_orbitals = std::max(ct.max_orbitals, sp->num_atomic_waves_m);
+        sp->num_orbitals = sp->num_atomic_waves_m;
 
     }
     else {
@@ -485,8 +487,7 @@ void LoadUpfPseudo(SPECIES *sp)
 
 
     // Set the maximum number of non-local projecters needed
-    if(max_nlprojectors > ct.max_nl) 
-        ct.max_nl = max_nlprojectors;
+    ct.max_nl = std::max(ct.max_nl, max_nlprojectors);
 
     // Optional stuff next
 

@@ -38,7 +38,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 {
     RmgTimer *RT1;
     RmgTimer RT0("3-ReinitIonicPotentials");
-    int pbasis = Kptr[0]->pbasis;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
 
@@ -70,7 +69,7 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     int projector_type = DELOCALIZED;
     if(ct.localize_projectors) projector_type = LOCALIZED;
     if(BetaProjector) delete BetaProjector;
-    BetaProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions);
+    BetaProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions, ct.max_nl);
     RT1= new RmgTimer("3-ReinitIonicPotentials: GetNlop");
 
     // Number of projectors required is computed when the Projector is created.

@@ -48,8 +48,8 @@
 
 
 
-template Projector<double>::Projector(int, int, int);
-template Projector<std::complex<double>>::Projector(int, int, int);
+template Projector<double>::Projector(int, int, int, int);
+template Projector<std::complex<double>>::Projector(int, int, int, int);
 template Projector<double>::~Projector(void);
 template Projector<std::complex<double>>::~Projector(void);
 
@@ -67,7 +67,7 @@ template int * Projector<std::complex<double>>::get_nonloc_ions_list(void);
 
 
 
-template <class KpointType> Projector<KpointType>::Projector(int projector_type, int num_pes, int num_ions) : 
+template <class KpointType> Projector<KpointType>::Projector(int projector_type, int num_pes, int num_ions, int stride) : 
                         list_owned_ions_per_pe(boost::extents[num_pes][num_ions]),
                         list_ions_per_owner(boost::extents[num_pes][num_ions])
 
@@ -85,6 +85,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     this->num_nonowned_ions_per_pe = new int[ct.num_ions]();
     this->nonloc_ions_list = new int[ct.num_ions]();
     this->idxptrlen = new int[ct.num_ions](); 
+    this->pstride = stride;
     for(int i=0;i < num_pes;i++)
     {
         for(int j=0;j < num_ions;j++)
@@ -264,7 +265,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     int *Aiy2 = new int[FNY_GRID]();
     int *Aiz2 = new int[FNZ_GRID]();
 
-    this->num_tot_proj = this->num_nonloc_ions * ct.max_nl;
+    this->num_tot_proj = this->num_nonloc_ions * this->pstride;
 
     int known_nonowner, nonwner_index, known_owner, owner_index, owned_ions_per_pe, nonowned_ions_per_pe; 
     int owned, owner;
@@ -433,7 +434,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         transa = transc;
         if(typeid(KpointType) == typeid(double)) transa = transt;
 
-        int length = factor * ct.num_ions * nstates * ct.max_nl;
+        int length = factor * ct.num_ions * nstates * this->pstride;
         RmgGemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
             weight, kptr->pbasis, &kptr->orbital_storage[offset*kptr->pbasis], kptr->pbasis,
             rzero, p, this->num_tot_proj);
@@ -455,12 +456,12 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
     size_own = 0;
     for (pe = 0; pe < this->num_owned_pe; pe++)
         size_own += this->num_owned_ions_per_pe[pe];
-    size_own *= nstates * ct.max_nl;
+    size_own *= nstates * this->pstride;
 
     size_nown = 0;
     for (pe = 0; pe < this->num_owners; pe++)
         size_nown += this->num_nonowned_ions_per_pe[pe];
-    size_nown *= nstates * ct.max_nl;
+    size_nown *= nstates * this->pstride;
 
 
     if (size_own) {
@@ -490,8 +491,8 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
 
 
     // Set sint array
-    //sint = &kptr->newsint_local[offset*this->num_nonloc_ions*ct.max_nl];
-    KpointType *sint = new KpointType[this->num_nonloc_ions * nstates * ct.max_nl]();
+    //sint = &kptr->newsint_local[offset*this->num_nonloc_ions*this->pstride];
+    KpointType *sint = new KpointType[this->num_nonloc_ions * nstates * this->pstride]();
 
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
@@ -561,8 +562,8 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
     int idx= 0 ;
     for(int st = 0;st < nstates;st++) {
         for(int ion = 0;ion < this->num_nonloc_ions;ion++) {
-            for(int ip = 0;ip < ct.max_nl;ip++) {
-                p[idx] = sint[ion*nstates*ct.max_nl + st*ct.max_nl + ip];
+            for(int ip = 0;ip < this->pstride;ip++) {
+                p[idx] = sint[ion*nstates*this->pstride + st*this->pstride + ip];
                 idx++;
             }
         }
@@ -598,10 +599,10 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
     {
         for(int istate = 0; istate < num_states; istate++)
         {
-            for(int ip = 0; ip < ct.max_nl; ip++)
+            for(int ip = 0; ip < this->pstride; ip++)
             {
-                int proj_index = nion * ct.max_nl + ip;
-                int idx1 = nion * num_states * ct.max_nl + istate * ct.max_nl + ip;
+                int proj_index = nion * this->pstride + ip;
+                int idx1 = nion * num_states * this->pstride + istate * this->pstride + ip;
                 //idx2 = proj_index * num_states + istate;
                 int idx2 = istate * this->num_tot_proj + proj_index;
                 sint_ptr[idx1] = nlarray[idx2];
@@ -635,7 +636,7 @@ void Projector<KpointType>::betaxpsi_receive (KpointType * recv_buff, int num_pe
         source = pe_list[pe];
         /*Tag is sender_rank * pct.grid_npes + receiver_rank */
         tag = 111;
-        size = num_ions_per_pe[pe] * num_states * ct.max_nl;
+        size = num_ions_per_pe[pe] * num_states * this->pstride;
         int transfer_size = size;
         if(!ct.is_gamma) transfer_size *= 2;
         MPI_Irecv (tpr, transfer_size, MPI_DOUBLE, source, tag, pct.grid_comm, &req_recv[pe]);
@@ -659,7 +660,7 @@ void Projector<KpointType>::betaxpsi_send (KpointType * send_buff, int num_pes,
         /*Tag is sender_rank * pct.grid_npes + receiver_rank */
         tag = 111;
         num_ions = num_ions_per_pe[pe];
-        size = num_ions * num_states * ct.max_nl;
+        size = num_ions * num_states * this->pstride;
         int transfer_size = size;
         if(!ct.is_gamma) transfer_size *= 2;
         MPI_Isend (tpr, transfer_size, MPI_DOUBLE, target, tag, pct.grid_comm, &req_send[pe]);
@@ -678,7 +679,7 @@ void Projector<KpointType>::betaxpsi_pack (KpointType * sint, KpointType * fill_
 
     tpr_buff = fill_buff;
 
-    size = num_states * ct.max_nl;
+    size = num_states * this->pstride;
 
     for (pe = 0; pe < num_pes; pe++)
     {
@@ -688,7 +689,7 @@ void Projector<KpointType>::betaxpsi_pack (KpointType * sint, KpointType * fill_
         for (ion = 0; ion < num_ions; ion++)
         {
             nlion = list_ions_per_pe[pe][ion];
-            sint_tpr = &sint[nlion * num_states * ct.max_nl];
+            sint_tpr = &sint[nlion * num_states * this->pstride];
 
             /*Pack data into send array */
             for(int idx=0;idx < size;idx++) tpr_buff[idx] = sint_tpr[idx];
@@ -707,7 +708,7 @@ void Projector<KpointType>::betaxpsi_sum_owned (KpointType * recv_buff, KpointTy
     KpointType *tpr1, *tpr2;
     int size, num_ions, ion_index, pe, ion;
 
-    size = num_states * ct.max_nl;
+    size = num_states * this->pstride;
     tpr1 = recv_buff;
 
     for (pe = 0; pe < num_pes; pe++)
@@ -716,7 +717,7 @@ void Projector<KpointType>::betaxpsi_sum_owned (KpointType * recv_buff, KpointTy
         for (ion = 0; ion < num_ions; ion++)
         {
             ion_index = list_ions_per_pe[pe][ion];
-            tpr2 = &sint[ion_index * num_states * ct.max_nl];
+            tpr2 = &sint[ion_index * num_states * this->pstride];
             for(int idx=0;idx < size;idx++) tpr2[idx] += tpr1[idx];
             tpr1 += size;
         }
@@ -735,7 +736,7 @@ void Projector<KpointType>::betaxpsi_write_non_owned (KpointType * sint, KpointT
     KpointType *tpr1, *tpr2;
     int size, num_ions, ion_index, pe, ion;
 
-    size = num_states * ct.max_nl;
+    size = num_states * this->pstride;
     tpr1 = recv_buff;
 
     for (pe = 0; pe < num_pes; pe++)
@@ -746,7 +747,7 @@ void Projector<KpointType>::betaxpsi_write_non_owned (KpointType * sint, KpointT
         {
             ion_index = list_ions_per_pe[pe][ion];
 
-            tpr2 = &sint[ion_index * num_states * ct.max_nl];
+            tpr2 = &sint[ion_index * num_states * this->pstride];
             for(int idx=0;idx < size;idx++) tpr2[idx] = tpr1[idx];
 
             tpr1 += size;

@@ -135,7 +135,6 @@ void InitDelocalizedOrbital (void)
                     }
                 }
             }
-
             for(int idx=0;idx < pbasis;idx++) betaptr[idx] =  weptr[idx]/vol;
 
         }

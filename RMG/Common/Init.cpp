@@ -114,8 +114,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Initialize buffers for gather scatter
     GatherScatterInit(P0_BASIS * pct.coalesce_factor);
 
-    ct.fftw_wisdom_setup = 0;
-
     ct.total_scf_steps = 0;
     ct.md_steps = 0;
 
@@ -326,27 +324,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     InitPseudo (Kptr[0]->ControlMap);
     delete(RT1);
 
-    /* Initialize orbitals */
-    if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE))
-    {
-        RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
-        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++){
-            int kpt1 = kpt + pct.kstart;
-            
-            LcaoGetPsi(Kptr[kpt]->Kstates, ct.kp[kpt1].kvec);
-        }
-        delete(RT2);
-    }
-
-    if (ct.runflag == RANDOM_START)
-    {
-        RmgTimer *RT2 = new RmgTimer("2-Init: RandomStart");
-        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-            Kptr[kpt]->random_init();
-        delete(RT2);
-    }
-
-
     /* Set initial ionic coordinates to the current ones. */
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -420,6 +397,28 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     RT1 = new RmgTimer("2-Init: ReinitIonicPotentials");
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
     delete(RT1);
+
+
+    /* Initialize orbitals */
+    if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE))
+    {
+        RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
+        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++){
+            int kpt1 = kpt + pct.kstart;
+            
+            LcaoGetPsi(Kptr[kpt]);
+        }
+        delete(RT2);
+    }
+
+    if (ct.runflag == RANDOM_START)
+    {
+        RmgTimer *RT2 = new RmgTimer("2-Init: RandomStart");
+        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+            Kptr[kpt]->random_init();
+        delete(RT2);
+    }
+
 
 
     /*Write out warnings, do it here before header otherwise they are hard to find*/

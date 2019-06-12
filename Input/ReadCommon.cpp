@@ -237,6 +237,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Type of run. Choices are \"Random Start\", \"Restart From File\", or \"LCAO Start\".\n", 
                      "start_mode must be one of  \"Random Start\", \"Restart From File\", or \"LCAO Start\". Terminating.\n");
 
+    If.RegisterInputKey("atomic_orbital_type", NULL, &ct.atomic_orbital_type, "delocalized",
+                     CHECK_AND_TERMINATE, OPTIONAL, atomic_orbital_type,
+                     "Atomic Orbital Type. Choices are localized and delocalized.\n", 
+                     "atomic_orbital_type not found.\n");
+
     If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "auto",
                      CHECK_AND_FIX, OPTIONAL, subdiag_driver,
                      "Driver type used for subspace diagonalization of the eigenvectors.\n", 

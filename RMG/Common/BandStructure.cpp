@@ -82,7 +82,8 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         exit(0);
     }
 
-    LcaoGetPsi(&Kptr[0]->Kstates[ct.num_states], Kptr[0]->kvec);
+// Broken by Lcao changes
+//    LcaoGetPsi(&Kptr[0]->Kstates[ct.num_states]);
 
 
     // Loop over k-points

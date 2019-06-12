@@ -55,7 +55,7 @@ template <typename KpointType> class Projector {
 
 public:
     typedef boost::multi_array<int, 2> int_2d_array;
-    Projector(int projector_type, int num_pes, int num_ions);
+    Projector(int projector_type, int num_pes, int num_ions, int stride);
     ~Projector(void);
     void project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int n, KpointType *w);
     int get_num_nonloc_ions(void);
@@ -78,6 +78,9 @@ private:
     int num_nonloc_ions;
     int *nonloc_ions_list;
     int num_nonloc_pes;
+
+    // For beta functions this is ct.max_nl while for atomic orbitals it is ct.max_orbitals
+    int pstride;
 
     /*For ions owned by current PE */
     /* Number of cores to cummunicate with about owned ions*/

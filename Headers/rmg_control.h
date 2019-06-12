@@ -544,6 +544,12 @@ typedef struct
     /** The maximum number of projectors for any species */
     int max_nl;
     
+    /** The maximum number of atomic orbitals for any species */
+    int max_orbitals;
+
+    /** Type of atomic orbitals used for LCAO inits and projections */
+    int atomic_orbital_type;
+
     /** The maximum l quantum number for any species */
     int max_l;
 
@@ -555,11 +561,6 @@ typedef struct
 
     /* Whether or not Bweight is required (not needed for Central FD operator with NCPP */
     bool need_Bweight;
-
-    /*This keeps track whether ct.fftw_wisdom_setup was setup or not so that
-     * we know whether to release wisdom memory at the end or not*/
-    int fftw_wisdom_setup;
-
 
     /*Interpolation flags */
     int interp_flag;

@@ -36,6 +36,7 @@
 #include "State.h"
 #include "InputKey.h"
 #include "Projector.h"
+#include "RmgParallelFft.h"
 #include <mpi.h>
 
 template <typename KpointType> class Kpoint {
@@ -54,7 +55,8 @@ public:
     void init_states(void);
     void write_occ(void);
     void get_nlop(Projector<KpointType> *projector);
-    void get_orbitals(Projector<KpointType> *projector);
+    void get_orbitals(KpointType *orbitals);
+    void get_ion_orbitals(ION *iptr, KpointType *orbitals);
     void reset_beta_arrays(void);
 
 
