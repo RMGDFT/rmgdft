@@ -54,6 +54,7 @@ public:
     void init_states(void);
     void write_occ(void);
     void get_nlop(Projector<KpointType> *projector);
+    void get_orbitals(Projector<KpointType> *projector);
     void reset_beta_arrays(void);
 
 

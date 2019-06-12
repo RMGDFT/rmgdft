@@ -40,7 +40,6 @@ template <typename KpointType>
 void GetWeight (Kpoint<KpointType> **Kptr)
 {
 
-    int max_size;
     KpointType *Bweight, *Nlweight;
     KpointType ZERO_t(0.0);
     std::complex<double> I_t(0.0, 1.0);
@@ -48,35 +47,24 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
     /*Pointer to the result of forward transform on the coarse grid */
     std::complex<double> *fptr;
-    std::complex<double> *beptr, *gbptr;
-
-    /*maximum of nldim^3 for any species */
-    max_size = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 
 
     /*Get memory to store the phase factor applied to the forward Fourier transform 
      * and to store the backwards transform*/
-    beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * 2 * max_size);
+    std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+    std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
 
-    if (beptr == NULL)
+    if ((beptr == NULL) || (gbptr == NULL))
         rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
-    gbptr = beptr + max_size;
-
-    // Release memory allocated for fftw_phase_sin and fftw_phase_cos prior to 
-    // reallocation (if needed) in find_phase
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
+    KpointType *tem_array = new KpointType[pbasis];
+    KpointType *Btem_array = new KpointType[pbasis];
 
     for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
-        KpointType *tem_array = new KpointType[pbasis];
-        KpointType *Btem_array = new KpointType[pbasis];
-
         int kpt1 = kpt + pct.kstart;
-        double kvec[3];
-        kvec[0] = ct.kp[kpt1].kvec[0];
-        kvec[1] = ct.kp[kpt1].kvec[1];
-        kvec[2] = ct.kp[kpt1].kvec[2];
+        double *kvec = ct.kp[kpt1].kvec;
 
         /* Loop over ions */
         for (int ion = 0; ion < ct.num_ions; ion++)
@@ -131,17 +119,13 @@ void GetWeight (Kpoint<KpointType> **Kptr)
                 std::complex<double> *Btem_array_C = (std::complex<double> *)Btem_array;
                 double *Btem_array_R = (double *)Btem_array;
 
-
-                for(int ix = 0; ix <pbasis; ix++) {
-                    tem_array[ix] = std::real(nbeptr[ix]);
+                if(ct.is_gamma)
+                {
+                    for(int ix = 0; ix <pbasis; ix++) tem_array[ix] = std::real(nbeptr[ix]);
                 }
-
-
-                // Apply phase factor for non-gamma
-// FIX: have to fix this up for non-gamma
-                if(!ct.is_gamma) {
-                    for (int idx = 0; idx < pbasis; idx++)
-                        tem_array_C[idx] = nbeptr[idx];
+                else
+                {
+                    for (int idx = 0; idx < pbasis; idx++) tem_array_C[idx] = nbeptr[idx];
                 }
 
                 // Apply B operator then map weights back
@@ -174,13 +158,13 @@ for(int idx = 0;idx < pbasis;idx++)Btem_array[idx] = tem_array[idx];
 
         }                           /* end for */
 
-        delete [] Btem_array;
-        delete [] tem_array;
-
 
     } // end for(kpt)
 
+    delete [] Btem_array;
+    delete [] tem_array;
     delete [] fftw_phase;
+    fftw_free (gbptr);
     fftw_free (beptr);
 
 

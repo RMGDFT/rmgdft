@@ -71,6 +71,8 @@ template void Kpoint<double>::get_nlop(Projector<double> *projector);
 template void Kpoint<std::complex <double> >::get_nlop(Projector<std::complex <double>> *projector);
 template void Kpoint<double>::reset_beta_arrays(void);
 template void Kpoint<std::complex <double> >::reset_beta_arrays(void);
+template void Kpoint<double>::get_orbitals(Projector<double> *projector);
+template void Kpoint<std::complex <double> >::get_orbitals(Projector<std::complex <double>> *projector);
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : ControlMap(ControlMap)
 {
@@ -930,7 +932,12 @@ template <class KpointType> void Kpoint<KpointType>::write_occ(void)
 }
 
 
-// Sets up Projector objects and creates weight and sint arrays for the beta functions
+// Sets up weight and sint arrays for the atomic orbitals
+template <class KpointType> void Kpoint<KpointType>::get_orbitals(Projector<KpointType> *projector)
+{
+}
+
+// Sets up weight and sint arrays for the beta functions
 template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointType> *projector)
 {
 
