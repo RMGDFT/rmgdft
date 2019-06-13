@@ -239,6 +239,9 @@ typedef struct
     /** Maximum number of states, used for davidson */
     int max_states;
 
+    /** Davidson multiplicative factor */
+    int davidx;
+
     /** Number of states to allocate memory for */
     int alloc_states;
     int state_block_size;

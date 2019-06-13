@@ -409,6 +409,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Ratio of the fine grid to the wavefunction grid.", 
                      "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset.\n");
 
+    If.RegisterInputKey("davidson_multiplier", &lc.davidx, 2, 4, 4, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "Multiplicative factor for davidson diagonalization. Nstates for davidson = davidson_multiplier*nstates.", 
+                     "davidson_multiplier must be in the range (2 <= davidson_multiplier <= 4).\n");
+
     If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 0.0, 
                       CHECK_AND_FIX, OPTIONAL, 
                      "Time step used for constant potential acceleration.\n",
