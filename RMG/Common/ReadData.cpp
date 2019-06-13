@@ -486,7 +486,6 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     rmg_printf("\nspin flag =%d\n", ct.spin_flag);
     
     int kstart = pct.kstart;
-    if (ct.forceflag == BAND_STRUCTURE) kstart = 0;
     sprintf (newname, "%s_spin%d_kpt%d_gridpe%d_1", name, pct.spinpe, kstart, pct.gridpe);
 
     int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
@@ -575,6 +574,9 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
 
     /* read wavefunctions */
     {
+        double *psi_R = new double[grid_size];
+        double *psi_I = new double[grid_size];
+
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
         double *tbuf = new double[wvfn_size];
         KpointType *tptr = (KpointType *)tbuf;
@@ -585,7 +587,17 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
             {
                 if(ct.compressed_infile)
                 {
-                    read_compressed_buffer(fhand, tbuf, pgrid[0], pgrid[1], pgrid[2]);
+                    if(ct.is_gamma)
+                    {
+                        read_compressed_buffer(fhand, (double *)tbuf, pgrid[0], pgrid[1], pgrid[2]);
+                    }
+                    else
+                    {
+                        std::complex<double> *cptr = (std::complex<double> *)tbuf;
+                        read_compressed_buffer(fhand, (double *)psi_R, pgrid[0], pgrid[1], pgrid[2]);
+                        read_compressed_buffer(fhand, (double *)psi_I, pgrid[0], pgrid[1], pgrid[2]);
+                        for(int idx=0;idx < grid_size;idx++) cptr[idx] = std::complex<double>(psi_R[idx], psi_I[idx]);
+                    }
                 }
                 else
                 {
@@ -597,6 +609,8 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
         }
 
         delete [] tbuf;
+        delete [] psi_I;
+        delete [] psi_R;
     }
 
     close (fhand);
