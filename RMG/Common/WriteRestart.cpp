@@ -163,7 +163,12 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     std::string new_file(newname);
     std::string old_file(newname);
     old_file = old_file + "_1";
-    boost::filesystem::rename(new_file, old_file);
+    try {
+        boost::filesystem::rename(new_file, old_file);
+    }
+    catch (std::exception &e) { 
+        // This could be an error but it could just be the first step ...
+    }
 
     amode = S_IREAD | S_IWRITE;
     fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
