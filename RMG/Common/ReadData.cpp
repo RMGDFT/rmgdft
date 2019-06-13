@@ -49,6 +49,9 @@ static void read_int (int fhand, int *ip, int count);
 template void ReadData(char *, double *, double *, double *, Kpoint<double> **);
 template void ReadData(char *, double *, double *, double *, Kpoint<std::complex<double> > **);
 
+template void ExtrapolateOrbitals(char *, Kpoint<double> **);
+template void ExtrapolateOrbitals(char *, Kpoint<std::complex<double> > **);
+
 void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz);
 
 /* Reads the hartree potential, the wavefunctions, the */
@@ -444,5 +447,151 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
     delete [] in;
 
 }
-/******/
-/******/
+
+
+template <typename KpointType>
+void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
+{
+    char newname[MAX_PATH + 200];
+    int grid[3];
+    int fine[3];
+    int pgrid[3];
+    int fpgrid[3];
+    int pe[3];
+    int grid_size;
+    int fgrid_size;
+    int gamma;
+    int nk, ik;
+    int ns, is;
+
+    pgrid[0] = Kptr[0]->G->get_PX0_GRID(1);
+    pgrid[1] = Kptr[0]->G->get_PY0_GRID(1);
+    pgrid[2] = Kptr[0]->G->get_PZ0_GRID(1);
+    fpgrid[0] = Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO);
+    fpgrid[1] = Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO);
+    fpgrid[2] = Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO);
+
+    /* wait until everybody gets here */
+    MPI_Barrier(pct.img_comm);	
+
+    /* Get the previous wavefunction file name */
+    rmg_printf("\nspin flag =%d\n", ct.spin_flag);
+    
+    int kstart = pct.kstart;
+    if (ct.forceflag == BAND_STRUCTURE) kstart = 0;
+    sprintf (newname, "%s_spin%d_kpt%d_gridpe%d_1", name, pct.spinpe, kstart, pct.gridpe);
+
+    int fhand = open(newname, O_RDWR, S_IREAD | S_IWRITE);
+    if (fhand < 0) {
+        rmg_printf("Can't open data file %s for extrapolation.", newname);
+        return;
+    }
+
+
+    double *dumarray = new double[fpgrid[0] * fpgrid[1] * fpgrid[2]];
+
+    /* read grid info */
+    read_int (fhand, grid, 3);
+    if (grid[0] != Kptr[0]->G->get_NX_GRID(1))
+        rmg_error_handler (__FILE__, __LINE__,"Wrong NX_GRID");
+    if (grid[1] != Kptr[0]->G->get_NY_GRID(1))
+        rmg_error_handler (__FILE__, __LINE__,"Wrong NY_GRID");
+    if (grid[2] != Kptr[0]->G->get_NZ_GRID(1))
+        rmg_error_handler (__FILE__, __LINE__,"Wrong NZ_GRID");
+
+    /* read grid processor topology */
+    read_int (fhand, pe, 3);
+    if (pe[0] != Kptr[0]->G->get_PE_X())
+        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_X");
+    if (pe[1] != Kptr[0]->G->get_PE_Y())
+        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Y");
+    if (pe[2] != Kptr[0]->G->get_PE_Z())
+        rmg_error_handler (__FILE__, __LINE__,"Wrong PE_Z");
+
+    grid_size = Kptr[0]->pbasis;
+
+    /* read fine grid info */
+    read_int (fhand, fine, 3);
+    if (fine[0] != Kptr[0]->G->get_PX0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PX0_GRID(1))
+        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+    if (fine[1] != Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PY0_GRID(1))
+        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+    if (fine[2] != Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO) / Kptr[0]->G->get_PZ0_GRID(1))
+        rmg_error_handler (__FILE__, __LINE__,"Wrong fine grid info");
+    fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
+
+    /* print out  */
+    rmg_printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
+    rmg_printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
+    rmg_printf ("read_data: grid_size  = %d\n", grid_size);
+    rmg_printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
+    rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
+
+
+    /* read wavefunction info */
+    read_int (fhand, &gamma, 1);
+    //if (gamma != ct.is_gamma)
+    //    rmg_error_handler (__FILE__, __LINE__,"Wrong gamma data");
+
+
+    read_int (fhand, &nk, 1);
+    if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
+        rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
+
+    rmg_printf ("read_data: gamma = %d\n", gamma);
+    rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
+
+    /* read number of states */  
+    read_int (fhand, &ns, 1);
+    if (ns > ct.num_states) {
+        rmg_printf ("Wrong number of states: read %d from wave file, but ct.num_states is %d",ns, ct.num_states);
+        rmg_error_handler (__FILE__, __LINE__,"Terminating.");
+    }
+
+    rmg_printf ("read_data: ns = %d\n", ns);
+
+
+    /* read the hartree potential, electronic density and xc potential */
+    if(ct.compressed_infile)
+    {
+        read_compressed_buffer(fhand, dumarray, fpgrid[0], fpgrid[1], fpgrid[2]);
+        read_compressed_buffer(fhand, dumarray, fpgrid[0], fpgrid[1], fpgrid[2]);
+        read_compressed_buffer(fhand, dumarray, fpgrid[0], fpgrid[1], fpgrid[2]);
+    }
+    else
+    {
+        read_double (fhand, dumarray, fgrid_size);
+        read_double (fhand, dumarray, fgrid_size);
+        read_double (fhand, dumarray, fgrid_size);
+    }
+
+    /* read wavefunctions */
+    {
+        int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
+        double *tbuf = new double[wvfn_size];
+        KpointType *tptr = (KpointType *)tbuf;
+
+        for (ik = 0; ik < ct.num_kpts_pe; ik++)
+        {
+            for (is = 0; is < ns; is++)
+            {
+                if(ct.compressed_infile)
+                {
+                    read_compressed_buffer(fhand, tbuf, pgrid[0], pgrid[1], pgrid[2]);
+                }
+                else
+                {
+                    read_double (fhand, (double *)tbuf, wvfn_size);
+                }
+                for(int idx = 0;idx < grid_size;idx++) Kptr[ik]->Kstates[is].psi[idx] = 2.0*Kptr[ik]->Kstates[is].psi[idx] - tptr[idx];
+            }
+
+        }
+
+        delete [] tbuf;
+    }
+
+    close (fhand);
+    delete [] dumarray;
+
+} // end ExtrapolateOrbitals

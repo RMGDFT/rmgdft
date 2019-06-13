@@ -126,6 +126,9 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
         delete RT0;
 
+        // Reset mixing
+        MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
+
         // Get atomic rho for new configuration and add back to rho
         LcaoGetAtomicRho(arho);
         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];

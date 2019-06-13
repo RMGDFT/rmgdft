@@ -65,8 +65,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
     /*Linear Mixing*/
-    //if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || (ct.rms > 5.0e-3) || (ct.scf_steps < 4))
-    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || (ct.scf_steps < 4))
+    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || ((ct.scf_steps < 4) && (ct.md_steps == 0)))
     {
         if(reset) return;
 	RmgTimer RT1("Mix rho: Linear");

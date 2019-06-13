@@ -69,6 +69,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     int ic;
     ION *iptr;
     std::vector<double> RMSdV;
+    static double *rhodiff;
 
 
     /*Get some memory */
@@ -185,7 +186,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
 
     /* begin the md loop */
-    for (ct.md_steps = 0; ct.md_steps < ct.max_md_steps; ct.md_steps++)
+    for (ct.md_steps = 1; ct.md_steps < ct.max_md_steps; ct.md_steps++)
     {
 
         /* enforce periodic boundary conditions on the ions */
@@ -221,6 +222,20 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
 
+        if(rhodiff == NULL)
+        {
+            rhodiff = new double[FP0_BASIS];
+            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = rho[idx];
+        }
+        else
+        {
+            double *trho = new double[FP0_BASIS];
+            for(int idx = 0;idx < FP0_BASIS;idx++) trho[idx] = rho[idx];
+            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
+            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = trho[idx];
+            delete [] trho;
+        }
+
 
         /* Update the positions a full timestep */
         //posup ();
@@ -242,6 +257,11 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         /* converge to the ground state at the final positions */
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
 
+        if (pct.gridpe == 0) rmg_printf ("\n Writing data to output file ...\n");
+            WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+
+        // Extrapolate orbitals after first step
+        ExtrapolateOrbitals(ct.outfile, Kptr);
 
         /* zero out the non-moving atoms */
         for (int ion = 0; ion < ct.num_ions; ion++)
@@ -290,16 +310,6 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         // get center of mass velocities
         double vx, vy, vz;
         center_of_mass_velocity(vx, vy, vz);
-
-        /*write data to output file */
-        if (ct.checkpoint) 
-        {
-            if ( ct.md_steps % ct.checkpoint == 0 )
-            {
-                WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
-                if (pct.gridpe == 0) rmg_printf ("\n Writing data to output file ...\n");
-            }
-        }
 
 
         if (pct.gridpe == 0)
