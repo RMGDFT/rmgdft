@@ -31,6 +31,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <libgen.h>
+#include <complex>
+#include <omp.h>
 #include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"
@@ -45,8 +47,8 @@
 #include "Kpoint.h"
 #include "RmgException.h"
 #include "blas.h"
-#include <complex>
-#include <omp.h>
+#include "ErrorFuncs.h"
+#include "GpuAlloc.h"
 #include "../Headers/prototypes.h"
 
 extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
@@ -1126,7 +1128,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointTy
     }
     else
     {
-        Kptr[kpt]->nl_weight = (KpointType *)GpuMallocManaged(this->nl_weight_size * sizeof(KpointType));
+        this->nl_weight = (KpointType *)GpuMallocManaged(this->nl_weight_size * sizeof(KpointType));
         int device = -1;
         cudaGetDevice(&device);
         cudaMemAdvise ( this->nl_weight, this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
