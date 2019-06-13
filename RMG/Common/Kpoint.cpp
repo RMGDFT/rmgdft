@@ -1105,11 +1105,11 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointTy
         if(ct.nvme_Bweight_fd != -1) close(ct.nvme_Bweight_fd);
 
         newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(this->kidx) + "_" + std::to_string(pct.gridpe);
+                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
         ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         
         newpath = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(this->kidx) + "_" + std::to_string(pct.gridpe);
+                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
         ct.nvme_Bweight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
     }
 
