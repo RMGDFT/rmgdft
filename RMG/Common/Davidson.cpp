@@ -65,17 +65,16 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     OrbitalType alpha(1.0);
     OrbitalType beta(0.0);
     OrbitalType *newsint;
-    if(ct.scf_steps > 0) {
-        occupied_tol = std::min(occupied_tol, 0.1*ct.scf_accuracy / std::max(1.0, (double)ct.nel));
-        occupied_tol = std::min(occupied_tol, 1.0e-4);
-    }
 
-    int num_nonloc_ions = kptr->BetaProjector->get_num_nonloc_ions();
-
+    double acheck = ct.scf_accuracy;
+    if(ct.scf_steps == 0) acheck = 0.01;
+    occupied_tol = 0.1*acheck / std::max(1.0, (double)ct.nel);
+    occupied_tol = std::min(occupied_tol, 1.0e-4);
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 1.0e-13);
-
     double unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-5 );
+
+    int num_nonloc_ions = kptr->BetaProjector->get_num_nonloc_ions();
 
     //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
