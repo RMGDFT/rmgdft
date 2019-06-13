@@ -144,6 +144,8 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         /* save data to file for future restart */
 	WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
+        // Extrapolate orbitals after first step
+        ExtrapolateOrbitals(ct.outfile, Kptr);
 
         /* check force convergence */
         CONV_FORCE = TRUE;

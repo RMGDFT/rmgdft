@@ -151,8 +151,11 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
 	/* done with writing */
 	fclose (fhandle);
+        fflush(NULL);
 
     } /*end if (pct.imgpe == 0) */
+
+    fflush(NULL);
 
     /* All processors should wait until 0 is done to make sure that directories are created*/
     MPI_Barrier(pct.img_comm);
@@ -179,6 +182,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
     WriteData (fhand, vh, rho, rho_oppo, vxc, Kptr);
     close (fhand);
+    fflush(NULL);
 
     write_time = my_crtc () - time0;
 
