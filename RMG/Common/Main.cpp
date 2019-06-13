@@ -337,6 +337,11 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             break;
 
         case MD_FASTRLX:           /* Fast relax */
+            if(ct.runflag != RESTART) 
+            {
+                Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+                WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+            }
             Relax (ct.max_md_steps, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
             break;
 
@@ -352,7 +357,11 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             ct.fpt[1] = 1;
             ct.fpt[2] = 2;
             ct.fpt[3] = 3;
-            if(ct.runflag != RESTART) Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            if(ct.runflag != RESTART) 
+            {
+                Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+                WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+            }
             MolecularDynamics (Kptr, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore);
             break;
 
