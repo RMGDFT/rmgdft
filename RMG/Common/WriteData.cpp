@@ -132,6 +132,9 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
 
     /* write wavefunctions */
     {
+        double *psi_R = new double[grid_size];
+        double *psi_I = new double[grid_size];
+
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
 
         for (ik = 0; ik < ct.num_kpts_pe; ik++)
@@ -140,7 +143,17 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
             {
                 if(ct.compressed_outfile)
                 {
-                    write_compressed_buffer(fhand, (double *)Kptr[ik]->Kstates[is].psi, pgrid[0], pgrid[1], pgrid[2]);
+                    if(gamma)
+                    {
+                        write_compressed_buffer(fhand, (double *)Kptr[ik]->Kstates[is].psi, pgrid[0], pgrid[1], pgrid[2]);
+                    }
+                    else
+                    {
+                        for(int idx=0;idx < grid_size;idx++) psi_R[idx] = std::real(Kptr[ik]->Kstates[is].psi[idx]);
+                        for(int idx=0;idx < grid_size;idx++) psi_I[idx] = std::imag(Kptr[ik]->Kstates[is].psi[idx]);
+                        write_compressed_buffer(fhand, psi_R, pgrid[0], pgrid[1], pgrid[2]);
+                        write_compressed_buffer(fhand, psi_I, pgrid[0], pgrid[1], pgrid[2]);
+                    }
                 }
                 else
                 {
@@ -148,6 +161,9 @@ void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double 
                 }
             }
         }
+
+        delete [] psi_I;
+        delete [] psi_R;
     }
 
 

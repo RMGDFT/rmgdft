@@ -180,6 +180,9 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
     /* read wavefunctions */
     {
+        double *psi_R = new double[grid_size];
+        double *psi_I = new double[grid_size];
+
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
         double *tbuf = new double[wvfn_size];
         std::complex<double> *tptr;
@@ -192,7 +195,17 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                 if(gamma == ct.is_gamma) {
                     if(ct.compressed_infile)
                     {
-                        read_compressed_buffer(fhand, (double *)Kptr[ik]->Kstates[is].psi, pgrid[0], pgrid[1], pgrid[2]);
+                        if(ct.is_gamma)
+                        {
+                            read_compressed_buffer(fhand, (double *)Kptr[ik]->Kstates[is].psi, pgrid[0], pgrid[1], pgrid[2]);
+                        }
+                        else
+                        {
+                            std::complex<double> *cptr = (std::complex<double> *)Kptr[ik]->Kstates[is].psi;
+                            read_compressed_buffer(fhand, (double *)psi_R, pgrid[0], pgrid[1], pgrid[2]);
+                            read_compressed_buffer(fhand, (double *)psi_I, pgrid[0], pgrid[1], pgrid[2]);
+                            for(int idx=0;idx < grid_size;idx++) cptr[idx] = std::complex<double>(psi_R[idx], psi_I[idx]);
+                        }
                     }
                     else
                     {
@@ -225,6 +238,8 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
         rmg_printf ("read_data: read 'wfns'\n");
 
         delete [] tbuf;
+        delete [] psi_I;
+        delete [] psi_R;
     }
 
     // If we have added unoccupied orbitals initialize them to a random state
@@ -349,14 +364,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                 }
 
 
-
-            /* 
-               since we are using floats on the data file the precision
-               of the occupations is worse than 1e-10 required by the fill() routine
-               therefore we need to 'renormalize' the occupations so
-               that they add up to an integer
-               it's a hack I know, but whatever... not a biggie
-               */
+            // 'renormalize' the occupations
 
             {
                 double iocc_total = (double) (int) (occ_total + 0.5);
