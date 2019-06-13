@@ -957,7 +957,6 @@ template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr,
         rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
-    KpointType *tem_array = new KpointType[pbasis];
 
     /* Get species type */
     SPECIES *sp = &ct.sp[iptr->species];
@@ -1000,7 +999,6 @@ template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr,
     } 
 
 
-    delete [] tem_array;
     delete [] fftw_phase;
     fftw_free (gbptr);
     fftw_free (beptr);
