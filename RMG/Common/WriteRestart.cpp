@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <boost/filesystem.hpp>
 #if !(defined(_WIN32) || defined(_WIN64))
     #include <unistd.h>
 #else
@@ -157,6 +158,12 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     MPI_Barrier(pct.img_comm);
 
     sprintf (newname, "%s_spin%d_kpt%d_gridpe%d", name, pct.spinpe, pct.kstart, pct.gridpe);
+
+    // Save previous wavefunction file
+    std::string new_file(newname);
+    std::string old_file(newname);
+    old_file = old_file + "_1";
+    boost::filesystem::rename(new_file, old_file);
 
     amode = S_IREAD | S_IWRITE;
     fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
