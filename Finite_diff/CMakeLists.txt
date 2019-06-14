@@ -5,7 +5,7 @@ ApplyLaplacian.cpp
 ApplyAOperator.cpp
 ApplyBOperator.cpp
 AppCir.cpp
-SumGradientKvec.cpp
+#SumGradientKvec.cpp
 FiniteDiff_Cbindings.cpp
 app_grad.c
 app6_del2.c
