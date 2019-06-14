@@ -117,14 +117,14 @@ static std::unordered_map<std::string, int> interpolation_type = {
         {"FFT", FFT_INTERPOLATION}};
 
 static std::unordered_map<std::string, int> start_mode = {
-        {"Random Start", 0},
-        {"Restart From File", 1},
-        {"LCAO Start", 2},
-        {"FIREBALL Start", 3},
-        {"Gaussian Start", 4},
-        {"Start TDDFT", 5},
-        {"Restart TDDFT", 6},
-        {"Modified LCAO Start", 7}
+        {"Random Start", RANDOM_START},
+        {"Restart From File", RESTART},
+        {"LCAO Start", LCAO_START},
+        {"FIREBALL Start", INIT_FIREBALL},
+        {"Gaussian Start", INIT_GAUSSIAN},
+        {"Start TDDFT", Start_TDDFT},
+        {"Restart TDDFT", Restart_TDDFT},
+        {"Modified LCAO Start", MODIFIED_LCAO_START}
         
         };
 

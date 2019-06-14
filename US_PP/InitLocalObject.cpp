@@ -347,7 +347,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         }
     }
 
-    if(ct.runflag == 5 || ct.runflag == 6 || ct.forceflag == TDDFT) return;
+    if(ct.runflag == RESTART || ct.runflag == Restart_TDDFT || ct.forceflag == TDDFT) return;
 
     if(object_type == ATOMIC_LOCAL_PP) init_efield (sumobject);
 
