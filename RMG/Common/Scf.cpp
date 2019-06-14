@@ -191,16 +191,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     }
 
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
-	if (!firststep && t[1] < ct.thr_rms) 
-	{
-	    CONVERGED = true;
-	    
-	    rmg_printf("\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", t[1], ct.thr_rms);  
-	    
-	    if (pct.imgpe == 0)
-		fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)", t[1], ct.thr_rms);  
-	}
-
+	if (!firststep && t[1] < ct.thr_rms) CONVERGED = true;
     }
 
     // Transfer vtot from the fine grid to the wavefunction grid
@@ -312,17 +303,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
-
-	if (!firststep && fabs(ct.scf_accuracy) < ct.thr_energy) 
-	{
-	    CONVERGED = true;
-	    
-	    rmg_printf("\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)\n", fabs(ct.scf_accuracy), ct.thr_energy);  
-	    
-	    if (pct.imgpe == 0)
-		fprintf(stdout, "\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)", fabs(ct.scf_accuracy), ct.thr_energy);  
-	}
-
+	if (!firststep && fabs(ct.scf_accuracy) < ct.thr_energy) CONVERGED = true;
     }
 
     if(CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1))) {

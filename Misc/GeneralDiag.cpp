@@ -221,6 +221,16 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
     double *global_matrix1 = new double[ct.max_states * ct.max_states];
 #endif
 
+   // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
+    if(!MainSp) {
+        // Need some code here to decide how to set the number of scalapack groups but for now use just 1
+        int scalapack_groups = 1;
+        int last = !ct.use_folded_spectrum;
+        MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, ct.max_states,
+                     ct.scalapack_block_factor, last, pct.grid_comm);
+
+    }
+
     bool participates = MainSp->Participates();
 
     if (participates) {

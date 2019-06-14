@@ -67,6 +67,7 @@ template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, Da
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid);
 template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid);
+template <typename DataType> void SumGradientKvec (DataType *a, DataType *b, double *kvec, const char *grid);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int dimx, int dimy, int dimz, int order);
 template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid);
@@ -89,7 +90,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,
-             double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
+             double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr, bool compute_forces);
 template <typename OrbitalType> bool Scf (double * vxc, double *vxc_correct, double * vh, double *vh_in, double *vh_ext,
           double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
           int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV);

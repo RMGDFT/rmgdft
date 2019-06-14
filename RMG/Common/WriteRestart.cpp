@@ -74,6 +74,18 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     if (pct.imgpe == 0)
     {
 
+        // Save previous restart file
+        std::string new_file(name);
+        std::string old_file(name);
+        new_file = new_file + ".restart";
+        old_file = old_file + ".restart_1";
+        try {
+            boost::filesystem::rename(new_file, old_file);
+        }
+        catch (std::exception &e) {
+            // This could be an error but it could just be the first step ...
+        }
+
 	/*This opens restart file, creates a directory if needed */
 	fhandle = open_restart_file (name);
 	rmg_printf ("WriteRestart: Restart file %s opened...\n", name);

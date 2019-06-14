@@ -61,7 +61,6 @@ template <typename KpointType>
 void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,
              double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 {
-
     double rms[3], trms;
     double nosekin, nosepot;
     double iontemp;
@@ -70,6 +69,13 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     ION *iptr;
     std::vector<double> RMSdV;
     static double *rhodiff;
+
+    // Prime the pump for extrapolations if this is an initial run.
+    if(ct.runflag != RESTART)
+    {
+        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, false);
+        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+    }
 
 
     /*Get some memory */
@@ -255,13 +261,8 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
 
         /* converge to the ground state at the final positions */
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
 
-        if (pct.gridpe == 0) rmg_printf ("\n Writing data to output file ...\n");
-            WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
-
-        // Extrapolate orbitals after first step
-        ExtrapolateOrbitals(ct.outfile, Kptr);
 
         /* zero out the non-moving atoms */
         for (int ion = 0; ion < ct.num_ions; ion++)
@@ -285,10 +286,15 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
         }
 
-
         /* Do another halfstep update of the velocities */
         /* to update them to the next time step */
         velup2 ();
+
+        if (pct.gridpe == 0) rmg_printf ("\n Writing data to output file ...\n");
+        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+
+        // Extrapolate orbitals after first step
+        ExtrapolateOrbitals(ct.outfile, Kptr);
 
         /* calculate the nose thermostat energies */
         if (ct.forceflag == MD_CVT && ct.tcontrol == T_NOSE_CHAIN)
@@ -351,6 +357,12 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
         fflush (NULL);
     }                           /* end for ct.md_steps */
+
+
+    // Final quench at these ionic positions without computing forces so the
+    // final wavefunctions are converged. Write the restart file then compute
+    Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, false);
+    WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
 
     if (pct.gridpe == 0)

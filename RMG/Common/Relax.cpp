@@ -58,10 +58,13 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
     int DONE, rlx_steps = 0;
     static double *rhodiff;
 
-    /* if ( ct.override_atoms == 1 ) quench(states, vxc, vh, vnuc, rho, rhocore, rhoc); */
+    /* quench the electrons and calculate forces */
+    if(ct.runflag != RESTART)
+    {
+        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
+        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+    }
 
-	/* quench the electrons and calculate forces */
-    Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
 
     /* ---------- begin relax loop --------- */
     DONE = (ct.max_md_steps < 1 || steps < 1);
@@ -138,7 +141,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         ct.md_steps++;
 
         /* quench the electrons and calculate forces */
-        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
 
 
         /* save data to file for future restart */
@@ -181,11 +184,6 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
             rmg_printf ("force convergence has NOT been achieved. stopping (max number of relax steps reached) ...\n");
 
     }
-
-
-    /*Write out final data */
-    WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
-
 
 }                               /* end fastrlx */
 
