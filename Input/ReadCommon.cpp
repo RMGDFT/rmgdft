@@ -414,6 +414,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Multiplicative factor for davidson diagonalization. Nstates for davidson = davidson_multiplier*nstates.", 
                      "davidson_multiplier must be in the range (2 <= davidson_multiplier <= 4).\n");
 
+    If.RegisterInputKey("davidson_max_steps", &lc.david_max_steps, 5, 20, 8, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "Maximum number of iterations for davidson diagonalization.", 
+                     "davidson_max_steps must be in the range (5 <= davidson_max_steps <= 20).\n");
+
     If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 0.0, 
                       CHECK_AND_FIX, OPTIONAL, 
                      "Time step used for constant potential acceleration.\n",

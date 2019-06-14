@@ -82,7 +82,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     int nstates = kptr->nstates;
     notconv = nstates;
     int nbase = nstates;
-    int max_steps = 10;
     char *trans_t = "t";
     char *trans_n = "n";
     char *trans_c = "c";
@@ -180,7 +179,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     for(int st=0;st < nstates;st++)eigsw[st] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st+nbase] = eigs[st];
 
-    for(int steps = 0;steps < max_steps;steps++) {
+    for(int steps = 0;steps < ct.david_max_steps;steps++) {
 
         // Reorder eigenvectors
         int np = 0;
@@ -370,7 +369,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         // have exceeded the maximum number of iterations then we need to do something else.
         // If the expanded basis is getting too large then we need to rotate the orbitals
         // and start the davidson iteration again.
-        if(((steps == (max_steps-1)) || ((nbase+notconv) > ct.max_states) || (notconv == 0))) {
+        if(((steps == (ct.david_max_steps-1)) || ((nbase+notconv) > ct.max_states) || (notconv == 0))) {
 
             // Rotate orbitals
             RT1 = new RmgTimer("6-Davidson: rotate orbitals");
@@ -393,7 +392,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
                 break;  // done
             }
 
-            if(steps == (max_steps-1)) {
+            if(steps == (ct.david_max_steps-1)) {
                 rmg_printf("Davidson incomplete convergence steps = %d\n", steps + 1);
                 // Incomplete convergence, what should we do here?
                 //throw RmgFatalException() << "Davidson failed to converge, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
