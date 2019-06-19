@@ -132,8 +132,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     InitPe4image();
 
-    snprintf (ct.cfile, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
-    snprintf (ct.shortname, MAX_PATH, "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
+    snprintf (ct.cfile, sizeof(ct.cfile), "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
+    snprintf (ct.shortname, sizeof(ct.shortname), "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
     ReadCommon(argc, argv, ct.cfile, ct, pct, ControlMap);
 
