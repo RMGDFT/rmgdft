@@ -21,7 +21,7 @@
 #include "RmgShm.h"
 
 
-/*This sets loop over species does forward fourier transofrm, finds and stores whatever is needed so that
+/*This sets loop over species does forward fourier transform, finds and stores whatever is needed so that
  * only backwards Fourier transform is needed in the calculation*/
 void InitWeight (void)
 {
@@ -76,15 +76,6 @@ void InitWeight (void)
         sp->num_projectors = prjcount;
 
         /*This array will store forward fourier transform on the coarse grid for all betas */
-/*
-        if(pct.procs_per_host > 1) {
-            char sname[256];
-            snprintf(sname, sizeof(sname), "RMG_ForwardBeta_%s", sp->atomic_symbol);
-            sp->forward_beta = (fftw_complex *)AllocSharedMemorySegment(sname, sizeof(fftw_complex) * sp->num_projectors * size * ct.num_kpts_pe);
-        }
-        if(!sp->forward_beta) {
-        }
-*/
         sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * size * ct.num_kpts_pe);
 
         if (sp->forward_beta == NULL)

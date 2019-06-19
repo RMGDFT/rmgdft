@@ -83,30 +83,25 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         /*Get nldim */
-        bool done = false;
-        bool reduced = false;
-        
-        while(!done) {
+        sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
+        sp->nldim = sp->nldim/2*2 + 1;
 
-            sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
-            sp->nldim = sp->nldim/2*2 + 1;
-
-            if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID())) {
-                sp->nlradius *= 0.99;
-                reduced = true;
+        if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID()))
+        {
+            if(ct.localize_projectors)
+            {
+                rmg_printf("Warning: localized projectors selected but diameter of projectors exceeds cell size. Switching to delocalized projectors.\n");
+                if(pct.gridpe == 0) printf("Warning: localized projectors selected but diameter of projectors exceeds cell size. Switching to delocalized projectors.\n");
+                ct.localize_projectors = false;
             }
-            else {
-                done = true;
-            }
-
         }
+
         sp->nlradius = 0.5 * ct.hmingrid * (double)(sp->nldim);
         sp->nlradius -= 0.5 * ct.hmingrid / (double)ct.nxfgrid;
-        if(reduced && ct.localize_projectors) rmg_printf("Warning: diameter of non-local projectors exceeds cell size. Reducing. New radius = %12.6f\n", sp->nlradius);
 
         // If projectors will span the full wavefunction grid then use a larger value for the nlradius for all remaining operations
         if(!ct.localize_projectors) {
-            sp->nlradius = 7.0;
+            sp->nlradius = std::max(sp->nlradius, 7.0);
             sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
             sp->nldim = sp->nldim/2*2 +1;
         }
@@ -161,8 +156,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         double max_r = std::max(sp->nlradius, sp->lradius);
         max_r = std::max(max_r, 12.0);
         for(ii = 0;ii < sp->rg_points;ii++) if(sp->r[ii] >= max_r) break;
-        double lb = sp->r[ii] - sp->r[ii-1];
-        double ub = sp->r[ii+1] - sp->r[ii];
         sp->rg_points = ii;
 
 

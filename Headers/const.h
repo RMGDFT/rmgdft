@@ -222,6 +222,9 @@
 #define LDA_PLUS_U_NONE 0
 #define LDA_PLUS_U_SIMPLE 1
 
+// Projector types
+#define BETA_PROJECTOR 0
+#define ORBITAL_PROJECTOR 1
 
 // 3-d interpolation types
 #define CUBIC_POLYNOMIAL_INTERPOLATION 0

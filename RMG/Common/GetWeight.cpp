@@ -63,10 +63,9 @@ void GetWeight (Kpoint<KpointType> **Kptr)
 
     for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
-        int kpt1 = kpt + pct.kstart;
-        double *kvec = ct.kp[kpt1].kvec;
+        double *kvec = Kptr[kpt]->kvec;
 
-        Projector<KpointType> *P = Kptr[kpt1]->BetaProjector;
+        Projector<KpointType> *P = Kptr[kpt]->BetaProjector;
 
         /* Loop over ions */
         for (int ion = 0; ion < ct.num_ions; ion++)

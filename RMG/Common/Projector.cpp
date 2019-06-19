@@ -48,8 +48,8 @@
 
 
 
-template Projector<double>::Projector(int, int, int, int);
-template Projector<std::complex<double>>::Projector(int, int, int, int);
+template Projector<double>::Projector(int, int, int, int, int);
+template Projector<std::complex<double>>::Projector(int, int, int, int, int);
 template Projector<double>::~Projector(void);
 template Projector<std::complex<double>>::~Projector(void);
 
@@ -60,19 +60,23 @@ template int Projector<double>::get_num_nonloc_ions(void);
 template int Projector<double>::get_num_owned_ions(void);
 template int * Projector<double>::get_owned_ions_list(void);
 template int * Projector<double>::get_nonloc_ions_list(void);
+template int Projector<double>::get_nldim(void);
 template int Projector<std::complex<double>>::get_num_nonloc_ions(void);
 template int Projector<std::complex<double>>::get_num_owned_ions(void);
 template int * Projector<std::complex<double>>::get_owned_ions_list(void);
 template int * Projector<std::complex<double>>::get_nonloc_ions_list(void);
+template int Projector<std::complex<double>>::get_nldim(void);
 
 
 
-template <class KpointType> Projector<KpointType>::Projector(int projector_type, int num_pes, int num_ions, int stride) : 
+template <class KpointType> Projector<KpointType>::Projector(int projector_type, int num_pes, int num_ions, int stride, int projector_kind) : 
                         list_owned_ions_per_pe(boost::extents[num_pes][num_ions]),
                         list_ions_per_owner(boost::extents[num_pes][num_ions])
 
 {
-    this->type = projector_type;
+
+    this->type = projector_type;    // LOCALIZED or DELOCALIZED
+    this->kind = projector_kind;    // ORBITAL_PROJECTOR OR BETA_PROJECTOR
     this->num_tot_proj = 0;
     this->num_nonloc_ions = 0;
     this->num_owned_ions = 0;
@@ -85,8 +89,26 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     this->num_nonowned_ions_per_pe = new int[ct.num_ions]();
     this->nonloc_ions_list = new int[ct.num_ions]();
     this->idxptrlen = new int[ct.num_ions](); 
+    this->nldims = new int[ct.num_species](); 
     this->pstride = stride;
     this->nlcrds.reserve(ct.num_ions);
+
+    // Go through the list of atomic species and set up the nldims array
+    for(int isp = 0;isp < ct.num_species;isp++)
+    {
+
+        SPECIES *sp = &ct.sp[isp];
+
+        // All the same for beta projectors
+        if(this->kind == BETA_PROJECTOR)
+        {
+            for(int ip = 0;ip < MAX_NL;ip++) this->nldims[isp] = sp->nldim;
+            continue;
+        }
+        else if(this->kind == ORBITAL_PROJECTOR)
+        {
+        }
+    }
 
     for(int i=0;i < num_pes;i++)
     {
@@ -138,13 +160,13 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             /* Get species type */
             SPECIES *sp = &ct.sp[iptr->species];
 
-            int icenter = sp->nldim / 2;
+            int icenter = this->nldims[iptr->species] / 2;
             int icut = (icenter + 1) * (icenter + 1);
 
             /* Determine mapping indices or even if a mapping exists */
-            int nlxdim = sp->nldim;
-            int nlydim = sp->nldim;
-            int nlzdim = sp->nldim;
+            int nlxdim = this->nldims[iptr->species];
+            int nlydim = this->nldims[iptr->species];
+            int nlzdim = this->nldims[iptr->species];
             double nlxcstart = 0.0;
             double nlycstart = 0.0;
             double nlzcstart = 0.0;
@@ -164,7 +186,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             else
             {
                 map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                             sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID,
+                             this->nldims[iptr->species], PX0_GRID, PY0_GRID, PZ0_GRID,
                              NX_GRID, NY_GRID, NZ_GRID,
                              &nlxcstart, &nlycstart, &nlzcstart);
             }
@@ -314,7 +336,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
                 if(this->type == DELOCALIZED) 
                     map = true;
                 else
-                    map = test_overlap (pe, iptr, Aix, Aiy, Aiz, sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
+                    map = test_overlap (pe, iptr, Aix, Aiy, Aiz, this->nldims[iptr->species], PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
 
                 /* Determine if ion has overlap with a given PE becasue of Q function */
                 if(ct.norm_conserving_pp) {
@@ -421,6 +443,10 @@ template <class KpointType> int * Projector<KpointType>::get_nonloc_ions_list(vo
 }
 
 
+template <class KpointType> int Projector<KpointType>::get_nldim(void)
+{
+    //return this->nldims[;
+}
 
 // Applies projectors to orbitals associated with kpoint kptr
 template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int nstates, KpointType *weight)
@@ -765,6 +791,8 @@ void Projector<KpointType>::betaxpsi_write_non_owned (KpointType * sint, KpointT
 // Destructor
 template <class KpointType> Projector<KpointType>::~Projector(void)
 {
+    this->nlcrds.empty();
+    delete [] this->nldims;
     delete [] this->idxptrlen;
     delete [] this->nonloc_ions_list;
     delete [] this->num_nonowned_ions_per_pe;

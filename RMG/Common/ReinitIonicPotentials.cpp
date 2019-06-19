@@ -65,18 +65,20 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     GetQI ();
     delete RT1;
 
-    static Projector<KpointType> *BetaProjector;
     int projector_type = DELOCALIZED;
     if(ct.localize_projectors) projector_type = LOCALIZED;
-    if(BetaProjector) delete BetaProjector;
-    BetaProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions, ct.max_nl);
     RT1= new RmgTimer("3-ReinitIonicPotentials: GetNlop");
 
     // Number of projectors required is computed when the Projector is created.
     // Beta function weights are created in the calls to get_nlop.
     for(int kpt=0; kpt < ct.num_kpts_pe; kpt++)
     {
-        Kptr[kpt]->get_nlop(BetaProjector);
+        if(Kptr[kpt]->BetaProjector)
+        {
+            delete Kptr[kpt]->BetaProjector;
+        }
+        Kptr[kpt]->BetaProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions, ct.max_nl, BETA_PROJECTOR);
+        Kptr[kpt]->get_nlop(Kptr[kpt]->BetaProjector);
     } // end loop over kpts
     delete RT1;
 

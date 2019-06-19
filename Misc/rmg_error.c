@@ -41,11 +41,18 @@ void errore(char *where, char *message, int ierr, int where_len, int message_len
      raise(SIGTERM);
   }
 
-  strncpy(tbuf, message, message_len);
-  strncpy(&tbuf[message_len], " in ", 4);
-  strncpy(&tbuf[message_len + 4], where, where_len);
-
+  strncpy(tbuf, message, sizeof(tbuf)-1);
+  int iz = message_len;
+  if(iz >= sizeof(tbuf)) iz = sizeof(tbuf) - 1;
+  tbuf[iz] = 0;
+  printf("%s in ", tbuf);
+  strncpy(tbuf, where, sizeof(tbuf)-1);
+  iz = where_len;
+  if(iz >= sizeof(tbuf)) iz = sizeof(tbuf) - 1;
+  tbuf[iz] = 0;
   printf("%s\n", tbuf);
+
+
   fflush (NULL);
 #if (defined(_WIN32) || defined(_WIN64))
     Sleep(2000);
