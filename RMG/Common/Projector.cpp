@@ -60,12 +60,12 @@ template int Projector<double>::get_num_nonloc_ions(void);
 template int Projector<double>::get_num_owned_ions(void);
 template int * Projector<double>::get_owned_ions_list(void);
 template int * Projector<double>::get_nonloc_ions_list(void);
-template int Projector<double>::get_nldim(void);
+template int Projector<double>::get_nldim(int);
 template int Projector<std::complex<double>>::get_num_nonloc_ions(void);
 template int Projector<std::complex<double>>::get_num_owned_ions(void);
 template int * Projector<std::complex<double>>::get_owned_ions_list(void);
 template int * Projector<std::complex<double>>::get_nonloc_ions_list(void);
-template int Projector<std::complex<double>>::get_nldim(void);
+template int Projector<std::complex<double>>::get_nldim(int);
 
 
 
@@ -443,9 +443,9 @@ template <class KpointType> int * Projector<KpointType>::get_nonloc_ions_list(vo
 }
 
 
-template <class KpointType> int Projector<KpointType>::get_nldim(void)
+template <class KpointType> int Projector<KpointType>::get_nldim(int species)
 {
-    //return this->nldims[;
+    return this->nldims[species];
 }
 
 // Applies projectors to orbitals associated with kpoint kptr

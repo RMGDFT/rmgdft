@@ -93,9 +93,9 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
 //            for(int idx = 0;idx < sp->num_projectors*P0_BASIS; idx++) Nlweight[idx] = 0.0;
 
 
-            int nlxdim = sp->nldim;
-            int nlydim = sp->nldim;
-            int nlzdim = sp->nldim;
+            int nlxdim = P->get_nldim(iptr->species);
+            int nlydim = P->get_nldim(iptr->species);
+            int nlzdim = P->get_nldim(iptr->species);
 
             in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
             out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);

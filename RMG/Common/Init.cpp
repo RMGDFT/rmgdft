@@ -372,7 +372,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     RT1 = new RmgTimer("2-Init: weights");
     if(ct.localize_projectors)
     {
-        InitWeight ();
+        InitLocalizedWeight ();
     }
     else
     {

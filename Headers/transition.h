@@ -290,7 +290,7 @@ void GetPhase (ION *, std::complex<double> *);
 void PrintSums(double *, int, char*);
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, 
         fftw_plan p1, fftw_plan p2);
-void InitWeight(void);
+void InitLocalizedWeight(void);
 void InitDelocalizedWeight (void);
 void InitOrbital (void);
 void InitDelocalizedOrbital (void);

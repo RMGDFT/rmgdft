@@ -65,9 +65,9 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     khi = klow + dimz - 1;
 
 
-    int nlxdim = sp->nldim;
-    int nlydim = sp->nldim;
-    int nlzdim = sp->nldim;
+    int nlxdim = P->get_nldim(iptr->species);
+    int nlydim = P->get_nldim(iptr->species);
+    int nlzdim = P->get_nldim(iptr->species);
     if(!ct.localize_projectors) {
         nlxdim = get_NX_GRID();
         nlydim = get_NY_GRID();
@@ -120,7 +120,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     int izstart = iptr->nl_global_grid_zstart;
     int igx, igy, igz;
 
-    int icenter = sp->nldim / 2;
+    int icenter = P->get_nldim(iptr->species) / 2;
     int icut = (icenter + 1) * (icenter + 1);
 
 

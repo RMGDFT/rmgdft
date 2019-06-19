@@ -23,7 +23,7 @@
 
 /*This sets loop over species does forward fourier transform, finds and stores whatever is needed so that
  * only backwards Fourier transform is needed in the calculation*/
-void InitWeight (void)
+void InitLocalizedWeight (void)
 {
 
     int ip, prjcount, isp, size, tot_proj;

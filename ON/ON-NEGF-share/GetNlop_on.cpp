@@ -67,7 +67,7 @@ void GetNlop_on(void)
 
 
     /*Do forward transform for each species and store results on the coarse grid */
-    InitWeight ();
+    InitLocalizedWeight ();
     /*The same for derivative of beta */
     //init_derweight ();
 

@@ -62,7 +62,7 @@ public:
     int get_num_owned_ions(void);
     int *get_owned_ions_list(void);
     int *get_nonloc_ions_list(void);
-    int get_nldim(void);
+    int get_nldim(int species);
 
     // Number of projectors
     int num_tot_proj;

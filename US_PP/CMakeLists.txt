@@ -4,7 +4,7 @@ GetPhaseSpecies.cpp
 InitClebschGordan.cpp
 Ylm.cpp
 CubicHarmonic.cpp
-InitWeight.cpp
+InitLocalizedWeight.cpp
 InitDelocalizedWeight.cpp
 InitOrbital.cpp
 InitDelocalizedOrbital.cpp
