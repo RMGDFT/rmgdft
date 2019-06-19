@@ -270,7 +270,7 @@ int CountAtomicOrbitals(void);
 void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap);
 void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap);
 void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double> *phase);
-void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw);
+void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw, bool localize);
 void VhPfft(double *rho, double *rhoc, double *vh);
 double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rms_target);
 void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in, double *vh_out, int max_iter, bool reset);
@@ -289,6 +289,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
         fftw_plan p1, fftw_plan p2);
 void InitWeight(void);
 void InitDelocalizedWeight (void);
+void InitOrbital (void);
 void InitDelocalizedOrbital (void);
 double CubicHarmonic(int L, int M, double *r);
 double Ylm(int L, int M, double *r);

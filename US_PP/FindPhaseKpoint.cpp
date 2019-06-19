@@ -31,7 +31,7 @@
 
 
 /*This calculates the phase factor that will be used when calculating the backwards fourier transform*/
-void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw)
+void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw, bool localize)
 {
 
     int i1, j1, k1;
@@ -54,7 +54,7 @@ void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double *
     int ihi = nlxdim;
     int jhi = nlydim;
     int khi = nlzdim;
-    if(!ct.localize_projectors) {
+    if(!localize) {
         ilo = get_PX_OFFSET();
         jlo = get_PY_OFFSET();
         klo = get_PZ_OFFSET();

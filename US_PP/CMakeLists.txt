@@ -6,6 +6,7 @@ Ylm.cpp
 CubicHarmonic.cpp
 InitWeight.cpp
 InitDelocalizedWeight.cpp
+InitOrbital.cpp
 InitDelocalizedOrbital.cpp
 InitWeightOne.cpp
 InitDelocalizedObject.cpp

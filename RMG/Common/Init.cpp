@@ -377,8 +377,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     else
     {
         InitDelocalizedWeight ();
+    }
+
+    if(ct.atomic_orbital_type == LOCALIZED)
+    {
+        InitOrbital ();
+    }
+    else
+    {
         InitDelocalizedOrbital ();
     }
+
     delete(RT1);
 
     if (ct.verbose == 1)

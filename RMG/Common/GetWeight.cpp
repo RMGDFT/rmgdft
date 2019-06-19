@@ -82,8 +82,8 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             int nlydim = get_NY_GRID();
             int nlzdim = get_NZ_GRID();
 
-            /*Calculate the phase factor */
-            FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase);
+            /*Calculate the phase factor for delocalized case */
+            FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase, false);
 
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)&sp->forward_beta[kpt * sp->num_projectors * pbasis];

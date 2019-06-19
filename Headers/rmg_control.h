@@ -877,6 +877,11 @@ typedef struct
 
     int fd_allocation_limit;
 
+    // LDA+U options
+    int lda_plus_u_mode;
+
+    double lda_plus_u_radius;
+
 } CONTROL;
 
 

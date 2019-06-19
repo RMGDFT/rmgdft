@@ -125,8 +125,11 @@ static std::unordered_map<std::string, int> start_mode = {
         {"Start TDDFT", Start_TDDFT},
         {"Restart TDDFT", Restart_TDDFT},
         {"Modified LCAO Start", MODIFIED_LCAO_START}
-        
         };
+
+static std::unordered_map<std::string, int> lda_plus_u_mode = {
+        {"None", LDA_PLUS_U_NONE},
+        {"Simple", LDA_PLUS_U_SIMPLE}};
 
 static std::unordered_map<std::string, int> boundary_condition_type = {
         {"Periodic", 0}};

@@ -1,5 +1,4 @@
 add_library (RMG_Common
-GetPhase.cpp
 EnergyCorrection.cpp
 BroydenPotential.cpp
 DavPreconditioner.cpp

@@ -32,7 +32,6 @@ void InitDelocalizedWeight (void)
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
 
-    Mgrid MG(&Rmg_L, Rmg_T);
 
     PROJ_INFO proj;
     std::vector<PROJ_INFO> proj_iter;

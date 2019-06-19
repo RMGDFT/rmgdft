@@ -32,7 +32,6 @@ void InitDelocalizedOrbital (void)
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
 
-    Mgrid MG(&Rmg_L, Rmg_T);
 
     PROJ_INFO proj;
     std::vector<PROJ_INFO> proj_iter;
@@ -82,7 +81,6 @@ void InitDelocalizedOrbital (void)
 
         sp->num_orbitals = orbital_count;
         tot_orbitals += orbital_count;
-
 
         /*This array will store forward fourier transform on the coarse grid for all atomic orbitals of this species */
         sp->forward_orbital = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_orbitals * pbasis * ct.num_kpts_pe);

@@ -940,7 +940,6 @@ template <class KpointType> void Kpoint<KpointType>::write_occ(void)
 template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr, KpointType *orbitals)
 {
 
-    KpointType ZERO_t(0.0);
     std::complex<double> I_t(0.0, 1.0);
 
     int pbasis = this->pbasis;
@@ -961,19 +960,28 @@ template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr,
     /* Get species type */
     SPECIES *sp = &ct.sp[iptr->species];
 
+    double vect[3], nlcrds[3];
+
+    /* Find nlcdrs, vector that gives shift of ion from center of its ionic box */
+    /* for delocalized case it's just half the cell dimensions */
+    vect[0] = iptr->xtal[0] - 0.5;
+    vect[1] = iptr->xtal[1] - 0.5;
+    vect[2] = iptr->xtal[2] - 0.5;
+
+    /*The vector we are looking for should be */
+    to_cartesian (vect, nlcrds);
+
     /*Calculate the phase factor */
-    FindPhaseKpoint (this->kvec, nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase);
+    FindPhaseKpoint (this->kvec, nlxdim, nlydim, nlzdim, nlcrds, fftw_phase, false);
 
     /*Temporary pointer to the already calculated forward transform */
     fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];
 
 
     KpointType *orbit = orbitals;
-
     /* Loop over atomic orbitals */
     for (int ip = 0; ip < sp->num_orbitals; ip++)
     {
-
         /*Apply the phase factor */
         for (int idx = 0; idx < pbasis; idx++) gbptr[idx] = fptr[idx] * std::conj(fftw_phase[idx]);
 
@@ -1044,7 +1052,7 @@ template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *or
 
 
         /*Calculate the phase factor */
-        FindPhaseKpoint (this->kvec, nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase);
+        FindPhaseKpoint (this->kvec, nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase, false);
 
         /*Temporary pointer to the already calculated forward transform */
         fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];

@@ -143,12 +143,15 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             int nlxdim = sp->nldim;
             int nlydim = sp->nldim;
             int nlzdim = sp->nldim;
+            double nlxcstart = 0.0;
+            double nlycstart = 0.0;
+            double nlzcstart = 0.0;
+
             if(this->type == DELOCALIZED) {
                 map = true;
                 nlxdim = NX_GRID;
                 nlydim = NY_GRID;
                 nlzdim = NZ_GRID;
-                iptr->nlxcstart = iptr->nlycstart = iptr->nlzcstart = 0.0;
                 ilow = PX_OFFSET;
                 ihi = ilow + get_PX0_GRID() -1;
                 jlow = PY_OFFSET;
@@ -161,14 +164,14 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
                 map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
                              sp->nldim, PX0_GRID, PY0_GRID, PZ0_GRID,
                              NX_GRID, NY_GRID, NZ_GRID,
-                             &iptr->nlxcstart, &iptr->nlycstart, &iptr->nlzcstart);
+                             &nlxcstart, &nlycstart, &nlzcstart);
             }
 
             /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
             /*xtal vector between ion and left bottom corner of the box */
-            vect[0] = iptr->xtal[0] - iptr->nlxcstart;
-            vect[1] = iptr->xtal[1] - iptr->nlycstart;
-            vect[2] = iptr->xtal[2] - iptr->nlzcstart;
+            vect[0] = iptr->xtal[0] - nlxcstart;
+            vect[1] = iptr->xtal[1] - nlycstart;
+            vect[2] = iptr->xtal[2] - nlzcstart;
 
             /*Substract vector between left bottom corner of the box and center of the box */
             vect[0] -= (nlxdim / 2) / (double) NX_GRID;

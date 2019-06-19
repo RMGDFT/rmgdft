@@ -218,6 +218,11 @@
 #define Restart_TDDFT  6
 #define MODIFIED_LCAO_START  7
 
+// Lda plus u flags
+#define LDA_PLUS_U_NONE 0
+#define LDA_PLUS_U_SIMPLE 1
+
+
 // 3-d interpolation types
 #define CUBIC_POLYNOMIAL_INTERPOLATION 0
 #define BSPLINE_INTERPOLATION 1
