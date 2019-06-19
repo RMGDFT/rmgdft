@@ -71,7 +71,10 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
 
     gbptr = beptr + max_size;
 
-    for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
+    for(int kpt =0; kpt < ct.num_kpts_pe;kpt++)
+    {
+
+        Projector<KpointType> *P = Kptr[kpt]->BetaProjector;
 
         /* Loop over ions */
         for (int ion1 = 0; ion1 < num_nonloc_ions; ion1++)
@@ -109,7 +112,7 @@ void GetWeightLocal (Kpoint<KpointType> **Kptr)
 
 
             /*Calculate the phase factor */
-            FindPhase(nlxdim, nlydim, nlzdim, iptr->nlcrds, phase_fftw);
+            FindPhase(nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), phase_fftw);
 
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)&sp->forward_beta[kpt*sp->num_projectors * coarse_size];

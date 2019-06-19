@@ -53,6 +53,8 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     int nygrid = G->get_NY_GRID(1);
     int nzgrid = G->get_NZ_GRID(1);
 
+    Projector<KpointType> *P = kptr->BetaProjector;
+
 
     int ilow, jlow, klow, ihi, jhi, khi;
     find_node_offsets(pct.gridpe, nxgrid, nygrid, nzgrid,
@@ -73,9 +75,10 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     }
 
     // These are probably not right for anything but simple cubic grids
-    double wx = iptr->nlcrds[0] / ct.hmaxgrid;
-    double wy = iptr->nlcrds[1] / ct.hmaxgrid;
-    double wz = iptr->nlcrds[2] / ct.hmaxgrid;
+    double *nlcrds = P->nlcrds[ion].data();
+    double wx = nlcrds[0] / ct.hmaxgrid;
+    double wy = nlcrds[1] / ct.hmaxgrid;
+    double wz = nlcrds[2] / ct.hmaxgrid;
 
 
     int pbasis = kptr->pbasis;

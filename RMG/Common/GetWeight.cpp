@@ -66,6 +66,8 @@ void GetWeight (Kpoint<KpointType> **Kptr)
         int kpt1 = kpt + pct.kstart;
         double *kvec = ct.kp[kpt1].kvec;
 
+        Projector<KpointType> *P = Kptr[kpt1]->BetaProjector;
+
         /* Loop over ions */
         for (int ion = 0; ion < ct.num_ions; ion++)
         {
@@ -83,7 +85,7 @@ void GetWeight (Kpoint<KpointType> **Kptr)
             int nlzdim = get_NZ_GRID();
 
             /*Calculate the phase factor for delocalized case */
-            FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, iptr->nlcrds, fftw_phase, false);
+            FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), fftw_phase, false);
 
             /*Temporary pointer to the already calculated forward transform */
             fptr = (std::complex<double> *)&sp->forward_beta[kpt * sp->num_projectors * pbasis];

@@ -71,6 +71,8 @@ public:
 
     int *idxptrlen;
 
+    std::vector<std::array<double, 3>> nlcrds;
+
 private:
     int num_owned_ions;
     int *owned_ions_list;
@@ -78,6 +80,7 @@ private:
     int num_nonloc_ions;
     int *nonloc_ions_list;
     int num_nonloc_pes;
+
 
     // For beta functions this is ct.max_nl while for atomic orbitals it is ct.max_orbitals
     int pstride;

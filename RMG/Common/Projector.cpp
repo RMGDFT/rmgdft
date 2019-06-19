@@ -86,6 +86,8 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     this->nonloc_ions_list = new int[ct.num_ions]();
     this->idxptrlen = new int[ct.num_ions](); 
     this->pstride = stride;
+    this->nlcrds.reserve(ct.num_ions);
+
     for(int i=0;i < num_pes;i++)
     {
         for(int j=0;j < num_ions;j++)
@@ -179,7 +181,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             vect[2] -= (nlzdim / 2) / (double) NZ_GRID;
 
             /*The vector we are looking for should be */
-            to_cartesian (vect, iptr->nlcrds);
+            to_cartesian (vect, this->nlcrds[ion].data());
 
             /* If there is a mapping for this ion then we have to generate */
             /* the projector.                                              */
