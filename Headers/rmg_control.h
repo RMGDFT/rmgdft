@@ -295,7 +295,6 @@ typedef struct
 
     /* Cutoff parameter */
     double cparm;        // Multiplicative factor
-    double betacparm;    // For beta functions (non-local projectors)
     double rhocparm;     // For qfunctions and density
 
     /** Total conpensating charge density */
@@ -313,11 +312,6 @@ typedef struct
     /** Species structure 
      * @see SPECIES */
     SPECIES *sp;
-
-    /** the fine grid size on each coarse grid cell */
-    int nxfgrid;
-    int nyfgrid;
-    int nzfgrid;
 
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;

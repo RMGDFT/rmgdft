@@ -90,14 +90,14 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         {
             if(ct.localize_projectors)
             {
-                rmg_printf("Warning: localized projectors selected but diameter of projectors exceeds cell size. Switching to delocalized projectors.\n");
-                if(pct.gridpe == 0) printf("Warning: localized projectors selected but diameter of projectors exceeds cell size. Switching to delocalized projectors.\n");
+                rmg_printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                if(pct.gridpe == 0) 
+                    printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
                 ct.localize_projectors = false;
             }
         }
 
         sp->nlradius = 0.5 * ct.hmingrid * (double)(sp->nldim);
-        sp->nlradius -= 0.5 * ct.hmingrid / (double)ct.nxfgrid;
 
         // If projectors will span the full wavefunction grid then use a larger value for the nlradius for all remaining operations
         if(!ct.localize_projectors) {
@@ -333,17 +333,25 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             // The range over which an atomic orbital is non-zero can vary widely so we
             // compute a range here for when we are using them directly in real space
             // (e.g. initialization and possibley LDA+U stuff)
-            for(int idx = sp->rg_points-1; idx > 0.0;idx--)
-            {
-                if((sp->r[idx] < 6.0) || (fabs(sp->atomic_wave[ip][idx]) > 1.0e-4))
-                {
-                    sp->aradius[ip] = sp->r[idx];
-                    break;
-                } 
-            }
-
             sp->aradius[ip]  = A->GetRange(sp->atomic_wave[ip], sp->r, sp->rab, sp->rg_points, 0.9999);
             if(sp->aradius[ip] < 6.0) sp->aradius[ip] = 6.0;
+
+            /* Get adim_wave */
+            sp->adim_wave = Radius2grid (sp->aradius[ip], ct.hmingrid);
+            sp->adim_wave = sp->adim_wave/2*2 + 1;
+
+            if ((sp->adim_wave >= get_NX_GRID()) || (sp->adim_wave >= get_NY_GRID()) || (sp->adim_wave >= get_NZ_GRID()))
+            {
+                if(ct.atomic_orbital_type == LOCALIZED)
+                {
+                    rmg_printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                    if(pct.gridpe == 0) 
+                       printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                    ct.atomic_orbital_type = DELOCALIZED;
+                }
+            }
+
+            sp->aradius[ip] = 0.5 * ct.hmingrid * (double)(sp->adim_wave);
 
             double rcut = 0.8 * sp->aradius[ip];
             for(int idx = 0; idx < sp->rg_points; idx++)

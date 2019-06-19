@@ -25,43 +25,34 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
      fftw_plan p2_forward, fftw_plan p2_backward)
 {
 
-    int idx, idx1, size;
     double ax[3];
     double t1;
-    std::complex<double> *weptr, *gwptr;
-    int xdim, ydim, zdim;
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
 
 
-
-    double hxx = get_hxgrid() / (double) ct.nxfgrid;
-    double hyy = get_hygrid() / (double) ct.nyfgrid;
-    double hzz = get_hzgrid() / (double) ct.nzfgrid;
-
     /* nl[xyz]fdim is the size of the non-local box in the high density grid */
-    size = sp->nldim * sp->nldim * sp->nldim;
-
+    int size = sp->nldim * sp->nldim * sp->nldim;
     size = std::max(size, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID());
 
-    weptr = new std::complex<double>[size];
-    gwptr = new std::complex<double>[size];
+    std::complex<double> *weptr = new std::complex<double>[size];
+    std::complex<double> *gwptr = new std::complex<double>[size];
 
 
     if(!weptr || !gwptr)
         throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
 
 
-    hxx = get_hxgrid() * get_xside();
-    hyy = get_hygrid() * get_yside();
-    hzz = get_hzgrid() * get_zside();
+    double hxx = get_hxgrid() * get_xside();
+    double hyy = get_hygrid() * get_yside();
+    double hzz = get_hzgrid() * get_zside();
 
     int ixx, iyy, izz;
     double gval, gcut;
 
-    xdim = sp->nldim;
-    ydim = sp->nldim;
-    zdim = sp->nldim;
+    int xdim = sp->nldim;
+    int ydim = sp->nldim;
+    int zdim = sp->nldim;
 
     gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2); // pwave structures store the squared magnitude
 
@@ -77,7 +68,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     phase = 2.0 * PI * ((xdim+1)/2)/xdim * I_t;
     phase = std::exp(phase);
 
-    for(idx = 0; idx < xdim * ydim * zdim; idx++) weptr[idx] = 0.0;
+    for(int idx = 0; idx < xdim * ydim * zdim; idx++) weptr[idx] = 0.0;
     for (int ix = -xdim/2; ix < xdim/2+1; ix++)
     {
         ax[0] = ix *2.0 * PI/(hxx*xdim);
@@ -95,7 +86,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
                 if(gval >= gcut) continue;
                 t1 = AtomicInterpolateInline_Ggrid(&sp->beta_g[ip][0], gval);
 
-                idx1 = ixx * ydim * zdim + iyy * zdim + izz;
+                int idx1 = ixx * ydim * zdim + iyy * zdim + izz;
                 weptr[idx1] += IL * Ylm(l, m, ax) * t1/vol;
             }
         }
@@ -106,7 +97,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     for(int iy = 0; iy < ydim; iy++)
     for(int iz = 0; iz < zdim; iz++)
     {
-        idx = ix * ydim * zdim + iy * zdim + iz;
+        int idx = ix * ydim * zdim + iy * zdim + iz;
         weptr[idx] *= std::pow(phase, ix+iy+iz);
 //        if( (ix + iy + iz) %2 ) weptr[idx] *=-1.0;
     }
@@ -129,7 +120,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 
     size = xdim * ydim * zdim;
 
-    for(idx = 0; idx < size; idx++) weptr[idx] = 0.0;
+    for(int idx = 0; idx < size; idx++) weptr[idx] = 0.0;
     for (int ix = 0; ix < sp->nldim; ix++)
     {
         int ixx = (ix-sp->nldim/2 + xdim/2 + 20 * xdim) % xdim;
@@ -140,8 +131,8 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
             for (int iz = 0; iz < sp->nldim; iz++)
             {
                 int izz = (iz-sp->nldim/2 + zdim/2 + 20 * zdim) % zdim;
-                idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
-                idx = ixx * ydim * zdim + iyy * zdim + izz;
+                int idx1 = ix * sp->nldim * sp->nldim + iy * sp->nldim + iz;
+                int idx = ixx * ydim * zdim + iyy * zdim + izz;
                 weptr[idx] += gwptr[idx1] * phaseptr[idx1]/double(size);
             }
         }

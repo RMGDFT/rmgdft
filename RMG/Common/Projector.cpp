@@ -102,11 +102,11 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
         // All the same for beta projectors
         if(this->kind == BETA_PROJECTOR)
         {
-            for(int ip = 0;ip < MAX_NL;ip++) this->nldims[isp] = sp->nldim;
-            continue;
+            this->nldims[isp] = sp->nldim;
         }
         else if(this->kind == ORBITAL_PROJECTOR)
         {
+            this->nldims[isp] = sp->adim_wave;    
         }
     }
 
@@ -156,9 +156,6 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
             /* Generate ion pointer */
             ION *iptr = &ct.ions[ion];
-
-            /* Get species type */
-            SPECIES *sp = &ct.sp[iptr->species];
 
             int icenter = this->nldims[iptr->species] / 2;
             int icut = (icenter + 1) * (icenter + 1);

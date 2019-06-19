@@ -648,11 +648,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Number of multigrid levels to use in the hartree multigrid solver.\n",
                      "poisson_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1).\n");
 
-    If.RegisterInputKey("fine_grid_non_local_pp", &lc.nxfgrid, 1, 8, 4,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "Fine grid for non-local pseudopotential.\n",
-                     "fine_grid_non_local_pp must lie in the range (1,4). Resetting to the default value of 4.\n");
-
     If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 4, 512,32,
                      CHECK_AND_FIX, OPTIONAL,
                      "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware.\n",
@@ -1053,9 +1048,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
         throw RmgFatalException() << "You must specify a triplet of (X,Y,Z) dimensions for kpoint_mesh and kpoint_is_shift.\n";
     }
 
-
-    // Currently, fine grid has to be the same in each direction
-    lc.nzfgrid = lc.nyfgrid = lc.nxfgrid;
 
     // This is an ugly hack but it's necessary for now since we want to print the
     // original options back out for reuse and the code modifies these

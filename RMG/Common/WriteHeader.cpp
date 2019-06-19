@@ -408,14 +408,11 @@ void WriteHeader (void)
 	printf("OFF\n");
     
 
-    
     printf ("\n");
     printf ("Filtering Cutoff  Parameters\n");  
     printf ("    Wavefunction grid (cparm):               %5.3f\n", ct.cparm);
     printf ("    Charge density grid (rhocparm):          %5.3f\n", ct.rhocparm);
-    printf ("    NL projectors grid (betacparm):          %5.3f\n", ct.betacparm);
     printf ("    Filter factor:                           %5.3f\n", ct.filter_factor);
-
 
 
     printf ("\n");

@@ -158,9 +158,8 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
         }
     }
 
-    // Cutoff parameter -- do we want separate settings for each of these?
+    // Cutoff parameter
     lc.rhocparm = 1.0;
-    ct.betacparm = ct.cparm * (ct.nxfgrid - 1);
 
 
     // If the user has not specifically set the number of kohn-sham multigrid levels use 2
