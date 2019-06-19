@@ -21,8 +21,8 @@ OutputBandPlot.cpp
 AppCirDriverBeta.cpp
 AssignWeight.cpp
 GatherScatter.cpp
-GetWeight.cpp
-GetWeightLocal.cpp
+GetDelocalizedWeight.cpp
+GetLocalizedWeight.cpp
 ReinitIonicPotentials.cpp
 PotentialAcceleration.cpp
 Projector.cpp

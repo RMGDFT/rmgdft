@@ -155,9 +155,9 @@ void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions
 template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **kptr, double * vnuc, double * rhocore, double * rhoc);
 template <typename KpointType>
-void GetWeight (Kpoint<KpointType> **Kptr);
+void GetDelocalizedWeight (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
-void GetWeightLocal (Kpoint<KpointType> **Kptr);
+void GetLocalizedWeight (Kpoint<KpointType> **Kptr);
 
 template <typename KpointType>
 void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Bweight, KpointType *Nlweight);

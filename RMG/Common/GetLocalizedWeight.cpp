@@ -33,10 +33,10 @@
 #include "transition.h"
 
 // Used for localizing projectors in real space
-template void GetWeightLocal<double> (Kpoint<double> **Kptr);
-template void GetWeightLocal<std::complex<double> >(Kpoint<std::complex<double>> **Kptr);
+template void GetLocalizedWeight<double> (Kpoint<double> **Kptr);
+template void GetLocalizedWeight<std::complex<double> >(Kpoint<std::complex<double>> **Kptr);
 template <typename KpointType>
-void GetWeightLocal (Kpoint<KpointType> **Kptr)
+void GetLocalizedWeight (Kpoint<KpointType> **Kptr)
 {
 
     int max_size;

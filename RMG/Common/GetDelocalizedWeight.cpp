@@ -34,10 +34,10 @@
 
 
 // Used to generate projectors that span the full space
-template void GetWeight<double> (Kpoint<double> **Kptr);
-template void GetWeight<std::complex<double> >(Kpoint<std::complex<double>> **Kptr);
+template void GetDelocalizedWeight<double> (Kpoint<double> **Kptr);
+template void GetDelocalizedWeight<std::complex<double> >(Kpoint<std::complex<double>> **Kptr);
 template <typename KpointType>
-void GetWeight (Kpoint<KpointType> **Kptr)
+void GetDelocalizedWeight (Kpoint<KpointType> **Kptr)
 {
 
     KpointType *Bweight, *Nlweight;
