@@ -127,7 +127,7 @@ static std::unordered_map<std::string, int> start_mode = {
         {"Modified LCAO Start", MODIFIED_LCAO_START}
         };
 
-static std::unordered_map<std::string, int> lda_plus_u_mode = {
+static std::unordered_map<std::string, int> ldaU_mode = {
         {"None", LDA_PLUS_U_NONE},
         {"Simple", LDA_PLUS_U_SIMPLE}};
 

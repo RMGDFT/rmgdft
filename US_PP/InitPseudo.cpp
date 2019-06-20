@@ -90,9 +90,11 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         {
             if(ct.localize_projectors)
             {
-                rmg_printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
                 if(pct.gridpe == 0) 
+                {
+                    rmg_printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                }
                 ct.localize_projectors = false;
             }
         }
@@ -321,6 +323,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         }
 
 
+        int ldaU_orbitals = 0;
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
         {
 
@@ -344,9 +347,11 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             {
                 if(ct.atomic_orbital_type == LOCALIZED)
                 {
-                    rmg_printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     if(pct.gridpe == 0) 
+                    {
+                       rmg_printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
                        printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                    }
                     ct.atomic_orbital_type = DELOCALIZED;
                 }
             }
@@ -371,7 +376,27 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
 
+            // Now lda+u stuff
+            if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+            {
+                // Check if it's a localized orbital
+                if(sp->aradius[ip] <= ct.ldaU_radius)
+                {
+                    // Ignore filled shell
+                    int l = sp->atomic_wave_l[ip];
+                    int m = 2*l + 1;
+                    double full_occ = 2.0 * (double)m;
+                    double tol = fabs(full_occ - sp->atomic_wave_oc[ip]);
+                    if(tol > 1.0e-5)
+                    {
+                        ldaU_orbitals += m;                        
+                    }
+                } 
+            }
         }
+
+        ct.max_ldaU_orbitals = std::max(ct.max_ldaU_orbitals, ldaU_orbitals);
+
         if (pct.gridpe == 0 && write_flag) fclose (psp);
 
         delete [] bessel_rg;

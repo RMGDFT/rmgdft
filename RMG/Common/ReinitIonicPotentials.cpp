@@ -79,6 +79,12 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
         }
         Kptr[kpt]->BetaProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions, ct.max_nl, BETA_PROJECTOR);
         Kptr[kpt]->get_nlop(Kptr[kpt]->BetaProjector);
+
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+        {
+            Kptr[kpt]->OrbitalProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ldaU_ions, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
+        }
+
     } // end loop over kpts
     delete RT1;
 

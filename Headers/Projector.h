@@ -77,6 +77,7 @@ public:
     std::vector<std::array<double, 3>> nlcrds;
 
 private:
+    int num_proj_ions;    // For BETA_PROJECTOR=ct.num_ions while may be less than ct.num_ions for ORBITAL_PROJECTOR
     int num_owned_ions;
     int *owned_ions_list;
 

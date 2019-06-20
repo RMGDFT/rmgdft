@@ -157,15 +157,32 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // If fine/coarse grid ratio is not set then autoset it. By default we
     // use 1 for norm conserving pseudopotentials and 2 for ultrasoft.
     ct.norm_conserving_pp = true;
-    for(int isp = 0;isp < ct.num_species;isp++) {
+    int nc_count = 0;
+    int us_count = 0;
+    for(int isp = 0;isp < ct.num_species;isp++)
+    {
         SPECIES *sp = &ct.sp[isp];
-        if(!sp->is_norm_conserving) ct.norm_conserving_pp = false;
+        if(sp->is_norm_conserving)
+        {
+            nc_count++;
+        }
+        else
+        {
+            us_count++;
+            ct.norm_conserving_pp = false;
+        }
     }
+    if(nc_count && us_count)
+    {
+        rmg_error_handler (__FILE__, __LINE__, "Mixing norm conserving and ultrasoft pseudopotentials is not supported. Check your input files.\n");
+    }
+
     if(!ct.FG_RATIO)
     {
         ct.FG_RATIO = 2;
         if(ct.norm_conserving_pp) ct.FG_RATIO = 1;
     }
+
     // For USPP force a minimum of 2
     if(!ct.norm_conserving_pp) ct.FG_RATIO = std::max(2, ct.FG_RATIO);
 

@@ -547,6 +547,9 @@ typedef struct
     /** The maximum number of atomic orbitals for any species */
     int max_orbitals;
 
+    /** The maximum number of LDA+U orbitals used for projections for any species */
+    int max_ldaU_orbitals;
+
     /** Type of atomic orbitals used for LCAO inits and projections */
     int atomic_orbital_type;
 
@@ -872,9 +875,10 @@ typedef struct
     int fd_allocation_limit;
 
     // LDA+U options
-    int lda_plus_u_mode;
+    int ldaU_mode;
+    int num_ldaU_ions;
 
-    double lda_plus_u_radius;
+    double ldaU_radius;
 
 } CONTROL;
 

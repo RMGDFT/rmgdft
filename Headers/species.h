@@ -38,6 +38,9 @@ typedef struct
     /** semi-local pp flag */
     int is_semi_local;
 
+    /** is included in ldaU projections */
+    int is_ldaU;
+
     /** Number of valence electrons */
     double zvalence;
 

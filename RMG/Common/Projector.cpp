@@ -156,7 +156,8 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
             /* Generate ion pointer */
             ION *iptr = &ct.ions[ion];
-
+            SPECIES *sp = &ct.sp[iptr->species];
+       
             int icenter = this->nldims[iptr->species] / 2;
             int icut = (icenter + 1) * (icenter + 1);
 
@@ -186,6 +187,12 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
                              this->nldims[iptr->species], PX0_GRID, PY0_GRID, PZ0_GRID,
                              NX_GRID, NY_GRID, NZ_GRID,
                              &nlxcstart, &nlycstart, &nlzcstart);
+            }
+
+            // Make map false if ionic type is not included in lda+u
+            if(this->kind == ORBITAL_PROJECTOR)
+            {
+                if(!sp->is_ldaU) map = false;
             }
 
             /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
@@ -264,9 +271,11 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
         /* Generate ion pointer */
         ION *iptr = &ct.ions[ion];
+        SPECIES *sp = &ct.sp[iptr->species];
 
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
-        if (this->idxptrlen[ion] || pct.Qidxptrlen[ion])
+        if (((this->kind == BETA_PROJECTOR) && (this->idxptrlen[ion] || pct.Qidxptrlen[ion])) ||
+            ((this->kind == ORBITAL_PROJECTOR) && this->idxptrlen[ion] && sp->is_ldaU))
         {
             this->nonloc_ions_list[this->num_nonloc_ions] = ion;
 
@@ -344,6 +353,11 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
                             get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), FNX_GRID, FNY_GRID, FNZ_GRID);
                 }
 
+                if((this->kind == ORBITAL_PROJECTOR) && !sp->is_ldaU)
+                {
+                    map = false;
+                    map2 = false;
+                }
 
                 if (map || map2)
                 {
