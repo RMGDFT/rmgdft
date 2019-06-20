@@ -424,10 +424,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Maximum number of iterations for davidson diagonalization.", 
                      "davidson_max_steps must be in the range (5 <= davidson_max_steps <= 20).\n");
 
-    If.RegisterInputKey("ldaU_radius", &lc.ldaU_radius, 1.0, 6.0, 6.0, 
+    If.RegisterInputKey("ldaU_radius", &lc.ldaU_radius, 1.0, 12.0, 9.0, 
                       CHECK_AND_FIX, OPTIONAL, 
                      "Max radius of atomic orbitals to be used in LDA+U projectors.\n",
-                     "ldaU_range must lie in the range (0.0, 6.0). Resetting to the default value of 6.0.\n");
+                     "ldaU_range must lie in the range (1.0, 12.0). Resetting to the default value of 9.0.\n");
 
     If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 0.0, 
                       CHECK_AND_FIX, OPTIONAL, 

@@ -59,13 +59,17 @@ template void Projector<std::complex<double>>::project(Kpoint<std::complex<doubl
 template int Projector<double>::get_num_nonloc_ions(void);
 template int Projector<double>::get_num_owned_ions(void);
 template int * Projector<double>::get_owned_ions_list(void);
+template int Projector<double>::get_num_tot_proj(void);
 template int * Projector<double>::get_nonloc_ions_list(void);
 template int Projector<double>::get_nldim(int);
+template int Projector<double>::get_pstride(void);
 template int Projector<std::complex<double>>::get_num_nonloc_ions(void);
 template int Projector<std::complex<double>>::get_num_owned_ions(void);
 template int * Projector<std::complex<double>>::get_owned_ions_list(void);
+template int Projector<std::complex<double>>::get_num_tot_proj(void);
 template int * Projector<std::complex<double>>::get_nonloc_ions_list(void);
 template int Projector<std::complex<double>>::get_nldim(int);
+template int Projector<std::complex<double>>::get_pstride(void);
 
 
 
@@ -192,7 +196,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             // Make map false if ionic type is not included in lda+u
             if(this->kind == ORBITAL_PROJECTOR)
             {
-                if(!sp->is_ldaU) map = false;
+                if(sp->num_ldaU_orbitals == 0) map = false;
             }
 
             /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
@@ -275,7 +279,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
         if (((this->kind == BETA_PROJECTOR) && (this->idxptrlen[ion] || pct.Qidxptrlen[ion])) ||
-            ((this->kind == ORBITAL_PROJECTOR) && this->idxptrlen[ion] && sp->is_ldaU))
+            ((this->kind == ORBITAL_PROJECTOR) && this->idxptrlen[ion] && (sp->num_ldaU_orbitals > 0)))
         {
             this->nonloc_ions_list[this->num_nonloc_ions] = ion;
 
@@ -305,7 +309,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/
-    if (int_sum_all (this->num_owned_ions, pct.grid_comm) != ct.num_ions)
+    if (int_sum_all (this->num_owned_ions, pct.grid_comm) != num_ions)
         rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
   
     
@@ -353,7 +357,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
                             get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), FNX_GRID, FNY_GRID, FNZ_GRID);
                 }
 
-                if((this->kind == ORBITAL_PROJECTOR) && !sp->is_ldaU)
+                if((this->kind == ORBITAL_PROJECTOR) && (sp->num_ldaU_orbitals == 0))
                 {
                     map = false;
                     map2 = false;
@@ -431,6 +435,16 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     delete [] Aiy;
     delete [] Aix;
 
+}
+
+template <class KpointType> int Projector<KpointType>::get_num_tot_proj(void)
+{
+    return this->num_tot_proj;
+}
+
+template <class KpointType> int Projector<KpointType>::get_pstride(void)
+{
+    return this->pstride;
 }
 
 template <class KpointType> int Projector<KpointType>::get_num_nonloc_ions(void)

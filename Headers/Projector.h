@@ -63,9 +63,8 @@ public:
     int *get_owned_ions_list(void);
     int *get_nonloc_ions_list(void);
     int get_nldim(int species);
-
-    // Number of projectors
-    int num_tot_proj;
+    int get_num_tot_proj(void);
+    int get_pstride(void);
 
     // Type LOCALIZED or DELOCALIZED
     int type;
@@ -85,6 +84,10 @@ private:
     int *nonloc_ions_list;
     int num_nonloc_pes;
     int *nldims;
+
+    // Number of projectors
+    int num_tot_proj;
+
 
     // For beta functions this is ct.max_nl while for atomic orbitals it is ct.max_orbitals
     int pstride;

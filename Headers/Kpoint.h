@@ -54,10 +54,12 @@ public:
     void orthogonalize(std::complex<double> *storage);
     void init_states(void);
     void write_occ(void);
-    void get_nlop(Projector<KpointType> *projector);
+    void get_nlop(int type);
+    void get_ldaUop(int type);
     void get_orbitals(KpointType *orbitals);
     void get_ion_orbitals(ION *iptr, KpointType *orbitals);
     void reset_beta_arrays(void);
+    void reset_orbital_arrays(void);
 
 
     // Input file internal map
@@ -105,14 +107,14 @@ public:
     // The orbital structure for this k-point
     State<KpointType> *Kstates;
 
-    // Legacy structure will be removed later
-    //STATE *kstates;
-
     // Pointer to sint arrays (Betaxpsi)
     KpointType *newsint_local;
 
+    // Pointer to orbital sint arrays (Orbital projectors)
+    KpointType *orbitalsint_local;
+
     // Size of the sint arrays
-    size_t sint_size;
+    //size_t sint_size;
 
     // Pointers to nv, ns, and Bns. Each of these arrays is dimensioned (NL_BLOCK_SIZE, P0_BASIS).
     // since we apply the non-local operators in blocks for efficiency and to save memory
@@ -127,8 +129,8 @@ public:
     KpointType *nl_Bweight;
     size_t nl_weight_size;
 
-    KpointType *orbital;
-    size_t orbital_size;
+    KpointType *orbital_weight;
+    size_t orbital_weight_size;
 
     std::complex<double> *phaseikr;
 

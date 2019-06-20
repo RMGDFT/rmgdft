@@ -41,6 +41,9 @@ typedef struct
     /** is included in ldaU projections */
     int is_ldaU;
 
+    /** Number of ldaU orbitals */
+    int num_ldaU_orbitals;
+
     /** Number of valence electrons */
     double zvalence;
 

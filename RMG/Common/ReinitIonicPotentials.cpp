@@ -73,16 +73,11 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     // Beta function weights are created in the calls to get_nlop.
     for(int kpt=0; kpt < ct.num_kpts_pe; kpt++)
     {
-        if(Kptr[kpt]->BetaProjector)
-        {
-            delete Kptr[kpt]->BetaProjector;
-        }
-        Kptr[kpt]->BetaProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions, ct.max_nl, BETA_PROJECTOR);
-        Kptr[kpt]->get_nlop(Kptr[kpt]->BetaProjector);
-
+        Kptr[kpt]->get_nlop(projector_type);
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
         {
-            Kptr[kpt]->OrbitalProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ldaU_ions, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
+            projector_type = DELOCALIZED;
+            Kptr[kpt]->get_ldaUop(ct.atomic_orbital_type);
         }
 
     } // end loop over kpts

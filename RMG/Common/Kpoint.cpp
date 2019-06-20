@@ -69,14 +69,20 @@ template void Kpoint<double>::orthogonalize(double *tpsi);
 template void Kpoint<std::complex <double> >::orthogonalize(std::complex <double> *tpsi);
 template void Kpoint<double>::write_occ(void);
 template void Kpoint<std::complex <double> >::write_occ(void);
-template void Kpoint<double>::get_nlop(Projector<double> *projector);
-template void Kpoint<std::complex <double> >::get_nlop(Projector<std::complex <double>> *projector);
+template void Kpoint<double>::get_nlop(int type);
+template void Kpoint<std::complex <double> >::get_nlop(int type);
 template void Kpoint<double>::reset_beta_arrays(void);
 template void Kpoint<std::complex <double> >::reset_beta_arrays(void);
+template void Kpoint<double>::reset_orbital_arrays(void);
+template void Kpoint<std::complex <double> >::reset_orbital_arrays(void);
 template void Kpoint<double>::get_orbitals(double *orbitals);
 template void Kpoint<std::complex <double> >::get_orbitals(std::complex<double> *orbitals);
 template void Kpoint<double>::get_ion_orbitals(ION *iptr, double *orbitals);
 template void Kpoint<std::complex <double> >::get_ion_orbitals(ION *iptr, std::complex<double> *orbitals);
+template void Kpoint<double>::get_ldaUop(int);
+template void Kpoint<std::complex <double> >::get_ldaUop(int);
+
+
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : ControlMap(ControlMap)
 {
@@ -88,9 +94,12 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->kidx = kindex;
     this->kweight = kkweight;
     this->nl_weight = NULL;
+    this->orbital_weight = NULL;
     this->nl_Bweight = NULL;
     this->BetaProjector = NULL;
+    this->OrbitalProjector = NULL;
     this->newsint_local = NULL;
+    this->orbitalsint_local = NULL;
 
     this->G = newG;
     this->T = newT;
@@ -1096,13 +1105,13 @@ template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *or
 
 
 // Sets up weight and sint arrays for the beta functions
-template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointType> *projector)
+template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type)
 {
 
+    if(this->BetaProjector) delete this->BetaProjector;
     reset_beta_arrays ();
-    this->BetaProjector = projector;
 
-    pct.num_tot_proj = this->BetaProjector->num_tot_proj;
+    this->BetaProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions, ct.max_nl, BETA_PROJECTOR);
     int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
 
     std::string newpath;
@@ -1121,7 +1130,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointTy
         ct.nvme_Bweight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
     }
 
-    this->nl_weight_size = (size_t)pct.num_tot_proj * (size_t)this->pbasis + 128;
+    this->nl_weight_size = (size_t)this->BetaProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
 
 #if GPU_ENABLED
     cudaError_t custat;
@@ -1200,7 +1209,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(Projector<KpointTy
    
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
-    size_t sint_alloc = (size_t)(factor * num_nonloc_ions * ct.max_nl);
+    size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride());
     sint_alloc *= (size_t)ct.max_states;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
 #if GPU_ENABLED
@@ -1260,3 +1269,110 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
     }
 
 }
+
+
+template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
+{
+
+    if (this->orbital_weight != NULL) {
+#if GPU_ENABLED
+        if(ct.pin_nonlocal_weights)
+        {
+            cudaFreeHost(this->orbital_weight);
+        }
+        else
+        {
+            cudaFree(this->orbital_weight);
+        }
+#else
+        if(ct.nvme_weights)
+        {
+            munmap(this->orbital_weight, this->orbital_weight_size*sizeof(double));
+        }
+        else
+        {
+            delete [] this->orbital_weight;
+        }
+#endif
+    }
+}
+
+
+// Sets up weight and sint arrays for the beta functions
+template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_type)
+{
+
+    if(this->OrbitalProjector) delete this->OrbitalProjector;
+    reset_orbital_arrays ();
+    this->OrbitalProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ldaU_ions, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
+
+    int num_nonloc_ions = this->OrbitalProjector->get_num_nonloc_ions();
+
+    std::string newpath;
+
+    if(ct.nvme_weights)
+    {
+        if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
+
+        newpath = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
+                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+        ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        
+    }
+
+    this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
+
+#if GPU_ENABLED
+    cudaError_t custat;
+    // Managed memory is faster when gpu memory is not constrained but 
+    // pinned memory works better when it is constrained.
+    if(ct.pin_nonlocal_weights)
+    {
+        custat = cudaMallocHost((void **)&this->orbital_weight, this->orbital_weight_size * sizeof(KpointType));
+        RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+    }
+    else
+    {
+        this->orbital_weight = (KpointType *)GpuMallocManaged(this->orbital_weight_size * sizeof(KpointType));
+        int device = -1;
+        cudaGetDevice(&device);
+        cudaMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
+    }
+    for(size_t idx = 0;idx < this->orbital_weight_size;idx++) this->orbital_weight[idx] = 0.0;
+
+#else
+    if(ct.nvme_weights)
+    {
+        this->orbital_weight = (KpointType *)CreateMmapArray(ct.nvme_weight_fd, this->orbital_weight_size*sizeof(KpointType));
+        if(!this->orbital_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
+        madvise(this->orbital_weight, this->orbital_weight_size*sizeof(KpointType), MADV_SEQUENTIAL);
+
+    }
+    else
+    {
+        this->orbital_weight = new KpointType[this->orbital_weight_size]();
+    }
+#endif
+
+
+#if GPU_ENABLED
+    if (this->orbitalsint_local)
+        GpuFreeManaged(this->orbitalsint_local);
+#else
+    if (this->orbitalsint_local)
+        delete [] this->orbitalsint_local;
+#endif
+   
+    int factor = 2;
+    if(ct.is_gamma) factor = 1; 
+    size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->OrbitalProjector->get_pstride());
+    sint_alloc *= (size_t)ct.max_states;
+    sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
+#if GPU_ENABLED
+    this->orbitalsint_local = (KpointType *)GpuMallocManaged(sint_alloc * sizeof(KpointType));
+#else
+    this->orbitalsint_local = new KpointType[sint_alloc]();
+#endif
+
+
+} 
