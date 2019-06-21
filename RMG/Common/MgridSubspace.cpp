@@ -103,6 +103,13 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
         delete(RT1);
 
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+        {
+            RT1 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
+            LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local, kptr->orbital_weight);
+            delete(RT1);
+        }
+
         /* Update the wavefunctions */
         int istop = kptr->nstates / (active_threads * pct.coalesce_factor);
         istop = istop * active_threads * pct.coalesce_factor;
@@ -236,8 +243,13 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     if(!potential_acceleration || (potential_acceleration && (ct.rms <  5.0e-6))) {
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
-
         delete(RT1);
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+        {
+            RT1 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
+            LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local, kptr->orbital_weight);
+            delete(RT1);
+        }
     }
 
 
@@ -250,29 +262,28 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     bool diag_this_step = (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag);
 
     /* do diagonalizations if requested, if not orthogonalize */
-    if (diag_this_step) {
-
+    if (diag_this_step)
+    {
         RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
         Subdiag (kptr, vtot_psi, ct.subdiag_driver);
         delete(RT1);
-        RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
-        delete(RT1);
-        // Projectors are rotated along with orbitals in Subdiag so no need to recalculate
-        // after diagonalizing.
-
     }
-    else {
-
+    else
+    {
         RT1 = new RmgTimer("3-MgridSubspace: Orthogonalization");
         kptr->orthogonalize(kptr->orbital_storage);
         delete(RT1);
+    }
 
-        // wavefunctions have changed, projectors have to be recalculated */
-        RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
+    // wavefunctions have changed, projectors have to be recalculated */
+    RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
+    Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
+    delete(RT1);
+    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+    {
+        RT1 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
+        LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local, kptr->orbital_weight);
         delete(RT1);
-
     }
         
 

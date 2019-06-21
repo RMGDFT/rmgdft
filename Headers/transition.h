@@ -165,6 +165,8 @@ template <typename KpointType>
 void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Bweight, KpointType *Nlweight);
 template <typename KpointType>
 void Betaxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *, KpointType *);
+template <typename KpointType>
+void LdaplusUxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *, KpointType *);
 template <typename RmgType>
 void AppCirDriverBeta (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
 template <typename DataType>

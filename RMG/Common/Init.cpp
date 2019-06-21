@@ -415,8 +415,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
         for (kpt = 0; kpt < ct.num_kpts_pe; kpt++){
-            int kpt1 = kpt + pct.kstart;
-            
             LcaoGetPsi(Kptr[kpt]);
         }
         delete(RT2);
@@ -568,6 +566,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
     delete RT3;
 
+    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+    {
+        RT3 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
+        for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local, Kptr[kpt]->orbital_weight);
+        }
+        delete(RT3);
+    }
+ 
+
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
     if(ct.runflag != RESTART ){
 
@@ -611,6 +620,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
             Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local, Kptr[kpt]->nl_weight);
             delete RT3;
+
+            if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+            {
+                RT3 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
+                LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local, Kptr[kpt]->orbital_weight);
+                delete(RT3);
+            }
+
         }
 
 

@@ -29,6 +29,7 @@ PotentialAcceleration.cpp
 Projector.cpp
 GetNewRho.cpp
 Betaxpsi.cpp
+LdaplusUxpsi.cpp
 Init.cpp
 Main.cpp
 AppNls.cpp

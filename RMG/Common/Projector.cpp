@@ -492,7 +492,6 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         char *transa;
         transa = transc;
         if(typeid(KpointType) == typeid(double)) transa = transt;
-
         int length = factor * ct.num_ions * nstates * this->pstride;
         RmgGemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
             weight, kptr->pbasis, &kptr->orbital_storage[offset*kptr->pbasis], kptr->pbasis,

@@ -1218,6 +1218,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     this->newsint_local = new KpointType[sint_alloc]();
 #endif
 
+    MPI_Barrier(pct.grid_comm);
 
 } 
 
@@ -1376,5 +1377,6 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     this->orbitalsint_local = new KpointType[sint_alloc]();
 #endif
 
+    MPI_Barrier(pct.grid_comm);
 
 } 
