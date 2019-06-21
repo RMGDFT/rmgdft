@@ -352,7 +352,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                        rmg_printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
                        printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     }
-                    //ct.atomic_orbital_type = DELOCALIZED;
+                    ct.atomic_orbital_type = DELOCALIZED;
                 }
             }
 

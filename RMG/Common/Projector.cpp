@@ -160,7 +160,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
             /* Generate ion pointer */
             ION *iptr = &ct.ions[ion];
-            SPECIES *sp = &ct.sp[iptr->species];
+//            SPECIES *sp = &ct.sp[iptr->species];
        
             int icenter = this->nldims[iptr->species] / 2;
             int icut = (icenter + 1) * (icenter + 1);
@@ -194,10 +194,11 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             }
 
             // Make map false if ionic type is not included in lda+u
-            if(this->kind == ORBITAL_PROJECTOR)
-            {
-                if(sp->num_ldaU_orbitals == 0) map = false;
-            }
+//  Future optimization
+//            if(this->kind == ORBITAL_PROJECTOR)
+//            {
+//                if(sp->num_ldaU_orbitals == 0) map = false;
+//            }
 
             /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
             /*xtal vector between ion and left bottom corner of the box */
@@ -280,6 +281,8 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
         if (((this->kind == BETA_PROJECTOR) && (this->idxptrlen[ion] || pct.Qidxptrlen[ion])) ||
             ((this->kind == ORBITAL_PROJECTOR) && this->idxptrlen[ion] && (sp->num_ldaU_orbitals > 0)))
+// Future optimization
+//            ((this->kind == ORBITAL_PROJECTOR) && this->idxptrlen[ion]))
         {
             this->nonloc_ions_list[this->num_nonloc_ions] = ion;
 
@@ -311,7 +314,6 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
      * This conditional can be removed if it is found that claim_ions works reliably*/
     if (int_sum_all (this->num_owned_ions, pct.grid_comm) != num_ions)
         rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
-  
     
     /* Loop over all ions to obtain the lists necessary for communication */
     for (int nlion = 0; nlion < this->num_nonloc_ions; nlion++)
@@ -357,11 +359,12 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
                             get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), FNX_GRID, FNY_GRID, FNZ_GRID);
                 }
 
-                if((this->kind == ORBITAL_PROJECTOR) && (sp->num_ldaU_orbitals == 0))
-                {
-                    map = false;
-                    map2 = false;
-                }
+// Future optimization
+//                if((this->kind == ORBITAL_PROJECTOR) && (sp->num_ldaU_orbitals == 0))
+//                {
+//                    map = false;
+//                    map2 = false;
+//                }
 
                 if (map || map2)
                 {

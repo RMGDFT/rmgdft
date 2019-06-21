@@ -158,6 +158,8 @@ template <typename KpointType>
 void GetDelocalizedWeight (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
 void GetLocalizedWeight (Kpoint<KpointType> **Kptr);
+template <typename KpointType>
+void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr);
 
 template <typename KpointType>
 void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Bweight, KpointType *Nlweight);

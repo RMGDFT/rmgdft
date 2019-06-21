@@ -24,6 +24,7 @@ GatherScatter.cpp
 GetDelocalizedWeight.cpp
 GetLocalizedWeight.cpp
 ReinitIonicPotentials.cpp
+GetDelocalizedOrbital.cpp
 PotentialAcceleration.cpp
 Projector.cpp
 GetNewRho.cpp

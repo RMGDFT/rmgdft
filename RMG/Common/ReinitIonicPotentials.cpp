@@ -76,7 +76,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
         Kptr[kpt]->get_nlop(projector_type);
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
         {
-            projector_type = DELOCALIZED;
             Kptr[kpt]->get_ldaUop(ct.atomic_orbital_type);
         }
 
