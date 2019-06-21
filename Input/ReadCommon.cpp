@@ -811,16 +811,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("filter_dpot", &lc.filter_dpot, false,
                         "Flag indicating whether or not to filter density depenedent potentials.");
 
-    if(ct.rmg_branch == RMG_NEGF)
-    {
-        If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, false,
-                            "Flag indicating whether or not to use square root technique for density interpolation.");
-    }
-    else
-    {
-        If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, true,
-                            "Flag indicating whether or not to use square root technique for density interpolation.");
-    }
+    If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, false,
+                        "Flag indicating whether or not to use square root technique for density interpolation.");
 
     If.RegisterInputKey("renormalize_forces", &lc.renormalize_forces, true,
                         "Flag indicating whether or not to renormalize forces.");
