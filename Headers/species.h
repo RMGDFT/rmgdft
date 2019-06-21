@@ -219,6 +219,8 @@ typedef struct
     /*Grid spacing for atomic wave functions on linear grid*/
     double drlig_awave;
 
+    // Flag indicating whether a particular orbital is included in LDA+U projectors
+    bool *awave_is_ldaU;
 
     /* Pseudopotential filtering parameters */
     double qcut;                  /* Real space local cutoff for qfunctions */

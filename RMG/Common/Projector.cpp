@@ -280,9 +280,9 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
         if (((this->kind == BETA_PROJECTOR) && (this->idxptrlen[ion] || pct.Qidxptrlen[ion])) ||
-            ((this->kind == ORBITAL_PROJECTOR) && this->idxptrlen[ion] && (sp->num_ldaU_orbitals > 0)))
+            ((this->kind == ORBITAL_PROJECTOR) && this->idxptrlen[ion]))
 // Future optimization
-//            ((this->kind == ORBITAL_PROJECTOR) && this->idxptrlen[ion]))
+//            ((this->kind == ORBITAL_PROJECTOR) && this->idxptrlen[ion] && (sp->num_ldaU_orbitals > 0)))
         {
             this->nonloc_ions_list[this->num_nonloc_ions] = ion;
 

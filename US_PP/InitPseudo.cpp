@@ -324,6 +324,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         int ldaU_orbitals = 0;
+        sp->awave_is_ldaU = new bool[sp->num_atomic_waves]();
+
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
         {
 
@@ -389,6 +391,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                     if(tol > 1.0e-5)
                     {
                         ldaU_orbitals += m;                        
+                        sp->awave_is_ldaU[ip] = true;
                     }
                 } 
             }

@@ -33,12 +33,13 @@
 #include "RmgParallelFft.h"
 
 
-// Used to generate orbital projectors that span the full space
+// Used to generate LDA+U orbital projectors that span the full space
 template void GetDelocalizedOrbital<double> (Kpoint<double> **Kptr);
 template void GetDelocalizedOrbital<std::complex<double> >(Kpoint<std::complex<double>> **Kptr);
 template <typename KpointType>
 void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
 {
+
 
     KpointType *weight;
     KpointType ZERO_t(0.0);
@@ -58,7 +59,6 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
         rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
-    KpointType *tem_array = new KpointType[pbasis];
 
     for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
@@ -91,63 +91,50 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
 
 
             /* Loop over radial projectors */
-            for (int ip = 0; ip < sp->num_ldaU_orbitals; ip++)
+            for (int ip = 0; ip < sp->num_orbitals; ip++)
             {
 
+                for(int idx = 0; idx < pbasis; idx++) weight[idx] = ZERO_t;
 
-                /*Apply the phase factor */
+
+                // Apply the phase factor. Because the parallel fft has to be executed by all nodes this has
+                // to be outside the if block even if we don't use the results
                 for (int idx = 0; idx < pbasis; idx++)
                 {
                     gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
                 }
 
-
                 /*Do the backwards transform */
                 PfftInverse(gbptr, beptr, *coarse_pwaves);
 
-                std::complex<double> *weight_C = (std::complex<double> *)weight;
 
-                double *weight_R = (double *)weight;
-
-                for(int idx = 0; idx < pbasis; idx++) weight[idx] = ZERO_t;
-
-                std::complex<double> *nbeptr = (std::complex<double> *)beptr;
-
-                std::complex<double> *tem_array_C = (std::complex<double> *)tem_array;
-
-                if(ct.is_gamma)
+                if(sp->awave_is_ldaU[ip])
                 {
-                    for(int ix = 0; ix <pbasis; ix++) tem_array[ix] = std::real(nbeptr[ix]);
-                }
-                else
-                {
-                    for (int idx = 0; idx < pbasis; idx++) tem_array_C[idx] = nbeptr[idx];
-                }
+                    std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 
-                for (int idx = 0; idx < pbasis; idx++)
-                {
-                    if(ct.is_gamma) {
-                        weight_R[idx] = std::real(nbeptr[idx]);
-
+                    if(ct.is_gamma)
+                    {
+                        double *weight_R = (double *)weight;
+                        for (int idx = 0; idx < pbasis; idx++) weight_R[idx] = std::real(nbeptr[idx]);
                     }
-                    else {
-                        weight_C[idx] = nbeptr[idx];
+                    else
+                    {
+                        std::complex<double> *weight_C = (std::complex<double> *)weight;
+                        for (int idx = 0; idx < pbasis; idx++) weight_C[idx] = nbeptr[idx];
                     }
                 }
-
 
                 /*Advance the temp pointers */
                 fptr += pbasis;
                 weight += pbasis;
 
-            }                   /*end for(ip = 0;ip < sp->num_ldaU_orbitals;ip++) */
+            } /* end for(ip = 0;ip < sp->num_orbitals;ip++) */
 
 
         }                           /* end for */
 
     } // end for(kpt)
 
-    delete [] tem_array;
     delete [] fftw_phase;
     fftw_free (gbptr);
     fftw_free (beptr);
