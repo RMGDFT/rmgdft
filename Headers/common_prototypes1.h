@@ -307,7 +307,6 @@ void fire (double *step, double step_max, double f_inc, double f_dec, int n_min,
 int int_sum_all (int x, MPI_Comm comm);
 void move_ions (double dt);
 void lcao_init (void);
-void lcao_get_rho (double * arho_f);
 void filter_potential (double *potential, double *r, int rg_points, double rmax, double offset, double parm, double* potential_lgrid, 
 	double *rab, int l_value, double dr, double  gwidth, int lgrid_points, double rcut, double rwidth, double * drpotential_lgrid);
 int test_overlap (int gridpe, ION * iptr, int *Aix, int *Aiy, int *Aiz,

@@ -124,15 +124,17 @@ public:
     int nl_first_state;  // first state in the buffer
 
 
-    // Pointers to weight and Bweight and gpu versions
+    // Pointers to weight and Bweight
     KpointType *nl_weight;
     KpointType *nl_Bweight;
     size_t nl_weight_size;
 
+    // Orbital weights
     KpointType *orbital_weight;
     size_t orbital_weight_size;
 
-    std::complex<double> *phaseikr;
+    // LDA+U occupation matrix
+    double_4d_array *ns_occ;
 
     // Pointer to potential acceleration arrays
     double *dvh;

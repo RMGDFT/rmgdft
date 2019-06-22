@@ -44,6 +44,9 @@ typedef struct
     /** Number of ldaU orbitals */
     int num_ldaU_orbitals;
 
+    /** ldaU l value */
+    int ldaU_l;
+
     /** Number of valence electrons */
     double zvalence;
 

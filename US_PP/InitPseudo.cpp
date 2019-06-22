@@ -324,6 +324,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         int ldaU_orbitals = 0;
+        int ldaU_l = 0;
         sp->awave_is_ldaU = new bool[sp->num_atomic_waves]();
 
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
@@ -388,17 +389,22 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                     // Ignore filled shell
                     double full_occ = 2.0 * (double)m;
                     double tol = fabs(full_occ - sp->atomic_wave_oc[ip]);
-                    if(tol > 1.0e-5)
+
+                    // Only use one set of localized orbitals per species
+                    if((tol > 1.0e-5) && (ldaU_l == 0))
                     {
                         ldaU_orbitals += m;                        
                         sp->awave_is_ldaU[ip] = true;
+                        ldaU_l = l;
                     }
                 } 
             }
         }
 
         ct.max_ldaU_orbitals = std::max(ct.max_ldaU_orbitals, ldaU_orbitals);
+        ct.max_ldaU_l = std::max(ct.max_ldaU_l, ldaU_l);
         sp->num_ldaU_orbitals = ldaU_orbitals;
+        sp->ldaU_l = ldaU_l;
         if (pct.gridpe == 0 && write_flag) fclose (psp);
 
         delete [] bessel_rg;

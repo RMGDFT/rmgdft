@@ -100,6 +100,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->OrbitalProjector = NULL;
     this->newsint_local = NULL;
     this->orbitalsint_local = NULL;
+    this->ns_occ = NULL;
 
     this->G = newG;
     this->T = newT;
@@ -1376,6 +1377,11 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 #else
     this->orbitalsint_local = new KpointType[sint_alloc]();
 #endif
+
+    // Now create the occupation array
+    int nspin = ct.spin_flag + 1;
+    if(!this->ns_occ) this->ns_occ = new double_4d_array(boost::extents[ct.num_ions][nspin][2*ct.max_ldaU_l+1][2*ct.max_ldaU_l+1]);
+printf("HHHH  %d  %d  %d\n", ct.num_ions, nspin, 2*ct.max_ldaU_l+1);
 
     MPI_Barrier(pct.grid_comm);
 
