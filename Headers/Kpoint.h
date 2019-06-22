@@ -37,6 +37,7 @@
 #include "InputKey.h"
 #include "Projector.h"
 #include "RmgParallelFft.h"
+#include "LdaU.h"
 #include <mpi.h>
 
 template <typename KpointType> class Kpoint {
@@ -61,7 +62,6 @@ public:
     void reset_beta_arrays(void);
     void reset_orbital_arrays(void);
 
-
     // Input file internal map
     std::unordered_map<std::string, InputKey *>& ControlMap;
 
@@ -79,6 +79,9 @@ public:
 
     // Atomic orbital projectors
     Projector<KpointType> *OrbitalProjector;
+
+    // ldaU object
+    LdaU<KpointType> *ldaU;
 
     // MPI communicator to use for trade images and reduction operations
     MPI_Comm comm;
@@ -132,9 +135,6 @@ public:
     // Orbital weights
     KpointType *orbital_weight;
     size_t orbital_weight_size;
-
-    // LDA+U occupation matrix
-    double_4d_array *ns_occ;
 
     // Pointer to potential acceleration arrays
     double *dvh;

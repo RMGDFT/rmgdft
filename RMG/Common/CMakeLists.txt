@@ -30,6 +30,7 @@ Projector.cpp
 GetNewRho.cpp
 Betaxpsi.cpp
 LdaplusUxpsi.cpp
+LdaU.cpp
 Init.cpp
 Main.cpp
 AppNls.cpp

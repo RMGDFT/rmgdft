@@ -98,9 +98,9 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->nl_Bweight = NULL;
     this->BetaProjector = NULL;
     this->OrbitalProjector = NULL;
+    this->ldaU = NULL;
     this->newsint_local = NULL;
     this->orbitalsint_local = NULL;
-    this->ns_occ = NULL;
 
     this->G = newG;
     this->T = newT;
@@ -1307,6 +1307,10 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     if(this->OrbitalProjector) delete this->OrbitalProjector;
     reset_orbital_arrays ();
 
+    if(this->ldaU) delete this->ldaU;
+
+    this->ldaU = new LdaU<KpointType>(ct.num_ions, ct.spin_flag + 1, ct.max_ldaU_l);
+
 //  Can make this more efficient at some point by restricting to ct.num_ldaU_ions but that does not yet work
 //    this->OrbitalProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ldaU_ions, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
     this->OrbitalProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
@@ -1378,11 +1382,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     this->orbitalsint_local = new KpointType[sint_alloc]();
 #endif
 
-    // Now create the occupation array
-    int nspin = ct.spin_flag + 1;
-    if(!this->ns_occ) this->ns_occ = new double_4d_array(boost::extents[ct.num_ions][nspin][2*ct.max_ldaU_l+1][2*ct.max_ldaU_l+1]);
-printf("HHHH  %d  %d  %d\n", ct.num_ions, nspin, 2*ct.max_ldaU_l+1);
-
     MPI_Barrier(pct.grid_comm);
 
 } 
+
