@@ -6,7 +6,20 @@
 
 #ifdef __cplusplus
     #include <complex>
+    #include <boost/multi_array.hpp>
     typedef std::complex<double> DoubleC;
+    typedef boost::multi_array<int, 1> int_1d_array;
+    typedef boost::multi_array<int, 2> int_2d_array;
+    typedef boost::multi_array<int, 3> int_3d_array;
+    typedef boost::multi_array<int, 4> int_4d_array;
+    typedef boost::multi_array<double, 1> double_1d_array;
+    typedef boost::multi_array<double, 2> double_2d_array;
+    typedef boost::multi_array<double, 3> double_3d_array;
+    typedef boost::multi_array<double, 4> double_4d_array;
+    typedef boost::multi_array<std::complex<double>, 1> doubleC_1d_array;
+    typedef boost::multi_array<std::complex<double>, 2> doubleC_2d_array;
+    typedef boost::multi_array<std::complex<double>, 3> doubleC_3d_array;
+    typedef boost::multi_array<std::complex<double>, 4> doubleC_4d_array;
 #else
     #include <complex.h>
     typedef complex double   DoubleC;

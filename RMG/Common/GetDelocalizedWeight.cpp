@@ -74,7 +74,7 @@ void GetDelocalizedWeight (Kpoint<KpointType> **Kptr)
             size_t offset = (size_t)ion * stride * (size_t)pbasis;
             Bweight = &Kptr[kpt]->nl_Bweight[offset];
             Nlweight = &Kptr[kpt]->nl_weight[offset];
-
+//printf("P  %p  %p\n",Bweight, Nlweight);
             /* Generate ion pointer */
             ION *iptr = &ct.ions[ion];
 

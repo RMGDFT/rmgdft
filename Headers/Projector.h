@@ -54,7 +54,6 @@
 template <typename KpointType> class Projector {
 
 public:
-    typedef boost::multi_array<int, 2> int_2d_array;
     Projector(int projector_type, int num_pes, int num_ions, int stride, int projector_kind);
     ~Projector(void);
     void project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int n, KpointType *w);
