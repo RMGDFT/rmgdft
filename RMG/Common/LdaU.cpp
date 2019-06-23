@@ -46,8 +46,8 @@
 
 
 
-template LdaU<double>::LdaU(int, int, int);
-template LdaU<std::complex<double>>::LdaU(int, int, int);
+template LdaU<double>::LdaU(Kpoint<double> *, int, int);
+template LdaU<std::complex<double>>::LdaU(Kpoint<std::complex<double>> *, int, int);
 template LdaU<double>::~LdaU(void);
 template LdaU<std::complex<double>>::~LdaU(void);
 
@@ -56,35 +56,69 @@ template void LdaU<std::complex<double>>::calc_ns_occ(std::complex<double> *);
 
 
 
-template <class KpointType> LdaU<KpointType>::LdaU(int num_ions, int nspin, int max_ldaU_l) : 
-                        ns_occ(boost::extents[num_ions][nspin][2*max_ldaU_l+1][2*max_ldaU_l+1])
+template <class KpointType> LdaU<KpointType>::LdaU(Kpoint<KpointType> *kptr, int num_ions, int max_ldaU_l) : 
+                        ns_occ(boost::extents[num_ions][2*max_ldaU_l+1][2*max_ldaU_l+1])
 
 {
     this->ldaU_m = 2*max_ldaU_l+1;
+    this->K = kptr;
 }
 
 // Computes the LDA+U occupation matrix
 template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint)
 {
-    int nspin = ct.spin_flag + 1;
+    int nstates = this->K->nstates;
+    int num_tot_proj = this->K->OrbitalProjector->get_num_tot_proj();
+    int num_nonloc_ions = this->K->OrbitalProjector->get_num_nonloc_ions();
+    int *nonloc_ions_list = this->K->OrbitalProjector->get_nonloc_ions_list();
+    int pstride = this->K->OrbitalProjector->get_pstride();
 
-    // Zero it out
-    for(int ion=0;ion < ct.num_ions;ion++)
+    size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states;
+    KpointType *sint_compack = new KpointType[alloc]();
+
+    boost::multi_array_ref<KpointType, 3> nsint{sint_compack, boost::extents[nstates][ct.num_ions][pstride]};
+
+    // Repack the sint array
+    for(int istate = 0; istate < nstates; istate++)
     {
-        for(int ispin=0;ispin < nspin;ispin++)
+        int sindex = istate * num_nonloc_ions * pstride;
+        for (int ion = 0; ion < num_nonloc_ions; ion++)
         {
-            for(int i=0;i < this->ldaU_m;i++)
+            int proj_index = ion * pstride;
+            KpointType *psint = &sint[proj_index + sindex];
+            int gion = nonloc_ions_list[ion];
+            for (int i = 0; i < pstride; i++)
             {
-                for(int j=0;j < this->ldaU_m;i++)
-                {
-                    this->ns_occ[ion][ispin][i][j] = 0.0;
-                }
+                //sint_compack[istate * num_tot_proj + proj_index + i] = psint[i];
+                nsint[istate][gion][i] = psint[i];
             }
         }
     }
 
-    // Now generate the occupation matrix
 
+
+    for(int ion=0;ion < ct.num_ions;ion++)
+    {
+        for(int i=0;i < this->ldaU_m;i++)
+        {
+            for(int j=0;j < this->ldaU_m;j++)
+            {
+
+                double occ = 0.0; 
+                for(int st=0;st < nstates;st++)
+                {
+                    occ = occ + this->K->Kstates[st].occupation[0] * std::real(nsint[st][ion][i] * nsint[st][ion][j]);
+                }
+                this->ns_occ[ion][i][j] = occ * this->K->kweight;
+if(pct.gridpe==0)
+{
+printf("PPPP  %d  %d  %d  %14.8e\n",ion,i,j,this->ns_occ[ion][i][j]);
+}
+            }
+            }
+    }
+
+    delete [] sint_compack;
 }
 
 // Destructor

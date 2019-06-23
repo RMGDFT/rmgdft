@@ -31,17 +31,19 @@
 #define RMG_LdaU_H 1
 
 #include "rmgtypedefs.h"
+#include "Kpoint.h"
 
 template <typename KpointType> class LdaU {
 
 public:
 
-    LdaU(int num_ions, int nspin, int max_ldaU_l);
+    LdaU(Kpoint<KpointType> *kptr, int num_ions, int max_ldaU_l);
     ~LdaU(void);
     void calc_ns_occ(KpointType *sint);
 
     int ldaU_m;
-    double_4d_array ns_occ;    
+    Kpoint<KpointType> *K;
+    double_3d_array ns_occ;    
 
 };
 

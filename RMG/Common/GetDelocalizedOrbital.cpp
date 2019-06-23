@@ -40,9 +40,7 @@ template <typename KpointType>
 void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
 {
 
-
     KpointType *weight;
-    KpointType ZERO_t(0.0);
     std::complex<double> I_t(0.0, 1.0);
     int pbasis = Kptr[0]->pbasis;
 
@@ -94,9 +92,6 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
             for (int ip = 0; ip < sp->num_orbitals; ip++)
             {
 
-                for(int idx = 0; idx < pbasis; idx++) weight[idx] = ZERO_t;
-
-
                 // Apply the phase factor. Because the parallel fft has to be executed by all nodes this has
                 // to be outside the if block even if we don't use the results
                 for (int idx = 0; idx < pbasis; idx++)
@@ -110,17 +105,15 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
 
                 if(sp->awave_is_ldaU[ip])
                 {
-                    std::complex<double> *nbeptr = (std::complex<double> *)beptr;
-
                     if(ct.is_gamma)
                     {
                         double *weight_R = (double *)weight;
-                        for (int idx = 0; idx < pbasis; idx++) weight_R[idx] = std::real(nbeptr[idx]);
+                        for (int idx = 0; idx < pbasis; idx++) weight_R[idx] = std::real(beptr[idx]);
                     }
                     else
                     {
                         std::complex<double> *weight_C = (std::complex<double> *)weight;
-                        for (int idx = 0; idx < pbasis; idx++) weight_C[idx] = nbeptr[idx];
+                        for (int idx = 0; idx < pbasis; idx++) weight_C[idx] = beptr[idx];
                     }
                 }
 
