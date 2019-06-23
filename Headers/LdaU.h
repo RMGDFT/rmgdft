@@ -38,7 +38,7 @@ public:
 
     LdaU(int num_ions, int nspin, int max_ldaU_l);
     ~LdaU(void);
-    void calc_ns_occ(void);
+    void calc_ns_occ(KpointType *sint);
 
     int ldaU_m;
     double_4d_array ns_occ;    

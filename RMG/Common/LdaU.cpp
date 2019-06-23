@@ -51,8 +51,8 @@ template LdaU<std::complex<double>>::LdaU(int, int, int);
 template LdaU<double>::~LdaU(void);
 template LdaU<std::complex<double>>::~LdaU(void);
 
-template void LdaU<double>::calc_ns_occ(void);
-template void LdaU<std::complex<double>>::calc_ns_occ(void);
+template void LdaU<double>::calc_ns_occ(double *);
+template void LdaU<std::complex<double>>::calc_ns_occ(std::complex<double> *);
 
 
 
@@ -64,7 +64,7 @@ template <class KpointType> LdaU<KpointType>::LdaU(int num_ions, int nspin, int 
 }
 
 // Computes the LDA+U occupation matrix
-template <class KpointType> void LdaU<KpointType>::calc_ns_occ(void)
+template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint)
 {
     int nspin = ct.spin_flag + 1;
 
