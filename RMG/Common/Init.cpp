@@ -228,6 +228,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 #else
     // Wavefunctions are actually stored here
+    // mpi_queue_mode has a bug for this case which can cause hangs so put the check in place
+    if(ct.mpi_queue_mode) ct.non_local_block_size = std::max(ct.non_local_block_size, ct.max_states);
+
     std::string newpath;
 
     if(ct.nvme_orbitals)
