@@ -37,18 +37,19 @@ template <typename KpointType> class LdaU {
 
 public:
 
-    LdaU(Kpoint<KpointType> *kptr, int num_ions, int max_ldaU_l);
+    LdaU(Kpoint<KpointType> &kp);
     ~LdaU(void);
     void calc_ns_occ(KpointType *sint);
+    void write_ldaU(void);
 
     int ldaU_m;
-    Kpoint<KpointType> *K;
-    double_3d_array ns_occ;    
+    Kpoint<KpointType> &K;
+    double_4d_array ns_occ;    
 
-    double *Hubbard_U;
-    double *Hubbard_J0;
-    double *Hubbard_alpha;
-    double *Hubbard_beta;
+    std::vector<double> Hubbard_U;
+    std::vector<double> Hubbard_J0;
+    std::vector<double> Hubbard_alpha;
+    std::vector<double> Hubbard_beta;
 
     double_2d_array Hubbard_J;
 

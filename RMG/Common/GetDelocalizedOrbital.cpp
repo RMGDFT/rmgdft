@@ -92,19 +92,16 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
             for (int ip = 0; ip < sp->num_orbitals; ip++)
             {
 
-                // Apply the phase factor. Because the parallel fft has to be executed by all nodes this has
-                // to be outside the if block even if we don't use the results
-                for (int idx = 0; idx < pbasis; idx++)
-                {
-                    gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
-                }
-
-                /*Do the backwards transform */
-                PfftInverse(gbptr, beptr, *coarse_pwaves);
-
-
+                // This ranges over all orbitals including the m-dependence
                 if(sp->awave_is_ldaU[ip])
                 {
+
+                    // Apply the phase factor.
+                    for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
+
+                    /*Do the backwards transform */
+                    PfftInverse(gbptr, beptr, *coarse_pwaves);
+
                     if(ct.is_gamma)
                     {
                         double *weight_R = (double *)weight;
@@ -115,11 +112,13 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
                         std::complex<double> *weight_C = (std::complex<double> *)weight;
                         for (int idx = 0; idx < pbasis; idx++) weight_C[idx] = beptr[idx];
                     }
+
+                    weight += pbasis;
+
                 }
 
                 /*Advance the temp pointers */
                 fptr += pbasis;
-                weight += pbasis;
 
             } /* end for(ip = 0;ip < sp->num_orbitals;ip++) */
 

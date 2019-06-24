@@ -46,47 +46,40 @@
 
 
 
-template LdaU<double>::LdaU(Kpoint<double> *, int, int);
-template LdaU<std::complex<double>>::LdaU(Kpoint<std::complex<double>> *, int, int);
+template LdaU<double>::LdaU(Kpoint<double> &);
+template LdaU<std::complex<double>>::LdaU(Kpoint<std::complex<double>> &);
 template LdaU<double>::~LdaU(void);
 template LdaU<std::complex<double>>::~LdaU(void);
 
 template void LdaU<double>::calc_ns_occ(double *);
 template void LdaU<std::complex<double>>::calc_ns_occ(std::complex<double> *);
+template void LdaU<double>::write_ldaU(void);
+template void LdaU<std::complex<double>>::write_ldaU(void);
 
 
-
-template <class KpointType> LdaU<KpointType>::LdaU(Kpoint<KpointType> *kptr, int num_ions, int max_ldaU_l) : 
-                        ns_occ(boost::extents[num_ions][2*max_ldaU_l+1][2*max_ldaU_l+1])
-
+template <class KpointType> LdaU<KpointType>::LdaU(Kpoint<KpointType> &kp) : K(kp)
 {
-    this->ldaU_m = 2*max_ldaU_l+1;
-    this->K = kptr;
+    this->ldaU_m = 2*ct.max_ldaU_l+1;
 
-    this->Hubbard_U = new double[ct.num_species];
-    this->Hubbard_J0 = new double[ct.num_species];
-    this->Hubbard_alpha = new double[ct.num_species];
-    this->Hubbard_beta = new double[ct.num_species];
-    Hubbard_J.resize(boost::extents[ct.num_species][3]);
-
+    this->Hubbard_J.resize(boost::extents[ct.num_species][3]);
+    this->ns_occ.resize(boost::extents[ct.spin_flag+1][ct.num_ions][2*ct.max_ldaU_l+1][2*ct.max_ldaU_l+1]);
 }
 
 // Computes the LDA+U occupation matrix
 template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint)
 {
-    int nstates = this->K->nstates;
-    int num_tot_proj = this->K->OrbitalProjector->get_num_tot_proj();
-    int num_nonloc_ions = this->K->OrbitalProjector->get_num_nonloc_ions();
-    int *nonloc_ions_list = this->K->OrbitalProjector->get_nonloc_ions_list();
-    int pstride = this->K->OrbitalProjector->get_pstride();
+    int num_tot_proj = K.OrbitalProjector->get_num_tot_proj();
+    int num_nonloc_ions = K.OrbitalProjector->get_num_nonloc_ions();
+    int *nonloc_ions_list = K.OrbitalProjector->get_nonloc_ions_list();
+    int pstride = K.OrbitalProjector->get_pstride();
 
     size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states;
     KpointType *sint_compack = new KpointType[alloc]();
 
-    boost::multi_array_ref<KpointType, 3> nsint{sint_compack, boost::extents[nstates][ct.num_ions][pstride]};
+    boost::multi_array_ref<KpointType, 3> nsint{sint_compack, boost::extents[K.nstates][ct.num_ions][pstride]};
 
     // Repack the sint array
-    for(int istate = 0; istate < nstates; istate++)
+    for(int istate = 0; istate < K.nstates; istate++)
     {
         int sindex = istate * num_nonloc_ions * pstride;
         for (int ion = 0; ion < num_nonloc_ions; ion++)
@@ -110,25 +103,59 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint)
         {
             for(int j=0;j < this->ldaU_m;j++)
             {
-
                 double occ = 0.0; 
-                for(int st=0;st < nstates;st++)
+                for(int st=0;st < K.nstates;st++)
                 {
-                    occ = occ + this->K->Kstates[st].occupation[0] * std::real(nsint[st][ion][i] * nsint[st][ion][j]);
+                    occ = occ + K.Kstates[st].occupation[0] * std::real(nsint[st][ion][i] * nsint[st][ion][j]);
                 }
-                this->ns_occ[ion][i][j] = occ * this->K->kweight;
+                ns_occ[0][ion][i][j] = occ * K.kweight;
             }
         }
     }
 
+    // Get opposite spins
+    if(ct.spin_flag)
+    {
+        MPI_Status status;
+        int len = ct.num_ions * pstride * pstride;
+        double *sendbuf = ns_occ.data();
+        double *recvbuf = sendbuf + len;
+        MPI_Sendrecv(sendbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
+            recvbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+
+    }
     delete [] sint_compack;
+}
+
+
+// Writes out LDA+U information
+template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
+{
+    if(pct.imgpe!=0) return;
+
+    for(int ion=0;ion < ct.num_ions;ion++)
+    {
+        ION *iptr = &ct.ions[ion];
+        SPECIES *sp = &ct.sp[iptr->species];
+        if(sp->num_ldaU_orbitals)
+        {
+            for(int ispin=0;ispin < ct.spin_flag+1;ispin++)
+            {
+                fprintf(ct.logfile, "  ion %d spin %d LDA+U occupation matrix\n", ion, ispin);
+                for(int i=0;i < ldaU_m;i++)
+                {
+                    for(int j=0;j < ldaU_m;j++)
+                    {
+                        fprintf(ct.logfile, "%7.4f   ", ns_occ[ispin][ion][i][j]);
+                    }
+                    fprintf(ct.logfile, "\n");
+                }
+            }
+        }
+    }
 }
 
 // Destructor
 template <class KpointType> LdaU<KpointType>::~LdaU(void)
 {
-    delete [] this->Hubbard_beta;
-    delete [] this->Hubbard_alpha;
-    delete [] this->Hubbard_J0;
-    delete [] this->Hubbard_U;
 }

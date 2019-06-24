@@ -1309,7 +1309,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
     if(this->ldaU) delete this->ldaU;
 
-    this->ldaU = new LdaU<KpointType>(this, ct.num_ions, ct.max_ldaU_l);
+    this->ldaU = new LdaU<KpointType>(*this);
 
 //  Can make this more efficient at some point by restricting to ct.num_ldaU_ions but that does not yet work
     this->OrbitalProjector = new Projector<KpointType>(projector_type, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);

@@ -325,8 +325,9 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         int ldaU_orbitals = 0;
         int ldaU_l = 0;
-        sp->awave_is_ldaU = new bool[sp->num_atomic_waves]();
+        sp->awave_is_ldaU = new bool[sp->num_atomic_waves_m]();
 
+        int lm_index = 0;
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
         {
 
@@ -380,10 +381,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
             // Now lda+u stuff
+            int l = sp->atomic_wave_l[ip];
+            int m = 2*l + 1;
             if(ct.ldaU_mode != LDA_PLUS_U_NONE)
             {
-                int l = sp->atomic_wave_l[ip];
-                int m = 2*l + 1;
                 if(l > 1)  // d or f state
                 {
                     // Ignore filled shell
@@ -394,11 +395,12 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                     if((tol > 1.0e-5) && (ldaU_l == 0))
                     {
                         ldaU_orbitals += m;                        
-                        sp->awave_is_ldaU[ip] = true;
+                        for(int im=lm_index;im < lm_index+m;im++) sp->awave_is_ldaU[im] = true;
                         ldaU_l = l;
                     }
                 } 
             }
+            lm_index += 2*l + 1;
         }
 
         ct.max_ldaU_orbitals = std::max(ct.max_ldaU_orbitals, ldaU_orbitals);
