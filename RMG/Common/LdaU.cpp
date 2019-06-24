@@ -62,6 +62,13 @@ template <class KpointType> LdaU<KpointType>::LdaU(Kpoint<KpointType> *kptr, int
 {
     this->ldaU_m = 2*max_ldaU_l+1;
     this->K = kptr;
+
+    this->Hubbard_U = new double[ct.num_species];
+    this->Hubbard_J0 = new double[ct.num_species];
+    this->Hubbard_alpha = new double[ct.num_species];
+    this->Hubbard_beta = new double[ct.num_species];
+    Hubbard_J.resize(boost::extents[ct.num_species][3]);
+
 }
 
 // Computes the LDA+U occupation matrix
@@ -110,12 +117,8 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint)
                     occ = occ + this->K->Kstates[st].occupation[0] * std::real(nsint[st][ion][i] * nsint[st][ion][j]);
                 }
                 this->ns_occ[ion][i][j] = occ * this->K->kweight;
-if(pct.gridpe==0)
-{
-printf("PPPP  %d  %d  %d  %14.8e\n",ion,i,j,this->ns_occ[ion][i][j]);
-}
             }
-            }
+        }
     }
 
     delete [] sint_compack;
@@ -124,4 +127,8 @@ printf("PPPP  %d  %d  %d  %14.8e\n",ion,i,j,this->ns_occ[ion][i][j]);
 // Destructor
 template <class KpointType> LdaU<KpointType>::~LdaU(void)
 {
+    delete [] this->Hubbard_beta;
+    delete [] this->Hubbard_alpha;
+    delete [] this->Hubbard_J0;
+    delete [] this->Hubbard_U;
 }

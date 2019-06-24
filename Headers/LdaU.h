@@ -45,6 +45,13 @@ public:
     Kpoint<KpointType> *K;
     double_3d_array ns_occ;    
 
+    double *Hubbard_U;
+    double *Hubbard_J0;
+    double *Hubbard_alpha;
+    double *Hubbard_beta;
+
+    double_2d_array Hubbard_J;
+
 };
 
 #endif

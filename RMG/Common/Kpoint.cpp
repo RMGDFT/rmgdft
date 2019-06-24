@@ -1112,7 +1112,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     if(this->BetaProjector) delete this->BetaProjector;
     reset_beta_arrays ();
 
-    this->BetaProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions, ct.max_nl, BETA_PROJECTOR);
+    this->BetaProjector = new Projector<KpointType>(projector_type, ct.max_nl, BETA_PROJECTOR);
     int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
 
     std::string newpath;
@@ -1312,8 +1312,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     this->ldaU = new LdaU<KpointType>(this, ct.num_ions, ct.max_ldaU_l);
 
 //  Can make this more efficient at some point by restricting to ct.num_ldaU_ions but that does not yet work
-//    this->OrbitalProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ldaU_ions, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
-    this->OrbitalProjector = new Projector<KpointType>(projector_type, pct.grid_npes, ct.num_ions, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
+    this->OrbitalProjector = new Projector<KpointType>(projector_type, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
     int num_nonloc_ions = this->OrbitalProjector->get_num_nonloc_ions();
 
     std::string newpath;

@@ -48,8 +48,8 @@
 
 
 
-template Projector<double>::Projector(int, int, int, int, int);
-template Projector<std::complex<double>>::Projector(int, int, int, int, int);
+template Projector<double>::Projector(int, int, int);
+template Projector<std::complex<double>>::Projector(int, int, int);
 template Projector<double>::~Projector(void);
 template Projector<std::complex<double>>::~Projector(void);
 
@@ -73,9 +73,7 @@ template int Projector<std::complex<double>>::get_pstride(void);
 
 
 
-template <class KpointType> Projector<KpointType>::Projector(int projector_type, int num_pes, int num_ions, int stride, int projector_kind) : 
-                        list_owned_ions_per_pe(boost::extents[num_pes][num_ions]),
-                        list_ions_per_owner(boost::extents[num_pes][num_ions])
+template <class KpointType> Projector<KpointType>::Projector(int projector_type, int stride, int projector_kind)
 
 {
 
@@ -97,6 +95,9 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     this->pstride = stride;
     this->nlcrds.reserve(ct.num_ions);
 
+    this->list_owned_ions_per_pe.resize(boost::extents[pct.grid_npes][ct.num_ions]);
+    this->list_ions_per_owner.resize(boost::extents[pct.grid_npes][ct.num_ions]);
+
     // Go through the list of atomic species and set up the nldims array
     for(int isp = 0;isp < ct.num_species;isp++)
     {
@@ -114,9 +115,9 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
         }
     }
 
-    for(int i=0;i < num_pes;i++)
+    for(int i=0;i < pct.grid_npes;i++)
     {
-        for(int j=0;j < num_ions;j++)
+        for(int j=0;j < ct.num_ions;j++)
         {
             list_owned_ions_per_pe[i][j] = 0;
             list_ions_per_owner[i][j] = 0;
@@ -312,7 +313,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/
-    if (int_sum_all (this->num_owned_ions, pct.grid_comm) != num_ions)
+    if (int_sum_all (this->num_owned_ions, pct.grid_comm) != ct.num_ions)
         rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
     
     /* Loop over all ions to obtain the lists necessary for communication */
