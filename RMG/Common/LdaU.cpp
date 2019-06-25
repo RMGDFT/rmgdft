@@ -53,6 +53,8 @@ template LdaU<std::complex<double>>::~LdaU(void);
 
 template void LdaU<double>::calc_ns_occ(double *);
 template void LdaU<std::complex<double>>::calc_ns_occ(std::complex<double> *);
+template void LdaU<double>::app_vhubbard(double *, double *);
+template void LdaU<std::complex<double>>::app_vhubbard(std::complex<double> *, std::complex<double> *);
 template void LdaU<double>::write_ldaU(void);
 template void LdaU<std::complex<double>>::write_ldaU(void);
 
@@ -103,22 +105,36 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint)
         {
             for(int j=0;j < this->ldaU_m;j++)
             {
-                double occ = 0.0; 
+                std::complex<double> occ(0.0, 0.0); 
                 for(int st=0;st < K.nstates;st++)
                 {
-                    occ = occ + K.Kstates[st].occupation[0] * std::real(nsint[st][ion][i] * nsint[st][ion][j]);
+                    occ = occ + K.Kstates[st].occupation[0] * nsint[st][ion][i] * nsint[st][ion][j];
                 }
                 ns_occ[0][ion][i][j] = occ * K.kweight;
             }
         }
     }
 
-    // Get opposite spins
+    // Impose hermiticity
+    for(int ion=0;ion < ct.num_ions;ion++)
+    {
+        for(int i=0;i < this->ldaU_m;i++)
+        {
+            for(int j=i+1;j < this->ldaU_m;j++)
+            {
+                ns_occ[0][ion][i][j] = ns_occ[0][ion][j][i];
+            }
+        }
+    }
+
+    // Need to sum over k-points and symmetrize here then may need to reimpose hermiticity
+
+    // Get occupation matrix from opposite spin case
     if(ct.spin_flag)
     {
         MPI_Status status;
-        int len = ct.num_ions * pstride * pstride;
-        double *sendbuf = ns_occ.data();
+        int len = 2 * ct.num_ions * pstride * pstride;
+        double *sendbuf = (double *)ns_occ.data();
         double *recvbuf = sendbuf + len;
         MPI_Sendrecv(sendbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
             recvbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
@@ -146,7 +162,7 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
                 {
                     for(int j=0;j < ldaU_m;j++)
                     {
-                        fprintf(ct.logfile, "%7.4f   ", ns_occ[ispin][ion][i][j]);
+                        fprintf(ct.logfile, "%7.4f   ", std::abs(ns_occ[ispin][ion][i][j]));
                     }
                     fprintf(ct.logfile, "\n");
                 }
@@ -154,6 +170,46 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
         }
     }
 }
+
+
+// Computes the hubbard potential
+template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint)
+{
+    KpointType ZERO_t(0.0);
+    KpointType ONE_t(1.0);
+
+    int num_tot_proj = K.OrbitalProjector->get_num_tot_proj();
+
+
+    // Update the occupation matrix
+    this->calc_ns_occ(sint);
+
+    // Get the eigenvectors of the occupation matrix
+    if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
+    {
+        double *work = new double[ct.num_ions];
+        for(int ion=0;ion < ct.num_ions;ion++)
+        {
+       
+                     
+        }
+        delete [] work;
+    }
+
+#if 0
+    for(int jj = 0;jj < K.nstates;jj++) {
+        for(int ii = 0;ii < num_tot_proj;ii++) {
+            nwork[jj*num_tot_proj + ii] = M_dnm[ii] * sint_compack[jj*num_tot_proj + ii];
+        }
+    }
+    RmgGemm (transa, transa, K.pbasis, K.nstates, num_tot_proj,
+                ONE_t, K.orbital_weight, K.pbasis, nwork, num_tot_proj,
+                ZERO_t, v_hub_x_psi, K.pbasis);
+#endif
+
+
+}
+
 
 // Destructor
 template <class KpointType> LdaU<KpointType>::~LdaU(void)

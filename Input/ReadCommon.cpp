@@ -166,6 +166,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "External pseudopotentials.\n", 
                      "");
 
+    If.RegisterInputKey("Hubbard_U", NULL , "",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Hubbard U parameter.\n", 
+                     "");
+
     If.RegisterInputKey("input_wave_function_file", &Infile, "Waves/wave.out",
                      CHECK_AND_FIX, OPTIONAL,
                      "Input file/path to  read wavefunctions and other binary data from on a restart.\n", 

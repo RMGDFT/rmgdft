@@ -47,6 +47,10 @@ typedef struct
     /** ldaU l value */
     int ldaU_l;
 
+    // Hubbard U and J
+    double Hubbard_U;
+    double Hubbard_J;
+
     /** Number of valence electrons */
     double zvalence;
 

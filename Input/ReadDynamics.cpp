@@ -36,6 +36,9 @@ namespace po = boost::program_options;
 
 **********************************************************************/
 
+typedef struct {double val; int index;} HUBBARD_INFO;
+void parse_Hubbard_info(std::string what, std::vector<HUBBARD_INFO> &hinfo, std::unordered_map<std::string, InputKey *>& InputMap, CONTROL& lc);
+
 namespace Ri = RmgInput;
 
 void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
@@ -109,8 +112,8 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     }
 
     // Next determine if an external pseudopotential has been specified that overrides the internal one.
-    InputKey *Key;
     try {
+        InputKey *Key;
         std::vector<std::string> lines;
         std::string delims = "\r\n^";
         std::string field_delims = " \t";
@@ -127,21 +130,65 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                 // Search the species structure for a matching symbol
                 boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
                 for(int isp = 0;isp < lc.num_species;isp++) {
-                    if(!std::strcmp(fields[0].c_str(), lc.sp[isp].atomic_symbol)) {
-
+                    if(!std::strcmp(fields[0].c_str(), lc.sp[isp].atomic_symbol))
+                    {
                         string_tem = std::string(pct.image_path[pct.thisimg]) + fields[1];  
                         std::strncpy(lc.sp[isp].pseudo_filename, string_tem.c_str(), sizeof(lc.sp[isp].pseudo_filename));
-
                     }
                 }
-
             }
-
         }
-
     }
     catch (const std::out_of_range& oor) {
         // no pseudpopotential tag which means only use internals
+    }
+#if 0
+    // Extract Hubbard U info if present
+    try {
+        InputKey *Key;
+        std::vector<std::string> lines;
+        std::string delims = "\r\n^";
+        std::string field_delims = " \t";
+        Key = InputMap.at("Hubbard_U");
+        boost::algorithm::split( lines, Key->Readstr, boost::is_any_of(delims), boost::token_compress_on );
+        std::vector<std::string>::iterator it;
+        for (it = lines.begin(); it != lines.end(); ++it) {
+            std::string pline = *it;
+            boost::trim_if(pline, boost::algorithm::is_any_of("\" \t"));
+            std::vector<std::string> fields;
+            boost::algorithm::split( fields, pline, boost::is_any_of(field_delims), boost::token_compress_on );
+            if(fields.size() == 2) {
+
+                // Search the species structure for a matching symbol
+                boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
+                for(int isp = 0;isp < lc.num_species;isp++)
+                {
+                    if(!std::strcmp(fields[0].c_str(), lc.sp[isp].atomic_symbol))
+                    {
+                        lc.sp[isp].Hubbard_U = std::stod(fields[1]) / Ha_eV;
+                    }
+                }
+            }
+        }
+    }
+    catch (const std::out_of_range& oor) {
+        // no Hubbard_U tag which is OK
+    }
+#endif
+    std::vector<HUBBARD_INFO> hinfo;
+    parse_Hubbard_info("Hubbard_U", hinfo, InputMap, lc);
+    for(auto it=hinfo.begin();it != hinfo.end();++it) 
+    {
+        HUBBARD_INFO h = *it;
+        lc.sp[h.index].Hubbard_U = h.val;
+    }
+
+    hinfo.empty();
+    parse_Hubbard_info("Hubbard_J", hinfo, InputMap, lc);
+    for(auto it=hinfo.begin();it != hinfo.end();++it) 
+    {
+        HUBBARD_INFO h = *it;
+        lc.sp[h.index].Hubbard_J = h.val;
     }
 
     // Load pseudopotentials
@@ -168,5 +215,46 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     }
 
+}
+
+
+// Used to parse out Hubbard_U and Hubbard_J vals
+void parse_Hubbard_info(std::string what, std::vector<HUBBARD_INFO> &hinfo, std::unordered_map<std::string, InputKey *>& InputMap, CONTROL& lc)
+{
+    // Extract Hubbard U info if present
+    try {
+        InputKey *Key;
+        std::vector<std::string> lines;
+        std::string delims = "\r\n^";
+        std::string field_delims = " \t";
+        Key = InputMap.at(what);
+        boost::algorithm::split( lines, Key->Readstr, boost::is_any_of(delims), boost::token_compress_on );
+        std::vector<std::string>::iterator it;
+        for (it = lines.begin(); it != lines.end(); ++it) {
+            std::string pline = *it;
+            boost::trim_if(pline, boost::algorithm::is_any_of("\" \t"));
+            std::vector<std::string> fields;
+            boost::algorithm::split( fields, pline, boost::is_any_of(field_delims), boost::token_compress_on );
+            if(fields.size() == 2)
+            {
+                // Search the species structure for a matching symbol
+                boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
+                for(int isp = 0;isp < lc.num_species;isp++)
+                {
+                    // Found so try to extract a parameter
+                    if(!std::strcmp(fields[0].c_str(), lc.sp[isp].atomic_symbol))
+                    {
+                        HUBBARD_INFO h;
+                        h.val = std::stod(fields[1]) / Ha_eV;
+                        h.index = isp;
+                        hinfo.push_back(h);
+                    }
+                }
+            }
+        }
+    }
+    catch (const std::out_of_range& oor) {
+        // no Hubbard_U tag which is OK
+    }
 }
 

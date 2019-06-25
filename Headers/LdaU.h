@@ -40,11 +40,12 @@ public:
     LdaU(Kpoint<KpointType> &kp);
     ~LdaU(void);
     void calc_ns_occ(KpointType *sint);
+    void app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint);
     void write_ldaU(void);
 
     int ldaU_m;
     Kpoint<KpointType> &K;
-    double_4d_array ns_occ;    
+    doubleC_4d_array ns_occ;    
 
     std::vector<double> Hubbard_U;
     std::vector<double> Hubbard_J0;

@@ -234,6 +234,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         }
         else
         {
+// Optimize for GPU's!
             for(int jj = 0;jj < num_states;jj++) {
                 for(int ii = 0;ii < num_tot_proj;ii++) {
                     nwork[jj*num_tot_proj + ii] = M_dnm[ii] * sint_compack[jj*num_tot_proj + ii];

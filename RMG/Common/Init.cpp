@@ -601,11 +601,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
 
-
             RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
             Subdiag (Kptr[kpt], vtot_psi, ct.subdiag_driver);
-//Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local);
-//Kptr[kpt]->ldaU->write_ldaU();
+
             // Force reinit of MainSp in case initialzation matrices are
             // not the same size
 #if SCALAPACK_LIBS
