@@ -285,8 +285,8 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         RT1 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
         LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local, kptr->orbital_weight);
         delete(RT1);
-kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local);        
-kptr->ldaU->write_ldaU();
+//kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, NULL);        
+//kptr->ldaU->write_ldaU();
     }
 
     /* If sorting is requested then sort the states. */

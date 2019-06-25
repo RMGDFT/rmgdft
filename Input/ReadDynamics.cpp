@@ -143,6 +143,12 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
         // no pseudpopotential tag which means only use internals
     }
 
+    for(int isp = 0;isp < lc.num_species;isp++)
+    {
+        ct.sp[isp].Hubbard_U = 0.0;
+        ct.sp[isp].Hubbard_J = 0.0;
+    }
+
     std::vector<HUBBARD_INFO> hinfo;
     parse_Hubbard_info("Hubbard_U", hinfo, InputMap, lc);
     for(auto it=hinfo.begin();it != hinfo.end();++it) 
@@ -160,7 +166,8 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     }
 
     // Load pseudopotentials
-    for(int isp = 0;isp < lc.num_species;isp++) {
+    for(int isp = 0;isp < lc.num_species;isp++)
+    {
         LoadPseudo(&ct.sp[isp]);
     }
 

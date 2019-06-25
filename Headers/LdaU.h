@@ -39,11 +39,12 @@ public:
 
     LdaU(Kpoint<KpointType> &kp);
     ~LdaU(void);
-    void calc_ns_occ(KpointType *sint);
+    void calc_ns_occ(KpointType *sint, KpointType *sint_in);
     void app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint);
     void write_ldaU(void);
 
     int ldaU_m;
+    double Ehub;
     Kpoint<KpointType> &K;
     doubleC_4d_array ns_occ;    
 

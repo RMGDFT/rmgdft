@@ -87,11 +87,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     KpointType *psintR;
     size_t stop = (size_t)num_states * (size_t)P0_BASIS;
 
-//    KpointType *psi = kpoint->Kstates[first_state].psi;
-//    KpointType *nv = kpoint->nv;
-//    KpointType *ns = &kpoint->ns[first_state * P0_BASIS];   // ns is not blocked like nv and Bns since we need the full matrix
-//    KpointType *Bns = kpoint->Bns;
-
     if(num_tot_proj == 0)
     {
         bool need_ns = true;
@@ -268,6 +263,13 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     delete [] M_qqq;
     delete [] M_dnm;
 #endif
+
+
+    // Add in ldaU contributions to nv
+    if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
+    {
+        kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local);
+    }
 
 }
 

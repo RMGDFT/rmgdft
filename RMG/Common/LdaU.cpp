@@ -51,8 +51,8 @@ template LdaU<std::complex<double>>::LdaU(Kpoint<std::complex<double>> &);
 template LdaU<double>::~LdaU(void);
 template LdaU<std::complex<double>>::~LdaU(void);
 
-template void LdaU<double>::calc_ns_occ(double *);
-template void LdaU<std::complex<double>>::calc_ns_occ(std::complex<double> *);
+template void LdaU<double>::calc_ns_occ(double *, double *);
+template void LdaU<std::complex<double>>::calc_ns_occ(std::complex<double> *, std::complex<double> *);
 template void LdaU<double>::app_vhubbard(double *, double *);
 template void LdaU<std::complex<double>>::app_vhubbard(std::complex<double> *, std::complex<double> *);
 template void LdaU<double>::write_ldaU(void);
@@ -67,8 +67,9 @@ template <class KpointType> LdaU<KpointType>::LdaU(Kpoint<KpointType> &kp) : K(k
     this->ns_occ.resize(boost::extents[ct.spin_flag+1][ct.num_ions][2*ct.max_ldaU_l+1][2*ct.max_ldaU_l+1]);
 }
 
-// Computes the LDA+U occupation matrix
-template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint)
+// Computes the LDA+U occupation matrix. If sint_compack_in is not NULL then it uses that array instead of
+// allocating it's own
+template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint, KpointType *sint_compack_in)
 {
     int num_tot_proj = K.OrbitalProjector->get_num_tot_proj();
     int num_nonloc_ions = K.OrbitalProjector->get_num_nonloc_ions();
@@ -76,7 +77,8 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint)
     int pstride = K.OrbitalProjector->get_pstride();
 
     size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states;
-    KpointType *sint_compack = new KpointType[alloc]();
+    KpointType *sint_compack = sint_compack_in;
+    if(!sint_compack_in) sint_compack = new KpointType[alloc]();
 
     boost::multi_array_ref<KpointType, 3> nsint{sint_compack, boost::extents[K.nstates][ct.num_ions][pstride]};
 
@@ -140,7 +142,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint)
             recvbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 
     }
-    delete [] sint_compack;
+    if(!sint_compack_in) delete [] sint_compack;
 }
 
 
@@ -172,18 +174,55 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
 }
 
 
-// Computes the hubbard potential
+// Applies the hubbard potential to orbitals V_hub|psi>
 template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint)
 {
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
     int num_tot_proj = K.OrbitalProjector->get_num_tot_proj();
+    int num_nonloc_ions = K.OrbitalProjector->get_num_nonloc_ions();
+    int pstride = K.OrbitalProjector->get_pstride();
 
+    // allocate memory for sint_compack;
+    size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states;
+    KpointType *sint_compack = new KpointType[alloc]();
+    KpointType *nwork = new KpointType[alloc];
 
-    // Update the occupation matrix
-    this->calc_ns_occ(sint);
+    // and for the diagonal part of ns_occ
+    size_t alloc1 = (size_t)pstride * (size_t)ct.num_ions;
+    KpointType *lambda = new KpointType[alloc1](); 
+    std::complex<double> *lambda_C = (std::complex<double> *)lambda;
+    boost::multi_array_ref<KpointType, 2> nlambda{lambda, boost::extents[ct.num_ions][pstride]};
+    boost::multi_array_ref<std::complex<double>, 2> nlambda_C{lambda_C, boost::extents[ct.num_ions][pstride]};
 
+    // Update the occupation matrix and get the sint_compack array
+    this->calc_ns_occ(sint, sint_compack);
+
+    // Put the diagonal part of ns_occ into a separate array
+    this->Ehub = 0.0;
+    for(int ion=0;ion < ct.num_ions;ion++)
+    {
+        SPECIES *sp = &ct.sp[ct.ions[ion].species];
+        double Ueff = sp->Hubbard_U / 2.0;       // FIXME: Have to deal with more complicated cases later
+        
+        for(int i=0;i < pstride;i++)
+        {
+            this->Ehub += Ueff * std::real(ns_occ[0][ion][i][i] * (1.0 - ns_occ[0][ion][i][i]));
+            if(ct.is_gamma)
+            {
+                nlambda[ion][i] = std::real(Ueff * (1.0 - 2.0*ns_occ[0][ion][i][i]));
+            }
+            else
+            {
+                nlambda_C[ion][i] = Ueff * (1.0 - 2.0*ns_occ[0][ion][i][i]);
+            }
+        }
+    }
+
+    MPI_Allreduce(MPI_IN_PLACE, &this->Ehub, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+
+#if 0
     // Get the eigenvectors of the occupation matrix
     if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
     {
@@ -196,18 +235,31 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
         delete [] work;
     }
 
-#if 0
     for(int jj = 0;jj < K.nstates;jj++) {
         for(int ii = 0;ii < num_tot_proj;ii++) {
             nwork[jj*num_tot_proj + ii] = M_dnm[ii] * sint_compack[jj*num_tot_proj + ii];
         }
     }
-    RmgGemm (transa, transa, K.pbasis, K.nstates, num_tot_proj,
-                ONE_t, K.orbital_weight, K.pbasis, nwork, num_tot_proj,
-                ZERO_t, v_hub_x_psi, K.pbasis);
 #endif
 
+    if(ct.scf_steps > 0)
+    {
+        char *transa = "n";
+        for(int jj = 0;jj < K.nstates;jj++) {
+            for(int ii = 0;ii < num_tot_proj;ii++) {
+                nwork[jj*num_tot_proj + ii] = lambda[ii] * sint_compack[jj*num_tot_proj + ii];
+            }
+        }
 
+        RmgGemm (transa, transa, K.pbasis, K.nstates, num_tot_proj,
+                    ONE_t, K.orbital_weight, K.pbasis, nwork, num_tot_proj,
+                    ONE_t, v_hub_x_psi, K.pbasis);
+printf("EBUB = %12.6f\n", this->Ehub);
+    }
+
+    delete [] lambda;
+    delete [] nwork;
+    delete [] sint_compack;
 }
 
 
