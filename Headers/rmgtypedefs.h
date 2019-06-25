@@ -1,8 +1,8 @@
 
-#include "params.h"
-
 #ifndef RMG_TYPEDEFS_H
 #define RMG_TYPEDEFS_H 1
+
+#include "params.h"
 
 #ifdef __cplusplus
     #include <complex>

@@ -1,3 +1,8 @@
+#ifndef RMG_SPECIES_H
+#define RMG_SPECIES_H 1
+
+#include <stdbool.h>
+
 /**@name SPECIES
  * @memo Species (pseudopotential) control structure
  * @doc Structure holds data about the pseudopotentials used to
@@ -284,3 +289,4 @@ typedef struct
     
 } SPECIES;
 
+#endif
