@@ -49,11 +49,12 @@ template <typename KpointType>
 void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local)
 {
     kptr->BetaProjector->project(kptr, sint_local, first_state, nstates, kptr->nl_weight);
-
+#if 0
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
     {
         RmgTimer *RT1 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
-        LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local, kptr->orbital_weight);
+        LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local);
         delete(RT1);
     }
+#endif
 }

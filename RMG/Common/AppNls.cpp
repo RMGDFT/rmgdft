@@ -268,7 +268,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     // Add in ldaU contributions to nv
     if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
     {
-        kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local);
+        kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local, first_state, num_states);
     }
 
 }

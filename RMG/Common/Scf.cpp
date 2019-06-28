@@ -218,8 +218,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
         // Needed to ensure consistency with some types of kpoint parrelization
         MPI_Barrier(pct.grid_comm);
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && ct.verbose) Kptr[kpt]->ldaU->write_ldaU();
 
     } // end loop over kpoints
+
 
 
     if (spin_flag)

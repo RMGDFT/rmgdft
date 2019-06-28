@@ -41,12 +41,13 @@
 
 
 
-template void LdaplusUxpsi<double>(Kpoint<double> *, int, int, double *, double *);
-template void LdaplusUxpsi<std::complex<double> >(Kpoint<std::complex<double>> *, int, int, std::complex<double> *, std::complex<double> *);
+template void LdaplusUxpsi<double>(Kpoint<double> *, int, int, double *);
+template void LdaplusUxpsi<std::complex<double> >(Kpoint<std::complex<double>> *, int, int, std::complex<double> *);
 
 
 template <typename KpointType>
-void LdaplusUxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local, KpointType *nlweight)
+void LdaplusUxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local)
 {
-    kptr->OrbitalProjector->project(kptr, sint_local, first_state, nstates, nlweight);
+    if(ct.num_ldaU_ions <= 0) return;
+    kptr->OrbitalProjector->project(kptr, sint_local, first_state, nstates, kptr->orbital_weight);
 }

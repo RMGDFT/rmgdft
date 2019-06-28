@@ -131,6 +131,13 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
     Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local);
     delete RT1;
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+    {   
+        RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
+        LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local);
+        kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, 0, kptr->nstates);
+    }
+
     RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
     double fd_diag = ApplyHamiltonianBlock (kptr, 0, nstates, h_psi, vtot); 
     delete RT1;
@@ -237,9 +244,15 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 
         // Apply Hamiltonian to the new vectors
         RT1 = new RmgTimer("6-Davidson: Betaxpsi");
-        newsint = kptr->newsint_local + nbase*num_nonloc_ions*ct.max_nl;
+        newsint = kptr->newsint_local + nbase * kptr->BetaProjector->get_num_nonloc_ions() * ct.max_nl;
         Betaxpsi (kptr, nbase, notconv, newsint);
         delete RT1;
+        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+        {   
+            RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
+            newsint = kptr->orbitalsint_local + nbase * kptr->OrbitalProjector->get_num_nonloc_ions() * kptr->OrbitalProjector->get_pstride();
+            LdaplusUxpsi(kptr, nbase, notconv, newsint);
+        }
         RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
         ApplyHamiltonianBlock (kptr, nbase, notconv, h_psi, vtot);
         delete RT1;
@@ -451,6 +464,12 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
     Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local);
     delete RT1;
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+    {
+        RmgTimer RTL("3-MgridSubspace: ldaUop x psi");
+        LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local);
+        kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, 0, kptr->nstates);
+    }
 
 }
 

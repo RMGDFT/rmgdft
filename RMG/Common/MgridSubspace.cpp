@@ -101,6 +101,13 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local);
         delete(RT1);
+        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+        {
+            RmgTimer RTL("3-MgridSubspace: ldaUop x psi");
+            LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local);
+            kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, 0, kptr->nstates);
+        }
+
 
         /* Update the wavefunctions */
         int istop = kptr->nstates / (active_threads * pct.coalesce_factor);
@@ -236,6 +243,12 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
         Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local);
         delete(RT1);
+        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+        {   
+            RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
+            LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local);
+            kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, 0, kptr->nstates);
+        }
     }
 
 
@@ -247,10 +260,11 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
     Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local);
     delete(RT1);
-    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-    {
-//kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, NULL);        
-//kptr->ldaU->write_ldaU();
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+    {   
+        RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
+        LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local);
+        kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, 0, kptr->nstates);
     }
 
     /* If sorting is requested then sort the states. */
