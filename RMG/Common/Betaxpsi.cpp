@@ -41,12 +41,19 @@
 
 
 
-template void Betaxpsi<double>(Kpoint<double> *, int, int, double *, double *);
-template void Betaxpsi<std::complex<double> >(Kpoint<std::complex<double>> *, int, int, std::complex<double> *, std::complex<double> *);
+template void Betaxpsi<double>(Kpoint<double> *, int, int, double *);
+template void Betaxpsi<std::complex<double> >(Kpoint<std::complex<double>> *, int, int, std::complex<double> *);
 
 
 template <typename KpointType>
-void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local, KpointType *nlweight)
+void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local)
 {
-    kptr->BetaProjector->project(kptr, sint_local, first_state, nstates, nlweight);
+    kptr->BetaProjector->project(kptr, sint_local, first_state, nstates, kptr->nl_weight);
+
+    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+    {
+        RmgTimer *RT1 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
+        LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local, kptr->orbital_weight);
+        delete(RT1);
+    }
 }

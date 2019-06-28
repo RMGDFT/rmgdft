@@ -94,8 +94,10 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     vel = get_vel_f();
 
-    /* Loop over states and get sum of the eigenvalues */
+    /* Loop over states and get sum of the eigenvalues and any LDA+U corrections */
     double eigsum = 0.0;
+    double ldaU_E = 0.0;
+    double ldaU_H = 0.0;
 
     for (idx = 0; idx < nspin; idx++)
     {
@@ -112,11 +114,19 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
             }
             eigsum += t1 * kptr->kweight;
+            if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+            {
+                ldaU_E += kptr->ldaU->Ecorrect * kptr->kweight;
+                ldaU_H += kptr->ldaU->Ehub * kptr->kweight;
+            }
     	}
     }
 
 
     eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
+    ldaU_E = RmgSumAll(ldaU_E, pct.kpsub_comm);
+    ldaU_H = RmgSumAll(ldaU_H, pct.kpsub_comm);
+
     /* Evaluate electrostatic energy correction terms */
     ct.ES = 0.0;
     if (ct.spin_flag)
@@ -167,17 +177,21 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /* Sum them all up */
-    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ct.scf_correction;
+    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_E + ct.scf_correction;
 //    ct.TOTAL = eigsum - ct.ES - ct.vtxc + ct.XC + ct.II + ct.scf_correction;
     
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     char *eunits = ct.energy_output_string[ct.energy_output_units];
+//rmg_printf ("@@ SCF CORRECTION     = %15.6f %s\n", efactor*ct.scf_correction, eunits);
     rmg_printf ("@@ EIGENVALUE SUM     = %15.6f %s\n", efactor*eigsum, eunits);
     rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
     rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", -efactor*ct.ES, eunits);
     rmg_printf ("@@ VXC                = %15.6f %s\n",  efactor*xcstate, eunits);
     rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
+    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+        rmg_printf ("@@ HUBBARD ENERGY     = %15.6f %s\n", efactor*ldaU_H, eunits);
+
     rmg_printf ("@@ TOTAL ENERGY       = %15.6f %s\n", efactor*ct.TOTAL, eunits);
     if(ct.scf_steps != 0) {
         rmg_printf ("@@ estimated error    =       %9.2e %s\n", efactor*ct.scf_accuracy, eunits);

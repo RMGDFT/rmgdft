@@ -83,7 +83,6 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
     
     // Set trade images coalesce_factor
     kptr->T->set_coalesce_factor(pct.coalesce_factor);
-
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
 
@@ -100,15 +99,8 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
 
         // Update betaxpsi        
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
+        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local);
         delete(RT1);
-
-        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-        {
-            RT1 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
-            LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local, kptr->orbital_weight);
-            delete(RT1);
-        }
 
         /* Update the wavefunctions */
         int istop = kptr->nstates / (active_threads * pct.coalesce_factor);
@@ -242,49 +234,21 @@ template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, d
      * it is counterproductive to do so */
     if(!potential_acceleration || (potential_acceleration && (ct.rms <  5.0e-6))) {
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
-        delete(RT1);
-        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-        {
-            RT1 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
-            LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local, kptr->orbital_weight);
-
-            delete(RT1);
-        }
-    }
-
-
-    /* Now we orthognalize and optionally do subspace diagonalization
-     * In the gamma point case, orthogonalization is not required when doing subspace diagonalization
-     * For non-gamma point we have to do first orthogonalization and then, optionally subspace diagonalization
-     * the reason is for non-gamma subdiag is not coded to solve generalized eigenvalue problem, it can
-     * only solve the regular eigenvalue problem and that requires that wavefunctions are orthogonal to start with.*/
-
-    bool diag_this_step = (ct.diag && ct.scf_steps % ct.diag == 0 && ct.scf_steps < ct.end_diag);
-
-    /* do diagonalizations if requested, if not orthogonalize */
-    if (diag_this_step)
-    {
-        RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
-        Subdiag (kptr, vtot_psi, ct.subdiag_driver);
+        Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local);
         delete(RT1);
     }
-    else
-    {
-        RT1 = new RmgTimer("3-MgridSubspace: Orthogonalization");
-        kptr->orthogonalize(kptr->orbital_storage);
-        delete(RT1);
-    }
+
+
+    RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
+    Subdiag (kptr, vtot_psi, ct.subdiag_driver);
+    delete(RT1);
 
     // wavefunctions have changed, projectors have to be recalculated */
     RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-    Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local, kptr->nl_weight);
+    Betaxpsi (kptr, 0, kptr->nstates, kptr->newsint_local);
     delete(RT1);
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
     {
-        RT1 = new RmgTimer("3-MgridSubspace: ldaUop x psi");
-        LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local, kptr->orbital_weight);
-        delete(RT1);
 //kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, NULL);        
 //kptr->ldaU->write_ldaU();
     }

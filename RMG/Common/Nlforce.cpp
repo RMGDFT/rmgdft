@@ -196,9 +196,9 @@ ct.state_block_size);
 
 
             RT1 = new RmgTimer("2-Force: non-local-betaxpsi");
-            Betaxpsi(Kptr[kpt], ct.num_states,                       num_state_thisblock, sint_derx, Kptr[kpt]->nl_weight);
-            Betaxpsi(Kptr[kpt], ct.num_states+ ct.state_block_size,  num_state_thisblock, sint_dery, Kptr[kpt]->nl_weight);
-            Betaxpsi(Kptr[kpt], ct.num_states+2*ct.state_block_size, num_state_thisblock, sint_derz, Kptr[kpt]->nl_weight);
+            Betaxpsi(Kptr[kpt], ct.num_states,                       num_state_thisblock, sint_derx);
+            Betaxpsi(Kptr[kpt], ct.num_states+ ct.state_block_size,  num_state_thisblock, sint_dery);
+            Betaxpsi(Kptr[kpt], ct.num_states+2*ct.state_block_size, num_state_thisblock, sint_derz);
 
             for(int i = 0; i < num_nonloc_ions * num_state_thisblock * ct.max_nl; i++)
             {

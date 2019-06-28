@@ -59,7 +59,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
     static double *rhodiff;
 
     /* quench the electrons and calculate forces */
-    if(ct.runflag != RESTART)
+    if((ct.runflag != RESTART) || (ct.forceflag == MD_QUENCH))
     {
         Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
         WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);

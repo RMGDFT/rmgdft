@@ -368,10 +368,7 @@ void WriteHeader (void)
     printf ("\n");
     printf ("Subspace Diagonalization Options\n");
     
-    printf ("    Frequency:                               every %d SCF step(s)", ct.diag);
-    if (ct.end_diag < ct.max_scf_steps)
-	 printf (" until step %d", ct.end_diag);
-    printf ("\n");
+    printf ("    Frequency:                               every %d SCF step(s)\n", ct.diag);
     
     printf ("    Driver:                                  ");
     switch(ct.subdiag_driver) {

@@ -45,6 +45,8 @@ public:
 
     int ldaU_m;
     double Ehub;
+    double Ecorrect;
+
     Kpoint<KpointType> &K;
     doubleC_4d_array ns_occ;    
 

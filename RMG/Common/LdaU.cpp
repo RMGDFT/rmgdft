@@ -201,6 +201,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
 
     // Put the diagonal part of ns_occ into a separate array
     this->Ehub = 0.0;
+    this->Ecorrect = 0.0;
     for(int ion=0;ion < ct.num_ions;ion++)
     {
         SPECIES *sp = &ct.sp[ct.ions[ion].species];
@@ -209,6 +210,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
         for(int i=0;i < pstride;i++)
         {
             this->Ehub += Ueff * std::real(ns_occ[0][ion][i][i] * (1.0 - ns_occ[0][ion][i][i]));
+            this->Ecorrect += Ueff * std::real(ns_occ[0][ion][i][i] * ns_occ[0][ion][i][i]);
             if(ct.is_gamma)
             {
                 nlambda[ion][i] = std::real(Ueff * (1.0 - 2.0*ns_occ[0][ion][i][i]));
@@ -220,7 +222,8 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
         }
     }
 
-    MPI_Allreduce(MPI_IN_PLACE, &this->Ehub, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    //MPI_Allreduce(MPI_IN_PLACE, &this->Ehub, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    //MPI_Allreduce(MPI_IN_PLACE, &this->Ecorrect, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
 #if 0
     // Get the eigenvectors of the occupation matrix
@@ -242,7 +245,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     }
 #endif
 
-    if(ct.scf_steps > 0)
+    if((ct.scf_steps > 0) || (ct.runflag == RESTART))
     {
         char *transa = "n";
         for(int jj = 0;jj < K.nstates;jj++) {
@@ -254,7 +257,6 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
         RmgGemm (transa, transa, K.pbasis, K.nstates, num_tot_proj,
                     ONE_t, K.orbital_weight, K.pbasis, nwork, num_tot_proj,
                     ONE_t, v_hub_x_psi, K.pbasis);
-printf("EBUB = %12.6f\n", this->Ehub);
     }
 
     delete [] lambda;

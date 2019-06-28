@@ -290,7 +290,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 	     * are not defined yet*/
             if(freeze_occupied) {
 
-                if ((ct.diag == 1) && (potential_acceleration == 0) && (ct.scf_steps < ct.end_diag))
+                if ((ct.diag == 1) && (potential_acceleration == 0))
                 {
                     if (ct.scf_steps == 0)
                     {

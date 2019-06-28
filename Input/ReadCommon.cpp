@@ -499,11 +499,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Diagonalization period (per scf step).\n", 
                      "Diagonalization period must be greater than 0. Resetting to the default value of 1.\n");
 
-    If.RegisterInputKey("end_diagonalization_step", &lc.end_diag, 0, INT_MAX, 1000000,
-                     CHECK_AND_FIX, OPTIONAL, 
-                     "Stop diagonalizing after end_diag steps.\n", 
-                     "end_diag must be greater than 0. Resetting to the default value of 1000000\n");
-
     If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 500,
                      CHECK_AND_FIX, OPTIONAL, 
                      "Maximum number of self consistent steps to perform.\n", 

@@ -461,7 +461,6 @@ typedef struct
     /* Diagonalization flag and period */
     bool initdiag;
     int diag;
-    int end_diag;
 
     /* Use folded spectrum if possible */
     bool use_folded_spectrum;

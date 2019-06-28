@@ -164,7 +164,7 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
 void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Bweight, KpointType *Nlweight);
 template <typename KpointType>
-void Betaxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *, KpointType *);
+void Betaxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *);
 template <typename KpointType>
 void LdaplusUxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *, KpointType *);
 template <typename RmgType>
