@@ -48,6 +48,9 @@ double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rm
     sum = sum / (double)global_basis;
     for(int i = 0;i < FP0_BASIS;i++) rho_tot[i] -= sum;
 
+    if((pct.gridpe == 0) && (abs(sum) > 1.0e-8))
+        printf("\n WARNING:  total charge is not zero: sum of rho-rhoc = %e", sum);
+
 
     if(ct.poisson_solver == POISSON_PFFT_SOLVER)
     {

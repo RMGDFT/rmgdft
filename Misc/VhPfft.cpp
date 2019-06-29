@@ -40,24 +40,12 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
 
     int pbasis = fine_pwaves->pbasis;
     int size = pbasis;
-    double sum = 0.0;
     std::complex<double> ZERO_t(0.0, 0.0);
     std::complex<double> *crho = new std::complex<double>[size];
 
 
     for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho_tot[i], 0.0);
-    // Make sure it is completely neutral if rhoc is defined
-    if(rhoc) {
-        for(int i = 0;i < pbasis;i++) crho[i] -= rhoc[i];
-        for(int i=0;i < pbasis;i++) sum += std::real(crho[i]);
-        sum = RmgSumAll(sum, pct.grid_comm) / (double)Rmg_G->get_GLOBAL_BASIS(Rmg_G->get_default_FG_RATIO());
-        for(int i=0;i < pbasis;i++) crho[i] -= sum;
-    }
-
     PfftForward(crho, crho, *fine_pwaves);
-
-    if((pct.gridpe == 0) && (abs(sum) > 1.0e-8)) 
-        printf("\n WARNING:  total charge is not zero: sum of rho-rhoc = %e", sum); 
 
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
