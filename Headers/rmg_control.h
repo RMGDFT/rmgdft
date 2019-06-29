@@ -881,6 +881,10 @@ typedef struct
 
     double ldaU_radius;
 
+    // Memory usage options
+    size_t q_alloc[3];
+    size_t beta_alloc[3];
+    size_t psi_alloc[3];
 } CONTROL;
 
 

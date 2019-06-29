@@ -271,6 +271,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         pct.Bns = (double *)Bns;
     }
 #endif
+
+    ct.psi_alloc[0] = sizeof(OrbitalType) * (size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024;
+    MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
+    MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &ct.psi_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
+
+
     pct.nv = (double *)nv;
     pct.ns = (double *)ns;
 

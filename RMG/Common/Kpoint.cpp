@@ -1132,6 +1132,11 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     }
 
     this->nl_weight_size = (size_t)this->BetaProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
+    ct.beta_alloc[0] = this->nl_weight_size * sizeof(KpointType);
+    MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
+    MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &ct.beta_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
+
 
 #if GPU_ENABLED
     cudaError_t custat;

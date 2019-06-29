@@ -95,6 +95,8 @@ void GetQI (void)
     Aiy = new int[get_FNY_GRID()];
     Aiz = new int[get_FNZ_GRID()];
 
+    ct.q_alloc[0] = 0;
+
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
@@ -200,6 +202,7 @@ void GetQI (void)
 
             size = nh * (nh + 1) / 2;
             pct.augfunc[ion] = new double[ size * icount + 128];
+            ct.q_alloc[0] += (size_t)(size * icount + 128) * sizeof(double);
 
 
             QI_tpr = pct.augfunc[ion];
@@ -285,6 +288,11 @@ void GetQI (void)
         pct.Qdvec[ion] = NULL;
 
     }                           /*end for ion */
+
+    // Sum q-function memory usage over all nodes
+    MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
+    MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &ct.q_alloc[0], 1, MPI_LONG, MPI_SUM, pct.grid_comm);
 
 
     delete [](Aiz);

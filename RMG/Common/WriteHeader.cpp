@@ -561,6 +561,22 @@ void WriteHeader (void)
     /**********  End Species Table  ************/
     
 
+    printf("\n\n");
+    printf("Memory usage (Mbytes):     Min        Max       Total\n");
+    printf("    wave functions      %8.2f   %8.2f   %8.2f\n",
+                            (double)ct.psi_alloc[1] / 1000.0 / 1000.0,
+                            (double)ct.psi_alloc[2] / 1000.0 / 1000.0,
+                            (double)ct.psi_alloc[0] / 1000.0 / 1000.0);
+    printf("    beta-functions      %8.2f   %8.2f   %8.2f\n",
+                            (double)ct.beta_alloc[1] / 1000.0 / 1000.0,
+                            (double)ct.beta_alloc[2] / 1000.0 / 1000.0,
+                            (double)ct.beta_alloc[0] / 1000.0 / 1000.0);
+    printf("    q-functions         %8.2f   %8.2f   %8.2f\n",
+                            (double)ct.q_alloc[1] / 1000.0 / 1000.0,
+                            (double)ct.q_alloc[2] / 1000.0 / 1000.0,
+                            (double)ct.q_alloc[0] / 1000.0 / 1000.0);
+
+    printf("\n");
 
     /* Write out the ionic positions and displacements */
     init_write_pos ();
