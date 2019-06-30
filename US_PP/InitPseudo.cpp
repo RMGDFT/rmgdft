@@ -153,7 +153,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         /* Write raw beta function into file if requested*/
         double *bessel_rg = new double[(ct.max_l+2) * RADIAL_GVECS * sp->rg_points];
 
-        // Reset sp->rg_points to correspond to the closest value to 12.0
+        // Reset sp->rg_points to correspond to the closest value to 10.0
         int ii;
         double max_r = std::max(sp->nlradius, sp->lradius);
         max_r = std::max(max_r, 10.0);
