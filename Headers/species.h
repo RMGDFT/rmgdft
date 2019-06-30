@@ -214,9 +214,6 @@ typedef struct
     /* Log interpolation storage for the core charge density */
     double rhocorelig[MAX_LOGGRID];
 
-    /* Utrosoft Vandbelit Projectors on log interpolation grid */
-    double betalig[MAX_NB][MAX_LOGGRID];
-
     // projectors in G-space radial log grid
     double *beta_g[MAX_NB];
 

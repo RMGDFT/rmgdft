@@ -79,11 +79,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     int dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
     int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
     int FP0_BASIS = dimx * dimy * dimz;
-
     int P0_BASIS;
-
-    /* to hold the send data and receive data of eigenvalues */
-    double *rho_tot=NULL;   
 
     double *rho_tf = NULL;
     double *rho_save = NULL; 
@@ -93,7 +89,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     /* allocate memory for eigenvalue send array and receive array */
-    rho_tot = new double[FP0_BASIS];
     new_rho = new double[nspin * FP0_BASIS];
     new_rho_oppo = &new_rho[FP0_BASIS];
     vtot = new double[FP0_BASIS];
@@ -346,8 +341,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	delete [] rho_tf;
 	delete [] rho_save;
     }
-
-    delete [] rho_tot;
 
 
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {

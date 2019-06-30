@@ -161,6 +161,9 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
             }                   /*end for j */
         }                       /*end for i */
 
+        // Raw q function from pp is no longer needed so free it's memory
+        delete []  sp->qnm;
+
         // Could be faster with an Allgather but probably does not matter
         if(!Verify ("write_pseudopotential_plots", true, ControlMap))
             MPI_Allreduce(MPI_IN_PLACE, sp->qnmlig, num * MAX_LOGGRID, MPI_DOUBLE, MPI_SUM, pct.grid_comm);

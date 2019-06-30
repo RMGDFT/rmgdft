@@ -156,7 +156,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Reset sp->rg_points to correspond to the closest value to 12.0
         int ii;
         double max_r = std::max(sp->nlradius, sp->lradius);
-        max_r = std::max(max_r, 12.0);
+        max_r = std::max(max_r, 10.0);
         for(ii = 0;ii < sp->rg_points;ii++) if(sp->r[ii] >= max_r) break;
         sp->rg_points = ii;
 
@@ -248,6 +248,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             A->RLogGridToGLogGrid(&sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
                     sp->rg_points, sp->llbeta[ip], bessel_rg);
 
+            // Raw beta function from pp is no longer used so free it's memory
+            delete [] sp->beta[ip];
 
         }                       /* end for ip */
 
