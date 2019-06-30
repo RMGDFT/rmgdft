@@ -288,8 +288,6 @@ void Nlccforce (double * rho, double * vxc, double *force_nlcc);
 void CorrectForces (double *vh, double *vh_in, double *vxc, double *vxc_in, double *force);
 
 void FindFftwPhaseLocalpp (int nlxdim, int nlydim, int nlzdim,double * nlcdrs, std::complex<double> *phase_fft, int level);
-void InitLocalForward();
-void InitLocalBackward(double *, double *, double *);
 void GetPhase (ION *, std::complex<double> *);
 void PrintSums(double *, int, char*);
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, 

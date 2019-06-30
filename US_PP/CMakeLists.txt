@@ -10,8 +10,6 @@ InitOrbital.cpp
 InitDelocalizedOrbital.cpp
 InitWeightOne.cpp
 InitDelocalizedObject.cpp
-#InitLocalForward.cpp
-InitLocalBackward.cpp
 #PackFine2Rhogrid.cpp
 FindFftwPhaseLocalpp.cpp
 Radius2grid.cpp

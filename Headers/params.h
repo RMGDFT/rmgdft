@@ -57,9 +57,6 @@
  *************************************************************
  *************************************************************/
 
-/* Maximum number of PE's */
-#define         MAX_PES        32768
-
 /* This is the maximum number of non-local projectors for any species
  * just an upper limit on dynamically allocated data structures. */
 #define         MAX_NL  	38
@@ -80,9 +77,6 @@
 
 /* Maximum number of atoms whose projectors have overlap with current processor */
 #define MAX_NONLOC_IONS         1024
-
-/* Maximum number of processors with which the current processor will communicate to calculate <beta|psi> */
-#define MAX_NONLOC_PROCS        250
 
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
 #define         MAX_L       	4

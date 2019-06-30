@@ -59,7 +59,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
         for(int ix=0;ix < FP0_BASIS;ix++) rhoc[ix] = 0.0;
     }
 
-    //    InitLocalBackward(vnuc, rhoc, rhocore);
     delete RT1;
     RT1= new RmgTimer("3-ReinitIonicPotentials: get_QI");
     GetQI ();

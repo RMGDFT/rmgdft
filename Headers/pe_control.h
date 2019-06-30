@@ -110,9 +110,6 @@ typedef struct
     int scalapack_nprow;
     int scalapack_npcol;
 
-    /* scalapack mpi rank for all nodes that participate */
-    int scalapack_mpi_rank[MAX_PES];
-
     /* desca for all nodes that participate */
     int *scalapack_desca;
 
