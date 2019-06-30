@@ -27,7 +27,6 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <cuda_device_runtime_api.h>
-#include <crt/host_runtime.h>
 #include <stdio.h>
 
 #define IMAGES 4
