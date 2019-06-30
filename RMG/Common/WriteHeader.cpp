@@ -571,10 +571,13 @@ void WriteHeader (void)
                             (double)ct.beta_alloc[1] / 1000.0 / 1000.0,
                             (double)ct.beta_alloc[2] / 1000.0 / 1000.0,
                             (double)ct.beta_alloc[0] / 1000.0 / 1000.0);
-    printf("    q-functions         %8.2f   %8.2f   %8.2f\n",
-                            (double)ct.q_alloc[1] / 1000.0 / 1000.0,
-                            (double)ct.q_alloc[2] / 1000.0 / 1000.0,
-                            (double)ct.q_alloc[0] / 1000.0 / 1000.0);
+    if(!ct.norm_conserving_pp)
+    {
+        printf("    q-functions         %8.2f   %8.2f   %8.2f\n",
+                                (double)ct.q_alloc[1] / 1000.0 / 1000.0,
+                                (double)ct.q_alloc[2] / 1000.0 / 1000.0,
+                                (double)ct.q_alloc[0] / 1000.0 / 1000.0);
+    }
 
     printf("\n");
 
