@@ -144,7 +144,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.localrhoc = NULL;
     pct.localrhonlcc = NULL;
     pct.localatomicrho = NULL;
-
+    pct.loc_ions_list = new int[ct.num_ions];
 
 
     /* Set hartree boundary condition stuff */

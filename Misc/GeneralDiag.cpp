@@ -81,6 +81,14 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
         case SUBDIAG_LAPACK:
             info = GeneralDiagLapack(A, B, eigs, V, N, M, ld);
             break;
+
+// dsygvdx routines are not available in cusolver library until version 10.1 or later
+// so redirect to scalapack
+#if GPU_ENABLED
+  #if (CUDA_VERSION_MAJOR < 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR < 1))
+        case SUBDIAG_CUSOLVER:
+  #endif
+#endif
         case SUBDIAG_SCALAPACK:
             if(!ct.is_gamma) {
                 info = GeneralDiagLapack(A, B, eigs, V, N, M, ld);
@@ -92,9 +100,14 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
             break;
 #if MAGMA_LIBS && GPU_ENABLED
         case SUBDIAG_MAGMA:
-        case SUBDIAG_CUSOLVER:
                 info = GeneralDiagMagma(A, B, eigs, V, N, M, ld);
+#endif
+#if GPU_ENABLED
+  #if (CUDA_VERSION_MAJOR > 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR > 0))
+        case SUBDIAG_CUSOLVER:
+            info = GeneralDiagCusolver(A, B, eigs, V, N, M, ld);
             break;
+  #endif
 #endif
         default:
             throw RmgFatalException() << "Invalid diagonalization driver type in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -404,3 +417,28 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
     return info;
 }
 #endif
+
+#if GPU_ENABLED
+  #if (CUDA_VERSION_MAJOR > 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR > 0))
+template int GeneralDiagCusolver<double>(double *A, double *B, double *eigs, double *V, int N, int M, int ld);
+template int GeneralDiagCusolver<std::complex<double>>(std::complex<double> *A, std::complex<double> *B, double *eigs, std::complex<double> *V,
+int N, int M, int ld);
+
+template <typename KpointType>
+int GeneralDiagCusolver(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld)
+{
+
+    // Redirect to CPU routines until we get this coded
+    int info;
+    if(!ct.is_gamma) {
+	info = GeneralDiagLapack(A, B, eigs, V, N, M, ld);
+    }
+
+    else {
+	info = GeneralDiagScaLapack((double *)A, (double *)B, eigs, (double *)V, N, M, ld);
+    }
+    return info;
+}
+  #endif
+#endif
+

@@ -75,9 +75,6 @@
  * dynamically allocated data structures. */
 #define         MAX_IONS        5120
 
-/* Maximum number of atoms whose projectors have overlap with current processor */
-#define MAX_NONLOC_IONS         1024
-
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
 #define         MAX_L       	4
 
@@ -115,9 +112,6 @@
 /* Log interpolation grid mesh parameter */
 #define         LOGGRID_MESHPARM  (1.0075)
 
-
-/* Size of the linear interpolation grid for the potentials */
-#define         MAX_QLIG       	(9000)
 
 /* Dimensions of shmem workspace */
 #define		MAX_PWRK	(1024)

@@ -153,7 +153,7 @@ typedef struct
 
     int num_owned_ions;
     int num_loc_ions;
-    int loc_ions_list[MAX_NONLOC_IONS];
+    int *loc_ions_list;
 
     double *localpp;
     double *localrhoc;

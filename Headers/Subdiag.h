@@ -98,7 +98,8 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int M, i
 template <typename KpointType>
 int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, int M, int N, int ld);
 
-
+template <typename KpointType>
+int GeneralDiagCusolver(KpointType *A, KpointType *B, double *eigs, KpointType *V, int M, int N, int ld);
 
 #endif
 #endif
