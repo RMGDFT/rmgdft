@@ -668,6 +668,8 @@ if(RMG_GPU_ENABLED)
 
 # Cuda functions that we build are in Gpufuncs/CMakeLists.txt
  
+  add_definitions(-DCUDA_VERSION_MAJOR=${CUDA_VERSION_MAJOR})
+  add_definitions(-DCUDA_VERSION_MINOR=${CUDA_VERSION_MINOR})
 endif(RMG_GPU_ENABLED)
 
 #include_directories(rmg "/usr/local/magma/include")
