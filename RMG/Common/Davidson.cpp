@@ -133,7 +133,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     delete RT1;
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)
     {   
-        RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
+        RmgTimer RTL("6-Davidson: ldaUop x psi"); 
         LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local);
         kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, 0, kptr->nstates);
     }
@@ -249,7 +249,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
         delete RT1;
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {   
-            RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
+            RmgTimer RTL("6-Davidson: ldaUop x psi"); 
             newsint = kptr->orbitalsint_local + nbase * kptr->OrbitalProjector->get_num_nonloc_ions() * kptr->OrbitalProjector->get_pstride();
             LdaplusUxpsi(kptr, nbase, notconv, newsint);
         }
@@ -466,7 +466,7 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     delete RT1;
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)
     {
-        RmgTimer RTL("3-MgridSubspace: ldaUop x psi");
+        RmgTimer RTL("6-Davidson: ldaUop x psi");
         LdaplusUxpsi(kptr, 0, kptr->nstates, kptr->orbitalsint_local);
         kptr->ldaU->calc_ns_occ(kptr->orbitalsint_local, 0, kptr->nstates);
     }
