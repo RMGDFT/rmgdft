@@ -427,29 +427,13 @@ void WriteHeader (void)
     printf ("    Psi pre:                                 %d\n", ct.eig_parm.gl_pre);
     printf ("    Psi post:                                %d\n", ct.eig_parm.gl_pst);
 
-
-#if 0
-    /* check minimum imaging assumption */
     printf ("\n");
-    printf ("\n    TEST OF MINIMUM IMAGING ASSUMPTION");
-    printf ("\n          SPEC-PAIR  ENERGY CONTRIBUTION");
-    t1 = (get_xside() < get_yside()) ? get_xside() : get_yside();
-    t1 = (t1 < get_zside()) ? t1 : get_zside();
-    t1 = 0.5 * t1;
-    for (int i = 0; i < ct.num_species; i++)
-    {
-        for (int j = i; j < ct.num_species; j++)
-        {
-            printf ("\n            %2d %2d    %13.7e", i, j,
-                    ct.sp[i].zvalence * ct.sp[i].zvalence *
-                    erfc (t1 / sqrt (ct.sp[i].rc * ct.sp[i].rc + ct.sp[j].rc * ct.sp[i].rc)) / t1);
-        }
+    if (ct.kohn_sham_solver == DAVIDSON_SOLVER) {
+        printf ("Davidson Parameters\n");
+	printf ("    Davidson multiplier:                     %d\n", ct.davidx);
+	printf ("    Davidson max step:                       %d\n", ct.david_max_steps);
+	printf ("    Davidson unocc tol factor:               %-6.3f\n", ct.unoccupied_tol_factor);
     }
-#endif
-
-
-
-
 
 
 

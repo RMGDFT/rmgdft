@@ -254,7 +254,17 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     if(ct.state_block_size > ct.num_states ) ct.state_block_size = ct.num_states;
     // Now figure out some buffer sizes
     ct.max_states = ct.run_states + 3 * ct.state_block_size;
-    if (Verify ("kohn_sham_solver", "davidson", ControlMap)) ct.max_states = std::max(ct.max_states, ct.davidx*ct.run_states);
+    if (Verify ("kohn_sham_solver", "davidson", ControlMap)) 
+    {
+        // Check if user specified autosetting of davidson multiplier
+        if(ct.davidx <= 1)
+        {
+            ct.davidx = 4;
+            if(ct.num_states > 600) ct.davidx = 3;
+            if(ct.num_states > 900) ct.davidx = 2;
+        }
+        ct.max_states = std::max(ct.max_states, ct.davidx*ct.run_states);
+    }
     if (Verify ("start_mode","LCAO Start", ControlMap)) ct.max_states = std::max(ct.max_states, 2*ct.init_states);
     if (Verify ("start_mode","Modified LCAO Start", ControlMap)) ct.max_states = std::max(ct.max_states, ct.init_states);
     if(ct.forceflag == BAND_STRUCTURE) ct.max_states = std::max(ct.max_states, 3*ct.num_states);
