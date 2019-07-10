@@ -177,11 +177,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         rmg_error_handler (__FILE__, __LINE__, "Mixing norm conserving and ultrasoft pseudopotentials is not supported. Check your input files.\n");
     }
 
-    if(!ct.FG_RATIO)
-    {
-        ct.FG_RATIO = 2;
-        if(ct.norm_conserving_pp) ct.FG_RATIO = 1;
-    }
+    if(!ct.FG_RATIO) ct.FG_RATIO = 2;
 
     // For USPP force a minimum of 2
     if(!ct.norm_conserving_pp) ct.FG_RATIO = std::max(2, ct.FG_RATIO);
