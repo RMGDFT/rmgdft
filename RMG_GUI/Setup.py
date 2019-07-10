@@ -172,7 +172,7 @@ class Setup(QtGui.QWidget):
         self._occmix = QtGui.QLineEdit()
         validator = QtGui.QDoubleValidator(self._occmix)
         self._occmix.setValidator(validator)
-        self._occmix.setText('0.3')
+        self._occmix.setText('1.0')
         form_layout.addRow(label, self._occmix)
 
 

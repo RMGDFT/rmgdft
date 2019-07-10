@@ -243,12 +243,13 @@ class RMG_GUI(QtGui.QTabWidget):
             
             # write positions:
 
-            _positions_line = "#  **** Lattice constants **** \n\n"
-	    _lattice_line  ='a_length =" '+str(configuration.conf.lattice[0])+'"\n'
+            _lattice_line = "#  **** Lattice constants **** \n\n"
+	    _lattice_line +='a_length =" '+str(configuration.conf.lattice[0])+'"\n'
 	    _lattice_line +='b_length =" '+str(configuration.conf.lattice[1])+'"\n'
 	    _lattice_line +='c_length =" '+str(configuration.conf.lattice[2])+'"\n'
 
             
+            _positions_line = ''
             zipped_coordinates = zip(_elements, configuration.conf.coords)
             _positions_line += 'atoms=\n"'
             for name,v in zipped_coordinates:

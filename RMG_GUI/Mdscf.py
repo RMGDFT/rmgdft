@@ -61,14 +61,14 @@ class Mdscf(QtGui.QWidget):
         validator = QtGui.QDoubleValidator(self._rms)
         self._rms.setValidator(validator)
         form_layout.addRow(label, self._rms)
-        self._rms.setText('1e-10')
+        self._rms.setText('1e-7')
 
         label = QtGui.QLabel('energy Convergence Criterion')
         self._rms_energy = QtGui.QLineEdit()
         validator = QtGui.QDoubleValidator(self._rms)
         self._rms_energy.setValidator(validator)
         form_layout.addRow(label, self._rms_energy)
-        self._rms_energy.setText('1e-12')
+        self._rms_energy.setText('1e-9')
 
 #        label = QtGui.QLabel('Max scf steps for NEGF ')
 #        self._maxscf_NEGF= QtGui.QLineEdit()
@@ -134,7 +134,7 @@ class Mdscf(QtGui.QWidget):
         validator = QtGui.QDoubleValidator(self._qmix)
         self._qmix.setValidator(validator)
         form_layout.addRow(label, self._qmix)
-        self._qmix.setText('0.1')
+        self._qmix.setText('0.7')
 
         # projector mixing parameter
 
@@ -148,7 +148,7 @@ class Mdscf(QtGui.QWidget):
         #  charge density mixing method
         label = QtGui.QLabel('charge density mixing method')
         self._mixmethod = QtGui.QComboBox()
-        self._mixmethod.addItems(["Pulay", "Linear", "Broyden"])
+        self._mixmethod.addItems(["Broyden", "Pulay", "Linear"])
         form_layout.addRow(label, self._mixmethod)
 
 

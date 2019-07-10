@@ -132,6 +132,13 @@ class Misc(QtGui.QWidget):
         form_layout.addRow(label, self._state_count_down)
         self._state_count_down.setText('')
 
+        label = QtGui.QLabel('potential acceleration constant')
+        self._p_acc_const= QtGui.QLineEdit()
+        validator = QtGui.QDoubleValidator(self._p_acc_const)
+        self._p_acc_const.setValidator(validator)
+        form_layout.addRow(label, self._p_acc_const)
+        self._p_acc_const.setText('1.0')
+
     def state(self):
         """
            @return A dictionary containing the widget state.
@@ -166,9 +173,12 @@ class Misc(QtGui.QWidget):
 
         input_misc_lines +=   'subdiag_diver  = "'               + (self.subdiag_solver.currentText()) +'"\n'
 
-        input_misc_lines +=   ' states_count_and_occupation = "'  + (self._state_count.text()) +'"\n'
-        input_misc_lines +=   ' states_count_and_occupation_spin_up = "'  + (self._state_count_up.text()) +'"\n'
-        input_misc_lines +=   ' states_count_and_occupation_spin_down = "'  + (self._state_count_down.text()) +'"\n'
+        if self._state_count.text() != '': 
+            input_misc_lines +=   ' states_count_and_occupation = "'  + (self._state_count.text()) +'"\n'
+        if self._state_count_up.text() != '': 
+            input_misc_lines +=   ' states_count_and_occupation_spin_up = "'  + (self._state_count_up.text()) +'"\n'
+        if self._state_count_down.text() != '': 
+            input_misc_lines +=   ' states_count_and_occupation_spin_down = "'  + (self._state_count_down.text()) +'"\n'
 
     
 
@@ -198,6 +208,8 @@ class Misc(QtGui.QWidget):
             
         if(self.folded_spectrum.isChecked()):
             input_misc_lines += 'folded_spectrum = "true"\n'
+
+        input_misc_lines += 'potential_acceleration_constant_step = "'+ self._p_acc_const.text() + '"\n'
 
 
         state={ 'input_misc_lines': input_misc_lines }
