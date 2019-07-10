@@ -1,4 +1,5 @@
 #from numpy import *
+from __future__ import division
 import numpy  
 import re
 import CifFile
@@ -133,7 +134,7 @@ class Configuration(QtGui.QWidget):
         self.bbxlayouts.addWidget(QtGui.QLabel('   c = '))
         self.bbxlayouts.addWidget(self.bbxc)
 
-        form_layout.addRow(self.bbxlayouts)
+        #form_layout.addRow(self.bbxlayouts)
         self.lattlayouts  = QtGui.QHBoxLayout()
 
         lattlabel =   QtGui.QLabel('              lattice constant:   a = ')
@@ -276,7 +277,7 @@ class Configuration(QtGui.QWidget):
        lattice=[input_para['a_length'],input_para['b_length'],input_para['c_length']]
        coords=[]
        
-       for i in range(len(conf_sp)/5):
+       for i in range(int(len(conf_sp)/5)):
           elements.append(conf_sp[i*5])
 #          coord=conf_sp[i*5+1]+' '+conf_sp[i*5+2]+' '+conf_sp[i*5+3]
           coord=[float(conf_sp[i*5+1]),float(conf_sp[i*5+2]),float(conf_sp[i*5+3])]
@@ -294,7 +295,8 @@ class Configuration(QtGui.QWidget):
 
         filekeys=cf.keys()
 
-        cb=cf['global']
+        print filekeys[0]
+        cb=cf[filekeys[0]]
         keys=cb.keys()
 
 
@@ -307,8 +309,9 @@ class Configuration(QtGui.QWidget):
         gamma=eval(cb['_cell_angle_gamma'])/180.*pi
        
 
-        symop=cb['_space_group_symop_operation_xyz']
-
+        for key in keys:
+            if key == '_space_group_symop_operation_xyz' or key == '_symmetry_equiv_pos_as_xyz':
+                symop=cb[key]
         sites_base=cb.GetLoop('_atom_site_label')
 
             
@@ -337,6 +340,13 @@ class Configuration(QtGui.QWidget):
                     value=eval(eq)
                     if value==0:
                         value=0
+                    if value>1:
+                        value=value -1
+                    if value<0:
+                        value=value +1
+                    if value<0:
+                        value=value +1
+                    
                     newcoord.append(str(value))
                 newelement=[elements_base[i],newcoord]
                 if newelement not in newsite:#!=newcoord:
@@ -359,6 +369,10 @@ class Configuration(QtGui.QWidget):
 
 
         self.conf = conf(lattice, elements, coords)            
+        self.latticea.setText(str(a))
+        self.latticeb.setText(str(b))
+        self.latticec.setText(str(c))
+        self.CONF_CHANGED.emit()
 
 
     def open_and_read_xyz(self, filename):
@@ -430,9 +444,9 @@ class Configuration(QtGui.QWidget):
         minx = 0.0
         miny = 0.0
         minz = 0.0
-        maxx = self.conf.lattice[0]
-        maxy = self.conf.lattice[1]
-        maxz = self.conf.lattice[2]
+        maxx = self.conf.lattice[0] * 0.529177
+        maxy = self.conf.lattice[1] * 0.529177 
+        maxz = self.conf.lattice[2] * 0.529177
         
         cmd.extend("drawbox", drawbox(minx, miny, minz, maxx, maxy, maxz, 2.0, 1,1,1))
 

@@ -46,7 +46,7 @@ class species(QtGui.QWidget):
             self.setLayout(self._layout)
 
             # Setup Groupbox
-            group_box = QtGui.QGroupBox('    Pseudopotential files       # of Orbitals      orbital radius ')
+            group_box = QtGui.QGroupBox('    Pseudopotential files       # of Orbitals      orbital radius  Hubbard_U')
             self._layout.addWidget(group_box)
 
             form_layout = QtGui.QFormLayout()
@@ -64,6 +64,7 @@ class species(QtGui.QWidget):
             self.pp_buttons= range(self.max_n)
             self.num_orbital= range(self.max_n)
             self.orbital_radius= range(self.max_n)
+            self.hubbard_u= range(self.max_n)
 
             ## first define slot-like versions of the 
             ## selectPPDir() function, to be used for the
@@ -87,11 +88,16 @@ class species(QtGui.QWidget):
                 self.pp_buttons[i_pp] =  QtGui.QPushButton('Browse...') 
                 self.num_orbital[i_pp] =  QtGui.QSpinBox()
                 self.num_orbital[i_pp].setValue(6)
+
                 self.orbital_radius[i_pp] =  QtGui.QLineEdit() 
-                
                 validator = QtGui.QDoubleValidator(self.orbital_radius[i_pp])
                 self.orbital_radius[i_pp].setValidator(validator)
                 self.orbital_radius[i_pp].setText('8.0')
+
+                self.hubbard_u[i_pp] =  QtGui.QLineEdit() 
+                validator = QtGui.QDoubleValidator(self.hubbard_u[i_pp])
+                self.hubbard_u[i_pp].setValidator(validator)
+                self.hubbard_u[i_pp].setText('0.0')
 
                 self.pp_layouts[i_pp].addWidget(self.pp_labels[i_pp] )
                 self.pp_layouts[i_pp].addWidget(self.pp_lines [i_pp] )
@@ -100,6 +106,7 @@ class species(QtGui.QWidget):
                 self.pp_layouts[i_pp].addWidget(self.num_orbital[i_pp] )
                 self.pp_layouts[i_pp].addWidget(self.pp_labels2[i_pp] )
                 self.pp_layouts[i_pp].addWidget(self.orbital_radius[i_pp] )
+                self.pp_layouts[i_pp].addWidget(self.hubbard_u[i_pp] )
 
                 self.pp_lines[i_pp].setToolTip('edit the pseudopotential path')
                 self.pp_buttons[i_pp].setToolTip('select an existing directory')
@@ -173,6 +180,7 @@ class species(QtGui.QWidget):
                 self.pp_buttons[i_pp].setVisible(True)
                 self.num_orbital[i_pp].setVisible(True)
                 self.orbital_radius[i_pp].setVisible(True)
+                self.hubbard_u[i_pp].setVisible(True)
 
             # make the other controls invisible:
             for i_pp in range(len(self.elements),self.max_n):
@@ -183,6 +191,7 @@ class species(QtGui.QWidget):
                 self.pp_buttons[i_pp].setVisible(False)
                 self.num_orbital[i_pp].setVisible(False)
                 self.orbital_radius[i_pp].setVisible(False)
+                self.hubbard_u[i_pp].setVisible(False)
   #      except:
   #          showError()
 
@@ -236,6 +245,18 @@ class species(QtGui.QWidget):
        #                       '    ../' + self.elements[i] +'-atom/Wave/wave \n' )
        # species_lines += '"\n'
 
+        hubbard_line =''
+        for i in range(len(self.elements)):
+            print self.hubbard_u[i].text()
+            if(self.hubbard_u[i].text() !='0.0'):
+                hubbard_line += self.elements[i] +'   '+ str(self.hubbard_u[i].text()) +"\n"
+                ldaU_radius = self.orbital_radius[i].text()
+        if hubbard_line !='':
+            species_lines += 'ldaU_mode = "Simple"' + "\n"
+            species_lines += 'ldaU_radius = "' + ldaU_radius + '"\n'
+            species_lines += 'Hubbard_U="\n'
+            species_lines += hubbard_line
+            species_lines += '"\n'
 
         state = {
             'input_species_lines' : species_lines

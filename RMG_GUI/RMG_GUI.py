@@ -131,7 +131,7 @@ class RMG_GUI(QtGui.QTabWidget):
 
 		self._setup._charge.setText(ip['system_charge'])
 
-#		occs=[self._setup._occ.itemText(i) for i in range(self._setup._occ.count())]
+#		iccs=[self._setup._occ.itemText(i) for i in range(self._setup._occ.count())]
 #self._setup._occ.setCurrentIndex(self._setup._occ.findText(ip['occupation_type']))
 		self._setup._occtem.setText(ip['occupation_electron_temperature_eV'])
 		self._setup._occmix.setText(ip['occupation_number_mixing'])
@@ -221,7 +221,7 @@ class RMG_GUI(QtGui.QTabWidget):
             configuration = self._configuration
             _format_vector = "  {0: 10.8f} {1: 10.8f} {2: 10.8f}\n"
             _format_with_comment = "  {0: 10.8f} {1: 10.8f} {2: 10.8f} {3}\n"
-            _ncsu_atom_format = " %s     %.12e    %.12e    %.12e      1\n"
+            _ncsu_atom_format = " %s     %.12e    %.12e    %.12e      1   0.0\n"
 
 
             _elements = []
@@ -234,7 +234,8 @@ class RMG_GUI(QtGui.QTabWidget):
             # Test whether we have a configuration defined:
 
 
-            # generate types of atoms encountered:
+            #e generate types of atoms encountered:
+
             _elements = configuration.conf.elements
             _element_types = list(set(_elements))
             _element_count = [ _elements.count(ii) for ii in _element_types]
@@ -484,10 +485,10 @@ class RMG_GUI(QtGui.QTabWidget):
 #                write_out_others(configuration, self._rmg_para, self._grids, self._mdscf, num_orbital_dict)
 #            except:
 #               print "failed to save3e"
-#            try:
-#                write_out_jobfiles(configuration, self._setup, self._grids)
-#            except:
-#               print "failed to save"
+            try:
+                write_out_jobfiles(configuration, self._setup, self._grids)
+            except:
+               print "failed to save job"
                     
         def state(self):
             """

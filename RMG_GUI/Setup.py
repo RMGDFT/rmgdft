@@ -185,18 +185,15 @@ class Setup(QtGui.QWidget):
 
         label = QtGui.QLabel('Machine')
         self._machine = QtGui.QComboBox()
-        self._machine.addItems(['bluewater','ox','Jaguar','chugach' ])
+        self._machine.addItems(['Summit','bluewater'])
         form_layout.addRow(label, self._machine)
+        label=QtGui.QLabel('Project name')
 
-#        label = QtGui.QLabel('Project name')
-#        self._projname = QtGui.QComboBox()
-#        self._projname.addItems(['CHM022','ONRDC17053C5A','ONRDC17053240'])
-#        form_layout.addRow(label, self._projname)
-	label=QtGui.QLabel('Project name')
-	self._projname=QtGui.QLineEdit()
-	validator=QtGui.QDoubleValidator(self._projname)
-	self._projname.setValidator(validator)
-	self._projname.setText('test')
+        self._projname=QtGui.QLineEdit()
+        validator=QtGui.QDoubleValidator(self._projname)
+        self._projname.setValidator(validator)
+        self._projname.setText('CHP107')
+        form_layout.addRow(label, self._projname)
 
 
         label = QtGui.QLabel('queue type')
@@ -211,21 +208,101 @@ class Setup(QtGui.QWidget):
         """
            @return A dictionary containing the widget state.
         """
-        input_setup_lines = '\n# **** Setup  ****\n\n'
+        input_setup_lines = '# description of run\n'
         input_setup_lines += 'description = "'                + self._description.text() +'"\n'
+
+        input_setup_lines += """
+
+# Uncommenting this will print out more information
+#verbose="true"
+
+
+# In most cases LCAO or Restart but certain special scenarios
+# may require a Random or Modified LCAO start
+#start_mode="LCAO Start"
+#start_mode="Random Start"
+#start_mode="Modified LCAO Start"
+#start_mode="Restart From File"
+"""
         input_setup_lines += 'start_mode = "'                + self._start_mode.currentText() +'"\n'
+
+        input_setup_lines += """
+
+# This is not an exhaustive list of options but does
+# contain the most frequently used ones.
+#calculation_mode="Quench Electrons"
+#calculation_mode="Relax Structure"
+#calculation_mode="Constant Volume And Energy"
+#calculation_mode="Constant Temperature And Energy"
+#calculation_mode="Band Structure Only"
+
+"""
+
         input_setup_lines += 'calculation_mode = \"' +self._calculation_mode.currentText() +'\"\n'
+
+        input_setup_lines += """
+
+"""
+
         input_setup_lines += 'relax_method =\"' +self._relaxmethod.currentText()+'\"\n'
+
+        input_setup_lines += """
+
+# Most pseudopotentials specify the exchange correlation type they
+# were generated with and the default value of AUTO_XC means that
+# the type specified in the pseudopotial is what RMG will use. That
+# can be overridden by specifying a value here. For a full list of
+# the available types look in the source distribution at the file
+# Headers/InputOpts.h around line 146.
+"""
+
         input_setup_lines += 'exchange_correlation_type = "' + self._ecf.currentText() +'"\n'
+
+
+        input_setup_lines += """
+
+# RMG supports the following lattice types (Hexagonal at gamma-only)
+#bravais_lattice_type="Cubic Primitive"
+#bravais_lattice_type="Orthorhombic Primitive"
+#bravais_lattice_type="Hexagonal Primitive"
+"""
+
         input_setup_lines += 'bravais_lattice_type = "' + self._brav.currentText() +'"\n'
         input_setup_lines += 'system_charge = "'             + str(self._charge.text()) +'"\n'
-        input_occupation_lines  = '\n# *****Occupation *****\n\n'
+
+        input_occupation_lines = """
+
+# RMG supports several different ways of specifying orbital occupations.
+# For a spin polarized system one may specify the occupations for up and
+# down separately. In the case of a non-zero electronic temperature these
+# will be adjusted as the calculation proceeds. For a non-spin polarized
+# calculation look at one of the other examples.
+#occupations_type = "Fixed"
+#occupations_type = "Fermi Dirac"
+#occupations_type = "MethfesselPaxton"
+"""
         input_occupation_lines += 'occupations_type = "'           + self._occ.currentText() +'"\n'
-	input_occupation_lines += 'occupation_electron_temperature_eV = "'             + str(self._occtem.text()) +'"\n'
+        input_occupation_lines += 'occupation_electron_temperature_eV = "'             + str(self._occtem.text()) +'"\n'
         input_occupation_lines += 'occupation_number_mixing = "'             + str(self._occmix.text()) +'"\n'
 
-        input_units_lines = '\n# **** Units  ****\n\n'
-        input_units_lines += 'length_units = "'                + self._lengthunit.currentText() +'"\n'
+        input_units_lines = """
+
+#  length unit in Bohr or Angerstrom
+# Default is Bohr
+#crds_units="Bohr"
+#crds_units="Angstrom"
+"""
+
+        input_units_lines += 'crds_units = "'                + self._lengthunit.currentText() +'"\n'
+
+
+        input_units_lines += """
+
+#atomic_coordinate_type="Cell Relative"
+#atomic_coordinate_type="Absolute"
+"""
+
+
         input_units_lines += 'atomic_coordinate_type = "'                + self._atomcoor.currentText() +'"\n'
 
         state={ 'input_setup_lines': input_setup_lines,
@@ -236,5 +313,6 @@ class Setup(QtGui.QWidget):
         return state
 
     ######### end of state(self):
+
 
 

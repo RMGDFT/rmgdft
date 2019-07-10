@@ -56,12 +56,19 @@ class Mdscf(QtGui.QWidget):
         form_layout.addRow(label, self._maxscf)
 
         # RMS convergence critierion
-        label = QtGui.QLabel('RMS Convergence Criterion for ON')
+        label = QtGui.QLabel('RMS Convergence Criterion')
         self._rms = QtGui.QLineEdit()
         validator = QtGui.QDoubleValidator(self._rms)
         self._rms.setValidator(validator)
         form_layout.addRow(label, self._rms)
-        self._rms.setText('1e-6')
+        self._rms.setText('1e-10')
+
+        label = QtGui.QLabel('energy Convergence Criterion')
+        self._rms_energy = QtGui.QLineEdit()
+        validator = QtGui.QDoubleValidator(self._rms)
+        self._rms_energy.setValidator(validator)
+        form_layout.addRow(label, self._rms_energy)
+        self._rms_energy.setText('1e-12')
 
 #        label = QtGui.QLabel('Max scf steps for NEGF ')
 #        self._maxscf_NEGF= QtGui.QLineEdit()
@@ -135,13 +142,13 @@ class Mdscf(QtGui.QWidget):
         self._pmix = QtGui.QLineEdit()
         validator = QtGui.QDoubleValidator(self._pmix)
         self._pmix.setValidator(validator)
-        form_layout.addRow(label, self._pmix)
+        #form_layout.addRow(label, self._pmix)
         self._pmix.setText('0.1')
 
         #  charge density mixing method
         label = QtGui.QLabel('charge density mixing method')
         self._mixmethod = QtGui.QComboBox()
-        self._mixmethod.addItems(["Pulay", "Linear"])
+        self._mixmethod.addItems(["Pulay", "Linear", "Broyden"])
         form_layout.addRow(label, self._mixmethod)
 
 
@@ -184,9 +191,20 @@ class Mdscf(QtGui.QWidget):
         input_mdscf_lines +=   'relax_dynamic_timestep = "'           + self._rdt.currentText() +'"\n'
 
         input_mdscf_lines +=   '\n# **** Mixing controls **** \n  \n'
-        input_mdscf_lines +=   'charge_density_mixing = "'      + str(self._qmix.text()) +'"\n'
-        input_mdscf_lines +=   'projector_mixing = "'           + str(self._pmix.text()) +'"\n'
+        input_mdscf_lines +=   """
+
+# RMG supports Broyden, Pulay and Linear mixing
+# When the davidson Kohn-Sham solver is selected Broyden or
+# Pulay are preferred. For the multigrid solver Linear with
+# potential acceleration is often (but not always) the best
+# choice.
+#charge_mixing_type = "Broyden"
+#charge_mixing_type = "Pulay"
+#charge_mixing_type = "Linear"
+"""
+
         input_mdscf_lines +=   'charge_mixing_type = "'           + self._mixmethod.currentText() +'"\n'
+        input_mdscf_lines +=   'charge_density_mixing = "'      + str(self._qmix.text()) +'"\n'
         input_mdscf_lines +=   'charge_pulay_order = "'           + self._pulayorder.text() +'"\n'
         input_mdscf_lines +=   'charge_pulay_scale = "'           + self._pulaybeta.text() +'"\n'
         input_mdscf_lines +=   'charge_pulay_refresh = "'           + self._pulayrefresh.text() +'"\n'
@@ -194,6 +212,7 @@ class Mdscf(QtGui.QWidget):
         input_mdscf_lines +=   '\n# **** SCF controls ****  \n  \n'
         input_mdscf_lines +=   'max_scf_steps = "'              + str(self._maxscf.text()) +'"\n'
         input_mdscf_lines +=   'rms_convergence_criterion = "'           + str(self._rms.text()) +'"\n'
+        input_mdscf_lines +=   'energy_convergence_criterion = "'           + str(self._rms_energy.text()) +'"\n'
 #        input_mdscf_lines +=   input_mdscf_lines
 
 #        input_mdscf_lines +=   '\n# **** SCF controls ****  \n  \n'

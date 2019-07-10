@@ -327,7 +327,7 @@ class Grids(QtGui.QWidget):
            @return A dictionary containing the widget state.
         """
         try:
-           input_grids_lines = '\n#space grid and processor grid control\n\n'
+           input_grids_lines = '\n#wavefunction grid  and processor grid\n'
            input_grids_lines += 'wavefunction_grid ="' 
            input_grids_lines +='%d ' %self._Nx.value()
            input_grids_lines +='%d ' %self._Ny.value()
@@ -335,13 +335,30 @@ class Grids(QtGui.QWidget):
            num_proc = self._Pex.value() * self._Pey.value() * self._Pez.value() 
            self.num_proc = num_proc
         #   input_grids_lines +='num_processor ="' +'%d'%num_proc +'"\n'
-           input_grids_lines +='potential_grid_refinement="'
-           input_grids_lines +='%d ' %self._potratio.value() +'"\n'
 
            input_grids_lines +='processor_grid="'
            input_grids_lines +='%d ' %self._Pex.value()
            input_grids_lines +='%d ' %self._Pey.value()
            input_grids_lines +='%d' %self._Pez.value() + '"\n'
+
+           input_grids_lines +="""
+
+# Ratio of the potential grid density to the wavefunction grid
+# density. For example if the wavefunction grid is (72,72,72) and 
+# potential_grid_refinement = "2" then the potential grid would be
+# (144,144,144). The default value is 2 but it may sometimes be
+# beneficial to adjust this. (For USPP the minimum value is also 2
+# and it cannot be set lower. NCPP can be set to 1).
+"""
+
+           input_grids_lines +='potential_grid_refinement="'
+           input_grids_lines +='%d ' %self._potratio.value() +'"\n'
+
+           input_grids_lines +="""
+
+#kpoint mesh set up
+#kpoint_is_shift ="0 0 0" include gamma point
+"""
 
            input_grids_lines += 'kpoint_mesh ="' 
            input_grids_lines +='%d ' %self._kx.value()
