@@ -139,6 +139,10 @@ class Misc(QtGui.QWidget):
         form_layout.addRow(label, self._p_acc_const)
         self._p_acc_const.setText('1.0')
 
+        label = QtGui.QLabel('number of unoccupied states')
+        self._num_unocc = QtGui.QSpinBox()
+        self._num_unocc.setValue(10)
+        form_layout.addRow(label, self._num_unocc)
     def state(self):
         """
            @return A dictionary containing the widget state.
@@ -180,7 +184,7 @@ class Misc(QtGui.QWidget):
         if self._state_count_down.text() != '': 
             input_misc_lines +=   ' states_count_and_occupation_spin_down = "'  + (self._state_count_down.text()) +'"\n'
 
-    
+        input_misc_lines += 'unoccupied_states_per_kpoint = "%s"'%self._num_unocc.text()
 
 
         input_misc_lines += """
