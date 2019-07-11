@@ -2,7 +2,6 @@
 from __future__ import division
 import numpy  
 import re
-import CifFile
 
 import pymol
 from pymol import cmd
@@ -289,6 +288,7 @@ class Configuration(QtGui.QWidget):
 
     def open_and_read_cif(self,filename):
 
+        import CifFile
         cf= CifFile.ReadCif(str(filename))
         self.input_para={}
          
