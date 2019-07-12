@@ -562,13 +562,14 @@ void Atomic::RLogGridToGLogGrid (
     for(int ift = 0; ift< gnum; ift++) f_g[ift] = 0.0;
 
     double *bessel_rg_l = &bessel_rg[lval * RADIAL_GVECS * rg_points ] ;
-    for (int ift =  0; ift < gnum; ift++)
+    for (int ift = pct.gridpe; ift < gnum; ift+=pct.grid_npes)
     {
         for(int idx = 0; idx < rg_points; idx++)
             work1[idx] = f[idx] * bessel_rg_l[ift * rg_points + idx];
         f_g[ift] = 4.0 * PI * radint1 (work1, r, rab, rg_points);
     
     }
+    GlobalSums (f_g, gnum, pct.grid_comm);
 
     /* Release memory */
     delete [] work1;
