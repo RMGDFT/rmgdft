@@ -59,3 +59,7 @@ target_link_libraries (on-tddft ${LIBXC_LIBRARIES})
 if(USE_NUMA_INTERNAL)
 target_link_libraries(on-tddft ${NUMA_LIBRARIES})
 endif(USE_NUMA_INTERNAL)
+if(NOT CRAY_XK)
+    target_link_libraries( on-tddft scalapack)
+endif(NOT CRAY_XK)
+

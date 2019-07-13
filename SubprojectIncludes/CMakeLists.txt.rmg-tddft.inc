@@ -59,4 +59,7 @@ target_link_libraries( ${rmg-tddft} ${Boost_LIBRARIES})
 if(USE_OPENBABEL_LIBS)
     target_link_libraries( ${rmg-tddft} ${OPENBABEL_LIBRARIES})
 endif(USE_OPENBABEL_LIBS)
+if(NOT CRAY_XK)
+    target_link_libraries( ${rmg-tddft} scalapack)
+endif(NOT CRAY_XK)
 

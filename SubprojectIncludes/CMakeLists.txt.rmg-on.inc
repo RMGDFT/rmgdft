@@ -56,3 +56,7 @@ add_dependencies(${rmg} libxc)
 target_link_libraries(${rmg-on} ${LIBXC_LIBRARIES})
 endif(USE_LIBXC)
 target_link_libraries( ${rmg-on} symspg_static)
+if(NOT CRAY_XK)
+    target_link_libraries( ${rmg-on} scalapack)
+endif(NOT CRAY_XK)
+
