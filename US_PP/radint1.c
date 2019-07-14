@@ -50,7 +50,6 @@
 
 double radint1 (double * f, double * r, double * dr_di, int n)
 {
-    int i;
 
     /* Simpson's rule weights */
     double w0 = 1.0 / 3.0;
@@ -59,8 +58,10 @@ double radint1 (double * f, double * r, double * dr_di, int n)
 
     double sum = w0 * f[0] * r[0] * r[0] * dr_di[0];    /* this is 0 because r[0] = 0 */
 
-    for (i = 1; i < n; i++)
-        sum += f[i] * r[i] * r[i] * dr_di[i] * (odd (i) ? w1 : w2);
+    int stop = n;
+    if(!(stop % 2)) stop--;
+    for (int i = 1; i < stop; i+=2) sum += f[i] * r[i] * r[i] * dr_di[i] * w1;
+    for (int i = 2; i < stop; i+=2) sum += f[i] * r[i] * r[i] * dr_di[i] * w2;
 
     return sum;
 }
