@@ -74,8 +74,6 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
     occupied_tol = std::max(occupied_tol, 1.0e-13);
     double unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-5 );
 
-    int num_nonloc_ions = kptr->BetaProjector->get_num_nonloc_ions();
-
     //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
     int pbasis = kptr->pbasis;
@@ -400,17 +398,20 @@ void Davidson (Kpoint<OrbitalType> *kptr, double *vtot, int &notconv)
 #endif
             delete RT1;
 
+
             if(notconv == 0) {
-                rmg_printf("Davidson converged in %d steps\n", steps+1);
+                // We use a single non update davidson cycle to get a variational value for the total
+                // energy when the multigrid solver is used so we don't want to write any davidson info
+                // in this case
+                if (!Verify ("kohn_sham_solver","multigrid", kptr->ControlMap))
+                    rmg_printf("Davidson converged in %d steps\n", steps+1);
                 break;  // done
             }
 
             if(steps == (ct.david_max_steps-1)) {
-                rmg_printf("Davidson incomplete convergence steps = %d\n", steps + 1);
-                // Incomplete convergence, what should we do here?
-                //throw RmgFatalException() << "Davidson failed to converge, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+                if (!Verify ("kohn_sham_solver","multigrid", kptr->ControlMap))
+                    rmg_printf("Davidson incomplete convergence steps = %d\n", steps + 1);
                 break;
-
             }
 
             // refresh s_psi and h_psi

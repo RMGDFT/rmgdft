@@ -303,7 +303,37 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	if (!firststep && fabs(ct.scf_accuracy) < ct.thr_energy) CONVERGED = true;
     }
 
-    if(CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1))) {
+    if(CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1)))
+    {
+        // If the multigrid solver is selected the total energy calculation from
+        // the loop above is not variational so we do a single davidson step
+        // with a multiplier of 1 to get a variational value for the energy.
+        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap))
+        {
+            for (int idx = 0; idx < FP0_BASIS; idx++)
+            {
+                vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
+            }
+            // Transfer vtot from the fine grid to the wavefunction grid
+            GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+
+            /*Generate the Dnm_I */
+            get_ddd (vtot);
+
+            // Set davidson parameters
+            ct.davidx = 1;
+            ct.david_max_steps = 1;
+            ct.scf_correction = 0.0;
+            int notconv;
+            for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+            {
+	        Davidson(Kptr[kpt], vtot_psi, notconv);
+                MPI_Barrier(pct.grid_comm);
+            }
+            if (spin_flag) GetOppositeEigvals (Kptr);
+            GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
+        }
+
 	// Evaluate XC energy and potential from the output density
 	// for the force correction
 	RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
@@ -312,6 +342,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	F->v_xc(new_rho, rhocore, ct.XC, ct.vtxc, vxc, ct.spin_flag );
 	delete F;
 	delete RT1;
+
     }
 
 
