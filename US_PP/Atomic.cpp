@@ -364,29 +364,16 @@ void Atomic::FilterPotential (
     // rmax is updated in BesselToLogGrid
     double nrmax = BesselToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, rmax, hmin);
 
-    /* Transform to g-space and filter it */
-    //RftToLogGrid (parm, potential, r, potential_lgrid, rab, rg_points, l_value, gwidth);
-
-    /*Fix up first point in filtered potential*/
-    //potential_lgrid[0] = 2.0 * potential_lgrid[1] - potential_lgrid[2];
-
     // Damp oscillatory tails in real space
     for (int idx = 0; idx < MAX_LOGGRID; idx++)
     {
         double rdist = r_filtered[idx];
-
-#if 1
         if (rdist > rcut)
         {
-//            double t1 = (rdist - rcut) / rcut;
-//            double exp_fac = exp (-rwidth * t1 * t1);
-//            potential_lgrid[idx] *= exp_fac;
               double t1 = (rdist - rcut) / (nrmax - rcut);
               if(t1 > 1.0) t1 = 1.0;
               potential_lgrid[idx] = (1.0 - t1)*potential_lgrid[idx];
         }               /* end if */
-
-#endif
     }
 } 
 
