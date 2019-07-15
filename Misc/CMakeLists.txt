@@ -12,6 +12,8 @@ VhDriver.cpp
 Pw.cpp
 PfftForward.cpp
 PfftInverse.cpp 
+LocalFftForward.cpp
+LocalFftInverse.cpp 
 GeneralDiag.cpp
 VhPfft.cpp
 VhDriver.cpp

@@ -59,6 +59,14 @@ void PfftInverse(std::complex<double> *, std::complex<double> *, Pw &pwaves);
 
 void PfftInverse(std::complex<double> *, double *, Pw &pwaves);
 
+void LocalFftForward(double *, std::complex<double> *, Pw &pwaves);
+
+void LocalFftForward(std::complex<double> *, std::complex<double> *, Pw &pwaves);
+
+void LocalFftInverse(std::complex<double> *, std::complex<double> *, Pw &pwaves);
+
+void LocalFftInverse(std::complex<double> *, double *, Pw &pwaves);
+
 void FftSmoother(double *x, Pw &pwaves, double factor);
 
 #endif
