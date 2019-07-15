@@ -46,27 +46,23 @@
  * change variables from 'dr' to 'di' and therefore the 'dr_di' must be provided.
  * Previously, 'dr_di' was confusingly named 'rab'. 
  * It is assumed that 'f' goes to zero for large 'r' faster than 'r^2'.
+ * Updated by Emil Briggs for performance and compatibility reasons Jul 2019.
+ * While not physically meaningful small changes in the integration routine
+ * can cause discrepancies when comparing with other codes.
  */
 
 double radint1 (double * f, double * r, double * dr_di, int n)
 {
 
     /* Simpson's rule weights */
-    const double w[2] = {4.0 / 3.0, 2.0 / 3.0};
+    const double w[2] = {2.0 / 3.0, 4.0 / 3.0};
     const unsigned mask = {1};
-    double w0 = 1.0 / 3.0;
-    double w1 = 4.0 / 3.0;
-    double w2 = 2.0 / 3.0;
 
+    double w0 = 1.0 / 3.0;
     double sum = w0 * f[0] * r[0] * r[0] * dr_di[0];    /* this is 0 because r[0] = 0 */
 
-    int stop = n;
-    if(!(stop % 2)) stop--;
-    for (unsigned i = 1; i < stop; i++)
-    {
-         unsigned iw = i & mask;
-         sum += f[i] * r[i] * r[i] * dr_di[i] * w[iw];
-    }
+    for (unsigned i = 1; i < n; i++)
+        sum += f[i] * r[i] * r[i] * dr_di[i] * w[i & mask];
 
     return sum;
 }
