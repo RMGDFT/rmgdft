@@ -52,6 +52,8 @@ double radint1 (double * f, double * r, double * dr_di, int n)
 {
 
     /* Simpson's rule weights */
+    const double w[2] = {4.0 / 3.0, 2.0 / 3.0};
+    const unsigned mask = {1};
     double w0 = 1.0 / 3.0;
     double w1 = 4.0 / 3.0;
     double w2 = 2.0 / 3.0;
@@ -60,8 +62,11 @@ double radint1 (double * f, double * r, double * dr_di, int n)
 
     int stop = n;
     if(!(stop % 2)) stop--;
-    for (int i = 1; i < stop; i+=2) sum += f[i] * r[i] * r[i] * dr_di[i] * w1;
-    for (int i = 2; i < stop; i+=2) sum += f[i] * r[i] * r[i] * dr_di[i] * w2;
+    for (unsigned i = 1; i < stop; i++)
+    {
+         unsigned iw = i & mask;
+         sum += f[i] * r[i] * r[i] * dr_di[i] * w[iw];
+    }
 
     return sum;
 }

@@ -322,7 +322,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
             // Set davidson parameters
             ct.davidx = 1;
-            ct.david_max_steps = 1;
+            ct.david_max_steps = 0;
             ct.scf_correction = 0.0;
             int notconv;
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
