@@ -104,7 +104,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
         num = (sp->nbeta * (sp->nbeta + 1)) * sp->nlc / 2;
         sp->qnmlig = new double[num * MAX_LOGGRID]();
         idx = 0;
-        int filter_idx = 0;
 
         for (i = 0; i < sp->nbeta; i++)
         {
@@ -119,43 +118,36 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 
                     qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_LOGGRID;
 
-                    // There can be a lot of q-functions so we distribute the filtering over nodes
-                    // unless write_pseudopotential_plots is true in which case we turn off the parallelization
-                    int qdr = filter_idx % pct.grid_npes;
-                    if((qdr == pct.gridpe) || Verify ("write_pseudopotential_plots", true, ControlMap))
+                    for (k = 0; k < MAX_RGRID; k++)
+                        work[k] = 0.0;
+
+                    for (k = 0; k < sp->rg_points; k++)
                     {
-                        for (k = 0; k < MAX_RGRID; k++)
-                            work[k] = 0.0;
-
-                        for (k = 0; k < sp->rg_points; k++)
-                        {
-                            work[k] = qnm_tpr[k]/sp->r[k]/sp->r[k];
-                            if(sp->nqf > 0)
-                                if (sp->r[k] < sp->rinner[ll])
-                                    work[k] = get_QnmL (idx, ll, sp->r[k], sp);
-                        }
-
-                        if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
-                        {
-                            for (k = 0; k < sp->kkbeta; k++)
-                                fprintf (fqq, "%e  %e\n", sp->r[k], work[k]);
-                            fprintf (fqq, "&\n");
-                        }
-
-                        A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
-                                sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
-
-                        /*Write final filtered Q function if requested*/
-                        if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
-                        {
-                            for (k = 0; k < MAX_LOGGRID; k++)
-                            {
-                                fprintf (fqq, "%e  %e\n", rgrid[k], qnmlig_tpr[k]);
-                            }
-                            fprintf (fqq, "&\n");
-                        }
+                        work[k] = qnm_tpr[k]/sp->r[k]/sp->r[k];
+                        if(sp->nqf > 0)
+                            if (sp->r[k] < sp->rinner[ll])
+                                work[k] = get_QnmL (idx, ll, sp->r[k], sp);
                     }
-                    filter_idx++;
+
+                    if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
+                    {
+                        for (k = 0; k < sp->kkbeta; k++)
+                            fprintf (fqq, "%e  %e\n", sp->r[k], work[k]);
+                        fprintf (fqq, "&\n");
+                    }
+
+                    A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
+                            sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
+
+                    /*Write final filtered Q function if requested*/
+                    if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
+                    {
+                        for (k = 0; k < MAX_LOGGRID; k++)
+                        {
+                            fprintf (fqq, "%e  %e\n", rgrid[k], qnmlig_tpr[k]);
+                        }
+                        fprintf (fqq, "&\n");
+                    }
 
                 }               /*end for ll */
             }                   /*end for j */
@@ -163,10 +155,6 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // Raw q function from pp is no longer needed so free it's memory
         delete []  sp->qnm;
-
-        // Could be faster with an Allgather but probably does not matter
-        if(!Verify ("write_pseudopotential_plots", true, ControlMap))
-            MPI_Allreduce(MPI_IN_PLACE, sp->qnmlig, num * MAX_LOGGRID, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
         if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
         {
