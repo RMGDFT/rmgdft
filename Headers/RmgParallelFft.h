@@ -29,6 +29,21 @@
 #include "Lattice.h"
 #include "Pw.h"
 
+typedef struct
+{
+    fftw_plan cplan;
+    int nx;
+    int ny;
+    int nz;
+    int pbasis;
+#if RMG_GPU_ENABLED
+    cufftHandle gplan;
+    cufftType type;
+    int batch;
+#endif
+    
+} LocalFftPlan;
+
 void FftInitPlans(void);
 
 void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, bool use_sqrt);
