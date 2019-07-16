@@ -28,3 +28,11 @@
 
 # /RMG/SvnRev/
 /RMG/SvnRev/svnrev
+
+# /build/
+/build/
+
+# /scalapack/
+scalapack/BLACS/INSTALL/Makefile
+scalapack/BLACS/INSTALL/cmake_install.cmake
+scalapack/BLACS/INSTALL/xintface
