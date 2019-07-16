@@ -1,0 +1,30 @@
+
+# /NEGF/
+/NEGF/.build.log
+
+# /NEGF/Headers/
+/NEGF/Headers/svnrev.h
+
+# /NEGF/SvnRev/
+/NEGF/SvnRev/svnrev
+
+# /ON/
+/ON/.build.log
+
+# /ON/Headers/
+/ON/Headers/arch.h
+/ON/Headers/svnrev.h
+
+# /ON/SvnRev/
+/ON/SvnRev/svnrev
+
+# /RMG/
+/RMG/.build.log
+
+# /RMG/Headers/
+/RMG/Headers/arch.h
+/RMG/Headers/make_conf.h
+/RMG/Headers/svnrev.h
+
+# /RMG/SvnRev/
+/RMG/SvnRev/svnrev
