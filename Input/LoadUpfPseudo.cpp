@@ -290,13 +290,15 @@ void LoadUpfPseudo(SPECIES *sp)
             sp->atomic_wave[iwf] = UPF_read_mesh_array(PP_CHI, r_total, ibegin);
 
             sp->atomic_wave_l[iwf] = upf_tree.get<int>(path(chi + "/<xmlattr>/l", '/'));
-            if(sp->atomic_wave_l[iwf] == 0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 1;
-            if(sp->atomic_wave_l[iwf] == 1) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 3;
-            if(sp->atomic_wave_l[iwf] == 2) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 5;
-            if(sp->atomic_wave_l[iwf] == 3) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 7;
 
             //sp->atomic_wave_label[j][0] =
             sp->atomic_wave_oc[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/occupation", '/'));
+
+            
+            if(sp->atomic_wave_l[iwf] == 0 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 1;
+            if(sp->atomic_wave_l[iwf] == 1 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 3;
+            if(sp->atomic_wave_l[iwf] == 2 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 5;
+            if(sp->atomic_wave_l[iwf] == 3 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 7;
 
             // UPF stores atomic wavefunctions * r so divide through
             for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];

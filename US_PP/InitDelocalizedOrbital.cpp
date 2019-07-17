@@ -67,15 +67,18 @@ void InitDelocalizedOrbital (void)
         int orbital_count = 0;
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
         {
-            for(int m = 0; m < 2*sp->atomic_wave_l[ip]+1; m++)
-            {
-                proj.species = isp;
-                proj.ip = ip;
-                proj.l = sp->atomic_wave_l[ip];
-                proj.m = m;
-                proj.proj_index = orbital_count;
-                proj_iter.push_back(proj);
-                orbital_count++;
+            if(sp->atomic_wave_oc[ip] > 0.0) {
+
+                for(int m = 0; m < 2*sp->atomic_wave_l[ip]+1; m++)
+                {
+                    proj.species = isp;
+                    proj.ip = ip;
+                    proj.l = sp->atomic_wave_l[ip];
+                    proj.m = m;
+                    proj.proj_index = orbital_count;
+                    proj_iter.push_back(proj);
+                    orbital_count++;
+                }
             }
         }
 

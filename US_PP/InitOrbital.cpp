@@ -56,7 +56,6 @@ void InitOrbital (void)
         phaseptr = (std::complex<double> *)sp->phase;
         GetPhaseSpecies(sp, phaseptr);
         /*Loop over all betas to calculate num of projectors for given species */
-        orbital_count = 0;
         for (ip = 0; ip < sp->nbeta; ip++)
         {
 
@@ -73,7 +72,21 @@ void InitOrbital (void)
         }
 
         size = sp->nldim * sp->nldim * sp->nldim;
+
+        
+        orbital_count = 0;
+
+        for (int ip = 0; ip < sp->num_atomic_waves; ip++) {
+            if(sp->atomic_wave_oc[ip] > 0.0) {
+                int l = sp->atomic_wave_l[ip];
+                for (int m=0; m < 2*l+1; m++) {
+                    orbital_count ++;
+                }
+            }
+        }
+
         sp->num_orbitals = orbital_count;
+
 
         sp->forward_orbital = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_orbitals * size * ct.num_kpts_pe);
 
