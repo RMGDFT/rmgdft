@@ -159,8 +159,8 @@ append_subdir_files(ptools "PBLAS/SRC/PTOOLS")
 #
 # REDIST
 #
-#add_subdirectory(REDIST)
-#append_subdir_files(redist "REDIST/SRC")
+add_subdirectory(REDIST)
+append_subdir_files(redist "REDIST/SRC")
 
 #
 # SRC
