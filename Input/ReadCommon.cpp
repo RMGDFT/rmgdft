@@ -151,7 +151,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     static Ri::ReadVector<int> DipoleCorrection;
     Ri::ReadVector<int> DefDipoleCorrection({{0,0,0}});
 
-    double celldm[6];
+    double celldm[6] = {1.0,1.0,1.0,0.0,0.0,0.0};
     static double grid_spacing;
     double a0[3], a1[3], a2[3], omega;
 
@@ -239,7 +239,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("start_mode", NULL, &lc.runflag, "LCAO Start",
                      CHECK_AND_TERMINATE, OPTIONAL, start_mode,
-                     "Type of run. Choices are \"Random Start\", \"Restart From File\", or \"LCAO Start\".\n", 
+                     "Type of run.\n", 
                      "start_mode must be one of  \"Random Start\", \"Restart From File\", or \"LCAO Start\". Terminating.\n");
 
     If.RegisterInputKey("atomic_orbital_type", NULL, &ct.atomic_orbital_type, "delocalized",
@@ -270,12 +270,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Pulay",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
-                     "Type of charge density mixing to use. Linear and Pulay are the available options.\n", 
-                     "charge_mixing_type must be either \"Linear\" or \"Pulay\". Terminating.\n");
+                     "Type of charge density mixing to use.\n", 
+                     "charge_mixing_type must be either \"Broyden\", \"Linear\" or \"Pulay\". Terminating.\n");
     
     If.RegisterInputKey("charge_analysis", NULL, &lc.charge_analysis_type, "Voronoi",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_analysis,
-                     "Type of charge nalysis to use. Only Voronoi deformation density is currently available.\n", 
+                     "Type of charge analysis to use. Only Voronoi deformation density is currently available.\n", 
                      "charge_analysis must be either \"Voronoi\" or \"None\". Terminating.\n");
     
     If.RegisterInputKey("charge_analysis_period", &lc.charge_analysis_period, 0, 500, 0,
@@ -756,12 +756,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("vxc_diag_nmin", &lc.vxc_diag_nmin, 1, 10000, 1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Minumum band index for diagonal Vxc matrix elements.\n ",
+                     "Minimum band index for diagonal Vxc matrix elements.\n",
                      "vxc_diag_nmin must lie in the range (1, 10000). Resetting to the default value of 1.\n");
 
     If.RegisterInputKey("vxc_diag_nmax", &lc.vxc_diag_nmax, 1, 10000, 1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Maximum band index for diagonal Vxc matrix elements.\n ",
+                     "Maximum band index for diagonal Vxc matrix elements.\n",
                      "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
     If.RegisterInputKey("max_nlradius", &lc.max_nlradius, 2.0, 10000.0, 10000.0,
                      CHECK_AND_FIX, OPTIONAL,
@@ -972,6 +972,14 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "",
                      "");
+
+    // Command line help request?
+    if(!strcmp(ct.argv[1], "--help"))
+    {
+        if(pct.imgpe == 0) WriteInputOptions(InputMap);
+        MPI_Barrier(MPI_COMM_WORLD);
+        exit(0);
+    }
 
     If.LoadInputKeys();
 

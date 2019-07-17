@@ -5,21 +5,21 @@
 #include <const.h>
 
 static std::unordered_map<std::string, int> bravais_lattice_type = {
-        {"None", 0},
+//        {"None", 0},
         {"Cubic Primitive", 1},
-        {"Cubic Face Centered", 2},
-        {"Cubic Body Centered", 3},
+//        {"Cubic Face Centered", 2},
+//        {"Cubic Body Centered", 3},
         {"Hexagonal Primitive", 4},
-        {"Hexagonal Rhombohedral (Trigonal)", 5},
-        {"Tetragonal Primitive", 6},
-        {"Tetragonal Body Centered", 7},
-        {"Orthorhombic Primitive", 8},
-        {"Orthorhombic Base Centered", 9},
-        {"Orthorhombic Body Centered", 10},
-        {"Orthorhombic Face Centered", 11},
-        {"Monoclinic Primitive", 12},
-        {"Monoclinic Base Centered", 13},
-        {"Triclinic Primitive", 14}};
+//        {"Hexagonal Rhombohedral (Trigonal)", 5},
+//        {"Tetragonal Primitive", 6},
+//        {"Tetragonal Body Centered", 7},
+        {"Orthorhombic Primitive", 8}};
+//        {"Orthorhombic Base Centered", 9},
+//        {"Orthorhombic Body Centered", 10},
+//        {"Orthorhombic Face Centered", 11},
+//        {"Monoclinic Primitive", 12},
+//        {"Monoclinic Base Centered", 13},
+//        {"Triclinic Primitive", 14}};
 
 static std::unordered_map<std::string, int> atomic_orbital_type = {
         {"localized", LOCALIZED},

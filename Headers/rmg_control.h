@@ -51,6 +51,10 @@ typedef struct
 typedef struct
 {
 
+    // argc and argc
+    int argc;
+    char **argv;
+
     // Branch type
     int rmg_branch;
 

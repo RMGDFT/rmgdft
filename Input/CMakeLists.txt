@@ -20,6 +20,7 @@ LoadUpfPseudo.cpp
 LoadXmlPseudo.cpp
 ReadPseudo.cpp
 ReadTFAtoms.cpp
+WriteInputOptions.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 if(OPENBABEL_FOUND)

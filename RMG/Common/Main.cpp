@@ -119,8 +119,10 @@ extern "C" void term_handler(int signal)
 int main (int argc, char **argv)
 {
 
-    // Set branch type
+    // Set branch type and save argc and argv in control structure
     ct.rmg_branch = RMG_BASE;
+    ct.argc = argc;
+    ct.argv = argv;
 
     // Signal handlers to cleanup in case user terminates
     std::signal(SIGTERM, term_handler);
