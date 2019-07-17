@@ -53,6 +53,7 @@
 #include "transition.h"
 #include "Atomic.h"
 #include "Functional.h"
+#include "LocalObject.h"
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
@@ -140,6 +141,32 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     my_barrier();
 
+
+    int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
+    ixmin = new int[3*ct.num_states];
+    iymin = ixmin + ct.num_states;
+    izmin = iymin + ct.num_states;
+    dimx = new int[3*ct.num_states];
+    dimy = dimx + ct.num_states;
+    dimz = dimy + ct.num_states;
+
+    for(int st = 0; st < ct.num_states; st++)
+    {
+        ixmin[st] = states[st].ixmin;
+        iymin[st] = states[st].iymin;
+        izmin[st] = states[st].izmin;
+        dimx[st] = states[st].orbit_nx;
+        dimy[st] = states[st].orbit_ny;
+        dimz[st] = states[st].orbit_nz;
+
+    }
+
+
+    LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
+                dimx, dimy, dimz, Rmg_G, pct.grid_comm);
+    delete [] ixmin;
+    delete [] dimx;
+    LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
 
     allocate_masks(states);
 

@@ -63,9 +63,13 @@
 
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
+#include "LocalObject.h"
 
 
 
+LocalObject<double> *LocalOrbital;
+LocalObject<double> *LocalProj;
+LocalObject<double> *LocalAtomicOrbital;
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */

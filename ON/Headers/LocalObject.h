@@ -34,15 +34,19 @@ public:
 
     // Type LOCALIZED or DELOCALIZED
     int type;
+    void ReadOrbitals(std::string filename, BaseGrid *Rmg_G);
 
 
 private:
     int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
-    void ReadOrbitals(std::string filename, BaseGrid *Rmg_G);
 
     
 
 
 };
+
+extern LocalObject<double> *LocalOrbital;
+extern LocalObject<double> *LocalProj;
+extern LocalObject<double> *LocalAtomicOrbital;
 
 #endif
