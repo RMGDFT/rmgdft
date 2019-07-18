@@ -163,7 +163,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("pseudopotential", NULL , "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "External pseudopotentials.\n", 
+                     "External pseudopotentials may be specfied with this input key. The format uses\nthe atomic symbol followed by the pseudopotential file name.\n    pseudopotential = \"Ni Ni.UPF  O O.UPF\"", 
                      "");
 
     If.RegisterInputKey("Hubbard_U", NULL , "",
@@ -396,8 +396,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Filtering factor.\n", 
                      "filter_factor must lie in the range (0.1, 1.0). Terminating.\n");
 
-    // Deault of zero is OK because this means to try to set it automatically later on.
-    // The value of 128 covers any possible hardware scenario I can imagine currently but might
+    // Default of zero is OK because this means to try to set it automatically later on.
+    // The max value of 128 covers any possible hardware scenario I can imagine currently but might
     // need to be adjusted at some point in the future.
     If.RegisterInputKey("omp_threads_per_node", &lc.OMP_THREADS_PER_NODE, 0, 64, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
@@ -406,22 +406,22 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("fd_allocation_limit", &lc.fd_allocation_limit, 1024, 262144, 65536, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Allocation sizes in finite difference routines less than this value are stack rather than headp based.\n", 
+                     "Allocation sizes in finite difference routines less than this value are stack rather than heap based.\n", 
                      "fd_allocation_limit must lie in the range 1024 to 262144.\n");
 
     If.RegisterInputKey("rmg_threads_per_node", &lc.MG_THREADS_PER_NODE, 0, 64, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Number of Multigrid threads each MPI process will use. A value of 0 selects automatic setting.\n", 
+                     "Number of Multigrid/Davidson threads each MPI process will use.\nA value of 0 means set automatically.", 
                      "threads_per_node cannnot be a negative number and must be less than 64.\n");
 
     If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 4, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Ratio of the fine grid to the wavefunction grid.", 
+                     "Ratio of the charge density grid to the wavefunction grid.\nWhen norm conserving pseudopotentials are used this should\nnever be larger than 2. Ultrasoft pseudopotentials can use higher values.", 
                      "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset.\n");
 
     If.RegisterInputKey("davidson_multiplier", &lc.davidx, 0, 6, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Multiplicative factor for davidson diagonalization. Nstates for davidson = davidson_multiplier*nstates.", 
+                     "Multiplicative factor for davidson diagonalization.\nMax nstates for davidson = davidson_multiplier*nstates.\nA value of 0 means autoset based on the number of orbitals.", 
                      "davidson_multiplier must be in the range (2 <= davidson_multiplier <= 6).\n");
 
     If.RegisterInputKey("davidson_max_steps", &lc.david_max_steps, 5, 20, 8, 
@@ -446,12 +446,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("ionic_time_step_increase", &lc.iondt_inc, 1.0, 3.0, 1.1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Factor by which iondt is increased when dynamic timesteps are enabled.\n",
+                     "Factor by which ionic timestep is increased when dynamic timesteps are enabled.\n",
                      "ionic_time_step_increase must lie in the range (1.0,1.1). Resetting to the default value of 1.1.\n");
     
     If.RegisterInputKey("ionic_time_step_decrease", &lc.iondt_dec, 0.0, 1.0, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Factor by which iondt is decreased when dynamic timesteps are enabled.\n",
+                     "Factor by which ionic timestep is decreased when dynamic timesteps are enabled.\n",
                      "ionic_time_step_decrease must lie in the range (0.0,1.0). Resetting to the default value of 0.5.\n");
 
     If.RegisterInputKey("max_ionic_time_step", &lc.iondt_max, 0.0, 150.0, 150.0,
@@ -461,7 +461,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 0, INT_MAX, 10, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "The number of unoccupied orbitals.\n", 
+                     "The number of unoccupied orbitals. A value that is 15-20% of the\nnumber of occupied orbitals generally works well.", 
                      "Unoccupied_states_per_kpoint must be greater than 0. Setting to default value of 10.\n");
 
     If.RegisterInputKey("state_block_size", &lc.state_block_size, 1, INT_MAX, 64, 
@@ -472,12 +472,12 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("extra_random_lcao_states", &lc.extra_random_lcao_states, 0, INT_MAX, 0, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
-                     "Extra random wavefunctions to use for LCAO starts.\n", 
+                     "LCAO (Linear Combination of Atomic Orbitals) is the default startup method\nfor RMG. The atomic orbitals are obtained from the pseudpotentials but in some cases\nbetter convergence may be obtained by adding extra random wavefunctions\nin addition to the atomic orbitals.", 
                      "extra_random_lcao_states must be greater than 0. Terminating.\n");
 
     If.RegisterInputKey("system_charge", &lc.background_charge, -DBL_MAX, DBL_MAX, 0.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of excess holes in the system (useful for doped systems). Example: 2 means system is missing two electrons\n",
+                     "Number of excess holes in the system (useful for doped systems).\nExample: 2 means system is missing two electrons\n",
                      "system_charge must be a real number.\n");
 
     If.RegisterInputKey("occupation_electron_temperature_eV", &lc.occ_width, 0.0, 2.0, 0.04,
@@ -489,20 +489,22 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
                      "Mixing parameter for orbital occupations when not using fixed occupations.\n",
                      "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3.\n");
+
     If.RegisterInputKey("MP_order", &lc.mp_order, 0, 5, 2, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "order of Methefessel Paxton occupation\n", 
+                     "order of Methefessel Paxton occupation.", 
                      "0 means simple error function as distribution\n");
 
     If.RegisterInputKey("period_of_diagonalization", &lc.diag, 0, INT_MAX, 1, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Diagonalization period (per scf step).\n", 
+                     "Diagonalization period (per scf step).\nMainly for debugging and should not be changed for production.", 
                      "Diagonalization period must be greater than 0. Resetting to the default value of 1.\n");
 
     If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 500,
                      CHECK_AND_FIX, OPTIONAL, 
                      "Maximum number of self consistent steps to perform.\n", 
                      "max_scf_steps must be greater than 0. Resetting to the default value of 500\n");
+
     If.RegisterInputKey("tddft_steps", &lc.tddft_steps, 0, INT_MAX, 2000,
                      CHECK_AND_FIX, OPTIONAL, 
                      "Maximum number of tddft steps to perform.\n", 
@@ -510,7 +512,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 10, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
+                     "Number of previous steps to use when Pulay mixing is used to update the charge density.",
                      "");
 
     If.RegisterInputKey("charge_pulay_scale", &lc.charge_pulay_scale, 0.0, 1.0, 0.50,
@@ -518,9 +520,9 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "charge_pulay_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50\n");
 
-    If.RegisterInputKey("unoccupied_tol_factor", &lc.unoccupied_tol_factor, 0.000001, 100000.0, 1000.0,
+    If.RegisterInputKey("unoccupied_tol_factor", &lc.unoccupied_tol_factor, 1.0, 100000.0, 1000.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
+                     "When using the Davidson Kohn-Sham solver unoccupied states are converged\nto a less stringent tolerance than occupied orbitals with the ratio set by this parameter.",
                      "unoccupied_tol_factor must lie in the range (0.000001,100000.0). Resetting to the default value of 1000.0\n");
 
     If.RegisterInputKey("charge_pulay_refresh", &lc.charge_pulay_refresh, 1, INT_MAX, 100,
@@ -530,7 +532,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
+                     "Number of previous steps to use when Broyden mixing is used to update the charge density.",
                      "");
 
     If.RegisterInputKey("charge_broyden_scale", &lc.charge_broyden_scale, 0.0, 1.0, 0.50,
@@ -540,17 +542,17 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("projector_expansion_factor", &lc.projector_expansion_factor, 0.5, 3.0, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
+                     "When using localized projectors the radius can be adjusted with this parameter.",
                      "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0\n");
 
     If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
+                     "How often to write checkpoint files during the initial quench in units of SCF steps.\nDuring structural relaxations of molecular dynamics checkpoints are written each ionic step.",
                      "");
 
     If.RegisterInputKey("write_eigvals_period", &lc.write_eigvals_period, 1, 100, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "How often to output eigenvalues.",
+                     "How often to output eigenvalues in units of scf steps.",
                      "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5.\n");
 
     If.RegisterInputKey("max_md_steps", &lc.max_md_steps, 0, INT_MAX, 100,
@@ -590,7 +592,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("force_grad_order", &lc.force_grad_order, 0, 12, 8,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
+                     "Order of the global grid finite difference operators to be used in force calculations.\nA value of 0 specifies the use of an FFT.",
                      "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8.\n");
 
     If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.0, 1.2, 1.0,
@@ -670,7 +672,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("md_number_of_nose_thermostats", &lc.nose.m, 5, 5, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
+                     "Number of Nose thermostats to use during Constant Volume and Temperature MD.",
                      "");
 
     If.RegisterInputKey("dynamic_time_delay", &lc.relax_steps_delay, 5, 5, 5,
@@ -700,7 +702,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 8, 4,
                      CHECK_AND_FIX, OPTIONAL,
-                     "",
+                     "Grid coalescing factor.",
                      "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.");
 
     If.RegisterInputKey("b_spline_order", &lc.interp_order, 0, 7, 5,
@@ -715,7 +717,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used.\n",
+                     "Proportion of the current charge density to replace with the new density\nafter each scf step when linear mixing is used.\n",
                      "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5.\n");
 
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
@@ -869,7 +871,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                          "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.");
 
     If.RegisterInputKey("require_huge_pages", &lc.require_huge_pages, false, 
-                         "If set RMG assumes that sufficient huge pages are available. Bad results may occur if that is not true.");
+                         "If set RMG assumes that sufficient huge pages are available. Bad things may happen if this is not true.");
 
     If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
                         "Flag indicating whether or not to use dynamic timesteps in relaxation mode.\n");
@@ -954,18 +956,18 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("states_count_and_occupation_spin_up", &Occup, "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Occupation string for spin up states.\n",
+                     "Occupation string for spin up states. Format is the same as for states_count_and_occupation.\nTotal number of states must match spin down occupation string.",
                      "");
 
     If.RegisterInputKey("states_count_and_occupation_spin_down", &Occdown, "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Occupation string for spin down states.\n",
+                     "Occupation string for spin down states. Format is the same as for states_count_and_occupation.\nTotal number of states must match spin up occupation string.",
                      "");
 
     
     If.RegisterInputKey("states_count_and_occupation", &Occ, "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Occupation string for states.\n",
+                     "Occupation string for states. Format for a system with 240 electrons\nand 20 unoccupied states would be. \"120 2.0 20 0.0\"\n",
                      "");
 
     If.RegisterInputKey("kpoint_distribution", &pelc.pe_kpoint, -INT_MAX, INT_MAX, -1,
@@ -973,15 +975,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "");
 
-    // Command line help request?
-    if(!strcmp(ct.argv[1], "--help"))
-    {
-        if(pct.imgpe == 0) WriteInputOptions(InputMap);
-        MPI_Barrier(MPI_COMM_WORLD);
-        exit(0);
-    }
-
-    If.LoadInputKeys();
 
     // Check items that require custom handling
     // Some hacks here to deal with code branches that are still in C
@@ -1015,6 +1008,16 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     if(!Outfile_tddft.length()) Outfile = "Waves/wave_tddft.out";
     std::strncpy(lc.outfile_tddft, Outfile_tddft.c_str(), sizeof(lc.outfile_tddft)-1);
     MakeFullPath(lc.outfile_tddft, pelc);
+
+    // Command line help request?
+    if(!strcmp(ct.argv[1], "--help"))
+    {
+        if(pct.imgpe == 0) WriteInputOptions(InputMap);
+        MPI_Barrier(MPI_COMM_WORLD);
+        exit(0);
+    }
+
+    If.LoadInputKeys();
 
     if(PseudoPath.length()) std::strncpy(lc.pseudo_dir, PseudoPath.c_str(), sizeof(lc.pseudo_dir)-1);
 
