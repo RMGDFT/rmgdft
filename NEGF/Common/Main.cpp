@@ -171,6 +171,9 @@ int main (int argc, char **argv)
 
     // Set branch type
     ct.rmg_branch = RMG_NEGF;
+    ct.argc = argc;
+    ct.argv = argv;
+
 
     /* Define a default output stream, gets redefined to log file later */
     ct.logfile = stdout;

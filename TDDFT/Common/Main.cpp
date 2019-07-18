@@ -149,6 +149,8 @@ int FilenameIncrement1(char *pathname);
 int main(int argc, char **argv)
 {
 
+    ct.argc = argc;
+    ct.argv = argv;
 
     double *Hmatrix, *Smatrix, *Xij_00, *Yij_00, *Zij_00;
     double *Xij_dist, *Yij_dist, *Zij_dist;
