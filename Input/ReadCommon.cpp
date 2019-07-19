@@ -252,9 +252,13 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Driver type used for subspace diagonalization of the eigenvectors.\n", 
                      "subdiag_driver must be lapack, scalapack, cusolver, magma or auto. Resetting to auto.\n");
 
-    If.RegisterInputKey("kohn_sham_solver", NULL, &lc.kohn_sham_solver, "multigrid",
+    If.RegisterInputKey("kohn_sham_solver", NULL, &lc.kohn_sham_solver, "davidson",
                      CHECK_AND_FIX, OPTIONAL, kohn_sham_solver,
-                     "Kohn-Sham solver.\n", 
+"RMG supports a pure multigrid Kohn-Sham solver as well as\n"
+"a multigrid preconditioned davidson solver. The davidson\n"
+"solver is usually better for smaller problems with the pure\n"
+"multigrid solver often being a better choice for very large\n"
+"problems.",
                      "kohn_sham_solver must be multigrid or davidson. Resetting to multigrid.\n");
 
     If.RegisterInputKey("poisson_solver", NULL, &lc.poisson_solver, "pfft",
@@ -270,7 +274,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Pulay",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
-                     "Type of charge density mixing to use.\n", 
+"RMG supports Broyden, Pulay and Linear mixing\n"
+"When the davidson Kohn-Sham solver is selected Broyden or\n"
+"Pulay are preferred. For the multigrid solver Linear with\n"
+"potential acceleration is often (but not always) the best\n"
+"choice.\n",
                      "charge_mixing_type must be either \"Broyden\", \"Linear\" or \"Pulay\". Terminating.\n");
     
     If.RegisterInputKey("charge_analysis", NULL, &lc.charge_analysis_type, "Voronoi",
@@ -358,12 +366,18 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("exchange_correlation_type", NULL, &lc.xctype, "AUTO_XC",
                      CHECK_AND_TERMINATE, OPTIONAL, exchange_correlation_type,
-                     "Type of functional for exchange-correlation.\n", 
+"Most pseudopotentials specify the exchange correlation type they\n"
+"were generated with and the default value of AUTO_XC means that\n"
+"the type specified in the pseudopotial is what RMG will use. That\n"
+"can be overridden by specifying a value here.",
                      "exchange_correlation_type not supported. Terminating.\n");
 
     If.RegisterInputKey("occupations_type", NULL, &lc.occ_flag, "Fermi Dirac",
                      CHECK_AND_TERMINATE, OPTIONAL, occupations_type,
-                     "Method used to set the occupations of the electronic orbitals.\n", 
+"RMG supports several different ways of specifying orbital occupations.\n"
+"For a spin polarized system one may specify the occupations for up and\n"
+"down separately. In the case of a non-zero electronic temperature these\n"
+"will be adjusted as the calculation proceeds based on this setting.\n",
                      "occupations_type not supported. Terminating.\n");
 
     If.RegisterInputKey("interpolation_type", NULL, &lc.interp_flag, "FFT",
@@ -416,12 +430,30 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 4, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Ratio of the charge density grid to the wavefunction grid.\nWhen norm conserving pseudopotentials are used this should\nnever be larger than 2. Ultrasoft pseudopotentials can use higher values.", 
+"Ratio of the potential grid density to the wavefunction grid\n"
+"density. For example if the wavefunction grid is (72,72,72) and\n"
+"potential_grid_refinement = \"2\" then the potential grid would be\n"
+"(144,144,144). The default value is 2 but it may sometimes be\n"
+"beneficial to adjust this. (For USPP the minimum value is also 2\n"
+"and it cannot be set lower. NCPP can be set to 1).",
                      "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset.\n");
 
     If.RegisterInputKey("davidson_multiplier", &lc.davidx, 0, 6, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Multiplicative factor for davidson diagonalization.\nMax nstates for davidson = davidson_multiplier*nstates.\nA value of 0 means autoset based on the number of orbitals.", 
+"The davidson solver expands the eigenspace with the maximum expansion\n"
+"factor being set by the value of davidson_multiplier. Larger values\n"
+"often lead to faster convergence but because the computational cost\n"
+"of the davidson diagonalization step scales as the cube of the number of\n"
+"eigenvectors the optimal value based on the fastest time to solution\n"
+"depends on the number of orbitals. If not specified explicitly or set\n"
+"to 0 RMG uses the following algorithm to set the value.\n"
+" \n"
+"  Number of orbitals <= 600          davidson_multiplier = \"4\"\n"
+"  600 < Number of orbitals <= 900    davidson_multiplier = \"3\"\n"
+"  Number of orbitals > 900           davidson_multiplier = \"2\"\n"
+" \n"
+"  For very large problems the N^3 scaling makes even a factor of 2\n"
+"  prohibitively costly and the multigrid solver is a better choice.\n",
                      "davidson_multiplier must be in the range (2 <= davidson_multiplier <= 6).\n");
 
     If.RegisterInputKey("davidson_max_steps", &lc.david_max_steps, 5, 20, 8, 
@@ -436,7 +468,16 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 0.0, 
                       CHECK_AND_FIX, OPTIONAL, 
-                     "Time step used for constant potential acceleration.\n",
+"When set to a non-zero value this parameter causes RMG to\n"
+"perform a band by band update of the self-consistent potential\n"
+"during the course of an SCF step when the multigrid kohn_sham_solver\n"
+"is chosen. This means that updates to the lower energy orbitals\n"
+"are incorporated into the SCF potential seen by the higher energy orbitals\n"
+"as soon as they are computed. This can lead to faster convergence\n"
+"and better stability for many systems. The option should only be used\n"
+"with Linear mixing. Even when the davidson solver is chosen this parameter\n"
+"may be used since the first few steps with davidson usually uses the\n"
+"multigrid solver.\n",
                      "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 0.0.\n");
 
     If.RegisterInputKey("ionic_time_step", &lc.iondt, 0.0, DBL_MAX, 50.0, 
@@ -587,12 +628,19 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 4, 12, 8,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Order of the global grid finite difference operators to be used in the kohn-sham multigrid preconditioner.\n ",
+"RMG uses finite differencing to represent the kinetic energy operator\n"
+"and the accuracy of the representation is controllable by the\n"
+"kohn_sham_fd_order parameter. The default is 8 and is fine for most\n"
+"purposes but higher accuracy is obtainable with 10th order at the cost\n"
+"of some additional computational expense.",
                      "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8.\n");
+
 
     If.RegisterInputKey("force_grad_order", &lc.force_grad_order, 0, 12, 8,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Order of the global grid finite difference operators to be used in force calculations.\nA value of 0 specifies the use of an FFT.",
+"Atomic forces may be computed to varying degrees of accuracy depending\n"
+"on the requirements of a specific problem. A value of 0 implies highest\n"
+"accuracy which is obtained by using FFTs in place of finite differencing.\n",
                      "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8.\n");
 
     If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.0, 1.2, 1.0,
@@ -722,7 +770,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Submatrix width to use as a fraction of the full spectrum.\n",
+"Submatrix width to use as a fraction of the full spectrum.\n"
+"The folded spectrum width ranges from 0.10 to 1.0. For insulators and\n"
+"semiconductors a value of 0.3 is appropriate. For metals values between\n"
+"0.15 to 0.2 tend to be better. The default value is 0.3\n",
                      "folded_spectrum_width must lie in the range (0.10,1.0). Resetting to the default value of 0.3.\n");
 
     If.RegisterInputKey("folded_spectrum_iterations", &lc.folded_spectrum_iterations, 0, 10, 2,
@@ -823,10 +874,20 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                         "Flag indicating whether or not to coalesce states.");
 
     If.RegisterInputKey("localize_projectors", &lc.localize_projectors, true,
-                        "Flag indicating whether or not the non-local projectors should be localized.");
+"The Beta function projectors for a particular ion decay rapidly\n"
+"in real-space with increasing r. For large cells truncating the\n"
+"real-space representation of the projector can lead to\n"
+"significant computational savings with a small loss of accuracy.\n"
+"For smaller cells the computational cost is the same for localized\n"
+"or delocalized projectors so it is better to set localize_projectors\n"
+"to false.");
 
     If.RegisterInputKey("localize_localpp", &lc.localize_localpp, true,
-                        "Flag indicating whether or not the local pseudopotential should be localized.");
+"The local potential associated with a particular ion also decays\n"
+"rapidly in real-space with increasing r. As with beta projectors\n"
+"truncating the real-space representation for large cells can lead\n"
+"to significant computational savings with a small loss of accuracy\n"
+"but it should be set to false for small cells.");
 
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
                         "Flag to test whether or not the modified metrics should be used in Pulay mixing.");
@@ -850,7 +911,11 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                         "Flag for writing out extra information\n");
 
     If.RegisterInputKey("folded_spectrum", &lc.use_folded_spectrum, false, 
-                         "Use folded spectrum.");
+"When the number of eigenvectors is large using folded_spectrum is\n"
+"substantially faster than standard diagonalization. It also tends\n"
+"to converge better for metallic systems. It works with the\n"
+"multigrid kohn_sham_solver but not the davidson solver.\n");
+                         
 
     If.RegisterInputKey("use_numa", &lc.use_numa, true, 
                          "Use internal numa setup if available.");
