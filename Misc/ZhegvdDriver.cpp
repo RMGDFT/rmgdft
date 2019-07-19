@@ -41,20 +41,30 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     const cusolverEigType_t itype = CUSOLVER_EIG_TYPE_1;
     const cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VECTOR; // compute eigenvectors.
     const cublasFillMode_t  uplo = CUBLAS_FILL_MODE_LOWER;
-
+    cuDoubleComplex *zwork;
 
     cu_status = cusolverDnZhegvd_bufferSize(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, &lwork);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZheevd_bufferSize failed.");
-    if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " ZhegvdDriver: provided workspace too small.");
+
+    if(work == NULL)
+    {
+        zwork = (cuDoubleComplex *)GpuMallocManaged(lwork * sizeof(std::complex<double>));
+    }
+    else
+    {
+        if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " ZhegvdDriver: provided workspace too small.");
+        zwork = (cuDoubleComplex *)work;
+    }
 
     RmgCudaError(__FILE__, __LINE__, cudaMalloc((void **)&devInfo, sizeof(int) ), "Problem with cudaMalloc");
 
-    cu_status = cusolverDnZhegvd(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, (cuDoubleComplex *)work, lwork, devInfo);
+    cu_status = cusolverDnZhegvd(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, (cuDoubleComplex *)zwork, lwork, devInfo);
     int info;
     cudaMemcpy(&info, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZhegvd failed.");
 
     cudaFree(devInfo);
+    if(work == NULL) GpuFreeManaged(zwork);
 }
 
 #else

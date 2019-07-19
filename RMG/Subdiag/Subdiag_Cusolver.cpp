@@ -154,9 +154,8 @@ if(1){
 
             int lwork = 3 * num_states * num_states + 8 * num_states;
             lwork = std::max(lwork, 128000);
-            double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
-            ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, work, lwork, num_states);
-            GpuFreeManaged(work);
+            ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, NULL, lwork, num_states);
+
         }
 
         delete [] iwork;
