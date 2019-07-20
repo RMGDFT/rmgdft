@@ -497,7 +497,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("max_ionic_time_step", &lc.iondt_max, 0.0, 150.0, 150.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Maximum ionic time step to use.\n",
+                     "Maximum ionic time step to use for molecular dynamics or structural optimizations.\n",
                      "max_ionic_time_step must lie in the range (0.0,150.0). Resetting to the default value of 150.0.\n");
 
     If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 0, INT_MAX, 10, 
@@ -513,7 +513,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("extra_random_lcao_states", &lc.extra_random_lcao_states, 0, INT_MAX, 0, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
-                     "LCAO (Linear Combination of Atomic Orbitals) is the default startup method\nfor RMG. The atomic orbitals are obtained from the pseudpotentials but in some cases\nbetter convergence may be obtained by adding extra random wavefunctions\nin addition to the atomic orbitals.", 
+"LCAO (Linear Combination of Atomic Orbitals) is the default startup method\n"
+"for RMG. The atomic orbitals are obtained from the pseudpotentials but in some\n"
+"cases better convergence may be obtained by adding extra random wavefunctions\n"
+"in addition to the atomic orbitals.", 
                      "extra_random_lcao_states must be greater than 0. Terminating.\n");
 
     If.RegisterInputKey("system_charge", &lc.background_charge, -DBL_MAX, DBL_MAX, 0.0,
@@ -839,6 +842,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("pin_nonlocal_weights", &lc.pin_nonlocal_weights, false,
                         "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.");
 #endif
+
+    If.RegisterInputKey("lcao_use_empty_orbitals", &lc.lcao_use_empty_orbitals, false,
+"Some pseudopotentials contain unbound atomic orbitals and this flag indicates\n"
+"whether or not they should be used for LCAO starts.");
 
     If.RegisterInputKey("compressed_infile", &lc.compressed_infile, true,
                         "Flag indicating whether or not restart wavefunction file uses compressed format.");

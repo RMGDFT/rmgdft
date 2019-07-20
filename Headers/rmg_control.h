@@ -237,6 +237,10 @@ typedef struct
     /** Extra random states used for LCAO start above and beyond the atomic orbitals. */
     int extra_random_lcao_states;
 
+    /** Some pseudopotentials contain unbound atomic orbitals and this flag indicates */
+    /** whether or not they should be used for LCAO starts. */
+    bool lcao_use_empty_orbitals;
+
     /** Number of run states */
     int run_states;
 

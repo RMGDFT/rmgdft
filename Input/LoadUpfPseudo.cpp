@@ -294,7 +294,7 @@ void LoadUpfPseudo(SPECIES *sp)
             //sp->atomic_wave_label[j][0] =
             sp->atomic_wave_oc[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/occupation", '/'));
 
-            
+            if(ct.lcao_use_empty_orbitals && (sp->atomic_wave_oc[iwf] == 0.0)) sp->atomic_wave_oc[iwf] = 1.0e-6;
             if(sp->atomic_wave_l[iwf] == 0 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 1;
             if(sp->atomic_wave_l[iwf] == 1 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 3;
             if(sp->atomic_wave_l[iwf] == 2 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 5;
