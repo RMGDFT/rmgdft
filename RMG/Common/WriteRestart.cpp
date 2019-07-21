@@ -192,9 +192,16 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
         rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
 
-    WriteData (fhand, vh, rho, rho_oppo, vxc, Kptr);
+    WriteData (fhand, vh, rho, vxc, Kptr);
     close (fhand);
     fflush(NULL);
+
+    if(ct.write_serial_restart)
+    {
+        std::string serial_file(name);
+        WriteSerialData (serial_file, vh, rho, vxc, Kptr);
+        fflush(NULL);
+    }
 
     write_time = my_crtc () - time0;
 

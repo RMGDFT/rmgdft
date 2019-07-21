@@ -311,7 +311,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     //Dprintf ("If not an initial run read data from files");
     if ((ct.runflag == RESTART) || (ct.forceflag == BAND_STRUCTURE) )
     {
-        ReadData (ct.infile, vh, rho, vxc, Kptr);
+        std::string serial_name(ct.infile);
+        if(ct.read_serial_restart)
+            ReadSerialData (serial_name, vh, rho, vxc, Kptr);
+        else
+            ReadData (ct.infile, vh, rho, vxc, Kptr);
 
         /*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
         if (ct.spin_flag)

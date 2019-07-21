@@ -847,11 +847,20 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 "Some pseudopotentials contain unbound atomic orbitals and this flag indicates\n"
 "whether or not they should be used for LCAO starts.");
 
+    If.RegisterInputKey("write_serial_restart", &lc.write_serial_restart, false,
+"RMG normally writes parallel restart files. These require that restarts have the\n"
+"same processor topology. If write_serial_restart = \"true\" then RMG will also\n"
+"write a serial restart file that can be used with a different processor topology\n");
+
+    If.RegisterInputKey("read_serial_restart", &lc.read_serial_restart, false,
+"Directs RMG to read from serial restart files. Normally used when changing\n"
+"the sprocessor topology used during a restart run\n");
+
     If.RegisterInputKey("compressed_infile", &lc.compressed_infile, true,
-                        "Flag indicating whether or not restart wavefunction file uses compressed format.");
+                        "Flag indicating whether or not parallel restart wavefunction file uses compressed format.");
 
     If.RegisterInputKey("compressed_outfile", &lc.compressed_outfile, true,
-                        "Flag indicating whether or not output wavefunction file uses compressed format.");
+                        "Flag indicating whether or not  parallel output wavefunction file uses compressed format.");
 
     If.RegisterInputKey("nvme_weights", &lc.nvme_weights, false,
                         "Flag indicating whether or not projector weights should be mapped to disk.");

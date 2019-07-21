@@ -48,12 +48,12 @@
 
 */
 
-template void WriteSerialData (std::string&, double *, double *, double *, double *, Kpoint<double> **);
-template void WriteSerialData (std::string&, double *, double *, double *, double *, Kpoint<std::complex<double> > **);
+template void WriteSerialData (std::string&, double *, double *, double *, Kpoint<double> **);
+template void WriteSerialData (std::string&, double *, double *, double *, Kpoint<std::complex<double> > **);
 
 
 template <typename KpointType>
-void WriteSerialData (std::string& name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
+void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr)
 {
     int sizes_c[3], sizes_f[3];
     int subsizes_c[3], subsizes_f[3];

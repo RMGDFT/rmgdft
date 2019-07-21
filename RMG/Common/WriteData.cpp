@@ -48,15 +48,15 @@ static void write_double (int fh, double * rp, int count);
 static void write_int (int fh, int *ip, int count);
 
 
-template void WriteData (int, double *, double *, double *, double *, Kpoint<double> **);
-template void WriteData (int, double *, double *, double *, double *, Kpoint<std::complex<double> > **);
+template void WriteData (int, double *, double *, double *, Kpoint<double> **);
+template void WriteData (int, double *, double *, double *, Kpoint<std::complex<double> > **);
 
 void write_compressed_buffer(int fh, double *array, int nx, int ny, int nz);
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
 template <typename KpointType>
-void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr)
+void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr)
 {
     int fine[3];
     int grid[3];

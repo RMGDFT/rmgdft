@@ -241,6 +241,15 @@ typedef struct
     /** whether or not they should be used for LCAO starts. */
     bool lcao_use_empty_orbitals;
 
+    /** RMG normally writes parallel restart files. These require that restarts have the */
+    /** same processor topology. If write_serial_restart = \"true\" then RMG will also */
+    /** write a serial restart file that can be used with a different processor topology. */
+    bool read_serial_restart;
+  
+    /** Directs RMG to read from serial restart files. Normally used when changing */
+    /** the sprocessor topology used during a restart run */
+    bool write_serial_restart;
+
     /** Number of run states */
     int run_states;
 

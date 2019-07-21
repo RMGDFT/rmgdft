@@ -205,7 +205,11 @@ void WriteBGW_Rhog (double * rho, double * rho_oppo);
 template <typename KpointType>
 void WriteBGW_VxcEig (int kpt, double * vxc, Kpoint<KpointType> * Kptr);
 template <typename KpointType>
-void WriteData (int fhand, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
+void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr);
+template <typename KpointType>
+void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr);
+template <typename KpointType>
+void ReadSerialData (std::string& name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
 double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag, int mp_order);
 template <typename KpointType>

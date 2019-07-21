@@ -10,6 +10,7 @@ MolecularDynamics.cpp
 GetAugRho.cpp
 MixRho.cpp
 WriteData.cpp
+WriteSerialData.cpp
 WriteBGW_Wfng.cpp
 WriteBGW_Rhog.cpp
 WriteBGW_VxcEig.cpp
@@ -17,6 +18,7 @@ WriteRestart.cpp
 LcaoGetAwave.cpp
 LcaoGetPsi.cpp
 ReadData.cpp
+ReadSerialData.cpp
 OutputBandPlot.cpp
 AppCirDriverBeta.cpp
 AssignWeight.cpp
