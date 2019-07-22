@@ -52,6 +52,14 @@ void WriteKeyStdout(InputKey *ik)
     const std::string truefalse[2] = {"false", "true"};
     std::string KeyName = ik->KeyName;
     std::string KeyType;
+    char *pre, *post;
+    char *pre_terminal = "    ";
+    char *post_terminal = "";
+    char *pre_markdown = "<b>";
+    char *post_markdown = "</b>\n";
+
+    pre = pre_terminal;
+    post = post_terminal;
 
     if(ik->KeyType == typeid(int).hash_code()) KeyType = "integer";
     if(ik->KeyType == typeid(double).hash_code()) KeyType = "double";
@@ -64,70 +72,70 @@ void WriteKeyStdout(InputKey *ik)
     // Strip trailing whitespace and expand embedded new lines.
     std::string Description = std::string(ik->helpmsg);
     boost::trim_right(Description);
-    boost::replace_all(Description, "\n", "\n              ");
+    boost::replace_all(Description, "\n", "\n                  ");
     
-    printf("Key name:     %s\n", KeyName.c_str());
-    printf("Required:     %s\n", yesno[ik->Required].c_str());
-    printf("Key type:     %s\n", KeyType.c_str());
-    printf("Description:  %s\n", Description.c_str());
+    printf("%sKey name:%s     %s\n", pre, post, KeyName.c_str());
+    printf("%sRequired:%s     %s\n", pre, post, yesno[ik->Required].c_str());
+    printf("%sKey type:%s     %s\n", pre, post, KeyType.c_str());
+    printf("%sDescription:%s  %s\n", pre, post, Description.c_str());
     if(ik->KeyType == typeid(int).hash_code())
     {
-        printf("Min value:    %d\n", ik->Minintval);
-        printf("Max value:    %d\n", ik->Maxintval);
-        printf("Default:      %d\n", ik->Defintval);
+        printf("%sMin value:%s    %d\n", pre, post, ik->Minintval);
+        printf("%sMax value:%s    %d\n", pre, post, ik->Maxintval);
+        printf("%sDefault:%s      %d\n", pre, post, ik->Defintval);
     }
     if(ik->KeyType == typeid(double).hash_code())
     {
         if(ik->Mindoubleval == -DBL_MAX)
-            printf("Min value:    %s\n", "-unlimited");
+            printf("%sMin value:%s    %s\n", pre, post, "-unlimited");
         else
         {
             if(fabs(ik->Mindoubleval) > 0.01)
-               printf("Min value:    %f\n", ik->Mindoubleval);
+               printf("%sMin value:%s    %f\n", pre, post, ik->Mindoubleval);
             else
-                printf("Min value:    %e\n", ik->Mindoubleval);
+                printf("%sMin value:%s    %e\n", pre, post, ik->Mindoubleval);
         }
 
         if(ik->Maxdoubleval == DBL_MAX)
-            printf("Max value:    %s\n", "unlimited");
+            printf("%sMax value:%s    %s\n", pre, post, "unlimited");
         else
         {
             if(fabs(ik->Maxdoubleval) > 0.01)
-                printf("Max value:    %f\n", ik->Maxdoubleval);
+                printf("%sMax value:%s    %f\n", pre, post, ik->Maxdoubleval);
             else
-                printf("Max value:    %e\n", ik->Maxdoubleval);
+                printf("%sMax value:%s    %e\n", pre, post, ik->Maxdoubleval);
         }
         if(fabs(ik->Defdoubleval) > 0.01)
-            printf("Default:      %f\n", ik->Defdoubleval);
+            printf("%sDefault:%s      %f\n", pre, post, ik->Defdoubleval);
         else
-            printf("Default:      %e\n", ik->Defdoubleval);
+            printf("%sDefault:%s      %e\n", pre, post, ik->Defdoubleval);
     }
     if(ik->KeyType == typeid(bool).hash_code())
     {
-        printf("Default:      \"%s\"\n", truefalse[ik->Defboolval].c_str());
+        printf("%sDefault:%s      \"%s\"\n", pre, post, truefalse[ik->Defboolval].c_str());
     }
     if(ik->KeyType == typeid(std::string).hash_code())
     {
-        printf("Default:      \"%s\"\n", ik->Defstr);
-        printf("Allowed:      ");
+        printf("%sDefault:%s      \"%s\"\n", pre, post, ik->Defstr);
+        printf("%sAllowed:%s      ", pre, post);
         int counter=0;
         for(auto it = ik->Range.begin();it != ik->Range.end(); ++it)
         {
             printf("\"%s\"  ",it->first.c_str()); 
             counter++;
-            if(!(counter % 4)) printf("\n              ");
+            if(!(counter % 4)) printf("\n                  ");
         }
         printf("\n");
     }
     if(ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code()) 
     {
         std::string str = ik->Print();
-        printf("Default:      \"%s\"\n", str.c_str());
+        printf("%sDefault:%s      \"%s\"\n", pre, post, str.c_str());
     }
     if(ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code()) 
     {
         std::string str = ik->Print();
-        printf("Default:      \"%s\"\n", str.c_str());
+        printf("%sDefault:%s      \"%s\"\n", pre, post, str.c_str());
     }
     printf("\n");
 }
@@ -136,21 +144,38 @@ void WriteKeyStdout(InputKey *ik)
 void WriteInputOptions(std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
+    printf ("\n");
+    printf ("               * * * * * * * * * *\n");
+    printf ("               *    R   M   G    *\n");
+    printf ("               * * * * * * * * * *\n");
+    printf ("\n");
+    printf (" -- A Real Space Multigrid Electronic structure code --\n");
+    printf (" --      More information at www.rmgdft.org          --\n");
     printf("\n\n");
-    printf("The RMG input file consists of a set of key-value pairs of the form.\n");
-    printf("name = \"scalar\"    where scalar can be an integer, double or boolean value.\n");
-    printf("period_of_diagonalization = \"1\"\n");
-    printf("charge_density_mixing = \"0.5\"\n");
-    printf("initial_diagonalization = \"true\"\n");
-    printf("\n\n");
-    printf("There are also strings and arrays which are delineated by double quotes so an\n");
-    printf("integer array with three elements would be.\n");
-    printf("    processor_grid = \"2 2 2\"\n\n");
-    printf("while a string example would be\n\n");
-    printf("description = \"64 atom diamond cell test run at the gamma point\"\n\n");
-    printf("strings can span multiple lines so the following would be valid as well.\n\n");
-    printf("description = \"64 atom diamond cell test run at gamma point\n");
-    printf("using a Vanderbilt ultrasoft pseudopotential\"\n");
+    printf(""
+"    The RMG input file consists of a set of key-value pairs of the form.\n"
+"    \n"
+"        name = \"scalar\"\n\n"
+"    \n"
+"    where scalar can be an integer, double or boolean value.\n\n"
+"        period_of_diagonalization = \"1\"\n"
+"        charge_density_mixing = \"0.5\"\n"
+"        initial_diagonalization = \"true\"\n"
+"    \n"
+"    There are also strings and arrays which are delineated by double quotes so an\n"
+"    integer array with three elements would be.\n"
+"    \n"
+"        processor_grid = \"2 2 2\"\n"
+"    \n"
+"    while a string example would be\n"
+"    \n"
+"        description = \"64 atom diamond cell test run at the gamma point\"\n"
+"    \n"
+"    strings can span multiple lines so the following would be valid as well.\n"
+"    \n"
+"        description = \"64 atom diamond cell test run at gamma point\n"
+"        using a Vanderbilt ultrasoft pseudopotential\"\n");
+
     printf("\n\n");
 
     std::map<std::string, InputKey *> SortedMap;

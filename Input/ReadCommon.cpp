@@ -448,13 +448,13 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 "depends on the number of orbitals. If not specified explicitly or set\n"
 "to 0 RMG uses the following algorithm to set the value.\n"
 " \n"
-"  Number of orbitals <= 600          davidson_multiplier = \"4\"\n"
-"  600 < Number of orbitals <= 900    davidson_multiplier = \"3\"\n"
-"  Number of orbitals > 900           davidson_multiplier = \"2\"\n"
+"    Number of orbitals <= 600          davidson_multiplier = \"4\"\n"
+"    600 < Number of orbitals <= 900    davidson_multiplier = \"3\"\n"
+"    Number of orbitals > 900           davidson_multiplier = \"2\"\n"
 " \n"
-"  For very large problems the N^3 scaling makes even a factor of 2\n"
-"  prohibitively costly and the multigrid solver is a better choice.\n",
-                     "davidson_multiplier must be in the range (2 <= davidson_multiplier <= 6).\n");
+"For very large problems the N^3 scaling makes even a factor of 2\n"
+"prohibitively costly and the multigrid solver is a better choice.\n",
+"davidson_multiplier must be in the range (2 <= davidson_multiplier <= 6).\n");
 
     If.RegisterInputKey("davidson_max_steps", &lc.david_max_steps, 5, 20, 8, 
                      CHECK_AND_FIX, OPTIONAL, 
@@ -1056,6 +1056,15 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "",
                      "");
 
+    // Command line help request?
+    if(!strcmp(ct.argv[1], "--help"))
+    {
+        if(pct.imgpe == 0) WriteInputOptions(InputMap);
+        MPI_Barrier(MPI_COMM_WORLD);
+        exit(0);
+    }
+
+    If.LoadInputKeys();
 
     // Check items that require custom handling
     // Some hacks here to deal with code branches that are still in C
@@ -1090,15 +1099,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     std::strncpy(lc.outfile_tddft, Outfile_tddft.c_str(), sizeof(lc.outfile_tddft)-1);
     MakeFullPath(lc.outfile_tddft, pelc);
 
-    // Command line help request?
-    if(!strcmp(ct.argv[1], "--help"))
-    {
-        if(pct.imgpe == 0) WriteInputOptions(InputMap);
-        MPI_Barrier(MPI_COMM_WORLD);
-        exit(0);
-    }
-
-    If.LoadInputKeys();
 
     if(PseudoPath.length()) std::strncpy(lc.pseudo_dir, PseudoPath.c_str(), sizeof(lc.pseudo_dir)-1);
 
