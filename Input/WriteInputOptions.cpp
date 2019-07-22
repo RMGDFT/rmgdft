@@ -68,16 +68,10 @@ void WriteKeyStdout(InputKey *ik)
     if(ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code()) KeyType = "integer array";
     if(ik->KeyType == typeid(RmgInput::ReadVector<double>).hash_code()) KeyType = "double array";
 
-
-    // Strip trailing whitespace and expand embedded new lines.
-    std::string Description = std::string(ik->helpmsg);
-    boost::trim_right(Description);
-    boost::replace_all(Description, "\n", "\n                  ");
     
     printf("%sKey name:%s     %s\n", pre, post, KeyName.c_str());
     printf("%sRequired:%s     %s\n", pre, post, yesno[ik->Required].c_str());
     printf("%sKey type:%s     %s\n", pre, post, KeyType.c_str());
-    printf("%sDescription:%s  %s\n", pre, post, Description.c_str());
     if(ik->KeyType == typeid(int).hash_code())
     {
         printf("%sMin value:%s    %d\n", pre, post, ik->Minintval);
@@ -137,6 +131,12 @@ void WriteKeyStdout(InputKey *ik)
         std::string str = ik->Print();
         printf("%sDefault:%s      \"%s\"\n", pre, post, str.c_str());
     }
+
+    // Strip trailing whitespace and expand embedded new lines.
+    std::string Description = std::string(ik->helpmsg);
+    boost::trim_right(Description);
+    boost::replace_all(Description, "\n", "\n                  ");
+    printf("%sDescription:%s  %s\n", pre, post, Description.c_str());
     printf("\n");
 }
 
