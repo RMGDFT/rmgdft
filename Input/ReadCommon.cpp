@@ -158,558 +158,564 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
  
     If.RegisterInputKey("description", &Description, "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Description of the run.\n", 
+                     "Description of the run. ", 
                      "");
 
     If.RegisterInputKey("pseudopotential", NULL , "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "External pseudopotentials may be specfied with this input key. The format uses\nthe atomic symbol followed by the pseudopotential file name.\n    pseudopotential = \"Ni Ni.UPF  O O.UPF\"", 
+                     "External pseudopotentials may be specfied with this input key. The format uses the atomic symbol followed by the pseudopotential file name.    pseudopotential = \"Ni Ni.UPF  O O.UPF\"", 
                      "");
 
     If.RegisterInputKey("Hubbard_U", NULL , "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Hubbard U parameter.\n", 
+                     "Hubbard U parameter. ", 
                      "");
 
     If.RegisterInputKey("input_wave_function_file", &Infile, "Waves/wave.out",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Input file/path to  read wavefunctions and other binary data from on a restart.\n", 
+                     "Input file/path to  read wavefunctions and other binary data from on a restart. ", 
                      "");
     If.RegisterInputKey("input_tddft_file", &Infile_tddft, "Waves/wave_tddft.out",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Input file/path to  read wavefunctions and other binary data from on a restart.\n", 
+                     "Input file/path to  read wavefunctions and other binary data from on a restart. ", 
                      "");
 
     If.RegisterInputKey("nvme_weights_filepath", &Weightsfile, "Weights/",
                      CHECK_AND_FIX, OPTIONAL,
-                     "File/path for disk storage of projector weights.\n", 
+                     "File/path for disk storage of projector weights. ", 
                      "");
 
     If.RegisterInputKey("nvme_work_filepath", &Workfile, "Work/",
                      CHECK_AND_FIX, OPTIONAL,
-                     "File/path for disk storage of workspace.\n", 
+                     "File/path for disk storage of workspace. ", 
                      "");
 
     If.RegisterInputKey("nvme_orbitals_filepath", &Orbitalfile, "Orbitals/",
                      CHECK_AND_FIX, OPTIONAL,
-                     "File/path for runtime disk storage of orbitals.\n", 
+                     "File/path for runtime disk storage of orbitals. ", 
                      "");
 
     If.RegisterInputKey("pseudo_dir", &PseudoPath, ".",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Directory where pseudopotentials are stored.\n", 
+                     "Directory where pseudopotentials are stored. ", 
                      "");
 
     If.RegisterInputKey("output_wave_function_file", &Outfile, "Waves/wave.out",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Output file/path to store wavefunctions and other binary data.\n", 
+                     "Output file/path to store wavefunctions and other binary data. ", 
                      "");
     If.RegisterInputKey("output_tddft_file", &Outfile_tddft, "Waves/wave_tddft.out",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Output file/path to store wavefunctions and other binary data.\n", 
+                     "Output file/path to store wavefunctions and other binary data. ", 
                      "");
     If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
                         "restart TDDFT");
 
     If.RegisterInputKey("processor_grid", &ProcessorGrid, &DefProcessorGrid, 3, OPTIONAL, 
-                     "Three-D (x,y,z) layout of the MPI processes.\n", 
-                     "You must specify a triplet of (X,Y,Z) dimensions for the processor grid.\n");
+                     "Three-D (x,y,z) layout of the MPI processes. ", 
+                     "You must specify a triplet of (X,Y,Z) dimensions for the processor grid. ");
 
     If.RegisterInputKey("wavefunction_grid", &WavefunctionGrid, &DefWavefunctionGrid, 3, OPTIONAL, 
-                     "Three-D (x,y,z) dimensions of the grid the wavefunctions are defined on.\n", 
-                     "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid.\n");
+                     "Three-D (x,y,z) dimensions of the grid the wavefunctions are defined on. ", 
+                     "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid. ");
 
     If.RegisterInputKey("dipole_correction", &DipoleCorrection, &DefDipoleCorrection, 3, OPTIONAL, 
-                     "(1,1,1) for molecule, dipole correction in all directions. \n", 
-                     "(0,0,0) means no correction by default, (1,0,0) or others have not programed\n");
+                     "(1,1,1) for molecule, dipole correction in all directions.  ", 
+                     "(0,0,0) means no correction by default, (1,0,0) or others have not programed ");
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
-                     "Three-D layout of the kpoint mesh.\n", 
-                     "You must specify a triplet of coordinate dimensions for the kpoint_mesh.\n");
+                     "Three-D layout of the kpoint mesh. ", 
+                     "You must specify a triplet of coordinate dimensions for the kpoint_mesh. ");
 
     If.RegisterInputKey("kpoint_is_shift", &kpoint_is_shift, &def_kpoint_is_shift, 3, OPTIONAL, 
-                     "Three-D layout of the kpoint shift.\n", 
-                     "You must specify a triplet of coordinate dimensions for kpoint_is_shift.\n");
+                     "Three-D layout of the kpoint shift. ", 
+                     "You must specify a triplet of coordinate dimensions for kpoint_is_shift. ");
 
     int ibrav;
     If.RegisterInputKey("bravais_lattice_type", NULL, &ibrav, "Orthorhombic Primitive",
                      CHECK_AND_TERMINATE, OPTIONAL, bravais_lattice_type,
-                     "Bravais Lattice Type.\n", 
-                     "bravais_lattice_type not found.\n");
+                     "Bravais Lattice Type. ", 
+                     "bravais_lattice_type not found. ");
 
     If.RegisterInputKey("start_mode", NULL, &lc.runflag, "LCAO Start",
                      CHECK_AND_TERMINATE, OPTIONAL, start_mode,
-                     "Type of run.\n", 
-                     "start_mode must be one of  \"Random Start\", \"Restart From File\", or \"LCAO Start\". Terminating.\n");
+                     "Type of run. ", 
+                     "start_mode must be one of  \"Random Start\", \"Restart From File\", or \"LCAO Start\". Terminating. ");
 
     If.RegisterInputKey("atomic_orbital_type", NULL, &ct.atomic_orbital_type, "delocalized",
                      CHECK_AND_TERMINATE, OPTIONAL, atomic_orbital_type,
-                     "Atomic Orbital Type. Choices are localized and delocalized.\n", 
-                     "atomic_orbital_type not found.\n");
+                     "Atomic Orbital Type. Choices are localized and delocalized. ", 
+                     "atomic_orbital_type not found. ");
 
     If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "auto",
                      CHECK_AND_FIX, OPTIONAL, subdiag_driver,
-                     "Driver type used for subspace diagonalization of the eigenvectors.\n", 
-                     "subdiag_driver must be lapack, scalapack, cusolver, magma or auto. Resetting to auto.\n");
+                     "Driver type used for subspace diagonalization of the eigenvectors. ", 
+                     "subdiag_driver must be lapack, scalapack, cusolver or auto. Resetting to auto. ", DIAG_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_solver", NULL, &lc.kohn_sham_solver, "davidson",
                      CHECK_AND_FIX, OPTIONAL, kohn_sham_solver,
-"RMG supports a pure multigrid Kohn-Sham solver as well as\n"
-"a multigrid preconditioned davidson solver. The davidson\n"
-"solver is usually better for smaller problems with the pure\n"
-"multigrid solver often being a better choice for very large\n"
+"RMG supports a pure multigrid Kohn-Sham solver as well as "
+"a multigrid preconditioned davidson solver. The davidson "
+"solver is usually better for smaller problems with the pure "
+"multigrid solver often being a better choice for very large "
 "problems.",
-                     "kohn_sham_solver must be multigrid or davidson. Resetting to multigrid.\n");
+                     "kohn_sham_solver must be multigrid or davidson. Resetting to multigrid. ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("poisson_solver", NULL, &lc.poisson_solver, "pfft",
                      CHECK_AND_FIX, OPTIONAL, poisson_solver,
-                     "poisson solver.\n", 
-                     "poisson_solver must be multigrid or pfft. Resetting to pfft.\n");
+                     "poisson solver. ", 
+                     "poisson_solver must be multigrid or pfft. Resetting to pfft. ");
 
 
     If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
                      CHECK_AND_FIX, OPTIONAL, crds_units,
-                     "Units for the atomic coordinates.\n", 
-                     "Coordinates must be specified in either Bohr or Angstrom.\n");
+                     "Units for the atomic coordinates. ", 
+                     "Coordinates must be specified in either Bohr or Angstrom. ");
 
     If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Pulay",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
-"RMG supports Broyden, Pulay and Linear mixing\n"
-"When the davidson Kohn-Sham solver is selected Broyden or\n"
-"Pulay are preferred. For the multigrid solver Linear with\n"
-"potential acceleration is often (but not always) the best\n"
-"choice.\n",
-                     "charge_mixing_type must be either \"Broyden\", \"Linear\" or \"Pulay\". Terminating.\n");
+"RMG supports Broyden, Pulay and Linear mixing "
+"When the davidson Kohn-Sham solver is selected Broyden or "
+"Pulay are preferred. For the multigrid solver Linear with "
+"potential acceleration is often (but not always) the best "
+"choice.",
+                     "charge_mixing_type must be either \"Broyden\", \"Linear\" or \"Pulay\". Terminating. ", MIXING_OPTIONS);
     
     If.RegisterInputKey("charge_analysis", NULL, &lc.charge_analysis_type, "Voronoi",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_analysis,
-                     "Type of charge analysis to use. Only Voronoi deformation density is currently available.\n", 
-                     "charge_analysis must be either \"Voronoi\" or \"None\". Terminating.\n");
+                     "Type of charge analysis to use. Only Voronoi deformation density is currently available. ", 
+                     "charge_analysis must be either \"Voronoi\" or \"None\". Terminating. ");
     
     If.RegisterInputKey("charge_analysis_period", &lc.charge_analysis_period, 0, 500, 0,
                      CHECK_AND_FIX, OPTIONAL,
                      "How often to  perform and write out charge analysis.",
-                     "charge_analysis_write_period must lie in the range (1,500). Resetting to the default value of 0.\n");
+                     "charge_analysis_write_period must lie in the range (1,500). Resetting to the default value of 0. ");
     
     If.RegisterInputKey("dipole_moment", &lc.dipole_moment, false, 
                         "Turns on calculation of dipole moment for the entire cell.");
 
     If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Coarse",
                      CHECK_AND_TERMINATE, OPTIONAL, vdwdf_grid_type,
-                     "Type of grid to use when computing vdw-df correlation.\n", 
-                     "vdwdf_grid_type be either \"Coarse\" or \"Fine\". Terminating.\n");
+                     "Type of grid to use when computing vdw-df correlation. ", 
+                     "vdwdf_grid_type be either \"Coarse\" or \"Fine\". Terminating. ");
 
     If.RegisterInputKey("relax_mass", NULL, &lc.relax_mass, "Atomic",
                      CHECK_AND_TERMINATE, OPTIONAL, relax_mass,
-                     "Mass to use for structural relaxation, either atomic masses, or use the mass of carbon for all atoms.\n", 
-                     "relax_mass must be either \"Atomic\" or \"Equal\". Terminating.\n");
+"Mass to use for structural relaxation, either atomic masses, or the mass of carbon for all atoms. ", 
+                     "relax_mass must be either \"Atomic\" or \"Equal\". Terminating. ", MD_OPTIONS);
 
     If.RegisterInputKey("md_integration_order", NULL, &lc.mdorder, "5th Beeman-Velocity Verlet",
                      CHECK_AND_TERMINATE, OPTIONAL, md_integration_order,
-                     "Integration order for molecular dynamics.\n", 
-                     "md_integration_order must be either \"2nd Velocity Verlet\", \"3rd Beeman-Velocity Verlet\" or \"5th Beeman-Velocity Verlet\". Terminating.\n");
+                     "Integration order for molecular dynamics. ", 
+                     "md_integration_order must be either \"2nd Velocity Verlet\", \"3rd Beeman-Velocity Verlet\" or \"5th Beeman-Velocity Verlet\". Terminating. ", MD_OPTIONS);
 
     If.RegisterInputKey("z_average_output_mode", NULL, &lc.zaverage, "None",
                      CHECK_AND_TERMINATE, OPTIONAL, z_average_output_mode,
-                     "z_average_output_mode.\n", 
-                     "z_average_output_mode not supported. Terminating.\n");
+                     "z_average_output_mode. ", 
+                     "z_average_output_mode not supported. Terminating. ");
 
     If.RegisterInputKey("atomic_coordinate_type", NULL, &lc.crd_flag, "Absolute",
                      CHECK_AND_TERMINATE, OPTIONAL, atomic_coordinate_type,
-                     "Flag indicated whether or not atomic coordinates are absolute or cell relative.\n", 
-                     "atomic_coordinate_type must be either \"Absolute\" or \"Cell Relative\". Terminating.\n");
+                     "Flag indicated whether or not atomic coordinates are absolute or cell relative. ", 
+                     "atomic_coordinate_type must be either \"Absolute\" or \"Cell Relative\". Terminating. ");
 
     If.RegisterInputKey("calculation_mode", NULL, &lc.forceflag, "Quench Electrons",
                      CHECK_AND_TERMINATE, OPTIONAL, calculation_mode,
-                     "Type of calculation to perform.\n", 
-                     "calculation_mode not available.\n");
+                     "Type of calculation to perform. ", 
+                     "calculation_mode not available. ");
 
     If.RegisterInputKey("ldaU_mode", NULL, &lc.ldaU_mode, "None",
                      CHECK_AND_TERMINATE, OPTIONAL, ldaU_mode,
-                     "Type of lda+u implementation.\n", 
-                     "lda+u type not available.\n");
+                     "Type of lda+u implementation. ", 
+                     "lda+u type not available. ");
 
     If.RegisterInputKey("relax_method", NULL, &lc.relax_method, "Fast Relax",
                      CHECK_AND_TERMINATE, OPTIONAL, relax_method,
-                     "Type of relaxation method to use for structural optimizations.\n", 
-                     "relax_method not supported.\n");
+                     "Type of relaxation method to use for structural optimizations. ", 
+                     "relax_method not supported. ", MD_OPTIONS);
 
     If.RegisterInputKey("md_temperature_control", NULL, &lc.tcontrol, "Nose Hoover Chains",
                      CHECK_AND_TERMINATE, OPTIONAL, md_temperature_control,
-                     "Type of temperature control method to use in molecular dynamics.\n", 
-                     "md_temperature_control type not supported.\n");
+                     "Type of temperature control method to use in molecular dynamics. ", 
+                     "md_temperature_control type not supported. ", MD_OPTIONS);
 
     If.RegisterInputKey("md_temperature", &lc.nose.temp, 0.0, DBL_MAX, 300.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Target MD Temperature.\n",
-                     "md_temperature must be a positive number.\n");
+                     "Target MD Temperature. ",
+                     "md_temperature must be a positive number. ", MD_OPTIONS);
 
     If.RegisterInputKey("md_nose_oscillation_frequency_THz", &lc.nose.fNose, 0.0, DBL_MAX, 15.59,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "md_nose_oscillation_frequency_THz must be a positive real number.");
+                     "md_nose_oscillation_frequency_THz must be a positive real number.", MD_OPTIONS);
 
     If.RegisterInputKey("discretization_type", &DiscretizationType, &lc.discretization, "Central",
                      CHECK_AND_FIX, OPTIONAL, discretization_type,
-                     "Type of discretization to use for the Kohn-Sham equations. Mehrstellen or Central types are implemented.\n", 
-                     "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Central\".\n");
+"Type of discretization to use for the Kohn-Sham equations. "
+"Mehrstellen or Central types are implemented.", 
+                     "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Central\". ");
 
     If.RegisterInputKey("energy_output_units", &EnergyOutputType, &lc.energy_output_units, "Hartrees",
                      CHECK_AND_FIX, OPTIONAL, energy_output_units,
-                     "Units to be used when writing energy values to the output file. Hartrees or Rydbergs are available.\n", 
-                     "energy_output_units must be either \"Hartrees\" or \"Rydbergs\". Setting to \"Hartrees\".\n");
+"Units to be used when writing energy values to the output file. "
+" Hartrees or Rydbergs are available.", 
+                     "energy_output_units must be either \"Hartrees\" or \"Rydbergs\". Setting to \"Hartrees\". ");
 
     If.RegisterInputKey("boundary_condition_type", NULL, &lc.boundaryflag, "Periodic",
                      CHECK_AND_TERMINATE, OPTIONAL, boundary_condition_type,
-                     "Boundary condition type Only periodic is currently implemented.\n", 
-                     "discretization_type must be Periodic.\n");
+                     "Boundary condition type Only periodic is currently implemented. ", 
+                     "discretization_type must be Periodic. ");
 
     If.RegisterInputKey("exchange_correlation_type", NULL, &lc.xctype, "AUTO_XC",
                      CHECK_AND_TERMINATE, OPTIONAL, exchange_correlation_type,
-"Most pseudopotentials specify the exchange correlation type they\n"
-"were generated with and the default value of AUTO_XC means that\n"
-"the type specified in the pseudopotial is what RMG will use. That\n"
+"Most pseudopotentials specify the exchange correlation type they "
+"were generated with and the default value of AUTO_XC means that "
+"the type specified in the pseudopotial is what RMG will use. That "
 "can be overridden by specifying a value here.",
-                     "exchange_correlation_type not supported. Terminating.\n");
+                     "exchange_correlation_type not supported. Terminating. ");
 
     If.RegisterInputKey("occupations_type", NULL, &lc.occ_flag, "Fermi Dirac",
                      CHECK_AND_TERMINATE, OPTIONAL, occupations_type,
-"RMG supports several different ways of specifying orbital occupations.\n"
-"For a spin polarized system one may specify the occupations for up and\n"
-"down separately. In the case of a non-zero electronic temperature these\n"
-"will be adjusted as the calculation proceeds based on this setting.\n",
-                     "occupations_type not supported. Terminating.\n");
+"RMG supports several different ways of specifying orbital occupations. "
+"For a spin polarized system one may specify the occupations for up and "
+"down separately. In the case of a non-zero electronic temperature these "
+"will be adjusted as the calculation proceeds based on this setting. ",
+                     "occupations_type not supported. Terminating. ", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("interpolation_type", NULL, &lc.interp_flag, "FFT",
                      CHECK_AND_TERMINATE, OPTIONAL, interpolation_type,
-                     "Interpolation method for transferring data between the potential grid and the wavefunction grid.\n", 
-                     "interpolation_type not supported. Terminating.\n");
+"Interpolation method for transferring data between the potential grid "
+"and the wavefunction grid.", 
+                     "interpolation_type not supported. Terminating. ");
 
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, REQUIRED, 
-                     "First lattice constant.\n", 
-                     "a_length must be a positive number. Terminating.\n");
+                     "First lattice constant. ", 
+                     "a_length must be a positive number. Terminating. ");
 
     If.RegisterInputKey("b_length", &celldm[1], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, REQUIRED, 
-                     "Second lattice constant.\n", 
-                     "b_length must be a positive number. Terminating.\n");
+                     "Second lattice constant. ", 
+                     "b_length must be a positive number. Terminating. ");
 
     If.RegisterInputKey("c_length", &celldm[2], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, REQUIRED, 
-                     "Third lattice constant.\n", 
-                     "c_length must be a positive number. Terminating.\n");
+                     "Third lattice constant. ", 
+                     "c_length must be a positive number. Terminating. ");
 
     If.RegisterInputKey("grid_spacing", &grid_spacing, 0.0, DBL_MAX, 0.35, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
-                     "Approximate grid spacing (bohr).\n", 
-                     "grid_spacing must be a positive number. Terminating.\n");
+                     "Approximate grid spacing (bohr). ", 
+                     "grid_spacing must be a positive number. Terminating. ");
 
     If.RegisterInputKey("filter_factor", &lc.filter_factor, 0.06, 1.0, 0.25, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
-                     "Filtering factor.\n", 
-                     "filter_factor must lie in the range (0.1, 1.0). Terminating.\n");
+                     "Filtering factor. ", 
+                     "filter_factor must lie in the range (0.1, 1.0). Terminating. ");
 
     // Default of zero is OK because this means to try to set it automatically later on.
     // The max value of 128 covers any possible hardware scenario I can imagine currently but might
     // need to be adjusted at some point in the future.
     If.RegisterInputKey("omp_threads_per_node", &lc.OMP_THREADS_PER_NODE, 0, 64, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Number of Open MP threads each MPI process will use. A value of 0 selects automatic setting.\n", 
-                     "threads_per_node cannnot be a negative number and must be less than 64.\n");
+                     "Number of Open MP threads each MPI process will use. A value of 0 selects automatic setting. ", 
+                     "threads_per_node cannnot be a negative number and must be less than 64. ");
 
     If.RegisterInputKey("fd_allocation_limit", &lc.fd_allocation_limit, 1024, 262144, 65536, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Allocation sizes in finite difference routines less than this value are stack rather than heap based.\n", 
-                     "fd_allocation_limit must lie in the range 1024 to 262144.\n");
+"Allocation sizes in finite difference routines less than this value are stack "
+"rather than heap based. ", 
+                     "fd_allocation_limit must lie in the range 1024 to 262144. ");
 
     If.RegisterInputKey("rmg_threads_per_node", &lc.MG_THREADS_PER_NODE, 0, 64, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Number of Multigrid/Davidson threads each MPI process will use.\nA value of 0 means set automatically.", 
-                     "threads_per_node cannnot be a negative number and must be less than 64.\n");
+                     "Number of Multigrid/Davidson threads each MPI process will use. A value of 0 means set automatically.", 
+                     "threads_per_node cannnot be a negative number and must be less than 64. ");
 
     If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 4, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-"Ratio of the potential grid density to the wavefunction grid\n"
-"density. For example if the wavefunction grid is (72,72,72) and\n"
-"potential_grid_refinement = \"2\" then the potential grid would be\n"
-"(144,144,144). The default value is 2 but it may sometimes be\n"
-"beneficial to adjust this. (For USPP the minimum value is also 2\n"
+"Ratio of the potential grid density to the wavefunction grid "
+"density. For example if the wavefunction grid is (72,72,72) and "
+"potential_grid_refinement = \"2\" then the potential grid would be "
+"(144,144,144). The default value is 2 but it may sometimes be "
+"beneficial to adjust this. (For USPP the minimum value is also 2 "
 "and it cannot be set lower. NCPP can be set to 1).",
-                     "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset.\n");
+                     "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset. ");
 
     If.RegisterInputKey("davidson_multiplier", &lc.davidx, 0, 6, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
-"The davidson solver expands the eigenspace with the maximum expansion\n"
-"factor being set by the value of davidson_multiplier. Larger values\n"
-"often lead to faster convergence but because the computational cost\n"
-"of the davidson diagonalization step scales as the cube of the number of\n"
-"eigenvectors the optimal value based on the fastest time to solution\n"
-"depends on the number of orbitals. If not specified explicitly or set\n"
-"to 0 RMG uses the following algorithm to set the value.\n"
-" \n"
-"    Number of orbitals <= 600          davidson_multiplier = \"4\"\n"
-"    600 < Number of orbitals <= 900    davidson_multiplier = \"3\"\n"
-"    Number of orbitals > 900           davidson_multiplier = \"2\"\n"
-" \n"
-"For very large problems the N^3 scaling makes even a factor of 2\n"
-"prohibitively costly and the multigrid solver is a better choice.\n",
-"davidson_multiplier must be in the range (2 <= davidson_multiplier <= 6).\n");
+"The davidson solver expands the eigenspace with the maximum expansion "
+"factor being set by the value of davidson_multiplier. Larger values "
+"often lead to faster convergence but because the computational cost "
+"of the davidson diagonalization step scales as the cube of the number of "
+"eigenvectors the optimal value based on the fastest time to solution "
+"depends on the number of orbitals. If not specified explicitly or set "
+"to 0 RMG uses the following algorithm to set the value. "
+" & &"
+"Number of orbitals <= 600 davidson_multiplier= \"4\"&"
+"600 < Number of orbitals <= 900    davidson_multiplier = \"3\"&"
+"Number of orbitals > 900           davidson_multiplier = \"2\"&"
+" &"
+"For very large problems the N^3 scaling makes even a factor of 2 "
+"prohibitively costly and the multigrid solver is a better choice. ",
+"davidson_multiplier must be in the range (2 <= davidson_multiplier <= 6).", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("davidson_max_steps", &lc.david_max_steps, 5, 20, 8, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Maximum number of iterations for davidson diagonalization.", 
-                     "davidson_max_steps must be in the range (5 <= davidson_max_steps <= 20).\n");
+                     "davidson_max_steps must be in the range (5 <= davidson_max_steps <= 20). ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("ldaU_radius", &lc.ldaU_radius, 1.0, 12.0, 9.0, 
                       CHECK_AND_FIX, OPTIONAL, 
-                     "Max radius of atomic orbitals to be used in LDA+U projectors.\n",
-                     "ldaU_range must lie in the range (1.0, 12.0). Resetting to the default value of 9.0.\n");
+                     "Max radius of atomic orbitals to be used in LDA+U projectors. ",
+                     "ldaU_range must lie in the range (1.0, 12.0). Resetting to the default value of 9.0. ");
 
     If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 0.0, 
                       CHECK_AND_FIX, OPTIONAL, 
-"When set to a non-zero value this parameter causes RMG to\n"
-"perform a band by band update of the self-consistent potential\n"
-"during the course of an SCF step when the multigrid kohn_sham_solver\n"
-"is chosen. This means that updates to the lower energy orbitals\n"
-"are incorporated into the SCF potential seen by the higher energy orbitals\n"
-"as soon as they are computed. This can lead to faster convergence\n"
-"and better stability for many systems. The option should only be used\n"
-"with Linear mixing. Even when the davidson solver is chosen this parameter\n"
-"may be used since the first few steps with davidson usually uses the\n"
-"multigrid solver.\n",
-                     "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 0.0.\n");
+"When set to a non-zero value this parameter causes RMG to "
+"perform a band by band update of the self-consistent potential "
+"during the course of an SCF step when the multigrid kohn_sham_solver "
+"is chosen. This means that updates to the lower energy orbitals "
+"are incorporated into the SCF potential seen by the higher energy orbitals "
+"as soon as they are computed. This can lead to faster convergence "
+"and better stability for many systems. The option should only be used "
+"with Linear mixing. Even when the davidson solver is chosen this parameter "
+"may be used since the first few steps with davidson usually uses the "
+"multigrid solver.",
+                     "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 0.0. ", MIXING_OPTIONS);
 
     If.RegisterInputKey("ionic_time_step", &lc.iondt, 0.0, DBL_MAX, 50.0, 
                      CHECK_AND_TERMINATE, OPTIONAL,
-                     "Ionic time step for use in molecular dynamics and structure optimizations.\n",
-                     "ionic_time_step must be greater than 0.0.\n");
+                     "Ionic time step for use in molecular dynamics and structure optimizations. ",
+                     "ionic_time_step must be greater than 0.0. ", MD_OPTIONS);
 
     If.RegisterInputKey("ionic_time_step_increase", &lc.iondt_inc, 1.0, 3.0, 1.1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Factor by which ionic timestep is increased when dynamic timesteps are enabled.\n",
-                     "ionic_time_step_increase must lie in the range (1.0,1.1). Resetting to the default value of 1.1.\n");
+                     "Factor by which ionic timestep is increased when dynamic timesteps are enabled. ",
+                     "ionic_time_step_increase must lie in the range (1.0,1.1). Resetting to the default value of 1.1. ", MD_OPTIONS);
     
     If.RegisterInputKey("ionic_time_step_decrease", &lc.iondt_dec, 0.0, 1.0, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Factor by which ionic timestep is decreased when dynamic timesteps are enabled.\n",
-                     "ionic_time_step_decrease must lie in the range (0.0,1.0). Resetting to the default value of 0.5.\n");
+                     "Factor by which ionic timestep is decreased when dynamic timesteps are enabled. ",
+                     "ionic_time_step_decrease must lie in the range (0.0,1.0). Resetting to the default value of 0.5. ", MD_OPTIONS);
 
     If.RegisterInputKey("max_ionic_time_step", &lc.iondt_max, 0.0, 150.0, 150.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Maximum ionic time step to use for molecular dynamics or structural optimizations.\n",
-                     "max_ionic_time_step must lie in the range (0.0,150.0). Resetting to the default value of 150.0.\n");
+                     "Maximum ionic time step to use for molecular dynamics or structural optimizations. ",
+                     "max_ionic_time_step must lie in the range (0.0,150.0). Resetting to the default value of 150.0. ", MD_OPTIONS);
 
     If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 0, INT_MAX, 10, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "The number of unoccupied orbitals. A value that is 15-20% of the\nnumber of occupied orbitals generally works well.", 
-                     "Unoccupied_states_per_kpoint must be greater than 0. Setting to default value of 10.\n");
+                     "The number of unoccupied orbitals. A value that is 15-20% of the number of occupied orbitals generally works well.", 
+                     "Unoccupied_states_per_kpoint must be greater than 0. Setting to default value of 10. ", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("state_block_size", &lc.state_block_size, 1, INT_MAX, 64, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "state_block used in nlforce.\n", 
-                     "it is better to be 2^n.\n");
+                     "state_block used in nlforce. ", 
+                     "it is better to be 2^n. ");
 
 
     If.RegisterInputKey("extra_random_lcao_states", &lc.extra_random_lcao_states, 0, INT_MAX, 0, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
-"LCAO (Linear Combination of Atomic Orbitals) is the default startup method\n"
-"for RMG. The atomic orbitals are obtained from the pseudpotentials but in some\n"
-"cases better convergence may be obtained by adding extra random wavefunctions\n"
+"LCAO (Linear Combination of Atomic Orbitals) is the default startup method "
+"for RMG. The atomic orbitals are obtained from the pseudpotentials but in some "
+"cases better convergence may be obtained by adding extra random wavefunctions "
 "in addition to the atomic orbitals.", 
-                     "extra_random_lcao_states must be greater than 0. Terminating.\n");
+                     "extra_random_lcao_states must be greater than 0. Terminating. ", DIAG_OPTIONS);
 
     If.RegisterInputKey("system_charge", &lc.background_charge, -DBL_MAX, DBL_MAX, 0.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of excess holes in the system (useful for doped systems).\nExample: 2 means system is missing two electrons\n",
-                     "system_charge must be a real number.\n");
+                     "Number of excess holes in the system (useful for doped systems). Example: 2 means system is missing two electrons ",
+                     "system_charge must be a real number. ");
 
     If.RegisterInputKey("occupation_electron_temperature_eV", &lc.occ_width, 0.0, 2.0, 0.04,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Target electron temperature when not using fixed occupations.\n ",
-                     "occupation_electron_temperature_eV must lie in the range (0.0,2.0). Resetting to the default value of 0.04.\n");
+                     "Target electron temperature when not using fixed occupations.  ",
+                     "occupation_electron_temperature_eV must lie in the range (0.0,2.0). Resetting to the default value of 0.04. ", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("occupation_number_mixing", &lc.occ_mix, 0.0, 1.0, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Mixing parameter for orbital occupations when not using fixed occupations.\n",
-                     "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3.\n");
+                     "Mixing parameter for orbital occupations when not using fixed occupations. ",
+                     "occupation_number_mixing must lie in the range (0.0,1.0). Resetting to the default value of 0.3. ", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("MP_order", &lc.mp_order, 0, 5, 2, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "order of Methefessel Paxton occupation.", 
-                     "0 means simple error function as distribution\n");
+                     "0 means simple error function as distribution ", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("period_of_diagonalization", &lc.diag, 0, INT_MAX, 1, 
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Diagonalization period (per scf step).\nMainly for debugging and should not be changed for production.", 
-                     "Diagonalization period must be greater than 0. Resetting to the default value of 1.\n");
+                     "Diagonalization period (per scf step). Mainly for debugging and should not be changed for production.", 
+                     "Diagonalization period must be greater than 0. Resetting to the default value of 1. ", DIAG_OPTIONS);
 
     If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 500,
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Maximum number of self consistent steps to perform.\n", 
-                     "max_scf_steps must be greater than 0. Resetting to the default value of 500\n");
+                     "Maximum number of self consistent steps to perform. ", 
+                     "max_scf_steps must be greater than 0. Resetting to the default value of 500 ");
 
     If.RegisterInputKey("tddft_steps", &lc.tddft_steps, 0, INT_MAX, 2000,
                      CHECK_AND_FIX, OPTIONAL, 
-                     "Maximum number of tddft steps to perform.\n", 
-                     "tddft steps must be greater than 0. Resetting to the default value of 2000\n");
+                     "Maximum number of tddft steps to perform. ", 
+                     "tddft steps must be greater than 0. Resetting to the default value of 2000 ");
 
     If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 10, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of previous steps to use when Pulay mixing is used to update the charge density.",
-                     "");
+                     "", MIXING_OPTIONS);
 
     If.RegisterInputKey("charge_pulay_scale", &lc.charge_pulay_scale, 0.0, 1.0, 0.50,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "charge_pulay_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50\n");
+                     "charge_pulay_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50 ", MIXING_OPTIONS);
 
     If.RegisterInputKey("unoccupied_tol_factor", &lc.unoccupied_tol_factor, 1.0, 100000.0, 1000.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "When using the Davidson Kohn-Sham solver unoccupied states are converged\nto a less stringent tolerance than occupied orbitals with the ratio set by this parameter.",
-                     "unoccupied_tol_factor must lie in the range (0.000001,100000.0). Resetting to the default value of 1000.0\n");
+                     "When using the Davidson Kohn-Sham solver unoccupied states are converged to a less stringent tolerance than occupied orbitals with the ratio set by this parameter.",
+                     "unoccupied_tol_factor must lie in the range (0.000001,100000.0). Resetting to the default value of 1000.0 ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("charge_pulay_refresh", &lc.charge_pulay_refresh, 1, INT_MAX, 100,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "");
+                     "", MIXING_OPTIONS);
 
     If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of previous steps to use when Broyden mixing is used to update the charge density.",
-                     "");
+                     "", MIXING_OPTIONS);
 
     If.RegisterInputKey("charge_broyden_scale", &lc.charge_broyden_scale, 0.0, 1.0, 0.50,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "charge_broyden_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50\n");
+                     "charge_broyden_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50 ", MIXING_OPTIONS);
 
     If.RegisterInputKey("projector_expansion_factor", &lc.projector_expansion_factor, 0.5, 3.0, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "When using localized projectors the radius can be adjusted with this parameter.",
-                     "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0\n");
+                     "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0 ");
 
     If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "How often to write checkpoint files during the initial quench in units of SCF steps.\nDuring structural relaxations of molecular dynamics checkpoints are written each ionic step.",
+                     "How often to write checkpoint files during the initial quench in units of SCF steps. During structural relaxations of molecular dynamics checkpoints are written each ionic step.",
                      "");
 
     If.RegisterInputKey("write_eigvals_period", &lc.write_eigvals_period, 1, 100, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "How often to output eigenvalues in units of scf steps.",
-                     "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5.\n");
+                     "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5. ");
 
     If.RegisterInputKey("max_md_steps", &lc.max_md_steps, 0, INT_MAX, 100,
                      CHECK_AND_TERMINATE, OPTIONAL,
                      "Maximum number of molecular dynamics steps to perform.",
-                     "max_md_steps must be a positive value. Terminating.\n");
+                     "max_md_steps must be a positive value. Terminating. ");
 
     If.RegisterInputKey("hartree_max_sweeps", &lc.hartree_max_sweeps, 5, 100, 10,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Maximum number of hartree iterations to perform per scf step.\n",
-                     "hartree_max_sweeps must lie in the range (5,100). Resetting to the default value of 10.\n");
+                     "Maximum number of hartree iterations to perform per scf step. ",
+                     "hartree_max_sweeps must lie in the range (5,100). Resetting to the default value of 10. ");
 
     If.RegisterInputKey("hartree_min_sweeps", &lc.hartree_min_sweeps, 0, 5, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Minimum number of hartree iterations to perform per scf step.\n",
-                     "hartree_min_sweeps must lie in the range (0.5). Resetting to the default value of 5.\n");
+                     "Minimum number of hartree iterations to perform per scf step. ",
+                     "hartree_min_sweeps must lie in the range (0.5). Resetting to the default value of 5. ");
 
     If.RegisterInputKey("kohn_sham_pre_smoothing", &lc.eig_parm.gl_pre, 1, 5, 2,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of global grid pre-smoothing steps to perform before a multigrid preconditioner iteration.\n",
-                     "kohn_sham_pre_smoothing must lie in the range (1,5). Resetting to the default value of 2.\n");
+"Number of global grid pre-smoothing steps to perform before a "
+"multigrid preconditioner iteration. ",
+                     "kohn_sham_pre_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 1, 5, 2,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of global grid post-smoothing steps to perform after a multigrid preconditioner iteration.\n",
-                     "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2.\n");
+"Number of global grid post-smoothing steps to perform after a "
+"multigrid preconditioner iteration. ",
+                     "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 2,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 2.\n");
+                     "Number of mu (also known as W) cycles to use in the kohn-sham multigrid preconditioner. ",
+                     "kohn_sham_mucycles must lie in the range (1,6). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_fd_order", &lc.kohn_sham_fd_order, 4, 12, 8,
                      CHECK_AND_FIX, OPTIONAL,
-"RMG uses finite differencing to represent the kinetic energy operator\n"
-"and the accuracy of the representation is controllable by the\n"
-"kohn_sham_fd_order parameter. The default is 8 and is fine for most\n"
-"purposes but higher accuracy is obtainable with 10th order at the cost\n"
+"RMG uses finite differencing to represent the kinetic energy operator "
+"and the accuracy of the representation is controllable by the "
+"kohn_sham_fd_order parameter. The default is 8 and is fine for most "
+"purposes but higher accuracy is obtainable with 10th order at the cost "
 "of some additional computational expense.",
-                     "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8.\n");
+                     "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8. ", KS_SOLVER_OPTIONS);
 
 
     If.RegisterInputKey("force_grad_order", &lc.force_grad_order, 0, 12, 8,
                      CHECK_AND_FIX, OPTIONAL,
-"Atomic forces may be computed to varying degrees of accuracy depending\n"
-"on the requirements of a specific problem. A value of 0 implies highest\n"
-"accuracy which is obtained by using FFTs in place of finite differencing.\n",
-                     "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8.\n");
+"Atomic forces may be computed to varying degrees of accuracy depending "
+"on the requirements of a specific problem. A value of 0 implies highest "
+"accuracy which is obtained by using FFTs in place of finite differencing. ",
+                     "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8. ");
 
     If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.0, 1.2, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Time step to use in the kohn-sham multigrid solver on the coarse levels.\n",
-                     "kohn_sham_coarse_time_step must lie in the range (0.5,1.2). Resetting to the default value of 1.0.\n");
+                     "Time step to use in the kohn-sham multigrid solver on the coarse levels. ",
+                     "kohn_sham_coarse_time_step must lie in the range (0.5,1.2). Resetting to the default value of 1.0. ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.0, 2.0, 0.66,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 0.66.\n");
+                     "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner. ",
+                     "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 0.66. ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_mg_timestep", &lc.eig_parm.mg_timestep, 0.0, 2.0, 0.6666666666666,
                      CHECK_AND_FIX, OPTIONAL,
-                     "timestep for multigrid correction.\n",
-                     "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 0.66\n");
+                     "timestep for multigrid correction. ",
+                     "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 0.66 ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 2,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of global hartree grid pre-smoothing steps to perform before a multigrid iteration.\n",
-                     "poisson_pre_smoothing must lie in the range (1,6). Resetting to the default value of 2.\n");
+                     "Number of global hartree grid pre-smoothing steps to perform before a multigrid iteration. ",
+                     "poisson_pre_smoothing must lie in the range (1,6). Resetting to the default value of 2. ");
 
     If.RegisterInputKey("poisson_post_smoothing", &lc.poi_parm.gl_pst, 1, 6, 1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of global hartree grid post-smoothing steps to perform after a multigrid iteration.\n",
+                     "Number of global hartree grid post-smoothing steps to perform after a multigrid iteration. ",
                      "");
 
     If.RegisterInputKey("poisson_mucycles", &lc.poi_parm.mucycles, 1, 4, 3,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of mu (also known as W) cycles to use in the hartree multigrid solver.\n",
-                     "poisson_mucycles must lie in the range (1,4). Resetting to the default value of 3.\n");
+                     "Number of mu (also known as W) cycles to use in the hartree multigrid solver. ",
+                     "poisson_mucycles must lie in the range (1,4). Resetting to the default value of 3. ");
 
     If.RegisterInputKey("poisson_finest_time_step", &lc.poi_parm.gl_step, 0.4, 1.0, 1.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Time step to use in the poisson multigrid solver on the finest level.\n",
-                     "poisson_finest_time_step must lie in the range (0.4,1.0). Resetting to the default value of 1.0.\n");
+                     "Time step to use in the poisson multigrid solver on the finest level. ",
+                     "poisson_finest_time_step must lie in the range (0.4,1.0). Resetting to the default value of 1.0. ");
 
     If.RegisterInputKey("poisson_coarse_time_step", &lc.poi_parm.sb_step, 0.4, 1.0, 0.8,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Time step to use in the poisson multigrid solver on the coarse levels.\n",
-                     "poisson_coarse_time_step must lie in the range (0.4,1.0). Resetting to the default value of 0.8.\n");
+                     "Time step to use in the poisson multigrid solver on the coarse levels. ",
+                     "poisson_coarse_time_step must lie in the range (0.4,1.0). Resetting to the default value of 0.8. ");
 
     If.RegisterInputKey("poisson_coarsest_steps", &lc.poi_parm.coarsest_steps, 10, 100, 25,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of smoothing steps to use on the coarsest level in the hartree multigrid solver.\n",
-                     "poisson_coarsest_steps must lie in the range (10,100). Resetting to the default value of 25.\n");
+                     "Number of smoothing steps to use on the coarsest level in the hartree multigrid solver. ",
+                     "poisson_coarsest_steps must lie in the range (10,100). Resetting to the default value of 25. ");
 
     If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, -1, 6, -1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of multigrid levels to use in the kohn-sham multigrid preconditioner.\n",
-                     "kohn_sham_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1).\n");
+                     "Number of multigrid levels to use in the kohn-sham multigrid preconditioner. ",
+                     "kohn_sham_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1). ", KS_SOLVER_OPTIONS);
 
     If.RegisterInputKey("poisson_mg_levels", &lc.poi_parm.levels, -1, 6, -1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of multigrid levels to use in the hartree multigrid solver.\n",
-                     "poisson_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1).\n");
+                     "Number of multigrid levels to use in the hartree multigrid solver. ",
+                     "poisson_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1). ");
 
     If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 4, 512,32,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware.\n",
-                     "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 32.\n");
+                     "Block size to use with scalapack. Optimal value is dependent on matrix size and system hardware. ",
+                     "scalapack_block_factor must lie in the range (4,512). Resetting to the default value of 32. ", DIAG_OPTIONS);
 
     If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 16384, 512,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Block size to use when applying the non-local and S operators.\n",
-                     "non_local_block_size must lie in the range (64,16384). Resetting to the default value of 512.\n");
+                     "Block size to use when applying the non-local and S operators. ",
+                     "non_local_block_size must lie in the range (64,16384). Resetting to the default value of 512. ");
 
     If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 201, 201, 201,
                      CHECK_AND_FIX, OPTIONAL,
@@ -724,17 +730,17 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("md_number_of_nose_thermostats", &lc.nose.m, 5, 5, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of Nose thermostats to use during Constant Volume and Temperature MD.",
-                     "");
+                     "", MD_OPTIONS);
 
     If.RegisterInputKey("dynamic_time_delay", &lc.relax_steps_delay, 5, 5, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "");
+                     "", MD_OPTIONS);
 
     If.RegisterInputKey("dynamic_time_counter", &lc.relax_steps_counter, 0, 0 , 0,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "");
+                     "", MD_OPTIONS);
 
     If.RegisterInputKey("scf_steps_offset", &lc.scf_steps, 0, 0, 0,
                      CHECK_AND_FIX, OPTIONAL,
@@ -758,8 +764,8 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("b_spline_order", &lc.interp_order, 0, 7, 5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Order of interpolation to use if b-spline is the selected method.\n",
-                     "b_spline_order must lie in the range (0,7). Resetting to the default value of 5.\n");
+                     "Order of interpolation to use if b-spline is the selected method. ",
+                     "b_spline_order must lie in the range (0,7). Resetting to the default value of 5. ");
 
     If.RegisterInputKey("b_spline_trade_order", &lc.interp_trade, 3, 3, 3,
                      CHECK_AND_FIX, OPTIONAL,
@@ -768,26 +774,27 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 
     If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Proportion of the current charge density to replace with the new density\nafter each scf step when linear mixing is used.\n",
-                     "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5.\n");
+                     "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used. ",
+                     "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5. ", MIXING_OPTIONS);
 
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
                      CHECK_AND_FIX, OPTIONAL,
-"Submatrix width to use as a fraction of the full spectrum.\n"
-"The folded spectrum width ranges from 0.10 to 1.0. For insulators and\n"
-"semiconductors a value of 0.3 is appropriate. For metals values between\n"
-"0.15 to 0.2 tend to be better. The default value is 0.3\n",
-                     "folded_spectrum_width must lie in the range (0.10,1.0). Resetting to the default value of 0.3.\n");
+"Submatrix width to use as a fraction of the full spectrum. "
+"The folded spectrum width ranges from 0.10 to 1.0. For insulators and "
+"semiconductors a value of 0.3 is appropriate. For metals values between "
+"0.15 to 0.2 tend to be better. The default value is 0.3 ",
+                     "folded_spectrum_width must lie in the range (0.10,1.0). Resetting to the default value of 0.3. ", DIAG_OPTIONS);
 
     If.RegisterInputKey("folded_spectrum_iterations", &lc.folded_spectrum_iterations, 0, 10, 2,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Number of folded spectrum iterations to perform.\n",
-                     "folded_spectrum_iterations must lie in the range (0,10). Resetting to the default value of 2.\n");
+                     "Number of folded spectrum iterations to perform. ",
+                     "folded_spectrum_iterations must lie in the range (0,10). Resetting to the default value of 2. ", DIAG_OPTIONS);
 
     If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, -DBL_MAX, DBL_MAX, 100.0,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "charge_pulay_special_metrics_weight must be a real number.");
+                     "charge_pulay_special_metrics_weight must be a real number.", MIXING_OPTIONS);
+
     If.RegisterInputKey("laplacian_offdiag", &lc.laplacian_offdiag, false, 
                         "if set to true, we use LaplacianCoeff.cpp to generate coeff");
     If.RegisterInputKey("laplacian_autocoeff", &lc.laplacian_autocoeff, false, 
@@ -802,39 +809,40 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                         "Write wavefunction in G-space to BerkeleyGW WFN file.");
     If.RegisterInputKey("ecutrho", &lc.ecutrho, 0.0, 10000.0, 0.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "ecut for rho in unit of Ry.\n",
-                     "\n");
+                     "ecut for rho in unit of Ry. ",
+                     " ");
 
     If.RegisterInputKey("ecutwfc", &lc.ecutwfc, 0.0, 10000.0, 0.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "ecut for wavefunctions in unit of Ry.\n",
-                     "\n");
+                     "ecut for wavefunctions in unit of Ry. ",
+                     " ");
 
     If.RegisterInputKey("vxc_diag_nmin", &lc.vxc_diag_nmin, 1, 10000, 1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Minimum band index for diagonal Vxc matrix elements.\n",
-                     "vxc_diag_nmin must lie in the range (1, 10000). Resetting to the default value of 1.\n");
+                     "Minimum band index for diagonal Vxc matrix elements. ",
+                     "vxc_diag_nmin must lie in the range (1, 10000). Resetting to the default value of 1. ");
 
     If.RegisterInputKey("vxc_diag_nmax", &lc.vxc_diag_nmax, 1, 10000, 1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Maximum band index for diagonal Vxc matrix elements.\n",
-                     "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1.\n");
+                     "Maximum band index for diagonal Vxc matrix elements. ",
+                     "vxc_diag_nmax must lie in the range (1, 10000). Resetting to the default value of 1. ");
+
     If.RegisterInputKey("max_nlradius", &lc.max_nlradius, 2.0, 10000.0, 10000.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "maximum radius for non-local projectors\n",
-                     "\n");
+                     "maximum radius for non-local projectors ",
+                     " ");
     If.RegisterInputKey("min_nlradius", &lc.min_nlradius, 1.0, 10000.0, 2.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "minimum radius for non-local projectors\n",
-                     "\n");
+                     "minimum radius for non-local projectors ",
+                     " ");
     If.RegisterInputKey("max_qradius", &lc.max_qradius, 2.0, 10000.0, 10000.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "maximum radius for qfunc in ultra-pseudopotential\n",
-                     "\n");
+                     "maximum radius for qfunc in ultra-pseudopotential ",
+                     " ");
     If.RegisterInputKey("min_qradius", &lc.min_qradius, 1.0, 10000.0, 2.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "minimum radius for qfunc in ultra-pseudopotential\n",
-                     "\n");
+                     "minimum radius for qfunc in ultra-pseudopotential ",
+                     " ");
 
     // Booleans next. Booleans are never required.
 #if GPU_ENABLED
@@ -844,17 +852,17 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
 #endif
 
     If.RegisterInputKey("lcao_use_empty_orbitals", &lc.lcao_use_empty_orbitals, false,
-"Some pseudopotentials contain unbound atomic orbitals and this flag indicates\n"
+"Some pseudopotentials contain unbound atomic orbitals and this flag indicates "
 "whether or not they should be used for LCAO starts.");
 
     If.RegisterInputKey("write_serial_restart", &lc.write_serial_restart, false,
-"RMG normally writes parallel restart files. These require that restarts have the\n"
-"same processor topology. If write_serial_restart = \"true\" then RMG will also\n"
-"write a serial restart file that can be used with a different processor topology\n");
+"RMG normally writes parallel restart files. These require that restarts have the "
+"same processor topology. If write_serial_restart = \"true\" then RMG will also "
+"write a serial restart file that can be used with a different processor topology ");
 
     If.RegisterInputKey("read_serial_restart", &lc.read_serial_restart, false,
-"Directs RMG to read from serial restart files. Normally used when changing\n"
-"the sprocessor topology used during a restart run\n");
+"Directs RMG to read from serial restart files. Normally used when changing "
+"the sprocessor topology used during a restart run ");
 
     If.RegisterInputKey("compressed_infile", &lc.compressed_infile, true,
                         "Flag indicating whether or not parallel restart wavefunction file uses compressed format.");
@@ -890,26 +898,26 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                         "Flag indicating whether or not to coalesce states.");
 
     If.RegisterInputKey("localize_projectors", &lc.localize_projectors, true,
-"The Beta function projectors for a particular ion decay rapidly\n"
-"in real-space with increasing r. For large cells truncating the\n"
-"real-space representation of the projector can lead to\n"
-"significant computational savings with a small loss of accuracy.\n"
-"For smaller cells the computational cost is the same for localized\n"
-"or delocalized projectors so it is better to set localize_projectors\n"
+"The Beta function projectors for a particular ion decay rapidly "
+"in real-space with increasing r. For large cells truncating the "
+"real-space representation of the projector can lead to "
+"significant computational savings with a small loss of accuracy. "
+"For smaller cells the computational cost is the same for localized "
+"or delocalized projectors so it is better to set localize_projectors "
 "to false.");
 
     If.RegisterInputKey("localize_localpp", &lc.localize_localpp, true,
-"The local potential associated with a particular ion also decays\n"
-"rapidly in real-space with increasing r. As with beta projectors\n"
-"truncating the real-space representation for large cells can lead\n"
-"to significant computational savings with a small loss of accuracy\n"
+"The local potential associated with a particular ion also decays "
+"rapidly in real-space with increasing r. As with beta projectors "
+"truncating the real-space representation for large cells can lead "
+"to significant computational savings with a small loss of accuracy "
 "but it should be set to false for small cells.");
 
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
-                        "Flag to test whether or not the modified metrics should be used in Pulay mixing.");
+                        "Flag to test whether or not the modified metrics should be used in Pulay mixing.", MIXING_OPTIONS);
 
     If.RegisterInputKey("write_pseudopotential_plots", NULL, false,
-                        "Flag to indicate whether or not to write pseudopotential plots.\n");
+                        "Flag to indicate whether or not to write pseudopotential plots. ");
 
     If.RegisterInputKey("equal_initial_density", &lc.init_equal_density_flag, false,
                         "Specifies whether to set initial up and down density to be equal.");
@@ -921,16 +929,16 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                         "Sort wavefunctions by eigenvalue. Not needed if using subspace diagonalization.");
 
     If.RegisterInputKey("initial_diagonalization", &lc.initdiag, true, 
-                        "Perform initial subspace diagonalization.");
+                        "Perform initial subspace diagonalization.", DIAG_OPTIONS);
     
     If.RegisterInputKey("verbose", &lc.verbose, false,
-                        "Flag for writing out extra information\n");
+                        "Flag for writing out extra information ");
 
     If.RegisterInputKey("folded_spectrum", &lc.use_folded_spectrum, false, 
-"When the number of eigenvectors is large using folded_spectrum is\n"
-"substantially faster than standard diagonalization. It also tends\n"
-"to converge better for metallic systems. It works with the\n"
-"multigrid kohn_sham_solver but not the davidson solver.\n");
+"When the number of eigenvectors is large using folded_spectrum is "
+"substantially faster than standard diagonalization. It also tends "
+"to converge better for metallic systems. It works with the "
+"multigrid kohn_sham_solver but not the davidson solver. ", DIAG_OPTIONS);
                          
 
     If.RegisterInputKey("use_numa", &lc.use_numa, true, 
@@ -952,65 +960,70 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                          "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.");
 
     If.RegisterInputKey("require_huge_pages", &lc.require_huge_pages, false, 
-                         "If set RMG assumes that sufficient huge pages are available. Bad things may happen if this is not true.");
+"If set RMG assumes that sufficient huge pages are available. "
+"Bad things may happen if this is not true.");
 
     If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
-                        "Flag indicating whether or not to use dynamic timesteps in relaxation mode.\n");
+                        "Flag indicating whether or not to use dynamic timesteps in relaxation mode. ");
 
     If.RegisterInputKey("freeze_occupied", NULL, false,
-                        "Flag indicating whether or not to freeze the density and occupied orbitals after a restart.\n");
+                        "Flag indicating whether or not to freeze the density and occupied orbitals after a restart. ");
 
     If.RegisterInputKey("relax_max_force", &lc.thr_frc, 0.0, DBL_MAX, 2.5E-3,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Force value at which an ionic relaxation is considered to be converged.\n",
-                     "relax_max_force must be a positive value. Resetting to default value of 2.5e-03.\n");
+                     "Force value at which an ionic relaxation is considered to be converged. ",
+                     "relax_max_force must be a positive value. Resetting to default value of 2.5e-03. ");
 
     If.RegisterInputKey("md_randomize_velocity", &lc.nose.randomvel, true,
-                        "");
+"The initial ionic velocities for a molecular dyanamics run are randomly initialized to the target temperature.");
 
     If.RegisterInputKey("output_rho_xsf", NULL, false,
                         "Generate xsf format for electronic density.");
 
     If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, 0.0, 1.0e-3, 1.0e-7,
                      CHECK_AND_FIX, OPTIONAL,
-                     "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
-                     "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7.\n");
+"The RMS value of the change in the total potential from step to step "
+"where we assume self consistency has been achieved.",
+                     "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7. ");
 
     If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-7, 1.0e-10,
                      CHECK_AND_FIX, OPTIONAL,
-                     "The RMS value of the change in the total potential where we assume self consistency has been achieved.\n",
-                     "rms_convergence_criterion must lie in the range (1.0e-07,1.0e-20). Resetting to default value of 1.0e-10.\n");
+"The RMS value of the estimated change in the total energy per step where we assume self "
+"consistency has been achieved. ",
+                     "rms_convergence_criterion must lie in the range (1.0e-07,1.0e-20). Resetting to default value of 1.0e-10. ");
 
     If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-9, 1.0e-1, 1.0e-1,
                      CHECK_AND_FIX, OPTIONAL,
-                     "The RMS value of the change in the total potential where we switch the preconditioner from single to double precision.\n",
-                     "preconditioner_threshold must lie in the range (1.0e-9,1.0e-1). Resetting to default value of 1.0e-1.\n");
+"The RMS value of the change in the total potential where we switch "
+"the preconditioner from single to double precision.",
+                     "preconditioner_threshold must lie in the range (1.0e-9,1.0e-1). Resetting to default value of 1.0e-1. ");
 
     If.RegisterInputKey("gw_residual_convergence_criterion", &lc.gw_threshold, 1.0e-14, 4.0e-4, 1.0e-6,
                      CHECK_AND_FIX, OPTIONAL,
-                     "The max value of the residual for unoccupied orbitals when performing a GW calculation.\n",
-                     "gw_residual_convergence_criterion must lie in the range (4.0e-04,1.0e-14). Resetting to default value of 4.0e-04.\n");
+                     "The max value of the residual for unoccupied orbitals when performing a GW calculation. ",
+                     "gw_residual_convergence_criterion must lie in the range (4.0e-04,1.0e-14). Resetting to default value of 4.0e-04. ");
 
     If.RegisterInputKey("gw_residual_fraction", &lc.gw_residual_fraction, 0.0, 1.0, 0.90,
                      CHECK_AND_FIX, OPTIONAL,
-                     "The residual value specified by gw_residual_convergence_criterion is applied to this fraction of the total spectrum.\n",
-                     "gw_residual_fraction must lie in the range (0.0,1.0). Resetting to default value of 0.90.\n");
+"The residual value specified by gw_residual_convergence_criterion is applied "
+"to this fraction of the total spectrum. ",
+                     "gw_residual_fraction must lie in the range (0.0,1.0). Resetting to default value of 0.90. ");
 
     If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, 1000.0, DBL_MAX, 100000.0,
                      CHECK_AND_FIX, OPTIONAL,
-                     "Ratio between target RMS for get_vh and RMS total potential.\n",
-                     "hartree_rms_ratio must be in the range (1000.0, 1000000.0). Resetting to default value of 100000.0.\n");
+                     "Ratio between target RMS for get_vh and RMS total potential. ",
+                     "hartree_rms_ratio must be in the range (1000.0, 1000000.0). Resetting to default value of 100000.0. ");
 
     If.RegisterInputKey("electric_field_magnitude", &lc.e_field, 0.0, DBL_MAX, 0.0,
                      CHECK_AND_TERMINATE, OPTIONAL,
-                     "Magnitude of external electric field.\n",
-                     "electric_field_magnitude must be a postive value.\n");
+                     "Magnitude of external electric field. ",
+                     "electric_field_magnitude must be a postive value. ");
 
     Ri::ReadVector<double> def_electric_field({{0.0,0.0,1.0}});
     Ri::ReadVector<double> electric_field;
     If.RegisterInputKey("electric_field_vector", &electric_field, &def_electric_field, 3, OPTIONAL,
-                     "Components of the electric field.\n",
-                     "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector.\n");
+                     "Components of the electric field. ",
+                     "You must specify a triplet of (X,Y,Z) dimensions for the electric field vector. ");
 
     If.RegisterInputKey("Emin", &lc.Emin, -100.0, 100.0, -6.0,
                      CHECK_AND_TERMINATE, OPTIONAL,
@@ -1025,31 +1038,31 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("neb_spring_constant", &lc.neb_spring_constant, 0.05, 3.0, 0.5,
                      CHECK_AND_TERMINATE, OPTIONAL,
                      "",
-                     "neb_spring_constant must be in the range (0.05, 3.0).\n");
+                     "neb_spring_constant must be in the range (0.05, 3.0). ");
 
     If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 0.6, 1.0, 0.8,
                      CHECK_AND_FIX, OPTIONAL,
                      "",
-                     "energy_cutoff_parameter must be in the range (0.6,1.0). Resetting to default value of 0.8.\n");
+                     "energy_cutoff_parameter must be in the range (0.6,1.0). Resetting to default value of 0.8. ");
 
     std::string Occup, Occdown;
     std::string Occ;
 
     If.RegisterInputKey("states_count_and_occupation_spin_up", &Occup, "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Occupation string for spin up states. Format is the same as for states_count_and_occupation.\nTotal number of states must match spin down occupation string.",
-                     "");
+                     "Occupation string for spin up states. Format is the same as for states_count_and_occupation. Total number of states must match spin down occupation string.",
+                     "", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("states_count_and_occupation_spin_down", &Occdown, "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Occupation string for spin down states. Format is the same as for states_count_and_occupation.\nTotal number of states must match spin up occupation string.",
-                     "");
+                     "Occupation string for spin down states. Format is the same as for states_count_and_occupation. Total number of states must match spin up occupation string.",
+                     "", OCCUPATION_OPTIONS);
 
     
     If.RegisterInputKey("states_count_and_occupation", &Occ, "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Occupation string for states. Format for a system with 240 electrons\nand 20 unoccupied states would be. \"120 2.0 20 0.0\"\n",
-                     "");
+                     "Occupation string for states. Format for a system with 240 electrons and 20 unoccupied states would be. \"120 2.0 20 0.0\" ",
+                     "", OCCUPATION_OPTIONS);
 
     If.RegisterInputKey("kpoint_distribution", &pelc.pe_kpoint, -INT_MAX, INT_MAX, -1,
                      CHECK_AND_FIX, OPTIONAL,

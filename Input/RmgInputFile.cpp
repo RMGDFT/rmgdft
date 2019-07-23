@@ -36,6 +36,9 @@ namespace po = boost::program_options;
 template void RmgInputFile::RegisterInputKey<int>(std::string, int *, int, int, int, bool, bool, const char *, const char *);
 template void RmgInputFile::RegisterInputKey<double>(std::string, double *, double, double, double, bool, bool, const char *, const char *);
 
+template void RmgInputFile::RegisterInputKey<int>(std::string, int *, int, int, int, bool, bool, const char *, const char *, int);
+template void RmgInputFile::RegisterInputKey<double>(std::string, double *, double, double, double, bool, bool, const char *, const char *, int);
+
 
 // Custom validators for boost program options. 
 namespace RmgInput {
@@ -91,44 +94,76 @@ RmgInputFile::RmgInputFile(char *inputfile, std::unordered_map<std::string, Inpu
 
 template <typename T>
 void RmgInputFile::RegisterInputKey(std::string KeyName, T *Readval, T Minval, T Maxval, T Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg) {
-    InputKey *NewKey = new InputKey(KeyName, Readval, Minval, Maxval, Defval, Fix, Required, helpmsg, errmsg);
+    InputKey *NewKey = new InputKey(KeyName, Readval, Minval, Maxval, Defval, Fix, Required, helpmsg, errmsg, 0);
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
 }
-
+template <typename T>
+void RmgInputFile::RegisterInputKey(std::string KeyName, T *Readval, T Minval, T Maxval, T Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group) {
+    InputKey *NewKey = new InputKey(KeyName, Readval, Minval, Maxval, Defval, Fix, Required, helpmsg, errmsg, group);
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
 void RmgInputFile::RegisterInputKey(std::string KeyName, bool *ReadVal, bool Defval, const char *helpmsg) {
-    InputKey *NewKey = new InputKey(KeyName, ReadVal, Defval, helpmsg);
+    InputKey *NewKey = new InputKey(KeyName, ReadVal, Defval, helpmsg, 0);
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
 }
-
+void RmgInputFile::RegisterInputKey(std::string KeyName, bool *ReadVal, bool Defval, const char *helpmsg, int group) {
+    InputKey *NewKey = new InputKey(KeyName, ReadVal, Defval, helpmsg, group);
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
 void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg) {
-    InputKey *NewKey = new InputKey(KeyName, Readstr, defstr, Fix, Required, helpmsg, errmsg);
+    InputKey *NewKey = new InputKey(KeyName, Readstr, defstr, Fix, Required, helpmsg, errmsg, 0);
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
 }
-
+void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group) {
+    InputKey *NewKey = new InputKey(KeyName, Readstr, defstr, Fix, Required, helpmsg, errmsg, group);
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
 void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, int *ReadVal, const char *defstr, bool Fix, bool Required, const std::unordered_map<std::string, int>& Allowed, const char *helpmsg, const char *errmsg) {
-    InputKey *NewKey = new InputKey(KeyName, Readstr, ReadVal, defstr, Fix, Required, Allowed, helpmsg, errmsg);
+    InputKey *NewKey = new InputKey(KeyName, Readstr, ReadVal, defstr, Fix, Required, Allowed, helpmsg, errmsg, 0);
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
+void RmgInputFile::RegisterInputKey(std::string KeyName, std::string *Readstr, int *ReadVal, const char *defstr, bool Fix, bool Required, const std::unordered_map<std::string, int>& Allowed, const char *helpmsg, const char *errmsg, int group) {
+    InputKey *NewKey = new InputKey(KeyName, Readstr, ReadVal, defstr, Fix, Required, Allowed, helpmsg, errmsg, group);
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
 }
 
 void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, RmgInput::ReadVector<int> *Defintvec, int count, bool Required, const char *helpmsg, const char *errmsg) {
-    InputKey *NewKey = new InputKey(KeyName, V, Defintvec, count, Required, helpmsg, errmsg);
+    InputKey *NewKey = new InputKey(KeyName, V, Defintvec, count, Required, helpmsg, errmsg, 0);
     if(!Required) {
-//        for(int i = 0;i < count;i++) NewKey->Vint.vals = Defintvec->vals;
-NewKey->Vint.vals = Defintvec->vals;
+        NewKey->Vint.vals = Defintvec->vals;
+    }
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
+void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<int> *V, RmgInput::ReadVector<int> *Defintvec, int count, bool Required, const char *helpmsg, const char *errmsg, int group) {
+    InputKey *NewKey = new InputKey(KeyName, V, Defintvec, count, Required, helpmsg, errmsg, group);
+    if(!Required) {
+        NewKey->Vint.vals = Defintvec->vals;
     }
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);
 }
 
 void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, int count, bool Required, const char *helpmsg, const char *errmsg) {
-    InputKey *NewKey = new InputKey(KeyName, V, Defdblvec, count, Required, helpmsg, errmsg);
+    InputKey *NewKey = new InputKey(KeyName, V, Defdblvec, count, Required, helpmsg, errmsg, 0);
     if(!Required) {
-//        for(int i = 0;i < count;i++) NewKey->Vdouble.vals = Defdblvec->vals;
-NewKey->Vdouble.vals = Defdblvec->vals;
+        NewKey->Vdouble.vals = Defdblvec->vals;
+    }
+    std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
+    InputMap.insert(NewEntry);
+}
+void RmgInputFile::RegisterInputKey(std::string KeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, int count, bool Required, const char *helpmsg, const char *errmsg, int group) {
+    InputKey *NewKey = new InputKey(KeyName, V, Defdblvec, count, Required, helpmsg, errmsg, group);
+    if(!Required) {
+        NewKey->Vdouble.vals = Defdblvec->vals;
     }
     std::pair <std::string, InputKey *> NewEntry(KeyName, NewKey);
     InputMap.insert(NewEntry);

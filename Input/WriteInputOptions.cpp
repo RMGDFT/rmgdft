@@ -28,6 +28,7 @@
 #include <string>
 #include <cfloat>
 #include <climits>
+#include <regex>
 #include <unordered_map>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
@@ -43,6 +44,33 @@
 #include "RmgInputFile.h"
 #include "InputOpts.h"
 
+
+void wordwrap(std::string const &input, size_t width, size_t indent)
+{ 
+
+    std::vector<std::string> lines;
+    boost::split(lines, input, boost::is_any_of("&"), boost::token_compress_on);
+
+//    for(auto line = lines.begin();line != lines.end(); ++line)
+    size_t last = lines.size() - 1;
+    for(size_t i=0;i < lines.size();i++)
+    {
+        std::istringstream in(lines[i]);
+        size_t current = indent;
+        std::string tstr;
+        while (in >> tstr)
+        {
+            if (current + tstr.size() > width) {
+                std::cout << "\n" << std::string(indent, ' ');
+                current = indent;
+            }
+            std::cout << tstr << ' ';
+            current += tstr.size() + 1;
+        }
+        std::cout << "\n";
+        if(i < last) std::cout << std::string(indent, ' ');
+    }
+}
 
 // Writes a key to stdout
 void WriteKeyStdout(InputKey *ik)
@@ -112,14 +140,11 @@ void WriteKeyStdout(InputKey *ik)
     {
         printf("%sDefault:%s      \"%s\"\n", pre, post, ik->Defstr);
         printf("%sAllowed:%s      ", pre, post);
-        int counter=0;
-        for(auto it = ik->Range.begin();it != ik->Range.end(); ++it)
-        {
-            printf("\"%s\"  ",it->first.c_str()); 
-            counter++;
-            if(!(counter % 4)) printf("\n                  ");
-        }
-        printf("\n");
+        std::string tstr;
+        for(auto it = ik->Range.begin();it != ik->Range.end(); ++it) tstr = tstr + "\"" + it->first + "\"   ";
+        boost::trim_right(tstr);
+        wordwrap(tstr, 84, 18);
+        //printf("\n");
     }
     if(ik->KeyType == typeid(RmgInput::ReadVector<int>).hash_code()) 
     {
@@ -132,11 +157,11 @@ void WriteKeyStdout(InputKey *ik)
         printf("%sDefault:%s      \"%s\"\n", pre, post, str.c_str());
     }
 
-    // Strip trailing whitespace and expand embedded new lines.
+    // Strip trailing whitespace
     std::string Description = std::string(ik->helpmsg);
     boost::trim_right(Description);
-    boost::replace_all(Description, "\n", "\n                  ");
-    printf("%sDescription:%s  %s\n", pre, post, Description.c_str());
+    printf("%sDescription:%s  ", pre, post);
+    wordwrap(Description, 84, 18);
     printf("\n");
 }
 

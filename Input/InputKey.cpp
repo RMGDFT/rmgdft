@@ -17,7 +17,7 @@
 // some means of tracking whether or not the memory needs to be freed in the des
 
 // ints
-InputKey::InputKey(std::string& NewKeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
 
     if(!ReadVal) {
         allocated = true;
@@ -32,11 +32,12 @@ InputKey::InputKey(std::string& NewKeyName, int *ReadVal, int Minval, int Maxval
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
     InputKey::KeyType = typeid(int).hash_code();
+    InputKey::grouping = group;
 
 }
 
 // doubles
-InputKey::InputKey(std::string& NewKeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
 
     if(!ReadVal) {
         allocated = true;
@@ -51,11 +52,12 @@ InputKey::InputKey(std::string& NewKeyName, double *ReadVal, double Minval, doub
     InputKey::helpmsg = helpmsg;
     InputKey::errmsg = errmsg;
     InputKey::KeyType = typeid(double).hash_code();
+    InputKey::grouping = group;
 
 }
 
 // booleans
-InputKey::InputKey(std::string& NewKeyName, bool *ReadVal, bool Defval, const char *helpmsg) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, bool *ReadVal, bool Defval, const char *helpmsg, int group) : KeyName(NewKeyName) {
 
     if(!ReadVal) {
         allocated = true;
@@ -67,11 +69,12 @@ InputKey::InputKey(std::string& NewKeyName, bool *ReadVal, bool Defval, const ch
     InputKey::Defboolval = Defval;
     InputKey::helpmsg = helpmsg;
     InputKey::KeyType = typeid(bool).hash_code();
+    InputKey::grouping = group;
 
 }
 
 // Regular string
-InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
 
     if(ReadStr) {
         InputKey::Readstr = *ReadStr;
@@ -84,11 +87,12 @@ InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, const char *De
     InputKey::errmsg = errmsg;
     InputKey::MapPresent = false;
     InputKey::KeyType = typeid(std::string).hash_code();
+    InputKey::grouping = group;
 
 }
 
 // Enumerated string
-InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
 
     if(ReadStr) {
         InputKey::Readstr = *ReadStr;
@@ -103,11 +107,12 @@ InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, int *ReadVal, 
     InputKey::errmsg = errmsg;
     InputKey::MapPresent = true;
     InputKey::KeyType = typeid(std::string).hash_code();
+    InputKey::grouping = group;
 
 }
 
 // Integer vector
-InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
 
     if(!V) {
         allocated = true;
@@ -121,10 +126,11 @@ InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<int> *V , RmgIn
     InputKey::count = count;
     InputKey::Defintvec = *Defintvec;
     InputKey::KeyType = typeid(RmgInput::ReadVector<int>).hash_code();
+    InputKey::grouping = group;
 }
 
 // Double vector
-InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<double> *V,  RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<double> *V,  RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
 
     if(!V) {
         allocated = true;
@@ -138,6 +144,7 @@ InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<double> *V,  Rm
     InputKey::count = count;
     InputKey::Defdblvec = *Defdblvec;
     InputKey::KeyType = typeid(RmgInput::ReadVector<double>).hash_code();
+    InputKey::grouping = group;
 
 }
 

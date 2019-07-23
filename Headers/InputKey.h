@@ -20,20 +20,20 @@ namespace RmgInput {
 class InputKey {
     public:
         // Scalar types
-        InputKey(std::string& NewKeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
-        InputKey(std::string& NewKeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
-        InputKey(std::string& NewKeyName, bool *ReadVal, bool Defval, const char *helpmsg);
+        InputKey(std::string& NewKeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group);
+        InputKey(std::string& NewKeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group);
+        InputKey(std::string& NewKeyName, bool *ReadVal, bool Defval, const char *helpmsg, int group);
 
         // Strings
-        InputKey(std::string& NewKeyName, std::string *ReadStr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg);
+        InputKey(std::string& NewKeyName, std::string *ReadStr, const char *defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group);
 
         // Enumerated strings
-        InputKey(std::string& NewKeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg);
+        InputKey(std::string& NewKeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg, int group);
 
 
         // Vectors
-        InputKey(std::string& NewKeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg);
-        InputKey(std::string& NewKeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg);
+        InputKey(std::string& NewKeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg, int group);
+        InputKey(std::string& NewKeyName, RmgInput::ReadVector<double> *V, RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg, int group);
         
         // Reads stored value
         std::string Print(void);
@@ -67,6 +67,7 @@ class InputKey {
         const char *Defstr;
         const char* helpmsg;
         const char *errmsg;
+        int grouping;
 };
 
 #endif
