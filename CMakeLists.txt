@@ -259,6 +259,11 @@ add_executable(${rmg-on} ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h
 add_executable(on-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 
+# qmcpack converter
+add_executable(RmgToQMC Interfaces/RmgToQMC.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+target_link_libraries(RmgToQMC Interfaces)
+target_link_libraries(RmgToQMC Interfaces ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY_RELEASE})
+target_link_libraries(RmgToQMC ${HDF5_CXX_LIBRARY_hdf5_cpp} ${HDF5_CXX_LIBRARY_hdf5} ${Boost_LIBRARIES} ${FFTW_LIBRARIES})
 
 
 
@@ -641,6 +646,7 @@ add_subdirectory (Misc)
 add_subdirectory (US_PP) 
 add_subdirectory (zfp) 
 add_subdirectory (spglib) 
+add_subdirectory (Interfaces)
 if(NOT CRAY_XK)
     add_subdirectory (scalapack) 
 endif()
@@ -679,6 +685,7 @@ link_directories (${RMG_BINARY_DIR}/MG)
 link_directories (${RMG_BINARY_DIR}/Misc)
 link_directories (${RMG_BINARY_DIR}/zfp)
 link_directories (${RMG_BINARY_DIR}/spglib)
+link_directories (${RMG_BINARY_DIR}/Interfaces)
 if(NOT CRAY_XK)
     link_directories (${RMG_BINARY_DIR}/scalapack)
 endif()
