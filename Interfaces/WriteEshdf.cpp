@@ -1,5 +1,4 @@
 #include "WriteEshdf.h"
-#include "XmlRep.h"
 #include "FftContainer.h"
 #include "HdfHelpers.h"
 #include <sstream>
@@ -74,6 +73,7 @@ void eshdfFile::handleSpinGroup(int kidx, int spin_idx, hid_t groupLoc, double& 
 
   vector<double> eigvals;
   nocc = 0.0;
+
   for (int chIdx = 0; chIdx < ct.num_states; chIdx++)
   {
       //cout << "Working on state " << stateCounter << endl;
@@ -137,6 +137,9 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
 //        rmg_error_handler (__FILE__,__LINE__,"Grid size mismatch.");
 //    }
 
+    eig_value = H.eig;
+    wf_occ = H.occ;
+
     int factor = 2;
     if(ct.is_gamma) factor = 1;
     double *tbuf = new double[cont.fullSize * factor];
@@ -144,7 +147,7 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
     if(rsize != cont.fullSize * sizeof(double) * factor)
         rmg_error_handler (__FILE__,__LINE__,"problem reading wf file");
     close(fhand);
-    for(int idx=0;idx < cont.fullSize;idx++) values[idx] = tbuf[idx];
+    for(int idx=0;idx < cont.fullSize;idx++) values.push_back(tbuf[idx]);
     delete [] tbuf;
 
   const double fixnorm = 1/std::sqrt(static_cast<double>(cont.fullSize));
@@ -227,19 +230,19 @@ void eshdfFile::writeBoilerPlate(const string& appName) {
   writeFormat();
 }
 
-void eshdfFile::writeSupercell(const xmlNode& qboxSample) {
-  // grab the primitive translation vectors from the atomset tag's attributes and put the entries in the vector ptvs
-  const xmlNode& atomset = qboxSample.getChild("atomset");
-  const xmlNode& unit_cell = atomset.getChild("unit_cell");
-
-  stringstream ss;
-  ss << unit_cell.getAttribute("a") << "  " << unit_cell.getAttribute("b") << "  " << unit_cell.getAttribute("c");
+void eshdfFile::writeSupercell(void) {
 
   vector<double> ptvs;
   double temp;
-  while (ss >> temp) {
-    ptvs.push_back(temp);
-  }
+  ptvs.push_back(Rmg_L.get_a0(0));
+  ptvs.push_back(Rmg_L.get_a0(1));
+  ptvs.push_back(Rmg_L.get_a0(2));
+  ptvs.push_back(Rmg_L.get_a1(0));
+  ptvs.push_back(Rmg_L.get_a1(1));
+  ptvs.push_back(Rmg_L.get_a1(2));
+  ptvs.push_back(Rmg_L.get_a2(0));
+  ptvs.push_back(Rmg_L.get_a2(1));
+  ptvs.push_back(Rmg_L.get_a2(2));
 
   // write the ptvs to the supercell group of the hdf file
   hid_t supercell_group = makeHDFGroup("supercell", file);
@@ -248,13 +251,12 @@ void eshdfFile::writeSupercell(const xmlNode& qboxSample) {
 }
 
 
-void eshdfFile::writeAtoms(const xmlNode& qboxSample) {
-  const xmlNode& atomset = qboxSample.getChild("atomset");
+void eshdfFile::writeAtoms(void) {
 
   //make group
   hid_t atoms_group = makeHDFGroup("atoms", file);
   
-  map<string, int> SpeciesNameToInt;  
+  //map<string, int> SpeciesNameToInt;  
   //go through each species, extract: 
   //   atomic_number, mass, name, pseudopotential and valence_charge
   //   then write to a file, also set up mapping between species name and number
@@ -286,8 +288,7 @@ void eshdfFile::writeAtoms(const xmlNode& qboxSample) {
   // RMG porting note - are positions sequentially stored 3 doubles per atom?
   for (int i = 0; i < ct.num_ions; i++) {
       ION *iptr = &ct.ions[i];
-      const xmlNode& atNode = atomset.getChild(i);
-      species_ids.push_back(SpeciesNameToInt[atNode.getAttribute("species")]);
+      species_ids.push_back(iptr->species);
 
 //    RMG porting note -- this adds a triplet to the vector
 //      atNode.getChild("position").getValue(positions);
@@ -303,8 +304,7 @@ void eshdfFile::writeAtoms(const xmlNode& qboxSample) {
   writeNumsToHDF("number_of_atoms", ct.num_ions, atoms_group);
 }
 
-void eshdfFile::writeElectrons(const xmlNode& qboxSample) {
-  const xmlNode& wfnNode = qboxSample.getChild("wavefunction");
+void eshdfFile::writeElectrons(void) {
   int nspin, nel;
 
   //wfnNode.getAttribute("nspin", nspin);
@@ -321,45 +321,7 @@ void eshdfFile::writeElectrons(const xmlNode& qboxSample) {
 
   fftContainer fftCont(nx,ny,nz);
 
-  vector<kpoint> kpts;
-  map<kpoint, const xmlNode*> kptToUpNode;
-  map<kpoint, const xmlNode*> kptToDnNode;
 
-  for (int i = 0; i < wfnNode.getNumChildren(); i++) {
-    if (wfnNode.getChild(i).getName() == "slater_determinant") {
-      const xmlNode& sdNode = wfnNode.getChild(i);
-      int spinIdx = sdNode.getAttributeIndex("spin");
-      string species;
-      if (spinIdx >= 0) {
-	species = sdNode.getAttribute(spinIdx);
-      } else {
-	species = "up";
-      }
-
-      kpoint kpt;
-      stringstream ss;
-      ss.str(sdNode.getAttribute("kpoint"));
-      ss >> kpt.kx;
-      ss >> kpt.ky;
-      ss >> kpt.kz;
-
-      bool newKpt = true;
-      for (int j = 0; j < kpts.size(); j++) {
-	if (kpts[j] == kpt) {
-	  newKpt = false;
-	}
-      }
-      if (newKpt) {
-	kpts.push_back(kpt);
-      }
-      
-      if (species == "up") {
-	kptToUpNode[kpt] = std::addressof(sdNode);
-      } else {
-	kptToDnNode[kpt] = std::addressof(sdNode);
-      }
-    }
-  }
   hid_t electrons_group = makeHDFGroup("electrons", file);
   writeNumsToHDF("number_of_kpoints", ct.num_kpts, electrons_group);
   writeNumsToHDF("number_of_spins", nspin, electrons_group);
@@ -372,9 +334,9 @@ void eshdfFile::writeElectrons(const xmlNode& qboxSample) {
     kptElemName << "kpoint_" << i;
     hid_t kpt_group = makeHDFGroup(kptElemName.str(), electrons_group);
     vector<double> kvector;
-    kvector.push_back(kpts[i].kx);
-    kvector.push_back(kpts[i].ky);
-    kvector.push_back(kpts[i].kz);
+    kvector.push_back(ct.kp[i].kpt[0]);
+    kvector.push_back(ct.kp[i].kpt[1]);
+    kvector.push_back(ct.kp[i].kpt[2]);
     //writeNumsToHDF("numsym", 1, kpt_group);
     //writeNumsToHDF("symgroup", 1, kpt_group);
     writeNumsToHDF("reduced_k", kvector, kpt_group);
@@ -420,8 +382,8 @@ void eshdfFile::writeElectrons(const xmlNode& qboxSample) {
       ndn = nup;
     }
 
-    avgNup += nup / static_cast<double>(kpts.size());
-    avgNdn += ndn / static_cast<double>(kpts.size());
+    avgNup += nup / static_cast<double>(ct.num_kpts);
+    avgNdn += ndn / static_cast<double>(ct.num_kpts);
   }
   vector<int> nels;
   nels.push_back(static_cast<int>(std::floor(avgNup+0.1)));

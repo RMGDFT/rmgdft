@@ -2,7 +2,6 @@
 #include <string>
 #include <fstream>
 #include <sys/stat.h>
-#include "XmlRep.h"
 #include "WriteEshdf.h"
 
 // RMG includes
@@ -40,6 +39,11 @@ inline bool file_exists (const std::string& name) {
   return (stat (name.c_str(), &buffer) == 0); 
 }
 
+// Pointer to Kpoint class arrays for gamma and non-gamma
+Kpoint<double> **Kptr_g;
+Kpoint<std::complex<double> > **Kptr_c;
+
+
 int main(int argc, char* argv[]) {
 
    // Set branch type and save argc and argv in control structure
@@ -68,19 +72,59 @@ int main(int argc, char* argv[]) {
    InitIo (argc, argv, ControlMap);
    MPI_Barrier(MPI_COMM_WORLD);
 
+    /* Initialize some k-point stuff */
+    Kptr_g = new Kpoint<double> * [ct.num_kpts_pe];
+    Kptr_c = new Kpoint<std::complex<double> > * [ct.num_kpts_pe];
+
+    ct.is_gamma = true;
+    for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
+        double v1, v2, v3;
+        v1 = twoPI * ct.kp[kpt].kpt[0] / Rmg_L.get_xside();
+        v2 = twoPI * ct.kp[kpt].kpt[1] / Rmg_L.get_yside();
+        v3 = twoPI * ct.kp[kpt].kpt[2] / Rmg_L.get_zside();
+
+        ct.kp[kpt].kvec[0] = v1;
+        ct.kp[kpt].kvec[1] = v2;
+        ct.kp[kpt].kvec[2] = v3;
+        ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
+
+        if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
+    }
+
+    if(!ct.is_gamma)
+    {
+        ct.is_use_symmetry = 1;
+    }
+
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+
+        int kpt1 = kpt + pct.kstart;
+        if(ct.is_gamma) {
+
+            // Gamma point
+            Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt1].kpt, ct.kp[kpt1].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+
+        }
+        else {
+
+            // General case
+            Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt1].kpt, ct.kp[kpt1].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+
+        }
+        ct.kp[kpt].kidx = kpt;
+    }
+
+
+   string ofname = "rmgEshdf.h5";
+   eshdfFile outFile(ofname);
+   outFile.writeBoilerPlate("rmg");
+   outFile.writeSupercell();
+   outFile.writeAtoms();
+   outFile.writeElectrons();
+
    /*Exit MPI */
    MPI_Finalize ();
    RmgTerminateThreads();
    exit(0);
-
-  ifstream is(fname.c_str());
-  xmlNode qboxSampleXml(&is, 0, true);
-
-
-  string ofname = "qboxEshdf.h5";
-  eshdfFile outFile(ofname);
-  outFile.writeBoilerPlate("rmg");
-  outFile.writeSupercell(qboxSampleXml);
-  outFile.writeAtoms(qboxSampleXml);
-  outFile.writeElectrons(qboxSampleXml);
 }

@@ -17,7 +17,6 @@
 #include "Kpoint.h"
 #include "InputKey.h"
 
-class xmlNode;
 class fftContainer;
 
 class eshdfFile {
@@ -41,9 +40,9 @@ public:
   ~eshdfFile();
 
   void writeBoilerPlate(const std::string& appName);
-  void writeSupercell(const xmlNode& qboxSample);
-  void writeAtoms(const xmlNode& qboxSample);
-  void writeElectrons(const xmlNode& qboxSample);
+  void writeSupercell(void);
+  void writeAtoms(void);
+  void writeElectrons(void);
 };
 
 #endif
