@@ -4,6 +4,22 @@
 #include "HdfHelpers.h"
 #include <sstream>
 #include <map>
+#include <fcntl.h>
+#include <sys/stat.h>
+
+
+// RMG includes
+#include "const.h"
+#include "RmgTimer.h"
+#include "RmgException.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "rmg_error.h"
+#include "transition.h"
+#include "Kpoint.h"
+#include "InputKey.h"
+
 using namespace std;
 using namespace hdfHelper;
 
@@ -52,34 +68,32 @@ int eshdfFile::wrapped(int i, int size) const {
   }
 }
 
-double eshdfFile::getOccupation(const xmlNode* nd) const {
-  double result = 0.0;
-  vector<double> occupancies;
-  const xmlNode& densMat = nd->getChild("density_matrix");
-  densMat.getValue(occupancies);
-  for (int i = 0; i < occupancies.size(); i++) {
-    result += occupancies[i];
-  }
-  return result;
-}
 
-void eshdfFile::handleSpinGroup(const xmlNode* nd, hid_t groupLoc, double& nocc, fftContainer& cont) {
-  nocc = getOccupation(nd);
-  int stateCounter = 0;
+// This handles all orbitals for one spin state and kpoint
+void eshdfFile::handleSpinGroup(int kidx, int spin_idx, hid_t groupLoc, double& nocc, fftContainer& cont) {
+
   vector<double> eigvals;
-
-  for (int chIdx = 0; chIdx < nd->getNumChildren(); chIdx++) {
-    if (nd->getChild(chIdx).getName() == "grid_function") {
+  nocc = 0.0;
+  for (int chIdx = 0; chIdx < ct.num_states; chIdx++)
+  {
       //cout << "Working on state " << stateCounter << endl;
       stringstream statess;
-      statess << "state_" << stateCounter;
+      statess << "state_" << chIdx;
       hid_t state_group = makeHDFGroup(statess.str(), groupLoc);
       
-      // HACK_HACK_HACK!!!
-      eigvals.push_back(-5000.0+stateCounter);
 
-      const xmlNode& eigFcnNode = nd->getChild(chIdx);
-      readInEigFcn(eigFcnNode, cont);
+      std::string wfname(ct.infile);
+      wfname = wfname + "_spin" + std::to_string(spin_idx) +
+                        "_kpt" + std::to_string(kidx) +
+                        "_wf" + std::to_string(chIdx);
+
+      double eig_val, wf_occ;
+      readInEigFcn(wfname, eig_val, wf_occ, cont);
+
+      // RMG Porting note - need to know QMCPACK units
+      eigvals.push_back(eig_val);
+      nocc += wf_occ;
+
       // write eigfcn to proper place
       hsize_t psig_dims[]={static_cast<hsize_t>(cont.fullSize),2};
 
@@ -88,32 +102,58 @@ void eshdfFile::handleSpinGroup(const xmlNode* nd, hid_t groupLoc, double& nocc,
 	temp.push_back(cont.kspace[i][0]);
 	temp.push_back(cont.kspace[i][1]);
       }
-
       writeNumsToHDF("psi_g", temp, state_group, 2, psig_dims);
-      stateCounter++;
-    }
   }
-  writeNumsToHDF("number_of_states", stateCounter, groupLoc);
+  writeNumsToHDF("number_of_states", ct.num_states, groupLoc);
   writeNumsToHDF("eigenvalues", eigvals, groupLoc);
 }
 
-void eshdfFile::readInEigFcn(const xmlNode& nd, fftContainer& cont) {
-  const string type = nd.getAttribute("type");
-  const string encoding = nd.getAttribute("encoding");
+void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_occ, fftContainer& cont) {
+//  const string type = nd.getAttribute("type");
+//  const string encoding = nd.getAttribute("encoding");
   
-  if (encoding != "text") {
-    cout << "Don't yet know how to handle encoding of wavefunction values other than text" << endl;
-    exit(1);
-  }
+//  if (encoding != "text") {
+//    cout << "Don't yet know how to handle encoding of wavefunction values other than text" << endl;
+//    exit(1);
+//  }
+//  RMG porting note - internal data
   
   vector<double> values;
-  nd.getValue(values);
+  OrbitalHeader H;
+
+//  nd.getValue(values);
+// read in the eigenfunction from file wfname along with header info
+    int fhand = open(wfname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
+    if (fhand < 0) {
+        rmg_printf("Can't open restart file %s", wfname.c_str());
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+    }
+    size_t rsize = read (fhand, &H, sizeof(OrbitalHeader));
+    if(rsize != sizeof(OrbitalHeader))
+        rmg_error_handler (__FILE__,__LINE__,"error reading");
+
+//    if((H.nx != (size_t)sizes_c[0]) || (H.ny != (size_t)sizes_c[1]) || (H.nz != (size_t)sizes_c[2])) {
+//        rmg_printf("Grid size mismatch. %d  %d  %d  %lu  %lu  %lu", sizes_c[0], sizes_c[1], sizes_c[2], H.nx, H.ny, H.nz);
+//        rmg_error_handler (__FILE__,__LINE__,"Grid size mismatch.");
+//    }
+
+    int factor = 2;
+    if(ct.is_gamma) factor = 1;
+    double *tbuf = new double[cont.fullSize * factor];
+    rsize = read (fhand, tbuf, cont.fullSize * sizeof(double) * factor);
+    if(rsize != cont.fullSize * sizeof(double) * factor)
+        rmg_error_handler (__FILE__,__LINE__,"problem reading wf file");
+    close(fhand);
+    for(int idx=0;idx < cont.fullSize;idx++) values[idx] = tbuf[idx];
+    delete [] tbuf;
+
   const double fixnorm = 1/std::sqrt(static_cast<double>(cont.fullSize));
-  if (type == "complex") {
+  if (!ct.is_gamma) {
     int index = 0;
     for (int ix = 0; ix < cont.getNx(); ix++) {
       for (int iy = 0; iy < cont.getNy(); iy++) {
 	for (int iz = 0; iz < cont.getNz(); iz++) {
+          // RMG porting note -- C or Fortran storage order again?
 	  const int qbx = cont.getQboxIndex(ix,iy,iz);
 	  cont.rspace[index][0] = values[2*qbx]*fixnorm;
 	  cont.rspace[index][1] = values[2*qbx+1]*fixnorm;
@@ -121,7 +161,7 @@ void eshdfFile::readInEigFcn(const xmlNode& nd, fftContainer& cont) {
 	}
       }
     }
-  } else if (type == "double") {
+  } else {
     int index = 0;
     for (int ix = 0; ix < cont.getNx(); ix++) {
       for (int iy = 0; iy < cont.getNy(); iy++) {
@@ -170,12 +210,10 @@ void eshdfFile::writeFormat() {
   writeStringToHDF("format", "ES-HDF", file);
 }
 
-void eshdfFile::writeBoilerPlate(const string& appName, const xmlNode& qboxSample) {
-  const xmlNode& description = qboxSample.getChild("description");
-  string desString = description.getValue();
-  int versionStart = desString.find("qbox-");
-  versionStart += 5;
-  string versionStr = desString.substr(versionStart);
+void eshdfFile::writeBoilerPlate(const string& appName) {
+  // Fix this up later
+  string desString("RMG");
+  string versionStr("4.0.0");
   
   const int firstDotIdx = versionStr.find_first_of('.');
   const int secondDotIdx = versionStr.find_last_of('.');
@@ -220,63 +258,66 @@ void eshdfFile::writeAtoms(const xmlNode& qboxSample) {
   //go through each species, extract: 
   //   atomic_number, mass, name, pseudopotential and valence_charge
   //   then write to a file, also set up mapping between species name and number
-  int speciesNum = 0;
-  for (int i = 0; i < atomset.getNumChildren(); i++) {
-    if (atomset.getChild(i).getName() == "species") {
-      const xmlNode& species = atomset.getChild(i);
+  for (int speciesNum = 0; speciesNum < ct.num_species; speciesNum++) {
 
-      string spName = species.getAttribute("name");
-      SpeciesNameToInt[spName] = speciesNum;
+    SPECIES *sp = &ct.sp[speciesNum];
+    // RMG porting note - Not used but is this the full name of the element?
+    //string spName = species.getAttribute("name");
+    //SpeciesNameToInt[spName] = speciesNum;
+    //SpeciesNameToInt[spName] = speciesNum;
+    string name(sp->atomic_symbol);
+    string pseudopotential(sp->pseudo_filename);
 
-      int atomic_number;
-      species.getChild("atomic_number").getValue(atomic_number);
-      double mass;
-      species.getChild("mass").getValue(mass);
-      string name = species.getChild("symbol").getValue();
-      int val_charge;
-      species.getChild("norm_conserving_pseudopotential").getChild("valence_charge").getValue(val_charge);
-
-      stringstream gname;
-      gname << "species_" << speciesNum;
-      hid_t species_group = makeHDFGroup(gname.str(), atoms_group);
-      writeNumsToHDF("atomic_number", atomic_number, species_group);
-      writeNumsToHDF("mass", mass, species_group);
-      writeNumsToHDF("valence_charge", val_charge, species_group);
-      writeStringToHDF("name", name, species_group);
-      writeStringToHDF("pseudopotential", "unknown", species_group);
-      speciesNum++;
-    }
+    stringstream gname;
+    gname << "species_" << speciesNum;
+    hid_t species_group = makeHDFGroup(gname.str(), atoms_group);
+    writeNumsToHDF("atomic_number", sp->atomic_number, species_group);
+    writeNumsToHDF("mass", sp->atomic_mass, species_group);
+    writeNumsToHDF("valence_charge", sp->zvalence, species_group);
+    writeStringToHDF("name", name, species_group);
+    writeStringToHDF("pseudopotential", pseudopotential, species_group);
+    speciesNum++;
   }
-  writeNumsToHDF("number_of_species", speciesNum, atoms_group);
+  writeNumsToHDF("number_of_species", ct.num_species, atoms_group);
   
   // go through atoms and extract their position and type 
   std::vector<int> species_ids;
   std::vector<double> positions;
-  hsize_t atNum = 0;
-  for (int i = 0; i < atomset.getNumChildren(); i++) {
-    if (atomset.getChild(i).getName() == "atom") {
+  // RMG porting note - are positions sequentially stored 3 doubles per atom?
+  for (int i = 0; i < ct.num_ions; i++) {
+      ION *iptr = &ct.ions[i];
       const xmlNode& atNode = atomset.getChild(i);
       species_ids.push_back(SpeciesNameToInt[atNode.getAttribute("species")]);
-      atNode.getChild("position").getValue(positions);
-      atNum++;
-    }
+
+//    RMG porting note -- this adds a triplet to the vector
+//      atNode.getChild("position").getValue(positions);
+
+      // RMG porting note - need to clarify if these are cell relative or absolute coordinates
+      positions.push_back(iptr->crds[0]);
+      positions.push_back(iptr->crds[1]);
+      positions.push_back(iptr->crds[2]);
   }
-  hsize_t dims[]={atNum,3};  
+  hsize_t dims[]={ct.num_ions,3};  
   writeNumsToHDF("positions", positions, atoms_group, 2, dims);
   writeNumsToHDF("species_ids", species_ids, atoms_group);
-  writeNumsToHDF("number_of_atoms", static_cast<int>(atNum), atoms_group);
+  writeNumsToHDF("number_of_atoms", ct.num_ions, atoms_group);
 }
 
 void eshdfFile::writeElectrons(const xmlNode& qboxSample) {
   const xmlNode& wfnNode = qboxSample.getChild("wavefunction");
   int nspin, nel;
-  wfnNode.getAttribute("nspin", nspin);
-  wfnNode.getAttribute("nel", nel);
-  const xmlNode& gridNode = wfnNode.getChild("grid");
-  int nx, ny, nz;
-  gridNode.getAttribute("nx", nx);
-  gridNode.getAttribute("ny", ny);
-  gridNode.getAttribute("nz", nz);
+
+  //wfnNode.getAttribute("nspin", nspin);
+  nspin = (int)(ct.spin_flag + 1);
+
+  //wfnNode.getAttribute("nel", nel);
+  // RMG porting note - In RMG this is total not per spin state
+  nel = (int)ct.nel;
+
+  // RMG porting note, C or Fortran order?
+  int nx = Rmg_G->get_NX_GRID(1);
+  int ny = Rmg_G->get_NY_GRID(1);
+  int nz = Rmg_G->get_NZ_GRID(1);
 
   fftContainer fftCont(nx,ny,nz);
 
@@ -320,13 +361,13 @@ void eshdfFile::writeElectrons(const xmlNode& qboxSample) {
     }
   }
   hid_t electrons_group = makeHDFGroup("electrons", file);
-  writeNumsToHDF("number_of_kpoints", static_cast<int>(kpts.size()), electrons_group);
+  writeNumsToHDF("number_of_kpoints", ct.num_kpts, electrons_group);
   writeNumsToHDF("number_of_spins", nspin, electrons_group);
 
   double avgNup = 0.0;
   double avgNdn = 0.0;
   // go through kpt by kpt and write 
-  for (int i = 0; i < kpts.size(); i++) {
+  for (int i = 0; i < ct.num_kpts; i++) {
     stringstream kptElemName;
     kptElemName << "kpoint_" << i;
     hid_t kpt_group = makeHDFGroup(kptElemName.str(), electrons_group);
@@ -337,7 +378,10 @@ void eshdfFile::writeElectrons(const xmlNode& qboxSample) {
     //writeNumsToHDF("numsym", 1, kpt_group);
     //writeNumsToHDF("symgroup", 1, kpt_group);
     writeNumsToHDF("reduced_k", kvector, kpt_group);
-    writeNumsToHDF("weight", 1.0/static_cast<double>(kpts.size()), kpt_group); 
+
+//    writeNumsToHDF("weight", 1.0/static_cast<double>(kpts.size()), kpt_group); 
+    // RMG porting note - all kpoints have the same weight is this right?
+    writeNumsToHDF("weight", ct.kp[i].kweight, kpt_group); 
 
     if (i == 0) {
       // figure out the order of the g-vectors
@@ -367,14 +411,11 @@ void eshdfFile::writeElectrons(const xmlNode& qboxSample) {
     double ndn = 0;
 
     hid_t up_spin_group = makeHDFGroup("spin_0", kpt_group);
-    const xmlNode* upnd = kptToUpNode[kpts[i]];    
-    handleSpinGroup(upnd, up_spin_group, nup, fftCont);
-
+    handleSpinGroup(i, nspin-1, up_spin_group, nup, fftCont);
 
     if (nspin == 2) {
       hid_t dn_spin_group = makeHDFGroup("spin_1", kpt_group);
-      const xmlNode* dnnd = kptToDnNode[kpts[i]];
-      handleSpinGroup(dnnd, dn_spin_group, ndn, fftCont);
+      handleSpinGroup(i, nspin-1, dn_spin_group, ndn, fftCont);
     } else {
       ndn = nup;
     }

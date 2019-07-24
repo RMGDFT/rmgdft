@@ -338,5 +338,13 @@ typedef struct
     
 } ORBITAL_PAIR;
 
-
+typedef struct
+{
+    size_t nx;
+    size_t ny;
+    size_t nz;
+    int spin;
+    double eig;
+    double occ;
+} OrbitalHeader;
 #endif

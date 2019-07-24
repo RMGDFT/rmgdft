@@ -261,9 +261,10 @@ add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/ma
 
 # qmcpack converter
 add_executable(RmgToQMC Interfaces/RmgToQMC.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-target_link_libraries(RmgToQMC Interfaces)
-target_link_libraries(RmgToQMC Interfaces ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY_RELEASE})
-target_link_libraries(RmgToQMC ${HDF5_CXX_LIBRARY_hdf5_cpp} ${HDF5_CXX_LIBRARY_hdf5} ${Boost_LIBRARIES} ${FFTW_LIBRARIES})
+target_link_libraries(RmgToQMC Interfaces Misc Input RmgLib XC Input US_PP RMG_Common Finite_diff InternalPseudo RMG_Subdiag ${FFTW_LIBRARIES} ${NUMA_LIBRARIES} symspg_static zfp)
+#target_link_libraries(RmgToQMC Interfaces RmgLib ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY_RELEASE} ${Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE} ${MPI_CXX_LIBRARIES})
+target_link_libraries(RmgToQMC Interfaces RmgLib Misc ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY_RELEASE} ${Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE} ${Boost_FILESYSTEM_LIBRARY_RELEASE} ${Boost_THREAD_LIBRARY_RELEASE} ${Boost_IOSTREAMS_LIBRARY_RELEASE} ${MPI_CXX_LIBRARIES} scalapack)
+target_link_libraries(RmgToQMC Misc ${HDF5_CXX_LIBRARY_hdf5_cpp} ${HDF5_CXX_LIBRARY_hdf5} ${Boost_LIBRARIES} ${FFTW_LIBRARIES})
 
 
 

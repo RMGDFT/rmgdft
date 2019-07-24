@@ -16,6 +16,16 @@
 #include "transition.h"
 #include "Kpoint.h"
 #include "InputKey.h"
+#include "rmgthreads.h"
+
+/* Main control structure which is declared extern in main.h so any module */
+/* may access it.                                                        */
+CONTROL ct;
+
+/* PE control structure which is also declared extern in main.h */
+PE_CONTROL pct;
+
+std::unordered_map<std::string, InputKey *> ControlMap;
 
 using namespace std;
 
@@ -31,17 +41,37 @@ inline bool file_exists (const std::string& name) {
 }
 
 int main(int argc, char* argv[]) {
-  vector<string> vecParams;
-  convertToVecStrings(argc, argv, vecParams);
-  string fname;
-  for (int i = 0; i < vecParams.size(); i++) {
-    // in principle check for other flags here
-    fname = vecParams[i];
-  }
-  if (file_exists(fname) == false) {
-    cout << "must specify a valid rmg input file name as an argument" << endl;
-    exit(1);
-  }
+
+   // Set branch type and save argc and argv in control structure
+   ct.rmg_branch = RMG_TO_QMC;
+   ct.argc = argc;
+   ct.argv = argv;
+
+   // RMG setup functions will use multiple cores is this is not set
+   setenv("OMP_NUM_THREADS", "1", true);
+   setenv("OMP_RMG_THREADS", "1", true);
+
+   vector<string> vecParams;
+   convertToVecStrings(argc, argv, vecParams);
+   string fname;
+   for (int i = 0; i < vecParams.size(); i++) {
+     // in principle check for other flags here
+     fname = vecParams[i];
+   }
+   if (file_exists(fname) == false) {
+     cout << "must specify a valid rmg input file name as an argument" << endl;
+     exit(1);
+   }
+
+   /* Initialize all I/O including MPI group comms */
+   /* Also reads control and pseudopotential files*/
+   InitIo (argc, argv, ControlMap);
+   MPI_Barrier(MPI_COMM_WORLD);
+
+   /*Exit MPI */
+   MPI_Finalize ();
+   RmgTerminateThreads();
+   exit(0);
 
   ifstream is(fname.c_str());
   xmlNode qboxSampleXml(&is, 0, true);
@@ -49,7 +79,7 @@ int main(int argc, char* argv[]) {
 
   string ofname = "qboxEshdf.h5";
   eshdfFile outFile(ofname);
-  outFile.writeBoilerPlate("qbox", qboxSampleXml);
+  outFile.writeBoilerPlate("rmg");
   outFile.writeSupercell(qboxSampleXml);
   outFile.writeAtoms(qboxSampleXml);
   outFile.writeElectrons(qboxSampleXml);

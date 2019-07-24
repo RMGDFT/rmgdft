@@ -43,6 +43,7 @@
 #define         RMG_BASE    0
 #define         RMG_NEGF    1
 #define         RMG_ON      2
+#define         RMG_TO_QMC  3 
 
 // Discretization types
 #define         MEHRSTELLEN_DISCRETIZATION      0

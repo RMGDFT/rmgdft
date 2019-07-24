@@ -535,7 +535,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     ct.poi_parm.levels = maxlevel;
 
     // Write a copy of the options file
-    if(pct.imgpe == 0) {
+    if((pct.imgpe == 0)  && (ct.rmg_branch != RMG_TO_QMC)) {
 
         // Write out options file
         std::string OptionsFile(ct.basename);

@@ -5,6 +5,18 @@
 #include <vector>
 #include <cmath>
 
+// RMG includes
+#include "const.h"
+#include "RmgTimer.h"
+#include "RmgException.h"
+#include "rmgtypedefs.h"
+#include "params.h"
+#include "typedefs.h"
+#include "rmg_error.h"
+#include "transition.h"
+#include "Kpoint.h"
+#include "InputKey.h"
+
 class xmlNode;
 class fftContainer;
 
@@ -19,9 +31,8 @@ private:
   void writeFormat();
   void writeVersion();
 
-  void readInEigFcn(const xmlNode& nd, fftContainer& cont);
-  void handleSpinGroup(const xmlNode* nd, hid_t groupLoc, double& nocc, fftContainer& cont);
-  double getOccupation(const xmlNode* nd) const;
+  void readInEigFcn(std::string& wfname, double& eig_value, double& wf_occ, fftContainer& cont);
+  void handleSpinGroup(int kidx, int spin_idx, hid_t groupLoc, double& nocc, fftContainer& cont);
 
   eshdfFile(const eshdfFile& f); // no copy constructor
   eshdfFile& operator=(const eshdfFile& f); // operator= not allowed
@@ -29,7 +40,7 @@ public:
   eshdfFile(const std::string& hdfFileName);
   ~eshdfFile();
 
-  void writeBoilerPlate(const std::string& appName, const xmlNode& qboxSample);
+  void writeBoilerPlate(const std::string& appName);
   void writeSupercell(const xmlNode& qboxSample);
   void writeAtoms(const xmlNode& qboxSample);
   void writeElectrons(const xmlNode& qboxSample);
