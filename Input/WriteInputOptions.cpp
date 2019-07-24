@@ -44,6 +44,40 @@
 #include "RmgInputFile.h"
 #include "InputOpts.h"
 
+std::unordered_map<int, std::string > option_headers = {
+        {CONTROL_OPTIONS, "Control options:"},
+        {KS_SOLVER_OPTIONS, "Kohn-Sham solver options:"},
+        {OCCUPATION_OPTIONS, "Orbital occupation options:"},
+        {MIXING_OPTIONS, "Charge density mixing options:"},
+        {MD_OPTIONS, "Relaxation/Molecular dynamics options:"},
+        {DIAG_OPTIONS, "Diagonalization options:"},
+        {PERF_OPTIONS, "Performance related options:"},
+        {MISC_OPTIONS, "Miscellaneous options:"}};
+
+#define CONTROL_OPTIONS 0
+#define KS_SOLVER_OPTIONS 1
+#define OCCUPATION_OPTIONS 2
+#define MIXING_OPTIONS 3
+#define MD_OPTIONS 4
+#define DIAG_OPTIONS 5
+#define PERF_OPTIONS 6
+#define MISC_OPTIONS 7
+
+
+// Used to sort keys by group and then alphabetically
+struct keycompare
+{
+    bool operator()(InputKey *ik_lhs, InputKey *ik_rhs)
+    {
+        // First sort by group
+        if(ik_lhs->grouping < ik_rhs->grouping) return true;
+        if(ik_lhs->grouping > ik_rhs->grouping) return false;
+
+        // Now alphabetically by key name within group
+        if(ik_lhs->KeyName.compare(ik_rhs->KeyName) < 0) return true;
+        return false;
+    }
+};
 
 void wordwrap(std::string const &input, size_t width, size_t indent)
 { 
@@ -202,18 +236,24 @@ void WriteInputOptions(std::unordered_map<std::string, InputKey *>& InputMap)
 "        using a Vanderbilt ultrasoft pseudopotential\"\n");
 
     printf("\n\n");
-
-    std::map<std::string, InputKey *> SortedMap;
+    std::map<InputKey *, InputKey *, keycompare> SortedMap;
     for(auto it = InputMap.begin();it != InputMap.end(); ++it)
     {
         std::string KeyName = it->first;
         InputKey *ik = it->second;
-        SortedMap.insert(std::make_pair(KeyName, ik));
+        SortedMap.insert(std::make_pair(ik, ik));
     }
 
+    int group = -1;
     for(auto it = SortedMap.begin();it != SortedMap.end(); ++it)
     {
         InputKey *ik = it->second;
+        int current_group = ik->grouping;
+        if(group != current_group)
+        {
+            group = current_group;
+            std::cout << option_headers[group] << "\n" << std::endl;
+        }
         WriteKeyStdout(ik);
     }
 }

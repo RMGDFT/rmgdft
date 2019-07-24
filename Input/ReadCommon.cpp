@@ -159,7 +159,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("description", &Description, "",
                      CHECK_AND_FIX, OPTIONAL,
                      "Description of the run. ", 
-                     "");
+                     "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("pseudopotential", NULL , "",
                      CHECK_AND_FIX, OPTIONAL,
@@ -174,40 +174,43 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("input_wave_function_file", &Infile, "Waves/wave.out",
                      CHECK_AND_FIX, OPTIONAL,
                      "Input file/path to  read wavefunctions and other binary data from on a restart. ", 
-                     "");
+                     "", CONTROL_OPTIONS);
+
     If.RegisterInputKey("input_tddft_file", &Infile_tddft, "Waves/wave_tddft.out",
                      CHECK_AND_FIX, OPTIONAL,
                      "Input file/path to  read wavefunctions and other binary data from on a restart. ", 
-                     "");
+                     "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("nvme_weights_filepath", &Weightsfile, "Weights/",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for disk storage of projector weights. ", 
-                     "");
+                     "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("nvme_work_filepath", &Workfile, "Work/",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for disk storage of workspace. ", 
-                     "");
+                     "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("nvme_orbitals_filepath", &Orbitalfile, "Orbitals/",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for runtime disk storage of orbitals. ", 
-                     "");
+                     "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("pseudo_dir", &PseudoPath, ".",
                      CHECK_AND_FIX, OPTIONAL,
                      "Directory where pseudopotentials are stored. ", 
-                     "");
+                     "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("output_wave_function_file", &Outfile, "Waves/wave.out",
                      CHECK_AND_FIX, OPTIONAL,
                      "Output file/path to store wavefunctions and other binary data. ", 
-                     "");
+                     "", CONTROL_OPTIONS);
+
     If.RegisterInputKey("output_tddft_file", &Outfile_tddft, "Waves/wave_tddft.out",
                      CHECK_AND_FIX, OPTIONAL,
                      "Output file/path to store wavefunctions and other binary data. ", 
-                     "");
+                     "", CONTROL_OPTIONS);
+
     If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
                         "restart TDDFT");
 
@@ -240,7 +243,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("start_mode", NULL, &lc.runflag, "LCAO Start",
                      CHECK_AND_TERMINATE, OPTIONAL, start_mode,
                      "Type of run. ", 
-                     "start_mode must be one of  \"Random Start\", \"Restart From File\", or \"LCAO Start\". Terminating. ");
+                     "start_mode must be one of  \"Random Start\", \"Restart From File\", or \"LCAO Start\". Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("atomic_orbital_type", NULL, &ct.atomic_orbital_type, "delocalized",
                      CHECK_AND_TERMINATE, OPTIONAL, atomic_orbital_type,
@@ -322,7 +325,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("calculation_mode", NULL, &lc.forceflag, "Quench Electrons",
                      CHECK_AND_TERMINATE, OPTIONAL, calculation_mode,
                      "Type of calculation to perform. ", 
-                     "calculation_mode not available. ");
+                     "calculation_mode not available. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("ldaU_mode", NULL, &lc.ldaU_mode, "None",
                      CHECK_AND_TERMINATE, OPTIONAL, ldaU_mode,
@@ -359,7 +362,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL, energy_output_units,
 "Units to be used when writing energy values to the output file. "
 " Hartrees or Rydbergs are available.", 
-                     "energy_output_units must be either \"Hartrees\" or \"Rydbergs\". Setting to \"Hartrees\". ");
+                     "energy_output_units must be either \"Hartrees\" or \"Rydbergs\". Setting to \"Hartrees\". ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("boundary_condition_type", NULL, &lc.boundaryflag, "Periodic",
                      CHECK_AND_TERMINATE, OPTIONAL, boundary_condition_type,
@@ -385,23 +388,23 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("interpolation_type", NULL, &lc.interp_flag, "FFT",
                      CHECK_AND_TERMINATE, OPTIONAL, interpolation_type,
 "Interpolation method for transferring data between the potential grid "
-"and the wavefunction grid.", 
-                     "interpolation_type not supported. Terminating. ");
+"and the wavefunction grid. Mostly for diagnostic purposes.", 
+                     "interpolation_type not supported. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, REQUIRED, 
                      "First lattice constant. ", 
-                     "a_length must be a positive number. Terminating. ");
+                     "a_length must be a positive number. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("b_length", &celldm[1], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, REQUIRED, 
                      "Second lattice constant. ", 
-                     "b_length must be a positive number. Terminating. ");
+                     "b_length must be a positive number. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("c_length", &celldm[2], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, REQUIRED, 
                      "Third lattice constant. ", 
-                     "c_length must be a positive number. Terminating. ");
+                     "c_length must be a positive number. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("grid_spacing", &grid_spacing, 0.0, DBL_MAX, 0.35, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
@@ -419,7 +422,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("omp_threads_per_node", &lc.OMP_THREADS_PER_NODE, 0, 64, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "Number of Open MP threads each MPI process will use. A value of 0 selects automatic setting. ", 
-                     "threads_per_node cannnot be a negative number and must be less than 64. ");
+                     "threads_per_node cannnot be a negative number and must be less than 64. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("fd_allocation_limit", &lc.fd_allocation_limit, 1024, 262144, 65536, 
                      CHECK_AND_FIX, OPTIONAL, 
@@ -858,26 +861,26 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("write_serial_restart", &lc.write_serial_restart, false,
 "RMG normally writes parallel restart files. These require that restarts have the "
 "same processor topology. If write_serial_restart = \"true\" then RMG will also "
-"write a serial restart file that can be used with a different processor topology ");
+"write a serial restart file that can be used with a different processor topology ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("read_serial_restart", &lc.read_serial_restart, false,
 "Directs RMG to read from serial restart files. Normally used when changing "
-"the sprocessor topology used during a restart run ");
+"the sprocessor topology used during a restart run ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("compressed_infile", &lc.compressed_infile, true,
-                        "Flag indicating whether or not parallel restart wavefunction file uses compressed format.");
+                        "Flag indicating whether or not parallel restart wavefunction file uses compressed format.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("compressed_outfile", &lc.compressed_outfile, true,
-                        "Flag indicating whether or not  parallel output wavefunction file uses compressed format.");
+                        "Flag indicating whether or not  parallel output wavefunction file uses compressed format.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("nvme_weights", &lc.nvme_weights, false,
-                        "Flag indicating whether or not projector weights should be mapped to disk.");
+                        "Flag indicating whether or not projector weights should be mapped to disk.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("nvme_work", &lc.nvme_work, false,
-                        "Flag indicating whether or not work arrays should be mapped to disk.");
+                        "Flag indicating whether or not work arrays should be mapped to disk.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("nvme_orbitals", &lc.nvme_orbitals, false,
-                        "Flag indicating whether or not orbitals should be mapped to disk.");
+                        "Flag indicating whether or not orbitals should be mapped to disk.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, true,
                         "Flag indicating whether or not to use alternate laplacian weights for some operators.");
@@ -942,29 +945,29 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                          
 
     If.RegisterInputKey("use_numa", &lc.use_numa, true, 
-                         "Use internal numa setup if available.");
+                         "Use internal numa setup if available.", PERF_OPTIONS);
 
-    If.RegisterInputKey("use_hwloc", &lc.use_hwloc, true, 
-                         "Use internal hwloc setup if available. If both this and use_numa are true hwloc takes precedence.");
+    If.RegisterInputKey("use_hwloc", &lc.use_hwloc, false, 
+                         "Use internal hwloc setup if available. If both this and use_numa are true hwloc takes precedence.", PERF_OPTIONS);
 
     If.RegisterInputKey("use_async_allreduce", &lc.use_async_allreduce, true, 
-                         "Use asynchronous allreduce if available.");
+                         "Use asynchronous allreduce if available.", PERF_OPTIONS);
 
     If.RegisterInputKey("mpi_queue_mode", &lc.mpi_queue_mode, true, 
-                         "Use mpi queue mode.");
+                         "Use mpi queue mode.", PERF_OPTIONS);
 
     If.RegisterInputKey("spin_manager_thread", &lc.spin_manager_thread, true, 
-                         "When mpi_queue_mode is enabled the manager thread spins instead of sleeping.");
+                         "When mpi_queue_mode is enabled the manager thread spins instead of sleeping.", PERF_OPTIONS);
 
     If.RegisterInputKey("spin_worker_threads", &lc.spin_worker_threads, true, 
-                         "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.");
+                         "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.", PERF_OPTIONS);
 
     If.RegisterInputKey("require_huge_pages", &lc.require_huge_pages, false, 
 "If set RMG assumes that sufficient huge pages are available. "
 "Bad things may happen if this is not true.");
 
     If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
-                        "Flag indicating whether or not to use dynamic timesteps in relaxation mode. ");
+                        "Flag indicating whether or not to use dynamic timesteps in relaxation mode. ", MD_OPTIONS);
 
     If.RegisterInputKey("freeze_occupied", NULL, false,
                         "Flag indicating whether or not to freeze the density and occupied orbitals after a restart. ");
@@ -972,10 +975,10 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
     If.RegisterInputKey("relax_max_force", &lc.thr_frc, 0.0, DBL_MAX, 2.5E-3,
                      CHECK_AND_FIX, OPTIONAL,
                      "Force value at which an ionic relaxation is considered to be converged. ",
-                     "relax_max_force must be a positive value. Resetting to default value of 2.5e-03. ");
+                     "relax_max_force must be a positive value. Resetting to default value of 2.5e-03. ", MD_OPTIONS);
 
     If.RegisterInputKey("md_randomize_velocity", &lc.nose.randomvel, true,
-"The initial ionic velocities for a molecular dyanamics run are randomly initialized to the target temperature.");
+"The initial ionic velocities for a molecular dyanamics run are randomly initialized to the target temperature.", MD_OPTIONS);
 
     If.RegisterInputKey("output_rho_xsf", NULL, false,
                         "Generate xsf format for electronic density.");
@@ -984,19 +987,19 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      CHECK_AND_FIX, OPTIONAL,
 "The RMS value of the change in the total potential from step to step "
 "where we assume self consistency has been achieved.",
-                     "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7. ");
+                     "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-7, 1.0e-10,
                      CHECK_AND_FIX, OPTIONAL,
 "The RMS value of the estimated change in the total energy per step where we assume self "
 "consistency has been achieved. ",
-                     "rms_convergence_criterion must lie in the range (1.0e-07,1.0e-20). Resetting to default value of 1.0e-10. ");
+                     "rms_convergence_criterion must lie in the range (1.0e-07,1.0e-20). Resetting to default value of 1.0e-10. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-9, 1.0e-1, 1.0e-1,
                      CHECK_AND_FIX, OPTIONAL,
 "The RMS value of the change in the total potential where we switch "
 "the preconditioner from single to double precision.",
-                     "preconditioner_threshold must lie in the range (1.0e-9,1.0e-1). Resetting to default value of 1.0e-1. ");
+                     "preconditioner_threshold must lie in the range (1.0e-9,1.0e-1). Resetting to default value of 1.0e-1. ", PERF_OPTIONS);
 
     If.RegisterInputKey("gw_residual_convergence_criterion", &lc.gw_threshold, 1.0e-14, 4.0e-4, 1.0e-6,
                      CHECK_AND_FIX, OPTIONAL,
