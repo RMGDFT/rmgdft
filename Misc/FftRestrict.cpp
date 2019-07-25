@@ -83,8 +83,7 @@ void FftRestrict (double * fine, double * coarse, int grid_ratio)
     }
     else
     {
-        FftFilter(temp, *fine_pwaves, 1.0 / (double)grid_ratio, LOW_PASS);
-        mg_restrict_6 (temp, coarse, dimx, dimy, dimz, grid_ratio);
+        rmg_error_handler (__FILE__, __LINE__, "A grid ratio > 3 is not allowed.");
     }
     delete [] temp;
 }

@@ -99,10 +99,7 @@ void GetVtotPsi (double * vtot_psi, double * in_vtot, int grid_ratio)
     }
     else
     {
-
-        FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)grid_ratio, LOW_PASS);
-
-        mg_restrict_6 (vtot, vtot_psi, dimx, dimy, dimz, grid_ratio);
+        rmg_error_handler (__FILE__, __LINE__, "A grid ratio > 4 is not allowed.");
     }
     delete [] vtot;
 }
