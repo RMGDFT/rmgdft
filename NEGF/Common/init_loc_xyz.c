@@ -75,7 +75,7 @@ void init_loc_xyz ()
         printf ("\n init_loc_xyz.c  done\n");
 
     } 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     fflush (NULL);
 
 

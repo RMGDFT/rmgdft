@@ -352,7 +352,7 @@ void get_cond_frommatrix_kyz ()
             } /*  end for iene */
 
 
-            my_barrier ();
+            MPI_Barrier(pct.img_comm);
 
             global_sums (cond_temp, &EP, pct.grid_comm);
 
@@ -499,7 +499,7 @@ void get_cond_frommatrix_kyz ()
         my_free(lcr[iprobe].SCL);
     }
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 }
 

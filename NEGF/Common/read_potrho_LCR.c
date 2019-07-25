@@ -42,7 +42,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
 
     /* Wait until everybody gets here */
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 
 
@@ -130,7 +130,7 @@ void read_potrho_LCR (double *vh, double *vxc, double *rho)
 
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     fflush (NULL);
 

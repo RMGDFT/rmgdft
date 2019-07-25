@@ -492,13 +492,13 @@ void local_current ()
             }                           /*  end for iene */
         }
 
-        my_barrier ();
+        MPI_Barrier(pct.img_comm);
 
 
     } /* ends of icond (num_cond_curve) loop */
     fclose(file);
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 }
 

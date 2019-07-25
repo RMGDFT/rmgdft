@@ -119,7 +119,7 @@ void global_sums_int (int *vect, int *length)
     int idx;
     int *rptr, *rptr1;
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     /* Check for small vector case and handle on stack */
     if (*length < 100)
     {

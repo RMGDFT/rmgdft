@@ -92,7 +92,7 @@ void get_wave(int st, STATE * states)
 
 	}
 
-	my_barrier();
+	MPI_Barrier(pct.img_comm);
 
 	idx = get_NX_GRID() * get_NY_GRID() * get_NZ_GRID();
 

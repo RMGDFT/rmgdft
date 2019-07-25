@@ -39,7 +39,7 @@ void read_rhomatrix(char *name, double *rho_matrix_row)
     int idx, idx1;
     int fhand;
     /* Wait until everyone gets here */
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     /* Make the new output file name */
 
@@ -90,5 +90,5 @@ void read_rhomatrix(char *name, double *rho_matrix_row)
 	MPI_File_read(mpi_fhand, rho_matrix_row, idx,MPI_DOUBLE, &status);
 	MPI_File_close(&mpi_fhand);
 
-	my_barrier();
+	MPI_Barrier(pct.img_comm);
 }

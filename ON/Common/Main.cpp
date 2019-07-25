@@ -212,7 +212,7 @@ int main(int argc, char **argv)
         GetPermStateIndex(ct.num_ions, ct.ions, perm_ion_index, perm_state_index, rev_perm_state_index);
 
         init_states();
-        my_barrier();
+        MPI_Barrier(pct.img_comm);
 
 
 
@@ -243,7 +243,7 @@ int main(int argc, char **argv)
         InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old, ControlMap);
 
 
-        my_barrier();
+        MPI_Barrier(pct.img_comm);
 
         delete(RTi);
         /* Dispatch to the correct driver routine */
@@ -275,7 +275,7 @@ int main(int argc, char **argv)
         /* Save state information to file */
         // write_states_info(ct.outfile, &states[0]);
 
-        my_barrier();
+        MPI_Barrier(pct.img_comm);
         delete(RTw);
 
     }

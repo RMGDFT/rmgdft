@@ -100,7 +100,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         write_header();
     }
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 
     RmgTimer *RT = new RmgTimer("1-TOTAL: init: state_init");
@@ -139,7 +139,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     duplicate_states_info(states, states1);
     duplicate_states_info(states, states_tem);
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 
     int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
@@ -196,7 +196,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     GetNlop_on();
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     delete(RT2);
 
     RmgTimer *RT3 = new RmgTimer("1-TOTAL: init: init_commi_nonlo");
@@ -334,7 +334,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     delete(RT8);
 
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     fflush(NULL);
 
 

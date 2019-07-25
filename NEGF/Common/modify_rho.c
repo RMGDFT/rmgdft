@@ -171,7 +171,7 @@ void modify_rho (double * rho, double * rho_old)
          */
 
     }
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 
 }

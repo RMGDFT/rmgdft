@@ -274,11 +274,11 @@ void lead_bandstructure ()
 
     }
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     idx = kpoints[0] * nL;
     comm_sums (ener_band, &idx, COMM_EN1);
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     if (pct.gridpe == 0)
     {
         file = fopen ("band.dat", "w");
@@ -294,6 +294,6 @@ void lead_bandstructure ()
             fprintf (file, "&\n");
         }
     }
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 }

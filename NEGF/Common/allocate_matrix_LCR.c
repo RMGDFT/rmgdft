@@ -55,7 +55,7 @@ void allocate_matrix_LCR ()
 
 
     /* Wait until everybody gets here */
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     ntot = 0;
     ndim = 0;

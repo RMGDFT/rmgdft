@@ -31,7 +31,7 @@ void OrbitalComm(STATE * states)
 
     int send_size, recv_size, position;
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     state_per_proc = ct.state_per_proc + 2;
 
 
@@ -54,7 +54,7 @@ void OrbitalComm(STATE * states)
     double *psi3 = new double[ct.max_orbit_size]();
 
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     for (loop = 0; loop < num_sendrecv_loop1; loop++)
     {
 
@@ -119,7 +119,7 @@ void OrbitalComm(STATE * states)
     }
 
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     delete [] psi3;
     delete [] mr_recv;
 

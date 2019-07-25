@@ -49,7 +49,7 @@ void read_lead_matrix ()
     int size, rank, ndims, gsizes[2], distribs[2];
 
     /* Wait until everyone gets here */
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 
     ictxt = pmo.ictxt[pmo.myblacs];

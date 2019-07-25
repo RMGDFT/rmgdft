@@ -42,7 +42,7 @@ void init_TDDFT(STATE *states, STATE *states1)
 
     init(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old);
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 
 }

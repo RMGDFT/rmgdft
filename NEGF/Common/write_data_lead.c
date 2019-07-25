@@ -53,7 +53,7 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 
 
 	/* Wait until everyone gets here */
-	my_barrier ();
+	MPI_Barrier(pct.img_comm);
 
 	/* Make the new output file name */
 

@@ -191,7 +191,7 @@ int main (int argc, char **argv)
     ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
     get_state_to_proc(states);
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     /*  Begin to do the real calculations */
     Run (states, states1, ControlMap);

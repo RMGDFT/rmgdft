@@ -122,7 +122,7 @@ void update_pot(double *vxc, double *vh, double * vxc_old, double * vh_old,
         printf(" SCF CHECKS: RMS[dv] = %15.10e RMS[drho] = %15.10e \n", t[1], tem1);
 
     fflush(NULL);
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     if (ct.scf_steps < 4 && ct.runflag == 0)
     {

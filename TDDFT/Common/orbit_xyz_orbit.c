@@ -40,7 +40,7 @@ void orbit_xyz_orbit(STATE * states, double *Xij, double *Yij, double *Zij)
     double X0, Y0, Z0;
 
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     state_per_proc = ct.state_per_proc + 2;
 
 

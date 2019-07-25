@@ -43,7 +43,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
     int pex, pey, pez;
 
     /* Wait until everybody gets here */
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 
     pe2xyz(pct.gridpe, &pex, &pey, &pez);
@@ -115,7 +115,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
     MPI_File_close(&mpi_fhand);
     MPI_Barrier(pct.grid_comm);
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     for (state = ct.state_begin; state < ct.state_end; state++)
     {
@@ -153,7 +153,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
         close(fhand);
     }
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     fflush(NULL);
     fflush(NULL);

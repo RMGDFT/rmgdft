@@ -50,7 +50,7 @@ void get_phi_xyz_phi(STATE * states, double *Xij, double *Yij, double *Zij)
     orbit_xyz_orbit(states, Xij, Yij, Zij);
 
 
-    //my_barrier();
+    //MPI_Barrier(pct.img_comm);
 
     n2 = (ct.state_end-ct.state_begin) * ct.num_states;
     vel = get_vel();

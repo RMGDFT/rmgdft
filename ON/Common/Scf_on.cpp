@@ -67,7 +67,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
     for (int st1 = ct.state_begin; st1 < ct.state_end; st1++)

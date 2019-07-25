@@ -153,7 +153,7 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
     /* Generate new density */
     dcopy (&fpbasis, rho, &ione, rho_old, &ione);
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     if (ct.runflag == 111 && ct.metal == 1)
         find_fermi (sigma_all);
     if (ct.runflag == 111 && ct.metal == 0)
@@ -165,13 +165,13 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
         delete(RT2);
     }
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     RmgTimer *RT3 = new RmgTimer("3-SCF: charge_density_matrix");
     charge_density_matrix_p (sigma_all);
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     delete(RT3);
 
@@ -235,7 +235,7 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
 
     /* mix_rho(rho, rho_old, ct.mix, ct.steps, 1); */
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     delete(RT5);
 
@@ -331,7 +331,7 @@ void update_pot (double *vxc, double *vh, double * vxc_old, double * vh_old, dou
         vtot[idx] = vxc[idx] + vh[idx] - vtot[idx];
     }
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     if (ct.scf_steps < 4 && ct.runflag == 0)
     {

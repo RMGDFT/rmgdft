@@ -57,7 +57,7 @@ void init_rho_atom(double *rho)
 
     if (pct.gridpe == 0)
         printf(" initial rho from atom \n");
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     ixdim = 0;
     iydim = 0;
@@ -266,7 +266,7 @@ void init_rho_atom(double *rho)
     }
 
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     EndRmgTimer(RT2);
     my_free(rho_tem);
     my_free(rho_out);

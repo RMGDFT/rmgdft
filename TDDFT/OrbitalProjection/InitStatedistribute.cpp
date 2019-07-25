@@ -71,7 +71,7 @@ void InitStatedistribute (STATE *states_distribute)
     hy_new = get_hygrid() * get_yside();
 
     /* Wait until everybody gets here */
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     /*
        printf ("state_begin, state_end %d %d \n", ct.state_begin, ct.state_end);

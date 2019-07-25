@@ -50,7 +50,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
 
     /* Wait until everyone gets here */
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     /* Make the new output file name */
 
@@ -128,7 +128,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     MPI_Barrier(pct.grid_comm);
 
 
-	my_barrier();
+	MPI_Barrier(pct.img_comm);
 
 
 	if(pct.gridpe == 0) 
@@ -283,7 +283,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	my_free(rho_tem);
 
 
-	my_barrier();
+	MPI_Barrier(pct.img_comm);
 
 
 #if 0
@@ -323,7 +323,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	MPI_File_close(&mpi_fhand);
 
 #endif
-	my_barrier();
+	MPI_Barrier(pct.img_comm);
 }
 
 

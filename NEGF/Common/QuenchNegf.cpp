@@ -130,7 +130,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         sigma_all_energy_point (sigma_all, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
         delete(RT1);
     }
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     if(pct.imgpe==0) printf("\n sigma_all done");
 
 

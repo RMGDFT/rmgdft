@@ -76,7 +76,7 @@ void init_nl_xyz (void)
         printf (" init_nl_xyz.c  done\n");
 
     }                           /* end if */
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     fflush (NULL);
 
 

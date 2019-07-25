@@ -1,6 +1,6 @@
 #ifndef RMG_control_H
 #define RMG_control_H 1
-
+#include <vector>
 #include <stdbool.h>
 #ifdef __cplusplus
     #include <complex>

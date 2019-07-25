@@ -84,7 +84,7 @@ void GetNlop_on(void)
      * PROJECTOR_SPACE = ct.max_nlpoints * ct.max_nl;
      */
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 
            
@@ -264,7 +264,7 @@ void GetNlop_on(void)
         printf(" get_nlop.c  done\n");
 
     }                           /* end if */
-    /*    my_barrier(); */
+    /*    MPI_Barrier(pct.img_comm); */
     fflush(NULL);
 
 }                               /* end get_nlop */

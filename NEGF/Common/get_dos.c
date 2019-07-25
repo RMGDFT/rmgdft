@@ -294,7 +294,7 @@ void get_dos (STATE * states)
             }
         }
 
-        my_barrier ();
+        MPI_Barrier(pct.img_comm);
     }
 
 
@@ -354,7 +354,7 @@ void get_dos (STATE * states)
     }
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     fflush (NULL);
 
     /*===============================*/

@@ -43,7 +43,7 @@ void read_orbital (STATE * states)
 
  
     /* Wait until everybody gets here */
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 /*
     printf ("state_begin, state_end %d %d \n", ct.state_begin, ct.state_end);
@@ -181,7 +181,7 @@ void read_orbital (STATE * states)
     }   /* st loop ends */
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     fflush (NULL);
 

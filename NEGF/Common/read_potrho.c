@@ -70,7 +70,7 @@ void read_potrho (double *vh, int iflag, char *file_ex)
 
 
     /* Wait until everybody gets here */
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     rcount = (int *) malloc(pct.grid_npes * sizeof(int));
     rdisp = (int *) malloc(pct.grid_npes * sizeof(int));
@@ -600,7 +600,7 @@ void read_potrho (double *vh, int iflag, char *file_ex)
 
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     fflush (NULL);
 

@@ -35,7 +35,7 @@ void write_global_data (int file_handle, double *data, int fnx, int fny, int fnz
     int ix, iy, iz;
     int global_index, local_index;
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     size = fny * fnz;
     my_malloc( x_plane, size, double );
 
@@ -73,7 +73,7 @@ void write_global_data (int file_handle, double *data, int fnx, int fny, int fnz
 
     my_free( x_plane );
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 }
 
 
@@ -89,7 +89,7 @@ void write_global_data_lead (int file_handle, double *data, int fnx, int fny, in
     int global_index, local_index;
     double sum;
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     size = fny * fnz;
     my_malloc( x_plane, size, double );
 
@@ -128,5 +128,5 @@ void write_global_data_lead (int file_handle, double *data, int fnx, int fny, in
 
     my_free( x_plane );
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 }

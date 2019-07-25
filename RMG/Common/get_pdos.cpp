@@ -66,19 +66,19 @@ void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS)
 
     if(ct.is_gamma)
     {
-        my_malloc (sintR, ct.max_nl, double);
+        sintR = new double[ct.max_nl];
     }
     else
     {
-        my_malloc (sintR, 2 * ct.max_nl, double);
+        sintR = new double[2*ct.max_nl];
         sintI = sintR + ct.max_nl;
     }
 #endif
             
     max_product = (ct.max_nl + 1) * ct.max_nl / 2;
-    my_malloc (product, max_product, double);
+    product = new double[max_product];
 
-    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), double );
+    rho_energy = new double[E_POINTS * get_FNX_GRID()];
                                                                                               
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
     xoff = ii * get_FPX0_GRID();
@@ -93,8 +93,8 @@ void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS)
 for (iene = 0; iene < E_POINTS; iene++)
 {
 
-	my_malloc_init (work_temp, P0_BASIS, double);
-	my_malloc_init (rho_temp, FP0_BASIS, double);
+        work_temp = new double[P0_BASIS];
+        rho_temp = new double[FP0_BASIS];
 
 	sp = ct.kp[0].kstate;
 	E =  iene * de  + Emin;
@@ -273,10 +273,10 @@ for (ix = 0; ix < get_FPX0_GRID(); ix++)
 
 
     /* release our memory */
-    my_free (product);
-    my_free (work);
-    my_free (sintR);
-    my_free(rho_energy); 
+    delete [] product;
+    delete [] work;
+    deletemy_free [] sintR;
+    deletemy_free [] rho_energy; 
 
 }                               /* end get_dos */
 

@@ -50,7 +50,7 @@ void init_comp (double *vh)
 
     fflush(NULL);
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     /* Get this processors offset */
     pxoff = get_FPX_OFFSET();
@@ -159,7 +159,7 @@ void init_comp (double *vh)
 
     /* Wait until everyone gets here */
     fflush(NULL);
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     my_free(zvec);
 
 }                               /* end init_comp */

@@ -75,7 +75,7 @@ void get_new_rho_local (STATE * states_distribute, double *rho, double *mat_loca
     RhoAugmented(rho, rho_matrix);
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 }
 

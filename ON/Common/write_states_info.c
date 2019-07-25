@@ -35,7 +35,7 @@ void write_states_info(char *name, STATE * states)
     int fhand;
 
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     if (pct.gridpe == 0)
     {

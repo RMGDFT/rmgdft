@@ -40,7 +40,7 @@ void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, d
 
     fflush(NULL);
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 
     /* Grab some memory for storage */
@@ -89,7 +89,7 @@ void init_ext (double *vext, double gbias_begin, double gbias_end,  double BT, d
 
     /* Wait until everyone gets here */
     fflush(NULL);
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 }                               /* end init_ext */
 

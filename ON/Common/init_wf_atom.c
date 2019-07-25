@@ -30,7 +30,7 @@ void init_wf_atom(STATE * states)
 
     if (pct.gridpe == 0)
         printf(" readin initial wavefunction \n");
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     for (state = ct.state_begin; state < ct.state_end; state++)
     {

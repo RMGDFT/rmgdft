@@ -40,7 +40,7 @@ static void init_wf_gamma(STATE * states)
 
     if (pct.gridpe == 0)
         printf(" Begin init_wf ...\n");
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     if (pct.gridpe == 0)
         printf(" Initialize random functions\n");

@@ -63,7 +63,7 @@ void init_wf_gaussian(STATE * states)
 
     if (pct.gridpe == 0)
         printf("\n initial orbitals with gaussian functions \n");
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 
     hx = get_hxgrid() * get_xside();

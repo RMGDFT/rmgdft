@@ -257,7 +257,7 @@ void get_cond_dos_test (STATE * states)
                 rho_energy[iene * get_FNX_GRID() + ix + xoff] += rho[ix * get_FPY0_GRID() * get_FPZ0_GRID() + i];
 
 
-        my_barrier ();
+        MPI_Barrier(pct.img_comm);
     }
 
     iene = E_POINTS * get_FNX_GRID();
@@ -287,7 +287,7 @@ void get_cond_dos_test (STATE * states)
 
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     fflush (NULL);
 
     my_free(ener1);

@@ -40,7 +40,7 @@ void apply_potential_drop (double *vbias)
     int x, y;
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     xoff = get_FPX_OFFSET();
     yoff = get_FPY_OFFSET();
@@ -411,7 +411,7 @@ void apply_potential_drop (double *vbias)
 
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 
 }                              

@@ -258,7 +258,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 			}
 		}
         }
-        my_barrier ();
+        MPI_Barrier(pct.img_comm);
     }
 
 
@@ -303,7 +303,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 	fclose (file);
     }
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     fflush (NULL);
 
     /*===============================*/

@@ -230,7 +230,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, double *GHG, doub
                 MPI_Send (psi1, size1, MPI_DOUBLE, proc1, i, pct.grid_comm);
             }
 
-        my_barrier ();
+        MPI_Barrier(pct.img_comm);
     }
 
 

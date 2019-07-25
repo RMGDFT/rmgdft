@@ -329,7 +329,7 @@ void get_cond_frommatrix ()
 
         }                           /*  end for iene */
 
-        my_barrier ();
+        MPI_Barrier(pct.img_comm);
         iene = E_POINTS;
         global_sums (cond, &iene, pct.grid_comm);
 
@@ -393,7 +393,7 @@ void get_cond_frommatrix ()
         my_free(lcr[iprobe].SCL);
     }
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 }
 

@@ -128,7 +128,7 @@ void update_orbit_centers(STATE * states)
     }
 
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     normalize_orbits(states);
 

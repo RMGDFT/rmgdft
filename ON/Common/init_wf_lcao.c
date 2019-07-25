@@ -42,7 +42,7 @@ void init_wf_lcao(STATE * states)
 
     if (pct.gridpe == 0)
         printf(" LCAO initial wavefunction \n");
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
     for (state = ct.state_begin; state < ct.state_end; state++)
     {

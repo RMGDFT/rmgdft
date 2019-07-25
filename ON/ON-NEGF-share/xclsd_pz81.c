@@ -459,7 +459,7 @@ void xclsd_pz81(double * rho, double * vxc)
 
     }                           /* end for */
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 
 }                               /* end xclsda_pz81 */
@@ -484,7 +484,7 @@ void exclsd_pz81(double * rho, double * exc)
 
     }                           /* end for */
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
 
 
 }                               /* end exclsda_pz81 */

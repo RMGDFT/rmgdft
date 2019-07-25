@@ -213,7 +213,7 @@ lcr[idx0].x_shift);
     my_free(psi_old);
     my_free(psi_new);
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     if (pct.gridpe == 0) printf ("\n interpolation_orbit  is done! ");
 
 }

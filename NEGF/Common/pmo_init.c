@@ -129,7 +129,7 @@ void pmo_init ()
     Cblacs_gridinfo (pmo.ictxt[pmo.myblacs], &nprow, &npcol, &myrow, &mycol);
 
     fflush(NULL);
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     /* If I'm not in the process grid, return */
     if(myrow == -1) return;
 

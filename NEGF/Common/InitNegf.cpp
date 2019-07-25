@@ -134,7 +134,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     }                           /* endif */
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     /* Initialize the mehrstellen weights */
     /*get_mehr (); */
@@ -160,7 +160,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     AllocatePsi (states, states1);
 
     duplicate_states_info (states, states1);
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 
     pmo_init();
@@ -263,7 +263,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
 
     }
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
 
     for (level = 0; level < ct.eig_parm.levels + 1; level++)

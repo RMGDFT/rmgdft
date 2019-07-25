@@ -39,7 +39,7 @@ void partial_vloc ()
     SPECIES *sp;
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     /*  get total number of vnuc on this processor */
     /*  pct.n_ion_center: number of ions whose nl projector overlap
@@ -143,7 +143,7 @@ void partial_vloc ()
         printf (" partial_vloc.c  done\n");
 
     }
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
     fflush (NULL);
 
 }

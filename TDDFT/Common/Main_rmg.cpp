@@ -274,7 +274,7 @@ void initialize(int argc, char **argv)
     }
 
 
-    my_barrier ();
+    MPI_Barrier(pct.img_comm);
 
     /* Record the time it took from the start of run until we hit init */
     delete(RT);

@@ -260,7 +260,6 @@ void global_sums_int (int *, int *);
 double linint (double * y, double r, double invdr);
 void ortho_norm_local (STATE * states);
 void global_sums_int (int *vect, int *length);
-void my_barrier (void);
 void matrix_and_diag (STATE * states, STATE * states1, double * vxc, int flag);
 void precond_mg (double *res, double *work1, double *work2, int istate);
 
@@ -488,7 +487,6 @@ void global_sums_int (int *, int *);
 double linint (double * y, double r, double invdr);
 void ortho_norm_local (STATE * states);
 void global_sums_int (int *vect, int *length);
-void my_barrier (void);
 void matrix_and_diag (STATE * states, STATE * states1, double * vxc, int flag);
 void precond_mg (double *res, double *work1, double *work2, int istate);
 

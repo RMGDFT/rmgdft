@@ -272,16 +272,16 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
             write_data_lead (ct.outfile, vh, vxc, vh_old, vxc_old, rho);
 
 
-        my_barrier ();
+        MPI_Barrier(pct.img_comm);
         writeout_matrix_p ();
         delete(RT5);
 
-        my_barrier ();
+        MPI_Barrier(pct.img_comm);
         if (pct.imgpe == 0)
             printf ("\n Run done...\n");
         fflush (NULL);
 
-        my_barrier();
+        MPI_Barrier(pct.img_comm);
 
 
     }

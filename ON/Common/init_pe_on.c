@@ -42,7 +42,7 @@ extern int mpi_myrank;
 void init_pe_on(void)
 {
 
-    my_barrier();
+    MPI_Barrier(pct.img_comm);
     /* INITIALIZE THE PROCESS GRID */
     int ictxt, info;
     int numst = ct.num_states;
