@@ -250,6 +250,9 @@ typedef struct
     /** the sprocessor topology used during a restart run */
     bool write_serial_restart;
 
+    /** If true also implies write_serial_restart */
+    bool write_qmcpack_restart;
+
     /** Number of run states */
     int run_states;
 

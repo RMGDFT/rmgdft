@@ -40,6 +40,7 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "transition.h"
+#include "WriteEshdf.h"
 
 template void WriteRestart (char *, double *, double *, double *, double *, Kpoint<double> **);
 template void WriteRestart (char *, double *, double *, double *, double *, Kpoint<std::complex<double> > **);
@@ -196,11 +197,22 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     close (fhand);
     fflush(NULL);
 
-    if(ct.write_serial_restart)
+    if(ct.write_serial_restart || ct.write_qmcpack_restart)
     {
         std::string serial_file(name);
         WriteSerialData (serial_file, vh, rho, vxc, Kptr);
         fflush(NULL);
+    }
+
+    if(ct.write_qmcpack_restart)
+    {
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if(rank == 0)
+        {
+            std::string qmcpack_file(name);
+            WriteQmcpackRestart(qmcpack_file);
+        }
     }
 
     write_time = my_crtc () - time0;

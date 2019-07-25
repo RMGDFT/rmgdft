@@ -17,6 +17,8 @@
 #include "Kpoint.h"
 #include "InputKey.h"
 
+void WriteQmcpackRestart(std::string& name);
+
 class fftContainer;
 
 class eshdfFile {

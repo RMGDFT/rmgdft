@@ -109,20 +109,10 @@ void eshdfFile::handleSpinGroup(int kidx, int spin_idx, hid_t groupLoc, double& 
 }
 
 void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_occ, fftContainer& cont) {
-//  const string type = nd.getAttribute("type");
-//  const string encoding = nd.getAttribute("encoding");
   
-//  if (encoding != "text") {
-//    cout << "Don't yet know how to handle encoding of wavefunction values other than text" << endl;
-//    exit(1);
-//  }
-//  RMG porting note - internal data
-  
-  vector<double> values;
-  OrbitalHeader H;
+    vector<double> values;
+    OrbitalHeader H;
 
-//  nd.getValue(values);
-// read in the eigenfunction from file wfname along with header info
     int fhand = open(wfname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
     if (fhand < 0) {
         rmg_printf("Can't open restart file %s", wfname.c_str());
@@ -204,7 +194,7 @@ void eshdfFile::writeCreator() {
   vector<int> version{0,1,0};
   hid_t h_creator = makeHDFGroup("creator", file);
   {
-    writeStringToHDF("program_name", "qboxConverter", h_creator);
+    writeStringToHDF("program_name", "rmgConverter", h_creator);
     writeNumsToHDF("version", version, h_creator);
   }
 }
@@ -389,4 +379,14 @@ void eshdfFile::writeElectrons(void) {
   nels.push_back(static_cast<int>(std::floor(avgNup+0.1)));
   nels.push_back(static_cast<int>(std::floor(avgNdn+0.1)));
   writeNumsToHDF("number_of_electrons", nels, electrons_group);
+}
+
+void WriteQmcpackRestart(std::string& name)
+{
+   string ofname = name + ".h5";
+   eshdfFile outFile(ofname);
+   outFile.writeBoilerPlate("rmg");
+   outFile.writeSupercell();
+   outFile.writeAtoms();
+   outFile.writeElectrons();
 }

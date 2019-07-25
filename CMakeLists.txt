@@ -86,6 +86,7 @@ option(USE_MAGMA_LIBS "Use magma libraries. Requires RMG_GPU_ENABLED." OFF)
 option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
 option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
 option(USE_INTERNAL_PSEUDOPOTENTIALS "Include internal pseudopotentials in binary." ON)
+option(QMCPACK_SUPPORT "Generates a QMCPACK restart file." ON)
 
 add_definitions(-DSCALAPACK_LIBS=1)
 
@@ -187,6 +188,7 @@ if(USE_INTERNAL_PSEUDOPOTENTIALS)
     add_definitions(-DINTERNAL_PP=1)
 endif()
 
+
 if(RMG_GPU_ENABLED)
     add_definitions(-DGPU_ENABLED=1)
     set(rmg-negf "rmg-negf-gpu")
@@ -259,13 +261,17 @@ add_executable(${rmg-on} ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h
 add_executable(on-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 
-# qmcpack converter
+# external qmcpack converter
 add_executable(RmgToQMC Interfaces/RmgToQMC.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 target_link_libraries(RmgToQMC Interfaces Misc Input RmgLib XC Input US_PP RMG_Common Finite_diff InternalPseudo RMG_Subdiag ${FFTW_LIBRARIES} ${NUMA_LIBRARIES} symspg_static zfp)
-#target_link_libraries(RmgToQMC Interfaces RmgLib ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY_RELEASE} ${Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE} ${MPI_CXX_LIBRARIES})
 target_link_libraries(RmgToQMC Interfaces RmgLib Misc RMG_Common US_PP ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY_RELEASE} ${Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE} ${Boost_FILESYSTEM_LIBRARY_RELEASE} ${Boost_THREAD_LIBRARY_RELEASE} ${Boost_IOSTREAMS_LIBRARY_RELEASE} ${MPI_CXX_LIBRARIES} scalapack)
 target_link_libraries(RmgToQMC Misc ${HDF5_CXX_LIBRARY_hdf5_cpp} ${HDF5_CXX_LIBRARY_hdf5} ${Boost_LIBRARIES} ${FFTW_LIBRARIES})
 
+# adds qmcpack support to base code
+if(QMCPACK_SUPPORT)
+    add_definitions(-DQMCPACK_SUPPORT=1)
+    target_link_libraries(${rmg} Interfaces RMG_Common Interfaces)
+endif()
 
 
 if(MPI_CXX_FOUND)
@@ -635,6 +641,7 @@ include_directories("${PROJECT_SOURCE_DIR}/spglib/src")
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/TDDFT/Headers/")
 include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
+include_directories("${PROJECT_SOURCE_DIR}/Interfaces/")
 
 
 # Common code subdirectories
