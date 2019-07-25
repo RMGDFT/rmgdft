@@ -54,7 +54,7 @@ write_force.cpp
 #getpoi_bc.c
 app_smooth1.cpp
 rand0.c
-#get_pdos.c
+#get_pdos.cpp
 BandStructure.cpp
 wvfn_residual.cpp
 #mulliken.c
@@ -62,7 +62,7 @@ write_avgd.cpp
 claim_ion.cpp
 debug_write_rho_z.cpp
 write_pdb.cpp
-neb_relax.c
+neb_relax.cpp
 xbsmovie.cpp
 write_zstates.cpp
 symmetry.c
