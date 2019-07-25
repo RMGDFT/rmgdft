@@ -65,7 +65,7 @@ write_pdb.cpp
 neb_relax.cpp
 xbsmovie.cpp
 write_zstates.cpp
-symmetry.c
+symmetry.cpp
 lbfgs.cpp
 rmg_lbfgs.cpp
 test_overlap.cpp
@@ -73,7 +73,7 @@ write_avgv.cpp
 move_ions.cpp
 print_density_z_direction.cpp
 set_pbc.cpp
-pulay_rho.c
+pulay_rho.cpp
 PartialGamma.cpp
 fire.cpp
 WriteHeader.cpp
