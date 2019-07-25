@@ -56,7 +56,7 @@ void print_density_z_direction (int grid_x, int grid_y, double * density, int px
 
     p0_basis = px0_grid * py0_grid * pz0_grid;
 
-    my_malloc (temp_buff, p0_basis, double);
+    temp_buff = new double[p0_basis];
 
     pe2xyz (pct.gridpe, &ii, &jj, &kk);
 
@@ -133,7 +133,7 @@ void print_density_z_direction (int grid_x, int grid_y, double * density, int px
 
     }                           /*end for (i=0;i<PE_Z;i++) */
 
-    my_free (temp_buff);
+    delete [] temp_buff;
 
 
 }

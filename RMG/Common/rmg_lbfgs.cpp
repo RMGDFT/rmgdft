@@ -34,8 +34,10 @@ void rmg_lbfgs (void)
     ION *iptr;
     double *position, *force;
 
-    my_malloc(position, 3*ct.num_ions, double);
-    my_malloc(force, 3*ct.num_ions, double);
+    //my_malloc(position, 3*ct.num_ions, double);
+    //my_malloc(force, 3*ct.num_ions, double);
+    position = new double[3*ct.num_ions];
+    force = new double[3*ct.num_ions];
     fpt = ct.fpt[0];
 
     /* Loop over ions */
@@ -88,6 +90,7 @@ void rmg_lbfgs (void)
 
     }
 
-
+    delete [] force;
+    delete [] position;
 }                               /* end rmg_fastrelax */
 

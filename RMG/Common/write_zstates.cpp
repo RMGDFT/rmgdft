@@ -29,7 +29,7 @@
 void write_zstates (STATE * states)
 {
 
-rmg_error_handler("Requires updating.");
+rmg_error_handler(__FILE__, __LINE__,"Requires updating.");
 
 #if 0
     int ix, iy, iz, poff, PX0_GRID, PY0_GRID, PZ0_GRID;

@@ -47,7 +47,7 @@ genvpsi.cpp
 MgEigState.cpp
 GetGamma.cpp
 fastrelax.cpp
-lbfgs_init.c
+lbfgs_init.cpp
 Nlforce.cpp
 pack_rho_ctof.cpp
 write_force.cpp
@@ -64,14 +64,14 @@ debug_write_rho_z.cpp
 write_pdb.cpp
 neb_relax.c
 xbsmovie.cpp
-write_zstates.c
+write_zstates.cpp
 symmetry.c
-lbfgs.c
-rmg_lbfgs.c
+lbfgs.cpp
+rmg_lbfgs.cpp
 test_overlap.cpp
 write_avgv.cpp
 move_ions.cpp
-print_density_z_direction.c
+print_density_z_direction.cpp
 set_pbc.cpp
 pulay_rho.c
 PartialGamma.cpp

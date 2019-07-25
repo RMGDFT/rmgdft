@@ -54,7 +54,6 @@
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
 
-extern "C" void lbfgs_init(int num_ions, int num_images);
 
 void initialize (int argc, char **argv);
 

@@ -45,19 +45,25 @@ void lbfgs_init(int num_ions, int num_images)
 
     invcurv = 0.01;
 
-    my_malloc_init(ro, memory_steps, double);
-    my_malloc_init(alpha_lbfgs, memory_steps, double);
+    //my_malloc_init(ro, memory_steps, double);
+    //my_malloc_init(alpha_lbfgs, memory_steps, double);
+    ro = new double[memory_steps]();
+    alpha_lbfgs = new double[memory_steps]();
 
     item = 3 * num_ions * num_images * memory_steps;
 
-    my_malloc_init(change_in_G, item, double);
-    my_malloc_init(change_in_R,  item,double);
+    //my_malloc_init(change_in_G, item, double);
+    //my_malloc_init(change_in_R,  item,double);
+    change_in_G = new double[item]();
+    change_in_R = new double[item]();
 
     item = 3 * num_ions * num_images;
-    my_malloc_init(Rold, item, double);
-    my_malloc_init(Fold, item, double);
-    my_malloc_init(direction, item, double);
-
+    //my_malloc_init(Rold, item, double);
+    //my_malloc_init(Fold, item, double);
+    //my_malloc_init(direction, item, double);
+    Rold = new double[item]();
+    Fold = new double[item]();
+    direction = new double[item]();
 
     reset_flag = 1;
     fdstep = 1;

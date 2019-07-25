@@ -73,7 +73,7 @@ void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz)
     }                           /* end if */
 
     stop = (ixdim + 2) * (iydim + 2) * (izdim + 2);
-    my_malloc (mask, stop, double);
+    mask = new double[stop];
 
     for (idx = 0; idx < stop; idx++)
         mask[idx] = 0.0;
@@ -262,7 +262,7 @@ void getpoi_bc (double * rho, double * vh_bc, int dimx, int dimy, int dimz)
         vh_bc[idx] = vh_bc[idx] * mask[idx];
     }
 
-    my_free (mask);
+    delete [] mask;
 
 }                               /* end getpoi_bc.c */
 
