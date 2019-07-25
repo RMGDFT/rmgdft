@@ -33,7 +33,7 @@ FilenameIncrement.cpp
 Scalapack.cpp
 Smooth.cpp
 Elpa.cpp
-open_restart_file.c
+open_restart_file.cpp
 cnpy.cpp
 LinePlot.cpp
 prime_factors.c
@@ -77,7 +77,7 @@ get_index.cpp
 get_te.c
 minimage.cpp
 get_vtot_psi.cpp
-blaswrappers.c
+blaswrappers.cpp
 set_bc.cpp
 cgen_prolong.c
 mg_prolong_MAX10.c
