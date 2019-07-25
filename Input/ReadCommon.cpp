@@ -765,16 +765,6 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "Grid coalescing factor.",
                      "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.");
 
-    If.RegisterInputKey("b_spline_order", &lc.interp_order, 0, 7, 5,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "Order of interpolation to use if b-spline is the selected method. ",
-                     "b_spline_order must lie in the range (0,7). Resetting to the default value of 5. ");
-
-    If.RegisterInputKey("b_spline_trade_order", &lc.interp_trade, 3, 3, 3,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "",
-                     "");
-
     If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
                      "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used. ",

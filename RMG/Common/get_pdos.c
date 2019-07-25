@@ -121,13 +121,10 @@ for (iene = 0; iene < E_POINTS; iene++)
     void *RT = BeginRmgTimer("Pdos interpolation time");
     switch (ct.interp_flag)
     {
-	    case 0:
+	    case CUBIC_POLYNOMIAL_INTERPOLATION:
 		    pack_rho_ctof (work_temp, rho_temp);
 		    break;
-	    case 1:
-		    bspline_interp_full (work_temp, rho_temp);
-		    break;
-	    case 2:
+	    case PROLONG_INTERPOLATION:
 		    mg_prolong_MAX10 (rho_temp, work_temp, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
 		    break;
 

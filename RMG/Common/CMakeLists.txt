@@ -59,12 +59,11 @@ BandStructure.cpp
 wvfn_residual.c
 #mulliken.c
 write_avgd.c
-bsplines.c
 claim_ion.c
 debug_write_rho_z.c
 write_pdb.c
 neb_relax.c
-xbsmovie.c
+xbsmovie.cpp
 write_zstates.c
 symmetry.c
 lbfgs.c

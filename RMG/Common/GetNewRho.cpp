@@ -95,9 +95,6 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         case CUBIC_POLYNOMIAL_INTERPOLATION:
             pack_rho_ctof (work, rho);
             break;
-        case BSPLINE_INTERPOLATION:
-            bspline_interp_full (work, rho);
-            break;
         case PROLONG_INTERPOLATION:
             mg_prolong_MAX10 (rho, work, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
             break;

@@ -112,7 +112,6 @@ static std::unordered_map<std::string, int> md_integration_order = {
 
 static std::unordered_map<std::string, int> interpolation_type = {
         {"Cubic Polynomial", CUBIC_POLYNOMIAL_INTERPOLATION},
-        {"B-spline", BSPLINE_INTERPOLATION},
         {"prolong", PROLONG_INTERPOLATION},
         {"FFT", FFT_INTERPOLATION}};
 
