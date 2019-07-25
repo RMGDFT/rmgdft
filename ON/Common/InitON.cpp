@@ -100,7 +100,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         write_header();
     }
 
-    MPI_Barrier(pct.img_comm);
+    my_barrier();
 
 
     RmgTimer *RT = new RmgTimer("1-TOTAL: init: state_init");
@@ -139,34 +139,36 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     duplicate_states_info(states, states1);
     duplicate_states_info(states, states_tem);
 
-    MPI_Barrier(pct.img_comm);
+    my_barrier();
 
 
-    int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
-    ixmin = new int[3*ct.num_states];
-    iymin = ixmin + ct.num_states;
-    izmin = iymin + ct.num_states;
-    dimx = new int[3*ct.num_states];
-    dimy = dimx + ct.num_states;
-    dimz = dimy + ct.num_states;
-
-    for(int st = 0; st < ct.num_states; st++)
     {
-        ixmin[st] = states[st].ixmin;
-        iymin[st] = states[st].iymin;
-        izmin[st] = states[st].izmin;
-        dimx[st] = states[st].orbit_nx;
-        dimy[st] = states[st].orbit_ny;
-        dimz[st] = states[st].orbit_nz;
+        int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
+        ixmin = new int[3*ct.num_states];
+        iymin = ixmin + ct.num_states;
+        izmin = iymin + ct.num_states;
+        dimx = new int[3*ct.num_states];
+        dimy = dimx + ct.num_states;
+        dimz = dimy + ct.num_states;
 
-    }
+        for(int st = 0; st < ct.num_states; st++)
+        {
+            ixmin[st] = states[st].ixmin;
+            iymin[st] = states[st].iymin;
+            izmin[st] = states[st].izmin;
+            dimx[st] = states[st].orbit_nx;
+            dimy[st] = states[st].orbit_ny;
+            dimz[st] = states[st].orbit_nz;
+
+        }
 
 
-    LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
+        LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
                 dimx, dimy, dimz, Rmg_G, pct.grid_comm);
-    delete [] ixmin;
-    delete [] dimx;
-    LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
+        delete [] ixmin;
+        delete [] dimx;
+        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
+    }
 
     allocate_masks(states);
 
@@ -182,7 +184,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     //  init_sym();
 
     /* Initialize the nuclear local potential and the compensating charges */
-//    init_nuc(vnuc, rhoc, rhocore);
+    //    init_nuc(vnuc, rhoc, rhocore);
 
     double *dum_array = NULL;
     InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
@@ -196,7 +198,48 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     GetNlop_on();
 
-    MPI_Barrier(pct.img_comm);
+    {
+        int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
+        int tot_prj = 0;
+        for (int ion=0; ion < ct.num_ions; ion++)
+        {
+            tot_prj += ct.sp[ct.ions[ion].species].num_projectors;
+        }
+        ixmin = new int[3*tot_prj];
+        iymin = ixmin + tot_prj;
+        izmin = iymin + tot_prj;
+        dimx = new int[3*tot_prj];
+        dimy = dimx + tot_prj;
+        dimz = dimy + tot_prj;
+        int proj_count = 0;
+        int *proj_per_ion = new int[ct.num_ions];
+        for (int ion=0; ion < ct.num_ions; ion++)
+        {
+            ION *iptr = &ct.ions[ion];
+            SPECIES *sp = &ct.sp[iptr->species];
+            proj_per_ion[ion] = sp->num_projectors;
+            for (int ip = 0; ip < sp->num_projectors; ip++)
+            {
+               ixmin[proj_count] = iptr->nlxcstart;
+               iymin[proj_count] = iptr->nlycstart;
+               izmin[proj_count] = iptr->nlzcstart;
+                dimx[proj_count] = sp->nldim;
+                dimy[proj_count] = sp->nldim;
+                dimz[proj_count] = sp->nldim;
+                proj_count++;
+            }
+        }
+
+        LocalProj = new LocalObject<double>(tot_prj, ixmin, iymin, izmin,
+                dimx, dimy, dimz, Rmg_G, pct.grid_comm);
+        delete [] ixmin;
+        delete [] dimx;
+        LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, Rmg_G);
+        delete [] proj_per_ion;
+    }
+
+
+    my_barrier();
     delete(RT2);
 
     RmgTimer *RT3 = new RmgTimer("1-TOTAL: init: init_commi_nonlo");
@@ -262,10 +305,10 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         case 5:
         case 6:
             if(ct.spin_flag)
-	            sprintf (newname, "%s_spin%d", ct.infile, pct.spinpe);
+                sprintf (newname, "%s_spin%d", ct.infile, pct.spinpe);
             else
-	            sprintf (newname, "%s", ct.infile);
-                
+                sprintf (newname, "%s", ct.infile);
+
             read_data(newname, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
             break;
@@ -334,7 +377,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     delete(RT8);
 
 
-    MPI_Barrier(pct.img_comm);
+    my_barrier();
     fflush(NULL);
 
 
