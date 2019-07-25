@@ -22,7 +22,6 @@
 
 
 #include <float.h>
-#include "main.h"
 
 
 #define   IA  16807

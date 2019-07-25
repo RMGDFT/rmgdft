@@ -6,7 +6,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <complex.h>
 #include "main.h"
 
 void weight_shift_center(SPECIES * sp, fftw_complex * weptr)

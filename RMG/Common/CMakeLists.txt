@@ -49,10 +49,9 @@ GetGamma.cpp
 fastrelax.c
 lbfgs_init.c
 Nlforce.cpp
-pack_rho_ctof.c
-write_force.c
-getpoi_bc.c
-nlforce_par_gamma.c
+pack_rho_ctof.cpp
+write_force.cpp
+#getpoi_bc.c
 app_smooth1.cpp
 rand0.c
 #get_pdos.c
@@ -64,13 +63,11 @@ bsplines.c
 claim_ion.c
 debug_write_rho_z.c
 write_pdb.c
-nlforce_par_omega.c
 neb_relax.c
 xbsmovie.c
 write_zstates.c
 symmetry.c
 lbfgs.c
-nlforce_par_Q.c
 rmg_lbfgs.c
 test_overlap.c
 write_avgv.c

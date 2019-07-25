@@ -5,7 +5,6 @@
 
 #include <math.h>
 #include <stdio.h>
-#include "main.h"
 
 // find a list of prime factors of a positive number n
 int prime_factors(int n, int *factors)

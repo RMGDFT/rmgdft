@@ -7,8 +7,6 @@ ApplyBOperator.cpp
 AppCir.cpp
 #SumGradientKvec.cpp
 FiniteDiff_Cbindings.cpp
-app_grad.c
-app6_del2.c
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 

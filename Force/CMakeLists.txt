@@ -1,7 +1,7 @@
 add_library (Force
 CorrectForces.cpp
 Lforce.cpp
-constrain.c
+constrain.cpp
 Force.cpp
 IIforce.cpp
 Nlccforce.cpp

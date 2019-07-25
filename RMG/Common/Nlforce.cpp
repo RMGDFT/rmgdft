@@ -35,14 +35,20 @@
 #include "Kpoint.h"
 #include "prototypes.h"
 #include "GpuAlloc.h"
+#include "blas.h"
 
-
-#include "TradeImages.h"
+//#include "TradeImages.h"
 #include "RmgException.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
 #include "transition.h"
 #include "GlobalSums.h"
+
+
+void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion, ION * iptr, int nh, double * forces);
+void nlforce_par_gamma (double * par_gamma, int ion, int nh, double *force);
+void nlforce_par_omega (double * par_omega, int ion, int nh, double *force);
+
 
 
 
@@ -368,3 +374,140 @@ ct.state_block_size);
 }
 
 
+void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion, ION * iptr, int nh, double * forces)
+{
+    int idx2, n, m, count, icount, size;
+    int *pidx;
+
+    count = pct.Qidxptrlen[ion];
+    pidx = pct.Qindex[ion];
+    double *Qnm;
+
+    Qnm = pct.augfunc[ion];
+
+    if (count)
+    {
+        size = (nh * (nh + 1)) / 2;
+
+        idx2 = 0;
+        for (n = 0; n < nh; n++)
+        {
+            for (m = n; m < nh; m++)
+            {
+                if (m != n) gamma[idx2] *= 2.0;
+                idx2++;
+            }
+        }
+
+        double one = 1.0, zero = 0.0, *tmp_arr;
+        int ione = 1;
+        tmp_arr = new double[count];
+
+        dgemm("N", "N", &count, &ione, &size, &one, Qnm, &count, gamma, &size, &zero, tmp_arr, &count); 
+
+        for (icount = 0; icount < count; icount++)
+        {
+            forces[0] -= gx[pidx[icount]] * tmp_arr[icount];
+            forces[1] -= gy[pidx[icount]] * tmp_arr[icount];
+            forces[2] -= gz[pidx[icount]] * tmp_arr[icount];
+        }
+        delete [] tmp_arr;
+    }
+
+
+}
+
+
+void nlforce_par_gamma (double * par_gamma, int ion, int nh, double *force)
+{
+    int idx, idx1, size, n, m;
+    double forces[3];
+    double *gamma_x, *gamma_y, *gamma_z, *dnmI;
+
+    size = nh * (nh + 1) / 2;
+
+    gamma_x = par_gamma;
+    gamma_y = gamma_x + size;
+    gamma_z = gamma_y + size;
+
+    dnmI = pct.dnmI[ion];
+
+    for (idx = 0; idx < 3; idx++)
+        forces[idx] = 0.0;
+
+    idx = 0;
+    for (n = 0; n < nh; n++)
+    {
+        for (m = n; m < nh; m++)
+        {
+            idx1 = n * nh + m;
+            if (n == m)
+            {
+                forces[0] += dnmI[idx1] * gamma_x[idx];
+                forces[1] += dnmI[idx1] * gamma_y[idx];
+                forces[2] += dnmI[idx1] * gamma_z[idx];
+            }
+            else
+            {
+                forces[0] += 2.0 * dnmI[idx1] * gamma_x[idx];
+                forces[1] += 2.0 * dnmI[idx1] * gamma_y[idx];
+                forces[2] += 2.0 * dnmI[idx1] * gamma_z[idx];
+            }
+
+            ++idx;
+        }
+    }
+
+    force[0] += forces[0];
+    force[1] += forces[1];
+    force[2] += forces[2];
+
+}
+
+
+void nlforce_par_omega (double * par_omega, int ion, int nh, double *force)
+{
+    int idx, idx1, size, n, m;
+    double forces[3];
+    double *omega_x, *omega_y, *omega_z, *qqq;
+
+    size = nh * (nh + 1) / 2;
+
+    omega_x = par_omega;
+    omega_y = omega_x + size;
+    omega_z = omega_y + size;
+
+    qqq = pct.qqq[ion];
+
+    for (idx = 0; idx < 3; idx++)
+        forces[idx] = 0.0;
+
+    idx = 0;
+    for (n = 0; n < nh; n++)
+    {
+        for (m = n; m < nh; m++)
+        {
+            idx1 = n * nh + m;
+            if (n == m)
+            {
+                forces[0] += qqq[idx1] * omega_x[idx];
+                forces[1] += qqq[idx1] * omega_y[idx];
+                forces[2] += qqq[idx1] * omega_z[idx];
+            }
+            else
+            {
+                forces[0] += 2.0 * qqq[idx1] * omega_x[idx];
+                forces[1] += 2.0 * qqq[idx1] * omega_y[idx];
+                forces[2] += 2.0 * qqq[idx1] * omega_z[idx];
+            }
+
+            ++idx;
+        }
+    }
+
+
+    force[0] -= forces[0];
+    force[1] -= forces[1];
+    force[2] -= forces[2];
+
+}
