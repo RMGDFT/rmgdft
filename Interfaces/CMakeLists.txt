@@ -1,5 +1,4 @@
 add_library(Interfaces
-RmgToQMC.cpp
 WriteEshdf.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")

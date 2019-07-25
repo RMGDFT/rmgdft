@@ -261,12 +261,6 @@ add_executable(${rmg-on} ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h
 add_executable(on-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 
-# external qmcpack converter
-add_executable(RmgToQMC Interfaces/RmgToQMC.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-target_link_libraries(RmgToQMC Interfaces Misc Input RmgLib XC Input US_PP RMG_Common Finite_diff InternalPseudo RMG_Subdiag ${FFTW_LIBRARIES} ${NUMA_LIBRARIES} symspg_static zfp)
-target_link_libraries(RmgToQMC Interfaces RmgLib Misc RMG_Common US_PP ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY_RELEASE} ${Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE} ${Boost_FILESYSTEM_LIBRARY_RELEASE} ${Boost_THREAD_LIBRARY_RELEASE} ${Boost_IOSTREAMS_LIBRARY_RELEASE} ${MPI_CXX_LIBRARIES} scalapack)
-target_link_libraries(RmgToQMC Misc ${HDF5_CXX_LIBRARY_hdf5_cpp} ${HDF5_CXX_LIBRARY_hdf5} ${Boost_LIBRARIES} ${FFTW_LIBRARIES})
-
 # adds qmcpack support to base code
 if(QMCPACK_SUPPORT)
     add_definitions(-DQMCPACK_SUPPORT=1)
