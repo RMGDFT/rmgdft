@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "main.h"
+#include "transition.h"
 
 void get_qqq ()
 {
@@ -57,7 +58,7 @@ void get_qqq ()
         qnmI = pct.augfunc[ion];
 
         if (pct.qqq[ion] == NULL) {
-            my_malloc (pct.qqq[ion], nh * nh, double);
+            pct.qqq[ion] = new double[nh * nh];
             qqq = pct.qqq[ion];
             for(idx = 0;idx < nh * nh;idx++) qqq[idx] = 0.0;
         }

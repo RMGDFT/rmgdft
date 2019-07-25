@@ -45,7 +45,7 @@ void pack_rho_ctof (double * rho, double * rho_f)
     FG_RATIO = get_FG_RATIO();
 
     alloc = (PX0_GRID + 4) * (PY0_GRID + 4) * (PZ0_GRID + 4);
-    my_malloc(rho_c, alloc, double);
+    rho_c = new double[alloc];
 
     ifxs = get_FPY0_GRID() * get_FPZ0_GRID();
     ifys = get_FPZ0_GRID();
@@ -219,6 +219,6 @@ void pack_rho_ctof (double * rho, double * rho_f)
     for (i = 0; i < num; i++)
         rho_f[i] *= coef;
 
-    my_free(rho_c);
+    delete [] rho_c;
 
 }

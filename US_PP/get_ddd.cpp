@@ -31,7 +31,7 @@ void get_ddd (double * veff)
         sum_dim += nh * (nh + 1) / 2;
     }
 
-    my_calloc (sum, sum_dim, double);
+    sum = new double[sum_dim]();
 
 
     sum_idx = 0;
@@ -46,7 +46,7 @@ void get_ddd (double * veff)
         ncount = pct.Qidxptrlen[ion];
 
         if (pct.dnmI[ion] == NULL)
-            my_malloc (pct.dnmI[ion], nh * nh, double);
+            pct.dnmI[ion] = new double[nh * nh];
 
         idx = 0;
         for (i = 0; i < nh; i++)
@@ -107,5 +107,5 @@ void get_ddd (double * veff)
         }                       /*end for i */
     }                           /*end for ion */
 
-    my_free (sum);
+    delete [] sum;
 }

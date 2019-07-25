@@ -47,9 +47,9 @@ void constrain (void)
     ION *iptr=NULL;
     printf("Entering constrained forces for image %d", pct.thisimg+1);
     double *Tau, *Img_L, *Img_R;
-    my_malloc(Tau, 3*ct.num_ions, double);
-    my_malloc(Img_L, 3*ct.num_ions, double);
-    my_malloc(Img_R, 3*ct.num_ions, double);
+    Tau = new double[3*ct.num_ions];
+    Img_L = new double[3*ct.num_ions];
+    Img_R = new double[3*ct.num_ions];
 
     switch (ct.constrainforces)
     {
@@ -464,9 +464,9 @@ void constrain (void)
             break;
     }
 
-    my_free(Img_R);
-    my_free(Img_L);
-    my_free(Tau);
+    delete [] Img_R;
+    delete [] Img_L;
+    delete [] Tau;
     return;
 
 }
