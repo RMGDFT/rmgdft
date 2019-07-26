@@ -22,15 +22,17 @@ public:
 //                BaseGrid *Rmg_G, int coarse_fine, MPI_Comm comm);
     LocalObject(int num_objects, int *ixmin, int *iymin, int *izmin, 
                 int *dimx, int *dimy, int *dimz,
-                BaseGrid *Rmg_G, MPI_Comm comm);
+                BaseGrid *Rmg_G, int density, MPI_Comm comm);
     ~LocalObject(void);
 
     KpointType *storage_proj;
 
     int num_thispe;
     int num_tot;
+    int density;
     int *index_proj_to_global;
     int *index_global_to_proj;
+    MPI_Comm comm;
 
     // Type LOCALIZED or DELOCALIZED
     int type;
@@ -41,9 +43,6 @@ public:
 
 private:
     int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
-
-    
-
 
 };
 

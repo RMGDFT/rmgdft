@@ -40,14 +40,16 @@
 template LocalObject<double>::~LocalObject(void);
 template LocalObject<std::complex<double>>::~LocalObject(void);
 
-template LocalObject<double>::LocalObject(int, int*, int*, int*, int*, int*, int*, BaseGrid*, MPI_Comm);
-template LocalObject<std::complex<double>>::LocalObject(int, int*, int*, int*, int*, int*, int*, BaseGrid*, MPI_Comm);
+template LocalObject<double>::LocalObject(int, int*, int*, int*, int*, int*, int*, BaseGrid*, int, MPI_Comm);
+template LocalObject<std::complex<double>>::LocalObject(int, int*, int*, int*, int*, int*, int*, BaseGrid*, int, MPI_Comm);
 template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects, 
         int *ixmin, int *iymin, int *izmin, int *dimx, int *dimy, int *dimz,
-        BaseGrid *Rmg_G, MPI_Comm comm)
+        BaseGrid *Rmg_G, int density, MPI_Comm comm)
 {
     this->num_tot = num_objects;
     this->num_thispe = 0;
+    this->comm = comm;
+    this->density = density;
 
     this->index_global_to_proj = new int[num_objects];
     this->index_proj_to_global = new int[num_objects];
@@ -71,7 +73,7 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects
 
     }
 
-    int density = 1;
+   
     int PX0_GRID = Rmg_G->get_PX0_GRID(density);
     int PY0_GRID = Rmg_G->get_PY0_GRID(density);
     int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
@@ -169,7 +171,7 @@ template void LocalObject<std::complex<double>>::ReadOrbitals(std::string filena
 template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::string filename, BaseGrid *Rmg_G)
 {
     
-    int density = 1;
+    int density = this->density;
     int PX0_GRID = Rmg_G->get_PX0_GRID(density);
     int PY0_GRID = Rmg_G->get_PY0_GRID(density);
     int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
@@ -247,7 +249,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
         int *num_prj_perion, BaseGrid *Rmg_G)
 {
 
-    int density = 1;
+    int density = this->density;
     int PX0_GRID = Rmg_G->get_PX0_GRID(density);
     int PY0_GRID = Rmg_G->get_PY0_GRID(density);
     int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
