@@ -140,7 +140,6 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
     for(int idx=0;idx < cont.fullSize;idx++) values.push_back(tbuf[idx]);
     delete [] tbuf;
 
-  const double fixnorm = 1/std::sqrt(static_cast<double>(cont.fullSize));
   if (!ct.is_gamma) {
     int index = 0;
     for (int ix = 0; ix < cont.getNx(); ix++) {
@@ -148,8 +147,8 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
 	for (int iz = 0; iz < cont.getNz(); iz++) {
           // RMG porting note -- C or Fortran storage order again?
 	  const int qbx = cont.getQboxIndex(ix,iy,iz);
-	  cont.rspace[index][0] = values[2*qbx]*fixnorm;
-	  cont.rspace[index][1] = values[2*qbx+1]*fixnorm;
+	  cont.rspace[index][0] = values[2*qbx];
+	  cont.rspace[index][1] = values[2*qbx+1];
 	  index++;
 	}
       }
@@ -160,7 +159,7 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
       for (int iy = 0; iy < cont.getNy(); iy++) {
 	for (int iz = 0; iz < cont.getNz(); iz++) {
 	  const int qbx = cont.getQboxIndex(ix,iy,iz);
-	  cont.rspace[index][0] = values[qbx] * fixnorm;
+	  cont.rspace[index][0] = values[qbx];
 	  cont.rspace[index][1] = 0.0;
 	  index++;
 	}
@@ -169,6 +168,7 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
   }
   //cout << "in readInEigFcn, before fft, real space L2 norm = " << cont.getL2NormRS() << endl;
   cont.executeFFT();
+  const double fixnorm = sqrt(Rmg_L.get_omega()) / static_cast<double>(cont.fullSize);
   cont.fixKsNorm(fixnorm);
   //cout << "in readInEigFcn, after fft, k space L2 norm = " << cont.getL2NormKS() << endl;
 }
