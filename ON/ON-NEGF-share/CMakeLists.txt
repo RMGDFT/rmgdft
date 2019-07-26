@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+LO_x_LO.cpp
 LocalObject.cpp
 OrbitalComm.cpp
 DistributeTasks.cpp

@@ -37,6 +37,8 @@ void GenVxPsi (double * psi, int st1, double * work1, double * vtot_global, STAT
 void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void DotProductOrbitNl (STATE *st1, int ion2, double * psi,
         double * prjptr, ION_ORBIT_OVERLAP *, int num_proj, double *kbpsi);
+void get_te (double *rho, double *rho_oppo, double *rhocore, double *rhoc, double *vh, double *vxc,
+             STATE *states, int ii_flag);
 
 #ifdef __cplusplus
 
@@ -643,8 +645,6 @@ void write_data(char *name, double *, double *vh, double *vxc, double *vh_old,
 
 void init(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, double * vxc_old);
-void get_te (double *rho, double *rho_oppo, double *rhocore, double *rhoc, double *vh, double *vxc,
-             STATE *states, int ii_flag);
 
 void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
