@@ -74,8 +74,6 @@ Lattice_Cbindings.cpp
 transition.cpp
 init_states.cpp
 get_index.cpp
-get_te.cpp
-minimage.cpp
 get_vtot_psi.cpp
 blaswrappers.cpp
 set_bc.cpp
@@ -84,7 +82,6 @@ mg_prolong_MAX10.cpp
 init_pos.cpp
 rmg_error.c
 rmg_alloc.c
-sl_init_comm.cpp
 get_opposite_occupancies.cpp
 get_opposite_eigvals.cpp
 Fill_on.cpp
