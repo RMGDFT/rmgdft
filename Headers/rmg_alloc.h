@@ -14,15 +14,15 @@ void rmg_free( void *ptr );
 void my_free( void *ptr );
 
 
-#define my_free(_ptr_) {rmg_free(_ptr_); _ptr_ = NULL;}
+#define my_free(_ptr_) {rmg_free((void *) _ptr_); _ptr_ = NULL;}
 #define my_malloc( _ptr_, _nobj_, _type_ ) \
-        _ptr_ = rmg_malloc((size_t) _nobj_, sizeof(_type_))
+        _ptr_ = (_type_ *)rmg_malloc((size_t) _nobj_, sizeof(_type_))
 
 #define my_calloc( _ptr_, _nobj_, _type_ ) \
-        _ptr_ = rmg_calloc((size_t) _nobj_, sizeof(_type_))
+        _ptr_ = (_type_ *)rmg_calloc((size_t) _nobj_, sizeof(_type_))
 
 #define my_malloc_init( _ptr_, _nobj_, _type_ ) \
-        _ptr_ = rmg_malloc_init((size_t) _nobj_, sizeof(_type_), #_type_)
+        _ptr_ = (_type_ *)rmg_malloc_init((size_t) _nobj_, sizeof(_type_), #_type_)
 
 
 #ifdef __cplusplus
