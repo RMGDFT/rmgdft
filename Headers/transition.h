@@ -58,7 +58,7 @@ void lbfgs_init(int num_ions, int num_images);
 extern "C" void write_restart (char *name, double * vh, double *vxc, double *vh_old, 
         double *vxc_old,  double * rho, double *rho_oppo, STATE *states);
 
-extern "C" int init_kpoints (int *mesh, int *is_shift);
+int init_kpoints (int *mesh, int *is_shift);
 
 template <typename RmgType> void AppCir (RmgType * a, RmgType * b, char * grid);
 template <typename RmgType> double AppCil (RmgType * a, RmgType * b, char * grid);

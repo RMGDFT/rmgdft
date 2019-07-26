@@ -58,10 +58,10 @@ void cgen_prolong (double coef[], double fraction, int order)
 {
 
     int ix, iy;
-    double A[order * order];
-    double b[order];
-    double d[order];
-    int ipvt[order];
+    double *A = new double[order * order];
+    double *b = new double[order];
+    double *d = new double[order];
+    int *ipvt = new int[order];
     int info;
     int ione = 1;
 
@@ -122,6 +122,10 @@ void cgen_prolong (double coef[], double fraction, int order)
 
     }
 
+    delete [] A;
+    delete [] ipvt;
+    delete [] d;
+    delete [] b;
 
 }                               /* end cgen-prolong */
 

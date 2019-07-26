@@ -61,8 +61,8 @@ void sl_init_comm (int *ictxt, int nprow, int npcol, MPI_Comm this_comm)
 
 
     /* Allocate space on the assumption that NPES is the same as group size */
-    my_malloc (tgmap, npes, int);
-    my_malloc (pmap, npes, int);
+    tgmap = new int[npes];
+    pmap = new int[npes];
 
     /* Set this group rank array maping */
     for (i = 0; i < npes; i++)
@@ -76,8 +76,8 @@ void sl_init_comm (int *ictxt, int nprow, int npcol, MPI_Comm this_comm)
     Cblacs_gridmap (ictxt, pmap, nprow, nprow, npcol);
 
 
-    my_free (pmap);
-    my_free (tgmap);
+    delete [] pmap;
+    delete [] tgmap;
 //#endif
 }
 

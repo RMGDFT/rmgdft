@@ -50,7 +50,7 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
     double fraction;
 
     for(ix = 0; ix < half_dimx * half_dimy * half_dimz; ix++) half[ix] = sqrt(fabs(half[ix]));
-    my_malloc (sg_half, (half_dimx + 10) * (half_dimy + 10) * (half_dimz + 10), double);
+    sg_half = new double[(half_dimx + 10) * (half_dimy + 10) * (half_dimz + 10)];
     trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, 5, FULL_TRADE);
 
 
@@ -96,8 +96,8 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
 
     }
 
-    my_malloc (fulla, dimx * (dimy / grid_ratio + 10) * (dimz / grid_ratio + 10), double);
-    my_malloc (fullb, dimx * dimy * (dimz / grid_ratio + 10), double);
+    fulla = new double[dimx * (dimy / grid_ratio + 10) * (dimz / grid_ratio + 10)];
+    fullb = new double[ dimx * dimy * (dimz / grid_ratio + 10)];
 
 
     for (ix = 0; ix < dimx / grid_ratio; ix++)
@@ -217,12 +217,9 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
 
 
     for(ix = 0; ix < dimx * dimy * dimz; ix++) full[ix] = full[ix] * full[ix];
-    my_free (fulla);
-    my_free (fullb);
-    my_free (sg_half);
-
-
-
+    delete [] fulla;
+    delete [] fullb;
+    delete [] sg_half;
 
 }                               /* end mg_prolong_MAX10 */
 

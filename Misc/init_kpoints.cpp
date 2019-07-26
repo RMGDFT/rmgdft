@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include "main.h"
 
-int spg_get_ir_reciprocal_mesh(int *grid_address,
+extern "C" int spg_get_ir_reciprocal_mesh(int *grid_address,
                                int map[],
                                const int mesh[3],
                                const int is_shift[3],
@@ -64,7 +64,8 @@ int init_kpoints (int *mesh, int *is_shift)
             && is_shift[0] == 0 && is_shift[1] == 0 && is_shift[2] == 0)
     {
         num_kpts = 1;
-        my_malloc (ct.kp, num_kpts, KPOINT);
+        //my_malloc (ct.kp, num_kpts, KPOINT);
+        ct.kp = new KPOINT[num_kpts];
         ct.num_kpts = num_kpts;
         ct.kp[0].kpt[ 0 ] = 0.0;
         ct.kp[0].kpt[ 1 ] = 0.0;
@@ -87,12 +88,13 @@ int init_kpoints (int *mesh, int *is_shift)
 
 
     meshsize = mesh[0] * mesh[1] * mesh[2];
-    my_malloc(grid_address, meshsize*5, int);
+    grid_address = new int[meshsize*5];
+
     map = grid_address + 3*meshsize;
     weight = map + meshsize;
 
-    my_malloc(tau, ct.num_ions*3, double);
-    my_malloc(ityp, ct.num_ions, int);
+    tau = new double[ct.num_ions*3];
+    ityp = new int[ct.num_ions];
 
     /* Set up atomic positions and species for fortran routines */
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -113,7 +115,7 @@ int init_kpoints (int *mesh, int *is_shift)
     //        printf("\n kvec %d  %d %d %d %d", kpt, grid_address[kpt*3 +0], grid_address[kpt*3 +1], grid_address[kpt*3 +2], map[kpt]);
 
 
-    my_malloc (ct.kp, num_kpts, KPOINT);
+    ct.kp = new KPOINT[num_kpts];
     ct.num_kpts = num_kpts;
     for(kpt = 0; kpt < meshsize; kpt++)
         weight[kpt] = 0;
@@ -142,9 +144,9 @@ int init_kpoints (int *mesh, int *is_shift)
           printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
     }
 
-    my_free(grid_address);
-    my_free(tau);
-    my_free(ityp);
+    delete [] grid_address;
+    delete [] tau;
+    delete [] ityp;
 
     return num_kpts;
 

@@ -129,7 +129,7 @@ STATE *init_states ()
     /* Allocate memory for the states */
     nk = ct.num_kpts; 
 
-    my_malloc (states, ct.num_states * nk, STATE); 
+    states = new STATE[ct.num_states * nk];
 
     /* set the initial occupations of the states */
     if (repeat_occ)

@@ -83,11 +83,11 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     /* Grab some memory */
     if (ct.spin_flag)
     {
-    	my_malloc (exc, 3 * FP0_BASIS, double);
+        exc = new double[3 * FP0_BASIS];
     	nrho_oppo = exc + 2 * FP0_BASIS;
     }
     else
-    	my_malloc (exc, 2 * FP0_BASIS, double);
+        exc = new double[2 * FP0_BASIS];
     
     nrho = exc + FP0_BASIS;
 
@@ -266,7 +266,7 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
 
 
     /* Release our memory */
-    my_free (exc);
+    delete [] exc;
 
 
 }                               /* end get_te */
