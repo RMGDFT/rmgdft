@@ -33,7 +33,6 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
-#include "Scalapack.h"
 
 
 void get_cholesky_real(double *matS)

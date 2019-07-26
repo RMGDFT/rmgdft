@@ -179,6 +179,7 @@ protected:
 #define		pdsymm		RMG_FC_GLOBAL(pdsymm, PDSYMM)
 #define		pdgetrf		RMG_FC_GLOBAL(pdgetrf, PDGETRF)
 #define		pdgetrs		RMG_FC_GLOBAL(pdgetrs, PDGETRS)
+#define		pdpocon		RMG_FC_GLOBAL(pdpocon, PDPOCON)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -216,6 +217,7 @@ void pdsyngst(int *, char *, int *, double *, int *, int *, int *, double *, int
 void pzhegst(int *, char *, int *, double *, int *, int *, int *, double *, int *,
               int *, int *, double *, int *);
 void pdpotrf(char *, int*, double*, int*, int*, int*, int*);
+void pdpocon(char *, int*, double*, int*, int*, int*, double *, double *, double *, int *, int *, int *, int *);
 void pzpotrf(char *, int*, double*, int*, int*, int*, int*);
 void pdtrtri(char *, char *, int*, double*, int*, int*, int*, int*);
 void pdsyrk( char *, char *, int *, int *, double *, double *, int *, int *, int *,

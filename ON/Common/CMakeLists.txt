@@ -14,60 +14,60 @@ add_library (ON_Common
  PermAtoms.cpp
  GetPermStateIndex.cpp
  BandwidthReduction.cpp
- gw_correction_matrix.c
- write_restart.c
- init_wf_lcao.c
- add_orbit_to_wave.c
- allocate_matrix.c
- app_cil_orbital6.c
- app_cil_orbital.c
- change_states_crds.c
+ gw_correction_matrix.cpp
+ write_restart.cpp
+ init_wf_lcao.cpp
+ add_orbit_to_wave.cpp
+ allocate_matrix.cpp
+ app_cil_orbital6.cpp
+ app_cil_orbital.cpp
+ change_states_crds.cpp
  CMakeLists.txt
- diag_eig_matrix.c
- genvpsi.c
- get_cholesky_real.c
- get_gamma_precond.c
- get_mat_Omega.c
- get_orbit_center.c
- get_state_to_proc.c
- get_sum_eig.c
- get_wave.c
+ diag_eig_matrix.cpp
+ genvpsi.cpp
+ get_cholesky_real.cpp
+ get_gamma_precond.cpp
+ get_mat_Omega.cpp
+ get_orbit_center.cpp
+ get_state_to_proc.cpp
+ get_sum_eig.cpp
+ get_wave.cpp
  InitON.cpp
- init_pe_on.c
- init_rho_atom.c
- init_wf_atom.c
- init_wf.c
- init_wf_gaussian.c
- interpolate_atom_density.c
+ init_pe_on.cpp
+ init_rho_atom.cpp
+ init_wf_atom.cpp
+ init_wf.cpp
+ init_wf_gaussian.cpp
+ interpolate_atom_density.cpp
  Kain.cpp
- md_fastrelax.c
- mgrid_solv_local.c
+ md_fastrelax.cpp
+ mgrid_solv_local.cpp
  MgridSolvLocal.cpp
- movie.c
- nlforce.c
- nlforce_par_omega.c
- normalize_orbits.c
- ortho_norm_local.c
+ movie.cpp
+ nlforce.cpp
+ nlforce_par_omega.cpp
+ normalize_orbits.cpp
+ ortho_norm_local.cpp
  Precond.cpp
  PrecondMg.cpp
  PrecondMg1.cpp
- print_status.c
- print_wave.c
+ print_status.cpp
+ print_wave.cpp
  PulayWeighted.cpp
- qnm_beta_betapsi.c
- quench.c
- rand0.c
- read_data.c
- real_max_all.c
- rmg_timings.c
+ qnm_beta_betapsi.cpp
+ quench.cpp
+ rand0.cpp
+ read_data.cpp
+ real_max_all.cpp
+ rmg_timings.cpp
  Scf_on.cpp
- sd.c
- tools_submat.c
- update_orbit_centers.c
- write_data.c
- write_eigs.c
- write_states_info.c
- xbsmovie.c
+ sd.cpp
+ tools_submat.cpp
+ update_orbit_centers.cpp
+ write_data.cpp
+ write_eigs.cpp
+ write_states_info.cpp
+ xbsmovie.cpp
  ZeroBoundary.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")
