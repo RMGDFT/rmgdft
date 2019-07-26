@@ -40,7 +40,9 @@
 #include "State.h"
 #include "Kpoint.h"
 #include "transition.h"
-#include "WriteEshdf.h"
+#if QMCPACK_SUPPORT
+    #include "WriteEshdf.h"
+#endif
 
 template void WriteRestart (char *, double *, double *, double *, double *, Kpoint<double> **);
 template void WriteRestart (char *, double *, double *, double *, double *, Kpoint<std::complex<double> > **);
@@ -206,6 +208,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
     if(ct.write_qmcpack_restart)
     {
+#if QMCPACK_SUPPORT
         int rank;
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         if(rank == 0)
@@ -213,6 +216,9 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
             std::string qmcpack_file(name);
             WriteQmcpackRestart(qmcpack_file);
         }
+#else
+         rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+#endif
     }
 
     write_time = my_crtc () - time0;
