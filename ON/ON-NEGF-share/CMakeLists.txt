@@ -19,7 +19,7 @@ AllocatePsi.cpp
 allocate_states.cpp
 app_grad6.cpp
 app_mask.cpp
-assign_weight_on.c
+assign_weight_on.cpp
 density_orbit_X_orbit.cpp
 DistributeToGlobal.cpp
 DotProductOrbitOrbit.cpp
@@ -46,7 +46,7 @@ init_parameter.cpp
 init_state_size.cpp
 int_max_all.cpp
 is_state_overlap.cpp
-make_mask_grid_state.c
+make_mask_grid_state.cpp
 minimage1.cpp
 nlforce_par_rho.cpp
 open_wave_file.cpp
@@ -55,7 +55,7 @@ OrbitDotOrbitBlock.cpp
 partial_Mat_nm_R.cpp
 print_matrix.cpp
 rho_augmented.cpp
-rho_Qnm_mat.c
+rho_Qnm_mat.cpp
 state_corner_xyz.cpp
 write_force.cpp
 write_header.cpp
@@ -65,7 +65,7 @@ write_rho_y.cpp
 write_rho_z.cpp
 ThetaPhi.cpp
 ThetaPhiBlock.cpp
-xyz2pe.c
+xyz2pe.cpp
 write_TFions.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/ON/Headers/")

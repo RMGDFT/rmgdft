@@ -76,7 +76,7 @@ int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc)
 
     size = ct.state_per_proc * max_ion_nonlocal * ct.max_nl;
 
-    void *RT1 = BeginRmgTimer("3-get_new_rho: augmented_comm_loop ");
+    RmgTimer *RT1 = new RmgTimer("3-get_new_rho: augmented_comm_loop ");
     for (idx = 0; idx < kbpsi_num_loop; idx++)
     {
 
@@ -101,7 +101,7 @@ int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc)
 //pct.gridpe);
 
 
-    void *RT2 = BeginRmgTimer("3-get_new_rho: augmented_comm_loop_calc ");
+    RmgTimer *RT2 = new RmgTimer("3-get_new_rho: augmented_comm_loop_calc ");
 
         for (ion1 = 0; ion1 < num_nonlocal_ion[proc]; ion1++)
             for (ion2 = 0; ion2 < num_nonlocal_ion[proc2]; ion2++)
@@ -143,10 +143,10 @@ int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc)
                 }           /* end for ion1 and ion2 */
 
             }                   /* end for st1 and st2 */
-        EndRmgTimer(RT2);
+        delete [] RT2;
     }                           /* end for idx */
 
-    EndRmgTimer(RT1);
+    delete [] RT1;
 
 }
 
