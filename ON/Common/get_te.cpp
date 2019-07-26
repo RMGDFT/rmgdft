@@ -66,6 +66,7 @@
 #include "common_prototypes.h"
 #include "main.h"
 #include "transition.h"
+#include "prototypes_on.h"
 
 
 void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, STATE * states, int ii_flag)
