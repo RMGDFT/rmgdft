@@ -241,3 +241,87 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::stri
     }
 }
 
+template void LocalObject<double>::ReadProjectors(int, int, int *,BaseGrid *Rmg_G);
+template void LocalObject<std::complex<double>>::ReadProjectors(int, int, int*, BaseGrid *Rmg_G);
+template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num_ions, int max_nlpoints,
+        int *num_prj_perion, BaseGrid *Rmg_G)
+{
+
+    int density = 1;
+    int PX0_GRID = Rmg_G->get_PX0_GRID(density);
+    int PY0_GRID = Rmg_G->get_PY0_GRID(density);
+    int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
+    int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+    int PX_OFFSET = Rmg_G->get_PX_OFFSET(density);
+    int PY_OFFSET = Rmg_G->get_PY_OFFSET(density);
+    int PZ_OFFSET = Rmg_G->get_PZ_OFFSET(density);
+    int NX_GRID = Rmg_G->get_NX_GRID(density);
+    int NY_GRID = Rmg_G->get_NY_GRID(density);
+    int NZ_GRID = Rmg_G->get_NZ_GRID(density);
+    int ilow = PX_OFFSET;
+    int ihigh = ilow + PX0_GRID;
+    int jlow = PY_OFFSET;
+    int jhigh = jlow + PY0_GRID;
+    int klow = PZ_OFFSET;
+    int khigh = klow + PZ0_GRID;
+
+    int fhand;
+    int proj_count = 0;
+    for(int ion = 0; ion > num_ions; ion++)
+    {
+        if ( this->index_global_to_proj[proj_count] == -1)
+        {
+            proj_count += num_prj_perion[ion];
+            continue;
+        }
+
+        
+        int proj_local_index;
+
+        std::string newname;
+        newname = std::string("PROJECTORS/ion_") + std::to_string(ion);
+
+        fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
+        ssize_t size = (ssize_t)num_prj_perion[ion] * (ssize_t)max_nlpoints;
+        double *beta = new double[size];
+        ssize_t read_size = read(fhand, beta, size * sizeof(double));
+        if(read_size != size * sizeof(double))
+            rmg_error_handler (__FILE__, __LINE__,"error reading");
+
+
+        close(fhand);
+
+        for (int ip = 0; ip < num_prj_perion[ion]; ip++)
+        {
+            proj_local_index = this->index_global_to_proj[proj_count];
+
+            double *beta_ip = &beta[ip * max_nlpoints];
+            for(int ix = 0; ix < this->dimx[proj_count]; ix++)
+                for(int iy = 0; iy < this->dimy[proj_count]; iy++)
+                    for(int iz = 0; iz < this->dimz[proj_count]; iz++)
+                    {
+                        int ixx = ix + this->ixmin[proj_count]; 
+                        int iyy = iy + this->iymin[proj_count]; 
+                        int izz = iz + this->izmin[proj_count]; 
+
+                        if (ixx < 0) ixx += NX_GRID;
+                        if (iyy < 0) iyy += NY_GRID;
+                        if (izz < 0) izz += NZ_GRID;
+                        if (ixx >= NX_GRID) ixx -=NX_GRID;
+                        if (iyy >= NY_GRID) iyy -=NY_GRID;
+                        if (izz >= NZ_GRID) izz -=NZ_GRID;
+
+                        if(ixx >=ilow && ixx < ihigh && iyy >=jlow && iyy <jhigh && izz >=klow && izz < khigh)
+                        {
+                            int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
+                            int idx0 = ix * this->dimy[proj_count] * this->dimz[proj_count] + iy * this->dimz[proj_count] + iz;
+                            this->storage_proj[proj_local_index * P0_BASIS + idx] = (KpointType) beta_ip[idx0];
+                        }
+
+                    }
+        }
+
+        delete [] beta;
+    }
+}
+

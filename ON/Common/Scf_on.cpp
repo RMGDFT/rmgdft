@@ -107,7 +107,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     ct.efermi = Fill_on(states, ct.occ_width, ct.nel, ct.occ_mix, numst, ct.occ_flag, ct.mp_order);
 
-get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
+    get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
     if(pct.gridpe == 0) write_eigs(states);
 
     if (pct.gridpe == 0 && ct.occ_flag == 1)

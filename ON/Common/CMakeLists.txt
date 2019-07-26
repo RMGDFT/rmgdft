@@ -1,4 +1,5 @@
 add_library (ON_Common
+ get_te.c
  MyCpdgemr2d.cpp
  ReadDataFromRMG.cpp
  VhcorrDipoleInit.cpp
