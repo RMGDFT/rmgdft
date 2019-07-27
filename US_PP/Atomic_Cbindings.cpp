@@ -27,7 +27,7 @@
 
 static Atomic *A = NULL;
 
-extern "C" double AtomicInterpolate(double *f, double r)
+double AtomicInterpolate(double *f, double r)
 {
     if(!A) {
         A = new Atomic();

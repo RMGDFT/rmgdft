@@ -37,8 +37,6 @@ extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves;
 extern struct fft_plan_3d *fft_forward_coarse, *fft_backward_coarse, *fft_forward_fine, *fft_backward_fine;
 
 
-extern "C"
-{
 double my_crtc (void);
 void thread_barrier_wait(void);
 void get_vxc (double * rho, double * rho_oppo, double * rhocore, double * vxc);
@@ -46,16 +44,15 @@ void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt,
                int *ftau, int *nat, double * tau, int *ityp, int *nks,
                double * xk, double * wk, double * celldm, int *nr1, int *nr2,
                int *nr3, double *a1, double *a2, double *a3, double *omega, int *wflag);
-}
-extern "C" double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
-extern "C" void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
-extern "C" void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
-extern "C" void  get_rho_oppo (double * rho, double * rho_oppo);
-extern "C" void get_ddd (double *veff);
-extern "C" void mix_betaxpsi (int mix);
+double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag);
+void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
+void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
+void  get_rho_oppo (double * rho, double * rho_oppo);
+void get_ddd (double *veff);
+void mix_betaxpsi (int mix);
 void rmg_lbfgs (void);
 void lbfgs_init(int num_ions, int num_images);
-extern "C" void write_restart (char *name, double * vh, double *vxc, double *vh_old, 
+void write_restart (char *name, double * vh, double *vxc, double *vh_old, 
         double *vxc_old,  double * rho, double *rho_oppo, STATE *states);
 
 int init_kpoints (int *mesh, int *is_shift);

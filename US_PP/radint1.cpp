@@ -51,7 +51,7 @@
  * can cause discrepancies when comparing with other codes.
  */
 
-extern "C" double radint1 (double * f, double * r, double * dr_di, int n)
+double radint1 (double * f, double * r, double * dr_di, int n)
 {
 
     /* Simpson's rule weights */

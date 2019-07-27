@@ -17,7 +17,7 @@
 
 
 // C wrappers
-extern "C" void mgrid_solv (double * v_mat, double * f_mat, double * work,
+void mgrid_solv (double * v_mat, double * f_mat, double * work,
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
                  int level, int max_levels, int *pre_cyc,
@@ -35,39 +35,39 @@ extern "C" void mgrid_solv (double * v_mat, double * f_mat, double * work,
 
 }
 
-extern "C" void mg_restrict (double * full, double * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+void mg_restrict (double * full, double * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
     Mgrid MG(&Rmg_L, Rmg_T);
     MG.mg_restrict<double>(full, half, dimx, dimy, dimz, dx2, dy2, dz2, xoffset, yoffset, zoffset);
 }
 
-extern "C" void mg_prolong (double * full, double * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
+void mg_prolong (double * full, double * half, int dimx, int dimy, int dimz, int dx2, int dy2, int dz2, int xoffset, int yoffset, int zoffset)
 {
     Mgrid MG(&Rmg_L, Rmg_T);
     MG.mg_prolong<double>(full, half, dimx, dimy, dimz, dx2, dy2, dz2, xoffset, yoffset, zoffset);
 }
 
-extern "C" void eval_residual (double * mat, double * f_mat, int dimx, int dimy, int dimz,
+void eval_residual (double * mat, double * f_mat, int dimx, int dimy, int dimz,
                     double gridhx, double gridhy, double gridhz, double * res)
 {
     Mgrid MG(&Rmg_L, Rmg_T);
     MG.eval_residual<double>(mat, f_mat, dimx, dimy, dimz, gridhx, gridhy, gridhz, res, NULL);
 }
 
-extern "C" int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
+int MG_SIZE (int curdim, int curlevel, int global_dim, int global_offset, int global_pdim, int *roffset, int bctype)
 {
     Mgrid MG(&Rmg_L, Rmg_T);
     return MG.MG_SIZE(curdim, curlevel, global_dim, global_offset, global_pdim, roffset, bctype);
 }
 
-extern "C" void solv_pois (double * vmat, double * fmat, double * work,
+void solv_pois (double * vmat, double * fmat, double * work,
                 int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, double step, double k)
 {
     Mgrid MG(&Rmg_L, Rmg_T);
     MG.solv_pois<double>(vmat, fmat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, 0.0, k, NULL);
 }
 
-extern "C" double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag)
+double get_vh (double * rho, double * rhoc, double * vh_eig, int min_sweeps, int max_sweeps, int maxlevel, double rms_target, int boundaryflag)
 {
     int dimx = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO()), dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO()), dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
     int pbasis = dimx * dimy * dimz;

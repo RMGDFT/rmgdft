@@ -53,7 +53,7 @@ pack_rho_ctof.cpp
 write_force.cpp
 #getpoi_bc.c
 app_smooth1.cpp
-rand0.c
+rand0.cpp
 #get_pdos.cpp
 BandStructure.cpp
 wvfn_residual.cpp

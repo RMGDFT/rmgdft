@@ -36,7 +36,7 @@ Elpa.cpp
 open_restart_file.cpp
 cnpy.cpp
 LinePlot.cpp
-prime_factors.c
+prime_factors.cpp
 InitIo.cpp
 Output_rho_xsf.cpp
 InitHybridModel.cpp

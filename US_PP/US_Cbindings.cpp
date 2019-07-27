@@ -5,7 +5,7 @@
 // in the fast relax routine which is still in C and several layers deep
 extern std::unordered_map<std::string, InputKey *> ControlMap;
 
-extern "C" void init_qfunct(void)
+void init_qfunct(void)
 {
     InitQfunct(ControlMap);
 }

@@ -37,7 +37,7 @@
 #include "main.h"
 #include <float.h>
 
-extern "C" double radint (double *f, double *r, int n, double al)
+double radint (double *f, double *r, int n, double al)
 {
 
     int i;

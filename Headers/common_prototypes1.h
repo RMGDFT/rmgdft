@@ -32,10 +32,6 @@
 
 #include <stdbool.h>
 
-#if __cplusplus
-extern "C" {
-#endif
-
 /* Function prototypes */
 void get_dipole (double * rho);
 void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
@@ -317,8 +313,4 @@ void get_opposite_occupancies (STATE * states);
 void get_tf_rho (double * tf_rho);
 void get_dipole (double * rho);
 void set_pbc(double *position, int num_ions, int num_images);
-
-#if __cplusplus
-}
-#endif
 

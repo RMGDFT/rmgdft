@@ -28,7 +28,7 @@
 #include "transition.h"
 #include "RmgParallelFft.h"
 
-extern "C" void FftFilterFine(double *x,  double factor)
+void FftFilterFine(double *x,  double factor)
 {
     FftFilter(x, *fine_pwaves, factor, LOW_PASS);
 }

@@ -17,9 +17,6 @@
 
 #include "rmgtypedefs.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* Blas wrappers */
 void QMD_daxpy (int n, double alpha, double *x, int incx, double *y, int incy);
@@ -139,9 +136,5 @@ void finalize_gpu (void);
 #endif
 
 
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

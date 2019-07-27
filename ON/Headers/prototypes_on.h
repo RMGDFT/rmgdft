@@ -65,7 +65,7 @@ void SolvPoisLocal (FiniteDiff *FD, double *vmat, double *fmat, double *work,
                 double gridhy, double gridhz, double step, double Zfac, double k);
 
 
-extern "C" {
+//extern "C" {
 #endif
 
 
@@ -182,7 +182,6 @@ double my_crtc (void);
 /* Local function prototypes */
 void norm_psi (STATE * psi, double bv);
 void output (STATE * states, int its);
-void pe2xyz (int pe, int *x, int *y, int *z);
 void pack_ptos (double * sg, double * pg, int dimx, int dimy, int dimz);
 void pack_stop (double * sg, double * pg, int dimx, int dimy, int dimz);
 void pack_stop_axpy (double * sg, double * pg, double alpha, int dimx, int dimy,
@@ -658,7 +657,7 @@ void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
 
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 

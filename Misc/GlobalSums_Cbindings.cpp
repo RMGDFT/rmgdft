@@ -24,12 +24,12 @@
 #include "common_prototypes.h"
 
 
-extern "C" void init_global_sums(void) 
+void init_global_sums(void) 
 {
    GlobalSumsInit();
 }
 
-extern "C" void global_sums (double * vect, int *length, MPI_Comm comm)
+void global_sums (double * vect, int *length, MPI_Comm comm)
 {
     GlobalSums<double>(vect, *length, comm);
 }

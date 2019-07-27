@@ -35,12 +35,12 @@
 
 
 
-extern "C" void pack_ptos(double * sg, double * pg, int dimx, int dimy, int dimz)
+void pack_ptos(double * sg, double * pg, int dimx, int dimy, int dimz)
 {
     CPP_pack_ptos<double> (sg, pg, dimx, dimy, dimz);
 }
 
-extern "C" void pack_stop (double * sg, double * pg, int dimx, int dimy, int dimz)
+void pack_stop (double * sg, double * pg, int dimx, int dimy, int dimz)
 {
     CPP_pack_stop<double> (sg, pg, dimx, dimy, dimz);
 }

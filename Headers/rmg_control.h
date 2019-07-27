@@ -2,11 +2,7 @@
 #define RMG_control_H 1
 
 #include <stdbool.h>
-#ifdef __cplusplus
-    #include <complex>
-#else
-    #include <complex.h>
-#endif
+#include <complex>
 
 #if GPU_ENABLED
     #include <cusolverDn.h>
@@ -909,10 +905,6 @@ typedef struct
 
 
 /* Extern declaration for the main control structure */
-#if __cplusplus
-extern "C" CONTROL ct;
-#else
 extern CONTROL ct;
-#endif
 
 #endif

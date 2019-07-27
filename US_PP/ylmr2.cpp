@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "main.h"
 
-extern "C" void ylmr2 (double *r, double *out)
+void ylmr2 (double *r, double *out)
 {
     int l, i;
     double rmod, rhat[3], rr1, rr2, rr3, c;

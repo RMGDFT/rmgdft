@@ -127,7 +127,7 @@ double MyCrtc (void)
 
 }
 
-extern "C" double my_crtc (void)
+double my_crtc (void)
 {
     return MyCrtc();
 }
