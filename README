@@ -1,15 +1,18 @@
 
+# How to compile
 RMG builds have been tested using the GNU and PGI compilers as well as MKL.
 Most development work is done using GNU which is the most reliable.
 Cmake is used for configuration and out of source builds are preferred.
 After cloning or downloading the repository the generic build instructions
 are to first change into the top level directory and make a build subdir.
 
+```Bash
 cd rmgdft 
 mkdir build
 cd build
 cmake ..
 make -jN target
+```
 
 In this case N is an integer used for a parallel build and target specifies
 the particular rmg module you wish to build. In the best case scenario things
@@ -19,23 +22,30 @@ configuration is often required. In particular one may have to specify a
 particular set of modules to use and set some environment variables. For
 example on the xsede machine comet as of July, 16, 2019 the following works.
 
+```Bash
 export CC=/opt/gnu/gcc/bin/gcc
 export CXX=/opt/gnu/gcc/bin/c++
 export FC=/opt/gnu/gcc/bin/gfortran
 module load boost
 module load fftw
 module load cmake 
+```
 
 One can then execute
+```Bash
 cmake ..
 make -jN target
+```
 
 Additional configuration may be performed at the cmake step. For example to
 build with GPU support one should use.
 
+```Bash
 cmake -DRMG_GPU_ENABLED=1
+```
 
 Available targets include.
+```
     rmg-cpu        Base code cpu only
     rmg-gpu        Base code with gpu support
     rmg-on-cpu     ON code cpu only
@@ -44,12 +54,12 @@ Available targets include.
     rmg-negf-gpu   Non equilibrium greens function code with gpu support
     rmg-tddft-cpu  TDDFT based on rmg-on cpu only
     rmg-tddft-gpu  TDDFT based on rmg-on with gpu support
-
+```
 RMG GPU support at the present time is limited to Nvidia hardware and requires
 Pascal or later hardware.
 
 
-Top level directory structure.
+# Top level directory structure
 
 cmake/
   Some additional cmake modules for finding specific libraries.
