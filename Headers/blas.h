@@ -155,7 +155,9 @@ void cheev (char *jobz, char *uplo, int *numm, double * ss, int *numn,
 void spotri (char *, int *, double *, int *, int *);
 void dpotri (char *, int *, double *, int *, int *);
 void dgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
-void zgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+//void zgemm(const char *, const char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int *);
+void zgemm(const char *, const char *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, std::complex<double> *, int *, std::complex<double> *, std::complex<double> *, int *);
+
 void dgetrf( int *, int *, double *, int *, int *, int *);
 void dgetri(int *, double *, int *, int *, double *, int *, int *);
 void zgetrf( int *, int *, double *, int *, int *, int *);

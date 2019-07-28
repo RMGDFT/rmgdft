@@ -26,6 +26,7 @@
 
 
 #include <mpi.h>
+#include <complex>
 #include "rmg_mangling.h"
 
 
@@ -180,6 +181,7 @@ protected:
 #define		pdgetrf		RMG_FC_GLOBAL(pdgetrf, PDGETRF)
 #define		pdgetrs		RMG_FC_GLOBAL(pdgetrs, PDGETRS)
 #define		pdpocon		RMG_FC_GLOBAL(pdpocon, PDPOCON)
+#define		pztranu		RMG_FC_GLOBAL(pztranu, PZTRANU)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -195,13 +197,13 @@ void descinit (int[], int *, int *, int *, int *, int *, int *, int *, int *,
                int *);
 void pdgesv (int *, int *, double *, int * , int *, int *, int *, double *,
         int *, int *, int *, int *);
-void pzgesv (int *, int *, double *, int * , int *, int *, int *, double *,
+void pzgesv (int *, int *, std::complex<double> *, int * , int *, int *, int *, std::complex<double> *,
         int *, int *, int *, int *);
 void pdgemm (char *, char *, int *, int *, int *, double *, double *, int *,
              int *, int *, double *, int *, int *, int *, double *, double *,
              int *, int *, int *);
-void pzgemm (char *, char *, int *, int *, int *, double *, double *, int *,
-             int *, int *, double *, int *, int *, int *, double *, double *,
+void pzgemm (char *, char *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *,
+             int *, int *, std::complex<double> *, int *, int *, int *, std::complex<double> *, std::complex<double> *,
              int *, int *, int *);
 void pdsyev (char *, char *, int *, double *, int *, int *, int *, double *,
              double *, int *, int *, int *, double *, int *, int *);
@@ -249,7 +251,10 @@ void pdtran( int * M, int * N, double * ALPHA, double * A, int * IA, int * JA, i
               double * BETA, double * C, int * IC, int * JC, int * DESCC );
 void pdsymm(char *SIDE, char *UPLO, int *M, int *N, double *ALPHA, double *A, int *IA, int *JA, int *DESCA,
             double *B, int *IB, int *JB, int *DESCB, double *BETA, double *C, int *IC, int *JC, int *DESCC);
-
+void pztranc(int *M, int *N, std::complex<double> *ALPHA, std::complex<double> *A, int *IA, int *JA, int *DESCA, std::complex<double> *BETA, std::complex<double> *C, int *IC, int *JC, int *DESCC);
+void pztranu (int *M, int *N, std::complex<double> *ALPHA, std::complex<double> *A, int *IA, int *JA, int *DESCA, std::complex<double> *BETA, std::complex<double> *C, int *IC, int *JC, int *DESCC);
+void pzgetri(int *, std::complex<double> *, int *, int *, int *, int *, std::complex<double> *, int *, int *, int *, int *);
+void pzgetrf(int *, int *, std::complex<double> *, int *, int *, int *, int *, int *);
 #ifdef __cplusplus
 }
 #endif

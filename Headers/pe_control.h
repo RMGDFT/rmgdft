@@ -8,6 +8,7 @@
     #include <hwloc.h>
 #endif
 #include "Mgrid.h"
+#include "Scalapack.h"
 
 
 /** @name PE_CONTROL

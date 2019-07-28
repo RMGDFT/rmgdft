@@ -366,7 +366,7 @@ void Scalapack::Pgemm (char *transa, char *transb, int *M, int *N, int *K, std::
                        std::complex<double> *beta, std::complex<double> *C, int *IC, int *JC, int *descc)
 {
     if(!this->participates) return;
-    pzgemm(transa, transb, M, N, K, (double *)alpha, (double *)A, IA, JA, desca, (double *)B, IB, JB, descb, (double *)beta, (double *)C, IC, JC, descc);
+    pzgemm(transa, transb, M, N, K, alpha, A, IA, JA, desca, B, IB, JB, descb, beta, C, IC, JC, descc);
 }
 
 void Scalapack::Pgesv (int *N, int *NRHS, double *A, int *IA, int *JA, int *desca, int *ipiv, double *B, int *IB,
@@ -380,7 +380,7 @@ void Scalapack::Pgesv (int *N, int *NRHS, std::complex<double> *A, int *IA, int 
                             int *JB, int *descb, int *info)
 {
     if(!this->participates) return;
-    pzgesv(N, NRHS, (double *)A, IA, JA, desca, ipiv, (double *)B, IB, JB, descb, info);
+    pzgesv(N, NRHS, A, IA, JA, desca, ipiv, B, IB, JB, descb, info);
 }
 
 // Reduces within the group only

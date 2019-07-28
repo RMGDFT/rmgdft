@@ -666,10 +666,10 @@ typedef struct
     bool pin_nonlocal_weights;
 
 #else
-    double *gpu_Htri, *gpu_Gtri, *gpu_GdiagBlocks;
-    double *gpu_Grow;
-    double *gpu_Gcol;
-    double *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
+    std::complex<double> *gpu_Htri, *gpu_Gtri, *gpu_GdiagBlocks;
+    std::complex<double> *gpu_Grow;
+    std::complex<double> *gpu_Gcol;
+    std::complex<double> *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
 #endif
 
     

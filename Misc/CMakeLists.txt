@@ -80,8 +80,8 @@ set_bc.cpp
 cgen_prolong.cpp
 mg_prolong_MAX10.cpp
 init_pos.cpp
-rmg_error.c
-rmg_alloc.c
+rmg_error.cpp
+rmg_alloc.cpp
 get_opposite_occupancies.cpp
 get_opposite_eigvals.cpp
 Fill_on.cpp
