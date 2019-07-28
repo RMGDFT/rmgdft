@@ -1,8 +1,6 @@
 # This is necessary in order to work around a cmake bug
 # in version prior to 3.10 where quotes around string
 # literals are escaped in a way that causes nvcc to fail.
-remove_definitions(-DSVN_REV="${CodeRevision}")
-remove_definitions(-DSVN_REVDATE="${LastChangeDate}")
 remove_definitions(-DBUILD_DATE="${BuildDate}")
 
 # c++11 standard is required for the main code but causes nvcc to fail
