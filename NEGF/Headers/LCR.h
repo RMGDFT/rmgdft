@@ -1,14 +1,8 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
- 
-#ifdef __cplusplus
-    #include <complex>
-    typedef std::complex<double> DoubleC;
-#else
-    #include <complex.h>
-    typedef complex double   DoubleC;
-#endif
+#ifndef LCR_H_INCLUDED
+#define LCR_H_INCLUDED
+
+#include <complex>
+typedef std::complex<double> DoubleC;
 
 #define 	TOLSCF 		1.0E-9
 
@@ -136,3 +130,4 @@ typedef struct  complex_energy_integral complex_energy_integral;
 
 extern complex_energy_integral cei;
 
+#endif

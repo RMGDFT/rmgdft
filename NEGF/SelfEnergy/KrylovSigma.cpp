@@ -172,7 +172,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
     //  find the dual vector u~ 
     // VR store overlap matrix S(num_modes, num_modes) 
     alpha = 1.0;
-    zgemm("C", "N", &num_modes, &num_modes, &n, (double *)&alpha, (double *)A, &n, (double *)A, &n, (double *)&zero, (double *)VR, &num_modes);
+    zgemm("C", "N", &num_modes, &num_modes, &n, &alpha, A, &n, A, &n, &zero, VR, &num_modes);
 
     //  &A[num_modes *n] store transpose( u(+) )
     for(i = 0; i < num_modes; i++)
@@ -196,11 +196,11 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
 
     //  VR store F(+)
     alpha = 1.0;
-    zgemm("N", "N", &n, &n, &num_modes, (double *)&alpha, (double *)A, &n, (double *)&A[num_modes*n], &num_modes, (double *)&zero, (double *)VR, &n);
+    zgemm("N", "N", &n, &n, &num_modes, &alpha, A, &n, &A[num_modes*n], &num_modes, &zero, VR, &n);
 
 
     alpha = -1.0;
-    zgemm("N", "N", &n, &n, &n, (double *)&alpha, (double *)H01, &n, (double *)VR, &n, (double *)&zero, (double *)sigma, &n);
+    zgemm("N", "N", &n, &n, &n, &alpha, H01, &n, VR, &n, &zero, sigma, &n);
 
 
     delete [] A;
