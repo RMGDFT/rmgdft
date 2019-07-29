@@ -16,7 +16,7 @@ Radius2grid.cpp
 FindPhase.cpp
 FindPhaseKpoint.cpp
 Atomic.cpp
-Atomic_Cbindings.cpp
+#Atomic_Cbindings.cpp
 InitPseudo.cpp
 InitQfunct.cpp
 InitLocalObject.cpp
