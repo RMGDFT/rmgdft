@@ -1,5 +1,5 @@
 
-# How to compile
+# How to compile RMG
 RMG builds have been tested using the GNU and PGI compilers as well as MKL.
 Most development work is done using GNU which is the most reliable.
 Cmake is used for configuration and out of source builds are preferred.
@@ -61,72 +61,73 @@ Pascal or later hardware.
 
 # Top level directory structure
 
-cmake/
+```cmake/```
   Some additional cmake modules for finding specific libraries.
 
-PlatformChecks/
+```PlatformChecks/```
   Code for checking whether certain features are suppored by compilers/libs.
 
-SubprojectIncludes/
+```SubprojectIncludes/```
   Module specific cmake stuff.
 
-RMG/
+```RMG/```
   Standard DFT code module (rmg-cpu and rmg-gpu binaries).
 
-ON/
+```ON/```
   Localized orbital DFT code module.
 
-NEGF/
+```NEGF/```
   Non equilibrium greens function code module.
 
-TDDFT/
+```TDDFT/```
   Time dependent DFT code module.
 
-RmgLib/
+```RmgLib/```
   Base code used by all modules.
 
-US_PP/
+```US_PP/```
   Code for working with pseudopotentials both US and NC.
 
-Input/
+```Input/```
   Routines for reading and parsing input files.
 
-InternalPseudo/
+```InternalPseudo/```
   RMG includes a set of pseudopotentials built into the executable which
   are included here as compressed header files.
 
-Misc/
+```Misc/```
   Miscellaneous code.
 
-FiniteDiff/
+```FiniteDiff/```
   Higher level driver routines for finite differencing.
 
-Force/
+```Force/```
   Force routines.
 
-MG/
+```MG/```
   Multigrid routines. All multigrid functionality has been moved into RmgLib and this
   directory only has C bindings for the C++ class in RmgLib. Will eventually be deprecated.
 
-Gpufuncs/
+```Gpufuncs/```
   Cuda code.
 
-XC/
+```XC/```
 XC_useLIBXC/
   Interfaces for exchange correlation.
 
-RMG_GUI/
+```RMG_GUI/```
   Gui setup code.
 
-The next three directories contain 3rd party  libraries.
 
-zfp/
+## The next three directories contain 3rd party  libraries.
+
+```zfp/```
   Compression library for floating point data.
 
-scalapack/
+```scalapack/```
   Parallel linear algegra/eigensolvers.
 
-spglib/
+```spglib/```
   Symmetry routines.
 
 Examples/
