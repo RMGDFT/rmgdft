@@ -1,7 +1,6 @@
 #ifndef RMG_control_H
 #define RMG_control_H 1
-
-#include <stdbool.h>
+#include <vector>
 #include <complex>
 
 #if GPU_ENABLED
@@ -24,9 +23,6 @@ typedef struct
     /* timestep for the subiteration */
     double sb_step;
 
-    /* timestep for the Richardson-Iteration */
-    double ri_step;
-
     /* lowest MG level */
     int levels;
 
@@ -44,12 +40,17 @@ typedef struct
   This is a global structure declared as extern CONTROL ct
  
  */
-typedef struct
+class CONTROL
 {
+public:
+    void save_args(int argc, char **argvin)
+    {
+        for (int i = 1; i < argc; i++) this->argv.push_back(argvin[i]);
+    }
 
     // argc and argc
     int argc;
-    char **argv;
+    std::vector<std::string> argv;
 
     // Branch type
     int rmg_branch;
@@ -732,18 +733,7 @@ typedef struct
 
 
     /* "Center" of global function */
-
-    double Bc;
-    double Bx;
-    double By;
-    double Bz;
     double Ac;
-    double Ax;
-    double Ay;
-    double Az;
-    double Axy;
-    double Axz;
-    double Ayz;
 
     int state_per_proc;
     int state_begin;
@@ -901,7 +891,7 @@ typedef struct
     size_t q_alloc[3];
     size_t beta_alloc[3];
     size_t psi_alloc[3];
-} CONTROL;
+};
 
 
 /* Extern declaration for the main control structure */

@@ -87,7 +87,7 @@ namespace RmgInput {
 RmgInputFile::RmgInputFile(char *inputfile, std::unordered_map<std::string, InputKey *>& Map, MPI_Comm comm) : InputMap(Map)
 {
     // If help requested no input file to process
-    if(!strcmp(ct.argv[1], "--help")) return;
+    if(std::find(ct.argv.begin(), ct.argv.end(), std::string("--help")) != ct.argv.end()) return;
     PreprocessInputFile(inputfile, comm);
 }
 

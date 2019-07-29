@@ -119,7 +119,7 @@ void MakeFullPath(char *fullpath, PE_CONTROL& pelc)
 
 namespace Ri = RmgInput;
 
-void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)
+void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
     RmgInputFile If(cfile, InputMap, pelc.img_comm);
@@ -1066,7 +1066,7 @@ void ReadCommon(int argc, char *argv[], char *cfile, CONTROL& lc, PE_CONTROL& pe
                      "");
 
     // Command line help request?
-    if(!strcmp(ct.argv[1], "--help"))
+    if(std::find(ct.argv.begin(), ct.argv.end(), std::string("--help")) != ct.argv.end())
     {
         if(pct.imgpe == 0) WriteInputOptions(InputMap);
         MPI_Barrier(MPI_COMM_WORLD);

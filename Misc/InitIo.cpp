@@ -135,7 +135,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     snprintf (ct.cfile, sizeof(ct.cfile), "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
     snprintf (ct.shortname, sizeof(ct.shortname), "%s%s", pct.image_path[pct.thisimg], pct.image_input[pct.thisimg]);
 
-    ReadCommon(argc, argv, ct.cfile, ct, pct, ControlMap);
+    ReadCommon(ct.cfile, ct, pct, ControlMap);
 
     if(Verify("start_mode", "Restart From File", ControlMap) 
             || Verify("calculation_mode", "Band Structure Only", ControlMap) ) {

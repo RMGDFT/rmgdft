@@ -120,8 +120,7 @@ int main (int argc, char **argv)
 
     // Set branch type and save argc and argv in control structure
     ct.rmg_branch = RMG_BASE;
-    ct.argc = argc;
-    ct.argv = argv;
+    ct.save_args(argc, argv);
 
     // Signal handlers to cleanup in case user terminates
     std::signal(SIGTERM, term_handler);

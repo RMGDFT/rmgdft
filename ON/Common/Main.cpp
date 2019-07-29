@@ -147,8 +147,7 @@ int main(int argc, char **argv)
 
     // Set branch type
     ct.rmg_branch = RMG_ON;
-    ct.argc = argc;
-    ct.argv = argv;
+    ct.save_args(argc, argv);
 
     FiniteDiff::allocation_limit = 0;
 
