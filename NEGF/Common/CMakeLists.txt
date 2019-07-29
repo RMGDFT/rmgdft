@@ -22,7 +22,6 @@ find_new_energy_point.cpp
 find_new_energy_point_sharp_peak.cpp
 gauleg.cpp
 get_3Ddos.cpp
-get_cond_frommatrix.cpp
 get_cond_frommatrix_kyz.cpp
 get_ddd_update.cpp
 get_dos.cpp
@@ -65,7 +64,6 @@ nlforce.cpp
 #nlforce_par_D.cpp
 #nlforce_par_Q.cpp
 #nlforce_partial_H_part2.cpp
-ortho_norm_local.cpp
 #partial_vloc.cpp
 #partial_vlocpsi.cpp
 plane_average_rho.cpp

@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+LO_x_LO.cpp
 LocalObject.cpp
 OrbitalComm.cpp
 DistributeTasks.cpp
@@ -46,7 +47,6 @@ init_parameter.cpp
 init_state_size.cpp
 int_max_all.cpp
 is_state_overlap.cpp
-make_mask_grid_state.cpp
 minimage1.cpp
 nlforce_par_rho.cpp
 open_wave_file.cpp

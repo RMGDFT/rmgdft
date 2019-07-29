@@ -23,6 +23,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 #include "PulayMixing.h"
+#include "LocalObject.h"
 #define DELTA_V_MAX 1.0
 
 void update_pot(double *, double *, double *, double *, double *, double *, double *,
@@ -78,6 +79,12 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
         ZeroBoundary(states[st1].psiR, ixx, iyy, izz);
     }
+#if 1
+    write_data (ct.outfile, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
+    MPI_Barrier(pct.img_comm);
+    LocalOrbital->ReadOrbitals(std::string(ct.outfile), Rmg_G);
+#endif
+
     OrbitalComm(states);
     delete(RT0);
 

@@ -37,8 +37,9 @@
 #include "LocalObject.h"
 #include "blas.h"
 #include "RmgException.h"
+#include "transition.h"
 
-void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid *Rmg_G)
+void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G)
 {
     double *mat_local;
 
@@ -47,23 +48,29 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGr
     if(A.density != B.density)
         throw RmgFatalException() << "density is different "<< " at file " << __FILE__ << "\n";
         
-    int P0_BASIS = Rmg_G->get_P0_BASIS(A.density);
+    int P0_BASIS = Rmg_G.get_P0_BASIS(A.density);
     
     mat_local = new double[na*nb];
     double one = 1.0, zero = 0.0;
-    dgemm("T", "N", &na, &nb, &P0_BASIS, &one, A.storage_proj, &P0_BASIS,
-                B.storage_proj, &P0_BASIS, &zero, mat_local, &nb);
 
+    dgemm("T", "N", &na, &nb, &P0_BASIS, &one, A.storage_proj, &P0_BASIS,
+                B.storage_proj, &P0_BASIS, &zero, mat_local, &na);
+
+    for (int j = 0; j < B.num_tot; j ++)
     for (int i = 0; i < A.num_tot; i ++)
-    for (int j = 0; i < B.num_tot; j ++)
-        mat[i * B.num_tot + j] = 0.0;
+        mat[j * A.num_tot + i] = 0.0;
     
-    for (int i = 0; i < A.num_thispe; i++)
+    double t1 = Rmg_G.get_NX_GRID(A.density); 
+    t1 *= Rmg_G.get_NY_GRID(A.density); 
+    t1 *= Rmg_G.get_NZ_GRID(A.density); 
+
+    double vol = Rmg_L.get_omega() /t1;
     for (int j = 0; j < B.num_thispe; j++)
+    for (int i = 0; i < A.num_thispe; i++)
     {
         int i_glob = A.index_proj_to_global[i];
-        int j_glob = B.index_proj_to_global[i];
-        mat[i_glob * B.num_tot + j_glob] = mat[i*B.num_thispe+j];
+        int j_glob = B.index_proj_to_global[j];
+        mat[j_glob * A.num_tot + i_glob] = mat_local[j*A.num_thispe+i] * vol;
 
     }
 

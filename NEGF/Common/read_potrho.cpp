@@ -41,7 +41,7 @@ void read_potrho (double *vh, int iflag, char *file_ex)
     char msg[200];
     MPI_Offset position;
 
-    long idx0, idx, idx1, idx_sub;
+    int idx0, idx, idx1, idx_sub;
     double x0_old, hx_new, hx_old;
     double y0_old, hy_new, hy_old;
     int NX0, NY0, NZ0;

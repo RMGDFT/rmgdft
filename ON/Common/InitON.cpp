@@ -118,7 +118,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     state_overlap_or_not = new char[size];
     //my_malloc( state_overlap_or_not, size,  char);
 
-
     is_state_overlap(states, state_overlap_or_not);
 
 
@@ -140,7 +139,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     duplicate_states_info(states, states_tem);
 
     MPI_Barrier(pct.img_comm);
-
 
     {
         int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
@@ -168,7 +166,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
                 dimx, dimy, dimz, Rmg_G, density, pct.grid_comm);
         delete [] ixmin;
         delete [] dimx;
-        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
+//        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
     }
 
     allocate_masks(states);
@@ -187,6 +185,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     /* Initialize the nuclear local potential and the compensating charges */
     //    init_nuc(vnuc, rhoc, rhocore);
 
+    pct.loc_ions_list = new int[ct.num_ions];
     double *dum_array = NULL;
     InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
     InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
@@ -221,9 +220,9 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             proj_per_ion[ion] = sp->num_projectors;
             for (int ip = 0; ip < sp->num_projectors; ip++)
             {
-               ixmin[proj_count] = iptr->nlxcstart;
-               iymin[proj_count] = iptr->nlycstart;
-               izmin[proj_count] = iptr->nlzcstart;
+               ixmin[proj_count] = iptr->ixstart;
+               iymin[proj_count] = iptr->iystart;
+               izmin[proj_count] = iptr->izstart;
                 dimx[proj_count] = sp->nldim;
                 dimy[proj_count] = sp->nldim;
                 dimz[proj_count] = sp->nldim;

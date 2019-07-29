@@ -20,8 +20,9 @@
 #include "init_var.h"
 #include "blas.h"
 #include "Kbpsi.h"
+#include "LocalObject.h"
 
-
+void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G);
 
 void KbpsiUpdate(STATE * states)
 {

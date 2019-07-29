@@ -37,6 +37,7 @@
 #include "ErrorFuncs.h"
 #include "Gpufuncs.h"
 #include "blas.h"
+#include "Scalapack.h"
 
 
 

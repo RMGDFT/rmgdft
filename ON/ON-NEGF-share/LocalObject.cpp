@@ -190,7 +190,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::stri
     int khigh = klow + PZ0_GRID;
 
     int fhand;
-    for(int st = 0; st > this->num_thispe; st++)
+    for(int st = 0; st < this->num_thispe; st++)
     {
 
         int st_glob = this->index_proj_to_global[st];
@@ -269,7 +269,11 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
 
     int fhand;
     int proj_count = 0;
-    for(int ion = 0; ion > num_ions; ion++)
+    for (int i = 0; i < this->num_thispe; i++)
+    for (int j = 0; j < P0_BASIS; j++)
+        this->storage_proj[i * P0_BASIS + j] = 0.0;
+
+    for(int ion = 0; ion < num_ions; ion++)
     {
         if ( this->index_global_to_proj[proj_count] == -1)
         {
@@ -321,9 +325,11 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
                         }
 
                     }
+            proj_count++;
         }
 
         delete [] beta;
     }
+
 }
 

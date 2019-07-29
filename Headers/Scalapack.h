@@ -179,6 +179,8 @@ protected:
 #define		pdsyrk		RMG_FC_GLOBAL(pdsyrk, PDSYRK)
 #define		pdsymm		RMG_FC_GLOBAL(pdsymm, PDSYMM)
 #define		pdgetrf		RMG_FC_GLOBAL(pdgetrf, PDGETRF)
+#define		pzgetrf		RMG_FC_GLOBAL(pzgetrf, PZGETRF)
+#define		pzgetri		RMG_FC_GLOBAL(pzgetri, PZGETRI)
 #define		pdgetrs		RMG_FC_GLOBAL(pdgetrs, PDGETRS)
 #define		pdpocon		RMG_FC_GLOBAL(pdpocon, PDPOCON)
 #define		pztranu		RMG_FC_GLOBAL(pztranu, PZTRANU)
