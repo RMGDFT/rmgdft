@@ -1,22 +1,22 @@
 add_library (tddft_Common
 
-read_rhomatrix.c
-dipole_calculation.c
-dot_product_orbit_xyz_orbit.c
-orbit_xyz_orbit.c
-get_phi_xyz_phi.c
-mat_global_to_dist.c
-mat_dist_to_global.c
-update_TDDFT.c
-init_TDDFT.c
+read_rhomatrix.cpp
+dipole_calculation.cpp
+dot_product_orbit_xyz_orbit.cpp
+orbit_xyz_orbit.cpp
+get_phi_xyz_phi.cpp
+mat_global_to_dist.cpp
+mat_dist_to_global.cpp
+update_TDDFT.cpp
+init_TDDFT.cpp
 )
 
 add_library (RmgTddft
 WriteData_rmgtddft.cpp
 ReadData_rmgtddft.cpp
-dipole_calculation.c
-mat_global_to_dist.c
-mat_dist_to_global.c
+dipole_calculation.cpp
+mat_global_to_dist.cpp
+mat_dist_to_global.cpp
 RmgTddft.cpp
 HmatrixUpdate.cpp
 HSmatrix.cpp
