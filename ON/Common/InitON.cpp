@@ -163,7 +163,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
         int density = 1;
         LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
-                dimx, dimy, dimz, Rmg_G, density, pct.grid_comm);
+                dimx, dimy, dimz, 0, Rmg_G, density, pct.grid_comm);
         delete [] ixmin;
         delete [] dimx;
 //        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
@@ -201,9 +201,11 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     {
         int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
         int tot_prj = 0;
+        int tot_orbitals = 0;
         for (int ion=0; ion < ct.num_ions; ion++)
         {
             tot_prj += ct.sp[ct.ions[ion].species].num_projectors;
+            tot_orbitals += ct.sp[ct.ions[ion].species].num_orbitals;
         }
         ixmin = new int[3*tot_prj];
         iymin = ixmin + tot_prj;
@@ -232,11 +234,16 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
         int density = 1;
         LocalProj = new LocalObject<double>(tot_prj, ixmin, iymin, izmin,
-                dimx, dimy, dimz, Rmg_G, density, pct.grid_comm);
+                dimx, dimy, dimz, 0, Rmg_G, density, pct.grid_comm);
         delete [] ixmin;
         delete [] dimx;
         LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, Rmg_G);
         delete [] proj_per_ion;
+
+        LocalAtomicOrbital = new LocalObject<double>(tot_orbitals, ixmin, iymin, izmin,
+                dimx, dimy, dimz, 1, Rmg_G, density, pct.grid_comm);
+        LocalAtomicOrbital->GetAtomicOrbitals(ct.num_ions, Rmg_G);
+
     }
 
 

@@ -74,6 +74,8 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGr
 
     }
 
+    int idx = A.num_tot * B.num_tot;
+    MPI_Allreduce(MPI_IN_PLACE, (double *)mat, idx, MPI_DOUBLE, MPI_SUM, A.comm);
     delete [] mat_local;
 
 }
