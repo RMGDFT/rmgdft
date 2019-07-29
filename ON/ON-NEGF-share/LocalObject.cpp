@@ -34,22 +34,33 @@
 #include <fcntl.h>
 #include <libgen.h>
 
+#include "const.h"
+
+#include "rmgtypedefs.h"
+#include "typedefs.h"
+#include <complex>
+#include "common_prototypes.h"
+#include "common_prototypes1.h"
+#include "transition.h"
+#include "RmgParallelFft.h"
+
 #include "LocalObject.h"
 
 
 template LocalObject<double>::~LocalObject(void);
 template LocalObject<std::complex<double>>::~LocalObject(void);
 
-template LocalObject<double>::LocalObject(int, int*, int*, int*, int*, int*, int*, BaseGrid*, int, MPI_Comm);
-template LocalObject<std::complex<double>>::LocalObject(int, int*, int*, int*, int*, int*, int*, BaseGrid*, int, MPI_Comm);
+template LocalObject<double>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, BaseGrid*, int, MPI_Comm);
+template LocalObject<std::complex<double>>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, BaseGrid*, int, MPI_Comm);
 template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects, 
-        int *ixmin, int *iymin, int *izmin, int *dimx, int *dimy, int *dimz,
+        int *ixmin, int *iymin, int *izmin, int *dimx, int *dimy, int *dimz, bool delocalized,
         BaseGrid *Rmg_G, int density, MPI_Comm comm)
 {
     this->num_tot = num_objects;
     this->num_thispe = 0;
     this->comm = comm;
     this->density = density;
+    this->delocalized = delocalized;
 
     this->index_global_to_proj = new int[num_objects];
     this->index_proj_to_global = new int[num_objects];
@@ -91,62 +102,94 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects
     int klow = PZ_OFFSET;
     int khigh = klow + PZ0_GRID;
 
-    bool xo, yo, zo;
-    for (int i = 0; i < this->num_tot; i++)
+    if(this->delocalized)
     {
-        xo = false;
-        if(ixmin[i] < 0) 
+        this->num_thispe = this->num_tot;
+        for (int i = 0; i < this->num_tot; i++)
         {
-            if (ilow < ixmin[i] + dimx[i]) xo = true;
-            if (ihigh > ixmin[i] + NX_GRID) xo = true;
-        }
-        else if(ixmin[i] +dimx[i] > NX_GRID)
-        {
-            if (ilow < ixmin[i] + dimx[i] - NX_GRID) xo = true;
-            if (ihigh > ixmin[i]) xo = true;
-        }         
-        {
-            if( (ilow < ixmin[i] + dimx[i]) && (ihigh >ixmin[i]) ) xo = true;
+            this->index_global_to_proj[i] = i;
+            this->index_proj_to_global[i] = i;
+            this->ixmin[i] = 0;
+            this->iymin[i] = 0; 
+            this->izmin[i] = 0;
+            this->dimx[i] = NX_GRID;
+            this->dimy[i] = NY_GRID; 
+            this->dimz[i] = NZ_GRID; 
         }
 
-        yo = false;
-        if(iymin[i] < 0) 
+    }
+    else
+    {
+        for (int i = 0; i < this->num_tot; i++)
         {
-            if (jlow < iymin[i] + dimy[i]) yo = true;
-            if (jhigh > iymin[i] + NY_GRID) yo = true;
-        }
-        else if(iymin[i] +dimy[i] > NY_GRID)
-        {
-            if (jlow < iymin[i] + dimy[i] - NY_GRID) yo = true;
-            if (jhigh > iymin[i]) yo = true;
-        }         
-        {
-            if( (jlow < iymin[i] + dimy[i]) && (jhigh >iymin[i]) ) yo = true;
-        }
-
-        zo = false;
-        if(izmin[i] < 0) 
-        {
-            if (klow < izmin[i] + dimz[i]) zo = true;
-            if (khigh > izmin[i] + NZ_GRID) zo = true;
-        }
-        else if(izmin[i] +dimz[i] > NZ_GRID)
-        {
-            if (klow < izmin[i] + dimz[i] - NZ_GRID) zo = true;
-            if (khigh > izmin[i]) zo = true;
-        }         
-        {
-            if( (klow < izmin[i] + dimz[i]) && (khigh >izmin[i]) ) zo = true;
-        }
-
-        if(xo && yo && zo)
-        {
-            this->index_global_to_proj[i] = this->num_thispe;
-            this->index_proj_to_global[this->num_thispe] = i;
-            this->num_thispe++;
+            this->index_global_to_proj[i] = -1;
+            this->index_proj_to_global[i] = -1;
+            this->ixmin[i] = ixmin[i];
+            this->iymin[i] = iymin[i];
+            this->izmin[i] = izmin[i];
+            this->dimx[i] = dimx[i];
+            this->dimy[i] = dimy[i];
+            this->dimz[i] = dimz[i];
 
         }
 
+        bool xo, yo, zo;
+        for (int i = 0; i < this->num_tot; i++)
+        {
+            xo = false;
+            if(ixmin[i] < 0) 
+            {
+                if (ilow < ixmin[i] + dimx[i]) xo = true;
+                if (ihigh > ixmin[i] + NX_GRID) xo = true;
+            }
+            else if(ixmin[i] +dimx[i] > NX_GRID)
+            {
+                if (ilow < ixmin[i] + dimx[i] - NX_GRID) xo = true;
+                if (ihigh > ixmin[i]) xo = true;
+            }         
+            {
+                if( (ilow < ixmin[i] + dimx[i]) && (ihigh >ixmin[i]) ) xo = true;
+            }
+
+            yo = false;
+            if(iymin[i] < 0) 
+            {
+                if (jlow < iymin[i] + dimy[i]) yo = true;
+                if (jhigh > iymin[i] + NY_GRID) yo = true;
+            }
+            else if(iymin[i] +dimy[i] > NY_GRID)
+            {
+                if (jlow < iymin[i] + dimy[i] - NY_GRID) yo = true;
+                if (jhigh > iymin[i]) yo = true;
+            }         
+            {
+                if( (jlow < iymin[i] + dimy[i]) && (jhigh >iymin[i]) ) yo = true;
+            }
+
+            zo = false;
+            if(izmin[i] < 0) 
+            {
+                if (klow < izmin[i] + dimz[i]) zo = true;
+                if (khigh > izmin[i] + NZ_GRID) zo = true;
+            }
+            else if(izmin[i] +dimz[i] > NZ_GRID)
+            {
+                if (klow < izmin[i] + dimz[i] - NZ_GRID) zo = true;
+                if (khigh > izmin[i]) zo = true;
+            }         
+            {
+                if( (klow < izmin[i] + dimz[i]) && (khigh >izmin[i]) ) zo = true;
+            }
+
+            if(xo && yo && zo)
+            {
+                this->index_global_to_proj[i] = this->num_thispe;
+                this->index_proj_to_global[this->num_thispe] = i;
+                this->num_thispe++;
+
+            }
+
+        }
     }
 
     this->storage_proj = new KpointType[this->num_thispe * P0_BASIS];
@@ -170,7 +213,7 @@ template void LocalObject<double>::ReadOrbitals(std::string filename, BaseGrid *
 template void LocalObject<std::complex<double>>::ReadOrbitals(std::string filename, BaseGrid *Rmg_G);
 template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::string filename, BaseGrid *Rmg_G)
 {
-    
+
     int density = this->density;
     int PX0_GRID = Rmg_G->get_PX0_GRID(density);
     int PY0_GRID = Rmg_G->get_PY0_GRID(density);
@@ -216,29 +259,29 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::stri
         close(fhand);
 
         for(int ix = 0; ix < this->dimx[st_glob]; ix++)
-        for(int iy = 0; iy < this->dimy[st_glob]; iy++)
-        for(int iz = 0; iz < this->dimz[st_glob]; iz++)
-        {
-           int ixx = ix + this->ixmin[st_glob]; 
-           int iyy = iy + this->iymin[st_glob]; 
-           int izz = iz + this->izmin[st_glob]; 
+            for(int iy = 0; iy < this->dimy[st_glob]; iy++)
+                for(int iz = 0; iz < this->dimz[st_glob]; iz++)
+                {
+                    int ixx = ix + this->ixmin[st_glob]; 
+                    int iyy = iy + this->iymin[st_glob]; 
+                    int izz = iz + this->izmin[st_glob]; 
 
-            if (ixx < 0) ixx += NX_GRID;
-            if (iyy < 0) iyy += NY_GRID;
-            if (izz < 0) izz += NZ_GRID;
-            if (ixx >= NX_GRID) ixx -=NX_GRID;
-            if (iyy >= NY_GRID) iyy -=NY_GRID;
-            if (izz >= NZ_GRID) izz -=NZ_GRID;
+                    if (ixx < 0) ixx += NX_GRID;
+                    if (iyy < 0) iyy += NY_GRID;
+                    if (izz < 0) izz += NZ_GRID;
+                    if (ixx >= NX_GRID) ixx -=NX_GRID;
+                    if (iyy >= NY_GRID) iyy -=NY_GRID;
+                    if (izz >= NZ_GRID) izz -=NZ_GRID;
 
-            if(ixx >=ilow && ixx < ihigh && iyy >=jlow && iyy <jhigh && izz >=klow && izz < khigh)
-            {
-                int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
-                int idx0 = ix * this->dimy[st_glob] * this->dimz[st_glob] + iy * this->dimz[st_glob] + iz;
-                this->storage_proj[st * P0_BASIS + idx] = (KpointType) psi[idx0];
-            }
-    
-        }
-        
+                    if(ixx >=ilow && ixx < ihigh && iyy >=jlow && iyy <jhigh && izz >=klow && izz < khigh)
+                    {
+                        int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
+                        int idx0 = ix * this->dimy[st_glob] * this->dimz[st_glob] + iy * this->dimz[st_glob] + iz;
+                        this->storage_proj[st * P0_BASIS + idx] = (KpointType) psi[idx0];
+                    }
+
+                }
+
         delete []psi;
     }
 }
@@ -270,8 +313,8 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
     int fhand;
     int proj_count = 0;
     for (int i = 0; i < this->num_thispe; i++)
-    for (int j = 0; j < P0_BASIS; j++)
-        this->storage_proj[i * P0_BASIS + j] = 0.0;
+        for (int j = 0; j < P0_BASIS; j++)
+            this->storage_proj[i * P0_BASIS + j] = 0.0;
 
     for(int ion = 0; ion < num_ions; ion++)
     {
@@ -281,7 +324,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
             continue;
         }
 
-        
+
         int proj_local_index;
 
         std::string newname;
@@ -330,6 +373,114 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
 
         delete [] beta;
     }
+
+}
+
+template void LocalObject<double>::GetAtomicOrbitals(int, BaseGrid *Rmg_G);
+template void LocalObject<std::complex<double>>::GetAtomicOrbitals(int, BaseGrid *Rmg_G);
+template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int num_ions, BaseGrid *Rmg_G)
+{
+
+    // Used to generate LDA+U orbital projectors that span the full space
+    if (!this->delocalized)
+            rmg_error_handler (__FILE__, __LINE__,"error GetAtomicOrbitals");
+
+    KpointType *weight;
+    std::complex<double> I_t(0.0, 1.0);
+    int pbasis = Rmg_G->get_P0_BASIS(density);
+
+    /*Pointer to the result of forward transform on the coarse grid */
+    std::complex<double> *fptr;
+
+
+    /*Get memory to store the phase factor applied to the forward Fourier transform 
+     * and to store the backwards transform*/
+    std::complex<double> *beptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+    std::complex<double> *gbptr = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+
+    if ((beptr == NULL) || (gbptr == NULL))
+        rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
+
+    std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
+
+
+    double kvec[3];
+
+    kvec[0] = 0.0;
+    kvec[1] = 0.0;
+    kvec[2] = 0.0;
+
+    /* Loop over ions */
+    weight = (KpointType *)this->storage_proj;
+    for (int ion = 0; ion < ct.num_ions; ion++)
+    {
+
+        /* Generate ion pointer */
+        ION *iptr = &ct.ions[ion];
+
+        /* Get species type */
+        SPECIES *sp = &ct.sp[iptr->species];
+
+        int nlxdim = get_NX_GRID();
+        int nlydim = get_NY_GRID();
+        int nlzdim = get_NZ_GRID();
+
+        double vect[3], nlcrds[3];
+
+        /* Find nlcdrs, vector that gives shift of ion from center of its ionic box */
+        /* for delocalized case it's just half the cell dimensions */
+        vect[0] = iptr->xtal[0] - 0.5;
+        vect[1] = iptr->xtal[1] - 0.5;
+        vect[2] = iptr->xtal[2] - 0.5;
+
+        /*The vector we are looking for should be */
+        to_cartesian (vect, nlcrds);
+
+        /*Calculate the phase factor */
+        FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, nlcrds, fftw_phase, false);
+
+
+        /*Temporary pointer to the already calculated forward transform */
+        int kpt = 0;
+        fptr = (std::complex<double> *)&sp->forward_orbital[kpt * sp->num_orbitals * pbasis];
+
+
+        /* Loop over radial projectors */
+        for (int ip = 0; ip < sp->num_orbitals; ip++)
+        {
+
+
+            // Apply the phase factor.
+            for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
+
+            /*Do the backwards transform */
+            PfftInverse(gbptr, beptr, *coarse_pwaves);
+
+            if(ct.is_gamma)
+            {
+                double *weight_R = (double *)weight;
+                for (int idx = 0; idx < pbasis; idx++) weight_R[idx] = std::real(beptr[idx]);
+            }
+            else
+            {
+                std::complex<double> *weight_C = (std::complex<double> *)weight;
+                for (int idx = 0; idx < pbasis; idx++) weight_C[idx] = beptr[idx];
+            }
+
+            weight += pbasis;
+
+            /*Advance the temp pointers */
+            fptr += pbasis;
+
+        }
+
+
+    }                           /* end for */
+
+
+    delete [] fftw_phase;
+    fftw_free (gbptr);
+    fftw_free (beptr);
 
 }
 

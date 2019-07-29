@@ -21,7 +21,7 @@ public:
 //    LocalObject(int num_objects, double *center_crd, double *radius, 
 //                BaseGrid *Rmg_G, int coarse_fine, MPI_Comm comm);
     LocalObject(int num_objects, int *ixmin, int *iymin, int *izmin, 
-                int *dimx, int *dimy, int *dimz,
+                int *dimx, int *dimy, int *dimz, bool delocalized,
                 BaseGrid *Rmg_G, int density, MPI_Comm comm);
     ~LocalObject(void);
 
@@ -32,12 +32,14 @@ public:
     int density;
     int *index_proj_to_global;
     int *index_global_to_proj;
+    bool delocalized;
     MPI_Comm comm;
 
     // Type LOCALIZED or DELOCALIZED
     int type;
     void ReadOrbitals(std::string filename, BaseGrid *Rmg_G);
     void ReadProjectors(int num_ions, int max_nlpoint, int *num_proj_perion, BaseGrid *Rmg_G);
+    void GetAtomicOrbitals(int num_ions, BaseGrid *Rmg_G);
 
 
 
