@@ -54,6 +54,7 @@
 #include "common_prototypes1.h"
 #include "macros.h"
 #include "FiniteDiff.h"
+#include "transition.h"
 
 
 
@@ -106,7 +107,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
         nrho[idx] = 0.0;
     pack_vhstod (work, nrho, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
 
-    app_cir_driver (nrho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
+    CPP_app_cir_driver (&Rmg_L, Rmg_T, nrho, mgrhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid, APP_CI_FOURTH);
 
 
     /* Multiply through by 4PI */
@@ -131,7 +132,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
             {
         
                 /* Apply operator */
-                diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+                diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
                             get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
                 diag = -1.0 / diag;
 
@@ -194,7 +195,7 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
         }                       /* end for */
 
         /*Get residual*/
-        diag = app_cil_driver (ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
+        diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, ct.vh_ext, mglhsarr, ct.vh_pxgrid, ct.vh_pygrid, ct.vh_pzgrid,
                             get_hxxgrid(), get_hyygrid(), get_hzzgrid(), APP_CI_FOURTH);
         diag = -1.0 / diag;
 
