@@ -256,6 +256,32 @@ typedef struct
 
 } KPOINT;
 
+/* multigrid-parameter structure */
+typedef struct
+{
+
+    /* number of global-grid pre/post smoothings and timestep */
+    double gl_step;
+    int gl_pre;
+    int gl_pst;
+
+    /* timestep for multigrid correction */
+    double mg_timestep;
+
+    /* timestep for the subiteration */
+    double sb_step;
+
+    /* lowest MG level */
+    int levels;
+
+    /* Number of Mu-cycles to use */
+    int mucycles;
+
+    /* Number of Smoother iterations on the coarsest level */
+    int coarsest_steps;
+
+} MG_PARM;
+
 
 #include "rmg_control.h"
 
