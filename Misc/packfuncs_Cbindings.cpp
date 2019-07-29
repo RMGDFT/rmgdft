@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id: pack_stop.c 2093 2014-02-06 01:02:40Z ebriggs $    **
-******************************************************************************/
-
 /****f* QMD-MGDFT/pack_stop.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration

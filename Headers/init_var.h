@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
- 
 #define ORDER_N 1
 
 extern unsigned int *perm_ion_index, *perm_state_index, *rev_perm_state_index;

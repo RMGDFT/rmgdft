@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
-******************************************************************************/
-
 /****f* QMD-MGDFT/minimage.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration

@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
- ******************************************************************************/
-
 /***** Common-MGDFT/constrain.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration

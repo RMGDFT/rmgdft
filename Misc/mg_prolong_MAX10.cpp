@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
- ******************************************************************************/
-
 /****f* QMD-MGDFT/mg_prolong_MAX10.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration

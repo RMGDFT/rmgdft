@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id: const.h 2072 2013-11-01 14:50:01Z ebriggs $    **
-******************************************************************************/
- 
 /****f* QMD-MGDFT/const.h *****
  * NAME
  *   Ab initio real space code with multigrid acceleration

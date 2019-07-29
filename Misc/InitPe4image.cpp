@@ -1,6 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id$    **
- ******************************************************************************/
 /*   init  processor topology for multiple images, spin/no spin, kpoint
  *   , and grid
  *   MPI_COMM_WORLD  :   first level

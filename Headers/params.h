@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id: params.h 1870 2013-02-05 13:58:02Z ebriggs $    **
-******************************************************************************/
- 
 /****f* QMD-MGDFT/params.h *****
  * NAME
  *   Ab initio real space code with multigrid acceleration

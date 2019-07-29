@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id: pack_vhdtos.c 2147 2014-02-26 18:46:25Z ebriggs $    **
-******************************************************************************/
-
 /****f* QMD-MG->FT/pack_vhdtos.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration

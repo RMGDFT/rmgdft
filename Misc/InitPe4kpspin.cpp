@@ -1,6 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id: InitPe4image.cpp 3142 2015-08-07 16:16:21Z luw $    **
- ******************************************************************************/
 /*   init  processor topology for multiple images, spin/no spin, kpoint
  *   , and grid
  *   MPI_COMM_WORLD  :   first level

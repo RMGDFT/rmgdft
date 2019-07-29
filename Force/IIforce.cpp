@@ -1,7 +1,3 @@
-/************************** SVN Revision Information **************************
- **    $Id: iiforce.c 3533 2016-05-02 19:10:01Z luw $    **
-******************************************************************************/
-
 /****f* QMD-MGDFT/iiforce.c *****
  * NAME
  *   Ab initio real space code with multigrid acceleration
