@@ -77,9 +77,7 @@ void WriteHeader (void)
     printf ("     --      More information at www.rmgdft.org          --\n");
         
 
-#if !(_WIN32 || _WIN64)
     printf ("\nBuild Date: %s  %s", __DATE__, __TIME__);
-#endif
     printf ("\nStart time: %s", timeptr);
 
     printf ("\n");

@@ -27,11 +27,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h> 
-#if (defined(_WIN32) || defined(_WIN64))
-    #include <io.h>
-#else
-    #include <unistd.h>
-#endif
+#include <unistd.h>
 #include <unordered_map>
 #include <csignal>
 
@@ -125,11 +121,6 @@ int main (int argc, char **argv)
     // Signal handlers to cleanup in case user terminates
     std::signal(SIGTERM, term_handler);
     std::signal(SIGINT, term_handler);
-
-#if (defined(_WIN32) || defined(_WIN64))
-    // make default io binary
-     _set_fmode( _O_BINARY);
-#endif
 
     RmgTimer *RT = new RmgTimer("1-TOTAL");
     char *tptr;
