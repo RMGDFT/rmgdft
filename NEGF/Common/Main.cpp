@@ -78,6 +78,7 @@
 #include "init_var.h"
 #include "Kbpsi.h"
 
+std::vector<ION> Atoms;
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
