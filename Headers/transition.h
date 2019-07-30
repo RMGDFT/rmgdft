@@ -312,7 +312,6 @@ void InitDelocalizedLocalpp(double *vlocpp_r);
 template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const char *grid);
 
 void SetLaplacian();
-double FiniteDiffLap(double *a, double *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
 void WriteHeader (void);
 
 #endif

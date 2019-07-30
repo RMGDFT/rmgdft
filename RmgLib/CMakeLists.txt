@@ -46,7 +46,9 @@ src/app_cil_driver_threaded.cpp
 src/app_grad_driver.cpp
 src/app_del2_driver.cpp
 src/FiniteDiff.cpp
+src/LaplacianCoeff.cpp
 src/RmgTimer.cpp
+src/FiniteDiffLap.cpp
 src/RmgPrintTimings.cpp
 src/RmgSumAll.cpp
 src/RmgMaxAll.cpp

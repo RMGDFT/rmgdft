@@ -27,14 +27,13 @@
  * 
 */
 
+#include <complex>
+#include <alloca.h>
 #include "TradeImages.h"
 #include "Lattice.h"
 #include "FiniteDiff.h"
+#include "LaplacianCoeff.h"
 #include "rmg_error.h"
-#include "RmgTimer.h"
-#include "transition.h"
-#include <complex>
-#include <alloca.h>
 
 template double CPP_app_del2_driver<float>(Lattice *, TradeImages *, float *, float *, int, int, int, double, double, double, int);
 template double CPP_app_del2_driver<double>(Lattice *, TradeImages *, double *, double *, int, int, int, double, double, double, int);
@@ -94,11 +93,13 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
 
-    int dim[3];
-    LC->GetDim(dim);
-    if(0 && dimx == dim[0] && dimy == dim[1] && dimz == dim[2])
+// disable this for now
+//    int dim[3];
+//    LC->GetDim(dim);
+//    if(0 && dimx == dim[0] && dimy == dim[1] && dimz == dim[2])
+if(0)
     {
-        cc = FiniteDiffLap ((double *)rptr, (double *)b, dimx, dimy, dimz, LC);
+//        cc = FiniteDiffLap ((double *)rptr, (double *)b, dimx, dimy, dimz, LC);
         
     }
     else

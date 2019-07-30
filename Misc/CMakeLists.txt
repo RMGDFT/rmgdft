@@ -1,7 +1,5 @@
 add_library (Misc
 PulayMixing.cpp
-LaplacianCoeff.cpp
-FiniteDiffLap.cpp
 SetLaplacian.cpp
 app_smooth.cpp
 IonIonEnergy_Ewald.cpp
