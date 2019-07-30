@@ -164,6 +164,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         int density = 1;
         LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
                 dimx, dimy, dimz, 0, Rmg_G, density, pct.grid_comm);
+        H_LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
+                dimx, dimy, dimz, 0, Rmg_G, density, pct.grid_comm);
         delete [] ixmin;
         delete [] dimx;
 //        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
@@ -201,11 +203,9 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     {
         int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
         int tot_prj = 0;
-        int tot_orbitals = 0;
         for (int ion=0; ion < ct.num_ions; ion++)
         {
             tot_prj += ct.sp[ct.ions[ion].species].num_projectors;
-            tot_orbitals += ct.sp[ct.ions[ion].species].num_orbitals;
         }
         ixmin = new int[3*tot_prj];
         iymin = ixmin + tot_prj;
@@ -239,8 +239,29 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         delete [] dimx;
         LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, Rmg_G);
         delete [] proj_per_ion;
+    }
 
-        LocalAtomicOrbital = new LocalObject<double>(tot_orbitals, ixmin, iymin, izmin,
+    if(ct.num_ldaU_ions > 0)
+    {
+        int tot_orbitals_ldaU = 0;
+        for (int ion=0; ion < ct.num_ions; ion++)
+        {
+            ION *iptr = &ct.ions[ion];
+            SPECIES *sp = &ct.sp[iptr->species];
+            for (int ip = 0; ip < sp->num_orbitals; ip++)
+            {
+                // This ranges over all orbitals including the m-dependence
+                if(sp->awave_is_ldaU[ip])
+                {
+
+                    tot_orbitals_ldaU++;
+                }
+            }
+        }
+
+        int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
+        int density = 1;
+        LocalAtomicOrbital = new LocalObject<double>(tot_orbitals_ldaU, ixmin, iymin, izmin,
                 dimx, dimy, dimz, 1, Rmg_G, density, pct.grid_comm);
         LocalAtomicOrbital->GetAtomicOrbitals(ct.num_ions, Rmg_G);
 

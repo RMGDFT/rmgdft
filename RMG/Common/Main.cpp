@@ -246,13 +246,10 @@ void initialize(int argc, char **argv)
         if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
     }
 
-    /*
-    it's necessary to ignore symmetry in certain cases, like MD
-    if(!ct.is_gamma) 
+    if(ct.is_gamma) 
     {
-        ct.is_use_symmetry = 1;
+        ct.is_use_symmetry = 0;
     }
-    */
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
