@@ -24,6 +24,7 @@
 #include "init_var.h"
 #include "PulayMixing.h"
 #include "LocalObject.h"
+#include "Kbpsi.h"
 #define DELTA_V_MAX 1.0
 
 void update_pot(double *, double *, double *, double *, double *, double *, double *,
@@ -91,11 +92,12 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
     KbpsiUpdate(states);
+    LO_x_LO(*LocalOrbital, *LocalProj, Kbpsi_mat, *Rmg_G);
     delete(RTk);
 
     RmgTimer *RT1 = new RmgTimer("2-SCF: get_HS");
     GetHS(states, states1, vtot_c, Hij_00, Bij_00);
-    GetHS_dis(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij_00, Bij_00);
+    GetHS_dis(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij_00, Bij_00, Kbpsi_mat);
     delete(RT1);
 #if ELEMENTAL_LIBS
     RmgTimer *RTa = new RmgTimer("2-SCF: DiagElemental");
@@ -129,7 +131,10 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     for (idx = 0; idx < nfp0; idx++)trho[idx] = rho[idx];
 
     if(ct.scf_steps >= ct.freeze_rho_steps)
+    {
         GetNewRho_on(states, rho, work_matrix_row);
+        GetNewRho_dis(*LocalOrbital, *H_LocalOrbital, rho, work_matrix_row);
+    }
     //BroydenPotential(rho_old, rho, rhoc, vh_old, vh, ct.charge_broyden_order, false);
 
     int iii = get_FP0_BASIS();

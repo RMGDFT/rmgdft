@@ -1,11 +1,13 @@
 #define GAMMA_PT 1
 //#include "typedefs.h"
+#include "LocalObject.h"
 void MyCpdgemr2d(int M,int N, double *A, int *desca, double *B, int *descb);
 
 void KbpsiComm();
 void InitNonlocalComm();
 void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double *Bij);
 void GetHvnlij (double *Aij, double *Bij);
+void GetHvnlij_dis (double *Aij, double *Bij, double *kbpsimat, int norb, int nproj);
 void OrbitalOptimize (STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rhoc, double * vxc_old,
         double * vh_old);
@@ -38,7 +40,8 @@ void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void DotProductOrbitNl (STATE *st1, int ion2, double * psi,
         double * prjptr, ION_ORBIT_OVERLAP *, int num_proj, double *kbpsi);
 void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G);
-void GetHS_dis(LocalObject<double> &A, LocalObject<double> &B, double *vtot_c, double *H, double *S);
+void GetHS_dis(LocalObject<double> &A, LocalObject<double> &B, double *vtot_c, double *H, double *S, double *kbpsi);
+void GetNewRho_dis(LocalObject<double> &A, LocalObject<double> &B, double *rho, double *mat_local);
 
 
 #ifdef __cplusplus

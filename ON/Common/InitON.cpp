@@ -54,6 +54,7 @@
 #include "Atomic.h"
 #include "Functional.h"
 #include "LocalObject.h"
+#include "Kbpsi.h"
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
@@ -239,6 +240,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         delete [] dimx;
         LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, Rmg_G);
         delete [] proj_per_ion;
+        Kbpsi_mat = new double[LocalProj->num_tot * LocalOrbital->num_tot]; 
     }
 
     if(ct.num_ldaU_ions > 0)

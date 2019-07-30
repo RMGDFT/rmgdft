@@ -68,8 +68,10 @@
 
 
 LocalObject<double> *LocalOrbital;
+LocalObject<double> *H_LocalOrbital;
 LocalObject<double> *LocalProj;
 LocalObject<double> *LocalAtomicOrbital;
+double *Kbpsi_mat;
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */

@@ -7,6 +7,7 @@ DistributeTasks.cpp
 RmgThread.cpp
 make_mask_grid_state.cpp
 GetNewRho_on.cpp
+GetNewRho_dis.cpp
 FillOrbitalBorders.cpp
 KbpsiUpdate.cpp
 RhoQnmMat.cpp
@@ -15,6 +16,7 @@ KbpsiComm.cpp
 InitNonlocalComm.cpp
 GetHS.cpp
 GetHvnlij.cpp
+GetHvnlij_dis.cpp
 ReadOrbitals.cpp
 allocate_masks.cpp
 AllocatePsi.cpp

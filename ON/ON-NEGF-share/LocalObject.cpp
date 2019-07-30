@@ -233,6 +233,8 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::stri
     int khigh = klow + PZ0_GRID;
 
     int fhand;
+
+    for(int idx = 0; idx < this->num_thispe * P0_BASIS; idx++) this->storage_proj[idx] = 0.0;
     for(int st = 0; st < this->num_thispe; st++)
     {
 

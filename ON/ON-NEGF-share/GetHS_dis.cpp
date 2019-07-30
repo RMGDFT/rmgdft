@@ -28,13 +28,14 @@
 
 
 void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi, 
-        double *vtot_c, double *Hij_glob, double *Bij_glob)
+        double *vtot_c, double *Hij_glob, double *Bij_glob, double *Kbpsi_mat)
 {
     int ione = 1;
 
     double hxgrid = Rmg_G->get_hxgrid(1);
     double hygrid = Rmg_G->get_hygrid(1);
     double hzgrid = Rmg_G->get_hzgrid(1);
+    int pbasis = Rmg_G->get_P0_BASIS(1);
 
     int order = ct.kohn_sham_fd_order;
 
@@ -58,7 +59,7 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
         for (int idx = 0; idx < pbasis; idx++)
         {
-            h_phi[idx] = a_phi[idx] * vtot_c[idx] - 0.5 * h_phi[idx]
+            h_phi[idx] = a_phi[idx] * vtot_c[idx] - 0.5 * h_phi[idx];
         }
     }
 
@@ -70,13 +71,13 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
      */
 
     RmgTimer *RT1 = new RmgTimer("4-get_HS: orbit_dot_orbit");
-    LO_x_LO(Phi, H_Phi, Hij_glob, Rmg_G);
-    LO_x_LO(Phi, Phi, Bij_glob, Rmg_G);
+    LO_x_LO(Phi, H_Phi, Hij_glob, *Rmg_G);
+    LO_x_LO(Phi, Phi, Bij_glob, *Rmg_G);
 
     delete(RT1);
 
     RmgTimer *RT3 = new RmgTimer("4-get_HS: Hvnlij");
-    GetHvnlij(Hij_glob, Bij_glob);
+    GetHvnlij_dis(Hij_glob, Bij_glob, Kbpsi_mat, Phi.num_tot, LocalProj->num_tot);
     delete(RT3);
 
     int n2 = Phi.num_tot * Phi.num_tot;
@@ -84,13 +85,13 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     double t1 = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
     double vel = Rmg_L.get_omega() / t1;
 
-    dscal (&n2, &vel, Hij_glob, &ione);
-    dscal (&n2, &vel, Bij_glob, &ione);
+  //  dscal (&n2, &vel, Hij_glob, &ione);
+  //  dscal (&n2, &vel, Bij_glob, &ione);
 
     if (pct.gridpe == 0)
     {
-        print_matrix(Hij_glob, 6, maxst);
-        print_matrix(Bij_glob, 6, maxst);
+        print_matrix(Hij_glob, 6, Phi.num_tot);
+        print_matrix(Bij_glob, 6, Phi.num_tot);
     }
 
     delete(RT);
