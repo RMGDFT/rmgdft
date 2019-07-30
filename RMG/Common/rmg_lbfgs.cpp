@@ -45,7 +45,7 @@ void rmg_lbfgs (void)
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         force[ion * 3 + 0] = iptr->force[fpt][0];
         force[ion * 3 + 1] = iptr->force[fpt][1];
         force[ion * 3 + 2] = iptr->force[fpt][2];
@@ -62,7 +62,7 @@ void rmg_lbfgs (void)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         if(iptr->movable )
         {
             iptr->crds[0] = position[ion * 3 + 0] ;

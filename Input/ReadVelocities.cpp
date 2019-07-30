@@ -83,17 +83,17 @@ void ReadVelocities(char *cfile, CONTROL& lc, std::unordered_map<std::string, In
 
         std::string xvelocity = *it1;
         boost::trim(xvelocity);
-        lc.ions[nions].velocity[0] = std::atof(xvelocity.c_str());
+        Atoms[nions].velocity[0] = std::atof(xvelocity.c_str());
 
         it1++;
         std::string yvelocity = *it1;
         boost::trim(yvelocity);
-        lc.ions[nions].velocity[1] = std::atof(yvelocity.c_str());
+        Atoms[nions].velocity[1] = std::atof(yvelocity.c_str());
 
         it1++;
         std::string zvelocity = *it1;
         boost::trim(zvelocity);
-        lc.ions[nions].velocity[2] = std::atof(zvelocity.c_str());
+        Atoms[nions].velocity[2] = std::atof(zvelocity.c_str());
         nions++;
 
     }

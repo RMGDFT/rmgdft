@@ -85,7 +85,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
     std::string AtomArray;
     std::string line_delims = "^\n";
     std::string whitespace_delims = " \n\t";
-    std::vector<std::string> Atoms;
+    std::vector<std::string> Atoms_str;
     std::unordered_map<std::string, InputKey *> NewMap;
     int nions = 0;
 
@@ -117,19 +117,19 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
     boost::trim(AtomArray);
     boost::trim_if(AtomArray, boost::algorithm::is_any_of("\"^"));
 
-    boost::algorithm::split( Atoms, AtomArray, boost::is_any_of(line_delims), boost::token_compress_on );
+    boost::algorithm::split( Atoms_str, AtomArray, boost::is_any_of(line_delims), boost::token_compress_on );
 
     // Next step is to determine if the ions are represented by an internal atoms tag or an external file.
     bool external_atoms = true;
-    if(Atoms.size() > 1) {
+    if(Atoms_str.size() > 1) {
 
         external_atoms = false;  // Must have just one entry in the tag
 
     }
-    else if(Atoms.size() == 1) {
+    else if(Atoms_str.size() == 1) {
 
         // If the file exists use it
-        if( !boost::filesystem::exists(Atoms[0].c_str())) external_atoms = false;
+        if( !boost::filesystem::exists(Atoms_str[0].c_str())) external_atoms = false;
 
     }
     else {
@@ -142,7 +142,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
 #if OPENBABEL_LIBS
     if(external_atoms) {
 
-        const char *atomfile = Atoms[0].c_str();
+        const char *atomfile = Atoms_str[0].c_str();
 
         std::ifstream ifs(atomfile);
         OpenBabel::OBConversion conv;
@@ -180,7 +180,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
             AtomArray = AtomArray + *it1 + "\n";
         }
         boost::trim(AtomArray);
-        boost::algorithm::split( Atoms, AtomArray, boost::is_any_of(line_delims), boost::token_compress_on );
+        boost::algorithm::split( Atoms_str, AtomArray, boost::is_any_of(line_delims), boost::token_compress_on );
 
         // Openbabel always uses Angstroms and absolute coordinates
         InputKey *Ik = InputMap["crds_units"]; 
@@ -202,11 +202,11 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
 
     // Converted to RMG internal format and process from here.
 
-    lc.num_ions = Atoms.size();
-    lc.ions.resize(lc.num_ions);
+    lc.num_ions = Atoms_str.size();
+    Atoms.resize(lc.num_ions);
 
     std::vector<std::string>::iterator it, it1;
-    for (it = Atoms.begin(); it != Atoms.end(); ++it) {
+    for (it = Atoms_str.begin(); it != Atoms_str.end(); ++it) {
 
         if(nions > lc.num_ions)
             throw RmgFatalException() << "Inconsistency in number of ions: " << lc.num_ions << " was specified initially but " << nions << " were found.\n";
@@ -231,13 +231,13 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         // Look for the coordinates
         it1++;
         std::string xstr = *it1;
-        lc.ions[nions].crds[0] = std::atof(xstr.c_str());
+        Atoms[nions].crds[0] = std::atof(xstr.c_str());
         it1++;
         std::string ystr = *it1;
-        lc.ions[nions].crds[1] = std::atof(ystr.c_str());
+        Atoms[nions].crds[1] = std::atof(ystr.c_str());
         it1++;
         std::string zstr = *it1;
-        lc.ions[nions].crds[2] = std::atof(zstr.c_str());
+        Atoms[nions].crds[2] = std::atof(zstr.c_str());
 
 
 
@@ -253,7 +253,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
             if( !smov.compare("NO") ) movable = 0;
         }
 
-        lc.ions[nions].movable = movable;
+        Atoms[nions].movable = movable;
 
         if((lc.spin_flag == 1) && (ncomp < 6)) 
         {
@@ -266,7 +266,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
             sp += rho_updown_diff;
             double tem = std::atof(rho_updown_diff.c_str());
             if(tem > 0.5 || tem < -0.5) throw RmgFatalException() << "for spin-polarization, the spin updown difference must be -0.5 to 0.5" << Atom << "\n"; 
-            lc.ions[nions].init_spin_rho = tem;
+            Atoms[nions].init_spin_rho = tem;
         }
 
         // Everything checks out so make an entry in the SpeciesTypes set and in the IonSpecies list.

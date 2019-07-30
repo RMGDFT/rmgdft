@@ -48,7 +48,7 @@ void nlforce_par_D (STATE *states, double *forces)
     idx2 = ct.num_states - lcr[2].num_states / 2;
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        if (ct.ions[ion].movable)
+        if (Atoms[ion].movable)
         {
 
             /* Making a loop for x , y, and z direction, corresponding to ixyz = 1, 2, 3 */

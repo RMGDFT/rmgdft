@@ -108,7 +108,7 @@ void GetNlop_on(void)
         {
             pct.ionidx[pct.n_ion_center] = ion;
             pct.n_ion_center += 1;
-            tot_prj += ct.sp[ct.ions[ion].species].num_projectors;
+            tot_prj += ct.sp[Atoms[ion].species].num_projectors;
         }
     }
 
@@ -142,7 +142,7 @@ void GetNlop_on(void)
 
 
     for (ion = 0; ion < ct.num_ions; ion++)
-        pct.prj_per_ion[ion] = ct.sp[ct.ions[ion].species].num_projectors;
+        pct.prj_per_ion[ion] = ct.sp[Atoms[ion].species].num_projectors;
 
     /* Loop over all the ions on this processor */
 
@@ -154,7 +154,7 @@ void GetNlop_on(void)
     {
 
         /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /* Get species type */
         sp = &ct.sp[iptr->species];
@@ -236,7 +236,7 @@ void GetNlop_on(void)
     {
         ion = pct.ionidx[ion1];
         /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /* Get species type */
         sp = &ct.sp[iptr->species];

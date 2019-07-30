@@ -26,7 +26,7 @@ void nlforce_par_Q(double * veff, double * rho_nm, int ion, int nh, double *forc
 
     count = pct.Qidxptrlen[ion];
     pidx = pct.Qindex[ion];
-    iptr = &ct.ions[ion];
+    iptr = &Atoms[ion];
 
     max_nl = ct.max_nl;
 

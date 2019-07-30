@@ -126,7 +126,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
                     for (int ion = 0; ion < ct.num_ions; ion++)
                     {
 
-                        iptr1 = &ct.ions[ion];
+                        iptr1 = &Atoms[ion];
                         if(iptr1->species == isp) 
                         {
                             kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
@@ -142,7 +142,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
                     for (int i = 0; i < ct.num_ions; i++)
                     {
 
-                        iptr1 = &ct.ions[i];
+                        iptr1 = &Atoms[i];
                         if(iptr1->species == isp) 
                         {
                             kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];

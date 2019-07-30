@@ -49,7 +49,7 @@ void GetHvnlij_dis(double *Aij, double *Bij, double *Kbpsi_mat, int num_orb, int
     int proj_count = 0;
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
-        ION *iptr = &ct.ions[ion];
+        ION *iptr = &Atoms[ion];
         SPECIES *sp = &ct.sp[iptr->species];
 
         int nh = sp->num_projectors;

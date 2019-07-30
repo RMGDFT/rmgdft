@@ -59,6 +59,8 @@ void report (void);
 
 void finish (void);
 
+std::vector<ION> Atoms;
+
 
 /* Electronic charge density or charge density of own spin in polarized case */
 double *rho;

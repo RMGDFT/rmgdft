@@ -65,7 +65,7 @@ static void init_xbsmovie(FILE * movie)
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         sp = &ct.sp[iptr->species];
 
         fprintf(movie, "atom %2s	%f %f %f\n",
@@ -138,7 +138,7 @@ void xbsmovie(FILE * movie)
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         fprintf(movie, "%f %f %f ", iptr->crds[0], iptr->crds[1], iptr->crds[2]);
     }

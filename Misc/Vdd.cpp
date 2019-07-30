@@ -121,7 +121,7 @@ void Vdd(double * rho)
 	/*Absolute ionic index*/
 	ion_index = pct.loc_ions_list[ionct];
 
-	iptr = &ct.ions[ion_index];
+	iptr = &Atoms[ion_index];
 
 	/*For non-cluster (periodic) boundary conditions we have to conside periodic images of ions*/
 	for (ix = loopx_min; ix<= loopx_max; ix++)
@@ -301,7 +301,7 @@ void Vdd(double * rho)
 
 
 	for (i=0; i<ct.num_ions; i++)
-	    ct.ions[i].partial_charge = 0.0;
+	    Atoms[i].partial_charge = 0.0;
 
 	
 	/*PE 0 own contribution, dealing with this separately*/
@@ -310,7 +310,7 @@ void Vdd(double * rho)
 
 	    ion_index = rel_index[i];
 
-	    ct.ions[ion_index].partial_charge +=  loc_array[i];
+	    Atoms[ion_index].partial_charge +=  loc_array[i];
 	}
 
 	/*Wait until communication is finished, these are non-blocking calls*/
@@ -324,7 +324,7 @@ void Vdd(double * rho)
 	{
 	    ion_index = rel_index_recv[j];
 
-	    ct.ions[ion_index].partial_charge += loc_array_recv[j];
+	    Atoms[ion_index].partial_charge += loc_array_recv[j];
 
 	}
 	//rmg_printf("\n Vdd p2p communication took %f seconds\n", my_crtc () - timex);
@@ -337,7 +337,7 @@ void Vdd(double * rho)
 	for (i = 0; i < ct.num_ions; i++)
 	{
 
-	    iptr = &ct.ions[i];
+	    iptr = &Atoms[i];
 	    iptr->partial_charge *= vel;
 
 	    check +=  iptr->partial_charge;

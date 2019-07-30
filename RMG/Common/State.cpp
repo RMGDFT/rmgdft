@@ -119,7 +119,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
 
             oion = owned_ions_list[ion];
             
-            iptr = &ct.ions[oion];
+            iptr = &Atoms[oion];
            
             nh = ct.sp[iptr->species].nh;
             

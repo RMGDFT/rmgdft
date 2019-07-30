@@ -109,8 +109,8 @@ void init_sym (void)
     /* Set up atomic positions and species for fortran routines */
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        to_crystal (&tau[ion * 3], ct.ions[ion].crds);
-        ityp[ion] = ct.ions[ion].species;
+        to_crystal (&tau[ion * 3], Atoms[ion].crds);
+        ityp[ion] = Atoms[ion].species;
     }
 
 
@@ -205,9 +205,9 @@ void init_sym (void)
             // xtal is the coordinates of atom operated by symmetry operatio isym.
             for(i = 0; i < 3; i++)
             {
-                xtal[i] = s[isym *9 + i *3 + 0] * ct.ions[ion].xtal[0]
-                    + s[isym *9 + i *3 + 1] * ct.ions[ion].xtal[1]
-                    + s[isym *9 + i *3 + 2] * ct.ions[ion].xtal[2] +ftau[isym *3 + i]/ndim[i];
+                xtal[i] = s[isym *9 + i *3 + 0] * Atoms[ion].xtal[0]
+                    + s[isym *9 + i *3 + 1] * Atoms[ion].xtal[1]
+                    + s[isym *9 + i *3 + 2] * Atoms[ion].xtal[2] +ftau[isym *3 + i]/ndim[i];
 
                 if(xtal[i] + symprec  < 0.0) xtal[i]= xtal[i] + 1.0;
                 if(xtal[i] + symprec >= 1.0) xtal[i]= xtal[i] - 1.0;
@@ -221,12 +221,12 @@ void init_sym (void)
             {
                 if(ityp[ion] == ityp[ionb])
                 {
-//                    r =  (xtal[0] - ct.ions[ionb].xtal[0]) *(xtal[0] - ct.ions[ionb].xtal[0])
-//                        +(xtal[1] - ct.ions[ionb].xtal[1]) *(xtal[1] - ct.ions[ionb].xtal[1])
-//                        +(xtal[2] - ct.ions[ionb].xtal[2]) *(xtal[2] - ct.ions[ionb].xtal[2]);
-                    mod_x = (xtal[0] - ct.ions[ionb].xtal[0]) *(xtal[0] - ct.ions[ionb].xtal[0]);
-                    mod_y = (xtal[1] - ct.ions[ionb].xtal[1]) *(xtal[1] - ct.ions[ionb].xtal[1]);
-                    mod_z = (xtal[2] - ct.ions[ionb].xtal[2]) *(xtal[2] - ct.ions[ionb].xtal[2]);
+//                    r =  (xtal[0] - Atoms[ionb].xtal[0]) *(xtal[0] - Atoms[ionb].xtal[0])
+//                        +(xtal[1] - Atoms[ionb].xtal[1]) *(xtal[1] - Atoms[ionb].xtal[1])
+//                        +(xtal[2] - Atoms[ionb].xtal[2]) *(xtal[2] - Atoms[ionb].xtal[2]);
+                    mod_x = (xtal[0] - Atoms[ionb].xtal[0]) *(xtal[0] - Atoms[ionb].xtal[0]);
+                    mod_y = (xtal[1] - Atoms[ionb].xtal[1]) *(xtal[1] - Atoms[ionb].xtal[1]);
+                    mod_z = (xtal[2] - Atoms[ionb].xtal[2]) *(xtal[2] - Atoms[ionb].xtal[2]);
 
                     cond_x = fabs(mod_x - (int) mod_x) < symprec*10 || fabs(mod_x - (int)mod_x) > 1.0-symprec*10;
                     cond_y = fabs(mod_y - (int) mod_y) < symprec*10 || fabs(mod_y - (int)mod_y) > 1.0-symprec*10;
@@ -374,7 +374,7 @@ void symforce ()
             ion1 = sym_atom[isy * ct.num_ions + ion];
             for(i = 0; i < 3; i++)
                 for(j = 0; j < 3; j++)
-                    force[3* ion1 + i] += s[isy *9 + i* 3 + j] * ct.ions[ion].force[ct.fpt[0]][j];
+                    force[3* ion1 + i] += s[isy *9 + i* 3 + j] * Atoms[ion].force[ct.fpt[0]][j];
         }
 
 
@@ -383,7 +383,7 @@ void symforce ()
 
     for (ion = 0; ion < ct.num_ions; ion++)
         for(i = 0; i < 3; i++) 
-            ct.ions[ion].force[ct.fpt[0]][i] = force[3*ion + i] /nsym;
+            Atoms[ion].force[ct.fpt[0]][i] = force[3*ion + i] /nsym;
     delete [] force;
 }                               /* end symforce */
 

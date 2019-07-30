@@ -88,7 +88,7 @@ void init_parameter(STATE * states)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         ct.ionic_charge += ct.sp[iptr->species].zvalence;
 
     }                           /* end for */

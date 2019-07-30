@@ -96,7 +96,7 @@ void get_dipole (double * rho)
     {
 
         /*Ionic pointer and ionic charge */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         icharge = ct.sp[iptr->species].zvalence;
 
         /*Difference vector between center of the cell and ionic position */

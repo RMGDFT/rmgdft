@@ -42,7 +42,7 @@ void init_nl_xyz (void)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /* Get species type */
         sp = &ct.sp[iptr->species];
@@ -53,11 +53,11 @@ void init_nl_xyz (void)
         hygrid = get_hygrid() * get_yside();
         hzgrid = get_hzgrid() * get_zside();
 
-        get_start (L0_NLDIM, ct.ions[ion].crds[0], ct.xcstart, hxgrid,
+        get_start (L0_NLDIM, Atoms[ion].crds[0], ct.xcstart, hxgrid,
                    &iptr->ixstart, &iptr->nlxcstart);
-        get_start (L0_NLDIM, ct.ions[ion].crds[1], ct.ycstart, hygrid,
+        get_start (L0_NLDIM, Atoms[ion].crds[1], ct.ycstart, hygrid,
                    &iptr->iystart, &iptr->nlycstart);
-        get_start (L0_NLDIM, ct.ions[ion].crds[2], ct.zcstart, hzgrid,
+        get_start (L0_NLDIM, Atoms[ion].crds[2], ct.zcstart, hzgrid,
                    &iptr->izstart, &iptr->nlzcstart);
 
         iptr->nlxcstart /= get_xside();

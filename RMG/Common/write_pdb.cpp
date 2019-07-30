@@ -36,7 +36,7 @@ void write_pdb (void)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
 
         printf ("\n");

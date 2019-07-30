@@ -33,14 +33,14 @@ void is_vloc_state_overlap (STATE *states)
 
     for (ion = 0; ion < pct.n_ion_center_loc; ion++)
     {
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         sp = &ct.sp[iptr->species];
         r1 = sp->lradius;
 
         for (ista = 0; ista < ct.num_states; ista++)
         {
 
-            r = minimage1 (ct.ions[ion].crds, states[ista].crds);
+            r = minimage1 (Atoms[ion].crds, states[ista].crds);
             r2 = states[ista].radius;
 
             if (r < (r1 + r2))

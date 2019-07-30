@@ -230,7 +230,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         ct.fpt[3] = 3;
 
         for(int ion=0;ion < ct.num_ions;ion++){
-            ION *iptr = &ct.ions[ion];
+            ION *iptr = &Atoms[ion];
             for(int i = 3;i > 0;i--) {
                 iptr->force[i][0] =iptr->force[i-1][0];
                 iptr->force[i][1] =iptr->force[i-1][1];

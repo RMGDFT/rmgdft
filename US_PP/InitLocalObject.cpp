@@ -102,7 +102,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /* Get species type */
         sp = &ct.sp[iptr->species];
@@ -189,7 +189,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     {
         ion = pct.loc_ions_list[ion1];
         /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /* Get species type */
         sp = &ct.sp[iptr->species];

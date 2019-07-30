@@ -69,7 +69,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
         /* Generate ion pointer */
-        ION *iptr = &ct.ions[ion];
+        ION *iptr = &Atoms[ion];
 
         /* Get species type */
         SPECIES *sp = &ct.sp[iptr->species];
@@ -91,7 +91,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
         for (int ion = 0; ion < ct.num_ions; ion++)
         {
             /* Generate ion pointer */
-            ION *iptr = &ct.ions[ion];
+            ION *iptr = &Atoms[ion];
 
             /* Get species type */
             SPECIES *sp = &ct.sp[iptr->species];
@@ -135,7 +135,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
         for (int ion = 0; ion < ct.num_ions; ion++)
         {
             /* Generate ion pointer */
-            ION *iptr = &ct.ions[ion];
+            ION *iptr = &Atoms[ion];
 
             /* Get species type */
             SPECIES *sp = &ct.sp[iptr->species];

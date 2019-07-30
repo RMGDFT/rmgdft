@@ -44,7 +44,7 @@ void RhoAugmented(double * rho, double * global_mat_X)
     RmgTimer *RT6 = new RmgTimer("3-get_new_rho: augmented_Q(r)");
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         sp = &ct.sp[iptr->species];
         nh = sp->num_projectors;
         ptr_product = product + ion * ct.max_nl * ct.max_nl;

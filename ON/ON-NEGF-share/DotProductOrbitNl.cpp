@@ -82,8 +82,8 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
     incx = iyy * izz;
     incy = izz;
 
-    iyy1 = ct.ions[ion2].iyend - ct.ions[ion2].iystart + 1;
-    izz1 = ct.ions[ion2].izend - ct.ions[ion2].izstart + 1;
+    iyy1 = Atoms[ion2].iyend - Atoms[ion2].iystart + 1;
+    izz1 = Atoms[ion2].izend - Atoms[ion2].izstart + 1;
     incx1 = iyy1 * izz1;
     incy1 = izz1;
 
@@ -92,16 +92,16 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
     if(zlength1 > 0)
     {
         iz1 = zlow1 - st1->izmin;
-        iz2 = zlow1 - ct.ions[ion2].izstart;
+        iz2 = zlow1 - Atoms[ion2].izstart;
         for (ix = xlow1; ix <= xhigh1; ix++)
         {
             ix1 = (ix - st1->ixmin) * incx;
-            ix2 = (ix - ct.ions[ion2].ixstart) * incx1;
+            ix2 = (ix - Atoms[ion2].ixstart) * incx1;
 
             for (iy = ylow1; iy <= yhigh1; iy++)
             {
                 iy1 = (iy - st1->iymin) * incy;
-                iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+                iy2 = (iy - Atoms[ion2].iystart) * incy1;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -112,7 +112,7 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
             for (iy = ylow2; iy <= yhigh2; iy++)
             {
                 iy1 = (iy - st1->iymin) * incy;
-                iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+                iy2 = (iy - Atoms[ion2].iystart - yshift) * incy1;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -123,12 +123,12 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
         for (ix = xlow2; ix <= xhigh2; ix++)
         {
             ix1 = (ix - st1->ixmin) * incx;
-            ix2 = (ix - ct.ions[ion2].ixstart - xshift) * incx1;
+            ix2 = (ix - Atoms[ion2].ixstart - xshift) * incx1;
 
             for (iy = ylow1; iy <= yhigh1; iy++)
             {
                 iy1 = (iy - st1->iymin) * incy;
-                iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+                iy2 = (iy - Atoms[ion2].iystart) * incy1;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 inline_betapsi(zlength1, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
@@ -137,7 +137,7 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
             for (iy = ylow2; iy <= yhigh2; iy++)
             {
                 iy1 = (iy - st1->iymin) * incy;
-                iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+                iy2 = (iy - Atoms[ion2].iystart - yshift) * incy1;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 inline_betapsi(zlength1, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
@@ -150,16 +150,16 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
     if(zlength2 > 0)
     {
         iz1 = zlow2 - st1->izmin;
-        iz2 = zlow2 - ct.ions[ion2].izstart-zshift;
+        iz2 = zlow2 - Atoms[ion2].izstart-zshift;
         for (ix = xlow1; ix <= xhigh1; ix++)
         {
             ix1 = (ix - st1->ixmin) * incx;
-            ix2 = (ix - ct.ions[ion2].ixstart) * incx1;
+            ix2 = (ix - Atoms[ion2].ixstart) * incx1;
 
             for (iy = ylow1; iy <= yhigh1; iy++)
             {
                 iy1 = (iy - st1->iymin) * incy;
-                iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+                iy2 = (iy - Atoms[ion2].iystart) * incy1;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -169,7 +169,7 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
             for (iy = ylow2; iy <= yhigh2; iy++)
             {
                 iy1 = (iy - st1->iymin) * incy;
-                iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+                iy2 = (iy - Atoms[ion2].iystart - yshift) * incy1;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -180,12 +180,12 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
         for (ix = xlow2; ix <= xhigh2; ix++)
         {
             ix1 = (ix - st1->ixmin) * incx;
-            ix2 = (ix - ct.ions[ion2].ixstart - xshift) * incx1;
+            ix2 = (ix - Atoms[ion2].ixstart - xshift) * incx1;
 
             for (iy = ylow1; iy <= yhigh1; iy++)
             {
                 iy1 = (iy - st1->iymin) * incy;
-                iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+                iy2 = (iy - Atoms[ion2].iystart) * incy1;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 inline_betapsi(zlength2, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 
@@ -194,7 +194,7 @@ void DotProductOrbitNl(STATE *st1, int ion2, double *
             for (iy = ylow2; iy <= yhigh2; iy++)
             {
                 iy1 = (iy - st1->iymin) * incy;
-                iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+                iy2 = (iy - Atoms[ion2].iystart - yshift) * incy1;
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
                 inline_betapsi(zlength2, num_proj, &prjptr[idx2], &psi[idx1], kbpsi); 

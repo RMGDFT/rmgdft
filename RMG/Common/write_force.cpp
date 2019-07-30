@@ -76,7 +76,7 @@ void write_force (void)
     if (ct.charge_analysis_type == CHARGE_ANALYSIS_NONE)
     {
 	for (ion = 0; ion < ct.num_ions; ion++)
-	    ct.ions[ion].partial_charge = 0.0;
+	    Atoms[ion].partial_charge = 0.0;
     }
 
     printf
@@ -86,7 +86,7 @@ void write_force (void)
     {
         SPECIES *sp;
 
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         fp = iptr->force[ct.fpt[0]];
         sp = &ct.sp[iptr->species];

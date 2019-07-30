@@ -146,7 +146,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 	    if (pct.Qidxptrlen[gion])
 	    {
 
-		    iptr = &ct.ions[gion];
+		    iptr = &Atoms[gion];
 
 		    nh = ct.sp[iptr->species].nh;
 

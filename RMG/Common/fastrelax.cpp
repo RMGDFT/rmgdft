@@ -46,7 +46,7 @@ void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_m
         {
 
             /* Get ion pointer */
-            iptr = &ct.ions[ion];
+            iptr = &Atoms[ion];
 
             force[0] = iptr->force[fpt][0];
             force[1] = iptr->force[fpt][1];
@@ -101,7 +101,7 @@ void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_m
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         force[0] = iptr->force[fpt][0];
         force[1] = iptr->force[fpt][1];

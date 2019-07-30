@@ -151,7 +151,7 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
 
     for(int ion=0;ion < ct.num_ions;ion++)
     {
-        ION *iptr = &ct.ions[ion];
+        ION *iptr = &Atoms[ion];
         SPECIES *sp = &ct.sp[iptr->species];
         if(sp->num_ldaU_orbitals)
         {
@@ -219,7 +219,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     this->Ecorrect = 0.0;
     for(int ion=0;ion < ct.num_ions;ion++)
     {
-        SPECIES *sp = &ct.sp[ct.ions[ion].species];
+        SPECIES *sp = &ct.sp[Atoms[ion].species];
         double Ueff = sp->Hubbard_U / 2.0;       // FIXME: Have to deal with more complicated cases later
         
         for(int i=0;i < pstride;i++)

@@ -53,7 +53,7 @@ void md_fastrelax(void)
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
 
         /* Get ionic mass */

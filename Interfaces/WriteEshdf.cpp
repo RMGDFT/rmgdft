@@ -277,7 +277,7 @@ void eshdfFile::writeAtoms(void) {
   std::vector<double> positions;
   // RMG porting note - are positions sequentially stored 3 doubles per atom?
   for (int i = 0; i < ct.num_ions; i++) {
-      ION *iptr = &ct.ions[i];
+      ION *iptr = &Atoms[i];
       species_ids.push_back(iptr->species);
 
 //    RMG porting note -- this adds a triplet to the vector

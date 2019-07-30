@@ -49,7 +49,7 @@ void get_qqq ()
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         sp = &ct.sp[iptr->species];
 
         nh = sp->nh;
@@ -109,7 +109,7 @@ void get_qqq ()
 			fprintf(ftpr,"%% for Specie %d :\",i);
 			fprintf(ftpr,"N    M    ");
 			for(j=0;j<ct.num_ions,j++) 
-				iptr=&ct.ions[ion];
+				iptr=&Atoms[ion];
 				if(i==iptr->species) fprintf(ftpr,"ION%d   ",j);
 			}
 	*/

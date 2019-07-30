@@ -343,10 +343,10 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         for (ic = 0; ic < 3; ic++)
         {
-            ct.ions[ion].icrds[ic] = ct.ions[ion].crds[ic];
-            ct.ions[ion].ixtal[ic] = ct.ions[ion].xtal[ic];
+            Atoms[ion].icrds[ic] = Atoms[ion].crds[ic];
+            Atoms[ion].ixtal[ic] = Atoms[ion].xtal[ic];
         }
-        SPECIES *sp = &ct.sp[ct.ions[ion].species];
+        SPECIES *sp = &ct.sp[Atoms[ion].species];
         if(sp->num_ldaU_orbitals > 0) ct.num_ldaU_ions++;
     }
 

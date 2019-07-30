@@ -25,7 +25,7 @@ void nlforce_par_rho(double * par_gamma_x, double * par_gamma_y, double * par_ga
     gamma_z = par_gamma_z + ion * size;
 
     dnmI = pct.dnmI[ion];
-    iptr = &ct.ions[ion];
+    iptr = &Atoms[ion];
 
     for (idx = 0; idx < 3; idx++)
         forces[idx] = 0.0;

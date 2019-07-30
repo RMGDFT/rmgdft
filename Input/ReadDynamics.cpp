@@ -75,10 +75,10 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
         for(int ion = 0;ion < lc.num_ions;ion++) {
 
-            lc.ions[ion].xtal[0] = lc.ions[ion].crds[0];
-            lc.ions[ion].xtal[1] = lc.ions[ion].crds[1];
-            lc.ions[ion].xtal[2] = lc.ions[ion].crds[2];
-            to_cartesian(lc.ions[ion].xtal, lc.ions[ion].crds);
+            Atoms[ion].xtal[0] = Atoms[ion].crds[0];
+            Atoms[ion].xtal[1] = Atoms[ion].crds[1];
+            Atoms[ion].xtal[2] = Atoms[ion].crds[2];
+            to_cartesian(Atoms[ion].xtal, Atoms[ion].crds);
 
         }
 
@@ -87,9 +87,9 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
         for(int ion = 0;ion < lc.num_ions;ion++) {
 
-            lc.ions[ion].crds[0] *= A_a0;
-            lc.ions[ion].crds[1] *= A_a0;
-            lc.ions[ion].crds[2] *= A_a0;
+            Atoms[ion].crds[0] *= A_a0;
+            Atoms[ion].crds[1] *= A_a0;
+            Atoms[ion].crds[2] *= A_a0;
 
         }
 
@@ -181,7 +181,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
             std::string AtomicSymbol2 = *it1;
             if(!AtomicSymbol1.compare(AtomicSymbol2)) {
-                lc.ions[ion].species = species;
+                Atoms[ion].species = species;
             }
             ion++;
 

@@ -82,7 +82,7 @@ void GetLocalizedWeight (Kpoint<KpointType> **Kptr)
 
             int ion = nonloc_ions_list[ion1];
             /* Generate ion pointer */
-            iptr = &ct.ions[ion];
+            iptr = &Atoms[ion];
 
             /* Get species type */
             sp = &ct.sp[iptr->species];

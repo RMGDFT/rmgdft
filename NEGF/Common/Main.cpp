@@ -188,7 +188,7 @@ int main (int argc, char **argv)
 
     perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
     for(int i = 0; i < ct.num_ions; i++) perm_ion_index[i] = i;
-    ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
+    ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm, perm_ion_index);
     get_state_to_proc(states);
 
     MPI_Barrier(pct.img_comm);

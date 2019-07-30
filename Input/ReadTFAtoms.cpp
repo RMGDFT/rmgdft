@@ -83,7 +83,7 @@ void ReadTFAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std
     std::string AtomArray;
     std::string line_delims = "^\n";
     std::string whitespace_delims = " \n\t";
-    std::vector<std::string> Atoms;
+    std::vector<std::string> Atoms_str;
     std::unordered_map<std::string, InputKey *> NewMap;
     int nions = 0;
 
@@ -111,17 +111,17 @@ void ReadTFAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std
     }
 
 
-    boost::algorithm::split( Atoms, AtomArray, boost::is_any_of(line_delims), boost::token_compress_on );
+    boost::algorithm::split( Atoms_str, AtomArray, boost::is_any_of(line_delims), boost::token_compress_on );
 
 
 
-    lc.num_tfions = Atoms.size();
+    lc.num_tfions = Atoms_str.size();
     printf("\n Found %d TF ions", lc.num_tfions);
     ///throw RmgFatalException() << "Found" << lc.num_tfions << " TF ions \n";
     lc.tf_ions = new TF_ION[lc.num_tfions]();
 
     std::vector<std::string>::iterator it, it1;
-    for (it = Atoms.begin(); it != Atoms.end(); ++it) {
+    for (it = Atoms_str.begin(); it != Atoms_str.end(); ++it) {
 
         if(nions > lc.num_tfions)
             throw RmgFatalException() << "Inconsistency in number of TF ions: " << lc.num_tfions << " was specified initially but " << nions << " were found.\n";

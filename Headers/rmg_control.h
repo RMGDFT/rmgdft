@@ -272,10 +272,6 @@ public:
     /** Used for simple solvent model */
     int num_tfions;
 
-    /** Ion structure */
-    //ION *ions;
-    std::vector<ION> ions;
-    
     /** TF Ion structure */
     /** Used for simple solvent model */
     TF_ION *tf_ions;
@@ -871,5 +867,5 @@ public:
 
 /* Extern declaration for the main control structure */
 extern CONTROL ct;
-
+extern std::vector<ION> Atoms;
 #endif

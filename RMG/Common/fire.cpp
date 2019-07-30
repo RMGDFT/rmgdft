@@ -48,7 +48,7 @@ void fire (double *step, double step_max, double f_inc, double f_dec, int n_min,
     {
 
 	/* Get ion pointer */
-	iptr = &ct.ions[ion];
+	iptr = &Atoms[ion];
 
 	/* Dot product of f and v */
 	dotfv = iptr->force[fpt][0] * iptr->velocity[0] +
@@ -85,7 +85,7 @@ void fire (double *step, double step_max, double f_inc, double f_dec, int n_min,
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 	/* Get ion pointer */
-	iptr = &ct.ions[ion];
+	iptr = &Atoms[ion];
 
 	/*Unit vector in direction of force*/
 	unitf[0] = iptr->force[fpt][0] / magf;

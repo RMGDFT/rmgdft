@@ -84,17 +84,17 @@ void ReadForces(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputK
 
         std::string xforce = *it1;
         boost::trim(xforce);
-        lc.ions[nions].force[fpt][0] = std::atof(xforce.c_str());
+        Atoms[nions].force[fpt][0] = std::atof(xforce.c_str());
 
         it1++;
         std::string yforce = *it1;
         boost::trim(yforce);
-        lc.ions[nions].force[fpt][1] = std::atof(yforce.c_str());
+        Atoms[nions].force[fpt][1] = std::atof(yforce.c_str());
 
         it1++;
         std::string zforce = *it1;
         boost::trim(zforce);
-        lc.ions[nions].force[fpt][2] = std::atof(zforce.c_str());
+        Atoms[nions].force[fpt][2] = std::atof(zforce.c_str());
         nions++;
         // Check if we have read forces for all ions. If yes reset nions
         if(nions == lc.num_ions) {

@@ -41,7 +41,7 @@ void move_ions (double dt)
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /*Save previous coordinates, needed for wavefunction extrapolation*/
         iptr->ocrds3[0] = iptr->ocrds2[0]; 

@@ -34,8 +34,8 @@ double get_te_ion_ion()
     for (i = 0; i < ct.num_ions; i++)
     {
 
-        energy -= (ct.sp[ct.ions[i].species].zvalence *
-                   ct.sp[ct.ions[i].species].zvalence / ct.sp[ct.ions[i].species].rc);
+        energy -= (ct.sp[Atoms[i].species].zvalence *
+                   ct.sp[Atoms[i].species].zvalence / ct.sp[Atoms[i].species].rc);
 
     }                           /* end for */
     energy /= sqrt(2. * PI);
@@ -44,11 +44,11 @@ double get_te_ion_ion()
     for (i = 0; i < ct.num_ions; i++)
     {
 
-        iptr1 = &ct.ions[i];
+        iptr1 = &Atoms[i];
         for (j = i + 1; j < ct.num_ions; j++)
         {
 
-            iptr2 = &ct.ions[j];
+            iptr2 = &Atoms[j];
 
             r = minimage1(iptr1->crds, iptr2->crds);
 

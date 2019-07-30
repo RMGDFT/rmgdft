@@ -6,9 +6,9 @@
  *                      Frisco Rose, Jerzy Bernholc
  * FUNCTION
  *   void constraint(ION *)
- *   Enforces per atom constraints as set in the ct.ions[ion].constraint 3-vector.
+ *   Enforces per atom constraints as set in the Atoms[ion].constraint 3-vector.
  *   Atomic forces are projected onto the constraint vector in one of three ways
- *   based on the ct.ions[ion].contraint_type integer.
+ *   based on the Atoms[ion].contraint_type integer.
  *   constraint_type == 0::do nothing,
  *   constraint_type == 1::restrict to plane as defined by the constraint vector as normal,
  *   constraint_type == 2::restrict to direction as defined by the constraint vector.
@@ -58,7 +58,7 @@ void constrain (void)
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
-                    iptr = &ct.ions[ion];
+                    iptr = &Atoms[ion];
 
                     /*Calculate displacement vectors from self to left and right image coords */
                     Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
@@ -180,7 +180,7 @@ void constrain (void)
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
-                    iptr = &ct.ions[ion];
+                    iptr = &Atoms[ion];
 
                     /*Calculate displacement vectors from self to left and right image coords */
                     Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
@@ -286,7 +286,7 @@ void constrain (void)
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
-                    iptr = &ct.ions[ion];
+                    iptr = &Atoms[ion];
 
                     /*Calculate displacement vectors from self to left and right image coords */
                     Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
@@ -369,7 +369,7 @@ void constrain (void)
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
-                    iptr = &ct.ions[ion];
+                    iptr = &Atoms[ion];
 
                     /*Calculate displacement vectors from self to left and right image coords */
                     Img_L[3*ion+X] = iptr->crds[X] - iptr->constraint.setA_coord[X];
@@ -430,7 +430,7 @@ void constrain (void)
 
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
-                    iptr = &ct.ions[ion];
+                    iptr = &Atoms[ion];
 
                     iptr->constraint.forcemask[X] = (Mag_T - FdotT) * Tau[3*ion+X];
                     iptr->constraint.forcemask[Y] = (Mag_T - FdotT) * Tau[3*ion+Y];
@@ -444,7 +444,7 @@ void constrain (void)
                 double FdotC;
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
-                    iptr = &ct.ions[ion];
+                    iptr = &Atoms[ion];
 
                     FdotC = iptr->force[ct.fpt[0]][X] * iptr->constraint.setA_coord[X]
                         + iptr->force[ct.fpt[0]][Y] * iptr->constraint.setA_coord[Y]

@@ -57,7 +57,7 @@ void nlforce (double * veff)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         sp = &ct.sp[iptr->species];
         nh = sp->num_projectors;
 
@@ -88,7 +88,7 @@ void nlforce (double * veff)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         iptr->force[ct.fpt[0]][0] += get_vel_f() * forces_tem[ion*3];
         iptr->force[ct.fpt[0]][1] += get_vel_f() * forces_tem[ion*3+1];
         iptr->force[ct.fpt[0]][2] += get_vel_f() * forces_tem[ion*3+2];
@@ -108,7 +108,7 @@ void nlforce (double * veff)
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         iptr->force[ct.fpt[0]][0] += forces_tem[3*ion];
         iptr->force[ct.fpt[0]][1] += forces_tem[3*ion+1];
         iptr->force[ct.fpt[0]][2] += forces_tem[3*ion+2];

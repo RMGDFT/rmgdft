@@ -233,7 +233,7 @@ ct.state_block_size);
 
                 } while (nonloc_ions_list[nion] != gion);
 
-                iptr = &ct.ions[gion];
+                iptr = &Atoms[gion];
 
 
                 nh = ct.sp[iptr->species].nh;
@@ -272,7 +272,7 @@ ct.state_block_size);
         /*Actual index of the ion under consideration*/
         gion = nonloc_ions_list[ion];
 
-        iptr = &ct.ions[gion];
+        iptr = &Atoms[gion];
 
         nh = ct.sp[iptr->species].nh;
 
@@ -319,7 +319,7 @@ ct.state_block_size);
 
         } while (nonloc_ions_list[nion] != gion);
 
-        iptr = &ct.ions[gion];
+        iptr = &Atoms[gion];
 
 
         nh = ct.sp[iptr->species].nh;

@@ -74,9 +74,9 @@ void neb_relax (STATE * states, double * vxc, double * vh, double * vnuc,
             /* pack coordinates for mpi transfer */
             for ( count = 0; count < ct.num_ions; count++ )
             {
-                S_ptr[3*count + X] = ct.ions[count].crds[X];
-                S_ptr[3*count + Y] = ct.ions[count].crds[Y];
-                S_ptr[3*count + Z] = ct.ions[count].crds[Z];
+                S_ptr[3*count + X] = Atoms[count].crds[X];
+                S_ptr[3*count + Y] = Atoms[count].crds[Y];
+                S_ptr[3*count + Z] = Atoms[count].crds[Z];
             }
 
             if ( img_rank_map[LEFT] != MPI_PROC_NULL  ) 
@@ -174,20 +174,20 @@ void neb_relax (STATE * states, double * vxc, double * vh, double * vnuc,
 		for ( count = 0; count < ct.num_ions; count++ )
 		{
 			/* put force constraints into control structure */
-			ct.ions[count].constraint.setA_weight = L_total;
-			ct.ions[count].constraint.setA_coord[X] = L_ptr[3*count + X]; 
-			ct.ions[count].constraint.setA_coord[Y] = L_ptr[3*count + Y]; 
-			ct.ions[count].constraint.setA_coord[Z] = L_ptr[3*count + Z]; 
+			Atoms[count].constraint.setA_weight = L_total;
+			Atoms[count].constraint.setA_coord[X] = L_ptr[3*count + X]; 
+			Atoms[count].constraint.setA_coord[Y] = L_ptr[3*count + Y]; 
+			Atoms[count].constraint.setA_coord[Z] = L_ptr[3*count + Z]; 
 
-			ct.ions[count].constraint.setB_weight = R_total;
-			ct.ions[count].constraint.setB_coord[X] = R_ptr[3*count + X]; 
-			ct.ions[count].constraint.setB_coord[Y] = R_ptr[3*count + Y]; 
-			ct.ions[count].constraint.setB_coord[Z] = R_ptr[3*count + Z]; 
+			Atoms[count].constraint.setB_weight = R_total;
+			Atoms[count].constraint.setB_coord[X] = R_ptr[3*count + X]; 
+			Atoms[count].constraint.setB_coord[Y] = R_ptr[3*count + Y]; 
+			Atoms[count].constraint.setB_coord[Z] = R_ptr[3*count + Z]; 
 
 			/* zero velocities for every nudge */
-			ct.ions[count].velocity[0] = 0.0;
-			ct.ions[count].velocity[1] = 0.0;
-			ct.ions[count].velocity[2] = 0.0;
+			Atoms[count].velocity[0] = 0.0;
+			Atoms[count].velocity[1] = 0.0;
+			Atoms[count].velocity[2] = 0.0;
 		}
 
         /* Call fastrelax for max_md_steps steps */
@@ -209,7 +209,7 @@ printf("NEB IS NOT FUNCTIONING RIGHT NOw.\n");exit(0);
         max_frc = 0.0;
         for (count = 0; count < ct.num_ions; count++)
         {
-            fp = ct.ions[count].force[ct.fpt[0]];
+            fp = Atoms[count].force[ct.fpt[0]];
             tmp_mag =  fp[X] * fp[X] + fp[Y] * fp[Y] + fp[Z] * fp[Z];
             if ( tmp_mag > max_frc )
                 max_frc = tmp_mag;

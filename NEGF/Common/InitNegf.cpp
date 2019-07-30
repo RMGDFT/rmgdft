@@ -113,8 +113,8 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
         for (ic = 0; ic < 3; ic++)
         {
-            ct.ions[ion].icrds[ic] = ct.ions[ion].crds[ic];
-            ct.ions[ion].ixtal[ic] = ct.ions[ion].xtal[ic];
+            Atoms[ion].icrds[ic] = Atoms[ion].crds[ic];
+            Atoms[ion].ixtal[ic] = Atoms[ion].xtal[ic];
         }                       /* end for ic */
 
     }                           /* end for */

@@ -210,8 +210,8 @@ int main(int argc, char **argv)
         ReadPermInfo(ct.infile, perm_ion_index);
     }
     MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
-    ReadOrbitals (ct.cfile, states, ct.ions, pct.img_comm, perm_ion_index);
-    GetPermStateIndex(ct.num_ions, ct.ions, perm_ion_index, perm_state_index, rev_perm_state_index);
+    ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm, perm_ion_index);
+    GetPermStateIndex(ct.num_ions, Atoms, perm_ion_index, perm_state_index, rev_perm_state_index);
 
     init_states();
 

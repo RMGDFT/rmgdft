@@ -73,7 +73,7 @@ void GetDelocalizedWeight (Kpoint<KpointType> **Kptr)
             Nlweight = &Kptr[kpt]->nl_weight[offset];
 
             /* Generate ion pointer */
-            ION *iptr = &ct.ions[ion];
+            ION *iptr = &Atoms[ion];
 
             /* Get species type */
             SPECIES *sp = &ct.sp[iptr->species];

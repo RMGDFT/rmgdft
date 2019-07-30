@@ -71,13 +71,13 @@ double IonIonEnergy_Ewald ()
     for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
     {
 
-        iptr1 = &ct.ions[i];
+        iptr1 = &Atoms[i];
         double Zi = ct.sp[iptr1->species].zvalence;
 
         for (j = 0; j < ct.num_ions; j++)
         {
 
-            iptr2 = &ct.ions[j];
+            iptr2 = &Atoms[j];
             double Zj = ct.sp[iptr2->species].zvalence;
             t1 = sqrt (sigma);
             if(ct.localize_localpp)
@@ -146,14 +146,14 @@ double IonIonEnergy_Ewald ()
     if(ct.localize_localpp)
     {
         for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
-            ii_self -= ct.sp[ct.ions[i].species].zvalence *
-                ct.sp[ct.ions[i].species].zvalence / (sqrt (2.0 * PI) * ct.sp[ct.ions[i].species].rc);
+            ii_self -= ct.sp[Atoms[i].species].zvalence *
+                ct.sp[Atoms[i].species].zvalence / (sqrt (2.0 * PI) * ct.sp[Atoms[i].species].rc);
     }
     else
     {
         for (i = pct.gridpe; i < ct.num_ions; i+=pct.grid_npes)
-            ii_self -= ct.sp[ct.ions[i].species].zvalence *
-                ct.sp[ct.ions[i].species].zvalence * sqrt (4.0 * sigma / PI);
+            ii_self -= ct.sp[Atoms[i].species].zvalence *
+                ct.sp[Atoms[i].species].zvalence * sqrt (4.0 * sigma / PI);
         ii_self *= 0.5;
     }
 
@@ -173,7 +173,7 @@ static std::complex<double> structure_factor(double *k)
     for (int i = 0; i < ct.num_ions; i++)
     {
 
-        iptr1 = &ct.ions[i];
+        iptr1 = &Atoms[i];
         double Zi = ct.sp[iptr1->species].zvalence;
         kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
         S +=  Zi * std::exp(std::complex<double>(0.0, kr));

@@ -58,25 +58,25 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr)
     incx = iyy * izz;
     incy = izz;
 
-    iyy1 = ct.ions[ion2].iyend - ct.ions[ion2].iystart + 1;
-    izz1 = ct.ions[ion2].izend - ct.ions[ion2].izstart + 1;
+    iyy1 = Atoms[ion2].iyend - Atoms[ion2].iystart + 1;
+    izz1 = Atoms[ion2].izend - Atoms[ion2].izstart + 1;
     incx1 = iyy1 * izz1;
     incy1 = izz1;
 
     for (ix = xlow1; ix <= xhigh1; ix++)
     {
         ix1 = (ix - state1->ixmin) * incx;
-        ix2 = (ix - ct.ions[ion2].ixstart) * incx1;
+        ix2 = (ix - Atoms[ion2].ixstart) * incx1;
 
         for (iy = ylow1; iy <= yhigh1; iy++)
         {
             iy1 = (iy - state1->iymin) * incy;
-            iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+            iy2 = (iy - Atoms[ion2].iystart) * incy1;
 
             for (iz = zlow1; iz <= zhigh1; iz++)
             {
                 iz1 = iz - state1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart;
+                iz2 = iz - Atoms[ion2].izstart;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -87,7 +87,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr)
             for (iz = zlow2; iz <= zhigh2; iz++)
             {
                 iz1 = iz - state1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart - zshift;
+                iz2 = iz - Atoms[ion2].izstart - zshift;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -99,12 +99,12 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr)
         for (iy = ylow2; iy <= yhigh2; iy++)
         {
             iy1 = (iy - state1->iymin) * incy;
-            iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+            iy2 = (iy - Atoms[ion2].iystart - yshift) * incy1;
 
             for (iz = zlow1; iz <= zhigh1; iz++)
             {
                 iz1 = iz - state1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart;
+                iz2 = iz - Atoms[ion2].izstart;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -115,7 +115,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr)
             for (iz = zlow2; iz <= zhigh2; iz++)
             {
                 iz1 = iz - state1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart - zshift;
+                iz2 = iz - Atoms[ion2].izstart - zshift;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -128,17 +128,17 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr)
     for (ix = xlow2; ix <= xhigh2; ix++)
     {
         ix1 = (ix - state1->ixmin) * incx;
-        ix2 = (ix - ct.ions[ion2].ixstart - xshift) * incx1;
+        ix2 = (ix - Atoms[ion2].ixstart - xshift) * incx1;
 
         for (iy = ylow1; iy <= yhigh1; iy++)
         {
             iy1 = (iy - state1->iymin) * incy;
-            iy2 = (iy - ct.ions[ion2].iystart) * incy1;
+            iy2 = (iy - Atoms[ion2].iystart) * incy1;
 
             for (iz = zlow1; iz <= zhigh1; iz++)
             {
                 iz1 = iz - state1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart;
+                iz2 = iz - Atoms[ion2].izstart;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -149,7 +149,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr)
             for (iz = zlow2; iz <= zhigh2; iz++)
             {
                 iz1 = iz - state1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart - zshift;
+                iz2 = iz - Atoms[ion2].izstart - zshift;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -161,12 +161,12 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr)
         for (iy = ylow2; iy <= yhigh2; iy++)
         {
             iy1 = (iy - state1->iymin) * incy;
-            iy2 = (iy - ct.ions[ion2].iystart - yshift) * incy1;
+            iy2 = (iy - Atoms[ion2].iystart - yshift) * incy1;
 
             for (iz = zlow1; iz <= zhigh1; iz++)
             {
                 iz1 = iz - state1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart;
+                iz2 = iz - Atoms[ion2].izstart;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;
@@ -177,7 +177,7 @@ void qnm_beta_betapsi(STATE *state1, int ion2, double * pptr)
             for (iz = zlow2; iz <= zhigh2; iz++)
             {
                 iz1 = iz - state1->izmin;
-                iz2 = iz - ct.ions[ion2].izstart - zshift;
+                iz2 = iz - Atoms[ion2].izstart - zshift;
 
                 idx1 = ix1 + iy1 + iz1;
                 idx2 = ix2 + iy2 + iz2;

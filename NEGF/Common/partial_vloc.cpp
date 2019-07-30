@@ -90,7 +90,7 @@ void partial_vloc ()
         ion = pct.ionidx_loc[ion1];
 
         /* Generate ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /* Get species type */
         sp = &ct.sp[iptr->species];

@@ -95,8 +95,8 @@ int init_kpoints (int *mesh, int *is_shift)
     /* Set up atomic positions and species for fortran routines */
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        to_crystal (&tau[ion*3], ct.ions[ion].crds);
-        ityp[ion] = ct.ions[ion].species;
+        to_crystal (&tau[ion*3], Atoms[ion].crds);
+        ityp[ion] = Atoms[ion].species;
     }
 
 

@@ -79,7 +79,7 @@ void WriteRestart (char *name, double * vh, double *vxc, double *vh_old, double 
 	for (ion = 0; ion < ct.num_ions; ion++)
 	{
 
-	    iptr = &ct.ions[ion];
+	    iptr = &Atoms[ion];
 	    sp = &ct.sp[iptr->species];
 
 	    fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %d", sp->atomic_symbol, iptr->crds[0], iptr->crds[1], iptr->crds[2], iptr->movable);
@@ -92,7 +92,7 @@ void WriteRestart (char *name, double * vh, double *vxc, double *vh_old, double 
 	fprintf(fhandle,"\nionic_velocities = \"");
 	for (ion = 0; ion < ct.num_ions; ion++)
 	{
-	    iptr = &ct.ions[ion];
+	    iptr = &Atoms[ion];
 	    fprintf(fhandle, "\n %#15.12g %#15.12g %#15.12g ", iptr->velocity[0], iptr->velocity[1], iptr->velocity[2]);
 	
 	}
@@ -106,7 +106,7 @@ void WriteRestart (char *name, double * vh, double *vxc, double *vh_old, double 
     for(int ic =0; ic < 4; ic++)
 	for (ion = 0; ion < ct.num_ions; ion++)
 	{
-	    iptr = &ct.ions[ion];
+	    iptr = &Atoms[ion];
 	    fprintf(fhandle, "\n %#15.12g %#15.12g %#15.12g ", iptr->force[ic][0], iptr->force[ic][1], iptr->force[ic][2]);
 	}
 	fprintf(fhandle,"\n\"\n");

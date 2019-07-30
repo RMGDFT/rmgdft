@@ -49,7 +49,7 @@ void init_pos ()
         /* if positions in cartesian coordinates get crystal coordinates */
         for (i = 0; i < ct.num_ions; i++)
         {
-            iptr = &ct.ions[i];
+            iptr = &Atoms[i];
             to_crystal(iptr->xtal, iptr->crds);
             to_cartesian (iptr->xtal, iptr->crds);
         }                       /* end for i */
@@ -59,7 +59,7 @@ void init_pos ()
         /* If the positions are in crystal coordinates get cartesian coordinates */
         for (i = 0; i < ct.num_ions; i++)
         {
-            iptr = &ct.ions[i];
+            iptr = &Atoms[i];
             to_cartesian (iptr->xtal, iptr->crds);
         }                       /* end for i */
     }                           /* if(ct.crd_flag) */

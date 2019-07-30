@@ -19,7 +19,7 @@
  *   void write_force(void)
  *   Writes out the postions of the ions and the current forces on them 
  * INPUTS
- *   forces are from ct.ions[]...
+ *   forces are from Atoms[]...
  * OUTPUT
  *   print out atomic coordinate and forces
  * PARENTS
@@ -63,7 +63,7 @@ void write_force(void)
         SPECIES *sp;
         double *fp;
       
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         fp = iptr->force[ct.fpt[0]];
         sp = &ct.sp[iptr->species];

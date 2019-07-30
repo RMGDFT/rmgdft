@@ -18,7 +18,7 @@ void movie(FILE * mfp)
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
         fprintf(mfp, " %d %f %f %f %14.10f %14.10f %14.10f\n", iptr->species,
                 iptr->crds[0],
                 iptr->crds[1],

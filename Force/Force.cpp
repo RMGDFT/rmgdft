@@ -80,7 +80,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     for (int ion = pct.gridpe; ion < ct.num_ions; ion+=pct.grid_npes)
     {
 
-        Zi = ct.sp[ct.ions[ion].species].zvalence;
+        Zi = ct.sp[Atoms[ion].species].zvalence;
 
         force_sum[ion *3 + 0] = ct.e_field * ct.x_field_0 * Zi;
         force_sum[ion *3 + 1] = ct.e_field * ct.y_field_0 * Zi;
@@ -158,9 +158,9 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        ct.ions[ion].force[ct.fpt[0]][0] = force_sum[ion * 3 + 0];
-        ct.ions[ion].force[ct.fpt[0]][1] = force_sum[ion * 3 + 1];
-        ct.ions[ion].force[ct.fpt[0]][2] = force_sum[ion * 3 + 2];
+        Atoms[ion].force[ct.fpt[0]][0] = force_sum[ion * 3 + 0];
+        Atoms[ion].force[ct.fpt[0]][1] = force_sum[ion * 3 + 1];
+        Atoms[ion].force[ct.fpt[0]][2] = force_sum[ion * 3 + 2];
 
     }
 
@@ -171,7 +171,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
         double sumx = 0.0, sumy = 0.0, sumz = 0.0;
         for (ion = 0; ion < ct.num_ions; ion++)
         {
-            double *fp = ct.ions[ion].force[ct.fpt[0]];
+            double *fp = Atoms[ion].force[ct.fpt[0]];
             sumx += fp[0];
             sumy += fp[1];
             sumz += fp[2];
@@ -186,7 +186,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
         // And correct forces
         for (ion = 0; ion < ct.num_ions; ion++)
         {
-            double *fp = ct.ions[ion].force[ct.fpt[0]];
+            double *fp = Atoms[ion].force[ct.fpt[0]];
             fp[0] -= sumx;
             fp[1] -= sumy;
             fp[2] -= sumz;

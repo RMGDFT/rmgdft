@@ -80,7 +80,7 @@ void IIforce (double *force)
     {
 
         /* Get ion pointer */
-        iptr1 = &ct.ions[i];
+        iptr1 = &Atoms[i];
 
 
         Zi = ct.sp[iptr1->species].zvalence;
@@ -92,7 +92,7 @@ void IIforce (double *force)
         for (j = 0; j < ct.num_ions; j++)
         {
 
-            iptr2 = &ct.ions[j];
+            iptr2 = &Atoms[j];
 
             Zj = ct.sp[iptr2->species].zvalence;
             rcj = ct.sp[iptr2->species].rc;
@@ -166,7 +166,7 @@ void IIforce (double *force)
                 for (int i = 0; i < ct.num_ions; i++)
                 {
 
-                    iptr1 = &ct.ions[i];
+                    iptr1 = &Atoms[i];
                     Zi = ct.sp[iptr1->species].zvalence;
                     kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
                     strfac +=  Zi * std::exp(std::complex<double>(0.0, kr));
@@ -178,7 +178,7 @@ void IIforce (double *force)
                 for (int i = 0; i < ct.num_ions; i++)
                 {
                     
-                    iptr1 = &ct.ions[i];
+                    iptr1 = &Atoms[i];
                     Zi = ct.sp[iptr1->species].zvalence;
                     kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
                     der_strfac_x =  Zi * std::complex<double>(0.0, k[0]) * std::exp(std::complex<double>(0.0, kr));

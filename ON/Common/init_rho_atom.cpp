@@ -72,7 +72,7 @@ void init_rho_atom(double *rho)
     RmgTimer *RT1 = new RmgTimer("1-TOTAL: init: init_rho_map");
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        species = ct.ions[ion].species;
+        species = Atoms[ion].species;
 
         sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species], ".rho_firstatom");
         if(pct.gridpe == 0)
@@ -110,7 +110,7 @@ void init_rho_atom(double *rho)
         izdim = rmg_max(izdim, izmax - izmin);
 
 
-        crds1 = &ct.ions[ion].crds[0];
+        crds1 = &Atoms[ion].crds[0];
         ixmin += (int) (crds1[0] / hxgrid_new) - (int) (crds[0] / hxgrid);
         iymin += (int) (crds1[1] / hygrid_new) - (int) (crds[1] / hygrid);
         izmin += (int) (crds1[2] / hzgrid_new) - (int) (crds[2] / hzgrid);
@@ -163,10 +163,10 @@ void init_rho_atom(double *rho)
 
         if (map[ion] == 1)
         {
-            species = ct.ions[ion].species;
-            crds1 = &ct.ions[ion].crds[0];
+            species = Atoms[ion].species;
+            crds1 = &Atoms[ion].crds[0];
             ION *iptr;
-            iptr = &ct.ions[ion];
+            iptr = &Atoms[ion];
             
             sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species], ".rho_firstatom");
             fhand = open(newname, O_RDWR);

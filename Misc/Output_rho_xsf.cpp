@@ -117,7 +117,7 @@ void Output_rho_xsf(double *array_3d, MPI_Comm comm)
 
         for(ion = 0; ion < ct.num_ions; ion++)
         {
-            iptr = &ct.ions[ion];
+            iptr = &Atoms[ion];
             sp = &ct.sp[iptr->species];
             fprintf(fhand, " %2s  %18.6e   %18.6e   %18.6e\n", sp->atomic_symbol, iptr->crds[0] * a0_A, 
                   iptr->crds[1] * a0_A,   iptr->crds[2] * a0_A);   

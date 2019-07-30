@@ -136,7 +136,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
 
-        if (ct.ions[ion].movable)
+        if (Atoms[ion].movable)
             N++;
 
     }
@@ -161,10 +161,10 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
 
-        if (ct.ions[ion].movable == 0)
+        if (Atoms[ion].movable == 0)
         {
 
-            iptr = &ct.ions[ion];
+            iptr = &Atoms[ion];
 
             for (ic = 0; ic < 4; ic++)
             {
@@ -199,7 +199,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         for (it = 0; it < ct.num_ions; it++)
         {
 
-            iptr = &ct.ions[it];
+            iptr = &Atoms[it];
 
             /* to_crystal enforces periodic boundary conditions */
             to_crystal (iptr->xtal, iptr->crds);
@@ -211,7 +211,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         for (it = 0; it < ct.num_ions; it++)
         {
 
-            iptr = &ct.ions[it];
+            iptr = &Atoms[it];
             crdsx[it] = iptr->crds[0];
             crdsy[it] = iptr->crds[1];
             crdsz[it] = iptr->crds[2];
@@ -268,10 +268,10 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         for (int ion = 0; ion < ct.num_ions; ion++)
         {
 
-            if (ct.ions[ion].movable == 0)
+            if (Atoms[ion].movable == 0)
             {
 
-                iptr = &ct.ions[ion];
+                iptr = &Atoms[ion];
 
                 for (int ic = 0; ic < 4; ic++)
                 {
@@ -411,7 +411,7 @@ void init_nose ()
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /* Get ionic mass */
         mass = ct.sp[iptr->species].atomic_mass * mu_me;
@@ -491,7 +491,7 @@ void velup1 ()
             {
 
                 /* Get ion pointer */
-                iptr = &ct.ions[ion];
+                iptr = &Atoms[ion];
 
                 /* Get ionic mass */
                 mass = ct.sp[iptr->species].atomic_mass * mu_me;
@@ -528,7 +528,7 @@ void velup1 ()
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         if (iptr->movable)
         {
@@ -620,7 +620,7 @@ void posup ()
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /* update positions by one full timestep */
         if (iptr->movable)
@@ -680,7 +680,7 @@ void velup2 ()
     {
 
         /* Get ion pointer */
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         /* Get ionic mass */
         mass = ct.sp[iptr->species].atomic_mass * mu_me;
@@ -767,7 +767,7 @@ void rms_disp (double * rms, double * trms)
     for (it = 0; it < ct.num_ions; it++)
     {
 
-        iptr = &ct.ions[it];
+        iptr = &Atoms[it];
 
         t1 = iptr->xtal[0] - iptr->ixtal[0];
         if (t1 < 0.0)
@@ -1042,7 +1042,7 @@ void center_of_mass_velocity(double &vx, double &vy, double &vz)
     double total_mass = 0.0;
     for (int ion = 0; ion < ct.num_ions; ion++) {
 
-        ION *iptr = &ct.ions[ion];
+        ION *iptr = &Atoms[ion];
         double mass = ct.sp[iptr->species].atomic_mass * mu_me;
         px += mass * iptr->velocity[0];
         py += mass * iptr->velocity[1];
@@ -1074,7 +1074,7 @@ void ranv (void)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        if (ct.ions[ion].movable)
+        if (Atoms[ion].movable)
             N++;
 
     }                           /* end for */
@@ -1093,7 +1093,7 @@ void ranv (void)
         {
 
             /* Get ion pointer */
-            iptr = &ct.ions[ion];
+            iptr = &Atoms[ion];
 
             /* Get ionic mass */
             mass = ct.sp[iptr->species].atomic_mass * mu_me;
@@ -1128,7 +1128,7 @@ void ranv (void)
         {
 
             /* Get ion pointer */
-            iptr = &ct.ions[ion];
+            iptr = &Atoms[ion];
 
             if (iptr->movable)
             {
@@ -1144,7 +1144,7 @@ void ranv (void)
         {
 
             /* Get ion pointer */
-            iptr = &ct.ions[ion];
+            iptr = &Atoms[ion];
 
             /* Get ionic mass */
             mass = ct.sp[iptr->species].atomic_mass * mu_me;
@@ -1167,7 +1167,7 @@ void ranv (void)
         {
 
             /* Get ion pointer */
-            iptr = &ct.ions[ion];
+            iptr = &Atoms[ion];
 
             /* Get ionic mass */
             mass = ct.sp[iptr->species].atomic_mass * mu_me;

@@ -110,8 +110,8 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
         /* to_crystal enforces periodic boundary conditions */
         for (it = 0; it < ct.num_ions; it++)
         {
-            to_crystal(ct.ions[it].xtal, ct.ions[it].crds);
-            to_cartesian(ct.ions[it].xtal, ct.ions[it].crds);
+            to_crystal(Atoms[it].xtal, Atoms[it].crds);
+            to_cartesian(Atoms[it].xtal, Atoms[it].crds);
         }
 
         /* output the milliken charges */
@@ -133,10 +133,10 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
         for (ion = 0; ion < ct.num_ions; ion++)
         {
 
-            if (ct.ions[ion].movable)
+            if (Atoms[ion].movable)
             {
                 double *fp;
-                fp = ct.ions[ion].force[ct.fpt[0]];
+                fp = Atoms[ion].force[ct.fpt[0]];
                 CONV_FORCE &= ((fabs(fp[0]) < ct.thr_frc) &&
                                (fabs(fp[1]) < ct.thr_frc) && (fabs(fp[2]) < ct.thr_frc));
             }

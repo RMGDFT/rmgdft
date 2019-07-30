@@ -47,7 +47,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, double *GHG, doub
             vloc_psi = states1[st2].psiR;
             for (ion1 = 0; ion1 < pct.n_ion_center_loc; ion1++)
             {
-                if (ct.ions[ion1].movable)
+                if (Atoms[ion1].movable)
                 {
                     if(vloc_state_overlap_or_not[ion1 * ct.num_states + st2] == 1) 
                     {
@@ -125,7 +125,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, double *GHG, doub
 
                 for (ion1 = 0; ion1 < pct.n_ion_center_loc; ion1++)
                 {
-                    if (ct.ions[ion1].movable)
+                    if (Atoms[ion1].movable)
                     {
 
                         if(vloc_state_overlap_or_not[ion1 * ct.num_states + st1] == 1) 
@@ -188,7 +188,7 @@ void nlforce_partial_H_part2 (STATE * states, STATE * states1, double *GHG, doub
 
                     for (ion1 = 0; ion1 < pct.n_ion_center_loc; ion1++)
                     {
-                        if (ct.ions[ion1].movable)
+                        if (Atoms[ion1].movable)
                         {
 
                             if(vloc_state_overlap_or_not[ion1 * ct.num_states + st1] == 1) 

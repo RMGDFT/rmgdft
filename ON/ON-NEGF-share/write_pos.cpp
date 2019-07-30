@@ -51,7 +51,7 @@ void write_pos(void)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 
         printf("\n  %d   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
                iptr->species + 1,

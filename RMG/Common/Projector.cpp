@@ -160,7 +160,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             double vect[3];
 
             /* Generate ion pointer */
-            ION *iptr = &ct.ions[ion];
+            ION *iptr = &Atoms[ion];
 //            SPECIES *sp = &ct.sp[iptr->species];
        
             int icenter = this->nldims[iptr->species] / 2;
@@ -276,7 +276,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     {
 
         /* Generate ion pointer */
-        ION *iptr = &ct.ions[ion];
+        ION *iptr = &Atoms[ion];
         SPECIES *sp = &ct.sp[iptr->species];
 
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
@@ -323,7 +323,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
         int map, map2;
 
         /* Generate ion pointer */
-        ION *iptr = &ct.ions[ion];
+        ION *iptr = &Atoms[ion];
 
         /* Get species type */
         SPECIES *sp = &ct.sp[iptr->species];

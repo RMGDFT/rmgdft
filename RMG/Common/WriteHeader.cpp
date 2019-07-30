@@ -281,7 +281,7 @@ void WriteHeader (void)
 
     
     printf ("\n");
-    printf ("Ions and States\n");
+    printf ("Atoms and States\n");
     printf ("    Number of ions:                          %d\n", ct.num_ions);
     printf ("    Number of species:                       %d\n", ct.num_species);
     if (ct.spin_flag)
@@ -441,10 +441,10 @@ void WriteHeader (void)
         for (idx = 0; idx < ct.num_ions; idx++)
         {
             printf ("       % 10f % 10f % 10f % 10f\n",
-					ct.ions[idx].constraint.setA_coord[0],
-					ct.ions[idx].constraint.setA_coord[1],
-					ct.ions[idx].constraint.setA_coord[2],
-                    ct.ions[idx].constraint.setA_weight);
+					Atoms[idx].constraint.setA_coord[0],
+					Atoms[idx].constraint.setA_coord[1],
+					Atoms[idx].constraint.setA_coord[2],
+                    Atoms[idx].constraint.setA_weight);
         }
     }
 #endif
@@ -610,7 +610,7 @@ static void init_write_pos (void)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
 
-        iptr = &ct.ions[ion];
+        iptr = &Atoms[ion];
 	sp = &ct.sp[iptr->species];
 
         printf ("\n  %-2s   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
