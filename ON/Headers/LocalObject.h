@@ -49,6 +49,7 @@ private:
 };
 
 extern LocalObject<double> *LocalOrbital;
+extern LocalObject<double> *H_LocalOrbital;
 extern LocalObject<double> *LocalProj;
 extern LocalObject<double> *LocalAtomicOrbital;
 

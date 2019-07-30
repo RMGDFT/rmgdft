@@ -796,7 +796,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                         "if set to true, we use Cpdgemr2d to change matrix distribution");
 
     //RMG2BGW options
-    If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, false, 
+    If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, true, 
                         "For non-gamma point, always true, for gamma point, optional");
     If.RegisterInputKey("rmg2bgw", &lc.rmg2bgw, false, 
                         "Write wavefunction in G-space to BerkeleyGW WFN file.");

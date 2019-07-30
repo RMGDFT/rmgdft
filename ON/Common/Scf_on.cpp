@@ -79,11 +79,12 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
         ZeroBoundary(states[st1].psiR, ixx, iyy, izz);
     }
-#if 1
-    write_data (ct.outfile, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
-    MPI_Barrier(pct.img_comm);
-    LocalOrbital->ReadOrbitals(std::string(ct.outfile), Rmg_G);
-#endif
+    //if(ct.num_ldaU_ions > 0)
+    {
+        write_data (ct.outfile, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
+        MPI_Barrier(pct.img_comm);
+        LocalOrbital->ReadOrbitals(std::string(ct.outfile), Rmg_G);
+    }
 
     OrbitalComm(states);
     delete(RT0);
@@ -94,6 +95,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RT1 = new RmgTimer("2-SCF: get_HS");
     GetHS(states, states1, vtot_c, Hij_00, Bij_00);
+    GetHS_dis(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij_00, Bij_00);
     delete(RT1);
 #if ELEMENTAL_LIBS
     RmgTimer *RTa = new RmgTimer("2-SCF: DiagElemental");
@@ -155,7 +157,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     {
         if(ct.spin_flag)
             get_rho_oppo(rho, rho_oppo);
-   //     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
+        //     get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
         for(int idx=0;idx < nfp0;idx++)rho[idx] = ct.mix*rho[idx] + (1.0-ct.mix)*trho[idx];
     }
     else
