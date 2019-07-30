@@ -135,7 +135,7 @@ void WriteHeader (void)
     default:
         error_handler ("Unknown molecular dynamics method.");
     }
-    printf ("    Description:              %s\n", ct.description);
+    printf ("    Description:              %s\n", ct.description.c_str());
     printf ("    Orbital Initialization:   ");
     switch (ct.runflag)
     {

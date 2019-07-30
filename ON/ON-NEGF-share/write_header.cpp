@@ -86,7 +86,7 @@ void write_header(void)
 
     }                           /* end switch */
 
-    printf("\n\n    %s", ct.description);
+    printf("\n\n    %s", ct.description.c_str());
 
     printf("\n\n    FILES USED");
     printf("\n       Control input file       %s", ct.cfile);

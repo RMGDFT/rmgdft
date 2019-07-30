@@ -60,7 +60,7 @@ public:
     bool spin_worker_threads;
 
     /** Description of the run. */
-    char description[MAX_CHAR];
+    std::string description;
 
     /* time at which run started */
     double time0;
@@ -273,7 +273,8 @@ public:
     int num_tfions;
 
     /** Ion structure */
-    ION *ions;
+    //ION *ions;
+    std::vector<ION> ions;
     
     /** TF Ion structure */
     /** Used for simple solvent model */
@@ -303,7 +304,7 @@ public:
 
     /** Species structure 
      * @see SPECIES */
-    SPECIES *sp;
+    std::vector<SPECIES> sp;
 
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;
@@ -729,7 +730,6 @@ public:
     /* number of waves to plot in ON calculation */
     int num_waves;
    
-
     char file_atomic_orbit[MAX_SPECIES][MAX_PATH];
 
     /* output information for GW calculations.  --Xiaohong */

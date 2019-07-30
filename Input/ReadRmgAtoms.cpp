@@ -203,7 +203,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
     // Converted to RMG internal format and process from here.
 
     lc.num_ions = Atoms.size();
-    lc.ions = new ION[lc.num_ions]();
+    lc.ions.resize(lc.num_ions);
 
     std::vector<std::string>::iterator it, it1;
     for (it = Atoms.begin(); it != Atoms.end(); ++it) {

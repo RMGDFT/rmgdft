@@ -1085,7 +1085,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     // Check items that require custom handling
     // Some hacks here to deal with code branches that are still in C
     if(!Description.length()) Description = "RMG electronic structure calculation.";
-    std::strncpy(lc.description, Description.c_str(), sizeof(lc.description)-1);
+    lc.description = Description;
 
     if(!Infile.length()) Infile = "Waves/wave.out";
     std::strncpy(lc.infile, Infile.c_str(), sizeof(lc.infile)-1);

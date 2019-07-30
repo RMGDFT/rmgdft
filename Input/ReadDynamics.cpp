@@ -98,7 +98,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     // SpeciesType holds the number of species found
     lc.num_species = SpeciesTypes.size();
-    ct.sp = new SPECIES[ct.num_species];
+    lc.sp.resize(lc.num_species);
 
     std::string nums = "-.0123456789";
     int isp = 0;
