@@ -10,7 +10,7 @@
 #include "rmgtypedefs.h"
 #include "transition.h"
 
-void PermAtoms(int num_ions, ION *ions, unsigned int *perm_index)
+void PermAtoms(int num_ions, std::vector<ION> &ions, unsigned int *perm_index)
 {
 
     ION *ions_perm;

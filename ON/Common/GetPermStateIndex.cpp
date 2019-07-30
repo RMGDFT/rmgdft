@@ -10,7 +10,7 @@
 #include "rmgtypedefs.h"
 #include "transition.h"
 
-void GetPermStateIndex(int num_ions, ION *ions, unsigned int *perm_ion_index, 
+void GetPermStateIndex(int num_ions, std::vector<ION> &ions, unsigned int *perm_ion_index, 
 unsigned int *perm_state_index, unsigned int *rev_perm_state_index)
 {
 

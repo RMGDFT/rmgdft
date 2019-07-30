@@ -127,9 +127,9 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
 void DiagScalapack(STATE *, int, double *, double*, double *, double *);
 void DiagElemental(STATE *, int, double *, double*, double *, double *);
-void BandwidthReduction(int num_ions, ION *ions, unsigned int *);
-void PermAtoms(int num_ions, ION *ions, unsigned int *);
-void GetPermStateIndex(int num_ions, ION *ions, unsigned int *, unsigned int *, unsigned int *);
+void BandwidthReduction(int num_ions, std::vector<ION> &ions, unsigned int *);
+void PermAtoms(int num_ions, std::vector<ION> &ions, unsigned int *);
+void GetPermStateIndex(int num_ions, std::vector<ION> &ions, unsigned int *, unsigned int *, unsigned int *);
 void ReadPermInfo(char *, unsigned int *);
 void WritePermInfo(char *, unsigned int *);
 void InitPe4image();
@@ -258,7 +258,7 @@ template <typename OrbitalType> void AssignDerweight (Kpoint<OrbitalType> *kptr,
 
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
-void ReadOrbitals(char *cfile, STATE  *states, ION *ions,  MPI_Comm comm, unsigned int *);
+void ReadOrbitals(char *cfile, STATE  *states, std::vector<ION> &ions,  MPI_Comm comm, unsigned int *);
 void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 template <typename KpointType>
 void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc);
