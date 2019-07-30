@@ -167,19 +167,6 @@ typedef struct
 
 #include "species.h"
 
-/* Structure for storing species information for internal pseudopotentials */
-typedef struct
-{
-    char name[4];
-    double valence;
-    double mass;
-    double rc;
-    int nlccflag;
-    int maxl;
-    int local;
-} ISPECIES;
-
-
 
 
 /* Nose control structure */
