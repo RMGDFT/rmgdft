@@ -115,6 +115,13 @@ void MakeFullPath(char *fullpath, PE_CONTROL& pelc)
         std::strncpy(fullpath, temp, MAX_PATH);
     }
 }
+void MakeFullPath(std::string &fullpath, PE_CONTROL& pelc)
+{
+    if(fullpath[0] != '/')
+    {
+        fullpath = std::string(pelc.image_path[pelc.thisimg]) + fullpath;
+    }
+}
 
 
 namespace Ri = RmgInput;
@@ -1088,16 +1095,16 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     std::strncpy(lc.outfile, Outfile.c_str(), sizeof(lc.outfile)-1);
     MakeFullPath(lc.outfile, pelc);
 
-    if(!Weightsfile.length()) Weightsfile = "Weights/";
-    std::strncpy(lc.nvme_weights_path, Weightsfile.c_str(), sizeof(lc.nvme_weights_path)-1);
+    lc.nvme_weights_path = Weightsfile;
+    if(lc.nvme_weights_path.length()) lc.nvme_weights_path.append("/");
     MakeFullPath(lc.nvme_weights_path, pelc);
 
-    if(!Workfile.length()) Workfile = "Work/";
-    std::strncpy(lc.nvme_work_path, Workfile.c_str(), sizeof(lc.nvme_work_path)-1);
+    lc.nvme_work_path = Workfile;
+    if(lc.nvme_work_path.length()) lc.nvme_work_path.append("/");
     MakeFullPath(lc.nvme_work_path, pelc);
 
-    if(!Orbitalfile.length()) Orbitalfile = "Orbitals/";
-    std::strncpy(lc.nvme_orbitals_path, Orbitalfile.c_str(), sizeof(lc.nvme_orbitals_path)-1);
+    lc.nvme_orbitals_path = Orbitalfile;
+    if(lc.nvme_orbitals_path.length()) lc.nvme_orbitals_path.append("/");
     MakeFullPath(lc.nvme_orbitals_path, pelc);
 
     if(!Infile_tddft.length()) Infile = "Waves/wave_tddft.out";
@@ -1109,7 +1116,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     MakeFullPath(lc.outfile_tddft, pelc);
 
 
-    if(PseudoPath.length()) std::strncpy(lc.pseudo_dir, PseudoPath.c_str(), sizeof(lc.pseudo_dir)-1);
+    lc.pseudo_dir = PseudoPath;
+    if(lc.pseudo_dir.length()) lc.pseudo_dir.append("/");
 
     if((Occup.length() != 0) && (Occdown.length() != 0) && (Occ.length() == 0)) lc.spin_flag = 1;
 

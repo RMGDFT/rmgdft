@@ -109,9 +109,9 @@ public:
     int nvme_work_fd;
     int nvme_weight_fd;
     int nvme_Bweight_fd;
-    char nvme_weights_path[2*MAX_PATH];
-    char nvme_work_path[2*MAX_PATH];
-    char nvme_orbitals_path[2*MAX_PATH];
+    std::string nvme_weights_path;
+    std::string nvme_work_path;
+    std::string nvme_orbitals_path;
 
     /** Input file name to read wavefunctions from when doing a restart */
     char infile[2*MAX_PATH];
@@ -125,7 +125,7 @@ public:
     bool restart_tddft;
 
     /** Prepended to pseudopotential name */
-    char pseudo_dir[2*MAX_PATH];
+    std::string pseudo_dir;
 
     /** Initial run flag. Read from the input file. 0=initial run otherwise a restart */
     int runflag;
