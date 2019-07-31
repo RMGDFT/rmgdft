@@ -77,8 +77,9 @@ void WriteHeader (void)
     printf ("     --      More information at www.rmgdft.org          --\n");
         
 
-    printf ("\nBuild Date: %s  %s", __DATE__, __TIME__);
-    printf ("\nStart time: %s", timeptr);
+    printf ("\nCode Revision:     %s", RMG_REVISION);
+    printf ("\nBuild Date:        %s  %s", __DATE__, __TIME__);
+    printf ("\nStart time:        %s", timeptr);
 
     printf ("\n");
     printf ("Files\n");
