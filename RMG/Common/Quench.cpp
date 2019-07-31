@@ -229,19 +229,19 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         ct.fpt[2] = 2;
         ct.fpt[3] = 3;
 
-        for(int ion=0;ion < ct.num_ions;ion++){
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+        {
             ION *iptr = &Atoms[ion];
             for(int i = 3;i > 0;i--) {
                 iptr->force[i][0] =iptr->force[i-1][0];
                 iptr->force[i][1] =iptr->force[i-1][1];
                 iptr->force[i][2] =iptr->force[i-1][2];
             }
-
         }
         Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
     }
 
-    rmg_printf (" volume and energy per atom = %18.8f  %18.8f eV\n", Rmg_L.get_omega()*a0_A*a0_A*a0_A/ct.num_ions,ct.TOTAL * Ha_eV/ct.num_ions);
+    rmg_printf (" volume and energy per atom = %18.8f  %18.8f eV\n", Rmg_L.get_omega()*a0_A*a0_A*a0_A/Atoms.size(),ct.TOTAL * Ha_eV/Atoms.size());
 
     if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
     {

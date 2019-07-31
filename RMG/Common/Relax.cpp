@@ -53,7 +53,6 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr)
 {
 
-    int iion;
     int CONV_FORCE=false, MAX_STEPS;
     int DONE, rlx_steps = 0;
     static double *rhodiff;
@@ -152,12 +151,12 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
         /* check force convergence */
         CONV_FORCE = TRUE;
-        for (iion = 0; iion < ct.num_ions; iion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-            if (Atoms[iion].movable)
+            if (Atoms[ion].movable)
             {
                 double *fp;
-                fp = Atoms[iion].force[ct.fpt[0]];
+                fp = Atoms[ion].force[ct.fpt[0]];
                 CONV_FORCE &=
                     ((fp[0] * fp[0] + fp[1] * fp[1] + fp[2] * fp[2]) < ct.thr_frc * ct.thr_frc);
             }

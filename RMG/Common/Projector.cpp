@@ -101,19 +101,16 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     this->list_ions_per_owner.resize(boost::extents[pct.grid_npes][num_ions]);
 
     // Go through the list of atomic species and set up the nldims array
-    for(int isp = 0;isp < ct.num_species;isp++)
+    for(size_t isp = 0;isp < Species.size();isp++)
     {
-
-        SPECIES *sp = &Species[isp];
-
         // All the same for beta projectors
         if(this->kind == BETA_PROJECTOR)
         {
-            this->nldims[isp] = sp->nldim;
+            this->nldims[isp] = Species[isp].nldim;
         }
         else if(this->kind == ORBITAL_PROJECTOR)
         {
-            this->nldims[isp] = sp->adim_wave;    
+            this->nldims[isp] = Species[isp].adim_wave;    
         }
     }
 
@@ -162,16 +159,15 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             double vect[3];
 
             /* Generate ion pointer */
-            ION *iptr = &Atoms[ion];
-//            SPECIES *sp = &Species[iptr->species];
+            ION &Atom = Atoms[ion];
        
-            int icenter = this->nldims[iptr->species] / 2;
+            int icenter = this->nldims[Atom.species] / 2;
             int icut = (icenter + 1) * (icenter + 1);
 
             /* Determine mapping indices or even if a mapping exists */
-            int nlxdim = this->nldims[iptr->species];
-            int nlydim = this->nldims[iptr->species];
-            int nlzdim = this->nldims[iptr->species];
+            int nlxdim = this->nldims[Atom.species];
+            int nlydim = this->nldims[Atom.species];
+            int nlzdim = this->nldims[Atom.species];
             double nlxcstart = 0.0;
             double nlycstart = 0.0;
             double nlzcstart = 0.0;
@@ -190,8 +186,8 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             }
             else
             {
-                map = get_index (pct.gridpe, iptr, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
-                             this->nldims[iptr->species], PX0_GRID, PY0_GRID, PZ0_GRID,
+                map = get_index (pct.gridpe, &Atom, Aix, Aiy, Aiz, &ilow, &ihi, &jlow, &jhi, &klow, &khi,
+                             this->nldims[Atom.species], PX0_GRID, PY0_GRID, PZ0_GRID,
                              NX_GRID, NY_GRID, NZ_GRID,
                              &nlxcstart, &nlycstart, &nlzcstart);
             }
@@ -205,9 +201,9 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
             /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
             /*xtal vector between ion and left bottom corner of the box */
-            vect[0] = iptr->xtal[0] - nlxcstart;
-            vect[1] = iptr->xtal[1] - nlycstart;
-            vect[2] = iptr->xtal[2] - nlzcstart;
+            vect[0] = Atom.xtal[0] - nlxcstart;
+            vect[1] = Atom.xtal[1] - nlycstart;
+            vect[2] = Atom.xtal[2] - nlzcstart;
 
             /*Substract vector between left bottom corner of the box and center of the box */
             vect[0] -= (nlxdim / 2) / (double) NX_GRID;
@@ -278,7 +274,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     {
 
         /* Generate ion pointer */
-        ION *iptr = &Atoms[ion];
+        ION &Atom = Atoms[ion];
 
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
         if (((this->kind == BETA_PROJECTOR) && (this->idxptrlen[ion] || pct.Qidxptrlen[ion])) ||
@@ -289,7 +285,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             this->nonloc_ions_list[this->num_nonloc_ions] = ion;
 
             /*See if this processor owns current ion */
-            if (pct.gridpe == claim_ion (iptr->xtal, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID))
+            if (pct.gridpe == claim_ion (Atom.xtal, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID))
             {
                 this->owned_ions_list[this->num_owned_ions] = ion;
                 this->num_owned_ions++;
@@ -324,13 +320,13 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
         int map, map2;
 
         /* Generate ion pointer */
-        ION *iptr = &Atoms[ion];
+        ION &Atom = Atoms[ion];
 
         /* Get species type */
-        SPECIES *sp = &Species[iptr->species];
+        SPECIES &AtomType = Species[Atom.species];
 
         /*See if this processor owns current ion */
-        owner = claim_ion (iptr->xtal, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
+        owner = claim_ion (Atom.xtal, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
 	owned = false;
         if (pct.gridpe == owner) owned = true;
 
@@ -350,14 +346,14 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
                 if(this->type == DELOCALIZED) 
                     map = true;
                 else
-                    map = test_overlap (pe, iptr, Aix, Aiy, Aiz, this->nldims[iptr->species], PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
+                    map = test_overlap (pe, &Atom, Aix, Aiy, Aiz, this->nldims[Atom.species], PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);
 
                 /* Determine if ion has overlap with a given PE becasue of Q function */
                 if(ct.norm_conserving_pp) {
                     map2 = FALSE;
                 }
                 else {
-                    map2 = test_overlap (pe, iptr, Aix2, Aiy2, Aiz2, sp->qdim, 
+                    map2 = test_overlap (pe, &Atom, Aix2, Aiy2, Aiz2, AtomType.qdim, 
                             get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), FNX_GRID, FNY_GRID, FNZ_GRID);
                 }
 

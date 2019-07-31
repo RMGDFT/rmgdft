@@ -56,10 +56,8 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     int amode;
     FILE *fhandle;
     int fhand;
-    int ia, ion;
+    int ia;
     double time0, write_time;
-    SPECIES *sp;
-    ION *iptr;
 
 
     time0 = my_crtc ();
@@ -101,14 +99,12 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 	/* write current ionic cartesian positions */
 	fprintf(fhandle,"atoms = \"");
 
-	for (ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
 	{
-
-	    iptr = &Atoms[ion];
-	    sp = &Species[iptr->species];
-
-        fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %d  %f", sp->atomic_symbol, iptr->crds[0], iptr->crds[1], 
-                iptr->crds[2],  iptr->movable, iptr->init_spin_rho);
+            ION &Atom = Atoms[ion];
+	    SPECIES &AtomType = Species[Atom.species];
+            fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %d  %f", AtomType.atomic_symbol, Atom.crds[0], Atom.crds[1], 
+                    Atom.crds[2],  Atom.movable, Atom.init_spin_rho);
 	}
 
 	fprintf(fhandle,"\n\"\n");
@@ -116,11 +112,10 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 
 	/* write current ionic velocities */
 	fprintf(fhandle,"\nionic_velocities = \"");
-	for (ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
 	{
-	    iptr = &Atoms[ion];
-	    fprintf(fhandle, "\n %#15.12g %#15.12g %#15.12g ", iptr->velocity[0], iptr->velocity[1], iptr->velocity[2]);
-	
+	    ION &Atom = Atoms[ion];
+	    fprintf(fhandle, "\n %#15.12g %#15.12g %#15.12g ", Atom.velocity[0], Atom.velocity[1], Atom.velocity[2]);
 	}
 	fprintf(fhandle,"\n\"\n");
 
@@ -130,10 +125,10 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 	/* write current ionic forces */
 	fprintf(fhandle,"\nionic_forces = \"");
         for(int ic = 0;ic < 4;ic++) {
-            for (ion = 0; ion < ct.num_ions; ion++)
+            for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
             {
-                iptr = &Atoms[ion];
-                fprintf(fhandle, "\n %#15.12g %#15.12g %#15.12g ", iptr->force[ic][0], iptr->force[ic][1], iptr->force[ic][2]);
+                ION &Atom = Atoms[ion];
+                fprintf(fhandle, "\n %#15.12g %#15.12g %#15.12g ", Atom.force[ic][0], Atom.force[ic][1], Atom.force[ic][2]);
             }
         }
 	fprintf(fhandle,"\n\"\n");

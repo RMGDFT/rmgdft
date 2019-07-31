@@ -66,20 +66,16 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
     /* Loop over ions */
     int state_count = 0;
 
-    for (int ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-        /* Generate ion pointer */
-        ION *iptr = &Atoms[ion];
-
         /* Get species type */
-        SPECIES *sp = &Species[iptr->species];
+        SPECIES &AtomType = Species[Atoms[ion].species];
 
         /*Make sure that the wavefunctions have been read*/
-        if (!sp->num_atomic_waves) {
-            rmg_printf("No initial wavefunctions for ion %d, most likely the PP file does not have them", ion);
+        if (!AtomType.num_atomic_waves) {
+            rmg_printf("No initial wavefunctions for ion %lu, most likely the PP file does not have them", ion);
             rmg_error_handler(__FILE__,__LINE__,"Terminating.");
         }
-
     }
 
     state_count = CountAtomicOrbitals();
@@ -88,32 +84,32 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
     {
         double coeff = 1.0;
         int st = 0;
-        for (int ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             /* Generate ion pointer */
-            ION *iptr = &Atoms[ion];
+            ION &Atom = Atoms[ion];
 
             /* Get species type */
-            SPECIES *sp = &Species[iptr->species];
+            SPECIES &AtomType = Species[Atom.species];
 
             if(ct.atomic_orbital_type == DELOCALIZED)
             {
                 // Delocalized orbitals
-                kptr->get_ion_orbitals(iptr, states[st].psi);
-                st += sp->num_orbitals;
+                kptr->get_ion_orbitals(&Atom, states[st].psi);
+                st += AtomType.num_orbitals;
             }
             else
             {
                 /*Loop over atomic wavefunctions for given ion*/
-                for (int ip = 0; ip < sp->num_atomic_waves; ip++)
+                for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
                 {
-                    int l = sp->atomic_wave_l[ip];
-                    if(sp->atomic_wave_oc[ip] > 0.0)
+                    int l = AtomType.atomic_wave_l[ip];
+                    if(AtomType.atomic_wave_oc[ip] > 0.0)
                     {
                         /*Loop over all m values for given l and get wavefunctions */
                         for (int m=0; m < 2*l+1; m++)
                         {
-                            LcaoGetAwave(states[st].psi, iptr, ip, l, m, coeff, kvec);
+                            LcaoGetAwave(states[st].psi, &Atom, ip, l, m, coeff, kvec);
                             st++;
                         }
                     }
@@ -132,33 +128,33 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
 
         double coeff = 1.0;
         int wave_idx = 0;
-        for (int ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             /* Generate ion pointer */
-            ION *iptr = &Atoms[ion];
+            ION &Atom = Atoms[ion];
 
             /* Get species type */
-            SPECIES *sp = &Species[iptr->species];
+            SPECIES &AtomType = Species[Atom.species];
 
             if(ct.atomic_orbital_type == DELOCALIZED)
             {
                 // Delocalized orbitals
-                kptr->get_ion_orbitals(iptr, &npsi[wave_idx * P0_BASIS]);
-                wave_idx += sp->num_orbitals;
+                kptr->get_ion_orbitals(&Atom, &npsi[wave_idx * P0_BASIS]);
+                wave_idx += AtomType.num_orbitals;
             }
             else
             {
                 /*Loop over atomic wavefunctions for given ion*/
-                for (int ip = 0; ip < sp->num_atomic_waves; ip++)
+                for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
                 {
-                    int l = sp->atomic_wave_l[ip];
-                    if(sp->atomic_wave_oc[ip] > 0.0) {
+                    int l = AtomType.atomic_wave_l[ip];
+                    if(AtomType.atomic_wave_oc[ip] > 0.0) {
 
                         /*Loop over all m values for given l and get wavefunctions */
                         for (int m=0; m < 2*l+1; m++)
                         {
                             for(int idx = 0;idx < P0_BASIS;idx++)  npsi[wave_idx * P0_BASIS + idx] = 0.0;
-                            LcaoGetAwave(&npsi[wave_idx * P0_BASIS], iptr, ip, l, m, coeff, kvec);
+                            LcaoGetAwave(&npsi[wave_idx * P0_BASIS], &Atom, ip, l, m, coeff, kvec);
                             wave_idx++;
                         }
 

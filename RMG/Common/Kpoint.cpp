@@ -141,8 +141,8 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     /* calculate total number of electrons in the system from pseudopotential information */
     ct.ionic_charge = 0.0;
 
-    for (ii = 0; ii < ct.num_ions; ii++)
-        ct.ionic_charge += Species[Atoms[ii].species].zvalence;
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+        ct.ionic_charge += Species[Atoms[ion].species].zvalence;
 
 
     if (ct.spin_flag)
@@ -1060,7 +1060,7 @@ template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *or
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
     /* Loop over ions */
-    for (int ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
         KpointType *orbit = &orbitals[ion * ct.max_orbitals * pbasis];
 
