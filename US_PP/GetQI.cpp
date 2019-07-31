@@ -127,7 +127,7 @@ void GetQI (void)
 
         iptr = &Atoms[ion];
         species = iptr->species;
-        sp = &ct.sp[species];
+        sp = &Species[species];
 
         nh = sp->nh;
 

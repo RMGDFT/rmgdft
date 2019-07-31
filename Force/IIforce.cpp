@@ -59,7 +59,7 @@ void IIforce (double *force)
     sigma = 0.0;
     if(!ct.localize_localpp) sigma = 3.0;
     for (i = 0; i<ct.num_species; i++) 
-        sigma = std::max(sigma, ct.sp[i].rc);
+        sigma = std::max(sigma, Species[i].rc);
 
 
     //  the ion-ion term in real space
@@ -83,8 +83,8 @@ void IIforce (double *force)
         iptr1 = &Atoms[i];
 
 
-        Zi = ct.sp[iptr1->species].zvalence;
-        rci = ct.sp[iptr1->species].rc;
+        Zi = Species[iptr1->species].zvalence;
+        rci = Species[iptr1->species].rc;
         if(!ct.localize_localpp) rci = sigma;
 
 
@@ -94,8 +94,8 @@ void IIforce (double *force)
 
             iptr2 = &Atoms[j];
 
-            Zj = ct.sp[iptr2->species].zvalence;
-            rcj = ct.sp[iptr2->species].rc;
+            Zj = Species[iptr2->species].zvalence;
+            rcj = Species[iptr2->species].rc;
             if(!ct.localize_localpp) rcj = sigma;
 
 
@@ -167,7 +167,7 @@ void IIforce (double *force)
                 {
 
                     iptr1 = &Atoms[i];
-                    Zi = ct.sp[iptr1->species].zvalence;
+                    Zi = Species[iptr1->species].zvalence;
                     kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
                     strfac +=  Zi * std::exp(std::complex<double>(0.0, kr));
                 }
@@ -179,7 +179,7 @@ void IIforce (double *force)
                 {
                     
                     iptr1 = &Atoms[i];
-                    Zi = ct.sp[iptr1->species].zvalence;
+                    Zi = Species[iptr1->species].zvalence;
                     kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
                     der_strfac_x =  Zi * std::complex<double>(0.0, k[0]) * std::exp(std::complex<double>(0.0, kr));
                     der_strfac_y =  Zi * std::complex<double>(0.0, k[1]) * std::exp(std::complex<double>(0.0, kr));

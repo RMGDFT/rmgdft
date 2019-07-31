@@ -346,7 +346,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Atoms[ion].icrds[ic] = Atoms[ion].crds[ic];
             Atoms[ion].ixtal[ic] = Atoms[ion].xtal[ic];
         }
-        SPECIES *sp = &ct.sp[Atoms[ion].species];
+        SPECIES *sp = &Species[Atoms[ion].species];
         if(sp->num_ldaU_orbitals > 0) ct.num_ldaU_ions++;
     }
 
@@ -367,7 +367,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     for (species = 0; species < ct.num_species; species++)
     {
         /* Get species type */
-        sp = &ct.sp[species];
+        sp = &Species[species];
 
         if (sp->nldim > ct.max_nldim)
             ct.max_nldim = sp->nldim;

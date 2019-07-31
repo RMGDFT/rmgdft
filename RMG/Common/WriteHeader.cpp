@@ -461,7 +461,7 @@ void WriteHeader (void)
     {
 
         SPECIES *sp;
-        sp = &ct.sp[idx];
+        sp = &Species[idx];
 
 	if (strlen(sp->functional) > max_funct_length)
 	    max_funct_length = strlen(sp->functional);
@@ -517,7 +517,7 @@ void WriteHeader (void)
     for (idx = 0; idx < ct.num_species; idx++)
     {
         SPECIES *sp;
-        sp = &ct.sp[idx];
+        sp = &Species[idx];
 	printf("|%5d",idx + 1);
 	printf("|%6.6s", sp->atomic_symbol);
 	printf("|%5.1lf", sp->atomic_mass);
@@ -611,7 +611,7 @@ static void init_write_pos (void)
     {
 
         iptr = &Atoms[ion];
-	sp = &ct.sp[iptr->species];
+	sp = &Species[iptr->species];
 
         printf ("\n  %-2s   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
 		sp->atomic_symbol,

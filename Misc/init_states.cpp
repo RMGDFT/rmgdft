@@ -50,7 +50,7 @@ STATE *init_states ()
     ct.ionic_charge = 0.0;
 
     for (ii = 0; ii < ct.num_ions; ii++)
-        ct.ionic_charge += ct.sp[Atoms[ii].species].zvalence; 
+        ct.ionic_charge += Species[Atoms[ii].species].zvalence; 
 
 
     if (ct.spin_flag)

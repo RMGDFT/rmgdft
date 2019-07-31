@@ -300,7 +300,7 @@ public:
 
     /** Species structure 
      * @see SPECIES */
-    std::vector<SPECIES> sp;
+    //std::vector<SPECIES> sp;
 
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;
@@ -868,4 +868,5 @@ public:
 /* Extern declaration for the main control structure */
 extern CONTROL ct;
 extern std::vector<ION> Atoms;
+extern std::vector<SPECIES> Species;
 #endif

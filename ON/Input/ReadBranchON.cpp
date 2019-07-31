@@ -139,7 +139,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
             // Search the species structure for a matching symbol
             boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
             for(int isp = 0;isp < lc.num_species;isp++) {
-                if(!std::strcmp(fields[0].c_str(), lc.sp[isp].atomic_symbol)) {
+                if(!std::strcmp(fields[0].c_str(), Species[isp].atomic_symbol)) {
                     std::strncpy(lc.file_atomic_orbit[isp], fields[1].c_str(), sizeof(lc.file_atomic_orbit[isp]));
                 }
             }

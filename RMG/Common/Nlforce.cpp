@@ -236,7 +236,7 @@ ct.state_block_size);
                 iptr = &Atoms[gion];
 
 
-                nh = ct.sp[iptr->species].nh;
+                nh = Species[iptr->species].nh;
 
                 /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
                 par_gamma = &par_gamma_allions[ion * 3 * max_nl2];
@@ -274,7 +274,7 @@ ct.state_block_size);
 
         iptr = &Atoms[gion];
 
-        nh = ct.sp[iptr->species].nh;
+        nh = Species[iptr->species].nh;
 
         RT1 = new RmgTimer("2-Force: non-local-get gamma");
         GetGamma (gamma, ion, nh, Kptr);
@@ -322,7 +322,7 @@ ct.state_block_size);
         iptr = &Atoms[gion];
 
 
-        nh = ct.sp[iptr->species].nh;
+        nh = Species[iptr->species].nh;
 
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
         //PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr);

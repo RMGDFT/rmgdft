@@ -19,7 +19,7 @@ void get_ddd (double * veff)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &Atoms[ion];
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
         
         nh = sp->nh;
 
@@ -35,7 +35,7 @@ void get_ddd (double * veff)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &Atoms[ion];
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
 
         ivec = pct.Qindex[ion];
         nh = sp->nh;
@@ -79,7 +79,7 @@ void get_ddd (double * veff)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &Atoms[ion];
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
 
         nh = sp->nh;
 

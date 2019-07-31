@@ -61,7 +61,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
     for (int isp = 0; isp < ct.num_species; isp++)
     {
 
-        sp = &ct.sp[isp];
+        sp = &Species[isp];
         if(!std::strcmp(sp->atomic_symbol, "DLO")) continue;
         if (Verify ("write_pseudopotential_plots", true, ControlMap))
         {

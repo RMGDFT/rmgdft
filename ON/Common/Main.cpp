@@ -126,6 +126,8 @@ int mpi_myrank;
 //STATE *states, *states1;
 
 std::vector<ION> Atoms;
+std::vector<SPECIES> Species;
+
 
 /*Variables from recips.h*/
 double b0[3], b1[3], b2[3];

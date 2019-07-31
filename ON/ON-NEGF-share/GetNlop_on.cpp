@@ -108,7 +108,7 @@ void GetNlop_on(void)
         {
             pct.ionidx[pct.n_ion_center] = ion;
             pct.n_ion_center += 1;
-            tot_prj += ct.sp[Atoms[ion].species].num_projectors;
+            tot_prj += Species[Atoms[ion].species].num_projectors;
         }
     }
 
@@ -142,7 +142,7 @@ void GetNlop_on(void)
 
 
     for (ion = 0; ion < ct.num_ions; ion++)
-        pct.prj_per_ion[ion] = ct.sp[Atoms[ion].species].num_projectors;
+        pct.prj_per_ion[ion] = Species[Atoms[ion].species].num_projectors;
 
     /* Loop over all the ions on this processor */
 
@@ -157,7 +157,7 @@ void GetNlop_on(void)
         iptr = &Atoms[ion];
 
         /* Get species type */
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
 
         //        fftw_import_wisdom_from_string(sp->backward_wisdom);
         p2 = fftw_plan_dft_3d(sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(gbptr), 
@@ -239,7 +239,7 @@ void GetNlop_on(void)
         iptr = &Atoms[ion];
 
         /* Get species type */
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
         std::string newname;
         newname = std::string("PROJECTORS/ion_") + std::to_string(ion);
         int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);

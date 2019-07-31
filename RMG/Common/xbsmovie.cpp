@@ -83,7 +83,7 @@ static void init_xbsmovie (FILE * movie)
 
         /* Get ion pointer */
         iptr = &Atoms[ion];
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
 
         fprintf (movie, "atom %2s	%f %f %f\n",
                  sp->atomic_symbol, iptr->crds[0], iptr->crds[1], iptr->crds[2]);
@@ -102,7 +102,7 @@ static void init_xbsmovie (FILE * movie)
     for (species = 0; species < ct.num_species; species++)
     {
 
-        sp = &ct.sp[species];
+        sp = &Species[species];
 
         /*Assign radii to species (from 0.5 to 1 according to atomic number) */
         radius =
@@ -122,10 +122,10 @@ static void init_xbsmovie (FILE * movie)
     /*Now bonds specification for all possible combinations */
     for (species = 0; species < ct.num_species; species++)
     {
-        sp = &ct.sp[species];
+        sp = &Species[species];
         for (species2 = 0; species2 < ct.num_species; species2++)
         {
-            sp2 = &ct.sp[species2];
+            sp2 = &Species[species2];
 
 
             /*Format should be: name1 name2 min_length max_length radius color */

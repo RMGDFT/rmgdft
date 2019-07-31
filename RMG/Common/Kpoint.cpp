@@ -142,7 +142,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     ct.ionic_charge = 0.0;
 
     for (ii = 0; ii < ct.num_ions; ii++)
-        ct.ionic_charge += ct.sp[Atoms[ii].species].zvalence;
+        ct.ionic_charge += Species[Atoms[ii].species].zvalence;
 
 
     if (ct.spin_flag)
@@ -666,7 +666,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
                     int oion = owned_ions_list[ion];
 
                     ION *iptr = &Atoms[oion];
-                    SPECIES *sp = &ct.sp[iptr->species];
+                    SPECIES *sp = &Species[iptr->species];
 
                     int nh = sp->nh;
 
@@ -821,7 +821,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
                   int oion = owned_ions_list[ion];
 
                   ION *iptr = &Atoms[oion];
-                  SPECIES *sp = &ct.sp[iptr->species];
+                  SPECIES *sp = &Species[iptr->species];
 
                   int nh = sp->nh;
 
@@ -978,7 +978,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr,
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
     /* Get species type */
-    SPECIES *sp = &ct.sp[iptr->species];
+    SPECIES *sp = &Species[iptr->species];
 
     double vect[3], nlcrds[3];
 
@@ -1068,7 +1068,7 @@ template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *or
         ION *iptr = &Atoms[ion];
 
         /* Get species type */
-        SPECIES *sp = &ct.sp[iptr->species];
+        SPECIES *sp = &Species[iptr->species];
 
 
         /*Calculate the phase factor */

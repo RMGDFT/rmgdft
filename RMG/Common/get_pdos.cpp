@@ -148,7 +148,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 
 		    iptr = &Atoms[gion];
 
-		    nh = ct.sp[iptr->species].nh;
+		    nh = Species[iptr->species].nh;
 
 		    ivec = pct.Qindex[gion];
 		    ncount = pct.Qidxptrlen[gion];

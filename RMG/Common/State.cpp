@@ -121,7 +121,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
             
             iptr = &Atoms[oion];
            
-            nh = ct.sp[iptr->species].nh;
+            nh = Species[iptr->species].nh;
             
             /* Figure out index of owned ion in nonloc_ions_list array*/
             do {

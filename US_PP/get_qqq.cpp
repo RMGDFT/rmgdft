@@ -50,7 +50,7 @@ void get_qqq ()
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &Atoms[ion];
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
 
         nh = sp->nh;
         ncount = pct.Qidxptrlen[ion];

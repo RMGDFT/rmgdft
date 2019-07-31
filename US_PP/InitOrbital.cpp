@@ -48,7 +48,7 @@ void InitOrbital (void)
     for (isp = 0; isp < ct.num_species; isp++)
     {
         /* Get species type */
-        sp = &ct.sp[isp];
+        sp = &Species[isp];
 
         nldim_max = std::max(nldim_max, sp->nldim);
         size = sp->nldim * sp->nldim * sp->nldim;
@@ -112,7 +112,7 @@ void InitOrbital (void)
     {
         proj = proj_iter[iproj];
 
-        sp = &ct.sp[proj.species];
+        sp = &Species[proj.species];
 
         // if sp->nldim > get_NX_GRID, folding of neighbor cells are needed. 
         xdim = sp->nldim;
@@ -144,7 +144,7 @@ void InitOrbital (void)
     for(int iproj = 0; iproj < tot_orbitals; iproj++)
     {
         proj = proj_iter[iproj];
-        sp = &ct.sp[proj.species];
+        sp = &Species[proj.species];
         root = iproj % pct.grid_npes;
         size = sp->nldim * sp->nldim * sp->nldim;
 
@@ -157,7 +157,7 @@ void InitOrbital (void)
 
     for (isp = 0; isp < ct.num_species; isp++)
     {
-        sp = &ct.sp[isp];
+        sp = &Species[isp];
         delete sp->phase;
     }
 

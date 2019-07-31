@@ -34,7 +34,7 @@ void is_vloc_state_overlap (STATE *states)
     for (ion = 0; ion < pct.n_ion_center_loc; ion++)
     {
         iptr = &Atoms[ion];
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
         r1 = sp->lradius;
 
         for (ista = 0; ista < ct.num_states; ista++)

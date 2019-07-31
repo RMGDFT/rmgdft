@@ -42,7 +42,7 @@ int CountAtomicOrbitals(void)
         ION *iptr = &Atoms[ion];
 
         /* Get species type */
-        SPECIES *sp = &ct.sp[iptr->species];
+        SPECIES *sp = &Species[iptr->species];
 
         for (int ip = 0; ip < sp->num_atomic_waves; ip++) {
             if(sp->atomic_wave_oc[ip] > 0.0) {

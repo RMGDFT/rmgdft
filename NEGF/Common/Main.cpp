@@ -79,6 +79,7 @@
 #include "Kbpsi.h"
 
 std::vector<ION> Atoms;
+std::vector<SPECIES> Species;
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */

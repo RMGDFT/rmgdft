@@ -53,7 +53,7 @@ void mulliken (STATE * states)
     {
         iptr = &Atoms[ion];
         species = iptr->species;
-        sp = &ct.sp[species];
+        sp = &Species[species];
 
         tot_atomic_states += sp->sum_atomic_waves;
     }
@@ -81,7 +81,7 @@ void mulliken (STATE * states)
 
         iptr = &Atoms[ion];
         species = iptr->species;
-        sp = &ct.sp[species];
+        sp = &Species[species];
         dim = sp->mill_dim;
 
         icenter = sp->mill_dim / 2;
@@ -357,7 +357,7 @@ void mulliken (STATE * states)
 
             iptr = &Atoms[ion];
             species = iptr->species;
-            sp = &ct.sp[species];
+            sp = &Species[species];
 
             for (i = 0; i < sp->sum_atomic_waves; i++)
                 printf ("%s% -4d  ", "Ion", ion);
@@ -373,7 +373,7 @@ void mulliken (STATE * states)
 
             iptr = &Atoms[ion];
             species = iptr->species;
-            sp = &ct.sp[species];
+            sp = &Species[species];
 
             for (i = 0; i < sp->num_atomic_waves; i++)
             {
@@ -594,7 +594,7 @@ void mulliken (STATE * states)
                     ion = 0;
                     do
                     {
-                        ii += ct.sp[Atoms[ion].species].sum_atomic_waves;
+                        ii += Species[Atoms[ion].species].sum_atomic_waves;
                         ion++;
                     }
                     while (ii < i);
@@ -603,7 +603,7 @@ void mulliken (STATE * states)
                     ion--;
 
                     /*ii will be index of atomic orbital in ion "ion" */
-                    ii = ii - ct.sp[Atoms[ion].species].sum_atomic_waves + 1;
+                    ii = ii - Species[Atoms[ion].species].sum_atomic_waves + 1;
                     ii = i - ii;
 
 
@@ -611,8 +611,8 @@ void mulliken (STATE * states)
 
                     printf (" Overlap: % 5.4f  Ion %d[%s] State %s   ",
                             overlap[st + i * ct.num_states], ion,
-                            ct.sp[Atoms[ion].species].pseudo_symbol,
-                            ct.sp[Atoms[ion].species].atomic_wave_symbol[ii]);
+                            Species[Atoms[ion].species].pseudo_symbol,
+                            Species[Atoms[ion].species].atomic_wave_symbol[ii]);
 
                 }
 

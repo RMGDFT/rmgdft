@@ -72,7 +72,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
         ION *iptr = &Atoms[ion];
 
         /* Get species type */
-        SPECIES *sp = &ct.sp[iptr->species];
+        SPECIES *sp = &Species[iptr->species];
 
         /*Make sure that the wavefunctions have been read*/
         if (!sp->num_atomic_waves) {
@@ -94,7 +94,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
             ION *iptr = &Atoms[ion];
 
             /* Get species type */
-            SPECIES *sp = &ct.sp[iptr->species];
+            SPECIES *sp = &Species[iptr->species];
 
             if(ct.atomic_orbital_type == DELOCALIZED)
             {
@@ -138,7 +138,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
             ION *iptr = &Atoms[ion];
 
             /* Get species type */
-            SPECIES *sp = &ct.sp[iptr->species];
+            SPECIES *sp = &Species[iptr->species];
 
             if(ct.atomic_orbital_type == DELOCALIZED)
             {

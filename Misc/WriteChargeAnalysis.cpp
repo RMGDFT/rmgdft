@@ -52,7 +52,7 @@ void WriteChargeAnalysis(void)
     {
 
 	iptr = &Atoms[i];
-	sp = &ct.sp[iptr->species];
+	sp = &Species[iptr->species];
 
 	rmg_printf("     %3d     %2s          %6.3f\n", i + 1, sp->atomic_symbol, iptr->partial_charge); 
 

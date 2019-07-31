@@ -48,7 +48,7 @@ void init_wf_lcao(STATE * states)
     {
         ion = states[state].atom_index;
         species = Atoms[ion].species;
-        sp = &ct.sp[species];
+        sp = &Species[species];
         ist = states[state].atomic_orbital_index;
         st = &states[state];
 

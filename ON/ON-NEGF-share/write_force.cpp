@@ -66,7 +66,7 @@ void write_force(void)
         iptr = &Atoms[ion];
 
         fp = iptr->force[ct.fpt[0]];
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
 
         printf ( "@ION %3d   %2s %2d  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f  %10.7f %7d\n",
                  ion + 1,

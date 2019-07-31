@@ -45,7 +45,7 @@ void init_nl_xyz (void)
         iptr = &Atoms[ion];
 
         /* Get species type */
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
 
 
         L0_NLDIM = sp->nldim;

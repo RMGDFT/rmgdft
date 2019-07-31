@@ -78,7 +78,7 @@ void nlforce(double * veff)
     {
 
         iptr = &Atoms[ion];
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
         nh = sp->num_projectors;
 
         nlforce_par_Q(veff, rho_nm, ion, nh, &forces_tem[ion*3]);

@@ -74,7 +74,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
     for (int isp = 0; isp < ct.num_species; isp++)
     {
         /* Get species type */
-        sp = &ct.sp[isp];
+        sp = &Species[isp];
         double Zv = sp->zvalence;
 
         rc = sp->rc;

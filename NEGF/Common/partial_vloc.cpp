@@ -93,7 +93,7 @@ void partial_vloc ()
         iptr = &Atoms[ion];
 
         /* Get species type */
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
 
         idx = 0;
         xc = iptr->xcstart_loc;

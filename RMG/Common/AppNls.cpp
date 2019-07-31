@@ -128,7 +128,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             /*Actual index of the ion under consideration*/
             int gion = nonloc_ions_list[ion];
             ION *iptr = &Atoms[gion];
-            SPECIES *sp = &ct.sp[iptr->species];
+            SPECIES *sp = &Species[iptr->species];
 
             int nh = sp->nh;
             for (int i = 0; i < nh; i++)
@@ -155,7 +155,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         proj_index = ion * ct.max_nl;
         int gion = nonloc_ions_list[ion];
         ION *iptr = &Atoms[gion];
-        SPECIES *sp = &ct.sp[iptr->species];
+        SPECIES *sp = &Species[iptr->species];
 
         int nh = sp->nh;
 

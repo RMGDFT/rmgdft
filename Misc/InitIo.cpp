@@ -161,7 +161,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     int us_count = 0;
     for(int isp = 0;isp < ct.num_species;isp++)
     {
-        SPECIES *sp = &ct.sp[isp];
+        SPECIES *sp = &Species[isp];
         if(sp->is_norm_conserving)
         {
             nc_count++;

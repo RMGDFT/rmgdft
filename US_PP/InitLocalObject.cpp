@@ -105,7 +105,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         iptr = &Atoms[ion];
 
         /* Get species type */
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
 
         dimx =  sp->lradius/(hxxgrid*xside);
         dimy =  sp->lradius/(hyygrid*yside);
@@ -192,7 +192,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         iptr = &Atoms[ion];
 
         /* Get species type */
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
         Zv = sp->zvalence;
         rc = sp->rc;
         rc2 = rc * rc;

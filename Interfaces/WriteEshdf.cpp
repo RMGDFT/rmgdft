@@ -252,7 +252,7 @@ void eshdfFile::writeAtoms(void) {
   //   then write to a file, also set up mapping between species name and number
   for (int speciesNum = 0; speciesNum < ct.num_species; speciesNum++) {
 
-    SPECIES *sp = &ct.sp[speciesNum];
+    SPECIES *sp = &Species[speciesNum];
     // RMG porting note - Not used but is this the full name of the element?
     //string spName = species.getAttribute("name");
     //SpeciesNameToInt[spName] = speciesNum;

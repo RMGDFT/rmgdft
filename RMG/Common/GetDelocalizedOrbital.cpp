@@ -75,7 +75,7 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
             ION *iptr = &Atoms[ion];
 
             /* Get species type */
-            SPECIES *sp = &ct.sp[iptr->species];
+            SPECIES *sp = &Species[iptr->species];
 
             int nlxdim = get_NX_GRID();
             int nlydim = get_NY_GRID();

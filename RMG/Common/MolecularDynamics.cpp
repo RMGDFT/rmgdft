@@ -414,7 +414,7 @@ void init_nose ()
         iptr = &Atoms[ion];
 
         /* Get ionic mass */
-        mass = ct.sp[iptr->species].atomic_mass * mu_me;
+        mass = Species[iptr->species].atomic_mass * mu_me;
 
         v1 = iptr->velocity[0];
         v2 = iptr->velocity[1];
@@ -494,7 +494,7 @@ void velup1 ()
                 iptr = &Atoms[ion];
 
                 /* Get ionic mass */
-                mass = ct.sp[iptr->species].atomic_mass * mu_me;
+                mass = Species[iptr->species].atomic_mass * mu_me;
 
                 /* calculate kinetic energy */
                 v1 = iptr->velocity[0];
@@ -534,7 +534,7 @@ void velup1 ()
         {
 
             /* Get ionic mass */
-            mass = ct.sp[iptr->species].atomic_mass * mu_me;
+            mass = Species[iptr->species].atomic_mass * mu_me;
 
             /* update velocity by one-half timestep */
             switch (ct.mdorder)
@@ -683,7 +683,7 @@ void velup2 ()
         iptr = &Atoms[ion];
 
         /* Get ionic mass */
-        mass = ct.sp[iptr->species].atomic_mass * mu_me;
+        mass = Species[iptr->species].atomic_mass * mu_me;
 
 
         if (iptr->movable)
@@ -1043,7 +1043,7 @@ void center_of_mass_velocity(double &vx, double &vy, double &vz)
     for (int ion = 0; ion < ct.num_ions; ion++) {
 
         ION *iptr = &Atoms[ion];
-        double mass = ct.sp[iptr->species].atomic_mass * mu_me;
+        double mass = Species[iptr->species].atomic_mass * mu_me;
         px += mass * iptr->velocity[0];
         py += mass * iptr->velocity[1];
         pz += mass * iptr->velocity[1];
@@ -1096,7 +1096,7 @@ void ranv (void)
             iptr = &Atoms[ion];
 
             /* Get ionic mass */
-            mass = ct.sp[iptr->species].atomic_mass * mu_me;
+            mass = Species[iptr->species].atomic_mass * mu_me;
 
             if (iptr->movable)
             {
@@ -1147,7 +1147,7 @@ void ranv (void)
             iptr = &Atoms[ion];
 
             /* Get ionic mass */
-            mass = ct.sp[iptr->species].atomic_mass * mu_me;
+            mass = Species[iptr->species].atomic_mass * mu_me;
 
             if (iptr->movable)
             {
@@ -1170,7 +1170,7 @@ void ranv (void)
             iptr = &Atoms[ion];
 
             /* Get ionic mass */
-            mass = ct.sp[iptr->species].atomic_mass * mu_me;
+            mass = Species[iptr->species].atomic_mass * mu_me;
 
             if (iptr->movable)
             {

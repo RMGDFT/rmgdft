@@ -61,7 +61,7 @@ void InitDelocalizedOrbital (void)
     for (int isp = 0; isp < ct.num_species; isp++)
     {
         /* Get species type */
-        SPECIES *sp = &ct.sp[isp];
+        SPECIES *sp = &Species[isp];
 
         /*Loop over all radial atomic wavefunctions to calculate num of 3D orbitals for given species */
         int orbital_count = 0;
@@ -100,7 +100,7 @@ void InitDelocalizedOrbital (void)
     {
         proj = proj_iter[iproj];
         std::complex<double> IL = std::pow(-I_t, proj.l);
-        SPECIES *sp = &ct.sp[proj.species];
+        SPECIES *sp = &Species[proj.species];
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {

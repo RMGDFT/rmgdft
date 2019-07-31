@@ -80,7 +80,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     for (int ion = pct.gridpe; ion < ct.num_ions; ion+=pct.grid_npes)
     {
 
-        Zi = ct.sp[Atoms[ion].species].zvalence;
+        Zi = Species[Atoms[ion].species].zvalence;
 
         force_sum[ion *3 + 0] = ct.e_field * ct.x_field_0 * Zi;
         force_sum[ion *3 + 1] = ct.e_field * ct.y_field_0 * Zi;

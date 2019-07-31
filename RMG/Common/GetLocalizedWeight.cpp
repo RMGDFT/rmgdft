@@ -85,7 +85,7 @@ void GetLocalizedWeight (Kpoint<KpointType> **Kptr)
             iptr = &Atoms[ion];
 
             /* Get species type */
-            sp = &ct.sp[iptr->species];
+            sp = &Species[iptr->species];
 
             Bweight = &Kptr[kpt]->nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
             Nlweight = &Kptr[kpt]->nl_weight[ion1 * ct.max_nl * P0_BASIS];

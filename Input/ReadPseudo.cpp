@@ -35,7 +35,7 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
     lc.norm_conserving_pp = true;
 
     for(int isp = 0;isp < nspecies;isp++) {
-        SPECIES *sp = &lc.sp[isp];
+        SPECIES *sp = &Species[isp];
         if(!sp->is_norm_conserving) lc.norm_conserving_pp = false;
         sp++; 
     } 
@@ -69,7 +69,7 @@ void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, Input
 
    for(int isp = 0;isp < nspecies;isp++) {
 
-        SPECIES *sp = &lc.sp[isp];
+        SPECIES *sp = &Species[isp];
         std::vector<std::string> func_components;
         std::string funcstr(sp->functional);
         boost::trim_if(funcstr, boost::algorithm::is_any_of(" \t"));

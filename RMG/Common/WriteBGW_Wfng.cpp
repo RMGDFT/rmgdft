@@ -334,7 +334,7 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
         for(int ion = 0; ion < ct.num_ions; ion++) 
         {
             iptr = &Atoms[ion];
-            sp = &ct.sp[iptr->species];
+            sp = &Species[iptr->species];
             double x[3];
             x[0] = iptr->crds[0]/alat;
             x[1] = iptr->crds[1]/alat;

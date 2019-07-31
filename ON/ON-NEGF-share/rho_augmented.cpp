@@ -45,7 +45,7 @@ int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc)
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         iptr = &Atoms[ion];
-        sp = &ct.sp[iptr->species];
+        sp = &Species[iptr->species];
         nh = sp->num_projectors;
         ptr_product = product + ion * ct.max_nl * ct.max_nl;
         ivec = pct.Qindex[ion];

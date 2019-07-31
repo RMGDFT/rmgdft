@@ -335,7 +335,7 @@ void WriteBGW_Rhog (double *rho, double *rho_oppo)
         for(int ion = 0; ion < ct.num_ions; ion++) 
         {
             iptr = &Atoms[ion];
-            sp = &ct.sp[iptr->species];
+            sp = &Species[iptr->species];
             double x[3];
             x[0] = iptr->crds[0]/alat;
             x[1] = iptr->crds[1]/alat;

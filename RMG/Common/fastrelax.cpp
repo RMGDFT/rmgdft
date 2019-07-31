@@ -117,7 +117,7 @@ void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_m
 
         /* Use either actual ionic mass or equal mass for all atoms*/
         if (ct.relax_mass == 0)
-            mass = ct.sp[iptr->species].atomic_mass * mu_me;
+            mass = Species[iptr->species].atomic_mass * mu_me;
         else
             mass =  12.0 * mu_me;
 

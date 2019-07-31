@@ -102,7 +102,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     for(int isp = 0;isp < ct.num_species;isp++)
     {
 
-        SPECIES *sp = &ct.sp[isp];
+        SPECIES *sp = &Species[isp];
 
         // All the same for beta projectors
         if(this->kind == BETA_PROJECTOR)
@@ -161,7 +161,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
             /* Generate ion pointer */
             ION *iptr = &Atoms[ion];
-//            SPECIES *sp = &ct.sp[iptr->species];
+//            SPECIES *sp = &Species[iptr->species];
        
             int icenter = this->nldims[iptr->species] / 2;
             int icut = (icenter + 1) * (icenter + 1);
@@ -277,7 +277,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
         /* Generate ion pointer */
         ION *iptr = &Atoms[ion];
-        SPECIES *sp = &ct.sp[iptr->species];
+        SPECIES *sp = &Species[iptr->species];
 
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
         if (((this->kind == BETA_PROJECTOR) && (this->idxptrlen[ion] || pct.Qidxptrlen[ion])) ||
@@ -326,7 +326,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
         ION *iptr = &Atoms[ion];
 
         /* Get species type */
-        SPECIES *sp = &ct.sp[iptr->species];
+        SPECIES *sp = &Species[iptr->species];
 
         /*See if this processor owns current ion */
         owner = claim_ion (iptr->xtal, PX0_GRID, PY0_GRID, PZ0_GRID, NX_GRID, NY_GRID, NZ_GRID);

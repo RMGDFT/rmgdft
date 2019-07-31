@@ -104,7 +104,7 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
     yindex = l*l + m;
 
     /* Get species type */
-    sp = &ct.sp[iptr->species];
+    sp = &Species[iptr->species];
 
     // r[i] = a exp[(i*b] -c
     // for norm-conserving in FHI, c= 0

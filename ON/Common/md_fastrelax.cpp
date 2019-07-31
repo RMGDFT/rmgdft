@@ -57,7 +57,7 @@ void md_fastrelax(void)
 
 
         /* Get ionic mass */
-        mass = ct.sp[iptr->species].atomic_mass * mu_me;
+        mass = Species[iptr->species].atomic_mass * mu_me;
 
 
         /* Magnitudes of f and v */

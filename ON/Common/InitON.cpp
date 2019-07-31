@@ -206,7 +206,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         int tot_prj = 0;
         for (int ion=0; ion < ct.num_ions; ion++)
         {
-            tot_prj += ct.sp[Atoms[ion].species].num_projectors;
+            tot_prj += Species[Atoms[ion].species].num_projectors;
         }
         ixmin = new int[3*tot_prj];
         iymin = ixmin + tot_prj;
@@ -219,7 +219,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         for (int ion=0; ion < ct.num_ions; ion++)
         {
             ION *iptr = &Atoms[ion];
-            SPECIES *sp = &ct.sp[iptr->species];
+            SPECIES *sp = &Species[iptr->species];
             proj_per_ion[ion] = sp->num_projectors;
             for (int ip = 0; ip < sp->num_projectors; ip++)
             {
@@ -249,7 +249,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         for (int ion=0; ion < ct.num_ions; ion++)
         {
             ION *iptr = &Atoms[ion];
-            SPECIES *sp = &ct.sp[iptr->species];
+            SPECIES *sp = &Species[iptr->species];
             for (int ip = 0; ip < sp->num_orbitals; ip++)
             {
                 // This ranges over all orbitals including the m-dependence

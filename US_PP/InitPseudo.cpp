@@ -64,7 +64,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
     /* Loop over species */
     for (isp = 0; isp < ct.num_species; isp++)
     {
-        SPECIES *sp = &ct.sp[isp];
+        SPECIES *sp = &Species[isp];
         double *work = new double[std::max(MAX_LOGGRID, sp->rg_points)];
         if(!std::strcmp(sp->atomic_symbol, "DLO")) continue;
         if (pct.gridpe == 0 && write_flag)

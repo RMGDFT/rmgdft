@@ -72,7 +72,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                 
                 ION *iptr = &Atoms[gion];
            
-                int nh = ct.sp[iptr->species].nh;
+                int nh = Species[iptr->species].nh;
                 
                 int *ivec = pct.Qindex[gion];
                 int ncount = pct.Qidxptrlen[gion];

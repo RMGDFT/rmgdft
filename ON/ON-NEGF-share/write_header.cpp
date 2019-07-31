@@ -154,8 +154,8 @@ void write_header(void)
         for (j = i; j < ct.num_species; j++)
         {
             printf("\n            %2d %2d    %13.7e", i, j,
-                    ct.sp[i].zvalence * ct.sp[i].zvalence *
-                    erfc(t1 / sqrt(ct.sp[i].rc * ct.sp[i].rc + ct.sp[j].rc * ct.sp[i].rc)) / t1);
+                    Species[i].zvalence * Species[i].zvalence *
+                    erfc(t1 / sqrt(Species[i].rc * Species[i].rc + Species[j].rc * Species[i].rc)) / t1);
         }                       /* j */
     }                           /* i */
 #endif
@@ -287,7 +287,7 @@ void write_header(void)
     {
 
         SPECIES *sp;
-        sp = &ct.sp[idx];
+        sp = &Species[idx];
 
         printf("\n\n      Species %d", idx + 1);
         printf("\n      %s", sp->description);
