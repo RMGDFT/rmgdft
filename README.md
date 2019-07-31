@@ -91,6 +91,9 @@ Pascal or later hardware.
 ```Input/```
   Routines for reading and parsing input files.
 
+```Interfaces/```
+  Interfaces to external programs. Still in progress.
+
 ```InternalPseudo/```
   RMG includes a set of pseudopotentials built into the executable which
   are included here as compressed header files.
