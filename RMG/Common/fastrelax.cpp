@@ -31,38 +31,35 @@
 
 void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_min, int *n_count)
 {
-    int ion, fpt;
-    ION *iptr;
     double mass, magf, dotfv, force[3], p = 0.0;
     bool set = true;
 
 
-    fpt = ct.fpt[0];
+    int fpt = ct.fpt[0];
 
     if (verify_boolean("relax_dynamic_timestep",&set))
     {
 
-        for (ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0; ion < Atoms.size(); ion++)
         {
 
-            /* Get ion pointer */
-            iptr = &Atoms[ion];
+            ION &Atom = Atoms[ion];
 
-            force[0] = iptr->force[fpt][0];
-            force[1] = iptr->force[fpt][1];
-            force[2] = iptr->force[fpt][2];
+            force[0] = Atom.force[fpt][0];
+            force[1] = Atom.force[fpt][1];
+            force[2] = Atom.force[fpt][2];
 
             if (ct.constrainforces)
             {
-                force[0] += iptr->constraint.forcemask[0];
-                force[1] += iptr->constraint.forcemask[1];
-                force[2] += iptr->constraint.forcemask[2];
+                force[0] += Atom.constraint.forcemask[0];
+                force[1] += Atom.constraint.forcemask[1];
+                force[2] += Atom.constraint.forcemask[2];
             }
             
             /* Dot product of f and v */
-            p += force[0] * iptr->velocity[0] +
-                 force[1] * iptr->velocity[1] +
-                 force[2] * iptr->velocity[2];
+            p += force[0] * Atom.velocity[0] +
+                 force[1] * Atom.velocity[1] +
+                 force[2] * Atom.velocity[2];
         }
 
         if (p < 0) 
@@ -97,27 +94,26 @@ void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_m
     }
 
     /* Loop over ions */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
-        /* Get ion pointer */
-        iptr = &Atoms[ion];
+        ION &Atom = Atoms[ion];
 
-        force[0] = iptr->force[fpt][0];
-        force[1] = iptr->force[fpt][1];
-        force[2] = iptr->force[fpt][2];
+        force[0] = Atom.force[fpt][0];
+        force[1] = Atom.force[fpt][1];
+        force[2] = Atom.force[fpt][2];
 
         if (ct.constrainforces)
         {
-            force[0] += iptr->constraint.forcemask[0];
-            force[1] += iptr->constraint.forcemask[1];
-            force[2] += iptr->constraint.forcemask[2];
+            force[0] += Atom.constraint.forcemask[0];
+            force[1] += Atom.constraint.forcemask[1];
+            force[2] += Atom.constraint.forcemask[2];
         }
 
 
         /* Use either actual ionic mass or equal mass for all atoms*/
         if (ct.relax_mass == 0)
-            mass = Species[iptr->species].atomic_mass * mu_me;
+            mass = Species[Atom.species].atomic_mass * mu_me;
         else
             mass =  12.0 * mu_me;
 
@@ -130,21 +126,21 @@ void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_m
 
 
         /* Dot product of f and v */
-        dotfv = force[0] * iptr->velocity[0] +
-                force[1] * iptr->velocity[1] +
-                force[2] * iptr->velocity[2];
+        dotfv = force[0] * Atom.velocity[0] +
+                force[1] * Atom.velocity[1] +
+                force[2] * Atom.velocity[2];
 
-        iptr->velocity[0] = *dt * force[0] / mass;
-        iptr->velocity[1] = *dt * force[1] / mass;
-        iptr->velocity[2] = *dt * force[2] / mass;
+        Atom.velocity[0] = *dt * force[0] / mass;
+        Atom.velocity[1] = *dt * force[1] / mass;
+        Atom.velocity[2] = *dt * force[2] / mass;
 
 
         if (dotfv >= 1.0e-12)
         {
 
-            iptr->velocity[0] += dotfv * force[0] / magf;
-            iptr->velocity[1] += dotfv * force[1] / magf;
-            iptr->velocity[2] += dotfv * force[2] / magf;
+            Atom.velocity[0] += dotfv * force[0] / magf;
+            Atom.velocity[1] += dotfv * force[1] / magf;
+            Atom.velocity[2] += dotfv * force[2] / magf;
 
         }
     }                           /* end for */

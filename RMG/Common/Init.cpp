@@ -144,7 +144,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     pct.localrhoc = NULL;
     pct.localrhonlcc = NULL;
     pct.localatomicrho = NULL;
-    pct.loc_ions_list = new int[ct.num_ions];
+    pct.loc_ions_list = new int[Atoms.size()];
 
 
     /* Set hartree boundary condition stuff */
@@ -339,7 +339,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     delete(RT1);
 
     /* Set initial ionic coordinates to the current ones. */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
         for (ic = 0; ic < 3; ic++)
         {
@@ -697,22 +697,20 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 static void init_alloc_nonloc_mem (void)
 {
-    int ion;
 
+    pct.Qindex = new int *[Atoms.size()];
+    pct.Qdvec = new int *[Atoms.size()];
 
-    pct.Qindex = new int *[ct.num_ions];
-    pct.Qdvec = new int *[ct.num_ions];
+    pct.Qidxptrlen = new int [Atoms.size()];
+    pct.lptrlen = new int [Atoms.size()];
 
-    pct.Qidxptrlen = new int [ct.num_ions];
-    pct.lptrlen = new int [ct.num_ions];
-
-    pct.augfunc = new double *[ct.num_ions];
-    pct.dnmI = new double *[ct.num_ions];
-    pct.qqq = new double *[ct.num_ions];
+    pct.augfunc = new double *[Atoms.size()];
+    pct.dnmI = new double *[Atoms.size()];
+    pct.qqq = new double *[Atoms.size()];
 
 
     /*Initialize pointer arrays to NULL */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
         pct.Qidxptrlen[ion] = 0;
@@ -725,7 +723,7 @@ static void init_alloc_nonloc_mem (void)
         pct.dnmI[ion] = NULL;
         pct.qqq[ion] = NULL;
 
-    }                           /*end for(ion=0; ion<ct.num_ions; ion++) */
+    }                           /*end for(ion=0; ion<Atoms.size(); ion++) */
 
 }                               /*end init_alloc_nonloc_mem */
 

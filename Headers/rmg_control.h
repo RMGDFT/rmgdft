@@ -298,10 +298,6 @@ public:
     /** Semi local pseudo potential flag */
     int semilocal_pp;
 
-    /** Species structure 
-     * @see SPECIES */
-    //std::vector<SPECIES> sp;
-
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;
     bool laplacian_offdiag;

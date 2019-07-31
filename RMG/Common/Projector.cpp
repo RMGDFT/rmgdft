@@ -76,6 +76,8 @@ template int Projector<std::complex<double>>::get_pstride(void);
 template <class KpointType> Projector<KpointType>::Projector(int projector_type, int stride, int projector_kind)
 
 {
+ 
+    int num_ions = Atoms.size();
 
     this->type = projector_type;    // LOCALIZED or DELOCALIZED
     this->kind = projector_kind;    // ORBITAL_PROJECTOR OR BETA_PROJECTOR
@@ -84,19 +86,19 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     this->num_owned_ions = 0;
     this->num_owned_pe = 0;
     this->num_owners = 0;
-    this->owned_ions_list = new int[ct.num_ions]();
+    this->owned_ions_list = new int[num_ions]();
     this->owned_pe_list = new int[pct.grid_npes]();
     this->num_owned_ions_per_pe = new int[pct.grid_npes]();
     this->owners_list = new int[pct.grid_npes]();
-    this->num_nonowned_ions_per_pe = new int[ct.num_ions]();
-    this->nonloc_ions_list = new int[ct.num_ions]();
-    this->idxptrlen = new int[ct.num_ions](); 
+    this->num_nonowned_ions_per_pe = new int[num_ions]();
+    this->nonloc_ions_list = new int[num_ions]();
+    this->idxptrlen = new int[num_ions](); 
     this->nldims = new int[ct.num_species](); 
     this->pstride = stride;
-    this->nlcrds.reserve(ct.num_ions);
+    this->nlcrds.reserve(num_ions);
 
-    this->list_owned_ions_per_pe.resize(boost::extents[pct.grid_npes][ct.num_ions]);
-    this->list_ions_per_owner.resize(boost::extents[pct.grid_npes][ct.num_ions]);
+    this->list_owned_ions_per_pe.resize(boost::extents[pct.grid_npes][num_ions]);
+    this->list_ions_per_owner.resize(boost::extents[pct.grid_npes][num_ions]);
 
     // Go through the list of atomic species and set up the nldims array
     for(int isp = 0;isp < ct.num_species;isp++)
@@ -117,7 +119,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
     for(int i=0;i < pct.grid_npes;i++)
     {
-        for(int j=0;j < ct.num_ions;j++)
+        for(int j=0;j < num_ions;j++)
         {
             list_owned_ions_per_pe[i][j] = 0;
             list_ions_per_owner[i][j] = 0;
@@ -153,7 +155,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
         int *Aiz = new int[NZ_GRID];
 
         #pragma omp parallel for schedule(static, 1) num_threads(nthreads)
-        for (int ion = 0; ion < ct.num_ions; ion++)
+        for (int ion = 0; ion < num_ions; ion++)
         /* Loop over ions */
         {
             int ilow, jlow, klow, ihi, jhi, khi, map;
@@ -262,7 +264,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
             }                       /* end if (map) */
 
-        }                           /* end for (ion = 0; ion < ct.num_ions; ion++) */
+        }                           /* end for (ion = 0; ion < num_ions; ion++) */
 
         
         delete [] Aiz;
@@ -272,12 +274,11 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
     } // end omp private area
 
 
-    for (int ion = 0; ion < ct.num_ions; ion++)
+    for (int ion = 0; ion < num_ions; ion++)
     {
 
         /* Generate ion pointer */
         ION *iptr = &Atoms[ion];
-        SPECIES *sp = &Species[iptr->species];
 
         /*Add ion into list of nonlocal ions if it has overlap with given processor */
         if (((this->kind == BETA_PROJECTOR) && (this->idxptrlen[ion] || pct.Qidxptrlen[ion])) ||
@@ -296,7 +297,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
             this->num_nonloc_ions++;
         }
 
-    } // end for (ion = 0; ion < ct.num_ions; ion++)
+    } // end for (ion = 0; ion < num_ions; ion++)
 
     int *Aix = new int[NX_GRID]();
     int *Aiy = new int[NY_GRID]();
@@ -313,7 +314,7 @@ template <class KpointType> Projector<KpointType>::Projector(int projector_type,
 
     /*Make sure that ownership of ions is properly established
      * This conditional can be removed if it is found that claim_ions works reliably*/
-    if (int_sum_all (this->num_owned_ions, pct.grid_comm) != ct.num_ions)
+    if (int_sum_all (this->num_owned_ions, pct.grid_comm) != num_ions)
         rmg_error_handler (__FILE__, __LINE__, "Problem with claimimg ions.");
     
     /* Loop over all ions to obtain the lists necessary for communication */
@@ -493,7 +494,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         char *transa;
         transa = transc;
         if(typeid(KpointType) == typeid(double)) transa = transt;
-        int length = factor * ct.num_ions * nstates * this->pstride;
+        int length = factor * Atoms.size() * nstates * this->pstride;
         RmgGemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
             weight, kptr->pbasis, &kptr->orbital_storage[offset*kptr->pbasis], kptr->pbasis,
             rzero, p, this->num_tot_proj);

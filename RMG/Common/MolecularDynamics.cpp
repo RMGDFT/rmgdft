@@ -79,9 +79,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
 
     /*Get some memory */
-    double *crdsx = new double[ct.num_ions];
-    double *crdsy = new double[ct.num_ions];
-    double *crdsz = new double[ct.num_ions];
+    double *crdsx = new double[Atoms.size()];
+    double *crdsy = new double[Atoms.size()];
+    double *crdsz = new double[Atoms.size()];
 
 
 
@@ -379,7 +379,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
 void init_nose ()
 {
-    int ion, N, jc;
+    int N, jc;
     ION *iptr;
     double wNose, tau_nose, kB, mass, step;
     double inittemp, nosesteps;
@@ -407,7 +407,7 @@ void init_nose ()
 
     /* calculate ion KE */
     ct.ionke = 0.0;
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
         /* Get ion pointer */
@@ -458,7 +458,7 @@ void init_nose ()
 
 void velup1 ()
 {
-    int ion, ic;
+    int ic;
     ION *iptr;
     double step, mass, kB;
     double t1, t2, v1, v2, v3;
@@ -487,7 +487,7 @@ void velup1 ()
 
             ct.ionke = 0.0;
             /* Loop over ions */
-            for (ion = 0; ion < ct.num_ions; ion++)
+            for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
             {
 
                 /* Get ion pointer */
@@ -524,7 +524,7 @@ void velup1 ()
 
     /* Loop over ions */
     ct.ionke = 0.0;
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
         /* Get ion pointer */
@@ -616,7 +616,7 @@ void posup ()
         nose_posup ();
 
     /* Loop over ions */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
         /* Get ion pointer */
@@ -645,7 +645,7 @@ void posup ()
 
 void velup2 ()
 {
-    int ion, ic;
+    int ic;
     ION *iptr;
     double step, mass;
     double t1, t2;
@@ -676,7 +676,7 @@ void velup2 ()
     ct.ionke = 0.0;
 
     /* Loop over ions */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
         /* Get ion pointer */
@@ -1061,7 +1061,7 @@ void center_of_mass_velocity(double &vx, double &vy, double &vz)
 
 void ranv (void)
 {
-    int i, ii, N, ion;
+    int i, ii, N;
     ION *iptr;
     double c, p, tmass, vtot[3], ek, scale;
     double kB, mass;
@@ -1071,7 +1071,7 @@ void ranv (void)
 
     /* count up moving atoms */
     N = 0;
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
         if (Atoms[ion].movable)
@@ -1089,7 +1089,7 @@ void ranv (void)
         vtot[0] = vtot[1] = vtot[2] = 0.0;
 
         /* randomize the velocity for each atom */
-        for (ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
 
             /* Get ion pointer */
@@ -1124,7 +1124,7 @@ void ranv (void)
         vtot[2] = vtot[2] / tmass;
 
         /* subtract out the center of mass velocity */
-        for (ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
 
             /* Get ion pointer */
@@ -1140,7 +1140,7 @@ void ranv (void)
 
         /* find kinetic energy */
         ek = 0.0;
-        for (ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
 
             /* Get ion pointer */
@@ -1163,7 +1163,7 @@ void ranv (void)
 
         ek = 0.0;
         /* rescale to correct temperature */
-        for (ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
 
             /* Get ion pointer */

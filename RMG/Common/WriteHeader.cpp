@@ -282,8 +282,8 @@ void WriteHeader (void)
     
     printf ("\n");
     printf ("Atoms and States\n");
-    printf ("    Number of ions:                          %d\n", ct.num_ions);
-    printf ("    Number of species:                       %d\n", ct.num_species);
+    printf ("    Number of ions:                          %lu\n", Atoms.size());
+    printf ("    Number of species:                       %lu\n", Species.size());
     if (ct.spin_flag)
     {
 	printf ("    Number of spin up states:                %d\n", ct.run_states);
@@ -597,27 +597,22 @@ void WriteHeader (void)
 
 static void init_write_pos (void)
 {
-    int ion;
-    ION *iptr;
-    SPECIES *sp;
-
 
     printf ("\n\nInitial Ionic Positions And Displacements\n");
-
-
     printf ("Species      X           Y           Z           dX          dY          dZ");
 
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
-        iptr = &Atoms[ion];
-	sp = &Species[iptr->species];
+        ION &Atom = Atoms[ion];
+        SPECIES &Type = Species[Atom.species];
 
         printf ("\n  %-2s   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
-		sp->atomic_symbol,
-                iptr->crds[0], iptr->crds[1], iptr->crds[2],
-                iptr->crds[0] - iptr->icrds[0],
-                iptr->crds[1] - iptr->icrds[1], iptr->crds[2] - iptr->icrds[2]);
+		Type.atomic_symbol,
+                Atom.crds[0], Atom.crds[1], Atom.crds[2],
+                Atom.crds[0] - Atom.icrds[0],
+                Atom.crds[1] - Atom.icrds[1], 
+                Atom.crds[2] - Atom.icrds[2]);
 
     }                           /* end for */
 
