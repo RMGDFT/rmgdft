@@ -62,11 +62,6 @@
  * init purposes. A of of 16 should be sufficent for any atomic species */
 #define         MAX_INITWF      16
 
-/* Maximum number of species -- just an upper limit on
- * dynamically allocated data structures. */
-#define         MAX_SPECIES     64
-
-
 /* Maximum number of ions -- just an upper limit on
  * dynamically allocated data structures. */
 #define         MAX_IONS        5120
@@ -78,11 +73,7 @@
 #define		MAX_CHAR	255
 
 /* Maximum pathname length for input file names */
-#if (defined(_WIN32) || defined(_WIN64))
-    #include <windows.h>
-#else
-    #define         MAX_PATH        MAX_CHAR
-#endif
+#define         MAX_PATH        MAX_CHAR
 
 /* Maximum image count */
 #define         MAX_IMGS        99
