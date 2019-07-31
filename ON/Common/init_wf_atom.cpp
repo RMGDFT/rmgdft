@@ -40,7 +40,7 @@ void init_wf_atom(STATE * states)
 
 
 
-        sprintf(newname, "%s%s%s%d", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species], ".orbit_", ist);
+        sprintf(newname, "%s%s%s%d", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), ".orbit_", ist);
         fhand = open(newname, O_RDWR);
         if (fhand < 0)
         {

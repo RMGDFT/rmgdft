@@ -1250,12 +1250,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     //}
 
     // Set up energy output units
-    static char *Hartree_str = "Ha";
-    static char *Rydberg_str = "Ry";
     lc.energy_output_conversion[0] = 1.0;
     lc.energy_output_conversion[1] = 2.0;
-    lc.energy_output_string[0] = Hartree_str;
-    lc.energy_output_string[1] = Rydberg_str;
+    lc.energy_output_string[0] = "Ha";
+    lc.energy_output_string[1] = "Ry";
 
     ct.use_vdwdf_finegrid = Verify ("vdwdf_grid_type", "Fine", InputMap);
 }

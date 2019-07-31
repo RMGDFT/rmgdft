@@ -45,7 +45,7 @@ void write_force (void)
     double f2;
     double *fp;
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
-    char *eunits = ct.energy_output_string[ct.energy_output_units];
+    const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
 
     printf ("\n\n\n  IONIC POSITIONS [a0] AND FORCES [%s/a0]", eunits);
     printf     ("\n  Charge analysis using: "); 

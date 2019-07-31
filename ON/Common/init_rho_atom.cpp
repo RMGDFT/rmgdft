@@ -74,7 +74,7 @@ void init_rho_atom(double *rho)
     {
         species = Atoms[ion].species;
 
-        sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species], ".rho_firstatom");
+        sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), ".rho_firstatom");
         if(pct.gridpe == 0)
         {
             fhand = open(newname, O_RDWR);
@@ -168,7 +168,7 @@ void init_rho_atom(double *rho)
             ION *iptr;
             iptr = &Atoms[ion];
             
-            sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species], ".rho_firstatom");
+            sprintf(newname, "%s%s%s", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), ".rho_firstatom");
             fhand = open(newname, O_RDWR);
             if (fhand < 0)
             {

@@ -33,7 +33,7 @@ public:
     // Energy output units 0=Hartrees, 1=Rydbergs
     int energy_output_units;
     double energy_output_conversion[2];
-    char *energy_output_string[2];
+    std::string energy_output_string[2];
 
     // Discretization type flag
     int discretization;
@@ -722,7 +722,7 @@ public:
     /* number of waves to plot in ON calculation */
     int num_waves;
    
-    char file_atomic_orbit[MAX_SPECIES][MAX_PATH];
+    std::vector<std::string> file_atomic_orbit;
 
     /* output information for GW calculations.  --Xiaohong */
     int flag_gw;

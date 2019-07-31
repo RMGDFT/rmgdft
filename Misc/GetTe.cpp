@@ -182,7 +182,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
-    char *eunits = ct.energy_output_string[ct.energy_output_units];
+    const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
 //rmg_printf ("@@ SCF CORRECTION     = %15.6f %s\n", efactor*ct.scf_correction, eunits);
     rmg_printf ("@@ EIGENVALUE SUM     = %15.6f %s\n", efactor*eigsum, eunits);
     rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
