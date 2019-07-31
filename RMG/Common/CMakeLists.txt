@@ -1,3 +1,6 @@
+set_source_files_properties(WriteHeader.cpp
+PROPERTIES
+COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 add_library (RMG_Common
 EnergyCorrection.cpp
 BroydenPotential.cpp

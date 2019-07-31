@@ -67,6 +67,8 @@ void write_header(void)
     double t1;
 
     time(&tt);
+    char *timeptr;
+    timeptr = ctime (&tt);
 
 
     switch (ct.boundaryflag)
@@ -87,6 +89,9 @@ void write_header(void)
     }                           /* end switch */
 
     printf("\n\n    %s", ct.description.c_str());
+    printf ("\n    Code Revision:     %s", RMG_REVISION);
+    printf ("\n    Build Date:        %s  %s", __DATE__, __TIME__);
+    printf ("\n    Start time:        %s", timeptr);
 
     printf("\n\n    FILES USED");
     printf("\n       Control input file       %s", ct.cfile);

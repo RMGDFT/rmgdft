@@ -1,3 +1,6 @@
+set_source_files_properties(write_header.cpp
+PROPERTIES
+COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 add_library (ON_NEGF_share
 LO_x_LO.cpp
 GetHS_dis.cpp
