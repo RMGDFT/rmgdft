@@ -92,8 +92,8 @@ void init_sym (void)
      * but I am not sure if this would not break FORTRAN routines to which
      * those arrays are passed*/
 
-    if (ct.num_ions >= MAX_IONS)
-        error_handler ("Too many ions, increase MAX_IONS in params.h");
+//    if (ct.num_ions >= MAX_IONS)
+//        error_handler ("Too many ions, increase MAX_IONS in params.h");
 
     nr1 = get_FNX_GRID();
     nr2 = get_FNY_GRID();
