@@ -84,7 +84,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     RmgTimer *RT1;
 
-    num_ions = ct.num_ions;
+    num_ions = Atoms.size();
 
 
     /*Array for q-force */
@@ -130,7 +130,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     
 
 
-//  determin the number of occupied states for all kpoints.
+//  determine the number of occupied states for all kpoints.
 
     num_occupied = 0;
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
@@ -290,13 +290,8 @@ ct.state_block_size);
     delete [] gx;
 
 
-    for(int i = 0; i < ct.num_ions * 3; i++) 
-    {
-        qforce[i] *= get_vel_f();
-    }
-
-
-
+    double vel_f = get_vel_f();
+    for(int i = 0; i < num_ions * 3; i++) qforce[i] *= vel_f;
 
 
 
@@ -340,7 +335,7 @@ ct.state_block_size);
 
 
 
-    for(int i = 0; i < ct.num_ions * 3; i++) 
+    for(int i = 0; i < num_ions * 3; i++) 
     {
         force_nl[i] += qforce[i];
         force_nl[i] += tmp_force_gamma[i];

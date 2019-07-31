@@ -67,16 +67,14 @@ void GetDelocalizedWeight (Kpoint<KpointType> **Kptr)
         size_t stride = P->get_pstride();
 
         /* Loop over ions */
-        for (int ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             size_t offset = (size_t)ion * stride * (size_t)pbasis;
             Nlweight = &Kptr[kpt]->nl_weight[offset];
 
-            /* Generate ion pointer */
-            ION *iptr = &Atoms[ion];
-
             /* Get species type */
-            SPECIES *sp = &Species[iptr->species];
+            SPECIES &AtomType = Species[Atoms[ion].species];
+
 
             int nlxdim = get_NX_GRID();
             int nlydim = get_NY_GRID();
@@ -86,11 +84,11 @@ void GetDelocalizedWeight (Kpoint<KpointType> **Kptr)
             FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), fftw_phase, false);
 
             /*Temporary pointer to the already calculated forward transform */
-            fptr = (std::complex<double> *)&sp->forward_beta[kpt * sp->num_projectors * pbasis];
+            fptr = (std::complex<double> *)AtomType.forward_beta[kpt * AtomType.num_projectors * pbasis];
 
 
             /* Loop over radial projectors */
-            for (int ip = 0; ip < sp->num_projectors; ip++)
+            for (int ip = 0; ip < AtomType.num_projectors; ip++)
             {
 
                 /*Apply the phase factor */
@@ -119,7 +117,7 @@ void GetDelocalizedWeight (Kpoint<KpointType> **Kptr)
                 fptr += pbasis;
                 Nlweight += pbasis;
 
-            }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
+            } 
 
         }                           /* end for */
 

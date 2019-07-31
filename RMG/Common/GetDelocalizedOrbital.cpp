@@ -66,16 +66,16 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
         size_t stride = P->get_pstride();
 
         /* Loop over ions */
-        for (int ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             size_t offset = (size_t)ion * stride * (size_t)pbasis;
             weight = &Kptr[kpt]->orbital_weight[offset];
-
-            /* Generate ion pointer */
-            ION *iptr = &Atoms[ion];
+    
+            /* Generate atom reference */
+            ION &Atom = Atoms[ion];
 
             /* Get species type */
-            SPECIES *sp = &Species[iptr->species];
+            SPECIES *sp = &Species[Atom.species];
 
             int nlxdim = get_NX_GRID();
             int nlydim = get_NY_GRID();

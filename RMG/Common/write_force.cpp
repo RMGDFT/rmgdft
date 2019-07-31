@@ -36,7 +36,6 @@
 void write_force (void)
 {
     int ion;
-    ION *iptr;
     int num_movable = 0, maxfx_ion = 0, maxfy_ion = 0, maxfz_ion = 0, maxf_ion = 0;
     double avfx = 0.0, avfy = 0.0, avfz = 0.0, maxfx = 0.0, maxfy = 0.0, maxfz = 0.0;
     double sumx = 0.0, sumy = 0.0, sumz = 0.0;
@@ -82,23 +81,21 @@ void write_force (void)
     printf
         ("@ION  Ion  Species       X           Y           Z       Charge       FX          FY         FZ      Movable\n");
 
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-        SPECIES *sp;
+        ION &Atom = Atoms[ion];
+        SPECIES &AtomType = Species[Atom.species];
 
-        iptr = &Atoms[ion];
-
-        fp = iptr->force[ct.fpt[0]];
-        sp = &Species[iptr->species];
+        fp = Atom.force[ct.fpt[0]];
 
         printf ("@ION  %3d  %4s     %10.7f  %10.7f  %10.7f   %6.3f   %10.7f  %10.7f  %10.7f  %4d\n",
                 ion + 1,
-                sp->atomic_symbol,
-                iptr->crds[0], iptr->crds[1], iptr->crds[2], 
-                 iptr->partial_charge,
-		 efactor*fp[0], efactor*fp[1], efactor*fp[2], iptr->movable);
+                AtomType.atomic_symbol,
+                Atom.crds[0], Atom.crds[1], Atom.crds[2], 
+                 Atom.partial_charge,
+		 efactor*fp[0], efactor*fp[1], efactor*fp[2], Atom.movable);
 
-        if (iptr->movable)
+        if (Atom.movable)
         {
 
             num_movable++;
