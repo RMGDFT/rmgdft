@@ -243,7 +243,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         Kbpsi_mat = new double[LocalProj->num_tot * LocalOrbital->num_tot]; 
     }
 
-    if(ct.num_ldaU_ions > 0)
+    //if(ct.num_ldaU_ions > 0)
     {
         int tot_orbitals_ldaU = 0;
         for (int ion=0; ion < ct.num_ions; ion++)
