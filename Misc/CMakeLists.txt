@@ -82,7 +82,6 @@ rmg_error.cpp
 rmg_alloc.cpp
 get_opposite_occupancies.cpp
 get_opposite_eigvals.cpp
-Fill_on.cpp
 remap.cpp
 get_tf_rho.cpp
 Vdd.cpp

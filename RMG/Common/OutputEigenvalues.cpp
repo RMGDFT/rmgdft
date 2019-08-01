@@ -57,7 +57,7 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf)
 
 
         rmg_printf ("\n\nKOHN SHAM EIGENVALUES [eV] AT K-POINT [%3d]:   %12.6f  %12.6f  %12.6f\n\n",
-                jk, kptr->kpt[0], kptr->kpt[1], kptr->kpt[2]);
+                jk, kptr->kp.kpt[0], kptr->kp.kpt[1], kptr->kp.kpt[2]);
 
         for (idx = 0; idx < nspin; idx++)
         {

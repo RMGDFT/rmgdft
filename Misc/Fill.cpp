@@ -84,7 +84,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     double *weight = new double[ct.num_kpts_pe];
     double *occ = new double[nspin * nks]();
 
-    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) weight[kpt] = Kptr[kpt]->kweight;
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) weight[kpt] = Kptr[kpt]->kp.kweight;
 
 
 
@@ -200,7 +200,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
                 sp = &Kptr[kpt]->Kstates[st1];
 
                 sp->occupation[idx] = mix * occ[st + idx * nks] + (1.0 - mix) * sp->occupation[idx];
-                fmid += sp->occupation[idx] * Kptr[kpt]->kweight;
+                fmid += sp->occupation[idx] * Kptr[kpt]->kp.kweight;
             }
         }                           /* st and kpt */
     }

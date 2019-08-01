@@ -24,6 +24,7 @@ add_library (ON_Common
  change_states_crds.cpp
  CMakeLists.txt
  diag_eig_matrix.cpp
+ Fill_on.cpp
  genvpsi.cpp
  get_cholesky_real.cpp
  get_gamma_precond.cpp

@@ -100,7 +100,7 @@ int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::s
     }
 
     lc.num_kpts = nkpts + 1;
-    lc.kp = new KPOINT[lc.num_kpts]();
+    lc.kp.resize(lc.num_kpts);
 
     for(int kpt=0; kpt < lc.num_kpts; kpt++) 
         strcpy(ct.kp[kpt].symbol,  "");

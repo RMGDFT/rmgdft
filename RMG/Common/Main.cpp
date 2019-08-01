@@ -261,13 +261,13 @@ void initialize(int argc, char **argv)
         if(ct.is_gamma) {
 
             // Gamma point
-            Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt1].kpt, ct.kp[kpt1].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+            Kptr_g[kpt] = new Kpoint<double> (ct.kp[kpt1], kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
 
         }
         else {
 
             // General case
-            Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt1].kpt, ct.kp[kpt1].kweight, kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
+            Kptr_c[kpt] = new Kpoint<std::complex<double>> (ct.kp[kpt1], kpt, pct.grid_comm, Rmg_G, Rmg_T, &Rmg_L, ControlMap);
 
         }
         ct.kp[kpt].kidx = kpt;

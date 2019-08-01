@@ -71,7 +71,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
             for (int istate = 0; istate < nstates; istate++)
             {
 
-                double scale = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kweight;
+                double scale = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kp.kweight;
 
                 OrbitalType *psi = Kpts[kpt]->Kstates[istate].psi;
 

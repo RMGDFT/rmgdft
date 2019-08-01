@@ -61,7 +61,7 @@ template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh 
             {
                 for (istate = 0; istate < ct.num_states; istate++)
                 {
-                    t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kweight;
+                    t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kp.kweight;
                     sintN = Kptr[kidx]->newsint_local[istate * num_nonloc_ions * ct.max_nl +
                         ion * ct.max_nl + i];
                     sintM = Kptr[kidx]->newsint_local[istate * num_nonloc_ions * ct.max_nl +

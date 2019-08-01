@@ -88,7 +88,7 @@ template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **K
                 t1 += (kptr->Kstates[st].occupation[is] * mix * (kptr->Kstates[st].feig[is] - kptr->Kstates[st].eig[is]));
                 ccharge += kptr->Kstates[st].occupation[is];
             }
-            ec += t1 * kptr->kweight;
+            ec += t1 * kptr->kp.kweight;
 
         }
     }

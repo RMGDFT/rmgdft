@@ -53,8 +53,8 @@
 
 extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
 
-template Kpoint<double>::Kpoint(double*, double, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
-template Kpoint<std::complex <double> >::Kpoint(double*, double, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
+template Kpoint<double>::Kpoint(KSTRUCT &kpin, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
+template Kpoint<std::complex <double> >::Kpoint(KSTRUCT &kpin, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
 template void Kpoint<double>::sort_orbitals(void);
 template void Kpoint<std::complex <double> >::sort_orbitals(void);
 template void Kpoint<double>::set_pool(double *pool);
@@ -84,15 +84,11 @@ template void Kpoint<std::complex <double> >::get_ldaUop(int);
 
 
 
-template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkweight, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : ControlMap(ControlMap)
+template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
 {
 
-    this->kpt[0] = kkpt[0];
-    this->kpt[1] = kkpt[1];
-    this->kpt[2] = kkpt[2];
     this->comm = newcomm;
     this->kidx = kindex;
-    this->kweight = kkweight;
     this->nl_weight = NULL;
     this->orbital_weight = NULL;
     this->nl_Bweight = NULL;
@@ -107,16 +103,6 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
     this->L = newL;
     this->pbasis = this->G->get_P0_BASIS(1);
 
-    double v1, v2, v3;
-    v1 = twoPI * this->kpt[0] / Rmg_L.get_xside();
-    v2 = twoPI * this->kpt[1] / Rmg_L.get_yside();
-    v3 = twoPI * this->kpt[2] / Rmg_L.get_zside();
-
-    this->kvec[0] = v1;
-    this->kvec[1] = v2;
-    this->kvec[2] = v3;
-    this->kmag = v1 * v1 + v2 * v2 + v3 * v3;
-
     this->init_states();
 
 }
@@ -125,7 +111,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(double *kkpt, double kkwe
 template <class KpointType> void Kpoint<KpointType>::init_states(void)
 {
 
-    int ii, is, ns, idx, i, j;
+    int is, ns, idx, i, j;
     int count_states[2]={0,0}, nocc[2]={0,0}, num_states_spf[2], nspin = (ct.spin_flag + 1);
     char *tbuf[2];
 
@@ -992,7 +978,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr,
     to_cartesian (vect, nlcrds);
 
     /*Calculate the phase factor */
-    FindPhaseKpoint (this->kvec, nlxdim, nlydim, nlzdim, nlcrds, fftw_phase, false);
+    FindPhaseKpoint (this->kp.kvec, nlxdim, nlydim, nlzdim, nlcrds, fftw_phase, false);
 
     /*Temporary pointer to the already calculated forward transform */
     fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];
@@ -1072,7 +1058,7 @@ template <class KpointType> void Kpoint<KpointType>::get_orbitals(KpointType *or
 
 
         /*Calculate the phase factor */
-        FindPhaseKpoint (this->kvec, nlxdim, nlydim, nlzdim, this->BetaProjector->nlcrds[ion].data(), fftw_phase, false);
+        FindPhaseKpoint (this->kp.kvec, nlxdim, nlydim, nlzdim, this->BetaProjector->nlcrds[ion].data(), fftw_phase, false);
 
         /*Temporary pointer to the already calculated forward transform */
         fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];

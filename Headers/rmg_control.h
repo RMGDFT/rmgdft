@@ -520,8 +520,11 @@ public:
 
 
 
-    /** K-point control structure */
-    KPOINT *kp;
+    /** minimal K-point structure 
+     *  the Kpoint class stores a reference to this so don't change this unless
+     *  you know what you are doing.
+    */
+    std::vector<KSTRUCT> kp;
     int kpoint_mesh[3];
     int kpoint_is_shift[3];
 

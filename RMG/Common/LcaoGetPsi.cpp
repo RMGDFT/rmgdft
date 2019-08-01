@@ -40,7 +40,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
 {
 
     State<KpointType> *states = kptr->Kstates;
-    double *kvec = kptr->kvec;
+    double *kvec = kptr->kp.kvec;
 
     long idum;
 

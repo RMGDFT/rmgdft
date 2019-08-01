@@ -76,7 +76,7 @@ template <typename OrbitalType> void PartialGamma (int kidx,
         for (istate = state_start; istate < state_end; istate++)
         {
             int istate_local = istate - state_start;
-            t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kweight;
+            t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kp.kweight;
 
 
 

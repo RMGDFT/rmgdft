@@ -61,7 +61,7 @@ void GetDelocalizedWeight (Kpoint<KpointType> **Kptr)
 
     for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
-        double *kvec = Kptr[kpt]->kvec;
+        double *kvec = Kptr[kpt]->kp.kvec;
 
         Projector<KpointType> *P = Kptr[kpt]->BetaProjector;
         size_t stride = P->get_pstride();

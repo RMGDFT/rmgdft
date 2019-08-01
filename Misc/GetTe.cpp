@@ -113,11 +113,11 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
                         kptr->Kstates[state].eig[idx]);
 
             }
-            eigsum += t1 * kptr->kweight;
+            eigsum += t1 * kptr->kp.kweight;
             if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
             {
-                ldaU_E += kptr->ldaU->Ecorrect * kptr->kweight;
-                ldaU_H += kptr->ldaU->Ehub * kptr->kweight;
+                ldaU_E += kptr->ldaU->Ecorrect * kptr->kp.kweight;
+                ldaU_H += kptr->ldaU->Ehub * kptr->kp.kweight;
             }
     	}
     }

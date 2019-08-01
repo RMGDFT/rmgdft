@@ -60,8 +60,7 @@ int init_kpoints (int *mesh, int *is_shift)
             && is_shift[0] == 0 && is_shift[1] == 0 && is_shift[2] == 0)
     {
         num_kpts = 1;
-        //my_malloc (ct.kp, num_kpts, KPOINT);
-        ct.kp = new KPOINT[num_kpts];
+        ct.kp.resize(num_kpts);
         ct.num_kpts = num_kpts;
         ct.kp[0].kpt[ 0 ] = 0.0;
         ct.kp[0].kpt[ 1 ] = 0.0;
@@ -111,7 +110,7 @@ int init_kpoints (int *mesh, int *is_shift)
     //        printf("\n kvec %d  %d %d %d %d", kpt, grid_address[kpt*3 +0], grid_address[kpt*3 +1], grid_address[kpt*3 +2], map[kpt]);
 
 
-    ct.kp = new KPOINT[num_kpts];
+    ct.kp.resize(num_kpts);
     ct.num_kpts = num_kpts;
     for(kpt = 0; kpt < meshsize; kpt++)
         weight[kpt] = 0;

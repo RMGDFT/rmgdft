@@ -44,7 +44,7 @@ template <typename KpointType> class Kpoint {
 
 public:
 
-    Kpoint(double *kpt, double kweight, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap);
+    Kpoint(KSTRUCT &kpin, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap);
 
     void set_pool(KpointType *pool);
     void sort_orbitals(void);
@@ -66,6 +66,8 @@ public:
     void Davidson(double *vtot, int &notconv);
 
 
+    // Minimal kpoint structure
+    KSTRUCT &kp;
 
     // Input file internal map
     std::unordered_map<std::string, InputKey *>& ControlMap;
@@ -93,21 +95,6 @@ public:
 
     // The index of the k-point for backreferencing
     int kidx;
-
-    // The k-point
-    double kpt[3];
-
-    // The corresponding vector
-    double kvec[3];
-
-    // The weight associated with the k-point
-    double kweight;
-
-    // The magnitude of the k-vector
-    double kmag;
-
-    // Identifier for band structures
-    std::string symbol;
 
     // Number of orbitals
     int nstates;

@@ -111,7 +111,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
                 {
                     occ = occ + K.Kstates[st].occupation[0] * nsint[st][ion][i] * nsint[st][ion][j];
                 }
-                ns_occ[0][ion][i][j] = occ * K.kweight;
+                ns_occ[0][ion][i][j] = occ * K.kp.kweight;
             }
         }
     }

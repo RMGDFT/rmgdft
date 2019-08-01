@@ -200,9 +200,12 @@ typedef struct
 } FINITE_T_PARM;
 
 
-/** @name KPOINT
- * @memo Holds data specific to individual k-points.
- */
+/** minimal K-point structure 
+ *  the Kpoint class stores a reference to this so don't change this unless
+ *  you know what you are doing.
+ *  It is used to hold info needed by multiple branches of the code
+ *  while the Kpoint class is used primarily by the base branch
+*/
 typedef struct
 {
 
@@ -224,24 +227,10 @@ typedef struct
     char symbol[10];
 
     /* The orbital structure for this k-point */
+    /* Need to get rid of this but still required in a few places */
     STATE *kstate;
 
-
-    /* Mean min, and max wavefunction residuals for occupied space */
-    double meanres;
-    double minres;
-    double maxres;
-
-    /* Total energies */
-    double ES;
-    double NUC;
-    double KE;
-    double XC;
-    double NL;
-    double II;
-    double TOTAL;
-
-} KPOINT;
+} KSTRUCT;
 
 /* multigrid-parameter structure */
 typedef struct

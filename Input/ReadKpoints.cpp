@@ -83,7 +83,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
 
 
     lc.num_kpts = KpointList.size();
-    lc.kp = new KPOINT[lc.num_kpts]();
+    lc.kp.resize(lc.num_kpts);
 
     std::vector<std::string>::iterator it, it1;
     nkpts=0;

@@ -188,9 +188,9 @@ ct.state_block_size);
                     psi_zC = (std::complex<double> *) psi_z;
                     for(int i = 0; i < P0_BASIS; i++) 
                     {
-                        psi_xC[i] += I_t *  Kptr[kpt]->kvec[0] * psi_C[i];
-                        psi_yC[i] += I_t *  Kptr[kpt]->kvec[1] * psi_C[i];
-                        psi_zC[i] += I_t *  Kptr[kpt]->kvec[2] * psi_C[i];
+                        psi_xC[i] += I_t *  Kptr[kpt]->kp.kvec[0] * psi_C[i];
+                        psi_yC[i] += I_t *  Kptr[kpt]->kp.kvec[1] * psi_C[i];
+                        psi_zC[i] += I_t *  Kptr[kpt]->kp.kvec[2] * psi_C[i];
                     }
                 }
 
