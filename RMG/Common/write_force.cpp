@@ -35,7 +35,6 @@
 /* Writes out the positions of the ions and the current forces on them */
 void write_force (void)
 {
-    int ion;
     int num_movable = 0, maxfx_ion = 0, maxfy_ion = 0, maxfz_ion = 0, maxf_ion = 0;
     double avfx = 0.0, avfy = 0.0, avfz = 0.0, maxfx = 0.0, maxfy = 0.0, maxfz = 0.0;
     double sumx = 0.0, sumy = 0.0, sumz = 0.0;
@@ -74,7 +73,7 @@ void write_force (void)
     /*If no charge analysis has been performed set partial charges to 0*/
     if (ct.charge_analysis_type == CHARGE_ANALYSIS_NONE)
     {
-	for (ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
 	    Atoms[ion].partial_charge = 0.0;
     }
 
@@ -88,7 +87,7 @@ void write_force (void)
 
         fp = Atom.force[ct.fpt[0]];
 
-        printf ("@ION  %3d  %4s     %10.7f  %10.7f  %10.7f   %6.3f   %10.7f  %10.7f  %10.7f  %4d\n",
+        printf ("@ION  %3lu  %4s     %10.7f  %10.7f  %10.7f   %6.3f   %10.7f  %10.7f  %10.7f  %4d\n",
                 ion + 1,
                 AtomType.atomic_symbol,
                 Atom.crds[0], Atom.crds[1], Atom.crds[2], 

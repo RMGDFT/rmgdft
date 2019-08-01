@@ -439,13 +439,13 @@ void WriteHeader (void)
     if (verify ("atom_constraints", NULL))
     {
         printf ("    Constrained per atom dynamics vector field.\n");
-        for (idx = 0; idx < ct.num_ions; idx++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             printf ("       % 10f % 10f % 10f % 10f\n",
-					Atoms[idx].constraint.setA_coord[0],
-					Atoms[idx].constraint.setA_coord[1],
-					Atoms[idx].constraint.setA_coord[2],
-                    Atoms[idx].constraint.setA_weight);
+					Atoms[ion].constraint.setA_coord[0],
+					Atoms[ion].constraint.setA_coord[1],
+					Atoms[ion].constraint.setA_coord[2],
+                    Atoms[ion].constraint.setA_weight);
         }
     }
 #endif

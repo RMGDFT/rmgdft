@@ -9,6 +9,38 @@ class ION
 
 public:
 
+    void RotateCoordinates(void)
+    {
+        ocrds3[0] = ocrds2[0];
+        ocrds3[1] = ocrds2[1];
+        ocrds3[2] = ocrds2[2];
+
+        ocrds2[0] = ocrds1[0];
+        ocrds2[1] = ocrds1[1];
+        ocrds2[2] = ocrds1[2];
+
+        ocrds1[0] = crds[0];
+        ocrds1[1] = crds[1];
+        ocrds1[2] = crds[2];
+    }
+
+    void ZeroForces(void)
+    {
+        for (int ic = 0; ic < 4; ic++)
+        {
+            force[ic][0] = 0.0;
+            force[ic][1] = 0.0;
+            force[ic][2] = 0.0;
+        }
+    }
+
+    void ZeroVelocity(void)
+    {
+        velocity[0] = 0.0;
+        velocity[1] = 0.0;
+        velocity[2] = 0.0;
+    }
+
     /* Initial physical coordinates at start of run */
     double icrds[3];
 

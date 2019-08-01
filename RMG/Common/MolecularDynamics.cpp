@@ -64,9 +64,8 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     double rms[3], trms;
     double nosekin, nosepot;
     double iontemp;
-    int it, N;
+    int N;
     int ic;
-    ION *iptr;
     std::vector<double> RMSdV;
     static double *rhodiff;
 
@@ -92,36 +91,35 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         /* print out the title */
         switch (ct.forceflag)
         {
-        case MD_CVE:
-            rmg_printf ("\n Constant Volume & Energy Molecular Dynamics");
-            break;
-        case MD_CVT:
-            if (ct.tcontrol == T_NOSE_CHAIN)
-            {
-                rmg_printf ("\n Finite Temperature MD with Nose-Hoover Chains");
-            }
-            else
-            {
-                rmg_printf ("\n Finite Temperature MD with Anderson Rescaling");
-            }                   /* end of if */
-            break;
-        case MD_CPT:
-            rmg_printf ("\n Constant Pressure and Temperature Molecular Dynamics");
-            break;
+            case MD_CVE:
+                rmg_printf ("\n Constant Volume & Energy Molecular Dynamics");
+                break;
+            case MD_CVT:
+                if (ct.tcontrol == T_NOSE_CHAIN)
+                {
+                    rmg_printf ("\n Finite Temperature MD with Nose-Hoover Chains");
+                }
+                else
+                {
+                    rmg_printf ("\n Finite Temperature MD with Anderson Rescaling");
+                }                   /* end of if */
+                break;
+            case MD_CPT:
+                rmg_printf ("\n Constant Pressure and Temperature Molecular Dynamics");
+                break;
         }                       /* end of switch */
 
         switch (ct.mdorder)
         {
-        case ORDER_2:
-            rmg_printf ("\n Integration with Velocity Verlet");
-            break;
-        case ORDER_3:
-            rmg_printf ("\n Integration with 3rd Order Beeman Velocity Verlet");
-            break;
-        case ORDER_5:
-            rmg_printf ("\n Integration with 5th Order Beeman Velocity Verlet");
-            break;
-
+            case ORDER_2:
+                rmg_printf ("\n Integration with Velocity Verlet");
+                break;
+            case ORDER_3:
+                rmg_printf ("\n Integration with 3rd Order Beeman Velocity Verlet");
+                break;
+            case ORDER_5:
+                rmg_printf ("\n Integration with 5th Order Beeman Velocity Verlet");
+                break;
         }                       /* end of switch */
     }                           /* end of if pe */
 
@@ -133,12 +131,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
     /* count up moving atoms */
     N = 0;
-    for (int ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-
-        if (Atoms[ion].movable)
-            N++;
-
+        if (Atoms[ion].movable) N++;
     }
     ct.nose.N = N;
 
@@ -158,30 +153,19 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         init_nose ();
 
     /* zero out the non-moving atoms */
-    for (int ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-
         if (Atoms[ion].movable == 0)
         {
-
-            iptr = &Atoms[ion];
-
-            for (ic = 0; ic < 4; ic++)
-            {
-                iptr->force[ic][0] = 0.0;
-                iptr->force[ic][1] = 0.0;
-                iptr->force[ic][2] = 0.0;
-            }
-            iptr->velocity[0] = 0.0;
-            iptr->velocity[1] = 0.0;
-            iptr->velocity[2] = 0.0;
+            ION &Atom = Atoms[ion];
+            Atom.ZeroForces();
+            Atom.ZeroVelocity();
         }
-
     }
 
     if (pct.gridpe == 0)
     {
-        rmg_printf ("\n ==============================================");
+        rmg_printf ("\n ==============================================\n\n");
     }
 
     /*Reset timers, so that they do not count preceeding quench run if any */
@@ -196,26 +180,22 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     {
 
         /* enforce periodic boundary conditions on the ions */
-        for (it = 0; it < ct.num_ions; it++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-
-            iptr = &Atoms[it];
+            ION &Atom = Atoms[ion];
 
             /* to_crystal enforces periodic boundary conditions */
-            to_crystal (iptr->xtal, iptr->crds);
-            to_cartesian (iptr->xtal, iptr->crds);
-
+            to_crystal (Atom.xtal, Atom.crds);
+            to_cartesian (Atom.xtal, Atom.crds);
         }
 
         /* Save coordinates */
-        for (it = 0; it < ct.num_ions; it++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-
-            iptr = &Atoms[it];
-            crdsx[it] = iptr->crds[0];
-            crdsy[it] = iptr->crds[1];
-            crdsz[it] = iptr->crds[2];
-
+            ION &Atom = Atoms[ion];
+            crdsx[ion] = Atom.crds[0];
+            crdsy[ion] = Atom.crds[1];
+            crdsz[ion] = Atom.crds[2];
         }
 
         /* Do a halfstep update of the velocities */
@@ -265,25 +245,14 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
 
         /* zero out the non-moving atoms */
-        for (int ion = 0; ion < ct.num_ions; ion++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-
             if (Atoms[ion].movable == 0)
             {
-
-                iptr = &Atoms[ion];
-
-                for (int ic = 0; ic < 4; ic++)
-                {
-                    iptr->force[ic][0] = 0.0;
-                    iptr->force[ic][1] = 0.0;
-                    iptr->force[ic][2] = 0.0;
-                }
-                iptr->velocity[0] = 0.0;
-                iptr->velocity[1] = 0.0;
-                iptr->velocity[2] = 0.0;
+                ION &Atom = Atoms[ion];
+                Atom.ZeroForces();
+                Atom.ZeroVelocity();
             }
-
         }
 
         /* Do another halfstep update of the velocities */
@@ -380,7 +349,6 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 void init_nose ()
 {
     int N, jc;
-    ION *iptr;
     double wNose, tau_nose, kB, mass, step;
     double inittemp, nosesteps;
     double v1, v2, v3;
@@ -410,15 +378,14 @@ void init_nose ()
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
-        /* Get ion pointer */
-        iptr = &Atoms[ion];
+        ION &Atom = Atoms[ion];
 
         /* Get ionic mass */
-        mass = Species[iptr->species].atomic_mass * mu_me;
+        mass = Species[Atom.species].atomic_mass * mu_me;
 
-        v1 = iptr->velocity[0];
-        v2 = iptr->velocity[1];
-        v3 = iptr->velocity[2];
+        v1 = Atom.velocity[0];
+        v2 = Atom.velocity[1];
+        v3 = Atom.velocity[2];
 
         ct.ionke += 0.5 * mass * (v1 * v1 + v2 * v2 + v3 * v3);
 
@@ -459,7 +426,6 @@ void init_nose ()
 void velup1 ()
 {
     int ic;
-    ION *iptr;
     double step, mass, kB;
     double t1, t2, v1, v2, v3;
     double scale = 1.0;
@@ -490,16 +456,15 @@ void velup1 ()
             for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
             {
 
-                /* Get ion pointer */
-                iptr = &Atoms[ion];
+                ION &Atom = Atoms[ion];
 
                 /* Get ionic mass */
-                mass = Species[iptr->species].atomic_mass * mu_me;
+                mass = Species[Atom.species].atomic_mass * mu_me;
 
                 /* calculate kinetic energy */
-                v1 = iptr->velocity[0];
-                v2 = iptr->velocity[1];
-                v3 = iptr->velocity[2];
+                v1 = Atom.velocity[0];
+                v2 = Atom.velocity[1];
+                v3 = Atom.velocity[2];
 
                 ct.ionke += 0.5 * mass * (v1 * v1 + v2 * v2 + v3 * v3);
 
@@ -527,70 +492,69 @@ void velup1 ()
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
-        /* Get ion pointer */
-        iptr = &Atoms[ion];
+        ION &Atom = Atoms[ion];
 
-        if (iptr->movable)
+        if (Atom.movable)
         {
 
             /* Get ionic mass */
-            mass = Species[iptr->species].atomic_mass * mu_me;
+            mass = Species[Atom.species].atomic_mass * mu_me;
 
             /* update velocity by one-half timestep */
             switch (ct.mdorder)
             {
 
-            case ORDER_2:
-                t1 = step / mass;
-                t2 = t1 / 2.0;
+                case ORDER_2:
+                    t1 = step / mass;
+                    t2 = t1 / 2.0;
 
-                /* step velocities forward */
-                for (ic = 0; ic < 3; ic++)
-                {
+                    /* step velocities forward */
+                    for (ic = 0; ic < 3; ic++)
+                    {
 
-                    iptr->velocity[ic] *= scale;
-                    iptr->velocity[ic] += t2 * iptr->force[0][ic];
+                        Atom.velocity[ic] *= scale;
+                        Atom.velocity[ic] += t2 * Atom.force[0][ic];
 
-                }
-                break;
+                    }
+                    break;
 
-            case ORDER_3:
-                t1 = step / mass;
-                t2 = t1 / 6.0;
+                case ORDER_3:
+                    t1 = step / mass;
+                    t2 = t1 / 6.0;
 
-                /* step velocities forward */
-                for (ic = 0; ic < 3; ic++)
-                {
+                    /* step velocities forward */
+                    for (ic = 0; ic < 3; ic++)
+                    {
 
-                    iptr->velocity[ic] *= scale;
-                    iptr->velocity[ic] += t2 * (4.0 * iptr->force[ct.fpt[0]][ic]
-                                                - 1.0 * iptr->force[ct.fpt[1]][ic]);
+                        Atom.velocity[ic] *= scale;
+                        Atom.velocity[ic] += t2 * (4.0 * Atom.force[ct.fpt[0]][ic]
+                                                    - 1.0 * Atom.force[ct.fpt[1]][ic]);
 
-                }
-                break;
+                    }
+                    break;
 
-            case ORDER_5:
-                t1 = step / mass;
-                t2 = t1 / 360.0;
+                case ORDER_5:
+                    t1 = step / mass;
+                    t2 = t1 / 360.0;
 
-                /* step velocities forward */
-                for (ic = 0; ic < 3; ic++)
-                {
+                    /* step velocities forward */
+                    for (ic = 0; ic < 3; ic++)
+                    {
 
-                    iptr->velocity[ic] *= scale;
-                    iptr->velocity[ic] += t2 * (323.0 * iptr->force[ct.fpt[0]][ic]
-                                                - 264.0 * iptr->force[ct.fpt[1]][ic]
-                                                + 159.0 * iptr->force[ct.fpt[2]][ic]
-                                                - 38.0 * iptr->force[ct.fpt[3]][ic]);
+                        Atom.velocity[ic] *= scale;
+                        Atom.velocity[ic] += t2 * (323.0 * Atom.force[ct.fpt[0]][ic]
+                                                    - 264.0 * Atom.force[ct.fpt[1]][ic]
+                                                    + 159.0 * Atom.force[ct.fpt[2]][ic]
+                                                    - 38.0 * Atom.force[ct.fpt[3]][ic]);
 
-                }
-                break;
+                    }
+                    break;
 
             }                   /* end of switch */
 
-            v1 = iptr->velocity[0];
-            v2 = iptr->velocity[1];
-            v3 = iptr->velocity[2];
+            v1 = Atom.velocity[0];
+            v2 = Atom.velocity[1];
+            v3 = Atom.velocity[2];
 
             ct.ionke += 0.5 * mass * (v1 * v1 + v2 * v2 + v3 * v3);
 
@@ -646,7 +610,6 @@ void posup ()
 void velup2 ()
 {
     int ic;
-    ION *iptr;
     double step, mass;
     double t1, t2;
     double v1, v2, v3;
@@ -679,14 +642,12 @@ void velup2 ()
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
-        /* Get ion pointer */
-        iptr = &Atoms[ion];
+        ION &Atom = Atoms[ion];
 
         /* Get ionic mass */
-        mass = Species[iptr->species].atomic_mass * mu_me;
+        mass = Species[Atom.species].atomic_mass * mu_me;
 
-
-        if (iptr->movable)
+        if (Atom.movable)
         {
 
 
@@ -700,8 +661,8 @@ void velup2 ()
 
                 for (ic = 0; ic < 3; ic++)
                 {
-                    iptr->velocity[ic] += t2 * iptr->force[0][ic];
-                    iptr->velocity[ic] *= scale;
+                    Atom.velocity[ic] += t2 * Atom.force[0][ic];
+                    Atom.velocity[ic] *= scale;
                 }
                 break;
 
@@ -711,9 +672,9 @@ void velup2 ()
 
                 for (ic = 0; ic < 3; ic++)
                 {
-                    iptr->velocity[ic] += t2 * (2.0 * iptr->force[ct.fpt[0]][ic]
-                                                + 1.0 * iptr->force[ct.fpt[1]][ic]);
-                    iptr->velocity[ic] *= scale;
+                    Atom.velocity[ic] += t2 * (2.0 * Atom.force[ct.fpt[0]][ic]
+                                                + 1.0 * Atom.force[ct.fpt[1]][ic]);
+                    Atom.velocity[ic] *= scale;
                 }
                 break;
 
@@ -723,11 +684,11 @@ void velup2 ()
 
                 for (ic = 0; ic < 3; ic++)
                 {
-                    iptr->velocity[ic] += t2 * (97.0 * iptr->force[ct.fpt[0]][ic]
-                                                + 114.0 * iptr->force[ct.fpt[1]][ic]
-                                                - 39.0 * iptr->force[ct.fpt[2]][ic]
-                                                + 8.0 * iptr->force[ct.fpt[3]][ic]);
-                    iptr->velocity[ic] *= scale;
+                    Atom.velocity[ic] += t2 * (97.0 * Atom.force[ct.fpt[0]][ic]
+                                                + 114.0 * Atom.force[ct.fpt[1]][ic]
+                                                - 39.0 * Atom.force[ct.fpt[2]][ic]
+                                                + 8.0 * Atom.force[ct.fpt[3]][ic]);
+                    Atom.velocity[ic] *= scale;
                 }
                 break;
 
@@ -735,9 +696,9 @@ void velup2 ()
 
         }                       /* end of if */
 
-        v1 = iptr->velocity[0];
-        v2 = iptr->velocity[1];
-        v3 = iptr->velocity[2];
+        v1 = Atom.velocity[0];
+        v2 = Atom.velocity[1];
+        v3 = Atom.velocity[2];
 
         ct.ionke += 0.5 * mass * (v1 * v1 + v2 * v2 + v3 * v3);
 
@@ -758,30 +719,28 @@ void velup2 ()
 void rms_disp (double * rms, double * trms)
 {
 
-    int it;
-    ION *iptr;
     double t1, t2, t3;
 
     *trms = 0.0;
     rms[0] = rms[1] = rms[2] = 0.0;
-    for (it = 0; it < ct.num_ions; it++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
-        iptr = &Atoms[it];
+        ION &Atom = Atoms[ion];
 
-        t1 = iptr->xtal[0] - iptr->ixtal[0];
+        t1 = Atom.xtal[0] - Atom.ixtal[0];
         if (t1 < 0.0)
             t1 *= -1.0;
         if (t1 > 0.5)
             t1 = 1.0 - t1;
 
-        t2 = iptr->xtal[1] - iptr->ixtal[1];
+        t2 = Atom.xtal[1] - Atom.ixtal[1];
         if (t2 < 0.0)
             t2 *= -1.0;
         if (t2 > 0.5)
             t2 = 1.0 - t2;
 
-        t3 = iptr->xtal[2] - iptr->ixtal[2];
+        t3 = Atom.xtal[2] - Atom.ixtal[2];
         if (t3 < 0.0)
             t3 *= -1.0;
         if (t3 > 0.5)
@@ -1040,15 +999,14 @@ void center_of_mass_velocity(double &vx, double &vy, double &vz)
 {
     double px = 0.0, py = 0.0, pz = 0.0;
     double total_mass = 0.0;
-    for (int ion = 0; ion < ct.num_ions; ion++) {
-
-        ION *iptr = &Atoms[ion];
-        double mass = Species[iptr->species].atomic_mass * mu_me;
-        px += mass * iptr->velocity[0];
-        py += mass * iptr->velocity[1];
-        pz += mass * iptr->velocity[1];
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+    {
+        ION &Atom = Atoms[ion];
+        double mass = Species[Atom.species].atomic_mass * mu_me;
+        px += mass * Atom.velocity[0];
+        py += mass * Atom.velocity[1];
+        pz += mass * Atom.velocity[1];
         total_mass += mass;
-
     }
     
     vx = px / total_mass;
@@ -1062,7 +1020,6 @@ void center_of_mass_velocity(double &vx, double &vy, double &vz)
 void ranv (void)
 {
     int i, ii, N;
-    ION *iptr;
     double c, p, tmass, vtot[3], ek, scale;
     double kB, mass;
 
@@ -1092,13 +1049,12 @@ void ranv (void)
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
 
-            /* Get ion pointer */
-            iptr = &Atoms[ion];
+            ION &Atom = Atoms[ion];
 
             /* Get ionic mass */
-            mass = Species[iptr->species].atomic_mass * mu_me;
+            mass = Species[Atom.species].atomic_mass * mu_me;
 
-            if (iptr->movable)
+            if (Atom.movable)
             {
                 c = -kB * ct.nose.temp / mass;
                 tmass += mass;
@@ -1108,11 +1064,12 @@ void ranv (void)
                     ii = rand ();
                     p = (double) ii / (double) RAND_MAX;
 
-                    iptr->velocity[i] = sqrt (c * log (p));
+                    Atom.velocity[i] = sqrt (c * log (p));
 
-                    if (p > 0.5)
-                        iptr->velocity[i] = -iptr->velocity[i];
-                    vtot[i] += mass * iptr->velocity[i];
+                    if (p > 0.5) Atom.velocity[i] = -Atom.velocity[i];
+
+                    vtot[i] += mass * Atom.velocity[i];
+
                 }
             }                   /* end of if */
 
@@ -1127,14 +1084,13 @@ void ranv (void)
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
 
-            /* Get ion pointer */
-            iptr = &Atoms[ion];
+            ION &Atom = Atoms[ion];
 
-            if (iptr->movable)
+            if (Atom.movable)
             {
-                iptr->velocity[0] -= vtot[0];
-                iptr->velocity[1] -= vtot[1];
-                iptr->velocity[2] -= vtot[2];
+                Atom.velocity[0] -= vtot[0];
+                Atom.velocity[1] -= vtot[1];
+                Atom.velocity[2] -= vtot[2];
             }
         }                       /* end of for ion */
 
@@ -1143,17 +1099,16 @@ void ranv (void)
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
 
-            /* Get ion pointer */
-            iptr = &Atoms[ion];
+            ION &Atom = Atoms[ion];
 
             /* Get ionic mass */
-            mass = Species[iptr->species].atomic_mass * mu_me;
+            mass = Species[Atom.species].atomic_mass * mu_me;
 
-            if (iptr->movable)
+            if (Atom.movable)
             {
-                ek += iptr->velocity[0] * iptr->velocity[0] * mass;
-                ek += iptr->velocity[1] * iptr->velocity[1] * mass;
-                ek += iptr->velocity[2] * iptr->velocity[2] * mass;
+                ek += Atom.velocity[0] * Atom.velocity[0] * mass;
+                ek += Atom.velocity[1] * Atom.velocity[1] * mass;
+                ek += Atom.velocity[2] * Atom.velocity[2] * mass;
             }
 
         }                       /* end of for ion */
@@ -1166,20 +1121,19 @@ void ranv (void)
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
 
-            /* Get ion pointer */
-            iptr = &Atoms[ion];
+            ION &Atom = Atoms[ion];
 
             /* Get ionic mass */
-            mass = Species[iptr->species].atomic_mass * mu_me;
+            mass = Species[Atom.species].atomic_mass * mu_me;
 
-            if (iptr->movable)
+            if (Atom.movable)
             {
-                iptr->velocity[0] *= scale;
-                iptr->velocity[1] *= scale;
-                iptr->velocity[2] *= scale;
-                ek += iptr->velocity[0] * iptr->velocity[0] * mass;
-                ek += iptr->velocity[1] * iptr->velocity[1] * mass;
-                ek += iptr->velocity[2] * iptr->velocity[2] * mass;
+                Atom.velocity[0] *= scale;
+                Atom.velocity[1] *= scale;
+                Atom.velocity[2] *= scale;
+                ek += Atom.velocity[0] * Atom.velocity[0] * mass;
+                ek += Atom.velocity[1] * Atom.velocity[1] * mass;
+                ek += Atom.velocity[2] * Atom.velocity[2] * mass;
             }
 
         }                       /* end of for ion */

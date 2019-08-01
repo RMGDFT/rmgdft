@@ -76,7 +76,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     MPI_Barrier(pct.img_comm);	
 
     /* Make the new output file name */
-    rmg_printf("\nspin flag =%d\n", ct.spin_flag);
+    if(ct.verbose) rmg_printf("\nspin flag =%d\n", ct.spin_flag);
     
     int kstart = pct.kstart;
     if (ct.forceflag == BAND_STRUCTURE) kstart = 0;
@@ -122,11 +122,11 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
-    rmg_printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
-    rmg_printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
-    rmg_printf ("read_data: grid_size  = %d\n", grid_size);
-    rmg_printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
-    rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
+    if(ct.verbose) rmg_printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
+    if(ct.verbose) rmg_printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
+    if(ct.verbose) rmg_printf ("read_data: grid_size  = %d\n", grid_size);
+    if(ct.verbose) rmg_printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
+    if(ct.verbose) rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
 
 
     /* read wavefunction info */
@@ -139,8 +139,8 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
         rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
 
-    rmg_printf ("read_data: gamma = %d\n", gamma);
-    rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
+    if(ct.verbose) rmg_printf ("read_data: gamma = %d\n", gamma);
+    if(ct.verbose) rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
 
     /* read number of states */  
     read_int (fhand, &ns, 1);
@@ -149,27 +149,27 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
         rmg_error_handler (__FILE__, __LINE__,"Terminating.");
     }
 
-    rmg_printf ("read_data: ns = %d\n", ns);
+    if(ct.verbose) rmg_printf ("read_data: ns = %d\n", ns);
 
 
     /* read the hartree potential, electronic density and xc potential */
     if(ct.compressed_infile)
     {
         read_compressed_buffer(fhand, vh, fpgrid[0], fpgrid[1], fpgrid[2]);
-        rmg_printf ("read_data: read 'vh'\n");
+        if(ct.verbose) rmg_printf ("read_data: read 'vh'\n");
         read_compressed_buffer(fhand, rho, fpgrid[0], fpgrid[1], fpgrid[2]);
-        rmg_printf ("read_data: read 'rho'\n");
+        if(ct.verbose) rmg_printf ("read_data: read 'rho'\n");
         read_compressed_buffer(fhand, vxc, fpgrid[0], fpgrid[1], fpgrid[2]);
-        rmg_printf ("read_data: read 'vxc'\n");
+        if(ct.verbose) rmg_printf ("read_data: read 'vxc'\n");
     }
     else
     {
         read_double (fhand, vh, fgrid_size);
-        rmg_printf ("read_data: read 'vh'\n");
+        if(ct.verbose) rmg_printf ("read_data: read 'vh'\n");
         read_double (fhand, rho, fgrid_size);
-        rmg_printf ("read_data: read 'rho'\n");
+        if(ct.verbose) rmg_printf ("read_data: read 'rho'\n");
         read_double (fhand, vxc, fgrid_size);
-        rmg_printf ("read_data: read 'vxc'\n");
+        if(ct.verbose) rmg_printf ("read_data: read 'vxc'\n");
     }
 
     /* read wavefunctions */
@@ -229,7 +229,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
             if(ct.forceflag == BAND_STRUCTURE) break;
         }
 
-        rmg_printf ("read_data: read 'wfns'\n");
+        if(ct.verbose) rmg_printf ("read_data: read 'wfns'\n");
 
         delete [] tbuf;
         delete [] psi_I;
@@ -344,7 +344,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
         read_double (fhand, occ, (nk * ns));
 
-        rmg_printf ("read_data: read 'occupations'\n"); 
+        if(ct.verbose) rmg_printf ("read_data: read 'occupations'\n"); 
 
 
         if (ct.forceflag != BAND_STRUCTURE)
@@ -393,16 +393,11 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                 read_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
             }
 
-        rmg_printf ("read_data: read 'eigenvalues'\n");
+        if(ct.verbose) rmg_printf ("read_data: read 'eigenvalues'\n");
 
     }      /* end of read eigenvalues */
 
-
-
-
-
     close (fhand);
-
 
 }                               /* end read_data */
 
@@ -477,7 +472,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     MPI_Barrier(pct.img_comm);	
 
     /* Get the previous wavefunction file name */
-    rmg_printf("\nspin flag =%d\n", ct.spin_flag);
+    if(ct.verbose) rmg_printf("\nspin flag =%d\n", ct.spin_flag);
     
     int kstart = pct.kstart;
     sprintf (newname, "%s_spin%d_kpt%d_gridpe%d_1", name, pct.spinpe, kstart, pct.gridpe);
@@ -522,11 +517,11 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     fgrid_size = grid_size * fine[0] * fine[1] * fine[2];
 
     /* print out  */
-    rmg_printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
-    rmg_printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
-    rmg_printf ("read_data: grid_size  = %d\n", grid_size);
-    rmg_printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
-    rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
+    if(ct.verbose) rmg_printf ("read_data: psi grid = %d %d %d\n", grid[0], grid[1], grid[2]);
+    if(ct.verbose) rmg_printf ("read_data: pe grid = %d %d %d\n", pe[0], pe[1], pe[2]);
+    if(ct.verbose) rmg_printf ("read_data: grid_size  = %d\n", grid_size);
+    if(ct.verbose) rmg_printf ("read_data: fine = %d %d %d\n", fine[0], fine[1], fine[2]);
+    if(ct.verbose) rmg_printf ("read_data: fgrid_size = %d\n", fgrid_size);
 
 
     /* read wavefunction info */
@@ -539,8 +534,8 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     if (nk != ct.num_kpts_pe && ct.forceflag != BAND_STRUCTURE)    /* bandstructure calculation */
         rmg_error_handler (__FILE__, __LINE__,"Wrong number of k points");
 
-    rmg_printf ("read_data: gamma = %d\n", gamma);
-    rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
+    if(ct.verbose) rmg_printf ("read_data: gamma = %d\n", gamma);
+    if(ct.verbose) rmg_printf ("read_data: nk = %d\n", ct.num_kpts_pe);
 
     /* read number of states */  
     read_int (fhand, &ns, 1);
@@ -549,7 +544,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
         rmg_error_handler (__FILE__, __LINE__,"Terminating.");
     }
 
-    rmg_printf ("read_data: ns = %d\n", ns);
+    if(ct.verbose) rmg_printf ("read_data: ns = %d\n", ns);
 
 
     /* read the hartree potential, electronic density and xc potential */

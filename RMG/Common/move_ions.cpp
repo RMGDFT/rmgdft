@@ -30,48 +30,37 @@
 
 void move_ions (double dt)
 {
-    int ion, which = 0, count = 0;
-    ION *iptr;
+    int which = 0, count = 0;
     double max_move = 0.0, avg_move = 0.0, rms_move = 0.0;
-    double move_x, move_y, move_z, move_sq, move;
+    double move_sq, move;
 
 
     /* Loop over ions */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
         /* Get ion pointer */
-        iptr = &Atoms[ion];
+        ION &Atom = Atoms[ion];
 
         /*Save previous coordinates, needed for wavefunction extrapolation*/
-        iptr->ocrds3[0] = iptr->ocrds2[0]; 
-        iptr->ocrds3[1] = iptr->ocrds2[1]; 
-        iptr->ocrds3[2] = iptr->ocrds2[2]; 
-
-        iptr->ocrds2[0] = iptr->ocrds1[0]; 
-        iptr->ocrds2[1] = iptr->ocrds1[1]; 
-        iptr->ocrds2[2] = iptr->ocrds1[2]; 
-
-        iptr->ocrds1[0] = iptr->crds[0]; 
-        iptr->ocrds1[1] = iptr->crds[1]; 
-        iptr->ocrds1[2] = iptr->crds[2]; 
+        Atom.RotateCoordinates();
 
         /* Move the ion */
-        if (iptr->movable)
+        if (Atom.movable)
         {
-            move_x = dt * iptr->velocity[0];
-            move_y = dt * iptr->velocity[1];
-            move_z = dt * iptr->velocity[2];
+            double move_x = dt * Atom.velocity[0];
+            double move_y = dt * Atom.velocity[1];
+            double move_z = dt * Atom.velocity[2];
 
 
             /*Update coordinates*/
-            iptr->crds[0] += move_x;
-            iptr->crds[1] += move_y;
-            iptr->crds[2] += move_z;
+            Atom.crds[0] += move_x;
+            Atom.crds[1] += move_y;
+            Atom.crds[2] += move_z;
 
             /* enforce periodic boundary conditions on the ions */
-            to_crystal (iptr->xtal, iptr->crds);
-            to_cartesian (iptr->xtal, iptr->crds);
+            to_crystal (Atom.xtal, Atom.crds);
+            to_cartesian (Atom.xtal, Atom.crds);
 
             /*Find maximum, average and RMS displacement*/
             move_sq = move_x*move_x + move_y*move_y + move_z*move_z;
@@ -93,16 +82,19 @@ void move_ions (double dt)
     }                           /* end for */
 
     /*Write out displacement info*/
-    printf ("\n");
-    progress_tag ();
-    printf ("Max displacement: %8.5f a0  (ion %d)", max_move, which + 1);
-    printf ("\n");
-    progress_tag ();
-    printf ("Avg displacement: %8.5f a0", avg_move/count);
-    printf ("\n");
-    progress_tag ();
-    printf ("RMS displacement: %8.5f a0", sqrt(rms_move/count));
-
+    if(ct.verbose)
+    {
+        printf ("\n\n");
+        progress_tag ();
+        printf ("Max displacement: %8.5f a0  (ion %d)", max_move, which + 1);
+        printf ("\n");
+        progress_tag ();
+        printf ("Avg displacement: %8.5f a0", avg_move/count);
+        printf ("\n");
+        progress_tag ();
+        printf ("RMS displacement: %8.5f a0", sqrt(rms_move/count));
+        printf ("\n");
+    }
 }                               /* end move_ions */
 
 /******/

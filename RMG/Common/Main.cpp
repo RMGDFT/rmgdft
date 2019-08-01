@@ -209,7 +209,7 @@ void initialize(int argc, char **argv)
 
     int num_images = pct.images;
     num_images = 1;
-    lbfgs_init(ct.num_ions, num_images);
+    lbfgs_init(Atoms.size(), num_images);
 
     int spinfac = 1;
     if(ct.spin_flag) spinfac = 2;
