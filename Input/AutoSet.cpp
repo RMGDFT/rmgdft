@@ -22,9 +22,6 @@
 
 
 
-#include <boost/program_options.hpp>
-#include <boost/program_options/parsers.hpp>
-namespace po = boost::program_options;
 #include <iostream> 
 #include <fstream>
 #include <sstream>
@@ -33,10 +30,6 @@ namespace po = boost::program_options;
 #include <cfloat> 
 #include <climits> 
 #include <unordered_map>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
 #include "portability.h"
 #include "BaseGrid.h"
