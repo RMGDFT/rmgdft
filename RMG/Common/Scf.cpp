@@ -201,13 +201,13 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
 	if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || ((ct.scf_steps < 4) && (ct.md_steps == 0) && (ct.runflag != RESTART ))) {
 	    RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
-	    MgridSubspace(Kptr[kpt], vtot_psi);
+	    Kptr[kpt]->MgridSubspace(vtot_psi);
 	    delete RT1;
 	}
 	else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
 	    int notconv;
 	    RmgTimer *RT1 = new RmgTimer("2-Scf steps: Davidson");
-	    Davidson(Kptr[kpt], vtot_psi, notconv);
+	    Kptr[kpt]->Davidson(vtot_psi, notconv);
 	    delete RT1;
 	}
 
@@ -327,7 +327,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
             int notconv;
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
             {
-	        Davidson(Kptr[kpt], vtot_psi, notconv);
+	        Kptr[kpt]->Davidson(vtot_psi, notconv);
                 MPI_Barrier(pct.grid_comm);
             }
             if (spin_flag) GetOppositeEigvals (Kptr);

@@ -61,6 +61,11 @@ public:
     void get_ion_orbitals(ION *iptr, KpointType *orbitals);
     void reset_beta_arrays(void);
     void reset_orbital_arrays(void);
+    void Subdiag (double *vtot_eig, int subdiag_driver);
+    void MgridSubspace (double *vtot_psi);
+    void Davidson(double *vtot, int &notconv);
+
+
 
     // Input file internal map
     std::unordered_map<std::string, InputKey *>& ControlMap;
@@ -100,6 +105,9 @@ public:
 
     // The magnitude of the k-vector
     double kmag;
+
+    // Identifier for band structures
+    std::string symbol;
 
     // Number of orbitals
     int nstates;
@@ -173,5 +181,8 @@ public:
 
 
 };
+
+template <typename T>
+using Kpoints = std::vector< Kpoint<T> >;
 
 #endif

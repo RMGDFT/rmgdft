@@ -95,7 +95,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
         {
             RmgTimer *RT = new RmgTimer("MgridSub in band");
-            MgridSubspace(Kptr[kpt], vtot_psi);
+            Kptr[kpt]->MgridSubspace(vtot_psi);
             delete RT;
 
 

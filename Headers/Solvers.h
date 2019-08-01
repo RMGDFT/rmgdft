@@ -30,23 +30,16 @@
 #ifndef RMG_Solvers_H
 #define RMG_Solvers_H 1
 
-#if __cplusplus
-#include "const.h"
-#include "rmgtypedefs.h"
-#include "params.h"
-#include "typedefs.h"
+//#include "const.h"
+//#include "rmgtypedefs.h"
+//#include "params.h"
+//#include "typedefs.h"
 #include "Kpoint.h"
-
-template <typename OrbitalType> void MgridSubspace (Kpoint<OrbitalType> *kptr, double *vtot);
-template <typename OrbitalType> void Davidson(Kpoint<OrbitalType> *kptr, double *vtot, int &notconv);
-
 
 template <typename KpointType>
 double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv);
 template <typename KpointType>
 double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot);
-template <typename RmgType>
-void CPP_app_smooth_test (RmgType * f, RmgType *b, int dimx, int dimy, int dimz);
 template <typename OrbitalType>
 void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, 
                         double fd_diag, double *eigs, double *vtot, int notconv, double avg_potential);
@@ -55,9 +48,4 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res,
                         double fd_diag, double eig, double *vtot, double avg_potential);
 
 
-
-
 #endif
-#endif
-
-

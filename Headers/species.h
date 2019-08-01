@@ -1,6 +1,7 @@
 #ifndef RMG_SPECIES_H
 #define RMG_SPECIES_H 1
 
+#include "fftw3.h"
 
 class SPECIES
 {

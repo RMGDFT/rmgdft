@@ -30,7 +30,6 @@
 #ifndef RMG_Subdiag_H
 #define RMG_Subdiag_H 1
 
-#if __cplusplus
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "TradeImages.h"
@@ -43,9 +42,6 @@
 #include "Kpoint.h"
 #include "Scalapack.h"
 
-template <typename KpointType> void Subdiag(Kpoint<KpointType> *kptr, 
-                                            double *vtot, 
-                                            int subdiag_driver);
 template <typename KpointType>
 void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot, KpointType *nv, KpointType *Bns);
 template <typename KpointType>
@@ -101,7 +97,6 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
 template <typename KpointType>
 int GeneralDiagCusolver(KpointType *A, KpointType *B, double *eigs, KpointType *V, int M, int N, int ld);
 
-#endif
 #endif
 
 
