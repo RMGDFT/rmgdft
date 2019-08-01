@@ -46,7 +46,6 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
     std::string line_delims = "^\n";
     std::string whitespace_delims = " \n\t";
-    std::vector<std::string> Kpoints;
     std::unordered_map<std::string, InputKey *> NewMap;
 
     std::string RMGfile;

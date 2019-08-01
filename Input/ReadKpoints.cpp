@@ -60,7 +60,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
     std::string KpointArray;
     std::string line_delims = "^\n";
     std::string whitespace_delims = " \n\t";
-    std::vector<std::string> Kpoints;
+    std::vector<std::string> KpointList;
     std::unordered_map<std::string, InputKey *> NewMap;
     int nkpts;
 
@@ -77,18 +77,18 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
     boost::trim(KpointArray);
     boost::trim_if(KpointArray, boost::algorithm::is_any_of("\"^"));
 
-    boost::algorithm::split( Kpoints, KpointArray, boost::is_any_of(line_delims), boost::token_compress_on );
+    boost::algorithm::split( KpointList, KpointArray, boost::is_any_of(line_delims), boost::token_compress_on );
 
     
 
 
-    lc.num_kpts = Kpoints.size();
+    lc.num_kpts = KpointList.size();
     lc.kp = new KPOINT[lc.num_kpts]();
 
     std::vector<std::string>::iterator it, it1;
     nkpts=0;
 
-    for (it = Kpoints.begin(); it != Kpoints.end(); ++it) {
+    for (it = KpointList.begin(); it != KpointList.end(); ++it) {
 
         std::string Kpoint = *it;
         boost::trim(Kpoint);
