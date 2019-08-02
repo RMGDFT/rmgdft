@@ -179,6 +179,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
             std::string AtomicSymbol2 = *it1;
             if(!AtomicSymbol1.compare(AtomicSymbol2)) {
                 Atoms[ion].species = species;
+                Atoms[ion].Type = &Species[species];
             }
             ion++;
 

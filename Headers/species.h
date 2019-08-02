@@ -282,5 +282,4 @@ public:
     void *OG;
     
 };
-
 #endif

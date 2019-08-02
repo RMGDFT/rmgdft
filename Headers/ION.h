@@ -1,7 +1,8 @@
 #ifndef RMG_ION_H
 #define RMG_ION_H 1
 
-
+#include "species.h"
+#include "const.h"
 
 /* Ion structure */
 class ION
@@ -39,6 +40,20 @@ public:
         velocity[0] = 0.0;
         velocity[1] = 0.0;
         velocity[2] = 0.0;
+    }
+
+    double GetKineticEnergy(void)
+    {
+       /* Get ionic mass */
+        double mass = this->Type->atomic_mass * mu_me;
+        double ke = 0.0;
+        if (movable)
+        {
+            ke += velocity[0] * velocity[0] * mass;
+            ke += velocity[1] * velocity[1] * mass;
+            ke += velocity[2] * velocity[2] * mass;
+        }
+        return 0.5 * ke;
     }
 
     /* Initial physical coordinates at start of run */
@@ -97,6 +112,11 @@ public:
 
     /* Integer species type when using a raw pseudopotential */
     int species;
+
+    /* Pointer to species class. Would prefer a reference to a pointer but
+     * Species is setup after Atoms so can't use a reference right now. Fix later.
+     */
+    SPECIES *Type;
 
     /* Forces on the ion */
     double force[4][3];

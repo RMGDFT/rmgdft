@@ -69,8 +69,7 @@ FILE *open_xbs_movie (char *filename)
 static void init_xbsmovie (FILE * movie)
 {
 
-    int ion, species, species2;
-    ION *iptr;
+    int species, species2;
     SPECIES *sp, *sp2;
     int max_atomic_number, min_atomic_number;
     double radius, color;
@@ -78,23 +77,23 @@ static void init_xbsmovie (FILE * movie)
     max_atomic_number = 0;
     min_atomic_number = 1000;
 
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
         /* Get ion pointer */
-        iptr = &Atoms[ion];
-        sp = &Species[iptr->species];
+        ION &Atom = Atoms[ion];
+        SPECIES &AtomType = Species[Atom.species];
 
         fprintf (movie, "atom %2s	%f %f %f\n",
-                 sp->atomic_symbol, iptr->crds[0], iptr->crds[1], iptr->crds[2]);
+                 AtomType.atomic_symbol, Atom.crds[0], Atom.crds[1], Atom.crds[2]);
 
         /*determine max and min atomic number */
-        if (sp->atomic_number > max_atomic_number)
-            max_atomic_number = sp->atomic_number;
-        if (sp->atomic_number < min_atomic_number)
-            min_atomic_number = sp->atomic_number;
+        if (AtomType.atomic_number > max_atomic_number)
+            max_atomic_number = AtomType.atomic_number;
+        if (AtomType.atomic_number < min_atomic_number)
+            min_atomic_number = AtomType.atomic_number;
 
-    }                           /*end for(ion = 0;ion < ct.num_ions;ion++) */
+    } 
 
     fprintf (movie, "\n\n");
 
@@ -145,19 +144,13 @@ static void init_xbsmovie (FILE * movie)
 
 void xbsmovie (FILE * movie)
 {
-    int ion;
-    ION *iptr;
 
     fprintf (movie, "frame 	This is a frame\n");
 
-
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-
-        /* Get ion pointer */
-        iptr = &Atoms[ion];
-
-        fprintf (movie, "%f %f %f ", iptr->crds[0], iptr->crds[1], iptr->crds[2]);
+        ION &Atom = Atoms[ion];
+        fprintf (movie, "%f %f %f ", Atom.crds[0], Atom.crds[1], Atom.crds[2]);
     }
 
     fprintf (movie, "\n\n");

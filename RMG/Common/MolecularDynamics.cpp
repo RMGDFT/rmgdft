@@ -65,7 +65,6 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     double nosekin, nosepot;
     double iontemp;
     int N;
-    int ic;
     std::vector<double> RMSdV;
     static double *rhodiff;
 
@@ -349,9 +348,8 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 void init_nose ()
 {
     int N, jc;
-    double wNose, tau_nose, kB, mass, step;
+    double wNose, tau_nose, kB, step;
     double inittemp, nosesteps;
-    double v1, v2, v3;
 
     step = ct.iondt;
 
@@ -377,18 +375,7 @@ void init_nose ()
     ct.ionke = 0.0;
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-
-        ION &Atom = Atoms[ion];
-
-        /* Get ionic mass */
-        mass = Species[Atom.species].atomic_mass * mu_me;
-
-        v1 = Atom.velocity[0];
-        v2 = Atom.velocity[1];
-        v3 = Atom.velocity[2];
-
-        ct.ionke += 0.5 * mass * (v1 * v1 + v2 * v2 + v3 * v3);
-
+        ct.ionke += Atoms[ion].GetKineticEnergy();
     }
 
     inittemp = ct.ionke * 2.0 / (3.0 * (double) N * kB);
@@ -427,7 +414,7 @@ void velup1 ()
 {
     int ic;
     double step, mass, kB;
-    double t1, t2, v1, v2, v3;
+    double t1, t2;
     double scale = 1.0;
     double temperature;
 
@@ -455,19 +442,7 @@ void velup1 ()
             /* Loop over ions */
             for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
             {
-
-                ION &Atom = Atoms[ion];
-
-                /* Get ionic mass */
-                mass = Species[Atom.species].atomic_mass * mu_me;
-
-                /* calculate kinetic energy */
-                v1 = Atom.velocity[0];
-                v2 = Atom.velocity[1];
-                v3 = Atom.velocity[2];
-
-                ct.ionke += 0.5 * mass * (v1 * v1 + v2 * v2 + v3 * v3);
-
+                ct.ionke += Atoms[ion].GetKineticEnergy();
             }
 
             temperature = ct.ionke * 2.0 / (3.0 * ct.nose.N * kB);
@@ -552,11 +527,7 @@ void velup1 ()
 
             }                   /* end of switch */
 
-            v1 = Atom.velocity[0];
-            v2 = Atom.velocity[1];
-            v3 = Atom.velocity[2];
-
-            ct.ionke += 0.5 * mass * (v1 * v1 + v2 * v2 + v3 * v3);
+            ct.ionke += Atoms[ion].GetKineticEnergy();
 
         }                       /* if */
 
@@ -612,7 +583,6 @@ void velup2 ()
     int ic;
     double step, mass;
     double t1, t2;
-    double v1, v2, v3;
     double scale = 1.0;
 
     step = ct.iondt;
@@ -649,7 +619,6 @@ void velup2 ()
 
         if (Atom.movable)
         {
-
 
             /* update velocity by one-half step */
             switch (ct.mdorder)
@@ -696,11 +665,7 @@ void velup2 ()
 
         }                       /* end of if */
 
-        v1 = Atom.velocity[0];
-        v2 = Atom.velocity[1];
-        v3 = Atom.velocity[2];
-
-        ct.ionke += 0.5 * mass * (v1 * v1 + v2 * v2 + v3 * v3);
+        ct.ionke += Atom.GetKineticEnergy();
 
     }                           /* end for */
 
@@ -1098,22 +1063,8 @@ void ranv (void)
         ek = 0.0;
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-
-            ION &Atom = Atoms[ion];
-
-            /* Get ionic mass */
-            mass = Species[Atom.species].atomic_mass * mu_me;
-
-            if (Atom.movable)
-            {
-                ek += Atom.velocity[0] * Atom.velocity[0] * mass;
-                ek += Atom.velocity[1] * Atom.velocity[1] * mass;
-                ek += Atom.velocity[2] * Atom.velocity[2] * mass;
-            }
-
+            ek += Atoms[ion].GetKineticEnergy();
         }                       /* end of for ion */
-
-        ek = ek * 0.5;
         scale = sqrt (1.5 * N * kB * ct.nose.temp / ek);
 
         ek = 0.0;
