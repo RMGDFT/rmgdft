@@ -183,7 +183,6 @@ void write_zstates (STATE *states);
 void write_header (void);
 void write_force (void);
 void write_timings (void);
-void wvfn_residual(STATE *states);
 double rand0 (long *idum);
 void cgen_prolong(double coef[], double fraction, int order);
 void mg_prolong_MAX10 (double * full, double * half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz, int grid_ratio, int order);

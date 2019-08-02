@@ -157,16 +157,6 @@ public:
     // Highest occupied orbital
     int highest_occupied;
 
-    // Total energies */
-    double ES;
-    double NUC;
-    double KE;
-    double XC;
-    double NL;
-    double II;
-    double TOTAL;
-
-
 };
 
 template <typename T>

@@ -58,7 +58,6 @@ write_force.cpp
 rand0.cpp
 #get_pdos.cpp
 BandStructure.cpp
-wvfn_residual.cpp
 #mulliken.c
 write_avgd.cpp
 claim_ion.cpp
