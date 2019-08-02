@@ -268,12 +268,6 @@ void SetupProcessorGrid(int npes, int NX_GRID, int NY_GRID, int NZ_GRID, PE_CONT
 void SetupWavefunctionGrid(int npes, int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm, double h);
 extern "C" int FilenameIncrement(char *pathname);
 
-template <typename RmgType>
-void CPP_app_smooth (RmgType * f, RmgType * work, int dimx, int dimy, int dimz);
-
-template <typename RmgType>
-void CPP_app_smooth1 (RmgType * f, RmgType * work, int dimx, int dimy, int dimz);
-
 int CountAtomicOrbitals(void);
 void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap);
 void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap);

@@ -32,10 +32,6 @@
 void get_dipole (double * rho);
 void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
-void app_smooth (double *f, double *work, int dimx, int dimy, int dimz);
-void app_smooth_f (float * f, float * work, int dimx, int dimy, int dimz);
-void app_smooth1 (double *f, double *work, int dimx, int dimy, int dimz);
-void app_smooth1_f (float *f, float *work, int dimx, int dimy, int dimz);
 void app_cir_driver (double *a, double *b, int dimx, int dimy, int dimz, int order);
 void app_cir_fourth (double *a, double *b, int dimx, int dimy, int dimz);
 void app_cir_sixth (double *a, double *b, int dimx, int dimy, int dimz);

@@ -1,7 +1,6 @@
 add_library (Misc
 PulayMixing.cpp
 SetLaplacian.cpp
-app_smooth.cpp
 IonIonEnergy_Ewald.cpp
 InitPe4image.cpp
 InitPe4kpspin.cpp

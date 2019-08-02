@@ -24,7 +24,6 @@ public:
     }
 
     // argc and argc
-    int argc;
     std::vector<std::string> argv;
 
     // Branch type
