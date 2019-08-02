@@ -38,6 +38,7 @@ public:
     // Type LOCALIZED or DELOCALIZED
     int type;
     void ReadOrbitals(std::string filename, BaseGrid *Rmg_G);
+    void WriteOrbitals(std::string filename, BaseGrid *Rmg_G);
     void ReadProjectors(int num_ions, int max_nlpoint, int *num_proj_perion, BaseGrid *Rmg_G);
     void GetAtomicOrbitals(int num_ions, BaseGrid *Rmg_G);
 

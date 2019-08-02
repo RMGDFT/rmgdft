@@ -22,13 +22,12 @@
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
 #include "LocalObject.h"
+#include "blacs.h"
 
 
-
-
-
+void mat_global_to_dist(double *a_dist, int *desca, double *a_glob);
 void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi, 
-        double *vtot_c, double *Hij_glob, double *Bij_glob, double *Kbpsi_mat)
+        double *vtot_c, double *Hij_dist, double *Bij_dist, double *Kbpsi_mat)
 {
     int ione = 1;
 
@@ -40,6 +39,9 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     int order = ct.kohn_sham_fd_order;
 
     RmgTimer *RT = new RmgTimer("4-get_HS");
+
+    double *Hij_glob = new double[Phi.num_tot * Phi.num_tot];
+    double *Bij_glob = new double[Phi.num_tot * Phi.num_tot];
 
     for (int st1 = 0; st1 < Phi.num_tot * Phi.num_tot; st1++) Hij_glob[st1] = 0.0;
     for (int st1 = 0; st1 < Phi.num_tot * Phi.num_tot; st1++) Bij_glob[st1] = 0.0;
@@ -94,8 +96,16 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
         print_matrix(Bij_glob, 6, Phi.num_tot);
     }
 
+
+    mat_global_to_dist(Hij_dist, pct.desca, Hij_glob);
+    mat_global_to_dist(Bij_dist, pct.desca, Bij_glob);
+    delete [] Hij_glob;
+    delete [] Bij_glob;
+
     delete(RT);
 
 }
+
+
 
 

@@ -97,7 +97,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     RmgTimer *RT1 = new RmgTimer("2-SCF: get_HS");
     GetHS(states, states1, vtot_c, Hij_00, Bij_00);
-    GetHS_dis(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij_00, Bij_00, Kbpsi_mat);
+    GetHS_dis(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij, matB, Kbpsi_mat);
     delete(RT1);
 #if ELEMENTAL_LIBS
     RmgTimer *RTa = new RmgTimer("2-SCF: DiagElemental");
@@ -105,7 +105,10 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     delete(RTa);
 #else
     RmgTimer *RTb = new RmgTimer("2-SCF: DiagScalapack");
-    DiagScalapack(states, ct.num_states, Hij_00, Bij_00, work_matrix_row, theta);
+
+    MyCpdgemr2d(numst,numst, Hij_00, pct.descb, Hij, pct.desca);
+    MyCpdgemr2d(numst,numst, Bij_00, pct.descb, matB, pct.desca);
+    DiagScalapack(states, ct.num_states, Hij, matB, work_matrix_row, theta);
 
     delete(RTb);
 #endif
@@ -217,6 +220,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
         RmgTimer *RT6 = new RmgTimer("2-SCF: OrbitalOptimize");
         OrbitalOptimize(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
+    
         delete(RT6);
     }
 

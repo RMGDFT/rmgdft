@@ -239,7 +239,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::stri
     {
 
         int st_glob = this->index_proj_to_global[st];
-        size_t size = this->dimx[st] * this->dimy[st] * this->dimz[st] *sizeof(double);
+        size_t size = this->dimx[st_glob] * this->dimy[st_glob] * this->dimz[st_glob] *sizeof(KpointType);
 
         std::string newname= filename + ".orbit_"+std::to_string(st_glob);
         fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
@@ -250,7 +250,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::stri
             exit(0);
         }
 
-        double *psi = new double[size/sizeof(double)];
+        KpointType *psi = new KpointType[size/sizeof(KpointType)];
         size_t nbytes = read(fhand, psi, size);
         if (nbytes != size)
         {
@@ -279,7 +279,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::stri
                     {
                         int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
                         int idx0 = ix * this->dimy[st_glob] * this->dimz[st_glob] + iy * this->dimz[st_glob] + iz;
-                        this->storage_proj[st * P0_BASIS + idx] = (KpointType) psi[idx0];
+                        this->storage_proj[st * P0_BASIS + idx] = psi[idx0];
                     }
 
                 }
@@ -489,5 +489,95 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
     fftw_free (gbptr);
     fftw_free (beptr);
 
+}
+
+//localized orbitals are projected on 3D domain decompostion, writing for each orbital here is not very 
+//efficient 
+template void LocalObject<double>::WriteOrbitals(std::string filename, BaseGrid *Rmg_G);
+template void LocalObject<std::complex<double>>::WriteOrbitals(std::string filename, BaseGrid *Rmg_G);
+template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::string filename, BaseGrid *Rmg_G)
+{
+
+    int density = this->density;
+    int PX0_GRID = Rmg_G->get_PX0_GRID(density);
+    int PY0_GRID = Rmg_G->get_PY0_GRID(density);
+    int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
+    int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+    int PX_OFFSET = Rmg_G->get_PX_OFFSET(density);
+    int PY_OFFSET = Rmg_G->get_PY_OFFSET(density);
+    int PZ_OFFSET = Rmg_G->get_PZ_OFFSET(density);
+    int NX_GRID = Rmg_G->get_NX_GRID(density);
+    int NY_GRID = Rmg_G->get_NY_GRID(density);
+    int NZ_GRID = Rmg_G->get_NZ_GRID(density);
+    int ilow = PX_OFFSET;
+    int ihigh = ilow + PX0_GRID;
+    int jlow = PY_OFFSET;
+    int jhigh = jlow + PY0_GRID;
+    int klow = PZ_OFFSET;
+    int khigh = klow + PZ0_GRID;
+
+    int fhand;
+
+    int factor = sizeof(KpointType) /sizeof(double);
+    for(int st_glob = 0; st_glob < this->num_tot; st_glob++)
+    {
+
+        int st = this->index_global_to_proj[st_glob];
+        int nxyz = this->dimx[st_glob] * this->dimy[st_glob] * this->dimz[st_glob];
+        KpointType *psi = new KpointType[nxyz];
+
+        for(int idx = 0; idx < nxyz; idx++) psi[idx] = 0.0;
+
+        for(int ix = 0; ix < this->dimx[st_glob]; ix++)
+            for(int iy = 0; iy < this->dimy[st_glob]; iy++)
+                for(int iz = 0; iz < this->dimz[st_glob]; iz++)
+                {
+                    int ixx = ix + this->ixmin[st_glob]; 
+                    int iyy = iy + this->iymin[st_glob]; 
+                    int izz = iz + this->izmin[st_glob]; 
+
+                    if (ixx < 0) ixx += NX_GRID;
+                    if (iyy < 0) iyy += NY_GRID;
+                    if (izz < 0) izz += NZ_GRID;
+                    if (ixx >= NX_GRID) ixx -=NX_GRID;
+                    if (iyy >= NY_GRID) iyy -=NY_GRID;
+                    if (izz >= NZ_GRID) izz -=NZ_GRID;
+
+                    if(ixx >=ilow && ixx < ihigh && iyy >=jlow && iyy <jhigh && izz >=klow && izz < khigh)
+                    {
+                        int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
+                        int idx0 = ix * this->dimy[st_glob] * this->dimz[st_glob] + iy * this->dimz[st_glob] + iz;
+                        psi[idx0] = this->storage_proj[st * P0_BASIS + idx];
+                    }
+
+                }
+
+        MPI_Allreduce(MPI_IN_PLACE, psi, nxyz*factor, MPI_DOUBLE, MPI_SUM, this->comm);
+
+        std::string newname= filename + ".orbit_"+std::to_string(st_glob);
+        fhand = open(newname.c_str(), O_CREAT |O_TRUNC| O_RDWR, S_IREAD | S_IWRITE);
+        if(fhand < 0)
+        {
+            printf ("\n %s \n", newname.c_str());
+            fflush(NULL);
+            exit(0);
+        }
+        
+        size_t size = nxyz * sizeof(KpointType);
+        write(fhand, psi, size);
+
+        int ixmax = this->ixmin[st_glob] + this->dimx[st_glob];
+        int iymax = this->iymin[st_glob] + this->dimy[st_glob];
+        int izmax = this->izmin[st_glob] + this->dimz[st_glob];
+        write(fhand, &this->ixmin[st_glob], sizeof(int));
+        write(fhand, &ixmax, sizeof(int));
+        write(fhand, &this->iymin[st_glob], sizeof(int));
+        write(fhand, &iymax, sizeof(int));
+        write(fhand, &this->izmin[st_glob], sizeof(int));
+        write(fhand, &izmax, sizeof(int));
+
+        close(fhand);
+        delete []psi;
+    }
 }
 
