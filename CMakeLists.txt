@@ -20,6 +20,12 @@
 # CXX = Full path to C++ compiler
 # FC  = Full path to Fortran compiler
 #
+# On some platforms an environment variable may need to be set to
+# find an optimized BLAS library. For example on Summit at ORNL
+# with the cmake/3.14.2 module loaded one needs to set
+# export BLA_VENDOR=IBMESSL in order for cmake to find the essl libs.
+#
+
 
 cmake_minimum_required (VERSION 3.1) 
 
@@ -59,6 +65,7 @@ elseif()
     set(git_version_clean "Unknown")
 endif(Git_FOUND)
 
+
 # Require a 64 bit system
 if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
     message( SEND_ERROR "RMG requires a 64 bit architechture." )
@@ -75,13 +82,16 @@ endif()
 # User settable options from cmake-gui, ccmake for text terminals
 # or command line
 option(RMG_GPU_ENABLED "Enable GPU support." OFF)
-option(USE_MAGMA_LIBS "Use magma libraries. Requires RMG_GPU_ENABLED." OFF)
 option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
 option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
 option(USE_INTERNAL_PSEUDOPOTENTIALS "Include internal pseudopotentials in binary." ON)
 option(QMCPACK_SUPPORT "Generates a QMCPACK restart file." OFF)
 
+
+# Now that the scalapack source has been included in the RMG distribution this should
+# always be available unless there is some issue with building it so we define it here.
 add_definitions(-DSCALAPACK_LIBS=1)
+
 
 # Helps to find the correct version of boost on some systems. In particular
 # many supercomputers will have a system version located in the standard
@@ -94,6 +104,8 @@ option(Boost_USE_MULTITHREADED      ON)
 option(USE_ELPA_LIBS "Experimental." OFF)
 option(USE_ELEMENTAL_LIBS "Experimental." OFF)
 
+
+# RMG requires c++14 and C99
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 
@@ -104,10 +116,10 @@ CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX14)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 14)
 elseif(COMPILER_SUPPORTS_CXX0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 14)
 else()
     message( WARNING "The detected compiler ${CMAKE_CXX_COMPILER} doesn't support the c++14 standard or requires a flag cmake does not understand. RMG will probably not build correctly.")
 endif()
@@ -136,12 +148,14 @@ include (CheckLibraryExists)
 include (CMakeForceCompiler)
 include (FortranCInterface)
 
+
 # Send the Fortran C interface mangling template file to the build directory and set it up there
 configure_file (
   "${PROJECT_SOURCE_DIR}/rmg_mangling.h.in"
   "${PROJECT_BINARY_DIR}/Headers/rmg_mangling.h"
 )
 FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h MACRO_NAMESPACE RMG_FC_)
+
 
 # Here set any extra compiler flags required for a specific platform
 # This is for stampede
@@ -151,13 +165,16 @@ FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h MACRO_NAMESP
 #
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 #set(RMG_EXTRA_COMPILER_FLAGS "-funroll-loops")
-# Generic debug
+
+
+# Generic Release or Debug
 set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_BUILD_TYPE Debug)
 
 
 # Load custom cmake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
+
 
 # Search for an MPI implementation. On Crays cmake does not pick up some
 # vars but the compiler wrappers take care of it automatically.
@@ -171,12 +188,20 @@ endif()
 set(RMGLIBS "${MPI_CXX_LIBRARIES}")
 list(APPEND RMGLIBS ${MPI_C_LIBRARIES})
 
+if(MPI_CXX_FOUND)
+    include_directories(${MPI_CXX_INCLUDE_PATH})
+endif()
+if(MPI_C_FOUND)
+    include_directories(${MPI_C_INCLUDE_PATH})
+endif()
+
 
 # Get Openmp flags
 find_package(OpenMP)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
+
 
 if(USE_INTERNAL_PSEUDOPOTENTIALS)
     add_definitions(-DINTERNAL_PP=1)
@@ -221,6 +246,7 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(RMG_EXTRA_COMPILER_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -fcx-limited-range -fno-trapping-math")
 endif()
 
+
 # MKL specific compiler flags
 #if(CMAKE_C_COMPILER_ID)
 #    # Intel compiler
@@ -229,8 +255,10 @@ endif()
 #    #set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++")
 #endif()
 
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
+
 
 if (CRAY_XK)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
@@ -246,25 +274,9 @@ endif()
 include(CMakeFindRootPath.inc)
 
 
-# Executables defined by the file that contains main()
-# Main codes
-#add_executable(${rmg} RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-#add_executable(${rmg-tddft} TDDFT/Common/Main_rmg.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-#add_executable(${rmg-on} ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-#add_executable(on-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-#add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-
 # adds qmcpack support to base code
 if(QMCPACK_SUPPORT)
     add_definitions(-DQMCPACK_SUPPORT=1)
-endif()
-
-if(MPI_CXX_FOUND)
-    include_directories(${MPI_CXX_INCLUDE_PATH})
-endif()
-
-if(MPI_C_FOUND)
-    include_directories(${MPI_C_INCLUDE_PATH})
 endif()
 
 
@@ -292,8 +304,10 @@ if(HWLOC_FOUND AND HWLOC_INCLUDES)
 endif(HWLOC_FOUND AND HWLOC_INCLUDES)
 
 
+#experimental
 if(USE_ELPA_LIBS)
-    add_definitions(-DUSE_ELPA=1)
+    message(WARNING "ELPA is experimental and requires manual editing of CMakeLists.txt to enable.")
+    #add_definitions(-DUSE_ELPA=1)
     #target_link_libraries(${rmg} /home/briggs/src/elpa-2016.11.001.pre/.libs/libelpa.so)
     #target_link_libraries(${rmg} /usr/lib64/libelpa.so)
 endif(USE_ELPA_LIBS)
@@ -341,6 +355,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 list(APPEND RMGLIBS ${Boost_LIBRARIES})
 
+
 if(CRAY_XK)
     find_package(BZ2 REQUIRED)
     find_package(Z REQUIRED)
@@ -361,9 +376,7 @@ if(USE_OPENBABEL_LIBS)
     else(CHECK_OPENBABEL_INTERNAL)
         add_definitions(-DOPENBABEL_LIBS=0)
     endif (CHECK_OPENBABEL_INTERNAL)
-
 endif(USE_OPENBABEL_LIBS)
-
 
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
@@ -387,11 +400,12 @@ if(NOT CRAY_XK)
         set(MKL_LIB64 "${MKLROOT}/lib/intel64")
         if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
             if(EXISTS "${MKL_LIB64}")
-                set(USE_LINUX_MKL_LIBS 1)
-                target_link_libraries (${rmg} -Wl,--start-group ${MAGMA_LIBRARIES} ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
-                target_link_libraries (${rmg-tddft} -Wl,--start-group ${MAGMA_LIBRARIES} ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
-                target_link_libraries (${rmg-on} -Wl,--start-group ${MAGMA_LIBRARIES} ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
-                target_link_libraries (${rmg-negf} -Wl,--start-group ${MAGMA_LIBRARIES} ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
+                list(APPEND RMGLIBS "${MKL_LIB64}/libmkl_intel_lp64.a")
+                list(APPEND RMGLIBS "${MKL_LIB64}/libmkl_core.a")
+                list(APPEND RMGLIBS "${MKL_LIB64}/libmkl_gnu_thread.a")
+                list(APPEND RMGLIBS "${MKLROOT}/lib/intel64/libmkl_intel_lp64.a")
+                list(APPEND RMGLIBS "${MKLROOT}/lib/intel64/libmkl_gnu_thread.a")
+                list(APPEND RMGLIBS "${MKLROOT}/lib/intel64/libmkl_core.a")
                 set(RMG_MATH_LIBS "done")
             else(EXISTS "${MKL_LIB64}")
                 message( SEND_ERROR "RMG requires 64 bit MKL." )
@@ -584,14 +598,6 @@ if(NOT CRAY_XK)
     add_subdirectory (scalapack) 
 endif()
 
-
-
-if(USE_LINUX_MKL_LIBS)
-    target_link_libraries (${rmg-tddft} -Wl,--start-group ${MKL_LIB64}/libfftw3x_cdft_lp64.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
-    target_link_libraries (${rmg} -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group)
-    target_link_libraries (${rmg-on} -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group)
-    target_link_libraries (${rmg-negf} -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group)
-endif(USE_LINUX_MKL_LIBS)
 
 #install(TARGETS ${rmg} 
 #DESTINATION bin)
