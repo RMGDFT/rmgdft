@@ -44,17 +44,17 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/spglib/src/arithmetic.c
             ${PROJECT_SOURCE_DIR}/spglib/src/symmetry.c)
 
 # Shared library
-add_library(symspg SHARED ${SOURCES})
-set_property(TARGET symspg PROPERTY VERSION ${serial})
-set_property(TARGET symspg PROPERTY SOVERSION ${soserial})
-install(TARGETS symspg LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/lib)
+#add_library(symspg SHARED ${SOURCES})
+#set_property(TARGET symspg PROPERTY VERSION ${serial})
+#set_property(TARGET symspg PROPERTY SOVERSION ${soserial})
+#install(TARGETS symspg LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/lib)
 
 # Static link library
 add_library(symspg_static STATIC ${SOURCES})
-set_property(TARGET symspg_static PROPERTY VERSION ${serial})
-set_property(TARGET symspg_static PROPERTY SOVERSION ${soserial})
-set_property(TARGET symspg_static PROPERTY OUTPUT_NAME symspg)
-install(TARGETS symspg_static ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/lib)
+#set_property(TARGET symspg_static PROPERTY VERSION ${serial})
+#set_property(TARGET symspg_static PROPERTY SOVERSION ${soserial})
+#set_property(TARGET symspg_static PROPERTY OUTPUT_NAME symspg)
+#install(TARGETS symspg_static ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/lib)
 
 # make check
 #enable_testing()

@@ -49,13 +49,13 @@ if(Git_FOUND)
     if(git_version)
         string(REPLACE "\n" ";" git_version1 ${git_version})
         string(REPLACE "-" "_" git_version_clean ${git_version1})
-        #add_definitions(-DRMG_REVISION="${git_version_clean}")
+        add_definitions(-DRMG_REVISION="${git_version_clean}")
     elseif()
-        #add_definitions(-DRMG_REVISION="Unknown")
+        add_definitions(-DRMG_REVISION="Unknown")
         set(git_version_clean "Unknown")
     endif(git_version)
 elseif()
-    #add_definitions(-DRMG_REVISION="Unknown")
+    add_definitions(-DRMG_REVISION="Unknown")
     set(git_version_clean "Unknown")
 endif(Git_FOUND)
 
@@ -93,7 +93,6 @@ option(Boost_USE_STATIC_LIBS        OFF)
 option(Boost_USE_MULTITHREADED      ON)
 option(USE_ELPA_LIBS "Experimental." OFF)
 option(USE_ELEMENTAL_LIBS "Experimental." OFF)
-option(USE_LIBXC "Use external libxc. Not recommended in most cases." OFF)
 
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
@@ -169,6 +168,9 @@ if(CRAY_XK)
 else()
     find_package(MPI REQUIRED)
 endif()
+set(RMGLIBS "${MPI_CXX_LIBRARIES}")
+list(APPEND RMGLIBS ${MPI_C_LIBRARIES})
+
 
 # Get Openmp flags
 find_package(OpenMP)
@@ -178,6 +180,7 @@ set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
 
 if(USE_INTERNAL_PSEUDOPOTENTIALS)
     add_definitions(-DINTERNAL_PP=1)
+    list(APPEND RMGLIBS InternalPseudo)
 endif()
 
 
@@ -203,6 +206,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     add_definitions(-DLINUX=1)
     set(ZLIB "z")
     set(RTLIB "rt")
+    list(APPEND RMGLIBS z)
+    list(APPEND RMGLIBS rt)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 
@@ -227,10 +232,6 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
 
-if(USE_LIBXC)
-    add_definitions(-D__LIBXC=1)
-endif()
-
 if (CRAY_XK)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
@@ -247,44 +248,31 @@ include(CMakeFindRootPath.inc)
 
 # Executables defined by the file that contains main()
 # Main codes
-add_executable(${rmg} RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-add_executable(${rmg-tddft} TDDFT/Common/Main_rmg.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-add_executable(${rmg-on} ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-add_executable(on-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
-add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+#add_executable(${rmg} RMG/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+#add_executable(${rmg-tddft} TDDFT/Common/Main_rmg.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+#add_executable(${rmg-on} ON/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+#add_executable(on-tddft TDDFT/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
+#add_executable(${rmg-negf} NEGF/Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 
 # adds qmcpack support to base code
 if(QMCPACK_SUPPORT)
     add_definitions(-DQMCPACK_SUPPORT=1)
-    target_link_libraries(${rmg} Interfaces RMG_Common Interfaces)
 endif()
-
 
 if(MPI_CXX_FOUND)
     include_directories(${MPI_CXX_INCLUDE_PATH})
-    target_link_libraries (${rmg} ${MPI_CXX_LIBRARIES})
-    target_link_libraries (${rmg-tddft} ${MPI_CXX_LIBRARIES})
-    target_link_libraries (${rmg-on} ${MPI_CXX_LIBRARIES})
-    target_link_libraries (on-tddft ${MPI_CXX_LIBRARIES})
-    target_link_libraries (${rmg-negf} ${MPI_CXX_LIBRARIES})
 endif()
 
 if(MPI_C_FOUND)
     include_directories(${MPI_C_INCLUDE_PATH})
-    target_link_libraries (${rmg} ${MPI_C_LIBRARIES})
-    target_link_libraries (${rmg-tddft} ${MPI_C_LIBRARIES})
-    target_link_libraries (${rmg-on} ${MPI_C_LIBRARIES})
-    target_link_libraries (on-tddft ${MPI_C_LIBRARIES})
-    target_link_libraries (${rmg-negf} ${MPI_C_LIBRARIES})
 endif()
 
 
 # Require pthreads on UNIX
 if (${UNIX})
     find_package(Threads REQUIRED)
-    target_link_libraries (${rmg} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
-    target_link_libraries (${rmg-tddft} ${CMAKE_THREAD_LIBS_INIT} ${RTLIB})
-    target_link_libraries (${rmg-on} ${RTLIB})
+    list(APPEND RMGLIBS ${RTLIB})
+    list(APPEND RMGLIBS ${CMAKE_THREAD_LIBS_INIT})
 endif(${UNIX})
 
 
@@ -292,9 +280,7 @@ find_package(NUMA)
 if(NUMA_FOUND AND NUMA_INCLUDES)
     include_directories(${NUMA_INCLUDES})
     add_definitions(-DUSE_NUMA=1)
-    set(USE_NUMA_INTERNAL 1)
-else(NUMA_FOUND AND NUMA_INCLUDES)
-    set(USE_NUMA_INTERNAL 0)
+    list(APPEND RMGLIBS ${NUMA_LIBRARIES})
 endif(NUMA_FOUND AND NUMA_INCLUDES)
 
 
@@ -302,17 +288,13 @@ find_package(HWLOC)
 if(HWLOC_FOUND AND HWLOC_INCLUDES)
     include_directories(${HWLOC_INCLUDES})
     #add_definitions(-DUSE_HWLOC=1)
-    target_link_libraries (${rmg} ${HWLOC_LIBRARIES})
-    target_link_libraries (${rmg-on} ${HWLOC_LIBRARIES})
-    target_link_libraries (on-tddft ${HWLOC_LIBRARIES})
-    target_link_libraries (${rmg-tddft} ${HWLOC_LIBRARIES})
-    target_link_libraries (${rmg-negf} ${HWLOC_LIBRARIES})
+    list(APPEND RMGLIBS ${HWLOC_LIBRARIES})
 endif(HWLOC_FOUND AND HWLOC_INCLUDES)
 
 
 if(USE_ELPA_LIBS)
     add_definitions(-DUSE_ELPA=1)
-    target_link_libraries(${rmg} /home/briggs/src/elpa-2016.11.001.pre/.libs/libelpa.so)
+    #target_link_libraries(${rmg} /home/briggs/src/elpa-2016.11.001.pre/.libs/libelpa.so)
     #target_link_libraries(${rmg} /usr/lib64/libelpa.so)
 endif(USE_ELPA_LIBS)
 
@@ -339,6 +321,8 @@ if(USE_PLPLOT_LIBS)
             include_directories(${PLplot_INCLUDE_DIR})
             include_directories("${PLplot_INCLUDE_DIR}/plplot")
             add_definitions(-DPLPLOT_LIBS=1)
+            list(APPEND RMGLIBS ${PLplot_cxx_LIBRARY})
+            list(APPEND RMGLIBS ${PLplot_LIBRARY})
         else(USE_PLPLOT_LIBS_INTERNAL)
             add_definitions(-DPLPLOT_LIBS=0)
         endif(USE_PLPLOT_LIBS_INTERNAL)
@@ -355,21 +339,13 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     endif()
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
+list(APPEND RMGLIBS ${Boost_LIBRARIES})
 
 if(CRAY_XK)
     find_package(BZ2 REQUIRED)
     find_package(Z REQUIRED)
-    target_link_libraries (${rmg} ${BZ2_LIBRARIES})
-    target_link_libraries (${rmg-tddft} ${BZ2_LIBRARIES})
-    target_link_libraries (${rmg-on} ${BZ2_LIBRARIES})
-    target_link_libraries (on-tddft ${BZ2_LIBRARIES})
-    target_link_libraries (${rmg-negf} ${BZ2_LIBRARIES})
-    target_link_libraries (${rmg} ${Z_LIBRARIES})
-    target_link_libraries (${rmg-tddft} ${Z_LIBRARIES})
-    target_link_libraries (${rmg-on} ${Z_LIBRARIES})
-    target_link_libraries (on-tddft ${Z_LIBRARIES})
-    target_link_libraries (${rmg-negf} ${Z_LIBRARIES})
+    list(APPEND RMGLIBS  ${BZ2_LIBRARIES})
+    list(APPEND RMGLIBS  ${Z_LIBRARIES})
 endif(CRAY_XK)
 
 
@@ -381,36 +357,13 @@ if(USE_OPENBABEL_LIBS)
     if(CHECK_OPENBABEL_INTERNAL)
         include_directories(${OPENBABEL_INCLUDES})
         add_definitions(-DOPENBABEL_LIBS=1)
+        list(APPEND RMGLIBS ${OPENBABEL_LIBRARIES})
     else(CHECK_OPENBABEL_INTERNAL)
         add_definitions(-DOPENBABEL_LIBS=0)
     endif (CHECK_OPENBABEL_INTERNAL)
 
 endif(USE_OPENBABEL_LIBS)
 
-
-# Look for the magma libraries
-if(USE_MAGMA_LIBS AND RMG_GPU_ENABLED)
-  find_package(MAGMA)
-  if(MAGMA_FOUND)
-    add_definitions(-DMAGMA_LIBS=1)
-    include_directories(${MAGMA_INCLUDES})
-    if(MAGMABLAS_FOUND) 
-        target_link_libraries (${rmg} ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
-        target_link_libraries (${rmg-tddft} ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
-        target_link_libraries (${rmg-on} ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
-        target_link_libraries (on-tddft ${MAGMA_LIBRARIES}  ${MAGMABLAS_LIBRARIES} )
-        target_link_libraries (${rmg-negf} ${MAGMA_LIBRARIES} ${MAGMABLAS_LIBRARIES} )
-    else(MAGMABLAS_FOUND) 
-        target_link_libraries (${rmg} ${MAGMA_LIBRARIES} )
-        target_link_libraries (${rmg-tddft} ${MAGMA_LIBRARIES} )
-        target_link_libraries (${rmg-on} ${MAGMA_LIBRARIES} )
-        target_link_libraries (on-tddft ${MAGMA_LIBRARIES} )
-        target_link_libraries (${rmg-negf} ${MAGMA_LIBRARIES} )
-    endif(MAGMABLAS_FOUND) 
-  elseif(MAGMA_FOUND)
-      add_definitions(-DMAGMA_LIBS=0)
-  endif(MAGMA_FOUND)
-endif(USE_MAGMA_LIBS AND RMG_GPU_ENABLED)
 
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
@@ -452,13 +405,7 @@ endif(NOT CRAY_XK)
 # individually
 find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDES})
-target_link_libraries (${rmg} ${FFTW_LIBRARIES})
-target_link_libraries (${rmg-tddft} ${FFTW_LIBRARIES})
-target_link_libraries (${rmg-on} ${FFTW_LIBRARIES})
-target_link_libraries (on-tddft ${FFTW_LIBRARIES})
-target_link_libraries (${rmg-negf} ${FFTW_LIBRARIES})
-target_link_libraries (${rmg} RMG_Common ${FFTW_LIBRARIES})
-target_link_libraries (${rmg-tddft} RMG_Common ${FFTW_LIBRARIES})
+list(APPEND RMGLIBS ${FFTW_LIBRARIES})
 
 
 if(NOT RMG_MATH_LIBS)
@@ -466,24 +413,14 @@ if(NOT RMG_MATH_LIBS)
     # FFTW
     find_package(FFTW REQUIRED)
     include_directories(${FFTW_INCLUDES})
-    target_link_libraries (${rmg} ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg-tddft} ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg-on} ${FFTW_LIBRARIES})
-    target_link_libraries (on-tddft ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg-negf} ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg} RMG_Common ${FFTW_LIBRARIES})
-    target_link_libraries (${rmg-tddft} RMG_Common ${FFTW_LIBRARIES})
+    list(APPEND RMGLIBS ${FFTW_LIBRARIES})
 
     if(NOT CRAY_XK)
 
         # BLAS
         find_package(BLAS REQUIRED)
         if(BLAS_FOUND)
-            target_link_libraries (${rmg} ${BLAS_LIBRARIES})
-            target_link_libraries (${rmg-tddft} ${BLAS_LIBRARIES})
-            target_link_libraries (${rmg-on} ${BLAS_LIBRARIES})
-            target_link_libraries (on-tddft ${BLAS_LIBRARIES})
-            target_link_libraries (${rmg-negf} ${BLAS_LIBRARIES})
+            list(APPEND RMGLIBS ${BLAS_LIBRARIES})
         endif (BLAS_FOUND)
 
     endif (NOT CRAY_XK)
@@ -546,49 +483,20 @@ if(RMG_GPU_ENABLED)
   endif(${CUDA_VERSION_MAJOR} LESS 6)
 
   if(NOT CRAY_XK)
-      target_link_libraries(${rmg} ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cusolver_LIBRARY})
-      target_link_libraries(${rmg-tddft} ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cusolver_LIBRARY})
-      target_link_libraries(${rmg-on} ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cusolver_LIBRARY})
-      target_link_libraries(on-tddft ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cusolver_LIBRARY})
-      target_link_libraries(${rmg-negf} ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cusparse_LIBRARY} ${CUDA_cusolver_LIBRARY})
+      list(APPEND RMGLIBS ${CUDA_CUDA_LIBRARY})
+      list(APPEND RMGLIBS ${CUDA_CUDART_LIBRARY})
+      list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
   endif(NOT CRAY_XK)
-  target_link_libraries(${rmg} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} ${CUDA_cusolver_LIBRARY})
-  target_link_libraries(${rmg-tddft} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY})
-  target_link_libraries(${rmg-on} ${CUDA_CUDART_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
-  target_link_libraries(${rmg-on} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
-  target_link_libraries(on-tddft ${CUDA_CUDART_LIBRARY} ${CUDA_cusolver_LIBRARY})
-  target_link_libraries(on-tddft ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY})
-  target_link_libraries(${rmg-negf} ${CUDA_CUDART_LIBRARY} ${CUDA_cusparse_LIBRARY} ${CUDA_cusolver_LIBRARY})
-  target_link_libraries(${rmg-negf} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} ${CUDA_cusolver_LIBRARY})
+  list(APPEND RMGLIBS ${CUDA_cublas_LIBRARY})
+  list(APPEND RMGLIBS ${CUDA_cusparse_LIBRARY})
+  list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
   include_directories(${CUDA_INCLUDE_DIRS})
-
 
 # Cuda functions that we build are in Gpufuncs/CMakeLists.txt
  
   add_definitions(-DCUDA_VERSION_MAJOR=${CUDA_VERSION_MAJOR})
   add_definitions(-DCUDA_VERSION_MINOR=${CUDA_VERSION_MINOR})
 endif(RMG_GPU_ENABLED)
-
-#include_directories(rmg "/usr/local/magma/include")
-
-if(USE_LIBXC)
-    find_package(LIBXC)
-    if(NOT LIBXC_FOUND)
-        execute_process(
-        COMMAND tar xvf ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2.tar.gz -C ${PROJECT_SOURCE_DIR}/lib )
-        execute_process(
-        COMMAND mkdir ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
-        execute_process(
-        COMMAND ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/configure
-            --prefix=${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64
-            --libdir=${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64/lib
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
-        execute_process(COMMAND make install
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/lib64)
-    endif(NOT LIBXC_FOUND)
-    find_package(LIBXC REQUIRED)
-    include_directories("${LIBXC_INCLUDES}"  "${PROJECT_SOURCE_DIR}/lib/libxc-2.2.2/")
-endif()
 
 
 if(USE_ELEMENTAL_LIBS)
@@ -624,14 +532,7 @@ include_directories("${PROJECT_SOURCE_DIR}/RmgLib/")
 include_directories("${PROJECT_SOURCE_DIR}/RmgLib/include")
 include_directories("${PROJECT_SOURCE_DIR}/zfp/include")
 include_directories("${PROJECT_SOURCE_DIR}/spglib/src")
-#include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
-#include_directories("${PROJECT_SOURCE_DIR}/TDDFT/Headers/")
-#include_directories("${PROJECT_SOURCE_DIR}/NEGF/Headers/")
 
-target_include_directories(${rmg} PRIVATE "${PROJECT_SOURCE_DIR}/RMG/Headers/")
-target_include_directories(${rmg-on} PRIVATE "${PROJECT_SOURCE_DIR}/ON/Headers/")
-target_include_directories(${rmg-negf} PRIVATE "${PROJECT_SOURCE_DIR}/NEGF/Headers/")
-target_include_directories(${rmg-tddft} PRIVATE "${PROJECT_SOURCE_DIR}/TDDFT/Header/")
 
 if(QMCPACK_SUPPORT)
     include_directories("${PROJECT_SOURCE_DIR}/Interfaces/")
@@ -648,15 +549,6 @@ add_subdirectory (Misc)
 add_subdirectory (US_PP) 
 add_subdirectory (zfp) 
 add_subdirectory (spglib) 
-if(QMCPACK_SUPPORT)
-    add_subdirectory (Interfaces)
-endif()
-if(NOT CRAY_XK)
-    add_subdirectory (scalapack) 
-endif()
-if(USE_LIBXC)
-    add_subdirectory (XC_useLIBXC) 
-endif(USE_LIBXC)
 add_subdirectory (XC) 
 add_subdirectory (InternalPseudo) 
 if(RMG_GPU_ENABLED)
@@ -664,10 +556,12 @@ if(RMG_GPU_ENABLED)
 endif(RMG_GPU_ENABLED)
 
 # Target specific code subdirectories
+add_subdirectory (RMG EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Spin EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Subdiag EXCLUDE_FROM_ALL)
 
+add_subdirectory (ON EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/Input EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/ON-NEGF-share EXCLUDE_FROM_ALL) 
@@ -675,44 +569,23 @@ add_subdirectory (TDDFT/Common EXCLUDE_FROM_ALL)
 add_subdirectory (TDDFT/ELDYN EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/OrbitalProjection EXCLUDE_FROM_ALL) 
 
+add_subdirectory (NEGF EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/SelfEnergy EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Input EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Local_current EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Pois_for_negf EXCLUDE_FROM_ALL) 
 
-# Link subdirectories
-link_directories (${RMG_BINARY_DIR}/Finite_diff) 
-link_directories (${RMG_BINARY_DIR}/Force)
-link_directories (${RMG_BINARY_DIR}/Input)
-link_directories (${RMG_BINARY_DIR}/MG)
-link_directories (${RMG_BINARY_DIR}/Misc)
-link_directories (${RMG_BINARY_DIR}/zfp)
-link_directories (${RMG_BINARY_DIR}/spglib)
+
 if(QMCPACK_SUPPORT)
-    link_directories (${RMG_BINARY_DIR}/Interfaces)
+    add_subdirectory (Interfaces)
 endif()
 if(NOT CRAY_XK)
-    link_directories (${RMG_BINARY_DIR}/scalapack)
+    add_subdirectory (scalapack) 
 endif()
-link_directories (${RMG_BINARY_DIR}/US_PP)
-link_directories (${RMG_BINARY_DIR}/XC)
-
-link_directories (${RMG_BINARY_DIR}/RMG/Common)
-link_directories (${RMG_BINARY_DIR}/RMG/Input)
-link_directories (${RMG_BINARY_DIR}/RMG/Spin)
-link_directories (${RMG_BINARY_DIR}/RMG/Spin/XC)
-link_directories (${RMG_BINARY_DIR}/RMG/Subdiag)
 
 
-# These include files include some subproject specific stuff
-# in order to keep from cluttering up the main CMakeLists.txt
-# file.
-include("SubprojectIncludes/CMakeLists.txt.rmg.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-tddft.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-on.inc")
-include("SubprojectIncludes/CMakeLists.txt.rmg-negf.inc")
-include("SubprojectIncludes/CMakeLists.txt.on-tddft.inc")
+
 if(USE_LINUX_MKL_LIBS)
     target_link_libraries (${rmg-tddft} -Wl,--start-group ${MKL_LIB64}/libfftw3x_cdft_lp64.a ${MKL_LIB64}/libmkl_intel_lp64.a ${MKL_LIB64}/libmkl_core.a ${MKL_LIB64}/libmkl_gnu_thread.a -Wl,--end-group)
     target_link_libraries (${rmg} -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group)
@@ -720,11 +593,9 @@ if(USE_LINUX_MKL_LIBS)
     target_link_libraries (${rmg-negf} -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group)
 endif(USE_LINUX_MKL_LIBS)
 
-install(TARGETS ${rmg} 
-DESTINATION bin)
+#install(TARGETS ${rmg} 
+#DESTINATION bin)
 
-#install(FILES RmgLib/libRmgLibShared.so RmgLib/libRmgLib.a
-#DESTINATION lib)
 
 install(DIRECTORY Examples DESTINATION share/rmg)
 
