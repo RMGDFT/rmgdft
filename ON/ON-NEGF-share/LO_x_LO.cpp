@@ -80,3 +80,15 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGr
 
 }
 
+void mat_global_to_local(LocalObject<double> &A, LocalObject<double> &B, double *mat_glob, double *mat_local)
+{
+    for (int j = 0; j < B.num_thispe; j++)
+    for (int i = 0; i < A.num_thispe; i++)
+    {
+        int i_glob = A.index_proj_to_global[i];
+        int j_glob = B.index_proj_to_global[j];
+        mat_local[j*A.num_thispe+i] = mat_glob[j_glob * A.num_tot + i_glob];
+
+    }
+}
+

@@ -42,15 +42,17 @@ void DotProductOrbitNl (STATE *st1, int ion2, double * psi,
 void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G);
 void GetHS_dis(LocalObject<double> &A, LocalObject<double> &B, double *vtot_c, double *H, double *S, double *kbpsi);
 void GetNewRho_dis(LocalObject<double> &A, LocalObject<double> &B, double *rho, double *mat_local);
+void mat_global_to_local(LocalObject<double> &A, LocalObject<double> &B, double *mat_glob, double *mat_local);
+void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
+        LocalObject<double> &NlProj, double *vtot_c, double *theta_glob, double *kbpsi_glob);
 
 
-#ifdef __cplusplus
+
 
 #include <unordered_map>
 #include "InputKey.h"
 #include "FiniteDiff.h"
 
-extern "C" void precond_mg_c(double *res, double *work1, double *work2, int istate);
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
           double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
@@ -70,9 +72,6 @@ void SolvPoisLocal (FiniteDiff *FD, double *vmat, double *fmat, double *work,
                 int dimx, int dimy, int dimz, double gridhx,
                 double gridhy, double gridhz, double step, double Zfac, double k);
 
-
-//extern "C" {
-#endif
 
 
 void write_rho_x(double *, char*);

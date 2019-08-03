@@ -1,4 +1,5 @@
 add_library (ON_Common
+ CalculateResidual.cpp
  get_te.cpp
  MyCpdgemr2d.cpp
  ReadDataFromRMG.cpp
