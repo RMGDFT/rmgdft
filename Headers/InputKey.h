@@ -5,6 +5,8 @@
 #include <vector>
 #include <unordered_map>
 
+
+
 namespace RmgInput {
 
     template <typename VectorType>
@@ -68,6 +70,21 @@ class InputKey {
         const char* helpmsg;
         const char *errmsg;
         int grouping;
+};
+
+// Used to sort keys by group and then alphabetically
+struct keycompare
+{
+    bool operator()(InputKey *ik_lhs, InputKey *ik_rhs)
+    {
+        // First sort by group
+        if(ik_lhs->grouping < ik_rhs->grouping) return true;
+        if(ik_lhs->grouping > ik_rhs->grouping) return false;
+
+        // Now alphabetically by key name within group
+        if(ik_lhs->KeyName.compare(ik_rhs->KeyName) < 0) return true;
+        return false;
+    }
 };
 
 #endif

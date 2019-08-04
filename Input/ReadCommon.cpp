@@ -172,8 +172,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("Hubbard_U", NULL , "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "Hubbard U parameter. ", 
-                     "");
+"Hubbard U parameter for each atomic species using the format &"
+"Hubbard_U=\"Ni  6.5\"",
+                     "", LDAU_OPTIONS);
 
     If.RegisterInputKey("input_wave_function_file", &Infile, "Waves/wave.out",
                      CHECK_AND_FIX, OPTIONAL,
@@ -334,7 +335,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("ldaU_mode", NULL, &lc.ldaU_mode, "None",
                      CHECK_AND_TERMINATE, OPTIONAL, ldaU_mode,
                      "Type of lda+u implementation. ", 
-                     "lda+u type not available. ");
+                     "lda+u type not available. ", LDAU_OPTIONS);
 
     If.RegisterInputKey("relax_method", NULL, &lc.relax_method, "Fast Relax",
                      CHECK_AND_TERMINATE, OPTIONAL, relax_method,
@@ -475,7 +476,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("ldaU_radius", &lc.ldaU_radius, 1.0, 12.0, 9.0, 
                       CHECK_AND_FIX, OPTIONAL, 
                      "Max radius of atomic orbitals to be used in LDA+U projectors. ",
-                     "ldaU_range must lie in the range (1.0, 12.0). Resetting to the default value of 9.0. ");
+                     "ldaU_range must lie in the range (1.0, 12.0). Resetting to the default value of 9.0. ", LDAU_OPTIONS);
 
     If.RegisterInputKey("potential_acceleration_constant_step", &lc.potential_acceleration_constant_step, 0.0, 4.0, 0.0, 
                       CHECK_AND_FIX, OPTIONAL, 
@@ -558,7 +559,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 500,
                      CHECK_AND_FIX, OPTIONAL, 
                      "Maximum number of self consistent steps to perform. ", 
-                     "max_scf_steps must be greater than 0. Resetting to the default value of 500 ");
+                     "max_scf_steps must be greater than 0. Resetting to the default value of 500 ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("tddft_steps", &lc.tddft_steps, 0, INT_MAX, 2000,
                      CHECK_AND_FIX, OPTIONAL, 
@@ -603,17 +604,17 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "How often to write checkpoint files during the initial quench in units of SCF steps. During structural relaxations of molecular dynamics checkpoints are written each ionic step.",
-                     "");
+                     "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("write_eigvals_period", &lc.write_eigvals_period, 1, 100, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "How often to output eigenvalues in units of scf steps.",
-                     "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5. ");
+                     "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("max_md_steps", &lc.max_md_steps, 0, INT_MAX, 100,
                      CHECK_AND_TERMINATE, OPTIONAL,
                      "Maximum number of molecular dynamics steps to perform.",
-                     "max_md_steps must be a positive value. Terminating. ");
+                     "max_md_steps must be a positive value. Terminating. ", MD_OPTIONS);
 
     If.RegisterInputKey("hartree_max_sweeps", &lc.hartree_max_sweeps, 5, 100, 10,
                      CHECK_AND_FIX, OPTIONAL,
@@ -767,7 +768,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 8, 4,
                      CHECK_AND_FIX, OPTIONAL,
                      "Grid coalescing factor.",
-                     "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.");
+                     "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
                      CHECK_AND_FIX, OPTIONAL,
@@ -895,7 +896,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                         "Flag indicating whether or not to renormalize forces.");
 
     If.RegisterInputKey("coalesce_states", &lc.coalesce_states, false,
-                        "Flag indicating whether or not to coalesce states.");
+                        "Flag indicating whether or not to coalesce states.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("localize_projectors", &lc.localize_projectors, true,
 "The Beta function projectors for a particular ion decay rapidly "
