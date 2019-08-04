@@ -86,17 +86,11 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
         sp->nldim = sp->nldim/2*2 + 1;
 
-        if ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID()))
+        while ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID()))
         {
-            if(ct.localize_projectors)
-            {
-                if(pct.gridpe == 0) 
-                {
-                    rmg_printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
-                    printf("Warning: localized projectors selected but their diameter exceeds cell size. Switching to delocalized.\n");
-                }
-                ct.localize_projectors = false;
-            }
+            sp->nlradius -= ct.hmingrid;
+            sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
+            sp->nldim = sp->nldim/2*2 + 1;
         }
 
         sp->nlradius = 0.5 * ct.hmingrid * (double)(sp->nldim);
@@ -271,7 +265,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 work[idx] = sp->rspsco[idx] / (4.0 * PI);
 
             A->RLogGridToGLogGrid(work, sp->r, sp->rab, sp->rhocore_g,
-                sp->rg_points, 0, bessel_rg);
+                    sp->rg_points, 0, bessel_rg);
 
             /*Write raw (pre-filtered) data to a file if requested */
             if (pct.gridpe == 0 && write_flag)
@@ -355,8 +349,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
                 {
                     if(pct.gridpe == 0) 
                     {
-                       rmg_printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
-                       printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                        rmg_printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
+                        printf("Warning: localized atomic orbitals selected but their diameter exceeds cell size. Switching to delocalized.\n");
                     }
                     ct.atomic_orbital_type = DELOCALIZED;
                 }

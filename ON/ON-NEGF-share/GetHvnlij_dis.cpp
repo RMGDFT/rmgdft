@@ -70,7 +70,6 @@ void GetHvnlij_dis(double *Aij, double *Bij, double *Kbpsi_mat, int num_orb, int
         proj_count += nh;
     }
            
-    
 
     dgemm ("T", "N", &num_orb, &num_proj, &num_proj, &one, Kbpsi_mat, &num_proj, dnm, &num_proj, &zero, temA, &num_orb);
     dgemm ("N", "N", &num_orb, &num_orb, &num_proj, &one, temA, &num_orb, Kbpsi_mat, &num_proj, &one, Aij, &num_orb);

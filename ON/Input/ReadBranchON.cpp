@@ -69,8 +69,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                      "freeze rho which read from RMG for a number of steps",""); 
 
     If.RegisterInputKey("orbital_mixing_method", NULL, &lc.orbital_mixing_method, "Pulay",
-                     CHECK_AND_TERMINATE, REQUIRED, mg_method,
-                     "mixing type for orbitals  \"Steepest Descent\", \"Pulay\", or \"KAIN\".\n", 
+                     CHECK_AND_FIX, OPTIONAL, mg_method, "mixing type for orbitals  \"Steepest Descent\", \"Pulay\", or \"KAIN\".\n", 
                      "start_mode must be one of \"Steepest Descent\", \"Pulay\", or \"KAIN\". Terminating.\n");
 
     If.RegisterInputKey("orbital_pulay_order", &lc.orbital_pulay_order, 0, 10, 2, 
@@ -106,6 +105,10 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                      "Output file/path to store wavefunctions and other binary data.\n",
                      "");
 
+    If.RegisterInputKey("LocalizedOrbitalLayout", NULL, &lc.LocalizedOrbitalLayout, "Distribute",
+            CHECK_AND_FIX, OPTIONAL, orbital_layout, 
+            "Localized rbitals layout \"Distribute\", \"Projetion\".\n", 
+            "Localized Orbital Layout mustbe one of \"Distribute\", or \"Projetion\".\n");
 
 
     If.LoadInputKeys();

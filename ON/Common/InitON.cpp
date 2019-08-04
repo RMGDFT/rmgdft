@@ -141,6 +141,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     MPI_Barrier(pct.img_comm);
 
+    std::cout << "LocalizedObitalLayout "<< ct.LocalizedOrbitalLayout <<std::endl;
+    if(ct.LocalizedOrbitalLayout == LO_projection)
     {
         int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
         ixmin = new int[3*ct.num_states];
@@ -201,6 +203,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     GetNlop_on();
 
+    if(ct.LocalizedOrbitalLayout == LO_projection)
     {
         int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
         int tot_prj = 0;
@@ -243,7 +246,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         Kbpsi_mat = new double[LocalProj->num_tot * LocalOrbital->num_tot]; 
     }
 
-    //if(ct.num_ldaU_ions > 0)
+    if(ct.num_ldaU_ions > 0)
     {
         int tot_orbitals_ldaU = 0;
         for (int ion=0; ion < ct.num_ions; ion++)

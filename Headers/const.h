@@ -268,4 +268,8 @@
 #define LOCALIZED 0
 #define DELOCALIZED 1
 
+#define LO_distribute 0
+#define LO_projection 1
+
+
 #endif /* CONST_H_INCLUDED */

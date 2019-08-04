@@ -1,4 +1,5 @@
 add_library (ON_Common
+ read_orbitals_on.cpp
  CalculateResidual.cpp
  get_te.cpp
  MyCpdgemr2d.cpp

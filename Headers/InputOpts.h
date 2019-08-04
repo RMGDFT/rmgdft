@@ -238,6 +238,10 @@ static std::unordered_map<std::string, int> mg_method = {
         {"Pulay", 1},
         {"Kain", 2}
         };
+static std::unordered_map<std::string, int> orbital_layout = {
+        {"Distribute", 0},
+        {"Projection", 1}
+        };
 
 static std::unordered_map<std::string, int> energy_point_insert_mode = {
         {"None", 0},

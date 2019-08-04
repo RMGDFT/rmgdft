@@ -45,17 +45,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     double *work1 = new double[mxllda2]();
 
 
-    RmgTimer  *RT2 = new RmgTimer("3-DiagScalapack: cpdgemr2d");
-    
-    MyCpdgemr2d(numst,numst, Hij_00, pct.descb, Hij, pct.desca);
-    MyCpdgemr2d(numst,numst, Bij_00, pct.descb, matB, pct.desca);
-    delete(RT2);
-
- //   Cpdgemr2d(numst, numst, Hij_00, ione, ione, pct.descb, Hij, ione, ione,
-  //          pct.desca, pct.desca[1]);
-  //  Cpdgemr2d(numst, numst, Bij_00, ione, ione, pct.descb, matB, ione, ione,
-  //          pct.desca, pct.desca[1]);
-
 
     RmgTimer *RT = new RmgTimer("3-DiagScalapack: pdsygvx ");
     /* If I'm in the process grid, execute the program */

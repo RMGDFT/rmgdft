@@ -75,9 +75,6 @@ void GetHvnlij(double *Aij, double *Bij)
         dgemm ("T", "N", &num_orb, &nh, &nh, &alpha, double_ptr, &nh, dnmI, &nh, &zero, temA, &num_orb);
         dgemm ("N", "N", &num_orb, &tot_orb, &nh, &one, temA, &num_orb, double_ptr, &nh, &zero, temB, &num_orb);
 
-
-
-
         for(idx1 = 0; idx1 < num_orb; idx1++)
         {
             st1 = int_ptr[idx1];

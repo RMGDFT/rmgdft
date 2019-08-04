@@ -80,7 +80,8 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
         ZeroBoundary(states[st1].psiR, ixx, iyy, izz);
     }
-    //if(ct.num_ldaU_ions > 0)
+    
+    if(ct.LocalizedOrbitalLayout == LO_projection)
     {
         write_data (ct.outfile, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
         MPI_Barrier(pct.img_comm);
@@ -90,28 +91,29 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     OrbitalComm(states);
     delete(RT0);
 
-    RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
-    KbpsiUpdate(states);
-    LO_x_LO(*LocalOrbital, *LocalProj, Kbpsi_mat, *Rmg_G);
-    delete(RTk);
 
-    RmgTimer *RT1 = new RmgTimer("2-SCF: get_HS");
-    GetHS(states, states1, vtot_c, Hij_00, Bij_00);
-    GetHS_dis(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij, matB, Kbpsi_mat);
-    delete(RT1);
-#if ELEMENTAL_LIBS
-    RmgTimer *RTa = new RmgTimer("2-SCF: DiagElemental");
-    DiagElemental(states, ct.num_states, Hij_00, Bij_00, work_matrix_row, theta);
-    delete(RTa);
-#else
+    if(ct.LocalizedOrbitalLayout == LO_projection)
+    {
+        LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat, *Rmg_G);
+        GetHS_dis(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij, matB, Kbpsi_mat);
+    }
+    else
+    {
+        RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
+        KbpsiUpdate(states);
+        delete(RTk);
+        RmgTimer *RT1 = new RmgTimer("2-SCF: get_HS");
+        GetHS(states, states1, vtot_c, Hij_00, Bij_00);
+        MyCpdgemr2d(numst,numst, Hij_00, pct.descb, Hij, pct.desca);
+        MyCpdgemr2d(numst,numst, Bij_00, pct.descb, matB, pct.desca);
+        delete(RT1);
+    }
+
     RmgTimer *RTb = new RmgTimer("2-SCF: DiagScalapack");
 
-    MyCpdgemr2d(numst,numst, Hij_00, pct.descb, Hij, pct.desca);
-    MyCpdgemr2d(numst,numst, Bij_00, pct.descb, matB, pct.desca);
     DiagScalapack(states, ct.num_states, Hij, matB, work_matrix_row, theta);
 
     delete(RTb);
-#endif
 
     if(ct.spin_flag)
     {
@@ -135,8 +137,10 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
     if(ct.scf_steps >= ct.freeze_rho_steps)
     {
-        GetNewRho_on(states, rho, work_matrix_row);
-        GetNewRho_dis(*LocalOrbital, *H_LocalOrbital, rho, work_matrix_row);
+        if(ct.LocalizedOrbitalLayout == LO_projection)
+            GetNewRho_dis(*LocalOrbital, *H_LocalOrbital, rho, work_matrix_row);
+        else
+            GetNewRho_on(states, rho, work_matrix_row);
     }
     //BroydenPotential(rho_old, rho, rhoc, vh_old, vh, ct.charge_broyden_order, false);
 
@@ -217,10 +221,16 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
             ct.restart_mix = 1;
         else
             ct.restart_mix = 0;
-
+        
+        if(ct.LocalizedOrbitalLayout == LO_projection)
+        {
+            CalculateResidual(*LocalOrbital, *H_LocalOrbital, *LocalProj,  vtot_c, theta, Kbpsi_mat);
+            H_LocalOrbital->WriteOrbitals(std::string(ct.outfile), Rmg_G);
+            read_orbitals_on(ct.outfile, states1);
+        }
         RmgTimer *RT6 = new RmgTimer("2-SCF: OrbitalOptimize");
         OrbitalOptimize(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
-    
+
         delete(RT6);
     }
 

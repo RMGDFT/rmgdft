@@ -40,7 +40,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     RmgTimer *RT = new RmgTimer("3-OrbitalOptimize: calculate");
 
 
-    double one = 1.0, zero = 0.0;
+    double one = 1.0, zero = 0.0, mtwo = -2.0;
 
 
     int pbasis = Rmg_G->get_P0_BASIS(1);
@@ -135,7 +135,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     dgemm("N", "N", &num_prj, &num_orb, &num_prj,  &one, qnm, &num_prj, kbpsi_work, &num_prj,
             &zero, kbpsi_work1, &num_prj);
     //  dnm * <beta_m|phi_j> 
-    dgemm("N", "N", &num_prj, &num_orb, &num_prj,  &one, dnm, &num_prj, kbpsi_local, &num_prj,
+    dgemm("N", "N", &num_prj, &num_orb, &num_prj,  &mtwo, dnm, &num_prj, kbpsi_local, &num_prj,
             &one, kbpsi_work1, &num_prj);
 
     // |beta_n> * (qnm <beta|phi>theta + dnm <beta|phi>

@@ -46,96 +46,97 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     double hxgrid = Rmg_G->get_hxgrid(1);
     double hygrid = Rmg_G->get_hygrid(1);
     double hzgrid = Rmg_G->get_hzgrid(1);
-
-    int item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
-    FiniteDiff FD(&Rmg_L);
-
     RmgTimer *RT = new RmgTimer("3-OrbitalOptimize");
-
-
-    RmgTimer *RT1a = new RmgTimer("3-OrbitalOptimize: distribute");
-    DistributeToGlobal(vtot_c, vtot_global);
-    delete(RT1a);
-
-
-    /* calculate  Theta * S * |states[].psiR > and stored in  states1[].psiR 
-     *  sum_j S(phi)_j*(Theta)_ji 
-     */
-
-    /*begin shuchun wang */
-    RmgTimer *RT12 = new RmgTimer("3-OrbitalOptimize: dcopya");
-    dcopy(&pct.psi_size, states[ct.state_begin].psiR, &ione, states_tem[ct.state_begin].psiR, &ione);
-    delete(RT12);
-
-    /*  add q_n,m|beta_n><beta_m|psi> on states_res.psiR */
-    RmgTimer *RT3 = new RmgTimer("3-OrbitalOptimize: nonortho");
-    get_nonortho_res(states, theta, states1);
-    MPI_Barrier(pct.grid_comm);
-    delete(RT3);
-
-    RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm");
-    get_qnm_res(theta);
-    MPI_Barrier(pct.grid_comm);
-    delete(RT4);
-    /* end shuchun wang */
-
-
-    /* Loop over states istate to compute the whole matrix Hij 
-       and all the vectors H|psi> */
-    /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
-
-    RmgTimer *RTa = new RmgTimer("3-OrbitalOptimize: Hpsi");
-    int st1;
-    double *orbital_border;
-    double *orbit_tem;
-#pragma omp parallel private(st1,orbital_border,orbit_tem)
+    if(ct.LocalizedOrbitalLayout == LO_distribute)
     {
-        orbital_border = new double[2*item];
-        orbit_tem = new double[2*item];
-#pragma omp for schedule(static,1) nowait
-        for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+        int item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
+        FiniteDiff FD(&Rmg_L);
+
+
+
+        RmgTimer *RT1a = new RmgTimer("3-OrbitalOptimize: distribute");
+        DistributeToGlobal(vtot_c, vtot_global);
+        delete(RT1a);
+
+
+        /* calculate  Theta * S * |states[].psiR > and stored in  states1[].psiR 
+         *  sum_j S(phi)_j*(Theta)_ji 
+         */
+
+        /*begin shuchun wang */
+        RmgTimer *RT12 = new RmgTimer("3-OrbitalOptimize: dcopya");
+        dcopy(&pct.psi_size, states[ct.state_begin].psiR, &ione, states_tem[ct.state_begin].psiR, &ione);
+        delete(RT12);
+
+        /*  add q_n,m|beta_n><beta_m|psi> on states_res.psiR */
+        RmgTimer *RT3 = new RmgTimer("3-OrbitalOptimize: nonortho");
+        get_nonortho_res(states, theta, states1);
+        MPI_Barrier(pct.grid_comm);
+        delete(RT3);
+
+        RmgTimer *RT4 = new RmgTimer("3-OrbitalOptimize: qnm");
+        get_qnm_res(theta);
+        MPI_Barrier(pct.grid_comm);
+        delete(RT4);
+        /* end shuchun wang */
+
+
+        /* Loop over states istate to compute the whole matrix Hij 
+           and all the vectors H|psi> */
+        /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
+
+        RmgTimer *RTa = new RmgTimer("3-OrbitalOptimize: Hpsi");
+        int st1;
+        double *orbital_border;
+        double *orbit_tem;
+#pragma omp parallel private(st1,orbital_border,orbit_tem)
         {
-            STATE *sp = &states[st1];
-            STATE *sp1 = &states1[st1];
-            int ixx = states[st1].orbit_nx;
-            int iyy = states[st1].orbit_ny;
-            int izz = states[st1].orbit_nz;
-
-            /* Generate 2*V*psi and store it  in orbit_tem */
-            GenVxPsi(sp->psiR, st1, orbit_tem, vtot_global, states);
-
-            double t1 = -1.0;
-            daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
-
-            /* A operating on psi stored in orbit_tem */
-            if(sp->radius > 0)
+            orbital_border = new double[2*item];
+            orbit_tem = new double[2*item];
+#pragma omp for schedule(static,1) nowait
+            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
             {
-                FillOrbitalBorders(orbital_border, sp->psiR, ixx, iyy, izz, order);
-            }
-            else
-            {
-                Rmg_T->trade_imagesx_central_local(sp->psiR, orbital_border, ixx, iyy, izz, order/2);
-            }
+                STATE *sp = &states[st1];
+                STATE *sp1 = &states1[st1];
+                int ixx = states[st1].orbit_nx;
+                int iyy = states[st1].orbit_ny;
+                int izz = states[st1].orbit_nz;
 
-            if(ct.laplacian_offdiag || ct.laplacian_autocoeff)
-                FiniteDiffLap (orbital_border, orbit_tem, ixx, iyy, izz, LC);
-            else
-                FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+                /* Generate 2*V*psi and store it  in orbit_tem */
+                GenVxPsi(sp->psiR, st1, orbit_tem, vtot_global, states);
 
-            t1 = 1.0;
-            daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
+                double t1 = -1.0;
+                daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
 
-        }                           /* end for st1 = .. */
-        delete [] orbit_tem;
-        delete [] orbital_border;
+                /* A operating on psi stored in orbit_tem */
+                if(sp->radius > 0)
+                {
+                    FillOrbitalBorders(orbital_border, sp->psiR, ixx, iyy, izz, order);
+                }
+                else
+                {
+                    Rmg_T->trade_imagesx_central_local(sp->psiR, orbital_border, ixx, iyy, izz, order/2);
+                }
+
+                if(ct.laplacian_offdiag || ct.laplacian_autocoeff)
+                    FiniteDiffLap (orbital_border, orbit_tem, ixx, iyy, izz, LC);
+                else
+                    FD.app8_del2 (orbital_border, orbit_tem, ixx, iyy, izz, hxgrid, hygrid, hzgrid);
+
+                t1 = 1.0;
+                daxpy(&sp->size, &t1, orbit_tem, &ione, sp1->psiR, &ione);
+
+            }                           /* end for st1 = .. */
+            delete [] orbit_tem;
+            delete [] orbital_border;
+        }
+
+        delete(RTa);
+        RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: dnm");
+        get_dnmpsi(states1);
+        delete(RT5);
+
     }
-
-    delete(RTa);
-    RmgTimer *RT5 = new RmgTimer("3-OrbitalOptimize: dnm");
-    get_dnmpsi(states1);
-    delete(RT5);
-
-
 
 
     /*
@@ -170,7 +171,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         ZeroBoundary(states1[st1].psiR, ixx, iyy, izz);
         double residual = 0.0;
         for(int i = 0; i < ixx * iyy *izz; i++) residual += states1[st1].psiR[i] * states1[st1].psiR[i];
-     //   printf("\n state residual %d %e", st1, residual);  
+        //   printf("\n state residual %d %e", st1, residual);  
 
     }
     double gamma = -0.5;

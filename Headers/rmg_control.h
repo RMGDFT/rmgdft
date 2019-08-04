@@ -860,6 +860,7 @@ public:
     size_t q_alloc[3];
     size_t beta_alloc[3];
     size_t psi_alloc[3];
+    int LocalizedOrbitalLayout;
 };
 
 

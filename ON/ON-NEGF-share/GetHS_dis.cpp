@@ -79,7 +79,7 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     delete(RT1);
 
     RmgTimer *RT3 = new RmgTimer("4-get_HS: Hvnlij");
-    GetHvnlij_dis(Hij_glob, Bij_glob, Kbpsi_mat, Phi.num_tot, LocalProj->num_tot);
+   GetHvnlij_dis(Hij_glob, Bij_glob, Kbpsi_mat, Phi.num_tot, LocalProj->num_tot);
     delete(RT3);
 
     int n2 = Phi.num_tot * Phi.num_tot;
