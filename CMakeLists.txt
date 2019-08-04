@@ -46,6 +46,8 @@ endif()
 enable_language(Fortran)
 project (RMG CXX C Fortran) 
 
+
+# Extract revision information to include in executables
 find_package(Git)
 if(Git_FOUND)
     set(VERSION_COMMAND "git")
@@ -110,7 +112,6 @@ include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 
 
-
 # Check for c++14 and c99 support
 CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
@@ -161,6 +162,7 @@ FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h MACRO_NAMESP
 # This is for stampede
 #set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
 
+
 # Ryzen Threadripper with gcc
 #
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
@@ -187,6 +189,7 @@ else()
 endif()
 set(RMGLIBS "${MPI_CXX_LIBRARIES}")
 list(APPEND RMGLIBS ${MPI_C_LIBRARIES})
+
 
 if(MPI_CXX_FOUND)
     include_directories(${MPI_CXX_INCLUDE_PATH})
@@ -308,8 +311,8 @@ endif(HWLOC_FOUND AND HWLOC_INCLUDES)
 if(USE_ELPA_LIBS)
     message(WARNING "ELPA is experimental and requires manual editing of CMakeLists.txt to enable.")
     #add_definitions(-DUSE_ELPA=1)
-    #target_link_libraries(${rmg} /home/briggs/src/elpa-2016.11.001.pre/.libs/libelpa.so)
-    #target_link_libraries(${rmg} /usr/lib64/libelpa.so)
+    #list(APPEND RMGLIBS /home/briggs/src/elpa-2016.11.001.pre/.libs/libelpa.so)
+    #list(APPEND RMGLIBS /usr/lib64/libelpa.so)
 endif(USE_ELPA_LIBS)
 
 
@@ -380,7 +383,8 @@ endif(USE_OPENBABEL_LIBS)
 
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
-# Check if environment variable is set
+# Check if environment variable is set. Unfortunately on many clusters there are multiple versions
+# of MKL installed and this does not always work correctly.
 if(NOT MKLROOT)
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         # Check the default location
@@ -412,6 +416,7 @@ if(NOT CRAY_XK)
             endif(EXISTS "${MKL_LIB64}")
         endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     endif(MKLROOT)
+    list(APPEND RMGLIBS scalapack)
 endif(NOT CRAY_XK)
 
 
@@ -488,7 +493,6 @@ ELSE(HDF5_FOUND)
 ENDIF(HDF5_FOUND)
 
 
-
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_GPU_ENABLED)
   find_package(CUDA REQUIRED)
@@ -530,15 +534,29 @@ if(USE_ELEMENTAL_LIBS)
 
     find_package(ELEMENTAL REQUIRED)
     include_directories(${ELEMENTAL_INCLUDES})
-    target_link_libraries (${rmg-on} ON_Common ${ELEMENTAL_LIBRARIES})
+    list(APPEND RMGLIBS ${ELEMENTAL_LIBRARIES})
     find_package(PMRRR)
     include_directories(${PMRRR_INCLUDES})
-    target_link_libraries (${rmg-on} ${PMRRR_LIBRARIES})
-    target_link_libraries (${rmg-on} ON_Common ${PMRRR_LIBRARIES})
+    list(APPEND RMGLIBS ${PMRRR_LIBRARIES})
+    list(APPEND RMGLIBS ${PMRRR_LIBRARIES})
 endif()
 
 
-# include files
+# Set common libs. Target specific libs set in subdirectories.
+list(APPEND RMGLIBS RmgLib)
+list(APPEND RMGLIBS Misc)
+list(APPEND RMGLIBS XC)
+list(APPEND RMGLIBS MG)
+list(APPEND RMGLIBS Force)
+list(APPEND RMGLIBS Input)
+list(APPEND RMGLIBS Finite_diff)
+list(APPEND RMGLIBS US_PP)
+list(APPEND RMGLIBS zfp)
+list(APPEND RMGLIBS symspg_static)
+
+
+
+# Common include files
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories("${PROJECT_SOURCE_DIR}/Headers/")
 include_directories("${PROJECT_BINARY_DIR}/Headers/")
@@ -554,23 +572,24 @@ endif()
 
 
 # Common code subdirectories
-add_subdirectory (RmgLib) 
-add_subdirectory (Finite_diff) 
-add_subdirectory (Force) 
-add_subdirectory (Input) 
-add_subdirectory (MG) 
-add_subdirectory (Misc) 
-add_subdirectory (US_PP) 
-add_subdirectory (zfp) 
-add_subdirectory (spglib) 
-add_subdirectory (XC) 
-add_subdirectory (InternalPseudo) 
+add_subdirectory (RmgLib EXCLUDE_FROM_ALL) 
+add_subdirectory (Finite_diff EXCLUDE_FROM_ALL) 
+add_subdirectory (Force EXCLUDE_FROM_ALL) 
+add_subdirectory (Input EXCLUDE_FROM_ALL) 
+add_subdirectory (MG EXCLUDE_FROM_ALL) 
+add_subdirectory (Misc EXCLUDE_FROM_ALL) 
+add_subdirectory (US_PP EXCLUDE_FROM_ALL) 
+add_subdirectory (zfp EXCLUDE_FROM_ALL) 
+add_subdirectory (spglib EXCLUDE_FROM_ALL) 
+add_subdirectory (XC EXCLUDE_FROM_ALL) 
+add_subdirectory (InternalPseudo EXCLUDE_FROM_ALL) 
 if(RMG_GPU_ENABLED)
-    add_subdirectory(Gpufuncs)
+    add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
 endif(RMG_GPU_ENABLED)
 
-# Target specific code subdirectories
-add_subdirectory (RMG EXCLUDE_FROM_ALL) 
+# Target specific code subdirectories. If no target
+# is given the base code rmg-cpu or rmg-gpu is built by default
+add_subdirectory (RMG) 
 add_subdirectory (RMG/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Spin EXCLUDE_FROM_ALL) 
 add_subdirectory (RMG/Subdiag EXCLUDE_FROM_ALL)
@@ -590,20 +609,19 @@ add_subdirectory (NEGF/Input EXCLUDE_FROM_ALL)
 add_subdirectory (NEGF/Local_current EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Pois_for_negf EXCLUDE_FROM_ALL) 
 
-
 if(QMCPACK_SUPPORT)
-    add_subdirectory (Interfaces)
+    add_subdirectory (Interfaces EXCLUDE_FROM_ALL)
 endif()
 if(NOT CRAY_XK)
-    add_subdirectory (scalapack) 
+    add_subdirectory (scalapack EXCLUDE_FROM_ALL) 
 endif()
+
 
 
 #install(TARGETS ${rmg} 
 #DESTINATION bin)
+#install(DIRECTORY Examples DESTINATION share/rmg)
 
-
-install(DIRECTORY Examples DESTINATION share/rmg)
 
 # Packaging section next
 SET(cpack_input_file "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")

@@ -1,33 +1,23 @@
-list(APPEND RMGLIBS RmgLib)
 list(APPEND RMGLIBS RMG_Common)
 list(APPEND RMGLIBS RMG_Spin)
+list(APPEND RMGLIBS RMG_Subdiag)
 list(APPEND RMGLIBS zfp)
 list(APPEND RMGLIBS symspg_static)
-list(APPEND RMGLIBS Force)
-list(APPEND RMGLIBS Input)
-list(APPEND RMGLIBS RMG_Subdiag)
-list(APPEND RMGLIBS Misc)
-list(APPEND RMGLIBS XC)
-list(APPEND RMGLIBS Finite_diff)
-list(APPEND RMGLIBS US_PP)
 if(RMG_GPU_ENABLED)
     list(APPEND RMGLIBS Gpufuncs)
 endif()
 if(QMCPACK_SUPPORT)
     list(APPEND RMGLIBS Interfaces)
 endif()
-if(NOT CRAY_XK)
-    list(APPEND RMGLIBS scalapack)
+if(QMCPACK_SUPPORT)
+    list(APPEND RMGLIBS Interfaces)
 endif()
+
 
 add_executable(${rmg} Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 set_target_properties(${rmg} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 target_include_directories(${rmg} PRIVATE "${PROJECT_SOURCE_DIR}/RMG/Headers/")
-
-if(NOT CRAY_XK)
-    add_dependencies(${rmg} scalapack)
-endif(NOT CRAY_XK)
 
 
 # There must be a better way to resolve circular references than this
