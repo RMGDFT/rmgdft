@@ -52,32 +52,10 @@ std::unordered_map<int, std::string > option_headers = {
         {MD_OPTIONS, "Relaxation/Molecular dynamics options:"},
         {DIAG_OPTIONS, "Diagonalization options:"},
         {PERF_OPTIONS, "Performance related options:"},
+        {LDAU_OPTIONS, "LDA+U options:"},
         {MISC_OPTIONS, "Miscellaneous options:"}};
 
-#define CONTROL_OPTIONS 0
-#define KS_SOLVER_OPTIONS 1
-#define OCCUPATION_OPTIONS 2
-#define MIXING_OPTIONS 3
-#define MD_OPTIONS 4
-#define DIAG_OPTIONS 5
-#define PERF_OPTIONS 6
-#define MISC_OPTIONS 7
 
-
-// Used to sort keys by group and then alphabetically
-struct keycompare
-{
-    bool operator()(InputKey *ik_lhs, InputKey *ik_rhs)
-    {
-        // First sort by group
-        if(ik_lhs->grouping < ik_rhs->grouping) return true;
-        if(ik_lhs->grouping > ik_rhs->grouping) return false;
-
-        // Now alphabetically by key name within group
-        if(ik_lhs->KeyName.compare(ik_rhs->KeyName) < 0) return true;
-        return false;
-    }
-};
 
 void wordwrap(std::string const &input, size_t width, size_t indent)
 { 

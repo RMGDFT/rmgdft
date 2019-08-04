@@ -545,14 +545,21 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if (!fhand)
             throw RmgFatalException() <<  "Unable to write file in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-        for(auto it = ControlMap.begin();it != ControlMap.end(); ++it) {
-
+        std::map<InputKey *, InputKey *, keycompare> SortedMap;
+        for(auto it = ControlMap.begin();it != ControlMap.end(); ++it)
+        {
             std::string KeyName = it->first;
             InputKey *ik = it->second;
-            std::string KeyVal = ik->Print();
-            fprintf(fhand, "%s = \"%s\"\n", KeyName.c_str(), KeyVal.c_str());fflush(NULL);
+            SortedMap.insert(std::make_pair(ik, ik));
         }
 
+        for(auto it = SortedMap.begin();it != SortedMap.end(); ++it) {
+
+            InputKey *ik = it->first;
+            std::string KeyName = ik->KeyName;
+            std::string KeyVal = ik->Print();
+            fprintf(fhand, "%s = \"%s\"\n", KeyName.c_str(), KeyVal.c_str());
+        }
         fclose(fhand);
     }
 
