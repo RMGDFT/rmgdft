@@ -57,7 +57,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
         for (int idx = 0; idx < pbasis; idx++)
         {
-            h_phi[idx] = -2.0 * a_phi[idx] * vtot_c[idx] +  h_phi[idx];
+            h_phi[idx] = -2.0 * a_phi[idx] * vtot_c[idx] +   h_phi[idx];
         }
     }
 

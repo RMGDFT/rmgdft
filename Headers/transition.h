@@ -124,7 +124,7 @@ template  <typename OrbitalType> void AppCilrDriver (TradeImages *T, OrbitalType
     int dimx, int dimy, int dimz, double hx, double hy, double hz, int order);
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 
-void DiagScalapack(STATE *, int, double *, double*, double *, double *);
+void DiagScalapack(STATE *, int, double *, double*);
 void DiagElemental(STATE *, int, double *, double*, double *, double *);
 void BandwidthReduction(int num_ions, std::vector<ION> &ions, unsigned int *);
 void PermAtoms(int num_ions, std::vector<ION> &ions, unsigned int *);

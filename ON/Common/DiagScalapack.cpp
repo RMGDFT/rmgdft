@@ -26,7 +26,7 @@
 
 
 
-void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, double *rho_matrix, double *theta_ptr)
+void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 {
 
     RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
@@ -62,8 +62,8 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
      */
 
     /* Transform the generalized eigenvalue problem to a sStandard form */
-    dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
-    dcopy(&mxllda2, matB, &ione, l_s, &ione);
+    dcopy(&mxllda2, Hij_dist, &ione, uu_dis, &ione);
+    dcopy(&mxllda2, Sij_dist, &ione, l_s, &ione);
 //dcopy(&mxllda2, matB, &ione, l_s, &ione);
 //pdtran(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
 //           &half, matB, &ione, &ione, pct.desca);
@@ -166,16 +166,11 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     delete(RT3);
 
 
-    RmgTimer *RT4 = new RmgTimer("3-DiagScalapack: XtoRow ");
-    Cpdgemr2d(numst, numst, mat_X, ione, ione, pct.desca, rho_matrix, ione, ione,
-            pct.descb, pct.desca[1]);
-    delete(RT4);
-
     RmgTimer *RT1b = new RmgTimer("3-DiagScalapack: (S^-1)H");
 
     int *ipiv = new int[numst];
     /* Compute matrix theta = matB^-1 * Hij  */
-    pdgetrf(&numst, &numst, matB, &ione, &ione, pct.desca, ipiv, &info);
+    pdgetrf(&numst, &numst, Sij_dist, &ione, &ione, pct.desca, ipiv, &info);
     if(info !=0)
     { 
         printf("\n error in pdgetrf in mg_eig.c INFO = %d\n", info);
@@ -183,8 +178,8 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
         exit(0);
     }
 
-    dcopy(&mxllda2, Hij, &ione, uu_dis, &ione);
-    pdgetrs("N", &numst, &numst, matB, &ione, &ione, pct.desca, ipiv, 
+    dcopy(&mxllda2, Hij_dist, &ione, uu_dis, &ione);
+    pdgetrs("N", &numst, &numst, Sij_dist, &ione, &ione, pct.desca, ipiv, 
             uu_dis, &ione, &ione, pct.desca, &info);
 
     delete [] ipiv;
@@ -193,9 +188,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_00, double *Bij_00, dou
     double t1 = 2.0;
     dscal(&mxllda2, &t1, uu_dis, &ione);
 
-    MyCpdgemr2d(numst,numst, uu_dis, pct.desca, theta_ptr, pct.descb);
-  //  Cpdgemr2d(numst, numst, uu_dis, ione, ione, pct.desca, theta_ptr, ione, ione,
-  //          pct.descb, pct.desca[1]);
     delete(RT1b);
 
     delete [] work1;
