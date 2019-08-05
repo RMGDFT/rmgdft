@@ -39,7 +39,6 @@
 FILE *open_restart_file (char *);
 void write_restart (char *name, double * vh, double *vxc, double *vh_old, double *vxc_old,  double * rho, double *rho_oppo, STATE *states)
 {
-    char newname[MAX_PATH + 20];
     FILE *fhandle;
     int ia, ion;
     double time0, write_time;
@@ -146,13 +145,8 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old, double
     /* All processors should wait until 0 is done to make sure that directories are created*/
     MPI_Barrier(pct.img_comm);
 
-    if(ct.spin_flag)
-        sprintf (newname, "%s_spin%d", name, pct.spinpe);
-    else
-        sprintf (newname, "%s", name);
 
-
-    write_data (newname, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
+    write_data (name, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
 
     write_time = my_crtc () - time0;
 

@@ -40,10 +40,11 @@ void init_wf_atom(STATE * states)
 
 
 
-        sprintf(newname, "%s%s%s%d", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), ".orbit_", ist);
+        sprintf(newname, "%s%s%s%d", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), "_spin0.orbit_", ist);
         fhand = open(newname, O_RDWR);
         if (fhand < 0)
         {
+            printf("\n ddd %d %d %d", state, ion, species);
             printf("\n unable to open file: %s \n", newname);
             error_handler(" Unable to open file ");
         }

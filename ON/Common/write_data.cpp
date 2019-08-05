@@ -103,7 +103,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	MPI_File_close(&mpi_fhand);
     MPI_Barrier(pct.grid_comm);
 
-	sprintf(newname, "%s%s", name, ".vxc");
+	sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".vxc");
 	MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
 	disp=0;
 	MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
@@ -111,7 +111,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	MPI_File_close(&mpi_fhand);
     MPI_Barrier(pct.grid_comm);
 
-	sprintf(newname, "%s%s", name, ".rho");
+	sprintf(newname, "%s_spin%d%s", name, pct.spinpe, ".rho");
 	MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
 	disp=0;
 	MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
@@ -157,7 +157,7 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	for (state = ct.state_begin; state < ct.state_end; state++)
 	{
         int state_permuted = perm_state_index[state];
-		sprintf(newname, "%s%s%d", name, ".orbit_", state_permuted);
+		sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
 		amode = S_IREAD | S_IWRITE;
 		int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand < 0)

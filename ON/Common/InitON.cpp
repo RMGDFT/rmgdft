@@ -338,12 +338,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         case 1:
         case 5:
         case 6:
-            if(ct.spin_flag)
-                sprintf (newname, "%s_spin%d", ct.infile, pct.spinpe);
-            else
-                sprintf (newname, "%s", ct.infile);
 
-            read_data(newname, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
+            read_data(ct.infile, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
             pack_vhstod(vh, ct.vh_ext, get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), ct.boundaryflag);
             break;
 

@@ -241,7 +241,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::stri
         int st_glob = this->index_proj_to_global[st];
         size_t size = this->dimx[st_glob] * this->dimy[st_glob] * this->dimz[st_glob] *sizeof(KpointType);
 
-        std::string newname= filename + ".orbit_"+std::to_string(st_glob);
+        std::string newname= filename + "_spin"+std::to_string(pct.spinpe)+".orbit_"+std::to_string(st_glob);
         fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
         if(fhand < 0)
         {
@@ -554,7 +554,7 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::str
 
         MPI_Allreduce(MPI_IN_PLACE, psi, nxyz*factor, MPI_DOUBLE, MPI_SUM, this->comm);
 
-        std::string newname= filename + ".orbit_"+std::to_string(st_glob);
+        std::string newname= filename + "_spin" + std::to_string(pct.spinpe) + ".orbit_"+std::to_string(st_glob);
         fhand = open(newname.c_str(), O_CREAT |O_TRUNC| O_RDWR, S_IREAD | S_IWRITE);
         if(fhand < 0)
         {
