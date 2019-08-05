@@ -43,6 +43,8 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGr
 void GetHS_dis(LocalObject<double> &A, LocalObject<double> &B, double *vtot_c, double *H, double *S, double *kbpsi);
 void GetNewRho_dis(LocalObject<double> &A, LocalObject<double> &B, double *rho, double *mat_local);
 void mat_global_to_local(LocalObject<double> &A, LocalObject<double> &B, double *mat_glob, double *mat_local);
+void mat_dist_to_local(double *mat_dist, int *desca, double *mat_local, LocalObject<double> &A);
+void mat_dist_to_global(double *mat_dist, int *desca, double *mat_global);
 void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
         LocalObject<double> &NlProj, double *vtot_c, double *theta_glob, double *kbpsi_glob);
 

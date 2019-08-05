@@ -34,8 +34,6 @@ void MyCpdgemr2d(int M,int N, double *A, int *desca, double *B, int *descb)
 
         mat_dist_to_global(A, desca, A_glob);
 
-        int length = M * N;
-        MPI_Allreduce(MPI_IN_PLACE, A_glob, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         mat_global_to_dist(B, descb, A_glob);
 
         delete [] A_glob;
@@ -103,6 +101,8 @@ void mat_dist_to_global(double *a_dist, int *desca, double *a_glob)
         }
     }
 
+    int length = m*n;
+    MPI_Allreduce(MPI_IN_PLACE, a_glob, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 }
 
 

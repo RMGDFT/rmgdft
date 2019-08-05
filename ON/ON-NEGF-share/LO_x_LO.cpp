@@ -38,6 +38,7 @@
 #include "blas.h"
 #include "RmgException.h"
 #include "transition.h"
+#include "prototypes_on.h"
 
 void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G)
 {
@@ -92,3 +93,12 @@ void mat_global_to_local(LocalObject<double> &A, LocalObject<double> &B, double 
     }
 }
 
+void mat_dist_to_local(double *mat_dist, int *desca, double *mat_local, LocalObject<double> &A)
+{
+
+    double *tem_global = new double[A.num_tot * A.num_tot];
+    mat_dist_to_global(mat_dist, desca, tem_global);
+    mat_global_to_local(A, A, tem_global, mat_local);
+    delete [] tem_global;
+
+}

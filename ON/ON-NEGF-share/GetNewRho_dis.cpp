@@ -36,6 +36,7 @@ void GetNewRho_dis(LocalObject<double> &Phi, LocalObject<double> &HPhi, double *
     int pbasis = Rmg_G->get_P0_BASIS(1);
     rho_temp = new double[pbasis];
 
+        
     for(int idx = 0; idx < pbasis; idx++)rho_temp[idx] = 0.0;
     if(Phi.num_thispe > 0)
     {
@@ -50,7 +51,6 @@ void GetNewRho_dis(LocalObject<double> &Phi, LocalObject<double> &HPhi, double *
             for(int idx = 0; idx < pbasis; idx++)
                 rho_temp[idx] += Phi.storage_proj[st1*pbasis + idx] * HPhi.storage_proj[st1 * pbasis + idx];
     }
-
 
 
 
