@@ -464,8 +464,8 @@ void WriteHeader (void)
         SPECIES *sp;
         sp = &Species[idx];
 
-	if (strlen(sp->functional) > max_funct_length)
-	    max_funct_length = strlen(sp->functional);
+	if (sp->functional.length() > max_funct_length)
+	    max_funct_length = sp->functional.length();
     }
 
 
@@ -531,7 +531,7 @@ void WriteHeader (void)
 	printf("|%5d", sp->local);
 	printf("|%6.2lf", sp->lradius); 
 	printf("|%6.2lf", sp->nlradius); 
-	printf("|%*s", funct_spacing,sp->functional);
+	printf("|%*s", funct_spacing,sp->functional.c_str());
 	printf ("|\n");
     }
     

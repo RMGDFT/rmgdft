@@ -9,10 +9,10 @@ class SPECIES
 public:
 
     /* Text header with extra information. For UPF pseudopotentials it is the PP_INFO node */
-    char *INFO;
+    std::string INFO;
 
     /* pseudopotential filename */
-    char pseudo_filename[MAX_PATH];
+    std::string pseudo_filename;
 
     /* Pseudopotential file format. Types are UPF (0) and XML (QMC) (1) */
     int ftype;
@@ -23,7 +23,7 @@ public:
     /** Description of the species (e.g Atomic carbon generated using 
      * hamann's code with  rcs=0.80 rcp=0.85 bohr
      */
-    char *description;
+    std::string description;
 
     /** Atomic number */
     int atomic_number;
@@ -57,10 +57,10 @@ public:
     double zvalence;
 
     // Exchange correlation string as read from UPF or XML pseudopotential format
-    char functional[256];
+    std::string functional;
 
     // Exchange correlation type string as read from XML pseudopotential format
-    char functional_type[256];
+    std::string functional_type;
 
     /** Gaussian charge parameter used for compensating the 1/r Coulomb
      * tail of the pseudopotentials

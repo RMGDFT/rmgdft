@@ -26,7 +26,7 @@
 void InitOrbital (void)
 {
 
-    int ip, orbital_count, isp, size, tot_orbitals;
+    int ip, isp, size, tot_orbitals;
     SPECIES *sp;
     fftw_plan p2_forward, p2_backward;
     fftw_complex *in, *out, *betaptr;
@@ -49,6 +49,7 @@ void InitOrbital (void)
     {
         /* Get species type */
         sp = &Species[isp];
+        int orbital_count = 0;
 
         nldim_max = std::max(nldim_max, sp->nldim);
         size = sp->nldim * sp->nldim * sp->nldim;

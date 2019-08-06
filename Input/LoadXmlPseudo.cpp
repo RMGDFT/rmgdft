@@ -99,9 +99,7 @@ void LoadXmlPseudo(SPECIES *sp)
 
     // Get the compulsory stuff first
     read_xml(ss, xml_tree);
-    std::string PP_INFO = xml_tree.get<std::string>("pseudo.header"); 
-    sp->INFO = new char[PP_INFO.size() + 1]();
-    std::strncpy(sp->INFO, PP_INFO.c_str(), PP_INFO.size());
+    sp->INFO = xml_tree.get<std::string>("pseudo.header"); 
 
     // Check for relativistic and thrown an error if found
     std::string s_is_relativistic = xml_tree.get<std::string>("pseudo.header.<xmlattr>.relativistic");
@@ -120,11 +118,7 @@ void LoadXmlPseudo(SPECIES *sp)
     if(sp->zvalence > ct.max_zvalence) ct.max_zvalence = sp->zvalence;
 
     // Store functional information for later processing
-    std::string PP_FUNCTYPE = xml_tree.get<std::string>("pseudo.header.<xmlattr>.xc-functional-type");
-    std::strncpy(sp->functional_type, PP_FUNCTYPE.c_str(), sizeof(sp->functional_type)-1);
-    std::string PP_FUNC = xml_tree.get<std::string>("pseudo.header.<xmlattr>.xc-functional-parametrization");
-    std::strncpy(sp->functional, PP_FUNC.c_str(), sizeof(sp->functional)-1);
-
+    sp->functional_type = xml_tree.get<std::string>("pseudo.header.<xmlattr>.xc-functional-type");
 
     // Setup the radial mesh
     std::string grid_type = xml_tree.get<std::string>("pseudo.grid.<xmlattr>.type");
@@ -351,9 +345,7 @@ void LoadXmlPseudo(SPECIES *sp)
 
     // Optional stuff next
 
-    std::string description = xml_tree.get<std::string>("pseudo.header.<xmlattr>.comment", "Pseudopotential");
-    sp->description = new char[description.length() + 1]();
-    std::strcpy(sp->description, description.c_str());
+    sp->description = xml_tree.get<std::string>("pseudo.header.<xmlattr>.comment", "Pseudopotential");
 
     // Stuff not present in the UPF format that RMG requires. 
     // We need to find a consistent way of automatically setting these.

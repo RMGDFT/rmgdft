@@ -44,8 +44,6 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     std::set<std::string> SpeciesTypes;
     std::list<std::string> IonSpecies;
 
-    std::string string_tem;
-
     std::unordered_map<std::string, InputKey *> NewMap;
 
     RmgInputFile If(cfile, NewMap, pct.img_comm);
@@ -104,7 +102,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
         for (char c: nums) AtomicSymbol.erase(std::remove(AtomicSymbol.begin(), AtomicSymbol.end(), c), AtomicSymbol.end());
         Species[isp].atomic_symbol = new char[4]();
         std::strncpy(Species[isp].atomic_symbol, AtomicSymbol.c_str(), 3);
-        std::strncpy(Species[isp].pseudo_filename, "./@Internal", sizeof(Species[isp].pseudo_filename));
+        Species[isp].pseudo_filename = std::string("./@Internal");
         isp++;
     }
 
@@ -129,8 +127,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                 for(int isp = 0;isp < lc.num_species;isp++) {
                     if(!std::strcmp(fields[0].c_str(), Species[isp].atomic_symbol))
                     {
-                        string_tem = std::string(pct.image_path[pct.thisimg]) + fields[1];  
-                        std::strncpy(Species[isp].pseudo_filename, string_tem.c_str(), sizeof(Species[isp].pseudo_filename));
+                        Species[isp].pseudo_filename = std::string(pct.image_path[pct.thisimg]) + fields[1];  
                     }
                 }
             }

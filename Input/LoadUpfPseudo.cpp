@@ -82,7 +82,7 @@ void LoadUpfPseudo(SPECIES *sp)
     double qqq[MAX_NL][MAX_NL];    // Used to read in the norms of the augmentation functions (PP_Q)
 
     std::string Msg;
-    if(!std::strcmp(sp->pseudo_filename, "./@Internal") || !strlen(sp->pseudo_filename)) {
+    if((sp->pseudo_filename == std::string("./@Internal")) || (sp->pseudo_filename.length() == 0)) {
 
 #if INTERNAL_PP
         std::string pp_string = GetInternalPseudo(&sp->atomic_symbol[0]);
@@ -154,9 +154,7 @@ void LoadUpfPseudo(SPECIES *sp)
 
     // Get the compulsory stuff first
     read_xml(ss, upf_tree);
-    std::string PP_INFO = upf_tree.get<std::string>("UPF.PP_INFO"); 
-    sp->INFO = new char[PP_INFO.size() + 1]();
-    std::strncpy(sp->INFO, PP_INFO.c_str(), PP_INFO.size());
+    sp->INFO = upf_tree.get<std::string>("UPF.PP_INFO"); 
    
     // Atomic symbol, mass, number and zvalence and mesh size
     std::string atomic_symbol = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.element");
@@ -168,9 +166,7 @@ void LoadUpfPseudo(SPECIES *sp)
     if(sp->zvalence > ct.max_zvalence) ct.max_zvalence = sp->zvalence;
 
     // Store UPF functional string for later processing
-    std::string PP_FUNC = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.functional");
-    std::strncpy(sp->functional, PP_FUNC.c_str(), sizeof(sp->functional)-1);
-
+    sp->functional = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.functional");
 
     // Read in the radial mesh and keep values between 1.0e-05 < r < 50.0
     // adjusting mesh size accordingly
@@ -493,9 +489,7 @@ void LoadUpfPseudo(SPECIES *sp)
 
     // Optional stuff next
 
-    std::string description = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.comment", "Pseudopotential");
-    sp->description = new char[description.length() + 1]();
-    std::strcpy(sp->description, description.c_str());
+    sp->description = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.comment", "Pseudopotential");
 
     // Stuff not present in the UPF format that RMG requires. 
     // We need to find a consistent way of automatically setting these.

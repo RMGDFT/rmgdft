@@ -37,7 +37,7 @@ void LoadPseudo(SPECIES *sp)
 
     }
     
-    if(!std::strcmp(sp->pseudo_filename, "./@Internal") || !strlen(sp->pseudo_filename)) {
+    if((sp->pseudo_filename == std::string("./@Internal")) || (sp->pseudo_filename.length() == 0)) {
 #if INTERNAL_PP
         LoadUpfPseudo(sp);
 #else
