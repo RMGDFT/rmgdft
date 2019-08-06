@@ -55,6 +55,7 @@
 #include "Functional.h"
 #include "LocalObject.h"
 #include "Kbpsi.h"
+#include "LdaU_on.h"
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
@@ -166,9 +167,9 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
         int density = 1;
         LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
-                dimx, dimy, dimz, 0, Rmg_G, density, pct.grid_comm);
+                dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
         H_LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
-                dimx, dimy, dimz, 0, Rmg_G, density, pct.grid_comm);
+                dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
         delete [] ixmin;
         delete [] dimx;
 //        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
@@ -203,6 +204,13 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     GetNlop_on();
 
+    
+   for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+   {
+       SPECIES *sp = &Species[Atoms[ion].species];
+       
+       if(sp->num_ldaU_orbitals > 0) ct.num_ldaU_ions++;
+    }
     if(ct.LocalizedOrbitalLayout == LO_projection)
     {
         int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
@@ -238,38 +246,18 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
         int density = 1;
         LocalProj = new LocalObject<double>(tot_prj, ixmin, iymin, izmin,
-                dimx, dimy, dimz, 0, Rmg_G, density, pct.grid_comm);
+                dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
         delete [] ixmin;
         delete [] dimx;
-        LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, Rmg_G);
+        LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, *Rmg_G);
         delete [] proj_per_ion;
         Kbpsi_mat = new double[LocalProj->num_tot * LocalOrbital->num_tot]; 
     }
 
-    if(ct.num_ldaU_ions > 0)
+    
+    if(ct.num_ldaU_ions > 0 )
     {
-        int tot_orbitals_ldaU = 0;
-        for (int ion=0; ion < ct.num_ions; ion++)
-        {
-            ION *iptr = &Atoms[ion];
-            SPECIES *sp = &Species[iptr->species];
-            for (int ip = 0; ip < sp->num_orbitals; ip++)
-            {
-                // This ranges over all orbitals including the m-dependence
-                if(sp->awave_is_ldaU[ip])
-                {
-
-                    tot_orbitals_ldaU++;
-                }
-            }
-        }
-
-        int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
-        int density = 1;
-        LocalAtomicOrbital = new LocalObject<double>(tot_orbitals_ldaU, ixmin, iymin, izmin,
-                dimx, dimy, dimz, 1, Rmg_G, density, pct.grid_comm);
-        LocalAtomicOrbital->GetAtomicOrbitals(ct.num_ions, Rmg_G);
-
+        ldaU_on = new LdaU_on(*LocalOrbital, *Rmg_G);
     }
 
 

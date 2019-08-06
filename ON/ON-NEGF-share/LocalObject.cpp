@@ -50,11 +50,11 @@
 template LocalObject<double>::~LocalObject(void);
 template LocalObject<std::complex<double>>::~LocalObject(void);
 
-template LocalObject<double>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, BaseGrid*, int, MPI_Comm);
-template LocalObject<std::complex<double>>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, BaseGrid*, int, MPI_Comm);
+template LocalObject<double>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, BaseGrid&, int, MPI_Comm);
+template LocalObject<std::complex<double>>::LocalObject(int, int*, int*, int*, int*, int*, int*, bool, BaseGrid&, int, MPI_Comm);
 template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects, 
         int *ixmin, int *iymin, int *izmin, int *dimx, int *dimy, int *dimz, bool delocalized,
-        BaseGrid *Rmg_G, int density, MPI_Comm comm)
+        BaseGrid &BG, int density, MPI_Comm comm)
 {
     this->num_tot = num_objects;
     this->num_thispe = 0;
@@ -71,30 +71,16 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects
     this->dimy = new int[num_objects];
     this->dimz = new int[num_objects];
 
-    for (int i = 0; i < this->num_tot; i++)
-    {
-        this->index_global_to_proj[i] = -1;
-        this->index_proj_to_global[i] = -1;
-        this->ixmin[i] = ixmin[i];
-        this->iymin[i] = iymin[i];
-        this->izmin[i] = izmin[i];
-        this->dimx[i] = dimx[i];
-        this->dimy[i] = dimy[i];
-        this->dimz[i] = dimz[i];
-
-    }
-
-   
-    int PX0_GRID = Rmg_G->get_PX0_GRID(density);
-    int PY0_GRID = Rmg_G->get_PY0_GRID(density);
-    int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
+    int PX0_GRID = BG.get_PX0_GRID(density);
+    int PY0_GRID = BG.get_PY0_GRID(density);
+    int PZ0_GRID = BG.get_PZ0_GRID(density);
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
-    int PX_OFFSET = Rmg_G->get_PX_OFFSET(density);
-    int PY_OFFSET = Rmg_G->get_PY_OFFSET(density);
-    int PZ_OFFSET = Rmg_G->get_PZ_OFFSET(density);
-    int NX_GRID = Rmg_G->get_NX_GRID(density);
-    int NY_GRID = Rmg_G->get_NY_GRID(density);
-    int NZ_GRID = Rmg_G->get_NZ_GRID(density);
+    int PX_OFFSET = BG.get_PX_OFFSET(density);
+    int PY_OFFSET = BG.get_PY_OFFSET(density);
+    int PZ_OFFSET = BG.get_PZ_OFFSET(density);
+    int NX_GRID = BG.get_NX_GRID(density);
+    int NY_GRID = BG.get_NY_GRID(density);
+    int NZ_GRID = BG.get_NZ_GRID(density);
     int ilow = PX_OFFSET;
     int ihigh = ilow + PX0_GRID;
     int jlow = PY_OFFSET;
@@ -209,22 +195,22 @@ template <class KpointType> LocalObject<KpointType>::~LocalObject(void)
 
 }
 
-template void LocalObject<double>::ReadOrbitals(std::string filename, BaseGrid *Rmg_G);
-template void LocalObject<std::complex<double>>::ReadOrbitals(std::string filename, BaseGrid *Rmg_G);
-template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::string filename, BaseGrid *Rmg_G)
+template void LocalObject<double>::ReadOrbitals(std::string filename, BaseGrid &BG);
+template void LocalObject<std::complex<double>>::ReadOrbitals(std::string filename, BaseGrid &BG);
+template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::string filename, BaseGrid &BG)
 {
 
     int density = this->density;
-    int PX0_GRID = Rmg_G->get_PX0_GRID(density);
-    int PY0_GRID = Rmg_G->get_PY0_GRID(density);
-    int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
+    int PX0_GRID = BG.get_PX0_GRID(density);
+    int PY0_GRID = BG.get_PY0_GRID(density);
+    int PZ0_GRID = BG.get_PZ0_GRID(density);
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
-    int PX_OFFSET = Rmg_G->get_PX_OFFSET(density);
-    int PY_OFFSET = Rmg_G->get_PY_OFFSET(density);
-    int PZ_OFFSET = Rmg_G->get_PZ_OFFSET(density);
-    int NX_GRID = Rmg_G->get_NX_GRID(density);
-    int NY_GRID = Rmg_G->get_NY_GRID(density);
-    int NZ_GRID = Rmg_G->get_NZ_GRID(density);
+    int PX_OFFSET = BG.get_PX_OFFSET(density);
+    int PY_OFFSET = BG.get_PY_OFFSET(density);
+    int PZ_OFFSET = BG.get_PZ_OFFSET(density);
+    int NX_GRID = BG.get_NX_GRID(density);
+    int NY_GRID = BG.get_NY_GRID(density);
+    int NZ_GRID = BG.get_NZ_GRID(density);
     int ilow = PX_OFFSET;
     int ihigh = ilow + PX0_GRID;
     int jlow = PY_OFFSET;
@@ -288,23 +274,23 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::stri
     }
 }
 
-template void LocalObject<double>::ReadProjectors(int, int, int *,BaseGrid *Rmg_G);
-template void LocalObject<std::complex<double>>::ReadProjectors(int, int, int*, BaseGrid *Rmg_G);
+template void LocalObject<double>::ReadProjectors(int, int, int *,BaseGrid &BG);
+template void LocalObject<std::complex<double>>::ReadProjectors(int, int, int*, BaseGrid &BG);
 template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num_ions, int max_nlpoints,
-        int *num_prj_perion, BaseGrid *Rmg_G)
+        int *num_prj_perion, BaseGrid &BG)
 {
 
     int density = this->density;
-    int PX0_GRID = Rmg_G->get_PX0_GRID(density);
-    int PY0_GRID = Rmg_G->get_PY0_GRID(density);
-    int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
+    int PX0_GRID = BG.get_PX0_GRID(density);
+    int PY0_GRID = BG.get_PY0_GRID(density);
+    int PZ0_GRID = BG.get_PZ0_GRID(density);
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
-    int PX_OFFSET = Rmg_G->get_PX_OFFSET(density);
-    int PY_OFFSET = Rmg_G->get_PY_OFFSET(density);
-    int PZ_OFFSET = Rmg_G->get_PZ_OFFSET(density);
-    int NX_GRID = Rmg_G->get_NX_GRID(density);
-    int NY_GRID = Rmg_G->get_NY_GRID(density);
-    int NZ_GRID = Rmg_G->get_NZ_GRID(density);
+    int PX_OFFSET = BG.get_PX_OFFSET(density);
+    int PY_OFFSET = BG.get_PY_OFFSET(density);
+    int PZ_OFFSET = BG.get_PZ_OFFSET(density);
+    int NX_GRID = BG.get_NX_GRID(density);
+    int NY_GRID = BG.get_NY_GRID(density);
+    int NZ_GRID = BG.get_NZ_GRID(density);
     int ilow = PX_OFFSET;
     int ihigh = ilow + PX0_GRID;
     int jlow = PY_OFFSET;
@@ -378,9 +364,9 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
 
 }
 
-template void LocalObject<double>::GetAtomicOrbitals(int, BaseGrid *Rmg_G);
-template void LocalObject<std::complex<double>>::GetAtomicOrbitals(int, BaseGrid *Rmg_G);
-template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int num_ions, BaseGrid *Rmg_G)
+template void LocalObject<double>::GetAtomicOrbitals(int, BaseGrid &BG);
+template void LocalObject<std::complex<double>>::GetAtomicOrbitals(int, BaseGrid &BG);
+template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int num_ions, BaseGrid &BG)
 {
 
     // Used to generate LDA+U orbital projectors that span the full space
@@ -389,7 +375,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
 
     KpointType *weight;
     std::complex<double> I_t(0.0, 1.0);
-    int pbasis = Rmg_G->get_P0_BASIS(density);
+    int pbasis = BG.get_P0_BASIS(density);
 
     /*Pointer to the result of forward transform on the coarse grid */
     std::complex<double> *fptr;
@@ -493,22 +479,22 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
 
 //localized orbitals are projected on 3D domain decompostion, writing for each orbital here is not very 
 //efficient 
-template void LocalObject<double>::WriteOrbitals(std::string filename, BaseGrid *Rmg_G);
-template void LocalObject<std::complex<double>>::WriteOrbitals(std::string filename, BaseGrid *Rmg_G);
-template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::string filename, BaseGrid *Rmg_G)
+template void LocalObject<double>::WriteOrbitals(std::string filename, BaseGrid &BG);
+template void LocalObject<std::complex<double>>::WriteOrbitals(std::string filename, BaseGrid &BG);
+template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::string filename, BaseGrid &BG)
 {
 
     int density = this->density;
-    int PX0_GRID = Rmg_G->get_PX0_GRID(density);
-    int PY0_GRID = Rmg_G->get_PY0_GRID(density);
-    int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
+    int PX0_GRID = BG.get_PX0_GRID(density);
+    int PY0_GRID = BG.get_PY0_GRID(density);
+    int PZ0_GRID = BG.get_PZ0_GRID(density);
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
-    int PX_OFFSET = Rmg_G->get_PX_OFFSET(density);
-    int PY_OFFSET = Rmg_G->get_PY_OFFSET(density);
-    int PZ_OFFSET = Rmg_G->get_PZ_OFFSET(density);
-    int NX_GRID = Rmg_G->get_NX_GRID(density);
-    int NY_GRID = Rmg_G->get_NY_GRID(density);
-    int NZ_GRID = Rmg_G->get_NZ_GRID(density);
+    int PX_OFFSET = BG.get_PX_OFFSET(density);
+    int PY_OFFSET = BG.get_PY_OFFSET(density);
+    int PZ_OFFSET = BG.get_PZ_OFFSET(density);
+    int NX_GRID = BG.get_NX_GRID(density);
+    int NY_GRID = BG.get_NY_GRID(density);
+    int NZ_GRID = BG.get_NZ_GRID(density);
     int ilow = PX_OFFSET;
     int ihigh = ilow + PX0_GRID;
     int jlow = PY_OFFSET;

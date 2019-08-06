@@ -23,6 +23,7 @@
 #include "FiniteDiff.h"
 #include "LocalObject.h"
 #include "blacs.h"
+#include "LdaU_on.h"
 
 
 void mat_global_to_dist(double *a_dist, int *desca, double *a_glob);
@@ -65,6 +66,8 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
         }
     }
 
+    if(ct.num_ldaU_ions > 0 )
+        ldaU_on->app_vhubbard(H_Phi, *Rmg_G);
 
     delete RT0;
 
@@ -79,7 +82,7 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     delete(RT1);
 
     RmgTimer *RT3 = new RmgTimer("4-get_HS: Hvnlij");
-   GetHvnlij_dis(Hij_glob, Bij_glob, Kbpsi_mat, Phi.num_tot, LocalProj->num_tot);
+    GetHvnlij_dis(Hij_glob, Bij_glob, Kbpsi_mat, Phi.num_tot, LocalProj->num_tot);
     delete(RT3);
 
     int n2 = Phi.num_tot * Phi.num_tot;
@@ -87,8 +90,8 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     double t1 = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
     double vel = Rmg_L.get_omega() / t1;
 
-  //  dscal (&n2, &vel, Hij_glob, &ione);
-  //  dscal (&n2, &vel, Bij_glob, &ione);
+    //  dscal (&n2, &vel, Hij_glob, &ione);
+    //  dscal (&n2, &vel, Bij_glob, &ione);
 
     if (pct.gridpe == 0)
     {

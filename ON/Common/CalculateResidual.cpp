@@ -25,6 +25,7 @@
 #include "BaseThread.h"
 #include "rmgthreads.h"
 #include "RmgThread.h"
+#include "LdaU_on.h"
 
 
 //template void CalculateResidual(LocalObject<std::complex<double>> &Phi, LocalObject<std::complex<double_> &H_Phi,
@@ -57,11 +58,13 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
         for (int idx = 0; idx < pbasis; idx++)
         {
-            h_phi[idx] = -2.0 * a_phi[idx] * vtot_c[idx] +   h_phi[idx];
+            h_phi[idx] = a_phi[idx] * vtot_c[idx] - 0.5 * h_phi[idx];
         }
     }
 
 
+    if(ct.num_ldaU_ions > 0 )
+        ldaU_on->app_vhubbard(H_Phi, *Rmg_G);
 
     double *theta_local = new double[Phi.num_thispe * Phi.num_thispe];
     double *kbpsi_local = new double[NlProj.num_thispe * Phi.num_thispe];
@@ -78,7 +81,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     int num_orb = Phi.num_thispe;
     int num_prj = NlProj.num_thispe;
     dgemm("N", "N", &pbasis, &num_orb, &num_orb,  &one, Phi.storage_proj, &pbasis,
-            theta_local, &num_orb, &one, H_Phi.storage_proj, &pbasis);
+            theta_local, &num_orb, &mtwo, H_Phi.storage_proj, &pbasis);
 
 
     //  kbpsi_work_m,i = <beta_m|phi_j> Theta_ji 

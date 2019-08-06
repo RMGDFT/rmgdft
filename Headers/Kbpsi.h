@@ -42,4 +42,7 @@ typedef struct
 
 extern KBPSI Kbpsi_str;
 extern double *Kbpsi_mat;
+extern double *Upsi_mat;
+extern double *Upsi_mat_dist;
+extern double *Upsi_mat_local;
 #endif

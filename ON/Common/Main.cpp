@@ -64,6 +64,7 @@
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
 #include "LocalObject.h"
+#include "LdaU_on.h"
 
 
 
@@ -71,6 +72,8 @@ LocalObject<double> *LocalOrbital;
 LocalObject<double> *H_LocalOrbital;
 LocalObject<double> *LocalProj;
 LocalObject<double> *LocalAtomicOrbital;
+LdaU_on *ldaU_on;
+
 double *Kbpsi_mat;
 
 /* Main control structure which is declared extern in main.h so any module */

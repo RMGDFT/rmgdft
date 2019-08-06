@@ -1,4 +1,5 @@
 add_library (ON_Common
+ LdaU_on.cpp
  read_orbitals_on.cpp
  CalculateResidual.cpp
  get_te.cpp

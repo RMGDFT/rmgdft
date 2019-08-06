@@ -25,6 +25,7 @@
 #include "PulayMixing.h"
 #include "LocalObject.h"
 #include "Kbpsi.h"
+#include "LdaU_on.h"
 #define DELTA_V_MAX 1.0
 
 void update_pot(double *, double *, double *, double *, double *, double *, double *,
@@ -85,7 +86,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     {
         write_data (ct.outfile, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
         MPI_Barrier(pct.img_comm);
-        LocalOrbital->ReadOrbitals(std::string(ct.outfile), Rmg_G);
+        LocalOrbital->ReadOrbitals(std::string(ct.outfile), *Rmg_G);
     }
 
     OrbitalComm(states);
@@ -124,6 +125,13 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
         mat_dist_to_local(mat_X, pct.desca, rho_matrix_local, *LocalOrbital);
         mat_dist_to_local(uu_dis, pct.desca, theta_local, *LocalOrbital);
+
+        if(ct.num_ldaU_ions > 0)
+        {
+            int nldaU = ldaU_on->tot_orbitals_ldaU;
+            ldaU_on->calc_ns_occ(*LocalOrbital, mat_X, *Rmg_G);
+
+        }
     }
     else
     {
@@ -238,11 +246,11 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
             ct.restart_mix = 1;
         else
             ct.restart_mix = 0;
-        
+
         if(ct.LocalizedOrbitalLayout == LO_projection)
         {
             CalculateResidual(*LocalOrbital, *H_LocalOrbital, *LocalProj,  vtot_c, theta_local, Kbpsi_mat);
-            H_LocalOrbital->WriteOrbitals(std::string(ct.outfile), Rmg_G);
+            H_LocalOrbital->WriteOrbitals(std::string(ct.outfile), *Rmg_G);
             read_orbitals_on(ct.outfile, states1);
         }
         RmgTimer *RT6 = new RmgTimer("2-SCF: OrbitalOptimize");
