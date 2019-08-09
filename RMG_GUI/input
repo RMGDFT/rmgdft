@@ -55,7 +55,7 @@ atomic_orbital_files="
 # **** MD/Relax controls  **** 
   
 max_md_steps = "10"
-fast_relax_max_force = "1e-3"
+relax_max_force = "1e-3"
 ionic_time_step = "45"
 relax_dynamic_timestep = "true"
 

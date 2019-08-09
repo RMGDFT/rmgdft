@@ -186,7 +186,7 @@ class Mdscf(QtGui.QWidget):
 
         input_mdscf_lines =   '\n# **** MD/Relax controls  **** \n  \n'
         input_mdscf_lines +=   'max_md_steps = "'               + str(self._maxmd.text()) +'"\n'
-        input_mdscf_lines +=   'fast_relax_max_force = "'           + str(self._forcemax.text()) +'"\n'
+        input_mdscf_lines +=   'relax_max_force = "'           + str(self._forcemax.text()) +'"\n'
         input_mdscf_lines +=   'ionic_time_step = "'           + str(self._ionstep.text()) +'"\n'
         input_mdscf_lines +=   'relax_dynamic_timestep = "'           + self._rdt.currentText() +'"\n'
 

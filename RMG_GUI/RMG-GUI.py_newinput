@@ -161,7 +161,7 @@ class RMG_GUI(QtGui.QTabWidget):
 
 
 		self._mdscf._maxmd.setText(ip['max_md_steps'])
-		self._mdscf._forcemax.setText(ip['fast_relax_max_force'])
+		self._mdscf._forcemax.setText(ip['relax_max_force'])
 		self._mdscf._ionstep.setText(ip['ionic_time_step'])
 #		rdts=[self._mdscf._rdt.itemText(i) for i in range(self._mdscf._rdt.count())]
 #		self._mdscf._rdt.setCurrentIndex
