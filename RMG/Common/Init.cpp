@@ -76,7 +76,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 {
 
     RmgTimer RT0("Init");
-    int kpt, ic, idx, state, ion, st1, P0_BASIS, FP0_BASIS;
+    int kpt, ic, idx, state, st1, P0_BASIS, FP0_BASIS;
     int species;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
@@ -224,7 +224,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(need_ns) ns = (OrbitalType *)GpuMallocManaged((size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType));
     if(!ct.norm_conserving_pp) {
         Bns = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * sizeof(OrbitalType));
-        pct.Bns = (double *)Bns;
     }
 #else
     // Wavefunctions are actually stored here
@@ -268,7 +267,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     nv = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS]();
     if(!ct.norm_conserving_pp) {
         Bns = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS]();
-        pct.Bns = (double *)Bns;
     }
 #endif
 
@@ -276,10 +274,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, &ct.psi_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
-
-
-    pct.nv = (double *)nv;
-    pct.ns = (double *)ns;
 
     OrbitalType *rptr_k;
     rptr_k = rptr;

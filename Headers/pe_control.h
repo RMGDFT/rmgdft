@@ -161,12 +161,6 @@ typedef struct
     double *localrhonlcc;
     double *localatomicrho;
 
-    // Holds non-local and S operators acting on psi
-    double *nv;
-    double *ns;
-    double *Bns;
-    int num_tot_proj;
-
     int instances;
     /** Neighboring processors in three-dimensional space */
 
@@ -185,7 +179,6 @@ typedef struct
     int n_ion_center;
     int n_ion_center_loc;
 
-
     /* Projectors per ion in a given region */
     int *prj_per_ion;
 
@@ -193,18 +186,13 @@ typedef struct
     int *ionidx;
     int *ionidx_loc;
 
-    /* Points to start of projectors for this ion in projector space */
+   /* Points to start of projectors for this ion in projector space */
     /* All projectors are stored consecutively.                      */
     int *prj_ptr;
 
-    /* Pointers to the index array for the non-local potentials */
-    int *idxptr;
-
-
-
-
     /* The size of local orbitals on this PE */
     int psi_size;
+
     /* pointer to former step solution, used in pulay and KAIN mixing  */
     int descb[DLEN];
 
