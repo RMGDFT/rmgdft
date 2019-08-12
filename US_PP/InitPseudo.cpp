@@ -83,14 +83,14 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         /*Get nldim */
-        sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
+        sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid, Rmg_L.get_ibrav_type(), ct.localize_projectors);
         sp->nldim = sp->nldim/2*2 + 1;
 
         int printed = 0;
         while ((sp->nldim >= get_NX_GRID()) || (sp->nldim >= get_NY_GRID()) || (sp->nldim >= get_NZ_GRID()))
         {
             sp->nlradius -= ct.hmingrid;
-            sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
+            sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid, Rmg_L.get_ibrav_type(), ct.localize_projectors);
             sp->nldim = sp->nldim/2*2 + 1;
             if(ct.localize_projectors)
             {
@@ -118,7 +118,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         // If projectors will span the full wavefunction grid then use a larger value for the nlradius for all remaining operations
         if(!ct.localize_projectors) {
             sp->nlradius = std::max(sp->nlradius, 7.0);
-            sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid);
+            sp->nldim = Radius2grid (sp->nlradius, ct.hmingrid, Rmg_L.get_ibrav_type(), ct.localize_projectors);
             sp->nldim = sp->nldim/2*2 +1;
         }
 
@@ -139,12 +139,12 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         }
 
 
-        sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
+        sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO, Rmg_L.get_ibrav_type(), ct.localize_localpp);
         sp->ldim = sp->ldim/2 * 2 +1;
         if(!ct.localize_localpp)
         {
             sp->lradius = 10.0;
-            sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO);
+            sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO, Rmg_L.get_ibrav_type(), ct.localize_localpp);
             sp->ldim = sp->nldim/2*2 + 1;
         }
         else
@@ -301,7 +301,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             double nlccradius = 3.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points, 0.999999999);
 
             // Make adjustments so radii terminates on a grid point
-            int nlccdim = Radius2grid (nlccradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
+            int nlccdim = Radius2grid (nlccradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO, Rmg_L.get_ibrav_type(), ct.localize_localpp);
             nlccdim = nlccdim/2*2 + 1;
             nlccradius = 0.5 * ct.hmingrid * (double)(nlccdim-1) / (double)Rmg_G->default_FG_RATIO;
             nlccradius -= 0.5 * ct.hmingrid / (double)Rmg_G->default_FG_RATIO;
@@ -360,7 +360,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             if(sp->aradius[ip] < 6.0) sp->aradius[ip] = 6.0;
 
             /* Get adim_wave */
-            sp->adim_wave = Radius2grid (sp->aradius[ip], ct.hmingrid);
+            sp->adim_wave = Radius2grid (sp->aradius[ip], ct.hmingrid, Rmg_L.get_ibrav_type(), (ct.atomic_orbital_type == LOCALIZED));
             sp->adim_wave = sp->adim_wave/2*2 + 1;
 
             if ((sp->adim_wave >= get_NX_GRID()) || (sp->adim_wave >= get_NY_GRID()) || (sp->adim_wave >= get_NZ_GRID()))
