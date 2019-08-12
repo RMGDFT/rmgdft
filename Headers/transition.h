@@ -279,7 +279,7 @@ void VhPfft(double *rho, double *rhoc, double *vh);
 double VhDriver(double *rho, double *rhoc, double *vh, double *vh_ext, double rms_target);
 void BroydenPotential(double *rho, double *new_rho, double *rhoc, double *vh_in, double *vh_out, int max_iter, bool reset);
 void output_force(double *force, char *desc);
-int Radius2grid (double radius, double mingrid_spacing);
+int Radius2grid (const double radius, const double mingrid_spacing, const int ibrav, const bool is_localized);
 void Lforce (double * rho, double * vh, double *force);
 void Nlccforce (double * rho, double * vxc, double *force_nlcc);
 void CorrectForces (double *vh, double *vh_in, double *vxc, double *vxc_in, double *force);

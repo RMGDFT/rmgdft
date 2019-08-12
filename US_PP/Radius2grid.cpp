@@ -41,31 +41,25 @@
 
 /*For a quantity localized around ionic positions, this function finds radius in number of grid points
  * given a radius in a.u.*/
-int Radius2grid (double radius, double mingrid_spacing)
+int Radius2grid (const double radius, const double mingrid_spacing, const int ibrav, const bool is_localized)
 {
 
-    double scale, t1, t2;
-    int it1, dim, ibrav;
-
-    ibrav = Rmg_L.get_ibrav_type();
-    
     /* Set the scaling factor for determining the radius of the local grids */
-    scale = 1.0;
-    if (ibrav == CUBIC_BC)
-	scale = 1.1;
-    if (ibrav == CUBIC_FC)
-	scale = 1.3;
-    if (ibrav == HEXAGONAL)
-	scale = 1.3;
+    double scale = 1.0;
+    if(is_localized)
+    {
+        if (ibrav == CUBIC_BC) scale = 1.1;
+        if (ibrav == CUBIC_FC) scale = 1.3;
+        if (ibrav == HEXAGONAL) scale = 1.6;
+    }
         
-    t1 = 2.0 * scale * radius / mingrid_spacing;
+    double t1 = 2.0 * scale * radius / mingrid_spacing, t2;
     t1 = modf (t1, &t2);
-    it1 = (int) t2;
+    int it1 = (int) t2;
     if (t1 > 0.5)
           it1++;
     if (!(it1 % 2))
         it1++;
-    dim = it1;
 
-    return dim;
+    return it1;
 }
