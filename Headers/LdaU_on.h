@@ -42,7 +42,8 @@ public:
     ~LdaU_on(void);
     void calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, BaseGrid &);
     void app_vhubbard(LocalObject<double> &HL, BaseGrid &);
-    void write_ldaU(void);
+    void WriteLdaU(std::string fileprefix, LocalObject<double> &LocalOrbital);
+    void ReadLdaU(std::string fileprefix, LocalObject<double> &LocalOrbital);
 
     LocalObject<double> *AtomicOrbital;
     int tot_orbitals_ldaU;

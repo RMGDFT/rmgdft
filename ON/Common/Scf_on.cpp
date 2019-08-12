@@ -258,7 +258,6 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
         delete(RT6);
     }
-
     delete(RT);
 
     delete [] trho;

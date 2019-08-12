@@ -44,6 +44,7 @@
 #include "main.h"
 #include "init_var.h"
 #include "prototypes_on.h"
+#include "transition.h"
 
 void quench(STATE * states, STATE * states1, double * vxc, double * vh,
             double * vnuc, double * vh_old, double *
@@ -63,6 +64,8 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         if (!CONVERGENCE || ct.scf_steps <= ct.freeze_rho_steps)
             Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore, vxc_old, vh_old, &CONVERGENCE);
 
+        if( (ct.scf_steps+1)%ct.checkpoint == 0)
+            write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]);
 
         if (CONVERGENCE && ct.scf_steps > ct.freeze_rho_steps)
         {

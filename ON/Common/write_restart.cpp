@@ -34,6 +34,8 @@
 #include "init_var.h"
 #include "prototypes_on.h"
 #include "transition.h"
+#include "LdaU_on.h"
+#include "LocalObject.h"
 
 
 FILE *open_restart_file (char *);
@@ -147,6 +149,13 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old, double
 
 
     write_data (name, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
+
+    if(ct.num_ldaU_ions > 0)
+    {
+        ldaU_on->WriteLdaU(std::string(name), *LocalOrbital);
+    }
+
+
 
     write_time = my_crtc () - time0;
 

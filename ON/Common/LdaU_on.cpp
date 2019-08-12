@@ -135,30 +135,30 @@ void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, Base
     
     mat_global_to_local(*this->AtomicOrbital, LocalOrbital, this->Upsi_mat, this->Upsi_mat_local);
     for(int j = 0; j < LocalOrbital.num_thispe; j++)
-    for(int i = 0; i < nldaU; i++)
-        this->Upsi_mat_local[j * nldaU + i] *= this->Hubbard_U[i] * (1.0-2.0*this->ns_occ[i * nldaU + i]);
+        for(int i = 0; i < nldaU; i++)
+            this->Upsi_mat_local[j * nldaU + i] *= this->Hubbard_U[i] * (1.0-2.0*this->ns_occ[i * nldaU + i]);
 
 
-//  for(int i = 0; i < nldaU; i++)
-//  {
-//      printf("\n");
-//      for(int j = 0; j < nldaU; j++)
-//      {
-//          printf(" %f ", this->ns_occ[i*nldaU + j]);
-//      } 
+    //  for(int i = 0; i < nldaU; i++)
+    //  {
+    //      printf("\n");
+    //for(int j = 0; j < nldaU; j++)
+    //{
+    //    printf("\n %f ", this->ns_occ[j*nldaU + j]);
+    //} 
 
-//  }
+    //  }
 
-//      printf("\n");
-//  for(int i = 0; i < norb; i++)
-//  {
-//      printf("\n");
-//      for(int j = 0; j < nldaU; j++)
-//      {
-//          printf(" %f ", this->Upsi_mat[i*nldaU + j]);
-//      } 
+    //      printf("\n");
+    //  for(int i = 0; i < norb; i++)
+    //  {
+    //      printf("\n");
+    //      for(int j = 0; j < nldaU; j++)
+    //      {
+    //          printf(" %f ", this->Upsi_mat[i*nldaU + j]);
+    //      } 
 
-//  }
+    //  }
 
     delete [] mat_X_glob;
     delete [] temA;
@@ -173,5 +173,36 @@ void LdaU_on::app_vhubbard(LocalObject<double> &HLO, BaseGrid &BG)
     double one = 1.0;
     dgemm("N", "N", &pbasis, &norb, &nldaU, &one, this->AtomicOrbital->storage_proj, &pbasis, 
             this->Upsi_mat_local, &nldaU, &one, HLO.storage_proj, &pbasis);
+
+}
+void LdaU_on::WriteLdaU(std::string file_prefix, LocalObject<double> &LO)
+{
+    std::string filename = file_prefix + "_spin"+std::to_string(pct.spinpe)+".LdaU";
+    std::ofstream fhand(filename.c_str(), std::ofstream::binary);
+    size_t size= this->tot_orbitals_ldaU * this->tot_orbitals_ldaU * sizeof(double);
+    fhand.write((char *)this->ns_occ, size);
+
+    size = LO.num_tot * this->tot_orbitals_ldaU * sizeof(double);
+    fhand.write((char *)this->Upsi_mat, size);
+    fhand.close();
     
+}
+void LdaU_on::ReadLdaU(std::string file_prefix, LocalObject<double> &LO)
+{
+    std::string filename = file_prefix + "_spin"+std::to_string(pct.spinpe)+".LdaU";
+    std::ifstream fhand(filename.c_str(), std::ifstream::binary);
+    int nldaU = this->tot_orbitals_ldaU;
+
+    size_t size= nldaU * nldaU * sizeof(double);
+    fhand.read((char *)this->ns_occ, size);
+
+    size = LO.num_tot * nldaU * sizeof(double);
+    fhand.read((char *)this->Upsi_mat, size);
+    fhand.close();
+    
+    mat_global_to_local(*this->AtomicOrbital, LO, this->Upsi_mat, this->Upsi_mat_local);
+
+    for(int j = 0; j < LO.num_thispe; j++)
+        for(int i = 0; i < nldaU; i++)
+            this->Upsi_mat_local[j * nldaU + i] *= this->Hubbard_U[i] * (1.0-2.0*this->ns_occ[i * nldaU + i]);
 }

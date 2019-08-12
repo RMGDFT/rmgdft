@@ -66,8 +66,11 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
         }
     }
 
+    
+    //print_sum_square(Phi.num_tot * pbasis, H_Phi.storage_proj, "HPhi before");
     if(ct.num_ldaU_ions > 0 )
         ldaU_on->app_vhubbard(H_Phi, *Rmg_G);
+    //print_sum_square(Phi.num_tot * pbasis, H_Phi.storage_proj, "HPhi aftere");
 
     delete RT0;
 
@@ -90,6 +93,7 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     double t1 = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
     double vel = Rmg_L.get_omega() / t1;
 
+    //print_sum_square(Phi.num_tot * Phi.num_tot, Hij_glob, "Hij_glob");
     //  dscal (&n2, &vel, Hij_glob, &ione);
     //  dscal (&n2, &vel, Bij_glob, &ione);
 

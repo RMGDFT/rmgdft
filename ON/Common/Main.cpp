@@ -202,6 +202,7 @@ int main(int argc, char **argv)
                 if(pct.gridpe == 0) 
                 {
                     ReadPermInfo(ct.infile, perm_ion_index);
+                    WritePermInfo(ct.outfile, perm_ion_index);
                 }
                 MPI_Bcast(perm_ion_index, ct.num_ions, MPI_INT, 0, pct.grid_comm);
                 break;

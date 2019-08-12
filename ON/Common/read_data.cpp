@@ -25,6 +25,7 @@
 #include "main.h"
 #include "prototypes_on.h"
 #include "init_var.h"
+#include "LdaU_on.h"
 
 
 
@@ -153,9 +154,15 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
         close(fhand);
     }
 
+
+    if(ct.num_ldaU_ions > 0)
+    {
+        ldaU_on->ReadLdaU(std::string(name), *LocalOrbital);
+    }
+
+
     MPI_Barrier(pct.img_comm);
 
-    fflush(NULL);
     fflush(NULL);
 
 

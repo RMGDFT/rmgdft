@@ -45,7 +45,7 @@ void read_orbitals_on(char *name, STATE *sts)
 
     for (state = ct.state_begin; state < ct.state_end; state++)
     {
-        sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state);
+        sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".res_", state);
         fhand = open(newname, O_RDWR);
         if (fhand < 0)
         {
