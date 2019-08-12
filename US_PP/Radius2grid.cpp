@@ -55,6 +55,8 @@ int Radius2grid (double radius, double mingrid_spacing)
 	scale = 1.1;
     if (ibrav == CUBIC_FC)
 	scale = 1.3;
+    if (ibrav == HEXAGONAL)
+	scale = 1.3;
         
     t1 = 2.0 * scale * radius / mingrid_spacing;
     t1 = modf (t1, &t2);
