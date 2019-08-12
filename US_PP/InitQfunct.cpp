@@ -89,7 +89,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
         sp->qradius = std::max(sp->qradius, ct.min_qradius);
 
         // Make adjustments so radii terminates on a grid point
-        sp->qdim = Radius2grid (sp->qradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO, Rmg_L.get_ibrav_type(), true);
+        sp->qdim = Radius2grid (sp->qradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO, Rmg_L.get_ibrav_type(), false);
         sp->qdim = sp->qdim/2*2 + 1;
 
         sp->qcut = 0.5 * sp->qradius;
