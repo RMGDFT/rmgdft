@@ -41,7 +41,6 @@
 #include "transition.h"
 #include "Kpoint.h"
 #include "InputKey.h"
-#include "RmgShm.h"
 #include "blas.h"
 #include "RmgThread.h"
 #include "rmgthreads.h"
@@ -103,7 +102,6 @@ std::unordered_map<std::string, InputKey *> ControlMap;
 
 extern "C" void term_handler(int signal)
 {
-    FreeAllSharedMemory();
     DeleteNvmeArrays();
     MPI_Abort( MPI_COMM_WORLD, 0 );
 
@@ -417,7 +415,6 @@ void report ()
 void finish ()
 {
 
-    FreeAllSharedMemory();
     DeleteNvmeArrays();
 
     MPI_Barrier(MPI_COMM_WORLD);

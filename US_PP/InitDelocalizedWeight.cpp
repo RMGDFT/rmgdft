@@ -18,7 +18,6 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "RmgException.h"
-#include "RmgShm.h"
 #include "RmgParallelFft.h"
 #include "AtomicInterpolate.h"
 #include "packfuncs.h"

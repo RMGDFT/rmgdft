@@ -18,7 +18,6 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "RmgException.h"
-#include "RmgShm.h"
 
 
 /*This sets loop over species does forward fourier transform, finds and stores whatever is needed so that

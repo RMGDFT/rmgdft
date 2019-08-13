@@ -4,7 +4,6 @@ SetLaplacian.cpp
 IonIonEnergy_Ewald.cpp
 InitPe4image.cpp
 InitPe4kpspin.cpp
-SharedMemory.cpp
 VhDriver.cpp 
 Pw.cpp
 PfftForward.cpp
