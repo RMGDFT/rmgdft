@@ -25,6 +25,16 @@ public:
         ocrds1[2] = crds[2];
     }
 
+    void RotateForces(void)
+    {
+        for(int i = 3;i > 0;i--)
+        {
+            force[i][0] = force[i-1][0];
+            force[i][1] = force[i-1][1];
+            force[i][2] = force[i-1][2];
+        }
+    }
+
     void ZeroForces(void)
     {
         for (int ic = 0; ic < 4; ic++)

@@ -227,12 +227,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-            ION *iptr = &Atoms[ion];
-            for(int i = 3;i > 0;i--) {
-                iptr->force[i][0] =iptr->force[i-1][0];
-                iptr->force[i][1] =iptr->force[i-1][1];
-                iptr->force[i][2] =iptr->force[i-1][2];
-            }
+            Atoms[ion].RotateForces();
         }
         Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
     }
