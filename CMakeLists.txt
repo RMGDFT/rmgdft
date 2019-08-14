@@ -236,6 +236,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(RTLIB "rt")
     list(APPEND RMGLIBS z)
     list(APPEND RMGLIBS rt)
+    list(APPEND RMGLIBS m)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 

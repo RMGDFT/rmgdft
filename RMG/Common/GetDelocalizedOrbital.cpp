@@ -34,15 +34,13 @@
 
 
 // Used to generate LDA+U orbital projectors that span the full space
-template void GetDelocalizedOrbital<double> (Kpoint<double> **Kptr);
-template void GetDelocalizedOrbital<std::complex<double> >(Kpoint<std::complex<double>> **Kptr);
-template <typename KpointType>
-void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
+template void Kpoint<double>::GetDelocalizedOrbital(void);
+template void Kpoint<std::complex<double>>::GetDelocalizedOrbital(void);
+template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void)
 {
 
     KpointType *weight;
     std::complex<double> I_t(0.0, 1.0);
-    int pbasis = Kptr[0]->pbasis;
 
     /*Pointer to the result of forward transform on the coarse grid */
     std::complex<double> *fptr;
@@ -58,18 +56,17 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
 
-    for(int kpt =0; kpt < ct.num_kpts_pe;kpt++) {
 
-        double *kvec = Kptr[kpt]->kp.kvec;
+        double *kvec = kp.kvec;
 
-        Projector<KpointType> *P = Kptr[kpt]->OrbitalProjector;
+        Projector<KpointType> *P = OrbitalProjector;
         size_t stride = P->get_pstride();
 
         /* Loop over ions */
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             size_t offset = (size_t)ion * stride * (size_t)pbasis;
-            weight = &Kptr[kpt]->orbital_weight[offset];
+            weight = &orbital_weight[offset];
     
             /* Generate atom reference */
             ION &Atom = Atoms[ion];
@@ -85,7 +82,7 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
             FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), fftw_phase, false);
 
             /*Temporary pointer to the already calculated forward transform */
-            fptr = (std::complex<double> *)&sp->forward_orbital[kpt * sp->num_orbitals * pbasis];
+            fptr = (std::complex<double> *)&sp->forward_orbital[kidx * sp->num_orbitals * pbasis];
 
 
             /* Loop over radial projectors */
@@ -125,7 +122,6 @@ void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr)
 
         }                           /* end for */
 
-    } // end for(kpt)
 
     delete [] fftw_phase;
     fftw_free (gbptr);

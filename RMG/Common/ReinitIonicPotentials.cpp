@@ -94,12 +94,13 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
         {
             Kptr[kpt]->GetDelocalizedWeight ();
         }
+
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+        {
+            Kptr[kpt]->GetDelocalizedOrbital ();
+        }
     }
 
-    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-    {
-        GetDelocalizedOrbital (Kptr);
-    }
 
     delete RT1;
 

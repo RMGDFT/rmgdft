@@ -65,6 +65,7 @@ public:
     void Davidson(double *vtot, int &notconv);
     void GetLocalizedWeight (void);
     void GetDelocalizedWeight (void);
+    void GetDelocalizedOrbital (void);
     void LcaoGetPsi (void);
 
 
