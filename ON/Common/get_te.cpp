@@ -67,6 +67,7 @@
 #include "main.h"
 #include "transition.h"
 #include "prototypes_on.h"
+#include "LdaU_on.h"
 
 
 void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, STATE * states, int ii_flag)
@@ -207,21 +208,19 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
 
 
     /* Sum them all up */
-    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II;
+    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_on->Ecorrect;
 
 
     /* Print contributions to total energies into output file */
     printf ("\n\n");
-    //    progress_tag ();
     printf ("@@ EIGENVALUE SUM     = %16.9f Ha\n", eigsum);
-    //    progress_tag ();
     printf ("@@ ION_ION            = %16.9f Ha\n", ct.II);
-    //    progress_tag ();
     printf ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
-    //    progress_tag ();
     printf ("@@ VXC                 = %16.9f Ha\n",  xcstate);
     printf ("@@ EXC                 = %16.9f Ha\n", ct.XC );
-    //    progress_tag ();
+   if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+     printf ("@@ HUBBARD ENERGY     = %15.6f Ha\n", ldaU_on->Ehub);
+
     printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
 
     if (ct.spin_flag)

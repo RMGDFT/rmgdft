@@ -138,6 +138,16 @@ void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, Base
         for(int i = 0; i < nldaU; i++)
             this->Upsi_mat_local[j * nldaU + i] *= this->Hubbard_U[i] * (1.0-2.0*this->ns_occ[i * nldaU + i]);
 
+    this->Ehub = 0.0;
+    this->Ecorrect = 0.0;
+    for(int i = 0; i < nldaU; i++)
+    {
+        this->Ehub += this->Hubbard_U[i] * this->ns_occ[i * nldaU + i] * (1.0-this->ns_occ[i * nldaU + i]);
+        this->Ecorrect += this->Hubbard_U[i] * this->ns_occ[i * nldaU + i] * this->ns_occ[i * nldaU + i];
+    }
+    MPI_Allreduce(MPI_IN_PLACE, &this->Ehub, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &this->Ecorrect, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+
 
     //  for(int i = 0; i < nldaU; i++)
     //  {
@@ -185,7 +195,7 @@ void LdaU_on::WriteLdaU(std::string file_prefix, LocalObject<double> &LO)
     size = LO.num_tot * this->tot_orbitals_ldaU * sizeof(double);
     fhand.write((char *)this->Upsi_mat, size);
     fhand.close();
-    
+
 }
 void LdaU_on::ReadLdaU(std::string file_prefix, LocalObject<double> &LO)
 {
@@ -199,7 +209,7 @@ void LdaU_on::ReadLdaU(std::string file_prefix, LocalObject<double> &LO)
     size = LO.num_tot * nldaU * sizeof(double);
     fhand.read((char *)this->Upsi_mat, size);
     fhand.close();
-    
+
     mat_global_to_local(*this->AtomicOrbital, LO, this->Upsi_mat, this->Upsi_mat_local);
 
     for(int j = 0; j < LO.num_thispe; j++)
