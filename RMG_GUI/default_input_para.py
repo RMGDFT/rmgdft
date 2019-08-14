@@ -25,7 +25,6 @@ class default_input_para(QtGui.QWidget):
         default_input_forON += 'potential_grid_refinement="2"\n'
         default_input_forON += 'beta_grid_refinement="4"\n'
         default_input_forON += 'calculation_mode="Quench Electrons"\n'
-        default_input_forON += 'do_sort_wavefunctions="false"\n'
         default_input_forON +='number_of_kpoints="1"\n'
         default_input_forON += 'kpoints= "0.0  0.0  0.0   1.0 "\n'
         default_input_forON += 'do_spin_polarized="false"\n'

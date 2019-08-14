@@ -268,12 +268,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         this->ldaU->calc_ns_occ(this->orbitalsint_local, 0, this->nstates);
     }
 
-    /* If sorting is requested then sort the states. */
-    if (ct.sortflag) {
-        this->sort_orbitals();
-    }
-
-
 }
 
 

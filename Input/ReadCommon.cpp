@@ -926,9 +926,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("write_pdos", &lc.pdos_flag, false,
                         "Flag to write partial density of states.");
 
-    If.RegisterInputKey("sort_wavefunctions", &lc.sortflag, false, 
-                        "Sort wavefunctions by eigenvalue. Not needed if using subspace diagonalization.");
-
     If.RegisterInputKey("initial_diagonalization", &lc.initdiag, true, 
                         "Perform initial subspace diagonalization.", DIAG_OPTIONS);
     

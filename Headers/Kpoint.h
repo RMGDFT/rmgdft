@@ -47,7 +47,6 @@ public:
     Kpoint(KSTRUCT &kpin, int index, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap);
 
     void set_pool(KpointType *pool);
-    void sort_orbitals(void);
     void random_init(void);
     int get_nstates(void);
     int get_index(void);

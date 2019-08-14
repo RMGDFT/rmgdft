@@ -55,8 +55,6 @@ extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> 
 
 template Kpoint<double>::Kpoint(KSTRUCT &kpin, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
 template Kpoint<std::complex <double> >::Kpoint(KSTRUCT &kpin, int, MPI_Comm, BaseGrid *, TradeImages *, Lattice *, std::unordered_map<std::string, InputKey *>& ControlMap);
-template void Kpoint<double>::sort_orbitals(void);
-template void Kpoint<std::complex <double> >::sort_orbitals(void);
 template void Kpoint<double>::set_pool(double *pool);
 template void Kpoint<std::complex <double> >::set_pool(std::complex<double> *pool);
 template void Kpoint<double>::init_states(void);
@@ -356,45 +354,6 @@ template <class KpointType> int Kpoint<KpointType>::get_nstates(void)
 template <class KpointType> int Kpoint<KpointType>::get_index(void)
 {
     return this->kidx;
-}
-
-template <class KpointType> void Kpoint<KpointType>::sort_orbitals(void)
-{
-
-    int state;
-    double t1;
-    State<KpointType> *sp, *sp1;
-
-    for(state = 0;state < this->nstates - 1;state++)
-    {
-        sp = &this->Kstates[state];
-        sp1 = &this->Kstates[state+1];
-        if (sp->eig[0] > sp1->eig[0])
-        {
-
-            if (((sp->occupation[0] > 0.1) && (sp1->occupation[0] > 0.1))
-                || ((sp->occupation[0] < 0.1) && (sp1->occupation[0] < 0.1)))
-            {
-
-                t1 = sp->eig[0];
-                sp->eig[0] = sp1->eig[0];
-                sp1->eig[0] = t1;
-
-                t1 = sp->oldeig[0];
-                sp->oldeig[0] = sp1->oldeig[0];
-                sp1->oldeig[0] = t1;
-
-                t1 = sp->occupation[0];
-                sp->occupation[0] = sp1->occupation[0];
-                sp1->occupation[0] = t1;
-
-
-            }                   /* end if */
-
-        }                       /* end if */
-
-    } 
-
 }
 
 
