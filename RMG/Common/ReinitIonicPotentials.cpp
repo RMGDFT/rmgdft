@@ -84,11 +84,16 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     /*Other things that need to be recalculated when ionic positions change */
     RT1= new RmgTimer("3-ReinitIonicPotentials: GetWeight");
-    if(ct.localize_projectors) {
-        GetLocalizedWeight (Kptr);
-    }
-    else {
-        GetDelocalizedWeight (Kptr);
+    for(int kpt=0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        if(ct.localize_projectors)
+        {
+            Kptr[kpt]->GetLocalizedWeight ();
+        }
+        else
+        {
+            Kptr[kpt]->GetDelocalizedWeight ();
+        }
     }
 
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))

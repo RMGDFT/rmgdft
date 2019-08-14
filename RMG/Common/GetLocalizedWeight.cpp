@@ -32,19 +32,20 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
+
 // Used for localizing projectors in real space
-template void GetLocalizedWeight<double> (Kpoint<double> **Kptr);
-template void GetLocalizedWeight<std::complex<double> >(Kpoint<std::complex<double>> **Kptr);
-template <typename KpointType>
-void GetLocalizedWeight (Kpoint<KpointType> **Kptr)
+template void Kpoint<double>::GetLocalizedWeight(void);
+template void Kpoint<std::complex<double>>::GetLocalizedWeight(void);
+
+template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 {
 
     int max_size;
     KpointType *Bweight, *Nlweight;
     std::complex<double> I_t(0.0, 1.0);
 
-    int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
-    int *nonloc_ions_list = Kptr[0]->BetaProjector->get_nonloc_ions_list();
+    int num_nonloc_ions = BetaProjector->get_num_nonloc_ions();
+    int *nonloc_ions_list = BetaProjector->get_nonloc_ions_list();
 
 
     SPECIES *sp;
@@ -71,87 +72,84 @@ void GetLocalizedWeight (Kpoint<KpointType> **Kptr)
 
     gbptr = beptr + max_size;
 
-    for(int kpt =0; kpt < ct.num_kpts_pe;kpt++)
+
+    Projector<KpointType> *P = BetaProjector;
+
+    /* Loop over ions */
+    for (int ion1 = 0; ion1 < num_nonloc_ions; ion1++)
     {
 
-        Projector<KpointType> *P = Kptr[kpt]->BetaProjector;
+        int ion = nonloc_ions_list[ion1];
+        /* Generate ion pointer */
+        iptr = &Atoms[ion];
 
-        /* Loop over ions */
-        for (int ion1 = 0; ion1 < num_nonloc_ions; ion1++)
-        {
+        /* Get species type */
+        sp = &Species[iptr->species];
 
-            int ion = nonloc_ions_list[ion1];
-            /* Generate ion pointer */
-            iptr = &Atoms[ion];
-
-            /* Get species type */
-            sp = &Species[iptr->species];
-
-            Bweight = &Kptr[kpt]->nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
-            Nlweight = &Kptr[kpt]->nl_weight[ion1 * ct.max_nl * P0_BASIS];
+        Bweight = &nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
+        Nlweight = &nl_weight[ion1 * ct.max_nl * P0_BASIS];
 //            for(int idx = 0;idx < sp->num_projectors*P0_BASIS; idx++) Bweight[idx] = 0.0;
 //            for(int idx = 0;idx < sp->num_projectors*P0_BASIS; idx++) Nlweight[idx] = 0.0;
 
 
-            int nlxdim = P->get_nldim(iptr->species);
-            int nlydim = P->get_nldim(iptr->species);
-            int nlzdim = P->get_nldim(iptr->species);
+        int nlxdim = P->get_nldim(iptr->species);
+        int nlydim = P->get_nldim(iptr->species);
+        int nlzdim = P->get_nldim(iptr->species);
 
-            in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
-            out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
-
-
-            /*Number of grid points on which fourier transform is done (in the coarse grid) */
-            int coarse_size = nlxdim * nlydim * nlzdim;
+        in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
+        out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * nlxdim * nlydim * nlzdim);
 
 
-            //fftw_import_wisdom_from_string (sp->backward_wisdom);
-            p2 = fftw_plan_dft_3d (nlxdim, nlydim, nlzdim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), FFTW_BACKWARD,
-                    FFTW_ESTIMATE);
-            //fftw_forget_wisdom ();
+        /*Number of grid points on which fourier transform is done (in the coarse grid) */
+        int coarse_size = nlxdim * nlydim * nlzdim;
 
 
-            /*Calculate the phase factor */
-            FindPhase(nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), phase_fftw);
+        //fftw_import_wisdom_from_string (sp->backward_wisdom);
+        p2 = fftw_plan_dft_3d (nlxdim, nlydim, nlzdim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), FFTW_BACKWARD,
+                FFTW_ESTIMATE);
+        //fftw_forget_wisdom ();
 
-            /*Temporary pointer to the already calculated forward transform */
-            fptr = (std::complex<double> *)&sp->forward_beta[kpt*sp->num_projectors * coarse_size];
+
+        /*Calculate the phase factor */
+        FindPhase(nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), phase_fftw);
+
+        /*Temporary pointer to the already calculated forward transform */
+        fptr = (std::complex<double> *)&sp->forward_beta[kidx*sp->num_projectors * coarse_size];
 
 
-            /* Loop over radial projectors */
-            for (int ip = 0; ip < sp->num_projectors; ip++)
+        /* Loop over radial projectors */
+        for (int ip = 0; ip < sp->num_projectors; ip++)
+        {
+
+
+            /*Apply the phase factor */
+            for (int idx = 0; idx < coarse_size; idx++)
             {
+                gbptr[idx] =fptr[idx] * std::conj(phase_fftw[idx]);
+            }
 
 
-                /*Apply the phase factor */
-                for (int idx = 0; idx < coarse_size; idx++)
-                {
-                    gbptr[idx] =fptr[idx] * std::conj(phase_fftw[idx]);
-                }
+            /*Do the backwards transform */
+            fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(gbptr), reinterpret_cast<fftw_complex*>(beptr));
+            /*This takes and stores the part of beta that is useful for this PE */
+            AssignWeight (this, sp, ion, reinterpret_cast<fftw_complex*>(beptr), Bweight, Nlweight);
 
 
-                /*Do the backwards transform */
-                fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(gbptr), reinterpret_cast<fftw_complex*>(beptr));
-                /*This takes and stores the part of beta that is useful for this PE */
-                AssignWeight (Kptr[kpt], sp, ion, reinterpret_cast<fftw_complex*>(beptr), Bweight, Nlweight);
+            /*Advance the temp pointers */
+            fptr += coarse_size;
+            Bweight += P0_BASIS;
+            Nlweight += P0_BASIS;
+
+        }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
 
 
-                /*Advance the temp pointers */
-                fptr += coarse_size;
-                Bweight += P0_BASIS;
-                Nlweight += P0_BASIS;
-
-            }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
+        fftw_destroy_plan (p2);
+        fftw_free(out);
+        fftw_free(in);
 
 
-            fftw_destroy_plan (p2);
-            fftw_free(out);
-            fftw_free(in);
+    }                           /* end for */
 
-
-        }                           /* end for */
-
-    } // end for(kpt)
 
     fftw_free (beptr);
     delete [] phase_fftw;

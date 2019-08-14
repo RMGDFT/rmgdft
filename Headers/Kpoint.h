@@ -63,6 +63,8 @@ public:
     void Subdiag (double *vtot_eig, int subdiag_driver);
     void MgridSubspace (double *vtot_psi);
     void Davidson(double *vtot, int &notconv);
+    void GetLocalizedWeight (void);
+    void GetDelocalizedWeight (void);
 
 
     // Minimal kpoint structure
@@ -120,7 +122,6 @@ public:
     KpointType *Bns;
     int nl_first_state;  // first state in the buffer
 
-
     // Pointers to weight and Bweight
     KpointType *nl_weight;
     KpointType *nl_Bweight;
@@ -140,6 +141,11 @@ public:
     // Number of points in orbital basis
     int pbasis;
 
+    // Highest occupied orbital
+    int highest_occupied;
+
+private:
+
     // Mean min, and max wavefunction residuals for occupied space
     double mean_occ_res;
     double min_occ_res;
@@ -152,9 +158,6 @@ public:
 
     // Index of the highest orbital included in the calculation of mean/min/max
     int max_unocc_res_index;
-
-    // Highest occupied orbital
-    int highest_occupied;
 
 };
 
