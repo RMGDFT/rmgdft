@@ -248,6 +248,9 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set (CMAKE_Fortran_FLAGS "-lg2c -cpp -c")
     set(CMAKE_EXE_LINKER_FLAGS "-ldl")
     set(RMG_EXTRA_COMPILER_FLAGS "${RMG_EXTRA_COMPILER_FLAGS} -fcx-limited-range -fno-trapping-math")
+    list(APPEND RMGLIBS z)
+    list(APPEND RMGLIBS rt)
+    list(APPEND RMGLIBS m)
 endif()
 
 
