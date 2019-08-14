@@ -85,7 +85,7 @@ template void Kpoint<std::complex <double> >::get_ldaUop(int);
 template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
 {
 
-    this->comm = newcomm;
+    this->grid_comm = newcomm;
     this->kidx = kindex;
     this->nl_weight = NULL;
     this->orbital_weight = NULL;
@@ -525,7 +525,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
 
         /* get the global part */
         length = this->nstates * this->nstates;
-        MPI_Allreduce(MPI_IN_PLACE, global_matrix, length, MPI_DOUBLE, MPI_SUM, this->comm);
+        MPI_Allreduce(MPI_IN_PLACE, global_matrix, length, MPI_DOUBLE, MPI_SUM, grid_comm);
 
 
         /* compute the cholesky factor of the overlap matrix */
@@ -655,7 +655,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
             /*Sum coefficients over all processors */
             if (length)
             {
-                global_sums (&cR[ist1 + 1], &length, pct.grid_comm);
+                global_sums (&cR[ist1 + 1], &length, grid_comm);
             }
             /*Update wavefunctions */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
@@ -723,7 +723,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
            }            
 
            int length = 2 * this->nstates;
-           MPI_Allreduce(MPI_IN_PLACE, dr, length, MPI_DOUBLE, MPI_SUM, this->comm);
+           MPI_Allreduce(MPI_IN_PLACE, dr, length, MPI_DOUBLE, MPI_SUM, grid_comm);
 
            std::complex<double> ct1(-vel, 0.0);
            for(int st2=0;st2 < this->nstates;st2++) {
@@ -816,8 +816,8 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
           /*Sum coefficients over all processors */
           if (length)
           {
-              global_sums (&cR[ist1 + 1], &length, pct.grid_comm);
-              global_sums (&cI[ist1 + 1], &length, pct.grid_comm);
+              global_sums (&cR[ist1 + 1], &length, grid_comm);
+              global_sums (&cI[ist1 + 1], &length, grid_comm);
           }
           /*Update wavefunctions */
           for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
@@ -1088,9 +1088,9 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
 
     this->nl_weight_size = (size_t)this->BetaProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
     ct.beta_alloc[0] = this->nl_weight_size * sizeof(KpointType);
-    MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
-    MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
-    MPI_Allreduce(MPI_IN_PLACE, &ct.beta_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[1], 1, MPI_LONG, MPI_MIN, grid_comm);
+    MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[2], 1, MPI_LONG, MPI_MAX, grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &ct.beta_alloc, 1, MPI_LONG, MPI_SUM, grid_comm);
 
 
 #if GPU_ENABLED
@@ -1179,7 +1179,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     this->newsint_local = new KpointType[sint_alloc]();
 #endif
 
-    MPI_Barrier(pct.grid_comm);
+    MPI_Barrier(grid_comm);
 
 } 
 
@@ -1341,7 +1341,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     this->orbitalsint_local = new KpointType[sint_alloc]();
 #endif
 
-    MPI_Barrier(pct.grid_comm);
+    MPI_Barrier(grid_comm);
 
 } 
 

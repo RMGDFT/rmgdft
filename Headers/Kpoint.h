@@ -95,7 +95,7 @@ public:
     LdaU<KpointType> *ldaU;
 
     // MPI communicator to use for trade images and reduction operations
-    MPI_Comm comm;
+    MPI_Comm grid_comm;
 
     // The index of the k-point for backreferencing
     int kidx;

@@ -221,11 +221,11 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     MPI_Request MPI_reqSij;
     MPI_Request MPI_reqBij;
     if(ct.use_async_allreduce)
-       MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+       MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqAij);
     else
-       MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+       MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #endif
 
     // Compute S matrix
@@ -243,11 +243,11 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqSij);
     else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #endif
 
 
@@ -260,11 +260,11 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         // Reduce matrix and store copy in Bij
 #if HAVE_ASYNC_ALLREDUCE
         if(ct.use_async_allreduce)
-            MPI_Iallreduce(MPI_IN_PLACE, (double *)Bij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqBij);
+            MPI_Iallreduce(MPI_IN_PLACE, (double *)Bij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqBij);
         else
-            MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+            MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #endif
 
     }
