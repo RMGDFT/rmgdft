@@ -48,7 +48,6 @@ void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 void  get_rho_oppo (double * rho, double * rho_oppo);
 void get_ddd (double *veff);
-void mix_betaxpsi (int mix);
 void rmg_lbfgs (void);
 void lbfgs_init(int num_ions, int num_images);
 void write_restart (char *name, double * vh, double *vxc, double *vh_old, 
@@ -152,10 +151,6 @@ void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions
 template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **kptr, double * vnuc, double * rhocore, double * rhoc);
 template <typename KpointType>
-void GetDelocalizedWeight (Kpoint<KpointType> **Kptr);
-template <typename KpointType>
-void GetLocalizedWeight (Kpoint<KpointType> **Kptr);
-template <typename KpointType>
 void GetDelocalizedOrbital (Kpoint<KpointType> **Kptr);
 
 template <typename KpointType>
@@ -187,8 +182,6 @@ template <typename KpointType>
 void GetOppositeEigvals (Kpoint<KpointType> **Kptr);
 template <typename KpointType>
 void GetOppositeOccupancies (Kpoint<KpointType> **Kptr);
-template <typename KpointType>
-void LcaoGetPsi (Kpoint<KpointType> *kptr);
 template <typename StateType>
 void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff, double *kvec);
 void LcaoGetRho (double * arho_f);

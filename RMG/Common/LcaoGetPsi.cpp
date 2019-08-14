@@ -32,15 +32,14 @@
 #include "GpuAlloc.h"
 #include "transition.h"
 
-template void LcaoGetPsi(Kpoint<double> *);
-template void LcaoGetPsi(Kpoint<std::complex<double> > *);
+template void Kpoint<double>::LcaoGetPsi(void);
+template void Kpoint<std::complex<double>>::LcaoGetPsi(void);
 
-template <typename KpointType>
-void LcaoGetPsi (Kpoint<KpointType> *kptr)
+template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 {
 
-    State<KpointType> *states = kptr->Kstates;
-    double *kvec = kptr->kp.kvec;
+    State<KpointType> *states = Kstates;
+    double *kvec = kp.kvec;
 
     long idum;
 
@@ -50,11 +49,10 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
     int PX_OFFSET = get_PX_OFFSET();
     int PY_OFFSET = get_PY_OFFSET();
     int PZ_OFFSET = get_PZ_OFFSET();
-    int P0_BASIS = get_P0_BASIS();
 
-    for (int st = 0; st < ct.num_states; st++)
+    for (int st = 0; st < nstates; st++)
     {
-        for (int idx = 0; idx < P0_BASIS; idx++)
+        for (int idx = 0; idx < pbasis; idx++)
         {
             states[st].psi[idx] = 0.0;
         }
@@ -80,7 +78,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
 
     state_count = CountAtomicOrbitals();
 
-    if(state_count <= ct.num_states)
+    if(state_count <= nstates)
     {
         double coeff = 1.0;
         int st = 0;
@@ -95,7 +93,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
             if(ct.atomic_orbital_type == DELOCALIZED)
             {
                 // Delocalized orbitals
-                kptr->get_ion_orbitals(&Atom, states[st].psi);
+                get_ion_orbitals(&Atom, states[st].psi);
                 st += AtomType.num_orbitals;
             }
             else
@@ -119,7 +117,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
     }
     else
     {
-        KpointType *npsi = new KpointType[P0_BASIS * state_count];      // The array for orbital storage is 4x run_state which should be big enough
+        KpointType *npsi = new KpointType[pbasis * state_count];      // The array for orbital storage is 4x run_state which should be big enough
         long *aidum = new long[state_count];
         for(int st = 0;st < state_count;st++)
         {
@@ -139,7 +137,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
             if(ct.atomic_orbital_type == DELOCALIZED)
             {
                 // Delocalized orbitals
-                kptr->get_ion_orbitals(&Atom, &npsi[wave_idx * P0_BASIS]);
+                get_ion_orbitals(&Atom, &npsi[wave_idx * pbasis]);
                 wave_idx += AtomType.num_orbitals;
             }
             else
@@ -153,8 +151,8 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
                         /*Loop over all m values for given l and get wavefunctions */
                         for (int m=0; m < 2*l+1; m++)
                         {
-                            for(int idx = 0;idx < P0_BASIS;idx++)  npsi[wave_idx * P0_BASIS + idx] = 0.0;
-                            LcaoGetAwave(&npsi[wave_idx * P0_BASIS], &Atom, ip, l, m, coeff, kvec);
+                            for(int idx = 0;idx < pbasis;idx++)  npsi[wave_idx * pbasis + idx] = 0.0;
+                            LcaoGetAwave(&npsi[wave_idx * pbasis], &Atom, ip, l, m, coeff, kvec);
                             wave_idx++;
                         }
 
@@ -166,13 +164,13 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
 
         // Now generate a random mix
 #if GPU_ENABLED
-        KpointType *rmatrix = (KpointType *)GpuMallocManaged(state_count * ct.num_states * sizeof(KpointType));
+        KpointType *rmatrix = (KpointType *)GpuMallocManaged(state_count * nstates * sizeof(KpointType));
 #else
-        KpointType *rmatrix = new KpointType[state_count * ct.num_states];
+        KpointType *rmatrix = new KpointType[state_count * nstates];
 #endif
 
         for(int st = 0;st < state_count;st++) {
-            for(int idx = 0;idx < ct.num_states;idx++) {
+            for(int idx = 0;idx < nstates;idx++) {
                 rmatrix[idx*state_count + st] = rand0(&aidum[idx]);
             }
         }
@@ -182,8 +180,8 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
         KpointType beta(0.0);
 
     
-        RmgGemm(trans_n, trans_n, P0_BASIS, ct.num_states, state_count, alpha,
-            npsi, P0_BASIS, rmatrix, state_count, beta, states[0].psi, P0_BASIS);
+        RmgGemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
+            npsi, pbasis, rmatrix, state_count, beta, states[0].psi, pbasis);
 
 #if GPU_ENABLED
         GpuFreeManaged(rmatrix);
@@ -198,7 +196,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
     }
 
     /*Initialize any additional states to random start*/
-    if ( ct.num_states > state_count)
+    if ( nstates > state_count)
     {
         int ix, iy, iz;
         int xoff, yoff, zoff;
@@ -218,7 +216,7 @@ void LcaoGetPsi (Kpoint<KpointType> *kptr)
         rand0 (&idum);
 
 
-        for (int st = state_count; st < ct.num_states; st++)
+        for (int st = state_count; st < nstates; st++)
         {
 
             /* Generate x, y, z random number sequences */

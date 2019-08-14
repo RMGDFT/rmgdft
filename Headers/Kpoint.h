@@ -65,6 +65,8 @@ public:
     void Davidson(double *vtot, int &notconv);
     void GetLocalizedWeight (void);
     void GetDelocalizedWeight (void);
+    void LcaoGetPsi (void);
+
 
 
     // Minimal kpoint structure

@@ -286,23 +286,8 @@ void initialize(int argc, char **argv)
     }
 
 
-    /* Need if statement here, otherwise job output file 
-     * will also show information of control file ? */
-    if (pct.imgpe == 0)
-    {
-    
-        /*if(ct.is_gamma) {
-            Kptr_g[0]->write_occ(); 
-        }
-        else {
-            Kptr_c[0]->write_occ(); 
-        }*/
-    }
-
-
     /* Flush the results immediately */
     fflush (NULL);
-
 
 
     /* Wait until everybody gets here */
@@ -359,8 +344,6 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
     }
 
-    //WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
-
 
     if(Verify ("output_rho_xsf", true, Kptr[0]->ControlMap))
         Output_rho_xsf(rho, pct.grid_comm);
@@ -393,7 +376,6 @@ void report ()
         delete [] tau;
 
     /* Write timing information */
-    //    write_timings ();
     if(pct.imgpe == 0) fclose(ct.logfile);
     int override_rank = 0;
     if(pct.imgpe==0) MPI_Comm_rank (pct.img_comm, &override_rank);
