@@ -208,8 +208,12 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
 
 
     /* Sum them all up */
-    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_on->Ecorrect;
+    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II;
 
+    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+    {
+        ct.TOTAL += ldaU_on->Ecorrect;
+    }
 
     /* Print contributions to total energies into output file */
     printf ("\n\n");
@@ -218,8 +222,10 @@ void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, d
     printf ("@@ ELECTROSTATIC      = %16.9f Ha\n", -ct.ES);
     printf ("@@ VXC                 = %16.9f Ha\n",  xcstate);
     printf ("@@ EXC                 = %16.9f Ha\n", ct.XC );
-   if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-     printf ("@@ HUBBARD ENERGY     = %15.6f Ha\n", ldaU_on->Ehub);
+    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+    {
+        printf ("@@ HUBBARD ENERGY     = %15.6f Ha\n", ldaU_on->Ehub);
+    }
 
     printf ("@@ TOTAL ENERGY       = %16.9f Ha\n", ct.TOTAL);
 

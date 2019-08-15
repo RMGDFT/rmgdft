@@ -87,6 +87,10 @@ LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
         }
     }
 
+    this->Ehub = 0.0;
+    this->Ecorrect = 0.0;
+
+    if(tot_orbitals_ldaU == 0) return;
     int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
     int density = 1;
     this->tot_orbitals_ldaU = tot_orbitals_ldaU;

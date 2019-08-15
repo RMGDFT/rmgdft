@@ -207,6 +207,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         {
             if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
             steps = ct.scf_steps - ct.freeze_orbital_step;
+            Pulay_rho->Refresh();
         }
 
         for (idx = 0; idx < nfp0; idx++)
