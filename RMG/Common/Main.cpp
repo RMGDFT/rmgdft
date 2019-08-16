@@ -48,6 +48,7 @@
 
 #include "../Headers/common_prototypes.h"
 #include "../Headers/common_prototypes1.h"
+#include "prototypes_tddft.h"
 
 
 void initialize (int argc, char **argv);
@@ -338,6 +339,12 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             if(ct.rmg2bgw) WriteBGW_Rhog(rho, rho_oppo);
             OutputBandPlot(Kptr);
             return;
+
+        case TDDFT:
+            if(!ct.restart_tddft) Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            RmgTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            break;
+
         default:
             rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
 

@@ -29,7 +29,7 @@
 #include <stdbool.h>
 
 /* Function prototypes */
-void get_dipole (double * rho);
+void get_dipole (double * rho, double *dipole);
 void app6_del2 (double *rho, double *work, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz);
 void app_cir_driver (double *a, double *b, int dimx, int dimy, int dimz, int order);
@@ -301,6 +301,5 @@ void  get_rho_oppo (double * rho, double * rho_oppo);
 void get_opposite_eigvals (STATE * states);
 void get_opposite_occupancies (STATE * states);
 void get_tf_rho (double * tf_rho);
-void get_dipole (double * rho);
 void set_pbc(double *position, int num_ions, int num_images);
 

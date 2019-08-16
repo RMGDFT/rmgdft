@@ -243,7 +243,22 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     /*Calculate and write dipole moment if requested*/
     if (ct.dipole_moment)
-        get_dipole(rho);
+    {
+        double dipole[3];
+        get_dipole(rho, dipole);
+
+        double DEBYE_CONVERSION = 2.54174618772314;
+
+            /*Now we need to convert to debye units */
+            if (pct.imgpe==0)
+            {
+                printf("\n\n Dipole moment [Debye]: (%.3f,%.3f, %.3f)", 
+                        DEBYE_CONVERSION *dipole[0], 
+                        DEBYE_CONVERSION *dipole[1], 
+                        DEBYE_CONVERSION *dipole[2]);
+            }
+
+    }                               /* end getpoi_bc.c */
 
 
 
@@ -259,6 +274,4 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
 
 }                               /* end quench */
-
-
 

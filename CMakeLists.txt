@@ -604,6 +604,7 @@ add_subdirectory (ON/Input EXCLUDE_FROM_ALL)
 add_subdirectory (ON/ON-NEGF-share EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/ELDYN EXCLUDE_FROM_ALL) 
+add_subdirectory (TDDFT/RMG_TDDFT EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/OrbitalProjection EXCLUDE_FROM_ALL) 
 
 add_subdirectory (NEGF EXCLUDE_FROM_ALL) 

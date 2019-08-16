@@ -9,16 +9,16 @@
 #define DEBYE_CONVERSION 2.54174618772314
 
 
-void get_dipole (double * rho)
+void get_dipole (double * rho, double *dipole)
 {
 
-    double px = 0.0, py = 0.0, pz = 0.0;
     double hxgrid, hygrid, hzgrid;
     double xc, yc, zc, ax[3], bx[3], x, y, z, temp, icharge, vel;
     int j, ix, iy, iz, ion, FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET, dimx, dimy, dimz ;
     ION *iptr;
 
 
+    for(int i = 0; i < 3; i++) dipole[i] = 0.0;
     vel = get_vel_f();
 
     hxgrid = get_hxxgrid();
@@ -63,9 +63,9 @@ void get_dipole (double * rho)
                 /*temp = rho[ix*incx + iy*incy +iz] * c->vel; */
                 temp = rho[j];
 
-                px += x * temp;
-                py += y * temp;
-                pz += z * temp;
+                dipole[0] += x * temp;
+                dipole[1] += y * temp;
+                dipole[2] += z * temp;
 
                 zc += hzgrid;
                 j++;
@@ -86,9 +86,9 @@ void get_dipole (double * rho)
 
     /* Sum these up over all processors, multiply by volume elemnt so that sum is 
      * integration and invert sign, since electron charge should be negative*/
-    px = -1.0 * vel * real_sum_all (px, pct.img_comm);
-    py = -1.0 * vel * real_sum_all (py, pct.img_comm);
-    pz = -1.0 * vel * real_sum_all (pz, pct.img_comm);
+    dipole[0] = -1.0 * vel * real_sum_all (dipole[0], pct.img_comm);
+    dipole[1] = -1.0 * vel * real_sum_all (dipole[1], pct.img_comm);
+    dipole[2] = -1.0 * vel * real_sum_all (dipole[2], pct.img_comm);
 
 
     /*Now we have dipole moment for electrons, need to add ions now */
@@ -100,9 +100,9 @@ void get_dipole (double * rho)
         icharge = Species[iptr->species].zvalence;
 
         /*Difference vector between center of the cell and ionic position */
-	ax[0] = iptr->xtal[0] - 0.5;
-	ax[1] = iptr->xtal[1] - 0.5;
-	ax[2] = iptr->xtal[2] - 0.5;
+        ax[0] = iptr->xtal[0] - 0.5;
+        ax[1] = iptr->xtal[1] - 0.5;
+        ax[2] = iptr->xtal[2] - 0.5;
 
 
 
@@ -110,21 +110,21 @@ void get_dipole (double * rho)
         to_cartesian (ax, bx);
 
         /*Ionic contribution to dipole moment */
-        px += icharge * bx[0];
-        py += icharge * bx[1];
-        pz += icharge * bx[2];
+        dipole[0] += icharge * bx[0];
+        dipole[1] += icharge * bx[1];
+        dipole[2] += icharge * bx[2];
 
     }                           /*end for (ion=0; ion<c->num_ions; ion++) */
 
     /*Now we need to convert to debye units */
-    if (pct.imgpe==0)
-    {
-	printf("\n\n Dipole moment [Debye]: Absolute value: %.3f, vector: (%.3f,%.3f, %.3f)", 
-		DEBYE_CONVERSION * sqrt (px * px + py * py + pz * pz), 
-		DEBYE_CONVERSION *px, 
-		DEBYE_CONVERSION *py, 
-		DEBYE_CONVERSION *pz);
-    }
+    //if (pct.imgpe==0)
+    //{
+    //   printf("\n\n Dipole moment [Debye]: Absolute value: %.3f, vector: (%.3f,%.3f, %.3f)", 
+    //          DEBYE_CONVERSION * sqrt (px * px + py * py + pz * pz), 
+    //         DEBYE_CONVERSION *px, 
+    //        DEBYE_CONVERSION *py, 
+    //       DEBYE_CONVERSION *pz);
+    //}
 
 
 
