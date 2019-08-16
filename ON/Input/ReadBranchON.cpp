@@ -75,7 +75,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     If.RegisterInputKey("orbital_pulay_order", &lc.orbital_pulay_order, 0, 10, 2, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
 
-    If.RegisterInputKey("orbital_pulay_refresh", &lc.orbital_pulay_refresh, 0, 100, 100, 
+    If.RegisterInputKey("orbital_pulay_refresh", &lc.orbital_pulay_refresh, 0, 100, 50, 
                      CHECK_AND_FIX, OPTIONAL, "", "");
     If.RegisterInputKey("orbital_mixing", &lc.orbital_pulay_mixfirst, 0.0, 1.0, 0.1,
                      CHECK_AND_FIX, OPTIONAL,
