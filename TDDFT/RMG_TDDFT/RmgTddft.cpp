@@ -151,6 +151,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, &pre_steps);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
+        ReadData (ct.infile, vh, rho, vxc, Kptr);
 
     }
     else
@@ -242,7 +243,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 //          }
 
 
+        RT2a = new RmgTimer("1-TOTAL: Rho");
         GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, Pn1, numst);
+        delete(RT2a);
         get_dipole(rho, dipole_ele);
 
         if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
@@ -268,7 +271,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         }
 
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+        RT2a = new RmgTimer("1-TOTAL: Hupdate");
         HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Hmatrix);
+        delete(RT2a);
 
         for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
