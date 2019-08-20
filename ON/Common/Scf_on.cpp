@@ -96,7 +96,17 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     if(ct.LocalizedOrbitalLayout == LO_projection)
     {
         LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat, *Rmg_G);
-        GetHS_dis(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij, matB, Kbpsi_mat);
+        int num_tot = LocalOrbital->num_tot;
+        double *Hij_glob = new double[num_tot * num_tot];
+        double *Sij_glob = new double[num_tot * num_tot];
+        GetHS_dis(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij_glob, Sij_glob, Kbpsi_mat);
+
+        mat_global_to_dist(Hij, pct.desca, Hij_glob);
+        mat_global_to_dist(matB, pct.desca, Sij_glob);
+        delete [] Hij_glob;
+        delete [] Sij_glob;
+    
+
     }
     else
     {

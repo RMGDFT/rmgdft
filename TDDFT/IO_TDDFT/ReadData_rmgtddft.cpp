@@ -43,7 +43,8 @@
 static size_t totalsize;
 
 void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, int *tot_steps)
+        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, 
+        double *Cmatrix, int *tot_steps)
 {
     int fhand, fgrid_size, size;
     char newname[MAX_PATH];
@@ -71,6 +72,7 @@ void ReadData_rmgtddft (char *filename, double * vh, double * vxc,
     read (fhand, Pn0, 2* n2 * sizeof(double));
     read (fhand, Hmatrix, n2 * sizeof(double));
     read (fhand, Smatrix, n2 * sizeof(double));
+    read (fhand, Cmatrix, n2 * sizeof(double));
     size = read (fhand, tot_steps, sizeof(int));
     if(size != sizeof(int)) 
             rmg_error_handler(__FILE__, __LINE__, "endof file in ReadData_rmgtddft ");

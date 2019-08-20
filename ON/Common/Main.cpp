@@ -59,6 +59,7 @@
 #include "transition.h"
 #include "prototypes_on.h"
 #include "Kbpsi.h"
+#include "rmgthreads.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -264,6 +265,22 @@ int main(int argc, char **argv)
 
                 quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                 break;
+            case TDDFT:
+                if(ct.LocalizedOrbitalLayout != LO_projection)
+                {   
+                    throw RmgFatalException() << " TDDFT only works with LO_Projection in "
+                        << __FILE__ << " at line " << __LINE__ << "\n";
+                }
+
+                if(!ct.restart_tddft) 
+                {
+                    quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
+                }
+                
+                OnTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, *LocalOrbital, 
+                        *H_LocalOrbital, *LocalProj);
+                break;
+
 
             default:
                 printf("\n undifined MD Method");
@@ -311,15 +328,14 @@ int main(int argc, char **argv)
 
     delete(RT);
 
-
     if(pct.imgpe == 0) fclose(ct.logfile);
-    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe);
-
-
+    int override_rank = 0;
+    if(pct.imgpe==0) MPI_Comm_rank (pct.img_comm, &override_rank);
+    RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe, override_rank);
 
     MPI_Finalize();
+    //RmgTerminateThreads();
 
-    return 0;
 }
 
 
@@ -358,7 +374,7 @@ static void dipole_calculation(double *rhooo, double *dipole)
     dipole[0] *= get_vel_f();
     dipole[1] *= get_vel_f();
     dipole[2] *= get_vel_f();
-    
+
     idx = 3;
     global_sums (dipole, &idx, pct.grid_comm);
 

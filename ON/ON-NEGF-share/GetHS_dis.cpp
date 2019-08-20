@@ -28,7 +28,7 @@
 
 void mat_global_to_dist(double *a_dist, int *desca, double *a_glob);
 void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi, 
-        double *vtot_c, double *Hij_dist, double *Bij_dist, double *Kbpsi_mat)
+        double *vtot_c, double *Hij_glob, double *Bij_glob, double *Kbpsi_mat)
 {
     int ione = 1;
 
@@ -40,9 +40,6 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     int order = ct.kohn_sham_fd_order;
 
     RmgTimer *RT = new RmgTimer("4-get_HS");
-
-    double *Hij_glob = new double[Phi.num_tot * Phi.num_tot];
-    double *Bij_glob = new double[Phi.num_tot * Phi.num_tot];
 
     for (int st1 = 0; st1 < Phi.num_tot * Phi.num_tot; st1++) Hij_glob[st1] = 0.0;
     for (int st1 = 0; st1 < Phi.num_tot * Phi.num_tot; st1++) Bij_glob[st1] = 0.0;
@@ -88,26 +85,12 @@ void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     GetHvnlij_dis(Hij_glob, Bij_glob, Kbpsi_mat, Phi.num_tot, LocalProj->num_tot);
     delete(RT3);
 
-    int n2 = Phi.num_tot * Phi.num_tot;
-
-    double t1 = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
-    double vel = Rmg_L.get_omega() / t1;
-
-    //print_sum_square(Phi.num_tot * Phi.num_tot, Hij_glob, "Hij_glob");
-    //  dscal (&n2, &vel, Hij_glob, &ione);
-    //  dscal (&n2, &vel, Bij_glob, &ione);
-
     if (pct.gridpe == 0)
     {
         print_matrix(Hij_glob, 6, Phi.num_tot);
         print_matrix(Bij_glob, 6, Phi.num_tot);
     }
 
-
-    mat_global_to_dist(Hij_dist, pct.desca, Hij_glob);
-    mat_global_to_dist(Bij_dist, pct.desca, Bij_glob);
-    delete [] Hij_glob;
-    delete [] Bij_glob;
 
     delete(RT);
 

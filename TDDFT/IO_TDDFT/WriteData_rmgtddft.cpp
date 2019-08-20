@@ -43,7 +43,8 @@
 
 
 void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, int tot_steps)
+        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, 
+        double *Cmatrix, int tot_steps)
 {
     int fhand;
     int fgrid_size;
@@ -95,6 +96,7 @@ void WriteData_rmgtddft (char *filename, double * vh, double * vxc,
    write (fhand, Pn0, 2* n2 * sizeof(double));
    write (fhand, Hmatrix, n2 * sizeof(double));
    write (fhand, Smatrix, n2 * sizeof(double));
+   write (fhand, Cmatrix, n2 * sizeof(double));
    write (fhand, &tot_steps, sizeof(int));
    close(fhand);
 
