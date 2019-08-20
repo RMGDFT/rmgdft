@@ -240,7 +240,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     {
 
         tot_steps = pre_steps + tddft_steps;
-        RmgTimer *RT2a = new RmgTimer("1-TOTAL: ELDYN");
+        RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
         
 
         dgemm("T", "N", &numst, &numst, &numst,  &one, Cmatrix, &numst,
@@ -277,9 +277,11 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 //      printf("\n\n");
 
 
-        RT2a = new RmgTimer("1-TOTAL: Rho");
+        RT2a = new RmgTimer("2-TDDFT: mat_glob_to_local");
 
         mat_global_to_local(Phi, H_Phi, Xmatrix, rho_matrix_local);
+        delete(RT2a);
+        RT2a = new RmgTimer("2-TDDFT: Rho");
         GetNewRho_dis(Phi, H_Phi, rho, rho_matrix_local);
 
 

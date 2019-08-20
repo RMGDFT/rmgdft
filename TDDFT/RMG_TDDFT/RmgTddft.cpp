@@ -236,7 +236,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 //          }
 
 
-        RT2a = new RmgTimer("1-TOTAL: Rho");
+        RT2a = new RmgTimer("2-TDDFT: Rho");
         GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, Pn1, numst);
         delete(RT2a);
         get_dipole(rho, dipole_ele);
