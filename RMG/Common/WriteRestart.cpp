@@ -224,5 +224,32 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
     /* force change mode of output file */
     chmod (newname, amode);
 
+    if (pct.imgpe == 0)
+    {
+        std::string new_file(name);
+        new_file = new_file + ".atomic_coordinates.xyz";
+
+        FILE *fhandle = fopen (new_file.c_str(), "w");
+        if (!fhandle)
+        {
+             rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
+        }
+
+        fprintf(fhandle,"%lu\n\n", Atoms.size());
+
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+        {   
+            ION &Atom = Atoms[ion];
+            SPECIES &AtomType = Species[Atom.species];
+            fprintf(fhandle,"%s %#15.12g %#15.12g %#15.12g\n", AtomType.atomic_symbol, 
+                    a0_A*Atom.crds[0], a0_A*Atom.crds[1], a0_A*Atom.crds[2]);
+        }
+
+
+        fclose (fhandle);
+        fflush(NULL);
+
+    }
+
 }                               /* end write_data */
 
