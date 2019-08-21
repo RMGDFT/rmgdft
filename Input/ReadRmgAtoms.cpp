@@ -163,19 +163,23 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         conv.SetInAndOutFormats(inFormat,outFormat);
         conv.Convert(pIn, &newstream);
         std::string XYZArray= newstream.str(); 
+
         std::vector<std::string>  XYZlines;
         boost::algorithm::split( XYZlines, XYZArray, boost::is_any_of(line_delims), boost::token_compress_on );
-        lc.num_ions = std::atoi(XYZlines[0].c_str());
-
-        // Should we do anything with the comment line?
 
         // Skip first two lines and reconstruct AtomArray
-        auto it = XYZlines.begin();
-        it++;
+        std::string fline = *XYZlines.begin();
+        int num_ions = std::atoi(fline.c_str());
+        XYZlines.erase(XYZlines.begin());
+        XYZlines.erase(XYZlines.begin());
         AtomArray.erase();
-        for(auto it1 = it++;it1 < XYZlines.end();++it1) {
-            AtomArray = AtomArray + *it1 + "\n";
+        auto it1 = XYZlines.begin();
+        // A little awkward but the Openbabel conversion seems to leave empty lines at the end.
+        for(int ion=0;ion < num_ions;ion++) {
+            AtomArray = AtomArray + *it1 + "    1\n";
+            ++it1;
         }
+
         boost::trim(AtomArray);
         boost::algorithm::split( Atoms_str, AtomArray, boost::is_any_of(line_delims), boost::token_compress_on );
 
