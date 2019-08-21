@@ -103,6 +103,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     double dipole_ele[3];
 
 
+    RmgTimer *RT0 = new RmgTimer("2-TDDFT");
 
     // Loop over k-points
     if(ct.num_kpts != 1) 
@@ -149,7 +150,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     if(ct.restart_tddft)
     {
 
-        ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, &pre_steps);
+        ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,Smatrix, &pre_steps);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
         ReadData (ct.infile, vh, rho, vxc, Kptr);
 
@@ -162,7 +163,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Akick);
 
-        printf("\n bbb \n");
         /* save old vhxc + vnuc */
         for (int idx = 0; idx < FP0_BASIS; idx++) {
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
@@ -174,13 +174,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         /*Generate the Dnm_I */
         get_ddd (vtot);
 
-        printf("\n aaa \n");
         HSmatrix (Kptr[0], vtot_psi, (OrbitalType *)Hmatrix, (OrbitalType *)Smatrix);
 
-        printf("\n ccc \n");
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
-        if(pct.gridpe == 0)
+        if(pct.gridpe == 0 && ct.verbose)
         { 
             printf("\nHMa\n");
             for(i = 0; i < 10; i++) 
@@ -214,11 +212,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
         rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
 
-        GetNewRho(Kptr, rho);
-        get_dipole(rho, dipole_ele);
-        rmg_printf("\n  x dipolll  %f ", dipole_ele[0]);
-        rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
-        rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
  //         for(int i = 0; i < 10; i++) 
  //         { printf("Akick\n");
  //        for(int j = 0; j < 10; j++) printf(" %8.1e", i, Akick[i*numst + j]);
@@ -232,7 +225,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     {
 
         tot_steps = pre_steps + tddft_steps;
-        RmgTimer *RT2a = new RmgTimer("1-TOTAL: ELDYN");
+        RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
         dscal(&n2, &time_step, Hmatrix, &ione);
         eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
         dcopy(&n22, Pn1, &ione, Pn0, &ione);
@@ -243,7 +236,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 //          }
 
 
-        RT2a = new RmgTimer("1-TOTAL: Rho");
+        RT2a = new RmgTimer("2-TDDFT: Rho");
         GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, Pn1, numst);
         delete(RT2a);
         get_dipole(rho, dipole_ele);
@@ -258,20 +251,22 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         //get_vxc(rho, rho_oppo, rhocore, vxc);
         double vtxc, etxc;
-        RmgTimer *RT1 = new RmgTimer("2-Init: exchange/correlation");
+        RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
         delete F;
         delete RT1;
 
+        RT1 = new RmgTimer("2-TDDFT: Vh");
         VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0-12);
+        delete RT1;
         for (int idx = 0; idx < FP0_BASIS; idx++) {
             vtot[idx] = vxc[idx] + vh[idx]
                 -vxc_old[idx] -vh_old[idx];
         }
 
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
-        RT2a = new RmgTimer("1-TOTAL: Hupdate");
+        RT2a = new RmgTimer("2-TDDFT: Hupdate");
         HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Hmatrix);
         delete(RT2a);
 
@@ -280,7 +275,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         if((tddft_steps +1) % ct.checkpoint == 0)
         {
-            WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, tot_steps);
+            RT2a = new RmgTimer("2-TDDFT: Write");
+            WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, tot_steps);
+            delete RT2a;
             fflush(NULL);
         }
 
@@ -289,5 +286,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     if(pct.gridpe == 0) fclose(dfi);
 
 
-    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, tot_steps+1);
+    RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
+    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, tot_steps+1);
+    delete RT2a;
+    delete RT0;
 }

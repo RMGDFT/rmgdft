@@ -8,8 +8,6 @@
 #        rmg-on-gpu     ON code with gpu support
 #        rmg-negf-cpu   Non equilibrium greens function code cpu only
 #        rmg-negf-gpu   Non equilibrium greens function code with gpu support
-#        rmg-tddft-cpu  TDDFT based on rmg-on cpu only
-#        rmg-tddft-gpu  TDDFT based on rmg-on with gpu support
 
 #
 # Environment variables that may also control configuration
@@ -602,10 +600,10 @@ add_subdirectory (ON EXCLUDE_FROM_ALL)
 add_subdirectory (ON/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/Input EXCLUDE_FROM_ALL) 
 add_subdirectory (ON/ON-NEGF-share EXCLUDE_FROM_ALL) 
-add_subdirectory (TDDFT/Common EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/ELDYN EXCLUDE_FROM_ALL) 
+add_subdirectory (TDDFT/IO_TDDFT EXCLUDE_FROM_ALL) 
 add_subdirectory (TDDFT/RMG_TDDFT EXCLUDE_FROM_ALL) 
-add_subdirectory (TDDFT/OrbitalProjection EXCLUDE_FROM_ALL) 
+add_subdirectory (TDDFT/ON_TDDFT EXCLUDE_FROM_ALL) 
 
 add_subdirectory (NEGF EXCLUDE_FROM_ALL) 
 add_subdirectory (NEGF/Common EXCLUDE_FROM_ALL) 

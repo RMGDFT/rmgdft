@@ -1,6 +1,4 @@
 add_library (RmgTddft
-WriteData_rmgtddft.cpp
-ReadData_rmgtddft.cpp
 RmgTddft.cpp
 HmatrixUpdate.cpp
 HSmatrix.cpp

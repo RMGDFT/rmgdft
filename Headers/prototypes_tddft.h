@@ -45,8 +45,8 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
 template <typename KpointType>
 void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij, KpointType *Sij);
 void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, int *tot_steps);
+        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, int *tot_steps);
 void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, int tot_steps);
+        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, double *Cmat, int tot_steps);
 
 void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_matrix, int numst);

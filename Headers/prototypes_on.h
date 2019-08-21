@@ -1,8 +1,16 @@
 #define GAMMA_PT 1
 //#include "typedefs.h"
 #include "LocalObject.h"
+template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double * vnuc,
+        double * rho, double * rho_oppo, double * rhocore, double * rhoc, LocalObject<OrbitalType> &Phi,
+        LocalObject<OrbitalType> &H_Phi, LocalObject<OrbitalType> &LP);
+
+void HmatrixUpdate_on(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
+        double *vtot_c, double *Hij_glob);
+void mat_dist_to_global(double *a_dist, int *desca, double *a_glob);
 void MyCpdgemr2d(int M,int N, double *A, int *desca, double *B, int *descb);
 
+void mat_global_to_dist(double *, int *desca, double *);
 void KbpsiComm();
 void InitNonlocalComm();
 void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double *Bij);

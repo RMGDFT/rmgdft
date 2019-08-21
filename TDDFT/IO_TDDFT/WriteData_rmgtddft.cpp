@@ -27,6 +27,7 @@
 #include <stdio.h>
 #if !(defined(_WIN32) || defined(_WIN64))
     #include <unistd.h>
+    #include <libgen.h>
 #else
     #include <io.h>
 #endif
@@ -40,42 +41,64 @@
 #include "Kpoint.h"
 #include "transition.h"
 
-static size_t totalsize;
 
-void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
-        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, int *tot_steps)
+void WriteData_rmgtddft (char *filename, double * vh, double * vxc, 
+        double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, 
+        double *Cmatrix, int tot_steps)
 {
-    int fhand, fgrid_size, size;
-    char newname[MAX_PATH];
+    int fhand;
+    int fgrid_size;
+    char newname[MAX_PATH], tmpname[MAX_PATH];
 
 
     int amode;
     sprintf (newname, "%s%d", filename, pct.gridpe);
 
     amode = S_IREAD | S_IWRITE;
-    fhand = open(newname, O_RDWR, amode);
+    fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 
    if (fhand < 0) {
+
+       strcpy (tmpname, newname);
+
+
+#if !(defined(_WIN32) || defined(_WIN64))
+       if (!mkdir (dirname (tmpname), S_IRWXU))
+#else
+           char dirname[_MAX_DIR];
+       _splitpath(tmpname, NULL, dirname, NULL, NULL);
+       if (!_mkdir(dirname));
+#endif
+   if (1)
+        rmg_printf ("\n Creating directory %s succesfull\n\n", tmpname);
+    else
+        rmg_printf ("\n Creating directory %s FAILED\n\n", tmpname);
+
+
+    fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+
+    if (fhand < 0) {
         rmg_printf("Can't open restart file %s", newname);
         rmg_error_handler(__FILE__, __LINE__, "Terminating.");
     }
 
 
-    fgrid_size = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
-    read (fhand, vh, fgrid_size * sizeof(double));
-    read (fhand, vxc, fgrid_size * sizeof(double));
-    read (fhand, vh_corr, fgrid_size * sizeof(double));
+   }
 
-    int n2 = ct.num_states * ct.num_states;
-    
-    read (fhand, Pn0, 2* n2 * sizeof(double));
-    read (fhand, Hmatrix, n2 * sizeof(double));
-    read (fhand, Smatrix, n2 * sizeof(double));
-    size = read (fhand, tot_steps, sizeof(int));
-    if(size != sizeof(int)) 
-            rmg_error_handler(__FILE__, __LINE__, "endof file in ReadData_rmgtddft ");
-    
-    close(fhand);
+
+   fgrid_size = get_FPX0_GRID() * get_FPY0_GRID() * get_FPZ0_GRID();
+   write (fhand, vh, fgrid_size * sizeof(double));
+   write (fhand, vxc, fgrid_size * sizeof(double));
+   write (fhand, vh_corr, fgrid_size * sizeof(double));
+
+   int n2 = ct.num_states * ct.num_states;
+
+   write (fhand, Pn0, 2* n2 * sizeof(double));
+   write (fhand, Hmatrix, n2 * sizeof(double));
+   write (fhand, Smatrix, n2 * sizeof(double));
+   write (fhand, Cmatrix, n2 * sizeof(double));
+   write (fhand, &tot_steps, sizeof(int));
+   close(fhand);
 
 
 }                               /* end write_data */
