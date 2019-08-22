@@ -279,6 +279,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      CHECK_AND_FIX, OPTIONAL, crds_units,
                      "Units for the atomic coordinates. ", 
                      "Coordinates must be specified in either Bohr or Angstrom. ");
+    If.RegisterInputKey("lattice_units", NULL, NULL, "Bohr",
+                     CHECK_AND_FIX, OPTIONAL, lattice_units,
+                     "Units for the lattice vectors ", 
+                     "lattice vectors' unit  must be specified in either Bohr or Angstrom, or Alat. ");
 
     If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Pulay",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
@@ -397,19 +401,26 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "interpolation_type not supported. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
-                     CHECK_AND_TERMINATE, REQUIRED, 
+                     CHECK_AND_TERMINATE, OPTIONAL, 
                      "First lattice constant. ", 
                      "a_length must be a positive number. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("b_length", &celldm[1], 0.0, DBL_MAX, 0.0, 
-                     CHECK_AND_TERMINATE, REQUIRED, 
+                     CHECK_AND_TERMINATE, OPTIONAL, 
                      "Second lattice constant. ", 
                      "b_length must be a positive number. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("c_length", &celldm[2], 0.0, DBL_MAX, 0.0, 
-                     CHECK_AND_TERMINATE, REQUIRED, 
+                     CHECK_AND_TERMINATE, OPTIONAL, 
                      "Third lattice constant. ", 
                      "c_length must be a positive number. Terminating. ", CONTROL_OPTIONS);
+
+
+    Ri::ReadVector<double> def_lattice_vector({{0.0,0.0,0.0, 0.0,0.0,0.0, 0.0,0.0,0.0}});
+    Ri::ReadVector<double> lattice_vector;
+    If.RegisterInputKey("lattice_vector", &lattice_vector, &def_lattice_vector, 9, OPTIONAL,
+                     "Lattice vectors, a0, a1, a2 ",
+                     "Optional Lattice vector input as 3x3 matrix or 9 numbers");
 
     If.RegisterInputKey("grid_spacing", &grid_spacing, 0.0, DBL_MAX, 0.35, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
@@ -1167,11 +1178,43 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         celldm[2] *= A_a0;
     }
 
+    if(ibrav == None)
+    {
+        double Lunit = 1.0;
+        if (Verify ("lattice_units", "Angstrom", InputMap))
+            Lunit = A_a0;
+        if (Verify ("lattice_units", "Alat", InputMap))
+            Lunit = celldm[0];
+
+        if(Lunit < 1.0e-10)    
+            throw RmgFatalException() << "lattice units = Alat, but Alat(a_length) = 0.0" << "\n";
+
+        double d[3]= {0.0, 0.0, 0.0};
+        for (int i = 0; i < 3; i++)
+        {
+            a0[i] = Lunit * lattice_vector.vals.at(i);
+            a1[i] = Lunit * lattice_vector.vals.at(i+3);
+            a2[i] = Lunit * lattice_vector.vals.at(i+6);
+            d[0] += a0[i] * a0[i];
+            d[1] += a1[i] * a1[i];
+            d[2] += a2[i] * a2[i];
+        }
+        
+        for (int i = 0; i < 3; i++)
+        {
+            if(celldm[i] > 1.0e-10 && abs(celldm[i] * celldm[i] - d[i]) > 1.0e-5)
+            {
+                std::cout << "direction="<<i<<" length = "<< celldm[i] << "  "<< sqrt(d[i])<<std::endl;
+                throw RmgFatalException() << "lattice vectors are inconsistent with a,b,c" << "\n";
+            }
+        }
+        
+    }
 
     // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
     // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
     if (!Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
-        !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
+            !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
     {
         celldm[1] /= celldm[0];
         celldm[2] /= celldm[0];
@@ -1184,8 +1227,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     // Set up the lattice vectors
     Rmg_L.set_ibrav_type(ibrav);
-    int flag = 0;
-    Rmg_L.latgen(celldm, &omega, a0, a1, a2, &flag);
+    Rmg_L.latgen(celldm, &omega, a0, a1, a2);
 
 
     int NX_GRID = WavefunctionGrid.vals.at(0);
@@ -1241,7 +1283,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     //for(auto it = InputMap.begin();it != InputMap.end(); ++it) {
     //    std::pair<std::string, InputKey*> Check = *it;
     //    InputKey *CheckKey = it->second;
-        //std::cout << Check.first << " = " << CheckKey->Print() << std::endl;
+    //std::cout << Check.first << " = " << CheckKey->Print() << std::endl;
     //}
 
     // Set up energy output units

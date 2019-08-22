@@ -233,7 +233,7 @@ void Lattice::recips (void)
 
 
 // If flag is true then A0I,A1I,A2I are cell relative (0.0-1.0)
-void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2, int *flag)
+void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2)
 {
 
     int ir;
@@ -243,16 +243,58 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
     /* Initialise the appropriate variables */
 
-    alat = celldm[0];
-
-    for (ir = 0; ir < 3; ir++)
+    if(Lattice::ibrav == None)
     {
-        Lattice::a0[ir] = 0.0;
-        Lattice::a1[ir] = 0.0;
-        Lattice::a2[ir] = 0.0;
-        Lattice::celldm[ir] = celldm[ir];
+        for (ir = 0; ir < 3; ir++)
+        {
+            Lattice::a0[ir] = a0[ir];
+            Lattice::a1[ir] = a1[ir];
+            Lattice::a2[ir] = a2[ir];
+        }
+
+        distance = 0.0;
+        for (ir = 0; ir < 3; ir++)
+            distance += Lattice::a0[ir] * Lattice::a0[ir];
+        celldm[0] = sqrt(distance);
+
+        distance = 0.0;
+        for (ir = 0; ir < 3; ir++)
+            distance += Lattice::a1[ir] * Lattice::a1[ir];
+        celldm[1] = sqrt(distance)/celldm[0];
+
+        distance = 0.0;
+        for (ir = 0; ir < 3; ir++)
+            distance += Lattice::a2[ir] * Lattice::a2[ir];
+        celldm[2] = sqrt(distance)/celldm[0];
+        
+        distance = 0.0;
+        distance += a0[1] * a0[1] + a0[2] * a0[2];
+        distance += a1[0] * a1[0] + a1[2] * a1[2];
+        distance += a2[0] * a2[0] + a2[1] * a2[1];
+        if(distance < 1.0e-10) 
+            Lattice::ibrav = ORTHORHOMBIC_PRIMITIVE;
+
+        distance = 0.0;
+        distance += a0[1] * a0[1] + a0[2] * a0[2];
+        distance += a1[2] * a1[2];
+        distance += a2[0] * a2[0] + a2[1] * a2[1];
+        if(distance < 1.0e-10 && abs(abs(a1[0]) - 0.5* a0[0]) < 1.0e-10 
+                && abs(abs(a1[1]) - 0.5 * sqrt(3.0) * a0[0]) < 1.0e-10   ) 
+            Lattice::ibrav = HEXAGONAL;
+    }
+    else
+    {
+        for (ir = 0; ir < 3; ir++)
+        {
+            Lattice::a0[ir] = 0.0;
+            Lattice::a1[ir] = 0.0;
+            Lattice::a2[ir] = 0.0;
+        }
     }
 
+    for (ir = 0; ir < 3; ir++)
+        Lattice::celldm[ir] = celldm[ir];
+    alat = celldm[0];
     switch (Lattice::ibrav)
     {
 
@@ -370,9 +412,9 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
             singam = sqrt (1.0 - celldm[5] * celldm[5]);
             term = sqrt ((1.0 + 2.0 * celldm[3] * celldm[4] * celldm[5] -
-                          celldm[3] * celldm[3]
-                          - celldm[4] * celldm[4]
-                          - celldm[5] * celldm[5]) / (1.0 - celldm[5] * celldm[5]));
+                        celldm[3] * celldm[3]
+                        - celldm[4] * celldm[4]
+                        - celldm[5] * celldm[5]) / (1.0 - celldm[5] * celldm[5]));
             Lattice::a0[0] = alat;
             Lattice::a1[0] = alat * celldm[1] * celldm[5];
             Lattice::a1[1] = alat * celldm[1] * singam;
@@ -415,27 +457,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
     Lattice::zside = sqrt (distance);
 
-    if (*flag)
-    {
-        for (ir = 0; ir < 3; ir++)
-        {
-            Lattice::a0[ir] /= celldm[0];
-            Lattice::a1[ir] /= celldm[0];
-            Lattice::a2[ir] /= celldm[0];
-        }                       /* end for */
-    }                           /* end if */
-
     Lattice::recips();
-
-    a0[0] = Lattice::a0[0];
-    a0[1] = Lattice::a0[1];
-    a0[2] = Lattice::a0[2];
-    a1[0] = Lattice::a1[0];
-    a1[1] = Lattice::a1[1];
-    a1[2] = Lattice::a1[2];
-    a2[0] = Lattice::a2[0];
-    a2[1] = Lattice::a2[1];
-    a2[2] = Lattice::a2[2];
 
 }                               /* end latgen */
 
@@ -464,7 +486,7 @@ int Lattice::get_ibrav_type(void)
 }
 void Lattice::set_ibrav_type(int newtype)
 {
-  Lattice::ibrav = newtype;
+    Lattice::ibrav = newtype;
 }
 double Lattice::get_omega(void)
 {
