@@ -164,6 +164,7 @@
 /* Crystal lattice types */
 /** Simple cubic lattice type.
  *  @doc Set input file value = 1 */
+#define None  0
 #define CUBIC_PRIMITIVE 	1
 
 /** Face centered cubic lattice type. 

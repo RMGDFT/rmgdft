@@ -34,6 +34,7 @@
 
 
 /* Crystal lattice types */
+#define None                            0
 #define CUBIC_PRIMITIVE                 1
 #define CUBIC_FC                        2
 #define CUBIC_BC                        3
@@ -79,7 +80,7 @@ public:
     // Total cell volume
     double omega;
 
-    void latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2, int *flag);
+    void latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2);
 
     void cross_product (double * a, double * b, double * c);
     void to_crystal (double *crystal, double *cartesian);

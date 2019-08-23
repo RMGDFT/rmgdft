@@ -73,10 +73,10 @@ namespace RmgInput {
 
         while(t1.size() > 0) {
             A.vals.push_back( std::atof(t1.c_str()));
-            size_t f1 = t1.find_first_of(" \t");
+            size_t f1 = t1.find_first_of(" \t\n^");
             if(f1 == std::string::npos) break;
             t1 = t1.substr(f1, std::string::npos);
-            boost::trim(t1);
+            boost::trim_if(t1, boost::algorithm::is_any_of(" \t\n^"));
         }
         v = A;
     }

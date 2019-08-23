@@ -5,7 +5,7 @@
 #include <const.h>
 
 static std::unordered_map<std::string, int> bravais_lattice_type = {
-//        {"None", 0},
+        {"None", 0},
         {"Cubic Primitive", 1},
 //        {"Cubic Face Centered", 2},
 //        {"Cubic Body Centered", 3},
@@ -36,6 +36,11 @@ static std::unordered_map<std::string, int> discretization_type = {
 static std::unordered_map<std::string, int> crds_units = {
         {"Bohr", 0},
         {"Angstrom", 1}};
+
+static std::unordered_map<std::string, int> lattice_units = {
+        {"Bohr", 0},
+        {"Angstrom", 1},
+        {"Alat", 2}};
 
 static std::unordered_map<std::string, int> charge_mixing_type = {
         {"Linear", 0},

@@ -85,15 +85,6 @@ void recips(void)
 {
     Rmg_L.recips();
 }
-void latgen (double *celldm, double *a0, double *a1, double *a2, double *OMEGAI, int *flag)
-{
-    Rmg_L.latgen(celldm, OMEGAI, a0, a1, a2, flag);
-}
-void latgen_f_ (int *ibrav, double *celldm, double *a0, double *a1, double *a2, double *OMEGAI, int *flag)
-{
-    //*ibrav = Rmg_L.get_ibrav_type();
-    Rmg_L.latgen(celldm, OMEGAI, a0, a1, a2, flag);
-}
 double get_anisotropy(void)
 {
     double hmaxgrid = get_xside() * get_hxgrid();
