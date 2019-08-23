@@ -173,5 +173,8 @@ void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc
         }
     }
 
+    MPI_Type_free(&grid_f);
+    MPI_Type_free(&grid_c);
+
 } // WriteSerialData
 
