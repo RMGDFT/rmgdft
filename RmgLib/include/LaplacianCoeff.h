@@ -11,11 +11,14 @@ typedef struct {
 
 struct GridPoint{
     double dist;
-    double dx,dy,dz;
-    int i, j, k, eq_num;
+    double delta[3];
+    int index[3];
     int ijk;
     double weight_factor;
     double coeff;
+    double coeff_gx;
+    double coeff_gy;
+    double coeff_gz;
 };
 typedef GridPoint GridPoint;
 
@@ -43,6 +46,9 @@ public:
     ~LaplacianCoeff(void);
 
     std::vector<CoeffList> coeff_and_index;
+    std::vector<CoeffList> gx_coeff_and_index;
+    std::vector<CoeffList> gy_coeff_and_index;
+    std::vector<CoeffList> gz_coeff_and_index;
     void SetLattice(double a[3][3])
     {
         for(int i = 0; i < 3; i++)
@@ -74,10 +80,10 @@ public:
 
     void GenerateList(const std::vector<GridPoint>& points);
     void BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list, int dimension);
-    void GetDerList(std::vector<GridPoint>& der_list, int Lorder, int dimension);
+    void GetDerList(std::vector<GridPoint>& der_list, int Lorder, int dimension, int direction);
     void GetPointList3D (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
     void GetPointList2D (std::vector<GridPoint>& points, double a[2][2], int Ngrid[2], int Lorder);
-    void GetPointList1D (std::vector<GridPoint>& points, double a, int Ngrid, int Lorder);
+    void GetPointList1D (std::vector<GridPoint>& points, double a, int Ngrid, int Lorder, int direction);
 
 
 };
