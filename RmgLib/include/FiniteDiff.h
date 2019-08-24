@@ -117,9 +117,6 @@ public:
     double app2_del2_offset (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int offset);
 
     template <typename RmgType>
-    double app4_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
-
-    template <typename RmgType>
     double app6_del2 (RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
@@ -127,9 +124,6 @@ public:
 
     template <typename RmgType>
     double app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
-
-    template <typename RmgType>
-    double app12_del2(RmgType * a, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 
     template <typename RmgType>
     double app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
@@ -150,10 +144,6 @@ public:
     void app_cir_hex (RmgType * a, RmgType * b, int dimx, int dimy, int dimz);
 
     template <typename RmgType>
-    void app_gradient_fourth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
-                               double gridhx, double gridhy, double gridhz);
-
-    template <typename RmgType>
     void app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
 
@@ -164,11 +154,6 @@ public:
     template <typename RmgType>
     void app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz);
-
-    template <typename RmgType>
-    void app_gradient_twelfth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
-                                   double gridhx, double gridhy, double gridhz);
-
 
 };
 #endif

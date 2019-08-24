@@ -104,30 +104,24 @@ if(0)
     }
     else
     {
-    if(order == APP_CI_SECOND) {
-        cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-    else if(order == APP_CI_FOURTH) {
-        cc = FD.app4_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-    else if(order == APP_CI_SIXTH) {
-        cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-    else if(order == APP_CI_EIGHT) {
-        cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-    else if(order == APP_CI_TEN) {
-        cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-    else if(order == APP_CI_TWELVE) {
-        cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-    else {
+        if(order == APP_CI_SECOND) {
+            cc = FD.app2_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        }
+        else if(order == APP_CI_SIXTH) {
+            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        }
+        else if(order == APP_CI_EIGHT) {
+            cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        }
+        else if(order == APP_CI_TEN) {
+            cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        }
+        else {
 
-        rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
-        return 0;   // Just to keep the compiler from complaining
+            rmg_error_handler (__FILE__, __LINE__, "APP_DEL2 order not programmed yet in app_del2_driver.\n");
+            return 0;   // Just to keep the compiler from complaining
 
-    }
+        }
     }
 
     if(alloc > FiniteDiff::allocation_limit) delete [] rptr;

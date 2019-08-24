@@ -68,12 +68,7 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     else
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
-    if(order == APP_CI_FOURTH) {
-
-        FD.app_gradient_fourth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-
-    }
-    else if(order == APP_CI_SIXTH) {
+    if(order == APP_CI_SIXTH) {
 
         FD.app_gradient_sixth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
@@ -86,11 +81,6 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     else if(order == APP_CI_TEN) {
 
         FD.app_gradient_tenth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-
-    }
-    else if(order == APP_CI_TWELVE) {
-
-        FD.app_gradient_twelfth (rptr, bx, by, bz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
 
     }
     else {

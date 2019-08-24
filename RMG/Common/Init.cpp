@@ -239,7 +239,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
         if(!rptr) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for orbitals. \n");
-        madvise(rptr, ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024) * sizeof(OrbitalType), MADV_NORMAL|MADV_HUGEPAGE);
+        madvise(rptr, ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024) * sizeof(OrbitalType), MADV_RANDOM);
     }
     else
     {

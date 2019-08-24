@@ -89,11 +89,7 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
        Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
     // First apply the laplacian
-    if(order == APP_CI_FOURTH) {
-        cc = FD.app4_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        if(!ct.is_gamma) FD.app_gradient_fourth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-    else if(order == APP_CI_SIXTH) {
+    if(order == APP_CI_SIXTH) {
         cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         if(!ct.is_gamma) FD.app_gradient_sixth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
@@ -104,10 +100,6 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
     else if(order == APP_CI_TEN) {
         cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         if(!ct.is_gamma) FD.app_gradient_tenth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-    }
-    else if(order == APP_CI_TWELVE) {
-        cc = FD.app12_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        if(!ct.is_gamma) FD.app_gradient_twelfth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else {
 
