@@ -43,7 +43,7 @@
 extern double Atomic_inv_a;
 extern double Atomic_inv_b;
 
-/* Sets Qnm function (part of ultrasfot pseudpotential*/
+/* Sets Qnm function (part of ultrasoft pseudpotential*/
 
 static inline double qval_inline (int lmax, int ih, int jh, int ic, double d0, double d1, double dm,  
         double * ptpr, int *nh_l2m,
@@ -60,12 +60,12 @@ void GetQI (void)
     int ilow, jlow, klow, ihi, jhi, khi, map, icount;
     int *Aix, *Aiy, *Aiz;
     int icut, itmp, icenter, alloc;
-    int *pvec, *ivec, *dvec;
+    int *pvec, *dvec;
     double x[3], cx[3], r;
     double xc, yc, zc;
     double hxxgrid, hyygrid, hzzgrid;
     ION *iptr;
-    double *qnmlig, *QI_tpr;
+    double *qnmlig;
     SPECIES *sp;
 
     hxxgrid = get_hxxgrid();
@@ -101,14 +101,8 @@ void GetQI (void)
     {
 
         /*Release memory first */
-        if (pct.Qindex[ion])
-            delete [](pct.Qindex[ion]);
-        if (pct.augfunc[ion])
-            delete [](pct.augfunc[ion]);
-
-        /*Let those empty pointers point to NULL */
-        pct.Qindex[ion] = NULL;
-        pct.augfunc[ion] = NULL;
+        Atoms[ion].Qindex.clear();
+        Atoms[ion].augfunc.clear();
 
         /*Initialize this */
         pct.Qidxptrlen[ion] = 0;
@@ -183,19 +177,14 @@ void GetQI (void)
             pct.Qidxptrlen[ion] = icount;
 
 
-            pct.Qindex[ion] = new int[icount + 128];
-
-            ivec = pct.Qindex[ion];
-            for (idx1 = 0; idx1 < icount; idx1++)
-                ivec[idx1] = (int) pvec[idx1];
+            Atoms[ion].Qindex.resize(icount);
+            for (idx1 = 0; idx1 < icount; idx1++) Atoms[ion].Qindex[idx1] = (int) pvec[idx1];
 
 
             size = nh * (nh + 1) / 2;
-            pct.augfunc[ion] = new double[ size * icount + 128];
-            ct.q_alloc[0] += (size_t)(size * icount + 128) * sizeof(double);
+            Atoms[ion].augfunc.resize(size * icount);
+            ct.q_alloc[0] += (size_t)(size * icount) * sizeof(double);
 
-
-            QI_tpr = pct.augfunc[ion];
             qnmlig = sp->qnmlig;
 
             idx = 0;
@@ -250,7 +239,7 @@ void GetQI (void)
                                 {
 
                                     idx1 = num * pct.Qidxptrlen[ion] + icount;
-                                    QI_tpr[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m,
+                                    Atoms[ion].augfunc[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m,
                                             sp->indv, ylm, ap, lpx, lpl, sp);
 
                                     num++;

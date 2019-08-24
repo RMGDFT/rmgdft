@@ -194,6 +194,11 @@ public:
     double partial_charge;
     double init_spin_rho;
 
+    // Augmentation charges associated with this ion
+    std::vector<double> augfunc;
+
+    // An index array which maps the q-functions onto the 3-d grid associated with each processor.
+    std::vector<int> Qindex;
 
 };
 

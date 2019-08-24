@@ -690,11 +690,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 static void init_alloc_nonloc_mem (void)
 {
 
-    pct.Qindex = new int *[Atoms.size()];
     pct.Qidxptrlen = new int [Atoms.size()];
     pct.lptrlen = new int [Atoms.size()];
 
-    pct.augfunc = new double *[Atoms.size()];
     pct.dnmI = new double *[Atoms.size()];
     pct.qqq = new double *[Atoms.size()];
 
@@ -706,8 +704,6 @@ static void init_alloc_nonloc_mem (void)
         pct.Qidxptrlen[ion] = 0;
         pct.lptrlen[ion] = 0;
 
-        pct.Qindex[ion] = NULL;
-        pct.augfunc[ion] = NULL;
         pct.dnmI[ion] = NULL;
         pct.qqq[ion] = NULL;
 

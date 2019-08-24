@@ -44,7 +44,7 @@ void get_ddd_update (double * veff)
         iptr = &Atoms[ion];
         sp = &Species[iptr->species];
 
-        ivec = pct.Qindex[ion];
+        ivec = Atoms[ion].Qindex.data();
         nh = sp->nh;
         ncount = pct.Qidxptrlen[ion];
 
@@ -58,7 +58,7 @@ void get_ddd_update (double * veff)
             {
                 if (ncount)
                 {
-                    qnmI = pct.augfunc[ion] + idx * ncount;
+                    qnmI = Atoms[ion].augfunc.data() + idx * ncount;
                     for (icount = 0; icount < ncount; icount++)
                     {
                         sum[sum_idx] += qnmI[icount] * veff[ivec[icount]];

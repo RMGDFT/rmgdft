@@ -124,11 +124,6 @@ typedef struct
     /** Processor z-coordinate for domain decomposition */
     int pe_z;
 
-    /** An index array which maps the projectors onto the 3-d grid associated
-        with each processor.
-    */
-    int **Qindex;
-
     /** Number of points in the nlindex array for each ion */
     int *Qidxptrlen;
 
@@ -136,9 +131,6 @@ typedef struct
     int *lptrlen;
 
     /** Phase shifts for the non-local operators */
-
-    /** Points to start of storage for theaugument function*/
-    double **augfunc;
 
     /** points to start of DnmI function storage for this ion*/
     double **dnmI;

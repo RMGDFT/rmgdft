@@ -150,9 +150,9 @@ for (iene = 0; iene < E_POINTS; iene++)
 
 		    nh = Species[iptr->species].nh;
 
-		    ivec = pct.Qindex[gion];
+                    ivec = Atoms[gion].Qindex.data();
 		    ncount = pct.Qidxptrlen[gion];
-		    qnmI = pct.augfunc[gion];
+		    qnmI = Atoms[gion].augfunc.data();
 
 		    for (i=0; i < max_product; i++)
 			    product[i] = 0.0;

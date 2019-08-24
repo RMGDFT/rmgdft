@@ -55,7 +55,7 @@ void get_qqq ()
         nh = sp->nh;
         ncount = pct.Qidxptrlen[ion];
 
-        qnmI = pct.augfunc[ion];
+        qnmI = Atoms[ion].augfunc.data();
 
         if (pct.qqq[ion] == NULL) {
             pct.qqq[ion] = new double[nh * nh];
@@ -77,7 +77,7 @@ void get_qqq ()
                     sum = 0.0;
                     if (ncount)
                     {
-                        qnmI = pct.augfunc[ion] + idx * ncount;
+                        qnmI = Atoms[ion].augfunc.data() + idx * ncount;
                         for (icount = 0; icount < ncount; icount++)
                         {
                             sum += qnmI[icount];
