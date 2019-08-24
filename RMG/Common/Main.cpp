@@ -101,16 +101,21 @@ PE_CONTROL pct;
 
 std::unordered_map<std::string, InputKey *> ControlMap;
 
+std::atomic<bool> shutdown_request(false);
+
 extern "C" void term_handler(int signal)
 {
-    DeleteNvmeArrays();
-    MPI_Abort( MPI_COMM_WORLD, 0 );
+    shutdown_request.store(true); 
+}
 
-#if GPU_ENABLED
-    //cublasDestroy(ct.cublas_handle);
-    //cudaDeviceReset();
-#endif
-    kill(getpid(), SIGKILL);
+void CheckShutdown(void)
+{
+    if(shutdown_request.load())
+    {
+        DeleteNvmeArrays();
+        MPI_Abort( MPI_COMM_WORLD, 0 );
+        kill(getpid(), SIGKILL);
+    }
 }
 
 int main (int argc, char **argv)

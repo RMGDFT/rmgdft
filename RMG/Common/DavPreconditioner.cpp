@@ -121,6 +121,9 @@ template <typename OrbitalType>
 void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_diag, double eig, 
                         double *vtot, double avg_potential)
 {
+    // We want a clean exit if user terminates early
+    CheckShutdown();
+
     BaseGrid *G = kptr->G;
     TradeImages *T = kptr->T;
     Lattice *L = kptr->L;

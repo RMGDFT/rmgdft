@@ -135,6 +135,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     RmgTimer RT("Mg_eig");
     bool freeze_occupied = true;
 
+    // We want a clean exit if user terminates early
+    CheckShutdown();
+
     // We can't just skip the occupied orbitals if they are frozen since we process states in blocks and
     // combine communications. So for now set a flag indicating whether we update the orbital or not. It should
     // be possible to fix this at a higher level at some point though so unneccessary work is not done.
