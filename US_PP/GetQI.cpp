@@ -101,15 +101,12 @@ void GetQI (void)
     {
 
         /*Release memory first */
-        if (pct.Qdvec[ion])
-            delete [](pct.Qdvec[ion]);
         if (pct.Qindex[ion])
             delete [](pct.Qindex[ion]);
         if (pct.augfunc[ion])
             delete [](pct.augfunc[ion]);
 
         /*Let those empty pointers point to NULL */
-        pct.Qdvec[ion] = NULL;
         pct.Qindex[ion] = NULL;
         pct.augfunc[ion] = NULL;
 
@@ -184,13 +181,6 @@ void GetQI (void)
 
             if (!icount) continue;
             pct.Qidxptrlen[ion] = icount;
-
-
-            pct.Qdvec[ion] = new int[idx];
-
-            ivec = pct.Qdvec[ion];
-            for (idx1 = 0; idx1 < idx; idx1++)
-                ivec[idx1] = (int) dvec[idx1];
 
 
             pct.Qindex[ion] = new int[icount + 128];
@@ -282,10 +272,6 @@ void GetQI (void)
             }                   /* end for ix */
 
         }                       /*end if map */
-
-        // No longer needed so release it
-        if (pct.Qdvec[ion]) delete [] pct.Qdvec[ion];
-        pct.Qdvec[ion] = NULL;
 
     }                           /*end for ion */
 

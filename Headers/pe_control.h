@@ -129,9 +129,6 @@ typedef struct
     */
     int **Qindex;
 
-    /** An index array which indicate whether the grid map on the current pocessor*/
-    int **Qdvec;
-
     /** Number of points in the nlindex array for each ion */
     int *Qidxptrlen;
 
