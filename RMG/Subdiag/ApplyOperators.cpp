@@ -46,6 +46,9 @@ template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>>
 template <typename KpointType>
 void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot, KpointType *nv, KpointType *Bns)
 {
+    // We want a clean exit if user terminates early
+    CheckShutdown();
+
     BaseGrid *G = kptr->G;
     Lattice *L = &Rmg_L;
     State<KpointType> *sp = &kptr->Kstates[istate];

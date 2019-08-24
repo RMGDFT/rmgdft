@@ -80,6 +80,8 @@ template void Kpoint<std::complex <double> >::get_ion_orbitals(ION *iptr, std::c
 template void Kpoint<double>::get_ldaUop(int);
 template void Kpoint<std::complex <double> >::get_ldaUop(int);
 
+template void Kpoint<double>::DeleteNvmeArrays(void);
+template void Kpoint<std::complex <double> >::DeleteNvmeArrays(void);
 
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
@@ -95,7 +97,8 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->ldaU = NULL;
     this->newsint_local = NULL;
     this->orbitalsint_local = NULL;
-
+    this->nvme_weight_fd = -1;
+    this->nvme_Bweight_fd = -1;
     this->G = newG;
     this->T = newT;
     this->L = newL;
@@ -1070,20 +1073,18 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     this->BetaProjector = new Projector<KpointType>(projector_type, ct.max_nl, BETA_PROJECTOR);
     int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
 
-    std::string newpath;
-
     if(ct.nvme_weights)
     {
-        if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
-        if(ct.nvme_Bweight_fd != -1) close(ct.nvme_Bweight_fd);
+        if(nvme_weight_fd != -1) close(nvme_weight_fd);
+        if(nvme_Bweight_fd != -1) close(nvme_Bweight_fd);
 
-        newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
+        nvme_weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
                   std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-        ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        nvme_weight_fd = FileOpenAndCreate(nvme_weight_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         
-        newpath = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) + "_" +
+        nvme_Bweight_path = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) + "_" +
                   std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-        ct.nvme_Bweight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        nvme_Bweight_fd = FileOpenAndCreate(nvme_Bweight_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
     }
 
     this->nl_weight_size = (size_t)this->BetaProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
@@ -1134,12 +1135,12 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
 #else
     if(ct.nvme_weights)
     {
-        this->nl_weight = (KpointType *)CreateMmapArray(ct.nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
+        this->nl_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
         if(!this->nl_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
-        madvise(this->nl_weight, this->nl_weight_size*sizeof(KpointType), MADV_SEQUENTIAL);
+        madvise(this->nl_weight, this->nl_weight_size*sizeof(KpointType), MADV_NORMAL|MADV_HUGEPAGE);
 
         if(ct.need_Bweight) {
-            this->nl_Bweight = (KpointType *)CreateMmapArray(ct.nvme_Bweight_fd, this->nl_weight_size*sizeof(KpointType));
+            this->nl_Bweight = (KpointType *)CreateMmapArray(nvme_Bweight_fd, this->nl_weight_size*sizeof(KpointType));
             if(!this->nl_Bweight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for bweights. \n");
         }
         else 
@@ -1275,15 +1276,13 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     this->OrbitalProjector = new Projector<KpointType>(projector_type, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
     int num_nonloc_ions = this->OrbitalProjector->get_num_nonloc_ions();
 
-    std::string newpath;
-
     if(ct.nvme_weights)
     {
-        if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
+        if(nvme_ldaU_fd != -1) close(nvme_ldaU_fd);
 
-        newpath = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
+        nvme_ldaU_path = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
                   std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-        ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        nvme_ldaU_fd = FileOpenAndCreate(nvme_ldaU_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         
     }
 
@@ -1310,9 +1309,9 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 #else
     if(ct.nvme_weights)
     {
-        this->orbital_weight = (KpointType *)CreateMmapArray(ct.nvme_weight_fd, this->orbital_weight_size*sizeof(KpointType));
+        this->orbital_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->orbital_weight_size*sizeof(KpointType));
         if(!this->orbital_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
-        madvise(this->orbital_weight, this->orbital_weight_size*sizeof(KpointType), MADV_SEQUENTIAL);
+        madvise(this->orbital_weight, this->orbital_weight_size*sizeof(KpointType), MADV_NORMAL|MADV_HUGEPAGE);
 
     }
     else
@@ -1344,4 +1343,30 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     MPI_Barrier(grid_comm);
 
 } 
+
+// Cleans up nvme arrays if they have been used
+template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
+{
+    if(nvme_weight_fd > 0)
+    {
+        ftruncate(nvme_weight_fd, 0);
+        close(nvme_weight_fd);
+        unlink(nvme_weight_path.c_str());
+    }
+
+    if(nvme_Bweight_fd > 0)
+    {
+        ftruncate(nvme_Bweight_fd, 0);
+        close(nvme_Bweight_fd);
+        unlink(nvme_Bweight_path.c_str());
+    }
+
+    if(nvme_ldaU_fd > 0)
+    {
+        ftruncate(nvme_ldaU_fd, 0);
+        close(nvme_ldaU_fd);
+        unlink(nvme_ldaU_path.c_str());
+    }
+
+}
 

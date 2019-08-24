@@ -82,8 +82,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     ct.nvme_orbital_fd = -1;
     ct.nvme_work_fd = -1;
-    ct.nvme_weight_fd = -1;
-    ct.nvme_Bweight_fd = -1;
 
     SPECIES *sp;
     OrbitalType *rptr = NULL, *nv, *ns = NULL, *Bns = NULL;
@@ -236,8 +234,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         if(ct.nvme_orbital_fd != -1) close(ct.nvme_orbital_fd);
 
-        newpath = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) +
-                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
+        newpath = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) + "_" +
+                  std::to_string(pct.kstart) + "_" + std::to_string(pct.gridpe);
         ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
         if(!rptr) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for orbitals. \n");

@@ -67,6 +67,7 @@ public:
     void GetDelocalizedWeight (void);
     void GetDelocalizedOrbital (void);
     void LcaoGetPsi (void);
+    void DeleteNvmeArrays(void);
 
 
 
@@ -161,6 +162,13 @@ private:
 
     // Index of the highest orbital included in the calculation of mean/min/max
     int max_unocc_res_index;
+
+    int nvme_weight_fd;
+    int nvme_Bweight_fd;
+    int nvme_ldaU_fd;
+    std::string nvme_weight_path;
+    std::string nvme_Bweight_path;
+    std::string nvme_ldaU_path;
 
 };
 

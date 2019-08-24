@@ -113,6 +113,19 @@ void CheckShutdown(void)
     if(shutdown_request.load())
     {
         DeleteNvmeArrays();
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+
+            int kpt1 = kpt + pct.kstart;
+            if(ct.is_gamma)
+            {
+                Kptr_g[kpt1]->DeleteNvmeArrays();
+            }
+            else
+            {
+                Kptr_c[kpt1]->DeleteNvmeArrays();
+            }
+        }
         MPI_Abort( MPI_COMM_WORLD, 0 );
         kill(getpid(), SIGKILL);
     }
@@ -410,6 +423,19 @@ void finish ()
 {
 
     DeleteNvmeArrays();
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+
+        int kpt1 = kpt + pct.kstart;
+        if(ct.is_gamma)
+        {
+            Kptr_g[kpt1]->DeleteNvmeArrays();
+        }
+        else
+        {
+            Kptr_c[kpt1]->DeleteNvmeArrays();
+        }
+    }
 
     MPI_Barrier(MPI_COMM_WORLD);
     /*Exit MPI */
