@@ -23,7 +23,7 @@ void nlforce_par_Q(double * veff, double * rho_nm, int ion, int nh, double *forc
     for (idx1 = 0; idx1 < 3; idx1++)
         forces[idx1] = 0.0;
 
-    count = pct.Qidxptrlen[ion];
+    count = Atoms[ion].Qindex.size();
     pidx = Atoms[ion].Qindex.data();
     iptr = &Atoms[ion];
 

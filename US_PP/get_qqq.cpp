@@ -53,8 +53,7 @@ void get_qqq ()
         sp = &Species[iptr->species];
 
         nh = sp->nh;
-        ncount = pct.Qidxptrlen[ion];
-
+        ncount = Atoms[ion].Qindex.size();
         qnmI = Atoms[ion].augfunc.data();
 
         if (pct.qqq[ion] == NULL) {

@@ -374,7 +374,7 @@ void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion,
     int idx2, n, m, count, icount, size;
     int *pidx;
 
-    count = pct.Qidxptrlen[ion];
+    count = Atoms[ion].Qindex.size();
     pidx = Atoms[ion].Qindex.data();
 
     double *Qnm;

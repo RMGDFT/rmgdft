@@ -93,8 +93,6 @@ typedef struct
     // Communicator associated with the master ranks on each node
     MPI_Comm local_master_comm;
 
-    MPI_Comm pfft_comm;
-
     /* scalapack variables */
     int desca[DLEN];
     int ictxt;
@@ -124,13 +122,8 @@ typedef struct
     /** Processor z-coordinate for domain decomposition */
     int pe_z;
 
-    /** Number of points in the nlindex array for each ion */
-    int *Qidxptrlen;
-
     /** Number of points in the circle of local projector for each pocessor*/
     int *lptrlen;
-
-    /** Phase shifts for the non-local operators */
 
     /** points to start of DnmI function storage for this ion*/
     double **dnmI;
@@ -174,10 +167,6 @@ typedef struct
     /* Indices of the ions within non-local range */
     int *ionidx;
     int *ionidx_loc;
-
-   /* Points to start of projectors for this ion in projector space */
-    /* All projectors are stored consecutively.                      */
-    int *prj_ptr;
 
     /* The size of local orbitals on this PE */
     int psi_size;

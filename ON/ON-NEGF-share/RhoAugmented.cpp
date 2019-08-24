@@ -49,10 +49,11 @@ void RhoAugmented(double * rho, double * global_mat_X)
         nh = sp->num_projectors;
         ptr_product = product + ion * ct.max_nl * ct.max_nl;
         ivec = Atoms[ion].Qindex.data();
-        ncount = pct.Qidxptrlen[ion];
+        ncount = Atoms[ion].Qindex.size();
+
         qnmI = Atoms[ion].augfunc.data();
 
-        if (pct.Qidxptrlen[ion])
+        if (Atoms[ion].Qindex.size())
         {
 
             idx = 0;

@@ -47,7 +47,6 @@ void FftInitPlans(void)
 {
 
     int grid[3]; 
-    pct.pfft_comm = pct.grid_comm;
 
     // See if we can use pfft without remapping. In and out arrays must be equal in size.
     grid[0] = Rmg_G->get_NX_GRID(1);

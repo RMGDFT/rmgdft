@@ -67,7 +67,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
         {
             int gion = nonloc_ions_list[ion];
             
-            if (pct.Qidxptrlen[gion])
+            if (Atoms[gion].Qindex.size())
             {
                 
                 ION *iptr = &Atoms[gion];
@@ -76,7 +76,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                 
                 int *ivec = Atoms[gion].Qindex.data();
 
-                int ncount = pct.Qidxptrlen[gion];
+                int ncount = Atoms[gion].Qindex.size();
                 double *qnmI = Atoms[gion].augfunc.data();
 
                 for (int i=0; i < max_product; i++)

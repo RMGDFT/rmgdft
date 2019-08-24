@@ -39,7 +39,7 @@ void get_ddd (double * veff)
 
         ivec = Atoms[ion].Qindex.data();
         nh = sp->nh;
-        ncount = pct.Qidxptrlen[ion];
+        ncount = Atoms[ion].Qindex.size();
 
         if (pct.dnmI[ion] == NULL)
             pct.dnmI[ion] = new double[nh * nh];

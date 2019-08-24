@@ -104,9 +104,6 @@ void GetQI (void)
         Atoms[ion].Qindex.clear();
         Atoms[ion].augfunc.clear();
 
-        /*Initialize this */
-        pct.Qidxptrlen[ion] = 0;
-
         for (idx = 0; idx < alloc; idx++)
         {
             pvec[idx] = 0;
@@ -174,8 +171,6 @@ void GetQI (void)
 
 
             if (!icount) continue;
-            pct.Qidxptrlen[ion] = icount;
-
 
             Atoms[ion].Qindex.resize(icount);
             for (idx1 = 0; idx1 < icount; idx1++) Atoms[ion].Qindex[idx1] = (int) pvec[idx1];
@@ -238,7 +233,7 @@ void GetQI (void)
                                 for (j = i; j < nh; j++)
                                 {
 
-                                    idx1 = num * pct.Qidxptrlen[ion] + icount;
+                                    idx1 = num * Atoms[ion].Qindex.size() + icount;
                                     Atoms[ion].augfunc[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m,
                                             sp->indv, ylm, ap, lpx, lpl, sp);
 

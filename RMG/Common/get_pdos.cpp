@@ -143,7 +143,7 @@ for (iene = 0; iene < E_POINTS; iene++)
     {
 	    gion = pct.nonloc_ions_list[ion];
 
-	    if (pct.Qidxptrlen[gion])
+	    if (Atoms[gion].Qindex.size())
 	    {
 
 		    iptr = &Atoms[gion];
@@ -151,7 +151,7 @@ for (iene = 0; iene < E_POINTS; iene++)
 		    nh = Species[iptr->species].nh;
 
                     ivec = Atoms[gion].Qindex.data();
-		    ncount = pct.Qidxptrlen[gion];
+                    ncount = Atoms[gion].Qindex.size()
 		    qnmI = Atoms[gion].augfunc.data();
 
 		    for (i=0; i < max_product; i++)

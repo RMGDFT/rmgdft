@@ -46,7 +46,7 @@ void get_ddd_update (double * veff)
 
         ivec = Atoms[ion].Qindex.data();
         nh = sp->nh;
-        ncount = pct.Qidxptrlen[ion];
+        ncount = Atoms[ion].Qindex.size();
 
         if (pct.dnmI[ion] == NULL)
             my_malloc (pct.dnmI[ion], nh * nh, double);
