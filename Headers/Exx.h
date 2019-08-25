@@ -26,15 +26,19 @@
 
 
 #include <string>
+#include <vector>
+#include <set>
 #include <complex>
+#include <mutex>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "fftw3.h"
+#include "Pw.h"
 
 template <typename T> class Exx {
 
 private:
-    // BaseGrid class
+    // BaseGrid class (distributed)
     BaseGrid &G;
 
     // Lattice object
@@ -49,8 +53,11 @@ private:
     // Total number of grid points
     size_t N;
 
-    // Number of orbitals
+    // Number of occupied orbitals
     int nstates;
+
+    // Occupations for the orbitals
+    double *occ;
 
     // Base of domain distributed wavefunction array
     T *psi;
@@ -63,18 +70,34 @@ private:
 
     // Each MPI process keeps a portion of the orbitals resident in memory and
     // these two class members control that.
-    int st_start;
-    int st_count;
+    int pair_start;
+    int pair_count;
+
+    // Local MPI communicator
+    MPI_Comm lcomm;
+
+    // BaseGrid instance for local grids
+    BaseGrid *LG;
+
+    // Plane wave object for local grids
+    Pw *pwave;
+
+    // <psi_i, psi_j> pairs that this MPI task is responsible for
+    std::vector< std::pair <int,int> > pairs;
+
+    std::mutex pair_mutex;
 
 public:
     Exx (BaseGrid &G, 
          Lattice &L, 
          std::string &wavefile,
          int nstates,
+         double *occ,
          T *psi_in);
 
     ~Exx(void);
 
+    void Vexx(std::string &vfile);
 };
 
 #endif

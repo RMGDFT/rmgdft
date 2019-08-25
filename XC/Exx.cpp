@@ -37,14 +37,22 @@
 // mmapped to an array. We only access the array in read-only mode.
 
 
-template Exx<double>::Exx(BaseGrid &, Lattice &, std::string &, int, double *);
-template Exx<std::complex<double>>::Exx(BaseGrid &, Lattice &, std::string &, int, std::complex<double> *);
+template Exx<double>::Exx(BaseGrid &, Lattice &, std::string &, int, double *, double *);
+template Exx<std::complex<double>>::Exx(BaseGrid &, Lattice &, std::string &, int, double *, std::complex<double> *);
+
+template Exx<double>::~Exx(void);
+template Exx<std::complex<double>>::~Exx(void);
+
+template void Exx<double>::Vexx(std::string &);
+template void Exx<std::complex<double>>::Vexx(std::string &);
+
 
 template <class T> Exx<T>::Exx (BaseGrid &G_in,
           Lattice &L_in,
           std::string &wavefile_in,
           int nstates_in,
-          T *psi_in) : G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), psi(psi_in)
+          double *occ_in,
+          T *psi_in) : G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), occ(occ_in), psi(psi_in)
 {
     RmgTimer RT0("5-Functional: Exact Exchange");
 
@@ -130,29 +138,61 @@ template <class T> Exx<T>::Exx (BaseGrid &G_in,
     MPI_Type_free(&grid_f);
     MPI_Type_free(&grid_c);
 
-    // Compute st_start and st_count
-    st_start = 0;
-    st_count = nstates;
+    // Generate the full set of pairs and store in a temporary vector
+    int npairs = (N*N + N) / 2;
+    std::vector< std::pair <int,int> > temp_pairs; 
+    temp_pairs.resize(npairs);
+    for(int i=0;i < npairs;i++)
+    {
+        for(int j=i;j < npairs;j++)
+        {
+            temp_pairs.push_back(std::make_pair(i, j));
+        }
+    }
+
+    // Compute start and count for this MPI task
+    pair_start = 0;
+    pair_count = npairs;
     int rank = G.get_rank();
     int NPES = G.get_NPES(); 
     if(NPES > 1)
     {
-        st_count = nstates / NPES;
-        st_start = st_count * rank;
-        int rem = nstates % NPES;
+        pair_count = npairs / NPES;
+        pair_start = pair_count * rank;
+        int rem = pair_count % NPES;
         if(rank < rem)
         {
-            st_count++;
-            st_start += rank;
+            pair_count++;
+            pair_start += rank;
         }
         else
         {
-            st_start += rem;
+            pair_start += rem;
         }
 
     }
+
+    // Copy the ones we are responsible for into our local vector of pairs
+    pairs.resize(pair_count);
+    for(int st=0;st < pair_count;st++)
+    {
+        pairs[st] = temp_pairs[pair_start + st];
+    }
+
+    LG = new BaseGrid(G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), 1, 1, 1, 0, 1);
+    MPI_Comm_split(G.comm, rank+1, rank, &lcomm);
+    LG->set_rank(0, lcomm);
+    pwave = new Pw(*LG, L, 1, false, lcomm);
+    
+    // Now we have to figure out how to distribute the pairs over computational resources.
+    // If we only have CPU's then it's easy
 }
 
+// This computes the action of the exact exchange operator on all wavefunctions
+// and writes the result into vfile.
+template <class T> void Exx<T>::Vexx(std::string &vfile)
+{
+}
 
 template <class T> Exx<T>::~Exx(void)
 {
@@ -160,4 +200,8 @@ template <class T> Exx<T>::~Exx(void)
     size_t length = nstates * N;
     munmap(psi_s, length);
     unlink(wavefile.c_str());
+
+    delete LG;
+    MPI_Comm_free(&lcomm); 
+    delete pwave;
 }
