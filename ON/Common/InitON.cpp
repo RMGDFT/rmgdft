@@ -76,8 +76,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         Rmg_G->get_NY_GRID(Rmg_G->default_FG_RATIO) *
         Rmg_G->get_NZ_GRID(Rmg_G->default_FG_RATIO) ;
 
-    ct.energies = new double[ct.max_scf_steps];
-
     ct.states = states;
 
 

@@ -680,26 +680,9 @@ public:
     /* number of velocity in constrained dynamics */
     double cd_velocity;
 
-
-
-    double Evxcold_rho;
-    double Evhold_rho;
-    double Evh_rho;
-    double Evh_rhoc;
-
-    double TOTAL_former;
-    double dE;
-
-    double *energies;
-    double pulay[10];
-
     int restart_mix;
 
     int move_centers_at_this_step;
-
-
-
-    int num_storage_st;
 
 
     /* "Center" of global function */
