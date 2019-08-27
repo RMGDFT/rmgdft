@@ -28,7 +28,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "portability.h"
 #include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"

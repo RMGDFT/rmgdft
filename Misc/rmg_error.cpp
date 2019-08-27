@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include "rmg_error.h"
 #include "rmg_mangling.h"
-#include "portability.h"
 #include "params.h"
 #include "pe_control.h"
 

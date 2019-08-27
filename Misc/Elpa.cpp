@@ -20,7 +20,6 @@
  *
 */
 
-#include "portability.h"
 #include <vector>
 #include <algorithm>
 #include <math.h>

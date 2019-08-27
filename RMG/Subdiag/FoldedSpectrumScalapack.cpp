@@ -22,7 +22,6 @@
 
 #include <complex>
 #include <omp.h>
-#include "portability.h"
 #include "FiniteDiff.h"
 #include "const.h"
 #include "rmgtypedefs.h"

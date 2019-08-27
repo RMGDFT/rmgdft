@@ -20,7 +20,7 @@
  *
 */
 
-#include "portability.h"
+#include <unistd.h>
 #include "blas.h"
 #include <stdlib.h>
 #include <limits.h>
