@@ -33,7 +33,7 @@ void get_qqq ()
 {
     int idx, i, j, ion;
     int nh, ncount, icount;
-    double *qnmI, *qqq, sum;
+    double *qqq, sum;
     ION *iptr;
     SPECIES *sp;
     FILE *ftpr=NULL;
@@ -54,7 +54,6 @@ void get_qqq ()
 
         nh = sp->nh;
         ncount = Atoms[ion].Qindex.size();
-        qnmI = Atoms[ion].augfunc.data();
 
         if (pct.qqq[ion] == NULL) {
             pct.qqq[ion] = new double[nh * nh];
@@ -76,10 +75,9 @@ void get_qqq ()
                     sum = 0.0;
                     if (ncount)
                     {
-                        qnmI = Atoms[ion].augfunc.data() + idx * ncount;
                         for (icount = 0; icount < ncount; icount++)
                         {
-                            sum += qnmI[icount];
+                            sum += Atoms[ion].augfunc[icount + idx * ncount];
                         }
                     }
                     sum = real_sum_all (sum, pct.grid_comm);

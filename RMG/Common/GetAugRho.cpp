@@ -77,7 +77,6 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                 int *ivec = Atoms[gion].Qindex.data();
 
                 int ncount = Atoms[gion].Qindex.size();
-                double *qnmI = Atoms[gion].augfunc.data();
 
                 for (int i=0; i < max_product; i++)
                     product[i] = 0.0;
@@ -123,10 +122,9 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                 {
                     for (int j = i; j < nh; j++)
                     {
-                        qtpr = qnmI + idx * ncount;
                         for (int icount = 0; icount < ncount; icount++)
                         {
-                            augrho[ivec[icount]] += qtpr[icount] * product[idx];
+                            augrho[ivec[icount]] += Atoms[gion].augfunc[icount + idx * ncount] * product[idx];
                         }           /*end for icount */
                         idx++;
                     }               /*end for j */

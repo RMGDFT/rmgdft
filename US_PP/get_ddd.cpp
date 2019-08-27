@@ -8,7 +8,7 @@ void get_ddd (double * veff)
 {
     int idx, i, j, ion;
     int nh, ncount, icount;
-    double *qnmI, *dnmI, *sum;
+    double *dnmI, *sum;
     int *ivec, sum_dim, sum_idx;
     ION *iptr;
     SPECIES *sp;
@@ -51,10 +51,9 @@ void get_ddd (double * veff)
             {
                 if (ncount)
                 {
-                    qnmI = Atoms[ion].augfunc.data() + idx * ncount;
                     for (icount = 0; icount < ncount; icount++)
                     {
-                        sum[sum_idx] += qnmI[icount] * veff[ivec[icount]];
+                        sum[sum_idx] += Atoms[ion].augfunc[icount + idx * ncount] * veff[ivec[icount]];
                     }
                 }               /*end if (ncount) */
 

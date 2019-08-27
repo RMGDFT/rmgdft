@@ -30,10 +30,6 @@
 #ifndef RMG_Solvers_H
 #define RMG_Solvers_H 1
 
-//#include "const.h"
-//#include "rmgtypedefs.h"
-//#include "params.h"
-//#include "typedefs.h"
 #include "Kpoint.h"
 
 template <typename KpointType>
