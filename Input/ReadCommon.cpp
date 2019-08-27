@@ -35,7 +35,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/lexical_cast.hpp>
-#include "portability.h"
 #include "BaseGrid.h"
 #include "transition.h"
 

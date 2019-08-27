@@ -31,7 +31,6 @@
 #include <climits> 
 #include <unordered_map>
 #include <boost/lexical_cast.hpp>
-#include "portability.h"
 #include "BaseGrid.h"
 #include "transition.h"
 

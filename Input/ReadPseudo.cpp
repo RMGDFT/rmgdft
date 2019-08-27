@@ -1,4 +1,3 @@
-#include "portability.h"
 #include <exception>
 #include <iostream>
 #include <fstream>
