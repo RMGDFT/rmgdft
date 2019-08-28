@@ -57,7 +57,7 @@ typedef struct
     // Number of cpu cores per physical host
     int ncpus;
 
-#ifdef USE_NUMA
+#if defined(USE_NUMA) || defined(USE_HWLOC)
     // Numa nodes per host
     int numa_nodes_per_host;
 
