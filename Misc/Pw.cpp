@@ -25,12 +25,6 @@
 #include <math.h>
 #include "transition.h"
 
-
-// Save coarse grid values
-int civx;
-int civy;
-int civz;
-
 Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
 {
 
@@ -75,33 +69,10 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   }
 
   // Get G^2 cutoff.
-  int ivx = (this->global_dimx - 1) / 2;
-  int ivy = (this->global_dimy - 1) / 2;
-  int ivz = (this->global_dimz - 1) / 2;
+  int ivx = ratio * ((G.get_NX_GRID(1) - 1) / 2);
+  int ivy = ratio * ((G.get_NY_GRID(1) - 1) / 2);
+  int ivz = ratio * ((G.get_NZ_GRID(1) - 1) / 2);
   
-  // We create our pw objects coarse grid first and then
-  // the fine grid. If ratio==1 though then the grids are
-  // the same but the plane wave object is different for
-  // the fine grid when using norm conserving pseudopotentials.
-  // With ultrasoft one should never run with ratio==1.
-  if(ratio == 1)
-  {
-    if(!civx)
-    {
-        // save coarse grid values
-        civx = ivx;
-        civy = ivy;
-        civz = ivz;
-    }
-  }
-  else
-  {
-      // Make sure max g-vector on fine grid is an integral multiple of coarse grid.
-      ivx = ratio*civx;
-      ivy = ratio*civy;
-      ivz = ratio*civz;
-  }
-
   gvec[0] = (double)ivx * L.b0[0] + (double)ivy * L.b1[0] + (double)ivz * L.b2[0];
   gvec[0] *= L.celldm[0];
   gvec[1] = (double)ivx * L.b0[1] + (double)ivy * L.b1[1] + (double)ivz * L.b2[1];

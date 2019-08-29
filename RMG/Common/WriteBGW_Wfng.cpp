@@ -80,31 +80,31 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
     ecutrho = ct.ecutrho;
     ecutwfc = ct.ecutwfc;
 
-    at[0] = Rmg_L.get_a0(0);
-    at[1] = Rmg_L.get_a0(1)/at[0];
-    at[2] = Rmg_L.get_a0(2)/at[0];
-    at[3] = Rmg_L.get_a1(0)/at[0];
-    at[4] = Rmg_L.get_a1(1)/at[0];
-    at[5] = Rmg_L.get_a1(2)/at[0];
-    at[6] = Rmg_L.get_a2(0)/at[0];
-    at[7] = Rmg_L.get_a2(1)/at[0];
-    at[8] = Rmg_L.get_a2(2)/at[0];
+    at[0] = kptr->L->get_a0(0);
+    at[1] = kptr->L->get_a0(1)/at[0];
+    at[2] = kptr->L->get_a0(2)/at[0];
+    at[3] = kptr->L->get_a1(0)/at[0];
+    at[4] = kptr->L->get_a1(1)/at[0];
+    at[5] = kptr->L->get_a1(2)/at[0];
+    at[6] = kptr->L->get_a2(0)/at[0];
+    at[7] = kptr->L->get_a2(1)/at[0];
+    at[8] = kptr->L->get_a2(2)/at[0];
 
-    bg[0] = Rmg_L.get_b0(0)*at[0];
-    bg[1] = Rmg_L.get_b0(1)*at[0];
-    bg[2] = Rmg_L.get_b0(2)*at[0];
-    bg[3] = Rmg_L.get_b1(0)*at[0];
-    bg[4] = Rmg_L.get_b1(1)*at[0];
-    bg[5] = Rmg_L.get_b1(2)*at[0];
-    bg[6] = Rmg_L.get_b2(0)*at[0];
-    bg[7] = Rmg_L.get_b2(1)*at[0];
-    bg[8] = Rmg_L.get_b2(2)*at[0];
+    bg[0] = kptr->L->get_b0(0)*at[0];
+    bg[1] = kptr->L->get_b0(1)*at[0];
+    bg[2] = kptr->L->get_b0(2)*at[0];
+    bg[3] = kptr->L->get_b1(0)*at[0];
+    bg[4] = kptr->L->get_b1(1)*at[0];
+    bg[5] = kptr->L->get_b1(2)*at[0];
+    bg[6] = kptr->L->get_b2(0)*at[0];
+    bg[7] = kptr->L->get_b2(1)*at[0];
+    bg[8] = kptr->L->get_b2(2)*at[0];
 
     at[0] = 1.0;
     double alat, alat2, omega, tpiba2;
-    alat = Rmg_L.get_a0(0);
+    alat = kptr->L->get_a0(0);
     alat2 = alat * alat;
-    omega = Rmg_L.get_omega();
+    omega = kptr->L->get_omega();
     tpiba = 2.0 * PI /alat;
     tpiba2 = tpiba * tpiba;
     recvol = 8.0 * PI*PI*PI / omega;
@@ -145,12 +145,12 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
                 if(ivec[1] > FNY_GRID/2) ivec[1] = ivec[1] - FNY_GRID;
                 if(ivec[2] > FNZ_GRID/2) ivec[2] = ivec[2] - FNZ_GRID;
 
-                gvec[0] = (double)ivec[0] * Rmg_L.b0[0] + (double)ivec[1] * Rmg_L.b1[0] + (double)ivec[2] * Rmg_L.b2[0];
-                gvec[0] *= Rmg_L.celldm[0];
-                gvec[1] = (double)ivec[0] * Rmg_L.b0[1] + (double)ivec[1] * Rmg_L.b1[1] + (double)ivec[2] * Rmg_L.b2[1];
-                gvec[1] *= Rmg_L.celldm[0];
-                gvec[2] = (double)ivec[0] * Rmg_L.b0[2] + (double)ivec[1] * Rmg_L.b1[2] + (double)ivec[2] * Rmg_L.b2[2];
-                gvec[2] *= Rmg_L.celldm[0];
+                gvec[0] = (double)ivec[0] * kptr->L->b0[0] + (double)ivec[1] * kptr->L->b1[0] + (double)ivec[2] * kptr->L->b2[0];
+                gvec[0] *= kptr->L->celldm[0];
+                gvec[1] = (double)ivec[0] * kptr->L->b0[1] + (double)ivec[1] * kptr->L->b1[1] + (double)ivec[2] * kptr->L->b2[1];
+                gvec[1] *= kptr->L->celldm[0];
+                gvec[2] = (double)ivec[0] * kptr->L->b0[2] + (double)ivec[1] * kptr->L->b1[2] + (double)ivec[2] * kptr->L->b2[2];
+                gvec[2] *= kptr->L->celldm[0];
 
                 gmags = gvec[0] * gvec[0] + gvec[1] * gvec[1] + gvec[2] * gvec[2];
 
@@ -186,12 +186,12 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
                 if(ivec[1] > NY_GRID/2) ivec[1] = ivec[1] - NY_GRID;
                 if(ivec[2] > NZ_GRID/2) ivec[2] = ivec[2] - NZ_GRID;
 
-                gvec[0] = (double)ivec[0] * Rmg_L.b0[0] + (double)ivec[1] * Rmg_L.b1[0] + (double)ivec[2] * Rmg_L.b2[0];
-                gvec[0] *= Rmg_L.celldm[0];
-                gvec[1] = (double)ivec[0] * Rmg_L.b0[1] + (double)ivec[1] * Rmg_L.b1[1] + (double)ivec[2] * Rmg_L.b2[1];
-                gvec[1] *= Rmg_L.celldm[0];
-                gvec[2] = (double)ivec[0] * Rmg_L.b0[2] + (double)ivec[1] * Rmg_L.b1[2] + (double)ivec[2] * Rmg_L.b2[2];
-                gvec[2] *= Rmg_L.celldm[0];
+                gvec[0] = (double)ivec[0] * kptr->L->b0[0] + (double)ivec[1] * kptr->L->b1[0] + (double)ivec[2] * kptr->L->b2[0];
+                gvec[0] *= kptr->L->celldm[0];
+                gvec[1] = (double)ivec[0] * kptr->L->b0[1] + (double)ivec[1] * kptr->L->b1[1] + (double)ivec[2] * kptr->L->b2[1];
+                gvec[1] *= kptr->L->celldm[0];
+                gvec[2] = (double)ivec[0] * kptr->L->b0[2] + (double)ivec[1] * kptr->L->b1[2] + (double)ivec[2] * kptr->L->b2[2];
+                gvec[2] *= kptr->L->celldm[0];
 
                 gvec[0] = gvec[0] * tpiba + ct.kp[kpt].kvec[0];
                 gvec[1] = gvec[1] * tpiba + ct.kp[kpt].kvec[1];
