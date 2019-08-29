@@ -51,7 +51,6 @@
 #include "params.h"
 #include "typedefs.h"
 #include "rmg_error.h"
-#include "Kpoint.h"
 #include "InputKey.h"
 #include "blas.h"
 //#include "main.h"

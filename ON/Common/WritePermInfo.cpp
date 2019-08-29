@@ -37,8 +37,6 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "State.h"
-#include "Kpoint.h"
-#include "transition.h"
 #include "prototypes_on.h"
 
 void WritePermInfo(char *name, unsigned int *perm_index)

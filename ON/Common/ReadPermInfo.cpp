@@ -37,8 +37,6 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "State.h"
-#include "Kpoint.h"
-#include "transition.h"
 
 /* Writes the hartree potential, the wavefunctions, the */
 /* compensating charges and various other things to a file. */
