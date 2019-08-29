@@ -28,7 +28,6 @@
 #include "typedefs.h"
 #include "rmg_error.h"
 #include "State.h"
-#include "Kpoint.h"
 #include "Functional.h"
 #include "GlobalSums.h"
 #include "transition.h"

@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 
-#include "Exx.h"
+#include "Exxbase.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
 
@@ -37,17 +37,18 @@
 // mmapped to an array. We only access the array in read-only mode.
 
 
-template Exx<double>::Exx(BaseGrid &, Lattice &, std::string &, int, double *, double *);
-template Exx<std::complex<double>>::Exx(BaseGrid &, Lattice &, std::string &, int, double *, std::complex<double> *);
+template Exxbase<double>::Exxbase(BaseGrid &, Lattice &, std::string &, int, double *, double *);
+template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, Lattice &, std::string &, int, double *, std::complex<double> *);
 
-template Exx<double>::~Exx(void);
-template Exx<std::complex<double>>::~Exx(void);
+template Exxbase<double>::~Exxbase(void);
+template Exxbase<std::complex<double>>::~Exxbase(void);
 
-template void Exx<double>::Vexx(std::string &);
-template void Exx<std::complex<double>>::Vexx(std::string &);
+template void Exxbase<double>::Vexx(std::string &);
+template void Exxbase<std::complex<double>>::Vexx(std::string &);
 
 
-template <class T> Exx<T>::Exx (BaseGrid &G_in,
+template <class T> Exxbase<T>::Exxbase (
+          BaseGrid &G_in,
           Lattice &L_in,
           std::string &wavefile_in,
           int nstates_in,
@@ -190,12 +191,14 @@ template <class T> Exx<T>::Exx (BaseGrid &G_in,
 
 // This computes the action of the exact exchange operator on all wavefunctions
 // and writes the result into vfile.
-template <class T> void Exx<T>::Vexx(std::string &vfile)
+template <class T> void Exxbase<T>::Vexx(std::string &vfile)
 {
+
 }
 
-template <class T> Exx<T>::~Exx(void)
+template <class T> Exxbase<T>::~Exxbase(void)
 {
+
     close(serial_fd);
     size_t length = nstates * N;
     munmap(psi_s, length);

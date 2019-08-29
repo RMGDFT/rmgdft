@@ -21,8 +21,8 @@
 */
 
 
-#ifndef RMG_Exx_H
-#define RMG_Exx_H 1
+#ifndef RMG_Exxbase_H
+#define RMG_Exxbase_H 1
 
 
 #include <string>
@@ -35,7 +35,11 @@
 #include "fftw3.h"
 #include "Pw.h"
 
-template <typename T> class Exx {
+
+#define EXX_DIST_FFT 1
+#define EXX_LOCAL_FFT  2
+
+template <typename T> class Exxbase {
 
 private:
     // BaseGrid class (distributed)
@@ -88,14 +92,15 @@ private:
     std::mutex pair_mutex;
 
 public:
-    Exx (BaseGrid &G, 
+    Exxbase (
+         BaseGrid &G, 
          Lattice &L, 
          std::string &wavefile,
          int nstates,
          double *occ,
          T *psi_in);
 
-    ~Exx(void);
+    ~Exxbase(void);
 
     void Vexx(std::string &vfile);
 };

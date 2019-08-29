@@ -10,7 +10,6 @@ PfftForward.cpp
 PfftInverse.cpp 
 LocalFftForward.cpp
 LocalFftInverse.cpp 
-GeneralDiag.cpp
 VhPfft.cpp
 VhDriver.cpp
 Fft_Cbindings.cpp
@@ -36,8 +35,6 @@ prime_factors.cpp
 InitIo.cpp
 Output_rho_xsf.cpp
 InitHybridModel.cpp
-Fill.cpp
-GetTe.cpp
 init_kpoints.cpp
 FileOpenAndCreate.cpp
 CreateMmapArray.cpp

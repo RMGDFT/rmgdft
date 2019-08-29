@@ -10,7 +10,10 @@ ApplyHamiltonianBlock.cpp
 Davidson.cpp
 MgridSubspace.cpp
 MolecularDynamics.cpp
+Fill.cpp
 GetAugRho.cpp
+GeneralDiag.cpp
+GetTe.cpp
 MixRho.cpp
 WriteData.cpp
 WriteSerialData.cpp

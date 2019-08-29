@@ -13,6 +13,6 @@ matches.f90
 more_functionals.F90
 vdw_splines.f90
 vdw_correlation.cpp
-Exx.cpp
+Exxbase.cpp
 Functional.cpp
 )
