@@ -175,4 +175,5 @@ private:
 template <typename T>
 using Kpoints = std::vector< Kpoint<T> >;
 
+#include "../../RMG/Headers/prototypes_rmg.h"
 #endif

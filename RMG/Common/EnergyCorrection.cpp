@@ -46,7 +46,6 @@
 #include "Functional.h"
 #include "transition.h"
 #include "Solvers.h"
-#include "../Headers/prototypes.h"
 #include "RmgParallelFft.h"
 #include "RmgSumAll.h"
 

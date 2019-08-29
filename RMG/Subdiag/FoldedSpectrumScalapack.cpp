@@ -38,7 +38,6 @@
 #include "Scalapack.h"
 #include "blas.h"
 
-#include "prototypes.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"

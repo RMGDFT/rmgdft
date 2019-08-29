@@ -40,7 +40,6 @@
 #include "Kpoint.h"
 #include "RmgSumAll.h"
 #include <complex>
-#include "../Headers/prototypes.h"
 
 
 template State<double>::State(void);

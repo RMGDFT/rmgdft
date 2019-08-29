@@ -49,7 +49,6 @@
 #include "blas.h"
 #include "ErrorFuncs.h"
 #include "GpuAlloc.h"
-#include "../Headers/prototypes.h"
 
 extern "C" void zaxpy(int *n, std::complex<double> *alpha, std::complex<double> *x, int *incx, std::complex<double> *y, int *incy);
 

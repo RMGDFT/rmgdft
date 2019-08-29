@@ -28,7 +28,6 @@
 #include "typedefs.h"
 #include "rmgthreads.h"
 #include "const.h"
-#include "prototypes.h"
 #include "transition.h"
 #include "Kpoint.h"
 #include "Subdiag.h"

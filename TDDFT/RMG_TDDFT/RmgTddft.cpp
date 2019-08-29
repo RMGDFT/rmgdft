@@ -45,7 +45,6 @@
 #include "Subdiag.h"
 #include "Functional.h"
 #include "Solvers.h"
-#include "../../RMG/Headers/prototypes.h"
 #include "RmgParallelFft.h"
 
 #include "blas.h"

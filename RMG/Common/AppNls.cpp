@@ -38,7 +38,6 @@
 #include "Kpoint.h"
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
-#include "../Headers/prototypes.h"
 
 #include "GlobalSums.h"
 #include "blas.h"

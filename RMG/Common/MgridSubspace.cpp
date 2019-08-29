@@ -44,7 +44,6 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "GatherScatter.h"
-#include "../Headers/prototypes.h"
 
 
 // Solver that uses multigrid preconditioning and subspace rotations

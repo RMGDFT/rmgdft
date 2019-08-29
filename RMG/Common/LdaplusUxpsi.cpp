@@ -37,7 +37,6 @@
 #include "GpuAlloc.h"
 #include "RmgGemm.h"
 #include "blas.h"
-#include "../Headers/prototypes.h"
 
 
 

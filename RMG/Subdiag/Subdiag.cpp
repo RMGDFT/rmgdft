@@ -39,7 +39,6 @@
 #include "blas.h"
 #include "RmgParallelFft.h"
 
-#include "prototypes.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"

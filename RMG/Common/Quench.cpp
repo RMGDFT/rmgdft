@@ -42,7 +42,6 @@
 #include "transition.h"
 #include "Plots.h"
 #include "Functional.h"
-#include "../Headers/prototypes.h"
 #include "../Headers/macros.h"
 
 // Instantiate gamma and non-gamma versions

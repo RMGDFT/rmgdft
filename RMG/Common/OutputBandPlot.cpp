@@ -43,7 +43,6 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "../Headers/prototypes.h"
 #include "Plots.h"
 
 

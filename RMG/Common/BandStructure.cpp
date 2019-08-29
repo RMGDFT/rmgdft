@@ -44,7 +44,6 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "Subdiag.h"
-#include "../Headers/prototypes.h"
 #include "Solvers.h"
 
 template void BandStructure(Kpoint<double> **, double *vh, double *vxc, double *vnuc);

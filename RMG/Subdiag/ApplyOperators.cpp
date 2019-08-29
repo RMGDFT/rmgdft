@@ -33,7 +33,7 @@
 #include "GlobalSums.h"
 #include "Subdiag.h"
 
-#include "prototypes.h"
+#include "prototypes_rmg.h"
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"

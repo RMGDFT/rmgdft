@@ -33,7 +33,6 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
-#include "prototypes.h"
 #include "GpuAlloc.h"
 #include "blas.h"
 

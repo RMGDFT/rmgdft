@@ -70,37 +70,6 @@ template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, in
 template <typename DataType> double ApplyLaplacian (DataType *a, DataType *b, int order, const char *grid, BaseGrid *G, TradeImages *T);
 
 void GetVtotPsi (double * vtot_psi, double * vtot, int grid_ratio);
-template <typename KpointType>
-void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, double * vnuc,
-             double * rho, double * rho_oppo, double * rhoc, double * rhocore);
-
-
-
-
-
-
-template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho);
-template <typename OrbitalType> void GetAugRho(Kpoint<OrbitalType> **Kpts, double *rho);
-template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
-           double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
-template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
-              double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
-template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,
-             double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr, bool compute_forces);
-template <typename OrbitalType> bool Scf (double * vxc, double *vxc_correct, double * vh, double *vh_in, double *vh_ext,
-          double * vnuc, double * rho, double * rho_oppo, double * rhocore, double * rhoc, int spin_flag,
-          int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV);
-template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
-            KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, int first_state, int num_states, bool need_bns);
-template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
-            KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, int first_state, int num_states);
-template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **Kptr,
-          double *rho, double *new_rho, double *vh, double *vh_in);
-
-
-
-template <typename OrbitalType, typename CalcType> void MgEigState (Kpoint<OrbitalType> *kptr, 
-State<OrbitalType> * sp, double * vtot_psi, OrbitalType *nv, OrbitalType *ns, int vcycle);
 
 
 // Gamma point float version
@@ -140,10 +109,6 @@ void DeleteNvmeArrays(void);
 
 template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
 template  <typename OrbitalType> double AppCilrSixth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);
-template <typename OrbitalType, typename CalcType>
-void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *nvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi);
-void PotentialAccelerationWait(int istate, int nstates, int skip);
-void PotentialAccelerationReset(int skip);
 
 // Print function
 void RmgPrintTimings(MPI_Comm comm, const char *outfile, int steps, int num_ions_loc, int override_rank);
@@ -170,38 +135,7 @@ double * UPF_str_to_double_array(std::string str, int max_count, int start);
 extern "C" void LoadUpf_C(SPECIES *sp);
 extern "C" bool verify( char *tagname, const void *optvalue );
 void ReadPseudo(int nspecies, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
-template <typename KpointType>
-void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf);
-template <typename KpointType>
-void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr);
-template <typename KpointType>
-void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr);
-template <typename KpointType>
-void GetOppositeEigvals (Kpoint<KpointType> **Kptr);
-template <typename KpointType>
-void GetOppositeOccupancies (Kpoint<KpointType> **Kptr);
-template <typename StateType>
-void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, double coeff, double *kvec);
-void LcaoGetRho (double * arho_f);
-template <typename KpointType>
-void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, Kpoint<KpointType> ** Kptr , int ii_flag);
-template <typename KpointType>
-void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, double * vxc, Kpoint<KpointType> ** Kptr);
-template <typename KpointType>
-void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * Kptr);
-void WriteBGW_Rhog (double * rho, double * rho_oppo);
-template <typename KpointType>
-void WriteBGW_VxcEig (int kpt, double * vxc, Kpoint<KpointType> * Kptr);
-template <typename KpointType>
-void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr);
-template <typename KpointType>
-void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr);
-template <typename KpointType>
-void ReadSerialData (std::string& name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr);
-template <typename KpointType>
-double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, int num_st, int occ_flag, int mp_order);
-template <typename KpointType>
-void OutputBandPlot(Kpoint<KpointType> ** Kptr);
+
 int GetRecommendedThreadNumber(int nthreads, int npes, int thispe, MPI_Comm comm);
 void InitHybridModel(int omp_nthreads, int mg_threads, int npes, int thispe, MPI_Comm comm);
 void ReadCommon(char *cfile, CONTROL& cont, PE_CONTROL& pecont, std::unordered_map<std::string, InputKey *>& Map);
@@ -222,37 +156,10 @@ void CheckShutdown(void);
 
 
 
-template <typename OrbitalType> 
-    void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, double *vh_in,
-        double * vxc, double *vxc_in, double * vnuc, Kpoint<OrbitalType> **Kptr);
-template <typename OrbitalType> 
-    void Nlforce (double * , Kpoint<OrbitalType> **Kptr, double *force);
-
-
-template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, double * newsintR_x, double * newsintR_y,
-                       double * newsintR_z, double * newsintI_x, double * newsintI_y, double * newsintI_z,
-                       ION * iptr,Kpoint<OrbitalType> **Kptr);
-
-template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh , Kpoint<OrbitalType> **Kptr);
-
-
-template <typename OrbitalType> void PartialGamma (int kpt,
-                    int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
-                    Kpoint<OrbitalType> **kptr, int state_start, int state_end, 
-                    OrbitalType *sint_derx, OrbitalType *sint_dery, OrbitalType *sint_derz);
-
-
-
-template <typename OrbitalType> void AssignDerweight (Kpoint<OrbitalType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, OrbitalType
-*rtptr);
-        
-
 void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 void ReadOrbitals(char *cfile, STATE  *states, std::vector<ION> &ions,  MPI_Comm comm, unsigned int *);
 void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
-template <typename KpointType>
-void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc);
 void GetPrimeFactors(std::vector<int>& factors, int val, int stop);
 void SetupGrids(int npes, int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *celldm, double h, PE_CONTROL& pelc);
 void SetupProcessorGrid(int npes, int NX_GRID, int NY_GRID, int NZ_GRID, PE_CONTROL& pelc);

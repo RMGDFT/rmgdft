@@ -37,7 +37,6 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include <complex>
-#include "../Headers/prototypes.h"
 #include "RmgParallelFft.h"
 #include "GlobalSums.h"
 
