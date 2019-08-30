@@ -34,6 +34,7 @@
 
 // This class is used to handle the integration of plane wave functionality into RMG
 
+#include <complex>
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "fft3d.h"
@@ -65,6 +66,9 @@ public:
     Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm);
     void index_to_gvector(int *index, double *gvector);
     int count_filtered_gvectors(double filter_factor);
+    void FftForward (double * in, std::complex<double> * out);
+    void FftForward (std::complex<double> * in, std::complex<double> * out);
+    void FftInverse (std::complex<double> * in, std::complex<double> * out);
 
 
     ~Pw(void);

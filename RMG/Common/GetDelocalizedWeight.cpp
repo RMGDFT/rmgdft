@@ -93,7 +93,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
             for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
 
             /*Do the backwards transform */
-            PfftInverse(gbptr, beptr, *coarse_pwaves);
+            coarse_pwaves->FftInverse(gbptr, beptr);
 
             std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
 

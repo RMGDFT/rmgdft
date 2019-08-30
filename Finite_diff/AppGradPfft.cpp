@@ -73,7 +73,7 @@ void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const c
 
     for(int i = 0;i < pbasis;i++) a_in[i] = a[i];
 
-    PfftForward(a_in, a_out, *pwaves);
+    pwaves->FftForward(a_in, a_out);
 
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
 
@@ -85,21 +85,21 @@ void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const c
         a_in[ig] = a_out[ig] * std::complex<double>(0.0, pwaves->g[ig].a[0] * tpiba);
 
     }
-    PfftInverse(a_in, a_in, *pwaves);
+    pwaves->FftInverse(a_in, a_in);
     for(int i = 0;i < pbasis;i++) gx[i] = std::real(a_in[i])/(double)pwaves->global_basis;
 
     for(int ig=0;ig < pbasis;ig++) {
         a_in[ig] = a_out[ig] * std::complex<double>(0.0, pwaves->g[ig].a[1] * tpiba);
 
     }
-    PfftInverse(a_in, a_in, *pwaves);
+    pwaves->FftInverse(a_in, a_in);
     for(int i = 0;i < pbasis;i++) gy[i] = std::real(a_in[i])/(double)pwaves->global_basis;
 
     for(int ig=0;ig < pbasis;ig++) {
         a_in[ig] = a_out[ig] * std::complex<double>(0.0, pwaves->g[ig].a[2] * tpiba);
 
     }
-    PfftInverse(a_in, a_in, *pwaves);
+    pwaves->FftInverse(a_in, a_in);
     for(int i = 0;i < pbasis;i++) gz[i] = std::real(a_in[i])/(double)pwaves->global_basis;
 
     delete [] a_in;

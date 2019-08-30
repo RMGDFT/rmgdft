@@ -58,7 +58,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
   std::complex<double> *crho = new std::complex<double>[size];
 
   for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(x[i], 0.0);
-  PfftForward(crho, crho, pwaves);
+  pwaves.FftForward(crho, crho);
 
   if(filter_type == LOW_PASS) {
       for(int ig=0;ig < pbasis;ig++) {
@@ -75,7 +75,7 @@ void FftFilter(double *x,   // IN:OUT  Input array in real space. Distributed ac
       }
   }
 
-  PfftInverse(crho, crho, pwaves);
+  pwaves.FftInverse(crho, crho);
   for(int i = 0;i < pbasis;i++) x[i] = std::real(crho[i])/(double)global_basis;
 
   delete [] crho;

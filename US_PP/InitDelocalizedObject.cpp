@@ -165,14 +165,14 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
         for (int ion = 0; ion < ct.num_ions; ion++)
         {
             std::complex<double> *ptr_g = &temp_g[(size_t)ion * (size_t)FP0_BASIS];
-            PfftInverse(ptr_g, ptr_g, *fine_pwaves);
+            fine_pwaves->FftInverse(ptr_g, ptr_g);
             for(int ig = 0; ig < fine_pwaves->pbasis; ig++) 
                 ionobject[(size_t)ion * (size_t)FP0_BASIS + ig] = std::real(ptr_g[ig])/omega;
         }
     }
     else
     {
-        PfftInverse(temp_g, temp_g, *fine_pwaves);
+        fine_pwaves->FftInverse(temp_g, temp_g);
         for(int ig = 0; ig < fine_pwaves->pbasis; ig++) sumobject[ig] = std::real(temp_g[ig])/omega;
     }
 

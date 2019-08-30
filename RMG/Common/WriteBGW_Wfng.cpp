@@ -448,7 +448,7 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
                 wfng_dist[idx] = std::complex<double>(kptr->Kstates[istate].psi[idx]);
         }
 
-        PfftForward(wfng_dist, wfng_dist, *coarse_pwaves);
+        coarse_pwaves->FftForward(wfng_dist, wfng_dist);
 
         for (ix = 0; ix < get_PX0_GRID(); ix++)
             for (iy = 0; iy < get_PY0_GRID(); iy++)

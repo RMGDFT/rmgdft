@@ -180,7 +180,7 @@ void WriteBGW_Rhog (double *rho, double *rho_oppo)
     for(int idx = 0; idx < FP0_BASIS; idx++)
         rhog_dist[idx] = std::complex<double>(rho[idx], 0.0);
 
-    PfftForward(rhog_dist, rhog_dist, *fine_pwaves);
+    fine_pwaves->FftForward(rhog_dist, rhog_dist);
 
 
     
@@ -225,7 +225,7 @@ void WriteBGW_Rhog (double *rho, double *rho_oppo)
         for(int idx = 0; idx < FP0_BASIS; idx++)
             rhog_dist[idx] = std::complex<double>(rho_oppo[idx], 0.0);
 
-        PfftForward(rhog_dist, rhog_dist, *fine_pwaves);
+        fine_pwaves->FftForward(rhog_dist, rhog_dist);
 
         for(int ig = 0; ig < FNBASIS; ig++) rhog_global[ig] = 0.0;
         for (ix = 0; ix < FPX0_GRID; ix++)

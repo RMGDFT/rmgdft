@@ -186,6 +186,49 @@ int Pw::count_filtered_gvectors(double filter_factor)
 
 }
 
+void Pw::FftForward (double * in, std::complex<double> * out)
+{
+  std::complex<double> *buf = new std::complex<double>[pbasis];
+  for(int i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
+
+  fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, fft_forward_plan);
+
+  delete [] buf;
+}
+
+
+void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
+{
+    if(in != out)
+    {
+        std::complex<double> *buf = new std::complex<double>[pbasis];
+        for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+        fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, fft_forward_plan);
+        delete [] buf;
+    }
+    else
+    {
+        fft_3d((FFT_DATA *)in, (FFT_DATA *)out, -1, fft_forward_plan);
+    }
+}
+
+
+void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
+{
+  if(in != out)
+  {
+      std::complex<double> *buf = new std::complex<double>[pbasis];
+      for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, fft_backward_plan);
+      delete [] buf;
+  }
+  else
+  {
+      fft_3d((FFT_DATA *)in, (FFT_DATA *)out, 1, fft_backward_plan);
+  }
+}
+
+
 Pw::~Pw(void)
 {
   delete [] g;

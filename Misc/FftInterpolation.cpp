@@ -96,7 +96,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
       for(int ix = 0;ix < pbasis_c;ix++) base_coarse[ix] = std::complex<double>(coarse[ix], 0.0);
   }
 
-  PfftForward(base_coarse, base_coarse, *coarse_pwaves);
+  coarse_pwaves->FftForward(base_coarse, base_coarse);
   // Zero higher frequency components
   for(int ix = 0;ix < pbasis_c;ix++)
   {
@@ -141,7 +141,7 @@ void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, boo
               }
 
               // Backtransform phase shifted coefficients
-              PfftInverse(shifted_coarse, backshifted_coarse, *coarse_pwaves);
+              coarse_pwaves->FftInverse(shifted_coarse, backshifted_coarse);
 
               // Pack interpolated values into the fine grid
               for(int ixx = 0;ixx < dimx_c;ixx++) {

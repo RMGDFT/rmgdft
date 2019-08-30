@@ -6,8 +6,6 @@ InitPe4image.cpp
 InitPe4kpspin.cpp
 VhDriver.cpp 
 Pw.cpp
-PfftForward.cpp
-PfftInverse.cpp 
 LocalFftForward.cpp
 LocalFftInverse.cpp 
 VhPfft.cpp

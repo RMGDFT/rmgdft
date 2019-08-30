@@ -45,7 +45,7 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
 
 
     for(int i = 0;i < pbasis;i++) crho[i] = std::complex<double>(rho_tot[i], 0.0);
-    PfftForward(crho, crho, *fine_pwaves);
+    fine_pwaves->FftForward(crho, crho);
 
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
@@ -56,7 +56,7 @@ void VhPfft(double *rho_tot, double *rhoc, double *vh)
             crho[ig] = ZERO_t;
     }
 
-    PfftInverse(crho, crho, *fine_pwaves);
+    fine_pwaves->FftInverse(crho, crho);
     for(int i = 0;i < pbasis;i++) vh[i] = std::real(crho[i])/(double)fine_pwaves->global_basis * 4.0 * PI;
 
     delete [] crho;
