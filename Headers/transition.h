@@ -183,8 +183,7 @@ void CorrectForces (double *vh, double *vh_in, double *vxc, double *vxc_in, doub
 void FindFftwPhaseLocalpp (int nlxdim, int nlydim, int nlzdim,double * nlcdrs, std::complex<double> *phase_fft, int level);
 void GetPhase (ION *, std::complex<double> *);
 void PrintSums(double *, int, char*);
-void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, 
-        fftw_plan p1, fftw_plan p2);
+void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m);
 void InitLocalizedWeight(void);
 void InitDelocalizedWeight (void);
 void InitOrbital (void);

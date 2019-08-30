@@ -108,18 +108,12 @@ void InitLocalizedWeight (void)
         zdim = sp->nldim;
         size = xdim * ydim * zdim;
 
-        p2_backward = fftw_plan_dft_3d (sp->nldim, sp->nldim, sp->nldim, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
-        p2_forward = fftw_plan_dft_3d (xdim, ydim, zdim, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
             phaseptr = (std::complex<double> *) &sp->phase[kpt * sp->nldim * sp->nldim * sp->nldim];
             betaptr = &sp->forward_beta[kpt *sp->num_projectors *size + proj.proj_index * size];
-            InitWeightOne(sp, betaptr, phaseptr, proj.ip, proj.l, proj.m, p2_forward, p2_backward);
+            InitWeightOne(sp, betaptr, phaseptr, proj.ip, proj.l, proj.m);
         }
-
-        fftw_destroy_plan (p2_forward);
-        fftw_destroy_plan (p2_backward);
 
     }                           /* end for */
 
@@ -152,4 +146,4 @@ void InitLocalizedWeight (void)
 
     delete RT4;
 
-}                               /* end InitWeight */
+}

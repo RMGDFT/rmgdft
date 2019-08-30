@@ -50,7 +50,7 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 
     SPECIES *sp;
     ION *iptr;
-    fftw_plan p2;
+
     /*Pointer to the result of forward transform on the coarse grid */
     std::complex<double> *fptr;
     std::complex<double> *beptr, *gbptr;
@@ -88,9 +88,6 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 
         Bweight = &nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
         Nlweight = &nl_weight[ion1 * ct.max_nl * P0_BASIS];
-//            for(int idx = 0;idx < sp->num_projectors*P0_BASIS; idx++) Bweight[idx] = 0.0;
-//            for(int idx = 0;idx < sp->num_projectors*P0_BASIS; idx++) Nlweight[idx] = 0.0;
-
 
         int nlxdim = P->get_nldim(iptr->species);
         int nlydim = P->get_nldim(iptr->species);
@@ -102,13 +99,6 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 
         /*Number of grid points on which fourier transform is done (in the coarse grid) */
         int coarse_size = nlxdim * nlydim * nlzdim;
-
-
-        //fftw_import_wisdom_from_string (sp->backward_wisdom);
-        p2 = fftw_plan_dft_3d (nlxdim, nlydim, nlzdim, reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), FFTW_BACKWARD,
-                FFTW_ESTIMATE);
-        //fftw_forget_wisdom ();
-
 
         /*Calculate the phase factor */
         FindPhase(nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), phase_fftw);
@@ -130,7 +120,7 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 
 
             /*Do the backwards transform */
-            fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(gbptr), reinterpret_cast<fftw_complex*>(beptr));
+            sp->prj_pwave->FftInverse(gbptr, beptr);
 
             /*This takes and stores the part of beta that is useful for this PE */
             AssignWeight (this, sp, ion, reinterpret_cast<fftw_complex*>(beptr), Bweight, Nlweight);
@@ -144,7 +134,6 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
         }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */
 
 
-        fftw_destroy_plan (p2);
         fftw_free(out);
         fftw_free(in);
 

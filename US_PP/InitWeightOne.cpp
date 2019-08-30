@@ -17,8 +17,7 @@
 #include "RmgException.h"
 
 
-void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m, 
-     fftw_plan p2_forward, fftw_plan p2_backward)
+void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m)
 {
 
     double ax[3];
@@ -103,7 +102,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     //    for(int ix = 0; ix < sp->nldim; ix++) printf("\n aaa %d %e %e", ix, weptr[ix]);
 
     RmgTimer *RT1 = new RmgTimer("weight fft_nldim");
-    fftw_execute_dft (p2_backward, reinterpret_cast<fftw_complex*>(weptr), reinterpret_cast<fftw_complex*>(gwptr));
+    sp->prj_pwave->FftInverse(weptr, gwptr);
     delete RT1;
 
     RmgTimer *RT2 = new RmgTimer("weight fold");
@@ -137,7 +136,7 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
 
     delete RT2;
     RmgTimer *RT3 = new RmgTimer("weight fft_forward");
-    fftw_execute_dft (p2_forward, reinterpret_cast<fftw_complex*>(weptr), rtptr);
+    sp->prj_pwave->FftForward(weptr, (std::complex<double> *)rtptr);
     delete RT3;
 
     // shift atom to the center instead of corner

@@ -44,6 +44,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   this->global_dimy = G.get_NY_GRID(ratio);
   this->global_dimz = G.get_NZ_GRID(ratio);
   this->global_basis = this->global_dimx * this->global_dimy * this->global_dimz;
+  this->distributed_plan = NULL;
 
   // Magnitudes of the g-vectors
   this->gmags = new double[this->pbasis]();
@@ -138,11 +139,33 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   //printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
 
   // Now set up plans
-//  if(G.get_NPES() == 1)
-//  {
-//      // Local fft plan(s)
-//  }
-//  else
+  if(G.get_NPES() == 1)
+  {
+      // Local cpu based fft plan(s). We use the array execute functions so the in and out arrays
+      // here are dummies to enable the use of FFTW_MEASURE. The caller has to ensure alignment
+      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * 2 * this->global_dimx*this->global_dimy*this->global_dimz);
+      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * 2 * this->global_dimx*this->global_dimy*this->global_dimz);
+
+      fftw_forward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftw_backward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+      fftw_forward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftw_backward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+      delete [] out;
+      delete [] in;
+  }
+  else
   {
       // NPES > 1 so setup distributed fft plan
       int grid[3];
@@ -157,7 +180,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
       int pxoffset, pyoffset, pzoffset, nbuf, scaled=false, permute=0, usecollective=true;
       G.find_node_offsets(G.get_rank(), grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);
-      forward_plan = fft_3d_create_plan(comm,
+      distributed_plan = fft_3d_create_plan(comm,
                            grid[2], grid[1], grid[0],
                            pzoffset, pzoffset + dimz - 1,
                            pyoffset, pyoffset + dimy - 1,
@@ -166,8 +189,6 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
                            pyoffset, pyoffset + dimy - 1,
                            pxoffset, pxoffset + dimx - 1,
                            scaled, permute, &nbuf, usecollective);
-
-      backward_plan = forward_plan;
 
   }
 
@@ -225,41 +246,67 @@ void Pw::FftForward (double * in, std::complex<double> * out)
   std::complex<double> *buf = new std::complex<double>[pbasis];
   for(int i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
 
-  fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, forward_plan);
-
+  if(Grid->get_NPES() == 1)
+  {
+      fftw_execute_dft (fftw_forward_plan,  reinterpret_cast<fftw_complex*>(buf), reinterpret_cast<fftw_complex*>(out));
+  }
+  else
+  {
+      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, distributed_plan);
+  }
   delete [] buf;
 }
 
 
 void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
 {
-    if(in != out)
+    if(Grid->get_NPES() == 1)
     {
-        std::complex<double> *buf = new std::complex<double>[pbasis];
-        for(int i = 0;i < pbasis;i++) buf[i] = in[i];
-        fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, forward_plan);
-        delete [] buf;
+        if(in == out)
+            fftw_execute_dft (fftw_forward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
+        else
+            fftw_execute_dft (fftw_forward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
     }
     else
     {
-        fft_3d((FFT_DATA *)in, (FFT_DATA *)out, -1, forward_plan);
+        if(in != out)
+        {
+            std::complex<double> *buf = new std::complex<double>[pbasis];
+            for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+            fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, distributed_plan);
+            delete [] buf;
+        }
+        else
+        {
+            fft_3d((FFT_DATA *)in, (FFT_DATA *)out, -1, distributed_plan);
+        }
     }
 }
 
 
 void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
 {
-  if(in != out)
-  {
-      std::complex<double> *buf = new std::complex<double>[pbasis];
-      for(int i = 0;i < pbasis;i++) buf[i] = in[i];
-      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, backward_plan);
-      delete [] buf;
-  }
-  else
-  {
-      fft_3d((FFT_DATA *)in, (FFT_DATA *)out, 1, backward_plan);
-  }
+    if(Grid->get_NPES() == 1)
+    {
+        if(in == out)
+            fftw_execute_dft (fftw_backward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
+        else
+            fftw_execute_dft (fftw_backward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
+    }
+    else
+    {
+        if(in != out)
+        {
+            std::complex<double> *buf = new std::complex<double>[pbasis];
+            for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+            fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, distributed_plan);
+            delete [] buf;
+        }
+        else
+        {
+            fft_3d((FFT_DATA *)in, (FFT_DATA *)out, 1, distributed_plan);
+        }
+    }
 }
 
 
@@ -268,5 +315,13 @@ Pw::~Pw(void)
   delete [] g;
   delete [] gmask;
   delete [] gmags;
+  if(this->distributed_plan) fft_3d_destroy_plan(this->distributed_plan);
+  if(Grid->get_NPES() == 1)
+  {
+      fftw_destroy_plan(fftw_backward_plan_inplace);
+      fftw_destroy_plan(fftw_forward_plan_inplace);
+      fftw_destroy_plan(fftw_backward_plan);
+      fftw_destroy_plan(fftw_forward_plan);
+  }
 }
 
