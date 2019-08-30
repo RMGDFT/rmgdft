@@ -64,7 +64,6 @@ Lattice_Cbindings.cpp
 transition.cpp
 init_states.cpp
 get_index.cpp
-get_vtot_psi.cpp
 blaswrappers.cpp
 set_bc.cpp
 cgen_prolong.cpp

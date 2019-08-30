@@ -168,7 +168,6 @@ int assign_species (CONTROL * c, char *buf);
 
 double real_sum_all (double x, MPI_Comm comm);
 double double_sum_all (double x, MPI_Comm comm);
-void FftFilterFine(double *x,  double factor);
 
 
 void sortpsi (STATE *states);
