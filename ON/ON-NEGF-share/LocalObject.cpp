@@ -446,7 +446,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
                 for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
 
                 /*Do the backwards transform */
-                PfftInverse(gbptr, beptr, *coarse_pwaves);
+                coarse_pwaves->FftInverse(gbptr, beptr);
 
                 if(ct.is_gamma)
                 {

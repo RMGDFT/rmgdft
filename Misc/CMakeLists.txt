@@ -10,7 +10,6 @@ LocalFftForward.cpp
 LocalFftInverse.cpp 
 VhPfft.cpp
 VhDriver.cpp
-Fft_Cbindings.cpp
 GetVtotPsi.cpp
 FftInitPlans.cpp
 FftFreqBin.cpp

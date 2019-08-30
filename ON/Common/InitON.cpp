@@ -388,7 +388,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vh[idx] + vxc[idx] + vnuc[idx] + vh_corr[idx];
 
-    get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
+    GetVtotPsi(vtot_c, vtot, get_FG_RATIO());
+
     get_ddd(vtot);
     delete(RT8);
 
