@@ -63,7 +63,7 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
         tx[ix] = std::complex<double>(x[ix], 0.0);
     }
 
-    PfftForward(tx, tx, pwaves);
+    pwaves.FftForward(tx, tx);
 
     double gcut = ct.filter_factor*pwaves.gcut;
 
@@ -77,7 +77,7 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
                 cgx[ig] = czero;
         }
 
-        PfftInverse(cgx, cgx, pwaves);
+        pwaves.FftInverse(cgx, cgx);
 
         double *ts;
         if(icar == 0) ts = fgx;

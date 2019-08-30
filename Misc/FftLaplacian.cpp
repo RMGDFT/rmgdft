@@ -62,7 +62,7 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
         tx[ix] = std::complex<double>(x[ix], 0.0);
     }
 
-    PfftForward(tx, tx, pwaves);
+    pwaves.FftForward(tx, tx);
 
     for(int ig=0;ig < isize;ig++) {
 //        if(pwaves.gmask[ig])
@@ -72,7 +72,7 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
             tx[ig]=czero;
     }
 
-    PfftInverse(tx, tx, pwaves);
+    pwaves.FftInverse(tx, tx);
 
     for(int ix=0;ix < isize;ix++) lapx[ix] = scale * std::real(tx[ix]);
 

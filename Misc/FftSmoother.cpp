@@ -63,7 +63,7 @@ void FftSmoother(double *x,     // IN:OUT  Input array in real space. Distribute
   for(int i = 0;i < pbasis;i++){
      if(x[i] > 0.0)crho[i] = std::complex<double>(sqrt(x[i]), 0.0);
   }
-  PfftForward(crho, crho, pwaves);
+  pwaves.FftForward(crho, crho);
 
   for(int ig=0;ig < pbasis;ig++) {
       if(pwaves.gmags[ig] >= g2cut)
@@ -72,7 +72,7 @@ void FftSmoother(double *x,     // IN:OUT  Input array in real space. Distribute
       }
   }
 
-  PfftInverse(crho, crho, pwaves);
+  pwaves.FftInverse(crho, crho);
   for(int i = 0;i < pbasis;i++) x[i] = scale*scale*std::real(crho[i])*std::real(crho[i]);
 
   delete [] crho;
