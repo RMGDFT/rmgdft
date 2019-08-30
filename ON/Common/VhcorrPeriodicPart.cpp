@@ -80,7 +80,7 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
         
     }
 
-    fft_3d((FFT_DATA *)crho, (FFT_DATA *)crho, 1, fine_pwaves->fft_backward_plan);
+    fine_pwaves->FftInverse(crho, crho);
 
     for(int i = 0;i < pbasis;i++) vh_x[i] = std::imag(crho[i]) * 4 * PI/Rmg_L.get_omega();
 
@@ -105,7 +105,7 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
         
     }
 
-    fft_3d((FFT_DATA *)crho, (FFT_DATA *)crho, 1, fine_pwaves->fft_backward_plan);
+    fine_pwaves->FftInverse(crho, crho);
     for(int i = 0;i < pbasis;i++) vh_y[i] = std::imag(crho[i]) * 4 * PI/Rmg_L.get_omega();
 
     for(int ig=0;ig < pbasis;ig++) {
@@ -130,7 +130,7 @@ void VhcorrPeriodicPart(double *vh_x, double *vh_y, double *vh_z, double alpha, 
         
     }
 
-    fft_3d((FFT_DATA *)crho, (FFT_DATA *)crho, 1, fine_pwaves->fft_backward_plan);
+    fine_pwaves->FftInverse(crho, crho);
     for(int i = 0;i < pbasis;i++) vh_z[i] = std::imag(crho[i]) * 4 * PI/Rmg_L.get_omega();
 
 

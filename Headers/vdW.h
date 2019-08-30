@@ -29,7 +29,6 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Pw.h"
-#include "fft3d.h"
 #include "rmg_mangling.h"
 
 #define VDW_NQPOINTS  20
@@ -43,7 +42,6 @@ extern "C" {void spline_interpolation (double *x, const int *Nx, double *evaluat
 extern "C" {void initialize_spline_interpolation (double *x, const int *Nx, double *d2y_dx2);}
 
 
-#ifdef __cplusplus
 
 class Vdw {
 
@@ -127,8 +125,7 @@ private:
     // cutoff value for density
     static const double epsr;
 
-    struct fft_plan_3d *plan_forward;
-    struct fft_plan_3d *plan_back;
+    Pw *pwaves;
 
 public:
     Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
@@ -137,9 +134,9 @@ public:
     void get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> *thetas, 
                          int ibasis, double *gx, double *gy, double *gz);
     void saturate_q(double q, double q_cut, double &q0, double &dq0_dq);
-    double vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int N_calc, Pw *pwaves);
+    double vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int N_calc);
     void get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW, 
-                       int ibasis, int N_calc, double *gx, double *gy, double *gz, Pw *pwaves);
+                       int ibasis, int N_calc, double *gx, double *gy, double *gz);
 
     double Fs(double s);
     double dFs_ds(double s);
@@ -157,6 +154,4 @@ public:
 };
 
 
-
-#endif
 #endif

@@ -62,8 +62,14 @@ private:
     // true if gamma only
     bool is_gamma;
 
+    // Parallel fft plans
+    struct fft_plan_3d *forward_plan;
+    struct fft_plan_3d *backward_plan;
+
+    MPI_Comm comm;
+
 public:
-    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm);
+    Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag);
     void index_to_gvector(int *index, double *gvector);
     int count_filtered_gvectors(double filter_factor);
     void FftForward (double * in, std::complex<double> * out);
@@ -76,10 +82,6 @@ public:
     // Real space basis on this node and globally
     int pbasis;
     int global_basis;
-
-    // fft plans to use with this PW object
-    struct fft_plan_3d *fft_forward_plan;
-    struct fft_plan_3d *fft_backward_plan;
 
     // Real space grid dimensions on this node
     int dimx;

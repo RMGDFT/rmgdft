@@ -191,7 +191,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   int calc_basis = this->pbasis;
   int N_calc = this->N;
   double *calc_rho=NULL, *calc_gx=NULL, *calc_gy=NULL, *calc_gz=NULL;
-  Pw *planewaves_calc;
   if(use_coarsegrid) {
       calc_basis = this->pbasis_c;    // basis size for rho on this PE
       N_calc = this->N_c;             // total basis size across all nodes
@@ -202,17 +201,13 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   }
 
   // FFT plans
-  if(use_coarsegrid) {
-
-      this->plan_forward = fft_forward_coarse;
-      this->plan_back = fft_backward_coarse;
-
+  if(use_coarsegrid)
+  {
+      pwaves = coarse_pwaves;
   }
-  else {
-
-      this->plan_forward = fft_forward_fine;
-      this->plan_back = fft_backward_fine;
-
+  else 
+  {
+      pwaves = fine_pwaves;
   }
 
   // If not initialized we must read in the kernel table
@@ -347,14 +342,6 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       this->info();
   }
 
-  // Use the global plane wave objects
-  if(use_coarsegrid) {
-      planewaves_calc = coarse_pwaves;
-  }
-  else {
-      planewaves_calc = fine_pwaves;
-  }
-
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
@@ -386,7 +373,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   this->get_q0_on_grid (calc_rho, q0, dq0_drho, dq0_dgradrho, thetas, calc_basis, calc_gx, calc_gy, calc_gz);
 
-  double Ec_nl = this->vdW_energy(q0, thetas, calc_basis, N_calc, planewaves_calc);
+  double Ec_nl = this->vdW_energy(q0, thetas, calc_basis, N_calc);
   etxc += Ec_nl;
 
 
@@ -401,13 +388,12 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
 
   for(int iq = 0;iq < Nqs;iq++) {
-    //pfft_execute_dft(plan_back_calc, (double (*)[2])&thetas[iq*calc_basis], (double (*)[2])&thetas[iq*calc_basis]);
-      fft_3d((FFT_DATA *)&thetas[iq*calc_basis], (FFT_DATA *)&thetas[iq*calc_basis], 1, plan_back);
+      pwaves->FftInverse(&thetas[iq*calc_basis], &thetas[iq*calc_basis]);
   }
 
   double *potential = new double[this->pbasis]();
   double *calc_potential = new double[this->pbasis]();
-  this->get_potential(q0, dq0_drho, dq0_dgradrho, calc_potential, thetas, calc_basis, N_calc, calc_gx, calc_gy, calc_gz, planewaves_calc);
+  this->get_potential(q0, dq0_drho, dq0_dgradrho, calc_potential, thetas, calc_basis, N_calc, calc_gx, calc_gy, calc_gz);
 
   if(use_coarsegrid) {
       FftInterpolation (G, calc_potential, potential, G.default_FG_RATIO, false);
@@ -560,14 +546,13 @@ void Vdw::get_q0_on_grid (double *calc_rho, double *q0, double *dq0_drho, double
 
 
   for(int iq = 0;iq < Nqs;iq++) {
-      //pfft_execute_dft(plan_forward_calc, (double (*)[2])&thetas[iq*ibasis], (double (*)[2])&thetas[iq*ibasis]);
-      fft_3d((FFT_DATA *)&thetas[iq*ibasis], (FFT_DATA *)&thetas[iq*ibasis], -1, plan_forward);
+      pwaves->FftForward(&thetas[iq*ibasis], &thetas[iq*ibasis]);
   }
 
 }
 
 
-double Vdw::vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int N_calc, Pw *pwaves)
+double Vdw::vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int N_calc)
 {
   double *kernel_of_k = new double[Nqs*Nqs]();
   std::complex<double> *u_vdW = new std::complex<double>[Nqs * ibasis]();
@@ -637,7 +622,7 @@ double Vdw::vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int
 }
 
 void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW, 
-                        int ibasis, int N_calc, double *gx, double *gy, double *gz, Pw *pwaves)
+                        int ibasis, int N_calc, double *gx, double *gy, double *gz)
 {
 
   std::complex<double> i(0.0,1.0);
@@ -715,9 +700,7 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
         if ( gradient2 > 0.0) h[ix] = h[ix] / sqrt( gradient2 );
      }
 
-
-     //pfft_execute_dft(plan_forward_calc, (double (*)[2])h, (double (*)[2])h);
-     fft_3d((FFT_DATA *)h, (FFT_DATA *)h, -1, plan_forward);
+     pwaves->FftForward(h, h);
 
      for(int ix=0;ix < ibasis;ix++) {
          if(pwaves->gmask[ix]) {
@@ -735,8 +718,7 @@ void Vdw::get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, doub
          }
      }
 
-     //pfft_execute_dft(plan_back_calc, (double (*)[2])h, (double (*)[2])h);
-     fft_3d((FFT_DATA *)h, (FFT_DATA *)h, 1, plan_back);
+     pwaves->FftInverse(h, h);
      double scale = 1.0 / (double)N_calc;
 
      for(int ix=0;ix < ibasis;ix++) potential[ix] -= scale * std::real(h[ix]);

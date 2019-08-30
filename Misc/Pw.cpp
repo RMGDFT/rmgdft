@@ -25,11 +25,12 @@
 #include <math.h>
 #include "transition.h"
 
-Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
+Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 {
 
   // Grid parameters
   this->Grid = &G;
+  this->comm = G.comm;
   this->L = &L;
   this->is_gamma = gamma_flag;
   this->pbasis = G.get_P0_BASIS(ratio);
@@ -121,7 +122,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
       }
   }
 
-  MPI_Allreduce(MPI_IN_PLACE, &this->gmax, 1, MPI_DOUBLE, MPI_MAX, pct.grid_comm);
+  MPI_Allreduce(MPI_IN_PLACE, &this->gmax, 1, MPI_DOUBLE, MPI_MAX, comm);
   this->gcut = this->gmax;
   for(int idx = 0;idx < this->dimx*this->dimy*this->dimz;idx++)
   {
@@ -132,10 +133,43 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag, MPI_Comm comm)
   }
 
   //int gcount = this->ng;
-  //MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, pct.grid_comm);
+  //MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, comm);
   //printf("G-vector count  = %d\n", gcount);
   //printf("G-vector cutoff = %8.2f\n", sqrt(this->gcut));
 
+  // Now set up plans
+//  if(G.get_NPES() == 1)
+//  {
+//      // Local fft plan(s)
+//  }
+//  else
+  {
+      // NPES > 1 so setup distributed fft plan
+      int grid[3];
+
+      // See if we can use pfft without remapping. In and out arrays must be equal in size.
+      grid[0] = G.get_NX_GRID(ratio);
+      grid[1] = G.get_NY_GRID(ratio);
+      grid[2] = G.get_NZ_GRID(ratio);
+      int dimx = G.get_PX0_GRID(ratio);
+      int dimy = G.get_PY0_GRID(ratio);
+      int dimz = G.get_PZ0_GRID(ratio);
+
+      int pxoffset, pyoffset, pzoffset, nbuf, scaled=false, permute=0, usecollective=true;
+      G.find_node_offsets(G.get_rank(), grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);
+      forward_plan = fft_3d_create_plan(comm,
+                           grid[2], grid[1], grid[0],
+                           pzoffset, pzoffset + dimz - 1,
+                           pyoffset, pyoffset + dimy - 1,
+                           pxoffset, pxoffset + dimx - 1,
+                           pzoffset, pzoffset + dimz - 1,
+                           pyoffset, pyoffset + dimy - 1,
+                           pxoffset, pxoffset + dimx - 1,
+                           scaled, permute, &nbuf, usecollective);
+
+      backward_plan = forward_plan;
+
+  }
 
 }
 
@@ -181,7 +215,7 @@ int Pw::count_filtered_gvectors(double filter_factor)
   {
       if(this->gmags[idx] < filter_factor*this->gcut) gcount++;
   }
-  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, pct.grid_comm);
+  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, comm);
   return gcount;
 
 }
@@ -191,7 +225,7 @@ void Pw::FftForward (double * in, std::complex<double> * out)
   std::complex<double> *buf = new std::complex<double>[pbasis];
   for(int i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
 
-  fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, fft_forward_plan);
+  fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, forward_plan);
 
   delete [] buf;
 }
@@ -203,12 +237,12 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
     {
         std::complex<double> *buf = new std::complex<double>[pbasis];
         for(int i = 0;i < pbasis;i++) buf[i] = in[i];
-        fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, fft_forward_plan);
+        fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, forward_plan);
         delete [] buf;
     }
     else
     {
-        fft_3d((FFT_DATA *)in, (FFT_DATA *)out, -1, fft_forward_plan);
+        fft_3d((FFT_DATA *)in, (FFT_DATA *)out, -1, forward_plan);
     }
 }
 
@@ -219,12 +253,12 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
   {
       std::complex<double> *buf = new std::complex<double>[pbasis];
       for(int i = 0;i < pbasis;i++) buf[i] = in[i];
-      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, fft_backward_plan);
+      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, backward_plan);
       delete [] buf;
   }
   else
   {
-      fft_3d((FFT_DATA *)in, (FFT_DATA *)out, 1, fft_backward_plan);
+      fft_3d((FFT_DATA *)in, (FFT_DATA *)out, 1, backward_plan);
   }
 }
 

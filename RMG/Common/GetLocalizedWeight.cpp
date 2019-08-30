@@ -131,6 +131,7 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 
             /*Do the backwards transform */
             fftw_execute_dft (p2,  reinterpret_cast<fftw_complex*>(gbptr), reinterpret_cast<fftw_complex*>(beptr));
+
             /*This takes and stores the part of beta that is useful for this PE */
             AssignWeight (this, sp, ion, reinterpret_cast<fftw_complex*>(beptr), Bweight, Nlweight);
 

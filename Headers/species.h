@@ -1,7 +1,7 @@
 #ifndef RMG_SPECIES_H
 #define RMG_SPECIES_H 1
 
-#include "fftw3.h"
+#include "Pw.h"
 
 class SPECIES
 {
@@ -275,8 +275,7 @@ public:
     int localidx;
 
     /* Point to plane wave object used for localized projectors */
-    /* Declared to be void*  rather than Pw* until migration from C to C++ is complete for all branches */
-    void *prj_pwave;
+    Pw *prj_pwave;
 
     /* Point to local BaseGrid object */
     void *OG;

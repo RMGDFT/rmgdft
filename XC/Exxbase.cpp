@@ -183,7 +183,7 @@ template <class T> Exxbase<T>::Exxbase (
     LG = new BaseGrid(G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), 1, 1, 1, 0, 1);
     MPI_Comm_split(G.comm, rank+1, rank, &lcomm);
     LG->set_rank(0, lcomm);
-    pwave = new Pw(*LG, L, 1, false, lcomm);
+    pwave = new Pw(*LG, L, 1, false);
     
     // Now we have to figure out how to distribute the pairs over computational resources.
     // If we only have CPU's then it's easy
