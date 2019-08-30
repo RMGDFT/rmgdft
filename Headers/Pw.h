@@ -35,6 +35,13 @@
 // This class is used to handle the integration of plane wave functionality into RMG
 
 #include <complex>
+#include <vector>
+
+#if GPU_ENABLED
+   #include <cuda.h>
+   #include <cufft.h>
+#endif
+
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "fftw3.h"
@@ -48,6 +55,14 @@ typedef struct {
 class Pw {
 
 private:
+#if GPU_ENABLED
+    const static int num_streams = 8;
+    cudaStream_t streams[num_streams];
+    cufftHandle gpu_plans[num_streams];
+    std::complex<double> *host_bufs[num_streams];
+    std::complex<double> *dev_bufs[num_streams];
+
+#endif    
 
     // BaseGrid class
     BaseGrid *Grid;

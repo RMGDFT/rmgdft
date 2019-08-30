@@ -27,7 +27,6 @@ void InitLocalizedWeight (void)
 
     int ip, prjcount, isp, size, tot_proj;
     SPECIES *sp;
-    fftw_plan p2_forward, p2_backward;
     fftw_complex *in, *out, *betaptr;
     std::complex<double> *phaseptr;
     int xdim, ydim, zdim, nldim_max;

@@ -20,10 +20,12 @@
  *
 */
 
-#include "Pw.h"
-#include "main.h"
 #include <math.h>
+#include "Pw.h"
+//#include "main.h"
 #include "transition.h"
+#include "rmg_error.h"
+#include "ErrorFuncs.h"
 
 Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 {
@@ -143,8 +145,8 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   {
       // Local cpu based fft plan(s). We use the array execute functions so the in and out arrays
       // here are dummies to enable the use of FFTW_MEASURE. The caller has to ensure alignment
-      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * 2 * this->global_dimx*this->global_dimy*this->global_dimz);
-      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * 2 * this->global_dimx*this->global_dimy*this->global_dimz);
+      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_dimx*this->global_dimy*this->global_dimz);
+      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_dimx*this->global_dimy*this->global_dimz);
 
       fftw_forward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
                      reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
@@ -164,6 +166,27 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
       delete [] out;
       delete [] in;
+
+#if GPU_ENABLED
+      // Gpu streams and plans
+      for (int i = 0; i < num_streams; i++)
+          RmgCudaError(__FILE__, __LINE__, cudaStreamCreate(&streams[i]), "Problem creating cuda stream.");
+
+      for (int i = 0; i < num_streams; i++)
+      {
+         cufftPlan3d(&gpu_plans[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_Z2Z);
+         cufftSetStream(gpu_plans[i], streams[i]);
+         RmgCudaError(__FILE__, __LINE__, 
+             cudaMallocHost((void **)&host_bufs[i],  this->global_dimx*this->global_dimy*this->global_dimz * sizeof(std::complex<double>)),
+             "Error: cudaMallocHost failed.\n");
+
+         RmgCudaError(__FILE__, __LINE__, 
+             cudaMalloc((void **)&dev_bufs[i],  this->global_dimx*this->global_dimy*this->global_dimz * sizeof(std::complex<double>)),
+             "Error: cudaMalloc failed.\n");
+      }
+ 
+#endif
+
   }
   else
   {
@@ -288,10 +311,20 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
 {
     if(Grid->get_NPES() == 1)
     {
+#if GPU_ENABLED
+        std::complex<double> *tptr = host_bufs[0];
+        for(int i = 0;i < pbasis;i++) tptr[i] = in[i];
+//        cudaMemcpyAsync(dev_bufs[0], host_bufs[0], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice, streams[0]);
+        cudaMemcpy(dev_bufs[0], host_bufs[0], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice);
+        cufftExecZ2Z(gpu_plans[0], (cufftDoubleComplex*)dev_bufs[0], (cufftDoubleComplex*)dev_bufs[0], CUFFT_INVERSE);
+        cudaMemcpy(host_bufs[0], dev_bufs[0], pbasis*sizeof(std::complex<double>), cudaMemcpyDeviceToHost);
+        for(int i = 0;i < pbasis;i++) out[i] = tptr[i];
+#else
         if(in == out)
             fftw_execute_dft (fftw_backward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
         else
             fftw_execute_dft (fftw_backward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
+#endif
     }
     else
     {
@@ -322,6 +355,20 @@ Pw::~Pw(void)
       fftw_destroy_plan(fftw_forward_plan_inplace);
       fftw_destroy_plan(fftw_backward_plan);
       fftw_destroy_plan(fftw_forward_plan);
+#if GPU_ENABLED
+      for (int i = 0; i < num_streams; i++)
+      {
+         cufftDestroy(gpu_plans[i]);
+         RmgCudaError(__FILE__, __LINE__, cudaFreeHost(host_bufs[i]), "Error: cudaFreeHost failed.\n");
+         RmgCudaError(__FILE__, __LINE__, cudaFree(dev_bufs[i]), "Error: cudaFreeHost failed.\n");
+      }
+
+      // Gpu streams and plans
+      for (int i = 0; i < num_streams; i++)
+          RmgCudaError(__FILE__, __LINE__, cudaStreamDestroy(streams[i]), "Problem freeing cuda stream.");
+
+
+#endif
   }
 }
 

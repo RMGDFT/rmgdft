@@ -506,10 +506,12 @@ if(RMG_GPU_ENABLED)
       list(APPEND RMGLIBS ${CUDA_CUDA_LIBRARY})
       list(APPEND RMGLIBS ${CUDA_CUDART_LIBRARY})
       list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
+      list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
   endif(NOT CRAY_XK)
   list(APPEND RMGLIBS ${CUDA_cublas_LIBRARY})
   list(APPEND RMGLIBS ${CUDA_cusparse_LIBRARY})
   list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
+  list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
   include_directories(${CUDA_INCLUDE_DIRS})
 
 # Cuda functions that we build are in Gpufuncs/CMakeLists.txt
