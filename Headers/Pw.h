@@ -46,11 +46,18 @@
 #include "Lattice.h"
 #include "fftw3.h"
 #include "fft3d.h"
+#include "WaitQueue.h"
 
 
 typedef struct {
   double a[3];
 } gvector;
+
+typedef struct {
+  std::complex<double> *in;
+  std::complex<double> *out;
+  int type;
+} FftPair;
 
 class Pw {
 
@@ -69,6 +76,9 @@ private:
 
     // Lattice object
     Lattice *L;
+
+    // Pending ffts
+    WaitQueue<FftPair> FftQ;
 
     // Grid spacings
     double hxgrid;
