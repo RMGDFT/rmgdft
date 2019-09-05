@@ -27,9 +27,11 @@
 #include <unistd.h>
 
 
+#include "const.h"
 #include "Exxbase.h"
 #include "RmgTimer.h"
 #include "RmgException.h"
+#include "transition.h"
 
 // This class implements exact exchange for delocalized orbitals.
 // The wavefunctions are stored in a single file and are not domain
@@ -37,8 +39,8 @@
 // mmapped to an array. We only access the array in read-only mode.
 
 
-template Exxbase<double>::Exxbase(BaseGrid &, Lattice &, std::string &, int, double *, double *);
-template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, Lattice &, std::string &, int, double *, std::complex<double> *);
+template Exxbase<double>::Exxbase(BaseGrid &, Lattice &, const std::string &, int, double *, double *);
+template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, Lattice &, const std::string &, int, double *, std::complex<double> *);
 
 template Exxbase<double>::~Exxbase(void);
 template Exxbase<std::complex<double>>::~Exxbase(void);
@@ -46,23 +48,29 @@ template Exxbase<std::complex<double>>::~Exxbase(void);
 template void Exxbase<double>::Vexx(std::string &);
 template void Exxbase<std::complex<double>>::Vexx(std::string &);
 
+template void Exxbase<double>::Vexx_int(std::string &);
+template void Exxbase<std::complex<double>>::Vexx_int(std::string &);
 
 template <class T> Exxbase<T>::Exxbase (
           BaseGrid &G_in,
           Lattice &L_in,
-          std::string &wavefile_in,
+          const std::string &wavefile_in,
           int nstates_in,
           double *occ_in,
           T *psi_in) : G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), occ(occ_in), psi(psi_in)
 {
-    RmgTimer RT0("5-Functional: Exact Exchange");
+    RmgTimer RT0("5-Functional: Exx init");
 
-    pbasis = G.get_P0_BASIS(G.default_FG_RATIO);
+    mode = EXX_DIST_FFT;
+
+    pbasis = G.get_P0_BASIS(1);
     N = (size_t)G.get_NX_GRID(G.default_FG_RATIO) *
               (size_t)G.get_NY_GRID(G.default_FG_RATIO) *
               (size_t)G.get_NZ_GRID(G.default_FG_RATIO);
 
     int ratio = G.default_FG_RATIO;
+
+    if(mode == EXX_DIST_FFT) return;
 
     // Write the domain distributed wavefunction array and map it to psi_s
     MPI_Datatype wftype = MPI_DOUBLE;
@@ -118,12 +126,14 @@ template <class T> Exxbase<T>::Exxbase (
     MPI_File_open(G.comm, wavefile.c_str(), amode, fileinfo, &mpi_fhand);
     MPI_Offset disp = 0;
     T *wfptr = psi;
+
     MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
     for(int st=0;st < nstates;st++)
     {
         MPI_File_write_all(mpi_fhand, wfptr, pbasis, MPI_DOUBLE, &status);
         wfptr += pbasis;
     }
+    MPI_Barrier(G.comm);
     MPI_File_close(&mpi_fhand);
     fflush(NULL);
     MPI_Barrier(G.comm);
@@ -140,6 +150,7 @@ template <class T> Exxbase<T>::Exxbase (
     MPI_Type_free(&grid_c);
 
     // Generate the full set of pairs and store in a temporary vector
+    // This is for gamma only right now
     int npairs = (N*N + N) / 2;
     std::vector< std::pair <int,int> > temp_pairs; 
     temp_pairs.resize(npairs);
@@ -196,8 +207,48 @@ template <class T> void Exxbase<T>::Vexx(std::string &vfile)
 
 }
 
+// This computes exact exchange integrals
+// and writes the result into vfile.
+template <class T> void Exxbase<T>::Vexx_int(std::string &vfile)
+{
+
+    double tpiba = 2.0 * PI / L.celldm[0];
+    double tpiba2 = tpiba * tpiba;
+    std::complex<double> ZERO_t(0.0, 0.0);
+
+    if(mode == EXX_DIST_FFT)
+    {
+        RmgTimer RT0("5-Functional: Exx integrals");
+        std::complex<double> *p = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+
+        // Loop over fft pairs and compute Kij(r) 
+        for(int i=0;i < nstates;i++)
+        {
+            T *psi_i = &psi[i*pbasis];
+            for(int j=i;j < nstates;j++)
+            {
+                T *psi_j = &psi[j*pbasis];
+                for(int idx=0;idx < pbasis;idx++) p[idx] = std::conj(psi_i[idx]) * psi_j[idx];     
+                coarse_pwaves->FftForward(p, p);
+                for(int ig=0;ig < pbasis;ig++) {
+                    if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
+                        p[ig] = p[ig]/(coarse_pwaves->gmags[ig] *tpiba2);
+                    else
+                        p[ig] = ZERO_t;
+                }
+                coarse_pwaves->FftInverse(p, p);
+
+            }
+        }
+
+        fftw_free(p);
+    }
+}
+
 template <class T> Exxbase<T>::~Exxbase(void)
 {
+
+    if(mode == EXX_DIST_FFT) return;
 
     close(serial_fd);
     size_t length = nstates * N;

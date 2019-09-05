@@ -42,6 +42,7 @@
 #include "transition.h"
 #include "Plots.h"
 #include "Functional.h"
+#include "Exxbase.h"
 #include "../Headers/macros.h"
 
 // Instantiate gamma and non-gamma versions
@@ -181,6 +182,17 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     progress_tag ();
     rmg_printf ("final total energy = %16.8f Ha\n", ct.TOTAL);
 
+
+    // Exact exchange integrals
+    if(ct.exx_int_file.length() > 0)
+    {
+        std::vector<double> occs;
+        occs.resize(Kptr[0]->nstates);
+        for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].eig[0];
+        Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), Kptr[0]->orbital_storage);
+        Exx.Vexx_int(ct.exx_int_file);
+
+    }
 
     /* output final eigenvalues with occupations */
     OutputEigenvalues (Kptr, 0, ct.scf_steps);

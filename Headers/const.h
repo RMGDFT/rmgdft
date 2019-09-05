@@ -272,5 +272,8 @@
 #define LO_distribute 0
 #define LO_projection 1
 
+// EXX modes
+#define EXX_DIST_FFT 0
+#define EXX_LOCAL_FFT 1
 
 #endif /* CONST_H_INCLUDED */

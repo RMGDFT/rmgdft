@@ -138,6 +138,12 @@ public:
     /* Exchage-Correlation flag */
     int xctype;
 
+    /* EXX integral file */
+    std::string exx_int_file;
+
+    /* Exx computation mode */
+    int exx_mode;
+
     /** Boundary condition flag. Read from the input file. 0=periodic, 1=cluster, 2=surface */
     int boundaryflag;
 

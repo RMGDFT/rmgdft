@@ -254,4 +254,8 @@ static std::unordered_map<std::string, int> energy_point_insert_mode = {
         {"Sharp Peaks", 2}
         };
 
+static std::unordered_map<std::string, int> exx_mode = {
+        {"Distributed fft", EXX_DIST_FFT},
+        {"Local fft", EXX_LOCAL_FFT},
+        };
 #endif

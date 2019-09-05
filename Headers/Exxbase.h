@@ -36,9 +36,6 @@
 #include "Pw.h"
 
 
-#define EXX_DIST_FFT 1
-#define EXX_LOCAL_FFT  2
-
 template <typename T> class Exxbase {
 
 private:
@@ -49,7 +46,10 @@ private:
     Lattice &L;
 
     // File path for wavefunction file. Spin and kpoint identifiers should be added by parent.
-    std::string &wavefile;
+    const std::string &wavefile;
+
+    // Exx mode
+    int mode;
 
     // Grid points on this processing node
     int pbasis;
@@ -95,7 +95,7 @@ public:
     Exxbase (
          BaseGrid &G, 
          Lattice &L, 
-         std::string &wavefile,
+         const std::string &wavefile,
          int nstates,
          double *occ,
          T *psi_in);
@@ -103,6 +103,7 @@ public:
     ~Exxbase(void);
 
     void Vexx(std::string &vfile);
+    void Vexx_int(std::string &ifile);
 };
 
 #endif

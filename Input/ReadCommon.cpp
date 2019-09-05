@@ -140,6 +140,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     std::string Weightsfile;
     std::string Workfile;
     std::string Orbitalfile;
+    std::string ExxIntfile;
     std::string PseudoPath;
  
     static Ri::ReadVector<int> ProcessorGrid;
@@ -198,6 +199,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("nvme_orbitals_filepath", &Orbitalfile, "Orbitals/",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for runtime disk storage of orbitals. ", 
+                     "", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("exx_integrals_filepath", &ExxIntfile, "ExxIntegrals",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "File/path for exact exchange integrals. ", 
                      "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("pseudo_dir", &PseudoPath, ".",
@@ -398,6 +404,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 "Interpolation method for transferring data between the potential grid "
 "and the wavefunction grid. Mostly for diagnostic purposes.", 
                      "interpolation_type not supported. Terminating. ", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("exx_mode", NULL, &lc.exx_mode, "Distributed fft",
+                     CHECK_AND_TERMINATE, OPTIONAL, exx_mode,
+"FFT mode for exact exchange computations.",
+                     "exx mode not supported. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
@@ -1099,6 +1110,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     if(!Outfile.length()) Outfile = "Waves/wave.out";
     std::strncpy(lc.outfile, Outfile.c_str(), sizeof(lc.outfile)-1);
     MakeFullPath(lc.outfile, pelc);
+
+    lc.exx_int_file = ExxIntfile;
+    MakeFullPath(lc.exx_int_file, pelc);
 
     lc.nvme_weights_path = Weightsfile;
     if(lc.nvme_weights_path.length()) lc.nvme_weights_path.append("/");
