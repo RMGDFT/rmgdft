@@ -103,7 +103,7 @@ public:
     ~Exxbase(void);
 
     void Vexx(std::string &vfile);
-    void Vexx_int(std::string &ifile);
+    void Vexx_int_gamma(std::string &ifile);
 };
 
 #endif
