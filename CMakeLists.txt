@@ -85,7 +85,7 @@ option(RMG_GPU_ENABLED "Enable GPU support." OFF)
 option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
 option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
 option(USE_INTERNAL_PSEUDOPOTENTIALS "Include internal pseudopotentials in binary." ON)
-option(QMCPACK_SUPPORT "Generates a QMCPACK restart file." OFF)
+option(QMCPACK_SUPPORT "Generates a QMCPACK restart file." ON)
 
 
 # Now that the scalapack source has been included in the RMG distribution this should
@@ -490,6 +490,9 @@ IF(HDF5_FOUND)
       MESSAGE(STATUS "Using HDF5 non-scalable serial I/O")
     ENDIF(ENABLE_PHDF5)
   ENDIF(HDF5_IS_PARALLEL)
+
+  list(APPEND RMGLIBS ${HDF5_LIBRARIES})
+
 ELSE(HDF5_FOUND)
 #    MESSAGE(FATAL_ERROR "Require hdf5 1.6.4 or higher. Set HDF5_ROOT")
 ENDIF(HDF5_FOUND)

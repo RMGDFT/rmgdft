@@ -1,6 +1,9 @@
 #define GAMMA_PT 1
 //#include "typedefs.h"
 #include "LocalObject.h"
+template <typename KpointType>
+void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dis, BaseGrid &BG,
+        double *eig, double *occ);
 template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double * vnuc,
         double * rho, double * rho_oppo, double * rhocore, double * rhoc, LocalObject<OrbitalType> &Phi,
         LocalObject<OrbitalType> &H_Phi, LocalObject<OrbitalType> &LP);
