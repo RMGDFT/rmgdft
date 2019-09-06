@@ -65,6 +65,7 @@
 #include "../Headers/common_prototypes1.h"
 #include "LocalObject.h"
 #include "LdaU_on.h"
+#include "WriteEshdf.h"
 
 
 
@@ -292,6 +293,34 @@ int main(int argc, char **argv)
         RmgTimer *RTw = new RmgTimer("1-TOTAL: write");
 
         write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]); 
+
+        if(ct.write_qmcpack_restart)
+        {
+
+            double *eig = new double[LocalOrbital->num_tot];
+            double *occ = new double[LocalOrbital->num_tot];
+            for(int is = 0; is < LocalOrbital->num_tot; is++)
+            {
+                eig[is] = states[is].eig[0];
+                occ[is] = states[is].occupation[0];
+            }
+            std::string fname(ct.outfile);
+            WriteWavefunctions(fname, *LocalOrbital, zz_dis, *Rmg_G, eig, occ);
+            MPI_Barrier(MPI_COMM_WORLD);
+            delete [] eig;
+            delete [] occ;
+#if QMCPACK_SUPPORT
+            int rank;
+            MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            if(rank == 0)
+            {
+                WriteQmcpackRestart(fname);
+            }
+#else
+            rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+#endif
+
+        }
         double dipole_ion, dipole_ele;
         dipole_calculation(rhoc, &dipole_ion);
         dipole_calculation(rho, &dipole_ele);

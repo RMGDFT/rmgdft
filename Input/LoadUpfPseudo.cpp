@@ -328,6 +328,7 @@ void LoadUpfPseudo(SPECIES *sp)
             sp->llbeta[ip] =  upf_tree.get<int>(path(betapath + "/<xmlattr>/angular_momentum", '/'));
             if(sp->llbeta[ip] > ct.max_l) ct.max_l = sp->llbeta[ip];  // For all species
             if(sp->llbeta[ip] > l_max) l_max = sp->llbeta[ip];        // For this species
+            if(l_max > ct.max_l) ct.max_l = l_max;
 //               double cutoff_radius = upf_tree.get<int>(betapath + ".<xmlattr>.cutoff_radius");
             
         }
