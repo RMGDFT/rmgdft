@@ -228,7 +228,7 @@ template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
 
     // The wave function array is always at least double the number of states so use
     // the upper part for storage of our kl pairs
-    double *kl_pair = (double *)&psi[nstates_occ * pbasis];
+    double *kl_pair = (double *)&psi[nstates * pbasis];
 
     // We block the ij pairs for GEMM efficiency
     double *ij_pair = new double[pbasis*jblocks];
