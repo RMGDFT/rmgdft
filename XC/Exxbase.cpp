@@ -214,12 +214,13 @@ template <class T> void Exxbase<T>::Vexx(std::string &vfile)
 template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
 {
 
-    int jblocks = 16;
     double tpiba = 2.0 * PI / L.celldm[0];
     double tpiba2 = tpiba * tpiba;
     double alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
 
     double beta = 0.0;
+    double scale = 1.0 / (double)fine_pwaves->global_basis;
+
     std::complex<double> ZERO_t(0.0, 0.0);
     char *trans_a = "t";
     char *trans_n = "n";
@@ -231,13 +232,13 @@ template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
     double *kl_pair = (double *)&psi[nstates * pbasis];
 
     // We block the ij pairs for GEMM efficiency
-    double *ij_pair = new double[pbasis*jblocks];
+    double *ij_pair = new double[pbasis];
 
     // The full N^4 array can be quite large so we don't try to store it in memory but we do store
     // a slice that is (jblocks,1,nstates)
-    double_3d_array Exxints, Summedints;
-    Exxints.resize(boost::extents[jblocks][1][nstates_occ]);
-    Summedints.resize(boost::extents[jblocks][1][nstates_occ]);
+    double_1d_array Exxints, Summedints;
+    Exxints.resize(boost::extents[nstates_occ]);
+    Summedints.resize(boost::extents[nstates_occ]);
 
     if(mode == EXX_DIST_FFT)
     {
@@ -251,30 +252,22 @@ template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi[i*pbasis];
-            int j = 0;
-            int jbase;
 
-            while(j < nstates_occ)
+            for(int j=0;j < nstates_occ;j++)
             {
-                jbase = (j / jblocks) * jblocks;
-                for(int jj=0;jj < jblocks;jj++)
-                {
-                    double *psi_j = (double *)&psi[j*pbasis];
-                    for(int idx=0;idx < pbasis;idx++) p[idx] = psi_i[idx] * psi_j[idx];     
-                    coarse_pwaves->FftForward(p, p);
-                    for(int ig=0;ig < pbasis;ig++) {
-                        if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
-                            p[ig] = p[ig]/(coarse_pwaves->gmags[ig] *tpiba2);
-                        else
-                            p[ig] = ZERO_t;
-                    }
-                    coarse_pwaves->FftInverse(p, p);
-
-                    // store (i,j) fft pair in ij_pair
-                    for(int idx=0;idx < pbasis;idx++) ij_pair[idx + jj*pbasis] = std::real(p[idx]);
-                    j++;
-                    if(j >= nstates_occ) break;
+                double *psi_j = (double *)&psi[j*pbasis];
+                for(int idx=0;idx < pbasis;idx++) p[idx] = psi_i[idx] * psi_j[idx];     
+                coarse_pwaves->FftForward(p, p);
+                for(int ig=0;ig < pbasis;ig++) {
+                    if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
+                        p[ig] = p[ig]/(coarse_pwaves->gmags[ig] *tpiba2);
+                    else
+                        p[ig] = ZERO_t;
                 }
+                coarse_pwaves->FftInverse(p, p);
+
+                // store (i,j) fft pair in ij_pair
+                for(int idx=0;idx < pbasis;idx++) ij_pair[idx] = scale * std::real(p[idx]);
 
                 // Now compute integrals for (i, j, k, l)
                 // We have a block of (i,j) pairs stored in ij_pair. We need to generate a set of kl pairs
@@ -286,16 +279,12 @@ template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
                     }
 
                     // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
-                    int jblocks1 = jblocks;
-                    if((j - jbase) < jblocks) jblocks1 = j - jbase;
-                    RmgGemm(trans_a, trans_n, jblocks1, nstates_occ, pbasis, alpha, ij_pair, pbasis, kl_pair, pbasis, beta, Exxints.data(), jblocks);
-                    MPI_Reduce(Exxints.data(), Summedints.data(), jblocks * nstates_occ, MPI_DOUBLE, MPI_SUM, 0, G.comm);
-for(int jjj=jbase;jjj < jbase+jblocks1;jjj++)
-   for(int lll=0;lll<nstates_occ;lll++)
-       if(G.get_rank()==0)printf("KKK  = (%d,%d,%d,%d)  %14.8f\n", i, jjj, k, lll, Summedints[jjj][1][lll]);
+                    RmgGemm(trans_a, trans_n, 1, nstates_occ, pbasis, alpha, ij_pair, pbasis, kl_pair, pbasis, beta, Exxints.data(), 1);
+                    MPI_Reduce(Exxints.data(), Summedints.data(), nstates_occ, MPI_DOUBLE, MPI_SUM, 0, G.comm);
+                    for(int ll=0;ll<nstates_occ;ll++)
+                       if(G.get_rank()==0)printf("KKK  = (%d,%d,%d,%d)  %14.8e\n", i, j, k, ll, Summedints[ll]);
 
                 }
-              
             }
 
             
