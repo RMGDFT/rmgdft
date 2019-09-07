@@ -363,7 +363,7 @@ void eshdfFile::writeElectrons(void) {
     double ndn = 0;
 
     hid_t up_spin_group = makeHDFGroup("spin_0", kpt_group);
-    handleSpinGroup(i, nspin-1, up_spin_group, nup, fftCont);
+    handleSpinGroup(i, 0, up_spin_group, nup, fftCont);
 
     if (nspin == 2) {
       hid_t dn_spin_group = makeHDFGroup("spin_1", kpt_group);
