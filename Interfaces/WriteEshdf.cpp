@@ -51,6 +51,7 @@ public:
 
 
 eshdfFile::eshdfFile(const string& hdfFileName) {
+  remove(hdfFileName.c_str());
   file = H5Fcreate(hdfFileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 }
 
