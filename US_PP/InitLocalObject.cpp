@@ -316,7 +316,6 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                 printf ("\n LCAO initialization: Normalization constant for initial atomic charge is %f\n", t1);
         }
 
-        t1 = 1.0 / t1;
         for(int idx = 0;idx < FP0_BASIS;idx++) sumobject[idx] *= t1;
 
     }
