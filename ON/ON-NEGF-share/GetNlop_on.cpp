@@ -230,7 +230,7 @@ void GetNlop_on(void)
     // Must fix this EMIL
     //
     
-    MPI_Barrier(pct.grid_comm);
+    MPI_Barrier(pct.img_comm);
     prjcount = 0;
     for (unsigned int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
@@ -246,7 +246,9 @@ void GetNlop_on(void)
         ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
         ssize_t read_size = read(fhand, &beta[prjcount], size);
         if(read_size != size)
+        {
             rmg_error_handler (__FILE__, __LINE__,"error reading");
+        }
         prjcount += sp->num_projectors * ct.max_nlpoints;
     }
 

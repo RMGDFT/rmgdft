@@ -139,12 +139,12 @@ void init_parameter(STATE * states)
             states[kst1].kidx = kpt;
             states[kst1].istate = st1;
             states[kst1].firstflag = 0;
-            states[kst1].occupation[0] = 0.0;
-            if(st1 < full_occ)  states[kst1].occupation[0] = 2.0/(1.0 + ct.spin_flag);
-            if(st1 == full_occ)  states[kst1].occupation[0] = part_occ/(1.0+ ct.spin_flag);
-            states[kst1].occupation[1] = 0.0;
-            if(st1 < full_occ)  states[kst1].occupation[1] = 2.0/(1.0 + ct.spin_flag);
-            if(st1 == full_occ)  states[kst1].occupation[1] = part_occ/(1.0+ ct.spin_flag);
+           // states[kst1].occupation[0] = 0.0;
+          //  if(st1 < full_occ)  states[kst1].occupation[0] = 2.0/(1.0 + ct.spin_flag);
+          //  if(st1 == full_occ)  states[kst1].occupation[0] = part_occ/(1.0+ ct.spin_flag);
+          //  states[kst1].occupation[1] = 0.0;
+          //  if(st1 < full_occ)  states[kst1].occupation[1] = 2.0/(1.0 + ct.spin_flag);
+          //  if(st1 == full_occ)  states[kst1].occupation[1] = part_occ/(1.0+ ct.spin_flag);
         }                   /* end for */
 
     }                       /* end for */

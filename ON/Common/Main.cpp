@@ -189,6 +189,7 @@ int main(int argc, char **argv)
 #endif
 
         ReadBranchON(ct.cfile, ct, ControlMap);
+        states = init_states();
         allocate_states();
         get_state_to_proc(states);
         perm_ion_index = new unsigned int[ct.num_ions + 1];
@@ -221,10 +222,7 @@ int main(int argc, char **argv)
         ReadOrbitals (ct.cfile, states, Atoms, pct.img_comm, perm_ion_index);
         GetPermStateIndex(ct.num_ions, Atoms, perm_ion_index, perm_state_index, rev_perm_state_index);
 
-        init_states();
         MPI_Barrier(pct.img_comm);
-
-
 
 
         RmgTimer *RTi = new RmgTimer("1-TOTAL: init");
