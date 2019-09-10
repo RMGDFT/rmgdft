@@ -118,7 +118,12 @@ void LoadXmlPseudo(SPECIES *sp)
     if(sp->zvalence > ct.max_zvalence) ct.max_zvalence = sp->zvalence;
 
     // Store functional information for later processing
-    sp->functional_type = xml_tree.get<std::string>("pseudo.header.<xmlattr>.xc-functional-type");
+    sp->functional = xml_tree.get<std::string>("pseudo.header.<xmlattr>.xc-functional-type");
+    std::string xctype = xml_tree.get<std::string>("pseudo.header.<xmlattr>.xc-functional-parametrization");
+    if(xctype == "Perdew-Burke-Ernzerhof")
+    {
+       sp->functional = "PBE";
+    }
 
     // Setup the radial mesh
     std::string grid_type = xml_tree.get<std::string>("pseudo.grid.<xmlattr>.type");
