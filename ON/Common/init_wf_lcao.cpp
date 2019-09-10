@@ -20,6 +20,7 @@
 
 
 
+
 #if RMG_FAST_MATH
    #include "fastonebigheader.h"
 #else
@@ -133,6 +134,7 @@ static void atomic_wave_to_orbital(STATE *st, SPECIES *sp, int ip, int l, int m)
     double a,b,c, r, vector[3];
 
     double r1, r2, fradius, coef1, coef2;
+    double dr = sp->r[1] - sp->r[0];
 
 
 
@@ -171,6 +173,12 @@ static void atomic_wave_to_orbital(STATE *st, SPECIES *sp, int ip, int l, int m)
                 vector[1] = y;
                 vector[2] = z;
 
+                if(r > sp->aradius[ip])  
+                {
+                    st->psiR[idx] = 0.0;
+                    continue;
+                }
+
                 if(r < sp->r[0])
                 {
                     fradius = sp->atomic_wave[l][0];
@@ -180,7 +188,16 @@ static void atomic_wave_to_orbital(STATE *st, SPECIES *sp, int ip, int l, int m)
                 }
                 else
                 {
-                    i_r = (int)(fasterlog ( (r+c)/a) /b);
+                    if(sp->gtype)
+                    {
+                        i_r = (int)(r/dr);
+                        if(i_r >= sp->rg_points) i_r = sp->rg_points - 1;
+                    }
+                    else
+                    {
+                        i_r = (int)(fasterlog ( (r+c)/a) /b);
+                    }
+
 
                     r1 = sp->r[i_r];
                     r2 = sp->r[i_r+1];
@@ -192,9 +209,10 @@ static void atomic_wave_to_orbital(STATE *st, SPECIES *sp, int ip, int l, int m)
                 }
 
                 st->psiR[idx] = fradius * ylm(yindex, vector);
+
+
             }
         }
     }
 
 }
-

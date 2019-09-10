@@ -196,6 +196,10 @@ void *run_threads(void *v) {
             case HYBRID_THETA_PHI:       // Performs Theta_ij * Phi_j
                 ThetaPhiBlock(ss.basetag, ss.extratag2,(double *)ss.nv);
                 break;
+            case HYBRID_THREAD_EXIT:
+                T->thread_exit();
+                return NULL;
+
             default:
                 break;
         }

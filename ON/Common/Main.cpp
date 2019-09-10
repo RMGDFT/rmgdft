@@ -327,8 +327,8 @@ int main(int argc, char **argv)
         /* Save state information to file */
         // write_states_info(ct.outfile, &states[0]);
 
-        MPI_Barrier(pct.img_comm);
         delete(RTw);
+        MPI_Barrier(pct.img_comm);
 
     }
     // Catch exceptions issued by us.
@@ -358,9 +358,10 @@ int main(int argc, char **argv)
     int override_rank = 0;
     if(pct.imgpe==0) MPI_Comm_rank (pct.img_comm, &override_rank);
     RmgPrintTimings(pct.img_comm, ct.logname, ct.scf_steps, pct.num_owned_ions * ct.num_kpts_pe, override_rank);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     MPI_Finalize();
-    //RmgTerminateThreads();
+    RmgTerminateThreads();
 
 }
 

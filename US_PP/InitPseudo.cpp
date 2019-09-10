@@ -360,7 +360,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
             /* Get adim_wave */
             sp->adim_wave = Radius2grid (sp->aradius[ip], ct.hmingrid, Rmg_L.get_ibrav_type(), (ct.atomic_orbital_type == LOCALIZED));
-            sp->adim_wave = sp->adim_wave/2*2 + 1;
+            sp->adim_wave = sp->adim_wave/2*2 - 1;
 
             if ((sp->adim_wave >= get_NX_GRID()) || (sp->adim_wave >= get_NY_GRID()) || (sp->adim_wave >= get_NZ_GRID()))
             {

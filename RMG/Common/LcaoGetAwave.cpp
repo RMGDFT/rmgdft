@@ -166,7 +166,11 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
                             double kr = kvec[0] * vector[0] +kvec[1] * vector[1] + kvec[2] * vector[2];
                             phase_kr =std::exp( std::complex<double>(0, -kr));
                         
-                            if(r < sp->r[0])
+                            if(r > sp->aradius[l] )
+                            {
+                                fradius = 0.0;
+                            }
+                            else if(r < sp->r[0])
                             {
                                 fradius = sp->atomic_wave[awave_idx][0]; 
                             }
