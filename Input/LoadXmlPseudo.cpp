@@ -43,7 +43,7 @@ void LoadXmlPseudo(SPECIES *sp)
     int max_nlprojectors = 0;
     std::stringstream ss; 
     double  ddd0[MAX_NL][MAX_NL];  // Used to read in the PP_DIJ
-    double qqq[MAX_NL][MAX_NL];    // Used to read in the norms of the augmentation functions (PP_Q)
+    double qqq[MAX_NL][MAX_NL]{{},{}};    // Used to read in the norms of the augmentation functions (PP_Q)
     std::string Msg;
 
     // PP format places occupations in the xml attributes of the potentials but we need
