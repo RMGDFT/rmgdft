@@ -85,6 +85,8 @@ public:
     bool dft_has_finite_size_correction_rmg(void);
     void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
     void nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
+    void start_exx_rmg(void);
+    void stop_exx_rmg(void);
 
     static std::string saved_dft_name;
 };

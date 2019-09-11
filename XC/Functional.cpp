@@ -48,6 +48,8 @@
 
 #define set_dft_from_name       RMG_FC_MODULE(funct,set_dft_from_name,mod_FUNCT,SET_DFT_FROM_NAME)
 #define get_dft_name            RMG_FC_MODULE(funct,get_dft_name,mod_FUNCT,GET_DFT_NAME)
+#define start_exx               RMG_FC_MODULE(funct,start_exx,mod_FUNCT,START_EXX)
+#define stop_exx                RMG_FC_MODULE(funct,stop_exx,mod_FUNCT,STOP_EXX)
 #define dft_is_gradient         RMG_FC_MODULE(funct,dft_is_gradient,mod_FUNCT,DFT_IS_GRADIENT)
 #define dft_is_meta             RMG_FC_MODULE(funct,dft_is_meta,mod_FUNCT,DFT_IS_META)
 #define dft_is_hybrid           RMG_FC_MODULE(funct,dft_is_hybrid,mod_FUNCT,DFT_IS_HYBRID)
@@ -65,6 +67,8 @@
 
 extern "C" void set_dft_from_name( const char *name, std::size_t len );
 extern "C" char *get_dft_name(void);
+extern "C" void start_exx(void);
+extern "C" void stop_exx(void);
 extern "C" bool dft_is_gradient(void);
 extern "C" bool dft_is_meta(void);
 extern "C" bool dft_is_hybrid(void);
@@ -154,6 +158,16 @@ const char *Functional::get_dft_name_rmg(void)
         throw RmgFatalException() << "Error! get_dft_name called before dft type was set." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
     }
     return saved_dft_name.c_str();
+}
+
+void Functional::start_exx_rmg(void)
+{
+    start_exx();
+}
+
+void Functional::stop_exx_rmg(void)
+{
+    stop_exx();
 }
 
 void Functional::set_dft_from_name_rmg(std::string newdft_name)
