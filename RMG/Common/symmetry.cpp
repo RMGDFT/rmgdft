@@ -274,7 +274,7 @@ void init_sym (void)
 void symmetrize_rho (double * rho)
 {
 
-    int idx, ix, iy, iz, xoff, yoff, zoff;
+    int ix, iy, iz, xoff, yoff, zoff;
     int isy, ixx, iyy, izz;
     double *da;
     double t1;

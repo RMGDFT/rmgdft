@@ -57,7 +57,7 @@ double radint1 (double * f, double * r, double * dr_di, int n)
     double w0 = 1.0 / 3.0;
     double sum = w0 * f[0] * r[0] * r[0] * dr_di[0];    /* this is 0 because r[0] = 0 */
 
-    for (unsigned i = 1; i < n; i++)
+    for (int i = 1; i < n; i++)
         sum += f[i] * r[i] * r[i] * dr_di[i] * w[i & mask];
 
     return sum;

@@ -38,7 +38,7 @@
 
 void init_pos ()
 {
-    int i, ir;
+    int i;
     ION *iptr;
 
 

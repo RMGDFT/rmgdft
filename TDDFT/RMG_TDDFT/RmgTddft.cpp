@@ -68,14 +68,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     int dimz = Rmg_G->get_PZ0_GRID(Rmg_G->get_default_FG_RATIO());
     int FP0_BASIS = dimx * dimy * dimz;
 
-    FILE *dfi;
-    char filename[MAX_PATH+200];
+    FILE *dfi = NULL;
+    std::string filename;
     int n2,n22, numst, P0_BASIS,i, ione =1;
-    int tot_steps, pre_steps, tddft_steps;
+    int tot_steps = 0, pre_steps, tddft_steps;
     int Ieldyn = 1, iprint = 0;
-
-    /* to hold the send data and receive data of eigenvalues */
-    double *rho_tot=NULL;   
 
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
@@ -128,9 +125,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     efield[2] = ct.z_field_0 * ct.e_field;
     if(pct.gridpe == 0)
     {
-        sprintf(filename, "%s%s%s", pct.image_path[pct.thisimg], "dipole.dat_", ct.basename);
+        filename = std::string(pct.image_path[pct.thisimg]) +"dipole.dat_"+ std::string(ct.basename);
 
-        dfi = fopen(filename, "w");
+        dfi = fopen(filename.c_str(), "w");
 
         fprintf(dfi, "\n  &&electric field:  %f  %f  %f ",efield[0], efield[1], efield[2]);
 

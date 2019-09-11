@@ -223,7 +223,7 @@ void output_force(double *force_tmp, char *desc)
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-            printf ("\n Ion %d Force  %16.10f  %16.10f  %16.10f",
+            printf ("\n Ion %zu Force  %16.10f  %16.10f  %16.10f",
                     ion, force_tmp[3 * ion],force_tmp[3 * ion + 1],force_tmp[3 * ion + 2]);
         }
     }

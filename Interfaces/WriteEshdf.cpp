@@ -224,7 +224,6 @@ void eshdfFile::writeBoilerPlate(const string& appName) {
 void eshdfFile::writeSupercell(void) {
 
   vector<double> ptvs;
-  double temp;
   ptvs.push_back(Rmg_L.get_a0(0));
   ptvs.push_back(Rmg_L.get_a0(1));
   ptvs.push_back(Rmg_L.get_a0(2));
@@ -289,21 +288,20 @@ void eshdfFile::writeAtoms(void) {
       positions.push_back(iptr->crds[1]);
       positions.push_back(iptr->crds[2]);
   }
-  hsize_t dims[]={ct.num_ions,3};  
+  hsize_t dims[]={(hsize_t)ct.num_ions,3};  
   writeNumsToHDF("positions", positions, atoms_group, 2, dims);
   writeNumsToHDF("species_ids", species_ids, atoms_group);
   writeNumsToHDF("number_of_atoms", ct.num_ions, atoms_group);
 }
 
 void eshdfFile::writeElectrons(void) {
-  int nspin, nel;
+  int nspin;
 
   //wfnNode.getAttribute("nspin", nspin);
   nspin = (int)(ct.spin_flag + 1);
 
   //wfnNode.getAttribute("nel", nel);
   // RMG porting note - In RMG this is total not per spin state
-  nel = (int)ct.nel;
 
   // RMG porting note, C or Fortran order?
   int nx = Rmg_G->get_NX_GRID(1);

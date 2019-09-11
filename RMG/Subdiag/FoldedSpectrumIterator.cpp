@@ -73,7 +73,6 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
 #endif
 
     // outer loop over steps
-    double neg_rone = -1.0;
     for(int step = 0;step < iterations;step++) {
 
         // Generate A * X for entire block

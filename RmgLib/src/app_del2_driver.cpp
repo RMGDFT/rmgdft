@@ -76,7 +76,7 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
 
     // while alloca is dangerous it's very fast for small arrays and the 64k default limit
     // is fine for linux and 64bit power
-    if(alloc <= FiniteDiff::allocation_limit)
+    if(alloc <= (size_t)FiniteDiff::allocation_limit)
     {
         rptr = (RmgType *)alloca(alloc);
     }
@@ -124,7 +124,7 @@ if(0)
         }
     }
 
-    if(alloc > FiniteDiff::allocation_limit) delete [] rptr;
+    if(alloc > (size_t)FiniteDiff::allocation_limit) delete [] rptr;
 
     return cc;
 

@@ -31,17 +31,12 @@
 
 void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_matrix, int numst)
 {
-    int idx, ione = 1;
-    double t2;
-    register double tcharge;
+    int idx;
 
     /* for parallel libraries */
 
-    int i, st1, st2, proc1, proc2, st11;
+    int st1;
     double *rho_temp;
-    int ix, iy; 
-    double tem;
-    char filename[MAX_PATH];
 
     double one = 1.0, zero = 0.0;
     int pbasis = get_P0_BASIS();

@@ -125,7 +125,7 @@ double vh_fmg (BaseGrid *G, Lattice *L, TradeImages *T, double * rho, double *vh
 
     // Restrict right hand side down to coarsest level
     size_t offset=pbasis;
-    int dx2, dy2, dz2;
+    int dx2(0), dy2(0), dz2(0);
     mgrhsptr[0] = mgrhsarr;
     mgrhsptr_f[0] = mgrhsarr_f;
 

@@ -27,7 +27,6 @@ void InitOrbital (void)
 
     int ip, isp, size, tot_orbitals;
     SPECIES *sp;
-    fftw_plan p2_forward, p2_backward;
     fftw_complex *in, *out, *betaptr;
     std::complex<double> *phaseptr;
     int xdim, ydim, zdim, nldim_max;

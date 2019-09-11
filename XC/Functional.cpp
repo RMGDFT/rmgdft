@@ -510,7 +510,6 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
  
     double grho2[2];
     const double epsr=1.0e-6;
-    const double epsg = 1.0e-10;
     double epsg_guard = 1.0e-7;
 
     double *grho_up = new double[3*this->pbasis];

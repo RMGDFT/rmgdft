@@ -49,7 +49,6 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
     int pbasis = Kpts[0]->pbasis;
     int nstates = Kpts[0]->nstates;
-    double nspin = (ct.spin_flag + 1.0);
 
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
 
@@ -136,9 +135,8 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     
     /*Write out normalization constant if needed*/
     double difference = fabs(t1 - 1.0);
-//    if ((ct.verbose == 1) || (difference > 0.01))
-
-	rmg_printf ("Charge normalization constant: %f\n", t1);
+    if ((ct.verbose == 1) || (difference > 0.01))
+        rmg_printf ("Charge normalization constant: %f\n", t1);
 
 
     delete [] work;

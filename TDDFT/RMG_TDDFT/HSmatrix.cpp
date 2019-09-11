@@ -69,7 +69,6 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
     KpointType *Sij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *tmp_array2T = (KpointType *)GpuMallocManaged(pbasis * nstates * sizeof(KpointType));     
     if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));     
-    double *eigs = (double *)GpuMallocManaged(2*nstates * sizeof(double));
     GpuFill((double *)Aij, factor*nstates * nstates, 0.0);
     GpuFill((double *)Sij, factor*nstates * nstates, 0.0);
 
@@ -83,7 +82,6 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
         if(retval1 != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
     }
     for(int ix=0;ix < nstates*nstates;ix++)global_matrix1[ix] = 0.0;
-    double *eigs = new double[2*nstates];
 #endif
 
 

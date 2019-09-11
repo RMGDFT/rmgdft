@@ -34,19 +34,19 @@ extern "C" void errore(char *where, char *message, int ierr, int where_len, int 
   char tbuf[1000];
   memset(tbuf, 0, sizeof(tbuf));
 
-  if(((where_len + message_len) > sizeof(tbuf)) || (where_len < 0) || (message_len < 0)) {
+  if(((where_len + message_len) > (int)sizeof(tbuf)) || (where_len < 0) || (message_len < 0)) {
      printf("Unknown issue printing error message from fortran routines\n"); 
      raise(SIGTERM);
   }
 
   strncpy(tbuf, message, sizeof(tbuf)-1);
   int iz = message_len;
-  if(iz >= sizeof(tbuf)) iz = sizeof(tbuf) - 1;
+  if(iz >= (int)sizeof(tbuf)) iz = sizeof(tbuf) - 1;
   tbuf[iz] = 0;
   printf("%s in ", tbuf);
   strncpy(tbuf, where, sizeof(tbuf)-1);
   iz = where_len;
-  if(iz >= sizeof(tbuf)) iz = sizeof(tbuf) - 1;
+  if(iz >= (int)sizeof(tbuf)) iz = sizeof(tbuf) - 1;
   tbuf[iz] = 0;
   printf("%s\n", tbuf);
 

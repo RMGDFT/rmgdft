@@ -95,8 +95,6 @@ void WriteKeyStdout(InputKey *ik)
     char *pre, *post;
     char *pre_terminal = "    ";
     char *post_terminal = "";
-    char *pre_markdown = "<b>";
-    char *post_markdown = "</b>\n";
 
     pre = pre_terminal;
     post = post_terminal;

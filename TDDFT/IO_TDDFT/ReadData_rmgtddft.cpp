@@ -40,8 +40,6 @@
 #include "Kpoint.h"
 #include "transition.h"
 
-static size_t totalsize;
-
 void ReadData_rmgtddft (char *filename, double * vh, double * vxc, 
         double *vh_corr, double *Pn0, double *Hmatrix, double *Smatrix, 
         double *Cmatrix, int *tot_steps)

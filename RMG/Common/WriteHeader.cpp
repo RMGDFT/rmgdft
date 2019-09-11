@@ -464,7 +464,7 @@ void WriteHeader (void)
         SPECIES *sp;
         sp = &Species[idx];
 
-	if (sp->functional.length() > max_funct_length)
+	if ((int)sp->functional.length() > max_funct_length)
 	    max_funct_length = sp->functional.length();
     }
 

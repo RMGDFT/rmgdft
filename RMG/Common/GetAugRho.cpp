@@ -48,7 +48,6 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 {
 
     int max_product = (ct.max_nl + 1) * ct.max_nl / 2;
-    double *qtpr;
 
     int pbasis = Kpts[0]->G->get_P0_BASIS(Kpts[0]->G->default_FG_RATIO);
     int num_nonloc_ions = Kpts[0]->BetaProjector->get_num_nonloc_ions();
