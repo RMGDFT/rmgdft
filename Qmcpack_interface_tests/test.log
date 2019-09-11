@@ -1,0 +1,196 @@
+atomO_pp/
+atomO_pp/RMG_noj/
+atomO_pp/RMG_noj/qmc_short_noj.in.xml
+atomO_pp/RMG_ON_sdj/
+atomO_pp/RMG_ON_sdj/qmc_short.in.xml
+atomO_pp/RMG_ON/
+atomO_pp/RMG_ON/input
+atomO_pp/RMG/
+atomO_pp/RMG/input
+atomO_pp/RMG_sdj/
+atomO_pp/RMG_sdj/qmc_short.in.xml
+atomO_pp/O.BFD.xml
+atomO_pp/RMG_ON_noj/
+atomO_pp/RMG_ON_noj/qmc_short_noj.in.xml
+Test for RMG/QMCPACK interface for sdj
+Tests for series 0
+  Testing quantity: Kinetic
+    reference mean value     :  11.85233000
+    reference error bar      :   0.04000000
+    computed  mean value     :  11.85494271
+    computed  error bar      :   0.03672908
+    pass tolerance           :   0.12000000  (  3.00000000 sigma)
+    deviation from reference :   0.00261271  (  0.06531768 sigma)
+    error bar of deviation   :   0.05430493
+    significance probability :   0.05207907  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: LocalEnergy
+    reference mean value     : -15.87003500
+    reference error bar      :   0.00450000
+    computed  mean value     : -15.86915721
+    computed  error bar      :   0.00379236
+    pass tolerance           :   0.01350000  (  3.00000000 sigma)
+    deviation from reference :   0.00087779  (  0.19506502 sigma)
+    error bar of deviation   :   0.00588489
+    significance probability :   0.15465791  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: ElecElec
+    reference mean value     :  10.36864200
+    reference error bar      :   0.01400000
+    computed  mean value     :  10.34651512
+    computed  error bar      :   0.02033101
+    pass tolerance           :   0.04200000  (  3.00000000 sigma)
+    deviation from reference :  -0.02212688  ( -1.58049121 sigma)
+    error bar of deviation   :   0.02468502
+    significance probability :   0.88600557  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: TotalSamples
+    reference mean value     :  64000.00000000
+    reference error bar      :   0.00000000
+    computed  mean value     :  64000.00000000
+    computed  error bar      :   0.00000000
+    pass tolerance           :   0.00000000  (  3.00000000 sigma)
+    error bar of deviation   :   0.00000000
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: LocalECP
+    reference mean value     : -40.15639000
+    reference error bar      :   0.05700000
+    computed  mean value     : -40.14901160
+    computed  error bar      :   0.04973265
+    pass tolerance           :   0.17100000  (  3.00000000 sigma)
+    deviation from reference :   0.00737840  (  0.12944558 sigma)
+    error bar of deviation   :   0.07564613
+    significance probability :   0.10299498  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: NonLocalECP
+    reference mean value     :   2.06538900
+    reference error bar      :   0.02000000
+    computed  mean value     :   2.07839656
+    computed  error bar      :   0.02260649
+    pass tolerance           :   0.06000000  (  3.00000000 sigma)
+    deviation from reference :   0.01300756  (  0.65037822 sigma)
+    error bar of deviation   :   0.03018366
+    significance probability :   0.48455218  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Test for RMG/QMCPACK interface for noj
+Tests for series 0
+  Testing quantity: Kinetic
+    reference mean value     :  11.64798000
+    reference error bar      :   0.04000000
+    computed  mean value     :  11.73551902
+    computed  error bar      :   0.05038868
+    pass tolerance           :   0.12000000  (  3.00000000 sigma)
+    deviation from reference :   0.08753902  (  2.18847543 sigma)
+    error bar of deviation   :   0.06433521
+    significance probability :   0.97136511  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Test for RMG_ON/QMCPACK interface for sdj
+Tests for series 0
+  Testing quantity: Kinetic
+    reference mean value     :  11.85233000
+    reference error bar      :   0.04000000
+    computed  mean value     :  11.92211320
+    computed  error bar      :   0.03524730
+    pass tolerance           :   0.12000000  (  3.00000000 sigma)
+    deviation from reference :   0.06978320  (  1.74457999 sigma)
+    error bar of deviation   :   0.05331390
+    significance probability :   0.91894207  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: LocalEnergy
+    reference mean value     : -15.87003500
+    reference error bar      :   0.00450000
+    computed  mean value     : -15.87126938
+    computed  error bar      :   0.00292498
+    pass tolerance           :   0.01350000  (  3.00000000 sigma)
+    deviation from reference :  -0.00123438  ( -0.27430619 sigma)
+    error bar of deviation   :   0.00536707
+    significance probability :   0.21615055  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: ElecElec
+    reference mean value     :  10.36864200
+    reference error bar      :   0.01400000
+    computed  mean value     :  10.38882060
+    computed  error bar      :   0.01237219
+    pass tolerance           :   0.04200000  (  3.00000000 sigma)
+    deviation from reference :   0.02017860  (  1.44132878 sigma)
+    error bar of deviation   :   0.01868344
+    significance probability :   0.85050809  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: TotalSamples
+    reference mean value     :  64000.00000000
+    reference error bar      :   0.00000000
+    computed  mean value     :  64000.00000000
+    computed  error bar      :   0.00000000
+    pass tolerance           :   0.00000000  (  3.00000000 sigma)
+    error bar of deviation   :   0.00000000
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: LocalECP
+    reference mean value     : -40.15639000
+    reference error bar      :   0.05700000
+    computed  mean value     : -40.23211700
+    computed  error bar      :   0.04928280
+    pass tolerance           :   0.17100000  (  3.00000000 sigma)
+    deviation from reference :  -0.07572700  ( -1.32854386 sigma)
+    error bar of deviation   :   0.07535114
+    significance probability :   0.81600137  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Tests for series 0
+  Testing quantity: NonLocalECP
+    reference mean value     :   2.06538900
+    reference error bar      :   0.02000000
+    computed  mean value     :   2.04991382
+    computed  error bar      :   0.02184312
+    pass tolerance           :   0.06000000  (  3.00000000 sigma)
+    deviation from reference :  -0.01547518  ( -0.77375901 sigma)
+    error bar of deviation   :   0.02961624
+    significance probability :   0.56092681  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
+Test for RMG_ON/QMCPACK interface for noj
+Tests for series 0
+  Testing quantity: Kinetic
+    reference mean value     :  11.64798000
+    reference error bar      :   0.04000000
+    computed  mean value     :  11.73840132
+    computed  error bar      :   0.04372495
+    pass tolerance           :   0.12000000  (  3.00000000 sigma)
+    deviation from reference :   0.09042132  (  2.26053291 sigma)
+    error bar of deviation   :   0.05926104
+    significance probability :   0.97621188  (gaussian statistics)
+    status of this test      :   pass
+
+Test status: pass
