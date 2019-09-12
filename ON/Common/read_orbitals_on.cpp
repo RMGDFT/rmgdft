@@ -2,17 +2,6 @@
  **    $Id$    **
  ******************************************************************************/
 
-/*
-
-   rdwrpg.c
-
-
-   Functions to read data from files.
-
-
- */
-
-
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -37,8 +26,7 @@ void read_orbitals_on(char *name, STATE *sts)
     int state;
     unsigned nbytes;
     char newname[MAX_PATH + 200];
-    int idx;
-    int pex, pey, pez;
+    unsigned idx;
 
     /* Wait until everybody gets here */
     MPI_Barrier(pct.img_comm);

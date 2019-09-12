@@ -65,7 +65,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     int ic, idx, ion;
     int level;
     int ione = 1;
-    char newname[MAX_PATH + 20];
 
 
     /* initialize the lattice basis vectors */

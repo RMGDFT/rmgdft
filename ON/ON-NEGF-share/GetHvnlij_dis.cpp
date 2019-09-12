@@ -30,7 +30,6 @@ potential, and add them into Aij.
 
 void GetHvnlij_dis(double *Aij, double *Bij, double *Kbpsi_mat, int num_orb, int num_proj)
 {
-    int nh;
     double zero = 0.0, one = 1.0;
     double *dnmI, *qnmI;
     double *temA;

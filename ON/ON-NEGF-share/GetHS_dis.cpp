@@ -30,14 +30,8 @@ void mat_global_to_dist(double *a_dist, int *desca, double *a_glob);
 void GetHS_dis(LocalObject<double> &Phi, LocalObject<double> &H_Phi, 
         double *vtot_c, double *Hij_glob, double *Bij_glob, double *Kbpsi_mat)
 {
-    int ione = 1;
 
-    double hxgrid = Rmg_G->get_hxgrid(1);
-    double hygrid = Rmg_G->get_hygrid(1);
-    double hzgrid = Rmg_G->get_hzgrid(1);
     int pbasis = Rmg_G->get_P0_BASIS(1);
-
-    int order = ct.kohn_sham_fd_order;
 
     RmgTimer *RT = new RmgTimer("4-get_HS");
 

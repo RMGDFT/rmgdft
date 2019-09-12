@@ -27,8 +27,8 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGr
 void KbpsiUpdate(STATE * states)
 {
     int st1;
-    unsigned int ion, num_orbital_thision, num_proj;
-    unsigned int ip, iip1;
+    int ion, num_orbital_thision, num_proj;
+    int ip, iip1;
 
     RmgTimer *RT2 = new RmgTimer("2-SCF: kbpsi: calc");
     GetAllKbpsi(states, states, ion_orbit_overlap_region_nl, projectors, kbpsi);
@@ -43,7 +43,7 @@ void KbpsiUpdate(STATE * states)
 
 
         // uopdate values from this process
-        for(unsigned int idx = 0; idx < num_orbital_thision; idx++)
+        for(int idx = 0; idx < num_orbital_thision; idx++)
         {
             st1 =Kbpsi_str.orbital_index[ion][idx];
             iip1 = (st1-ct.state_begin) * pct.n_ion_center * ct.max_nl + ion * ct.max_nl;

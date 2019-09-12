@@ -41,7 +41,6 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rhoc, double * vxc_old, double * vh_old)
 {
     int ione = 1;
-    double t1;
     int order = ct.kohn_sham_fd_order;
     double hxgrid = Rmg_G->get_hxgrid(1);
     double hygrid = Rmg_G->get_hygrid(1);
@@ -304,7 +303,7 @@ void get_qnm_res(double *work_theta)
 
     max_orb = 0;
 
-    for (unsigned int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
+    for (int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
         tot_orb = Kbpsi_str.orbital_index[ion1].size();
         max_orb = std::max(max_orb, tot_orb);
@@ -313,7 +312,7 @@ void get_qnm_res(double *work_theta)
     work_mat = new double[(ct.state_end-ct.state_begin) *max_orb];
 
 
-    for (unsigned int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
+    for (int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
 
         num_prj = pct.prj_per_ion[pct.ionidx[ion1]];
@@ -365,7 +364,7 @@ void get_dnmpsi(STATE *states1)
      */
 
     int num_orb_max = 1;
-    for (unsigned int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    for (int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         num_orb_max = std::max(num_orb_max,Kbpsi_str.num_orbital_thision[ion2]); 
     }
@@ -375,14 +374,14 @@ void get_dnmpsi(STATE *states1)
 
 
     size_t prj_ion_address = 0;
-    for (unsigned int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    for (int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         int ion = pct.ionidx[ion2];
         prjptr[ion2] = &projectors[prj_ion_address];
         prj_ion_address += pct.prj_per_ion[ion] * ct.max_nlpoints;       
     }
 
-    for (unsigned int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    for (int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         int ion = pct.ionidx[ion2];
         int num_prj = pct.prj_per_ion[ion];

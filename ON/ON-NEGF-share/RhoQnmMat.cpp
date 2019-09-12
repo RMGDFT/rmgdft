@@ -41,7 +41,7 @@ void RhoQnmMat(double *Aij, double * global_mat_X)
 
     double *mat_kbpsi = new double[ct.max_nl];
 
-    for (unsigned int ion = 0; ion < pct.n_ion_center; ion++)
+    for (int ion = 0; ion < pct.n_ion_center; ion++)
     {
         ion1 = pct.ionidx[ion];
         nh = pct.prj_per_ion[ion1];

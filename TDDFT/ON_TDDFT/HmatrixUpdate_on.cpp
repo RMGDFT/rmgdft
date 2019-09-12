@@ -29,11 +29,7 @@
 void HmatrixUpdate_on(LocalObject<double> &Phi, LocalObject<double> &H_Phi, 
         double *vtot_c, double *Hij_glob)
 {
-    int ione = 1;
 
-    double hxgrid = Rmg_G->get_hxgrid(1);
-    double hygrid = Rmg_G->get_hygrid(1);
-    double hzgrid = Rmg_G->get_hzgrid(1);
     int pbasis = Rmg_G->get_P0_BASIS(1);
 
 

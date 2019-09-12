@@ -322,7 +322,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
         ssize_t size = (ssize_t)num_prj_perion[ion] * (ssize_t)max_nlpoints;
         double *beta = new double[size];
         ssize_t read_size = read(fhand, beta, size * sizeof(double));
-        if(read_size != size * sizeof(double))
+        if(read_size != (ssize_t)(size * sizeof(double)))
             rmg_error_handler (__FILE__, __LINE__,"error reading");
 
 

@@ -42,7 +42,6 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     int numst = ct.num_states;
     int idx, ione = 1;
     double tem;
-    int steps;
     int nfp0 = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
     double *rho_pre;
 
@@ -138,7 +137,6 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
 
         if(ct.num_ldaU_ions > 0)
         {
-            int nldaU = ldaU_on->tot_orbitals_ldaU;
             ldaU_on->calc_ns_occ(*LocalOrbital, mat_X, *Rmg_G);
 
         }
@@ -209,16 +207,6 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     }
     else
     {
-        if(ct.scf_steps <ct.freeze_orbital_step)
-        {
-            steps = ct.scf_steps - ct.freeze_rho_steps;
-        }
-        else
-        {
-            if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
-            steps = ct.scf_steps - ct.freeze_orbital_step;
-            Pulay_rho->Refresh();
-        }
 
         for (idx = 0; idx < nfp0; idx++)
         {
@@ -230,6 +218,12 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         if(ct.spin_flag)
             get_rho_oppo(rho, rho_oppo);
         //get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
+        if(ct.scf_steps >=ct.freeze_orbital_step)
+        {
+            if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
+            Pulay_rho->Refresh();
+        }
+
         if(ct.scf_steps >= ct.freeze_rho_steps)
             Pulay_rho->Mixing(rho, rho_old);
 
@@ -252,7 +246,6 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     /* Update the orbitals */
     if(ct.scf_steps < ct.freeze_orbital_step)
     {
-        steps = ct.scf_steps;
         if(ct.scf_steps == ct.freeze_rho_steps ) 
             ct.restart_mix = 1;
         else

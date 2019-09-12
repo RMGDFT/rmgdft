@@ -295,7 +295,7 @@ void write_header(void)
         sp = &Species[idx];
 
         printf("\n\n      Species %d", idx + 1);
-        printf("\n      %s", sp->description);
+        printf("\n      %s", sp->description.c_str());
         printf("\n        ATOMIC NUMBER   = %d", sp->atomic_number);
         printf("\n        ATOMIC MASS     = %12.6f", sp->atomic_mass);
         printf("\n        ZVALENCE        = %12.6f", sp->zvalence);

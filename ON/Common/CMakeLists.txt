@@ -18,7 +18,6 @@ add_library (ON_Common
  PermAtoms.cpp
  GetPermStateIndex.cpp
  BandwidthReduction.cpp
- gw_correction_matrix.cpp
  write_restart.cpp
  init_wf_lcao.cpp
  add_orbit_to_wave.cpp

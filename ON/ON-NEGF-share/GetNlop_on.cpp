@@ -232,7 +232,7 @@ void GetNlop_on(void)
     
     MPI_Barrier(pct.img_comm);
     prjcount = 0;
-    for (unsigned int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
+    for (int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
     {
         ion = pct.ionidx[ion1];
         /* Generate ion pointer */

@@ -38,7 +38,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
 {
     int fhand;
     int state;
-    unsigned nbytes;
+    size_t nbytes;
     char newname[MAX_PATH + 200];
     int idx;
     int pex, pey, pez;
@@ -131,7 +131,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
 
         nbytes = read(fhand, states[state].psiR, states[state].size * sizeof(double));
         idx = states[state].size * sizeof(double);
-        if (nbytes != idx)
+        if (nbytes != (size_t)idx)
         {
             printf("\n read %d is different from %d for state %d", nbytes, idx, state);
             error_handler("Unexpected end of file orbit");

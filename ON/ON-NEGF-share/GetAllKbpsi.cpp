@@ -102,7 +102,7 @@ void get_local_kbpsi (STATE *st1, double *psi, double *kbpsi_one_state,
 
     prjptr = projectors;
 
-    for (unsigned int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
+    for (int ion2 = 0; ion2 < pct.n_ion_center; ion2++)
     {
         ion = pct.ionidx[ion2];
         /* Loop over projectors for this ion and evaluate */

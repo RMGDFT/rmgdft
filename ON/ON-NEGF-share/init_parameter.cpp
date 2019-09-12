@@ -124,13 +124,7 @@ void init_parameter(STATE * states)
     /* Some multigrid parameters */
     ct.poi_parm.sb_step = 1.0;
     ct.eig_parm.sb_step = 1.0;
-    double t2, part_occ;
-    int full_occ;
-    modf(ct.nel/2.0, &t2);
-    full_occ = (int)(t2);
      
-    part_occ = ct.nel - full_occ *2.0;
-
     for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
         for (st1 = 0; st1 < ct.num_states; st1++)
@@ -139,12 +133,6 @@ void init_parameter(STATE * states)
             states[kst1].kidx = kpt;
             states[kst1].istate = st1;
             states[kst1].firstflag = 0;
-           // states[kst1].occupation[0] = 0.0;
-          //  if(st1 < full_occ)  states[kst1].occupation[0] = 2.0/(1.0 + ct.spin_flag);
-          //  if(st1 == full_occ)  states[kst1].occupation[0] = part_occ/(1.0+ ct.spin_flag);
-          //  states[kst1].occupation[1] = 0.0;
-          //  if(st1 < full_occ)  states[kst1].occupation[1] = 2.0/(1.0 + ct.spin_flag);
-          //  if(st1 == full_occ)  states[kst1].occupation[1] = part_occ/(1.0+ ct.spin_flag);
         }                   /* end for */
 
     }                       /* end for */

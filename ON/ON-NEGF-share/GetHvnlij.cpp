@@ -47,7 +47,7 @@ void GetHvnlij(double *Aij, double *Bij)
 
     max_state = 0;
     max_nl = 0;
-    for (unsigned int ion = 0; ion < pct.n_ion_center; ion++)
+    for (int ion = 0; ion < pct.n_ion_center; ion++)
     {
         nh = pct.prj_per_ion[pct.ionidx[ion]];
         tot_orb = Kbpsi_str.orbital_index[ion].size();
@@ -58,7 +58,7 @@ void GetHvnlij(double *Aij, double *Bij)
     temA = new double[(ct.state_end-ct.state_begin) * max_nl];
     temB = new double[(ct.state_end-ct.state_begin) * max_state];
 
-    for (unsigned int ion = 0; ion < pct.n_ion_center; ion++)
+    for (int ion = 0; ion < pct.n_ion_center; ion++)
     {
         /* begin shuchun wang */
         ion1 = pct.ionidx[ion];

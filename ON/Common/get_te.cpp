@@ -72,11 +72,10 @@
 
 void get_te (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh, double * vxc, STATE * states, int ii_flag)
 {
-    int state, kpt, idx, i, j, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1), FP0_BASIS;
-    double r, esum[3], t1, eigsum, xcstate, xtal_r[3], mag, absmag;
-    double vel, loc_sum;
+    int state, kpt, idx, three = 3, two = 2, one = 1, nspin = (ct.spin_flag + 1), FP0_BASIS;
+    double esum[3], t1, eigsum, xcstate, mag, absmag;
+    double vel;
     double *exc, *nrho, *nrho_oppo=NULL;
-    ION *iptr1, *iptr2;
 
 
     FP0_BASIS = get_FP0_BASIS();
