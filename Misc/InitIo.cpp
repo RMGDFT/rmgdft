@@ -563,18 +563,19 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
 
     // Set up exchange correlation type
+    Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     InputKey *ik = ControlMap["exchange_correlation_type"];
     if(*ik->Readintval == AUTO_XC) {
         // Type set from pp files
-        Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
         F.set_dft_from_name_rmg(reordered_xc_type[ct.xctype]);
     }
     else {
         // Type set explicitly in input file
         std::string xc_type = reordered_xc_type[*ik->Readintval];
-        Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F.set_dft_from_name_rmg(xc_type.c_str());
+        F.set_dft_from_name_rmg(xc_type);
     }
+    ct.xc_is_hybrid = F.dft_is_hybrid_rmg();
+    ct.exx_fraction = F.get_exx_fraction_rmg();
 
 }
 

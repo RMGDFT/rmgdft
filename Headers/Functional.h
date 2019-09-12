@@ -87,6 +87,7 @@ public:
     void nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
     void start_exx_rmg(void);
     void stop_exx_rmg(void);
+    double get_exx_fraction_rmg(void);
 
     static std::string saved_dft_name;
 };
