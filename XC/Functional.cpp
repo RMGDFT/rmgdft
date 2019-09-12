@@ -53,6 +53,7 @@
 #define dft_is_gradient         RMG_FC_MODULE(funct,dft_is_gradient,mod_FUNCT,DFT_IS_GRADIENT)
 #define dft_is_meta             RMG_FC_MODULE(funct,dft_is_meta,mod_FUNCT,DFT_IS_META)
 #define dft_is_hybrid           RMG_FC_MODULE(funct,dft_is_hybrid,mod_FUNCT,DFT_IS_HYBRID)
+#define get_exx_fraction        RMG_FC_MODULE(funct,get_exx_fraction,mod_FUNCT,GET_EXX_FRACTION)
 #define igcc_is_lyp             RMG_FC_MODULE(funct,igcc_is_lyp,mod_FUNCT,IGCC_IS_LYP)
 #define dft_has_finite_size_correction RMG_FC_MODULE(funct,dft_has_finite_size_correction,mod_FUNCT,DFT_HAS_FINITE_SIZE_CORRECTION)
 #define dft_is_nonlocc          RMG_FC_MODULE(funct,dft_is_nonlocc,mod_FUNCT,DFT_IS_NONLOCC)
@@ -72,6 +73,7 @@ extern "C" void stop_exx(void);
 extern "C" bool dft_is_gradient(void);
 extern "C" bool dft_is_meta(void);
 extern "C" bool dft_is_hybrid(void);
+extern "C" double get_exx_fraction(void);
 extern "C" bool igcc_is_lyp(void);
 extern "C" bool dft_has_finite_size_correction(void);
 extern "C" bool dft_is_nonlocc(void);
@@ -195,6 +197,11 @@ bool Functional::dft_is_meta_rmg(void)
 bool Functional::dft_is_hybrid_rmg(void)
 {
     return dft_is_hybrid();
+}
+
+double Functional::get_exx_fraction_rmg(void)
+{
+    return get_exx_fraction();
 }
 
 bool Functional::igcc_is_lyp_rmg(void)

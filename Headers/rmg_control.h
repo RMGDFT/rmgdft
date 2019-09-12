@@ -138,6 +138,10 @@ public:
     /* Exchage-Correlation flag */
     int xctype;
 
+    /* Hybrid EXC flag */
+    int xc_is_hybrid;
+    double exx_fraction;
+
     /* EXX integral file */
     std::string exx_int_file;
 
