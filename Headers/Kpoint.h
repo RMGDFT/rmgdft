@@ -131,6 +131,9 @@ public:
     KpointType *nl_Bweight;
     size_t nl_weight_size;
 
+    //Pointer to vexx
+    KpointType *vexx;
+
     // Orbital weights
     KpointType *orbital_weight;
     size_t orbital_weight_size;

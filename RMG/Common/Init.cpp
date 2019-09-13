@@ -226,6 +226,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Wavefunctions are actually stored here
     // mpi_queue_mode has a bug for this case which can cause hangs so put the check in place
     if(ct.mpi_queue_mode) ct.non_local_block_size = std::max(ct.non_local_block_size, ct.max_states);
+    if(ct.xc_is_hybrid) ct.non_local_block_size = std::max(ct.non_local_block_size, ct.max_states);
 
     std::string newpath;
 
@@ -276,6 +277,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     rptr_k = rptr;
     for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
+
+        if(ct.xc_is_hybrid)
+        {
+            Kptr[kpt]->vexx = new OrbitalType[ct.alloc_states * (size_t)P0_BASIS]();
+        }
 
     // for band structure calculation only one k point storage is initilized.
         if(ct.forceflag == BAND_STRUCTURE ) rptr_k = rptr;

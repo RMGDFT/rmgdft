@@ -45,6 +45,11 @@ private:
     // Lattice object
     Lattice &L;
 
+    // Don't need to keep recomputing these
+    double tpiba;
+    double tpiba2;
+    double alpha;
+
     // File path for wavefunction file. Spin and kpoint identifiers should be added by parent.
     const std::string &wavefile;
 
@@ -91,6 +96,8 @@ private:
 
     std::mutex pair_mutex;
 
+    void fftpair(T *psi_i, T*psi_j, std::complex<double> *p);
+
 public:
     Exxbase (
          BaseGrid &G, 
@@ -102,8 +109,8 @@ public:
 
     ~Exxbase(void);
 
-    void Vexx(std::string &vfile);
-    void Vexx_int_gamma(std::string &ifile);
+    void Vexx(T *vexx);
+    void Vexx_integrals(std::string &ifile);
 };
 
 #endif

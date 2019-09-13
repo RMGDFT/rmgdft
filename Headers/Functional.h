@@ -61,6 +61,7 @@ private:
 
     bool gammaflag;
     static bool dft_set;
+    static bool exx_started;
 
 
     void gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);

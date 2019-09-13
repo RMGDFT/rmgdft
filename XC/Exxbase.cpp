@@ -47,12 +47,6 @@ template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, Lattice &, const std
 template Exxbase<double>::~Exxbase(void);
 template Exxbase<std::complex<double>>::~Exxbase(void);
 
-template void Exxbase<double>::Vexx(std::string &);
-template void Exxbase<std::complex<double>>::Vexx(std::string &);
-
-template void Exxbase<double>::Vexx_int_gamma(std::string &);
-template void Exxbase<std::complex<double>>::Vexx_int_gamma(std::string &);
-
 template <class T> Exxbase<T>::Exxbase (
           BaseGrid &G_in,
           Lattice &L_in,
@@ -63,14 +57,17 @@ template <class T> Exxbase<T>::Exxbase (
 {
     RmgTimer RT0("5-Functional: Exx init");
 
+    tpiba = 2.0 * PI / L.celldm[0];
+    tpiba2 = tpiba * tpiba;
+    alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
     mode = EXX_DIST_FFT;
-
     pbasis = G.get_P0_BASIS(1);
     N = (size_t)G.get_NX_GRID(G.default_FG_RATIO) *
               (size_t)G.get_NY_GRID(G.default_FG_RATIO) *
               (size_t)G.get_NZ_GRID(G.default_FG_RATIO);
 
     int ratio = G.default_FG_RATIO;
+
 
     if(mode == EXX_DIST_FFT) return;
 
@@ -202,48 +199,105 @@ template <class T> Exxbase<T>::Exxbase (
     // If we only have CPU's then it's easy
 }
 
-// This computes the action of the exact exchange operator on all wavefunctions
-// and writes the result into vfile.
-template <class T> void Exxbase<T>::Vexx(std::string &vfile)
+template <> void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p)
 {
+    std::complex<double> ZERO_t(0.0, 0.0);
+    for(int idx=0;idx < pbasis;idx++) p[idx] = std::complex<double>(psi_i[idx] * psi_j[idx], 0.0);
+    coarse_pwaves->FftForward(p, p);
+    for(int ig=0;ig < pbasis;ig++) {
+        if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
+            p[ig] = p[ig]/(coarse_pwaves->gmags[ig] *tpiba2);
+        else
+            p[ig] = ZERO_t;
+    }
+    coarse_pwaves->FftInverse(p, p);
+}
 
+template <> void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p)
+{
+}
+
+// These compute the action of the exact exchange operator on all wavefunctions
+// and writes the result into vfile.
+template <> void Exxbase<double>::Vexx(double *vexx)
+{
+    RmgTimer RT0("5-Functional: Exx potential");
+    double scale = -4.0 * PI / (double)coarse_pwaves->global_basis;
+    double ZERO_t(0.0), ONE_T(1.0);
+    char *trans_a = "t";
+    char *trans_n = "n";
+
+    // Clear vexx
+    for(int idx=0;idx < nstates*pbasis;idx++) vexx[idx] = 0.0;
+
+    int nstates_occ = 0;
+    for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
+
+    if(mode == EXX_DIST_FFT)
+    {
+        std::complex<double> *p = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+        double *Kij = new double[pbasis];
+        double *psi_base = (double *)psi;
+
+        // Loop over fft pairs and compute Kij(r) 
+        for(int i=0;i < nstates_occ;i++)
+        {
+            double *psi_i = (double *)&psi[i*pbasis];
+            for(int j=0;j < nstates_occ;j++)
+            {   
+                double *psi_j = (double *)&psi[j*pbasis];
+                RmgTimer RT1("5-Functional: Exx potential fft");
+                fftpair(psi_i, psi_j, p);
+                for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale*std::real(p[idx]) * psi_base[j*pbasis + idx];
+            }
+        }
+
+        delete [] Kij;
+        fftw_free(p);
+    }
+    else
+    {
+        rmg_error_handler (__FILE__,__LINE__,"Exx potential mode not programmed yet. Terminating.");
+    }
+}
+
+
+template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx)
+{
+    RmgTimer RT0("5-Functional: Exx potential");
+    rmg_error_handler (__FILE__,__LINE__,"Exx potential not programmed for non-gamma yet. Terminating.");
 }
 
 // This computes exact exchange integrals
 // and writes the result into vfile.
-template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
+template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 {
 
-    double tpiba = 2.0 * PI / L.celldm[0];
-    double tpiba2 = tpiba * tpiba;
-    double alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
-
     double beta = 0.0;
-    double scale = 1.0 / (double)fine_pwaves->global_basis;
+    double scale = 1.0 / (double)coarse_pwaves->global_basis;
 
-    std::complex<double> ZERO_t(0.0, 0.0);
     char *trans_a = "t";
     char *trans_n = "n";
     int nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
 
-    // The wave function array is always at least double the number of states so use
-    // the upper part for storage of our kl pairs
-    double *kl_pair = (double *)&psi[nstates * pbasis];
-
-    // We block the ij pairs for GEMM efficiency
-    double *ij_pair = new double[pbasis];
-
-    // The full N^4 array can be quite large so we don't try to store it in memory but we do store
-    // a slice that is (jblocks,1,nstates)
-    double_1d_array Exxints, Summedints;
-    Exxints.resize(boost::extents[nstates_occ]);
-    Summedints.resize(boost::extents[nstates_occ]);
 
     if(mode == EXX_DIST_FFT)
     {
         RmgTimer RT0("5-Functional: Exx integrals");
 
+        // The wave function array is always at least double the number of states so use
+        // the upper part for storage of our kl pairs
+        double *kl_pair = (double *)&psi[nstates * pbasis];
+
+        // We block the ij pairs for GEMM efficiency
+        double *ij_pair = new double[pbasis];
+
+        // The full N^4 array can be quite large so we don't try to store it in memory but we do store
+        // a slice that is (jblocks,1,nstates)
+        double_1d_array Exxints, Summedints;
+        Exxints.resize(boost::extents[nstates_occ]);
+        Summedints.resize(boost::extents[nstates_occ]);
 
         std::complex<double> *p = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
         double *psi_base = (double *)psi;
@@ -253,18 +307,10 @@ template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
         {
             double *psi_i = (double *)&psi[i*pbasis];
 
-            for(int j=0;j < nstates_occ;j++)
+            for(int j=i;j < nstates_occ;j++)
             {
                 double *psi_j = (double *)&psi[j*pbasis];
-                for(int idx=0;idx < pbasis;idx++) p[idx] = psi_i[idx] * psi_j[idx];     
-                coarse_pwaves->FftForward(p, p);
-                for(int ig=0;ig < pbasis;ig++) {
-                    if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
-                        p[ig] = p[ig]/(coarse_pwaves->gmags[ig] *tpiba2);
-                    else
-                        p[ig] = ZERO_t;
-                }
-                coarse_pwaves->FftInverse(p, p);
+                fftpair(psi_i, psi_j, p);
 
                 // store (i,j) fft pair in ij_pair
                 for(int idx=0;idx < pbasis;idx++) ij_pair[idx] = scale * std::real(p[idx]);
@@ -273,7 +319,7 @@ template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
                 // We have a block of (i,j) pairs stored in ij_pair. We need to generate a set of kl pairs
                 for(int k=0;k < nstates_occ;k++)
                 {
-                    for(int l=0;l < nstates_occ;l++)
+                    for(int l=k;l < nstates_occ;l++)
                     {
                         for(int idx=0;idx < pbasis;idx++) kl_pair[l*pbasis + idx] = psi_base[k*pbasis+idx]*psi_base[l*pbasis+idx];
                     }
@@ -281,7 +327,7 @@ template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
                     // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
                     RmgGemm(trans_a, trans_n, 1, nstates_occ, pbasis, alpha, ij_pair, pbasis, kl_pair, pbasis, beta, Exxints.data(), 1);
                     MPI_Reduce(Exxints.data(), Summedints.data(), nstates_occ, MPI_DOUBLE, MPI_SUM, 0, G.comm);
-                    for(int ll=0;ll<nstates_occ;ll++)
+                    for(int ll=k;ll<nstates_occ;ll++)
                        if(G.get_rank()==0)printf("KKK  = (%d,%d,%d,%d)  %14.8e\n", i, j, k, ll, Summedints[ll]);
 
                 }
@@ -291,10 +337,19 @@ template <class T> void Exxbase<T>::Vexx_int_gamma(std::string &vfile)
         }
 
         fftw_free(p);
+        delete [] ij_pair;
+    }
+    else
+    {
+        printf("Exx mode not programmed yet\n");
     }
 
-    delete [] ij_pair;
 
+}
+
+template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfile)
+{
+    printf("Exx mode not programmed yet\n");
 }
 
 template <class T> Exxbase<T>::~Exxbase(void)

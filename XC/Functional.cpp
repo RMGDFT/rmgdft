@@ -92,6 +92,7 @@ extern "C" void gcc_spin( double *arho, double *zeta, double *grh2, double *sc, 
 extern "C" int get_inlc(void);
 
 bool Functional::dft_set=false;
+bool Functional::exx_started=false;
 std::string Functional::saved_dft_name;
 
 double SMALL_CHARGE=1.0e-10;
@@ -130,6 +131,9 @@ Functional::Functional (
               G.get_NY_GRID(G.default_FG_RATIO) *
               G.get_NZ_GRID(G.default_FG_RATIO);
 
+    if(dft_set && dft_is_hybrid() && exx_started) start_exx();
+    if(dft_set && dft_is_hybrid() && !exx_started) stop_exx();
+
 }
 
 
@@ -164,11 +168,13 @@ const char *Functional::get_dft_name_rmg(void)
 
 void Functional::start_exx_rmg(void)
 {
+    exx_started = true;
     start_exx();
 }
 
 void Functional::stop_exx_rmg(void)
 {
+    exx_started = false;
     stop_exx();
 }
 
