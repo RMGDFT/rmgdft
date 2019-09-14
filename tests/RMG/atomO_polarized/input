@@ -65,5 +65,5 @@ O   10.0   10.0   10.0   1  0.0
 
 pseudopotential=
 "
-O    ../O.BFD.xml
+O    ./O.BFD.xml
 "
