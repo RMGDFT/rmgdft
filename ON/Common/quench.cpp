@@ -45,6 +45,7 @@
 #include "init_var.h"
 #include "prototypes_on.h"
 #include "transition.h"
+#include "Exxbase.h"
 
 void quench(STATE * states, STATE * states1, double * vxc, double * vh,
             double * vnuc, double * vh_old, double *
@@ -84,35 +85,58 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         }
         outcount++;
     }
-    
-//    gw_correction_matrix(matB, zz_dis);
 
-//    printf ("\n print relative eigenvalue list for plotted states\n");
+    // Exact exchange integrals
+    printf("\n lll %s\n", ct.exx_int_file.c_str());
+    fflush(NULL);
+    if(ct.exx_int_file.length() > 0)
+    {
+        int nstates_occ = 0;
+        std::vector<double> occs;
+        // calculate num of occupied states
+        for(int i=0;i < ct.num_states;i++) 
+        {
+            if(states[i].occupation[0] > 1.0e-6)
+            {
+                occs.push_back(states[i].occupation[0]);
+                nstates_occ++;
+            }
+            else
+            {
+            //    break;
+            }
+        }
+        printf("\n aaaa\n");
+    fflush(NULL);
 
-//    state_plot = ct.nel/2 + 3; // start from a state slightly above the Fermi level, and then go deeper  
-//    for (i = 0; i < ct.num_waves; i++)
-//    {
-//	    printf ("\n %f \n",(states[state_plot].eig[0] - ct.efermi)* Ha_eV);
- //           state_plot--;
- //   }
+        int pbasis = Rmg_G->get_P0_BASIS(1);
+        //  calculate the wavefuctions from localized orbitals
+        double *psi = new double[2* LocalOrbital->num_tot * pbasis];
+        double *Cij_global = new double[LocalOrbital->num_tot * LocalOrbital->num_tot];
+        double *Cij_local = new double[LocalOrbital->num_tot * LocalOrbital->num_thispe];
 
- //   state_plot = ct.nel/2 + 3;   
- //   for (i = 0; i < ct.num_waves; i++)
- //   {
-//	    get_wave(state_plot, states);
-//            print_wave(state_plot, states, 2); //use coarse_level = 2, otherwise file too big
- //           state_plot--;
-  //  }
+        mat_dist_to_global(zz_dis, pct.desca, Cij_global);
 
-
-//    get_mat_Omega(states, mat_Omega);
-    /* Calculate the force */
-//    force(rho, rho, rhoc, vh, vxc, vnuc, states); 
-    /* write out the force */
-//  if (pct.gridpe == 0) write_force();
+        for(int i = 0; i < LocalOrbital->num_thispe; i++)
+        {
+            int i_glob = LocalOrbital->index_proj_to_global[i];
+            for(int j = 0; j < LocalOrbital->num_tot; j++)
+                Cij_local[j * LocalOrbital->num_thispe + i] = Cij_global[j * LocalOrbital->num_tot + i_glob];
+        }
 
 
+        double one(1.0), zero(0.0);
+        dgemm("N", "N", &pbasis, &LocalOrbital->num_tot, &LocalOrbital->num_thispe, &one, LocalOrbital->storage_proj, &pbasis,
+                Cij_local, &LocalOrbital->num_thispe, &zero, psi, &pbasis);
+
+
+        printf("\n aaaa\n");
+    fflush(NULL);
+        Exxbase<double> Exx(*Rmg_G, Rmg_L, "tempwave", nstates_occ, occs.data(), psi);
+        printf("\n bbbb\n");
+    fflush(NULL);
+        Exx.Vexx_integrals(ct.exx_int_file);
+    }
 
 
 }
-
