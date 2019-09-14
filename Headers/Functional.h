@@ -24,9 +24,6 @@
 #ifndef RMG_Functional_H
 #define RMG_Functional_H 1
 
-
-
-#ifdef __cplusplus
 #include <string>
 #include "BaseGrid.h"
 #include "Lattice.h"
@@ -37,9 +34,6 @@
 #if USE_LIBXC
 #include "xc.h"
 #endif
-
-// C interface functions
-extern "C" const char *c_get_dft_name(void);
 
 class Functional {
 
@@ -62,7 +56,7 @@ private:
     bool gammaflag;
     static bool dft_set;
     static bool exx_started;
-
+    double gau_scrlen;
 
     void gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
     void gradcorr_spin(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
@@ -76,7 +70,7 @@ public:
     ~Functional(void);
 
     void set_dft_from_name_rmg(char *newdft_name);
-    const char *get_dft_name_rmg(void);
+    static const char *get_dft_name_rmg(void);
     void set_dft_from_name_rmg(std::string newdft_name);
     bool dft_is_gradient_rmg(void);
     bool dft_is_meta_rmg(void);
@@ -89,11 +83,11 @@ public:
     void start_exx_rmg(void);
     void stop_exx_rmg(void);
     double get_exx_fraction_rmg(void);
+    void set_exx_fraction_rmg(double);
+    static double get_gau_parameter_rmg(void);
+    void set_gau_parameter_rmg(double p);
 
     static std::string saved_dft_name;
 };
 
-#else
-const char *c_get_dft_name(void);
-#endif
 #endif

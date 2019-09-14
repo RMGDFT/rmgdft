@@ -54,6 +54,7 @@
 #define dft_is_meta             RMG_FC_MODULE(funct,dft_is_meta,mod_FUNCT,DFT_IS_META)
 #define dft_is_hybrid           RMG_FC_MODULE(funct,dft_is_hybrid,mod_FUNCT,DFT_IS_HYBRID)
 #define get_exx_fraction        RMG_FC_MODULE(funct,get_exx_fraction,mod_FUNCT,GET_EXX_FRACTION)
+#define set_exx_fraction        RMG_FC_MODULE(funct,set_exx_fraction,mod_FUNCT,SET_EXX_FRACTION)
 #define igcc_is_lyp             RMG_FC_MODULE(funct,igcc_is_lyp,mod_FUNCT,IGCC_IS_LYP)
 #define dft_has_finite_size_correction RMG_FC_MODULE(funct,dft_has_finite_size_correction,mod_FUNCT,DFT_HAS_FINITE_SIZE_CORRECTION)
 #define dft_is_nonlocc          RMG_FC_MODULE(funct,dft_is_nonlocc,mod_FUNCT,DFT_IS_NONLOCC)
@@ -65,6 +66,8 @@
 #define gcc_spin_more           RMG_FC_MODULE(funct,gcc_spin_more,mod_FUNCT,GCC_SPIN_MORE)
 #define gcc_spin                RMG_FC_MODULE(funct,gcc_spin,mod_FUNCT,GCC_SPIN)
 #define get_inlc                RMG_FC_MODULE(funct,get_inlc,mod_FUNCT,GET_INLC)
+#define get_gau_parameter       RMG_FC_MODULE(funct,get_gau_parameter,mod_FUNCT,GET_GAU_PARAMETER)
+#define set_gau_parameter       RMG_FC_MODULE(funct,set_gau_parameter,mod_FUNCT,SET_GAU_PARAMETER)
 
 extern "C" void set_dft_from_name( const char *name, std::size_t len );
 extern "C" char *get_dft_name(void);
@@ -74,6 +77,7 @@ extern "C" bool dft_is_gradient(void);
 extern "C" bool dft_is_meta(void);
 extern "C" bool dft_is_hybrid(void);
 extern "C" double get_exx_fraction(void);
+extern "C" void set_exx_fraction(double frac);
 extern "C" bool igcc_is_lyp(void);
 extern "C" bool dft_has_finite_size_correction(void);
 extern "C" bool dft_is_nonlocc(void);
@@ -90,6 +94,8 @@ extern "C" void gcc_spin_more( double *arho_up, double *arho_down,  double *grho
 extern "C" void gcc_spin( double *arho, double *zeta, double *grh2, double *sc, double *v1cup, double *v1cdw, double *v2c );
 
 extern "C" int get_inlc(void);
+extern "C" double get_gau_parameter(void);
+extern "C" void set_gau_parameter(double *);
 
 bool Functional::dft_set=false;
 bool Functional::exx_started=false;
@@ -208,6 +214,21 @@ bool Functional::dft_is_hybrid_rmg(void)
 double Functional::get_exx_fraction_rmg(void)
 {
     return get_exx_fraction();
+}
+
+void Functional::set_exx_fraction_rmg(double frac)
+{
+    set_exx_fraction(frac);
+}
+
+double Functional::get_gau_parameter_rmg(void)
+{
+    return get_gau_parameter();
+}
+
+void Functional::set_gau_parameter_rmg(double p)
+{
+    set_gau_parameter(&p);
 }
 
 bool Functional::igcc_is_lyp_rmg(void)

@@ -34,6 +34,7 @@
 #include "Lattice.h"
 #include "fftw3.h"
 #include "Pw.h"
+#include "Functional.h"
 
 
 template <typename T> class Exxbase {
@@ -95,6 +96,7 @@ private:
     std::vector< std::pair <int,int> > pairs;
 
     std::mutex pair_mutex;
+    double *gfac;
 
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p);
 

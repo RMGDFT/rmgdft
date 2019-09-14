@@ -576,7 +576,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
     ct.xc_is_hybrid = F.dft_is_hybrid_rmg();
     ct.exx_fraction = F.get_exx_fraction_rmg();
-
 }
 
 
