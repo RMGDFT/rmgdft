@@ -649,3 +649,9 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
 
 include(CPack)
 
+include(${CMAKE_SOURCE_DIR}/CTestConfig.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/macro.cmake)
+
+ENABLE_TESTING()
+INCLUDE(CTest)
+SUBDIRS(tests)
