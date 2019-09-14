@@ -30,6 +30,7 @@
 #include "Functional.h"
 #include "RmgParallelFft.h"
 #include "transition.h"
+#include "Functional.h"
 
 static void init_write_pos (void);
 
@@ -176,7 +177,7 @@ void WriteHeader (void)
 	default:
             printf ("Unknown start mode\n");
     }
-    printf("    Exchange Correlation:     %s\n", c_get_dft_name());
+    printf("    Exchange Correlation:     %s\n", Functional::get_dft_name_rmg());
     printf("    Spin Polarization:        ");
     if (ct.spin_flag)
 	printf("ON\n");

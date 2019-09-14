@@ -204,12 +204,7 @@ template <> void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::com
     std::complex<double> ZERO_t(0.0, 0.0);
     for(int idx=0;idx < pbasis;idx++) p[idx] = std::complex<double>(psi_i[idx] * psi_j[idx], 0.0);
     coarse_pwaves->FftForward(p, p);
-    for(int ig=0;ig < pbasis;ig++) {
-        if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
-            p[ig] = p[ig]/(coarse_pwaves->gmags[ig] *tpiba2);
-        else
-            p[ig] = ZERO_t;
-    }
+    for(int ig=0;ig < pbasis;ig++) p[ig] *= gfac[ig];
     coarse_pwaves->FftInverse(p, p);
 }
 
@@ -222,10 +217,33 @@ template <> void Exxbase<std::complex<double>>::fftpair(std::complex<double> *ps
 template <> void Exxbase<double>::Vexx(double *vexx)
 {
     RmgTimer RT0("5-Functional: Exx potential");
-    double scale = -4.0 * PI / (double)coarse_pwaves->global_basis;
+    double scale = - 1.0 / (double)coarse_pwaves->global_basis;
+
     double ZERO_t(0.0), ONE_T(1.0);
     char *trans_a = "t";
     char *trans_n = "n";
+    double gau_scrlen = Functional::get_gau_parameter_rmg();
+
+    gfac = new double[pbasis];
+
+    for(int ig=0;ig < pbasis;ig++)
+    {
+        if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
+            gfac[ig] = 1.0/(coarse_pwaves->gmags[ig] *tpiba2);
+        else
+            gfac[ig] = 0.0;
+    }
+    if(gau_scrlen > 0.0)
+    {
+        double a0 = pow(PI / gau_scrlen, 1.5);
+        for(int ig=0;ig < pbasis;ig++)
+        {
+            if(coarse_pwaves->gmask[ig])
+                gfac[ig] = a0 * exp(-tpiba2*coarse_pwaves->gmags[ig] / 4.0 / gau_scrlen);
+            else
+                gfac[ig] = 0.0;
+        }
+    }
 
     // Clear vexx
     for(int idx=0;idx < nstates*pbasis;idx++) vexx[idx] = 0.0;
@@ -236,9 +254,6 @@ template <> void Exxbase<double>::Vexx(double *vexx)
     if(mode == EXX_DIST_FFT)
     {
         std::complex<double> *p = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
-        double *Kij = new double[pbasis];
-        double *psi_base = (double *)psi;
-
         // Loop over fft pairs and compute Kij(r) 
         for(int i=0;i < nstates_occ;i++)
         {
@@ -248,17 +263,18 @@ template <> void Exxbase<double>::Vexx(double *vexx)
                 double *psi_j = (double *)&psi[j*pbasis];
                 RmgTimer RT1("5-Functional: Exx potential fft");
                 fftpair(psi_i, psi_j, p);
-                for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale*std::real(p[idx]) * psi_base[j*pbasis + idx];
+                for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale*std::real(p[idx]) * psi[j*pbasis + idx];
             }
         }
 
-        delete [] Kij;
         fftw_free(p);
     }
     else
     {
         rmg_error_handler (__FILE__,__LINE__,"Exx potential mode not programmed yet. Terminating.");
     }
+
+    delete [] gfac;
 }
 
 
