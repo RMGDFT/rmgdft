@@ -60,9 +60,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     double *vh_in = new double[FP0_BASIS];
     double *vxc_in = new double[FP0_BASIS];
 
-    /*int ist, ik;
-       double KE; */
-
     /* ---------- begin scf loop ---------- */
     
     double start_time = my_crtc ();
@@ -142,6 +139,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         }
 
     }
+    /* ---------- end scf loop ---------- */
+
+
 
     if(CONVERGED)
     {
@@ -157,6 +157,15 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 if (pct.imgpe == 0)
                     fprintf(stdout, "\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)", fabs(ct.scf_accuracy), ct.thr_energy);
             }
+
+            rmg_printf ("\n");
+            //progress_tag ();
+            rmg_printf ("potential convergence has been achieved. stopping ...\n");
+
+            /*Write PDOS if converged*/
+            //	if (ct.pdos_flag)
+            //	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
+
     }
     else
     {
@@ -165,34 +174,24 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             fprintf(stdout, "\n Convergence criterion not met but max_scf_steps %d was reached.\n", ct.max_scf_steps);
     }
 
-    /* ---------- end scf loop ---------- */
-
-    if (CONVERGED)
-    {
-        rmg_printf ("\n");
-        //progress_tag ();
-        rmg_printf ("potential convergence has been achieved. stopping ...\n");
-
-        /*Write PDOS if converged*/
-        //	if (ct.pdos_flag)
-        //	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
-    }
 
     rmg_printf ("\n");
     progress_tag ();
     rmg_printf ("final total energy = %16.8f Ha\n", ct.TOTAL);
 
-#if 0
+
     // Exact exchange integrals
+    // Experimental for now. Exchange correlation type must be manually set to
+    // gaupbe in the input file (and gaupbe is the only divergence type supported).
     if(ct.exx_int_file.length() > 0)
     {
         std::vector<double> occs;
         occs.resize(Kptr[0]->nstates);
         for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
         Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), Kptr[0]->orbital_storage);
-        Exx.Vexx_int_gamma(ct.exx_int_file);
+        Exx.Vexx_integrals(ct.exx_int_file);
     }
-#endif
+
 
     /* output final eigenvalues with occupations */
     OutputEigenvalues (Kptr, 0, ct.scf_steps);

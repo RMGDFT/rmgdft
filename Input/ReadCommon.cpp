@@ -201,7 +201,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "File/path for runtime disk storage of orbitals. ", 
                      "", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("exx_integrals_filepath", &ExxIntfile, "ExxIntegrals",
+    If.RegisterInputKey("exx_integrals_filepath", &ExxIntfile, "",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for exact exchange integrals. ", 
                      "", CONTROL_OPTIONS);
