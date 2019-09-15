@@ -68,6 +68,7 @@ template <class T> Exxbase<T>::Exxbase (
 
     int ratio = G.default_FG_RATIO;
 
+    setup_gfac();
 
     if(mode == EXX_DIST_FFT) return;
 
@@ -212,6 +213,42 @@ template <> void Exxbase<std::complex<double>>::fftpair(std::complex<double> *ps
 {
 }
 
+// This implements different ways of handling the divergence at G=0
+template <> void Exxbase<double>::setup_gfac(void)
+{
+    gfac = new double[pbasis];
+
+    const std::string &dftname = Functional::get_dft_name_rmg();
+
+    if(dftname == "gaupbe")
+    {
+        double gau_scrlen = Functional::get_gau_parameter_rmg();
+        double a0 = pow(PI / gau_scrlen, 1.5);
+        for(int ig=0;ig < pbasis;ig++)
+        {
+            if(coarse_pwaves->gmask[ig] && coarse_pwaves->gmask[ig])
+                gfac[ig] = a0 * exp(-tpiba2*coarse_pwaves->gmags[ig] / 4.0 / gau_scrlen);
+            else
+                gfac[ig] = 0.0;
+        }
+    }
+    else
+    {
+        for(int ig=0;ig < pbasis;ig++)
+        {
+            if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
+                gfac[ig] = 1.0/(coarse_pwaves->gmags[ig] *tpiba2);
+            else
+                gfac[ig] = 0.0;
+        }
+    }
+
+}
+
+template <> void Exxbase<std::complex<double>>::setup_gfac(void)
+{
+}
+
 // These compute the action of the exact exchange operator on all wavefunctions
 // and writes the result into vfile.
 template <> void Exxbase<double>::Vexx(double *vexx)
@@ -223,27 +260,6 @@ template <> void Exxbase<double>::Vexx(double *vexx)
     char *trans_a = "t";
     char *trans_n = "n";
     double gau_scrlen = Functional::get_gau_parameter_rmg();
-
-    gfac = new double[pbasis];
-
-    for(int ig=0;ig < pbasis;ig++)
-    {
-        if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
-            gfac[ig] = 1.0/(coarse_pwaves->gmags[ig] *tpiba2);
-        else
-            gfac[ig] = 0.0;
-    }
-    if(gau_scrlen > 0.0)
-    {
-        double a0 = pow(PI / gau_scrlen, 1.5);
-        for(int ig=0;ig < pbasis;ig++)
-        {
-            if(coarse_pwaves->gmask[ig])
-                gfac[ig] = a0 * exp(-tpiba2*coarse_pwaves->gmags[ig] / 4.0 / gau_scrlen);
-            else
-                gfac[ig] = 0.0;
-        }
-    }
 
     // Clear vexx
     for(int idx=0;idx < nstates*pbasis;idx++) vexx[idx] = 0.0;
@@ -263,7 +279,8 @@ template <> void Exxbase<double>::Vexx(double *vexx)
                 double *psi_j = (double *)&psi[j*pbasis];
                 RmgTimer RT1("5-Functional: Exx potential fft");
                 fftpair(psi_i, psi_j, p);
-                for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale*std::real(p[idx]) * psi[j*pbasis + idx];
+//if(G.get_rank()==0)printf("TTTT  %d  %d  %e\n",i,j,std::real(p[1]));
+                for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi[j*pbasis + idx];
             }
         }
 
@@ -274,7 +291,6 @@ template <> void Exxbase<double>::Vexx(double *vexx)
         rmg_error_handler (__FILE__,__LINE__,"Exx potential mode not programmed yet. Terminating.");
     }
 
-    delete [] gfac;
 }
 
 

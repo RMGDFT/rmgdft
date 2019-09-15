@@ -315,8 +315,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     } // end switch
     delete(RT1);
 
-
-    // If subspace diagonalization is used everystep, use eigenvalues obtained here 
+    // If subspace diagonalization is used every step, use eigenvalues obtained here 
     // as the correct eigenvalues
     if (ct.diag == 1) {
         for (int st1 = 0; st1 < nstates; st1++) {
@@ -353,6 +352,19 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         }
         istart = (highest_occupied + 1)*pbasis;
         tlen = nstates * pbasis - (highest_occupied + 1) * pbasis;
+    }
+
+    // And finally make sure they follow the same sign convention when using hybrid XC
+    // Optimize this for GPUs!
+    if(ct.xc_is_hybrid)
+    {
+        for(int istate=0;istate < nstates;istate++)
+        {
+            if(std::real(global_matrix1[istate*nstates + istate]) < 0.0)
+            {
+                for(int idx=0;idx < pbasis;idx++) Kstates[istate].psi[idx] = -Kstates[istate].psi[idx];
+            }
+        }
     }
 
 #if GPU_ENABLED

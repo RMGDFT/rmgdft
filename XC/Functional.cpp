@@ -164,12 +164,12 @@ void Functional::set_dft_from_name_rmg(char *newdft_name)
     this->dft_set = true;
 }
 
-const char *Functional::get_dft_name_rmg(void)
+const std::string &Functional::get_dft_name_rmg(void)
 {
     if(!dft_set) {
         throw RmgFatalException() << "Error! get_dft_name called before dft type was set." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
     }
-    return saved_dft_name.c_str();
+    return saved_dft_name;
 }
 
 void Functional::start_exx_rmg(void)

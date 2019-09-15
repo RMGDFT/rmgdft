@@ -177,7 +177,8 @@ void WriteHeader (void)
 	default:
             printf ("Unknown start mode\n");
     }
-    printf("    Exchange Correlation:     %s\n", Functional::get_dft_name_rmg());
+    const std::string tstr = Functional::get_dft_name_rmg();
+    printf("    Exchange Correlation:     %s\n", tstr.c_str());
     printf("    Spin Polarization:        ");
     if (ct.spin_flag)
 	printf("ON\n");

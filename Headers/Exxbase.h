@@ -99,6 +99,7 @@ private:
     double *gfac;
 
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p);
+    void setup_gfac(void);
 
 public:
     Exxbase (

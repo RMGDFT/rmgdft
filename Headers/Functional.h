@@ -70,7 +70,7 @@ public:
     ~Functional(void);
 
     void set_dft_from_name_rmg(char *newdft_name);
-    static const char *get_dft_name_rmg(void);
+    static const std::string & get_dft_name_rmg(void);
     void set_dft_from_name_rmg(std::string newdft_name);
     bool dft_is_gradient_rmg(void);
     bool dft_is_meta_rmg(void);
@@ -80,8 +80,8 @@ public:
     bool dft_has_finite_size_correction_rmg(void);
     void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
     void nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
-    void start_exx_rmg(void);
-    void stop_exx_rmg(void);
+    static void start_exx_rmg(void);
+    static void stop_exx_rmg(void);
     double get_exx_fraction_rmg(void);
     void set_exx_fraction_rmg(double);
     static double get_gau_parameter_rmg(void);
