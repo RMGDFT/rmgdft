@@ -319,10 +319,6 @@ int main(int argc, char **argv)
 #endif
 
         }
-        double dipole_ion, dipole_ele;
-        dipole_calculation(rhoc, &dipole_ion);
-        dipole_calculation(rho, &dipole_ele);
-        printf("\n duoile    %f %f \n", dipole_ion, dipole_ele);
 
         /* Save state information to file */
         // write_states_info(ct.outfile, &states[0]);

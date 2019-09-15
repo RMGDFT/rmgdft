@@ -192,8 +192,8 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
     if(ct.spin_flag)
         get_rho_oppo(rho, rho_oppo);
 
-    //    if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
-    printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2);
+    if(fabs(t2 -1.0) > 1.0e-6 && pct.gridpe == 0)
+        printf("\n Warning: total charge Normalization constant = %15.12e  \n", t2-1.0);
     delete(RT2);
 
     RmgTimer *RT3 = new RmgTimer("2-SCF: pulay mix");

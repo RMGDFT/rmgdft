@@ -76,20 +76,12 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         }
 
 
-        /* Check if we need to output intermediate results */
-        if (outcount >= ct.outcount)
-        {
-            if (pct.gridpe == 0)
-                printf("\n TOTAL ENERGY = %14.7f\n", ct.TOTAL);
-            outcount = 0;
-        }
-        outcount++;
     }
 
+    if (pct.gridpe == 0)
+        rmg_printf("\n final total energy = %14.8f Ha\n", ct.TOTAL);
     // Exact exchange integrals
-    printf("\n lll %s\n", ct.exx_int_file.c_str());
-    fflush(NULL);
-    if(ct.exx_int_file.length() > 0)
+    if(ct.exx_int_file.length() > 0 && 0)
     {
         int nstates_occ = 0;
         std::vector<double> occs;
@@ -106,8 +98,6 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             //    break;
             }
         }
-        printf("\n aaaa\n");
-    fflush(NULL);
 
         int pbasis = Rmg_G->get_P0_BASIS(1);
         //  calculate the wavefuctions from localized orbitals
@@ -130,11 +120,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
                 Cij_local, &LocalOrbital->num_thispe, &zero, psi, &pbasis);
 
 
-        printf("\n aaaa\n");
-    fflush(NULL);
         Exxbase<double> Exx(*Rmg_G, Rmg_L, "tempwave", nstates_occ, occs.data(), psi);
-        printf("\n bbbb\n");
-    fflush(NULL);
         Exx.Vexx_integrals(ct.exx_int_file);
     }
 

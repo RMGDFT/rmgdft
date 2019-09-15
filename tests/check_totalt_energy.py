@@ -6,10 +6,11 @@ if __name__ == '__main__':
   
   for line in open(fname):
     if "final tot" in line:
-      Etot = float(line.split()[11])
+      print line.split("=")[1]
+      Etot = float(line.split("=")[1].split()[0])
   for line in open(fref):
     if "final tot" in line:
-      Eref = float(line.split()[11])
+      Eref = float(line.split("=")[1].split()[0])
 
   delta = Etot - Eref
   print "Refernece TOTAL ENERGY: %15.8f"%Eref

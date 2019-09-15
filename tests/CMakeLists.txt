@@ -4,5 +4,6 @@ SET(num_proc 16)
 endif()
 
 SUBDIRS(RMG)
+SUBDIRS(RMG_ON)
 
 
