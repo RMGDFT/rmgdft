@@ -85,7 +85,9 @@ public:
     double get_exx_fraction_rmg(void);
     void set_exx_fraction_rmg(double);
     static double get_gau_parameter_rmg(void);
-    void set_gau_parameter_rmg(double p);
+    static void set_gau_parameter_rmg(double p);
+    static double get_screening_parameter_rmg(void);
+    static void set_screening_parameter_rmg(double p);
 
     static std::string saved_dft_name;
 };

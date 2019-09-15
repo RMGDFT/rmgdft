@@ -219,20 +219,43 @@ template <> void Exxbase<double>::setup_gfac(void)
     gfac = new double[pbasis];
 
     const std::string &dftname = Functional::get_dft_name_rmg();
+    double scrlen = Functional::get_screening_parameter_rmg();
 
-    if(dftname == "gaupbe")
+    if((dftname == "gaupbe") || (scr_type == GAU_SCREENING))
     {
         double gau_scrlen = Functional::get_gau_parameter_rmg();
         double a0 = pow(PI / gau_scrlen, 1.5);
         for(int ig=0;ig < pbasis;ig++)
         {
-            if(coarse_pwaves->gmask[ig] && coarse_pwaves->gmask[ig])
+            if(coarse_pwaves->gmask[ig])
                 gfac[ig] = a0 * exp(-tpiba2*coarse_pwaves->gmags[ig] / 4.0 / gau_scrlen);
             else
                 gfac[ig] = 0.0;
         }
     }
-    else
+    else if(scr_type == ERF_SCREENING)
+    {
+        double a0 = 4.0 * PI;
+        for(int ig=0;ig < pbasis;ig++)
+        {
+            if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
+                gfac[ig] = a0 * exp(-tpiba2*coarse_pwaves->gmags[ig] / 4.0 / (scrlen*scrlen)) / (tpiba2*coarse_pwaves->gmags[ig]);
+            else
+                gfac[ig] = 0.0;
+        }
+    }
+    else if(scr_type == ERFC_SCREENING)
+    {
+        double a0 = 4.0 * PI;
+        for(int ig=0;ig < pbasis;ig++)
+        {
+            if((coarse_pwaves->gmags[ig] > 1.0e-6) && coarse_pwaves->gmask[ig])
+                gfac[ig] = a0 * (1.0 - exp(-tpiba2*coarse_pwaves->gmags[ig] / 4.0 / (scrlen*scrlen))) / (tpiba2*coarse_pwaves->gmags[ig]);
+            else
+                gfac[ig] = 0.0;
+        }
+    }
+    else  // Default is probably wrong
     {
         for(int ig=0;ig < pbasis;ig++)
         {
@@ -259,7 +282,6 @@ template <> void Exxbase<double>::Vexx(double *vexx)
     double ZERO_t(0.0), ONE_T(1.0);
     char *trans_a = "t";
     char *trans_n = "n";
-    double gau_scrlen = Functional::get_gau_parameter_rmg();
 
     // Clear vexx
     for(int idx=0;idx < nstates*pbasis;idx++) vexx[idx] = 0.0;

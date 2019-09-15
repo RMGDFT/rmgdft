@@ -68,6 +68,8 @@
 #define get_inlc                RMG_FC_MODULE(funct,get_inlc,mod_FUNCT,GET_INLC)
 #define get_gau_parameter       RMG_FC_MODULE(funct,get_gau_parameter,mod_FUNCT,GET_GAU_PARAMETER)
 #define set_gau_parameter       RMG_FC_MODULE(funct,set_gau_parameter,mod_FUNCT,SET_GAU_PARAMETER)
+#define get_screening_parameter       RMG_FC_MODULE(funct,get_screening_parameter,mod_FUNCT,GET_SCREENING_PARAMETER)
+#define set_screening_parameter       RMG_FC_MODULE(funct,set_screening_parameter,mod_FUNCT,SET_SCREENING_PARAMETER)
 
 extern "C" void set_dft_from_name( const char *name, std::size_t len );
 extern "C" char *get_dft_name(void);
@@ -96,6 +98,8 @@ extern "C" void gcc_spin( double *arho, double *zeta, double *grh2, double *sc, 
 extern "C" int get_inlc(void);
 extern "C" double get_gau_parameter(void);
 extern "C" void set_gau_parameter(double *);
+extern "C" double get_screening_parameter(void);
+extern "C" void set_screening_parameter(double *);
 
 bool Functional::dft_set=false;
 bool Functional::exx_started=false;
@@ -229,6 +233,16 @@ double Functional::get_gau_parameter_rmg(void)
 void Functional::set_gau_parameter_rmg(double p)
 {
     set_gau_parameter(&p);
+}
+
+double Functional::get_screening_parameter_rmg(void)
+{
+    return get_screening_parameter();
+}
+
+void Functional::set_screening_parameter_rmg(double p)
+{
+    set_screening_parameter(&p);
 }
 
 bool Functional::igcc_is_lyp_rmg(void)

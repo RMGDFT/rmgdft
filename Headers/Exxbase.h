@@ -36,6 +36,12 @@
 #include "Pw.h"
 #include "Functional.h"
 
+// Screening types
+#define NO_SCREENING 0
+#define GAU_SCREENING 1
+#define ERF_SCREENING 2
+#define ERFC_SCREENING 3
+
 
 template <typename T> class Exxbase {
 
@@ -96,6 +102,8 @@ private:
     std::vector< std::pair <int,int> > pairs;
 
     std::mutex pair_mutex;
+    int scr_type;
+
     double *gfac;
 
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p);
