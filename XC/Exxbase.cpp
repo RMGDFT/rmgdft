@@ -340,55 +340,178 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     {
         RmgTimer RT0("5-Functional: Exx integrals");
 
+        std::vector< std::pair <int,int> > wf_pairs;
+        for(int i=0;i < nstates_occ;i++)
+        {
+            for(int j=i;j < nstates_occ;j++)
+            {
+                wf_pairs.push_back(std::make_pair(i, j));
+            }
+        }
+
+        block_size = 16;
+        if(block_size > nstates_occ) block_size = nstates_occ;
+        int num_blocks = wf_pairs.size()/block_size;
+        int num_rem = wf_pairs.size() % block_size;
+
         // The wave function array is always at least double the number of states so use
         // the upper part for storage of our kl pairs
-        double *kl_pair = (double *)&psi[nstates * pbasis];
+
+        kl_pair = (double *)&psi[nstates * pbasis];
 
         // We block the ij pairs for GEMM efficiency
-        double *ij_pair = new double[pbasis];
+        ij_pair = new double[block_size * pbasis];
 
-        // The full N^4 array can be quite large so we don't try to store it in memory but we do store
-        // a slice that is (jblocks,1,nstates)
-        double_1d_array Exxints, Summedints;
-        Exxints.resize(boost::extents[nstates_occ]);
-        Summedints.resize(boost::extents[nstates_occ]);
+        Exxints = new double[block_size * block_size];
+        Summedints = new double[block_size * block_size];
 
         std::complex<double> *p = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
         double *psi_base = (double *)psi;
 
-        // Loop over fft pairs and compute Kij(r) 
-        for(int i=0;i < nstates_occ;i++)
+        for(int ib =0; ib < num_blocks; ib++)
         {
-            double *psi_i = (double *)&psi[i*pbasis];
 
-            for(int j=i;j < nstates_occ;j++)
+            for(int ic = 0; ic < block_size; ic++)
             {
+                int ij = ib * block_size + ic;
+                int i = wf_pairs[ij].first;
+                int j = wf_pairs[ij].second;
+                double *psi_i = (double *)&psi[i*pbasis];
                 double *psi_j = (double *)&psi[j*pbasis];
                 fftpair(psi_i, psi_j, p);
 
                 // store (i,j) fft pair in ij_pair
-                for(int idx=0;idx < pbasis;idx++) ij_pair[idx] = scale * std::real(p[idx]);
+                // forward and then backward fft should not have the scale, Wenchang
+                for(int idx=0;idx < pbasis;idx++) ij_pair[ic * pbasis + idx] = scale * std::real(p[idx]);
+            }
+
+
+            // calculate kl pairs
+            for(int id =ib; id < num_blocks; id++)
+            {
+                for(int ie = 0; ie < block_size; ie++)
+                {
+                    int kl = id * block_size + ie;
+                    int k = wf_pairs[kl].first;
+                    int l = wf_pairs[kl].second;
+                    double *psi_k = (double *)&psi[k*pbasis];
+                    double *psi_l = (double *)&psi[l*pbasis];
+                    for(int idx=0;idx < pbasis;idx++) kl_pair[ie*pbasis + idx] = psi_k[idx]*psi_l[idx];
+                }
 
                 // Now compute integrals for (i, j, k, l)
-                // We have a block of (i,j) pairs stored in ij_pair. We need to generate a set of kl pairs
-                for(int k=0;k < nstates_occ;k++)
+
+                // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
+                RmgGemm(trans_a, trans_n, block_size, block_size, pbasis, alpha, ij_pair, pbasis, kl_pair, pbasis, beta, Exxints, block_size);
+                int pairsize = block_size * block_size;
+                MPI_Reduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, 0, G.comm);
+
+                for(int ic = 0; ic < block_size; ic++)
                 {
-                    for(int l=k;l < nstates_occ;l++)
+                    int ij = ib * block_size + ic;
+                    int i = wf_pairs[ij].first;
+                    int j = wf_pairs[ij].second;
+
+                    for(int ie = 0; ie < block_size; ie++)
                     {
-                        for(int idx=0;idx < pbasis;idx++) kl_pair[l*pbasis + idx] = psi_base[k*pbasis+idx]*psi_base[l*pbasis+idx];
+                        int kl = id * block_size + ie;
+                        int k = wf_pairs[kl].first;
+                        int l = wf_pairs[kl].second;
+
+                        if(G.get_rank()==0)printf("KKK  = (%d,%d,%d,%d)  %14.8e\n", i, j, k, l, Summedints[ie * block_size + ic]);
+                        //if(G.get_rank()==0)printf("%d  %14.8e\n", i*16*16*16+ j*16*16+ k*16+ l, Summedints[ie * block_size + ic]);
                     }
+                }
 
-                    // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
-                    RmgGemm(trans_a, trans_n, 1, nstates_occ, pbasis, alpha, ij_pair, pbasis, kl_pair, pbasis, beta, Exxints.data(), 1);
-                    MPI_Reduce(Exxints.data(), Summedints.data(), nstates_occ, MPI_DOUBLE, MPI_SUM, 0, G.comm);
-                    for(int ll=k;ll<nstates_occ;ll++)
-                       if(G.get_rank()==0)printf("KKK  = (%d,%d,%d,%d)  %14.8e\n", i, j, k, ll, Summedints[ll]);
+            }
 
+            // calculate remaining kl pairs
+            for(int kl = block_size * num_blocks; kl < int(wf_pairs.size()); kl++)
+            {
+                int ie = kl - block_size * num_blocks;
+                int k = wf_pairs[kl].first;
+                int l = wf_pairs[kl].second;
+                double *psi_k = (double *)&psi[k*pbasis];
+                double *psi_l = (double *)&psi[l*pbasis];
+                for(int idx=0;idx < pbasis;idx++) kl_pair[ie*pbasis + idx] = psi_k[idx]*psi_l[idx];
+            }
+
+
+            // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
+            RmgGemm(trans_a, trans_n, block_size, num_rem, pbasis, alpha, ij_pair, pbasis, kl_pair, pbasis, beta, Exxints, block_size);
+            int pairsize = block_size * num_rem;
+            MPI_Reduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, 0, G.comm);
+
+            for(int ic = 0; ic < block_size; ic++)
+            {
+                int ij = ib * block_size + ic;
+                int i = wf_pairs[ij].first;
+                int j = wf_pairs[ij].second;
+
+                for(int kl = block_size * num_blocks; kl <(int)wf_pairs.size(); kl++)
+                {
+                    int ie = kl - block_size * num_blocks;
+                    int k = wf_pairs[kl].first;
+                    int l = wf_pairs[kl].second;
+
+                    if(G.get_rank()==0)printf("KKK  = (%d,%d,%d,%d)  %14.8e\n", i, j, k, l, Summedints[ie * block_size + ic]);
+            //            if(G.get_rank()==0)printf("%d  %14.8e\n", i*16*16*16+ j*16*16+ k*16+ l, Summedints[ie * block_size + ic]);
                 }
             }
 
-            
         }
+
+        for(int ij = block_size * num_blocks; ij < (int)wf_pairs.size(); ij++)
+        {
+            int ic = ij - block_size * num_blocks;
+            int i = wf_pairs[ij].first;
+            int j = wf_pairs[ij].second;
+            double *psi_i = (double *)&psi[i*pbasis];
+            double *psi_j = (double *)&psi[j*pbasis];
+            fftpair(psi_i, psi_j, p);
+
+            // store (i,j) fft pair in ij_pair
+            // forward and then backward fft should not have the scale, Wenchang
+            for(int idx=0;idx < pbasis;idx++) ij_pair[ic * pbasis + idx] = scale * std::real(p[idx]);
+        }
+
+        // calculate remaining kl pairs
+        for(int kl = block_size * num_blocks; kl <(int)wf_pairs.size(); kl++)
+        {
+            int ie = kl - block_size * num_blocks;
+            int k = wf_pairs[kl].first;
+            int l = wf_pairs[kl].second;
+            double *psi_k = (double *)&psi[k*pbasis];
+            double *psi_l = (double *)&psi[l*pbasis];
+            for(int idx=0;idx < pbasis;idx++) kl_pair[ie*pbasis + idx] = psi_k[idx]*psi_l[idx];
+        }
+
+
+        // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
+        RmgGemm(trans_a, trans_n, num_rem, num_rem, pbasis, alpha, ij_pair, pbasis, kl_pair, pbasis, beta, Exxints, block_size);
+        int pairsize = block_size * num_rem;
+        MPI_Reduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, 0, G.comm);
+
+        for(int ij = block_size * num_blocks; ij < (int)wf_pairs.size(); ij++)
+        {
+            int ic = ij - block_size * num_blocks;
+            int i = wf_pairs[ij].first;
+            int j = wf_pairs[ij].second;
+
+            for(int kl = block_size * num_blocks; kl < (int)wf_pairs.size(); kl++)
+            {
+                int ie = kl - block_size * num_blocks;
+                int k = wf_pairs[kl].first;
+                int l = wf_pairs[kl].second;
+
+                if(G.get_rank()==0)printf("KKK  = (%d,%d,%d,%d)  %14.8e\n", i, j, k, l, Summedints[ie * block_size + ic]);
+              //          if(G.get_rank()==0)printf("%d  %14.8e\n", i*16*16*16+ j*16*16+ k*16+ l, Summedints[ie * block_size + ic]);
+            }
+        }
+
+
+
+
 
         fftw_free(p);
         delete [] ij_pair;
@@ -420,3 +543,4 @@ template <class T> Exxbase<T>::~Exxbase(void)
     MPI_Comm_free(&lcomm); 
     delete pwave;
 }
+

@@ -109,19 +109,31 @@ private:
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p);
     void setup_gfac(void);
 
+    std::vector< std::pair <int,int> > wf_pairs;
+    int block_size = 16;
+    double *kl_pair;
+    double *ij_pair;
+    double *Exxints;
+    double *Summedints;
+    std::complex<double> *wf_fft;
+
+
 public:
     Exxbase (
-         BaseGrid &G, 
-         Lattice &L, 
-         const std::string &wavefile,
-         int nstates,
-         double *occ,
-         T *psi_in);
+            BaseGrid &G, 
+            Lattice &L, 
+            const std::string &wavefile,
+            int nstates,
+            double *occ,
+            T *psi_in);
 
     ~Exxbase(void);
 
     void Vexx(T *vexx);
     void Vexx_integrals(std::string &ifile);
+    void Vexx_integrals_block(int ij_start, int ij_end, int kl_start, int kl_end);
 };
 
 #endif
+
+
