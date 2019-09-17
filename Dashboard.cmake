@@ -20,8 +20,8 @@ set(OPTION_BUILD             "-j8")
 # define generator (optional), e.g. default to 'Unix Makefiles' on UNIX, Visual Studio on Windows
 set(CTEST_GENERATOR          "Unix Makefiles")
 # submit under Continuous, Nightly (default), Experimental
-set(CTEST_MODEL              "Nightly")
-#set(CTEST_MODEL              "Continuous")
+#set(CTEST_MODEL              "Nightly")
+set(CTEST_MODEL              "Continuous")
 # define how to checkout code, e.g. copy a directory, git pull, svn co, etc.
 set(CTEST_CHECKOUT_COMMAND   "git pull")
 # define how to update (optional), e.g. git checkout <git-branch>
@@ -29,9 +29,9 @@ set(CTEST_CHECKOUT_COMMAND   "git pull")
 # define how to configure (e.g. cmake -DCMAKE_INSTALL_PREFIX=...)
 set(CTEST_CONFIGURE_COMMAND  "cmake ..")
 # the name of the build
-set(CTEST_BUILD_NAME         "rmg-cpu")
+set(CTEST_BUILD_COMMAND      "make -j8 rmg-on-cpu rmg-cpu")
+set(CTEST_BUILD_NAME         "rmg")
 # how to build
-set(CTEST_BUILD_COMMAND      "make")
 # default max time each tests can run (in seconds)
 set(CTEST_TIMEOUT            "7200")
 # locale to English
