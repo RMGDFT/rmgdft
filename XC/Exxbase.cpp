@@ -34,6 +34,7 @@
 #include "RmgGemm.h"
 #include "transition.h"
 #include "rmgtypedefs.h"
+#include "pe_control.h"
 
 // This class implements exact exchange for delocalized orbitals.
 // The wavefunctions are stored in a single file and are not domain
@@ -321,10 +322,10 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx)
     RmgTimer RT0("5-Functional: Exx potential");
     rmg_error_handler (__FILE__,__LINE__,"Exx potential not programmed for non-gamma yet. Terminating.");
 }
-template <> void Exxbase<std::complex<double>>::Vexx_integrals_block(int ij_start, int ij_end, int kl_start, int kl_end)
+template <> void Exxbase<std::complex<double>>::Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end)
 {
 }
-template <> void Exxbase<double>::Vexx_integrals_block( int ij_start, int ij_end, int kl_start, int kl_end)
+template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, int ij_end, int kl_start, int kl_end)
 {
 
     double beta = 0.0;
@@ -332,6 +333,7 @@ template <> void Exxbase<double>::Vexx_integrals_block( int ij_start, int ij_end
     char *trans_a = "t";
     char *trans_n = "n";
 
+    RmgTimer *RT0 = new RmgTimer("5-Functional: Exx: kl");
 
     // calculate kl pairs
     for(int kl = kl_start; kl < kl_end; kl++)
@@ -344,15 +346,22 @@ template <> void Exxbase<double>::Vexx_integrals_block( int ij_start, int ij_end
         for(int idx=0;idx < pbasis;idx++) kl_pair[ie*pbasis + idx] = psi_k[idx]*psi_l[idx];
     }
 
+    delete RT0;
     // Now compute integrals for (i, j, k, l)
 
     int ij_length = ij_end - ij_start;
     int kl_length = kl_end - kl_start;
     // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
+    RT0 = new RmgTimer("5-Functional: Exx: gemm");
     RmgGemm(trans_a, trans_n, ij_length, kl_length, pbasis, alpha, ij_pair, pbasis, kl_pair, pbasis, beta, Exxints, ij_length);
+    delete RT0;
     int pairsize = ij_length * kl_length;
+    RT0 = new RmgTimer("5-Functional: Exx: reduce");
     MPI_Reduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, 0, G.comm);
+    MPI_Barrier(G.comm);
+    delete RT0;
 
+    RT0 = new RmgTimer("5-Functional: Exx: print");
     for(int ij = ij_start; ij < ij_end; ij++)
     {
         int ic = ij - ij_start;
@@ -363,12 +372,12 @@ template <> void Exxbase<double>::Vexx_integrals_block( int ij_start, int ij_end
             int ie = kl- kl_start;
             int k = wf_pairs[kl].first;
             int l = wf_pairs[kl].second;
-            double *psi_k = (double *)&psi[k*pbasis];
 
-            if(G.get_rank()==0)printf("KKK  = (%d,%d,%d,%d)  %14.8e\n", i, j, k, l, Summedints[ie * ij_length + ic]);
+            if(G.get_rank()==0 && kl >= ij)fprintf(fp, "%14.8e %d %d %d %d\n", Summedints[ie * ij_length + ic], i, j, k, l);
         }
     }
 
+    delete RT0;
 }
 
 // This computes exact exchange integrals
@@ -379,7 +388,6 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     double scale = 1.0 / (double)coarse_pwaves->global_basis;
     int nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
-
 
     if(mode == EXX_DIST_FFT)
     {
@@ -396,7 +404,6 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         //block_size = 16;
         int num_blocks = (wf_pairs.size() + block_size -1)/block_size;
 
-        printf("\n aaa %d %d \n", block_size, num_blocks);
 
         // The wave function array is always at least double the number of states so use
         // the upper part for storage of our kl pairs
@@ -410,70 +417,96 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         wf_fft = new std::complex<double> [pbasis];
 
 
-
-        for(int ib =0; ib < num_blocks; ib++)
+        char *buf;
+        FILE *fp=NULL;
+        if(G.get_rank()==0)
         {
-            int ij_start = ib * block_size;
-            int ij_end = (ib+1) * block_size;
-            if (ij_end > wf_pairs.size()) ij_end = wf_pairs.size();
-            for(int ij = ij_start; ij < ij_end; ij++)
-            {
+            size_t size = 1<<18;
+            printf("\n %zu buff\n", size);
+            buf = new char[size];
+            std::string filename = vfile + "_spin"+std::to_string(pct.spinpe)+".fcidump";
+            fp= fopen(filename.c_str(), "w");
+            if(int nn = setvbuf (fp, buf, _IOFBF, size) != 0) printf("\n failed buff %d\n", nn);
 
-                int ic = ij - ij_start;
-                int i = wf_pairs[ij].first;
-                int j = wf_pairs[ij].second;
-                double *psi_i = (double *)&psi[i*pbasis];
-                double *psi_j = (double *)&psi[j*pbasis];
-                fftpair(psi_i, psi_j, wf_fft);
-
-                // store (i,j) fft pair in ij_pair
-                // forward and then backward fft should not have the scale, Wenchang
-                for(int idx=0;idx < pbasis;idx++) ij_pair[ic * pbasis + idx] = scale * std::real(wf_fft[idx]);
-            }
-
-            for(int ic = ib; ic < num_blocks; ic++)
-            {
-
-                int kl_start = ic * block_size;
-                int kl_end = (ic+1) * block_size;
-                if (kl_end > wf_pairs.size()) kl_end = wf_pairs.size();
-                Vexx_integrals_block(ij_start, ij_end, kl_start, kl_end);
-            }
+            fprintf(fp, "&FCI\n");
+            fprintf(fp, "NORB=%d,\n", nstates_occ);
+            fprintf(fp, "NELEC=%d,\n", (int)(ct.nel+1.0e-6));
+            int ms2 = pct.spinpe;
+            if(ct.spin_flag && pct.spinpe == 0) ms2 = -1;
+            fprintf(fp, "MS2=%d,\n", ms2);
+            fprintf(fp, "\n&END\n");
         }
 
-        delete [] ij_pair;
-        delete [] kl_pair;
-        delete [] Exxints;
-        delete [] Summedints;
-        delete [] wf_fft;
+            for(int ib =0; ib < num_blocks; ib++)
+            {
+                int ij_start = ib * block_size;
+                int ij_end = (ib+1) * block_size;
+                if (ij_end > wf_pairs.size()) ij_end = wf_pairs.size();
+                RmgTimer *RT1 = new RmgTimer("5-Functional: Exx: ij+fft");
+                for(int ij = ij_start; ij < ij_end; ij++)
+                {
+
+                    int ic = ij - ij_start;
+                    int i = wf_pairs[ij].first;
+                    int j = wf_pairs[ij].second;
+                    double *psi_i = (double *)&psi[i*pbasis];
+                    double *psi_j = (double *)&psi[j*pbasis];
+                    fftpair(psi_i, psi_j, wf_fft);
+
+                    // store (i,j) fft pair in ij_pair
+                    // forward and then backward fft should not have the scale, Wenchang
+                    for(int idx=0;idx < pbasis;idx++) ij_pair[ic * pbasis + idx] = scale * std::real(wf_fft[idx]);
+                }
+                delete RT1;
+
+                for(int ic = ib; ic < num_blocks; ic++)
+                {
+
+                    int kl_start = ic * block_size;
+                    int kl_end = (ic+1) * block_size;
+                    if (kl_end > wf_pairs.size()) kl_end = wf_pairs.size();
+                    Vexx_integrals_block(fp, ij_start, ij_end, kl_start, kl_end);
+                }
+            }
+
+            if(G.get_rank()==0)
+            {
+                fclose(fp);
+                delete []buf;
+            }
+            delete [] ij_pair;
+            delete [] kl_pair;
+            delete [] Exxints;
+            delete [] Summedints;
+            delete [] wf_fft;
+
+        }
+
+        else
+        {
+            printf("Exx mode not programmed yet\n");
+        }
+
 
     }
 
-    else
+    template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfile)
     {
         printf("Exx mode not programmed yet\n");
     }
 
+    template <class T> Exxbase<T>::~Exxbase(void)
+    {
 
-}
+        if(mode == EXX_DIST_FFT) return;
 
-template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfile)
-{
-    printf("Exx mode not programmed yet\n");
-}
+        close(serial_fd);
+        size_t length = nstates * N;
+        munmap(psi_s, length);
+        unlink(wavefile.c_str());
 
-template <class T> Exxbase<T>::~Exxbase(void)
-{
-
-    if(mode == EXX_DIST_FFT) return;
-
-    close(serial_fd);
-    size_t length = nstates * N;
-    munmap(psi_s, length);
-    unlink(wavefile.c_str());
-
-    delete LG;
-    MPI_Comm_free(&lcomm); 
-    delete pwave;
-}
+        delete LG;
+        MPI_Comm_free(&lcomm); 
+        delete pwave;
+    }
 
