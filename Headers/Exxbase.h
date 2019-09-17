@@ -110,7 +110,7 @@ private:
     void setup_gfac(void);
 
     std::vector< std::pair <int,int> > wf_pairs;
-    int block_size = 16;
+    int block_size = 64;
     double *kl_pair;
     double *ij_pair;
     double *Exxints;
