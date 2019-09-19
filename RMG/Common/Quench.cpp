@@ -134,8 +134,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                     ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
 
             /*Also print to stdout*/
-            fprintf (stdout,"\n quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]",
-                    ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
+            if(pct.images == 1)
+                fprintf (stdout,"\n quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]",
+                        ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
         }
 
     }
@@ -145,32 +146,32 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     if(CONVERGED)
     {
-            if(ct.rms < ct.thr_rms)
-            {
-               rmg_printf("\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
-                if (pct.imgpe == 0)
-                    fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)", ct.rms, ct.thr_rms);
-            }
-            else if(fabs(ct.scf_accuracy) < ct.thr_energy)
-            {
-                rmg_printf("\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)\n", fabs(ct.scf_accuracy), ct.thr_energy);
-                if (pct.imgpe == 0)
-                    fprintf(stdout, "\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)", fabs(ct.scf_accuracy), ct.thr_energy);
-            }
+        if(ct.rms < ct.thr_rms)
+        {
+            rmg_printf("\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)\n", ct.rms, ct.thr_rms);
+            if (pct.imgpe == 0 && pct.images == 1)
+                fprintf(stdout,"\n Convergence criterion reached: potential RMS (%.2e) is lower than threshold (%.2e)", ct.rms, ct.thr_rms);
+        }
+        else if(fabs(ct.scf_accuracy) < ct.thr_energy)
+        {
+            rmg_printf("\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)\n", fabs(ct.scf_accuracy), ct.thr_energy);
+            if (pct.imgpe == 0 && pct.images ==1)
+                fprintf(stdout, "\n Convergence criterion reached: Energy variation (%.2e) is lower than threshold (%.2e)", fabs(ct.scf_accuracy), ct.thr_energy);
+        }
 
-            rmg_printf ("\n");
-            //progress_tag ();
-            rmg_printf ("potential convergence has been achieved. stopping ...\n");
+        rmg_printf ("\n");
+        //progress_tag ();
+        rmg_printf ("potential convergence has been achieved. stopping ...\n");
 
-            /*Write PDOS if converged*/
-            //	if (ct.pdos_flag)
-            //	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
+        /*Write PDOS if converged*/
+        //	if (ct.pdos_flag)
+        //	    get_pdos (Kptr[0]->kstates, ct.Emin, ct.Emax, ct.E_POINTS);
 
     }
     else
     {
         rmg_printf("\n Convergence criterion not met but max_scf_steps %d was reached.\n", ct.max_scf_steps);
-        if (pct.imgpe == 0)
+        if (pct.imgpe == 0 && pct.images ==1)
             fprintf(stdout, "\n Convergence criterion not met but max_scf_steps %d was reached.\n", ct.max_scf_steps);
     }
 
@@ -258,14 +259,14 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         double DEBYE_CONVERSION = 2.54174618772314;
 
-            /*Now we need to convert to debye units */
-            if (pct.imgpe==0)
-            {
-                printf("\n\n Dipole moment [Debye]: (%.3f,%.3f, %.3f)", 
-                        DEBYE_CONVERSION *dipole[0], 
-                        DEBYE_CONVERSION *dipole[1], 
-                        DEBYE_CONVERSION *dipole[2]);
-            }
+        /*Now we need to convert to debye units */
+        if (pct.imgpe==0)
+        {
+            printf("\n\n Dipole moment [Debye]: (%.3f,%.3f, %.3f)", 
+                    DEBYE_CONVERSION *dipole[0], 
+                    DEBYE_CONVERSION *dipole[1], 
+                    DEBYE_CONVERSION *dipole[2]);
+        }
 
     }                               /* end getpoi_bc.c */
 

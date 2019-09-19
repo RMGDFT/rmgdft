@@ -38,6 +38,7 @@
 
 #include "FiniteDiff.h"
 #include "transition.h"
+#include "GlobalSums.h"
 
 
 // Scf correction for forces as described by Chan, Bohnen and Ho
@@ -59,7 +60,10 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
     int ithree = 3;
     double alpha = get_vel_f(), zero = 0.0;
 
-    for(int ix = 0;ix < FP0_BASIS;ix++) dvh[ix] = vh_in[ix] + vxc_in[ix]  - vh[ix] - vxc[ix];
+    double factor = 1.0;
+    if(ct.spin_flag == 1) factor = 0.5;
+
+    for(int ix = 0;ix < FP0_BASIS;ix++) dvh[ix] = factor*(vh_in[ix] - vh[ix]) + vxc_in[ix]  - vxc[ix];
 
     ApplyGradient (dvh, gx, gy, gz, ct.force_grad_order, "Fine");
 
@@ -83,6 +87,8 @@ void CorrectForces (double * vh, double *vh_in, double *vxc, double *vxc_in, dou
 
     }
 
+    int count = 3 * ct.num_ions;
+    GlobalSums(force, count, pct.spin_comm);
 
     delete [] dvh;
     delete [] force_tmp;

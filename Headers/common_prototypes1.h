@@ -209,8 +209,6 @@ double metric (double *crystal);
 /* Md run types */
 void relax (int steps, STATE *states, double *vxc, double *vh, double *vnuc,
               double *rho, double *rho_oppo, double *rhocore, double *rhoc);
-void neb_relax (STATE *states, double *vxc, double *vh, double *vnuc,
-              double *rho, double *rho_oppo, double *rhocore, double *rhoc);
 void cdfastrlx (STATE *states, double *vxc, double *vh, double *vnuc,
                 double *rho, double *rhocore, double *rhoc);
 void moldyn (STATE *states, double *vxc, double *vh, double *vnuc,

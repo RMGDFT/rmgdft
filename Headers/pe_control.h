@@ -39,6 +39,7 @@ typedef struct
     MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm, scalapack_comm;
     MPI_Comm kpsub_comm, allkp_comm, my_comm;
 
+    MPI_Comm img_root_comm;
     // Coalesced grid MPI communicator
     MPI_Comm coalesced_grid_comm;
 
@@ -56,6 +57,9 @@ typedef struct
 
     // Number of cpu cores per physical host
     int ncpus;
+
+    // rank for image communication in NEB relax
+    int left_img_rank, right_img_rank;
 
 #if defined(USE_NUMA) || defined(USE_HWLOC)
     // Numa nodes per host

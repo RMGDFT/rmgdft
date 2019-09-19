@@ -94,5 +94,29 @@ void InitPe4image()
     /* set gridpe rank value to its image rank */
     MPI_Comm_rank (pct.img_comm, &pct.imgpe);
 
+    // set up neighboring image's corresponding world rank for NEB communication
+    pct.left_img_rank = MPI_PROC_NULL;
+    pct.right_img_rank = MPI_PROC_NULL;
+    if(pct.images == 1) return;
+    if(pct.thisimg == 0) // leftest image
+    {
+        pct.left_img_rank = pemin[pct.images-1] + pct.imgpe * ct.images_per_node;
+        pct.right_img_rank = pemin[pct.thisimg + 1] + pct.imgpe * ct.images_per_node;
+        
+    }
+    else if(pct.thisimg == pct.images -1) // rightest images
+    {
+        pct.left_img_rank = pemin[pct.thisimg - 1] + pct.imgpe * ct.images_per_node;
+        pct.right_img_rank = pemin[0] + pct.imgpe * ct.images_per_node;
+    }
+    else   //images in the middle
+    {
+        pct.left_img_rank = pemin[pct.thisimg - 1] + pct.imgpe * ct.images_per_node;
+        pct.right_img_rank = pemin[pct.thisimg + 1] + pct.imgpe * ct.images_per_node;
+    }
+
+    MPI_Group_incl(world_grp, pct.images, pemin, &group);
+    MPI_Comm_create_group(MPI_COMM_WORLD, group, 0, &pct.img_root_comm);
+
 }
 

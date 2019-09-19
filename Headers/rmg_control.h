@@ -144,6 +144,7 @@ public:
 
     /* EXX integral file */
     std::string exx_int_file;
+    bool exx_int_flag;
 
     /* Exx computation mode */
     int exx_mode;
@@ -158,7 +159,7 @@ public:
     int max_md_steps;
 
     /* Maximum number of rmg meta loops (NEB, ARTS, etc.) */
-    int max_rmg_steps;
+    int max_neb_steps;
 
     /* MD steps iterator */
     int md_steps;

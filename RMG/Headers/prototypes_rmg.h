@@ -47,6 +47,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
+template <typename OrbitalType> void NEB_relax (int steps, double * vxc, double * vh, double * vnuc,
+              double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> bool Quench (double * vxc, double * vh, double * vnuc, double * rho,
              double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr, bool compute_forces);
 template <typename OrbitalType> bool Scf (double * vxc, double *vxc_correct, double * vh, double *vh_in, double *vh_ext,

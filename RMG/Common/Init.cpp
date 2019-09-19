@@ -90,7 +90,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION) && ct.is_gamma) need_ns = false;
 
 
-    if (pct.imgpe == 0)
+    if (pct.worldrank == 0)
     {
 	printf ("\n");
 	printf ("               * * * * * * * * * *\n");

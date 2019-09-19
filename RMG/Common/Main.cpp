@@ -167,6 +167,7 @@ int main (int argc, char **argv)
         delete(RT1);
 
 
+
         RmgTimer *RT2 = new RmgTimer("1-TOTAL: run");
         if(ct.is_gamma)
             run<double> ((Kpoint<double> **)Kptr_g);
@@ -338,8 +339,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             break;
 
         case NEB_RELAX:           /* nudged elastic band relax */
-            // Fix later. Calls C version of relax which is deprecated
-            //        neb_relax (states, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc);
+            NEB_relax (ct.max_neb_steps, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
             break;
 
         case MD_CVE:               /* molecular dynamics */

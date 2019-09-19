@@ -237,7 +237,7 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
             numa_bind(pct.nodemask);
 
             //printf("set_mempolicy ret=%d   %d\n",ret,pct.numa_nodes_per_host);
-            if(pct.gridpe==0)
+            if(pct.worldrank==0)
                 printf("C1: Numa aware allocation with 1 MPI proc, %d cores and %d numa nodes per host.\n", pct.ncpus, pct.numa_nodes_per_host);
 
             numa_free_cpumask(tmask);
@@ -271,7 +271,7 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
                     offset++;
                 }
             }
-            if(pct.gridpe==0)
+            if(pct.worldrank==0)
                 printf("C2: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
         }
         else if(pct.procs_per_host == pct.numa_nodes_per_host) 
@@ -284,7 +284,7 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
             numa_bind(pct.nodemask);
             numa_migrate_pages(getpid(), numa_all_nodes_ptr, pct.nodemask);
 
-            if(pct.gridpe==0)
+            if(pct.worldrank==0)
                 printf("C3: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
         }
         else if((pct.procs_per_host > pct.numa_nodes_per_host) && (pct.ncpus != pct.procs_per_host)) 
@@ -295,7 +295,7 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
             numa_bind(pct.nodemask);
             numa_node_to_cpus(nid, pct.cpumask);
             numa_migrate_pages(getpid(), numa_all_nodes_ptr, pct.nodemask);
-            if(pct.gridpe == 0)
+            if(pct.worldrank == 0)
                 printf("C4: Numa aware allocation with %d MPI procs, %d cores and %d numa nodes per host.\n", pct.procs_per_host, pct.ncpus, pct.numa_nodes_per_host);
         }
     }
@@ -348,31 +348,31 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
     if(ct.OMP_THREADS_PER_NODE < 1)
     {
         ct.OMP_THREADS_PER_NODE = pct.ncpus / pct.procs_per_host;
-        if(pct.gridpe==0) printf("Warning: omp_num_threads not set or set to invalid value. Auto set to %d.\n", ct.OMP_THREADS_PER_NODE);
+        if(pct.worldrank==0) printf("Warning: omp_num_threads not set or set to invalid value. Auto set to %d.\n", ct.OMP_THREADS_PER_NODE);
     }
     else if(ct.OMP_THREADS_PER_NODE > (pct.ncpus/pct.procs_per_host))
     {
         ct.OMP_THREADS_PER_NODE = pct.ncpus / pct.procs_per_host;
-        if(pct.gridpe==0) printf("Warning: omp_num_threads set greater than cores/proc. Resetting to %d.\n", ct.OMP_THREADS_PER_NODE);
+        if(pct.worldrank==0) printf("Warning: omp_num_threads set greater than cores/proc. Resetting to %d.\n", ct.OMP_THREADS_PER_NODE);
     }
     else
     {
-        if(pct.gridpe==0) printf("Running with %d Open MP threads.\n", ct.OMP_THREADS_PER_NODE);
+        if(pct.worldrank==0) printf("Running with %d Open MP threads.\n", ct.OMP_THREADS_PER_NODE);
     }
 
     if(ct.MG_THREADS_PER_NODE < 1) 
     {
         ct.MG_THREADS_PER_NODE = ct.OMP_THREADS_PER_NODE;
-        if(pct.gridpe==0) printf("Warning: mg_num_threads not set or set to invalid value. Auto set to %d.\n", ct.MG_THREADS_PER_NODE);
+        if(pct.worldrank==0) printf("Warning: mg_num_threads not set or set to invalid value. Auto set to %d.\n", ct.MG_THREADS_PER_NODE);
     }
     else if(ct.MG_THREADS_PER_NODE > MAX_RMG_THREADS)
     {
         ct.MG_THREADS_PER_NODE = pct.ncpus / pct.procs_per_host;
-        if(pct.gridpe==0) printf("Warning: mg_num_threads set greater than MAX_RMG_THREADS. Resetting to %d.\n", ct.MG_THREADS_PER_NODE);
+        if(pct.worldrank==0) printf("Warning: mg_num_threads set greater than MAX_RMG_THREADS. Resetting to %d.\n", ct.MG_THREADS_PER_NODE);
     }
     else
     {
-        if(pct.gridpe==0) printf("Running with %d RMG threads.\n", ct.MG_THREADS_PER_NODE);
+        if(pct.worldrank==0) printf("Running with %d RMG threads.\n", ct.MG_THREADS_PER_NODE);
     }
 
     omp_set_num_threads(ct.OMP_THREADS_PER_NODE);

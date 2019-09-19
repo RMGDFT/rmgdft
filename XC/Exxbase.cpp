@@ -422,7 +422,6 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         if(G.get_rank()==0)
         {
             size_t size = 1<<18;
-            printf("\n %zu buff\n", size);
             buf = new char[size];
             std::string filename = vfile + "_spin"+std::to_string(pct.spinpe)+".fcidump";
             fp= fopen(filename.c_str(), "w");

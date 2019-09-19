@@ -76,6 +76,14 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
     If.RegisterInputKey("spin_polarization", &lc.spin_polarization, false,
                          "Spin polarized calculation.");
 
+    If.RegisterInputKey("max_neb_steps", &lc.max_neb_steps, 0, 1000, 1,
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Number of rmg \"restart like\" (NEB/exchange/ARTs) steps to perform",
+                     "max_rmg_steps must lie in the range (0,1000). Resetting to the default value of 1.");
+    If.RegisterInputKey("neb_spring_constant", &lc.neb_spring_constant, 0.05, 3.0, 0.5,
+                     CHECK_AND_TERMINATE, OPTIONAL,
+                     "",
+                     "neb_spring_constant must be in the range (0.05, 3.0). ");
     If.LoadInputKeys();
 
     if(lc.spin_polarization) lc.spin_flag = true;

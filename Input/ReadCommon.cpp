@@ -751,11 +751,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "",
                      "");
 
-    If.RegisterInputKey("max_rmg_steps", &lc.max_rmg_steps, 0, 1000, 1,
-                     CHECK_AND_FIX, OPTIONAL,
-                     "Number of rmg \"restart like\" (NEB/exchange/ARTs) steps to perform",
-                     "max_rmg_steps must lie in the range (0,1000). Resetting to the default value of 1.");
-
     If.RegisterInputKey("md_number_of_nose_thermostats", &lc.nose.m, 5, 5, 5,
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of Nose thermostats to use during Constant Volume and Temperature MD.",
@@ -1053,11 +1048,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      CHECK_AND_TERMINATE, OPTIONAL,
                      "",
                      "");
-
-    If.RegisterInputKey("neb_spring_constant", &lc.neb_spring_constant, 0.05, 3.0, 0.5,
-                     CHECK_AND_TERMINATE, OPTIONAL,
-                     "",
-                     "neb_spring_constant must be in the range (0.05, 3.0). ");
 
     If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 0.6, 1.0, 0.8,
                      CHECK_AND_FIX, OPTIONAL,
