@@ -54,15 +54,15 @@ public:
 
     double GetKineticEnergy(void)
     {
-       /* Get ionic mass */
+        /* Get ionic mass */
         double mass = this->Type->atomic_mass * mu_me;
         double ke = 0.0;
-        if (movable)
-        {
+        if (movable[0])
             ke += velocity[0] * velocity[0] * mass;
+        if (movable[1])
             ke += velocity[1] * velocity[1] * mass;
+        if (movable[2])
             ke += velocity[2] * velocity[2] * mass;
-        }
         return 0.5 * ke;
     }
 
@@ -107,7 +107,7 @@ public:
     double nlxcstart;
     double nlycstart;
     double nlzcstart;
- 
+
     int nl_global_grid_xstart;
     int nl_global_grid_ystart;
     int nl_global_grid_zstart;
@@ -141,7 +141,7 @@ public:
     int prjcount;
 
     /* Movable flag */
-    int movable;
+    int movable[3];
 
     /* Force modifier parameters */
     struct {
@@ -164,11 +164,11 @@ public:
     int izend;
 
     int frozen;
- 
-       /* Localization mask */
+
+    /* Localization mask */
     char *lmask[4];
 
-    
+
 
     int first_state_index;
 

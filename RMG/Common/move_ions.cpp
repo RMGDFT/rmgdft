@@ -46,11 +46,12 @@ void move_ions (double dt)
         Atom.RotateCoordinates();
 
         /* Move the ion */
-        if (Atom.movable)
+        int movable = Atom.movable[0] + Atom.movable[1] + Atom.movable[2];
+        if (movable)
         {
-            double move_x = dt * Atom.velocity[0];
-            double move_y = dt * Atom.velocity[1];
-            double move_z = dt * Atom.velocity[2];
+            double move_x = dt * Atom.velocity[0] * Atom.movable[0];
+            double move_y = dt * Atom.velocity[1] * Atom.movable[1];
+            double move_z = dt * Atom.velocity[2] * Atom.movable[2];
 
 
             /*Update coordinates*/

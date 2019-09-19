@@ -219,7 +219,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         boost::algorithm::split( AtomComponents, Atom, boost::is_any_of(whitespace_delims), boost::token_compress_on );
 
         size_t ncomp = AtomComponents.size();
-        if((ncomp < 4) || (ncomp > 6)) throw RmgFatalException() << "Synax error in ionic information near " << Atom << "\n";
+        if((ncomp < 4) || (ncomp > 8)) throw RmgFatalException() << "Synax error in ionic information near " << Atom << "\n";
 
         // First field should be an atomic symbol
         it1 = AtomComponents.begin();
@@ -242,33 +242,75 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
 
 
 
-        int movable = 1;
+        int movable[3] = {1,1,1};
         std::string smov;
-        if(ncomp > 4) {
-            it1++;
-            smov = *it1;
-            boost::trim(smov);
-            if( !smov.compare("0") ) movable = 0;
-            if( !smov.compare("no") ) movable = 0;
-            if( !smov.compare("No") ) movable = 0;
-            if( !smov.compare("NO") ) movable = 0;
+        double init_spin_ratio = 0.0;
+        switch(ncomp)
+        {
+
+            case 5:
+            case 6:
+            {
+                it1++;
+                smov = *it1;
+                boost::trim(smov);
+                if( !smov.compare("0") ) 
+                {
+                    movable[0] = 0;
+                    movable[1] = 0;
+                    movable[2] = 0;
+                }
+            }
+                break;
+            case 7:
+            case 8:
+            {
+                it1++;
+                smov = *it1;
+                boost::trim(smov);
+                if( !smov.compare("0") ) 
+                    movable[0] = 0;
+                it1++;
+                smov = *it1;
+                boost::trim(smov);
+                if( !smov.compare("0") ) 
+                    movable[1] = 0;
+                it1++;
+                smov = *it1;
+                boost::trim(smov);
+                if( !smov.compare("0") ) 
+                    movable[2] = 0;
+            }
+                break;
         }
 
-        Atoms[nions].movable = movable;
+        switch(ncomp)
+        {
+            case 6:
+            case 8:
+            {
+                it1++;
+                std::string rho_updown_diff = *it1;
+                sp += rho_updown_diff;
+                init_spin_ratio = std::atof(rho_updown_diff.c_str());
+            }
+                break;
+            default :
+                if(lc.spin_flag == 1)  
+                {
+                    throw RmgFatalException() << 
+                        "for spin-polarization, one needs to have init_spin density setup near " << Atom << "\n";
+                }
+        }
 
-        if((lc.spin_flag == 1) && (ncomp < 6)) 
-        {
-            throw RmgFatalException() << "for spin-polarization, one needs to have init_spin density setup near " << Atom << "\n";
-        }
-        else if((lc.spin_flag == 1) && (ncomp == 6))
-        {
-            it1++;
-            std::string rho_updown_diff = *it1;
-            sp += rho_updown_diff;
-            double tem = std::atof(rho_updown_diff.c_str());
-            if(tem > 0.5 || tem < -0.5) throw RmgFatalException() << "for spin-polarization, the spin updown difference must be -0.5 to 0.5" << Atom << "\n"; 
-            Atoms[nions].init_spin_rho = tem;
-        }
+        Atoms[nions].movable[0] = movable[0];
+        Atoms[nions].movable[1] = movable[1];
+        Atoms[nions].movable[2] = movable[2];
+        Atoms[nions].init_spin_rho = init_spin_ratio;
+
+        if(init_spin_ratio > 0.5 || init_spin_ratio < -0.5) 
+            throw RmgFatalException() << 
+                "for spin-polarization, the spin updown difference must be -0.5 to 0.5" << Atom << "\n"; 
 
         // Everything checks out so make an entry in the SpeciesTypes set and in the IonSpecies list.
         // SpeciesTypes set only contains one entry for each unique species type while IonSpecies 

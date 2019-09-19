@@ -36,6 +36,7 @@
 void write_force (void)
 {
     int num_movable = 0, maxfx_ion = 0, maxfy_ion = 0, maxfz_ion = 0, maxf_ion = 0;
+    int num_movable_x = 0, num_movable_y = 0, num_movable_z = 0; 
     double avfx = 0.0, avfy = 0.0, avfz = 0.0, maxfx = 0.0, maxfy = 0.0, maxfz = 0.0;
     double sumx = 0.0, sumy = 0.0, sumz = 0.0;
     double avf = 0.0;
@@ -87,21 +88,20 @@ void write_force (void)
 
         fp = Atom.force[ct.fpt[0]];
 
-        printf ("@ION  %3lu  %4s     %10.7f  %10.7f  %10.7f   %6.3f   %10.7f  %10.7f  %10.7f  %4d\n",
+        printf ("@ION  %3lu  %4s     %10.7f  %10.7f  %10.7f   %6.3f   %10.7f  %10.7f  %10.7f  %1d %1d %1d\n",
                 ion + 1,
                 AtomType.atomic_symbol,
                 Atom.crds[0], Atom.crds[1], Atom.crds[2], 
                  Atom.partial_charge,
-		 efactor*fp[0], efactor*fp[1], efactor*fp[2], Atom.movable);
+		 efactor*fp[0], efactor*fp[1], efactor*fp[2], Atom.movable[0], Atom.movable[1], Atom.movable[2]);
 
-        if (Atom.movable)
+        f2 = 0.0;
+        if (Atom.movable[0])
         {
 
-            num_movable++;
+            num_movable_x++;
 
             avfx += fabs (fp[0]);
-            avfy += fabs (fp[1]);
-            avfz += fabs (fp[2]);
 
 
             if (fabs (fp[0]) > maxfx)
@@ -109,46 +109,64 @@ void write_force (void)
                 maxfx = fabs (fp[0]);
                 maxfx_ion = ion;
             }
-            
+
+            f2 += fp[0] * fp[0];
+
+        }
+
+        if (Atom.movable[1])
+        {
+            avfy += fabs (fp[1]);
             if (fabs (fp[1]) > maxfy)
             {
                 maxfy = fabs(fp[1]);
                 maxfy_ion = ion;
             }
-            
+            f2 += fp[1] * fp[1];
+
+        }
+
+        if (Atom.movable[2])
+        {
+            avfz += fabs (fp[2]);
             if (fabs (fp[2]) > maxfz)
             {
                 maxfz = fabs(fp[2]);
                 maxfz_ion = ion;
             }
-            
-            
-            
+            f2 += fp[2] * fp[2];
 
-            f2 = fp[0] * fp[0] + fp[1] * fp[1] + fp[2] * fp[2];
-
-            if (f2 > maxf)
-            {
-                maxf = f2;
-                maxf_ion = ion;
-            } 
-
-            avf += f2;
         }
-            
-	sumx += fp[0];
-	sumy += fp[1];
-	sumz += fp[2];
+
+
+
+
+
+        if (f2 > maxf)
+        {
+            maxf = f2;
+            maxf_ion = ion;
+        } 
+
+        avf += f2;
+
+        sumx += fp[0];
+        sumy += fp[1];
+        sumz += fp[2];
     }
 
 
 
+    num_movable = num_movable_x + num_movable_y + num_movable_z;
+    if (num_movable_x != 0)
+        avfx /= num_movable_x;
+    if (num_movable_y != 0)
+        avfy /= num_movable_y;
+    if (num_movable_z != 0)
+        avfz /= num_movable_z;
+
     if (num_movable != 0)
     {
-        avfx /= num_movable;
-        avfy /= num_movable;
-        avfz /= num_movable;
-
         maxf = sqrt (maxf);
         avf = sqrt (avf / num_movable);
         max_all_f = rmg_max (maxfx, maxfy);
@@ -187,8 +205,6 @@ void write_force (void)
 
     }
 
-//    if ((pct.imgpe == 0) && (verify ("pdb_atoms", NULL)))
-//        write_pdb ();
 
 }                               /* end write_force */
 
