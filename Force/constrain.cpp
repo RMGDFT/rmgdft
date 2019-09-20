@@ -139,6 +139,7 @@ void constrain (void)
                 /* Find the amount of force along the Tau vector */
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
+                    iptr = &Atoms[ion];
                     FdotT += iptr->force[ct.fpt[0]][X] * Tau[3*ion+X]
                         + iptr->force[ct.fpt[0]][Y] * Tau[3*ion+Y]
                         + iptr->force[ct.fpt[0]][Z] * Tau[3*ion+Z];
@@ -164,9 +165,13 @@ void constrain (void)
                 /* Remove physical force along Tau, replace it with the restoring force */
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
+                    iptr = &Atoms[ion];
                     iptr->constraint.forcemask[X] = (Mag_T - FdotT) * Tau[3*ion+X];
                     iptr->constraint.forcemask[Y] = (Mag_T - FdotT) * Tau[3*ion+Y];
                     iptr->constraint.forcemask[Z] = (Mag_T - FdotT) * Tau[3*ion+Z];
+                    iptr->force[ct.fpt[0]][X] +=iptr->constraint.forcemask[X];
+                    iptr->force[ct.fpt[0]][Y] +=iptr->constraint.forcemask[Y]; 
+                    iptr->force[ct.fpt[0]][Z] +=iptr->constraint.forcemask[Z];
                 }
             }
             break;

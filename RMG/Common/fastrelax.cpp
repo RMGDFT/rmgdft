@@ -48,13 +48,6 @@ void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_m
             force[1] = Atom.force[fpt][1];
             force[2] = Atom.force[fpt][2];
 
-            if (ct.constrainforces)
-            {
-                force[0] += Atom.constraint.forcemask[0];
-                force[1] += Atom.constraint.forcemask[1];
-                force[2] += Atom.constraint.forcemask[2];
-            }
-            
             /* Dot product of f and v */
             p += force[0] * Atom.velocity[0] +
                  force[1] * Atom.velocity[1] +
@@ -101,13 +94,6 @@ void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_m
         force[0] = Atom.force[fpt][0];
         force[1] = Atom.force[fpt][1];
         force[2] = Atom.force[fpt][2];
-
-        if (ct.constrainforces)
-        {
-            force[0] += Atom.constraint.forcemask[0];
-            force[1] += Atom.constraint.forcemask[1];
-            force[2] += Atom.constraint.forcemask[2];
-        }
 
 
         /* Use either actual ionic mass or equal mass for all atoms*/

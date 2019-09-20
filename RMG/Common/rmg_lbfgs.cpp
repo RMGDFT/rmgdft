@@ -63,30 +63,30 @@ void rmg_lbfgs (void)
     {
 
         iptr = &Atoms[ion];
-        if(iptr->movable )
-        {
+        if(iptr->movable[0] )
             iptr->crds[0] = position[ion * 3 + 0] ;
+        if(iptr->movable[1] )
             iptr->crds[1] = position[ion * 3 + 1] ;
+        if(iptr->movable[2] )
             iptr->crds[2] = position[ion * 3 + 2] ;
 
-            to_crystal (iptr->xtal, iptr->crds);
-            if (iptr->xtal[0] > ONE)
-                iptr->xtal[0] -= ONE;
-            if (iptr->xtal[0] < ZERO)
-                iptr->xtal[0] += ONE;
+        to_crystal (iptr->xtal, iptr->crds);
+        if (iptr->xtal[0] > ONE)
+            iptr->xtal[0] -= ONE;
+        if (iptr->xtal[0] < ZERO)
+            iptr->xtal[0] += ONE;
 
-            if (iptr->xtal[1] > ONE)
-                iptr->xtal[1] -= ONE;
-            if (iptr->xtal[1] < ZERO)
-                iptr->xtal[1] += ONE;
+        if (iptr->xtal[1] > ONE)
+            iptr->xtal[1] -= ONE;
+        if (iptr->xtal[1] < ZERO)
+            iptr->xtal[1] += ONE;
 
-            if (iptr->xtal[2] > ONE)
-                iptr->xtal[2] -= ONE;
-            if (iptr->xtal[2] < ZERO)
-                iptr->xtal[2] += ONE;
+        if (iptr->xtal[2] > ONE)
+            iptr->xtal[2] -= ONE;
+        if (iptr->xtal[2] < ZERO)
+            iptr->xtal[2] += ONE;
 
-            to_cartesian (iptr->xtal, iptr->crds);
-        }
+        to_cartesian (iptr->xtal, iptr->crds);
 
     }
 

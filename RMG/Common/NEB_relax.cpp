@@ -61,6 +61,9 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
     double *L_coor = new double[3*ct.num_ions];
     double *S_coor = new double[3*ct.num_ions];
     double *R_coor = new double[3*ct.num_ions];
+    double *totale = new double[3*pct.images];
+    double *all_frc = &totale[pct.images];
+    double *path_length = &totale[2*pct.images];
 
     // total energy for left, self, and right images. 
     double L_total, S_total, R_total;
@@ -103,10 +106,15 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
 
         if(pct.thisimg == 0 || pct.thisimg == pct.images -1)
             ct.constrainforces = 0;
-        
+
         /* capture force constraint parameters from right and left data*/
+        for(int img = 0; img < pct.images; img++) path_length[img] = 0.0;
         for (int count = 0; count < ct.num_ions; count++ )
         {
+            double x = S_coor[3*count +0] - R_coor[3*count + 0];
+            double y = S_coor[3*count +1] - R_coor[3*count + 1];
+            double z = S_coor[3*count +2] - R_coor[3*count + 2];
+            path_length[pct.thisimg] += x*x + y*y + z*z;
             /* put force constraints into control structure */
             Atoms[count].constraint.setA_weight = L_total;
             Atoms[count].constraint.setA_coord[0] = L_coor[3*count + 0]; 
@@ -124,6 +132,7 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
             Atoms[count].velocity[2] = 0.0;
         }
 
+        path_length[pct.thisimg] = sqrt(path_length[pct.thisimg]);
         /* Call fastrelax for max_md_steps steps */
         MPI_Barrier( MPI_COMM_WORLD );
         if(pct.worldrank == 0) rmg_printf("\tNEB call fast relax.\n");
@@ -138,6 +147,8 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
 
         Relax (2, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
         MPI_Barrier( MPI_COMM_WORLD );
+
+        //rmg_lbfgs();
 
         /* Check for NEB convergence */
         /* Are we force converged? */
@@ -156,14 +167,12 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
         max_frc = std::sqrt(max_frc);
         MPI_Barrier( MPI_COMM_WORLD );
 
-        double *totale = new double[2*pct.images];
-        double *all_frc = &totale[pct.images];
         for(int pe = 0; pe < pct.images; pe++) totale[pe] = 0.0;
         for(int pe = 0; pe < pct.images; pe++) all_frc[pe] = 0.0;
         totale[pct.thisimg] = ct.TOTAL;
         all_frc[pct.thisimg] = max_frc;
 
-        int count = 2 * pct.images;
+        int count = 3 * pct.images;
         MPI_Allreduce(MPI_IN_PLACE, totale, count, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
         MPI_Barrier( MPI_COMM_WORLD );
@@ -172,7 +181,7 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
             printf("\n image     total energy(eV)     max_force \n");
             for(int img = 0; img < pct.images; img++)
             {
-                printf("\n %d        %15.6e               %15.6e", img, totale[img]*Ha_eV, all_frc[img]);
+                printf("\n %d        %15.6e         %15.6e    %f", img, totale[img]/2, all_frc[img], path_length[img]);
             }
         }
 
@@ -194,6 +203,7 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
     delete [] L_coor;
     delete [] S_coor;
     delete [] R_coor;
+    delete [] totale;
 }                               /* end neb_relax */
 
 
