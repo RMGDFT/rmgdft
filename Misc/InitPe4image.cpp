@@ -34,7 +34,7 @@
 void InitPe4image()
 {
 
-    int image_grp_map[MAX_IMGS], range[1][3];
+    int image_grp_map[MAX_IMGS], range[2][3];
     MPI_Group group, world_grp, img_masters;
     int pe1, pe2, i, j, k;
     int pemin[MAX_IMGS], pemax[MAX_IMGS];
@@ -115,8 +115,20 @@ void InitPe4image()
         pct.right_img_rank = pemin[pct.thisimg + 1] + pct.imgpe * ct.images_per_node;
     }
 
-    MPI_Group_incl(world_grp, pct.images, pemin, &group);
-    MPI_Comm_create_group(MPI_COMM_WORLD, group, 0, &pct.img_root_comm);
+    bool eq_pe = 1;
+    for (int img = 1; img < pct.images; img++)
+        eq_pe = eq_pe && (pct.image_npes[img] == pct.image_npes[img-1]);
+        
+    if(eq_pe && (ct.images_per_node == 1))
+    {
+        range[0][0] = pct.imgpe;
+        range[0][1] = pct.total_npes-1;
+        range[0][2] = pct.image_npes[0];
+        MPI_Group_range_incl (world_grp, 1, range, &group);
+        MPI_Comm_create (MPI_COMM_WORLD, group, &pct.img_cross_comm);
+    //    MPI_Comm_rank(pct.img_cross_comm, &pe1);
+    }
+
 
 }
 

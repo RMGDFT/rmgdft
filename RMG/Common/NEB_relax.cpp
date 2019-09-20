@@ -74,6 +74,19 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
     MPI_Status status;
     if(pct.worldrank == 0) printf("\tEntering NEB routine.\n");
 
+    if(pct.thisimg == 0 || pct.thisimg == pct.images -1)
+    {
+        ct.constrainforces = 0;
+        for (int count = 0; count < ct.num_ions; count++)
+        {
+            Atoms[count].movable[0] =0;
+            Atoms[count].movable[1] =0;
+            Atoms[count].movable[2] =0;
+        }
+    }
+
+            
+
     /* Loop NEB relaxations */
     for (int neb_step = 0; neb_step < max_steps; neb_step++)
     {
@@ -104,8 +117,6 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
         MPI_Sendrecv(&S_total, 1, MPI_DOUBLE, pct.right_img_rank, tag,
                 &L_total, 1, MPI_DOUBLE, pct.left_img_rank, tag, MPI_COMM_WORLD, &status);
 
-        if(pct.thisimg == 0 || pct.thisimg == pct.images -1)
-            ct.constrainforces = 0;
 
         /* capture force constraint parameters from right and left data*/
         for(int img = 0; img < pct.images; img++) path_length[img] = 0.0;
@@ -127,9 +138,9 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
             Atoms[count].constraint.setB_coord[2] = R_coor[3*count + 2]; 
 
             /* zero velocities for every nudge */
-            Atoms[count].velocity[0] = 0.0;
-            Atoms[count].velocity[1] = 0.0;
-            Atoms[count].velocity[2] = 0.0;
+   //         Atoms[count].velocity[0] = 0.0;
+   //         Atoms[count].velocity[1] = 0.0;
+   //         Atoms[count].velocity[2] = 0.0;
         }
 
         path_length[pct.thisimg] = sqrt(path_length[pct.thisimg]);
@@ -173,15 +184,25 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
         all_frc[pct.thisimg] = max_frc;
 
         int count = 3 * pct.images;
-        MPI_Allreduce(MPI_IN_PLACE, totale, count, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        if(pct.img_cross_comm == MPI_COMM_NULL) 
+        {
+            printf("\n NEB runs without setting img_cross_comm \n");
+            printf("\n either num_processors for images are not equal or ct.image_per_node !=1\n");
+            exit(0);
+        }
+        MPI_Allreduce(MPI_IN_PLACE, totale, count, MPI_DOUBLE, MPI_SUM, pct.img_cross_comm);
 
         MPI_Barrier( MPI_COMM_WORLD );
         if(pct.worldrank == 0)
         {
-            printf("\n image     total energy(eV)     max_force \n");
+            double max_tote = *std::max_element(totale, totale+pct.images);
+            printf("\n Barrier from  left:  %f eV", (max_tote - totale[0])*Ha_eV);
+            printf("\n Barrier from right:  %f eV", (max_tote - totale[pct.images-1])*Ha_eV);
+
+            printf("\n image     total energy(eV)     max_force  path_length (au)\n");
             for(int img = 0; img < pct.images; img++)
             {
-                printf("\n %d        %15.6e         %15.6e    %f", img, totale[img]/2, all_frc[img], path_length[img]);
+                printf("\n %d        %15.6e    %15.6e    %f", img, totale[img]*Ha_eV, all_frc[img], path_length[img]);
             }
         }
 

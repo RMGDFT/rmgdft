@@ -39,7 +39,7 @@ typedef struct
     MPI_Comm rmg_comm, img_topo_comm, grid_topo_comm, grid_comm, img_comm, spin_comm, scalapack_comm;
     MPI_Comm kpsub_comm, allkp_comm, my_comm;
 
-    MPI_Comm img_root_comm;
+    MPI_Comm img_cross_comm;
     // Coalesced grid MPI communicator
     MPI_Comm coalesced_grid_comm;
 
