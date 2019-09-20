@@ -102,7 +102,7 @@ private:
     std::vector< std::pair <int,int> > pairs;
 
     std::mutex pair_mutex;
-    int scr_type;
+    int scr_type =1;
 
     double *gfac;
 
