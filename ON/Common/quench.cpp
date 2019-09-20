@@ -81,7 +81,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
     if (pct.gridpe == 0)
         rmg_printf("\n final total energy = %14.8f Ha\n", ct.TOTAL);
     // Exact exchange integrals
-    if(ct.exx_int_file.length() > 0 && 0)
+   // if(ct.exx_int_file.length() > 0 )
     {
         int nstates_occ = 0;
         std::vector<double> occs;

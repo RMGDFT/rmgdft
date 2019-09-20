@@ -115,6 +115,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     
     size =  num_nonloc_ions * ct.state_block_size * ct.max_nl; 
+    size += 1;
 #if GPU_ENABLED
     OrbitalType *sint_der = (OrbitalType *)GpuMallocManaged(3*size * sizeof(OrbitalType));
     OrbitalType *sint_derx = sint_der + 0 * size;
@@ -126,6 +127,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     OrbitalType *sint_dery = sint_der + 1 * size;
     OrbitalType *sint_derz = sint_der + 2 * size;
 #endif
+
     
 
 
