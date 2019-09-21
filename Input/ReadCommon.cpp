@@ -410,6 +410,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 "FFT mode for exact exchange computations.",
                      "exx mode not supported. Terminating. ", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("exx_int_flag", &lc.exx_int_flag, false, 
+"if set true, calculate the exact exchange integrals ");
+
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
                      CHECK_AND_TERMINATE, OPTIONAL, 
                      "First lattice constant. ", 

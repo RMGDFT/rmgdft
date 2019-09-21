@@ -184,7 +184,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     // Exact exchange integrals
     // Experimental for now. Exchange correlation type must be manually set to
     // gaupbe in the input file (and gaupbe is the only divergence type supported).
-    if(ct.exx_int_file.length() > 0)
+    if(ct.exx_int_flag)
     {
         std::vector<double> occs;
         occs.resize(Kptr[0]->nstates);
