@@ -266,6 +266,9 @@ void write_header(void)
             case TDDFT:
                 printf("\n\n    TDDFT");
                 break;
+            case Exx_only:
+                printf("\n\n    calculate Exx from saved wave function file");
+                break;
 
             default:
                 error_handler("UNKNOWN MOLECULAR DYNAMICS METHOD");

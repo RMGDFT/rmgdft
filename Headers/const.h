@@ -129,6 +129,7 @@
 #define		BAND_STRUCTURE 	7
 #define		NEB_RELAX       8
 #define		TDDFT       10
+#define     Exx_only    11
 
 /* MD integration flags */
 #define		ORDER_2         0

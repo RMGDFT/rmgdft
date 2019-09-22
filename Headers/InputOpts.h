@@ -78,7 +78,8 @@ static std::unordered_map<std::string, int> calculation_mode = {
         {"Band Structure Only", 7},
         {"NEB Relax", 8},
         {"Dimer Relax", 9},
-        {"TDDFT", 10}
+        {"TDDFT", 10},
+        {"Exx Only", 11}
         };
 
 static std::unordered_map<std::string, int> occupations_type = {

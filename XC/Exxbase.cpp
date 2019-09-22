@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <iterator>
 
 
 #include "const.h"
@@ -42,8 +43,8 @@
 // mmapped to an array. We only access the array in read-only mode.
 
 
-template Exxbase<double>::Exxbase(BaseGrid &, Lattice &, const std::string &, int, double *, double *);
-template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, Lattice &, const std::string &, int, double *, std::complex<double> *);
+template Exxbase<double>::Exxbase(BaseGrid &, Lattice &, const std::string &, int, double *, double *, int);
+template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, Lattice &, const std::string &, int, double *, std::complex<double> *, int );
 
 template Exxbase<double>::~Exxbase(void);
 template Exxbase<std::complex<double>>::~Exxbase(void);
@@ -54,49 +55,35 @@ template <class T> Exxbase<T>::Exxbase (
           const std::string &wavefile_in,
           int nstates_in,
           double *occ_in,
-          T *psi_in) : G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), occ(occ_in), psi(psi_in)
+          T *psi_in, int mode_in) : G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), occ(occ_in), psi(psi_in), mode(mode_in)
 {
     RmgTimer RT0("5-Functional: Exx init");
 
     tpiba = 2.0 * PI / L.celldm[0];
     tpiba2 = tpiba * tpiba;
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
-    mode = EXX_DIST_FFT;
-    pbasis = G.get_P0_BASIS(1);
 
     if(mode == EXX_DIST_FFT) 
     {
+        pbasis = G.get_P0_BASIS(1);
         pwave = coarse_pwaves;
+        psi_s = psi;
+        LG = &G_in;
     }
     else
     {
+        pbasis = G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1);
         LG = new BaseGrid(G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), 1, 1, 1, 0, 1);
         int rank = G.get_rank();
         MPI_Comm_split(G.comm, rank+1, rank, &lcomm);
         LG->set_rank(0, lcomm);
         pwave = new Pw(*LG, L, 1, false);
+
+
     }
 
     setup_gfac();
 
-    if(mode == EXX_DIST_FFT) return;
-
-
-    serial_fd = open(wavefile.c_str(), O_RDONLY, (mode_t)0600);
-    if(serial_fd < 0)
-        throw RmgFatalException() << "Error! Could not open " << wavefile << " . Terminating.\n";
-
-    size_t length = nstates * G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1);
-    psi_s = (T *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
-    MPI_Barrier(G.comm);
-
-
-    // Generate the full set of pairs and store in a temporary vector
-    // This is for gamma only right now
-
-
-    // Now we have to figure out how to distribute the pairs over computational resources.
-    // If we only have CPU's then it's easy
 }
 
 template <> void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p)
@@ -195,14 +182,14 @@ template <> void Exxbase<double>::Vexx(double *vexx)
         // Loop over fft pairs and compute Kij(r) 
         for(int i=0;i < nstates_occ;i++)
         {
-            double *psi_i = (double *)&psi[i*pbasis];
+            double *psi_i = (double *)&psi_s[i*pbasis];
             for(int j=0;j < nstates_occ;j++)
             {   
-                double *psi_j = (double *)&psi[j*pbasis];
+                double *psi_j = (double *)&psi_s[j*pbasis];
                 RmgTimer RT1("5-Functional: Exx potential fft");
                 fftpair(psi_i, psi_j, p);
                 //if(G.get_rank()==0)printf("TTTT  %d  %d  %e\n",i,j,std::real(p[1]));
-                for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi[j*pbasis + idx];
+                for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi_s[j*pbasis + idx];
             }
         }
 
@@ -240,8 +227,8 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
         int ie = kl- kl_start;
         int k = wf_pairs[kl].first;
         int l = wf_pairs[kl].second;
-        double *psi_k = (double *)&psi[k*pbasis];
-        double *psi_l = (double *)&psi[l*pbasis];
+        double *psi_k = (double *)&psi_s[k*pbasis];
+        double *psi_l = (double *)&psi_s[l*pbasis];
         for(int idx=0;idx < pbasis;idx++) kl_pair[ie*pbasis + idx] = psi_k[idx]*psi_l[idx];
     }
 
@@ -256,8 +243,8 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
     delete RT0;
     int pairsize = ij_length * kl_length;
     RT0 = new RmgTimer("5-Functional: Exx: reduce");
-    MPI_Reduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, 0, G.comm);
-    MPI_Barrier(G.comm);
+    MPI_Reduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, 0, LG->comm);
+    MPI_Barrier(LG->comm);
     delete RT0;
 
     RT0 = new RmgTimer("5-Functional: Exx: print");
@@ -272,7 +259,7 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
             int k = wf_pairs[kl].first;
             int l = wf_pairs[kl].second;
 
-            if(G.get_rank()==0 && kl >= ij)fprintf(fp, "%14.8e %d %d %d %d\n", Summedints[ie * ij_length + ic], i, j, k, l);
+            if(LG->get_rank()==0 && kl >= ij)fprintf(fp, "%14.8e %d %d %d %d\n", Summedints[ie * ij_length + ic], i, j, k, l);
         }
     }
 
@@ -288,106 +275,149 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     int nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
 
+    RmgTimer RT0("5-Functional: Exx integrals");
+
+    for(int i=0;i < nstates_occ;i++)
+    {
+        for(int j=i;j < nstates_occ;j++)
+        {
+            wf_pairs.push_back(std::make_pair(i, j));
+        }
+    }
+
+    //block_size = 16;
+    int num_blocks = (wf_pairs.size() + block_size -1)/block_size;
+
+
+    // The wave function array is always at least double the number of states so use
+    // the upper part for storage of our kl pairs
+
+    kl_pair = new double[block_size * pbasis];
+    ij_pair = new double[block_size * pbasis];
+
+    Exxints = new double[block_size * block_size];
+    Summedints = new double[block_size * block_size];
+
+    wf_fft = new std::complex<double> [pbasis];
+
+
+    char *buf;
+    FILE *fp=NULL;
+    if(LG->get_rank()==0)
+    {
+        int rank = G.get_rank();
+        size_t size = 1<<18;
+        buf = new char[size];
+        std::string filename = vfile + "_spin"+std::to_string(pct.spinpe)+".fcidump_"+std::to_string(rank);
+        fp= fopen(filename.c_str(), "w");
+        if(int nn = setvbuf (fp, buf, _IOFBF, size) != 0) printf("\n failed buff %d\n", nn);
+
+        if(rank == 0)
+        {
+            fprintf(fp, "&FCI\n");
+            fprintf(fp, "NORB=%d,\n", nstates_occ);
+            fprintf(fp, "NELEC=%d,\n", (int)(ct.nel+1.0e-6));
+            int ms2 = pct.spinpe;
+            if(ct.spin_flag && pct.spinpe == 0) ms2 = -1;
+            fprintf(fp, "MS2=%d,\n", ms2);
+            fprintf(fp, "\n&END\n");
+        }
+    }
+
+    std::vector<int> blocks_in_thispe;
+
     if(mode == EXX_DIST_FFT)
     {
-        RmgTimer RT0("5-Functional: Exx integrals");
-
-        for(int i=0;i < nstates_occ;i++)
-        {
-            for(int j=i;j < nstates_occ;j++)
-            {
-                wf_pairs.push_back(std::make_pair(i, j));
-            }
-        }
-
-        //block_size = 16;
-        int num_blocks = (wf_pairs.size() + block_size -1)/block_size;
-
-
-        // The wave function array is always at least double the number of states so use
-        // the upper part for storage of our kl pairs
-
-        kl_pair = new double[block_size * pbasis];
-        ij_pair = new double[block_size * pbasis];
-
-        Exxints = new double[block_size * block_size];
-        Summedints = new double[block_size * block_size];
-
-        wf_fft = new std::complex<double> [pbasis];
-
-
-        char *buf;
-        FILE *fp=NULL;
-        if(G.get_rank()==0)
-        {
-            size_t size = 1<<18;
-            buf = new char[size];
-            std::string filename = vfile + "_spin"+std::to_string(pct.spinpe)+".fcidump_"+std::to_string(pct.gridpe);
-            fp= fopen(filename.c_str(), "w");
-            if(int nn = setvbuf (fp, buf, _IOFBF, size) != 0) printf("\n failed buff %d\n", nn);
-
-            if(pct.gridpe == 0)
-            {
-                fprintf(fp, "&FCI\n");
-                fprintf(fp, "NORB=%d,\n", nstates_occ);
-                fprintf(fp, "NELEC=%d,\n", (int)(ct.nel+1.0e-6));
-                int ms2 = pct.spinpe;
-                if(ct.spin_flag && pct.spinpe == 0) ms2 = -1;
-                fprintf(fp, "MS2=%d,\n", ms2);
-                fprintf(fp, "\n&END\n");
-            }
-        }
-
         for(int ib =0; ib < num_blocks; ib++)
-        {
-            int ij_start = ib * block_size;
-            int ij_end = (ib+1) * block_size;
-            if (ij_end > wf_pairs.size()) ij_end = wf_pairs.size();
-            RmgTimer *RT1 = new RmgTimer("5-Functional: Exx: ij+fft");
-            for(int ij = ij_start; ij < ij_end; ij++)
-            {
-
-                int ic = ij - ij_start;
-                int i = wf_pairs[ij].first;
-                int j = wf_pairs[ij].second;
-                double *psi_i = (double *)&psi[i*pbasis];
-                double *psi_j = (double *)&psi[j*pbasis];
-                fftpair(psi_i, psi_j, wf_fft);
-
-                // store (i,j) fft pair in ij_pair
-                // forward and then backward fft should not have the scale, Wenchang
-                for(int idx=0;idx < pbasis;idx++) ij_pair[ic * pbasis + idx] = scale * std::real(wf_fft[idx]);
-            }
-            delete RT1;
-
-            for(int ic = ib; ic < num_blocks; ic++)
-            {
-
-                int kl_start = ic * block_size;
-                int kl_end = (ic+1) * block_size;
-                if (kl_end > wf_pairs.size()) kl_end = wf_pairs.size();
-                Vexx_integrals_block(fp, ij_start, ij_end, kl_start, kl_end);
-            }
-        }
-
-        if(G.get_rank()==0)
-        {
-            fclose(fp);
-            delete []buf;
-        }
-        delete [] ij_pair;
-        delete [] kl_pair;
-        delete [] Exxints;
-        delete [] Summedints;
-        delete [] wf_fft;
-
+            blocks_in_thispe.push_back(ib);
     }
-
     else
     {
-        printf("Exx mode not programmed yet\n");
+        std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe);
+        serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
+        if(serial_fd < 0)
+            throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+
+        size_t length = nstates * pbasis *sizeof(double);
+        psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+
+        MPI_Barrier(G.comm);
+
+        int npes = G.get_NPES();
+        int rank = G.get_rank();
+        //   first npes blocks assigned to processor 0,1,2,... npes-1
+        //  second npes blocks assigned to processor npes-1, npes-2, ... 2, 1, 0
+        // thus wuill balance the blocks on each processor
+        for(int ib =0; ib < num_blocks; ib++)
+        {
+            int ibb = ib%(2*npes);
+            if(ibb == rank) 
+            {
+                blocks_in_thispe.push_back(ib);
+            }
+            else if( (ibb >= npes) && (npes - 1 - ibb%npes == rank) )
+            {
+
+                blocks_in_thispe.push_back(ib);
+            }
+
+        }
+
     }
 
+    for(std::vector<int>::iterator it = blocks_in_thispe.begin(); it != blocks_in_thispe.end(); it++)
+    {
+        int ib = *it;
+        int ij_start = ib * block_size;
+        int ij_end = (ib+1) * block_size;
+        if (ij_end > wf_pairs.size()) ij_end = wf_pairs.size();
+        RmgTimer *RT1 = new RmgTimer("5-Functional: Exx: ij+fft");
+        for(int ij = ij_start; ij < ij_end; ij++)
+        {
+
+            int ic = ij - ij_start;
+            int i = wf_pairs[ij].first;
+            int j = wf_pairs[ij].second;
+            double *psi_i = (double *)&psi_s[i*pbasis];
+            double *psi_j = (double *)&psi_s[j*pbasis];
+            fftpair(psi_i, psi_j, wf_fft);
+
+            // store (i,j) fft pair in ij_pair
+            // forward and then backward fft should not have the scale, Wenchang
+            for(int idx=0;idx < pbasis;idx++) ij_pair[ic * pbasis + idx] = scale * std::real(wf_fft[idx]);
+
+            double tem1 =0.0, tem2 = 0.0, tem3 = 0.0;
+            for(int idx=0;idx < pbasis;idx++) 
+            {
+            tem1 += ij_pair[ic * pbasis + idx];
+            tem2 += psi_i[ic * pbasis + idx];
+            tem3 += psi_j[ic * pbasis + idx];
+            }
+        }
+        delete RT1;
+
+        for(int ic = ib; ic < num_blocks; ic++)
+        {
+
+            int kl_start = ic * block_size;
+            int kl_end = (ic+1) * block_size;
+            if (kl_end > wf_pairs.size()) kl_end = wf_pairs.size();
+            Vexx_integrals_block(fp, ij_start, ij_end, kl_start, kl_end);
+        }
+    }
+
+    if(LG->get_rank()==0)
+    {
+        fclose(fp);
+        delete []buf;
+    }
+
+
+    delete [] ij_pair;
+    delete [] kl_pair;
+    delete [] Exxints;
+    delete [] Summedints;
+    delete [] wf_fft;
 
 }
 
@@ -402,15 +432,18 @@ template <class T> Exxbase<T>::~Exxbase(void)
     if(mode == EXX_DIST_FFT) return;
 
     close(serial_fd);
-    size_t length = nstates * N;
+    size_t length = nstates * pbasis * sizeof(T);
     munmap(psi_s, length);
-    unlink(wavefile.c_str());
+    //std::string filename= wavefile + "_spin"+ std::to_string(pct.spinpe);
+    //unlink(filename.c_str());
 
     delete LG;
     MPI_Comm_free(&lcomm); 
     delete pwave;
 }
 
+template void Exxbase<double>::WriteWfsToSingleFile();
+template void Exxbase<std::complex<double>>::WriteWfsToSingleFile();
 template <class T> void Exxbase<T>::WriteWfsToSingleFile()
 {
     // Write the domain distributed wavefunction array and map it to psi_s
@@ -448,15 +481,17 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
 
     MPI_Barrier(G.comm);
 
-    MPI_File_open(G.comm, wavefile.c_str(), amode, fileinfo, &mpi_fhand);
+    std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe);
+    MPI_File_open(G.comm, filename.c_str(), amode, fileinfo, &mpi_fhand);
     MPI_Offset disp = 0;
-    T *wfptr = psi;
 
+    T *wfptr;
     MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
+    int dis_dim = G.get_P0_BASIS(1);
     for(int st=0;st < nstates;st++)
     {
+        wfptr = &psi[st * dis_dim];
         MPI_File_write_all(mpi_fhand, wfptr, pbasis, MPI_DOUBLE, &status);
-        wfptr += pbasis;
     }
     MPI_Barrier(G.comm);
     MPI_File_close(&mpi_fhand);

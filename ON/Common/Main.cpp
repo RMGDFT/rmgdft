@@ -66,6 +66,7 @@
 #include "LocalObject.h"
 #include "LdaU_on.h"
 #include "WriteEshdf.h"
+#include "Exxbase.h"
 
 
 
@@ -278,6 +279,31 @@ int main(int argc, char **argv)
                 OnTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, *LocalOrbital, 
                         *H_LocalOrbital, *LocalProj);
                 break;
+            case Exx_only:
+                {    
+                    int nstates_occ = 0;
+                    std::vector<double> occs;
+                    // calculate num of occupied states
+                    for(int i=0;i < ct.num_states;i++) 
+                    {
+                        if(states[i].occupation[0] > 1.0e-6)
+                        {
+                            occs.push_back(states[i].occupation[0]);
+                            nstates_occ++;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    double *psi;
+                    ct.exx_mode = EXX_LOCAL_FFT;
+                    Exxbase<double> Exx(*Rmg_G, Rmg_L, "tempwave", nstates_occ, occs.data(), psi, ct.exx_mode);
+                    Exx.Vexx_integrals(ct.exx_int_file);
+                }
+
+                break;
 
 
             default:
@@ -403,3 +429,5 @@ static void dipole_calculation(double *rhooo, double *dipole)
 
 
 }
+
+

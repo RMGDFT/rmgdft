@@ -133,6 +133,10 @@ void WriteHeader (void)
     case TDDFT:
         printf ("Time dependent DFT (TDDFT) calculation \n");
         break;
+    case Exx_only:
+        printf ("calculate Exx integral's from saveed wave functions \n");
+        break;
+
 
     default:
         error_handler ("Unknown molecular dynamics method.");
