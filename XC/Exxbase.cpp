@@ -491,7 +491,7 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
     for(int st=0;st < nstates;st++)
     {
         wfptr = &psi[st * dis_dim];
-        MPI_File_write_all(mpi_fhand, wfptr, pbasis, MPI_DOUBLE, &status);
+        MPI_File_write_all(mpi_fhand, wfptr, dis_dim, MPI_DOUBLE, &status);
     }
     MPI_Barrier(G.comm);
     MPI_File_close(&mpi_fhand);
