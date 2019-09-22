@@ -110,7 +110,7 @@ private:
     void setup_gfac(void);
 
     std::vector< std::pair <int,int> > wf_pairs;
-    int block_size = 2;
+    int block_size = 64;
     double *kl_pair;
     double *ij_pair;
     double *Exxints;
@@ -133,7 +133,7 @@ public:
     void Vexx_integrals(std::string &ifile);
     void Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end);
     void WriteWfsToSingleFile(void);
-    void set_mode(int exx_mode){mode = exx_mode;}
+    void ReadWfsFromSingleFile(void);
 
 };
 

@@ -442,6 +442,66 @@ template <class T> Exxbase<T>::~Exxbase(void)
     delete pwave;
 }
 
+template void Exxbase<double>::ReadWfsFromSingleFile();
+template void Exxbase<std::complex<double>>::ReadWfsFromSingleFile();
+template <class T> void Exxbase<T>::ReadWfsFromSingleFile()
+{
+    // Write the domain distributed wavefunction array and map it to psi_s
+    MPI_Datatype wftype = MPI_DOUBLE;
+    if(typeid(T) == typeid(std::complex<double>)) wftype = MPI_DOUBLE_COMPLEX;
+
+    int sizes_c[3], sizes_f[3];
+    int subsizes_c[3], subsizes_f[3];
+    int starts_c[3], starts_f[3];
+
+    sizes_c[0] = G.get_NX_GRID(1);
+    sizes_c[1] = G.get_NY_GRID(1);
+    sizes_c[2] = G.get_NZ_GRID(1);
+
+    subsizes_c[0] = G.get_PX0_GRID(1);
+    subsizes_c[1] = G.get_PY0_GRID(1);
+    subsizes_c[2] = G.get_PZ0_GRID(1);
+
+    starts_c[0] = G.get_PX_OFFSET(1);
+    starts_c[1] = G.get_PY_OFFSET(1);
+    starts_c[2] = G.get_PZ_OFFSET(1);
+
+    int order = MPI_ORDER_C;
+    MPI_Info fileinfo;
+    MPI_Datatype grid_c;
+    MPI_Status status;
+
+    MPI_Type_create_subarray(3, sizes_c, subsizes_c, starts_c, order, wftype, &grid_c);
+    MPI_Type_commit(&grid_c);
+
+    MPI_Info_create(&fileinfo);
+
+    int amode = MPI_MODE_RDONLY;
+    MPI_File mpi_fhand ;
+
+    MPI_Barrier(G.comm);
+
+    std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe);
+    int flag = MPI_File_open(G.comm, filename.c_str(), amode, fileinfo, &mpi_fhand);
+    if(flag) 
+        throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+    MPI_Offset disp = 0;
+
+    T *wfptr;
+    MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
+    int dis_dim = G.get_P0_BASIS(1);
+    for(int st=0;st < nstates;st++)
+    {
+        wfptr = &psi[st * dis_dim];
+        MPI_File_read_all(mpi_fhand, wfptr, dis_dim, MPI_DOUBLE, &status);
+    }
+    MPI_Barrier(G.comm);
+    MPI_File_close(&mpi_fhand);
+    MPI_Type_free(&grid_c);
+    fflush(NULL);
+    MPI_Barrier(G.comm);
+}
+
 template void Exxbase<double>::WriteWfsToSingleFile();
 template void Exxbase<std::complex<double>>::WriteWfsToSingleFile();
 template <class T> void Exxbase<T>::WriteWfsToSingleFile()

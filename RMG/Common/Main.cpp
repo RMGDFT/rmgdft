@@ -371,6 +371,8 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                 for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
                 Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), 
                         Kptr[0]->orbital_storage, ct.exx_mode);
+                if(ct.exx_mode == EXX_DIST_FFT)
+                    Exx.ReadWfsFromSingleFile();
                 Exx.Vexx_integrals(ct.exx_int_file);
                 break;
             }
