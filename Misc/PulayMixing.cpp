@@ -44,7 +44,7 @@ PulayMixing::~PulayMixing(void)
     delete [] this->res_hist;
 }
 
-void PulayMixing::SetPrecond(std::function<void(double*)> precond)
+void PulayMixing::SetPrecond(std::function<void(double*, int)> precond)
 { 
     this->need_precond = 1;
     this->Precond = precond;
@@ -145,7 +145,7 @@ void PulayMixing::Mixing(double *xm, double *fm)
         daxpy(&N, &b[i], this->res_hist_ptr[i], &ione, fm, &ione);
     }
 
-    if(this->need_precond) this->Precond(fm);
+    if(this->need_precond) this->Precond(fm, this->nstates);
 
     daxpy(&N, &this->beta, fm, &ione, xm, &ione);
 

@@ -17,15 +17,17 @@ private:
     double *A_mat;
     std::vector<double*> hist_ptr;
     std::vector<double*> res_hist_ptr;
-    std::function<void(double*)> Precond;
+    std::function<void(double*, int)> Precond;
     bool need_precond;
+    int nstates;
 
 public:
 
     PulayMixing(size_t Nsize, int pulay_order, int refresh_steps, double mix_init, double beta, MPI_Comm comm);
     ~PulayMixing(void);
     void Mixing(double *xm, double *fm);
-    void SetPrecond(std::function<void(double*)> precon);
+    void SetPrecond(std::function<void(double*, int)> precon);
+    void SetNstates(int nstates){ this->nstates = nstates;}
     void Refresh();
 
 };

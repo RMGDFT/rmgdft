@@ -26,6 +26,7 @@ public:
     ~LocalObject(void);
 
     KpointType *storage_proj;
+    char *mask;
 
     int num_thispe;
     int num_tot;
@@ -41,6 +42,7 @@ public:
     void WriteOrbitals(std::string filename, BaseGrid &Rmg_G);
     void ReadProjectors(int num_ions, int max_nlpoint, int *num_proj_perion, BaseGrid &Rmg_G);
     void GetAtomicOrbitals(int num_ions, BaseGrid &Rmg_G);
+    void SetZeroBoundary(BaseGrid &Rmg_G, int multi_grid_level, int fd_order);
 
 
 

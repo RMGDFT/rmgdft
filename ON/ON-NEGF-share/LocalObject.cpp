@@ -567,3 +567,77 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::str
     }
 }
 
+template void LocalObject<double>::SetZeroBoundary(BaseGrid&, int kh_level, int fd_order);
+template void LocalObject<std::complex<double>>::SetZeroBoundary(BaseGrid&, int kh_level, int fd_order);
+template <class KpointType> void LocalObject<KpointType>::SetZeroBoundary(BaseGrid &BG, int kh_level, int fd_order)
+{
+
+    int PX0_GRID = BG.get_PX0_GRID(density);
+    int PY0_GRID = BG.get_PY0_GRID(density);
+    int PZ0_GRID = BG.get_PZ0_GRID(density);
+    int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+    int PX_OFFSET = BG.get_PX_OFFSET(density);
+    int PY_OFFSET = BG.get_PY_OFFSET(density);
+    int PZ_OFFSET = BG.get_PZ_OFFSET(density);
+    int NX_GRID = BG.get_NX_GRID(density);
+    int NY_GRID = BG.get_NY_GRID(density);
+    int NZ_GRID = BG.get_NZ_GRID(density);
+    int ilow = PX_OFFSET;
+    int ihigh = ilow + PX0_GRID;
+    int jlow = PY_OFFSET;
+    int jhigh = jlow + PY0_GRID;
+    int klow = PZ_OFFSET;
+    int khigh = klow + PZ0_GRID;
+
+    int dim = 1 << kh_level;
+    if( (PX0_GRID % dim != 0) || (PY0_GRID % dim != 0) || (PZ0_GRID % dim != 0) )
+    {
+        std::cout << " multigrid level of " << kh_level << " require grid on each processor divisible by " << dim << std::endl;
+    }
+
+    this->mask = new char[this->num_thispe * P0_BASIS];
+    for(int i = 0; i < this->num_thispe * P0_BASIS; i++) mask[i] = 0;
+    char *mask_x = new char[PX0_GRID];
+    char *mask_y = new char[PY0_GRID];
+    char *mask_z = new char[PZ0_GRID];
+
+    for (int i_local = 0; i_local < this->num_thispe; i_local++)
+    {
+        for(int ix = 0; ix < PX0_GRID; ix++) mask_x[ix] = 0;
+        for(int iy = 0; iy < PY0_GRID; iy++) mask_y[iy] = 0;
+        for(int iz = 0; iz < PZ0_GRID; iz++) mask_z[iz] = 0;
+
+        int i = this->index_proj_to_global[i_local];
+        
+        for(int ix = ixmin[i] + fd_order; ix < ixmin[i] + dimx[i] - fd_order/2; ix++) 
+        {
+            int ixx = (ix+NX_GRID) % NX_GRID;
+            if( ixx >= ilow && ixx < ihigh)  mask_x[ixx-ilow] = 1;
+        }
+        for(int iy = iymin[i] + fd_order; iy < iymin[i] + dimy[i] - fd_order/2; iy++) 
+        {
+            int iyy = (iy+NY_GRID) % NY_GRID;
+            if( iyy >= jlow && iyy < jhigh)  mask_y[iyy-jlow] = 1;
+        }
+        for(int iz = izmin[i] + fd_order; iz < izmin[i] + dimz[i] - fd_order/2; iz++) 
+        {
+            int izz = (iz+NZ_GRID) % NZ_GRID;
+            if( izz >= klow && izz < khigh)  mask_z[izz-klow] = 1;
+        }
+
+        for(int ix = 0; ix < PX0_GRID; ix++)
+            for(int iy = 0; iy < PY0_GRID; iy++)
+                for(int iz = 0; iz < PZ0_GRID; iz++)
+                {
+                    int idx = ix * PY0_GRID * PZ0_GRID + iy * PZ0_GRID + iz;
+                    mask[i_local * P0_BASIS + idx] = mask_x[ix] * mask_y[iy] * mask_z[iz];
+                }
+    }
+
+    delete [] mask_x;
+    delete [] mask_y;
+    delete [] mask_z;
+
+
+}
+

@@ -177,19 +177,15 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     switch (ct.orbital_mixing_method)
     {
         case 0:
-            Precond(states1[ct.state_begin].psiR);
+            Precond(states1[ct.state_begin].psiR, 0);
             daxpy(&pct.psi_size, &gamma, states1[ct.state_begin].psiR, &ione, states[ct.state_begin].psiR, &ione);
             break;
         case 1:
-            Pulay_orbital->Mixing(states[ct.state_begin].psiR, states1[ct.state_begin].psiR);
+            Pulay_orbital->Mixing(LocalOrbital->storage_proj, H_LocalOrbital->storage_proj);
             break;
         case 2:
             Kain(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
                     states1[ct.state_begin].psiR, ct.orbital_pulay_order);
-            break;
-        case 3:
-            PulayWeighted(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
-                    states1[ct.state_begin].psiR, ct.orbital_pulay_order, 100, 0.5, 1);
             break;
         default:
             printf("\n Undefined mg_method \n ");

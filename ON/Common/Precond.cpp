@@ -8,7 +8,7 @@
 #include <boost/circular_buffer.hpp>
 
 
-void Precond(double *x)
+void Precond(double *x, int nstates)
 {
 
     static boost::circular_buffer<double> rms(3);

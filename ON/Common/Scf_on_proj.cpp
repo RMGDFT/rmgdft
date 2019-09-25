@@ -220,6 +220,11 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         CalculateResidual(*LocalOrbital, *H_LocalOrbital, *LocalProj,  vtot_c, theta_local, Kbpsi_mat);
         delete RT0;
 
+        for(int st = 0; st < LocalOrbital->num_thispe; st++)
+        {
+            for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
+                H_LocalOrbital->storage_proj[st * pbasis + idx] = 0.0;
+        }
         RT0 = new RmgTimer("2-SCF: orbital precond and mixing");
         OrbitalOptimize(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
         delete RT0;
