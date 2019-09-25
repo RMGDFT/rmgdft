@@ -345,7 +345,11 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   // Get total charge and compute it's gradient
   for(int i = 0;i < this->pbasis;i++) total_rho[i] = rho_valence[i] + rho_core[i];
 
-  CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
+  int ibrav = Rmg_L.get_ibrav_type();
+  if(ibrav == HEXAGONAL)
+      CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_EIGHT);
+  else
+      CPP_app_grad_driver (&L, &T, total_rho, gx, gy, gz, this->dimx, this->dimy, this->dimz, this->hxgrid, this->hygrid, this->hzgrid, APP_CI_TEN);
 
   // Have to generate half density versions of gradient and rho if use_coarsegrid is true.
   if(use_coarsegrid) {
