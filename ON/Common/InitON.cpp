@@ -167,6 +167,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
                 dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
         H_LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
                 dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
+        LocalOrbital->SetZeroBoundary(*Rmg_G,ct.eig_parm.levels,ct.kohn_sham_fd_order);
         delete [] ixmin;
         delete [] dimx;
 //        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);

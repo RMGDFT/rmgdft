@@ -1,4 +1,6 @@
 add_library (ON_Common
+ Scf_on_proj.cpp
+ Preconditioner.cpp
  WriteWaveFunctions.cpp
  LdaU_on.cpp
  read_orbitals_on.cpp
@@ -57,7 +59,6 @@ add_library (ON_Common
  PrecondMg1.cpp
  print_status.cpp
  print_wave.cpp
- PulayWeighted.cpp
  qnm_beta_betapsi.cpp
  quench.cpp
  rand0.cpp

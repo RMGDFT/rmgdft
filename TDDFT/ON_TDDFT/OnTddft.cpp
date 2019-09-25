@@ -184,7 +184,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         get_ddd (vtot);
 
         LO_x_LO(LP, Phi, Kbpsi_mat, *Rmg_G);
-        GetHS_dis(Phi, H_Phi, vtot_psi, Hmatrix, Smatrix, Kbpsi_mat);
+        GetHS_proj(Phi, H_Phi, vtot_psi, Hmatrix, Smatrix, Kbpsi_mat);
 
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
@@ -279,7 +279,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         mat_global_to_local(Phi, H_Phi, Xmatrix, rho_matrix_local);
         delete(RT2a);
         RT2a = new RmgTimer("2-TDDFT: Rho");
-        GetNewRho_dis(Phi, H_Phi, rho, rho_matrix_local);
+        GetNewRho_proj(Phi, H_Phi, rho, rho_matrix_local);
 
 
         double tcharge = 0.0;

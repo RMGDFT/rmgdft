@@ -3,14 +3,14 @@ PROPERTIES
 COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 add_library (ON_NEGF_share
 LO_x_LO.cpp
-GetHS_dis.cpp
+GetHS_proj.cpp
 LocalObject.cpp
 OrbitalComm.cpp
 DistributeTasks.cpp
 RmgThread.cpp
 make_mask_grid_state.cpp
 GetNewRho_on.cpp
-GetNewRho_dis.cpp
+GetNewRho_proj.cpp
 FillOrbitalBorders.cpp
 KbpsiUpdate.cpp
 RhoQnmMat.cpp
@@ -19,7 +19,7 @@ KbpsiComm.cpp
 InitNonlocalComm.cpp
 GetHS.cpp
 GetHvnlij.cpp
-GetHvnlij_dis.cpp
+GetHvnlij_proj.cpp
 ReadOrbitals.cpp
 allocate_masks.cpp
 AllocatePsi.cpp

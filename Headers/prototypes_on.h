@@ -1,6 +1,7 @@
 #define GAMMA_PT 1
 //#include "typedefs.h"
 #include "LocalObject.h"
+void Preconditioner(double *, int);
 template <typename KpointType>
 void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dis, BaseGrid &BG,
         double *eig, double *occ);
@@ -18,7 +19,7 @@ void KbpsiComm();
 void InitNonlocalComm();
 void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double *Bij);
 void GetHvnlij (double *Aij, double *Bij);
-void GetHvnlij_dis (double *Aij, double *Bij, double *kbpsimat, int norb, int nproj);
+void GetHvnlij_proj (double *Aij, double *Bij, double *kbpsimat, int norb, int nproj);
 void OrbitalOptimize (STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rhoc, double * vxc_old,
         double * vh_old);
@@ -51,8 +52,8 @@ void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void DotProductOrbitNl (STATE *st1, int ion2, double * psi,
         double * prjptr, ION_ORBIT_OVERLAP *, int num_proj, double *kbpsi);
 void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G);
-void GetHS_dis(LocalObject<double> &A, LocalObject<double> &B, double *vtot_c, double *H, double *S, double *kbpsi);
-void GetNewRho_dis(LocalObject<double> &A, LocalObject<double> &B, double *rho, double *mat_local);
+void GetHS_proj(LocalObject<double> &A, LocalObject<double> &B, double *vtot_c, double *H, double *S, double *kbpsi);
+void GetNewRho_proj(LocalObject<double> &A, LocalObject<double> &B, double *rho, double *mat_local);
 void mat_global_to_local(LocalObject<double> &A, LocalObject<double> &B, double *mat_glob, double *mat_local);
 void mat_dist_to_local(double *mat_dist, int *desca, double *mat_local, LocalObject<double> &A);
 void mat_dist_to_global(double *mat_dist, int *desca, double *mat_global);
@@ -70,7 +71,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
           double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap);
 void PrecondMg(double *psiR, double *work1, STATE *sp);
-void Precond(double *x);
+void Precond(double *x, int);
 void ZeroBoundary(double *a, int ixx, int iyy, int izz);
 void ZeroBoundary(double *a, int ixx, int iyy, int izz, int width);
 void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
@@ -670,8 +671,9 @@ void get_te (double *rho, double *rho_oppo, double *rhocore, double *rhoc, doubl
 void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
         double * vxc_old, double * vh_old, int *CONVERGENCE);
-void pulay_rho_on (int step0, int N, double *xm, double *fm, int NsavedSteps,
-                int Nrefresh, double scale, int preconditioning);
+void Scf_on_proj(STATE *states, double *vxc, double *vh,
+        double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
+        double * vxc_old, double * vh_old, int *CONVERGENCE);
 
 
 

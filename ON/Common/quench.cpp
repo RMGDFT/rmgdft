@@ -63,7 +63,20 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
         /* Perform a single self-consistent step */
         if (!CONVERGENCE || ct.scf_steps <= ct.freeze_rho_steps)
-            Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, rhocore, vxc_old, vh_old, &CONVERGENCE);
+        {
+            if(ct.LocalizedOrbitalLayout == LO_projection)
+            {
+                Scf_on_proj(states, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
+                        rhocore, vxc_old, vh_old, &CONVERGENCE);
+                //Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
+                //        rhocore, vxc_old, vh_old, &CONVERGENCE);
+            }
+            else
+            {
+                Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
+                        rhocore, vxc_old, vh_old, &CONVERGENCE);
+            }
+        }
 
         if( (ct.scf_steps+1)%ct.checkpoint == 0)
             write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]);
@@ -95,7 +108,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             }
             else
             {
-            //    break;
+                //    break;
             }
         }
 

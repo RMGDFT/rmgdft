@@ -71,7 +71,7 @@ void Kain(int step, int N, double *xm, double *fm, int NsavedSteps)
         dcopy(&N, xm, &ione, x, &ione);
         dcopy(&N, fm, &ione, f, &ione);
 
-        Precond(fm);
+        Precond(fm, 0);
 
         daxpy(&N, &sd_step, fm, &ione, xm, &ione);
     }
@@ -149,7 +149,7 @@ void Kain(int step, int N, double *xm, double *fm, int NsavedSteps)
                 daxpy(&N, &b[i], f1, &ione, fm, &ione);
             }
 
-            Precond(fm);
+            Precond(fm,0);
             daxpy(&N, &gamma, fm, &ione, xm, &ione);
 
         }
@@ -175,7 +175,7 @@ void Kain(int step, int N, double *xm, double *fm, int NsavedSteps)
             t1 = 1.0 - sum_ci;
             daxpy(&N, &t1, fm, &ione, f, &ione);
 
-            Precond(f);
+            Precond(f,0);
             dscal(&N, &gamma, f, &ione);
             daxpy(&N, &one, x, &ione, f, &ione);
 
