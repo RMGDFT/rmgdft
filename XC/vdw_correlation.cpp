@@ -381,7 +381,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
 
   this->get_q0_on_grid (calc_rho, q0, dq0_drho, dq0_dgradrho, thetas, calc_basis, calc_gx, calc_gy, calc_gz);
 
-  double Ec_nl = this->vdW_energy(q0, thetas, calc_basis, N_calc);
+  double Ec_nl = this->vdW_energy(q0, thetas, calc_basis, N_calc) * (double)this->N / (double)N_calc;
   etxc += Ec_nl;
 
 
@@ -609,8 +609,9 @@ double Vdw::vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int
   // We skip the sum over processors for the returned quantity since that is the convention
   // followed in higher level routines where vdW_xc_energy is added to the other components
   // and then summed
-  vdW_xc_energy = 0.5 * vdW_xc_energy * L->omega / (double)N_calc / (double)N_calc;
-  double t1 = RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm());
+  vdW_xc_energy = 0.5*vdW_xc_energy / (double)N_calc;
+  double t1 = L->omega * RmgSumAll(vdW_xc_energy, this->T->get_MPI_comm()) / (double)N_calc;
+   
   rmg_printf("Van der Waals correlation energy = %16.9e Ha\n", t1);
 
   // Save u_vdW

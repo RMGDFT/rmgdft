@@ -207,7 +207,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "File/path for exact exchange integrals. ", 
                      "", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("vdW_kernel_filepath", &VdwKernelfile, "vdW_kernel_table",
+    If.RegisterInputKey("vdwdf_kernel_filepath", &VdwKernelfile, "vdW_kernel_table",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for vdW_kernel_table data. ", 
                      "", CONTROL_OPTIONS);
