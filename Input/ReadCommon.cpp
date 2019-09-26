@@ -142,6 +142,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     std::string Orbitalfile;
     std::string ExxIntfile;
     std::string PseudoPath;
+    std::string VdwKernelfile;
  
     static Ri::ReadVector<int> ProcessorGrid;
     Ri::ReadVector<int> DefProcessorGrid({{1,1,1}});
@@ -204,6 +205,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("exx_integrals_filepath", &ExxIntfile, "ExxIntegrals",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for exact exchange integrals. ", 
+                     "", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("vdW_kernel_filepath", &VdwKernelfile, "vdW_kernel_table",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "File/path for vdW_kernel_table data. ", 
                      "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("pseudo_dir", &PseudoPath, ".",
@@ -1106,6 +1112,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     lc.exx_int_file = ExxIntfile;
     MakeFullPath(lc.exx_int_file, pelc);
+
+    lc.vdW_kernel_file = VdwKernelfile;
+    MakeFullPath(lc.vdW_kernel_file, pelc);
 
     lc.nvme_weights_path = Weightsfile;
     if(lc.nvme_weights_path.length()) lc.nvme_weights_path.append("/");
