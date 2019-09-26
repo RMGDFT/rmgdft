@@ -181,7 +181,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
             daxpy(&pct.psi_size, &gamma, states1[ct.state_begin].psiR, &ione, states[ct.state_begin].psiR, &ione);
             break;
         case 1:
-            Pulay_orbital->Mixing(LocalOrbital->storage_proj, H_LocalOrbital->storage_proj);
+            Pulay_orbital->Mixing(states[ct.state_begin].psiR, states1[ct.state_begin].psiR);
             break;
         case 2:
             Kain(mix_steps, pct.psi_size, states[ct.state_begin].psiR,
@@ -203,7 +203,6 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
 
     delete(RT7);
 
-    normalize_orbits(states);
 
     for (int st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
@@ -215,6 +214,7 @@ void OrbitalOptimize(STATE * states, STATE * states1, double *vxc, double *vh,
     }
 
 
+    normalize_orbits(states);
 
 
 

@@ -609,17 +609,17 @@ template <class KpointType> void LocalObject<KpointType>::SetZeroBoundary(BaseGr
 
         int i = this->index_proj_to_global[i_local];
         
-        for(int ix = ixmin[i] + fd_order; ix < ixmin[i] + dimx[i] - fd_order/2; ix++) 
+        for(int ix = ixmin[i] + fd_order/2; ix < ixmin[i] + dimx[i] - fd_order/2; ix++) 
         {
             int ixx = (ix+NX_GRID) % NX_GRID;
             if( ixx >= ilow && ixx < ihigh)  mask_x[ixx-ilow] = 1;
         }
-        for(int iy = iymin[i] + fd_order; iy < iymin[i] + dimy[i] - fd_order/2; iy++) 
+        for(int iy = iymin[i] + fd_order/2; iy < iymin[i] + dimy[i] - fd_order/2; iy++) 
         {
             int iyy = (iy+NY_GRID) % NY_GRID;
             if( iyy >= jlow && iyy < jhigh)  mask_y[iyy-jlow] = 1;
         }
-        for(int iz = izmin[i] + fd_order; iz < izmin[i] + dimz[i] - fd_order/2; iz++) 
+        for(int iz = izmin[i] + fd_order/2; iz < izmin[i] + dimz[i] - fd_order/2; iz++) 
         {
             int izz = (iz+NZ_GRID) % NZ_GRID;
             if( izz >= klow && izz < khigh)  mask_z[izz-klow] = 1;
