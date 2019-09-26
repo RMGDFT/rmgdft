@@ -31,12 +31,13 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 
     RmgTimer  *RT0 = new RmgTimer("3-DiagScalapack");
     int ione = 1;    /* blas constants */
-    char *uplo = "u", *jobz = "v";
+    char *uplo = "l", *jobz = "v";
+    int *desca = pct.desca;
 
     int info;
     double zero = 0., one = 1., alpha;
     int st1, st_g;
-    double *eigs;
+    double *eigs= new double[numst];
 
     /* for parallel libraries */
     int mb= pct.desca[4];
@@ -68,50 +69,44 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
 //pdtran(&numst, &numst, &half, l_s, &ione, &ione, pct.desca,
 //           &half, matB, &ione, &ione, pct.desca);
 
-    char *range = "a";
-    double vx = 0.0;
-    double tol = 0.0;
-    int eigs_found, eigvs_found;
-    double orfac = 0.0;
-    int *iwork, *ifail, *iclustr, lwork;
-    double *gap, lwork_tmp, *work2;
-    int liwork_tmp, liwork;
 
-    ifail = new int[numst];
-    eigs = new double[numst];
-    iclustr = new int[2 * pct.scalapack_nprow * pct.scalapack_npcol];
-    gap = new double[pct.scalapack_nprow * pct.scalapack_npcol];
+    int ibtype = 1;
+    double scale=1.0, rone = 1.0;
 
+    pdpotrf(uplo, &numst, (double *)l_s,  &ione, &ione, desca,  &info);
+
+    // Get pdsyngst_ workspace
+    int lwork = -1;
+    double lwork_tmp;
+    pdsyngst(&ibtype, uplo, &numst, (double *)uu_dis, &ione, &ione, desca,
+            (double *)l_s, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
+    lwork = 2*(int)lwork_tmp;
+    double *work2 = new double[lwork];
+
+    pdsyngst(&ibtype, uplo, &numst, (double *)uu_dis, &ione, &ione, desca,
+            (double *)l_s, &ione, &ione, desca, &scale, work2, &lwork, &info);
+
+    // Get workspace required
     lwork = -1;
-    liwork = -1;
+    int liwork=-1;
+    int liwork_tmp;
+    pdsyevd(jobz, uplo, &numst, (double *)uu_dis, &ione, &ione, desca,
+            eigs, (double *)zz_dis, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
+    lwork = 16*(int)lwork_tmp;
+    liwork = 16*numst;
+    double *nwork = new double[lwork];
+    int *iwork = new int[liwork];
 
-    pdsygvx (&ione, jobz, range, uplo, &numst, uu_dis, &ione, &ione, pct.desca,
-            l_s, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-            &eigvs_found, eigs, &orfac, zz_dis, &ione, &ione, pct.desca, &lwork_tmp, &lwork,
-            &liwork_tmp, &liwork, ifail, iclustr, gap, &info);
+    // and now solve it 
+    pdsyevd(jobz, uplo, &numst, (double *)uu_dis, &ione, &ione, desca,
+            eigs, (double *)zz_dis, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
 
-    if (info)
-    {
-        printf ("\n pdsygvx query failed, info is %d", info);
-        exit(0);
-    }
+    pdtrsm("Left", uplo, "T", "N", &numst, &numst, &rone, (double *)l_s, &ione, &ione, desca,
+            (double *)zz_dis, &ione, &ione, desca);
+    delete [] iwork;
+    delete [] nwork;
+    delete [] work2;
 
-
-    /*set lwork and liwork */
-    lwork = (int) lwork_tmp + 1;
-    liwork = liwork_tmp;
-
-    work2 = new double[lwork];
-    iwork = new int[liwork];
-
-
-
-
-    tol = 1.0e-15;
-    pdsygvx (&ione, jobz, range, uplo, &numst, uu_dis, &ione, &ione, pct.desca,
-            l_s, &ione, &ione, pct.desca, &vx, &vx, &ione, &ione, &tol, &eigs_found,
-            &eigvs_found, eigs, &orfac, zz_dis, &ione, &ione, pct.desca, work2, &lwork,
-            iwork, &liwork, ifail, iclustr, gap, &info);
 
 
     if (info)
@@ -131,11 +126,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
         states[st1].eig[0] = eigs[st1];
     }
 
-    delete [] ifail;
-    delete [] iclustr;
-    delete [] gap;
-    delete [] work2;
-    delete [] iwork;
     delete [] eigs;
 
     delete(RT1);

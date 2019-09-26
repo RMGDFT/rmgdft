@@ -66,10 +66,10 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         {
             if(ct.LocalizedOrbitalLayout == LO_projection)
             {
-                //Scf_on_proj(states, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
-                //        rhocore, vxc_old, vh_old, &CONVERGENCE);
-                Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
+                Scf_on_proj(states, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
                         rhocore, vxc_old, vh_old, &CONVERGENCE);
+                //Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
+                //        rhocore, vxc_old, vh_old, &CONVERGENCE);
             }
             else
             {
