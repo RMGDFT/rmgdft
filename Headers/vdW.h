@@ -29,6 +29,7 @@
 #include "TradeImages.h"
 #include "FiniteDiff.h"
 #include "Pw.h"
+#include "rmgtypedefs.h"
 #include "rmg_mangling.h"
 
 #define VDW_NQPOINTS  20
@@ -112,8 +113,9 @@ private:
     static double r_max;
     static double dk;
     static double q_mesh[VDW_NQPOINTS];
-    static double kernel[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
-    static double d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
+    static double_3d_array kernel;
+    static double_3d_array d2phi_dk2;
+
     static double gmax;  // Maximum magnitude of g-vector
 
     // largest value of q_mesh
