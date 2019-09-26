@@ -214,7 +214,7 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
   if(!this->initialized) {
 
       std::ifstream kernel_file;
-      kernel_file.open("vdW_kernel_table", std::ios_base::in);
+      kernel_file.open(ct.vdW_kernel_file, std::ios_base::in);
       if (!kernel_file)  { 
           throw RmgFatalException() << "Unable to open vdW_kernel_table file. Please make sure this file is in the current directory. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
       }
