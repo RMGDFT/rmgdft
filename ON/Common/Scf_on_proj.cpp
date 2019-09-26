@@ -49,7 +49,8 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     {
         Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
                 ct.mix, ct.charge_pulay_scale, pct.grid_comm); 
-        Pulay_orbital = new PulayMixing(pbasis, ct.orbital_pulay_order, ct.orbital_pulay_refresh, 
+        int tot_size = LocalOrbital->num_thispe * pbasis;
+        Pulay_orbital = new PulayMixing(tot_size, ct.orbital_pulay_order, ct.orbital_pulay_refresh, 
                 ct.orbital_pulay_mixfirst, ct.orbital_pulay_scale, pct.grid_comm); 
         Pulay_orbital->SetPrecond(Preconditioner);
         Pulay_orbital->SetNstates(LocalOrbital->num_thispe);
@@ -226,7 +227,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
                 H_LocalOrbital->storage_proj[st * pbasis + idx] = 0.0;
         }
         RT0 = new RmgTimer("2-SCF: orbital precond and mixing");
-        OrbitalOptimize(states, states1, vxc, vh, vnuc, rho, rhoc, vxc_old, vh_old);
+        Pulay_orbital->Mixing(LocalOrbital->storage_proj, H_LocalOrbital->storage_proj);
         delete RT0;
 
     }
@@ -235,5 +236,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     delete [] trho;
     delete [] rho_pre;
 }                               /* end scf */
+
 
 

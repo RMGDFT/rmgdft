@@ -75,14 +75,32 @@ void GetHS_proj(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     delete(RT1);
 
+
     RmgTimer *RT3 = new RmgTimer("4-get_HS: Hvnlij");
     GetHvnlij_proj(Hij_glob, Bij_glob, Kbpsi_mat, Phi.num_tot, LocalProj->num_tot);
     delete(RT3);
 
+    double *norm_phi = new double[Phi.num_tot];
+    for(int i = 0; i < Phi.num_tot; i++) norm_phi[i] = 1.0/std::sqrt(Bij_glob[i*Phi.num_tot + i]);
+
+    for(int i = 0; i < Phi.num_tot; i++) 
+        for(int j = 0; j < Phi.num_tot; j++) 
+        {
+            Hij_glob[ i * Phi.num_tot + j] *= norm_phi[i] * norm_phi[j];
+            Bij_glob[ i * Phi.num_tot + j] *= norm_phi[i] * norm_phi[j];
+        }
+
+    for(int i = 0; i < Phi.num_thispe; i++)
+    {
+        int j = Phi.index_proj_to_global[i];
+        for(int idx = 0; idx< pbasis; idx++) Phi.storage_proj[i * pbasis + idx] *= norm_phi[j];
+    }
+
+    delete [] norm_phi;
     if (pct.gridpe == 0)
     {
-        print_matrix(Hij_glob, 6, Phi.num_tot);
-        print_matrix(Bij_glob, 6, Phi.num_tot);
+        print_matrix(Hij_glob, 4, Phi.num_tot);
+        print_matrix(Bij_glob, 4, Phi.num_tot);
     }
 
     delete(RT);
