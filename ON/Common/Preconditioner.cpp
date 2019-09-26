@@ -82,7 +82,6 @@ void Preconditioner (double *res, int num_states)
     double *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     double *work2_t = &work_t[6*(dimx + 2)*(dimy + 2)*(dimz + 2)];
 
-
     for(int st = 0 ; st < num_states; st++)
     {
         CPP_pack_ptos (work1_t, &res[st*pbasis], dimx, dimy, dimz);
@@ -97,6 +96,7 @@ void Preconditioner (double *res, int num_states)
         CPP_pack_stop (work2_t, &res[st*pbasis], dimx, dimy, dimz);
     }
 
+    for(int idx = 0; idx < num_states * pbasis; idx++) res[idx] = -res[idx];
 
     free(work_t);
 }
