@@ -115,8 +115,8 @@ double Vdw::q_mesh[VDW_NQPOINTS] = {
 1.482340921174910, 1.780437058359530 , 2.129442028133640 , 2.538050036534580,
 3.016440085356680, 3.576529545442460 , 4.232271035198720 , 5.0 };
 
-double Vdw::kernel[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
-double Vdw::d2phi_dk2[VDW_NRPOINTS+1][VDW_NQPOINTS][VDW_NQPOINTS];
+double_3d_array Vdw::kernel;
+double_3d_array Vdw::d2phi_dk2;
 
 const double Vdw::epsr = 1.0e-12;
 double Vdw::gmax;
@@ -226,9 +226,13 @@ Vdw::Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence
       std::istringstream is0(line);
       is0 >> Nqs >> Nrpoints;
 
-      if((Nqs != VDW_NQPOINTS) || (Nrpoints != VDW_NRPOINTS)) {
-          throw RmgFatalException() << "Mismatch for Nqs or Nrpoints, vdW_kernel_table appears to be corrupted." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
-      }
+      // Any checks needed here?
+//      if((Nqs != VDW_NQPOINTS) || (Nrpoints != VDW_NRPOINTS)) {
+//          throw RmgFatalException() << "Mismatch for Nqs or Nrpoints, vdW_kernel_table appears to be corrupted." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+//      }
+
+      this->kernel.resize(boost::extents[Nrpoints+1][Nqs][Nqs]);
+      this->d2phi_dk2.resize(boost::extents[Nrpoints+1][Nqs][Nqs]);
 
       // Read in r_max the maximum allowed value of an r point
       std::getline(kernel_file, line);
