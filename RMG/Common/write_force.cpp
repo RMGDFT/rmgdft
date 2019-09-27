@@ -98,12 +98,8 @@ void write_force (void)
         f2 = 0.0;
         if (Atom.movable[0])
         {
-
             num_movable_x++;
-
             avfx += fabs (fp[0]);
-
-
             if (fabs (fp[0]) > maxfx)
             {
                 maxfx = fabs (fp[0]);
@@ -116,6 +112,7 @@ void write_force (void)
 
         if (Atom.movable[1])
         {
+            num_movable_y++;
             avfy += fabs (fp[1]);
             if (fabs (fp[1]) > maxfy)
             {
@@ -128,6 +125,7 @@ void write_force (void)
 
         if (Atom.movable[2])
         {
+            num_movable_z++;
             avfz += fabs (fp[2]);
             if (fabs (fp[2]) > maxfz)
             {
