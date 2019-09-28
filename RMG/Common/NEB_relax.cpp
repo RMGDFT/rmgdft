@@ -122,25 +122,32 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
         for(int img = 0; img < pct.images; img++) path_length[img] = 0.0;
         for (int count = 0; count < ct.num_ions; count++ )
         {
-            double x = S_coor[3*count +0] - R_coor[3*count + 0];
-            double y = S_coor[3*count +1] - R_coor[3*count + 1];
-            double z = S_coor[3*count +2] - R_coor[3*count + 2];
-            path_length[pct.thisimg] += x*x + y*y + z*z;
-            /* put force constraints into control structure */
-            Atoms[count].constraint.setA_weight = L_total;
-            Atoms[count].constraint.setA_coord[0] = L_coor[3*count + 0]; 
-            Atoms[count].constraint.setA_coord[1] = L_coor[3*count + 1]; 
-            Atoms[count].constraint.setA_coord[2] = L_coor[3*count + 2]; 
+            double rdiff[3], rdiff_crys[3];
+            rdiff[0] = R_coor[3*count +0] - S_coor[3*count + 0];
+            rdiff[2] = R_coor[3*count +1] - S_coor[3*count + 1];
+            rdiff[3] = R_coor[3*count +2] - S_coor[3*count + 2];
+            
+            Rmg_L.to_crystal_half(rdiff_crys, rdiff);
+            Rmg_L.to_cartesian(rdiff_crys, rdiff);
+            path_length[pct.thisimg] += rdiff[0] * rdiff[0] + rdiff[1] * rdiff[1] + rdiff[2] * rdiff[2]; 
 
             Atoms[count].constraint.setB_weight = R_total;
-            Atoms[count].constraint.setB_coord[0] = R_coor[3*count + 0]; 
-            Atoms[count].constraint.setB_coord[1] = R_coor[3*count + 1]; 
-            Atoms[count].constraint.setB_coord[2] = R_coor[3*count + 2]; 
+            Atoms[count].constraint.setB_coord[0] = S_coor[3*count + 0] + rdiff[0]; 
+            Atoms[count].constraint.setB_coord[1] = S_coor[3*count + 1] + rdiff[1]; 
+            Atoms[count].constraint.setB_coord[2] = S_coor[3*count + 2] + rdiff[2]; 
+            /* put force constraints into control structure */
+            rdiff[0] = L_coor[3*count +0] - S_coor[3*count + 0];
+            rdiff[2] = L_coor[3*count +1] - S_coor[3*count + 1];
+            rdiff[3] = L_coor[3*count +2] - S_coor[3*count + 2];
 
-            /* zero velocities for every nudge */
-   //         Atoms[count].velocity[0] = 0.0;
-   //         Atoms[count].velocity[1] = 0.0;
-   //         Atoms[count].velocity[2] = 0.0;
+            Rmg_L.to_crystal_half(rdiff_crys, rdiff);
+            Rmg_L.to_cartesian(rdiff_crys, rdiff);
+            Atoms[count].constraint.setA_weight = L_total;
+            Atoms[count].constraint.setA_coord[0] = S_coor[3*count + 0] + rdiff[0]; 
+            Atoms[count].constraint.setA_coord[1] = S_coor[3*count + 1] + rdiff[1]; 
+            Atoms[count].constraint.setA_coord[2] = S_coor[3*count + 2] + rdiff[2]; 
+
+
         }
 
         path_length[pct.thisimg] = sqrt(path_length[pct.thisimg]);
@@ -156,20 +163,18 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
 
 
 
-        Relax (2, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
-        MPI_Barrier( MPI_COMM_WORLD );
+        static double *rhodiff;
 
-        //rmg_lbfgs();
+        Quench (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr, true);
+        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
-        /* Check for NEB convergence */
-        /* Are we force converged? */
         tmp_mag = 0.0;
         max_frc = 0.0;
         for (int count = 0; count < ct.num_ions; count++)
         {
-            double fx = Atoms[count].force[ct.fpt[0]][0] + Atoms[count].constraint.forcemask[0];
-            double fy = Atoms[count].force[ct.fpt[0]][1] + Atoms[count].constraint.forcemask[1];
-            double fz = Atoms[count].force[ct.fpt[0]][2] + Atoms[count].constraint.forcemask[2];
+            double fx = Atoms[count].force[ct.fpt[0]][0];
+            double fy = Atoms[count].force[ct.fpt[0]][1];
+            double fz = Atoms[count].force[ct.fpt[0]][2];
             tmp_mag =  fx*fx + fy*fy + fz*fz;
             if ( tmp_mag > max_frc )
                 max_frc = tmp_mag;
@@ -219,12 +224,77 @@ template <typename OrbitalType> void NEB_relax (int max_steps, double * vxc, dou
             break;
         }
 
-    } 
+
+
+        // Get atomic rho for this ionic configuration and subtract from current rho
+        int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+        double *arho = new double[FP0_BASIS];
+        LcaoGetAtomicRho(arho);
+
+        // If first step allocate rhodiff
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
+
+        if(rhodiff == NULL)
+        {
+            rhodiff = new double[FP0_BASIS];
+            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = rho[idx];
+        }
+        else
+        {
+            double *trho = new double[FP0_BASIS];
+            for(int idx = 0;idx < FP0_BASIS;idx++) trho[idx] = rho[idx];
+            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
+            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = trho[idx];
+            delete [] trho;
+        }
+
+        /* not done yet ? => move atoms */
+        /* move the ions */
+
+        switch(ct.relax_method)
+        {
+
+            case FASTRELAX:
+                fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay, &ct.relax_steps_counter);
+                break;
+            case FIRE:
+                fire (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay, &ct.relax_steps_counter);
+                break;
+            case QUICK_MIN:
+                fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay, &ct.relax_steps_counter);
+                break;
+            case MD_MIN:
+                fastrelax (&ct.iondt, ct.iondt_max, ct.iondt_inc, ct.iondt_dec, ct.relax_steps_delay, &ct.relax_steps_counter);
+                break;
+            case LBFGS:
+                rmg_lbfgs();
+                break;
+            default:
+                rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
+        }
+
+        /* Update items that change when the ionic coordinates change */
+        RmgTimer *RT0=new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
+        ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
+        delete RT0;
+
+        // Reset mixing
+        MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
+
+        // Get atomic rho for new configuration and add back to rho
+        LcaoGetAtomicRho(arho);
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+        delete [] arho;
+
+        // Extrapolate orbitals after first step
+        ExtrapolateOrbitals(ct.outfile, Kptr);
+
+    }
+
 
     delete [] L_coor;
     delete [] S_coor;
     delete [] R_coor;
     delete [] totale;
 }                               /* end neb_relax */
-
 

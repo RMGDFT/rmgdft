@@ -95,6 +95,7 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc)
     dipole_center[2] = idx * hzzgrid * zside;
 
 
+printf("\n %f %f %f", dipole_center[0], dipole_center[1], dipole_center[2]);
 
     VhcorrPeriodicPart(vh_x, vh_y, vh_z, alpha, dipole_center);
     for(i = 0; i < FPX0_GRID; i++)
@@ -102,6 +103,8 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc)
         x = (FPX_OFFSET + i)*hxxgrid * xside - dipole_center[0];
         if(x > xside * 0.5) x = x- xside;
         if(x < -xside * 0.5) x = x + xside;
+
+        double tem = 0.0, tem1 = 0;
 
         for(j = 0; j < FPY0_GRID; j++)
         {
@@ -132,14 +135,18 @@ void VhcorrDipoleInit(double *vh_x, double *vh_y, double *vh_z, double *rhoc)
                 }
 
                 idx = i * FPY0_GRID * FPZ0_GRID + j*FPZ0_GRID + k;
+                tem1 += vh_x[idx];
                 vh_x[idx] = vcorr * x - vh_x[idx];
                 vh_y[idx] = vcorr * y - vh_y[idx];
                 vh_z[idx] = vcorr * z - vh_z[idx];
+                tem += vh_x[idx];
 
 
             }
 
         }
+
+        printf("\n %d %e %e aaaa", i, tem, tem1);
     }
 
 }

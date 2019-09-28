@@ -141,19 +141,6 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
         crystal[1] = cartesian[1] / (SQRT3 / 2.0) / Lattice::celldm[0];
         crystal[2] = cartesian[2] * b2[2];
 
-        if (crystal[0] < 0.0)
-            crystal[0] += 1.0;
-        if (crystal[1] < 0.0)
-            crystal[1] += 1.0;
-        if (crystal[2] < 0.0)
-            crystal[2] += 1.0;
-        if (crystal[0] > 1.0)
-            crystal[0] -= 1.0;
-        if (crystal[1] > 1.0)
-            crystal[1] -= 1.0;
-        if (crystal[2] > 1.0)
-            crystal[2] -= 1.0;
-
     }
     else if (Lattice::ibrav == CUBIC_PRIMITIVE)
     {
@@ -162,19 +149,6 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
         crystal[1] = cartesian[1] / (Lattice::celldm[0] * Lattice::celldm[1]);
         crystal[2] = cartesian[2] / (Lattice::celldm[0] * Lattice::celldm[2]);
 
-        if (crystal[0] < 0.0)
-            crystal[0] += 1.0;
-        if (crystal[1] < 0.0)
-            crystal[1] += 1.0;
-        if (crystal[2] < 0.0)
-            crystal[2] += 1.0;
-        if (crystal[0] > 1.0)
-            crystal[0] -= 1.0;
-        if (crystal[1] > 1.0)
-            crystal[1] -= 1.0;
-        if (crystal[2] > 1.0)
-            crystal[2] -= 1.0;
-
     }
     else if (Lattice::ibrav == ORTHORHOMBIC_PRIMITIVE)
     {
@@ -182,19 +156,6 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
         crystal[0] = cartesian[0] / Lattice::celldm[0];
         crystal[1] = cartesian[1] / (Lattice::celldm[0] * Lattice::celldm[1]);
         crystal[2] = cartesian[2] / (Lattice::celldm[0] * Lattice::celldm[2]);
-
-        if (crystal[0] < 0.0)
-            crystal[0] += 1.0;
-        if (crystal[1] < 0.0)
-            crystal[1] += 1.0;
-        if (crystal[2] < 0.0)
-            crystal[2] += 1.0;
-        if (crystal[0] > 1.0)
-            crystal[0] -= 1.0;
-        if (crystal[1] > 1.0)
-            crystal[1] -= 1.0;
-        if (crystal[2] > 1.0)
-            crystal[2] -= 1.0;
 
     }
     else
@@ -206,6 +167,74 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
         }                       /* end for ir */
 
     }                           /* end if */
+
+    if (crystal[0] < 0.0)
+        crystal[0] += 1.0;
+    if (crystal[1] < 0.0)
+        crystal[1] += 1.0;
+    if (crystal[2] < 0.0)
+        crystal[2] += 1.0;
+    if (crystal[0] > 1.0)
+        crystal[0] -= 1.0;
+    if (crystal[1] > 1.0)
+        crystal[1] -= 1.0;
+    if (crystal[2] > 1.0)
+        crystal[2] -= 1.0;
+
+
+}                               /* end to_crystal  */
+
+void Lattice::to_crystal_half (double *crystal, double *cartesian)
+{
+    int ir;
+
+    if (Lattice::ibrav == HEXAGONAL)
+    {
+
+        crystal[0] = (cartesian[0] + cartesian[1] / SQRT3) / Lattice::celldm[0];
+        crystal[1] = cartesian[1] / (SQRT3 / 2.0) / Lattice::celldm[0];
+        crystal[2] = cartesian[2] * b2[2];
+
+    }
+    else if (Lattice::ibrav == CUBIC_PRIMITIVE)
+    {
+
+        crystal[0] = cartesian[0] / Lattice::celldm[0];
+        crystal[1] = cartesian[1] / (Lattice::celldm[0] * Lattice::celldm[1]);
+        crystal[2] = cartesian[2] / (Lattice::celldm[0] * Lattice::celldm[2]);
+
+    }
+    else if (Lattice::ibrav == ORTHORHOMBIC_PRIMITIVE)
+    {
+
+        crystal[0] = cartesian[0] / Lattice::celldm[0];
+        crystal[1] = cartesian[1] / (Lattice::celldm[0] * Lattice::celldm[1]);
+        crystal[2] = cartesian[2] / (Lattice::celldm[0] * Lattice::celldm[2]);
+
+    }
+    else
+    {
+
+        for (ir = 0; ir < 3; ir++)
+        {
+            crystal[ir] = cartesian[0] * b0[ir] + cartesian[1] * b1[ir] + cartesian[2] * b2[ir];
+        }                       /* end for ir */
+
+    }                           /* end if */
+
+    if (crystal[0] < -0.5)
+        crystal[0] += 1.0;
+    if (crystal[1] < -0.5)
+        crystal[1] += 1.0;
+    if (crystal[2] < -0.5)
+        crystal[2] += 1.0;
+    if (crystal[0] > 0.5)
+        crystal[0] -= 1.0;
+    if (crystal[1] > 0.5)
+        crystal[1] -= 1.0;
+    if (crystal[2] > 0.5)
+        crystal[2] -= 1.0;
+
 
 }                               /* end to_crystal  */
 
@@ -266,7 +295,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         for (ir = 0; ir < 3; ir++)
             distance += Lattice::a2[ir] * Lattice::a2[ir];
         celldm[2] = sqrt(distance)/celldm[0];
-        
+
         distance = 0.0;
         distance += a0[1] * a0[1] + a0[2] * a0[2];
         distance += a1[0] * a1[0] + a1[2] * a1[2];

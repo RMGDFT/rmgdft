@@ -84,6 +84,7 @@ public:
 
     void cross_product (double * a, double * b, double * c);
     void to_crystal (double *crystal, double *cartesian);
+    void to_crystal_half (double *crystal, double *cartesian);
     void to_cartesian (double *crystal, double *cartesian);
     void recips (void);
     int get_ibrav_type(void);
