@@ -152,13 +152,13 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         CONV_FORCE = TRUE;
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-            if (Atoms[ion].movable)
-            {
-                double *fp;
-                fp = Atoms[ion].force[ct.fpt[0]];
-                CONV_FORCE &=
-                    ((fp[0] * fp[0] + fp[1] * fp[1] + fp[2] * fp[2]) < ct.thr_frc * ct.thr_frc);
-            }
+            double *fp, fsq;
+            fp = Atoms[ion].force[ct.fpt[0]];
+            fsq = 0.0;
+            for(int i = 0; i < 3; i++)
+                if (Atoms[ion].movable[i])
+                    fsq += fp[i] * fp[i];
+            CONV_FORCE &= (fsq < ct.thr_frc * ct.thr_frc);
         }
 
         /* check for max relax steps */

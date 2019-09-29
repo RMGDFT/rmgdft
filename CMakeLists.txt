@@ -437,7 +437,7 @@ if(NOT RMG_MATH_LIBS)
     if(NOT CRAY_XK)
 
         # BLAS
-        find_package(BLAS REQUIRED)
+        find_package(BLAS)
         if(BLAS_FOUND)
             list(APPEND RMGLIBS ${BLAS_LIBRARIES})
         endif (BLAS_FOUND)

@@ -82,7 +82,8 @@ void WriteRestart (char *name, double * vh, double *vxc, double *vh_old, double 
 	    iptr = &Atoms[ion];
 	    sp = &Species[iptr->species];
 
-	    fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %d", sp->atomic_symbol, iptr->crds[0], iptr->crds[1], iptr->crds[2], iptr->movable);
+	    fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %d %d %d", sp->atomic_symbol, iptr->crds[0], 
+                iptr->crds[1], iptr->crds[2], iptr->movable[0],iptr->movable[1],iptr->movable[2]);
 	}
 
 	fprintf(fhandle,"\n\"\n");

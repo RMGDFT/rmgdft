@@ -21,15 +21,14 @@ void change_states_crds(STATE * states)
 
         ion = states[ist].atom_index;
 
-        if (Atoms[ion].movable)
-        {
-
+        if (Atoms[ion].movable[0])
             states[ist].crds[0] = Atoms[ion].crds[0];
+
+        if (Atoms[ion].movable[1])
             states[ist].crds[1] = Atoms[ion].crds[1];
+
+        if (Atoms[ion].movable[2])
             states[ist].crds[2] = Atoms[ion].crds[2];
-
-
-        }                       /* end if */
 
     }
 

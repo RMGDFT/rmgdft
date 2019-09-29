@@ -133,12 +133,23 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
         for (ion = 0; ion < ct.num_ions; ion++)
         {
 
-            if (Atoms[ion].movable)
+            if (Atoms[ion].movable[0])
             {
                 double *fp;
                 fp = Atoms[ion].force[ct.fpt[0]];
-                CONV_FORCE &= ((fabs(fp[0]) < ct.thr_frc) &&
-                               (fabs(fp[1]) < ct.thr_frc) && (fabs(fp[2]) < ct.thr_frc));
+                CONV_FORCE &= ((fabs(fp[0]) < ct.thr_frc));
+            }
+            if (Atoms[ion].movable[1])
+            {
+                double *fp;
+                fp = Atoms[ion].force[ct.fpt[0]];
+                CONV_FORCE &= ((fabs(fp[1]) < ct.thr_frc));
+            }
+            if (Atoms[ion].movable[2])
+            {
+                double *fp;
+                fp = Atoms[ion].force[ct.fpt[0]];
+                CONV_FORCE &= ((fabs(fp[2]) < ct.thr_frc));
             }
         }
 

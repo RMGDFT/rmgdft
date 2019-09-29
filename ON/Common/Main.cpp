@@ -297,9 +297,11 @@ int main(int argc, char **argv)
                         }
                     }
 
-                    double *psi;
-                    ct.exx_mode = EXX_LOCAL_FFT;
+                    double *psi = new double[Rmg_G->get_P0_BASIS(1) * ct.num_states];
                     Exxbase<double> Exx(*Rmg_G, Rmg_L, "tempwave", nstates_occ, occs.data(), psi, ct.exx_mode);
+                    if(ct.exx_mode == EXX_DIST_FFT)
+                        Exx.ReadWfsFromSingleFile();
+
                     Exx.Vexx_integrals(ct.exx_int_file);
                 }
 
@@ -429,5 +431,3 @@ static void dipole_calculation(double *rhooo, double *dipole)
 
 
 }
-
-

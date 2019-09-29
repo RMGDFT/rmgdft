@@ -132,7 +132,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     N = 0;
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-        if (Atoms[ion].movable) N++;
+        if (Atoms[ion].movable[0] || Atoms[ion].movable[1] || Atoms[ion].movable[2] ) N++;
     }
     ct.nose.N = N;
 
@@ -154,9 +154,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     /* zero out the non-moving atoms */
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-        if (Atoms[ion].movable == 0)
+        ION &Atom = Atoms[ion];
+        if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
         {
-            ION &Atom = Atoms[ion];
             Atom.ZeroForces();
             Atom.ZeroVelocity();
         }
@@ -224,7 +224,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
 
         /* Update the positions a full timestep */
         //posup ();
-	move_ions (ct.iondt);
+        move_ions (ct.iondt);
 
         // Get atomic rho for new configuration and add back to rho
         LcaoGetAtomicRho(arho);
@@ -246,9 +246,9 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         /* zero out the non-moving atoms */
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
-            if (Atoms[ion].movable == 0)
+            ION &Atom = Atoms[ion];
+            if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
             {
-                ION &Atom = Atoms[ion];
                 Atom.ZeroForces();
                 Atom.ZeroVelocity();
             }
@@ -291,30 +291,30 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
             switch (ct.forceflag)
             {
 
-            case MD_CVE:
-                rmg_printf ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
-                        ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
-                rmg_printf("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
-                break;
-            case MD_CVT:
-                if (ct.tcontrol == T_NOSE_CHAIN)
-                {
-                    rmg_printf ("\n @CVT-NOSE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
-                            ct.md_steps, ct.TOTAL, ct.ionke, nosekin + nosepot,
-                            ct.TOTAL + ct.ionke + nosekin + nosepot, iontemp, trms);
-                }
-                if (ct.tcontrol == T_AND_SCALE)
-                {
-                    rmg_printf ("\n @CVT-ANDERSON %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                case MD_CVE:
+                    rmg_printf ("\n @CVE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
                             ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
-                }
-                break;
-            case MD_CPT:
-                rmg_error_handler (__FILE__, __LINE__,"MD_CPT is not programmed yet.");
-                break;
+                    rmg_printf("\n Center of mass velocity (%15.10f, %15.10f, %15.10f)", vx, vy, vz);
+                    break;
+                case MD_CVT:
+                    if (ct.tcontrol == T_NOSE_CHAIN)
+                    {
+                        rmg_printf ("\n @CVT-NOSE %5d  %15.10f  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                                ct.md_steps, ct.TOTAL, ct.ionke, nosekin + nosepot,
+                                ct.TOTAL + ct.ionke + nosekin + nosepot, iontemp, trms);
+                    }
+                    if (ct.tcontrol == T_AND_SCALE)
+                    {
+                        rmg_printf ("\n @CVT-ANDERSON %5d  %15.10f  %15.10f  %15.10f  %15.10f  %10.8e",
+                                ct.md_steps, ct.TOTAL, ct.ionke, ct.TOTAL + ct.ionke, iontemp, trms);
+                    }
+                    break;
+                case MD_CPT:
+                    rmg_error_handler (__FILE__, __LINE__,"MD_CPT is not programmed yet.");
+                    break;
 
-            default:
-                throw RmgFatalException() << "Undefined output type" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+                default:
+                    throw RmgFatalException() << "Undefined output type" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
             }                   /* end of switch */
 
@@ -386,7 +386,7 @@ void init_nose ()
     {
 
         ct.nose.xf[ct.fpt[0]][jc] = (ct.nose.xq[jc - 1] * ct.nose.xv[jc - 1] * ct.nose.xv[jc - 1]
-                                     - ct.nose.temp * kB) / ct.nose.xq[jc];
+                - ct.nose.temp * kB) / ct.nose.xq[jc];
 
     }
 
@@ -426,40 +426,40 @@ void velup1 ()
     switch (ct.forceflag)
     {
 
-    case MD_CVE:
-        scale = 1.0;
-        break;
-    case MD_CVT:
-        if (ct.tcontrol == T_NOSE_CHAIN)
-        {
-            nose_velup1 ();
-            scale = exp (-0.5 * step * ct.nose.xv[0]);
-        }
-        if (ct.tcontrol == T_AND_SCALE)
-        {
-
-            ct.ionke = 0.0;
-            /* Loop over ions */
-            for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+        case MD_CVE:
+            scale = 1.0;
+            break;
+        case MD_CVT:
+            if (ct.tcontrol == T_NOSE_CHAIN)
             {
-                ct.ionke += Atoms[ion].GetKineticEnergy();
+                nose_velup1 ();
+                scale = exp (-0.5 * step * ct.nose.xv[0]);
             }
-
-            temperature = ct.ionke * 2.0 / (3.0 * ct.nose.N * kB);
-
-            if (ct.ionke > 0.0)
+            if (ct.tcontrol == T_AND_SCALE)
             {
-                scale = sqrt (ct.nose.temp / temperature);
-                if (pct.gridpe == 0)
-                    rmg_printf ("\ntscale=%f\n", scale);
-            }
-            else
-            {
-                scale = 1.0;
-            }
 
-        }
-        break;
+                ct.ionke = 0.0;
+                /* Loop over ions */
+                for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+                {
+                    ct.ionke += Atoms[ion].GetKineticEnergy();
+                }
+
+                temperature = ct.ionke * 2.0 / (3.0 * ct.nose.N * kB);
+
+                if (ct.ionke > 0.0)
+                {
+                    scale = sqrt (ct.nose.temp / temperature);
+                    if (pct.gridpe == 0)
+                        rmg_printf ("\ntscale=%f\n", scale);
+                }
+                else
+                {
+                    scale = 1.0;
+                }
+
+            }
+            break;
     }
 
     /* Loop over ions */
@@ -469,7 +469,7 @@ void velup1 ()
 
         ION &Atom = Atoms[ion];
 
-        if (Atom.movable)
+        if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
         {
 
             /* Get ionic mass */
@@ -503,7 +503,7 @@ void velup1 ()
 
                         Atom.velocity[ic] *= scale;
                         Atom.velocity[ic] += t2 * (4.0 * Atom.force[ct.fpt[0]][ic]
-                                                    - 1.0 * Atom.force[ct.fpt[1]][ic]);
+                                - 1.0 * Atom.force[ct.fpt[1]][ic]);
 
                     }
                     break;
@@ -518,9 +518,9 @@ void velup1 ()
 
                         Atom.velocity[ic] *= scale;
                         Atom.velocity[ic] += t2 * (323.0 * Atom.force[ct.fpt[0]][ic]
-                                                    - 264.0 * Atom.force[ct.fpt[1]][ic]
-                                                    + 159.0 * Atom.force[ct.fpt[2]][ic]
-                                                    - 38.0 * Atom.force[ct.fpt[3]][ic]);
+                                - 264.0 * Atom.force[ct.fpt[1]][ic]
+                                + 159.0 * Atom.force[ct.fpt[2]][ic]
+                                - 38.0 * Atom.force[ct.fpt[3]][ic]);
 
                     }
                     break;
@@ -590,19 +590,19 @@ void velup2 ()
     switch (ct.forceflag)
     {
 
-    case MD_CVE:
-        scale = 1.0;
-        break;
-    case MD_CVT:
-        if (ct.tcontrol == T_NOSE_CHAIN)
-        {
-            scale = exp (-0.5 * step * ct.nose.xv[0]);
-        }
-        if (ct.tcontrol == T_AND_SCALE)
-        {
+        case MD_CVE:
             scale = 1.0;
-        }
-        break;
+            break;
+        case MD_CVT:
+            if (ct.tcontrol == T_NOSE_CHAIN)
+            {
+                scale = exp (-0.5 * step * ct.nose.xv[0]);
+            }
+            if (ct.tcontrol == T_AND_SCALE)
+            {
+                scale = 1.0;
+            }
+            break;
 
     }                           /* end of switch */
 
@@ -617,49 +617,49 @@ void velup2 ()
         /* Get ionic mass */
         mass = Species[Atom.species].atomic_mass * mu_me;
 
-        if (Atom.movable)
+        if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
         {
 
             /* update velocity by one-half step */
             switch (ct.mdorder)
             {
 
-            case ORDER_2:
-                t1 = step / mass;
-                t2 = t1 / 2.0;
+                case ORDER_2:
+                    t1 = step / mass;
+                    t2 = t1 / 2.0;
 
-                for (ic = 0; ic < 3; ic++)
-                {
-                    Atom.velocity[ic] += t2 * Atom.force[0][ic];
-                    Atom.velocity[ic] *= scale;
-                }
-                break;
+                    for (ic = 0; ic < 3; ic++)
+                    {
+                        Atom.velocity[ic] += t2 * Atom.force[0][ic];
+                        Atom.velocity[ic] *= scale;
+                    }
+                    break;
 
-            case ORDER_3:
-                t1 = step / mass;
-                t2 = t1 / 6.0;
+                case ORDER_3:
+                    t1 = step / mass;
+                    t2 = t1 / 6.0;
 
-                for (ic = 0; ic < 3; ic++)
-                {
-                    Atom.velocity[ic] += t2 * (2.0 * Atom.force[ct.fpt[0]][ic]
-                                                + 1.0 * Atom.force[ct.fpt[1]][ic]);
-                    Atom.velocity[ic] *= scale;
-                }
-                break;
+                    for (ic = 0; ic < 3; ic++)
+                    {
+                        Atom.velocity[ic] += t2 * (2.0 * Atom.force[ct.fpt[0]][ic]
+                                + 1.0 * Atom.force[ct.fpt[1]][ic]);
+                        Atom.velocity[ic] *= scale;
+                    }
+                    break;
 
-            case ORDER_5:
-                t1 = step / mass;
-                t2 = t1 / 360.0;
+                case ORDER_5:
+                    t1 = step / mass;
+                    t2 = t1 / 360.0;
 
-                for (ic = 0; ic < 3; ic++)
-                {
-                    Atom.velocity[ic] += t2 * (97.0 * Atom.force[ct.fpt[0]][ic]
-                                                + 114.0 * Atom.force[ct.fpt[1]][ic]
-                                                - 39.0 * Atom.force[ct.fpt[2]][ic]
-                                                + 8.0 * Atom.force[ct.fpt[3]][ic]);
-                    Atom.velocity[ic] *= scale;
-                }
-                break;
+                    for (ic = 0; ic < 3; ic++)
+                    {
+                        Atom.velocity[ic] += t2 * (97.0 * Atom.force[ct.fpt[0]][ic]
+                                + 114.0 * Atom.force[ct.fpt[1]][ic]
+                                - 39.0 * Atom.force[ct.fpt[2]][ic]
+                                + 8.0 * Atom.force[ct.fpt[3]][ic]);
+                        Atom.velocity[ic] *= scale;
+                    }
+                    break;
 
             }                   /* end of switch */
 
@@ -735,41 +735,41 @@ void nose_velup1 ()
     switch (ct.mdorder)
     {
 
-    case ORDER_2:
-        ct.nose.xv[mn] += 0.5 * step * ct.nose.xf[0][mn];
-        for (jc = mn - 1; jc >= 0; jc--)
-        {
-            scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
-            ct.nose.xv[jc] = scale * ct.nose.xv[jc] + 0.5 * step * ct.nose.xf[0][jc];
-        }
-        break;
+        case ORDER_2:
+            ct.nose.xv[mn] += 0.5 * step * ct.nose.xf[0][mn];
+            for (jc = mn - 1; jc >= 0; jc--)
+            {
+                scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
+                ct.nose.xv[jc] = scale * ct.nose.xv[jc] + 0.5 * step * ct.nose.xf[0][jc];
+            }
+            break;
 
-    case ORDER_3:
-        ct.nose.xv[mn] +=
-            step / 6.0 * (4.0 * ct.nose.xf[ct.fpt[0]][mn] - ct.nose.xf[ct.fpt[1]][mn]);
-        for (jc = mn - 1; jc >= 0; jc--)
-        {
-            scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
-            ct.nose.xv[jc] = scale * ct.nose.xv[jc] +
-                step / 6.0 * (4.0 * ct.nose.xf[ct.fpt[0]][jc] - ct.nose.xf[ct.fpt[1]][jc]);
-        }
-        break;
+        case ORDER_3:
+            ct.nose.xv[mn] +=
+                step / 6.0 * (4.0 * ct.nose.xf[ct.fpt[0]][mn] - ct.nose.xf[ct.fpt[1]][mn]);
+            for (jc = mn - 1; jc >= 0; jc--)
+            {
+                scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
+                ct.nose.xv[jc] = scale * ct.nose.xv[jc] +
+                    step / 6.0 * (4.0 * ct.nose.xf[ct.fpt[0]][jc] - ct.nose.xf[ct.fpt[1]][jc]);
+            }
+            break;
 
-    case ORDER_5:
-        ct.nose.xv[mn] += step / 360.0 * (323.0 * ct.nose.xf[ct.fpt[0]][mn]
-                                          - 264.0 * ct.nose.xf[ct.fpt[1]][mn]
-                                          + 159.0 * ct.nose.xf[ct.fpt[2]][mn]
-                                          - 38.0 * ct.nose.xf[ct.fpt[3]][mn]);
-        for (jc = mn - 1; jc >= 0; jc--)
-        {
-            scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
-            ct.nose.xv[jc] = scale * ct.nose.xv[jc] +
-                step / 360.0 * (323.0 * ct.nose.xf[ct.fpt[0]][jc]
-                                - 264.0 * ct.nose.xf[ct.fpt[1]][jc]
-                                + 159.0 * ct.nose.xf[ct.fpt[2]][jc]
-                                - 38.0 * ct.nose.xf[ct.fpt[3]][jc]);
-        }
-        break;
+        case ORDER_5:
+            ct.nose.xv[mn] += step / 360.0 * (323.0 * ct.nose.xf[ct.fpt[0]][mn]
+                    - 264.0 * ct.nose.xf[ct.fpt[1]][mn]
+                    + 159.0 * ct.nose.xf[ct.fpt[2]][mn]
+                    - 38.0 * ct.nose.xf[ct.fpt[3]][mn]);
+            for (jc = mn - 1; jc >= 0; jc--)
+            {
+                scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
+                ct.nose.xv[jc] = scale * ct.nose.xv[jc] +
+                    step / 360.0 * (323.0 * ct.nose.xf[ct.fpt[0]][jc]
+                            - 264.0 * ct.nose.xf[ct.fpt[1]][jc]
+                            + 159.0 * ct.nose.xf[ct.fpt[2]][jc]
+                            - 38.0 * ct.nose.xf[ct.fpt[3]][jc]);
+            }
+            break;
     }
 
 }                               /* end of nose_velup1 */
@@ -811,19 +811,19 @@ void nose_velup2 ()
         ct.nose.xf[ct.fpt[0]][0] = 2.0 * (ct.ionke - ct.nose.k0) / ct.nose.xq[0];
         switch (ct.mdorder)
         {
-        case ORDER_2:
-            ct.nose.xv[0] += step / 2.0 * ct.nose.xf[0][0];
-            break;
-        case ORDER_3:
-            ct.nose.xv[0] +=
-                step / 6.0 * (2.0 * ct.nose.xf[ct.fpt[0]][0] + ct.nose.xf[ct.fpt[1]][0]);
-            break;
-        case ORDER_5:
-            ct.nose.xv[0] += step / 360.0 * (97.0 * ct.nose.xf[ct.fpt[0]][0]
-                                             + 114.0 * ct.nose.xf[ct.fpt[1]][0]
-                                             - 39.0 * ct.nose.xf[ct.fpt[2]][0]
-                                             + 8.0 * ct.nose.xf[ct.fpt[3]][0]);
-            break;
+            case ORDER_2:
+                ct.nose.xv[0] += step / 2.0 * ct.nose.xf[0][0];
+                break;
+            case ORDER_3:
+                ct.nose.xv[0] +=
+                    step / 6.0 * (2.0 * ct.nose.xf[ct.fpt[0]][0] + ct.nose.xf[ct.fpt[1]][0]);
+                break;
+            case ORDER_5:
+                ct.nose.xv[0] += step / 360.0 * (97.0 * ct.nose.xf[ct.fpt[0]][0]
+                        + 114.0 * ct.nose.xf[ct.fpt[1]][0]
+                        - 39.0 * ct.nose.xf[ct.fpt[2]][0]
+                        + 8.0 * ct.nose.xf[ct.fpt[3]][0]);
+                break;
         }                       /* end of switch */
     }
     else
@@ -833,87 +833,87 @@ void nose_velup2 ()
 
         switch (ct.mdorder)
         {
-        case ORDER_2:
-            ct.nose.xv[0] = scale * (ct.nose.xv[0] + step / 2.0 * ct.nose.xf[0][0]);
-            break;
-        case ORDER_3:
-            ct.nose.xv[0] =
-                scale * (ct.nose.xv[0] +
-                         step / 6.0 * (2.0 * ct.nose.xf[ct.fpt[0]][0] + ct.nose.xf[ct.fpt[1]][0]));
-            break;
-        case ORDER_5:
-            ct.nose.xv[0] = scale * (ct.nose.xv[0] + step / 360.0 * (97.0 * ct.nose.xf[ct.fpt[0]][0]
-                                                                     +
-                                                                     114.0 *
-                                                                     ct.nose.xf[ct.fpt[1]][0] -
-                                                                     39.0 *
-                                                                     ct.nose.xf[ct.fpt[2]][0] +
-                                                                     8.0 *
-                                                                     ct.nose.xf[ct.fpt[3]][0]));
-            break;
+            case ORDER_2:
+                ct.nose.xv[0] = scale * (ct.nose.xv[0] + step / 2.0 * ct.nose.xf[0][0]);
+                break;
+            case ORDER_3:
+                ct.nose.xv[0] =
+                    scale * (ct.nose.xv[0] +
+                            step / 6.0 * (2.0 * ct.nose.xf[ct.fpt[0]][0] + ct.nose.xf[ct.fpt[1]][0]));
+                break;
+            case ORDER_5:
+                ct.nose.xv[0] = scale * (ct.nose.xv[0] + step / 360.0 * (97.0 * ct.nose.xf[ct.fpt[0]][0]
+                            +
+                            114.0 *
+                            ct.nose.xf[ct.fpt[1]][0] -
+                            39.0 *
+                            ct.nose.xf[ct.fpt[2]][0] +
+                            8.0 *
+                            ct.nose.xf[ct.fpt[3]][0]));
+                break;
         }                       /* end of switch */
 
         switch (ct.mdorder)
         {
-        case ORDER_2:
-            for (jc = 1; jc < ct.nose.m - 1; jc++)
-            {
-                scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
-                ct.nose.xf[ct.fpt[0]][jc] = (ct.nose.xq[jc - 1] * ct.nose.xv[jc - 1] *
-                                             ct.nose.xv[jc - 1] - ct.nose.temp * kB) /
-                    ct.nose.xq[jc];
-                ct.nose.xv[jc] = scale * (ct.nose.xv[jc] + step / 2.0 * ct.nose.xf[ct.fpt[0]][jc]);
-            }
-            mn = ct.nose.m - 1;
-            ct.nose.xf[ct.fpt[0]][mn] =
-                (ct.nose.xq[mn - 1] * ct.nose.xv[mn - 1] * ct.nose.xv[mn - 1] -
-                 ct.nose.temp * kB) / ct.nose.xq[mn];
-            ct.nose.xv[mn] = ct.nose.xv[mn] + step / 2.0 * ct.nose.xf[ct.fpt[0]][mn];
-            break;
-        case ORDER_3:
-            for (jc = 1; jc < ct.nose.m - 1; jc++)
-            {
-                scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
-                ct.nose.xf[ct.fpt[0]][jc] = (ct.nose.xq[jc - 1] * ct.nose.xv[jc - 1] *
-                                             ct.nose.xv[jc - 1] - ct.nose.temp * kB) /
-                    ct.nose.xq[jc];
-                ct.nose.xv[jc] =
-                    scale * (ct.nose.xv[jc] +
-                             step / 6.0 * (2.0 * ct.nose.xf[ct.fpt[0]][jc] +
-                                           ct.nose.xf[ct.fpt[1]][jc]));
-            }
-            mn = ct.nose.m - 1;
-            ct.nose.xf[ct.fpt[0]][mn] =
-                (ct.nose.xq[mn - 1] * ct.nose.xv[mn - 1] * ct.nose.xv[mn - 1] -
-                 ct.nose.temp * kB) / ct.nose.xq[mn];
-            ct.nose.xv[mn] =
-                ct.nose.xv[mn] + step / 6.0 * (2.0 * ct.nose.xf[ct.fpt[0]][mn] +
-                                               ct.nose.xf[ct.fpt[1]][mn]);
-            break;
-        case ORDER_5:
-            for (jc = 1; jc < ct.nose.m - 1; jc++)
-            {
-                scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
-                ct.nose.xf[ct.fpt[0]][jc] = (ct.nose.xq[jc - 1] * ct.nose.xv[jc - 1] *
-                                             ct.nose.xv[jc - 1] - ct.nose.temp * kB) /
-                    ct.nose.xq[jc];
-                ct.nose.xv[jc] =
-                    scale * (ct.nose.xv[jc] +
-                             step / 360.0 * (97.0 * ct.nose.xf[ct.fpt[0]][jc] +
-                                             114.0 * ct.nose.xf[ct.fpt[1]][jc] -
-                                             39.0 * ct.nose.xf[ct.fpt[2]][jc] +
-                                             8.0 * ct.nose.xf[ct.fpt[3]][jc]));
-            }
-            mn = ct.nose.m - 1;
-            ct.nose.xf[ct.fpt[0]][mn] =
-                (ct.nose.xq[mn - 1] * ct.nose.xv[mn - 1] * ct.nose.xv[mn - 1] -
-                 ct.nose.temp * kB) / ct.nose.xq[mn];
-            ct.nose.xv[mn] =
-                ct.nose.xv[mn] + step / 360.0 * (97.0 * ct.nose.xf[ct.fpt[0]][mn] +
-                                                 114.0 * ct.nose.xf[ct.fpt[1]][mn] -
-                                                 39.0 * ct.nose.xf[ct.fpt[2]][mn] +
-                                                 8.0 * ct.nose.xf[ct.fpt[3]][mn]);
-            break;
+            case ORDER_2:
+                for (jc = 1; jc < ct.nose.m - 1; jc++)
+                {
+                    scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
+                    ct.nose.xf[ct.fpt[0]][jc] = (ct.nose.xq[jc - 1] * ct.nose.xv[jc - 1] *
+                            ct.nose.xv[jc - 1] - ct.nose.temp * kB) /
+                        ct.nose.xq[jc];
+                    ct.nose.xv[jc] = scale * (ct.nose.xv[jc] + step / 2.0 * ct.nose.xf[ct.fpt[0]][jc]);
+                }
+                mn = ct.nose.m - 1;
+                ct.nose.xf[ct.fpt[0]][mn] =
+                    (ct.nose.xq[mn - 1] * ct.nose.xv[mn - 1] * ct.nose.xv[mn - 1] -
+                     ct.nose.temp * kB) / ct.nose.xq[mn];
+                ct.nose.xv[mn] = ct.nose.xv[mn] + step / 2.0 * ct.nose.xf[ct.fpt[0]][mn];
+                break;
+            case ORDER_3:
+                for (jc = 1; jc < ct.nose.m - 1; jc++)
+                {
+                    scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
+                    ct.nose.xf[ct.fpt[0]][jc] = (ct.nose.xq[jc - 1] * ct.nose.xv[jc - 1] *
+                            ct.nose.xv[jc - 1] - ct.nose.temp * kB) /
+                        ct.nose.xq[jc];
+                    ct.nose.xv[jc] =
+                        scale * (ct.nose.xv[jc] +
+                                step / 6.0 * (2.0 * ct.nose.xf[ct.fpt[0]][jc] +
+                                    ct.nose.xf[ct.fpt[1]][jc]));
+                }
+                mn = ct.nose.m - 1;
+                ct.nose.xf[ct.fpt[0]][mn] =
+                    (ct.nose.xq[mn - 1] * ct.nose.xv[mn - 1] * ct.nose.xv[mn - 1] -
+                     ct.nose.temp * kB) / ct.nose.xq[mn];
+                ct.nose.xv[mn] =
+                    ct.nose.xv[mn] + step / 6.0 * (2.0 * ct.nose.xf[ct.fpt[0]][mn] +
+                            ct.nose.xf[ct.fpt[1]][mn]);
+                break;
+            case ORDER_5:
+                for (jc = 1; jc < ct.nose.m - 1; jc++)
+                {
+                    scale = exp (-0.5 * step * ct.nose.xv[jc + 1]);
+                    ct.nose.xf[ct.fpt[0]][jc] = (ct.nose.xq[jc - 1] * ct.nose.xv[jc - 1] *
+                            ct.nose.xv[jc - 1] - ct.nose.temp * kB) /
+                        ct.nose.xq[jc];
+                    ct.nose.xv[jc] =
+                        scale * (ct.nose.xv[jc] +
+                                step / 360.0 * (97.0 * ct.nose.xf[ct.fpt[0]][jc] +
+                                    114.0 * ct.nose.xf[ct.fpt[1]][jc] -
+                                    39.0 * ct.nose.xf[ct.fpt[2]][jc] +
+                                    8.0 * ct.nose.xf[ct.fpt[3]][jc]));
+                }
+                mn = ct.nose.m - 1;
+                ct.nose.xf[ct.fpt[0]][mn] =
+                    (ct.nose.xq[mn - 1] * ct.nose.xv[mn - 1] * ct.nose.xv[mn - 1] -
+                     ct.nose.temp * kB) / ct.nose.xq[mn];
+                ct.nose.xv[mn] =
+                    ct.nose.xv[mn] + step / 360.0 * (97.0 * ct.nose.xf[ct.fpt[0]][mn] +
+                            114.0 * ct.nose.xf[ct.fpt[1]][mn] -
+                            39.0 * ct.nose.xf[ct.fpt[2]][mn] +
+                            8.0 * ct.nose.xf[ct.fpt[3]][mn]);
+                break;
         }                       /* end of switch */
 
     }                           /* end of if m */
@@ -973,7 +973,7 @@ void center_of_mass_velocity(double &vx, double &vy, double &vz)
         pz += mass * Atom.velocity[1];
         total_mass += mass;
     }
-    
+
     vx = px / total_mass;
     vy = py / total_mass;
     vz = pz / total_mass;
@@ -996,7 +996,8 @@ void ranv (void)
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
-        if (Atoms[ion].movable)
+        ION &Atom = Atoms[ion];
+        if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
             N++;
 
     }                           /* end for */
@@ -1019,7 +1020,7 @@ void ranv (void)
             /* Get ionic mass */
             mass = Species[Atom.species].atomic_mass * mu_me;
 
-            if (Atom.movable)
+            if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
             {
                 c = -kB * ct.nose.temp / mass;
                 tmass += mass;
@@ -1051,7 +1052,7 @@ void ranv (void)
 
             ION &Atom = Atoms[ion];
 
-            if (Atom.movable)
+            if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
             {
                 Atom.velocity[0] -= vtot[0];
                 Atom.velocity[1] -= vtot[1];
@@ -1077,7 +1078,7 @@ void ranv (void)
             /* Get ionic mass */
             mass = Species[Atom.species].atomic_mass * mu_me;
 
-            if (Atom.movable)
+            if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
             {
                 Atom.velocity[0] *= scale;
                 Atom.velocity[1] *= scale;
