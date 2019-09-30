@@ -38,5 +38,5 @@ foreach(lib ${RMGLIBS})
     target_link_libraries(${rmg} ${lib})
 endforeach(lib ${RMGLIBS})
 
-install(TARGETS ${rmg} DESTINATION $PROJECT_BINARY_DIR)
+install(TARGETS ${rmg} DESTINATION bin)
 
