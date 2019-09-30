@@ -76,7 +76,7 @@ C     9.3055    15.6378    17.8881    1
 
 namespace Ri = RmgInput;
 
-void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& IonSpecies, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
+void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& IonSpecies, std::vector<ION>& Atoms_read, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
 {
 
     std::string AtomArray;
@@ -204,7 +204,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
     // Converted to RMG internal format and process from here.
 
     lc.num_ions = Atoms_str.size();
-    Atoms.resize(lc.num_ions);
+    Atoms_read.resize(lc.num_ions);
 
     std::vector<std::string>::iterator it, it1;
     for (it = Atoms_str.begin(); it != Atoms_str.end(); ++it) {
@@ -232,13 +232,13 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         // Look for the coordinates
         it1++;
         std::string xstr = *it1;
-        Atoms[nions].crds[0] = std::atof(xstr.c_str());
+        Atoms_read[nions].crds[0] = std::atof(xstr.c_str());
         it1++;
         std::string ystr = *it1;
-        Atoms[nions].crds[1] = std::atof(ystr.c_str());
+        Atoms_read[nions].crds[1] = std::atof(ystr.c_str());
         it1++;
         std::string zstr = *it1;
-        Atoms[nions].crds[2] = std::atof(zstr.c_str());
+        Atoms_read[nions].crds[2] = std::atof(zstr.c_str());
 
 
 
@@ -303,10 +303,10 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
                 }
         }
 
-        Atoms[nions].movable[0] = movable[0];
-        Atoms[nions].movable[1] = movable[1];
-        Atoms[nions].movable[2] = movable[2];
-        Atoms[nions].init_spin_rho = init_spin_ratio;
+        Atoms_read[nions].movable[0] = movable[0];
+        Atoms_read[nions].movable[1] = movable[1];
+        Atoms_read[nions].movable[2] = movable[2];
+        Atoms_read[nions].init_spin_rho = init_spin_ratio;
 
         if(init_spin_ratio > 0.5 || init_spin_ratio < -0.5) 
             throw RmgFatalException() << 

@@ -57,7 +57,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
 
     // Read atoms
-    ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
+    ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, Atoms, lc, InputMap);
 
     ReadTFAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
 
