@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import subprocess
 if __name__ == '__main__':
 
     num_images = 7
@@ -8,6 +9,22 @@ if __name__ == '__main__':
     first_image = "image_initial"
     last_image = "image_final"
     
+    cmd = "grep 'final total' %s/*.log |tail -1"%first_image
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+    if(len(p.split()) == 13):
+        te_initial=p.split()[11]
+    else:
+        te_initial="0.0"
+        print "No total eneryg from initial image"
+
+    cmd = "grep 'final total' %s/*.log |tail -1"%last_image
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+    if(len(p.split()) == 13):
+        te_final=p.split()[11]
+    else:
+        te_final="0.0"
+        print "No total eneryg from final image"
+
     print "modify lines in NEB_generate.py to generate NEB inputs for different images"
     ctrl_init = """ 
 #spin_polarization="false"
@@ -27,10 +44,10 @@ num_images="%d"
     ctrl_init += """
 input_file_initial_image = "./%s/input"
 input_file_final_image = "./%s/input"
-totale_initial_image = "-1.73479761"
-totale_final_image = "-1.73479761"
+totale_initial_image = "%s"
+totale_final_image = "%s"
 
-"""%(first_image, last_image)
+"""%(first_image, last_image, te_initial, te_final)
 
     ctrl_init += """
 # for each image, path is either relative to the path in job file or
