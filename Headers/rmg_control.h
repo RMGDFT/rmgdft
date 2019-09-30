@@ -859,6 +859,9 @@ public:
     size_t beta_alloc[3];
     size_t psi_alloc[3];
     int LocalizedOrbitalLayout;
+
+    std::string input_initial, input_final;
+    double totale_initial, totale_final;
 };
 
 

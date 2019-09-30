@@ -5,13 +5,16 @@ if __name__ == '__main__':
 
     num_images = 7
     num_proc = 2
-    first_image = "image00"
-    last_image = "image06"
+    first_image = "image_initial"
+    last_image = "image_final"
     
     print "modify lines in NEB_generate.py to generate NEB inputs for different images"
     ctrl_init = """ 
-spin_polarization="false"
-# spin_polarization="true"
+#spin_polarization="false"
+spin_polarization="true"
+
+
+calculation_mode="NEB Relax"
 
 image_per_node="1"
 max_neb_steps = "10"
@@ -19,12 +22,21 @@ neb_spring_constant = "0.50000000"
 
 #  max number of images is defined in params.h MAX_IMGS 99
 num_images="%d"
+"""%(num_images-2)
 
+    ctrl_init += """
+input_file_initial_image = "./%s/input"
+input_file_final_image = "./%s/input"
+totale_initial_image = "-1.73479761"
+totale_final_image = "-1.73479761"
+
+"""%(first_image, last_image)
+
+    ctrl_init += """
 # for each image, path is either relative to the path in job file or
 # full path
 image_infos="
-./%s/  input   %d 
-"""%(num_images,first_image,num_proc)
+"""
 
     image_per_node="1"
     max_neb_steps = "10"
@@ -93,7 +105,10 @@ image_infos="
 
         filename = dir_name + "/input"
         with open(filename, "w") as f: f.write(input_image)
+        filename = dir_name + "/input_restart"
+        with open(filename, "w") as f: f.write(input_image.replace("LCAO Start", "Restart From File", 1))
 
-    ctrl_init += "./%s/  input   %d\n\"\n"%(last_image, num_proc) 
+    ctrl_init +="\"\n"
     with open("ctrl_init.dat", "w") as f: f.write(ctrl_init)
+    with open("ctrl_init_restart.dat", "w") as f: f.write(ctrl_init.replace("input", "input_restart", num_images))
 

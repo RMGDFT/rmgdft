@@ -146,7 +146,7 @@ bool Verify(const std::string& KeyName, const bool& KeyVal, const std::unordered
 extern "C" bool verify_boolean(char *tagname, const void *optvalue );
 void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& Species, std::vector<ION> &Atoms,
-        CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
+        CONTROL& lc);
 void ReadForces(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 void ReadVelocities(char *cfile, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);
 void ReadTFAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& IonSpecies, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap);

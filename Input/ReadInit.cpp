@@ -90,6 +90,22 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
                      "Type of calculation to perform. ",
                      "calculation_mode not available. ", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("input_file_initial_image", &lc.input_initial, "image_initial/input",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Input file for initial state of NEB relax ",
+                     "", CONTROL_OPTIONS);
+    If.RegisterInputKey("input_file_final_image", &lc.input_final, "image_final/input",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "Input file for final state of NEB relax ",
+                     "", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("totale_initial_image", &lc.totale_initial, -DBL_MAX, DBL_MAX, 1.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Total energy of the inital state during NEB relax in unit of Ha ", "");
+    If.RegisterInputKey("totale_final_image", &lc.totale_final, -DBL_MAX, DBL_MAX, 1.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Total energy of the final state during NEB relax in unit of Ha ", "");
+
     If.LoadInputKeys();
 
     if(lc.spin_polarization) lc.spin_flag = true;

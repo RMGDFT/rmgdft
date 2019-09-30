@@ -76,7 +76,8 @@ C     9.3055    15.6378    17.8881    1
 
 namespace Ri = RmgInput;
 
-void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& IonSpecies, std::vector<ION>& Atoms_read, CONTROL& lc, std::unordered_map<std::string, InputKey *>& InputMap)
+void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<std::string>& IonSpecies, 
+        std::vector<ION>& Atoms_read, CONTROL& lc)
 {
 
     std::string AtomArray;
@@ -107,8 +108,6 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
     
     If.LoadInputKeys();
 
-    InputMap["atomic_coordinate_type"]->Readstr = NewMap["atomic_coordinate_type"]->Readstr; 
-    InputMap["crds_units"]->Readstr = NewMap["crds_units"]->Readstr; 
 
     // Process atoms
     boost::trim(AtomArray);
@@ -184,11 +183,11 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         boost::algorithm::split( Atoms_str, AtomArray, boost::is_any_of(line_delims), boost::token_compress_on );
 
         // Openbabel always uses Angstroms and absolute coordinates
-        InputKey *Ik = InputMap["crds_units"]; 
+        InputKey *Ik = NewMap["crds_units"]; 
         static std::string Angstroms("Angstrom");
         Ik->Readstr = Angstroms;
 
-        Ik = InputMap["atomic_coordinate_type"]; 
+        Ik = NewMap["atomic_coordinate_type"]; 
         static std::string AbsoluteCoords("Absolute");
         Ik->Readstr = AbsoluteCoords;
     }
@@ -323,7 +322,35 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
 
     }
 
+
+    // Atoms have been read, now take care of conversion to internal coordinates
+    if (Verify ("atomic_coordinate_type", "Cell Relative", NewMap)) {
+
+        for(int ion = 0;ion < lc.num_ions;ion++) {
+
+            Atoms[ion].xtal[0] = Atoms[ion].crds[0];
+            Atoms[ion].xtal[1] = Atoms[ion].crds[1];
+            Atoms[ion].xtal[2] = Atoms[ion].crds[2];
+            to_cartesian(Atoms[ion].xtal, Atoms[ion].crds);
+
+        }
+
+    }
+    else if(Verify ("crds_units", "Angstrom", NewMap)) {
+
+        for(int ion = 0;ion < lc.num_ions;ion++) {
+
+            Atoms[ion].crds[0] *= A_a0;
+            Atoms[ion].crds[1] *= A_a0;
+            Atoms[ion].crds[2] *= A_a0;
+
+        }
+
+    }
+
+
     if(nions > lc.num_ions)
         throw RmgFatalException() << "Inconsistency in number of ions: " << lc.num_ions << " was specified initially but " << nions << " were found.\n";
 
 }
+

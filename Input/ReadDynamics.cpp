@@ -57,39 +57,13 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
 
 
     // Read atoms
-    ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, Atoms, lc, InputMap);
+    ReadRmgAtoms(cfile, SpeciesTypes, IonSpecies, Atoms, lc);
 
     ReadTFAtoms(cfile, SpeciesTypes, IonSpecies, lc, InputMap);
 
     // Forces and velocities (if present)
     ReadForces(cfile, lc, InputMap);
     ReadVelocities(cfile, lc, InputMap);
-
-    // Atoms have been read, now take care of conversion to internal coordinates
-    if (Verify ("atomic_coordinate_type", "Cell Relative", InputMap)) {
-
-        for(int ion = 0;ion < lc.num_ions;ion++) {
-
-            Atoms[ion].xtal[0] = Atoms[ion].crds[0];
-            Atoms[ion].xtal[1] = Atoms[ion].crds[1];
-            Atoms[ion].xtal[2] = Atoms[ion].crds[2];
-            to_cartesian(Atoms[ion].xtal, Atoms[ion].crds);
-
-        }
-
-    }
-    else if(Verify ("crds_units", "Angstrom", InputMap)) {
-
-        for(int ion = 0;ion < lc.num_ions;ion++) {
-
-            Atoms[ion].crds[0] *= A_a0;
-            Atoms[ion].crds[1] *= A_a0;
-            Atoms[ion].crds[2] *= A_a0;
-
-        }
-
-    }
-
 
     // SpeciesType holds the number of species found
     lc.num_species = SpeciesTypes.size();

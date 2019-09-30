@@ -50,6 +50,7 @@
 #include "../Headers/common_prototypes1.h"
 #include "prototypes_tddft.h"
 #include "Exxbase.h"
+#include "Neb.h"
 
 
 void initialize (int argc, char **argv);
@@ -340,7 +341,10 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             break;
 
         case NEB_RELAX:           /* nudged elastic band relax */
-            NEB_relax (ct.max_neb_steps, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            {
+                Neb<OrbitalType> NEB (*Rmg_G, pct.images,ct.max_neb_steps, ct.input_initial, ct.input_final, ct.totale_initial, ct.totale_final); 
+                NEB.relax(vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            }
             break;
 
         case MD_CVE:               /* molecular dynamics */
