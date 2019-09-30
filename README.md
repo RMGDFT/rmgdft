@@ -52,8 +52,6 @@ Available targets include.
     rmg-on-gpu     ON code with gpu support
     rmg-negf-cpu   Non equilibrium greens function code cpu only
     rmg-negf-gpu   Non equilibrium greens function code with gpu support
-    rmg-tddft-cpu  TDDFT based on rmg-on cpu only
-    rmg-tddft-gpu  TDDFT based on rmg-on with gpu support
 ```
 RMG GPU support at the present time is limited to Nvidia hardware and requires
 Pascal or later hardware.

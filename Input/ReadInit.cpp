@@ -84,6 +84,12 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
                      CHECK_AND_TERMINATE, OPTIONAL,
                      "",
                      "neb_spring_constant must be in the range (0.05, 3.0). ");
+
+    If.RegisterInputKey("calculation_mode", NULL, &lc.forceflag, "Quench Electrons",
+                     CHECK_AND_TERMINATE, OPTIONAL, calculation_mode,
+                     "Type of calculation to perform. ",
+                     "calculation_mode not available. ", CONTROL_OPTIONS);
+
     If.LoadInputKeys();
 
     if(lc.spin_polarization) lc.spin_flag = true;
