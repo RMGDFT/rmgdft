@@ -155,7 +155,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
         ION &Atom = Atoms[ion];
-        if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
+        if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
         {
             Atom.ZeroForces();
             Atom.ZeroVelocity();
@@ -247,7 +247,7 @@ void MolecularDynamics (Kpoint<KpointType> **Kptr, double * vxc, double * vh, do
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
         {
             ION &Atom = Atoms[ion];
-            if (Atom.movable[0] || Atom.movable[1] || Atom.movable[2])
+            if (!Atom.movable[0] && !Atom.movable[1] && !Atom.movable[2])
             {
                 Atom.ZeroForces();
                 Atom.ZeroVelocity();
