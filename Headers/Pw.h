@@ -74,9 +74,6 @@ private:
     // BaseGrid class
     BaseGrid *Grid;
 
-    // Lattice object
-    Lattice *L;
-
     // Pending ffts
     WaitQueue<FftPair> FftQ;
 
@@ -107,6 +104,9 @@ public:
 
 
     ~Pw(void);
+
+    // Lattice object
+    Lattice *L;
 
     // Real space basis on this node and globally
     int pbasis;

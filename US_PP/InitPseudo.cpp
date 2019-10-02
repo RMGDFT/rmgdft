@@ -131,10 +131,26 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         if(ct.localize_projectors)
         {
+            // Grid object local to this MPI process
             sp->OG = (void *)new BaseGrid(sp->nldim, sp->nldim, sp->nldim, 1, 1, 1, 0, 1);
             BaseGrid *OG = (BaseGrid *)sp->OG;
             OG->set_rank(0, pct.my_comm);
-            sp->prj_pwave = new Pw(*OG, Rmg_L, 1, false);
+
+            // Lattice object for the localized projector region. Global vectors need to be
+            // scaled so that they correspond to the local region.
+            Lattice *L = new Lattice();
+            double a0[3], a1[3], a2[3], s1, celldm[6], omega;
+            s1 = (double)sp->nldim / (double)Rmg_G->get_NX_GRID(1);
+            a0[0] = s1*Rmg_L.get_a0(0);a0[1] = s1*Rmg_L.get_a0(1);a0[2] = s1*Rmg_L.get_a0(2);
+            s1 = (double)sp->nldim / (double)Rmg_G->get_NY_GRID(1);
+            a1[0] = s1*Rmg_L.get_a1(0);a1[1] = s1*Rmg_L.get_a1(1);a1[2] = s1*Rmg_L.get_a1(2);
+            s1 = (double)sp->nldim / (double)Rmg_G->get_NZ_GRID(1);
+            a2[0] = s1*Rmg_L.get_a2(0);a2[1] = s1*Rmg_L.get_a2(1);a2[2] = s1*Rmg_L.get_a2(2);
+
+            L->set_ibrav_type(None);
+            L->latgen(celldm, &omega, a0, a1, a2);
+
+            sp->prj_pwave = new Pw(*OG, *L, 1, false);
         }
 
 

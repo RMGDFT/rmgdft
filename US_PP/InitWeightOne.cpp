@@ -24,23 +24,18 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     double t1;
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double tpiba2 = tpiba * tpiba;
-
+    double scale = 2.0 * PI / sp->prj_pwave->L->celldm[0];
 
     /* nl[xyz]fdim is the size of the non-local box in the high density grid */
     int size = sp->nldim * sp->nldim * sp->nldim;
     size = std::max(size, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID());
 
-    std::complex<double> *weptr = new std::complex<double>[size];
+    std::complex<double> *weptr = new std::complex<double>[size]();
     std::complex<double> *gwptr = new std::complex<double>[size];
 
 
     if(!weptr || !gwptr)
         throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
-
-
-    double hxx = get_hxgrid() * get_xside();
-    double hyy = get_hygrid() * get_yside();
-    double hzz = get_hzgrid() * get_zside();
 
     int ixx, iyy, izz;
     double gval, gcut;
@@ -63,25 +58,25 @@ void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *ph
     phase = 2.0 * PI * ((xdim+1)/2)/xdim * I_t;
     phase = std::exp(phase);
 
-    for(int idx = 0; idx < xdim * ydim * zdim; idx++) weptr[idx] = 0.0;
     for (int ix = -xdim/2; ix < xdim/2+1; ix++)
     {
-        ax[0] = ix *2.0 * PI/(hxx*xdim);
         ixx = (ix + xdim)%xdim;
         for (int iy = -ydim/2; iy < ydim/2+1; iy++)
         {
-            ax[1] = iy *2.0 * PI/(hyy*ydim);
             iyy = (iy + ydim)%ydim;
             for (int iz = -zdim/2; iz < zdim/2+1; iz++)
             {
-                ax[2] = 2.0 * PI/(hzz*zdim) * iz;
                 izz = (iz + zdim)%zdim;
+                int idx1 = ixx * ydim * zdim + iyy * zdim + izz;
 
-                gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
+                ax[0] = scale * sp->prj_pwave->g[idx1].a[0];
+                ax[1] = scale * sp->prj_pwave->g[idx1].a[1];
+                ax[2] = scale * sp->prj_pwave->g[idx1].a[2];
+                gval = scale*sqrt(sp->prj_pwave->gmags[idx1]);
+
                 if(gval >= gcut) continue;
                 t1 = AtomicInterpolateInline_Ggrid(&sp->beta_g[ip][0], gval);
 
-                int idx1 = ixx * ydim * zdim + iyy * zdim + izz;
                 weptr[idx1] += IL * Ylm(l, m, ax) * t1/vol;
             }
         }

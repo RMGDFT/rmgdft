@@ -101,7 +101,7 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
         int coarse_size = nlxdim * nlydim * nlzdim;
 
         /*Calculate the phase factor */
-        FindPhase(nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), phase_fftw);
+        FindPhase(sp, nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), phase_fftw);
 
         /*Temporary pointer to the already calculated forward transform */
         fptr = (std::complex<double> *)&sp->forward_beta[kidx*sp->num_projectors * coarse_size];

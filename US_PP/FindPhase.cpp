@@ -31,11 +31,12 @@
 
 
 /*This calculates the phase factor that will be used when calculating the backwards fourier transform*/
-void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw)
+void FindPhase (SPECIES *sp, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw)
 {
 
     int i1, j1, k1;
 
+    double tpiba = 2.0*PI / sp->prj_pwave->L->celldm[0];
 
     // If we are running with localized projectors then nxldim,nlydim and nlzdim
     // are odd numbers so the loop from (-nlxdim / 2) to (nlxdim / 2) is correct but
@@ -47,11 +48,6 @@ void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::comple
     if(nlxdim % 2) ixadj = 0;
     if(nlydim % 2) iyadj = 0;
     if(nlzdim % 2) izadj = 0;
-
-    /*Reciprocal grid spacings in x, y and z directions */
-    double rgs_x = 1.0 / (Rmg_G->get_hxgrid(1) * Rmg_L.get_xside());
-    double rgs_y = 1.0 / (Rmg_G->get_hygrid(1) * Rmg_L.get_yside());
-    double rgs_z = 1.0 / (Rmg_G->get_hzgrid(1) * Rmg_L.get_zside());
 
     int ilo = 0;
     int jlo = 0;
@@ -95,17 +91,15 @@ void FindPhase (int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::comple
                 if(map) 
                 {
                     /* Phase factor */
-                    double theta = 2.0 * PI *
-                        (((nlcdrs[0] * (double) i) * rgs_x / (double)nlxdim) +
-                         ((nlcdrs[1] * (double) j) * rgs_y / (double)nlydim) + 
-                         ((nlcdrs[2] * (double) k) * rgs_z / (double)nlzdim));
-
                     int idx1 = (i1 - ilo) * (jhi - jlo) * (khi - klo) + (j1 - jlo) * (khi - klo) + (k1 - klo);
+
+                    double theta = nlcdrs[0] * tpiba*sp->prj_pwave->g[idx1].a[0] +
+                                   nlcdrs[1] * tpiba*sp->prj_pwave->g[idx1].a[1] +
+                                   nlcdrs[2] * tpiba*sp->prj_pwave->g[idx1].a[2];
 
 
                     phase_fftw[idx1] = exp(std::complex<double>(0.0, theta));
                 }
-
             }
         }
     }
