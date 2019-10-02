@@ -152,6 +152,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
             sp->prj_pwave = new Pw(*OG, *L, 1, false);
         }
+        else
+        {
+            sp->prj_pwave = new Pw(*Rmg_G, Rmg_L, 1, false);
+        }
 
 
         sp->ldim = Radius2grid (sp->lradius, ct.hmingrid / (double)Rmg_G->default_FG_RATIO, Rmg_L.get_ibrav_type(), ct.localize_localpp);

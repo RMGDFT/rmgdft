@@ -28,39 +28,29 @@
 void InitDelocalizedWeight (void)
 {
     RmgTimer RT0("Weight");
-    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
-    double tpiba2 = tpiba * tpiba;
 
 
     PROJ_INFO proj;
     std::vector<PROJ_INFO> proj_iter;
-    double ax[3];
-
 
     // get tot number of projectors and their information
     int tot_proj = 0;
     
-    int dimx = Rmg_G->get_PX0_GRID(1);
-    int dimy = Rmg_G->get_PY0_GRID(1);
-    int dimz = Rmg_G->get_PZ0_GRID(1);
-    int ixstart = Rmg_G->get_PX_OFFSET(1);
-    int iystart = Rmg_G->get_PY_OFFSET(1);
-    int izstart = Rmg_G->get_PZ_OFFSET(1);
-    int pbasis = Rmg_G->get_P0_BASIS(1);
-    double vol = Rmg_L.get_omega();
 
     std::complex<double> I_t(0.0, 1.0);
     std::complex<double> phase = PI * I_t;
     phase = std::exp(phase);
+    int max_pbasis = 0;
 
-
-    std::complex<double> *weptr = new std::complex<double>[pbasis];
 
     RmgTimer *RT1= new RmgTimer("Weight: phase and set");
     for (int isp = 0; isp < ct.num_species; isp++)
     {
         /* Get species type */
         SPECIES *sp = &Species[isp];
+        Pw *pwave = sp->prj_pwave;
+        int pbasis = pwave->Grid->get_P0_BASIS(1);
+        max_pbasis = std::max(max_pbasis, pbasis);
 
         /*Loop over all betas to calculate num of projectors for given species */
         int prjcount = 0;
@@ -90,14 +80,27 @@ void InitDelocalizedWeight (void)
 
     }
 
+    std::complex<double> *weptr = new std::complex<double>[max_pbasis];
 
-    double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2);
     RmgTimer *RT3= new RmgTimer("Weight: proj cal");
     for(int iproj = 0; iproj < tot_proj; iproj++)
     {
         proj = proj_iter[iproj];
         std::complex<double> IL = std::pow(-I_t, proj.l);
         SPECIES *sp = &Species[proj.species];
+        Pw *pwave = sp->prj_pwave;
+        int dimx = pwave->Grid->get_PX0_GRID(1);
+        int dimy = pwave->Grid->get_PY0_GRID(1);
+        int dimz = pwave->Grid->get_PZ0_GRID(1);
+        int ixstart = pwave->Grid->get_PX_OFFSET(1);
+        int iystart = pwave->Grid->get_PY_OFFSET(1);
+        int izstart = pwave->Grid->get_PZ_OFFSET(1);
+        double vol = pwave->L->get_omega();
+        int pbasis = pwave->Grid->get_P0_BASIS(1);
+        double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+        double tpiba2 = tpiba * tpiba;
+        double gcut = sqrt(ct.filter_factor*pwave->gcut*tpiba2);
+        double ax[3];
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
@@ -105,11 +108,11 @@ void InitDelocalizedWeight (void)
             std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis];
             for(int idx = 0;idx < pbasis;idx++)
             {
-                if(!coarse_pwaves->gmask[idx]) continue;
+                if(!pwave->gmask[idx]) continue;
                 weptr[idx] = std::complex<double>(0.0,0.0);
-                ax[0] = coarse_pwaves->g[idx].a[0] * tpiba;
-                ax[1] = coarse_pwaves->g[idx].a[1] * tpiba;
-                ax[2] = coarse_pwaves->g[idx].a[2] * tpiba;
+                ax[0] = pwave->g[idx].a[0] * tpiba;
+                ax[1] = pwave->g[idx].a[1] * tpiba;
+                ax[2] = pwave->g[idx].a[2] * tpiba;
 
                 ax[0] += ct.kp[kpt1].kvec[0];
                 ax[1] += ct.kp[kpt1].kvec[1];

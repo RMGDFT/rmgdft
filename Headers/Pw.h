@@ -71,9 +71,6 @@ private:
 
 #endif    
 
-    // BaseGrid class
-    BaseGrid *Grid;
-
     // Pending ffts
     WaitQueue<FftPair> FftQ;
 
@@ -104,6 +101,9 @@ public:
 
 
     ~Pw(void);
+
+    // BaseGrid class
+    BaseGrid *Grid;
 
     // Lattice object
     Lattice *L;
