@@ -44,6 +44,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
     ION *iptr = &Atoms[ion];
+    int ibrav = L->get_ibrav_type();
 
     BaseGrid *G = kptr->G;
     int dimx = G->get_PX0_GRID(1);
@@ -151,8 +152,13 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
                 int itmp = (ix - icenter) * (ix - icenter) +
                     (iy - icenter) * (iy - icenter) + (iz - icenter) * (iz - icenter);
-
-                if (ct.localize_projectors && itmp > icut ) continue;
+                if(ibrav == HEXAGONAL)
+                {
+                    double dtmp = ((double)(ix-icenter)+0.5*(double)(iy-icenter))*((double)(ix-icenter)+0.5*(double)(iy-icenter)) +
+                           0.75*(double)(iy-icenter)*(double)(iy-icenter) + (double)(iz - icenter) * (double)(iz - icenter);
+                    itmp = (int)dtmp;
+                }
+                if (ct.localize_projectors && (itmp > icut)) continue;
 
                 // global index of nl grid , mode to unit cell  
                 igz = (izstart + iz +nzgrid) % nzgrid ;
