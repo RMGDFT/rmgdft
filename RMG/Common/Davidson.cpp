@@ -101,9 +101,8 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
     if(ct.is_gamma) factor = 1;
 
     double *eigs = new double[ct.max_states];
-    double *eigsw = new double[ct.max_states];
+    double *eigsw = new double[2*ct.max_states];
     bool *converged = new bool[ct.max_states]();
-
 
 #if GPU_ENABLED
     KpointType *h_psi = (KpointType *)GpuMallocManaged(pbasis * ct.max_states * sizeof(KpointType));
