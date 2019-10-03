@@ -267,7 +267,7 @@ if (CRAY_XK)
    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
    # External packages sometimes have trouble with this on Crays
-   set($ENV{MPICC} "${CMAKE_C_COMPILER}")
+   set(ENV{MPICC} "${CMAKE_C_COMPILER}")
 endif()
 
 
@@ -352,7 +352,7 @@ endif(USE_PLPLOT_LIBS)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 #    set(BOOST_ROOT "...")
     if(DEFINED ENV{BOOST_ROOT})
-        set(BOOST_ROOT  $ENV{BOOST_ROOT})
+        set(BOOST_ROOT ENV{BOOST_ROOT})
     endif()
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -385,18 +385,19 @@ endif(USE_OPENBABEL_LIBS)
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
 # Check if environment variable is set. Unfortunately on many clusters there are multiple versions
 # of MKL installed and this does not always work correctly.
-if(NOT MKLROOT)
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        # Check the default location
-        if (EXISTS "/opt/intel/mkl")
+#if(NOT MKLROOT)
+#    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+#        # Check the default location
+#        if (EXISTS "/opt/intel/mkl")
 #            set(MKLROOT "/opt/intel/mkl")
-        endif (EXISTS "/opt/intel/mkl")
-    endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-endif()
+#        endif (EXISTS "/opt/intel/mkl")
+#    endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+#endif()
 
 
 if(NOT CRAY_XK)
-    if(MKLROOT)
+    if(DEFINED ENV{MKLROOT})
+	set(MKLROOT $ENV{MKLROOT})
         include_directories(${MKLROOT}/include)
         add_definitions(-DUSE_MKL)
         set(FFTW_INCLUDES "${MKLROOT}/include/fftw")
@@ -415,16 +416,18 @@ if(NOT CRAY_XK)
                 message( SEND_ERROR "RMG requires 64 bit MKL." )
             endif(EXISTS "${MKL_LIB64}")
         endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    endif(MKLROOT)
+    endif(DEFINED ENV{MKLROOT})
     list(APPEND RMGLIBS scalapack)
 endif(NOT CRAY_XK)
 
 
 # MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
 # individually
-find_package(FFTW REQUIRED)
-include_directories(${FFTW_INCLUDES})
-list(APPEND RMGLIBS ${FFTW_LIBRARIES})
+if(NOT ${FFTW_INCLUDES})
+    find_package(FFTW REQUIRED)
+    include_directories(${FFTW_INCLUDES})
+    list(APPEND RMGLIBS ${FFTW_LIBRARIES})
+endif(NOT ${FFTW_INCLUDES})
 
 
 if(NOT RMG_MATH_LIBS)
