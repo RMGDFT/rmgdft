@@ -141,7 +141,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     vtot = new double[FP0_BASIS];
     vtot_psi = new double[P0_BASIS];
-    double time_step =0.2;
+    double time_step =ct.tddft_time_step;
 
     if(ct.restart_tddft)
     {

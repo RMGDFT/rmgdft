@@ -181,7 +181,7 @@ void GetNlop_on(void)
         coarse_size = sp->nldim *sp->nldim *sp->nldim ;
 
         /*Calculate the phase factor */
-        FindPhase (sp->nldim, sp->nldim, sp->nldim, nlcrds, fftw_phase);
+        FindPhase (sp, sp->nldim, sp->nldim, sp->nldim, nlcrds, fftw_phase);
 
         /*Temporary pointer to the already calculated forward transform */
         fptr = (std::complex<double> *)sp->forward_beta;
