@@ -441,17 +441,17 @@ void finish ()
 {
 
     DeleteNvmeArrays();
+    MPI_Barrier(MPI_COMM_WORLD);
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
-        int kpt1 = kpt + pct.kstart;
         if(ct.is_gamma)
         {
-            Kptr_g[kpt1]->DeleteNvmeArrays();
+            Kptr_g[kpt]->DeleteNvmeArrays();
         }
         else
         {
-            Kptr_c[kpt1]->DeleteNvmeArrays();
+            Kptr_c[kpt]->DeleteNvmeArrays();
         }
     }
 
