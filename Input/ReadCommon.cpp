@@ -523,6 +523,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "multigrid solver.",
             "potential_acceleration_constant_step must lie in the range (0.0, 4.0). Resetting to the default value of 0.0. ", MIXING_OPTIONS);
 
+    If.RegisterInputKey("tddft_time_step", &lc.tddft_time_step, 0.0, DBL_MAX, 0.2, 
+            CHECK_AND_TERMINATE, OPTIONAL,
+            "TDDFT time step for use in TDDFT mode ",
+            "tddft_time_step is in atomic unit ", MD_OPTIONS);
+
     If.RegisterInputKey("ionic_time_step", &lc.iondt, 0.0, DBL_MAX, 50.0, 
             CHECK_AND_TERMINATE, OPTIONAL,
             "Ionic time step for use in molecular dynamics and structure optimizations. ",

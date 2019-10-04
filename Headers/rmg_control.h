@@ -492,6 +492,9 @@ public:
     /** Ionic motion timestep */
     double iondt;
 
+    //  TDDFT time step in atomic unit
+    double tddft_time_step;
+
     /*** Maximum ionic motion timestep */
     double iondt_max;
 
