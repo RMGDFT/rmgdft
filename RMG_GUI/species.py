@@ -3,12 +3,12 @@
 # modified by Wenchang Lu at NCSU
 
 
-
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtWidgets as myQtW
 
 from distutils.sysconfig import get_python_lib
 
-class species(QtGui.QWidget):
+class species(QtWidgets.QWidget):
     """
        Widget for selecting pseudopotentials.
     """
@@ -28,7 +28,7 @@ class species(QtGui.QWidget):
         try:
 
             ## Initialize base class 
-            QtGui.QWidget.__init__(self, parent)
+            myQtW.QWidget.__init__(self, parent)
 
     #        self.dict_pp_dirs = {}
 
@@ -42,17 +42,17 @@ class species(QtGui.QWidget):
             ##################  __init__ : set up GUI:
 
             # Main layout
-            self._layout = QtGui.QVBoxLayout()
+            self._layout = myQtW.QVBoxLayout()
             self.setLayout(self._layout)
 
             # Setup Groupbox
-            group_box = QtGui.QGroupBox('    Pseudopotential files       # of Orbitals      orbital radius  Hubbard_U')
+            group_box = myQtW.QGroupBox('    Pseudopotential files       # of Orbitals      orbital radius  Hubbard_U')
             self._layout.addWidget(group_box)
 
-            form_layout = QtGui.QFormLayout()
+            form_layout = myQtW.QFormLayout()
             group_box.setLayout(form_layout)
 
-            self.error_label=QtGui.QLabel('(No valid configuration defined)')
+            self.error_label=myQtW.QLabel('(No valid configuration defined)')
             form_layout.addRow(self.error_label)
 
             # create an array of max_n copies of PP selectors
@@ -79,22 +79,22 @@ class species(QtGui.QWidget):
 
 
             for i_pp in range(self.max_n):
-                self.pp_layouts[i_pp]  = QtGui.QHBoxLayout() 
+                self.pp_layouts[i_pp]  = myQtW.QHBoxLayout() 
 
-                self.pp_labels[i_pp] =   QtGui.QLabel('undefined') 
-                self.pp_labels1[i_pp] =   QtGui.QLabel(' ') 
-                self.pp_labels2[i_pp] =   QtGui.QLabel(' ') 
-                self.pp_lines[i_pp] =    QtGui.QLineEdit('undefined') 
-                self.pp_buttons[i_pp] =  QtGui.QPushButton('Browse...') 
-                self.num_orbital[i_pp] =  QtGui.QSpinBox()
+                self.pp_labels[i_pp] =   myQtW.QLabel('undefined') 
+                self.pp_labels1[i_pp] =   myQtW.QLabel(' ') 
+                self.pp_labels2[i_pp] =   myQtW.QLabel(' ') 
+                self.pp_lines[i_pp] =    myQtW.QLineEdit('undefined') 
+                self.pp_buttons[i_pp] =  myQtW.QPushButton('Browse...') 
+                self.num_orbital[i_pp] =  myQtW.QSpinBox()
                 self.num_orbital[i_pp].setValue(6)
 
-                self.orbital_radius[i_pp] =  QtGui.QLineEdit() 
+                self.orbital_radius[i_pp] =  myQtW.QLineEdit() 
                 validator = QtGui.QDoubleValidator(self.orbital_radius[i_pp])
                 self.orbital_radius[i_pp].setValidator(validator)
                 self.orbital_radius[i_pp].setText('8.0')
 
-                self.hubbard_u[i_pp] =  QtGui.QLineEdit() 
+                self.hubbard_u[i_pp] =  myQtW.QLineEdit() 
                 validator = QtGui.QDoubleValidator(self.hubbard_u[i_pp])
                 self.hubbard_u[i_pp].setValidator(validator)
                 self.hubbard_u[i_pp].setText('0.0')
@@ -125,7 +125,7 @@ class species(QtGui.QWidget):
     #         ########  __init__ : manage PP directories button:
 
 
-    #         button_pp_dir_selector = QtGui.QPushButton("Manage pseudopotential directories...")
+    #         button_pp_dir_selector = myQtW.QPushButton("Manage pseudopotential directories...")
     #         self._layout.addWidget(button_pp_dir_selector)
 
     #         self.connect(button_pp_dir_selector,
@@ -134,7 +134,7 @@ class species(QtGui.QWidget):
 
 
         except:
-            showError()
+            print "error in species"
 
     ######### end of  __init__ #####################################
 
@@ -202,8 +202,8 @@ class species(QtGui.QWidget):
            browse to a directory for the i_pp'th pseudopotential 
         """
         try:
-            dialog = QtGui.QFileDialog(self)
-#            dialog.setFileMode(QtGui.QFileDialog.Directory)
+            dialog = myQtW.QFileDialog(self)
+#            dialog.setFileMode(myQtW.QFileDialog.Directory)
             if QtCore.QDir( self.pp_lines[i_pp].text() ).exists():
                 dialog.selectFile( self.pp_lines[i_pp].text() )
             if dialog.exec_():

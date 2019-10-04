@@ -1,6 +1,7 @@
 
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtWidgets as myQtW
 
 from distutils.sysconfig import get_python_lib
 
@@ -11,7 +12,7 @@ import json
 import string
 import codecs
 
-class Setup(QtGui.QWidget):
+class Setup(myQtW.QWidget):
     """
        Widget for the basic setup of a NCSURMG calculation.
     """
@@ -31,32 +32,32 @@ class Setup(QtGui.QWidget):
         """
 
         ################ __init__ : Initialize base class 
-        QtGui.QWidget.__init__(self, parent)
+        myQtW.QWidget.__init__(self, parent)
 
         ################ __init__ : define the non-GUI variables: 
 
         ##################  __init__ : set up GUI:
         
         # Main layout
-        self._layout = QtGui.QVBoxLayout()
+        self._layout = myQtW.QVBoxLayout()
         self.setLayout(self._layout)
 
         # Setup Groupbox
-        group_box = QtGui.QGroupBox('Setup')
+        group_box = myQtW.QGroupBox('Setup')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
 
         #description
-        label = QtGui.QLabel('Description of input')
-        self._description = QtGui.QLineEdit()
+        label = myQtW.QLabel('Description of input')
+        self._description = myQtW.QLineEdit()
         form_layout.addRow(label, self._description)
         self._description.setText('Short description of the input file')
 
         # Start mode 
-        label = QtGui.QLabel('Start mode')
-        self._start_mode = QtGui.QComboBox()
+        label = myQtW.QLabel('Start mode')
+        self._start_mode = myQtW.QComboBox()
         self._start_mode.addItems([
                             "LCAO Start",
                             "Restart From File",
@@ -67,8 +68,8 @@ class Setup(QtGui.QWidget):
 
 
         # Calculation mode 
-        label = QtGui.QLabel('calculation mode')
-        self._calculation_mode = QtGui.QComboBox()
+        label = myQtW.QLabel('calculation mode')
+        self._calculation_mode = myQtW.QComboBox()
         self._calculation_mode.addItems([
                             "Quench Electrons",
                             "Relax Structure",
@@ -82,8 +83,8 @@ class Setup(QtGui.QWidget):
         form_layout.addRow(label, self._calculation_mode)
 
         # Relax Method
-        label = QtGui.QLabel('Relax Method')
-        self._relaxmethod = QtGui.QComboBox()
+        label = myQtW.QLabel('Relax Method')
+        self._relaxmethod = myQtW.QComboBox()
         self._relaxmethod.addItems(["Fast Relax",
                 "FIRE", "Quick Min", "MD Min", "LBFGS"])
         form_layout.addRow(label, self._relaxmethod)
@@ -91,8 +92,8 @@ class Setup(QtGui.QWidget):
 
         # XC selector:
 
-        label = QtGui.QLabel('Exchange correlation functional')
-        self._ecf = QtGui.QComboBox()
+        label = myQtW.QLabel('Exchange correlation functional')
+        self._ecf = myQtW.QComboBox()
         self._ecf.addItems(['AUTO_XC', 'LDA' , 'GGA BLYP', 'GGA XB CP', 'GGA PBE'
                             ])
         self._ecf.setToolTip(self.tr('Select the exchange-correlation functional.'))
@@ -100,8 +101,8 @@ class Setup(QtGui.QWidget):
 
         #bravais_lattice_type 
 
-        label = QtGui.QLabel('Bravais lattice')
-        self._brav = QtGui.QComboBox()
+        label = myQtW.QLabel('Bravais lattice')
+        self._brav = myQtW.QComboBox()
         self._brav.addItems([
                             'Orthorhombic Primitive',
                             'Cubic Primitive',
@@ -110,8 +111,8 @@ class Setup(QtGui.QWidget):
         form_layout.addRow(label, self._brav)
 
         # Charge
-        label = QtGui.QLabel('System Charge')
-        self._charge = QtGui.QLineEdit()
+        label = myQtW.QLabel('System Charge')
+        self._charge = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._charge)
         self._charge.setValidator(validator)
         form_layout.addRow(label, self._charge)
@@ -119,47 +120,47 @@ class Setup(QtGui.QWidget):
 
 
         # Spin polarized
-        self._spin_polarized = QtGui.QCheckBox('Spin polarized')
+        self._spin_polarized = myQtW.QCheckBox('Spin polarized')
         form_layout.addRow(self._spin_polarized)
 
         # units
-        group_box = QtGui.QGroupBox('Units')
+        group_box = myQtW.QGroupBox('Units')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
 
         #Length units
-        label = QtGui.QLabel('Length unit')
-        self._lengthunit = QtGui.QComboBox()
+        label = myQtW.QLabel('Length unit')
+        self._lengthunit = myQtW.QComboBox()
         self._lengthunit.addItems(["Bohr","Angstrom"])
         form_layout.addRow(label, self._lengthunit)
 
         # Atomic coordinate type
-        label = QtGui.QLabel('Atomic Coordinate')
-        self._atomcoor = QtGui.QComboBox()
+        label = myQtW.QLabel('Atomic Coordinate')
+        self._atomcoor = myQtW.QComboBox()
         self._atomcoor.addItems(["Absolute","Cell Relative"])
         form_layout.addRow(label, self._atomcoor)
 
 
         # Occupation 
-        group_box = QtGui.QGroupBox('Occupation')
+        group_box = myQtW.QGroupBox('Occupation')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
 
 
         #Occupation type
-        label = QtGui.QLabel('Occupation type')
-        self._occ = QtGui.QComboBox()
+        label = myQtW.QLabel('Occupation type')
+        self._occ = myQtW.QComboBox()
         self._occ.addItems(['Fermi Dirac','Fixed' 
                             ])
         form_layout.addRow(label, self._occ)
 
         #  Occupation temperature 
-        label = QtGui.QLabel('electron temperature (eV)')
-        self._occtem = QtGui.QLineEdit()
+        label = myQtW.QLabel('electron temperature (eV)')
+        self._occtem = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._occtem)
         self._occtem.setValidator(validator)
         self._occtem.setText('0.1')
@@ -168,8 +169,8 @@ class Setup(QtGui.QWidget):
 
 
         #  Occupation temperature 
-        label = QtGui.QLabel('Occupation mixing')
-        self._occmix = QtGui.QLineEdit()
+        label = myQtW.QLabel('Occupation mixing')
+        self._occmix = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._occmix)
         self._occmix.setValidator(validator)
         self._occmix.setText('1.0')
@@ -177,27 +178,27 @@ class Setup(QtGui.QWidget):
 
 
         # Machines
-        group_box = QtGui.QGroupBox('Computer and project name')
+        group_box = myQtW.QGroupBox('Computer and project name')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
 
-        label = QtGui.QLabel('Machine')
-        self._machine = QtGui.QComboBox()
+        label = myQtW.QLabel('Machine')
+        self._machine = myQtW.QComboBox()
         self._machine.addItems(['Summit','bluewater'])
         form_layout.addRow(label, self._machine)
-        label=QtGui.QLabel('Project name')
+        label=myQtW.QLabel('Project name')
 
-        self._projname=QtGui.QLineEdit()
+        self._projname=myQtW.QLineEdit()
         validator=QtGui.QDoubleValidator(self._projname)
         self._projname.setValidator(validator)
         self._projname.setText('CHP107')
         form_layout.addRow(label, self._projname)
 
 
-        label = QtGui.QLabel('queue type')
-        self._queue = QtGui.QComboBox()
+        label = myQtW.QLabel('queue type')
+        self._queue = myQtW.QComboBox()
         self._queue.addItems(['batch','debug' ])
         form_layout.addRow(label, self._queue)
 

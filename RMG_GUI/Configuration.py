@@ -5,8 +5,9 @@ import re
 
 import pymol
 from pymol import cmd
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5 import QtWidgets as myQtW
 
 from distutils.sysconfig import get_python_lib
 from drawbox import *
@@ -22,7 +23,7 @@ class conf:
         self.lattice = lattice
         self.elements = elements
         self.coords = coords
-class Configuration(QtGui.QWidget):
+class Configuration(myQtW.QWidget):
     """
        Widget for the basic setup of a NCSURMG calculation.
     """
@@ -39,7 +40,7 @@ class Configuration(QtGui.QWidget):
         """
 
         ################ __init__ : Initialize base class 
-        QtGui.QWidget.__init__(self, parent)
+        myQtW.QWidget.__init__(self, parent)
 
         ################ __init__ : define the non-GUI variables: 
 
@@ -66,26 +67,26 @@ class Configuration(QtGui.QWidget):
 
 
    # Main layout
-        self._layout = QtGui.QVBoxLayout()
+        self._layout = myQtW.QVBoxLayout()
         self.setLayout(self._layout)
 
 
-        group_box = QtGui.QGroupBox('   Choose input files for configuration   ')
+        group_box = myQtW.QGroupBox('   Choose input files for configuration   ')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
 
-        self.layout  = QtGui.QHBoxLayout()
+        self.layout  = myQtW.QHBoxLayout()
 
-        self.label =   QtGui.QLabel('file for configuration')
-        #self.inputfile =    QtGui.QLineEdit('/home/can/AMS-DATA.cif')
-        #self.inputfile =    QtGui.QLineEdit('/home/can/projects/atk-on/RMG-GUI_readcif/input')
-        self.inputfile =    QtGui.QLineEdit('./input')
+        self.label =   myQtW.QLabel('file for configuration')
+        #self.inputfile =    myQtW.QLineEdit('/home/can/AMS-DATA.cif')
+        #self.inputfile =    myQtW.QLineEdit('/home/can/projects/atk-on/RMG-GUI_readcif/input')
+        self.inputfile =    myQtW.QLineEdit('./input')
 
-        self.button =  QtGui.QPushButton('Browse...')
-        self.pymolshow =  QtGui.QPushButton('Pymol Show')
-        self.quitshow =  QtGui.QPushButton('reinit Pymol')
+        self.button =  myQtW.QPushButton('Browse...')
+        self.pymolshow =  myQtW.QPushButton('Pymol Show')
+        self.quitshow =  myQtW.QPushButton('reinit Pymol')
 
         self.layout.addWidget(self.label )
         self.layout.addWidget(self.inputfile  )
@@ -105,11 +106,11 @@ class Configuration(QtGui.QWidget):
 
         form_layout.addRow(self.layout)
         
-        self.lattlayout  = QtGui.QHBoxLayout()
+        self.lattlayout  = myQtW.QHBoxLayout()
 
-#        lattlabel =   QtGui.QLabel('              lattice constant:')
-       # self.latticea =  QtGui.QLineEdit('0.0   0.0   0.0')
-#        self.latticea =  QtGui.QLabel('0.0   0.0   0.0')
+#        lattlabel =   myQtW.QLabel('              lattice constant:')
+       # self.latticea =  myQtW.QLineEdit('0.0   0.0   0.0')
+#        self.latticea =  myQtW.QLabel('0.0   0.0   0.0')
 
 #        self.inputfile.textChanged.connect(self.open_and_read(self.inputfile.text()))
 
@@ -119,45 +120,45 @@ class Configuration(QtGui.QWidget):
 
 ###############padding and bbx#############
 
-        self.bbxlayouts  = QtGui.QHBoxLayout()
+        self.bbxlayouts  = myQtW.QHBoxLayout()
 
-        bbxlabel =   QtGui.QLabel('              Bounding Box:   a = ')
-        self.bbxa =  QtGui.QLineEdit('1.0')
-        self.bbxb =  QtGui.QLineEdit('1.0')
-        self.bbxc =  QtGui.QLineEdit('1.0')
+        bbxlabel =   myQtW.QLabel('              Bounding Box:   a = ')
+        self.bbxa =  myQtW.QLineEdit('1.0')
+        self.bbxb =  myQtW.QLineEdit('1.0')
+        self.bbxc =  myQtW.QLineEdit('1.0')
 
         self.bbxlayouts.addWidget(bbxlabel )
         self.bbxlayouts.addWidget(self.bbxa)
-        self.bbxlayouts.addWidget(QtGui.QLabel('   b = '))
+        self.bbxlayouts.addWidget(myQtW.QLabel('   b = '))
         self.bbxlayouts.addWidget(self.bbxb)
-        self.bbxlayouts.addWidget(QtGui.QLabel('   c = '))
+        self.bbxlayouts.addWidget(myQtW.QLabel('   c = '))
         self.bbxlayouts.addWidget(self.bbxc)
 
         #form_layout.addRow(self.bbxlayouts)
-        self.lattlayouts  = QtGui.QHBoxLayout()
+        self.lattlayouts  = myQtW.QHBoxLayout()
 
-        lattlabel =   QtGui.QLabel('              lattice constant:   a = ')
-        self.latticea =  QtGui.QLineEdit('10.0')
-        self.latticeb =  QtGui.QLineEdit('10.0')
-        self.latticec =  QtGui.QLineEdit('10.0')
+        lattlabel =   myQtW.QLabel('              lattice constant:   a = ')
+        self.latticea =  myQtW.QLineEdit('10.0')
+        self.latticeb =  myQtW.QLineEdit('10.0')
+        self.latticec =  myQtW.QLineEdit('10.0')
 
         self.lattlayouts.addWidget(lattlabel )
         self.lattlayouts.addWidget(self.latticea)
-        self.lattlayouts.addWidget(QtGui.QLabel('   b = '))
+        self.lattlayouts.addWidget(myQtW.QLabel('   b = '))
         self.lattlayouts.addWidget(self.latticeb)
-        self.lattlayouts.addWidget(QtGui.QLabel('   c = '))
+        self.lattlayouts.addWidget(myQtW.QLabel('   c = '))
         self.lattlayouts.addWidget(self.latticec)
 
         form_layout.addRow(self.lattlayouts)
 
-        self.paddinglayouts  = QtGui.QHBoxLayout()
-        self.paddingx = QtGui.QCheckBox('padding x')
-        self.paddingy = QtGui.QCheckBox('padding y')
-        self.paddingz = QtGui.QCheckBox('padding z')
+        self.paddinglayouts  = myQtW.QHBoxLayout()
+        self.paddingx = myQtW.QCheckBox('padding x')
+        self.paddingy = myQtW.QCheckBox('padding y')
+        self.paddingz = myQtW.QCheckBox('padding z')
 
-        self.xpad =  QtGui.QLineEdit('10.0')
-        self.ypad =  QtGui.QLineEdit('10.0')
-        self.zpad =  QtGui.QLineEdit('10.0')
+        self.xpad =  myQtW.QLineEdit('10.0')
+        self.ypad =  myQtW.QLineEdit('10.0')
+        self.zpad =  myQtW.QLineEdit('10.0')
 
         self.paddinglayouts.addWidget(self.paddingx)
         self.paddinglayouts.addWidget(self.xpad)
@@ -165,7 +166,7 @@ class Configuration(QtGui.QWidget):
         self.paddinglayouts.addWidget(self.ypad)
         self.paddinglayouts.addWidget(self.paddingz)
         self.paddinglayouts.addWidget(self.zpad)
-        self.changepadding = QtGui.QPushButton('change padding')
+        self.changepadding = myQtW.QPushButton('change padding')
         self.paddinglayouts.addWidget(self.changepadding)
         self.changepadding.clicked.connect( self.updatepadding)
 
@@ -211,13 +212,13 @@ class Configuration(QtGui.QWidget):
 ###############padding and bbx#############
     def selectfile(self):        
 
-#        dialog = QtGui.QFileDialog(self)
+#        dialog = myQtW.QFileDialog(self)
 #       dialog.exec_()
 #        self.open_and_read(self.inputfile.text())  
 
 
-        dialog = QtGui.QFileDialog(self)
-        directory=os.getcwd()#QtGui.QFileDialog.getExistingDirectory(self)
+        dialog = myQtW.QFileDialog(self)
+        directory=os.getcwd()#myQtW.QFileDialog.getExistingDirectory(self)
         dialog.setDirectory(directory)# self.inputfile.text() )
         if QtCore.QDir( self.inputfile.text() ).exists():
             dialog.selectFile( self.inputfile.text() )
@@ -448,7 +449,7 @@ class Configuration(QtGui.QWidget):
         maxy = self.conf.lattice[1] * 0.529177 
         maxz = self.conf.lattice[2] * 0.529177
         
-        cmd.extend("drawbox", drawbox(minx, miny, minz, maxx, maxy, maxz, 2.0, 1,1,1))
+        #cmd.extend("drawbox", drawbox(minx, miny, minz, maxx, maxy, maxz, 2.0, 1,1,1))
 
     def quitpymol(self):
         cmd.reinitialize()

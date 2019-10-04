@@ -1,7 +1,8 @@
 # written by Wenchang Lu at NCSU
 
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtWidgets as myQtW
 
 from distutils.sysconfig import get_python_lib
 
@@ -11,7 +12,7 @@ from distutils.sysconfig import get_python_lib
 import json
 import codecs
 
-class Mdscf(QtGui.QWidget):
+class Mdscf(myQtW.QWidget):
     """
        Widget for the basic setup of a NCSURMG calculation.
     """
@@ -31,75 +32,75 @@ class Mdscf(QtGui.QWidget):
         """
 
         ################ __init__ : Initialize base class 
-        QtGui.QWidget.__init__(self, parent)
+        myQtW.QWidget.__init__(self, parent)
 
         ################ __init__ : define the non-GUI variables: 
 
         ##################  __init__ : set up GUI:
         
         # Main layout
-        self._layout = QtGui.QVBoxLayout()
+        self._layout = myQtW.QVBoxLayout()
         self.setLayout(self._layout)
 
         # Setup Groupbox
-        group_box = QtGui.QGroupBox('SCF')
+        group_box = myQtW.QGroupBox('SCF')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
 
         # max SCF steps
 
-        label = QtGui.QLabel('Max scf steps for RMG ')
-        self._maxscf = QtGui.QLineEdit()
+        label = myQtW.QLabel('Max scf steps for RMG ')
+        self._maxscf = myQtW.QLineEdit()
         self._maxscf.setText('50')
         form_layout.addRow(label, self._maxscf)
 
         # RMS convergence critierion
-        label = QtGui.QLabel('RMS Convergence Criterion')
-        self._rms = QtGui.QLineEdit()
+        label = myQtW.QLabel('RMS Convergence Criterion')
+        self._rms = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._rms)
         self._rms.setValidator(validator)
         form_layout.addRow(label, self._rms)
         self._rms.setText('1e-7')
 
-        label = QtGui.QLabel('energy Convergence Criterion')
-        self._rms_energy = QtGui.QLineEdit()
+        label = myQtW.QLabel('energy Convergence Criterion')
+        self._rms_energy = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._rms)
         self._rms_energy.setValidator(validator)
         form_layout.addRow(label, self._rms_energy)
         self._rms_energy.setText('1e-9')
 
-#        label = QtGui.QLabel('Max scf steps for NEGF ')
-#        self._maxscf_NEGF= QtGui.QLineEdit()
+#        label = myQtW.QLabel('Max scf steps for NEGF ')
+#        self._maxscf_NEGF= myQtW.QLineEdit()
 #        self._maxscf_NEGF.setText('30')
 #        form_layout.addRow(label, self._maxscf_NEGF)
 
         # RMS convergence critierion
-#        label = QtGui.QLabel('RMS Convergence Criterion for NEGF')
-#        self._rms_NEGF = QtGui.QLineEdit()
-#        validator = QtGui.QDoubleValidator(self._rms_NEGF)
+#        label = myQtW.QLabel('RMS Convergence Criterion for NEGF')
+#        self._rms_NEGF = myQtW.QLineEdit()
+#        validator = myQtW.QDoubleValidator(self._rms_NEGF)
 #        self._rms_NEGF.setValidator(validator)
 #        form_layout.addRow(label, self._rms_NEGF)
 #        self._rms_NEGF.setText('1e-12')
 
 
         # Setup Groupbox
-        group_box = QtGui.QGroupBox('Relax/MD')
+        group_box = myQtW.QGroupBox('Relax/MD')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
         # max MD steps
 
-        label = QtGui.QLabel('Max MD/FastRelax steps ')
-        self._maxmd = QtGui.QLineEdit()
+        label = myQtW.QLabel('Max MD/FastRelax steps ')
+        self._maxmd = myQtW.QLineEdit()
         self._maxmd.setText('10')
         form_layout.addRow(label, self._maxmd)
 
         # force convergence critierion
-        label = QtGui.QLabel('Max force (Ha/au) < ')
-        self._forcemax = QtGui.QLineEdit()
+        label = myQtW.QLabel('Max force (Ha/au) < ')
+        self._forcemax = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._forcemax)
         self._forcemax.setValidator(validator)
         form_layout.addRow(label, self._forcemax)
@@ -107,30 +108,30 @@ class Mdscf(QtGui.QWidget):
 
         # ionic time step
 
-        label = QtGui.QLabel('ionic time step')
-        self._ionstep = QtGui.QLineEdit()
+        label = myQtW.QLabel('ionic time step')
+        self._ionstep = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._ionstep)
         self._ionstep.setValidator(validator)
         form_layout.addRow(label, self._ionstep)
         self._ionstep.setText('45')
 
         # relax_dynamic_timestep
-        label = QtGui.QLabel('time step changed dynamicall')
-        self._rdt = QtGui.QComboBox()
+        label = myQtW.QLabel('time step changed dynamicall')
+        self._rdt = myQtW.QComboBox()
         self._rdt.addItems(["true", "false"])
         form_layout.addRow(label, self._rdt)
     
         # Setup Groupbox
-        group_box = QtGui.QGroupBox('Mixing')
+        group_box = myQtW.QGroupBox('Mixing')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
 
         # charge density mixing parameter
 
-        label = QtGui.QLabel('Charge Density mixing')
-        self._qmix = QtGui.QLineEdit()
+        label = myQtW.QLabel('Charge Density mixing')
+        self._qmix = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._qmix)
         self._qmix.setValidator(validator)
         form_layout.addRow(label, self._qmix)
@@ -138,39 +139,39 @@ class Mdscf(QtGui.QWidget):
 
         # projector mixing parameter
 
-        label = QtGui.QLabel('Projector mixing')
-        self._pmix = QtGui.QLineEdit()
+        label = myQtW.QLabel('Projector mixing')
+        self._pmix = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._pmix)
         self._pmix.setValidator(validator)
         #form_layout.addRow(label, self._pmix)
         self._pmix.setText('0.1')
 
         #  charge density mixing method
-        label = QtGui.QLabel('charge density mixing method')
-        self._mixmethod = QtGui.QComboBox()
+        label = myQtW.QLabel('charge density mixing method')
+        self._mixmethod = myQtW.QComboBox()
         self._mixmethod.addItems(["Broyden", "Pulay", "Linear"])
         form_layout.addRow(label, self._mixmethod)
 
 
 
-        Hlayout = QtGui.QHBoxLayout()
+        Hlayout = myQtW.QHBoxLayout()
         #Pulay mixing histroy
-        label = QtGui.QLabel('  Pulay Order ')
-        self._pulayorder = QtGui.QSpinBox()
+        label = myQtW.QLabel('  Pulay Order ')
+        self._pulayorder = myQtW.QSpinBox()
         self._pulayorder.setValue(5)
         Hlayout.addWidget(label)
         Hlayout.addWidget(self._pulayorder)
 
         #Pulay mixing scale
-        label = QtGui.QLabel(' scale (beta)  ')
-        self._pulaybeta = QtGui.QLineEdit()
+        label = myQtW.QLabel(' scale (beta)  ')
+        self._pulaybeta = myQtW.QLineEdit()
         self._pulaybeta.setText('0.5')
         Hlayout.addWidget(label)
         Hlayout.addWidget(self._pulaybeta)
 
         #Pulay mixing refresh
-        label = QtGui.QLabel(' refresh steps  ')
-        self._pulayrefresh = QtGui.QLineEdit()
+        label = myQtW.QLabel(' refresh steps  ')
+        self._pulayrefresh = myQtW.QLineEdit()
         self._pulayrefresh.setText('100')
         Hlayout.addWidget(label)
         Hlayout.addWidget(self._pulayrefresh)

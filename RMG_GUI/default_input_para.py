@@ -1,5 +1,5 @@
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore
 
 from distutils.sysconfig import get_python_lib
 
@@ -7,7 +7,7 @@ from distutils.sysconfig import get_python_lib
 import json
 import codecs
 
-class default_input_para(QtGui.QWidget):
+class default_input_para():
     """
        Widget for default input para
     """

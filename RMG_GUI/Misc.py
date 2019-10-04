@@ -1,7 +1,8 @@
 # written by Wenchang Lu at NCSU
 
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtWidgets as myQtW
 
 from distutils.sysconfig import get_python_lib
 
@@ -11,7 +12,7 @@ from distutils.sysconfig import get_python_lib
 import json
 import codecs
 
-class Misc(QtGui.QWidget):
+class Misc(QtWidgets.QWidget):
     """
        Widget for the basic setup of a NCSURMG calculation.
     """
@@ -31,43 +32,43 @@ class Misc(QtGui.QWidget):
         """
 
         ################ __init__ : Initialize base class 
-        QtGui.QWidget.__init__(self, parent)
+        myQtW.QWidget.__init__(self, parent)
 
         ################ __init__ : define the non-GUI variables: 
 
         ##################  __init__ : set up GUI:
         
         # Main layout
-        self._layout = QtGui.QVBoxLayout()
+        self._layout = myQtW.QVBoxLayout()
         self.setLayout(self._layout)
 
         # Setup Groupbox
-        group_box = QtGui.QGroupBox('Misc')
+        group_box = myQtW.QGroupBox('Misc')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
 
 
         # Kohn Sham mgrid levels
 
-        label = QtGui.QLabel('Kohn Sham MG level ')
-        self._khlevel = QtGui.QSpinBox()
+        label = myQtW.QLabel('Kohn Sham MG level ')
+        self._khlevel = myQtW.QSpinBox()
         self._khlevel.setValue(3)
         form_layout.addRow(label, self._khlevel)
 
         # poisson mgrid levels
 
-        label = QtGui.QLabel('Poisson MG level ')
-        self._poissonlevel = QtGui.QSpinBox()
+        label = myQtW.QLabel('Poisson MG level ')
+        self._poissonlevel = myQtW.QSpinBox()
         self._poissonlevel.setValue(4)
         form_layout.addRow(label, self._poissonlevel)
 
 
         # Kohn Sham time step
 
-        label = QtGui.QLabel('Kohn Sham time step')
-        self._khstep = QtGui.QLineEdit()
+        label = myQtW.QLabel('Kohn Sham time step')
+        self._khstep = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._khstep)
         self._khstep.setValidator(validator)
         #form_layout.addRow(label, self._khstep)
@@ -75,16 +76,16 @@ class Misc(QtGui.QWidget):
 
         # Poisson time step
 
-        label = QtGui.QLabel('Poisson time step')
-        self._poissonstep = QtGui.QLineEdit()
+        label = myQtW.QLabel('Poisson time step')
+        self._poissonstep = myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._poissonstep)
         self._poissonstep.setValidator(validator)
         #form_layout.addRow(label, self._poissonstep)
         self._poissonstep.setText('0.66')
 
         # Kohn-sham Solver
-        label = QtGui.QLabel('Kohn-Sham Solver')
-        self.KS_solver = QtGui.QComboBox()
+        label = myQtW.QLabel('Kohn-Sham Solver')
+        self.KS_solver = myQtW.QComboBox()
         self.KS_solver.addItems([
                             "davidson",
                             "multigrid"
@@ -92,8 +93,8 @@ class Misc(QtGui.QWidget):
         form_layout.addRow(label, self.KS_solver)
 
         # VH Solver
-        label = QtGui.QLabel('Poisson Solver')
-        self.VH_solver = QtGui.QComboBox()
+        label = myQtW.QLabel('Poisson Solver')
+        self.VH_solver = myQtW.QComboBox()
         self.VH_solver.addItems([
                             "pfft",
                             "multigrid"
@@ -101,8 +102,8 @@ class Misc(QtGui.QWidget):
         form_layout.addRow(label, self.VH_solver)
 
         # Subdiag Solver
-        label = QtGui.QLabel('Subdiag Solver')
-        self.subdiag_solver = QtGui.QComboBox()
+        label = myQtW.QLabel('Subdiag Solver')
+        self.subdiag_solver = myQtW.QComboBox()
         self.subdiag_solver.addItems([
                             "cusolver",
                             "lapack",
@@ -110,37 +111,37 @@ class Misc(QtGui.QWidget):
                             ])
         form_layout.addRow(label, self.subdiag_solver)
 
-        self.local_pp_delocalization = QtGui.QCheckBox('local pseudopotentials extended to whole cell(delocalization)')
+        self.local_pp_delocalization = myQtW.QCheckBox('local pseudopotentials extended to whole cell(delocalization)')
         form_layout.addRow(self.local_pp_delocalization)
-        self.proj_delocalization = QtGui.QCheckBox('non-local projectors extended to whole cell(delocalization)')
+        self.proj_delocalization = myQtW.QCheckBox('non-local projectors extended to whole cell(delocalization)')
         form_layout.addRow(self.proj_delocalization)
-        self.folded_spectrum = QtGui.QCheckBox('use folded spectrum method')
+        self.folded_spectrum = myQtW.QCheckBox('use folded spectrum method')
         form_layout.addRow(self.folded_spectrum)
 
-        label = QtGui.QLabel('states count and occupation ')
-        self._state_count = QtGui.QLineEdit()
+        label = myQtW.QLabel('states count and occupation ')
+        self._state_count = myQtW.QLineEdit()
         form_layout.addRow(label, self._state_count)
         self._state_count.setText('')
 
-        label = QtGui.QLabel('states count and occupation spin_up ')
-        self._state_count_up = QtGui.QLineEdit()
+        label = myQtW.QLabel('states count and occupation spin_up ')
+        self._state_count_up = myQtW.QLineEdit()
         form_layout.addRow(label, self._state_count_up)
         self._state_count_up.setText('')
 
-        label = QtGui.QLabel('states count and occupation spin_down')
-        self._state_count_down = QtGui.QLineEdit()
+        label = myQtW.QLabel('states count and occupation spin_down')
+        self._state_count_down = myQtW.QLineEdit()
         form_layout.addRow(label, self._state_count_down)
         self._state_count_down.setText('')
 
-        label = QtGui.QLabel('potential acceleration constant')
-        self._p_acc_const= QtGui.QLineEdit()
+        label = myQtW.QLabel('potential acceleration constant')
+        self._p_acc_const= myQtW.QLineEdit()
         validator = QtGui.QDoubleValidator(self._p_acc_const)
         self._p_acc_const.setValidator(validator)
         form_layout.addRow(label, self._p_acc_const)
         self._p_acc_const.setText('1.0')
 
-        label = QtGui.QLabel('number of unoccupied states')
-        self._num_unocc = QtGui.QSpinBox()
+        label = myQtW.QLabel('number of unoccupied states')
+        self._num_unocc = myQtW.QSpinBox()
         self._num_unocc.setValue(10)
         form_layout.addRow(label, self._num_unocc)
     def state(self):

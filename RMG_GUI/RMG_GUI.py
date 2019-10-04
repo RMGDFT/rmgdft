@@ -1,6 +1,7 @@
 # Wenchang Lu at NCSU
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtWidgets as myQtW
 
 import os
 import sys
@@ -32,7 +33,7 @@ from distutils.sysconfig import get_python_lib
 
 
 
-class RMG_GUI(QtGui.QTabWidget):
+class RMG_GUI(QtWidgets.QTabWidget):
     """
        Class used for representing a NCSURMG scripter.
     """
@@ -65,15 +66,15 @@ class RMG_GUI(QtGui.QTabWidget):
                              self._species, self._grids, self._default_input]
 			    #,self._rmg_para]#,self._configuration]
     # Main layout
-            #layout = QtGui.QVBoxLayout()
-            layout = QtGui.QGridLayout()
+            #layout = myQtW.QVBoxLayout()
+            layout = myQtW.QGridLayout()
             layout.setSpacing(10)
             self.setLayout(layout)
 
         # Setup Groupbox
-            savebtn = QtGui.QPushButton('Save')
-            self.savedir = QtGui.QLineEdit(os.getcwd())
-            choosedir = QtGui.QPushButton('...')
+            savebtn = myQtW.QPushButton('Save')
+            self.savedir = myQtW.QLineEdit(os.getcwd())
+            choosedir = myQtW.QPushButton('...')
             choosedir.clicked.connect(self.selectdir)
             savebtn.clicked.connect(self.save)
 
@@ -81,10 +82,10 @@ class RMG_GUI(QtGui.QTabWidget):
             layout.addWidget(self.savedir, 1, 1, 1, 4)
             layout.addWidget(choosedir, 1, 5, 1, 1)
 
-            form_layout = QtGui.QTabWidget()
+            form_layout = myQtW.QTabWidget()
             layout.addWidget(form_layout, 2, 0, 1, 10)
 
-            #form_layout = QtGui.QTabWidget(group_box)
+            #form_layout = myQtW.QTabWidget(group_box)
 
 
             
@@ -514,13 +515,13 @@ class RMG_GUI(QtGui.QTabWidget):
 
 
     def selectdir(self):
-        directory = QtGui.QFileDialog.getExistingDirectory(self)
+        directory = myQtW.QFileDialog.getExistingDirectory(self)
         self.savedir.setText(directory)
 
         
 def main():
     
-    app = QtGui.QApplication(sys.argv)
+    app = myQtW.QApplication(sys.argv)
     ex = RMG_GUI()
     sys.exit(app.exec_())
 

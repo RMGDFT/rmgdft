@@ -1,7 +1,8 @@
 # written by Wenchang Lu at NCSU
 
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtWidgets as myQtW
 
 from distutils.sysconfig import get_python_lib
 
@@ -11,7 +12,7 @@ from distutils.sysconfig import get_python_lib
 import json
 import codecs
 
-class IOcontrol(QtGui.QWidget):
+class IOcontrol(myQtW.QWidget):
     """
        Widget for the basic setup of a NCSURMG calculation.
     """
@@ -31,46 +32,46 @@ class IOcontrol(QtGui.QWidget):
         """
 
         ################ __init__ : Initialize base class 
-        QtGui.QWidget.__init__(self, parent)
+        myQtW.QWidget.__init__(self, parent)
 
         ################ __init__ : define the non-GUI variables: 
 
         ##################  __init__ : set up GUI:
         
         # Main layout
-        self._layout = QtGui.QVBoxLayout()
+        self._layout = myQtW.QVBoxLayout()
         self.setLayout(self._layout)
 
         # Setup Groupbox
-        group_box = QtGui.QGroupBox('IOcontrol')
+        group_box = myQtW.QGroupBox('IOcontrol')
         self._layout.addWidget(group_box)
 
-        form_layout = QtGui.QFormLayout()
+        form_layout = myQtW.QFormLayout()
         group_box.setLayout(form_layout)
 
         # controle eigen value write 
 
-        label = QtGui.QLabel('Write eigvals period ')
-        self._eigp = QtGui.QSpinBox()
+        label = myQtW.QLabel('Write eigvals period ')
+        self._eigp = myQtW.QSpinBox()
         self._eigp.setValue(10)
         form_layout.addRow(label, self._eigp)
 
         # controle wavefunction  write 
 
-        label = QtGui.QLabel('wave function output after this md steps  ')
-        self._wavemd = QtGui.QSpinBox()
+        label = myQtW.QLabel('wave function output after this md steps  ')
+        self._wavemd = myQtW.QSpinBox()
         self._wavemd.setValue(10)
         form_layout.addRow(label, self._wavemd)
         
         # input wave files
-        label = QtGui.QLabel('Input wave function file')
-        self._inputwave = QtGui.QLineEdit()
+        label = myQtW.QLabel('Input wave function file')
+        self._inputwave = myQtW.QLineEdit()
         form_layout.addRow(label, self._inputwave)
         self._inputwave.setText('Wave/wave')
 
         # output wave files
-        label = QtGui.QLabel('output wave function file')
-        self._outputwave = QtGui.QLineEdit()
+        label = myQtW.QLabel('output wave function file')
+        self._outputwave = myQtW.QLineEdit()
         form_layout.addRow(label, self._outputwave)
         self._outputwave.setText('Wave/wave')
 

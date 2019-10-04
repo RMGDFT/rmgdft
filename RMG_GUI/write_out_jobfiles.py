@@ -1,6 +1,6 @@
 import os
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore
 
 from distutils.sysconfig import get_python_lib
 

@@ -1,17 +1,16 @@
 # written by Wenchang Lu at NCSU
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtWidgets as myQtW
 
 from distutils.sysconfig import get_python_lib
-
-from procgrid3d_to_2d import *
 
 ## presumably need to import pickle module twice to make it work properly:
 import json
 import codecs
 from numpy import *
 
-class Grids(QtGui.QWidget):
+class Grids(myQtW.QWidget):
     """
        Widget for the setup grids, including processor grids and space grids
     """
@@ -23,26 +22,26 @@ class Grids(QtGui.QWidget):
            @param parent : The parent widget.
         """
 
-        QtGui.QWidget.__init__(self, parent)
+        myQtW.QWidget.__init__(self, parent)
 
         try:
             # Main layout
-            self._layout = QtGui.QVBoxLayout()
+            self._layout = myQtW.QVBoxLayout()
             self.setLayout(self._layout)
             
             # Setup Groupbox
-            group_box = QtGui.QGroupBox('Grid information for RealSpace Multigrid')
+            group_box = myQtW.QGroupBox('Grid information for RealSpace Multigrid')
             self._layout.addWidget(group_box)
             
-            form_layout = QtGui.QFormLayout()
+            form_layout = myQtW.QFormLayout()
             group_box.setLayout(form_layout)
 
-            layout = QtGui.QHBoxLayout()
-            label = QtGui.QLabel('         choose approximate grid spacing:')
-            self.gridspacing = QtGui.QLineEdit()
+            layout = myQtW.QHBoxLayout()
+            label = myQtW.QLabel('         choose approximate grid spacing:')
+            self.gridspacing = myQtW.QLineEdit()
             validator = QtGui.QDoubleValidator(self.gridspacing)
             self.gridspacing.setValidator(validator)
-            self.button = QtGui.QPushButton('update gridspacing')
+            self.button = myQtW.QPushButton('update gridspacing')
 
             layout.addWidget(self.gridspacing)
             layout.addWidget(self.button)
@@ -51,43 +50,43 @@ class Grids(QtGui.QWidget):
 
             self.gridspacing.setText('0.35')
 
-            Hlayout = QtGui.QHBoxLayout()
+            Hlayout = myQtW.QHBoxLayout()
 
-            Hlayout = QtGui.QHBoxLayout()
-            label = QtGui.QLabel('   wave function grids:')
-            self._Nx = QtGui.QSpinBox()
+            Hlayout = myQtW.QHBoxLayout()
+            label = myQtW.QLabel('   wave function grids:')
+            self._Nx = myQtW.QSpinBox()
             self._Nx.setMaximum(9000)
             self._Nx.setValue(48)
-            self._Ny = QtGui.QSpinBox()
+            self._Ny = myQtW.QSpinBox()
             self._Ny.setMaximum(9000)
             self._Ny.setValue(48)
-            self._Nz = QtGui.QSpinBox()
+            self._Nz = myQtW.QSpinBox()
             self._Nz.setMaximum(9000)
             self._Nz.setValue(48)
 
-            Hlayout.addWidget(QtGui.QLabel('     Nx='))
+            Hlayout.addWidget(myQtW.QLabel('     Nx='))
             Hlayout.addWidget(self._Nx)
-            Hlayout.addWidget(QtGui.QLabel('     Ny='))
+            Hlayout.addWidget(myQtW.QLabel('     Ny='))
             Hlayout.addWidget(self._Ny)
-            Hlayout.addWidget(QtGui.QLabel('     Nz='))
+            Hlayout.addWidget(myQtW.QLabel('     Nz='))
             Hlayout.addWidget(self._Nz)
 
             form_layout.addRow(label,Hlayout)
 
-            label = QtGui.QLabel('   exact grid spacing:')
-            self.exacthxyz = QtGui.QLabel('      hx = 0.35             hy = 0.35             hz = 0.35 bohr')
+            label = myQtW.QLabel('   exact grid spacing:')
+            self.exacthxyz = myQtW.QLabel('      hx = 0.35             hy = 0.35             hz = 0.35 bohr')
 
             form_layout.addRow(label,self.exacthxyz)
 
 
-            label = QtGui.QLabel('   grid spacing anisotropy:')
-            self.anisotropy = QtGui.QLabel('      0.0%')
+            label = myQtW.QLabel('   grid spacing anisotropy:')
+            self.anisotropy = myQtW.QLabel('      0.0%')
 
             form_layout.addRow(label,self.anisotropy)
 
-            Hlayout = QtGui.QHBoxLayout()
-            label = QtGui.QLabel('   pot-rho/wave grid ratio:')
-            self._potratio = QtGui.QSpinBox()
+            Hlayout = myQtW.QHBoxLayout()
+            label = myQtW.QLabel('   pot-rho/wave grid ratio:')
+            self._potratio = myQtW.QSpinBox()
             self._potratio.setMaximum(8)
             self._potratio.setMinimum(1)
             self._potratio.setValue(2)
@@ -95,92 +94,92 @@ class Grids(QtGui.QWidget):
 
             form_layout.addRow(label,Hlayout)
 
-            Hlayout = QtGui.QHBoxLayout()
-            label = QtGui.QLabel('   processor grids for 3D space:')
-            self._Pex = QtGui.QSpinBox()
+            Hlayout = myQtW.QHBoxLayout()
+            label = myQtW.QLabel('   processor grids for 3D space:')
+            self._Pex = myQtW.QSpinBox()
             self._Pex.setMaximum(9000)
             self._Pex.setValue(1)
-            self._Pey = QtGui.QSpinBox()
+            self._Pey = myQtW.QSpinBox()
             self._Pey.setMaximum(9000)
             self._Pey.setValue(1)
-            self._Pez = QtGui.QSpinBox()
+            self._Pez = myQtW.QSpinBox()
             self._Pez.setMaximum(9000)
             self._Pez.setValue(1)
 
-            Hlayout.addWidget(QtGui.QLabel('    Pex='))
+            Hlayout.addWidget(myQtW.QLabel('    Pex='))
             Hlayout.addWidget(self._Pex)
-            Hlayout.addWidget(QtGui.QLabel('    Pey='))
+            Hlayout.addWidget(myQtW.QLabel('    Pey='))
             Hlayout.addWidget(self._Pey)
-            Hlayout.addWidget(QtGui.QLabel('    Pez='))
+            Hlayout.addWidget(myQtW.QLabel('    Pez='))
             Hlayout.addWidget(self._Pez)
 
             form_layout.addRow(label,Hlayout)
 
             # Setup Groupbox
-            group_box = QtGui.QGroupBox('K-point ')
+            group_box = myQtW.QGroupBox('K-point ')
             self._layout.addWidget(group_box)
 
-            form_layout = QtGui.QFormLayout()
+            form_layout = myQtW.QFormLayout()
             group_box.setLayout(form_layout)
 
-            Hlayout = QtGui.QHBoxLayout()
-            label = QtGui.QLabel('   k-point mesh ')
-            self._kx = QtGui.QSpinBox()
+            Hlayout = myQtW.QHBoxLayout()
+            label = myQtW.QLabel('   k-point mesh ')
+            self._kx = myQtW.QSpinBox()
             self._kx.setMaximum(9000)
             self._kx.setValue(1)
-            self._ky = QtGui.QSpinBox()
+            self._ky = myQtW.QSpinBox()
             self._ky.setMaximum(9000)
             self._ky.setValue(1)
-            self._kz = QtGui.QSpinBox()
+            self._kz = myQtW.QSpinBox()
             self._kz.setMaximum(9000)
             self._kz.setValue(1)
             self._kx.setMinimum(1)
             self._ky.setMinimum(1)
             self._kz.setMinimum(1)
 
-            Hlayout.addWidget(QtGui.QLabel('     Kx='))
+            Hlayout.addWidget(myQtW.QLabel('     Kx='))
             Hlayout.addWidget(self._kx)
-            Hlayout.addWidget(QtGui.QLabel('     Ky='))
+            Hlayout.addWidget(myQtW.QLabel('     Ky='))
             Hlayout.addWidget(self._ky)
-            Hlayout.addWidget(QtGui.QLabel('     Kz='))
+            Hlayout.addWidget(myQtW.QLabel('     Kz='))
             Hlayout.addWidget(self._kz)
 
             form_layout.addRow(label,Hlayout)
 
-            Hlayout = QtGui.QHBoxLayout()
-            label = QtGui.QLabel('   k-point shift ')
-            self._is_shift_x = QtGui.QSpinBox()
+            Hlayout = myQtW.QHBoxLayout()
+            label = myQtW.QLabel('   k-point shift ')
+            self._is_shift_x = myQtW.QSpinBox()
             self._is_shift_x.setMaximum(1)
             self._is_shift_x.setValue(0)
-            self._is_shift_y = QtGui.QSpinBox()
+            self._is_shift_y = myQtW.QSpinBox()
             self._is_shift_y.setMaximum(1)
             self._is_shift_y.setValue(0)
-            self._is_shift_z = QtGui.QSpinBox()
+            self._is_shift_z = myQtW.QSpinBox()
             self._is_shift_z.setMaximum(1)
             self._is_shift_z.setValue(0)
 
-            Hlayout.addWidget(QtGui.QLabel('     is_shift_x='))
+            Hlayout.addWidget(myQtW.QLabel('     is_shift_x='))
             Hlayout.addWidget(self._is_shift_x)
-            Hlayout.addWidget(QtGui.QLabel('     is_shift_y='))
+            Hlayout.addWidget(myQtW.QLabel('     is_shift_y='))
             Hlayout.addWidget(self._is_shift_y)
-            Hlayout.addWidget(QtGui.QLabel('     is_shift_z='))
+            Hlayout.addWidget(myQtW.QLabel('     is_shift_z='))
             Hlayout.addWidget(self._is_shift_z)
 
             form_layout.addRow(label,Hlayout)
 
-            group_box = QtGui.QGroupBox('K-point for Band structure')
+            group_box = myQtW.QGroupBox('K-point for Band structure')
             self._layout.addWidget(group_box)
 
-            form_layout = QtGui.QFormLayout()
+            form_layout = myQtW.QFormLayout()
             group_box.setLayout(form_layout)
 
-            Hlayout = QtGui.QHBoxLayout()
-            label = QtGui.QLabel('   number of special lines:')
-            self.num_klines = QtGui.QSpinBox()
+            Hlayout = myQtW.QHBoxLayout()
+            label = myQtW.QLabel('   number of special lines:')
+            self.num_klines = myQtW.QSpinBox()
             self.num_klines.setValue(1)
             Hlayout.addWidget(self.num_klines)
             form_layout.addRow(label,Hlayout)
-            label = QtGui.QLabel('   kx (2pi/a)             ky (2pi/b)                     kz (2pi/c)    number of kpoint    symbol:')
+            label = myQtW.QLabel('   kx (2pi/a)             ky (2pi/b)                     kz (2pi/c)    number of kpoint    symbol:')
             form_layout.addRow(label)
             max_klines = 5
             self.kk_layouts = range(max_klines+1)
@@ -190,20 +189,20 @@ class Grids(QtGui.QWidget):
             self.kpts_band = range(max_klines+1)
             self.ksymbol_band = range(max_klines+1)
             for i in range(max_klines):
-                self.kk_layouts[i]  = QtGui.QHBoxLayout() 
-                self.kx_band[i] =  QtGui.QLineEdit() 
+                self.kk_layouts[i]  = myQtW.QHBoxLayout() 
+                self.kx_band[i] =  myQtW.QLineEdit() 
                 self.kx_band[i].setText('0.0')
                 self.kk_layouts[i].addWidget(self.kx_band[i] )
-                self.ky_band[i] =  QtGui.QLineEdit() 
+                self.ky_band[i] =  myQtW.QLineEdit() 
                 self.ky_band[i].setText('0.0')
                 self.kk_layouts[i].addWidget(self.ky_band[i] )
-                self.kz_band[i] =  QtGui.QLineEdit() 
+                self.kz_band[i] =  myQtW.QLineEdit() 
                 self.kz_band[i].setText('0.0')
                 self.kk_layouts[i].addWidget(self.kz_band[i] )
-                self.kpts_band[i] =  QtGui.QSpinBox() 
+                self.kpts_band[i] =  myQtW.QSpinBox() 
                 self.kpts_band[i].setValue(10)
                 self.kk_layouts[i].addWidget(self.kpts_band[i] )
-                self.ksymbol_band[i] =  QtGui.QLineEdit() 
+                self.ksymbol_band[i] =  myQtW.QLineEdit() 
                 self.ksymbol_band[i].setText('G')
                 self.kk_layouts[i].addWidget(self.ksymbol_band[i] )
                 form_layout.addRow(self.kk_layouts[i])
@@ -217,12 +216,6 @@ class Grids(QtGui.QWidget):
            self._Ny.valueChanged.connect(self.changeNyzgrid)
            self._Nz.valueChanged.connect(self.changeNyzgrid)
 
-           self.get2dgrid()
-
-           self._Pex.valueChanged.connect(self.get2dgrid)
-           self._Pey.valueChanged.connect(self.get2dgrid)
-           self._Pez.valueChanged.connect(self.get2dgrid)
-
         except:
            print " Grids value change error"
     def changeNxgrid(self):
@@ -230,15 +223,6 @@ class Grids(QtGui.QWidget):
         Nxgrid = Nxgrid/self.gridfactor * self.gridfactor
         self._Nx.setValue(Nxgrid)
 
-    def get2dgrid(self):
-        
-        pex = self._Pex.value()
-        pey = self._Pey.value()
-        pez = self._Pez.value()
-        nprow, npcol = procgrid3d_to_2d(pex, pey, pez)
-        self._nprow = nprow
-        self._npcol = npcol
-        
 
     def lattparameters(self, configuration, misc):
 
