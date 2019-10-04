@@ -26,6 +26,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <boost/filesystem.hpp>
 #include "main.h"
 
 
@@ -34,40 +35,28 @@ void DeleteNvmeArrays(void)
 {
     std::string newpath;
 
-    if(ct.nvme_orbital_fd > 0)
-    {
-        ftruncate(ct.nvme_orbital_fd, 0);
-        close(ct.nvme_orbital_fd);
-        newpath = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(pct.kstart) + "_" + std::to_string(pct.gridpe);
-        unlink(newpath.c_str());
-    }
-
     if(ct.nvme_work_fd > 0)
     {
-        ftruncate(ct.nvme_work_fd, 0);
-        close(ct.nvme_work_fd);
-        newpath = ct.nvme_work_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
+        std::string newpath = ct.nvme_work_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
-        unlink(newpath.c_str());
+        if(boost::filesystem::exists(newpath.c_str()))
+        {
+            unlink(newpath.c_str());
+        }
+        ct.nvme_work_fd = -1;
     }
 
-    if(ct.nvme_weight_fd > 0)
+    if(ct.nvme_orbital_fd > 0)
     {
-        ftruncate(ct.nvme_weight_fd, 0);
-        close(ct.nvme_weight_fd);
-        newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) +
-                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
-        unlink(newpath.c_str());
+        std::string orbital_path = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) + "_" +
+                  std::to_string(pct.kstart) + "_" + std::to_string(pct.gridpe);
+
+        if(boost::filesystem::exists(orbital_path.c_str()))
+        {
+            unlink(orbital_path.c_str());
+        }
+        ct.nvme_orbital_fd = -1;
     }
 
-    if(ct.nvme_Bweight_fd > 0)
-    {
-        ftruncate(ct.nvme_Bweight_fd, 0);
-        close(ct.nvme_Bweight_fd);
-        newpath = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) +
-                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
-        unlink(newpath.c_str());
-    }
 
 }

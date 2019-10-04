@@ -33,6 +33,7 @@
 #include <libgen.h>
 #include <complex>
 #include <omp.h>
+#include <boost/filesystem.hpp>
 #include "transition.h"
 #include "const.h"
 #include "RmgTimer.h"
@@ -98,6 +99,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->orbitalsint_local = NULL;
     this->nvme_weight_fd = -1;
     this->nvme_Bweight_fd = -1;
+    this->nvme_ldaU_fd = -1;
     this->G = newG;
     this->T = newT;
     this->L = newL;
@@ -1207,6 +1209,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
             delete [] this->nl_weight;
         }
 #endif
+        this->nl_weight = NULL;
     }
     if ((this->nl_Bweight != NULL) && ct.need_Bweight) {
 #if GPU_ENABLED
@@ -1228,6 +1231,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
             delete [] this->nl_Bweight;
         }
 #endif
+        this->nl_Bweight = NULL;
     }
 
 }
@@ -1256,6 +1260,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
             delete [] this->orbital_weight;
         }
 #endif
+        this->orbital_weight = NULL;
     }
 }
 
@@ -1346,25 +1351,42 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 // Cleans up nvme arrays if they have been used
 template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
 {
+    reset_beta_arrays();
+    reset_orbital_arrays();
     if(nvme_weight_fd > 0)
     {
-        ftruncate(nvme_weight_fd, 0);
-        close(nvme_weight_fd);
-        unlink(nvme_weight_path.c_str());
+        std::string weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
+                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+
+        if(boost::filesystem::exists(weight_path.c_str()))
+        {
+            unlink(weight_path.c_str());
+        }
+        nvme_weight_fd = -1;
     }
 
     if(nvme_Bweight_fd > 0)
     {
-        ftruncate(nvme_Bweight_fd, 0);
-        close(nvme_Bweight_fd);
-        unlink(nvme_Bweight_path.c_str());
+        std::string weight_path = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) + "_" +
+                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+
+        if(boost::filesystem::exists(weight_path.c_str()))
+        {
+            unlink(weight_path.c_str());
+        }
+        nvme_Bweight_fd = -1;
     }
 
     if(nvme_ldaU_fd > 0)
     {
-        ftruncate(nvme_ldaU_fd, 0);
-        close(nvme_ldaU_fd);
-        unlink(nvme_ldaU_path.c_str());
+        std::string orbital_path = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
+                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+
+        if(boost::filesystem::exists(orbital_path.c_str()))
+        {
+            unlink(orbital_path.c_str());
+        }
+        nvme_ldaU_fd = -1;
     }
 
 }
