@@ -227,6 +227,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
                 H_LocalOrbital->storage_proj[st * pbasis + idx] = 0.0;
         }
         RT0 = new RmgTimer("2-SCF: orbital precond and mixing");
+
         Pulay_orbital->Mixing(LocalOrbital->storage_proj, H_LocalOrbital->storage_proj);
         delete RT0;
 
@@ -235,6 +236,9 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
     delete [] trho;
     delete [] rho_pre;
+    delete [] rho_matrix_local;
+    delete [] theta_local;
+
 }                               /* end scf */
 
 

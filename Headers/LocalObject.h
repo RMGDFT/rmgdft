@@ -43,6 +43,7 @@ public:
     void ReadProjectors(int num_ions, int max_nlpoint, int *num_proj_perion, BaseGrid &Rmg_G);
     void GetAtomicOrbitals(int num_ions, BaseGrid &Rmg_G);
     void SetZeroBoundary(BaseGrid &Rmg_G, int multi_grid_level, int fd_order);
+    void ReAssign(BaseGrid &BG);
 
 
 

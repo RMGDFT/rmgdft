@@ -33,7 +33,7 @@
 //    double *vtot_c, std::complex<double> *theta_glob, std::complex<double> *kbpsi_glob);
 //template void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi, LocalObject<double> &NlProj, double *vtot_c, double *theta_glob, double *kbpsi_glob);
 void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi, 
-        LocalObject<double> &NlProj, double *vtot_c, double *theta_glob, double *kbpsi_glob)
+        LocalObject<double> &NlProj, double *vtot_c, double *theta_local, double *kbpsi_glob)
 {
 
     FiniteDiff FD(&Rmg_L);
@@ -66,13 +66,11 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     if(ct.num_ldaU_ions > 0 )
         ldaU_on->app_vhubbard(H_Phi, *Rmg_G);
 
-    double *theta_local = new double[Phi.num_thispe * Phi.num_thispe];
     double *kbpsi_local = new double[NlProj.num_thispe * Phi.num_thispe];
     double *kbpsi_work = new double[NlProj.num_thispe * Phi.num_thispe];
     double *kbpsi_work1 = new double[NlProj.num_thispe * Phi.num_thispe];
 
 
-    mat_global_to_local (Phi, Phi, theta_glob, theta_local);
     mat_global_to_local (NlProj, Phi, kbpsi_glob, kbpsi_local);
 
     // calculate residual part H_Phi_j += Phi_j * Theta_ji
@@ -82,7 +80,6 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     int num_prj = NlProj.num_thispe;
     dgemm("N", "N", &pbasis, &num_orb, &num_orb,  &one, Phi.storage_proj, &pbasis,
             theta_local, &num_orb, &mtwo, H_Phi.storage_proj, &pbasis);
-
 
     //  kbpsi_work_m,i = <beta_m|phi_j> Theta_ji 
     dgemm("N", "N", &num_prj, &num_orb, &num_orb,  &one, kbpsi_local, &num_prj,
@@ -147,13 +144,11 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
             kbpsi_work1, &num_prj, &one, H_Phi.storage_proj, &pbasis);
 
 
-
     delete [] qnm;
     delete [] dnm;
     delete [] kbpsi_work1;;
     delete [] kbpsi_work;;
     delete [] kbpsi_local;
-    delete [] theta_local;
 
     delete(RT);
 

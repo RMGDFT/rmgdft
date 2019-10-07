@@ -641,3 +641,100 @@ template <class KpointType> void LocalObject<KpointType>::SetZeroBoundary(BaseGr
 
 }
 
+template void LocalObject<double>::ReAssign(BaseGrid &BG);
+template void LocalObject<std::complex<double>>::ReAssign(BaseGrid &BG);
+template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
+{
+
+    // reassign orrbitals so that one orbital's local index on different proceessors are the same.
+    // we can perform multigrid preconditioning with distributed domain decomposioitn. 
+    if(this->delocalized) return;
+    
+    int rank,npes;
+    
+    MPI_Comm_size(this->comm, &npes);
+    MPI_Comm_rank(this->comm, &rank);
+    int *orbital_proj = new int[npes * this->num_tot];
+    char *onerow = new char[npes];
+    bool *assigned = new bool[this->num_tot];
+    int *orbital_index = new int[npes];
+    for(int idx = 0; idx < npes * this->num_tot; idx++) orbital_proj[idx] = 0;
+
+    for(int i = 0; i < this->num_thispe; i++)
+    {
+        int i_glob = this->index_proj_to_global[i];
+        orbital_proj[i_glob * npes + rank] = 1;
+    }
+
+    int size_mat = npes * this->num_tot;
+    MPI_Allreduce(MPI_IN_PLACE, orbital_proj, size_mat, MPI_INT, MPI_SUM, this->comm);
+
+    int num_proj = 0;
+    bool can_be_assigned, no_left;
+    for(int i = 0; i < this->num_tot; i++) assigned[i] = false;
+
+    for(int i = 0; i < this->num_tot; i++)   // maximu number of projected orbitals will be the num_tot
+    {
+        for (int ip = 0; ip < npes; ip++) onerow[ip] = 0;
+        
+        for(int j = i; j < this->num_tot; j++)  
+        {
+            no_left = true;
+            if( assigned[j] ) continue;
+            no_left = false;
+            // check if this orbital can assign to this processor's nmu_proj orbital
+            can_be_assigned = true;
+            for (int ip = 0; ip < npes; ip++) 
+            {
+                if( onerow[ip] + orbital_proj[j* npes + ip] >1) 
+                {
+                   can_be_assigned = false;
+                   break; 
+                }
+            }
+        
+            if( can_be_assigned ) 
+            {
+                
+                for (int ip = 0; ip < npes; ip++) 
+                {
+
+                    if( onerow[ip] == 0) orbital_index[ip] = j;
+                    if( orbital_proj[j * npes + ip] ) 
+                    {
+                        onerow[ip] = 1;
+                    }
+                }
+                assigned[j] = true;
+            }
+        }
+        
+        if(no_left) break;
+
+        this->index_proj_to_global[num_proj] = orbital_index[rank];
+        this->index_global_to_proj[orbital_index[rank]] = num_proj;
+        
+        num_proj++;
+
+    }
+
+    this->num_thispe = num_proj;
+
+    for(int i = 0; i < this->num_thispe; i++)
+    {
+//        std::cout << rank << "  " <<i<< "  aaaa  " << this->index_proj_to_global[i] << std::endl;
+    }
+    
+    int PX0_GRID = BG.get_PX0_GRID(density);
+    int PY0_GRID = BG.get_PY0_GRID(density);
+    int PZ0_GRID = BG.get_PZ0_GRID(density);
+    int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+
+    delete [] this->storage_proj;
+    this->storage_proj = new KpointType[this->num_thispe * P0_BASIS];
+
+    delete [] orbital_proj;
+    delete [] onerow;
+    delete [] assigned;
+    
+}
