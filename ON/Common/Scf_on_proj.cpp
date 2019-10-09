@@ -26,6 +26,8 @@
 #include "LocalObject.h"
 #include "Kbpsi.h"
 #include "LdaU_on.h"
+#include "GpuAlloc.h"
+
 #define DELTA_V_MAX 1.0
 
 void update_pot(double *, double *, double *, double *, double *, double *, double *,
@@ -102,8 +104,8 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     double *rho_matrix_local, *theta_local;
 
     int num_orb = LocalOrbital->num_thispe;
-    rho_matrix_local = new double[num_orb * num_orb];
-    theta_local = new double[num_orb * num_orb];
+    rho_matrix_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
+    theta_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
 
     mat_dist_to_local(mat_X, pct.desca, rho_matrix_local, *LocalOrbital);
     mat_dist_to_local(uu_dis, pct.desca, theta_local, *LocalOrbital);
@@ -236,8 +238,8 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
     delete [] trho;
     delete [] rho_pre;
-    delete [] rho_matrix_local;
-    delete [] theta_local;
+    GpuFreeManaged(rho_matrix_local);
+    GpuFreeManaged(theta_local);
 
 }                               /* end scf */
 

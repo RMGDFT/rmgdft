@@ -39,6 +39,9 @@
 #include "RmgException.h"
 #include "transition.h"
 #include "prototypes_on.h"
+#include "RmgGemm.h"
+#include "GpuAlloc.h"
+
 
 void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G)
 {
@@ -51,11 +54,11 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGr
         
     int P0_BASIS = Rmg_G.get_P0_BASIS(A.density);
     
-    mat_local = new double[na*nb];
+    mat_local = (double *) GpuMallocManaged(na*nb*sizeof(double));
     double one = 1.0, zero = 0.0;
 
-    dgemm("T", "N", &na, &nb, &P0_BASIS, &one, A.storage_proj, &P0_BASIS,
-                B.storage_proj, &P0_BASIS, &zero, mat_local, &na);
+    RmgGemm("T", "N", na, nb, P0_BASIS, one, A.storage_proj, P0_BASIS,
+                B.storage_proj, P0_BASIS, zero, mat_local, na);
 
     for (int j = 0; j < B.num_tot; j ++)
     for (int i = 0; i < A.num_tot; i ++)
@@ -77,7 +80,7 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGr
 
     int idx = A.num_tot * B.num_tot;
     MPI_Allreduce(MPI_IN_PLACE, (double *)mat, idx, MPI_DOUBLE, MPI_SUM, A.comm);
-    delete [] mat_local;
+    GpuFreeManaged(mat_local);
 
 }
 

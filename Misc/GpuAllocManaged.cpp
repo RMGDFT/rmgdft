@@ -21,7 +21,6 @@
 */
 
 
-#if GPU_ENABLED
 
 #include "GpuAlloc.h"
 #include "rmg_error.h"
@@ -29,10 +28,14 @@
 #include "ErrorFuncs.h"
 
 #include <complex>
+#include <sys/mman.h>
+#include "RmgException.h"
+
+#if GPU_ENABLED
+
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
-#include <sys/mman.h>
 
 
 void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
@@ -47,6 +50,23 @@ void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
 void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
 {
     cudaFree(ptr);
+}
+
+#else
+
+void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
+{
+    void *ptr;
+    if(NULL == (ptr = malloc(size))) {
+        printf("\n memory size required %lu ", size);
+        throw RmgFatalException() << "memory cannot be allocated: " << fname << " at line " << line << ".\n";
+    }
+    return ptr;
+}
+
+void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
+{
+    free(ptr);
 }
 
 #endif

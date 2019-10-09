@@ -26,6 +26,8 @@
 #include "rmgthreads.h"
 #include "RmgThread.h"
 #include "LdaU_on.h"
+#include "GpuAlloc.h"
+#include "RmgGemm.h"
 
 
 //template void CalculateResidual(LocalObject<std::complex<double>> &Phi, LocalObject<std::complex<double_> &H_Phi,
@@ -66,9 +68,9 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     if(ct.num_ldaU_ions > 0 )
         ldaU_on->app_vhubbard(H_Phi, *Rmg_G);
 
-    double *kbpsi_local = new double[NlProj.num_thispe * Phi.num_thispe];
-    double *kbpsi_work = new double[NlProj.num_thispe * Phi.num_thispe];
-    double *kbpsi_work1 = new double[NlProj.num_thispe * Phi.num_thispe];
+    double *kbpsi_local = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
+    double *kbpsi_work = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
+    double *kbpsi_work1 = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
 
 
     mat_global_to_local (NlProj, Phi, kbpsi_glob, kbpsi_local);
@@ -78,12 +80,12 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     //
     int num_orb = Phi.num_thispe;
     int num_prj = NlProj.num_thispe;
-    dgemm("N", "N", &pbasis, &num_orb, &num_orb,  &one, Phi.storage_proj, &pbasis,
-            theta_local, &num_orb, &mtwo, H_Phi.storage_proj, &pbasis);
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_proj, pbasis,
+            theta_local, num_orb, mtwo, H_Phi.storage_proj, pbasis);
 
     //  kbpsi_work_m,i = <beta_m|phi_j> Theta_ji 
-    dgemm("N", "N", &num_prj, &num_orb, &num_orb,  &one, kbpsi_local, &num_prj,
-            theta_local, &num_orb, &zero, kbpsi_work, &num_prj);
+    RmgGemm("N", "N", num_prj, num_orb, num_orb,  one, kbpsi_local, num_prj,
+            theta_local, num_orb, zero, kbpsi_work, num_prj);
 
 
     // assigin qnm and dnm for all ions into matrix
@@ -132,23 +134,23 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     assert(proj_count_local==num_prj);
 
     //  qnm * <beta_m|phi_j> theta_ji
-    dgemm("N", "N", &num_prj, &num_orb, &num_prj,  &one, qnm, &num_prj, kbpsi_work, &num_prj,
-            &zero, kbpsi_work1, &num_prj);
+    RmgGemm("N", "N", num_prj, num_orb, num_prj,  one, qnm, num_prj, kbpsi_work, num_prj,
+            zero, kbpsi_work1, num_prj);
     //  dnm * <beta_m|phi_j> 
-    dgemm("N", "N", &num_prj, &num_orb, &num_prj,  &mtwo, dnm, &num_prj, kbpsi_local, &num_prj,
-            &one, kbpsi_work1, &num_prj);
+    RmgGemm("N", "N", num_prj, num_orb, num_prj,  mtwo, dnm, num_prj, kbpsi_local, num_prj,
+            one, kbpsi_work1, num_prj);
 
     // |beta_n> * (qnm <beta|phi>theta + dnm <beta|phi>
 
-    dgemm ("N", "N", &pbasis, &num_orb, &num_prj, &one, NlProj.storage_proj, &pbasis, 
-            kbpsi_work1, &num_prj, &one, H_Phi.storage_proj, &pbasis);
+    RmgGemm ("N", "N", pbasis, num_orb, num_prj, one, NlProj.storage_proj, pbasis, 
+            kbpsi_work1, num_prj, one, H_Phi.storage_proj, pbasis);
 
 
     delete [] qnm;
     delete [] dnm;
-    delete [] kbpsi_work1;;
-    delete [] kbpsi_work;;
-    delete [] kbpsi_local;
+    GpuFreeManaged(kbpsi_work1);;
+    GpuFreeManaged(kbpsi_work);;
+    GpuFreeManaged(kbpsi_local);;
 
     delete(RT);
 

@@ -45,6 +45,7 @@
 #include "RmgParallelFft.h"
 
 #include "LocalObject.h"
+#include "GpuAlloc.h"
 
 
 template LocalObject<double>::~LocalObject(void);
@@ -178,7 +179,8 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects
         }
     }
 
-    this->storage_proj = new KpointType[this->num_thispe * P0_BASIS];
+    size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType);
+    this->storage_proj = (KpointType *) GpuMallocManaged(size);
 }
 
 template <class KpointType> LocalObject<KpointType>::~LocalObject(void)
@@ -191,7 +193,7 @@ template <class KpointType> LocalObject<KpointType>::~LocalObject(void)
     delete [] this->dimx;
     delete [] this->dimy;
     delete [] this->dimz;
-    delete [] this->storage_proj;
+    GpuFreeManaged(this->storage_proj);
 
 }
 
@@ -730,8 +732,9 @@ template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
     int PZ0_GRID = BG.get_PZ0_GRID(density);
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
 
-    delete [] this->storage_proj;
-    this->storage_proj = new KpointType[this->num_thispe * P0_BASIS];
+    GpuFreeManaged(this->storage_proj);
+    size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType);
+    this->storage_proj = (KpointType *) GpuMallocManaged(size);
 
     delete [] orbital_proj;
     delete [] onerow;
