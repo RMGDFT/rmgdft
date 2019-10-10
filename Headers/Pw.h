@@ -83,7 +83,8 @@ private:
     bool is_gamma;
 
     // Parallel fft plans
-    struct fft_plan_3d *distributed_plan;
+//    struct fft_plan_3d *distributed_plan;
+    std::vector<struct fft_plan_3d *> distributed_plan;
 
     // Local fft plans
     fftw_plan fftw_forward_plan, fftw_backward_plan;

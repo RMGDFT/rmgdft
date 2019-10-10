@@ -13,7 +13,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 #include "remap.h"
+#include "MpiQueue.h"
+#include "BaseThread.h"
+#include "transition.h"
+
 
 #define PACK_DATA FFT_SCALAR
 
@@ -67,6 +72,30 @@ void remap_3d(FFT_SCALAR *in, FFT_SCALAR *out, FFT_SCALAR *buf,
   if (!plan->usecollective) {
     int i,isend,irecv;
     FFT_SCALAR *scratch;
+    BaseThread *T = BaseThread::getBaseThread(0);
+    int tid = T->get_thread_tid();
+
+    std::vector<mpi_queue_item_t> qitems_r, qitems_s;
+    qitems_r.resize(plan->nrecv);
+    qitems_s.resize(plan->nsend);
+
+    std::vector<std::atomic_bool> is_completed_r(plan->nrecv);
+    std::vector<std::atomic_bool> is_completed_s(plan->nsend);
+    std::atomic_int group_count{plan->nrecv+plan->nsend};
+
+
+    for(int it = 0;it < plan->nrecv;it++)
+    {
+        qitems_r[it].is_completed = &is_completed_r[it];
+        qitems_r[it].group_count = &group_count;
+    }
+
+    for(int it = 0;it < plan->nsend;it++)
+    {
+        qitems_s[it].is_completed = &is_completed_s[it];
+        qitems_s[it].group_count = &group_count;
+    }
+
 
     if (plan->memory == 0)
       scratch = buf;
@@ -76,18 +105,57 @@ void remap_3d(FFT_SCALAR *in, FFT_SCALAR *out, FFT_SCALAR *buf,
     // post all recvs into scratch space
 
     for (irecv = 0; irecv < plan->nrecv; irecv++)
-      MPI_Irecv(&scratch[plan->recv_bufloc[irecv]],plan->recv_size[irecv],
-                MPI_FFT_SCALAR,plan->recv_proc[irecv],0,
-                plan->comm,&plan->request[irecv]);
+    {
+
+      if((tid >= 0) && ct.mpi_queue_mode)
+      {
+          qitems_r[irecv].comm = plan->comm;
+          qitems_r[irecv].is_unpacked = false;
+          qitems_r[irecv].is_completed->store(false);
+          qitems_r[irecv].target = plan->recv_proc[irecv];
+          qitems_r[irecv].buf = (void *)&scratch[plan->recv_bufloc[irecv]];
+          qitems_r[irecv].buflen = sizeof(MPI_FFT_SCALAR) * plan->recv_size[irecv];
+          qitems_r[irecv].mpi_tag = T->get_thread_basetag();
+          qitems_r[irecv].type = RMG_MPI_IRECV;
+          Rmg_Q->queue[tid]->push(qitems_r[irecv]);
+      }
+      else
+      {
+          MPI_Irecv(&scratch[plan->recv_bufloc[irecv]],plan->recv_size[irecv],
+                    MPI_FFT_SCALAR,plan->recv_proc[irecv],0,
+                    plan->comm,&plan->request[irecv]);
+      }
+    }
 
     // send all messages to other procs
 
-    for (isend = 0; isend < plan->nsend; isend++) {
+    for (isend = 0; isend < plan->nsend; isend++)
+    {
       plan->pack(&in[plan->send_offset[isend]],
                  plan->sendbuf,&plan->packplan[isend]);
-      MPI_Send(plan->sendbuf,plan->send_size[isend],MPI_FFT_SCALAR,
-               plan->send_proc[isend],0,plan->comm);
+
+      if((tid >= 0) && ct.mpi_queue_mode)
+      {
+          qitems_s[isend].comm = plan->comm;
+          qitems_s[isend].is_unpacked = false;
+          qitems_s[isend].is_completed->store(false);
+          qitems_s[isend].target = plan->send_proc[isend];
+          qitems_s[isend].buf = (void *)plan->sendbuf;
+          qitems_s[isend].buflen = sizeof(MPI_FFT_SCALAR) * plan->send_size[isend];
+          qitems_s[isend].mpi_tag = T->get_thread_basetag();
+          qitems_s[isend].type = RMG_MPI_ISEND;
+          Rmg_Q->queue[tid]->push(qitems_s[isend]);
+          while(!is_completed_s[isend].load(std::memory_order_acquire))
+          {
+          }
+      } 
+      else
+      {
+          MPI_Send(plan->sendbuf,plan->send_size[isend],MPI_FFT_SCALAR,
+                   plan->send_proc[isend],0,plan->comm);
+      }
     }
+
 
     // copy in -> scratch -> out for self data
 
@@ -103,12 +171,35 @@ void remap_3d(FFT_SCALAR *in, FFT_SCALAR *out, FFT_SCALAR *buf,
 
     // unpack all messages from scratch -> out
 
-    for (i = 0; i < plan->nrecv; i++) {
-      MPI_Waitany(plan->nrecv,plan->request,&irecv,MPI_STATUS_IGNORE);
-      plan->unpack(&scratch[plan->recv_bufloc[irecv]],
-                   &out[plan->recv_offset[irecv]],&plan->unpackplan[irecv]);
+    if((tid >= 0) && ct.mpi_queue_mode)
+    {
+        int items_completed = 0;
+        while(items_completed < plan->nrecv)
+        {
+            for (int irecv = 0; irecv < plan->nrecv; irecv++)
+            {
+                if(!qitems_r[irecv].is_unpacked)
+                {
+                    if(is_completed_r[irecv].load(std::memory_order_acquire))
+                    {
+                        plan->unpack(&scratch[plan->recv_bufloc[irecv]],
+                        &out[plan->recv_offset[irecv]],&plan->unpackplan[irecv]);
+                        items_completed++;
+                        qitems_r[irecv].is_unpacked = true;
+                    }
+                }
+            }
+        }
     }
+    else
+    {
 
+        for (i = 0; i < plan->nrecv; i++) {
+          MPI_Waitany(plan->nrecv,plan->request,&irecv,MPI_STATUS_IGNORE);
+          plan->unpack(&scratch[plan->recv_bufloc[irecv]],
+                       &out[plan->recv_offset[irecv]],&plan->unpackplan[irecv]);
+        }
+    }
   // use All2Allv collective for remap communication
 
   } else {

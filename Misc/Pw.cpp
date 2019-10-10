@@ -46,7 +46,8 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   this->global_dimy = G.get_NY_GRID(ratio);
   this->global_dimz = G.get_NZ_GRID(ratio);
   this->global_basis = this->global_dimx * this->global_dimy * this->global_dimz;
-  this->distributed_plan = NULL;
+  this->distributed_plan.resize(ct.MG_THREADS_PER_NODE);
+  for(int thread=0;thread < ct.MG_THREADS_PER_NODE;thread++) this->distributed_plan[thread] = NULL;
 
   // Magnitudes of the g-vectors
   this->gmags = new double[this->pbasis]();
@@ -201,9 +202,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       int dimy = G.get_PY0_GRID(ratio);
       int dimz = G.get_PZ0_GRID(ratio);
 
-      int pxoffset, pyoffset, pzoffset, nbuf, scaled=false, permute=0, usecollective=true;
+      int pxoffset, pyoffset, pzoffset, nbuf, scaled=false, permute=0, usecollective=false;
       G.find_node_offsets(G.get_rank(), grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);
-      distributed_plan = fft_3d_create_plan(comm,
+      for(int thread=0;thread < ct.MG_THREADS_PER_NODE;thread++)
+      {
+          distributed_plan[thread] = fft_3d_create_plan(comm,
                            grid[2], grid[1], grid[0],
                            pzoffset, pzoffset + dimz - 1,
                            pyoffset, pyoffset + dimy - 1,
@@ -213,6 +216,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
                            pxoffset, pxoffset + dimx - 1,
                            scaled, permute, &nbuf, usecollective);
 
+      }
   }
 
 }
@@ -266,6 +270,10 @@ int Pw::count_filtered_gvectors(double filter_factor)
 
 void Pw::FftForward (double * in, std::complex<double> * out)
 {
+  BaseThread *T = BaseThread::getBaseThread(0);
+  int tid = T->get_thread_tid();
+  if(tid < 0) tid = 0;
+
   std::complex<double> *buf = new std::complex<double>[pbasis];
   for(int i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
 
@@ -275,7 +283,7 @@ void Pw::FftForward (double * in, std::complex<double> * out)
   }
   else
   {
-      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, distributed_plan);
+      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, distributed_plan[tid]);
   }
   delete [] buf;
 }
@@ -283,63 +291,71 @@ void Pw::FftForward (double * in, std::complex<double> * out)
 
 void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
 {
-    if(Grid->get_NPES() == 1)
-    {
-        if(in == out)
-            fftw_execute_dft (fftw_forward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
-        else
-            fftw_execute_dft (fftw_forward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
-    }
-    else
-    {
-        if(in != out)
-        {
-            std::complex<double> *buf = new std::complex<double>[pbasis];
-            for(int i = 0;i < pbasis;i++) buf[i] = in[i];
-            fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, distributed_plan);
-            delete [] buf;
-        }
-        else
-        {
-            fft_3d((FFT_DATA *)in, (FFT_DATA *)out, -1, distributed_plan);
-        }
-    }
+  BaseThread *T = BaseThread::getBaseThread(0);
+  int tid = T->get_thread_tid();
+  if(tid < 0) tid = 0;
+
+  if(Grid->get_NPES() == 1)
+  {
+      if(in == out)
+          fftw_execute_dft (fftw_forward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
+      else
+          fftw_execute_dft (fftw_forward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
+  }
+  else
+  {
+      if(in != out)
+      {
+          std::complex<double> *buf = new std::complex<double>[pbasis];
+          for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+          fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, distributed_plan[tid]);
+          delete [] buf;
+      }
+      else
+      {
+          fft_3d((FFT_DATA *)in, (FFT_DATA *)out, -1, distributed_plan[tid]);
+      }
+  }
 }
 
 
 void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
 {
-    if(Grid->get_NPES() == 1)
-    {
+  BaseThread *T = BaseThread::getBaseThread(0);
+  int tid = T->get_thread_tid();
+  if(tid < 0) tid = 0;
+
+  if(Grid->get_NPES() == 1)
+  {
 #if GPU_ENABLED
-        std::complex<double> *tptr = host_bufs[0];
-        for(int i = 0;i < pbasis;i++) tptr[i] = in[i];
+      std::complex<double> *tptr = host_bufs[0];
+      for(int i = 0;i < pbasis;i++) tptr[i] = in[i];
 //        cudaMemcpyAsync(dev_bufs[0], host_bufs[0], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice, streams[0]);
-        cudaMemcpy(dev_bufs[0], host_bufs[0], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice);
-        cufftExecZ2Z(gpu_plans[0], (cufftDoubleComplex*)dev_bufs[0], (cufftDoubleComplex*)dev_bufs[0], CUFFT_INVERSE);
-        cudaMemcpy(host_bufs[0], dev_bufs[0], pbasis*sizeof(std::complex<double>), cudaMemcpyDeviceToHost);
-        for(int i = 0;i < pbasis;i++) out[i] = tptr[i];
+      cudaMemcpy(dev_bufs[0], host_bufs[0], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice);
+      cufftExecZ2Z(gpu_plans[0], (cufftDoubleComplex*)dev_bufs[0], (cufftDoubleComplex*)dev_bufs[0], CUFFT_INVERSE);
+      cudaMemcpy(host_bufs[0], dev_bufs[0], pbasis*sizeof(std::complex<double>), cudaMemcpyDeviceToHost);
+      for(int i = 0;i < pbasis;i++) out[i] = tptr[i];
 #else
-        if(in == out)
-            fftw_execute_dft (fftw_backward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
-        else
-            fftw_execute_dft (fftw_backward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
+      if(in == out)
+          fftw_execute_dft (fftw_backward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
+      else
+          fftw_execute_dft (fftw_backward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
 #endif
-    }
-    else
-    {
-        if(in != out)
-        {
-            std::complex<double> *buf = new std::complex<double>[pbasis];
-            for(int i = 0;i < pbasis;i++) buf[i] = in[i];
-            fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, distributed_plan);
-            delete [] buf;
-        }
-        else
-        {
-            fft_3d((FFT_DATA *)in, (FFT_DATA *)out, 1, distributed_plan);
-        }
-    }
+  }
+  else
+  {
+      if(in != out)
+      {
+          std::complex<double> *buf = new std::complex<double>[pbasis];
+          for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+          fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, distributed_plan[tid]);
+          delete [] buf;
+      }
+      else
+      {
+          fft_3d((FFT_DATA *)in, (FFT_DATA *)out, 1, distributed_plan[tid]);
+      }
+  }
 }
 
 
@@ -348,7 +364,12 @@ Pw::~Pw(void)
   delete [] g;
   delete [] gmask;
   delete [] gmags;
-  if(this->distributed_plan) fft_3d_destroy_plan(this->distributed_plan);
+
+  for(int thread=0;thread < ct.MG_THREADS_PER_NODE;thread++)
+  {
+      if(this->distributed_plan[thread]) fft_3d_destroy_plan(this->distributed_plan[thread]);
+  }
+
   if(Grid->get_NPES() == 1)
   {
       fftw_destroy_plan(fftw_backward_plan_inplace);
