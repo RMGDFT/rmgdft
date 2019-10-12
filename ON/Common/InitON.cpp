@@ -56,6 +56,7 @@
 #include "LocalObject.h"
 #include "Kbpsi.h"
 #include "LdaU_on.h"
+#include "GpuAlloc.h"
 
 void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, double * rhoc,
           STATE * states, STATE * states1, double * vnuc, double * vxc, double * vh_old, 
@@ -132,6 +133,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     init_comm_res(states);
     delete(RT1);
     RmgTimer *RT2 = new RmgTimer("1-TOTAL: init: init_nuc");
+    RmgTimer *RTa = new RmgTimer("1-TOTAL: init: init_nuc: LocalObject");
     AllocatePsi(states, states1);
 
     duplicate_states_info(states, states1);
@@ -139,7 +141,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     MPI_Barrier(pct.img_comm);
 
-    std::cout << "LocalizedObitalLayout "<< ct.LocalizedOrbitalLayout <<std::endl;
+    //std::cout << "LocalizedObitalLayout "<< ct.LocalizedOrbitalLayout <<std::endl;
     if(ct.LocalizedOrbitalLayout == LO_projection)
     {
         int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
@@ -176,6 +178,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 //        LocalOrbital->ReadOrbitals(std::string(ct.infile), Rmg_G);
     }
 
+    delete RTa;
+    RTa = new RmgTimer("1-TOTAL: init: init_nuc: InitPseudo");
     allocate_masks(states);
 
     for (level = 0; level < ct.eig_parm.levels + 1; level++)
@@ -186,6 +190,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     /* Initialize the radial potential stuff */
     InitPseudo(ControlMap);
 
+    delete RTa;
+    RTa = new RmgTimer("1-TOTAL: init: init_nuc: vnuc");
     /* Initialize symmetry stuff */
     //  init_sym();
 
@@ -203,8 +209,12 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     init_nl_xyz();
     get_ion_orbit_overlap_nl(states);
 
+    delete RTa;
+    RTa = new RmgTimer("1-TOTAL: init: init_nuc: get_nlop");
     GetNlop_on();
 
+    delete RTa;
+    RTa = new RmgTimer("1-TOTAL: init: init_nuc: get_proj");
     
    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
    {
@@ -251,16 +261,17 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         delete [] ixmin;
         delete [] dimx;
         LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, *Rmg_G);
+        
         delete [] proj_per_ion;
         Kbpsi_mat = new double[LocalProj->num_tot * LocalOrbital->num_tot]; 
     }
 
+    delete RTa;
     
     if(ct.num_ldaU_ions > 0 )
     {
         ldaU_on = new LdaU_on(*LocalOrbital, *Rmg_G);
     }
-
 
     MPI_Barrier(pct.img_comm);
     delete(RT2);
