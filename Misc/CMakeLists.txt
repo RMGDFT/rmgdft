@@ -78,6 +78,7 @@ Vdd.cpp
 WriteChargeAnalysis.cpp
 get_dipole.cpp
 get_rho_oppo.cpp
+pack.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories(${MAGMA_INCLUDES})
