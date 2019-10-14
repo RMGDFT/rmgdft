@@ -157,7 +157,7 @@ proc1 = pct.gridpe;
         }
 
 
-dprintf("\n  num-sendrecv_loop1 %d", num_sendrecv_loop1);
+//dprintf("\n  num-sendrecv_loop1 %d", num_sendrecv_loop1);
         for (loop = 0; loop < num_sendrecv_loop1; loop++)
         {
             proc1 = pct.gridpe;

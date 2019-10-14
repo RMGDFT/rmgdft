@@ -185,7 +185,7 @@ void init_nonlocal_comm(void)
 
     kbpsi_num_loop = loop;
 
-    dprintf("\n kbpsi_num_loop %d", kbpsi_num_loop);
+    //dprintf("\n kbpsi_num_loop %d", kbpsi_num_loop);
     //    for (loop = 0; loop < pct.grid_npes; loop++)
     //      dprintf("\n\n %d  %d  %d  %d   loooop\n\n", pct.gridpe, loop,
     //kbpsi_comm_send[loop], kbpsi_comm_recv[loop]);

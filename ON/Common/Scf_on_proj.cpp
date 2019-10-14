@@ -45,8 +45,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     int pbasis= Rmg_G->get_P0_BASIS(1);
     double *rho_pre;
 
-    RmgTimer *RT = new RmgTimer("2-SCF");
-    RmgTimer *RT0 = new RmgTimer("2-SCF: init orbital");
+    RmgTimer *RT0 = new RmgTimer("init orbital");
     if(ct.scf_steps == 0)
     {
         Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
@@ -67,6 +66,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     MPI_Barrier(pct.img_comm);
     delete RT0;
 
+    RmgTimer *RT = new RmgTimer("2-SCF");
     RT0 = new RmgTimer("2-SCF: set zero boundary");
     
     for(int st = 0; st < LocalOrbital->num_thispe; st++)

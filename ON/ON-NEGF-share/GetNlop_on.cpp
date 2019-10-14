@@ -116,26 +116,29 @@ void GetNlop_on(void)
 
 
 //    printf("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
-    std::string newpath;
-
-    if(ct.nvme_weights)
+    if(ct.LocalizedOrbitalLayout != LO_projection)
     {
-        if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
+        std::string newpath;
 
-        newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) +
-                  std::to_string(pct.kstart) + std::to_string(pct.gridpe);
-        ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        if(ct.nvme_weights)
+        {
+            if(ct.nvme_weight_fd != -1) close(ct.nvme_weight_fd);
 
-        projectors = (double *)CreateMmapArray(ct.nvme_weight_fd, PROJECTOR_SPACE*sizeof(double));
-        if(!projectors) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for GetNlop_on. \n");
-        madvise(projectors, PROJECTOR_SPACE*sizeof(double), MADV_SEQUENTIAL);
-        
-    }
-    else
-    {
-        if (projectors != NULL)
-            delete []projectors;
-        projectors = new double[PROJECTOR_SPACE];
+            newpath = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) +
+                std::to_string(pct.kstart) + std::to_string(pct.gridpe);
+            ct.nvme_weight_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+
+            projectors = (double *)CreateMmapArray(ct.nvme_weight_fd, PROJECTOR_SPACE*sizeof(double));
+            if(!projectors) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for GetNlop_on. \n");
+            madvise(projectors, PROJECTOR_SPACE*sizeof(double), MADV_SEQUENTIAL);
+
+        }
+        else
+        {
+            if (projectors != NULL)
+                delete []projectors;
+            projectors = new double[PROJECTOR_SPACE];
+        }
     }
 
     /*allocate memorry for weight factor of partial_beta/partial_x */
@@ -148,11 +151,12 @@ void GetNlop_on(void)
 
     mkdir("PROJECTORS",S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-    beta = projectors;
+   // beta = projectors;
 
-    for (ion = pct.gridpe; ion < ct.num_ions; ion+=pct.grid_npes)
+    for (ion = pct.imgpe; ion < ct.num_ions; ion+=pct.image_npes[pct.thisimg])
     {
 
+        beta = new double[pct.prj_per_ion[ion] * ct.max_nlpoints];
         /* Generate ion pointer */
         iptr = &Atoms[ion];
 
@@ -222,38 +226,43 @@ void GetNlop_on(void)
         write(fhand, beta, size);
         close(fhand);
 
+        delete [] beta;
 
     }                           /* end for ion */
+    MPI_Barrier(pct.img_comm);
 
     delete [] beptr;
     delete [] fftw_phase;
     // Must fix this EMIL
     //
-    
-    MPI_Barrier(pct.img_comm);
-    prjcount = 0;
-    for (int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
-    {
-        ion = pct.ionidx[ion1];
-        /* Generate ion pointer */
-        iptr = &Atoms[ion];
 
-        /* Get species type */
-        sp = &Species[iptr->species];
-        std::string newname;
-        newname = std::string("PROJECTORS/ion_") + std::to_string(ion);
-        int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
-        ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
-        ssize_t read_size = read(fhand, &beta[prjcount], size);
-        if(read_size != size)
+    if(ct.LocalizedOrbitalLayout != LO_projection)
+    {
+        beta = projectors;
+        prjcount = 0;
+        for (int ion1 = 0; ion1 < pct.n_ion_center; ion1++)
         {
-            rmg_error_handler (__FILE__, __LINE__,"error reading");
+            ion = pct.ionidx[ion1];
+            /* Generate ion pointer */
+            iptr = &Atoms[ion];
+
+            /* Get species type */
+            sp = &Species[iptr->species];
+            std::string newname;
+            newname = std::string("PROJECTORS/ion_") + std::to_string(ion);
+            int fhand = open(newname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
+            ssize_t size = (ssize_t)sp->num_projectors * (ssize_t)ct.max_nlpoints * sizeof(double);
+            ssize_t read_size = read(fhand, &beta[prjcount], size);
+            if(read_size != size)
+            {
+                rmg_error_handler (__FILE__, __LINE__,"error reading");
+            }
+            prjcount += sp->num_projectors * ct.max_nlpoints;
         }
-        prjcount += sp->num_projectors * ct.max_nlpoints;
+
+        MPI_Barrier(pct.img_comm);
     }
 
-    MPI_Barrier(pct.grid_comm);
-    
 
 #if	DEBUG
     printf("PE: %d leave  get_nlop ...\n", pct.gridpe);

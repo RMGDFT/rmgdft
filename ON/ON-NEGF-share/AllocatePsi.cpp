@@ -85,6 +85,9 @@ void AllocatePsi(STATE * states, STATE * states1)
     if (pct.gridpe == 0)
         printf("\n allocate_psi Done! ");
 
+    
+     if(ct.LocalizedOrbitalLayout == LO_projection)
+         return;
 //  count how many orbtials will be received from other processor and 
 //    allocate memory for them in states[].psiR
 

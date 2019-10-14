@@ -34,7 +34,6 @@ void GetHS_proj(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     int pbasis = Rmg_G->get_P0_BASIS(1);
 
     RmgTimer *RT = new RmgTimer("4-get_HS");
-
     for (int st1 = 0; st1 < Phi.num_tot * Phi.num_tot; st1++) Hij_glob[st1] = 0.0;
     for (int st1 = 0; st1 < Phi.num_tot * Phi.num_tot; st1++) Bij_glob[st1] = 0.0;
 

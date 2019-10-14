@@ -72,14 +72,19 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     double *kbpsi_work = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
     double *kbpsi_work1 = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
 
+    double *dnmI, *qnmI;
+    double *dnm, *qnm;
+    int num_orb = Phi.num_thispe;
+    int num_prj = NlProj.num_thispe;
+    dnm = (double *) GpuMallocManaged(num_prj * num_prj*sizeof(double));
+    qnm = (double *) GpuMallocManaged(num_prj * num_prj*sizeof(double));
+
 
     mat_global_to_local (NlProj, Phi, kbpsi_glob, kbpsi_local);
 
     // calculate residual part H_Phi_j += Phi_j * Theta_ji
     //  Theta = S^-1H, 
     //
-    int num_orb = Phi.num_thispe;
-    int num_prj = NlProj.num_thispe;
     RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_proj, pbasis,
             theta_local, num_orb, mtwo, H_Phi.storage_proj, pbasis);
 
@@ -90,11 +95,6 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     // assigin qnm and dnm for all ions into matrix
 
-    double *dnmI, *qnmI;
-    double *dnm, *qnm;
-
-    dnm = new double[num_prj * num_prj];
-    qnm = new double[num_prj * num_prj];
 
     for(int idx = 0; idx < num_prj * num_prj; idx++) 
     {
@@ -146,8 +146,8 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
             kbpsi_work1, num_prj, one, H_Phi.storage_proj, pbasis);
 
 
-    delete [] qnm;
-    delete [] dnm;
+    GpuFreeManaged(dnm);;
+    GpuFreeManaged(qnm);;
     GpuFreeManaged(kbpsi_work1);;
     GpuFreeManaged(kbpsi_work);;
     GpuFreeManaged(kbpsi_local);;
