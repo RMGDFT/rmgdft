@@ -206,7 +206,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       G.find_node_offsets(G.get_rank(), grid[0], grid[1], grid[2], &pxoffset, &pyoffset, &pzoffset);
       for(int thread=0;thread < ct.MG_THREADS_PER_NODE;thread++)
       {
-          distributed_plan[thread] = fft_3d_create_plan(comm,
+          distributed_plan[thread] = fft_3d_create_plan<fftw_complex, double>(comm,
                            grid[2], grid[1], grid[0],
                            pzoffset, pzoffset + dimz - 1,
                            pyoffset, pyoffset + dimy - 1,
@@ -283,7 +283,7 @@ void Pw::FftForward (double * in, std::complex<double> * out)
   }
   else
   {
-      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, distributed_plan[tid]);
+      fft_3d((fftw_complex *)buf, (fftw_complex *)out, -1, distributed_plan[tid]);
   }
   delete [] buf;
 }
@@ -308,12 +308,12 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
       {
           std::complex<double> *buf = new std::complex<double>[pbasis];
           for(int i = 0;i < pbasis;i++) buf[i] = in[i];
-          fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, distributed_plan[tid]);
+          fft_3d((fftw_complex *)buf, (fftw_complex *)out, -1, distributed_plan[tid]);
           delete [] buf;
       }
       else
       {
-          fft_3d((FFT_DATA *)in, (FFT_DATA *)out, -1, distributed_plan[tid]);
+          fft_3d((fftw_complex *)in, (fftw_complex *)out, -1, distributed_plan[tid]);
       }
   }
 }
@@ -348,12 +348,12 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
       {
           std::complex<double> *buf = new std::complex<double>[pbasis];
           for(int i = 0;i < pbasis;i++) buf[i] = in[i];
-          fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, distributed_plan[tid]);
+          fft_3d((fftw_complex *)buf, (fftw_complex *)out, 1, distributed_plan[tid]);
           delete [] buf;
       }
       else
       {
-          fft_3d((FFT_DATA *)in, (FFT_DATA *)out, 1, distributed_plan[tid]);
+          fft_3d((fftw_complex *)in, (fftw_complex *)out, 1, distributed_plan[tid]);
       }
   }
 }
