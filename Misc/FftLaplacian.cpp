@@ -53,7 +53,6 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double scale = tpiba * tpiba / (double)pwaves.global_basis;
     int isize = pwaves.pbasis;
-    double gcut = ct.filter_factor*pwaves.gcut;
 
     std::complex<double> czero(0.0,0.0);
     std::complex<double> *tx = new std::complex<double>[isize];
@@ -64,13 +63,7 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
 
     pwaves.FftForward(tx, tx);
 
-    for(int ig=0;ig < isize;ig++) {
-//        if(pwaves.gmask[ig])
-          if(pwaves.gmags[ig] < gcut)
-            tx[ig] = -pwaves.gmags[ig] * tx[ig];
-        else
-            tx[ig]=czero;
-    }
+    for(int ig=0;ig < isize;ig++) tx[ig] = -pwaves.gmags[ig] * tx[ig];
 
     pwaves.FftInverse(tx, tx);
 
