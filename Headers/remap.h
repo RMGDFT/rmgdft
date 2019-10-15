@@ -11,8 +11,14 @@
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
+#ifndef RMG_remap_H
+#define RMG_remap_H 1
+
+
+
 #include <mpi.h>
 
+#if 0
 #ifdef FFT_SINGLE
 typedef float FFT_SCALAR;
 #define MPI_FFT_SCALAR MPI_FLOAT
@@ -20,9 +26,11 @@ typedef float FFT_SCALAR;
 typedef double FFT_SCALAR;
 #define MPI_FFT_SCALAR MPI_DOUBLE
 #endif
+#endif
 
 // details of how to do a 3d remap
 
+template <typename FFT_SCALAR>
 struct remap_plan_3d {
   FFT_SCALAR *sendbuf;                  // buffer for MPI sends
   FFT_SCALAR *scratch;                  // scratch buffer for MPI recvs
@@ -60,11 +68,13 @@ struct extent_3d {
 
 // function prototypes
 
-void remap_3d(FFT_SCALAR *, FFT_SCALAR *, FFT_SCALAR *, struct remap_plan_3d *);
-struct remap_plan_3d *remap_3d_create_plan(MPI_Comm,
+template <typename FFT_SCALAR> void remap_3d(FFT_SCALAR *, FFT_SCALAR *, FFT_SCALAR *, struct remap_plan_3d<FFT_SCALAR> *);
+template <typename FFT_SCALAR> struct remap_plan_3d<FFT_SCALAR> *remap_3d_create_plan(MPI_Comm,
                                            int, int, int, int, int, int,
                                            int, int, int, int, int, int,
                                            int, int, int, int, int);
-void remap_3d_destroy_plan(struct remap_plan_3d *);
+template <typename FFT_SCALAR> void remap_3d_destroy_plan(struct remap_plan_3d<FFT_SCALAR> *);
 int remap_3d_collide(struct extent_3d *,
                      struct extent_3d *, struct extent_3d *);
+
+#endif

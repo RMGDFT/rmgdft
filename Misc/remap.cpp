@@ -14,10 +14,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <type_traits>
 #include "remap.h"
 #include "MpiQueue.h"
 #include "BaseThread.h"
 #include "transition.h"
+
+
+
+template struct remap_plan_3d<double> *remap_3d_create_plan(MPI_Comm,
+                                           int, int, int, int, int, int,
+                                           int, int, int, int, int, int,
+                                           int, int, int, int, int);
+template struct remap_plan_3d<float> *remap_3d_create_plan(MPI_Comm,
+                                           int, int, int, int, int, int,
+                                           int, int, int, int, int, int,
+                                           int, int, int, int, int);
+template void remap_3d_destroy_plan(struct remap_plan_3d<double> *);
+template void remap_3d_destroy_plan(struct remap_plan_3d<float> *);
+template void remap_3d<double>(double *, double *, double *, struct remap_plan_3d<double> *);
+template void remap_3d<float>(float *, float *, float *, struct remap_plan_3d<float> *);
 
 
 #define PACK_DATA FFT_SCALAR
@@ -64,9 +80,12 @@
    plan         plan returned by previous call to remap_3d_create_plan
 ------------------------------------------------------------------------- */
 
-void remap_3d(FFT_SCALAR *in, FFT_SCALAR *out, FFT_SCALAR *buf,
-              struct remap_plan_3d *plan)
+template <typename FFT_SCALAR> void remap_3d(FFT_SCALAR *in, FFT_SCALAR *out, FFT_SCALAR *buf,
+              struct remap_plan_3d<FFT_SCALAR> *plan)
 {
+  MPI_Datatype MPI_FFT_SCALAR = MPI_FLOAT;
+  if(sizeof(FFT_SCALAR) > sizeof(float)) MPI_FFT_SCALAR = MPI_DOUBLE;
+
   // use point-to-point communication
 
   if (!plan->usecollective) {
@@ -319,7 +338,7 @@ void remap_3d(FFT_SCALAR *in, FFT_SCALAR *out, FFT_SCALAR *buf,
    usecollective        whether to use collective MPI or point-to-point
 ------------------------------------------------------------------------- */
 
-struct remap_plan_3d *remap_3d_create_plan(
+template<typename FFT_SCALAR> struct remap_plan_3d<FFT_SCALAR> *remap_3d_create_plan(
   MPI_Comm comm,
   int in_ilo, int in_ihi, int in_jlo, int in_jhi,
   int in_klo, int in_khi,
@@ -329,7 +348,7 @@ struct remap_plan_3d *remap_3d_create_plan(
 
 {
 
-  struct remap_plan_3d *plan;
+  struct remap_plan_3d<FFT_SCALAR> *plan;
   struct extent_3d *inarray, *outarray;
   struct extent_3d in,out,overlap;
   int i,iproc,nsend,nrecv,ibuf,size,me,nprocs;
@@ -341,7 +360,7 @@ struct remap_plan_3d *remap_3d_create_plan(
 
   // allocate memory for plan data struct
 
-  plan = (struct remap_plan_3d *) malloc(sizeof(struct remap_plan_3d));
+  plan = (struct remap_plan_3d<FFT_SCALAR> *) malloc(sizeof(struct remap_plan_3d<FFT_SCALAR>));
   if (plan == NULL) return NULL;
   plan->usecollective = usecollective;
 
@@ -725,7 +744,7 @@ struct remap_plan_3d *remap_3d_create_plan(
    Destroy a 3d remap plan
 ------------------------------------------------------------------------- */
 
-void remap_3d_destroy_plan(struct remap_plan_3d *plan)
+template<typename FFT_SCALAR> void remap_3d_destroy_plan(struct remap_plan_3d<FFT_SCALAR> *plan)
 {
   // free MPI communicator
 

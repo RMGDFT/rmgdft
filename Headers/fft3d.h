@@ -13,16 +13,20 @@
 #ifndef RMG_fft3d_H
 #define RMG_fft3d_H 1
 
+#include <type_traits>
+#include <complex>
+#include "remap.h"
+#include "fftw3.h"
+
+
 // User-settable FFT precision
 
 // FFT_PRECISION = 1 is single-precision complex (4-byte real, 4-byte imag)
 // FFT_PRECISION = 2 is double-precision complex (8-byte real, 8-byte imag)
 #ifdef FFT_SINGLE
 #define FFT_PRECISION 1
-typedef float FFT_SCALAR;
 #else
 #define FFT_PRECISION 2
-typedef double FFT_SCALAR;
 #endif
 
 #define FFT_FFTW 1
@@ -37,39 +41,7 @@ typedef double FFT_SCALAR;
 
 #if FFT_PRECISION == 1
 
-#if defined(FFT_MKL)
-#include "mkl_dfti.h"
-typedef float _Complex FFT_DATA;
-#define FFT_MKL_PREC DFTI_SINGLE
-
-#elif defined(FFT_FFTW2)
-#if defined(FFTW_SIZE)
-#include "sfftw.h"
-#else
-#include "fftw.h"
-#endif
-typedef FFTW_COMPLEX FFT_DATA;
-
-#elif defined(FFT_FFTW3)
-#include "fftw3.h"
-typedef fftwf_complex FFT_DATA;
 #define FFTW_API(function)  fftwf_ ## function
-
-#else
-
-/* use a stripped down version of kiss fft as default fft */
-#ifndef FFT_KISSFFT
-#define FFT_KISSFFT
-#endif
-#define kiss_fft_scalar float
-typedef struct {
-    kiss_fft_scalar re;
-    kiss_fft_scalar im;
-} FFT_DATA;
-
-struct kiss_fft_state;
-typedef struct kiss_fft_state* kiss_fft_cfg;
-#endif
 
 // -------------------------------------------------------------------------
 
@@ -77,53 +49,20 @@ typedef struct kiss_fft_state* kiss_fft_cfg;
 
 #elif FFT_PRECISION == 2
 
-#if defined(FFT_MKL)
-#include "mkl_dfti.h"
-typedef double _Complex FFT_DATA;
-#define FFT_MKL_PREC DFTI_DOUBLE
-
-#elif defined(FFT_FFTW2)
-#if defined(FFTW_SIZE)
-#include "dfftw.h"
-#else
-#include "fftw.h"
-#endif
-typedef FFTW_COMPLEX FFT_DATA;
-
-#elif defined(FFT_FFTW3)
-#include "fftw3.h"
-typedef fftw_complex FFT_DATA;
 #define FFTW_API(function)  fftw_ ## function
 
-#else
-
-/* use a stripped down version of kiss fft as default fft */
-#ifndef FFT_KISSFFT
-#define FFT_KISSFFT
-#endif
-#define kiss_fft_scalar double
-typedef struct {
-    kiss_fft_scalar re;
-    kiss_fft_scalar im;
-} FFT_DATA;
-
-struct kiss_fft_state;
-typedef struct kiss_fft_state* kiss_fft_cfg;
-#endif
-
-#else
-#error "FFT_PRECISION needs to be either 1 (=single) or 2 (=double)"
 #endif
 
 // -------------------------------------------------------------------------
 
 // details of how to do a 3d FFT
 
+template <typename FFT_DATA, typename FFT_SCALAR>
 struct fft_plan_3d {
-  struct remap_plan_3d *pre_plan;       // remap from input -> 1st FFTs
-  struct remap_plan_3d *mid1_plan;      // remap from 1st -> 2nd FFTs
-  struct remap_plan_3d *mid2_plan;      // remap from 2nd -> 3rd FFTs
-  struct remap_plan_3d *post_plan;      // remap from 3rd FFTs -> output
+  struct remap_plan_3d<FFT_SCALAR> *pre_plan;       // remap from input -> 1st FFTs
+  struct remap_plan_3d<FFT_SCALAR> *mid1_plan;      // remap from 1st -> 2nd FFTs
+  struct remap_plan_3d<FFT_SCALAR> *mid2_plan;      // remap from 2nd -> 3rd FFTs
+  struct remap_plan_3d<FFT_SCALAR> *post_plan;      // remap from 3rd FFTs -> output
   FFT_DATA *copy;                   // memory for remap results (if needed)
   FFT_DATA *scratch;                // scratch space for remaps
   int total1,total2,total3;         // # of 1st,2nd,3rd FFTs (times length)
@@ -135,47 +74,25 @@ struct fft_plan_3d {
   double norm;                      // normalization factor for rescaling
 
                                     // system specific 1d FFT info
-#if defined(FFT_MKL)
-  DFTI_DESCRIPTOR *handle_fast;
-  DFTI_DESCRIPTOR *handle_mid;
-  DFTI_DESCRIPTOR *handle_slow;
-#elif defined(FFT_FFTW2)
-  fftw_plan plan_fast_forward;
-  fftw_plan plan_fast_backward;
-  fftw_plan plan_mid_forward;
-  fftw_plan plan_mid_backward;
-  fftw_plan plan_slow_forward;
-  fftw_plan plan_slow_backward;
-#elif defined(FFT_FFTW3)
   FFTW_API(plan) plan_fast_forward;
   FFTW_API(plan) plan_fast_backward;
   FFTW_API(plan) plan_mid_forward;
   FFTW_API(plan) plan_mid_backward;
   FFTW_API(plan) plan_slow_forward;
   FFTW_API(plan) plan_slow_backward;
-#elif defined(FFT_KISSFFT)
-  kiss_fft_cfg cfg_fast_forward;
-  kiss_fft_cfg cfg_fast_backward;
-  kiss_fft_cfg cfg_mid_forward;
-  kiss_fft_cfg cfg_mid_backward;
-  kiss_fft_cfg cfg_slow_forward;
-  kiss_fft_cfg cfg_slow_backward;
-#endif
 };
 
 // function prototypes
 
-extern "C" {
-  void fft_3d(FFT_DATA *, FFT_DATA *, int, struct fft_plan_3d *);
-  struct fft_plan_3d *fft_3d_create_plan(MPI_Comm, int, int, int,
-                                         int, int, int, int, int,
-                                         int, int, int, int, int, int, int,
-                                         int, int, int *, int);
-  void fft_3d_destroy_plan(struct fft_plan_3d *);
-  void factor(int, int *, int *);
-  void bifactor(int, int *, int *);
-  void fft_1d_only(FFT_DATA *, int, int, struct fft_plan_3d *);
-}
+template<typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *, FFT_DATA *, int, struct fft_plan_3d<FFT_DATA, FFT_SCALAR> *);
+template<typename FFT_DATA, typename FFT_SCALAR> struct fft_plan_3d<FFT_DATA, FFT_SCALAR> *fft_3d_create_plan(MPI_Comm, int, int, int,
+                                       int, int, int, int, int,
+                                       int, int, int, int, int, int, int,
+                                       int, int, int *, int);
+template<typename FFT_DATA, typename FFT_SCALAR> void fft_3d_destroy_plan(struct fft_plan_3d<FFT_DATA, FFT_SCALAR> *);
+void factor(int, int *, int *);
+void bifactor(int, int *, int *);
+template<typename FFT_DATA, typename FFT_SCALAR> void fft_1d_only(FFT_DATA *, int, int, struct fft_plan_3d<FFT_DATA, FFT_SCALAR> *);
 
 /* ERROR/WARNING messages:
 
