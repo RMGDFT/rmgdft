@@ -14,10 +14,10 @@ double FiniteDiffLap(double * __restrict__ a, double * __restrict__ b, int dimx,
     //recalculate relative index
     if(dim[0] != dimx || dim[1] != dimy || dim[2] != dimz) 
     {
-        dim[0] = dimx;
-        dim[1] = dimy;
-        dim[2] = dimz;
-        LC->UpdateIndex(dim);
+        std::cout << "dimxyz wanted : "<< dimx << "  " <<dimy << "  " <<dimz<< std::endl;
+        std::cout << "dimxyz shouldbe: "<< dim[0] << "  " <<dim[1] << "  " <<dim[2]<< std::endl;
+
+        rmg_error_handler(__FILE__, __LINE__, "Generalized finite diffenerence dims not match ");
     }
 
 

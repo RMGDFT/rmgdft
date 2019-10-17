@@ -85,10 +85,15 @@
 /* conversions between hartree and eV */
 #define     Ha_eV      27.2113845
 #define     eV_Ha       0.0367493245336341
+#define     Ha_SI       4.35974394E-18
 
 /* conversions between angstrom and bohr */
 #define     a0_A        0.5291772108
 #define     A_a0         1.88972612499359
+#define     a0_SI        0.5291772108E-10
+
+//  1GPa = 1J/m^3 (SI unit) = 10 kbar
+#define     Ha_Kbar     10.0 * Ha_SI/a0_SI/a0_SI/a0_SI*1.0e-9 
 
 
 /* conversion factor for atomic masses */
