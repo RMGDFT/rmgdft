@@ -625,3 +625,51 @@ void Atomic::InitBessel(
 
 
 } 
+
+
+void Atomic::Der_Localpp_g(
+                   double * f,          // IN:  function to be filtered defined on pseudopotential grid
+                   double * r,          // IN:  pseudopotential grid dimensioned r[rg_points], logarithmic
+                   double *rab,         // IN:  radial volume element from the pseudopotential file
+                   double * f_g,        // OUT: on radial g grid
+                   int rg_points)       // IN:  number of points in pseudopotential radial grid
+{
+
+    double *work = new double[rg_points]();
+
+    double t1;
+    int gnum = RADIAL_GVECS;
+
+    /* G-vectors are defined on a log grid with the smallest value set */
+    /* by the largest real-space value of r.                           */
+    gvec[0] = LOGGRID_START;
+    // The largest g-vector we use corresponds to an energy cutoff of 5483 Rydbergs.
+    double gmax = PI / 0.03;
+
+    double gmesh = (log (gmax) - log (gvec[0])) / gnum;
+    t1 = exp (gmesh);
+
+    /* Generate g-vectors */
+    for (int idx = 1; idx < gnum; idx++)
+    {
+        gvec[idx] = gvec[idx-1] * t1;
+    }                           /* end for */
+
+    for(int ift = 0; ift< gnum; ift++) f_g[ift] = 0.0;
+    for (int ift = pct.gridpe; ift < gnum; ift+=pct.grid_npes)
+    {
+        for(int idx = 0; idx < rg_points; idx++)
+        {
+            double gr = gvec[ift] * r[idx];
+            work[idx] = f[idx] * (gr * std::cos(gr) - std::sin(gr)) /(gvec[ift] * gr);
+        }
+        f_g[ift] = 4.0 * PI * radint1 (work, r, rab, rg_points)/(2.0 * gvec[ift]);
+
+    }
+    GlobalSums (f_g, gnum, pct.grid_comm);
+
+    /* Release memory */
+    delete [] work;
+
+} 
+

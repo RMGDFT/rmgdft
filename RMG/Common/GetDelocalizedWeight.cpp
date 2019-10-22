@@ -68,7 +68,6 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
         size_t offset = (size_t)ion * stride * (size_t)pbasis;
-        Nlweight = &nl_weight[offset];
 
         /* Get species type */
         SPECIES &AtomType = Species[Atoms[ion].species];
@@ -81,13 +80,13 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
         /*Calculate the phase factor for delocalized case */
         FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), fftw_phase, false);
 
-        /*Temporary pointer to the already calculated forward transform */
-        fptr = (std::complex<double> *)AtomType.forward_beta[kidx * AtomType.num_projectors * pbasis];
-
-
         /* Loop over radial projectors */
         for (int ip = 0; ip < AtomType.num_projectors; ip++)
         {
+            Nlweight = &nl_weight[offset + ip * pbasis];
+
+            /*Temporary pointer to the already calculated forward transform */
+            fptr = (std::complex<double> *)AtomType.forward_beta[kidx * AtomType.num_projectors * pbasis + ip*pbasis];
 
             /*Apply the phase factor */
             for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
@@ -96,26 +95,55 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
             coarse_pwaves->FftInverse(gbptr, beptr);
 
             std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
-
             double *Nlweight_R = (double *)Nlweight;
             for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
 
             std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 
-// Apply B operator then map weights back
-// FIX: Only works for central operator right now. Have to fix AppCirDriverBeta for Mehrstellen
+            // Apply B operator then map weights back
+            // FIX: Only works for central operator right now. Have to fix AppCirDriverBeta for Mehrstellen
             if(ct.is_gamma) {
                 for (int idx = 0; idx < pbasis; idx++) Nlweight_R[idx] = std::real(nbeptr[idx]);
             }
             else {
                 for (int idx = 0; idx < pbasis; idx++) Nlweight_C[idx] = nbeptr[idx];
             }
+        }
 
-            /*Advance the temp pointers */
-            fptr += pbasis;
-            Nlweight += pbasis;
+        // for stress calculation, calculate x*beta, y * beta, z*beta
+        if(!ct.stress) continue;
+        for(int ixyz = 0; ixyz < 3; ixyz++)
+        {
+            for (int ip = 0; ip < AtomType.num_projectors; ip++)
+            {
+                Nlweight = &nl_weight[nl_weight_size * (ixyz+1) + offset + ip * pbasis];
 
-        } 
+                /*Temporary pointer to the already calculated forward transform */
+                fptr = (std::complex<double> *)AtomType.forward_beta_r[ixyz][kidx * AtomType.num_projectors * pbasis + ip*pbasis];
+
+                /*Apply the phase factor */
+                for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  fptr[idx] * std::conj(fftw_phase[idx]);
+
+                /*Do the backwards transform */
+                coarse_pwaves->FftInverse(gbptr, beptr);
+
+                std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
+                double *Nlweight_R = (double *)Nlweight;
+                for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
+
+                std::complex<double> *nbeptr = (std::complex<double> *)beptr;
+
+                // Apply B operator then map weights back
+                // FIX: Only works for central operator right now. Have to fix AppCirDriverBeta for Mehrstellen
+                if(ct.is_gamma) {
+                    for (int idx = 0; idx < pbasis; idx++) Nlweight_R[idx] = std::real(nbeptr[idx]);
+                }
+                else {
+                    for (int idx = 0; idx < pbasis; idx++) Nlweight_C[idx] = nbeptr[idx];
+                }
+
+            } 
+        }
 
     }                           /* end for */
 

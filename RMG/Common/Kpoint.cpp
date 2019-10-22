@@ -1094,6 +1094,9 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[2], 1, MPI_LONG, MPI_MAX, grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, &ct.beta_alloc, 1, MPI_LONG, MPI_SUM, grid_comm);
 
+    // when we calculate stress, we need beta and x*beta, y*beta, z*beta, so that allocate memory for 4 timrs of nl_weight_size
+    int stress_factor = 1;
+    if(ct.stress) stress_factor = 4;
 
 #if GPU_ENABLED
     cudaError_t custat;
@@ -1101,17 +1104,17 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     // pinned memory works better when it is constrained.
     if(ct.pin_nonlocal_weights)
     {
-        custat = cudaMallocHost((void **)&this->nl_weight, this->nl_weight_size * sizeof(KpointType));
+        custat = cudaMallocHost((void **)&this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType));
         RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
     }
     else
     {
-        this->nl_weight = (KpointType *)GpuMallocManaged(this->nl_weight_size * sizeof(KpointType));
+        this->nl_weight = (KpointType *)GpuMallocManaged(stress_factor * this->nl_weight_size * sizeof(KpointType));
         int device = -1;
         cudaGetDevice(&device);
-        cudaMemAdvise ( this->nl_weight, this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
+        cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
     }
-    for(size_t idx = 0;idx < this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
+    for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
 
     if(ct.need_Bweight) 
     {
@@ -1138,7 +1141,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     {
         this->nl_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
         if(!this->nl_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
-        madvise(this->nl_weight, this->nl_weight_size*sizeof(KpointType), MADV_RANDOM);
+        madvise(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(KpointType), MADV_RANDOM);
 
         if(ct.need_Bweight) {
             this->nl_Bweight = (KpointType *)CreateMmapArray(nvme_Bweight_fd, this->nl_weight_size*sizeof(KpointType));
@@ -1151,7 +1154,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     }
     else
     {
-        this->nl_weight = new KpointType[this->nl_weight_size]();
+        this->nl_weight = new KpointType[stress_factor * this->nl_weight_size]();
         if(ct.need_Bweight) {
             this->nl_Bweight = new KpointType[this->nl_weight_size]();
         }
@@ -1200,9 +1203,11 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
             cudaFree(this->nl_weight);
         }
 #else
+        int stress_factor = 1;
+        if(ct.stress) stress_factor = 4;
         if(ct.nvme_weights)
         {
-            munmap(this->nl_weight, this->nl_weight_size*sizeof(double));
+            munmap(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(double));
         }
         else
         {
@@ -1276,7 +1281,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
     this->ldaU = new LdaU<KpointType>(*this);
 
-//  Can make this more efficient at some point by restricting to ct.num_ldaU_ions but that does not yet work
+    //  Can make this more efficient at some point by restricting to ct.num_ldaU_ions but that does not yet work
     this->OrbitalProjector = new Projector<KpointType>(projector_type, ct.max_ldaU_orbitals, ORBITAL_PROJECTOR);
     int num_nonloc_ions = this->OrbitalProjector->get_num_nonloc_ions();
 
@@ -1285,9 +1290,9 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
         if(nvme_ldaU_fd != -1) close(nvme_ldaU_fd);
 
         nvme_ldaU_path = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
         nvme_ldaU_fd = FileOpenAndCreate(nvme_ldaU_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        
+
     }
 
     this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
@@ -1332,7 +1337,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     if (this->orbitalsint_local)
         delete [] this->orbitalsint_local;
 #endif
-   
+
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
     size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->OrbitalProjector->get_pstride());
@@ -1356,7 +1361,7 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
     if(nvme_weight_fd > 0)
     {
         std::string weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
 
         if(boost::filesystem::exists(weight_path.c_str()))
         {
@@ -1368,7 +1373,7 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
     if(nvme_Bweight_fd > 0)
     {
         std::string weight_path = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
 
         if(boost::filesystem::exists(weight_path.c_str()))
         {
@@ -1380,7 +1385,7 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
     if(nvme_ldaU_fd > 0)
     {
         std::string orbital_path = ct.nvme_weights_path + std::string("rmg_orbital_weight") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
 
         if(boost::filesystem::exists(orbital_path.c_str()))
         {

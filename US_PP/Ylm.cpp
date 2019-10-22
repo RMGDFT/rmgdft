@@ -31,13 +31,13 @@ double Ylm (int l, int m, double * r)
     if (lm == 2)
     {
         c = sqrt (3.0 / fourPI);
-        out = c * rhat[2];
+        out = c * rhat[1];
         return (out);
     }
     if (lm == 3)
     {
         c = sqrt (3.0 / fourPI);
-        out = c * rhat[1];
+        out = c * rhat[2];
         return (out);
     }
     if (lm == 4)

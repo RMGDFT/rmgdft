@@ -55,6 +55,8 @@ void InitClebschGordan (int lmax, double *ap, int *lpx, int *lpl)
     dgesv (&tot_LM, &tot_LM, ylm_tem, &tot_LM, ipvt, ylm_invert, &tot_LM, &info);
 
 
+//  lpx: how many non-zero LMs for Y_il and Y_ik
+//  lpl: L value for the above LMs
     for(int il = 0; il < num_lm; il++)
         for(int ik = 0; ik < num_lm; ik++)
         {

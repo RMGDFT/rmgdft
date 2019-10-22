@@ -213,9 +213,11 @@ public:
 
     // projectors in G-space radial log grid
     double *beta_g[MAX_NB];
+    double *rbeta_g[MAX_NB][MAX_L+1];
 
     // local pseudopotential (rhoc part not included ) in G-space radial log grid.
     double *localpp_g;
+    double *der_localpp_g;
     double *arho_g;
     double *rhocore_g;
 
@@ -253,6 +255,7 @@ public:
 
     /*This will store results of forward fourier transform on the coarse grid */
     fftw_complex *forward_beta;
+    fftw_complex *forward_beta_r[3];
     fftw_complex *forward_orbital;
     fftw_complex *forward_vnuc;
     fftw_complex *forward_rhoc;

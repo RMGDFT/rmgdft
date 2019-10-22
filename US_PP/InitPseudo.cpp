@@ -178,6 +178,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         /*Filter and interpolate local potential into the internal log grid*/
         Zv = sp->zvalence;
         rc = sp->rc;
+        rc = 1.0;
 
         /* Generate the difference potential */
         for (int idx = 0; idx < sp->rg_points; idx++)
@@ -200,12 +201,14 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         // get the local pseudopotential in G space
         sp->localpp_g = new double[RADIAL_GVECS];
+        sp->der_localpp_g = new double[RADIAL_GVECS];
         sp->arho_g = new double[RADIAL_GVECS];
         sp->rhocore_g = new double[RADIAL_GVECS];
         A->RLogGridToGLogGrid(work, sp->r, sp->rab, sp->localpp_g,
                 sp->rg_points, 0, bessel_rg);
         A->RLogGridToGLogGrid(sp->atomic_rho, sp->r, sp->rab, sp->arho_g,
                 sp->rg_points, 0, bessel_rg);
+        A->Der_Localpp_g(work, sp->r, sp->rab, sp->der_localpp_g, sp->rg_points);
 
         if (pct.gridpe == 0 && write_flag)
         {
@@ -244,6 +247,8 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         {
             double gval = A->gvec[idx]*A->gvec[idx];
             sp->localpp_g[idx] -= fac * exp ( - 0.25*gval*rc*rc) / gval;
+
+            sp->der_localpp_g[idx] += fac * exp(-0.25*gval*rc*rc)/(gval * gval) * (0.25 * gval * rc * rc + 1.0);
         }
 
         // Next we want to fourier filter the input atomic charge density and transfer
@@ -278,8 +283,27 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             sp->beta_g[ip] = new double[RADIAL_GVECS];
+            sp->rbeta_g[ip][0] = new double[RADIAL_GVECS];
+            sp->rbeta_g[ip][1] = new double[RADIAL_GVECS];
+            sp->rbeta_g[ip][2] = new double[RADIAL_GVECS];
+
             A->RLogGridToGLogGrid(&sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
                     sp->rg_points, sp->llbeta[ip], bessel_rg);
+
+            for(int idx = 0; idx < sp->rg_points; idx++)
+                work[idx] = sp->beta[ip][idx] * sp->r[idx];
+
+            // generate beta * x, beta * y, beta * z for stress calculation 
+            // equally, the beta * r will have the angular momentum +1
+            // l1 = llbeta[ip], l2 = 1 (for x, y, z)
+            // L = l1 + l2 ... |l1-l2|
+            for(int L = std::abs(sp->llbeta[ip] - 1); L <= sp->llbeta[ip] +1; L++)
+            {
+                
+                A->RLogGridToGLogGrid(work, sp->r, sp->rab, sp->rbeta_g[ip][L],
+                        sp->rg_points, L, bessel_rg);
+            }
+
 
             // Raw beta function from pp is no longer used so free it's memory
             delete [] sp->beta[ip];

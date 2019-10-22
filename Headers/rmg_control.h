@@ -855,6 +855,7 @@ public:
     int max_ldaU_l;  // max ldaU l value for any ion
 
 
+    bool stress = 1;
     double ldaU_radius;
 
     // Memory usage options
