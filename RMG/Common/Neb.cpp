@@ -251,10 +251,10 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
         MPI_Barrier( MPI_COMM_WORLD );
         if(pct.worldrank == 0)
         {
-            double max_tote = *std::max_element(totale, totale+pct.images);
+            double max_tote = *std::max_element(totale, totale+(pct.images+2));
             printf("\n Total Energy of Initial:  %f Ha", totale[0]);
             printf("\n Barrier from  left:  %f eV", (max_tote - totale[0])*Ha_eV);
-            printf("\n Barrier from right:  %f eV", (max_tote - totale[pct.images-1])*Ha_eV);
+            printf("\n Barrier from right:  %f eV", (max_tote - totale[(pct.images+2)-1])*Ha_eV);
 
             printf("\n image     total energy(eV)     max_force  path_length (au)\n");
             for(int img = 0; img < pct.images+2; img++)
