@@ -81,7 +81,7 @@ endif()
 
 # User settable options from cmake-gui, ccmake for text terminals
 # or command line
-option(RMG_GPU_ENABLED "Enable GPU support." ON)
+option(RMG_GPU_ENABLED "Enable GPU support." OFF)
 option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
 option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
 option(USE_INTERNAL_PSEUDOPOTENTIALS "Include internal pseudopotentials in binary." ON)
