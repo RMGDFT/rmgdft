@@ -244,9 +244,10 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             Atoms[ion].RotateForces();
         }
         Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
-       Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, ct.XC, vxc, rho);
 
     }
+    if(ct.stress)
+       Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, ct.XC, vxc, rho);
 
     rmg_printf (" volume and energy per atom = %18.8f  %18.8f eV\n", Rmg_L.get_omega()*a0_A*a0_A*a0_A/Atoms.size(),ct.TOTAL * Ha_eV/Atoms.size());
 
