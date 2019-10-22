@@ -1,6 +1,7 @@
 
 #include <cmath>
 #include <complex>
+#include <iostream>
 #include "Lattice.h"
 #include "LaplacianCoeff.h"
 

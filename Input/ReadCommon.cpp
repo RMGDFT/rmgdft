@@ -882,6 +882,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.");
 #endif
 
+    If.RegisterInputKey("kohn_sham_ke_fft", &lc.kohn_sham_ke_fft, false,
+            "Special purpose flag which will force use of an FFT for the kinetic energy operator.");
+
     If.RegisterInputKey("lcao_use_empty_orbitals", &lc.lcao_use_empty_orbitals, false,
             "Some pseudopotentials contain unbound atomic orbitals and this flag indicates "
             "whether or not they should be used for LCAO starts.");

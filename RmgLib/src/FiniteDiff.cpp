@@ -1555,6 +1555,9 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
     RmgType t3z  (1.0 / (90.0 * h2));
     RmgType t0 (th2);
 
+    // NULL b means we just want the diagonal component.
+    if(b == NULL) return (double)std::real(t0);
+
     for (int ix = 3; ix < dimx + 3; ix++)
     {
 
@@ -1657,6 +1660,9 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     RmgType t4z (c1*w1[ic+4] / h2z);
 
     RmgType t0 (th2);
+
+    // NULL b means we just want the diagonal component.
+    if(b == NULL) return (double)std::real(t0);
 
     switch(ibrav)
     {
@@ -1829,6 +1835,9 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     RmgType t4z ((c1*w1[ic+4] - c2*w2[ic+3]) / h2z);
     RmgType t5z (c1*w1[ic+5] / h2z);
     RmgType t0 (th2);
+
+    // NULL b means we just want the diagonal component.
+    if(b == NULL) return (double)std::real(t0);
 
     switch(ibrav)
     {

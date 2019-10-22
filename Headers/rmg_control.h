@@ -314,6 +314,7 @@ public:
     bool laplacian_offdiag;
     bool laplacian_autocoeff;
     int force_grad_order;
+    bool kohn_sham_ke_fft;
 
     /* This is the max of nldim for any species cubed */
     int max_nlpoints;
