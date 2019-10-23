@@ -48,11 +48,19 @@ void FftInitPlans(void);
 
 void FftInterpolation (BaseGrid &G, double *coarse, double *fine, int ratio, bool use_sqrt);
 
+void FftGradientCoarse(float *x, float *fgx, float *fgy, float *fgz);
+void FftGradientCoarse(std::complex<float> *x, std::complex<float> *fgx, std::complex<float> *fgy, std::complex<float> *fgz);
 void FftGradientCoarse(double *x, double *fgx, double *fgy, double *fgz);
+void FftGradientCoarse(std::complex<double> *x, std::complex<double> *fgx, std::complex<double> *fgy, std::complex<double> *fgz);
 
+void FftGradientFine(float *x, float *fgx, float *fgy, float *fgz);
+void FftGradientFine(std::complex<float> *x, std::complex<float> *fgx, std::complex<float> *fgy, std::complex<float> *fgz);
 void FftGradientFine(double *x, double *fgx, double *fgy, double *fgz);
+void FftGradientFine(std::complex<double> *x, std::complex<double> *fgx, std::complex<double> *fgy, std::complex<double> *fgz);
 
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves);
+void FftGradient(std::complex<double> *x, std::complex<double> *fgx, std::complex<double> *fgy, std::complex<double> *fgz, Pw &pwaves);
+
 
 void FftLaplacianCoarse(float *x, float *lapx);
 void FftLaplacianCoarse(std::complex<float> *x, std::complex<float> *lapx);

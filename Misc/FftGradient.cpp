@@ -41,11 +41,20 @@ void FftGradientCoarse(double *x, double *fgx, double *fgy, double *fgz)
     FftGradient(x, fgx, fgy, fgz, *coarse_pwaves);
 }
 
+void FftGradientCoarse(std::complex<double> *x, std::complex<double> *fgx, std::complex<double> *fgy, std::complex<double> *fgz)
+{
+    FftGradient(x, fgx, fgy, fgz, *coarse_pwaves);
+}
+
 void FftGradientFine(double *x, double *fgx, double *fgy, double *fgz)
 {
     FftGradient(x, fgx, fgy, fgz, *fine_pwaves);
 }
 
+void FftGradientFine(std::complex<double> *x, std::complex<double> *fgx, std::complex<double> *fgy, std::complex<double> *fgz)
+{
+    FftGradient(x, fgx, fgy, fgz, *fine_pwaves);
+}
 
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
 {
@@ -85,6 +94,51 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
         if(icar == 2) ts = fgz;
 
         for(int ix=0;ix < isize;ix++) ts[ix] = scale * std::real(cgx[ix]);
+    }
+
+    delete [] cgx;
+    delete [] tx;
+}
+
+
+void FftGradient(std::complex<double> *x, std::complex<double> *fgx, std::complex<double> *fgy, std::complex<double> *fgz, Pw &pwaves)
+{
+
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double scale = 1.0 / (double)pwaves.global_basis;
+    int isize = pwaves.pbasis;
+
+    std::complex<double> czero(0.0,0.0);
+    std::complex<double> ci(0.0,1.0);
+    std::complex<double> *tx = new std::complex<double>[isize];
+    std::complex<double> *cgx = new std::complex<double>[isize];
+
+    for(int ix = 0;ix < isize;ix++) {
+        tx[ix] = x[ix];
+    }
+
+    pwaves.FftForward(tx, tx);
+
+    double gcut = ct.filter_factor*pwaves.gcut;
+
+    for(int icar=0;icar < 3;icar++) {
+
+        for(int ig=0;ig < isize;ig++) {
+            //if(pwaves.gmask[ig]) 
+            if(pwaves.gmags[ig] < gcut) 
+                cgx[ig] = ci * tpiba * pwaves.g[ig].a[icar] * tx[ig];
+            else
+                cgx[ig] = czero;
+        }
+
+        pwaves.FftInverse(cgx, cgx);
+
+        std::complex<double> *ts;
+        if(icar == 0) ts = fgx;
+        if(icar == 1) ts = fgy;
+        if(icar == 2) ts = fgz;
+
+        for(int ix=0;ix < isize;ix++) ts[ix] = scale * cgx[ix];
     }
 
     delete [] cgx;
