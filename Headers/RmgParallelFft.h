@@ -54,11 +54,18 @@ void FftGradientFine(double *x, double *fgx, double *fgy, double *fgz);
 
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves);
 
+void FftLaplacianCoarse(float *x, float *lapx);
+void FftLaplacianCoarse(std::complex<float> *x, std::complex<float> *lapx);
 void FftLaplacianCoarse(double *x, double *lapx);
+void FftLaplacianCoarse(std::complex<double> *x, std::complex<double> *lapx);
 
+void FftLaplacianFine(float *x, float *lapx);
+void FftLaplacianFine(std::complex<float> *x, std::complex<float> *lapx);
 void FftLaplacianFine(double *x, double *lapx);
+void FftLaplacianFine(std::complex<double> *x, std::complex<double> *lapx);
 
 void FftLaplacian(double *x, double *lapx, Pw &pwaves);
+void FftLaplacian(std::complex<double> *x, std::complex<double> *lapx, Pw &pwaves);
 
 void FftFilter(double *x, Pw &pwaves, double factor, int type);
 

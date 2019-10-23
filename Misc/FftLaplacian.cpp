@@ -37,12 +37,43 @@
 #include "RmgParallelFft.h"
 
 
+
+void FftLaplacianCoarse(float *x, float *lapx)
+{
+   throw RmgFatalException() << "Float version not implemented yet in FftLaplacian "<< " at line " << __LINE__ << "\n";
+}
+
+void FftLaplacianCoarse(std::complex<float> *x, std::complex<float> *lapx)
+{
+   throw RmgFatalException() << "Float version not implemented yet in FftLaplacian "<< " at line " << __LINE__ << "\n";
+}
+
 void FftLaplacianCoarse(double *x, double *lapx)
 {
     FftLaplacian(x, lapx, *coarse_pwaves);
 }
 
+void FftLaplacianCoarse(std::complex<double> *x, std::complex<double> *lapx)
+{
+    FftLaplacian(x, lapx, *coarse_pwaves);
+}
+
+void FftLaplacianFine(float *x, float *lapx)
+{
+   throw RmgFatalException() << "Float version not implemented yet in FftLaplacian "<< " at line " << __LINE__ << "\n";
+}
+
+void FftLaplacianFine(std::complex<float> *x, std::complex<float> *lapx)
+{
+   throw RmgFatalException() << "Float version not implemented yet in FftLaplacian "<< " at line " << __LINE__ << "\n";
+}
+
 void FftLaplacianFine(double *x, double *lapx)
+{
+    FftLaplacian(x, lapx, *fine_pwaves);
+}
+
+void FftLaplacianFine(std::complex<double> *x, std::complex<double> *lapx)
 {
     FftLaplacian(x, lapx, *fine_pwaves);
 }
@@ -68,6 +99,31 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
     pwaves.FftInverse(tx, tx);
 
     for(int ix=0;ix < isize;ix++) lapx[ix] = scale * std::real(tx[ix]);
+
+
+    delete [] tx;
+}
+
+void FftLaplacian(std::complex<double> *x, std::complex<double> *lapx, Pw &pwaves)
+{
+
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double scale = tpiba * tpiba / (double)pwaves.global_basis;
+    int isize = pwaves.pbasis;
+
+    std::complex<double> *tx = new std::complex<double>[isize];
+
+    for(int ix = 0;ix < isize;ix++) {
+        tx[ix] = x[ix];
+    }
+
+    pwaves.FftForward(tx, tx);
+
+    for(int ig=0;ig < isize;ig++) tx[ig] = -pwaves.gmags[ig] * tx[ig];
+
+    pwaves.FftInverse(tx, tx);
+
+    for(int ix=0;ix < isize;ix++) lapx[ix] = scale * tx[ix];
 
 
     delete [] tx;
