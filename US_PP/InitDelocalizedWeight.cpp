@@ -38,8 +38,8 @@ void InitDelocalizedWeight (void)
     
 
     std::complex<double> I_t(0.0, 1.0);
-    std::complex<double> *IL =  new std::complex<double>[2*ct.max_l];
-    for(int L = 0; L < 2 * ct.max_l; L++) IL[L] = std::pow(-I_t, L);
+    std::complex<double> *IL =  new std::complex<double>[ct.max_l+2];
+    for(int L = 0; L <  ct.max_l+2; L++) IL[L] = std::pow(-I_t, L);
     std::complex<double> phase = PI * I_t;
     phase = std::exp(phase);
     int max_pbasis = 0;
