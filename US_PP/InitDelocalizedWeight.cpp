@@ -44,15 +44,16 @@ void InitDelocalizedWeight (void)
     phase = std::exp(phase);
     int max_pbasis = 0;
 
-    int num_lm = (ct.max_l + 1) * (ct.max_l+1);
-    int num_LM2 = (2*ct.max_l + 1) * (2*ct.max_l+1);
+    int lmax = ct.max_l + 1;
+    int num_lm = (lmax + 1) * (lmax + 1);
+    int num_LM2 = (2*lmax + 1) * (2*lmax + 1);
 
     int *lpx = new int[num_lm * num_lm];
     int *lpl = new int[num_lm * num_lm  * num_LM2];
     double *ap = new double[num_LM2 * num_lm * num_lm];
     //ylm = new double[25];
 
-    InitClebschGordan(ct.max_l, ap, lpx, lpl);
+    InitClebschGordan(lmax, ap, lpx, lpl);
 
     for (int isp = 0; isp < ct.num_species; isp++)
     {
