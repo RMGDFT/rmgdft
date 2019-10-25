@@ -147,7 +147,7 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
 
     for(int i = 0; i < 9; i++) stress_tensor_R[i] = std::real(stress_tensor_T[i])/L.omega;
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_R, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
-    symmetrize_tensor(stress_tensor_R);
+    if(!ct.is_gamma)symmetrize_tensor(stress_tensor_R);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     print_stress("Kinetic term", stress_tensor_R);
@@ -205,44 +205,13 @@ template void Stress<double>::Exc_term(double Exc, double *vxc, double *rho);
 template void Stress<std::complex<double>>::Exc_term(double Exc, double *vxc, double *rho);
 template <class T> void Stress<T>::Exc_term(double Exc, double *vxc, double *rho)
 {
-    int PX0_GRID = Rmg_G->get_PX0_GRID(1);
-    int PY0_GRID = Rmg_G->get_PY0_GRID(1);
-    int PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
-
-    int pbasis = PX0_GRID * PY0_GRID * PZ0_GRID;
     double stress_tensor_x[9];
     for(int i = 0; i < 9; i++) stress_tensor_x[i] = 0.0;
-    double tem = 0.0;
     for(int i = 0; i < 3; i++) stress_tensor_x[i * 3 + i ] = -(ct.XC - ct.vtxc)/Rmg_L.omega;
 
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_x[i];
 
     print_stress("XC term", stress_tensor_x);
-}
-
-template void Stress<double>::Local_term1(double *rho, double *vnuc);
-template void Stress<std::complex<double>>::Local_term1(double *rho, double *vnuc);
-template <class T> void Stress<T>::Local_term1(double *rho, double *vnuc)
-{
-
-    int grid_ratio = Rmg_G->default_FG_RATIO;
-    int PX0_GRID = Rmg_G->get_PX0_GRID(grid_ratio);
-    int PY0_GRID = Rmg_G->get_PY0_GRID(grid_ratio);
-    int PZ0_GRID = Rmg_G->get_PZ0_GRID(grid_ratio);
-
-    int pbasis = PX0_GRID * PY0_GRID * PZ0_GRID;
-    double *grad_vnuc = new double[3 * pbasis];
-    double *vnuc_x = grad_vnuc;
-    double *vnuc_y = grad_vnuc + pbasis;
-    double *vnuc_z = grad_vnuc + 2*pbasis;
-
-    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(grid_ratio) * Rmg_G->get_NY_GRID(grid_ratio) * Rmg_G->get_NZ_GRID(grid_ratio)));
-    double stress_tensor_loc[9];
-
-
-    for(int i = 0; i < 9; i++) stress_tensor_loc[i] = 0.0;
-    ApplyGradient(vnuc, vnuc_x, vnuc_y, vnuc_z, ct.force_grad_order, "Fine");
-
 }
 
 template void Stress<double>::Local_term(std::vector<ION> &atoms, 
@@ -271,10 +240,6 @@ template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms,
     for (int isp = 0; isp < ct.num_species; isp++)
     {
         SPECIES *sp = &Species[isp];
-
-        double Zv = sp->zvalence;
-        double fac = 4.0 * PI * Zv;
-        double rc = sp->rc;
 
         for(int ig=0;ig < pbasis;ig++) 
         {
@@ -335,8 +300,6 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     T *psi, *psi_x, *psi_y, *psi_z;
     double stress_tensor_nl[9];
     for(int i = 0; i < 9; i++) stress_tensor_nl[i] = 0.0;
-    double stress_tensor_nl0[9];
-    for(int i = 0; i < 9; i++) stress_tensor_nl0[i] = 0.0;
     int num_occupied;
     std::complex<double> I_t(0.0, 1.0);
 
@@ -357,7 +320,6 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
     int num_proj = num_nonloc_ions * ct.max_nl;
     T *proj_mat = (T *)GpuMallocManaged(num_proj * num_proj * sizeof(T));
-    T *proj_mat1 = (T *)GpuMallocManaged(num_proj * num_proj * sizeof(T));
 
     //  determine the number of occupied states for all kpoints.
 
@@ -523,7 +485,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
     // img_comm includes kpoint, spin, and grid (num_owned_ions) sum
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nl, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
-    symmetrize_tensor(stress_tensor_nl);
+    if(!ct.is_gamma)symmetrize_tensor(stress_tensor_nl);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nl[i];
     print_stress("Nonlocal term", stress_tensor_nl);
 
