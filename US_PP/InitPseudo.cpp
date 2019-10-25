@@ -178,7 +178,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
         /*Filter and interpolate local potential into the internal log grid*/
         Zv = sp->zvalence;
         rc = sp->rc;
-        rc = 1.0;
 
         /* Generate the difference potential */
         for (int idx = 0; idx < sp->rg_points; idx++)
