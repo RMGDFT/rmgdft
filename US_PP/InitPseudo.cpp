@@ -196,7 +196,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
 
 
         RmgTimer *RT1 = new RmgTimer("radial beta");
-        A->InitBessel(sp->r, sp->rg_points, ct.max_l, bessel_rg);
+        A->InitBessel(sp->r, sp->rg_points, ct.max_l + 1, bessel_rg);
         delete RT1;
 
         // get the local pseudopotential in G space
@@ -283,9 +283,6 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             }
 
             sp->beta_g[ip] = new double[RADIAL_GVECS];
-            sp->rbeta_g[ip][0] = new double[RADIAL_GVECS];
-            sp->rbeta_g[ip][1] = new double[RADIAL_GVECS];
-            sp->rbeta_g[ip][2] = new double[RADIAL_GVECS];
 
             A->RLogGridToGLogGrid(&sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
                     sp->rg_points, sp->llbeta[ip], bessel_rg);
@@ -300,6 +297,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             for(int L = std::abs(sp->llbeta[ip] - 1); L <= sp->llbeta[ip] +1; L++)
             {
                 
+                sp->rbeta_g[ip][L] = new double[RADIAL_GVECS];
                 A->RLogGridToGLogGrid(work, sp->r, sp->rab, sp->rbeta_g[ip][L],
                         sp->rg_points, L, bessel_rg);
             }

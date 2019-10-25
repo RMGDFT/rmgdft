@@ -49,8 +49,6 @@
 #include "AtomicInterpolate.h"
 
 
-static void dlocal_pp(double gval, int rg_points, double *r, double *rab, double *vloc0, double *work, 
-        double &dvloc_g, double &vloc_g);
 static void print_stress(char *w, double *stress_term);
 
 template Stress<double>::~Stress(void);
@@ -75,7 +73,6 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     delete RT2;
     RT2 = new RmgTimer("2-Stress: Loc");
     Local_term(atoms, species, rho, pwaves);
-    //Local_term1(rho, vnuc);
     delete RT2;
     RT2 = new RmgTimer("2-Stress: Non-loc");
     NonLocal_term(Kpin, atoms, species);
@@ -123,11 +120,11 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
         {
             if (std::abs(kptr->Kstates[st].occupation[0]) < 1.0e-10) break;
             ApplyGradient(kptr->Kstates[st].psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
-            //ApplyGradient(kptr->Kstates[st].psi, psi_x, psi_y, psi_z, 0, "Coarse");
 
-            alpha = vel * kptr->Kstates[st].occupation[0];
+            alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
             RmgGemm("C", "N", 3, 3, pbasis, alpha, grad_psi, pbasis,
                     grad_psi, pbasis, one, stress_tensor_T, 3);
+
         }
     }
 
@@ -256,20 +253,15 @@ template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms,
     for (int isp = 0; isp < ct.num_species; isp++)
     {
         SPECIES *sp = &Species[isp];
-        double *work = new double[sp->rg_points];
-        double *vloc0 = new double[sp->rg_points];
 
         double Zv = sp->zvalence;
         double fac = 4.0 * PI * Zv;
         double rc = sp->rc;
-        // add the long range compensating charge contribution in real space
-        for (int idx = 0; idx < sp->rg_points; idx++)
-            vloc0[idx] = sp->vloc0[idx] + Zv * boost::math::erf (sp->r[idx] / rc) / sp->r[idx];
 
         for(int ig=0;ig < pbasis;ig++) 
         {
-            if((pwaves.gmags[ig] < 1.0e-6) || !pwaves.gmask[ig]) continue;
-            //if((pwaves.gmags[ig] < 1.0e-6) ) continue;
+            if(!pwaves.gmask[ig]) continue;
+            //if((pwaves.gmags[ig] < 1.0e-6) || !pwaves.gmask[ig]) continue;
             double gsqr = pwaves.gmags[ig] *tpiba2;
             double gval = std::sqrt(gsqr);
             double g[3];
@@ -277,11 +269,6 @@ template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms,
             g[1] = pwaves.g[ig].a[1] * tpiba;
             g[2] = pwaves.g[ig].a[2] * tpiba;
 
-            //dlocal_pp(gval, sp->rg_points, sp->r, sp->rab, vloc0, work, dvloc_g2, vloc_g);
-
-            // substract the long range part in G space.
-            //vloc_g -= fac * std::exp(-0.25 * gsqr *rc *rc)/gsqr;
-            //dvloc_g2 += fac * std::exp(-0.25 * gsqr *rc *rc)/(gsqr*gsqr) *( 0.25 * gsqr * rc * rc + 1.0);
             vloc_g = AtomicInterpolateInline_Ggrid(sp->localpp_g, gval);
             dvloc_g2 = AtomicInterpolateInline_Ggrid(sp->der_localpp_g, gval);
 
@@ -295,7 +282,7 @@ template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms,
                 if (iptr1->species != isp) continue;
 
                 gr = iptr1->crds[0] * g[0] + iptr1->crds[1] * g[1] + iptr1->crds[2] * g[2];
-                S +=  std::exp(std::complex<double>(0.0, gr));
+                S +=  std::exp(std::complex<double>(0.0, -gr));
             }
 
             double sg = std::real(S * std::conj(crho[ig]) );
@@ -303,9 +290,9 @@ template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms,
             {
                 for(int j = 0; j < 3; j++)
                 {
-                    stress_tensor_loc[i*3+j] -= 2.0 * g[i] * g[j] * sg * dvloc_g2;
+                    stress_tensor_loc[i*3+j] += 2.0 * g[i] * g[j] * sg * dvloc_g2;
                     if(i == j) 
-                        stress_tensor_loc[i*3+j] -= sg * vloc_g;
+                        stress_tensor_loc[i*3+j] += sg * vloc_g;
                 }
             }
 
@@ -330,6 +317,8 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     T *psi, *psi_x, *psi_y, *psi_z;
     double stress_tensor_nl[9];
     for(int i = 0; i < 9; i++) stress_tensor_nl[i] = 0.0;
+    double stress_tensor_nl0[9];
+    for(int i = 0; i < 9; i++) stress_tensor_nl0[i] = 0.0;
     int num_occupied;
     std::complex<double> I_t(0.0, 1.0);
 
@@ -345,13 +334,14 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
     size_t size = num_nonloc_ions * ct.state_block_size * ct.max_nl; 
     size += 1;
-//  sint_der:  leading dimension is num_nonloc_ions * ct.max_nl, 
+    //  sint_der:  leading dimension is num_nonloc_ions * ct.max_nl, 
     T *sint_der = (T *)GpuMallocManaged(size * sizeof(T));
 
     int num_proj = num_nonloc_ions * ct.max_nl;
     T *proj_mat = (T *)GpuMallocManaged(num_proj * num_proj * sizeof(T));
+    T *proj_mat1 = (T *)GpuMallocManaged(num_proj * num_proj * sizeof(T));
 
-//  determine the number of occupied states for all kpoints.
+    //  determine the number of occupied states for all kpoints.
 
     num_occupied = 0;
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
@@ -382,11 +372,11 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
     if(ct.alloc_states < ct.num_states + 3 * ct.state_block_size)     
     {
-       printf("\n allco_states %d should be larger than ct.num_states %d + 3* ct.state_block_size, %d", ct.alloc_states, ct.num_states,
-ct.state_block_size);
-       exit(0);
+        printf("\n allco_states %d should be larger than ct.num_states %d + 3* ct.state_block_size, %d", ct.alloc_states, ct.num_states,
+                ct.state_block_size);
+        exit(0);
     }
-    
+
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
@@ -400,7 +390,6 @@ ct.state_block_size);
                 psi_y = psi_x + ct.state_block_size*pbasis;
                 psi_z = psi_x +2* ct.state_block_size*pbasis;
                 ApplyGradient(psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
-                //ApplyGradient(psi, psi_x, psi_y, psi_z, 0, "Coarse");
 
                 if(!ct.is_gamma)
                 {
@@ -423,9 +412,9 @@ ct.state_block_size);
 
             int num_state_thisblock = state_end[ib] - state_start[ib];
 
-
             for(int id1 = 0, id2 = 0; id1 < 3 && id2 < 3; id1++, id2++)
             {
+                
 
                 RT1 = new RmgTimer("2-Stress: Non-loc: betaxpsi");
 
@@ -447,8 +436,8 @@ ct.state_block_size);
                     double t1 = kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
                     for (int iproj = 0; iproj < num_proj; iproj++)
                     {
-                        sint_der[ (st-state_start[ib]) * num_proj + iproj] *= t1;
-                        if(id1 == id2  && 0)
+                        sint_der[ (st-state_start[ib]) * num_proj + iproj] *= 2.0*t1;
+                        if(id1 == id2 && 0)
                         {
                             sint_der[ (st-state_start[ib]) * num_proj + iproj] += 
                                 sint[ (st-state_start[ib]) * num_proj + iproj] * t1; 
@@ -461,7 +450,6 @@ ct.state_block_size);
 
                 RmgGemm("N", "C", num_proj, num_proj, num_state_thisblock, one, sint_der, num_proj,
                         sint, num_proj, zero, proj_mat, num_proj); 
-
 
                 delete RT1;
 
@@ -488,6 +476,7 @@ ct.state_block_size);
 
                     int nh = Species[iptr->species].nh;
                     double *dnmI = pct.dnmI[gion];
+
 
                     for(int n = 0, m = 0; n <nh && m <nh; n++, m++)
                     {
@@ -644,28 +633,6 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
     for(i=0; i < 9; i++) stress_tensor[i] += stress_tensor_gs[i];
 
     print_stress("Ewald term", stress_tensor_gs);
-}
-
-static void dlocal_pp(double gval, int rg_points, double *r, double *rab, 
-        double *vloc0, double *work, double &dvloc_g2, double &vloc_g)
-{
-    //  vloc0(r) = vloc(r) + Zv * erf(r/rc) /r in radial grid 
-    //  vloc_g = integration of  vloc0(r) * sin(gr)/gr 
-    //  dvloc_g:  d_vloc_g/d_g = integration of vloc0(r) * (gr*cos(gr) - sin(gr))/(g^2r)
-    //  dvloc_g2: d_vloc_g/d_g^2 = dvloc_g/(2.0*g)
-    for(int idx = 0; idx < rg_points; idx++)
-    {
-        double gr = gval * r[idx];
-        work[idx] = vloc0[idx] * (gr * std::cos(gr) - std::sin(gr)) /(gval * gr);
-    }
-    dvloc_g2 = 4.0 * PI * radint1 (work, r, rab, rg_points)/(2.0 * gval);
-
-//    for(int idx = 0; idx < rg_points; idx++)
-//    {
-//        double gr = gval * r[idx];
-//        work[idx] = vloc0[idx] * std::sin(gr) /gr;
-//    }
-//    vloc_g = 4.0 * PI * radint1 (work, r, rab, rg_points)/(2.0 * gval);
 }
 
 static void print_stress(char *w, double *stress_term)
