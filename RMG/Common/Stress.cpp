@@ -121,6 +121,23 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
             if (std::abs(kptr->Kstates[st].occupation[0]) < 1.0e-10) break;
             ApplyGradient(kptr->Kstates[st].psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
 
+            if(!ct.is_gamma)
+            {
+                std::complex<double> I_t(0.0, 1.0);
+                std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
+                psi_C = (std::complex<double> *) kptr->Kstates[st].psi;
+                psi_xC = (std::complex<double> *) psi_x;
+                psi_yC = (std::complex<double> *) psi_y;
+                psi_zC = (std::complex<double> *) psi_z;
+                for(int i = 0; i < pbasis; i++)
+                {
+                    psi_xC[i] += I_t *  kptr->kp.kvec[0] * psi_C[i];
+                    psi_yC[i] += I_t *  kptr->kp.kvec[1] * psi_C[i];
+                    psi_zC[i] += I_t *  kptr->kp.kvec[2] * psi_C[i];
+                }
+            }
+
+
             alpha = vel * kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
             RmgGemm("C", "N", 3, 3, pbasis, alpha, grad_psi, pbasis,
                     grad_psi, pbasis, one, stress_tensor_T, 3);
@@ -130,6 +147,7 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
 
     for(int i = 0; i < 9; i++) stress_tensor_R[i] = std::real(stress_tensor_T[i])/L.omega;
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_R, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+    symmetrize_tensor(stress_tensor_R);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     print_stress("Kinetic term", stress_tensor_R);
@@ -177,7 +195,7 @@ template <class T> void Stress<T>::Hartree_term(double *rho, Pw &pwaves)
     }
 
     for(int i = 0; i < 9; i++) stress_tensor_h[i] *= -0.5 * (4.0 * PI);
-    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_h, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_h, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     print_stress("Hartree term", stress_tensor_h);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_h[i];
     delete [] crho;
@@ -412,85 +430,87 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
             int num_state_thisblock = state_end[ib] - state_start[ib];
 
-            for(int id1 = 0, id2 = 0; id1 < 3 && id2 < 3; id1++, id2++)
-            {
-                
-
-                RT1 = new RmgTimer("2-Stress: Non-loc: betaxpsi");
-
-                // kptr's wavefunction storage store the gradient of psi starting at first_state
-                int first_state = ct.num_states + id1 * ct.state_block_size;
-
-                // nlweight points to beta * x, beta * y, and beta * z for id2 = 0, 1, 2
-                T *nlweight = &kptr->nl_weight[ (id2 + 1) *kptr->nl_weight_size];
-
-                kptr->BetaProjector->project(kptr, sint_der, first_state, num_state_thisblock, nlweight);
-                delete RT1;
-
-                RT1 = new RmgTimer("2-Stress: Non-loc: <beta-psi>f(st) < psi-beta> ");
-
-                T *sint = &kptr->newsint_local[state_start[ib] * num_proj];
-
-                for(int st = state_start[ib]; st < state_end[ib]; st++)
+            for(int id1 = 0; id1 < 3; id1++)
+                for(int id2 = 0; id2 < 3; id2++)
                 {
-                    double t1 = kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
-                    for (int iproj = 0; iproj < num_proj; iproj++)
+
+
+                    RT1 = new RmgTimer("2-Stress: Non-loc: betaxpsi");
+
+                    // kptr's wavefunction storage store the gradient of psi starting at first_state
+                    int first_state = ct.num_states + id1 * ct.state_block_size;
+
+                    // nlweight points to beta * x, beta * y, and beta * z for id2 = 0, 1, 2
+                    T *nlweight = &kptr->nl_weight[ (id2 + 1) *kptr->nl_weight_size];
+
+                    kptr->BetaProjector->project(kptr, sint_der, first_state, num_state_thisblock, nlweight);
+                    delete RT1;
+
+                    RT1 = new RmgTimer("2-Stress: Non-loc: <beta-psi>f(st) < psi-beta> ");
+
+                    T *sint = &kptr->newsint_local[state_start[ib] * num_proj];
+
+                    for(int st = state_start[ib]; st < state_end[ib]; st++)
                     {
-                        sint_der[ (st-state_start[ib]) * num_proj + iproj] *= 2.0*t1;
-                        if(id1 == id2 && 0)
+                        double t1 = kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
+                        for (int iproj = 0; iproj < num_proj; iproj++)
                         {
-                            sint_der[ (st-state_start[ib]) * num_proj + iproj] += 
-                                sint[ (st-state_start[ib]) * num_proj + iproj] * t1; 
+                            sint_der[ (st-state_start[ib]) * num_proj + iproj] *= 2.0*t1;
+                            if(id1 == id2 )
+                            {
+                                sint_der[ (st-state_start[ib]) * num_proj + iproj] += 
+                                    sint[ (st-state_start[ib]) * num_proj + iproj] * t1; 
+                            }
                         }
                     }
+
+                    T one(1.0);
+                    T zero(0.0);
+
+                    RmgGemm("N", "C", num_proj, num_proj, num_state_thisblock, one, sint_der, num_proj,
+                            sint, num_proj, zero, proj_mat, num_proj); 
+
+                    delete RT1;
+
+                    RT1 = new RmgTimer("2-Stress: Non-loc: dnmI mat ");
+                    int nion = -1;
+                    for (int ion = 0; ion < num_owned_ions; ion++)
+                    {
+                        /*Global index of owned ion*/
+                        int gion = owned_ions_list[ion];
+
+                        /* Figure out index of owned ion in nonloc_ions_list array, store it in nion*/
+                        do {
+
+                            nion++;
+                            if (nion >= num_nonloc_ions)
+                            {
+                                printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
+                                rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                            }
+
+                        } while (nonloc_ions_list[nion] != gion);
+
+                        ION *iptr = &Atoms[gion];
+
+                        int nh = Species[iptr->species].nh;
+                        double *dnmI = pct.dnmI[gion];
+
+
+                        for(int n = 0; n <nh; n++)
+                            for(int m = 0; m <nh; m++)
+                            {
+                                int idx1 = n * nh + m;
+                                int ng = nion * ct.max_nl + n;
+                                int mg = nion * ct.max_nl + m;
+
+                                stress_tensor_nl[id1 * 3 + id2] += 
+                                    dnmI[idx1] * std::real(proj_mat[ng * num_proj + mg]);
+                            }
+                    } 
+                    delete RT1;
+
                 }
-
-                T one(1.0);
-                T zero(0.0);
-
-                RmgGemm("N", "C", num_proj, num_proj, num_state_thisblock, one, sint_der, num_proj,
-                        sint, num_proj, zero, proj_mat, num_proj); 
-
-                delete RT1;
-
-                RT1 = new RmgTimer("2-Stress: Non-loc: dnmI mat ");
-                int nion = -1;
-                for (int ion = 0; ion < num_owned_ions; ion++)
-                {
-                    /*Global index of owned ion*/
-                    int gion = owned_ions_list[ion];
-
-                    /* Figure out index of owned ion in nonloc_ions_list array, store it in nion*/
-                    do {
-
-                        nion++;
-                        if (nion >= num_nonloc_ions)
-                        {
-                            printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
-                            rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
-                        }
-
-                    } while (nonloc_ions_list[nion] != gion);
-
-                    ION *iptr = &Atoms[gion];
-
-                    int nh = Species[iptr->species].nh;
-                    double *dnmI = pct.dnmI[gion];
-
-
-                    for(int n = 0, m = 0; n <nh && m <nh; n++, m++)
-                    {
-                        int idx1 = n * nh + m;
-                        int ng = nion * ct.max_nl + n;
-                        int mg = nion * ct.max_nl + m;
-
-                        stress_tensor_nl[id1 * 3 + id2] += 
-                            dnmI[idx1] * std::real(proj_mat[ng * num_proj + mg]);
-                    }
-                } 
-                delete RT1;
-
-            }
 
         }
 
@@ -503,6 +523,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
     // img_comm includes kpoint, spin, and grid (num_owned_ions) sum
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nl, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+    symmetrize_tensor(stress_tensor_nl);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nl[i];
     print_stress("Nonlocal term", stress_tensor_nl);
 
@@ -637,7 +658,7 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
 
 static void print_stress(char *w, double *stress_term)
 {
-    if(pct.gridpe == 0)
+    if(pct.imgpe == 0)
     {
         printf("\n stress term %s", w);
         fprintf(ct.logfile, "\n stress term %s", w);

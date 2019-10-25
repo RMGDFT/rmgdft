@@ -142,6 +142,7 @@ void init_nuc (double *vnuc, double *rhoc, double *rhocore);
 void init_pos (void);
 void init_sym (void);
 void symmetrize_rho (double *rho);
+void symmetrize_tensor (double *mat);
 void symforce (void);
 void rmg_timings (int what, double time);
 double minimage (ION *ip1, ION *ip2, double *xtal_r);

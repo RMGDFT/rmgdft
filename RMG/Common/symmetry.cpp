@@ -460,4 +460,22 @@ void inline symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx
 
 
 }
+void symmetrize_tensor(double *mat_tensor)
+{
+    // symmetrize the stress tensor matrix
+    double work[9];
+    for(int i = 0; i < 9; i++) work[9] = 0.0;
+    for(int isy = 0; isy < nsym; isy++)
+    {
+        
+        for(int i = 0; i < 3; i++)
+        for(int j = 0; j < 3; j++)
+        for(int k = 0; k < 3; k++)
+        for(int l = 0; l < 3; l++)
+        {
+          work[i*3+j] += s[isy * 9 + i * 3 + k] * mat_tensor[k * 3 + l] * s[isy*9 + j*3 +l];
+        }
+    }
+    for(int i = 0; i < 9; i++) mat_tensor[i] = work[i] / nsym;
+}
 /******/
