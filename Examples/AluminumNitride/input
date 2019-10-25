@@ -2,14 +2,14 @@
 description="AlN 32 atom wurtzite test cell"
 localize_projectors="false"
 localize_localpp="false"
-wavefunction_grid="40 40 64"
+wavefunction_grid="48 48 72"
 
-#grid_spacing = "0.3000000"
+
 occupations_type = "Fixed"
 
 # number of unoccupied states
 unoccupied_states_per_kpoint="16"
-preconditioner_threshold = "0.0001"
+kohn_sham_mg_levels = "2"
 
 # Units for bravais_lattice_type and atoms
 #crds_units=
@@ -17,6 +17,7 @@ preconditioner_threshold = "0.0001"
 #"Angstrom"
 
 bravais_lattice_type="Hexagonal Primitive"
+
 
 # Lattice constants 
 a_length="12.094"
@@ -26,8 +27,8 @@ alpha="0.0"
 beta="0.0"
 gamma="0.0"
 
-
 start_mode="LCAO Start"
+#start_mode="Random Start"
 #start_mode="Restart From File"
 
 calculation_mode="Quench Electrons"
@@ -38,7 +39,6 @@ subdiag_driver="scalapack"
 charge_mixing_type = "Broyden"
 charge_density_mixing = "0.5"
 kohn_sham_mucycles = "3"
-#kohn_sham_mg_levels = "0"
 max_scf_steps="20"
 potential_acceleration_constant_step="1.0"
 write_data_period="50"
