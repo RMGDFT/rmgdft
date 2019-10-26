@@ -68,7 +68,6 @@ write_avgd.cpp
 claim_ion.cpp
 debug_write_rho_z.cpp
 write_pdb.cpp
-NEB_relax.cpp
 xbsmovie.cpp
 write_zstates.cpp
 symmetry.cpp

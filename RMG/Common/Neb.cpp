@@ -105,6 +105,7 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
     MPI_Status status;
     if(pct.worldrank == 0) printf("\tEntering NEB routine.\n");
 
+    ct.constrainforces = 5;
     /* Loop NEB relaxations */
     for (int neb_step = 0; neb_step < max_steps; neb_step++)
     {
@@ -151,7 +152,7 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
         // for the last image, its right is the final image
         if(pct.thisimg == num_images-1) 
         {
-            L_total = this->totale_final;
+            R_total = this->totale_final;
             for (int count = 0; count < ct.num_ions; count++ )
             {
                 R_coor[3*count + 0] = Atoms_final[count].crds[0];

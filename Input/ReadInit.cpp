@@ -80,7 +80,7 @@ void ReadInit(char *meta, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std:
                      CHECK_AND_FIX, OPTIONAL,
                      "Number of rmg \"restart like\" (NEB/exchange/ARTs) steps to perform",
                      "max_rmg_steps must lie in the range (0,1000). Resetting to the default value of 1.");
-    If.RegisterInputKey("neb_spring_constant", &lc.neb_spring_constant, 0.05, 3.0, 0.5,
+    If.RegisterInputKey("neb_spring_constant", &lc.neb_spring_constant, 0.00, 3.0, 0.1,
                      CHECK_AND_TERMINATE, OPTIONAL,
                      "",
                      "neb_spring_constant must be in the range (0.05, 3.0). ");
