@@ -37,22 +37,25 @@ static int *sym_index_x, *sym_index_y, *sym_index_z ;
 
 
 extern "C" int spg_get_multiplicity(const double *lattice,
-                         const double *position,
-                         const int *types,
-                         const int num_atom,
-                         const double symprec);
+        const double *position,
+        const int *types,
+        const int num_atom,
+        const double symprec,
+        const double angprec);
+
 
 extern "C" int spg_get_symmetry(int *rotation,
-                     double *translation,
-                     const int max_size,
-                     const double *lattice,
-                     const double *position,
-                     const int types[],
-                     const int num_atom,
-                     const double symprec);
+        double *translation,
+        const int max_size,
+        const double *lattice,
+        const double *position,
+        const int types[],
+        const int num_atom,
+        const double symprec,
+        const double angprec);
 
 void  symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx, int *iyy, int *izz,
-              int nx, int ny, int nz);
+        int nx, int ny, int nz);
 void init_symm_ijk(void);
 
 /* This routine is used to initialize the symmetry structures */
@@ -60,7 +63,7 @@ void init_sym (void)
 {
     int nr1, nr2, nr3;
     int ion, kpt;
-    double frac1, frac2, frac3, intpart, symprec = 1.0e-5;
+    double frac1, frac2, frac3, intpart, symprec = 1.0e-5, angprec = 1.0;
     double *tau, *translation;
     double xtal[3];
     double ndim[3];
@@ -77,23 +80,22 @@ void init_sym (void)
     int i, j;
 
     lattice[0*3+0] = get_a0(0);
-    lattice[0*3+1] = get_a0(1);
-    lattice[0*3+2] = get_a0(2);
-    lattice[1*3+0] = get_a1(0);
+    lattice[1*3+0] = get_a0(1);
+    lattice[2*3+0] = get_a0(2);
+    lattice[0*3+1] = get_a1(0);
     lattice[1*3+1] = get_a1(1);
-    lattice[1*3+2] = get_a1(2);
-    lattice[2*3+0] = get_a2(0);
-    lattice[2*3+1] = get_a2(1);
+    lattice[2*3+1] = get_a1(2);
+    lattice[0*3+2] = get_a2(0);
+    lattice[1*3+2] = get_a2(1);
     lattice[2*3+2] = get_a2(2);
-
 
     /* This function uses MAX_IONS as a limit for array sizes.
      * It is, of course, possible to allocate these arrays dynamically,
      * but I am not sure if this would not break FORTRAN routines to which
      * those arrays are passed*/
 
-//    if (ct.num_ions >= MAX_IONS)
-//        error_handler ("Too many ions, increase MAX_IONS in params.h");
+    //    if (ct.num_ions >= MAX_IONS)
+    //        error_handler ("Too many ions, increase MAX_IONS in params.h");
 
     nr1 = get_FNX_GRID();
     nr2 = get_FNY_GRID();
@@ -103,8 +105,8 @@ void init_sym (void)
     ndim[2] = nr3;
 
 
-    tau = new double[3 * ct.num_ions];
-    ityp = new int[ct.num_ions];
+    tau = new double[4*3 * ct.num_ions];
+    ityp = new int[4* ct.num_ions];
 
     /* Set up atomic positions and species for fortran routines */
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -114,7 +116,7 @@ void init_sym (void)
     }
 
 
-    nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec);
+    nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
 
     sa = new int[9 * nsym_atom];
@@ -125,16 +127,16 @@ void init_sym (void)
     ct.sym_trans = new double[3 * nsym_atom];
     ct.sym_rotate = new int[9 * nsym_atom];
 
-    nsym_atom = spg_get_symmetry(sa, translation,  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec);
+    nsym_atom = spg_get_symmetry(sa, translation,  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
-//    for(kpt = 0; kpt < nsym_atom; kpt++)
-//    {
- //       printf("\n sym operation considering atom only # %d", kpt);
-  //      for(i = 0; i < 3; i++)
-   //     {
+    //    for(kpt = 0; kpt < nsym_atom; kpt++)
+    //    {
+    //       printf("\n sym operation considering atom only # %d", kpt);
+    //      for(i = 0; i < 3; i++)
+    //     {
     //        printf("\n      %3d  %3d  %3d", sa[kpt][i][0],sa[kpt][i][1],sa[kpt][i][2]);
-     //   }
-      //  printf("\n  translation in crystal unit:    %f %f %f ", translation[kpt][0], translation[kpt][1], translation[kpt][2]);
+    //   }
+    //  printf("\n  translation in crystal unit:    %f %f %f ", translation[kpt][0], translation[kpt][1], translation[kpt][2]);
     //}
     //   check if the real space grid fit the symmetry operations, if not, kick it out
 
@@ -164,24 +166,30 @@ void init_sym (void)
             ct.sym_trans[nsym*3+0] = translation[kpt*3+0];
             ct.sym_trans[nsym*3+1] = translation[kpt*3+1];
             ct.sym_trans[nsym*3+2] = translation[kpt*3+2];
-            
 
 
-            for(i = 0; i < 3; i++)
+
+            if(ct.verbose)
             {
-                if(ct.verbose) printf("\n      %3d  %3d  %3d", s[nsym * 9 + i *3 + 0],s[nsym * 9 + i *3 + 1],s[nsym * 9 + i *3 + 2]);
+                for(i = 0; i < 3; i++)
+                {
+                    printf("\n      %3d  %3d  %3d", s[nsym * 9 + i *3 + 0],s[nsym * 9 + i *3 + 1],s[nsym * 9 + i *3 + 2]);
+                }
+                printf("  with translation of (%d %d %d) grids ", ftau[nsym*3 + 0],ftau[nsym*3 + 1],ftau[nsym*3 + 2]);
             }
-            if(ct.verbose) printf("  with translation of (%d %d %d) grids ", ftau[nsym*3 + 0],ftau[nsym*3 + 1],ftau[nsym*3 + 2]);
             nsym++;
         }
-        else
+        else if(ct.verbose)
         {
-//            printf("\n translation break a symmetry") ;
- //           for(i = 0; i < 3; i++)
-  //          {
-   //             printf("\n      %3d  %3d  %3d", sa[kpt * 9 + i *3 + 0],sa[kpt * 9 + i *3 + 1],sa[kpt * 9 + i *3 + 2]);
-    //        }
-     //       printf("  with translation of (%f %f %f) grids ", frac1, frac2, frac3);
+
+            
+            printf("\n translation break a symmetry") ;
+            for(i = 0; i < 3; i++)
+            {
+                printf("\n      %3d  %3d  %3d", sa[kpt * 9 + i *3 + 0],sa[kpt * 9 + i *3 + 1],sa[kpt * 9 + i *3 + 2]);
+            }
+            printf("  with translation of (%f %f %f) grids ", frac1, frac2, frac3);
+
         }
     }
 
@@ -193,7 +201,7 @@ void init_sym (void)
 
     sym_atom = new int[ct.num_ions* nsym];
 
-//  determine equivenlent ions after symmetry operation
+    //  determine equivenlent ions after symmetry operation
     bool find_atom, cond_x, cond_y, cond_z;
     double mod_x, mod_y, mod_z;
     int ionb, isym;
@@ -221,9 +229,9 @@ void init_sym (void)
             {
                 if(ityp[ion] == ityp[ionb])
                 {
-//                    r =  (xtal[0] - Atoms[ionb].xtal[0]) *(xtal[0] - Atoms[ionb].xtal[0])
-//                        +(xtal[1] - Atoms[ionb].xtal[1]) *(xtal[1] - Atoms[ionb].xtal[1])
-//                        +(xtal[2] - Atoms[ionb].xtal[2]) *(xtal[2] - Atoms[ionb].xtal[2]);
+                    //                    r =  (xtal[0] - Atoms[ionb].xtal[0]) *(xtal[0] - Atoms[ionb].xtal[0])
+                    //                        +(xtal[1] - Atoms[ionb].xtal[1]) *(xtal[1] - Atoms[ionb].xtal[1])
+                    //                        +(xtal[2] - Atoms[ionb].xtal[2]) *(xtal[2] - Atoms[ionb].xtal[2]);
                     mod_x = (xtal[0] - Atoms[ionb].xtal[0]) *(xtal[0] - Atoms[ionb].xtal[0]);
                     mod_y = (xtal[1] - Atoms[ionb].xtal[1]) *(xtal[1] - Atoms[ionb].xtal[1]);
                     mod_z = (xtal[2] - Atoms[ionb].xtal[2]) *(xtal[2] - Atoms[ionb].xtal[2]);
@@ -329,18 +337,18 @@ void symmetrize_rho (double * rho)
 
     for(ix = 0; ix < FPX0_GRID * FPY0_GRID * FPZ0_GRID; ix++) rho[ix] = 0.0;
 
-                    
+
     for(isy = 0; isy < nsym; isy++)
     {
         for (ix = 0; ix < FPX0_GRID; ix++) {
             for (iy = 0; iy < FPY0_GRID; iy++) {
                 for (iz = 0; iz < FPZ0_GRID; iz++) {
 
-                  ixx =   sym_index_x[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] ;
-                  iyy =   sym_index_y[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] ;
-                  izz =   sym_index_z[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] ;
-            
-                rho[ix * incx + iy*incy + iz] += da[izz *incz1 + iyy *incy1 + ixx *incx1];
+                    ixx =   sym_index_x[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] ;
+                    iyy =   sym_index_y[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] ;
+                    izz =   sym_index_z[isy * FPX0_GRID * FPY0_GRID * FPZ0_GRID + ix * incx + iy * incy + iz] ;
+
+                    rho[ix * incx + iy*incy + iz] += da[izz *incz1 + iyy *incy1 + ixx *incx1];
                 }
             }
         }
@@ -467,14 +475,14 @@ void symmetrize_tensor(double *mat_tensor)
     for(int i = 0; i < 9; i++) work[9] = 0.0;
     for(int isy = 0; isy < nsym; isy++)
     {
-        
+
         for(int i = 0; i < 3; i++)
-        for(int j = 0; j < 3; j++)
-        for(int k = 0; k < 3; k++)
-        for(int l = 0; l < 3; l++)
-        {
-          work[i*3+j] += s[isy * 9 + i * 3 + k] * mat_tensor[k * 3 + l] * s[isy*9 + j*3 +l];
-        }
+            for(int j = 0; j < 3; j++)
+                for(int k = 0; k < 3; k++)
+                    for(int l = 0; l < 3; l++)
+                    {
+                        work[i*3+j] += s[isy * 9 + i * 3 + k] * mat_tensor[k * 3 + l] * s[isy*9 + j*3 +l];
+                    }
     }
     for(int i = 0; i < 9; i++) mat_tensor[i] = work[i] / nsym;
 }
