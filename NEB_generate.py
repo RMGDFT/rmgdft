@@ -35,7 +35,7 @@ calculation_mode="NEB Relax"
 
 image_per_node="1"
 max_neb_steps = "10"
-neb_spring_constant = "0.50000000"
+neb_spring_constant = "0.05"
 
 #  max number of images is defined in params.h MAX_IMGS 99
 num_images="%d"
