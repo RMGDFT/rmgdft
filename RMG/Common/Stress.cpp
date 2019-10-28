@@ -87,7 +87,7 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     Ewald_term(atoms, species, L, pwaves);
     delete RT2;
     delete RT1;
-    print_stress("total stress", stress_tensor);
+    print_stress("total ", stress_tensor);
 }
 
 template void Stress<double>::Kinetic_term(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
@@ -120,6 +120,7 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
         {
             if (std::abs(kptr->Kstates[st].occupation[0]) < 1.0e-10) break;
             ApplyGradient(kptr->Kstates[st].psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
+            ApplyGradient(kptr->Kstates[st].psi, psi_x, psi_y, psi_z, 0, "Coarse");
 
             if(!ct.is_gamma)
             {
@@ -150,7 +151,7 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
     if(!ct.is_gamma)symmetrize_tensor(stress_tensor_R);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
-    print_stress("Kinetic term", stress_tensor_R);
+    if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
     GpuFreeManaged(grad_psi);
 }
 
@@ -196,7 +197,7 @@ template <class T> void Stress<T>::Hartree_term(double *rho, Pw &pwaves)
 
     for(int i = 0; i < 9; i++) stress_tensor_h[i] *= -0.5 * (4.0 * PI);
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_h, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-    print_stress("Hartree term", stress_tensor_h);
+    if(ct.verbose) print_stress("Hartree term", stress_tensor_h);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_h[i];
     delete [] crho;
 }
@@ -211,7 +212,7 @@ template <class T> void Stress<T>::Exc_term(double Exc, double *vxc, double *rho
 
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_x[i];
 
-    print_stress("XC term", stress_tensor_x);
+    if(ct.verbose) print_stress("XC term", stress_tensor_x);
 }
 
 template void Stress<double>::Local_term(std::vector<ION> &atoms, 
@@ -285,7 +286,7 @@ template <class T> void Stress<T>::Local_term(std::vector<ION> &atoms,
     for(int i = 0; i < 9; i++) stress_tensor_loc[i] /= Rmg_L.omega;
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_loc, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_loc[i];
-    print_stress("Loc term", stress_tensor_loc);
+    if(ct.verbose) print_stress("Loc term", stress_tensor_loc);
 }
 
 template void Stress<double>::NonLocal_term(Kpoint<double> **Kpin,
@@ -487,7 +488,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nl, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
     if(!ct.is_gamma)symmetrize_tensor(stress_tensor_nl);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nl[i];
-    print_stress("Nonlocal term", stress_tensor_nl);
+    if(ct.verbose) print_stress("Nonlocal term", stress_tensor_nl);
 
 }
 
@@ -615,15 +616,15 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
 
     for(i=0; i < 9; i++) stress_tensor[i] += stress_tensor_gs[i];
 
-    print_stress("Ewald term", stress_tensor_gs);
+    if(ct.verbose) print_stress("Ewald term", stress_tensor_gs);
 }
 
 static void print_stress(char *w, double *stress_term)
 {
     if(pct.imgpe == 0)
     {
-        printf("\n stress term %s", w);
-        fprintf(ct.logfile, "\n stress term %s", w);
+        printf("\n stress  %s in unit of kbar", w);
+        fprintf(ct.logfile, "\n stress %s  in unit of kbar", w);
         for(int i = 0; i < 3; i++)
         {
             printf("\n");
@@ -631,6 +632,8 @@ static void print_stress(char *w, double *stress_term)
             for (int j = 0; j < 3; j++) printf(" %f ", stress_term[i*3+j] * Ha_Kbar);
             for (int j = 0; j < 3; j++) fprintf(ct.logfile, " %f ", stress_term[i*3+j] * Ha_Kbar);
         }
+        printf("\n");
+        fprintf(ct.logfile, "\n");
     }
 }
 

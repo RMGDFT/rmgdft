@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "main.h"
+#include "transition.h"
 
 extern "C" int spg_get_ir_reciprocal_mesh(int *grid_address,
                                int map[],
@@ -42,7 +43,8 @@ extern "C" int spg_get_ir_reciprocal_mesh(int *grid_address,
                                const double *position,
                                const int types[],
                                const int num_atom,
-                               const double symprec);
+                               const double symprec,
+                               const double angprec);
 
 int init_kpoints (int *mesh, int *is_shift)
 {
@@ -53,7 +55,7 @@ int init_kpoints (int *mesh, int *is_shift)
     int meshsize, num_kpts, count;
 
     int ion, *ityp;
-    double symprec = 1.0e-5;
+    double symprec = 1.0e-5, angprec = 1.0;
 
     int kpt;
     if(mesh[0] == 1 && mesh[1] == 1 && mesh[2] == 1 
@@ -72,13 +74,13 @@ int init_kpoints (int *mesh, int *is_shift)
 
     double lattice[3][3];
     lattice[0][0] = get_a0(0);
-    lattice[0][1] = get_a0(1);
-    lattice[0][2] = get_a0(2);
-    lattice[1][0] = get_a1(0);
+    lattice[1][0] = get_a0(1);
+    lattice[2][0] = get_a0(2);
+    lattice[0][1] = get_a1(0);
     lattice[1][1] = get_a1(1);
-    lattice[1][2] = get_a1(2);
-    lattice[2][0] = get_a2(0);
-    lattice[2][1] = get_a2(1);
+    lattice[2][1] = get_a1(2);
+    lattice[0][2] = get_a2(0);
+    lattice[1][2] = get_a2(1);
     lattice[2][2] = get_a2(2);
 
 
@@ -103,7 +105,7 @@ int init_kpoints (int *mesh, int *is_shift)
 
 
     num_kpts = spg_get_ir_reciprocal_mesh(grid_address, map,mesh, is_shift, 
-            is_time_reversal, lattice, tau, ityp, ct.num_ions, symprec);
+            is_time_reversal, lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
     //    printf("\n num_k %d", num_kpts);
     //    for(kpt = 0; kpt < meshsize; kpt++)
@@ -132,6 +134,40 @@ int init_kpoints (int *mesh, int *is_shift)
 
     assert(count == num_kpts);
     /*Not necessary and it ends up being the first thing printed to stdout*/
+
+    ct.is_gamma = true;
+    for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
+        double v1, v2, v3;
+        v1 = 0.0;
+        v2 = 0.0;
+        v3 = 0.0;
+
+        for(int ir = 0; ir<3; ir++)
+        {
+            v1 = ct.kp[kpt].kpt[0] *Rmg_L.b0[0]
+                + ct.kp[kpt].kpt[1] *Rmg_L.b1[0] 
+                + ct.kp[kpt].kpt[2] *Rmg_L.b2[0];
+            v2 = ct.kp[kpt].kpt[0] *Rmg_L.b0[1]
+                + ct.kp[kpt].kpt[1] *Rmg_L.b1[1] 
+                + ct.kp[kpt].kpt[2] *Rmg_L.b2[1];
+            v3 = ct.kp[kpt].kpt[0] *Rmg_L.b0[2]
+                + ct.kp[kpt].kpt[1] *Rmg_L.b1[2] 
+                + ct.kp[kpt].kpt[2] *Rmg_L.b2[2];
+        }
+
+        ct.kp[kpt].kvec[0] = v1 * twoPI;
+        ct.kp[kpt].kvec[1] = v2 * twoPI;
+        ct.kp[kpt].kvec[2] = v3 * twoPI;
+        ct.kp[kpt].kmag = (v1 * v1 + v2 * v2 + v3 * v3) * twoPI * twoPI;
+
+        if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
+    }
+
+    if(ct.is_gamma) 
+    {
+        ct.is_use_symmetry = 0;
+    }
+
     if (ct.verbose)
     {
         printf("\n num_k %d", count);
@@ -147,6 +183,4 @@ int init_kpoints (int *mesh, int *is_shift)
 
 
 }                               /* end init_kpoints */
-
-
 

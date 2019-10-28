@@ -277,11 +277,21 @@ void WriteHeader (void)
     {
 	printf ("    Brillouin Zone sampling with %d K-points (orbitals are complex)\n", ct.num_kpts);
 	printf ("\n");
-	printf ("         Kx      Ky        Kz     Weight\n");
+	printf ("         Kx      Ky        Kz     Weight in crystal unit\n");
 	for (kpt = 0; kpt < ct.num_kpts; kpt++)
 	{
 	    printf ("    %8.4f   %8.4f   %8.4f   %5.3f\n",
 		    ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+
+	}
+
+	printf ("\n");
+	printf ("         Kx      Ky        Kz     Weight in 2PI/a \n");
+    double kunit = twoPI /Rmg_L.celldm[0];
+	for (kpt = 0; kpt < ct.num_kpts; kpt++)
+	{
+	    printf ("    %8.4f   %8.4f   %8.4f   %5.3f\n",
+		    ct.kp[kpt].kvec[0]/kunit, ct.kp[kpt].kvec[1]/kunit, ct.kp[kpt].kvec[2]/kunit, ct.kp[kpt].kweight);
 
 	}
     }

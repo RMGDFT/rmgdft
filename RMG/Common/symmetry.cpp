@@ -510,7 +510,7 @@ void symmetrize_tensor(double *mat_tensor)
             for(int k = 0; k < 3; k++)
                 for(int l = 0; l < 3; l++)
                 {
-                    work[i*3 + j] += mat_tensor[k * 3 +l] *b[k*3 + i] * b[l*3 + j];
+                    work[i*3 + j] += mat_tensor[k * 3 +l] *b[i*3 + k] * b[j*3 + l];
                 }
 
     for(int i = 0; i < 9; i++) mat_tensor[i] = 0.0;

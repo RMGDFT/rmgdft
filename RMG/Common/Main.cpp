@@ -254,26 +254,6 @@ void initialize(int argc, char **argv)
     Kptr_g = new Kpoint<double> * [ct.num_kpts_pe];
     Kptr_c = new Kpoint<std::complex<double> > * [ct.num_kpts_pe];
 
-    ct.is_gamma = true;
-    for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
-        double v1, v2, v3;
-        v1 = twoPI * ct.kp[kpt].kpt[0] / Rmg_L.get_xside();
-        v2 = twoPI * ct.kp[kpt].kpt[1] / Rmg_L.get_yside();
-        v3 = twoPI * ct.kp[kpt].kpt[2] / Rmg_L.get_zside();
-
-        ct.kp[kpt].kvec[0] = v1;
-        ct.kp[kpt].kvec[1] = v2;
-        ct.kp[kpt].kvec[2] = v3;
-        ct.kp[kpt].kmag = v1 * v1 + v2 * v2 + v3 * v3;
-
-        if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
-    }
-
-    if(ct.is_gamma) 
-    {
-        ct.is_use_symmetry = 0;
-    }
-
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
