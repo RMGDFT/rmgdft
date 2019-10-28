@@ -26,6 +26,7 @@
 
 #include "main.h"
 #include "RmgTimer.h"
+#include "transition.h"
 
 
 static int *s;
@@ -373,8 +374,20 @@ void symforce ()
     double *force;
 
     force = new double[3* ct.num_ions];
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        for (int ir = 0; ir < 3; ir++)
+        {
+            force[ion *3 + ir] = Atoms[ion].force[ct.fpt[0]][0] * Rmg_L.b0[ir] +
+                Atoms[ion].force[ct.fpt[0]][1] * Rmg_L.b1[ir] +
+                Atoms[ion].force[ct.fpt[0]][2] * Rmg_L.b2[ir];
+        }                       /* end for ir */
 
-    for(i = 0; i < 3 * ct.num_ions; i++ ) force[i] = 0.0;
+
+        Atoms[ion].force[ct.fpt[0]][0] = 0.0;
+        Atoms[ion].force[ct.fpt[0]][1] = 0.0;
+        Atoms[ion].force[ct.fpt[0]][2] = 0.0;
+    }
     for (ion = 0; ion < ct.num_ions; ion++)
     {
         for(isy = 0; isy < nsym; isy++)
@@ -382,11 +395,18 @@ void symforce ()
             ion1 = sym_atom[isy * ct.num_ions + ion];
             for(i = 0; i < 3; i++)
                 for(j = 0; j < 3; j++)
-                    force[3* ion1 + i] += s[isy *9 + i* 3 + j] * Atoms[ion].force[ct.fpt[0]][j];
+                    Atoms[ion1].force[ct.fpt[0]][i] += s[isy *9 + i* 3 + j] * force[ion*3 + j];
         }
 
-
-
+    }
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        for (int ir = 0; ir < 3; ir++)
+        {
+            force[ion *3 + ir] = Atoms[ion].force[ct.fpt[0]][0] * Rmg_L.a0[ir] +
+                Atoms[ion].force[ct.fpt[0]][1] * Rmg_L.a1[ir] +
+                Atoms[ion].force[ct.fpt[0]][2] * Rmg_L.a2[ir];
+        }                       /* end for ir */
     }
 
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -471,8 +491,29 @@ void inline symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx
 void symmetrize_tensor(double *mat_tensor)
 {
     // symmetrize the stress tensor matrix
-    double work[9];
-    for(int i = 0; i < 9; i++) work[9] = 0.0;
+    double work[9], b[9], a[9];
+    for (int i = 0; i < 3; i++)
+    {
+        b[0 * 3 + i] = Rmg_L.b0[i];
+        b[1 * 3 + i] = Rmg_L.b1[i];
+        b[2 * 3 + i] = Rmg_L.b2[i];
+        a[0 * 3 + i] = Rmg_L.a0[i];
+        a[1 * 3 + i] = Rmg_L.a1[i];
+        a[2 * 3 + i] = Rmg_L.a2[i];
+    }
+
+    for(int i = 0; i < 9; i++) work[i] = 0.0;
+
+// transfer to crystal coordinate
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            for(int k = 0; k < 3; k++)
+                for(int l = 0; l < 3; l++)
+                {
+                    work[i*3 + j] += mat_tensor[k * 3 +l] *b[k*3 + i] * b[l*3 + j];
+                }
+
+    for(int i = 0; i < 9; i++) mat_tensor[i] = 0.0;
     for(int isy = 0; isy < nsym; isy++)
     {
 
@@ -481,9 +522,19 @@ void symmetrize_tensor(double *mat_tensor)
                 for(int k = 0; k < 3; k++)
                     for(int l = 0; l < 3; l++)
                     {
-                        work[i*3+j] += s[isy * 9 + i * 3 + k] * mat_tensor[k * 3 + l] * s[isy*9 + j*3 +l];
+                        mat_tensor[i*3+j] += s[isy * 9 + i * 3 + k] * work[k * 3 + l] * s[isy*9 + j*3 +l];
                     }
     }
+
+    for(int i = 0; i < 9; i++) work[i] = 0.0;
+    //transfer bact to cartesian 
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            for(int k = 0; k < 3; k++)
+                for(int l = 0; l < 3; l++)
+                {
+                    work[i*3 + j] += mat_tensor[k * 3 +l] *a[k*3 + i] * a[l*3 + j];
+                }
+
     for(int i = 0; i < 9; i++) mat_tensor[i] = work[i] / nsym;
 }
-/******/

@@ -64,6 +64,19 @@ void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const c
     }
 
     
+    std::complex<double> *gx_CD = (std::complex<double> *)gx;
+    std::complex<float> *gx_CF = (std::complex<float> *)gx;
+    double *gx_D = (double *)gx;
+    float *gx_F = (float *)gx;
+    std::complex<double> *gy_CD = (std::complex<double> *)gy;
+    std::complex<float> *gy_CF = (std::complex<float> *)gy;
+    double *gy_D = (double *)gy;
+    float *gy_F = (float *)gy;
+    std::complex<double> *gz_CD = (std::complex<double> *)gz;
+    std::complex<float> *gz_CF = (std::complex<float> *)gz;
+    double *gz_D = (double *)gz;
+    float *gz_F = (float *)gz;
+    
     int pbasis = pwaves->pbasis;
     int size = pbasis;
 
@@ -83,24 +96,73 @@ void AppGradPfft (DataType *a, DataType *gx, DataType *gy, DataType *gz, const c
 
     for(int ig=0;ig < pbasis;ig++) {
         a_in[ig] = a_out[ig] * std::complex<double>(0.0, pwaves->g[ig].a[0] * tpiba);
-
     }
     pwaves->FftInverse(a_in, a_in);
-    for(int i = 0;i < pbasis;i++) gx[i] = std::real(a_in[i])/(double)pwaves->global_basis;
+
+    if(typeid(DataType) == typeid(std::complex<double>) )
+    {
+        for(int i = 0;i < pbasis;i++) gx_CD[i] = a_in[i]/(double)pwaves->global_basis;
+    }
+    else if( typeid(DataType) == typeid(std::complex<float>))
+    {
+        for(int i = 0;i < pbasis;i++) gx_CF[i] = (std::complex<float>)a_in[i]/(float)pwaves->global_basis;
+    }
+    else if( typeid(DataType) == typeid(double) )
+    {
+        for(int i = 0;i < pbasis;i++) gx_D[i] = std::real(a_in[i])/(double)pwaves->global_basis;
+    }
+    else if( typeid(DataType) == typeid(float) )
+    {
+        for(int i = 0;i < pbasis;i++) gx_F[i] = (float)std::real(a_in[i])/(float)pwaves->global_basis;
+    }
+    
+    
 
     for(int ig=0;ig < pbasis;ig++) {
         a_in[ig] = a_out[ig] * std::complex<double>(0.0, pwaves->g[ig].a[1] * tpiba);
-
     }
     pwaves->FftInverse(a_in, a_in);
-    for(int i = 0;i < pbasis;i++) gy[i] = std::real(a_in[i])/(double)pwaves->global_basis;
+
+    if(typeid(DataType) == typeid(std::complex<double>) )
+    {
+        for(int i = 0;i < pbasis;i++) gy_CD[i] = a_in[i]/(double)pwaves->global_basis;
+    }
+    else if( typeid(DataType) == typeid(std::complex<float>))
+    {
+        for(int i = 0;i < pbasis;i++) gy_CF[i] = (std::complex<float>)a_in[i]/(float)pwaves->global_basis;
+    }
+    else if( typeid(DataType) == typeid(double) )
+    {
+        for(int i = 0;i < pbasis;i++) gy_D[i] = std::real(a_in[i])/(double)pwaves->global_basis;
+    }
+    else if( typeid(DataType) == typeid(float) )
+    {
+        for(int i = 0;i < pbasis;i++) gy_F[i] = (float)std::real(a_in[i])/(float)pwaves->global_basis;
+    }
+    
 
     for(int ig=0;ig < pbasis;ig++) {
         a_in[ig] = a_out[ig] * std::complex<double>(0.0, pwaves->g[ig].a[2] * tpiba);
-
     }
     pwaves->FftInverse(a_in, a_in);
-    for(int i = 0;i < pbasis;i++) gz[i] = std::real(a_in[i])/(double)pwaves->global_basis;
+
+    if(typeid(DataType) == typeid(std::complex<double>) )
+    {
+        for(int i = 0;i < pbasis;i++) gz_CD[i] = a_in[i]/(double)pwaves->global_basis;
+    }
+    else if( typeid(DataType) == typeid(std::complex<float>))
+    {
+        for(int i = 0;i < pbasis;i++) gz_CF[i] = (std::complex<float>)a_in[i]/(float)pwaves->global_basis;
+    }
+    else if( typeid(DataType) == typeid(double) )
+    {
+        for(int i = 0;i < pbasis;i++) gz_D[i] = std::real(a_in[i])/(double)pwaves->global_basis;
+    }
+    else if( typeid(DataType) == typeid(float) )
+    {
+        for(int i = 0;i < pbasis;i++) gz_F[i] = (float)std::real(a_in[i])/(float)pwaves->global_basis;
+    }
+    
 
     delete [] a_in;
     delete [] a_out;
