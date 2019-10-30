@@ -73,6 +73,8 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
     int images = order / 2;
     size_t alloc = (sbasis + 64) * sizeof(RmgType);
     RmgType *rptr;
+    int special = ((ibrav == HEXAGONAL) || (ibrav == ORTHORHOMBIC_PRIMITIVE) || (ibrav == CUBIC_PRIMITIVE));
+
 
     // while alloca is dangerous it's very fast for small arrays and the 64k default limit
     // is fine for linux and 64bit power
@@ -87,20 +89,17 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
 
     
 
-    if(ibrav == HEXAGONAL)
+    if(!special || (ibrav == HEXAGONAL))
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
     else
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
 
-// disable this for now
-//    int dim[3];
-//    LC->GetDim(dim);
-//    if(0 && dimx == dim[0] && dimy == dim[1] && dimz == dim[2])
-if(0)
+    int dim[3];
+    LC->GetDim(dim);
+    if(!special && (dimx == dim[0]) && (dimy == dim[1]) && (dimz == dim[2]))
     {
-//        cc = FiniteDiffLap ((double *)rptr, (double *)b, dimx, dimy, dimz, LC);
-        
+        cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
     }
     else
     {

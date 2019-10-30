@@ -70,6 +70,7 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
     int images = order / 2;
     size_t alloc = (sbasis + 64) * sizeof(DataType);
     DataType *rptr;
+    int special = ((Rmg_L.get_ibrav_type() == HEXAGONAL) || (Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE));
 
     // while alloca is dangerous it's very fast for small arrays and the 110k limit
     // is fine for linux and 64bit power
@@ -83,22 +84,31 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
     }
 
 
-    if(Rmg_L.get_ibrav_type() == HEXAGONAL)
+    if(!special || (Rmg_L.get_ibrav_type() == HEXAGONAL))
         Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
     else
        Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
     // First apply the laplacian
     if(order == APP_CI_SIXTH) {
-        cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!special)
+            cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
+        else
+            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         if(!ct.is_gamma) FD.app_gradient_sixth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else if(order == APP_CI_EIGHT) {
-        cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!special)
+            cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
+        else
+            cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         if(!ct.is_gamma) FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else if(order == APP_CI_TEN) {
-        cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!special)
+            cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
+        else
+            cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         if(!ct.is_gamma) FD.app_gradient_tenth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else {
