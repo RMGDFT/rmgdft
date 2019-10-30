@@ -89,10 +89,8 @@ public:
 
 };
 
-double FiniteDiffLap(double *a, double *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
-double FiniteDiffLap(float *a, float *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
-double FiniteDiffLap(std::complex<double> *a, std::complex<double> *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
-double FiniteDiffLap(std::complex<float> *a, std::complex<float> *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
+template <typename T>
+double FiniteDiffLap(T * __restrict__ a, T * __restrict__ b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
 
 extern LaplacianCoeff *LC;
 
