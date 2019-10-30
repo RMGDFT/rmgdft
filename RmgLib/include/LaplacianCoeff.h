@@ -92,6 +92,9 @@ public:
 template <typename T>
 double FiniteDiffLap(T * __restrict__ a, T * __restrict__ b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
 
+template <typename T>
+void FiniteDiffGrad(T * __restrict__ a, T * __restrict__ gx, T * __restrict__ gy, T * __restrict__ gz, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
+
 extern LaplacianCoeff *LC;
 
 #endif
