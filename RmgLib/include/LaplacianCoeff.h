@@ -90,5 +90,7 @@ public:
 
 double FiniteDiffLap(double *a, double *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
 
+extern LaplacianCoeff *LC;
+
 #endif
 
