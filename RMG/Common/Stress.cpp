@@ -47,6 +47,7 @@
 #include "transition.h"
 #include "Stress.h"
 #include "AtomicInterpolate.h"
+#include "RmgException.h"
 
 
 static void print_stress(char *w, double *stress_term);
@@ -64,6 +65,15 @@ template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpi
 template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho)
 {
+
+    if(ct.xctype != 0) 
+    {
+        throw RmgFatalException() << "stress only works for LDA now" << __FILE__ << " at line " << __LINE__ << "\n";
+    }
+    if(!ct.norm_conserving_pp)
+    {
+        throw RmgFatalException() << "stress only works for NC pseudopotential now" << __FILE__ << " at line " << __LINE__ << "\n";
+    }
 
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
@@ -120,7 +130,6 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
         {
             if (std::abs(kptr->Kstates[st].occupation[0]) < 1.0e-10) break;
             ApplyGradient(kptr->Kstates[st].psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
-            ApplyGradient(kptr->Kstates[st].psi, psi_x, psi_y, psi_z, 0, "Coarse");
 
             if(!ct.is_gamma)
             {
