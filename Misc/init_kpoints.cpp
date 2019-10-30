@@ -69,6 +69,7 @@ int init_kpoints (int *mesh, int *is_shift)
         ct.kp[0].kpt[ 2 ] = 0.0;
         ct.kp[0].kweight = 1.0;
         ct.is_gamma = 1;
+        ct.is_use_symmetry = false;
         return ct.num_kpts;
     }
 
