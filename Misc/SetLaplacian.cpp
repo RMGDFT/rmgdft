@@ -45,6 +45,7 @@ void SetLaplacian()
     dim[2] = Rmg_G->get_PZ0_GRID(1);
 
     LC = new LaplacianCoeff(a, Ngrid, Lorder, dim);
+    LC->SetBrav(Rmg_L.get_ibrav_type());
 
     LC->SetOffdiag(ct.laplacian_offdiag);
 
