@@ -47,6 +47,7 @@ private:
     TradeImages *T;
     int ibrav;
     int level_flag;
+    bool central_trade;
 
     static int level_warning;
 
