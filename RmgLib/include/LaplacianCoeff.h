@@ -96,6 +96,7 @@ template <typename T>
 void FiniteDiffGrad(T * __restrict__ a, T * __restrict__ gx, T * __restrict__ gy, T * __restrict__ gz, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
 
 extern LaplacianCoeff *LC;
+extern LaplacianCoeff *HLC;
 
 #endif
 

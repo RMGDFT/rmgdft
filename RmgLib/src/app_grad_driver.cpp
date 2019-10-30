@@ -71,11 +71,16 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     else
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
-    int dim[3];
+    int dim[3], hdim[3];
     LC->GetDim(dim);
+    HLC->GetDim(hdim);
     if(!special && (dimx == dim[0]) && (dimy == dim[1]) && (dimz == dim[2]))
     {
         FiniteDiffGrad (rptr, bx, by, bz, dimx, dimy, dimz, LC);
+    }
+    else if(!special && (dimx == hdim[0]) && (dimy == hdim[1]) && (dimz == hdim[2]))
+    {
+        FiniteDiffGrad (rptr, bx, by, bz, dimx, dimy, dimz, HLC);
     }
     else
     {
