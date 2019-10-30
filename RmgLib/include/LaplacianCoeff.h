@@ -1,7 +1,8 @@
 #ifndef RMG_LaplacianCoeff_H
 #define RMG_LaplacianCoeff_H 1
-#include "const.h"
+#include "Lattice.h"
 #include <vector>
+#include <complex>
 // with input of base vectors a[3][3] and required order of Lapalacian operator, find needed neighbors and their coefficients. 
 
 typedef struct {
@@ -89,6 +90,9 @@ public:
 };
 
 double FiniteDiffLap(double *a, double *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
+double FiniteDiffLap(float *a, float *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
+double FiniteDiffLap(std::complex<double> *a, std::complex<double> *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
+double FiniteDiffLap(std::complex<float> *a, std::complex<float> *b, int dimx, int dimy, int dimz, LaplacianCoeff *LC);
 
 extern LaplacianCoeff *LC;
 

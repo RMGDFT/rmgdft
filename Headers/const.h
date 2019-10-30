@@ -167,42 +167,6 @@
 #define OCC_MP 5
 
 
-/* Crystal lattice types */
-/** Simple cubic lattice type.
- *  @doc Set input file value = 1 */
-#define None  0
-#define CUBIC_PRIMITIVE 	1
-
-/** Face centered cubic lattice type. 
- *  @doc Set input file value = 2 */
-#define CUBIC_FC		2
-
-/** Bodycentered cubic lattice type. 
- *  @doc Set input file value = 3 */
-#define CUBIC_BC		3
-
-/** Hexagonal lattice type. 
- *  @doc Set input file value = 4 */
-#define HEXAGONAL		4
-
-#define TRIGONAL_PRIMITIVE	5
-#define TETRAGONAL_PRIMITIVE	6
-#define TETRAGONAL_BC           7
-
-/** Orthorhombic lattice type. 
- *  @doc Set input file value = 8 */
-#define ORTHORHOMBIC_PRIMITIVE  8
-
-#define ORTHORHOMBIC_BASE_CENTRED 9
-#define ORTHORHOMBIC_BC         10
-#define ORTHORHOMBIC_FC 11
-#define MONOCLINIC_PRIMITIVE 12
-#define MONOCLINIC_BASE_CENTRED 13
-#define TRICLINIC_PRIMITIVE 14
-
-/* The real or imaginary part of a wavefunction */
-#define PSI_double     0
-#define PSI_IMAG     1
 
 /* subspace diagonalization types */
 #define SUBDIAG_LAPACK 0
