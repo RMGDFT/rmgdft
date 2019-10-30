@@ -224,7 +224,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
             solv_pois (v_mat, f_mat, work, dimx, dimy, dimz, gridhx, gridhy, gridhz, step, Zfac, k, pot);
 
             /* trade boundary info */
-            if (((level >= max_levels) && (cycl == pre_cyc[level]-1)) || (ibrav == HEXAGONAL)) {
+            if (((level >= max_levels) && (cycl == pre_cyc[level]-1)) || (ibrav == HEXAGONAL) || (ibrav == CUBIC_FC)) {
                 T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
             }
             else {
@@ -322,7 +322,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
         /* re-solve on this grid level */
         if(pot || (k != 0.0) || (pre_cyc[level] > MAX_TRADE_IMAGES) || !check)
         {
-            if(ibrav == HEXAGONAL)
+            if((ibrav == HEXAGONAL) || (ibrav == CUBIC_FC))
                 T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
             else
                 T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
@@ -336,7 +336,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
                 /* trade boundary info */
                 if(cycl < (post_cyc[level] - 1))
                 {
-                    if(ibrav == HEXAGONAL)
+                    if((ibrav == HEXAGONAL) || (ibrav == CUBIC_FC))
                         T->trade_images (v_mat, dimx, dimy, dimz, FULL_TRADE);
                     else
                         T->trade_images (v_mat, dimx, dimy, dimz, CENTRAL_TRADE);
