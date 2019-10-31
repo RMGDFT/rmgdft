@@ -95,21 +95,39 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
             cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
         else
             cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        if(!ct.is_gamma) FD.app_gradient_sixth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!ct.is_gamma)
+        {
+            if(special)
+                FD.app_gradient_sixth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            else
+                FiniteDiffGrad(rptr, gx, gy, gz, dimx, dimy, dimz, LC);
+        }
     }
     else if(order == APP_CI_EIGHT) {
         if(!special)
             cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
         else
             cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        if(!ct.is_gamma) FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!ct.is_gamma)
+        {
+            if(special)
+                FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            else
+                FiniteDiffGrad(rptr, gx, gy, gz, dimx, dimy, dimz, LC);
+        }
     }
     else if(order == APP_CI_TEN) {
         if(!special)
             cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
         else
             cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        if(!ct.is_gamma) FD.app_gradient_tenth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        if(!ct.is_gamma)
+        {
+            if(special)
+                FD.app_gradient_tenth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            else
+                FiniteDiffGrad(rptr, gx, gy, gz, dimx, dimy, dimz, LC);
+        }
     }
     else {
 
