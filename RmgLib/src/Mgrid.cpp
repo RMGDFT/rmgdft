@@ -675,6 +675,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
 
         case CUBIC_PRIMITIVE:
         case CUBIC_FC:
+        case CUBIC_BC:
         case ORTHORHOMBIC_PRIMITIVE:
 
             /* transfer coarse grid points to fine grid along with the
