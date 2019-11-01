@@ -190,6 +190,7 @@ public:
     /* estimated total energy  convergence criterion */
     double thr_energy;
 
+    double thr_stress; 
     /* preconditioner single/double precision switch threshold */
     double preconditioner_thr;
 
@@ -210,6 +211,9 @@ public:
     
     /** Flag for verbose output. Read from input file. 0=short output, 1=verbose */
     bool verbose;
+
+    /** Flag for write the pseudopotential  */
+    bool write_pp_flag;
 
     /** Number of states. May switch between init_states and run_states */
     int num_states;
@@ -857,6 +861,8 @@ public:
 
 
     bool stress;
+    bool cell_relax;
+    int cell_movable[9];
     double ldaU_radius;
 
     // Memory usage options

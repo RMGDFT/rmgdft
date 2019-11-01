@@ -332,7 +332,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     //Dprintf ("Initialize the radial potential stuff");
     RmgTimer *RT1 = new RmgTimer("2-Init: radial potentials");
-    InitPseudo (Kptr[0]->ControlMap);
+    InitPseudo ();
     delete(RT1);
 
     /* Set initial ionic coordinates to the current ones. */
@@ -411,7 +411,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /* Initialize the qfunction stuff */
     RT1 = new RmgTimer("2-Init: qfunct");
-    InitQfunct(Kptr[0]->ControlMap);
+    InitQfunct();
     delete(RT1);
 
 

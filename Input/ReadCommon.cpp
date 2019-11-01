@@ -156,6 +156,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     static Ri::ReadVector<int> DipoleCorrection;
     Ri::ReadVector<int> DefDipoleCorrection({{0,0,0}});
 
+    static Ri::ReadVector<int> Cell_movable;
+    Ri::ReadVector<int> DefCell_movable({{0,0,0,0,0,0,0,0,0}});
+
     double celldm[6] = {1.0,1.0,1.0,0.0,0.0,0.0};
     static double grid_spacing;
     double a0[3], a1[3], a2[3], omega;
@@ -231,6 +234,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                         "restart TDDFT");
     If.RegisterInputKey("stress", &lc.stress, false, 
                         "flag to control stress cacluation");
+    If.RegisterInputKey("cell_relax", &lc.cell_relax, false, 
+                        "flag to control unit cell relaxation");
 
     If.RegisterInputKey("processor_grid", &ProcessorGrid, &DefProcessorGrid, 3, OPTIONAL, 
                      "Three-D (x,y,z) layout of the MPI processes. ", 
@@ -243,6 +248,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("dipole_correction", &DipoleCorrection, &DefDipoleCorrection, 3, OPTIONAL, 
                      "(1,1,1) for molecule, dipole correction in all directions.  ", 
                      "(0,0,0) means no correction by default, (1,0,0) or others have not programed ");
+
+    If.RegisterInputKey("cell_movable", &Cell_movable, &DefCell_movable, 9, OPTIONAL, 
+                     "9 numbers to control cell relaxation  ", 
+                     "0 0 0 0 0 0 0 0 0 by default, no cell relax ");
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh. ", 
@@ -953,8 +962,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
             "Flag to test whether or not the modified metrics should be used in Pulay mixing.", MIXING_OPTIONS);
 
-    If.RegisterInputKey("write_pseudopotential_plots", NULL, false,
-            "Flag to indicate whether or not to write pseudopotential plots. ");
+    If.RegisterInputKey("write_pseudopotential_plots", &lc.write_pp_flag, false,
+            "Flag to indicate whether or not to write pseudopotential plots. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("equal_initial_density", &lc.init_equal_density_flag, false,
             "Specifies whether to set initial up and down density to be equal.");
@@ -1019,6 +1028,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "The RMS value of the change in the total potential from step to step "
             "where we assume self consistency has been achieved.",
             "rms_convergence_criterion must lie in the range (1.0e-04,1.0e-14). Resetting to default value of 1.0e-7. ", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("stress_convergence_criterion", &lc.thr_stress, 0.0, 5.0e+1, 0.5,
+            CHECK_AND_FIX, OPTIONAL,
+            "The stress criteria ",
+            "stress_convergence_criterion must lie in the range (1.0e-04,50). Resetting to default value of 0.5. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("energy_convergence_criterion", &lc.thr_energy, 1.0e-20, 1.0e-7, 1.0e-10,
             CHECK_AND_FIX, OPTIONAL,
@@ -1253,7 +1267,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     // Set up the lattice vectors
     Rmg_L.set_ibrav_type(ibrav);
-    Rmg_L.latgen(celldm, &omega, a0, a1, a2);
+    Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
 
 
     int NX_GRID = WavefunctionGrid.vals.at(0);
@@ -1263,6 +1277,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     lc.dipole_corr[0] = DipoleCorrection.vals.at(0);
     lc.dipole_corr[1] = DipoleCorrection.vals.at(1);
     lc.dipole_corr[2] = DipoleCorrection.vals.at(2);
+
+    for(int i = 0; i < 9; i++) lc.cell_movable[i] = Cell_movable.vals.at(i);
 
     CheckAndTerminate(NX_GRID, 1, INT_MAX, "The value given for the global wavefunction grid X dimension is " + boost::lexical_cast<std::string>(NX_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(NY_GRID, 1, INT_MAX, "The value given for the global wavefunction grid Y dimension is " + boost::lexical_cast<std::string>(NY_GRID) + " and only postive values are allowed.");

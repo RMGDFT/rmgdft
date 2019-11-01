@@ -29,7 +29,7 @@
 #include "transition.h"
 
 
-static int *s;
+static int *s = NULL;
 //static int irg[MAX_SYMMETRY], irt[MAX_IONS][MAX_SYMMETRY];
 static int *sym_atom;  //  atom B = sym(atom A)
 static int *ftau;
@@ -75,6 +75,17 @@ void init_sym (void)
     //int wflag = pct.gridpe;
 
 
+    if(s != NULL)
+    {
+        delete [] s;
+        delete [] sym_atom; 
+        delete [] ftau;
+        delete [] sym_index_x;
+        delete [] sym_index_y;
+        delete [] sym_index_z;
+        delete [] ct.sym_trans;
+        delete [] ct.sym_rotate;
+    }
 
     double lattice[9];
     int nsym_atom;
@@ -116,7 +127,6 @@ void init_sym (void)
         ityp[ion] = Atoms[ion].species;
     }
 
-
     nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
 
@@ -141,6 +151,7 @@ void init_sym (void)
     //}
     //   check if the real space grid fit the symmetry operations, if not, kick it out
 
+    nsym = 0;
     for(kpt = 0; kpt < nsym_atom; kpt++)
     {
         frac1 = modf(translation[kpt*3 + 0] * nr1, &intpart);
@@ -183,7 +194,7 @@ void init_sym (void)
         else if(ct.verbose)
         {
 
-            
+
             printf("\n translation break a symmetry") ;
             for(i = 0; i < 3; i++)
             {
@@ -504,7 +515,7 @@ void symmetrize_tensor(double *mat_tensor)
 
     for(int i = 0; i < 9; i++) work[i] = 0.0;
 
-// transfer to crystal coordinate
+    // transfer to crystal coordinate
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
             for(int k = 0; k < 3; k++)

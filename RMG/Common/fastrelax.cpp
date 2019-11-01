@@ -133,6 +133,38 @@ void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_m
     /*Move ions by dt*velocity*/
     move_ions(*dt);
 
+    if(ct.cell_relax)
+    {
+        double mass = 12.0 * mu_me;
+        for(int i = 0; i < 9; i++)
+        {
+            dotfv = Rmg_L.cell_force[i] * Rmg_L.cell_velocity[i];
+            magf = Rmg_L.cell_force[i] * Rmg_L.cell_force[i];
+
+            Rmg_L.cell_velocity[i] = *dt * Rmg_L.cell_force[i]/mass;
+
+            if(dotfv >=1.0e-12)  // force and previous velocity in the same direction
+                Rmg_L.cell_velocity[i] += dotfv * Rmg_L.cell_force[i]/magf;
+            if(pct.imgpe == 0 and ct.verbose)
+            {
+                printf("\n cell velocity %d %e %e", i, Rmg_L.cell_velocity[i], Rmg_L.cell_force[i]);
+            }
+        }
+
+    } 
+
+    Rmg_L.move_cell(*dt, ct.cell_movable);
+    if(pct.imgpe == 0)
+    {
+        printf("\n lattice a0: ");
+        for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a0[i]);
+        printf("\n lattice a1: ");
+        for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a1[i]);
+        printf("\n lattice a2: ");
+        for(int i = 0; i < 3; i++) printf(" %15.8f ", Rmg_L.a2[i]);
+        printf("\n");
+    }
+
 }                               /* end rmg_fastrelax */
 
 /******/

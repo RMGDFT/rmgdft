@@ -946,7 +946,6 @@ template <class KpointType> void Kpoint<KpointType>::get_ion_orbitals(ION *iptr,
     /*Temporary pointer to the already calculated forward transform */
     fptr = (std::complex<double> *)&sp->forward_orbital[this->kidx * sp->num_orbitals * pbasis];
 
-
     KpointType *orbit = orbitals;
     /* Loop over atomic orbitals */
     for (int ip = 0; ip < sp->num_orbitals; ip++)

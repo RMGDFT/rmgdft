@@ -122,6 +122,16 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
                 rmg_error_handler (__FILE__, __LINE__, "Undefined MD method");
         }
 
+
+        if(ct.cell_relax)
+        {
+
+            Reinit (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, Kptr);
+        }
+        // Get atomic rho for new configuration and add back to rho
+        LcaoGetAtomicRho(arho);
+         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+        delete [] arho;
         /* Update items that change when the ionic coordinates change */
         RmgTimer *RT0=new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
         ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
@@ -129,11 +139,6 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
         // Reset mixing
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
-
-        // Get atomic rho for new configuration and add back to rho
-        LcaoGetAtomicRho(arho);
-        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
-        delete [] arho;
 
         /* ct.md_steps measures the number of updates to the atomic positions */
         ct.md_steps++;
@@ -143,7 +148,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
 
         /* save data to file for future restart */
-	WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
         // Extrapolate orbitals after first step
         ExtrapolateOrbitals(ct.outfile, Kptr);
@@ -159,6 +164,11 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
                 if (Atoms[ion].movable[i])
                     fsq += fp[i] * fp[i];
             CONV_FORCE &= (fsq < ct.thr_frc * ct.thr_frc);
+        }
+    
+        for(int i = 0; i < 9; i++) 
+        {
+            if(ct.cell_movable[i])  CONV_FORCE &= (std::abs(Rmg_L.stress_tensor[i]) * Ha_Kbar < ct.thr_stress);
         }
 
         /* check for max relax steps */

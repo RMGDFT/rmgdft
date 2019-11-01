@@ -254,12 +254,9 @@ public:
     fftw_complex *phase;
 
     /*This will store results of forward fourier transform on the coarse grid */
-    fftw_complex *forward_beta;
+    fftw_complex *forward_beta=NULL;
     fftw_complex *forward_beta_r[3];
-    fftw_complex *forward_orbital;
-    fftw_complex *forward_vnuc;
-    fftw_complex *forward_rhoc;
-    fftw_complex *forward_rhocore;
+    fftw_complex *forward_orbital=NULL;
 
     /*Backwards wisdom for fftw */
     char *backward_wisdom;

@@ -188,7 +188,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     // Initialize some commonly used plans
     FftInitPlans();
     /* Initialize the radial potential stuff */
-    InitPseudo(ControlMap);
+    InitPseudo();
 
     delete RTa;
     RTa = new RmgTimer("1-TOTAL: init: init_nuc: vnuc");
@@ -286,7 +286,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     /* Initialize qfuction in Cartesin coordinates */
     RmgTimer *RT4 = new RmgTimer("1-TOTAL: init: init_qfunc");
-    InitQfunct(ControlMap);
+    InitQfunct();
     delete(RT4);
     RmgTimer *RT5 = new RmgTimer("1-TOTAL: init: init_QI");
 

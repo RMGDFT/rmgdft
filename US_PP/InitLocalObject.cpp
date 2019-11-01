@@ -28,6 +28,7 @@
 #include "AtomicInterpolate.h"
 #include "Atomic.h"
 #include "RmgException.h"
+#include "transition.h"
 
 // This is used to initialize 4 types of atomic data structures that live
 // on the high density grid. Each object can have a sum representation
@@ -242,7 +243,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                 x[0] = ix * hxxgrid - iptr->xtal[0];
                                 x[1] = iy * hyygrid - iptr->xtal[1];
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
-                                double r = metric (x);
+                                double r = Rmg_L.metric (x);
 
                                 if(r > sp->lradius) continue;
                                 double t1;
@@ -255,6 +256,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
                                     case ATOMIC_RHO:
                                         t1= AtomicInterpolateInline (&sp->arho_lig[0], r);
+                           // if(pct.gridpe == 0) printf("\n ffff %d %d %d %e %e", ix, iy, iz, r, t1);
                                         break;
 
                                     case ATOMIC_RHOCOMP:

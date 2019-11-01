@@ -274,10 +274,10 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     RmgTimer *RT4 = new RmgTimer("1-TOTAL: init:  psp");
     /* Initialize the radial potential stuff */
-    InitPseudo(ControlMap);
+    InitPseudo();
 
     /* Initialize the radial qfunction stuff */
-    InitQfunct(ControlMap);
+    InitQfunct();
 
     /* Initialize symmetry stuff */
     //init_sym ();

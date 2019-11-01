@@ -25,6 +25,7 @@
 #include <time.h>
 #include <math.h>
 #include "main.h"
+#include "transition.h"
 
 
 
@@ -203,6 +204,14 @@ void write_force (void)
 
     }
 
+    if(ct.stress) 
+    {
+        printf("\n cell forces (Ha/bohr)");
+        for(int i = 0; i < 3; i++) printf("\n     %10.7f   %10.7f   %10.7f",
+                Rmg_L.cell_force[i*3+0],  Rmg_L.cell_force[i*3+1],  Rmg_L.cell_force[i*3+2]);
+        printf("\n");
+
+    }
 
 }                               /* end write_force */
 

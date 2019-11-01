@@ -74,14 +74,21 @@ public:
     double b1[3];
     double b2[3];
 
+    // cell force dE/da = -omega sum (a^-1) sigma
+    // sigma: the stress tensor
+    double stress_tensor[9];
+    double cell_force[9]; 
+    double cell_velocity[9]; 
+
     // cell dimensions
     double celldm[6];
 
     // Total cell volume
     double omega;
 
-    void latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2);
+    void latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2, bool flag);
 
+    void move_cell(double dt, int *cell_movable);
     void cross_product (double * a, double * b, double * c);
     void to_crystal (double *crystal, double *cartesian);
     void to_crystal_half (double *crystal, double *cartesian);

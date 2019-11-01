@@ -121,6 +121,7 @@ void InitDelocalizedOrbital (void)
                 if(gval >= gcut) continue;
                 double t1 = AtomicInterpolateInline_Ggrid(sp->atomic_wave_g[proj.ip], gval);
                 weptr[idx] = IL * Ylm(proj.l, proj.m, ax) * t1;
+
             }
 
             // Shift atom to the center instead of corner.

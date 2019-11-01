@@ -43,7 +43,7 @@ using boost::math::policies::policy;
 using boost::math::policies::promote_double;
 typedef policy<promote_double<false> > bessel_policy;
 
-void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
+void InitPseudo ()
 {
 
     int isp;
@@ -54,7 +54,7 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
     double *rgrid = A->GetRgrid();
 
 
-    bool write_flag = Verify ("write_pseudopotential_plots", true, ControlMap);
+    bool write_flag = ct.write_pp_flag;
 
     /*Initialize max_nlpoints */
     ct.max_nlpoints = 0;
@@ -148,9 +148,10 @@ void InitPseudo (std::unordered_map<std::string, InputKey *>& ControlMap)
             a2[0] = s1*Rmg_L.get_a2(0);a2[1] = s1*Rmg_L.get_a2(1);a2[2] = s1*Rmg_L.get_a2(2);
 
             L->set_ibrav_type(None);
-            L->latgen(celldm, &omega, a0, a1, a2);
+            L->latgen(celldm, &omega, a0, a1, a2, true);
 
             sp->prj_pwave = new Pw(*OG, *L, 1, false);
+            delete L;
         }
         else
         {

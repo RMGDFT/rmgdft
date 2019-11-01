@@ -168,11 +168,11 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
 
     }                           /* end if */
 
-    if (crystal[0] < 0.0)
+    if (crystal[0] < -1.0e-10)
         crystal[0] += 1.0;
-    if (crystal[1] < 0.0)
+    if (crystal[1] < -1.0e-10)
         crystal[1] += 1.0;
-    if (crystal[2] < 0.0)
+    if (crystal[2] < -1.0e-10)
         crystal[2] += 1.0;
     if (crystal[0] > 1.0)
         crystal[0] -= 1.0;
@@ -261,8 +261,9 @@ void Lattice::recips (void)
 }                               /* end recips */
 
 
-// If flag is true then A0I,A1I,A2I are cell relative (0.0-1.0)
-void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2)
+// flag == true: determine celldm from a0, a1, a2
+// flag == false: determin a0, a1, a2 from celldm
+void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, double *a2, bool flag)
 {
 
     int ir;
@@ -272,7 +273,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
     /* Initialise the appropriate variables */
 
-    if(Lattice::ibrav == None)
+    if(Lattice::ibrav == None || flag)
     {
         for (ir = 0; ir < 3; ir++)
         {
@@ -284,17 +285,17 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         distance = 0.0;
         for (ir = 0; ir < 3; ir++)
             distance += Lattice::a0[ir] * Lattice::a0[ir];
-        celldm[0] = sqrt(distance);
+        Lattice::celldm[0] = sqrt(distance);
 
         distance = 0.0;
         for (ir = 0; ir < 3; ir++)
             distance += Lattice::a1[ir] * Lattice::a1[ir];
-        celldm[1] = sqrt(distance)/celldm[0];
+        Lattice::celldm[1] = sqrt(distance)/Lattice::celldm[0];
 
         distance = 0.0;
         for (ir = 0; ir < 3; ir++)
             distance += Lattice::a2[ir] * Lattice::a2[ir];
-        celldm[2] = sqrt(distance)/celldm[0];
+        Lattice::celldm[2] = sqrt(distance)/Lattice::celldm[0];
 
         distance = 0.0;
         distance += a0[1] * a0[1] + a0[2] * a0[2];
@@ -310,19 +311,26 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         if(distance < 1.0e-10 && abs(abs(a1[0]) - 0.5* a0[0]) < 1.0e-10 
                 && abs(abs(a1[1]) - 0.5 * sqrt(3.0) * a0[0]) < 1.0e-10   ) 
             Lattice::ibrav = HEXAGONAL;
+        alat = Lattice::celldm[0];
+
+        for (ir = 0; ir < 6; ir++)
+            celldm[ir] = Lattice::celldm[ir];
     }
     else
     {
-        for (ir = 0; ir < 3; ir++)
-        {
-            Lattice::a0[ir] = 0.0;
-            Lattice::a1[ir] = 0.0;
-            Lattice::a2[ir] = 0.0;
-        }
+        for (ir = 0; ir < 6; ir++)
+            Lattice::celldm[ir] = celldm[ir];
+    }
+    if(Lattice::ibrav == None) return;
+
+    // force the lattice symmetry, lattice vectors are determined from celldm[0],[1],[2]
+    for (ir = 0; ir < 3; ir++)
+    {
+        Lattice::a0[ir] = 0.0;
+        Lattice::a1[ir] = 0.0;
+        Lattice::a2[ir] = 0.0;
     }
 
-    for (ir = 0; ir < 3; ir++)
-        Lattice::celldm[ir] = celldm[ir];
     alat = celldm[0];
     switch (Lattice::ibrav)
     {
@@ -425,6 +433,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
         case MONOCLINIC_PRIMITIVE:
 
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             sine = sqrt (1.0 - celldm[3] * celldm[3]);
             Lattice::a0[0] = alat;
             Lattice::a1[0] = alat * celldm[1] * celldm[3];
@@ -439,6 +448,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
         case TRICLINIC_PRIMITIVE:
 
+            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             singam = sqrt (1.0 - celldm[5] * celldm[5]);
             term = sqrt ((1.0 + 2.0 * celldm[3] * celldm[4] * celldm[5] -
                         celldm[3] * celldm[3]
@@ -460,6 +470,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
 
     }                           /* end switch (*ibrav) */
+
 
     cross_product (Lattice::a0, Lattice::a1, cvec);
     *OMEGAI = cvec[0] * Lattice::a2[0] + cvec[1] * Lattice::a2[1] + cvec[2] * Lattice::a2[2];
@@ -564,5 +575,16 @@ double Lattice::get_zside(void)
     return Lattice::zside;
 }
 
-//****/
+void Lattice::move_cell(double dt, int *cell_movable)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        Lattice::a0[i] += dt * Lattice::cell_velocity[0*3 + i] * cell_movable[0*3+i];
+        Lattice::a1[i] += dt * Lattice::cell_velocity[1*3 + i] * cell_movable[1*3+i];
+        Lattice::a2[i] += dt * Lattice::cell_velocity[2*3 + i] * cell_movable[2*3+i];
+    }
 
+    double celldm[6]= {1.0,1.0,1.0,0.0,0.0,0.0},omega;
+    Lattice::latgen (celldm, &omega, Lattice::a0, Lattice::a1, Lattice::a2, true);
+
+}

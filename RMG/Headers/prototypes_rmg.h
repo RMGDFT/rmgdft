@@ -44,6 +44,8 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 template <typename OrbitalType> void GetAugRho(Kpoint<OrbitalType> **Kpts, double *rho);
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
            double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
+template <typename OrbitalType> void Reinit (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
+           double * vnuc, double * vxc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh, double * vnuc,
               double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType> void NEB_relax (int steps, double * vxc, double * vh, double * vnuc,

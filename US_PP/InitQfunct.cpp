@@ -39,7 +39,7 @@
 #include "Atomic.h"
 
 
-void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
+void InitQfunct ()
 {
     if(ct.norm_conserving_pp) return;
     int idx, i, j, k, num, il, jl, ll;
@@ -62,7 +62,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
 
         sp = &Species[isp];
         if(!std::strcmp(sp->atomic_symbol, "DLO")) continue;
-        if (Verify ("write_pseudopotential_plots", true, ControlMap))
+        if (ct.write_pp_flag)
         {
             snprintf (newname1, MAX_PATH, "q_%s.xmgr", sp->atomic_symbol);
             if (pct.gridpe == 0)
@@ -128,7 +128,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                                 work[k] = get_QnmL (idx, ll, sp->r[k], sp);
                     }
 
-                    if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
+                    if (pct.gridpe == 0 && ct.write_pp_flag)
                     {
                         for (k = 0; k < sp->kkbeta; k++)
                             fprintf (fqq, "%e  %e\n", sp->r[k], work[k]);
@@ -139,7 +139,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
                             sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
 
                     /*Write final filtered Q function if requested*/
-                    if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
+                    if (pct.gridpe == 0 && ct.write_pp_flag)
                     {
                         for (k = 0; k < MAX_LOGGRID; k++)
                         {
@@ -155,7 +155,7 @@ void InitQfunct (std::unordered_map<std::string, InputKey *>& ControlMap)
         // Raw q function from pp is no longer needed so free it's memory
         delete []  sp->qnm;
 
-        if (pct.gridpe == 0 && Verify ("write_pseudopotential_plots", true, ControlMap))
+        if (pct.gridpe == 0 && ct.write_pp_flag)
         {
             fclose (fqq);
         }
