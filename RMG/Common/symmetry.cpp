@@ -494,8 +494,14 @@ void inline symm_ijk(int *srotate, int *strans, int ix, int iy, int iz, int *ixx
 
 
     *ixx = (opoint[0] + nx)%nx;
+    while(*ixx < 0) *ixx += nx;
+    while(*ixx >= nx) *ixx -= nx;
     *iyy = (opoint[1] + ny)%ny;
+    while(*iyy < 0) *iyy += ny;
+    while(*iyy >= ny) *iyy -= ny;
     *izz = (opoint[2] + nz)%nz;
+    while(*izz < 0) *izz += nz;
+    while(*izz >= nz) *izz -= nz;
 
 
 }

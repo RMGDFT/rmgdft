@@ -36,6 +36,16 @@
 #include "transition.h"
 #include "RmgParallelFft.h"
 
+void FftGradientCoarse(float *x, float *fgx, float *fgy, float *fgz)
+{
+    throw RmgFatalException() << "Float version not implemented yet in FftGradient "<< " at line " << __LINE__ << "\n";
+}
+
+void FftGradientCoarse(std::complex<float> *x, std::complex<float> *fgx, std::complex<float> *fgy, std::complex<float> *fgz)
+{
+    throw RmgFatalException() << "Float version not implemented yet in FftGradient "<< " at line " << __LINE__ << "\n";
+}
+
 void FftGradientCoarse(double *x, double *fgx, double *fgy, double *fgz)
 {
     FftGradient(x, fgx, fgy, fgz, *coarse_pwaves);
