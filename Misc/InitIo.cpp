@@ -200,7 +200,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     AutoSet(ct, pct, ControlMap);
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
-    SetLaplacian();
+    bool special = ((Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
+                    (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
+                    (Rmg_L.get_ibrav_type() == HEXAGONAL));
+    if(!special) SetLaplacian();
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
 
