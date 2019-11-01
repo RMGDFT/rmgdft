@@ -2,6 +2,7 @@
 #include <cmath>
 #include <complex>
 #include <iostream>
+#include <typeinfo>
 #include "Lattice.h"
 #include "LaplacianCoeff.h"
 
