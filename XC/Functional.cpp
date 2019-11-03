@@ -144,6 +144,12 @@ Functional::Functional (
     if(dft_set && dft_is_hybrid() && exx_started) start_exx();
     if(dft_set && dft_is_hybrid() && !exx_started) stop_exx();
 
+    if(this->dft_is_gradient_rmg()) 
+    {
+        vxc2 = new double[2 * this->pbasis];
+        v2cud = new double[this->pbasis];
+    }
+    
 }
 
 
@@ -152,6 +158,11 @@ Functional::Functional (
 Functional::~Functional(void)
 {
 
+    if(this->dft_is_gradient_rmg()) 
+    {
+        delete [] vxc2;
+        delete [] v2cud;
+    }
 
 }
 
@@ -438,7 +449,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
     double *rhoout = new double[this->pbasis];
     double *grho = new double[3*this->pbasis];
-    double *vxc2 = new double[this->pbasis]();
+    double *vxc2 = this->vxc2;
     double *d2rho = new double[this->pbasis];
     double *gx = grho;
     double *gy = gx + this->pbasis;
@@ -523,7 +534,6 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     etxc = etxc + etxcgc;
 
     delete [] h;
-    delete [] vxc2;
     delete [] d2rho;
     delete [] grho;
     delete [] rhoout;
@@ -563,9 +573,9 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     double *grho_down = new double[3*this->pbasis];
     double *d2rho_up = new double[this->pbasis];
     double *d2rho_down = new double[this->pbasis];
-    double *vxc2_up = new double[this->pbasis]();
-    double *vxc2_down = new double[this->pbasis]();
-    double *v2cud = new double[this->pbasis]();
+    double *vxc2_up = this->vxc2;
+    double *vxc2_down = vxc2_up + this->pbasis;
+    double *v2cud = this->v2cud;
     double *rhoout_up = new double[this->pbasis];
     double *rhoout_down = new double[this->pbasis];
 
@@ -725,9 +735,6 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
     delete RT4;
 
     delete [] h;
-    delete [] v2cud;
-    delete [] vxc2_down;
-    delete [] vxc2_up;
     delete [] d2rho_up;
     delete [] d2rho_down;
     delete [] grho_down;
