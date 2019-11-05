@@ -247,7 +247,13 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     }
     if(ct.stress)
-       Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, ct.XC, vxc, rho, rhocore);
+    {
+        double *vtot = new double[FP0_BASIS];
+        for(int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = vh[idx] + vnuc[idx] + vxc[idx];
+        Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, 
+                ct.XC, vxc, rho, rhocore, vtot);
+        delete [] vtot;
+    }
 
     rmg_printf (" volume and energy per atom = %18.8f  %18.8f eV\n", Rmg_L.get_omega()*a0_A*a0_A*a0_A/Atoms.size(),ct.TOTAL * Ha_eV/Atoms.size());
 

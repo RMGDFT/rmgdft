@@ -61,22 +61,22 @@ template <class T> Stress<T>::~Stress(void)
 }
 
 template Stress<double>::Stress(Kpoint<double> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore);
+        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff);
 
 template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore);
+        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff);
 template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore)
+        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff)
 {
 
     //if(ct.xctype != 0) 
     //{
     //    throw RmgFatalException() << "stress only works for LDA now" << __FILE__ << " at line " << __LINE__ << "\n";
     //}
-    if(!ct.norm_conserving_pp)
-    {
-        throw RmgFatalException() << "stress only works for NC pseudopotential now" << __FILE__ << " at line " << __LINE__ << "\n";
-    }
+   // if(!ct.norm_conserving_pp)
+   // {
+  //      throw RmgFatalException() << "stress only works for NC pseudopotential now" << __FILE__ << " at line " << __LINE__ << "\n";
+   // }
 
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
@@ -90,6 +90,13 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     RT2 = new RmgTimer("2-Stress: Non-loc");
     NonLocal_term(Kpin, atoms, species);
     delete RT2;
+    if(!ct.norm_conserving_pp)  
+    {
+        RT2 = new RmgTimer("2-Stress: Non-loc");
+        NonLocalQfunc_term(Kpin, atoms, species, veff);
+        delete RT2;
+
+    }
     RT2 = new RmgTimer("2-Stress: Hartree");
     Hartree_term(rho, pwaves);
     delete RT2;
@@ -104,25 +111,25 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     delete RT2;
     delete RT1;
     print_stress("total ", stress_tensor);
-    
+
     for(int i = 0; i < 9; i++) Rmg_L.stress_tensor[i] = stress_tensor[i];
     double zero(0.0);
     int ithree = 3;
     double  a[9]; // b is the reciprocal vector without 2PI, a^-1
     for (int i = 0; i < 3; i++)
     {
-       // b[0 * 3 + i] = Rmg_L.b0[i];
-       // b[1 * 3 + i] = Rmg_L.b1[i];
-       // b[2 * 3 + i] = Rmg_L.b2[i];
+        // b[0 * 3 + i] = Rmg_L.b0[i];
+        // b[1 * 3 + i] = Rmg_L.b1[i];
+        // b[2 * 3 + i] = Rmg_L.b2[i];
         a[0 * 3 + i] = Rmg_L.a0[i];
         a[1 * 3 + i] = Rmg_L.a1[i];
         a[2 * 3 + i] = Rmg_L.a2[i];
     }
 
-    
+
     double alpha = Rmg_L.omega;
     dgemm("N","N", &ithree, &ithree, &ithree, &alpha, a, &ithree, stress_tensor, &ithree, &zero, Rmg_L.cell_force, &ithree);
-    
+
 }
 
 template void Stress<double>::Kinetic_term(Kpoint<double> **Kpin, BaseGrid &BG, Lattice &L);
@@ -283,11 +290,11 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     daxpy (&pbasis, &malpha, rhocore, &ione, rho, &ione);
 
     for(int i = 0; i < 3; i++)
-    for(int j = 0; j < 3; j++)
-    {
-        for(int idx = 0; idx < pbasis; idx++)
-            stress_tensor_xcgrad[i*3+j] += rho_grad[i*pbasis + idx] * rho_grad[j*pbasis + idx] * F->vxc2[idx]; 
-    }
+        for(int j = 0; j < 3; j++)
+        {
+            for(int idx = 0; idx < pbasis; idx++)
+                stress_tensor_xcgrad[i*3+j] += rho_grad[i*pbasis + idx] * rho_grad[j*pbasis + idx] * F->vxc2[idx]; 
+        }
 
     if(ct.spin_flag)
     {
@@ -311,7 +318,7 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     delete F;
 
     for(int i = 0; i < 9; i++) stress_tensor_xcgrad[i] *= vel /Rmg_L.omega;
-//  sum over grid communicator and spin communicator  but no kpoint communicator
+    //  sum over grid communicator and spin communicator  but no kpoint communicator
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcgrad, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcgrad, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_xcgrad[i];
@@ -426,6 +433,9 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     int num_proj = num_nonloc_ions * ct.max_nl;
     T *proj_mat = (T *)GpuMallocManaged(num_proj * num_proj * sizeof(T));
 
+    //  proj_mat_q: for US pseudopotenital only = sum_i  <beta_n *r[] |partial_ psi_i> eig[i] <psi_i|beta_n>
+    T *proj_mat_q = (T *)GpuMallocManaged(num_proj * num_proj * sizeof(T));
+
     //  determine the number of occupied states for all kpoints.
 
     num_occupied = 0;
@@ -491,7 +501,6 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                     }
                 }
 
-
             }
 
 
@@ -537,6 +546,17 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                     RmgGemm("N", "C", num_proj, num_proj, num_state_thisblock, one, sint_der, num_proj,
                             sint, num_proj, zero, proj_mat, num_proj); 
 
+                    for(int st = state_start[ib]; st < state_end[ib]; st++)
+                    {
+                        double t1 = kptr->Kstates[st].eig[0];
+                        for (int iproj = 0; iproj < num_proj; iproj++)
+                        {
+                            sint_der[ (st-state_start[ib]) * num_proj + iproj] *= t1;
+                        }
+                    }
+                    RmgGemm("N", "C", num_proj, num_proj, num_state_thisblock, one, sint_der, num_proj,
+                            sint, num_proj, zero, proj_mat_q, num_proj); 
+
                     delete RT1;
 
                     RT1 = new RmgTimer("2-Stress: Non-loc: dnmI mat ");
@@ -562,6 +582,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
                         int nh = Species[iptr->species].nh;
                         double *dnmI = pct.dnmI[gion];
+                        double *qnmI = pct.qqq[gion];
 
 
                         for(int n = 0; n <nh; n++)
@@ -572,7 +593,8 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                                 int mg = nion * ct.max_nl + m;
 
                                 stress_tensor_nl[id1 * 3 + id2] += 
-                                    dnmI[idx1] * std::real(proj_mat[ng * num_proj + mg]);
+                                    dnmI[idx1] * std::real(proj_mat[ng * num_proj + mg]) -
+                                    qnmI[idx1] * std::real(proj_mat_q[ng * num_proj + mg]);
                             }
                     } 
                     delete RT1;
@@ -585,11 +607,15 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
     delete [] state_end;
     delete [] state_start;
+    GpuFreeManaged(proj_mat);
+    GpuFreeManaged(proj_mat_q);
+    GpuFreeManaged(sint_der);
 
     for(int i = 0; i < 9; i++) stress_tensor_nl[i] = stress_tensor_nl[i]/Rmg_L.omega;
 
     // img_comm includes kpoint, spin, and grid (num_owned_ions) sum
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nl, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+
     if(!ct.is_gamma)symmetrize_tensor(stress_tensor_nl);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nl[i];
     if(ct.verbose) print_stress("Nonlocal term", stress_tensor_nl);
@@ -723,6 +749,206 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
     if(ct.verbose) print_stress("Ewald term", stress_tensor_gs);
 }
 
+
+template void Stress<double>::NonLocalQfunc_term(Kpoint<double> **Kpin,
+        std::vector<ION> &atoms, std::vector<SPECIES> &speices, double *veff);
+template void Stress<std::complex<double>>::NonLocalQfunc_term(Kpoint<std::complex<double>> **Kpin,
+        std::vector<ION> &atoms, std::vector<SPECIES> &speices, double *veff);
+template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr, 
+        std::vector<ION> &atoms, std::vector<SPECIES> &speices, double *veff)
+{
+
+
+    double stress_tensor_nlq[9];
+    for(int i = 0; i < 9; i++) stress_tensor_nlq[i] = 0.0;
+    int num_occupied;
+    std::complex<double> I_t(0.0, 1.0);
+
+
+    int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
+    int num_owned_ions = Kptr[0]->BetaProjector->get_num_owned_ions();
+    int *nonloc_ions_list = Kptr[0]->BetaProjector->get_nonloc_ions_list();
+    int *owned_ions_list = Kptr[0]->BetaProjector->get_owned_ions_list();
+
+
+
+    int num_proj = num_nonloc_ions * ct.max_nl;
+    T *proj_mat = (T *)GpuMallocManaged(num_proj * num_proj * sizeof(T));
+
+    //  determine the number of occupied states for all kpoints.
+
+    num_occupied = 0;
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        for(int st = 0; st < ct.num_states; st++)
+        {
+            if(abs(Kptr[kpt]->Kstates[st].occupation[0]) < 1.0e-10) 
+            {
+                num_occupied = std::max(num_occupied, st);
+                break;
+            }
+        }
+    }
+
+
+    size_t size = num_nonloc_ions * ct.max_nl * num_occupied; 
+    size += 1;
+    //  sint_der:  leading dimension is num_nonloc_ions * ct.max_nl, 
+    T *sint_der = (T *)GpuMallocManaged(size * sizeof(T));
+
+
+    // proj_mat = Sum_stm kpt (kpweigth *  <beta_n|psi_i> occ[i] <psi_i|beta_m>) eq 27 in PRB 61, 8433
+    for(int i = 0; i < num_proj * num_proj; i++) proj_mat[i] = 0.0;
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+
+        Kpoint<T> *kptr = Kptr[kpt];
+        T *sint = kptr->newsint_local;
+        for(int st = 0; st < num_occupied; st++)
+        {
+            double t1 = kptr->Kstates[st].occupation[0] * kptr->kp.kweight;
+            for (int iproj = 0; iproj < num_proj; iproj++)
+            {
+                sint_der[ st * num_proj + iproj] = t1 * sint[ st * num_proj + iproj];
+
+            }
+        }
+
+        T one(1.0);
+
+        RmgGemm("N", "C", num_proj, num_proj, num_occupied, one, sint_der, num_proj,
+                sint, num_proj, one, proj_mat, num_proj); 
+    }
+
+
+    int idx, i, j, ion;
+    int nh, ncount, icount;
+    double *sum;
+    int *ivec, sum_dim;
+    ION *iptr;
+    SPECIES *sp;
+
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+
+    /*Count the number of elements in sum array */
+    int nh_max = 0;
+    for(int sp = 0; sp <ct.num_species; sp++)
+        nh_max = std::max(nh_max, Species[sp].nh);
+    int num_q_max =  ((nh_max+1) * nh_max)/2;
+    sum_dim = ct.num_ions * num_q_max;
+
+    sum = new double[sum_dim];
+
+    double *veff_grad = new double[3*FP0_BASIS];
+    double *veff_gx = veff_grad;
+    double *veff_gy = veff_grad + FP0_BASIS;
+    double *veff_gz = veff_grad + 2*FP0_BASIS;
+    double *veff_gxyz;
+
+    ApplyGradient(veff, veff_gx, veff_gy, veff_gz, ct.force_grad_order, "Fine");
+    for(int id1 = 0; id1 < 3; id1++)
+        for(int id2 = 0; id2 < 3; id2++)
+        {
+
+            veff_gxyz = veff_grad + id1 * FP0_BASIS;
+            for(int i = 0; i < sum_dim; i++) sum[i] = 0.0;
+
+            for (ion = 0; ion < ct.num_ions; ion++)
+            {
+                iptr = &Atoms[ion];
+                sp = &Species[iptr->species];
+
+                ivec = Atoms[ion].Qindex.data();
+                nh = sp->nh;
+                ncount = Atoms[ion].Qindex.size();
+
+                idx = 0;
+                for (i = 0; i < nh; i++)
+                {
+                    for (j = i; j < nh; j++)
+                    {
+                        if (ncount)
+                        {
+                            for (icount = 0; icount < ncount; icount++)
+                            {
+                                sum[ion * num_q_max + idx] += Atoms[ion].augfunc_xyz[id2][icount + idx * ncount] * veff_gxyz[ivec[icount]];
+                            }
+
+                            // switching the derivative from Q to veff introduce Q * Veff term 
+                            // cancelling out the original Q * Veff term
+                            if(id1 == id2 && 0)  
+                                for (icount = 0; icount < ncount; icount++)
+                                {
+                                    sum[ion * num_q_max + idx] += Atoms[ion].augfunc[icount + idx * ncount] * veff[ivec[icount]];
+                                }
+
+                        }               /*end if (ncount) */
+
+                        sum[ion * num_q_max + idx] *= get_vel_f();
+
+                        idx++;
+                    }                   /*end for (j = i; j < nh; j++) */
+                }                       /*end for (i = 0; i < nh; i++) */
+
+            }                           /*end for (ion = 0; ion < ct.num_ions; ion++) */
+
+            global_sums (sum, &sum_dim, pct.grid_comm);
+
+            int nion = -1;
+            for (int ion = 0; ion < num_owned_ions; ion++)
+            {
+                /*Global index of owned ion*/
+                int gion = owned_ions_list[ion];
+
+                /* Figure out index of owned ion in nonloc_ions_list array, store it in nion*/
+                do {
+
+                    nion++;
+                    if (nion >= num_nonloc_ions)
+                    {
+                        printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
+                        rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                    }
+
+                } while (nonloc_ions_list[nion] != gion);
+
+                ION *iptr = &Atoms[gion];
+
+                int nh = Species[iptr->species].nh;
+
+                int idx1 = 0;
+                for(int n = 0; n <nh; n++)
+                    for(int m = n; m <nh; m++)
+                    {
+                        int ng = nion * ct.max_nl + n;
+                        int mg = nion * ct.max_nl + m;
+
+                        double fac = 1.0;
+                        if(n != m) fac = 2.0;
+                        stress_tensor_nlq[id1 * 3 + id2] += fac* sum[gion * num_q_max + idx1] * std::real(proj_mat[ng * num_proj + mg]);
+                        idx1++;
+                    }
+            } 
+
+        }
+
+    for(int i = 0; i < 9; i++) stress_tensor_nlq[i] = stress_tensor_nlq[i]/Rmg_L.omega;
+
+    // img_comm includes spin, and grid (num_owned_ions) sum
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nlq, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nlq, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+
+    if(!ct.is_gamma)symmetrize_tensor(stress_tensor_nlq);
+    for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nlq[i];
+    if(ct.verbose) print_stress("NonlocalQfunc term", stress_tensor_nlq);
+    delete [] sum;
+    delete [] veff_grad;
+    GpuFreeManaged(sint_der);
+    GpuFreeManaged(proj_mat);
+    
+
+}
+
 static void print_stress(char *w, double *stress_term)
 {
     if(pct.imgpe == 0)
@@ -740,4 +966,3 @@ static void print_stress(char *w, double *stress_term)
         fprintf(ct.logfile, "\n");
     }
 }
-

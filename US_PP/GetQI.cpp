@@ -103,6 +103,9 @@ void GetQI (void)
         /*Release memory first */
         Atoms[ion].Qindex.clear();
         Atoms[ion].augfunc.clear();
+        Atoms[ion].augfunc_xyz[0].clear();
+        Atoms[ion].augfunc_xyz[1].clear();
+        Atoms[ion].augfunc_xyz[2].clear();
 
         for (idx = 0; idx < alloc; idx++)
         {
@@ -178,6 +181,12 @@ void GetQI (void)
 
             size = nh * (nh + 1) / 2;
             Atoms[ion].augfunc.resize(size * icount);
+            if(ct.stress)
+            {
+                Atoms[ion].augfunc_xyz[0].resize(size * icount);
+                Atoms[ion].augfunc_xyz[1].resize(size * icount);
+                Atoms[ion].augfunc_xyz[2].resize(size * icount);
+            }
             ct.q_alloc[0] += (size_t)(size * icount) * sizeof(double);
 
             qnmlig = sp->qnmlig;
@@ -206,9 +215,9 @@ void GetQI (void)
                             r = metric (x);
                             to_cartesian (x, cx);
                             for(int l = 0; l <= 2*ct.max_l; l++)
-                            for(int m = 0; m < 2*l + 1; m++)
-                                ylm[l*l+m] = Ylm(l, m, cx);
-                    
+                                for(int m = 0; m < 2*l + 1; m++)
+                                    ylm[l*l+m] = Ylm(l, m, cx);
+
                             //ylmr2 (cx, ylm);
 
                             if((r < LOGGRID_START)) {
@@ -236,6 +245,12 @@ void GetQI (void)
                                     idx1 = num * Atoms[ion].Qindex.size() + icount;
                                     Atoms[ion].augfunc[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m,
                                             sp->indv, ylm, ap, lpx, lpl, sp);
+                                    if(ct.stress)
+                                    {
+                                        Atoms[ion].augfunc_xyz[0][idx1] = Atoms[ion].augfunc[idx1] *cx[0];
+                                        Atoms[ion].augfunc_xyz[1][idx1] = Atoms[ion].augfunc[idx1] *cx[1];
+                                        Atoms[ion].augfunc_xyz[2][idx1] = Atoms[ion].augfunc[idx1] *cx[2];
+                                    }
 
                                     num++;
                                 }

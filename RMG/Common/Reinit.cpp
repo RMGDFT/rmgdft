@@ -246,12 +246,6 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
 
     delete(RT1);
 
-    /* Initialize the qfunction stuff */
-    RT1 = new RmgTimer("2-ReInit: qfunct");
-    InitQfunct();
-    delete(RT1);
-
-
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 1.0e-10);
 
     // Zero out dvh array if potential acceleration is enabled

@@ -129,13 +129,14 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
             Reinit (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, Kptr);
         }
         // Get atomic rho for new configuration and add back to rho
-        LcaoGetAtomicRho(arho);
-         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
-        delete [] arho;
         /* Update items that change when the ionic coordinates change */
         RmgTimer *RT0=new RmgTimer("1-TOTAL: run: ReinitIonicPotentials");
         ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
         delete RT0;
+
+        LcaoGetAtomicRho(arho);
+         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+        delete [] arho;
 
         // Reset mixing
         MixRho(NULL, NULL, NULL, NULL, NULL, NULL, Kptr[0]->ControlMap, true);
@@ -166,9 +167,12 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
             CONV_FORCE &= (fsq < ct.thr_frc * ct.thr_frc);
         }
     
-        for(int i = 0; i < 9; i++) 
+        if(ct.cell_relax)
         {
-            if(ct.cell_movable[i])  CONV_FORCE &= (std::abs(Rmg_L.stress_tensor[i]) * Ha_Kbar < ct.thr_stress);
+            for(int i = 0; i < 9; i++) 
+            {
+                if(ct.cell_movable[i])  CONV_FORCE &= (std::abs(Rmg_L.stress_tensor[i]) * Ha_Kbar < ct.thr_stress);
+            }
         }
 
         /* check for max relax steps */
