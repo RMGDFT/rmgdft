@@ -85,10 +85,13 @@ private:
     // Parallel fft plans
 //    struct fft_plan_3d *distributed_plan;
     std::vector<struct fft_plan_3d<fftw_complex, double> *> distributed_plan;
+    std::vector<struct fft_plan_3d<fftwf_complex, float> *> distributed_plan_f;
 
     // Local fft plans
     fftw_plan fftw_forward_plan, fftw_backward_plan;
     fftw_plan fftw_forward_plan_inplace, fftw_backward_plan_inplace;
+    fftwf_plan fftwf_forward_plan, fftwf_backward_plan;
+    fftwf_plan fftwf_forward_plan_inplace, fftwf_backward_plan_inplace;
  
     MPI_Comm comm;
 

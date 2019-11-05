@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <type_traits>
+#include <typeinfo>
 #include "fft3d.h"
 #include "remap.h"
 
@@ -31,14 +32,14 @@ template struct fft_plan_3d<fftw_complex, double> *fft_3d_create_plan(MPI_Comm, 
                                        int, int, int, int, int,
                                        int, int, int, int, int, int, int,
                                        int, int, int *, int);
-//template struct fft_plan_3d<fftwf_complex> *fft_3d_create_plan(MPI_Comm, int, int, int,
-//                                       int, int, int, int, int,
-//                                       int, int, int, int, int, int, int,
-//                                       int, int, int *, int);
-template void fft_3d_destroy_plan(struct fft_plan_3d<fftwf_complex, double> *plan);
+template struct fft_plan_3d<fftwf_complex, float> *fft_3d_create_plan(MPI_Comm, int, int, int,
+                                       int, int, int, int, int,
+                                       int, int, int, int, int, int, int,
+                                       int, int, int *, int);
 template void fft_3d_destroy_plan(struct fft_plan_3d<fftw_complex, double> *plan);
+template void fft_3d_destroy_plan(struct fft_plan_3d<fftwf_complex, float> *plan);
 template void fft_3d(fftw_complex *, fftw_complex *, int, struct fft_plan_3d<fftw_complex, double> *);
-//template void fft_3d(fftwf_complex *, fftwf_complex *, int, struct fft_plan_3d<fftwf_complex> *);
+template void fft_3d(fftwf_complex *, fftwf_complex *, int, struct fft_plan_3d<fftwf_complex, float> *);
 
 
 #define MIN(A,B) ((A) < (B) ? (A) : (B))
@@ -79,7 +80,8 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
   FFT_DATA *data,*copy;
 
   // system specific constants
-  FFTW_API(plan) theplan;
+  //FFTW_API(plan) theplan;
+  typename std::conditional<std::is_same<FFT_SCALAR, double>::value, fftw_plan, fftwf_plan>::type theplan;
 
   // pre-remap to prepare for 1st FFTs if needed
   // copy = loc for remap result
@@ -99,7 +101,15 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
     theplan=plan->plan_fast_forward;
   else
     theplan=plan->plan_fast_backward;
-  FFTW_API(execute_dft)(theplan,data,data);
+  if(typeid(FFT_SCALAR) == typeid(float))
+  {
+      fftwf_execute_dft((fftwf_plan)theplan,(float (*)[2])data,(float (*)[2])data);
+  }
+  else
+  {
+      fftw_execute_dft((fftw_plan)theplan,(double (*)[2])data,(double (*)[2])data);
+  }
+  //fftw_execute_plan_wrapper(theplan,data,data);
 
   // 1st mid-remap to prepare for 2nd FFTs
   // copy = loc for remap result
@@ -115,7 +125,15 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
     theplan=plan->plan_mid_forward;
   else
     theplan=plan->plan_mid_backward;
-  FFTW_API(execute_dft)(theplan,data,data);
+  if(typeid(FFT_SCALAR) == typeid(float))
+  {
+      fftwf_execute_dft((fftwf_plan)theplan,(float (*)[2])data,(float (*)[2])data);
+  }
+  else
+  {
+      fftw_execute_dft((fftw_plan)theplan,(double (*)[2])data,(double (*)[2])data);
+  }
+  //fftw_execute_plan_wrapper(theplan,data,data);
 
   // 2nd mid-remap to prepare for 3rd FFTs
   // copy = loc for remap result
@@ -131,7 +149,15 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
     theplan=plan->plan_slow_forward;
   else
     theplan=plan->plan_slow_backward;
-  FFTW_API(execute_dft)(theplan,data,data);
+  if(typeid(FFT_SCALAR) == typeid(float))
+  {
+      fftwf_execute_dft((fftwf_plan)theplan,(float (*)[2])data,(float (*)[2])data);
+  }
+  else
+  {
+      fftw_execute_dft((fftw_plan)theplan,(double (*)[2])data,(double (*)[2])data);
+  }
+  //fftw_execute_plan_wrapper(theplan,data,data);
 
   // post-remap to put data in output format if needed
   // destination is always out
@@ -406,36 +432,36 @@ template <typename FFT_DATA, typename FFT_SCALAR> struct fft_plan_3d<FFT_DATA, F
 
   // system specific pre-computation of 1d FFT coeffs
   // and scaling normalization
-
+  FFT_DATA *fft_nullptr = NULL;
   plan->plan_fast_forward =
-    FFTW_API(plan_many_dft)(1, &nfast,plan->total1/plan->length1,
-                            NULL,&nfast,1,plan->length1,
-                            NULL,&nfast,1,plan->length1,
+    fft_plan_many_dft_wrapper(1, &nfast,plan->total1/plan->length1,
+                            fft_nullptr,&nfast,1,plan->length1,
+                            fft_nullptr,&nfast,1,plan->length1,
                             FFTW_FORWARD,FFTW_ESTIMATE);
   plan->plan_fast_backward =
-    FFTW_API(plan_many_dft)(1, &nfast,plan->total1/plan->length1,
-                            NULL,&nfast,1,plan->length1,
-                            NULL,&nfast,1,plan->length1,
+    fft_plan_many_dft_wrapper(1, &nfast,plan->total1/plan->length1,
+                            fft_nullptr,&nfast,1,plan->length1,
+                            fft_nullptr,&nfast,1,plan->length1,
                             FFTW_BACKWARD,FFTW_ESTIMATE);
   plan->plan_mid_forward =
-    FFTW_API(plan_many_dft)(1, &nmid,plan->total2/plan->length2,
-                            NULL,&nmid,1,plan->length2,
-                            NULL,&nmid,1,plan->length2,
+    fft_plan_many_dft_wrapper(1, &nmid,plan->total2/plan->length2,
+                            fft_nullptr,&nmid,1,plan->length2,
+                            fft_nullptr,&nmid,1,plan->length2,
                             FFTW_FORWARD,FFTW_ESTIMATE);
   plan->plan_mid_backward =
-    FFTW_API(plan_many_dft)(1, &nmid,plan->total2/plan->length2,
-                            NULL,&nmid,1,plan->length2,
-                            NULL,&nmid,1,plan->length2,
+    fft_plan_many_dft_wrapper(1, &nmid,plan->total2/plan->length2,
+                            fft_nullptr,&nmid,1,plan->length2,
+                            fft_nullptr,&nmid,1,plan->length2,
                             FFTW_BACKWARD,FFTW_ESTIMATE);
   plan->plan_slow_forward =
-    FFTW_API(plan_many_dft)(1, &nslow,plan->total3/plan->length3,
-                            NULL,&nslow,1,plan->length3,
-                            NULL,&nslow,1,plan->length3,
+    fft_plan_many_dft_wrapper(1, &nslow,plan->total3/plan->length3,
+                            fft_nullptr,&nslow,1,plan->length3,
+                            fft_nullptr,&nslow,1,plan->length3,
                             FFTW_FORWARD,FFTW_ESTIMATE);
   plan->plan_slow_backward =
-    FFTW_API(plan_many_dft)(1, &nslow,plan->total3/plan->length3,
-                            NULL,&nslow,1,plan->length3,
-                            NULL,&nslow,1,plan->length3,
+    fft_plan_many_dft_wrapper(1, &nslow,plan->total3/plan->length3,
+                            fft_nullptr,&nslow,1,plan->length3,
+                            fft_nullptr,&nslow,1,plan->length3,
                             FFTW_BACKWARD,FFTW_ESTIMATE);
 
   if (scaled == 0)
@@ -464,12 +490,12 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d_destroy_plan(struc
   if (plan->copy) free(plan->copy);
   if (plan->scratch) free(plan->scratch);
 
-  FFTW_API(destroy_plan)(plan->plan_slow_forward);
-  FFTW_API(destroy_plan)(plan->plan_slow_backward);
-  FFTW_API(destroy_plan)(plan->plan_mid_forward);
-  FFTW_API(destroy_plan)(plan->plan_mid_backward);
-  FFTW_API(destroy_plan)(plan->plan_fast_forward);
-  FFTW_API(destroy_plan)(plan->plan_fast_backward);
+  fft_destroy_plan_wrapper(plan->plan_slow_forward);
+  fft_destroy_plan_wrapper(plan->plan_slow_backward);
+  fft_destroy_plan_wrapper(plan->plan_mid_forward);
+  fft_destroy_plan_wrapper(plan->plan_mid_backward);
+  fft_destroy_plan_wrapper(plan->plan_fast_forward);
+  fft_destroy_plan_wrapper(plan->plan_fast_backward);
 
   free(plan);
 }
@@ -575,22 +601,22 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_1d_only(FFT_DATA *dat
   // perform 1d FFTs in each of 3 dimensions
   // data is just an array of 0.0
 
-  FFTW_API(plan) theplan;
+  typename std::conditional<std::is_same<FFT_SCALAR, double>::value, fftw_plan, fftwf_plan>::type theplan;
   if (flag == -1)
     theplan=plan->plan_fast_forward;
   else
     theplan=plan->plan_fast_backward;
-  FFTW_API(execute_dft)(theplan,data,data);
+  fftw_execute_plan_wrapper(theplan,data,data);
   if (flag == -1)
     theplan=plan->plan_mid_forward;
   else
     theplan=plan->plan_mid_backward;
-  FFTW_API(execute_dft)(theplan,data,data);
+  fftw_execute_plan_wrapper(theplan,data,data);
   if (flag == -1)
     theplan=plan->plan_slow_forward;
   else
     theplan=plan->plan_slow_backward;
-  FFTW_API(execute_dft)(theplan,data,data);
+  fftw_execute_plan_wrapper(theplan,data,data);
 
   // scaling if required
   // limit num to size of data
@@ -605,3 +631,45 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_1d_only(FFT_DATA *dat
     }
   }
 }
+
+void fft_destroy_plan_wrapper(fftw_plan plan)
+{
+    fftw_destroy_plan(plan);
+}
+
+void fft_destroy_plan_wrapper(fftwf_plan plan)
+{
+    fftwf_destroy_plan(plan);
+}
+
+void fftw_execute_plan_wrapper(fftw_plan plan, fftw_complex *d1, fftw_complex *d2)
+{
+    fftw_execute_dft(plan,d1,d2);
+}
+void fftw_execute_plan_wrapper(fftwf_plan plan, fftwf_complex *d1, fftwf_complex *d2)
+{
+    fftwf_execute_dft(plan,d1,d2);
+}
+
+fftw_plan fft_plan_many_dft_wrapper(int rank, const int *n, int howmany,
+                             fftw_complex *in, const int *inembed,
+                             int istride, int idist,
+                             fftw_complex *out, const int *onembed,
+                             int ostride, int odist,
+                             int sign, unsigned flags)
+{
+    return fftw_plan_many_dft(rank, n, howmany, in, inembed, istride, idist,
+                              out, onembed, ostride, odist, sign, flags);
+}
+
+fftwf_plan fft_plan_many_dft_wrapper(int rank, const int *n, int howmany,
+                             fftwf_complex *in, const int *inembed,
+                             int istride, int idist,
+                             fftwf_complex *out, const int *onembed,
+                             int ostride, int odist,
+                             int sign, unsigned flags)
+{
+    return fftwf_plan_many_dft(rank, n, howmany, in, inembed, istride, idist,
+                              out, onembed, ostride, odist, sign, flags);
+}
+

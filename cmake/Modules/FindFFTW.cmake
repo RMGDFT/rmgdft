@@ -24,6 +24,15 @@ if(NOT FFTW_LIBRARIES)
     find_library (FFTW_LIBRARIES NAMES fftw3 HINTS "$ENV{FFTW_LIB}" "$ENV{FFTW_DIR}")
 endif(NOT FFTW_LIBRARIES)
 
+find_library (FFTWF_LIBRARIES NAMES sfftw3)
+if(NOT FFTWF_LIBRARIES)
+	find_library (FFTWF_LIBRARIES NAMES libfftw3f.a HINTS "$ENV{FFTW_LIB}" "$ENV{FFTW_DIR}")
+endif(NOT FFTWF_LIBRARIES)
+
+if(NOT FFTWF_LIBRARIES)
+    find_library (FFTWF_LIBRARIES NAMES fftw3f HINTS "$ENV{FFTW_LIB}" "$ENV{FFTW_DIR}")
+endif(NOT FFTWF_LIBRARIES)
+
 # use libfftw3_mpi.so if you have errors like "fftw_mktensor_4d"
 #find_library (FFTW_MPI_LIBRARIES NAMES libfftw3_mpi.so)
 #find_library (FFTW_MPI_LIBRARIES NAMES fftw3_mpi)
@@ -31,7 +40,7 @@ endif(NOT FFTW_LIBRARIES)
 # handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if
 # all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args (FFTW DEFAULT_MSG FFTW_LIBRARIES FFTW_INCLUDES)
+find_package_handle_standard_args (FFTW DEFAULT_MSG FFTW_LIBRARIES FFTWF_LIBRARIES FFTW_INCLUDES)
 
-mark_as_advanced (FFTW_LIBRARIES FFTW_INCLUDES)
+mark_as_advanced (FFTW_LIBRARIES FFTWF_LIBRARIES FFTW_INCLUDES)
 

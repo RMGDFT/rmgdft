@@ -427,6 +427,7 @@ if(NOT ${FFTW_INCLUDES})
     find_package(FFTW REQUIRED)
     include_directories(${FFTW_INCLUDES})
     list(APPEND RMGLIBS ${FFTW_LIBRARIES})
+    list(APPEND RMGLIBS ${FFTWF_LIBRARIES})
 endif(NOT ${FFTW_INCLUDES})
 
 
@@ -436,6 +437,7 @@ if(NOT RMG_MATH_LIBS)
     find_package(FFTW REQUIRED)
     include_directories(${FFTW_INCLUDES})
     list(APPEND RMGLIBS ${FFTW_LIBRARIES})
+    list(APPEND RMGLIBS ${FFTWF_LIBRARIES})
 
     if(NOT CRAY_XK)
 
