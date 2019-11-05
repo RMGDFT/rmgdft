@@ -41,7 +41,7 @@ private:
 public:
     double stress_tensor[9];
     Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves,
-            std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho);
+            std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore);
 
     void Ewald_term(std::vector<ION> &atoms, std::vector<SPECIES> &species, Lattice &L, Pw &pwaves);
     void Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, Lattice &L);
@@ -50,6 +50,7 @@ public:
     void Hartree_term(double *rho, Pw &pwaves);
     void NonLocal_term(Kpoint<T> **Kpin, std::vector<ION> &atoms, std::vector<SPECIES> &species);
     void Exc_term(double Exc, double *vxc, double *rho);
+    void Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
     ~Stress(void);
 
 };

@@ -48,6 +48,7 @@
 #include "Stress.h"
 #include "AtomicInterpolate.h"
 #include "RmgException.h"
+#include "Functional.h"
 #include "blas.h"
 
 
@@ -60,17 +61,18 @@ template <class T> Stress<T>::~Stress(void)
 }
 
 template Stress<double>::Stress(Kpoint<double> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho);
+        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore);
+
 template Stress<std::complex<double>>::Stress(Kpoint<std::complex<double>> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho);
+        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore);
 template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG, Pw &pwaves, 
-        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho)
+        std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore)
 {
 
-    if(ct.xctype != 0) 
-    {
-        throw RmgFatalException() << "stress only works for LDA now" << __FILE__ << " at line " << __LINE__ << "\n";
-    }
+    //if(ct.xctype != 0) 
+    //{
+    //    throw RmgFatalException() << "stress only works for LDA now" << __FILE__ << " at line " << __LINE__ << "\n";
+    //}
     if(!ct.norm_conserving_pp)
     {
         throw RmgFatalException() << "stress only works for NC pseudopotential now" << __FILE__ << " at line " << __LINE__ << "\n";
@@ -91,8 +93,11 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     RT2 = new RmgTimer("2-Stress: Hartree");
     Hartree_term(rho, pwaves);
     delete RT2;
-    RT2 = new RmgTimer("2-Stress: XC");
+    RT2 = new RmgTimer("2-Stress: XC Local");
     Exc_term(Exc, vxc, rho);
+    delete RT2;
+    RT2 = new RmgTimer("2-Stress: XC gradient");
+    Exc_gradcorr(Exc, vxc, rho, rhocore);
     delete RT2;
     RT2 = new RmgTimer("2-Stress: Ewald");
     Ewald_term(atoms, species, L, pwaves);
@@ -103,12 +108,12 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     for(int i = 0; i < 9; i++) Rmg_L.stress_tensor[i] = stress_tensor[i];
     double zero(0.0);
     int ithree = 3;
-    double b[9], a[9]; // b is the reciprocal vector without 2PI, a^-1
+    double  a[9]; // b is the reciprocal vector without 2PI, a^-1
     for (int i = 0; i < 3; i++)
     {
-        b[0 * 3 + i] = Rmg_L.b0[i];
-        b[1 * 3 + i] = Rmg_L.b1[i];
-        b[2 * 3 + i] = Rmg_L.b2[i];
+       // b[0 * 3 + i] = Rmg_L.b0[i];
+       // b[1 * 3 + i] = Rmg_L.b1[i];
+       // b[2 * 3 + i] = Rmg_L.b2[i];
         a[0 * 3 + i] = Rmg_L.a0[i];
         a[1 * 3 + i] = Rmg_L.a1[i];
         a[2 * 3 + i] = Rmg_L.a2[i];
@@ -242,6 +247,76 @@ template <class T> void Stress<T>::Exc_term(double Exc, double *vxc, double *rho
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_x[i];
 
     if(ct.verbose) print_stress("XC term", stress_tensor_x);
+}
+
+template void Stress<double>::Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
+template void Stress<std::complex<double>>::Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
+template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore)
+{
+    double stress_tensor_xcgrad[9];
+    for(int i = 0; i < 9; i++) stress_tensor_xcgrad[i] = 0.0;
+
+    int grid_ratio = Rmg_G->default_FG_RATIO;
+    int pbasis = Rmg_G->get_P0_BASIS(grid_ratio);
+
+    int fac = 1.0;
+    if(ct.spin_flag ) fac = 2;
+    double *rho_grad = new double[fac*3*pbasis];
+    double *rho_gx = rho_grad;
+    double *rho_gy = rho_grad + pbasis ;
+    double *rho_gz = rho_grad + 2 * pbasis;
+
+    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(grid_ratio) * 
+                Rmg_G->get_NY_GRID(grid_ratio) * Rmg_G->get_NZ_GRID(grid_ratio)));
+
+    double alpha = 1.0;
+    if(ct.spin_flag) alpha = 0.5;
+    double malpha = -alpha;
+    int ione = 1;
+
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.spin_flag );
+
+    // get gradient of rho+rhocore
+    daxpy (&pbasis, &alpha, rhocore, &ione, rho, &ione);
+    ApplyGradient(rho, rho_gx, rho_gy, rho_gz, ct.force_grad_order, "Fine");
+    daxpy (&pbasis, &malpha, rhocore, &ione, rho, &ione);
+
+    for(int i = 0; i < 3; i++)
+    for(int j = 0; j < 3; j++)
+    {
+        for(int idx = 0; idx < pbasis; idx++)
+            stress_tensor_xcgrad[i*3+j] += rho_grad[i*pbasis + idx] * rho_grad[j*pbasis + idx] * F->vxc2[idx]; 
+    }
+
+    if(ct.spin_flag)
+    {
+        //opposite spin's rho is stored in &rho[pbasis];
+        daxpy (&pbasis, &alpha, rhocore, &ione, &rho[pbasis], &ione);
+        double *rho_gx1 = &rho_grad[3*pbasis];
+        double *rho_gy1 = &rho_grad[4*pbasis];
+        double *rho_gz1 = &rho_grad[5*pbasis];
+        ApplyGradient(&rho[pbasis], rho_gx1, rho_gy1, rho_gz1, ct.force_grad_order, "Fine");
+        daxpy (&pbasis, &malpha, rhocore, &ione, &rho[pbasis], &ione);
+
+
+        for(int i = 0; i < 3; i++)
+            for(int j = 0; j < 3; j++)
+            {
+                for(int idx = 0; idx < pbasis; idx++)
+                    stress_tensor_xcgrad[i*3+j] += rho_grad[i*pbasis + idx] * rho_grad[(3 + j) *pbasis + idx] * F->vxc2[idx]; 
+            }
+
+    }
+    delete F;
+
+    for(int i = 0; i < 9; i++) stress_tensor_xcgrad[i] *= vel /Rmg_L.omega;
+//  sum over grid communicator and spin communicator  but no kpoint communicator
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcgrad, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcgrad, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_xcgrad[i];
+
+    if(ct.verbose) print_stress("XC gradcorr", stress_tensor_xcgrad);
 }
 
 template void Stress<double>::Local_term(std::vector<ION> &atoms, 

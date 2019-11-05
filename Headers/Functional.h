@@ -58,6 +58,7 @@ private:
     static bool exx_started;
     double gau_scrlen;
 
+
     void gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
     void gradcorr_spin(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
 
@@ -68,6 +69,8 @@ public:
                 bool gamma_flag);
 
     ~Functional(void);
+
+    double *vxc2, *v2cud;
 
     void set_dft_from_name_rmg(char *newdft_name);
     static const std::string & get_dft_name_rmg(void);
