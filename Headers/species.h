@@ -278,7 +278,7 @@ public:
     Pw *prj_pwave;
 
     /* Point to local BaseGrid object */
-    void *OG;
+    BaseGrid *OG;
     
 };
 #endif
