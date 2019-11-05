@@ -132,7 +132,7 @@ void InitPseudo ()
         if(ct.localize_projectors)
         {
             // Grid object local to this MPI process
-            sp->OG = (void *)new BaseGrid(sp->nldim, sp->nldim, sp->nldim, 1, 1, 1, 0, 1);
+            sp->OG = new BaseGrid(sp->nldim, sp->nldim, sp->nldim, 1, 1, 1, 0, 1);
             BaseGrid *OG = (BaseGrid *)sp->OG;
             OG->set_rank(0, pct.my_comm);
 

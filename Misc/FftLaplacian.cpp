@@ -40,12 +40,12 @@
 
 void FftLaplacianCoarse(float *x, float *lapx)
 {
-   throw RmgFatalException() << "Float version not implemented yet in FftLaplacian "<< " at line " << __LINE__ << "\n";
+   FftLaplacian(x, lapx, *coarse_pwaves);
 }
 
 void FftLaplacianCoarse(std::complex<float> *x, std::complex<float> *lapx)
 {
-   throw RmgFatalException() << "Float version not implemented yet in FftLaplacian "<< " at line " << __LINE__ << "\n";
+   FftLaplacian(x, lapx, *coarse_pwaves);
 }
 
 void FftLaplacianCoarse(double *x, double *lapx)
@@ -78,6 +78,30 @@ void FftLaplacianFine(std::complex<double> *x, std::complex<double> *lapx)
     FftLaplacian(x, lapx, *fine_pwaves);
 }
 
+void FftLaplacian(float *x, float *lapx, Pw &pwaves)
+{
+
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double scale = tpiba * tpiba / (double)pwaves.global_basis;
+    int isize = pwaves.pbasis;
+
+    std::complex<float> *tx = new std::complex<float>[isize];
+
+    for(int ix = 0;ix < isize;ix++) {
+        tx[ix] = std::complex<float>(x[ix], 0.0);
+    }
+
+    pwaves.FftForward(tx, tx);
+
+    for(int ig=0;ig < isize;ig++) tx[ig] = -tx[ig] * (float)pwaves.gmags[ig];
+
+    pwaves.FftInverse(tx, tx);
+
+    for(int ix=0;ix < isize;ix++) lapx[ix] = (float)scale * (float)std::real(tx[ix]);
+    delete [] tx;
+
+}
+
 void FftLaplacian(double *x, double *lapx, Pw &pwaves)
 {
 
@@ -99,6 +123,31 @@ void FftLaplacian(double *x, double *lapx, Pw &pwaves)
     pwaves.FftInverse(tx, tx);
 
     for(int ix=0;ix < isize;ix++) lapx[ix] = scale * std::real(tx[ix]);
+
+
+    delete [] tx;
+}
+
+void FftLaplacian(std::complex<float> *x, std::complex<float> *lapx, Pw &pwaves)
+{
+
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double scale = tpiba * tpiba / (double)pwaves.global_basis;
+    int isize = pwaves.pbasis;
+
+    std::complex<float> *tx = new std::complex<float>[isize];
+
+    for(int ix = 0;ix < isize;ix++) {
+        tx[ix] = x[ix];
+    }
+
+    pwaves.FftForward(tx, tx);
+
+    for(int ig=0;ig < isize;ig++) tx[ig] = -(float)pwaves.gmags[ig] * tx[ig];
+
+    pwaves.FftInverse(tx, tx);
+
+    for(int ix=0;ix < isize;ix++) lapx[ix] = (float)scale * tx[ix];
 
 
     delete [] tx;

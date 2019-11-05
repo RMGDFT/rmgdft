@@ -38,12 +38,12 @@
 
 void FftGradientCoarse(float *x, float *fgx, float *fgy, float *fgz)
 {
-    throw RmgFatalException() << "Float version not implemented yet in FftGradient "<< " at line " << __LINE__ << "\n";
+    FftGradient(x, fgx, fgy, fgz, *coarse_pwaves);
 }
 
 void FftGradientCoarse(std::complex<float> *x, std::complex<float> *fgx, std::complex<float> *fgy, std::complex<float> *fgz)
 {
-    throw RmgFatalException() << "Float version not implemented yet in FftGradient "<< " at line " << __LINE__ << "\n";
+    FftGradient(x, fgx, fgy, fgz, *coarse_pwaves);
 }
 
 void FftGradientCoarse(double *x, double *fgx, double *fgy, double *fgz)
@@ -64,6 +64,50 @@ void FftGradientFine(double *x, double *fgx, double *fgy, double *fgz)
 void FftGradientFine(std::complex<double> *x, std::complex<double> *fgx, std::complex<double> *fgy, std::complex<double> *fgz)
 {
     FftGradient(x, fgx, fgy, fgz, *fine_pwaves);
+}
+
+void FftGradient(float *x, float *fgx, float *fgy, float *fgz, Pw &pwaves)
+{
+
+    float tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    float scale = 1.0 / (float)pwaves.global_basis;
+    int isize = pwaves.pbasis;
+
+    std::complex<float> czero(0.0,0.0);
+    std::complex<float> ci(0.0,1.0);
+    std::complex<float> *tx = new std::complex<float>[isize];
+    std::complex<float> *cgx = new std::complex<float>[isize];
+
+    for(int ix = 0;ix < isize;ix++) {
+        tx[ix] = std::complex<float>(x[ix], 0.0);
+    }
+
+    pwaves.FftForward(tx, tx);
+
+    double gcut = ct.filter_factor*pwaves.gcut;
+
+    for(int icar=0;icar < 3;icar++) {
+
+        for(int ig=0;ig < isize;ig++) {
+            //if(pwaves.gmask[ig]) 
+            if(pwaves.gmags[ig] < gcut)
+                cgx[ig] = ci * tpiba * (float)pwaves.g[ig].a[icar] * tx[ig];
+            else
+                cgx[ig] = czero;
+        }
+
+        pwaves.FftInverse(cgx, cgx);
+
+        float *ts;
+        if(icar == 0) ts = fgx;
+        if(icar == 1) ts = fgy;
+        if(icar == 2) ts = fgz;
+
+        for(int ix=0;ix < isize;ix++) ts[ix] = scale * std::real(cgx[ix]);
+    }
+
+    delete [] cgx;
+    delete [] tx;
 }
 
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
@@ -104,6 +148,50 @@ void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves)
         if(icar == 2) ts = fgz;
 
         for(int ix=0;ix < isize;ix++) ts[ix] = scale * std::real(cgx[ix]);
+    }
+
+    delete [] cgx;
+    delete [] tx;
+}
+
+void FftGradient(std::complex<float> *x, std::complex<float> *fgx, std::complex<float> *fgy, std::complex<float> *fgz, Pw &pwaves)
+{
+
+    float tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    float scale = 1.0 / (float)pwaves.global_basis;
+    int isize = pwaves.pbasis;
+
+    std::complex<float> czero(0.0,0.0);
+    std::complex<float> ci(0.0,1.0);
+    std::complex<float> *tx = new std::complex<float>[isize];
+    std::complex<float> *cgx = new std::complex<float>[isize];
+
+    for(int ix = 0;ix < isize;ix++) {
+        tx[ix] = x[ix];
+    }
+
+    pwaves.FftForward(tx, tx);
+
+    double gcut = ct.filter_factor*pwaves.gcut;
+
+    for(int icar=0;icar < 3;icar++) {
+
+        for(int ig=0;ig < isize;ig++) {
+            //if(pwaves.gmask[ig]) 
+            if(pwaves.gmags[ig] < gcut)
+                cgx[ig] = ci * tpiba * (float)pwaves.g[ig].a[icar] * tx[ig];
+            else
+                cgx[ig] = czero;
+        }
+
+        pwaves.FftInverse(cgx, cgx);
+
+        std::complex<float> *ts;
+        if(icar == 0) ts = fgx;
+        if(icar == 1) ts = fgy;
+        if(icar == 2) ts = fgz;
+
+        for(int ix=0;ix < isize;ix++) ts[ix] = scale * cgx[ix];
     }
 
     delete [] cgx;

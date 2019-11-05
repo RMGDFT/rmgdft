@@ -193,7 +193,7 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
         {
             // Grid object local to this MPI process
             delete sp->OG;
-            sp->OG = (void *)new BaseGrid(sp->nldim, sp->nldim, sp->nldim, 1, 1, 1, 0, 1);
+            sp->OG = new BaseGrid(sp->nldim, sp->nldim, sp->nldim, 1, 1, 1, 0, 1);
             BaseGrid *OG = (BaseGrid *)sp->OG;
             OG->set_rank(0, pct.my_comm);
 
