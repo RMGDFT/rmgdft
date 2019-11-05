@@ -100,6 +100,10 @@ public:
     void FftForward (std::complex<double> * in, std::complex<double> * out);
     void FftInverse (std::complex<double> * in, std::complex<double> * out);
 
+    void FftForward (float * in, std::complex<float> * out);
+    void FftForward (std::complex<float> * in, std::complex<float> * out);
+    void FftInverse (std::complex<float> * in, std::complex<float> * out);
+
 
     ~Pw(void);
 

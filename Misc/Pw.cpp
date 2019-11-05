@@ -288,6 +288,16 @@ void Pw::FftForward (double * in, std::complex<double> * out)
   delete [] buf;
 }
 
+void Pw::FftForward (float * in, std::complex<float> * out)
+{
+  double *bufin = new double[pbasis];
+  std::complex<double> *bufout = new std::complex<double>[pbasis];
+  for(int i = 0;i < pbasis;i++) bufin[i] = (double)in[i];
+  Pw::FftForward(bufin, bufout);
+  for(int i = 0;i < pbasis;i++) out[i] = std::complex<float>((float)std::real(bufout[i]), (float)std::imag(bufout[i]));
+  delete [] bufout;
+  delete [] bufin;
+}
 
 void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
 {
@@ -316,6 +326,16 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
           fft_3d((fftw_complex *)in, (fftw_complex *)out, -1, distributed_plan[tid]);
       }
   }
+}
+
+
+void Pw::FftForward (std::complex<float> * in, std::complex<float> * out)
+{
+  std::complex<double> *buf = new std::complex<double>[pbasis];
+  for(int i = 0;i < pbasis;i++) buf[i] = std::complex<double>((double)std::real(in[i]), (double)std::imag(in[i]));
+  Pw::FftForward(buf, buf);
+  for(int i = 0;i < pbasis;i++) out[i] = std::complex<float>((float)std::real(buf[i]), (float)std::imag(buf[i]));
+  delete [] buf;
 }
 
 
@@ -358,6 +378,14 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
   }
 }
 
+void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out)
+{
+  std::complex<double> *buf = new std::complex<double>[pbasis];
+  for(int i = 0;i < pbasis;i++) buf[i] = std::complex<double>((double)std::real(in[i]), (double)std::imag(in[i]));
+  Pw::FftInverse(buf, buf);
+  for(int i = 0;i < pbasis;i++) out[i] = std::complex<float>((float)std::real(buf[i]), (float)std::imag(buf[i]));
+  delete [] buf;
+}
 
 Pw::~Pw(void)
 {

@@ -58,7 +58,9 @@ void FftGradientFine(std::complex<float> *x, std::complex<float> *fgx, std::comp
 void FftGradientFine(double *x, double *fgx, double *fgy, double *fgz);
 void FftGradientFine(std::complex<double> *x, std::complex<double> *fgx, std::complex<double> *fgy, std::complex<double> *fgz);
 
+void FftGradient(float *x, float *fgx, float *fgy, float *fgz, Pw &pwaves);
 void FftGradient(double *x, double *fgx, double *fgy, double *fgz, Pw &pwaves);
+void FftGradient(std::complex<float> *x, std::complex<float> *fgx, std::complex<float> *fgy, std::complex<float> *fgz, Pw &pwaves);
 void FftGradient(std::complex<double> *x, std::complex<double> *fgx, std::complex<double> *fgy, std::complex<double> *fgz, Pw &pwaves);
 
 
@@ -72,6 +74,8 @@ void FftLaplacianFine(std::complex<float> *x, std::complex<float> *lapx);
 void FftLaplacianFine(double *x, double *lapx);
 void FftLaplacianFine(std::complex<double> *x, std::complex<double> *lapx);
 
+void FftLaplacian(float *x, float *lapx, Pw &pwaves);
+void FftLaplacian(std::complex<float> *x, std::complex<float> *lapx, Pw &pwaves);
 void FftLaplacian(double *x, double *lapx, Pw &pwaves);
 void FftLaplacian(std::complex<double> *x, std::complex<double> *lapx, Pw &pwaves);
 
