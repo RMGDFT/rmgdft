@@ -543,6 +543,9 @@ void LaplacianCoeff::GenerateList(const std::vector<GridPoint>&  points)
     coeff_list.relative_index.push_back(0);
     this->coeff_and_index.insert(this->coeff_and_index.begin(), coeff_list);
 
+    // Sort ascending to make application more efficient
+    for(auto coeff:LC->coeff_and_index) std::sort(std::begin(coeff.relative_index), std::end(coeff.relative_index));
+
     if(iprint)
     {
         std::cout << "Laplacian coeff"<< std::endl;
@@ -599,6 +602,9 @@ void LaplacianCoeff::GenerateList(const std::vector<GridPoint>&  points)
         coeff_list.relative_index.push_back(0);
         this->gx_coeff_and_index.insert(this->gx_coeff_and_index.begin(), coeff_list);
     }
+
+    // Sort ascending to make application more efficient
+    for(auto coeff:LC->gx_coeff_and_index) std::sort(std::begin(coeff.relative_index), std::end(coeff.relative_index));
 
     if(iprint)
     {
@@ -657,6 +663,9 @@ void LaplacianCoeff::GenerateList(const std::vector<GridPoint>&  points)
         this->gy_coeff_and_index.insert(this->gy_coeff_and_index.begin(), coeff_list);
     }
 
+    // Sort ascending to make application more efficient
+    for(auto coeff:LC->gy_coeff_and_index) std::sort(std::begin(coeff.relative_index), std::end(coeff.relative_index));
+
     if(iprint)
     {
         std::cout << "gradient_y coeff"<< std::endl;
@@ -713,6 +722,9 @@ void LaplacianCoeff::GenerateList(const std::vector<GridPoint>&  points)
         coeff_list.relative_index.push_back(0);
         this->gz_coeff_and_index.insert(this->gz_coeff_and_index.begin(), coeff_list);
     }
+
+    // Sort ascending to make application more efficient
+    for(auto coeff:LC->gz_coeff_and_index) std::sort(std::begin(coeff.relative_index), std::end(coeff.relative_index));
 
     if(iprint)
     {
