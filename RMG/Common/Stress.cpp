@@ -106,6 +106,9 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     RT2 = new RmgTimer("2-Stress: XC gradient");
     Exc_gradcorr(Exc, vxc, rho, rhocore);
     delete RT2;
+    RT2 = new RmgTimer("2-Stress: XC nlcc");
+    Exc_Nlcc(vxc, rhocore);
+    delete RT2;
     RT2 = new RmgTimer("2-Stress: Ewald");
     Ewald_term(atoms, species, L, pwaves);
     delete RT2;
@@ -949,6 +952,56 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
 
 }
 
+template void Stress<double>::Exc_Nlcc(double *vxc, double *rhocore);
+template void Stress<std::complex<double>>::Exc_Nlcc(double *vxc, double *rhocore);
+template <class T> void Stress<T>::Exc_Nlcc(double *vxc, double *rhocore)
+{
+    double stress_tensor_xcc[9];
+    for(int i = 0; i < 9; i++) stress_tensor_xcc[i] = 0.0;
+
+    int grid_ratio = Rmg_G->default_FG_RATIO;
+    int pbasis = Rmg_G->get_P0_BASIS(grid_ratio);
+
+    int fac = 1.0;
+    if(ct.spin_flag ) fac = 2;
+    double *vxc_grad = new double[fac*3*pbasis];
+    double *vxc_gx = vxc_grad;
+    double *vxc_gy = vxc_grad + pbasis ;
+    double *vxc_gz = vxc_grad + 2 * pbasis;
+    double *rhocore_stress = new double[fac*3*pbasis];
+
+    double vel = Rmg_L.get_omega() / ((double)(Rmg_G->get_NX_GRID(grid_ratio) * 
+                Rmg_G->get_NY_GRID(grid_ratio) * Rmg_G->get_NZ_GRID(grid_ratio)));
+
+    double *dummy = NULL;
+    InitLocalObject(rhocore_stress,dummy, ATOMIC_RHOCORE_STRESS, false); 
+    double alpha = vel;
+    // for spin-polarized case, the rhocore should be split into half+half
+    if(ct.spin_flag) alpha = 0.5 * vel;
+    double zero = 0.0;
+    int ione = 1;
+
+    ApplyGradient(vxc, vxc_gx, vxc_gy, vxc_gz, ct.force_grad_order, "Fine");
+
+    int ithree = 3;
+    dgemm("T","N", &ithree, &ithree, &pbasis, &alpha, vxc_grad, &pbasis, rhocore_stress, &pbasis, &zero, stress_tensor_xcc, &ithree);
+
+    double diag_term = 0.0;
+    for(int idx = 0; idx < pbasis; idx++) diag_term += alpha * vxc[idx] * rhocore[idx];
+
+    for(int i = 0; i < 3; i++) stress_tensor_xcc[i*3+i] += diag_term;
+
+    for(int i = 0; i < 9; i++) stress_tensor_xcc[i] *= 1.0 /Rmg_L.omega;
+    //  sum over grid communicator and spin communicator  but no kpoint communicator
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcc, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, stress_tensor_xcc, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_xcc[i];
+
+    if(ct.verbose) print_stress("XC Nlcc", stress_tensor_xcc);
+    delete [] vxc_grad;
+    delete [] rhocore_stress;
+}
+
 static void print_stress(char *w, double *stress_term)
 {
     if(pct.imgpe == 0)
@@ -966,3 +1019,4 @@ static void print_stress(char *w, double *stress_term)
         fprintf(ct.logfile, "\n");
     }
 }
+

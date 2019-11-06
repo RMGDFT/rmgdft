@@ -52,6 +52,7 @@ public:
     void NonLocalQfunc_term(Kpoint<T> **Kpin, std::vector<ION> &atoms, std::vector<SPECIES> &species, double *vtot);
     void Exc_term(double Exc, double *vxc, double *rho);
     void Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
+    void Exc_Nlcc(double *vxc, double *rhocore);
     ~Stress(void);
 
 };

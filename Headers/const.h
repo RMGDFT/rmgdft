@@ -226,6 +226,7 @@
 #define ATOMIC_RHO       1
 #define ATOMIC_RHOCOMP   2
 #define ATOMIC_RHOCORE   3
+#define ATOMIC_RHOCORE_STRESS   4
 
 // Pseudopotential file formats
 #define UPF_FORMAT  0

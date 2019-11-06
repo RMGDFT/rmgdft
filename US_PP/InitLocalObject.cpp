@@ -173,6 +173,11 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
     // Zero out sumobject
     for(int idx = 0; idx < FP0_BASIS; idx++) sumobject[idx] = 0.0;
+    if(object_type == ATOMIC_RHOCORE_STRESS)
+    {
+        for(int idx = 0; idx < 3* FP0_BASIS; idx++) sumobject[idx] = 0.0;
+    }
+
 
     if(object_type == ATOMIC_RHOCOMP) {
         int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
@@ -239,11 +244,12 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                             {
 
                                 int idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
-                                double x[3];
+                                double x[3], cx[3];
                                 x[0] = ix * hxxgrid - iptr->xtal[0];
                                 x[1] = iy * hyygrid - iptr->xtal[1];
                                 x[2] = iz * hzzgrid - iptr->xtal[2];
                                 double r = Rmg_L.metric (x);
+                                Rmg_L.to_cartesian(x, cx);
 
                                 if(r > sp->lradius) continue;
                                 double t1;
@@ -256,7 +262,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
                                     case ATOMIC_RHO:
                                         t1= AtomicInterpolateInline (&sp->arho_lig[0], r);
-                           // if(pct.gridpe == 0) printf("\n ffff %d %d %d %e %e", ix, iy, iz, r, t1);
+                                        // if(pct.gridpe == 0) printf("\n ffff %d %d %d %e %e", ix, iy, iz, r, t1);
                                         break;
 
                                     case ATOMIC_RHOCOMP:
@@ -273,11 +279,21 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                             t1 = 0.0;
                                         }
                                         break;
+                                    case ATOMIC_RHOCORE_STRESS: 
+                                        if(sp->nlccflag) 
+                                        {
+                                            t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
+                                        }
+                                        else
+                                        {
+                                            t1 = 0.0;
+                                        }
+                                        break;
 
                                     default:
                                         throw RmgFatalException() << "Undefined local object type" << 
-                                               " in " << __FILE__ << " at line " << __LINE__ << "\n";
-        
+                                            " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
                                 }
 
                                 if( (ct.spin_flag == 1) && (object_type == ATOMIC_RHO) && !compute_lobject)
@@ -286,6 +302,12 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                         sumobject[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
                                     else
                                         sumobject[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
+                                }
+                                else if(object_type == ATOMIC_RHOCORE_STRESS)
+                                {
+                                    sumobject[0*FP0_BASIS + idx] += t1* cx[0];
+                                    sumobject[1*FP0_BASIS + idx] += t1* cx[1];
+                                    sumobject[2*FP0_BASIS + idx] += t1* cx[2];
                                 }
                                 else
                                 {
