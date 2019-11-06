@@ -51,6 +51,10 @@
 #include "Functional.h"
 #include "blas.h"
 
+#include "rmg_mangling.h"
+#define get_inlc                RMG_FC_MODULE(funct,get_inlc,mod_FUNCT,GET_INLC)
+
+extern "C" int get_inlc(void);
 
 static void print_stress(char *w, double *stress_term);
 
@@ -69,14 +73,11 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
         std::vector<ION> &atoms, std::vector<SPECIES> &species, double Exc, double *vxc, double *rho, double *rhocore, double *veff)
 {
 
-    //if(ct.xctype != 0) 
-    //{
-    //    throw RmgFatalException() << "stress only works for LDA now" << __FILE__ << " at line " << __LINE__ << "\n";
-    //}
-   // if(!ct.norm_conserving_pp)
-   // {
-  //      throw RmgFatalException() << "stress only works for NC pseudopotential now" << __FILE__ << " at line " << __LINE__ << "\n";
-   // }
+    int inlc = get_inlc();
+    if(inlc !=0) 
+    {
+        throw RmgFatalException() << "stress does not work for vdw now" << __FILE__ << " at line " << __LINE__ << "\n";
+    }
 
     RmgTimer *RT1 = new RmgTimer("2-Stress");
     RmgTimer *RT2;
@@ -979,7 +980,6 @@ template <class T> void Stress<T>::Exc_Nlcc(double *vxc, double *rhocore)
     // for spin-polarized case, the rhocore should be split into half+half
     if(ct.spin_flag) alpha = 0.5 * vel;
     double zero = 0.0;
-    int ione = 1;
 
     ApplyGradient(vxc, vxc_gx, vxc_gy, vxc_gz, ct.force_grad_order, "Fine");
 
