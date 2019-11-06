@@ -56,6 +56,16 @@ void FftGradientCoarse(std::complex<double> *x, std::complex<double> *fgx, std::
     FftGradient(x, fgx, fgy, fgz, *coarse_pwaves);
 }
 
+void FftGradientFine(float *x, float *fgx, float *fgy, float *fgz)
+{
+    FftGradient(x, fgx, fgy, fgz, *fine_pwaves);
+}
+
+void FftGradientFine(std::complex<float> *x, std::complex<float> *fgx, std::complex<float> *fgy, std::complex<float> *fgz)
+{
+    FftGradient(x, fgx, fgy, fgz, *fine_pwaves);
+}
+
 void FftGradientFine(double *x, double *fgx, double *fgy, double *fgz)
 {
     FftGradient(x, fgx, fgy, fgz, *fine_pwaves);
