@@ -19,39 +19,13 @@
 #include "fftw3.h"
 
 
-// User-settable FFT precision
-
-// FFT_PRECISION = 1 is single-precision complex (4-byte real, 4-byte imag)
-// FFT_PRECISION = 2 is double-precision complex (8-byte real, 8-byte imag)
-#ifdef FFT_SINGLE
-#define FFT_PRECISION 1
-#else
-#define FFT_PRECISION 2
-#endif
-
 #define FFT_FFTW 1
 // set default fftw library. switch to FFT_FFTW3 when convenient.
 #ifdef FFT_FFTW
 #define FFT_FFTW3
 #endif
 
-// -------------------------------------------------------------------------
 
-// Data types for single-precision complex
-
-#if FFT_PRECISION == 1
-
-#define FFTW_API(function)  fftwf_ ## function
-
-// -------------------------------------------------------------------------
-
-// Data types for double-precision complex
-
-#elif FFT_PRECISION == 2
-
-#define FFTW_API(function)  fftw_ ## function
-
-#endif
 
 // -------------------------------------------------------------------------
 

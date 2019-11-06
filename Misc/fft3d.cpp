@@ -245,6 +245,9 @@ template <typename FFT_DATA, typename FFT_SCALAR> struct fft_plan_3d<FFT_DATA, F
 
   MPI_Allreduce(&flag,&remapflag,1,MPI_INT,MPI_MAX,comm);
 
+  int FFT_PRECISION = 2;
+  if(typeid(FFT_SCALAR) == typeid(float)) FFT_PRECISION = 1;
+
   if (remapflag == 0) {
     first_ilo = in_ilo;
     first_ihi = in_ihi;
@@ -260,6 +263,7 @@ template <typename FFT_DATA, typename FFT_SCALAR> struct fft_plan_3d<FFT_DATA, F
     first_jhi = (ip1+1)*nmid/np1 - 1;
     first_klo = ip2*nslow/np2;
     first_khi = (ip2+1)*nslow/np2 - 1;
+
     plan->pre_plan =
       remap_3d_create_plan<FFT_SCALAR>(comm,in_ilo,in_ihi,in_jlo,in_jhi,in_klo,in_khi,
                            first_ilo,first_ihi,first_jlo,first_jhi,
