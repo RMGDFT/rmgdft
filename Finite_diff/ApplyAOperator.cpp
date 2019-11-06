@@ -61,8 +61,18 @@ template double ApplyAOperator<std::complex<double> >(Lattice *, TradeImages *, 
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, DataType *gz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
 {
-//FftLaplacianCoarse((double *)a, (double *)b);    
-//return -136.666667;
+    if(ct.kohn_sham_ke_fft)
+    {
+        FftLaplacianCoarse(a, b);    
+        if(!ct.is_gamma) FftGradientCoarse(a, gx, gy, gz);
+       
+        FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+        DataType *ptr = NULL;
+        // When ptr=NULL this does not do the finite differencing but just
+        // returns the value of the diagonal element.
+        double fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        return fd_diag;
+    }
 
     double cc = 0.0;
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
@@ -137,6 +147,7 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
     }
 
     if(alloc > 110592) delete [] rptr;
+
     return cc;
 
 }
@@ -206,6 +217,17 @@ template <typename DataType>
 double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
 {
 
+    if(ct.kohn_sham_ke_fft)
+    {
+        FftLaplacianCoarse(a, b);
+        FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+        DataType *ptr = NULL;
+        // When ptr=NULL this does not do the finite differencing but just
+        // returns the value of the diagonal element.
+        double fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        return fd_diag;
+    }
+
     if(ct.discretization == MEHRSTELLEN_DISCRETIZATION) {
 
         return CPP_app_cil_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
@@ -213,8 +235,6 @@ double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int
     }
     else if(ct.discretization == CENTRAL_DISCRETIZATION) {
 
-//FftLaplacianCoarse((double *)a, (double *)b);    
-//return -136.666667;
         double cc = CPP_app_del2_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, ct.alt_laplacian);
         return cc;
 

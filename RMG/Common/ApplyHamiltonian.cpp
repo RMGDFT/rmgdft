@@ -54,7 +54,27 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
     double fd_diag;
 
     // Apply Laplacian to psi
-    fd_diag = ApplyLaplacian (psi, h_psi, ct.kohn_sham_fd_order, "Coarse");
+    if(ct.kohn_sham_ke_fft)
+    {
+        KpointType *ptr = NULL;
+        int density = 1;
+        int dimx = kptr->G->get_PX0_GRID(density);
+        int dimy = kptr->G->get_PY0_GRID(density);
+        int dimz = kptr->G->get_PZ0_GRID(density);
+        double gridhx = kptr->G->get_hxgrid(density);
+        double gridhy = kptr->G->get_hygrid(density);
+        double gridhz = kptr->G->get_hzgrid(density);
+        FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+        FftLaplacianCoarse(psi, h_psi);
+        // When ptr=NULL this does not do the finite differencing but just
+        // returns the value of the diagonal element.
+        fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+    }
+    else
+    {
+        fd_diag = ApplyLaplacian (psi, h_psi, ct.kohn_sham_fd_order, "Coarse");
+    }
+
 
     // Factor of -0.5 and add in potential terms
     for(int idx = 0;idx < pbasis;idx++){ 
@@ -69,7 +89,11 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
         KpointType *gy = new KpointType[pbasis];
         KpointType *gz = new KpointType[pbasis];
 
-        ApplyGradient (psi, gx, gy, gz, APP_CI_EIGHT, "Coarse");
+
+        if(ct.kohn_sham_ke_fft)
+            FftGradientCoarse(psi, gx, gy, gz);
+        else
+            ApplyGradient (psi, gx, gy, gz, APP_CI_EIGHT, "Coarse");
 
         std::complex<double> I_t(0.0, 1.0);
         for(int idx = 0;idx < pbasis;idx++) {
