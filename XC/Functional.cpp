@@ -149,6 +149,11 @@ Functional::Functional (
         vxc2 = new double[2 * this->pbasis];
         v2cud = new double[this->pbasis];
     }
+    else
+    {
+        vxc2 = NULL;
+        v2cud = NULL;
+    }
     
 }
 
@@ -160,8 +165,8 @@ Functional::~Functional(void)
 
     if(this->dft_is_gradient_rmg()) 
     {
-        delete [] vxc2;
-        delete [] v2cud;
+        if(vxc2) delete [] vxc2;
+        if(v2cud) delete [] v2cud;
     }
 
 }
