@@ -87,8 +87,12 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         }
 
     }
+
+    ct.FOCK = 0.0;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     { 
+
+        RMSdV.clear();
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
         {
@@ -170,7 +174,11 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         {
             F->start_exx_rmg();
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+            {
                 Exx_scf[kpt]->Vexx(Kptr[kpt]->vexx);
+                ct.FOCK = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
+printf("FFFFFFFFF  %f\n", ct.FOCK);
+            }
         }
     }
 

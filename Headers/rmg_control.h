@@ -531,6 +531,7 @@ public:
     double vtxc;
     double NL;
     double II;
+    double FOCK;
     double TOTAL;
 
     /* fermi energy */

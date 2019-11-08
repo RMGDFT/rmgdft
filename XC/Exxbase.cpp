@@ -203,12 +203,29 @@ template <> void Exxbase<double>::Vexx(double *vexx)
 
 }
 
+template <> double Exxbase<double>::Exxenergy(double *vexx)
+{
+    double energy = 0.0;
+    for(int st=0;st < nstates;st++)
+    {
+        for(int i=0;i < pbasis;i++) energy += occ[st]*vexx[st*pbasis + i]*psi[st*pbasis + i];
+    }
+    energy = energy * this->L.get_omega() / (double)this->G.get_GLOBAL_BASIS(1);
+    MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
+
+    return energy;
+}
 
 template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx)
 {
     RmgTimer RT0("5-Functional: Exx potential");
     rmg_error_handler (__FILE__,__LINE__,"Exx potential not programmed for non-gamma yet. Terminating.");
 }
+
+template <> double Exxbase<std::complex<double>>::Exxenergy(std::complex<double> *vexx)
+{
+}
+
 template <> void Exxbase<std::complex<double>>::Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end)
 {
 }
