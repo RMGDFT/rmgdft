@@ -130,6 +130,7 @@ public:
     ~Exxbase(void);
 
     void Vexx(T *vexx);
+    double Exxenergy(T *vexx);
     void Vexx_integrals(std::string &ifile);
     void Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end);
     void WriteWfsToSingleFile(void);

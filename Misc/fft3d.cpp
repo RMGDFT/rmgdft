@@ -101,15 +101,8 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
     theplan=plan->plan_fast_forward;
   else
     theplan=plan->plan_fast_backward;
-  if(typeid(FFT_SCALAR) == typeid(float))
-  {
-      fftwf_execute_dft((fftwf_plan)theplan,(float (*)[2])data,(float (*)[2])data);
-  }
-  else
-  {
-      fftw_execute_dft((fftw_plan)theplan,(double (*)[2])data,(double (*)[2])data);
-  }
-  //fftw_execute_plan_wrapper(theplan,data,data);
+
+  fftw_execute_plan_wrapper(theplan,data,data);
 
   // 1st mid-remap to prepare for 2nd FFTs
   // copy = loc for remap result
@@ -125,15 +118,8 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
     theplan=plan->plan_mid_forward;
   else
     theplan=plan->plan_mid_backward;
-  if(typeid(FFT_SCALAR) == typeid(float))
-  {
-      fftwf_execute_dft((fftwf_plan)theplan,(float (*)[2])data,(float (*)[2])data);
-  }
-  else
-  {
-      fftw_execute_dft((fftw_plan)theplan,(double (*)[2])data,(double (*)[2])data);
-  }
-  //fftw_execute_plan_wrapper(theplan,data,data);
+
+  fftw_execute_plan_wrapper(theplan,data,data);
 
   // 2nd mid-remap to prepare for 3rd FFTs
   // copy = loc for remap result
@@ -149,15 +135,8 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
     theplan=plan->plan_slow_forward;
   else
     theplan=plan->plan_slow_backward;
-  if(typeid(FFT_SCALAR) == typeid(float))
-  {
-      fftwf_execute_dft((fftwf_plan)theplan,(float (*)[2])data,(float (*)[2])data);
-  }
-  else
-  {
-      fftw_execute_dft((fftw_plan)theplan,(double (*)[2])data,(double (*)[2])data);
-  }
-  //fftw_execute_plan_wrapper(theplan,data,data);
+
+  fftw_execute_plan_wrapper(theplan,data,data);
 
   // post-remap to put data in output format if needed
   // destination is always out
@@ -610,16 +589,21 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_1d_only(FFT_DATA *dat
     theplan=plan->plan_fast_forward;
   else
     theplan=plan->plan_fast_backward;
+
   fftw_execute_plan_wrapper(theplan,data,data);
+
   if (flag == -1)
     theplan=plan->plan_mid_forward;
   else
     theplan=plan->plan_mid_backward;
+
   fftw_execute_plan_wrapper(theplan,data,data);
+
   if (flag == -1)
     theplan=plan->plan_slow_forward;
   else
     theplan=plan->plan_slow_backward;
+
   fftw_execute_plan_wrapper(theplan,data,data);
 
   // scaling if required

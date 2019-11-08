@@ -54,8 +54,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
              double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr, bool compute_forces)
 {
 
-    bool CONVERGED;
+    bool CONVERGED = false;
     static std::vector<double> RMSdV;
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
 
     int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
     double *vh_in = new double[FP0_BASIS];
@@ -67,82 +68,121 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     double step_time;
     double elapsed_time;
 
-    for (ct.scf_steps = 0, CONVERGED = false;
-            ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
+    int outer_steps = 1;
+    std::vector<Exxbase<OrbitalType> *> Exx_scf;
+    Exx_scf.resize(ct.num_kpts_pe);
+    if(ct.xc_is_hybrid)
     {
-
-
-
-        /* perform a single self-consistent step */
-        step_time = my_crtc ();
-        CONVERGED = Scf (vxc, vxc_in, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
-        step_time = my_crtc () - step_time;
-
-        // Save data to file for future restart at checkpoint interval if this is a quench run.
-        // For Relaxation and molecular dynamics we save at the end of each ionic step.
-        if (ct.checkpoint)
-            if ((ct.scf_steps % ct.checkpoint == 0) && (ct.forceflag == MD_QUENCH))
-                WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
-
-        /* output the eigenvalues with occupations */
-        if (ct.write_eigvals_period)
+        outer_steps = ct.max_exx_steps;
+        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
         {
-            if (ct.scf_steps % ct.write_eigvals_period == 0)
-            {
-                if (pct.imgpe == 0)
-                {
-                    OutputEigenvalues (Kptr, 0, ct.scf_steps);
-                    rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
-                }
-            }
-        }
+            std::vector<double> occs;
+            occs.resize(Kptr[kpt]->nstates);
+            for(int i=0;i < Kptr[kpt]->nstates;i++) occs[i] = Kptr[kpt]->Kstates[i].occupation[0];
 
+            Exx_scf[kpt] = new Exxbase<OrbitalType>(*Kptr[kpt]->G, *Kptr[kpt]->L, "tempwave", Kptr[kpt]->nstates, occs.data(),
+                Kptr[kpt]->orbital_storage, ct.exx_mode);
 
-        /*Perform charge analysis if requested*/
-        if (ct.charge_analysis_period)
-        {
-            if (ct.scf_steps % ct.charge_analysis_period == 0)
-            {
-                if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
-                {
-                    double timex = my_crtc ();
-                    Vdd(rho);
-                    WriteChargeAnalysis();
-                    rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
-                }
-            }
-        }
-
-#if PLPLOT_LIBS
-        if(pct.imgpe == 0) {
-            std::vector<double> x;
-            std::string ConvergencePlot(ct.basename);
-            ConvergencePlot = ConvergencePlot + ".rmsdv.png";
-            std::string ConvergenceTitle("RMG convergence:");
-            if(CONVERGED) {
-                ConvergenceTitle = ConvergenceTitle + " quench completed.";
-            }
-            else {
-                ConvergenceTitle = ConvergenceTitle + " quenching electrons.";
-            }
-            LinePlotLog10y(ConvergencePlot.c_str(), "SCF Steps", "log10(RMS[dV])", ConvergenceTitle.c_str(), x, RMSdV);
-        }
-#endif
-
-        elapsed_time = my_crtc() - start_time;
-        if (pct.imgpe == 0) {
-            rmg_printf (" quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]\n\n\n",
-                    ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
-
-            /*Also print to stdout*/
-            if(pct.images == 1)
-                fprintf (stdout,"\n quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]",
-                        ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
+            occs.clear();
         }
 
     }
-    /* ---------- end scf loop ---------- */
 
+    ct.FOCK = 0.0;
+    for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
+    { 
+
+        RMSdV.clear();
+        for (ct.scf_steps = 0, CONVERGED = false;
+                ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
+        {
+
+
+
+            /* perform a single self-consistent step */
+            step_time = my_crtc ();
+            CONVERGED = Scf (vxc, vxc_in, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo, rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+            step_time = my_crtc () - step_time;
+
+            // Save data to file for future restart at checkpoint interval if this is a quench run.
+            // For Relaxation and molecular dynamics we save at the end of each ionic step.
+            if (ct.checkpoint)
+                if ((ct.scf_steps % ct.checkpoint == 0) && (ct.forceflag == MD_QUENCH))
+                    WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+
+            /* output the eigenvalues with occupations */
+            if (ct.write_eigvals_period)
+            {
+                if (ct.scf_steps % ct.write_eigvals_period == 0)
+                {
+                    if (pct.imgpe == 0)
+                    {
+                        OutputEigenvalues (Kptr, 0, ct.scf_steps);
+                        rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
+                    }
+                }
+            }
+
+
+            /*Perform charge analysis if requested*/
+            if (ct.charge_analysis_period)
+            {
+                if (ct.scf_steps % ct.charge_analysis_period == 0)
+                {
+                    if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
+                    {
+                        double timex = my_crtc ();
+                        Vdd(rho);
+                        WriteChargeAnalysis();
+                        rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
+                    }
+                }
+            }
+
+    #if PLPLOT_LIBS
+            if(pct.imgpe == 0) {
+                std::vector<double> x;
+                std::string ConvergencePlot(ct.basename);
+                ConvergencePlot = ConvergencePlot + ".rmsdv.png";
+                std::string ConvergenceTitle("RMG convergence:");
+                if(CONVERGED) {
+                    ConvergenceTitle = ConvergenceTitle + " quench completed.";
+                }
+                else {
+                    ConvergenceTitle = ConvergenceTitle + " quenching electrons.";
+                }
+                LinePlotLog10y(ConvergencePlot.c_str(), "SCF Steps", "log10(RMS[dV])", ConvergenceTitle.c_str(), x, RMSdV);
+            }
+    #endif
+
+            elapsed_time = my_crtc() - start_time;
+            if (pct.imgpe == 0) {
+                rmg_printf (" quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]\n\n\n",
+                        ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
+
+                /*Also print to stdout*/
+                if(pct.images == 1)
+                    fprintf (stdout,"\n quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]",
+                            ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
+            }
+
+        }
+
+        /* ---------- end scf loop ---------- */
+        // If a hybrid calculation compute vexx
+        if(ct.xc_is_hybrid)
+        {
+            F->start_exx_rmg();
+            for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+            {
+                Exx_scf[kpt]->Vexx(Kptr[kpt]->vexx);
+                ct.FOCK = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
+printf("FFFFFFFFF  %f\n", ct.FOCK);
+            }
+        }
+    }
+
+    /* ---------- end exx loop ---------- */
 
 
     if(CONVERGED)

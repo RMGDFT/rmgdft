@@ -187,6 +187,9 @@ public:
     /* SCF steps iterator */
     int scf_steps;
 
+    /* EXX steps iterator */
+    int exx_steps;
+
     /* RMS[dV] convergence criterion */
     double thr_rms;
 
@@ -531,6 +534,7 @@ public:
     double vtxc;
     double NL;
     double II;
+    double FOCK;
     double TOTAL;
 
     /* fermi energy */

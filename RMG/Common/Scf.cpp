@@ -342,6 +342,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	delete F;
 	delete RT1;
 
+        // Reset firststep for hybrid calcs
+        if(ct.xc_is_hybrid) firststep = false;
     }
 
 

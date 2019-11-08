@@ -85,6 +85,7 @@ public:
     void nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
     static void start_exx_rmg(void);
     static void stop_exx_rmg(void);
+    static bool is_exx_active(void);
     double get_exx_fraction_rmg(void);
     void set_exx_fraction_rmg(double);
     static double get_gau_parameter_rmg(void);

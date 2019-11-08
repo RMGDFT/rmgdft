@@ -149,6 +149,11 @@ Functional::Functional (
         vxc2 = new double[2 * this->pbasis];
         v2cud = new double[this->pbasis];
     }
+    else
+    {
+        vxc2 = NULL;
+        v2cud = NULL;
+    }
     
 }
 
@@ -160,8 +165,8 @@ Functional::~Functional(void)
 
     if(this->dft_is_gradient_rmg()) 
     {
-        delete [] vxc2;
-        delete [] v2cud;
+        if(vxc2) delete [] vxc2;
+        if(v2cud) delete [] v2cud;
     }
 
 }
@@ -197,6 +202,11 @@ void Functional::stop_exx_rmg(void)
 {
     exx_started = false;
     stop_exx();
+}
+
+bool Functional::is_exx_active(void)
+{
+    return exx_started;
 }
 
 void Functional::set_dft_from_name_rmg(std::string newdft_name)
