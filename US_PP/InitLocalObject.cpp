@@ -296,12 +296,19 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
                                 }
 
-                                if( (ct.spin_flag == 1) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                if( (ct.nspin == 2) && (object_type == ATOMIC_RHO) && !compute_lobject)
                                 { 
                                     if (pct.spinpe == 0)
                                         sumobject[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
                                     else
                                         sumobject[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
+                                }
+                                if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                { 
+                                        sumobject[idx] += t1;
+                                        sumobject[idx+FP0_BASIS] += t1 * iptr->init_spin_x   ;
+                                        sumobject[idx+2*FP0_BASIS] += t1 * iptr->init_spin_y ;
+                                        sumobject[idx+3*FP0_BASIS] += t1 * iptr->init_spin_z ;
                                 }
                                 else if(object_type == ATOMIC_RHOCORE_STRESS)
                                 {

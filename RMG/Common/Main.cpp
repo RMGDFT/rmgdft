@@ -231,14 +231,12 @@ void initialize(int argc, char **argv)
     num_images = 1;
     lbfgs_init(Atoms.size(), num_images);
 
-    int spinfac = 1;
-    if(ct.spin_flag) spinfac = 2;
-    rho = new double[spinfac * FP0_BASIS]();
+    rho = new double[ct.nspin * FP0_BASIS]();
     rhocore = new double[FP0_BASIS];
     rhoc = new double[FP0_BASIS];
     vh = new double[FP0_BASIS];
     vnuc = new double[FP0_BASIS];
-    vxc = new double[spinfac * FP0_BASIS];
+    vxc = new double[ct.nspin* FP0_BASIS];
     if (ct.xctype == MGGA_TB09) 
     	tau = new double[FP0_BASIS];
 

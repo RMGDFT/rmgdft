@@ -193,6 +193,9 @@ public:
 
     double partial_charge;
     double init_spin_rho;
+    double init_spin_x;
+    double init_spin_y;
+    double init_spin_z;
 
     // Augmentation charges associated with this ion
     std::vector<double> augfunc;

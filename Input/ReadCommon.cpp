@@ -431,6 +431,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("exx_int_flag", &lc.exx_int_flag, false, 
             "if set true, calculate the exact exchange integrals ");
 
+    If.RegisterInputKey("noncollinear", &lc.noncoll, false, 
+            "if set true, calculate noncollinear ");
+
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
             CHECK_AND_TERMINATE, OPTIONAL, 
             "First lattice constant. ", 
@@ -1172,8 +1175,16 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         rmg_error_handler (__FILE__, __LINE__, "You have specified occupations for spin-up spin-down and non-spin cases which is ambiguous. Terminating.");
     }
 
+    lc.noncoll = 1;
+    lc.nspin = 1;
+    if(lc.noncoll) 
+    {
+        lc.nspin = 4;
+        lc.noncoll = 2;
+    }
     if(lc.spin_flag) {
 
+        lc.nspin = 2;
         std::strncpy(lc.occupation_str_spin_up, Occup.c_str(), sizeof(lc.occupation_str_spin_up)-1);
         std::strncpy(lc.occupation_str_spin_down, Occdown.c_str(), sizeof(lc.occupation_str_spin_down)-1);
 

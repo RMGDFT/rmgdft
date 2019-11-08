@@ -65,8 +65,6 @@ template void Kpoint<double>::random_init(void);
 template void Kpoint<std::complex <double> >::random_init(void);
 template void Kpoint<double>::orthogonalize(double *tpsi);
 template void Kpoint<std::complex <double> >::orthogonalize(std::complex <double> *tpsi);
-template void Kpoint<double>::write_occ(void);
-template void Kpoint<std::complex <double> >::write_occ(void);
 template void Kpoint<double>::get_nlop(int type);
 template void Kpoint<std::complex <double> >::get_nlop(int type);
 template void Kpoint<double>::reset_beta_arrays(void);
@@ -114,14 +112,16 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
 {
 
     int is, ns, idx, i, j;
-    int count_states[2]={0,0}, nocc[2]={0,0}, num_states_spf[2], nspin = (ct.spin_flag + 1);
+    int count_states[2]={0,0}, nocc[2]={0,0}, num_states_spf[2], nspin_occ;
     char *tbuf[2];
 
+    nspin_occ = 1;
+    if(ct.nspin == 2) nspin_occ = 2;
     struct
     {
         int n;
         double occ;
-    } occ[nspin * MAX_NOCC];
+    } occ[nspin_occ * MAX_NOCC];
 
     int repeat_occ;
 
@@ -133,7 +133,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         ct.ionic_charge += Species[Atoms[ion].species].zvalence;
 
 
-    if (ct.spin_flag)
+    if (ct.nspin == 2)
     {
         repeat_occ =( (strcmp(ct.occupation_str_spin_up, "") != 0) && (strcmp(ct.occupation_str_spin_down, "")!= 0) );
         if( (strcmp(ct.occupation_str_spin_up, "") != 0) + (strcmp(ct.occupation_str_spin_down, "")!= 0) == 1 )
@@ -158,31 +158,31 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
         ct.nel_up = 0;
         ct.nel_down = 0;
 
-        for (idx = 0; idx < nspin; idx++)
+        for (idx = 0; idx < nspin_occ; idx++)
         {
-                /* count the fixed occupations of states */
-                while ((n = strtol (tbuf[idx], &tbuf[idx], 10)) > 0)
-                {
-                        count_states[idx] += n;
-                        if (nocc[idx] == MAX_NOCC)
-                                rmg_error_handler (__FILE__, __LINE__, "Too many blocks in repeat count for state occupations");
-                                /* two block example  3 1.0  4 0.0*/
-                        occ[nocc[idx] + MAX_NOCC * idx].n = n;
-                        occ[nocc[idx] + MAX_NOCC * idx].occ = strtod (tbuf[idx], &tbuf[idx]);
-                        ct.nel += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
-                        if(idx == 0)ct.nel_up += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
-                        if(idx == 1)ct.nel_down += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
-                        nocc[idx]++;
-                }
+            /* count the fixed occupations of states */
+            while ((n = strtol (tbuf[idx], &tbuf[idx], 10)) > 0)
+            {
+                count_states[idx] += n;
+                if (nocc[idx] == MAX_NOCC)
+                    rmg_error_handler (__FILE__, __LINE__, "Too many blocks in repeat count for state occupations");
+                /* two block example  3 1.0  4 0.0*/
+                occ[nocc[idx] + MAX_NOCC * idx].n = n;
+                occ[nocc[idx] + MAX_NOCC * idx].occ = strtod (tbuf[idx], &tbuf[idx]);
+                ct.nel += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
+                if(idx == 0)ct.nel_up += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
+                if(idx == 1)ct.nel_down += n * occ[nocc[idx] + MAX_NOCC * idx].occ;
+                nocc[idx]++;
+            }
 
-                num_states_spf[idx] = count_states[idx];
+            num_states_spf[idx] = count_states[idx];
 
         }
 
-        if ( (nspin == 2) && (num_states_spf[0] != num_states_spf[1]) )
+        if ( (nspin_occ == 2) && (num_states_spf[0] != num_states_spf[1]) )
         {
-                rmg_printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
-                rmg_error_handler(__FILE__, __LINE__, "num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
+            rmg_printf("number of states for spin up: %d, number of states for spin down %d\n", num_states_spf[0], num_states_spf[1]);
+            rmg_error_handler(__FILE__, __LINE__, "num_of_states_spin_up not equal to num_states_spin_down, you are wasting memory address for extra STATE structures !");
         }
 
         ct.background_charge = ct.nel - ct.ionic_charge;
@@ -191,8 +191,8 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     else     /* in case no fixed occupations available, calculate number of states */
     {
         ct.nel = ct.ionic_charge + ct.background_charge;
-        for (idx = 0; idx < nspin; idx++) {
-            num_states_spf[idx] = (int) ceil(0.5 * ct.nel) + ct.num_unocc_states;
+        for (idx = 0; idx < nspin_occ; idx++) {
+            num_states_spf[idx] = (int) ceil(0.5 * ct.nel * ct.noncoll_factor) + ct.num_unocc_states;
             if(idx == 0) ct.nel_up = 0.5*(ct.nel + 1.0);
             if(idx == 1) ct.nel_down = 0.5*(ct.nel - 1.0);
         }
@@ -224,7 +224,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     // here and allocate state structures for the largest possible number of states
     ct.total_atomic_orbitals = CountAtomicOrbitals();
     if (Verify ("start_mode","LCAO Start", ControlMap) || (ct.forceflag == BAND_STRUCTURE)) {
-        ct.init_states = ct.total_atomic_orbitals + ct.extra_random_lcao_states;
+        ct.init_states = ct.total_atomic_orbitals * ct.noncoll_factor + ct.extra_random_lcao_states;
         if(ct.init_states < ct.num_states) {
             ct.init_states = ct.num_states;
         }
@@ -275,13 +275,13 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     }
 
 
-//    if (verify ("calculation_mode", "Band Structure Only"))
-//        nk = 1;
-//    else
-//        nk = ct.num_kpts;
-//    my_malloc (states, ct.num_states * nk, STATE);
+    //    if (verify ("calculation_mode", "Band Structure Only"))
+    //        nk = 1;
+    //    else
+    //        nk = ct.num_kpts;
+    //    my_malloc (states, ct.num_states * nk, STATE);
 
-    if (nspin == 2)
+    if (nspin_occ == 2)
     {
         ct.num_states_up = num_states_spf[0];
         ct.num_states_down = num_states_spf[1];
@@ -291,44 +291,59 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     if (repeat_occ)
     {
 
-        if (nspin ==1)
-                pct.spinpe = 0;
-
-        for (idx = 0; idx < nspin; idx++)
+        for (idx = 0; idx < nspin_occ; idx++)
         {
-                ns = 0;
-                j = (idx + pct.spinpe) % 2;
-                for (i = 0; i < nocc[j]; i++)
-                {
-                        for (is = ns; is < ns + occ[i + j * MAX_NOCC].n; is++)
-                            this->Kstates[is].occupation[idx] = occ[i + j * MAX_NOCC].occ;
+            ns = 0;
+            j = (idx + pct.spinpe) % 2;
+            for (i = 0; i < nocc[j]; i++)
+            {
+                for (is = ns; is < ns + occ[i + j * MAX_NOCC].n; is++)
+                    this->Kstates[is].occupation[idx] = occ[i + j * MAX_NOCC].occ;
 
-                        ns += occ[i + j * MAX_NOCC].n;
-                }
+                ns += occ[i + j * MAX_NOCC].n;
+            }
         }
     }
 
     else
     {
-        double ne[nspin], oc;
+        double ne[2], oc;
 
-        for (idx = 0; idx < nspin; idx++)
-                ne[idx] = ct.nel / ((double) nspin);
-
-        for (idx = 0; idx < nspin; idx++)
+        ne[0] = ct.nel;
+        if(nspin_occ == 2)
         {
+            ne[0] = ct.nel/2.0;
+            ne[1] = ct.nel/2.0;
+
+
+            for (idx = 0; idx < nspin_occ; idx++)
+            {
                 for (is = 0; is < ct.init_states; is++)
                 {
-                        oc = 0.0;
-                        if ( ne[idx] >= (3.0 - nspin) )
-                                oc = (3.0 - nspin);
-                        else if (ne[idx] >= 0.0)
-                                oc = ne[idx];
-                        ne[idx] -= oc;
-                        this->Kstates[is].occupation[idx] = oc;
+                    if(ne[idx] >= 1.0) oc = 1.0;
+                    else if(ne[idx] > 0.0) oc = ne[idx];
+                    else oc = 0;
+
+                    ne[idx] -= oc;
+                    this->Kstates[is].occupation[idx] = oc;
                 }
+            }
         }
 
+        else
+        {
+            int num_fullocc = (int)(ct.nel /2.0 * ct.noncoll_factor);
+            for (is = 0; is < ct.init_states; is++)
+            {
+                this->Kstates[is].occupation[0] = 0.0;
+            }
+            for (is = 0; is < num_fullocc; is++)
+            {
+                this->Kstates[is].occupation[0] = 2.0/ct.noncoll_factor;
+            }
+            this->Kstates[num_fullocc+1].occupation[0] = ct.nel - num_fullocc * 2.0 / ct.noncoll_factor;
+
+        }
     }
 
 }
@@ -346,7 +361,7 @@ template <class KpointType> void Kpoint<KpointType>::set_pool(KpointType *pool)
         Kstates[state].set_storage(tptr); 
         Kstates[state].Kptr = this;
         Kstates[state].istate = state;
-        tptr += this->pbasis;
+        tptr += this->pbasis * ct.noncoll_factor;
     }
 
 }
@@ -371,24 +386,25 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
     int PZ0_GRID = Rmg_G->get_PZ0_GRID(1);
 
     int pbasis = PX0_GRID * PY0_GRID * PZ0_GRID;
-    double *tmp_psiR = new double[pbasis];
-    double *tmp_psiI = new double[pbasis];
+    double *tmp_psiR = new double[ct.noncoll_factor *pbasis];
+    double *tmp_psiI = new double[ct.noncoll_factor *pbasis];
 
-    double *xrand = new double[2 * Rmg_G->get_NX_GRID(1)];
-    double *yrand = new double[2 * Rmg_G->get_NY_GRID(1)];
-    double *zrand = new double[2 * Rmg_G->get_NZ_GRID(1)];
+    double *xrand = new double[ct.noncoll_factor *2 * Rmg_G->get_NX_GRID(1)];
+    double *yrand = new double[ct.noncoll_factor *2 * Rmg_G->get_NY_GRID(1)];
+    double *zrand = new double[ct.noncoll_factor *2 * Rmg_G->get_NZ_GRID(1)];
 
     int factor = 2;
     if(ct.is_gamma) factor = 1;
 
+    factor = factor * ct.noncoll_factor;
     // Set state 0 to a constant 
-    for(int idx = 0;idx < pbasis;idx++) {
+    for(int idx = 0;idx < ct.noncoll_factor *pbasis;idx++) {
 
         this->Kstates[0].psi[idx] = ONE_t;
 
     }
     if(typeid(KpointType) == typeid(std::complex<double>)) {
-        for(int idx = 0;idx < pbasis;idx++) {
+        for(int idx = 0;idx <ct.noncoll_factor * pbasis;idx++) {
             double *a = (double *)&this->Kstates[0].psi[idx];
             a[1] = 1.0;
         }
@@ -399,8 +415,12 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
     if (ct.occ_flag && (ct.runflag != RESTART))
     {
         /* Set occupation for the first state */
-        for (int idx = 0; idx < (ct.spin_flag+1); idx++) {
-            this->Kstates[0].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
+        this->Kstates[0].occupation[0] = ct.nel / (this->nstates);
+        this->Kstates[0].occupation[1] = ct.nel / (this->nstates);
+        if(ct.nspin == 2) 
+        {
+            this->Kstates[0].occupation[0] /=2.0;
+            this->Kstates[0].occupation[1] /=2.0;
         }
     }
 
@@ -430,14 +450,17 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
 
         if (ct.occ_flag && (ct.runflag != RESTART))
         {
-            for (int idx = 0; idx < (ct.spin_flag+1); idx++) {
-                this->Kstates[state].occupation[idx] = ct.nel / ((ct.spin_flag+1) * this->nstates);
+            this->Kstates[state].occupation[0] = ct.nel / (this->nstates);
+            this->Kstates[state].occupation[1] = ct.nel / (this->nstates);
+            if(ct.nspin == 2) 
+            {
+                this->Kstates[state].occupation[0] /=2.0;
+                this->Kstates[state].occupation[1] /=2.0;
             }
         }
 
 
 
-        int idx = 0;
         for (int ix = 0; ix < PX0_GRID; ix++)
         {
 
@@ -447,34 +470,47 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
                 for (int iz = 0; iz < PZ0_GRID; iz++)
                 {
 
-                    
-                    tmp_psiR[idx] = xrand[xoff + ix] * 
-                                    yrand[yoff + iy] * 
-                                    zrand[zoff + iz];
-                    tmp_psiR[idx] = tmp_psiR[idx] * tmp_psiR[idx];
+
+                    for(int inoncoll = 0; inoncoll < ct.noncoll_factor; inoncoll++)
+                    {
+                        int idxoff = inoncoll * pbasis;
+                        int idx = idxoff + ix * PY0_GRID * PZ0_GRID + iy * PZ0_GRID + iz;
+
+                        int ixoff = inoncoll * 2 * Rmg_G->get_NX_GRID(1);
+                        int iyoff = inoncoll * 2 * Rmg_G->get_NY_GRID(1);
+                        int izoff = inoncoll * 2 * Rmg_G->get_NZ_GRID(1);
+
+                        tmp_psiR[idx] = xrand[ixoff +  xoff + ix] * 
+                            yrand[iyoff + yoff + iy] * 
+                            zrand[izoff + zoff + iz];
+                        tmp_psiR[idx] = tmp_psiR[idx] * tmp_psiR[idx];
 
 
-                    if(!ct.is_gamma) {
+                        if(!ct.is_gamma) {
+                            ixoff = (inoncoll * 2 + 1) * Rmg_G->get_NX_GRID(1);
+                            iyoff = (inoncoll * 2 + 1) * Rmg_G->get_NY_GRID(1);
+                            izoff = (inoncoll * 2 + 1) * Rmg_G->get_NZ_GRID(1);
 
-                        tmp_psiI[idx] = xrand[Rmg_G->get_NX_GRID(1) + xoff + ix] * 
-                                        yrand[Rmg_G->get_NY_GRID(1) + yoff + iy] * 
-                                        zrand[Rmg_G->get_NZ_GRID(1) + zoff + iz];
-                        tmp_psiI[idx] = tmp_psiI[idx] * tmp_psiI[idx];
+                            tmp_psiI[idx] = xrand[ixoff + xoff + ix] * 
+                                yrand[iyoff + yoff + iy] * 
+                                zrand[izoff + zoff + iz];
+                            tmp_psiI[idx] = tmp_psiI[idx] * tmp_psiI[idx];
 
-                    }
+                        }
 
-                    idx++;
 
-                }               /* end for */
-            }                   /* end for */
-        }                       /* end for */
 
+                    }               /* end for */
+                }                   /* end for */
+            }                       /* end for */
+
+        }
         // Copy data from tmp_psi into orbital storage
-        for(idx = 0;idx < pbasis;idx++) {
+        for(int idx = 0;idx < ct.noncoll_factor * pbasis;idx++) {
             this->Kstates[state].psi[idx] = tmp_psiR[idx];
         }
         if(typeid(KpointType) == typeid(std::complex<double>)) {
-            for(idx = 0;idx < pbasis;idx++) {
+            for(int idx = 0;idx < ct.noncoll_factor * pbasis;idx++) {
                 double *a = (double *)&this->Kstates[state].psi[idx];
                 if(!ct.is_gamma)
                     a[1] = tmp_psiI[idx];
@@ -490,7 +526,7 @@ template <class KpointType> void Kpoint<KpointType>::random_init(void)
     }                           /* end for */
 
 
-    
+
     delete [] zrand;
     delete [] yrand;
     delete [] xrand;
@@ -525,7 +561,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
         double *global_matrix = new double[this->nstates * this->nstates];
 
         dsyrk( uplo, transt, &this->nstates, &this->pbasis, &one, this->orbital_storage, &this->pbasis,
-                    &zero, global_matrix, &this->nstates);
+                &zero, global_matrix, &this->nstates);
 
         /* get the global part */
         length = this->nstates * this->nstates;
@@ -550,13 +586,13 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
         // and excellent parformance on the XK6.
 
         double *darr;
-        #pragma omp parallel private(idx,st,st1,omp_tid,sarr)
+#pragma omp parallel private(idx,st,st1,omp_tid,sarr)
         {
-               omp_tid = omp_get_thread_num();
-               if(omp_tid == 0) darr = new double[this->nstates * omp_get_num_threads()];
-        #pragma omp barrier
+            omp_tid = omp_get_thread_num();
+            if(omp_tid == 0) darr = new double[this->nstates * omp_get_num_threads()];
+#pragma omp barrier
 
-        #pragma omp for schedule(static, 1) nowait
+#pragma omp for schedule(static, 1) nowait
             for(idx = 0;idx < this->pbasis;idx++) {
 
                 sarr = &darr[omp_tid*this->nstates];
@@ -663,11 +699,11 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
             }
             /*Update wavefunctions */
             for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
-  
+
                 KpointType cA(cR[ist2]);
                 for(int idx = 0;idx < this->pbasis;idx++) {
                     this->Kstates[ist2].psi[idx] = this->Kstates[ist2].psi[idx] 
-                                                  - cA * this->Kstates[ist1].psi[idx]; 
+                        - cA * this->Kstates[ist1].psi[idx]; 
                 }
                 /* update localized <beta|psi2> */
                 for (int ion = 0; ion < num_nonloc_ions; ion++)
@@ -688,218 +724,170 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
         }
         delete [] cR;
     }
-    
+
 }
 
 template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<double> *tpsi)
 {
 
-   RmgTimer RT("Orthogonalization");
+    RmgTimer RT("Orthogonalization");
 
-   double vel = (double) (this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1));
-   vel = this->L->get_omega() / vel;
-   int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
-   int num_owned_ions = this->BetaProjector->get_num_owned_ions();
-   int *owned_ions_list = this->BetaProjector->get_owned_ions_list();
+    double vel = (double) (this->G->get_NX_GRID(1) * this->G->get_NY_GRID(1) * this->G->get_NZ_GRID(1));
+    vel = this->L->get_omega() / vel;
+    int num_nonloc_ions = this->BetaProjector->get_num_nonloc_ions();
+    int num_owned_ions = this->BetaProjector->get_num_owned_ions();
+    int *owned_ions_list = this->BetaProjector->get_owned_ions_list();
     int *nonloc_ions_list = this->BetaProjector->get_nonloc_ions_list();
 
 
 
-   if(ct.norm_conserving_pp) {
+    if(ct.norm_conserving_pp) {
 
-       int ione = 1;
-       std::complex<double> *dr = new std::complex<double>[this->nstates];
+        int ione = 1;
+        std::complex<double> *dr = new std::complex<double>[this->nstates];
 
-       // compute the lower-triangular part of the overlap matrix
-       for(int st = 0;st < this->nstates;st++) {
+        // compute the lower-triangular part of the overlap matrix
+        for(int st = 0;st < this->nstates;st++) {
 
-           dr[st] = std::complex<double>(0.0,0.0); 
+            dr[st] = std::complex<double>(0.0,0.0); 
 
-           // Normalize this orbital
-           this->Kstates[st].normalize(this->Kstates[st].psi, st);
+            // Normalize this orbital
+            this->Kstates[st].normalize(this->Kstates[st].psi, st);
 
-           // compute the projection along the remaining vectors
-           for(int st1 = st + 1;st1 < this->nstates;st1++) {
-               dr[st1] = std::complex<double>(0.0,0.0); 
-               for(int idx = 0;idx < this->pbasis;idx++) {
-                   dr[st1] = dr[st1] + std::conj(this->orbital_storage[st*this->pbasis + idx]) * this->orbital_storage[st1*this->pbasis + idx];
-               }
-           }            
+            // compute the projection along the remaining vectors
+            for(int st1 = st + 1;st1 < this->nstates;st1++) {
+                dr[st1] = std::complex<double>(0.0,0.0); 
+                for(int idx = 0;idx < this->pbasis;idx++) {
+                    dr[st1] = dr[st1] + std::conj(this->orbital_storage[st*this->pbasis + idx]) * this->orbital_storage[st1*this->pbasis + idx];
+                }
+            }            
 
-           int length = 2 * this->nstates;
-           MPI_Allreduce(MPI_IN_PLACE, dr, length, MPI_DOUBLE, MPI_SUM, grid_comm);
+            int length = 2 * this->nstates;
+            MPI_Allreduce(MPI_IN_PLACE, dr, length, MPI_DOUBLE, MPI_SUM, grid_comm);
 
-           std::complex<double> ct1(-vel, 0.0);
-           for(int st2=0;st2 < this->nstates;st2++) {
-               dr[st2] = ct1 * dr[st2];
-           }
-           
-           for(int st1 = st + 1;st1 < this->nstates;st1++) {
-               zaxpy(&this->pbasis, &dr[st1], &this->orbital_storage[st*this->pbasis], &ione, &this->orbital_storage[st1*this->pbasis], &ione);
-           }            
-           
-       }
+            std::complex<double> ct1(-vel, 0.0);
+            for(int st2=0;st2 < this->nstates;st2++) {
+                dr[st2] = ct1 * dr[st2];
+            }
 
-       delete [] dr;
+            for(int st1 = st + 1;st1 < this->nstates;st1++) {
+                zaxpy(&this->pbasis, &dr[st1], &this->orbital_storage[st*this->pbasis], &ione, &this->orbital_storage[st1*this->pbasis], &ione);
+            }            
 
-   }
-   else {
+        }
 
-      double *cR = new double[this->nstates];
-      double *cI = new double[this->nstates];
+        delete [] dr;
 
-      for(int ist1 = 0;ist1 < this->nstates;ist1++) {
-
-
-          // Normalize this orbital
-          this->Kstates[ist1].normalize(this->Kstates[ist1].psi, ist1);
-
-          /*This will calculate cR and cI coefficients */
-          for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
-
-              int sidx1 = ist1 * ct.max_nl;
-              int sidx2 = ist2 * ct.max_nl;
-              double sumpsiR = 0.0;
-              double sumpsiI = 0.0;
-              double sumbetaR = 0.0;
-              double sumbetaI = 0.0;
-
-              int nidx = -1;
-              for (int ion = 0; ion < num_owned_ions; ion++)
-              {
-                  int oion = owned_ions_list[ion];
-
-                  ION *iptr = &Atoms[oion];
-                  SPECIES *sp = &Species[iptr->species];
-
-                  int nh = sp->nh;
-
-                  /* Figure out index of owned ion in nonloc_ions_list array*/
-                  do {
-
-                      nidx++;
-                      if (nidx >= num_nonloc_ions)
-                          rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
-
-                  } while (nonloc_ions_list[nidx] != oion);
-
-                  double *qqq = pct.qqq[oion];
-
-                  /* get<beta|psi1> and <beta|psi2> */
-                  KpointType *sint1 = &this->newsint_local[sidx1 + nidx * ct.max_nl];
-                  KpointType *sint2 = &this->newsint_local[sidx2 + nidx * ct.max_nl];
-
-
-                  for (int i = 0; i < nh; i++)
-                  {
-                      int inh = i * nh;
-                      double sri = std::real(sint1[i]);
-                      double sii = std::imag(sint1[i]);
-
-                      for (int j = 0; j < nh; j++)
-                      {
-                          sumbetaR += qqq[inh + j] * (sri * std::real(sint2[j]) + sii * std::imag(sint2[j]));
-                          sumbetaI += qqq[inh + j] * (sri * std::imag(sint2[j]) - sii * std::real(sint2[j]));
-                      }                   /*end for j */
-                  }                       /*end for i */
-              }                           /*end for ion */
-
-              for (int idx = 0; idx < this->pbasis; idx++)
-              {
-                  //sumpsiR += (tmp_psi2R[idx] * tmp_psi1R[idx] + tmp_psi2I[idx] * tmp_psi1I[idx]);
-                  //sumpsiI += (tmp_psi2I[idx] * tmp_psi1R[idx] - tmp_psi2R[idx] * tmp_psi1I[idx]);
-                  sumpsiR = sumpsiR + std::real(this->Kstates[ist2].psi[idx] * std::conj(this->Kstates[ist1].psi[idx]));
-                  sumpsiI = sumpsiI + std::imag(this->Kstates[ist2].psi[idx] * std::conj(this->Kstates[ist1].psi[idx]));
-              }
-
-              cR[ist2] = vel * sumpsiR + sumbetaR;
-              cI[ist2] = vel * sumpsiI + sumbetaI;
-
-          }
-          int length = this->nstates - (ist1 + 1);
-          /*Sum coefficients over all processors */
-          if (length)
-          {
-              global_sums (&cR[ist1 + 1], &length, grid_comm);
-              global_sums (&cI[ist1 + 1], &length, grid_comm);
-          }
-          /*Update wavefunctions */
-          for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
-
-              KpointType cA(cR[ist2], cI[ist2]);
-              for(int idx = 0;idx < this->pbasis;idx++) {
-                  this->Kstates[ist2].psi[idx] = this->Kstates[ist2].psi[idx] 
-                                                - cA * this->Kstates[ist1].psi[idx]; 
-              }
-              /* update localized <beta|psi2> */
-              for (int ion = 0; ion < num_nonloc_ions; ion++)
-              {
-
-                  int lsidx1 = ist1 * ct.max_nl;
-                  int lsidx2 = ist2 * ct.max_nl;
-
-                  KpointType *ptr1 = &this->newsint_local[lsidx1 + ion * ct.max_nl];
-                  KpointType *ptr2 = &this->newsint_local[lsidx2 + ion * ct.max_nl];
-
-                  for(int inh=0;inh < ct.max_nl;inh++) {
-                      ptr2[inh] = ptr2[inh] - cA * ptr1[inh];
-                  }
-
-              }
-
-          }
-
-      }
-      delete [] cI;
-      delete [] cR;
-   }
-
-}
-
-
-template <class KpointType> void Kpoint<KpointType>::write_occ(void)
-{
-
-    int i, idx, nspin = (ct.spin_flag + 1);
-
-    switch (ct.occ_flag)
-    {
-        case OCC_NONE:
-            break;
-        case OCC_FD:
-            printf ("\nFERMI-DIRAC OCCUPATION WITH PARAMETERS:");
-            printf ("\n  TEMP   = %14.8f", ct.occ_width);
-            printf ("\n  MIXING = %14.8f", ct.occ_mix);
-            break;
-        case OCC_GS:
-            printf ("\nGAUSSIAN OCCUPATION WITH PARAMETERS:");
-            printf ("\n  TEMP   = %14.8f", ct.occ_width);
-            printf ("\n  MIXING = %14.8f", ct.occ_mix);
-            break;
-        case OCC_EF:
-            printf ("\nERROR_FUNCTION OCCUPATION WITH PARAMETERS:");
-            printf ("\n  TEMP   = %14.8f", ct.occ_width);
-            printf ("\n  MIXING = %14.8f", ct.occ_mix);
-            break;
-        default:
-            rmg_error_handler (__FILE__, __LINE__, "unknown filling procedure");
     }
+    else {
+
+        double *cR = new double[this->nstates];
+        double *cI = new double[this->nstates];
+
+        for(int ist1 = 0;ist1 < this->nstates;ist1++) {
 
 
-    for (idx = 0; idx < nspin; idx++)
-    {
-        if (nspin == 1)
-                rmg_printf ("\n\n  STATE OCCUPATIONS :\n");
-        else if ((nspin == 2) && (idx == 0))
-                rmg_printf ("\n\n  STATE OCCUPATIONS FOR SPIN UP:\n");
-        else if ((nspin == 2) && (idx == 1))
-                rmg_printf ("\n\n  STATE OCCUPATIONS FOR SPIN DOWN:\n");
+            // Normalize this orbital
+            this->Kstates[ist1].normalize(this->Kstates[ist1].psi, ist1);
 
-        for (i = 0; i < ct.num_states; i++)
-                rmg_printf (" %7.2f%s", this->Kstates[i].occupation[idx], ((i % 10 == 9) ? "\n" : ""));
+            /*This will calculate cR and cI coefficients */
+            for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
 
-        rmg_printf ("\n\n");
+                int sidx1 = ist1 * ct.max_nl;
+                int sidx2 = ist2 * ct.max_nl;
+                double sumpsiR = 0.0;
+                double sumpsiI = 0.0;
+                double sumbetaR = 0.0;
+                double sumbetaI = 0.0;
 
+                int nidx = -1;
+                for (int ion = 0; ion < num_owned_ions; ion++)
+                {
+                    int oion = owned_ions_list[ion];
+
+                    ION *iptr = &Atoms[oion];
+                    SPECIES *sp = &Species[iptr->species];
+
+                    int nh = sp->nh;
+
+                    /* Figure out index of owned ion in nonloc_ions_list array*/
+                    do {
+
+                        nidx++;
+                        if (nidx >= num_nonloc_ions)
+                            rmg_error_handler(__FILE__,__LINE__,"Could not find matching entry in pct.nonloc_ions_list for owned ion");
+
+                    } while (nonloc_ions_list[nidx] != oion);
+
+                    double *qqq = pct.qqq[oion];
+
+                    /* get<beta|psi1> and <beta|psi2> */
+                    KpointType *sint1 = &this->newsint_local[sidx1 + nidx * ct.max_nl];
+                    KpointType *sint2 = &this->newsint_local[sidx2 + nidx * ct.max_nl];
+
+
+                    for (int i = 0; i < nh; i++)
+                    {
+                        int inh = i * nh;
+                        double sri = std::real(sint1[i]);
+                        double sii = std::imag(sint1[i]);
+
+                        for (int j = 0; j < nh; j++)
+                        {
+                            sumbetaR += qqq[inh + j] * (sri * std::real(sint2[j]) + sii * std::imag(sint2[j]));
+                            sumbetaI += qqq[inh + j] * (sri * std::imag(sint2[j]) - sii * std::real(sint2[j]));
+                        }                   /*end for j */
+                    }                       /*end for i */
+                }                           /*end for ion */
+
+                for (int idx = 0; idx < this->pbasis; idx++)
+                {
+                    //sumpsiR += (tmp_psi2R[idx] * tmp_psi1R[idx] + tmp_psi2I[idx] * tmp_psi1I[idx]);
+                    //sumpsiI += (tmp_psi2I[idx] * tmp_psi1R[idx] - tmp_psi2R[idx] * tmp_psi1I[idx]);
+                    sumpsiR = sumpsiR + std::real(this->Kstates[ist2].psi[idx] * std::conj(this->Kstates[ist1].psi[idx]));
+                    sumpsiI = sumpsiI + std::imag(this->Kstates[ist2].psi[idx] * std::conj(this->Kstates[ist1].psi[idx]));
+                }
+
+                cR[ist2] = vel * sumpsiR + sumbetaR;
+                cI[ist2] = vel * sumpsiI + sumbetaI;
+
+            }
+            int length = this->nstates - (ist1 + 1);
+            /*Sum coefficients over all processors */
+            if (length)
+            {
+                global_sums (&cR[ist1 + 1], &length, grid_comm);
+                global_sums (&cI[ist1 + 1], &length, grid_comm);
+            }
+            /*Update wavefunctions */
+            for (int ist2 = ist1 + 1; ist2 < this->nstates; ist2++) {
+
+                KpointType cA(cR[ist2], cI[ist2]);
+                for(int idx = 0;idx < this->pbasis;idx++) {
+                    this->Kstates[ist2].psi[idx] = this->Kstates[ist2].psi[idx] 
+                        - cA * this->Kstates[ist1].psi[idx]; 
+                }
+                /* update localized <beta|psi2> */
+                for (int ion = 0; ion < num_nonloc_ions; ion++)
+                {
+
+                    int lsidx1 = ist1 * ct.max_nl;
+                    int lsidx2 = ist2 * ct.max_nl;
+
+                    KpointType *ptr1 = &this->newsint_local[lsidx1 + ion * ct.max_nl];
+                    KpointType *ptr2 = &this->newsint_local[lsidx2 + ion * ct.max_nl];
+
+                    for(int inh=0;inh < ct.max_nl;inh++) {
+                        ptr2[inh] = ptr2[inh] - cA * ptr1[inh];
+                    }
+
+                }
+
+            }
+
+        }
+        delete [] cI;
+        delete [] cR;
     }
 
 }
@@ -1079,11 +1067,11 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
         if(nvme_Bweight_fd != -1) close(nvme_Bweight_fd);
 
         nvme_weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
         nvme_weight_fd = FileOpenAndCreate(nvme_weight_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        
+
         nvme_Bweight_path = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) + "_" +
-                  std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
+            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
         nvme_Bweight_fd = FileOpenAndCreate(nvme_Bweight_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
     }
 
@@ -1171,7 +1159,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     if (this->newsint_local)
         delete [] this->newsint_local;
 #endif
-   
+
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
     size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride());
