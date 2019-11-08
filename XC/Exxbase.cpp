@@ -185,13 +185,15 @@ template <> void Exxbase<double>::Vexx(double *vexx)
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi_s[i*pbasis];
-            for(int j=0;j < nstates_occ;j++)
+            for(int j=i;j < nstates_occ;j++)
             {   
                 double *psi_j = (double *)&psi_s[j*pbasis];
                 RmgTimer RT1("5-Functional: Exx potential fft");
                 fftpair(psi_i, psi_j, p);
                 //if(G.get_rank()==0)printf("TTTT  %d  %d  %e\n",i,j,std::real(p[1]));
                 for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi_s[j*pbasis + idx];
+                if(i!=j)
+                    for(int idx = 0;idx < pbasis;idx++)vexx[j*pbasis +idx] += scale * std::real(p[idx]) * psi_s[i*pbasis + idx];
             }
         }
 
