@@ -89,6 +89,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     }
 
     ct.FOCK = 0.0;
+    double FOCK1=0.0;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     { 
 
@@ -178,6 +179,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 Exx_scf[kpt]->Vexx(Kptr[kpt]->vexx);
                 ct.FOCK = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
             }
+            // Need to come up with a better way of deciding when we are good enough.
+            if(fabs(ct.FOCK - FOCK1) < 1.0e-6) break;
+            FOCK1 = ct.FOCK;
         }
     }
 
