@@ -204,6 +204,11 @@ void Functional::stop_exx_rmg(void)
     stop_exx();
 }
 
+bool Functional::is_exx_active(void)
+{
+    return exx_started;
+}
+
 void Functional::set_dft_from_name_rmg(std::string newdft_name)
 {
     if(!this->dft_set) {
