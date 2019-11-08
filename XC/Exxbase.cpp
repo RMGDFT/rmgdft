@@ -175,6 +175,7 @@ template <> void Exxbase<double>::Vexx(double *vexx)
 
     int nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
+    MPI_Allreduce(MPI_IN_PLACE, &nstates_occ, 1, MPI_INT, MPI_MAX, G.comm);
 
     if(mode == EXX_DIST_FFT)
     {

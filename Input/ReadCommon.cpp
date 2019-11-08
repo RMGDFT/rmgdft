@@ -605,8 +605,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("max_scf_steps", &lc.max_scf_steps, 0, INT_MAX, 500,
             CHECK_AND_FIX, OPTIONAL, 
-            "Maximum number of self consistent steps to perform. ", 
+            "Maximum number of self consistent steps to perform. Inner loop for hybrid functionals. ", 
             "max_scf_steps must be greater than 0. Resetting to the default value of 500 ", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("max_exx_steps", &lc.max_exx_steps, 1, INT_MAX, 100,
+            CHECK_AND_FIX, OPTIONAL, 
+            "Maximum number of self consistent steps to perform with hybrid functionals. ", 
+            "max_exx_steps must be greater than 0. Resetting to the default value of 500 ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("tddft_steps", &lc.tddft_steps, 0, INT_MAX, 2000,
             CHECK_AND_FIX, OPTIONAL, 

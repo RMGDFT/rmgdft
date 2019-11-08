@@ -295,7 +295,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                 if ((ct.diag == 1) && (potential_acceleration == 0))
                 {
-                    if (ct.scf_steps == 0)
+                    if ((ct.scf_steps == 0) && (ct.exx_steps == 0))
                     {
                         sp->eig[0] = eig;
                         sp->oldeig[0] = eig;
@@ -306,7 +306,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                 else
                 {
                     sp->eig[0] = eig;
-                    if(ct.scf_steps == 0) {
+                    if(ct.scf_steps == 0 && (ct.exx_steps == 0)) {
                         sp->oldeig[0] = eig;
                     }
                 }

@@ -376,6 +376,16 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     memcpy(&orbital_storage[istart], &tmp_arrayT[istart], tlen);
 #endif
 
+    // Rotate EXX
+    if(ct.xc_is_hybrid)
+    {
+        tlen = nstates * pbasis * sizeof(KpointType);
+// vexx is not in managed memory yet so that might create an issue
+        RmgGemm(trans_n, trans_b, pbasis, nstates, nstates, alpha, 
+            this->vexx, pbasis, global_matrix1, nstates, beta, tmp_arrayT, pbasis);
+        memcpy(this->vexx, tmp_arrayT, tlen);
+    }
+
     delete(RT1);
 
 #if GPU_ENABLED
