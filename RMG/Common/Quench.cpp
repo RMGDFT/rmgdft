@@ -177,7 +177,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             {
                 Exx_scf[kpt]->Vexx(Kptr[kpt]->vexx);
                 ct.FOCK = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
-printf("FFFFFFFFF  %f\n", ct.FOCK);
             }
         }
     }

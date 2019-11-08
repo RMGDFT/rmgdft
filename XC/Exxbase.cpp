@@ -55,10 +55,11 @@ template <class T> Exxbase<T>::Exxbase (
           const std::string &wavefile_in,
           int nstates_in,
           double *occ_in,
-          T *psi_in, int mode_in) : G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), occ(occ_in), psi(psi_in), mode(mode_in)
+          T *psi_in, int mode_in) : G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), init_occ(occ_in), psi(psi_in), mode(mode_in)
 {
     RmgTimer RT0("5-Functional: Exx init");
 
+    for(int st=0;st < nstates;st++) occ.push_back(init_occ[st]);
     tpiba = 2.0 * PI / L.celldm[0];
     tpiba2 = tpiba * tpiba;
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
@@ -210,7 +211,7 @@ template <> double Exxbase<double>::Exxenergy(double *vexx)
     {
         for(int i=0;i < pbasis;i++) energy += occ[st]*vexx[st*pbasis + i]*psi[st*pbasis + i];
     }
-    energy = energy * this->L.get_omega() / (double)this->G.get_GLOBAL_BASIS(1);
+    energy = 0.5*energy * this->L.get_omega() / (double)this->G.get_GLOBAL_BASIS(1);
     MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
 
     return energy;

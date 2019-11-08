@@ -73,7 +73,8 @@ private:
     int nstates;
 
     // Occupations for the orbitals
-    double *occ;
+    double *init_occ;
+    std::vector<double> occ;
 
     // Base of domain distributed wavefunction array
     T *psi;
@@ -124,7 +125,7 @@ public:
             Lattice &L, 
             const std::string &wavefile,
             int nstates,
-            double *occ,
+            double *init_occ,
             T *psi_in, int mode_in);
 
     ~Exxbase(void);
