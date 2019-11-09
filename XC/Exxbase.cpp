@@ -170,7 +170,7 @@ template <> void Exxbase<std::complex<double>>::setup_gfac(void)
 
 // These compute the action of the exact exchange operator on all wavefunctions
 // and writes the result into vfile.
-template <> void Exxbase<double>::Vexx(double *vexx)
+template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 {
     RmgTimer RT0("5-Functional: Exx potential");
     double scale = - 1.0 / (double)pwave->global_basis;
@@ -198,7 +198,12 @@ template <> void Exxbase<double>::Vexx(double *vexx)
             {   
                 double *psi_j = (double *)&psi_s[j*pbasis];
                 RmgTimer RT1("5-Functional: Exx potential fft");
-                fftpair(psi_i, psi_j, p, w);
+
+                if(use_float_fft)
+                    fftpair(psi_i, psi_j, p, w);
+                else
+                    fftpair(psi_i, psi_j, p);
+
                 //if(G.get_rank()==0)printf("TTTT  %d  %d  %e\n",i,j,std::real(p[1]));
                 for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi_s[j*pbasis + idx];
                 if(i!=j)
@@ -231,7 +236,7 @@ template <> double Exxbase<double>::Exxenergy(double *vexx)
     return energy;
 }
 
-template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx)
+template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx, bool use_float_fft)
 {
     RmgTimer RT0("5-Functional: Exx potential");
     rmg_error_handler (__FILE__,__LINE__,"Exx potential not programmed for non-gamma yet. Terminating.");

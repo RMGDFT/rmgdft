@@ -89,7 +89,8 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     }
 
     ct.FOCK = 0.0;
-    double FOCK1=0.0;
+    ct.exx_delta = DBL_MAX;
+    double f1,f2=0.0;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     { 
 
@@ -176,12 +177,17 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             F->start_exx_rmg();
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
             {
-                Exx_scf[kpt]->Vexx(Kptr[kpt]->vexx);
-                ct.FOCK = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
+                // f1 is fock energy calculated using vexx from previous orbitals and the current orbitals
+                f1 = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
+                Exx_scf[kpt]->Vexx(Kptr[kpt]->vexx, (fabs(ct.exx_delta) > ct.vexx_fft_threshold));
+                ct.FOCK = f2;
+                // f2 is fock energy calculated using vexx from current orbitals and the current orbitals
+                f2 = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
+                ct.exx_delta = f1 - 0.5*(ct.FOCK + f2);
+printf("DDDDDDDDd  %12.6e    %d\n", ct.exx_delta, (fabs(ct.exx_delta) > ct.vexx_fft_threshold));
+
             }
-            // Need to come up with a better way of deciding when we are good enough.
-            if(fabs(ct.FOCK - FOCK1) < 1.0e-6) break;
-            FOCK1 = ct.FOCK;
+            if(ct.exx_delta < ct.exx_convergence_criterion) break;
         }
     }
 

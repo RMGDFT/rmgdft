@@ -534,6 +534,15 @@ public:
     double FOCK;
     double TOTAL;
 
+    // EXX convergence measure
+    double exx_delta;
+
+    // Exit criteria from EXX loop
+    double exx_convergence_criterion;
+
+    // Single/double precision delta fft threshold for EXX Vexx computation
+    double vexx_fft_threshold;
+
     /* fermi energy */
     double efermi;
 
