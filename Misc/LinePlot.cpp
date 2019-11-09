@@ -12,7 +12,8 @@
 
 
 #if PLPLOT_LIBS
-#include <plstream.h>
+#include <plplot.h>
+#include <plstrm.h>
 
 #include "Plots.h"
 
