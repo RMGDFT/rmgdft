@@ -177,7 +177,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
 
     /* Sum them all up */
-    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_E + ct.scf_correction + 0.5*ct.FOCK;
+    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_E + ct.scf_correction;
+    if(ct.xc_is_hybrid && Functional::is_exx_active()) ct.TOTAL -= ct.FOCK;
 //    ct.TOTAL = eigsum - ct.ES - ct.vtxc + ct.XC + ct.II + ct.scf_correction;
     
     /* Print contributions to total energies into output file */
@@ -189,7 +190,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", -efactor*ct.ES, eunits);
     rmg_printf ("@@ VXC                = %15.6f %s\n",  efactor*xcstate, eunits);
     rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-    if(ct.xc_is_hybrid)
+    if(ct.xc_is_hybrid && Functional::is_exx_active())
         rmg_printf ("@@ FOCK               = %15.6f %s\n", efactor*ct.FOCK, eunits);
 
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))

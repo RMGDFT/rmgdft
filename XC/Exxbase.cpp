@@ -89,11 +89,19 @@ template <class T> Exxbase<T>::Exxbase (
 
 template <> void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p)
 {
-    std::complex<double> ZERO_t(0.0, 0.0);
     for(int idx=0;idx < pbasis;idx++) p[idx] = std::complex<double>(psi_i[idx] * psi_j[idx], 0.0);
     pwave->FftForward(p, p);
     for(int ig=0;ig < pbasis;ig++) p[ig] *= gfac[ig];
     pwave->FftInverse(p, p);
+}
+
+template <> void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, std::complex<float> *workbuf)
+{
+    for(int idx=0;idx < pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * psi_j[idx], 0.0);
+    pwave->FftForward(workbuf, workbuf);
+    for(int ig=0;ig < pbasis;ig++) workbuf[ig] *= gfac[ig];
+    pwave->FftInverse(workbuf, workbuf);
+    for(int idx=0;idx < pbasis;idx++) p[idx] = (std::complex<double>)workbuf[idx];
 }
 
 template <> void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p)
@@ -181,6 +189,7 @@ template <> void Exxbase<double>::Vexx(double *vexx)
     if(mode == EXX_DIST_FFT)
     {
         std::complex<double> *p = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
+        std::complex<float> *w = (std::complex<float> *)fftw_malloc(sizeof(std::complex<float>) * pbasis);
         // Loop over fft pairs and compute Kij(r) 
         for(int i=0;i < nstates_occ;i++)
         {
@@ -189,7 +198,7 @@ template <> void Exxbase<double>::Vexx(double *vexx)
             {   
                 double *psi_j = (double *)&psi_s[j*pbasis];
                 RmgTimer RT1("5-Functional: Exx potential fft");
-                fftpair(psi_i, psi_j, p);
+                fftpair(psi_i, psi_j, p, w);
                 //if(G.get_rank()==0)printf("TTTT  %d  %d  %e\n",i,j,std::real(p[1]));
                 for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi_s[j*pbasis + idx];
                 if(i!=j)
@@ -197,6 +206,7 @@ template <> void Exxbase<double>::Vexx(double *vexx)
             }
         }
 
+        fftw_free(w);
         fftw_free(p);
     }
     else
@@ -211,9 +221,11 @@ template <> double Exxbase<double>::Exxenergy(double *vexx)
     double energy = 0.0;
     for(int st=0;st < nstates;st++)
     {
-        for(int i=0;i < pbasis;i++) energy += occ[st]*vexx[st*pbasis + i]*psi[st*pbasis + i];
+        double scale = 0.0;
+        if(occ[st] > 1.0e-1) scale = 1.0;
+        for(int i=0;i < pbasis;i++) energy += scale*vexx[st*pbasis + i]*psi[st*pbasis + i];
     }
-    energy = 0.5*energy * this->L.get_omega() / (double)this->G.get_GLOBAL_BASIS(1);
+    energy = ct.exx_fraction*energy * this->L.get_omega() / (double)this->G.get_GLOBAL_BASIS(1);
     MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
 
     return energy;

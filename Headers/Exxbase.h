@@ -108,6 +108,7 @@ private:
     double *gfac;
 
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p);
+    void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, std::complex<float> *workbuf);
     void setup_gfac(void);
 
     std::vector< std::pair <int,int> > wf_pairs;
