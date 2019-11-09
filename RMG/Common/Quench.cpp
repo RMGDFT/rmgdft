@@ -184,10 +184,18 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 // f2 is fock energy calculated using vexx from current orbitals and the current orbitals
                 f2 = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
                 ct.exx_delta = f1 - 0.5*(ct.FOCK + f2);
-printf("DDDDDDDDd  %12.6e    %d\n", ct.exx_delta, (fabs(ct.exx_delta) > ct.vexx_fft_threshold));
-
             }
-            if(ct.exx_delta < ct.exx_convergence_criterion) break;
+            if(ct.verbose) printf("EXX delta = %12.6e\n", ct.exx_delta);
+            if(ct.exx_delta < ct.exx_convergence_criterion)
+            { 
+                printf("Finished EXX inner loop in %3d scf steps. Convergence criteria exx_delta = %e reached.\n", 
+                        ct.scf_steps, fabs(ct.exx_delta));
+                break;
+            }
+            else
+            {
+                printf("Finished EXX inner loop in %3d scf steps. Restarting with new orbitals.\n", ct.scf_steps);
+            }
         }
     }
 
