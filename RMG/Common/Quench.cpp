@@ -50,6 +50,7 @@
 void PlotConvergence(std::vector<double> &RMSdV, bool CONVERGED);
 void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& ControlMap);
 void ProgressTag(double step_time, double elapsed_time);
+void ExxProgressTag(double step_time, double elapsed_time);
 
 
 // Instantiate gamma and non-gamma versions
@@ -71,7 +72,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     /* ---------- begin scf loop ---------- */
     
     double start_time = my_crtc ();
+    double exx_start_time = start_time;
     double step_time;
+    double exx_step_time;
 
     int outer_steps = 1;
     std::vector<Exxbase<OrbitalType> *> Exx_scf;
@@ -98,7 +101,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     { 
 
+        exx_step_time = my_crtc ();
         RMSdV.clear();
+
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
         {
@@ -149,8 +154,17 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 // f2 is fock energy calculated using vexx from current orbitals and the current orbitals
                 f2 = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
                 ct.exx_delta = f1 - 0.5*(ct.FOCK + f2);
+                if(ct.exx_steps == 0) ct.FOCK = f2;
             }
-            if(ct.verbose) printf("EXX delta = %12.6e\n", ct.exx_delta);
+
+            if(ct.exx_steps)
+            {
+                exx_step_time = my_crtc () - exx_step_time;
+                // Write out progress info
+                double exx_elapsed_time = my_crtc() - exx_start_time;
+                ExxProgressTag(exx_step_time, exx_elapsed_time);
+            }
+
             if(ct.exx_delta < ct.exx_convergence_criterion)
             { 
                 printf("Finished EXX inner loop in %3d scf steps. Convergence criteria exx_delta = %e reached.\n", 
@@ -162,6 +176,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 printf("Finished EXX inner loop in %3d scf steps. Restarting with new orbitals.\n", ct.scf_steps);
             }
         }
+
     }
     /* ---------- end exx loop ---------- */
 
@@ -364,5 +379,18 @@ void ProgressTag(double step_time, double elapsed_time)
         if(pct.images == 1)
             fprintf (stdout,"\n quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]",
                     ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
+    }
+}
+
+void ExxProgressTag(double step_time, double elapsed_time)
+{
+    if (pct.imgpe == 0) {
+        rmg_printf (" quench: [md: %3d/%-d  exx: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  EXX[dV]: %8.2e ]\n\n\n",
+                ct.md_steps, ct.max_md_steps, ct.exx_steps, ct.max_exx_steps, step_time, elapsed_time, ct.exx_delta);
+
+        /*Also print to stdout*/
+        if(pct.images == 1)
+            fprintf (stdout,"\n quench: [md: %3d/%-d  exx: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  EXX[dV]: %8.2e ]",
+                    ct.md_steps, ct.max_md_steps, ct.exx_steps, ct.max_exx_steps, step_time, elapsed_time, ct.exx_delta);
     }
 }
