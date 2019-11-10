@@ -50,8 +50,6 @@
 
 
 
-static int firststep = true;
-
 template bool Scf<double> (double *, double *, double *, double *,
           double *, double *, double *, double *, double *, double *, int ,
           int , Kpoint<double> **, std::vector<double> &);
@@ -175,7 +173,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     ct.rms = t[1];
 
-    if (!firststep)
+    if (ct.scf_steps)
     {
 	//rmg_printf("scf check: <rho dv>   = %8.2e\n", t[0]);
 	RMSdV.emplace_back(t[1]);
@@ -185,7 +183,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     }
 
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
-	if (!firststep && t[1] < ct.thr_rms) CONVERGED = true;
+	if (ct.scf_steps && t[1] < ct.thr_rms) CONVERGED = true;
     }
 
     // Transfer vtot from the fine grid to the wavefunction grid
@@ -236,9 +234,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     // Calculate total energy 
     // Eigenvalues are based on in potentials and density
     GetTe (rho, rho_oppo, rhocore, rhoc, vh, vxc, Kptr, !ct.scf_steps);
-
-    if (firststep)
-	firststep = false;
 
     /* Generate new density */
     RT1 = new RmgTimer("2-Scf steps: GetNewRho");
@@ -299,7 +294,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
-	if (!firststep && fabs(ct.scf_accuracy) < ct.thr_energy) CONVERGED = true;
+	if (ct.scf_steps && fabs(ct.scf_accuracy) < ct.thr_energy) CONVERGED = true;
     }
 
     if(CONVERGED || (ct.scf_steps == (ct.max_scf_steps-1)))
@@ -324,6 +319,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
             ct.david_max_steps = 0;
             ct.scf_correction = 0.0;
             int notconv;
+
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
             {
 	        Kptr[kpt]->Davidson(vtot_psi, notconv);
@@ -342,8 +338,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 	delete F;
 	delete RT1;
 
-        // Reset firststep for hybrid calcs
-        if(ct.xc_is_hybrid) firststep = false;
     }
 
 
@@ -377,7 +371,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
-	if(!firststep && (max_unocc_res < ct.gw_threshold)) {
+	if(ct.scf_steps && (max_unocc_res < ct.gw_threshold)) {
 	    rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
 	    rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
 	    //            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
