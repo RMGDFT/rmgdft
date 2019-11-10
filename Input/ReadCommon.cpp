@@ -1051,10 +1051,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "consistency has been achieved. ",
             "exx_convergence_criterion must lie in the range (1.0e-12,1.0e-6). Resetting to default value of 1.0e-9. ", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("vexx_fft_threshold", &lc.vexx_fft_threshold, 1.0e-12, 1.0e-6, 1.0e-9,
+    If.RegisterInputKey("vexx_fft_threshold", &lc.vexx_fft_threshold, 1.0e-12, 1.0e-1, 1.0e-9,
             CHECK_AND_FIX, OPTIONAL,
             "The value for the EXX delta where we switch from single to double precision ffts. ",
-            "vexx_fft_threshold must lie in the range (1.0e-10,1.0e-6). Resetting to default value of 1.0e-9. ", CONTROL_OPTIONS);
+            "vexx_fft_threshold must lie in the range (1.0e-10,1.0e-1). Resetting to default value of 1.0e-9. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-9, 1.0e-1, 1.0e-1,
             CHECK_AND_FIX, OPTIONAL,
