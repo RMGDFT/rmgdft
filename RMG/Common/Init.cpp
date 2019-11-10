@@ -582,6 +582,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete RT3;
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {   
+            if(ct.nspin == 4) 
+            {
+            }
             RmgTimer("3-MgridSubspace: ldaUop x psi"); 
             LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
             Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
@@ -600,7 +603,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
         /*Generate the Dnm_I */
-        get_ddd (vtot);
+        get_ddd (vtot, vxc);
 
         // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);

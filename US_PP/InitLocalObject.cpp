@@ -178,6 +178,10 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         for(int idx = 0; idx < 3* FP0_BASIS; idx++) sumobject[idx] = 0.0;
     }
 
+    if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
+    {
+        for(int idx = 0; idx < 4* FP0_BASIS; idx++) sumobject[idx] = 0.0;
+    }
 
     if(object_type == ATOMIC_RHOCOMP) {
         int npes = get_PE_X() * get_PE_Y() * get_PE_Z();

@@ -86,7 +86,7 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
 
 
 
-    get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
+    GetVtotPsi(vtot_c, vtot, get_FG_RATIO());
 
     get_ddd_update (vtot);
 

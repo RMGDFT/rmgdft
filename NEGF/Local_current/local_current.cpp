@@ -442,7 +442,7 @@ void local_current ()
                 }
 
                 Sgreen_onerow (H_tri, sigma_all, sigma_idx, green_C_non, nC, iprobe2);
-                rho_munu_p (rho_mn, green_C_non, Gamma2, iprobe2); 
+                rho_munu (rho_mn, green_C_non, Gamma2, iprobe2); 
 
                 for (i = 0; i < pmo.mxllda_cond[1] * pmo.mxlocc_cond[1]; i++)
                 {

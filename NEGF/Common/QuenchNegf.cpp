@@ -160,9 +160,9 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
 
 
 
-    get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
+    GetVtotPsi(vtot_c, vtot, get_FG_RATIO());
 
-    get_ddd (vtot);
+    get_ddd (vtot, vxc);
 
     RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
     OrbitalComm(states);

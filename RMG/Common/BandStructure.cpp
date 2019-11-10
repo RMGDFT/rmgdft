@@ -72,7 +72,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     for (idx = 0; idx < get_FP0_BASIS(); idx++)
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
-    get_ddd (vtot);
+    get_ddd (vtot, vxc);
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
     if(ct.alloc_states < 2 * ct.num_states) 

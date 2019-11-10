@@ -70,6 +70,8 @@ int init_kpoints (int *mesh, int *is_shift)
         ct.kp[0].kweight = 1.0;
         ct.is_gamma = 1;
         ct.is_use_symmetry = false;
+        // in the case of noncollinear, the wavefunctions are always complex
+        if(ct.noncoll) ct.is_gamma = 0;
         return ct.num_kpts;
     }
 
@@ -164,6 +166,7 @@ int init_kpoints (int *mesh, int *is_shift)
         if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
     }
 
+    if(ct.noncoll) ct.is_gamma = 0;
     if(ct.is_gamma) 
     {
         ct.is_use_symmetry = 0;

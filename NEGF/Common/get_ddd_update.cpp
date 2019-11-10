@@ -21,6 +21,13 @@ void get_ddd_update (double * veff)
     SPECIES *sp;
 
 
+    if(ct.noncoll) 
+    {
+        printf("\n need to change for noncollinear \n");
+        fflush(NULL);
+        exit(0);
+    }
+
     /*Count the number of elements in sum array */
     sum_dim = 0;
     for (ion = 0; ion < ct.num_ions; ion++)
