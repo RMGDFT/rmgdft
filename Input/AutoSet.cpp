@@ -129,6 +129,7 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
 
     // Set grid object up
     Rmg_G = new BaseGrid(NX_GRID, NY_GRID, NZ_GRID, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, lc.FG_RATIO);
+    Rmg_halfgrid = new BaseGrid(NX_GRID/2, NY_GRID/2, NZ_GRID/2, pelc.pe_x, pelc.pe_y, pelc.pe_z, 0, 2);
 
     int FNX_GRID = NX_GRID * lc.FG_RATIO;
     int FNY_GRID = NY_GRID * lc.FG_RATIO;

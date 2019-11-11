@@ -353,7 +353,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                 std::vector<double> occs;
                 occs.resize(Kptr[0]->nstates);
                 for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
-                Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), 
+                Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Rmg_halfgrid, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), 
                         Kptr[0]->orbital_storage, ct.exx_mode);
                 if(ct.exx_mode == EXX_DIST_FFT)
                     Exx.ReadWfsFromSingleFile();

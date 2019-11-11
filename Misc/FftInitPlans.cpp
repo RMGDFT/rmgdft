@@ -35,7 +35,7 @@
 #include "RmgParallelFft.h"
 
 // Declared here with extern declarations in transition.h
-Pw *coarse_pwaves = NULL, *fine_pwaves = NULL, *ewald_pwaves = NULL;
+Pw *coarse_pwaves = NULL, *fine_pwaves = NULL, *ewald_pwaves = NULL, *half_pwaves = NULL;
 
 // Initializes common plans and plane wave objects for reuse.
 void FftInitPlans(void)
@@ -44,10 +44,12 @@ void FftInitPlans(void)
     {
         delete coarse_pwaves;
         delete fine_pwaves;
+        delete half_pwaves;
     }
 
     coarse_pwaves = new Pw(*Rmg_G, Rmg_L, 1, false);
     fine_pwaves = new Pw(*Rmg_G, Rmg_L, Rmg_G->default_FG_RATIO, false);
+    half_pwaves = new Pw(*Rmg_halfgrid, Rmg_L, 1, false);
 
     if(Rmg_G->default_FG_RATIO > 1)
     {

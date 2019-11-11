@@ -26,11 +26,12 @@
 extern PulayMixing *Pulay_rho;
 extern PulayMixing *Pulay_orbital;
 extern BaseGrid *Rmg_G;
+extern BaseGrid *Rmg_halfgrid;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
 
-extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves;
+extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
 
 double my_crtc (void);

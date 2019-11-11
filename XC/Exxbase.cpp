@@ -43,19 +43,20 @@
 // mmapped to an array. We only access the array in read-only mode.
 
 
-template Exxbase<double>::Exxbase(BaseGrid &, Lattice &, const std::string &, int, double *, double *, int);
-template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, Lattice &, const std::string &, int, double *, std::complex<double> *, int );
+template Exxbase<double>::Exxbase(BaseGrid &, BaseGrid &, Lattice &, const std::string &, int, double *, double *, int);
+template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, BaseGrid &, Lattice &, const std::string &, int, double *, std::complex<double> *, int );
 
 template Exxbase<double>::~Exxbase(void);
 template Exxbase<std::complex<double>>::~Exxbase(void);
 
 template <class T> Exxbase<T>::Exxbase (
           BaseGrid &G_in,
+          BaseGrid &G_h_in,
           Lattice &L_in,
           const std::string &wavefile_in,
           int nstates_in,
           double *occ_in,
-          T *psi_in, int mode_in) : G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), init_occ(occ_in), psi(psi_in), mode(mode_in)
+          T *psi_in, int mode_in) : G(G_in), G_h(G_h_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), init_occ(occ_in), psi(psi_in), mode(mode_in)
 {
     RmgTimer RT0("5-Functional: Exx init");
 
@@ -67,7 +68,9 @@ template <class T> Exxbase<T>::Exxbase (
     if(mode == EXX_DIST_FFT) 
     {
         pbasis = G.get_P0_BASIS(1);
+        pbasis_h = G_h.get_P0_BASIS(1);
         pwave = coarse_pwaves;
+        pwave_h = half_pwaves;
         psi_s = psi;
         LG = &G_in;
     }
@@ -114,30 +117,21 @@ template <> void Exxbase<double>::setup_gfac(void)
     gfac = new double[pbasis];
 
     const std::string &dftname = Functional::get_dft_name_rmg();
-    double scrlen = Functional::get_screening_parameter_rmg();
+    erfc_scrlen = Functional::get_screening_parameter_rmg();
+    gau_scrlen = Functional::get_gau_parameter_rmg();
 
-    if((dftname == "gaupbe") || (scr_type == GAU_SCREENING))
+    scr_type = ERFC_SCREENING;
+    if(gau_scrlen > 0.0) scr_type = GAU_SCREENING;
+
+    if(scr_type == GAU_SCREENING)
     {
-        double gau_scrlen = Functional::get_gau_parameter_rmg();
         if (gau_scrlen < 1.0e-5) gau_scrlen = 0.15;
         double a0 = pow(PI / gau_scrlen, 1.5);
+
         for(int ig=0;ig < pbasis;ig++)
         {
             if(pwave->gmask[ig])
                 gfac[ig] = a0 * exp(-tpiba2*pwave->gmags[ig] / 4.0 / gau_scrlen);
-            else
-                gfac[ig] = 0.0;
-        }
-    }
-    else if(scr_type == ERF_SCREENING)
-    {
-        double a0 = 4.0 * PI;
-        for(int ig=0;ig < pbasis;ig++)
-        {
-            if((pwave->gmags[ig] > 1.0e-6) && pwave->gmask[ig])
-                gfac[ig] = a0 * exp(-tpiba2*pwave->gmags[ig] / 4.0 / (scrlen*scrlen)) / (tpiba2*pwave->gmags[ig]);
-            else
-                gfac[ig] = 0.0;
         }
     }
     else if(scr_type == ERFC_SCREENING)
@@ -146,12 +140,10 @@ template <> void Exxbase<double>::setup_gfac(void)
         for(int ig=0;ig < pbasis;ig++)
         {
             if((pwave->gmags[ig] > 1.0e-6) && pwave->gmask[ig])
-                gfac[ig] = a0 * (1.0 - exp(-tpiba2*pwave->gmags[ig] / 4.0 / (scrlen*scrlen))) / (tpiba2*pwave->gmags[ig]);
-            else
-                gfac[ig] = 0.0;
+                gfac[ig] = a0 * (1.0 - exp(-tpiba2*pwave->gmags[ig] / 4.0 / (erfc_scrlen*erfc_scrlen))) / (tpiba2*pwave->gmags[ig]);
         }
     }
-    else  // Default is probably wrong
+    else if(scr_type == NO_SCREENING) // Default is probably wrong
     {
         for(int ig=0;ig < pbasis;ig++)
         {
@@ -213,6 +205,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
         fftw_free(w);
         fftw_free(p);
+
     }
     else
     {

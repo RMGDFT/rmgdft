@@ -41,13 +41,15 @@
 #define GAU_SCREENING 1
 #define ERF_SCREENING 2
 #define ERFC_SCREENING 3
+#define YUKAWA_SCREENING 4
 
 
 template <typename T> class Exxbase {
 
 private:
-    // BaseGrid class (distributed)
+    // BaseGrid class (distributed) and half grid
     BaseGrid &G;
+    BaseGrid &G_h;
 
     // Lattice object
     Lattice &L;
@@ -65,9 +67,7 @@ private:
 
     // Grid points on this processing node
     int pbasis;
-
-    // Total number of grid points
-    size_t N;
+    int pbasis_h;
 
     // Number of occupied orbitals
     int nstates;
@@ -99,11 +99,16 @@ private:
     // Plane wave object for local grids
     Pw *pwave;
 
+    // Plane wave object for half density grids
+    Pw *pwave_h;
+
     // <psi_i, psi_j> pairs that this MPI task is responsible for
     std::vector< std::pair <int,int> > pairs;
 
     std::mutex pair_mutex;
-    int scr_type =1;
+    double erfc_scrlen=0.0;
+    double gau_scrlen=0.0;
+    int scr_type = ERFC_SCREENING;
 
     double *gfac;
 
@@ -119,10 +124,12 @@ private:
     double *Summedints;
     std::complex<double> *wf_fft;
 
+    double eps_qdiv = 1.0e-8;
 
 public:
     Exxbase (
             BaseGrid &G, 
+            BaseGrid &G_h, 
             Lattice &L, 
             const std::string &wavefile,
             int nstates,

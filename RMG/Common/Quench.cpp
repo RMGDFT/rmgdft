@@ -88,7 +88,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             occs.resize(Kptr[kpt]->nstates);
             for(int i=0;i < Kptr[kpt]->nstates;i++) occs[i] = Kptr[kpt]->Kstates[i].occupation[0];
 
-            Exx_scf[kpt] = new Exxbase<OrbitalType>(*Kptr[kpt]->G, *Kptr[kpt]->L, "tempwave", Kptr[kpt]->nstates, occs.data(),
+            Exx_scf[kpt] = new Exxbase<OrbitalType>(*Kptr[kpt]->G, *Rmg_halfgrid, *Kptr[kpt]->L, "tempwave", Kptr[kpt]->nstates, occs.data(),
                 Kptr[kpt]->orbital_storage, ct.exx_mode);
 
             occs.clear();
@@ -103,7 +103,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         exx_step_time = my_crtc ();
         RMSdV.clear();
-
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
         {
@@ -218,14 +217,12 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
 
     // Exact exchange integrals
-    // Experimental for now. Exchange correlation type must be manually set to
-    // gaupbe in the input file (and gaupbe is the only divergence type supported).
     if(ct.exx_int_flag)
     {
         std::vector<double> occs;
         occs.resize(Kptr[0]->nstates);
         for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
-        Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), 
+        Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Rmg_halfgrid, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), 
                 Kptr[0]->orbital_storage, ct.exx_mode);
         if(ct.exx_mode == EXX_LOCAL_FFT)
             Exx.WriteWfsToSingleFile();
