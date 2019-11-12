@@ -281,150 +281,199 @@ bool Functional::dft_is_nonlocc_rmg(void)
     return dft_is_nonlocc();
 }
 
-void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
+void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vtxc, double *v, int nspin)
 {
 
-   RmgTimer RT0("5-Functional");
-   RmgTimer RT1("5-Functional: vxc");
-   double rhoneg[2]{0.0,0.0};
-   double *rho_up, *rho_down;
-   double *v_up, *v_down;
-   double *rho = new double[2*this->pbasis];
+    RmgTimer RT0("5-Functional");
+    RmgTimer RT1("5-Functional: vxc");
+    const double epsr=1.0e-6;
+    double rhoneg[2]{0.0,0.0};
+    double *rho_up, *rho_down;
+    double *v_up, *v_down;
+    double *rho = new double[nspin*this->pbasis];
 
-   for(int ix=0;ix < this->pbasis;ix++)rho[ix] = rho_in[ix];
-   if(spinflag)
-   {
-       for(int ix=0;ix < this->pbasis;ix++)rho[ix+this->pbasis] = rho_in[ix+this->pbasis];
-   }
+    for(int ix=0;ix < this->pbasis;ix++)rho[ix] = rho_in[ix];
+    // for collinear case, spin up and down are in different processor groups.
+std::cout<< "nspin = " << nspin<<std::endl;
+    if(nspin==2)
+    {
+        for(int ix=0;ix < this->pbasis;ix++)rho[ix+this->pbasis] = rho_in[ix+this->pbasis];
 
-   if(pct.spinpe == 0) {
-       rho_up = rho;
-       rho_down = &rho[this->pbasis];
-       v_up = v;
-       v_down = &v[this->pbasis];
-   }
-   else {
-       rho_down = rho;
-       rho_up = &rho[this->pbasis];
-       v_down = v;
-       v_up = &v[this->pbasis];
-   }
+        if(pct.spinpe == 0) {
+            rho_up = rho;
+            rho_down = &rho[this->pbasis];
+            v_up = v;
+            v_down = &v[this->pbasis];
+        }
+        else {
+            rho_down = rho;
+            rho_up = &rho[this->pbasis];
+            v_down = v;
+            v_up = &v[this->pbasis];
+        }
+    }
+    else if(nspin == 4)
+    {
+        rho_up = rho;
+        rho_down = &rho[this->pbasis];
+        v_up = v;
+        v_down = &v[this->pbasis];
+        double mrho;
+        for(int idx = 0; idx < this->pbasis; idx++)
+        {
+            mrho = rho_in[idx + this->pbasis] *rho_in[idx + this->pbasis];
+            mrho += rho_in[idx + 2*this->pbasis] *rho_in[idx + 2*this->pbasis];
+            mrho += rho_in[idx + 3*this->pbasis] *rho_in[idx + 3*this->pbasis];
+            mrho = std::sqrt(mrho);
+            rho_up[idx] = 0.5 * rho_in[idx] + mrho;
+            rho_down[idx] = 0.5* rho_in[idx] - mrho;
+        }
 
-   etxc = 0.0;
-   vtxc = 0.0;
-   for(int ix = 0;ix < this->pbasis;ix++) v[ix] = 0.0;
-   if(spinflag) for(int ix = 0;ix < this->pbasis;ix++) v[ix + this->pbasis] = 0.0;
+    }
+
+    etxc = 0.0;
+    vtxc = 0.0;
+    for(int ix = 0;ix < this->pbasis;ix++) v[ix] = 0.0;
+    for(int ispin = 1; ispin < nspin; ispin++)
+        for(int ix = 0;ix < this->pbasis;ix++) v[ix + ispin * this->pbasis] = 0.0;
 
 
-   // First get the local exchange and correlation
-   RmgTimer *RT2 = new RmgTimer("5-Functional: vxc local");
-   if(!spinflag) {
+    // First get the local exchange and correlation
+    RmgTimer *RT2 = new RmgTimer("5-Functional: vxc local");
+    if(nspin==1) {
 
-       double etxcl=0.0, vtxcl=0.0, rhonegl=0.0;
+        double etxcl=0.0, vtxcl=0.0, rhonegl=0.0;
 #pragma omp parallel for reduction(+:etxcl,vtxcl), reduction(-:rhonegl)
-       // spin unpolarized  
-       for(int ix=0;ix < this->pbasis;ix++) {
+        // spin unpolarized  
+        for(int ix=0;ix < this->pbasis;ix++) {
 
-           double trho = rho[ix] + rho_core[ix];
-           double atrho = fabs(trho);
-           double ex, ec, vx, vc;
-           if(atrho > SMALL_CHARGE) {
+            double trho = rho[ix] + rho_core[ix];
+            double atrho = fabs(trho);
+            double ex, ec, vx, vc;
+            if(atrho > SMALL_CHARGE) {
 
-               xc( &trho, &ex, &ec, &vx, &vc);
-               v[ix] = vx + vc;
-               etxcl = etxcl + ( ex + ec ) * trho;
-               vtxcl = vtxcl + v[ix] * rho[ix];
+                xc( &trho, &ex, &ec, &vx, &vc);
+                v[ix] = vx + vc;
+                etxcl = etxcl + ( ex + ec ) * trho;
+                vtxcl = vtxcl + v[ix] * rho[ix];
 
-           }
+            }
 
-           else {
-               double rhotem = SMALL_CHARGE * (1.0 + SMALL_CHARGE);
-               xc( &rhotem, &ex, &ec, &vx, &vc );
-               double frac = std::cbrt(atrho/SMALL_CHARGE);
-               v[ix] = (vx + vc) * frac;
-               etxcl = etxcl + ( ex + ec ) * trho * frac;
-               vtxcl = vtxcl + v[ix] * rho[ix];
-                
-           }
+            else {
+                double rhotem = SMALL_CHARGE * (1.0 + SMALL_CHARGE);
+                xc( &rhotem, &ex, &ec, &vx, &vc );
+                double frac = std::cbrt(atrho/SMALL_CHARGE);
+                v[ix] = (vx + vc) * frac;
+                etxcl = etxcl + ( ex + ec ) * trho * frac;
+                vtxcl = vtxcl + v[ix] * rho[ix];
 
-           if(rho[ix] < 0.0) rhonegl = rhonegl - rho[ix];
+            }
 
-       } 
-       etxc += etxcl;
-       vtxc += vtxcl;
-       rhoneg[0] += rhonegl;
+            if(rho[ix] < 0.0) rhonegl = rhonegl - rho[ix];
 
-   } 
-   else {
+        } 
+        etxc += etxcl;
+        vtxc += vtxcl;
+        rhoneg[0] += rhonegl;
 
-       // spin polarized
-       double etxcl=0.0, vtxcl=0.0;
+    } 
+    else {
+
+        // spin polarized
+        double etxcl=0.0, vtxcl=0.0;
 #pragma omp parallel for reduction(+:etxcl,vtxcl)
-       for(int ix=0;ix < this->pbasis;ix++) {
+        for(int ix=0;ix < this->pbasis;ix++) {
 
-           double trho = rho_up[ix] + rho_down[ix] + rho_core[ix];
-           double atrho = fabs(trho);
-           double vx0, vx1, vc0, vc1;
-           double ex, ec;
-           if(atrho > SMALL_CHARGE) {
+            double trho = rho_up[ix] + rho_down[ix] + rho_core[ix];
+            double atrho = fabs(trho);
+            double vx0, vx1, vc0, vc1;
+            double ex, ec;
+            if(atrho > SMALL_CHARGE) {
 
-               double zeta = (rho_up[ix] - rho_down[ix]) / atrho;
-               if( fabs( zeta ) > 1.0 ) {
-                   double tzeta = 1.0;
-                   if(zeta < 0.0) tzeta = -1.0;
-                   zeta = tzeta;
-               }
-               xc_spin( &trho, &zeta, &ex, &ec, &vx0, &vx1, &vc0, &vc1 );
-               v_up[ix] = vx0 + vc0;
-               v_down[ix] = vx1 + vc1;
-               etxcl = etxcl + ( ex + ec ) * trho;
-               vtxcl = vtxcl + v_up[ix] * rho_up[ix] + v_down[ix] * rho_down[ix];
+                double zeta = (rho_up[ix] - rho_down[ix]) / atrho;
+                if( fabs( zeta ) > 1.0 ) {
+                    double tzeta = 1.0;
+                    if(zeta < 0.0) tzeta = -1.0;
+                    zeta = tzeta;
+                }
+                xc_spin( &trho, &zeta, &ex, &ec, &vx0, &vx1, &vc0, &vc1 );
+                v_up[ix] = vx0 + vc0;
+                v_down[ix] = vx1 + vc1;
+                etxcl = etxcl + ( ex + ec ) * trho;
+                vtxcl = vtxcl + v_up[ix] * rho_up[ix] + v_down[ix] * rho_down[ix];
 
-           }
-           else {
+            }
+            else {
 
-           }
+            }
 
-       }
-       etxc += etxcl;
-       vtxc += vtxcl;
+        }
+        etxc += etxcl;
+        vtxc += vtxcl;
 
-   }
-   delete RT2;
-
-
-   // Next add in any gradient corrections
-   RmgTimer *RT3 = new RmgTimer("5-Functional: vxc grad");
-   if(!spinflag) {
-       this->gradcorr(rho, rho_core, etxc, vtxc, v);
-   }
-   else {
-       this->gradcorr_spin(rho, rho_core, etxc, vtxc, v);
-   }
-   delete RT3;
+    }
+    delete RT2;
 
 
-   // And finally any non-local corrections
-   RmgTimer *RT4 = new RmgTimer("5-Functional: vxc nonlocal");
-   if(this->dft_is_nonlocc_rmg()) {
-       double netxc=0.0, nvtxc=0.0;
-       this->nlc_rmg(rho, rho_core, netxc, nvtxc, v, spinflag);
-       vtxc += nvtxc;
-       etxc += netxc;
-   }
-   delete RT4;
+    // Next add in any gradient corrections
+    RmgTimer *RT3 = new RmgTimer("5-Functional: vxc grad");
+    if(nspin == 1) {
+        this->gradcorr(rho, rho_core, etxc, vtxc, v);
+    }
+    else {
+        this->gradcorr_spin(rho_up, rho_down, rho_core, etxc, vtxc, v_up, v_down);
+    }
+    delete RT3;
 
-   vtxc = vtxc * L->omega / (double)this->N;
-   etxc = etxc * L->omega / (double)this->N;
+    if(nspin == 4)
+    {
+        double vt, vd, mrho;
+        for(int idx = 0; idx < this->pbasis; idx++)
+        {
+            vt = 0.5 * (v_up[idx] + v_down[idx]);
+            vd = 0.5 * (v_up[idx] - v_down[idx]);
 
-   vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
-   etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
+            mrho = rho_in[idx + this->pbasis] *rho_in[idx + this->pbasis];
+            mrho += rho_in[idx + 2*this->pbasis] *rho_in[idx + 2*this->pbasis];
+            mrho += rho_in[idx + 3*this->pbasis] *rho_in[idx + 3*this->pbasis];
+            mrho = std::sqrt(mrho);
+            
+            v[idx] = vt;
+            
+            if(mrho > epsr)
+            {
+                v[idx +   this->pbasis] = rho_in[idx +   this->pbasis] /mrho * vd;
+                v[idx + 2*this->pbasis] = rho_in[idx + 2*this->pbasis] /mrho * vd;
+                v[idx + 3*this->pbasis] = rho_in[idx + 3*this->pbasis] /mrho * vd;
+            }
+        }    
+    }
+    // And finally any non-local corrections
+    RmgTimer *RT4 = new RmgTimer("5-Functional: vxc nonlocal");
+    if(this->dft_is_nonlocc_rmg()) {
+        if(nspin == 4) 
+        {
+            throw RmgFatalException() << "vdw with noncollinear not programed. " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
-   delete [] rho;
+        }
+        double netxc=0.0, nvtxc=0.0;
+        this->nlc_rmg(rho, rho_core, netxc, nvtxc, v);
+        vtxc += nvtxc;
+        etxc += netxc;
+    }
+    delete RT4;
+
+    vtxc = vtxc * L->omega / (double)this->N;
+    etxc = etxc * L->omega / (double)this->N;
+
+    vtxc = RmgSumAll(vtxc, this->T->get_MPI_comm());
+    etxc = RmgSumAll(etxc, this->T->get_MPI_comm());
+
+    delete [] rho;
 }
 
 // Applies non-local corrections for the correlation
-void Functional::nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag)
+void Functional::nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v)
 {
     int inlc = get_inlc();
 
@@ -529,15 +578,15 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
 #pragma omp parallel for
     for(int ix=0;ix < this->pbasis;ix++) {
-      double arho = fabs(rhoout[ix]);
-      if(arho > epsr) {
-        double gdot =  ( h[ix] * gx[ix] +
-                         h[ix+this->pbasis] * gy[ix] + 
-                         h[ix+2*this->pbasis] * gz[ix] ) ;
-        v[ix] -= gdot;
-        v[ix] -= vxc2[ix] * d2rho[ix];
-        vtxcgc -= rhoout[ix]*(gdot + vxc2[ix] * d2rho[ix]);
-      }
+        double arho = fabs(rhoout[ix]);
+        if(arho > epsr) {
+            double gdot =  ( h[ix] * gx[ix] +
+                    h[ix+this->pbasis] * gy[ix] + 
+                    h[ix+2*this->pbasis] * gz[ix] ) ;
+            v[ix] -= gdot;
+            v[ix] -= vxc2[ix] * d2rho[ix];
+            vtxcgc -= rhoout[ix]*(gdot + vxc2[ix] * d2rho[ix]);
+        }
     }
 
     vtxc = vtxc + vtxcgc;
@@ -552,29 +601,13 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 }
 
 // Applies gradient corrections for spin case
-void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, double &vtxc, double *v)
+void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_core, double &etxc, double &vtxc, double *v_up, double *v_down)
 {
     if(!this->dft_is_gradient_rmg()) return;
 
-    double *rho_up, *rho_down;
-    double *v_up, *v_down;
-
-    if(pct.spinpe == 0) {
-        rho_up = rho;
-        rho_down = &rho[this->pbasis];
-        v_up = v;
-        v_down = &v[this->pbasis];
-    }
-    else {
-        rho_down = rho;
-        rho_up = &rho[this->pbasis];
-        v_down = v;
-        v_up = &v[this->pbasis];
-    }
-
     double etxcgc = 0.0;
     double vtxcgc = 0.0;
- 
+
     double grho2[2];
     const double epsr=1.0e-6;
     double epsg_guard = 1.0e-7;
@@ -631,15 +664,15 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
         double v1xup, v1xdw, v2xup, v2xdw, sx;
 
         gcx_spin( &arho_up, &arho_down, &pgrho2_up,
-                        &pgrho2_down, &sx, &v1xup, &v1xdw, &v2xup, &v2xdw );
+                &pgrho2_down, &sx, &v1xup, &v1xdw, &v2xup, &v2xdw );
 
-         double sc    = 0.0;
-         double v1cup = 0.0;
-         double v1cdw = 0.0;
-         double v2c   = 0.0;
-         double v2cup = 0.0;
-         double v2cdw = 0.0;
-         v2cud[k] = 0.0;
+        double sc    = 0.0;
+        double v1cup = 0.0;
+        double v1cdw = 0.0;
+        double v2c   = 0.0;
+        double v2cup = 0.0;
+        double v2cdw = 0.0;
+        v2cud[k] = 0.0;
 
         if(arho > epsr) {
 
@@ -650,7 +683,7 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
                 double grhoud = gx_up[k]*gx_down[k] + gy_up[k]*gy_down[k] + gz_up[k]*gz_down[k];
 
                 gcc_spin_more( &arho_up, &arho_down, &grhoup, &grhodw, &grhoud,
-                                  &sc, &v1cup, &v1cdw, &v2cup, &v2cdw, &v2cud[k] );
+                        &sc, &v1cup, &v1cdw, &v2cup, &v2cdw, &v2cud[k] );
 
             }
             else {
@@ -658,9 +691,9 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
                 double zeta = ( rhoout_up[k] - rhoout_down[k]) / arho;
                 zeta = (arho_up - arho_down) / arho;
                 double grh2 = (gx_up[k] + gx_down[k]) * (gx_up[k] + gx_down[k]) +
-                              (gy_up[k] + gy_down[k]) * (gy_up[k] + gy_down[k]) +
-                              (gz_up[k] + gz_down[k]) * (gz_up[k] + gz_down[k]);
-                
+                    (gy_up[k] + gy_down[k]) * (gy_up[k] + gy_down[k]) +
+                    (gz_up[k] + gz_down[k]) * (gz_up[k] + gz_down[k]);
+
                 gcc_spin( &arho, &zeta, &grh2, &sc, &v1cup, &v1cdw, &v2c );
                 v2cup = v2c;
                 v2cdw = v2c;
@@ -672,9 +705,9 @@ void Functional::gradcorr_spin(double *rho, double *rho_core, double &etxc, doub
                 v_down[k] = v_down[k] + ( v1xdw + v1cdw );
 
                 vtxcgc = vtxcgc +
-                         ( v1xup + v1cup ) * ( rhoout_up[k] - 0.5*rho_core[k]);
+                    ( v1xup + v1cup ) * ( rhoout_up[k] - 0.5*rho_core[k]);
                 vtxcgc = vtxcgc + 
-                         ( v1xdw + v1cdw ) * ( rhoout_down[k] - 0.5*rho_core[k]);
+                    ( v1xdw + v1cdw ) * ( rhoout_down[k] - 0.5*rho_core[k]);
                 etxcgc = etxcgc + ( sx + sc );
 
                 //  used later for second term of the gradient correction

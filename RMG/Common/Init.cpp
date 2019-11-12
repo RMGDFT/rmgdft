@@ -420,7 +420,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
     delete(RT1);
 
-
+std::cout<<"cccc" << std::endl;
     /* Initialize orbitals */
     if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE))
     {
@@ -431,6 +431,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete(RT2);
     }
 
+std::cout<<"dddd" << std::endl;
     if (ct.runflag == RANDOM_START)
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: RandomStart");
@@ -473,11 +474,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     
     /* Write header, do it here rather than later, otherwise other information is printed first*/
+std::cout<<"eeee" << std::endl;
     if (pct.imgpe == 0)
     {
         WriteHeader (); 
     }
 
+std::cout<<"ffff" << std::endl;
     if (ct.forceflag == BAND_STRUCTURE) 
     {
         ct.num_states = ct.run_states;
@@ -560,7 +563,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         double etxc, vtxc;
         RT1 = new RmgTimer("2-Init: exchange/correlation");
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+        F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
         // Initial vxc and vh can be very noisy
         FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
         delete F;

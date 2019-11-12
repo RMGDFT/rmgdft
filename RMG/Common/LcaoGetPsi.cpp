@@ -119,6 +119,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
     // in the case of noncollinear, the first state_count wavefunctions will have (atomic_psi, 0) and the second state_count wavefuntions will
     // have (0, atomic_psi). 
+    std::cout<< "lcao " << ct.noncoll_factor << std::endl;
     if(state_count * ct.noncoll_factor <= nstates)
     {
         for(int st = 0;st < state_count;st++)

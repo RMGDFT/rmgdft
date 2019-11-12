@@ -305,21 +305,23 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
                 }
         }
 
-        if(ct.noncoll && ncomp == 10)
+        if(ct.noncoll)
         {
-            it1++;
-            std::string rho_spin_theta = *it1;
-            init_spin_angle1 = std::atof(rho_spin_theta.c_str());
-            it1++;
-            std::string rho_spin_phi = *it1;
-            init_spin_angle2 = std::atof(rho_spin_phi.c_str());
-        }
-        else
-        {
-            throw RmgFatalException() << 
-                "noncollinear require 10 iterm in atom lines:\n" << Atom << "\n"; 
+            if(ncomp == 10)
+            {
+                it1++;
+                std::string rho_spin_theta = *it1;
+                init_spin_angle1 = std::atof(rho_spin_theta.c_str());
+                it1++;
+                std::string rho_spin_phi = *it1;
+                init_spin_angle2 = std::atof(rho_spin_phi.c_str());
+            }
+            else 
+            {
+                throw RmgFatalException() << 
+                    "noncollinear require 10 iterm in atom lines:\n" << Atom << "\n"; 
 
-
+            }
         }
 
         Atoms_read[nions].movable[0] = movable[0];

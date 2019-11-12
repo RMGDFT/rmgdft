@@ -1180,12 +1180,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         rmg_error_handler (__FILE__, __LINE__, "You have specified occupations for spin-up spin-down and non-spin cases which is ambiguous. Terminating.");
     }
 
-    lc.noncoll = 1;
     lc.nspin = 1;
+    lc.noncoll_factor = 1;
     if(lc.noncoll) 
     {
         lc.nspin = 4;
-        lc.noncoll = 2;
+        lc.noncoll_factor = 2;
     }
     if(lc.spin_flag) {
 

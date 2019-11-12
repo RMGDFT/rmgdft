@@ -60,7 +60,7 @@ private:
 
 
     void gradcorr(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
-    void gradcorr_spin(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
+    void gradcorr_spin(double *rho_up, double *rho_down, double *rho_core, double &etxc, double &vtxc, double *v_up, double *v_down);
 
 public:
     Functional (BaseGrid &G, 
@@ -81,8 +81,8 @@ public:
     bool igcc_is_lyp_rmg(void);
     bool dft_is_nonlocc_rmg(void);
     bool dft_has_finite_size_correction_rmg(void);
-    void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
-    void nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int spinflag);
+    void v_xc(double *rho, double *rho_core, double &etxc, double &vtxc, double *v, int nspin);
+    void nlc_rmg(double *rho, double *rho_core, double &etxc, double &vtxc, double *v);
     static void start_exx_rmg(void);
     static void stop_exx_rmg(void);
     static bool is_exx_active(void);

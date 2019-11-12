@@ -68,8 +68,6 @@ void get_ddd (double * veff, double *vxc)
                     }
                 }               /*end if (ncount) */
 
-                sum[sum_idx] *= get_vel_f();
-
                 idx++;
                 sum_idx++;
             }                   /*end for (j = i; j < nh; j++) */

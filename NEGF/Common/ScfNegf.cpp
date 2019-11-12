@@ -291,7 +291,7 @@ void update_pot (double *vxc, double *vh, double * vxc_old, double * vh_old, dou
     double vtxc, etxc;
     RmgTimer *RT1 = new RmgTimer("2-Init: exchange/correlation");
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+    F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
     delete F;
     delete RT1;
 

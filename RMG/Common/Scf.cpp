@@ -66,7 +66,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     RmgTimer RT0("2-Scf steps"), *RT1;
     RmgTimer RTt("1-TOTAL: run: Scf steps");
-    int nspin = (spin_flag + 1);
 
     bool CONVERGED = false;
     double t3;
@@ -88,7 +87,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     /* allocate memory for eigenvalue send array and receive array */
-    new_rho = new double[nspin * FP0_BASIS];
+    new_rho = new double[ct.nspin * FP0_BASIS];
     new_rho_oppo = &new_rho[FP0_BASIS];
     vtot = new double[FP0_BASIS];
     vtot_psi = new double[P0_BASIS];
@@ -102,7 +101,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     /* Evaluate XC energy and potential */
     RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.spin_flag );
+    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
     if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1)) 
         FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
     //if(pct.gridpe==0)printf("\nXC = %f  %f\n", ct.XC, ct.vtxc);
@@ -170,8 +169,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     t[0] *= get_vel_f();
 
     /* get the averaged value over each spin and each fine grid */
-    t[1] = sqrt (t[1] / ((double) (nspin * ct.psi_fnbasis)));  
-    t[2] /= ((double) (nspin * ct.psi_fnbasis));   
+    t[1] = sqrt (t[1] / ((double) (ct.nspin * ct.psi_fnbasis)));  
+    t[2] /= ((double) (ct.nspin * ct.psi_fnbasis));   
 
     ct.rms = t[1];
 
@@ -291,7 +290,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
     sum = 0.5 * vel * sum;
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.img_comm);
-    ct.scf_accuracy = sum / nspin;
+    ct.scf_accuracy = sum / ct.nspin;
 
     // Compute variational energy correction term if any
     sum = EnergyCorrection(Kptr, rho, new_rho, vh, vh_out);
@@ -338,7 +337,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
         for(int i = 0;i < FP0_BASIS;i++) vxc_in[i] = vxc[i];
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(new_rho, rhocore, ct.XC, ct.vtxc, vxc, ct.spin_flag );
+        F->v_xc(new_rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
         delete F;
         delete RT1;
 

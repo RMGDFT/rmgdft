@@ -286,7 +286,7 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     int ione = 1;
 
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.spin_flag );
+    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
 
     // get gradient of rho+rhocore
     daxpy (&pbasis, &alpha, rhocore, &ione, rho, &ione);
