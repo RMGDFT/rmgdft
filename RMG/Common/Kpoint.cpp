@@ -1162,7 +1162,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
 
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
-    size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride());
+    size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride() * ct.noncoll_factor);
     sint_alloc *= (size_t)ct.max_states;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
 #if GPU_ENABLED

@@ -50,10 +50,10 @@
 #endif
 
 
-template void Kpoint<double>::Subdiag(double *, int);
-template void Kpoint<std::complex<double>>::Subdiag(double *, int);
+template void Kpoint<double>::Subdiag(double *, double *, int);
+template void Kpoint<std::complex<double>>::Subdiag(double *, double *, int);
 
-template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, int subdiag_driver)
+template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver)
 {
     RmgTimer RT0("4-Diagonalization");
 

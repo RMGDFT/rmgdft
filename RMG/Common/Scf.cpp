@@ -70,6 +70,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     bool CONVERGED = false;
     double t3;
     double *vtot, *vtot_psi, *new_rho, *new_rho_oppo;
+    double *vxc_psi;
     double t[3];                  /* SCF checks and average potential */
     double max_unocc_res = 0.0;
 
@@ -97,13 +98,18 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
     }
 
+    if(ct.noncoll) vxc_psi = new double[4*P0_BASIS];
+
 
     /* Evaluate XC energy and potential */
     RT1 = new RmgTimer("2-Scf steps: exchange/correlation");
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
     if(ct.filter_dpot && (Rmg_G->default_FG_RATIO > 1)) 
-        FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+    {
+        for(int is = 0; is < ct.nspin; is++)
+            FftFilter(&vxc[is*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+    }
     //if(pct.gridpe==0)printf("\nXC = %f  %f\n", ct.XC, ct.vtxc);
     delete F;
     delete RT1;
@@ -113,25 +119,25 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     /*Simplified solvent model, experimental */
     if (ct.num_tfions > 0)
     {
-	rho_tf = new double[FP0_BASIS];
-	rho_save = new double[FP0_BASIS];
+        rho_tf = new double[FP0_BASIS];
+        rho_save = new double[FP0_BASIS];
 
-	//get_dipole (rho);
-	rmg_printf("\nCalling get_tf_rho\n");
-	get_tf_rho(rho_tf);
-	rmg_printf("get_tf_rho Done\n");
+        //get_dipole (rho);
+        rmg_printf("\nCalling get_tf_rho\n");
+        get_tf_rho(rho_tf);
+        rmg_printf("get_tf_rho Done\n");
 
-	for (int idx = 0; idx < FP0_BASIS; idx++)
-	{
-	    /*Save original rho, copy it into rho_save*/
-	    rho_save[idx] = rho[idx];
+        for (int idx = 0; idx < FP0_BASIS; idx++)
+        {
+            /*Save original rho, copy it into rho_save*/
+            rho_save[idx] = rho[idx];
 
-	    /*Add rho_tf to rho*/
-	    rho[idx] += rho_tf[idx];
+            /*Add rho_tf to rho*/
+            rho[idx] += rho_tf[idx];
 
-	    /*Check that rho_tf chargeis indeed 0, can be removed if it works well*/
-	    t[0] += rho_tf[idx];
-	}                           /* idx */
+            /*Check that rho_tf chargeis indeed 0, can be removed if it works well*/
+            t[0] += rho_tf[idx];
+        }                           /* idx */
     }
 
 
@@ -142,10 +148,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     /*Simplified solvent model, experimental */
     if (ct.num_tfions > 0)
     {
-	for (int idx = 0; idx < FP0_BASIS; idx++)
-	{ 
-	    rho[idx] = rho_save[idx];
-	}
+        for (int idx = 0; idx < FP0_BASIS; idx++)
+        { 
+            rho[idx] = rho_save[idx];
+        }
     }
 
 
@@ -199,7 +205,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
         if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || ((ct.scf_steps < 4) && (ct.md_steps == 0) && (ct.runflag != RESTART ))) {
             RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
-            Kptr[kpt]->MgridSubspace(vtot_psi);
+            Kptr[kpt]->MgridSubspace(vtot_psi, vxc_psi);
             delete RT1;
         }
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {

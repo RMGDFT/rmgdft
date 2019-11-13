@@ -74,7 +74,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
 {
 
-    RmgTimer RT0("Init");
+   RmgTimer RT0("Init");
     int kpt, ic, idx, state, st1, P0_BASIS, FP0_BASIS;
     int species;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
@@ -420,7 +420,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
     delete(RT1);
 
-std::cout<<"cccc" << std::endl;
     /* Initialize orbitals */
     if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE))
     {
@@ -581,11 +580,11 @@ std::cout<<"ffff" << std::endl;
     for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
-        Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local);
+        Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
         delete RT3;
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {   
-            if(ct.nspin == 4) 
+            if(ct.noncoll)
             {
             }
             RmgTimer("3-MgridSubspace: ldaUop x psi"); 
@@ -601,6 +600,7 @@ std::cout<<"ffff" << std::endl;
         /*dnmI has to be stup before calling subdiag */
         vtot = new double[FP0_BASIS];
         double *vtot_psi = new double[P0_BASIS];
+        double *vxc_psi = NULL;
 
         for (idx = 0; idx < FP0_BASIS; idx++)
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
@@ -610,6 +610,13 @@ std::cout<<"ffff" << std::endl;
 
         // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+        if(ct.noncoll)
+        {
+            vxc_psi = new double[ct.nspin * P0_BASIS];
+            for(int is = 0; is < ct.nspin; is++)
+                GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
+        }
+                
 
         /*Now we can do subspace diagonalization */
         double *new_rho=new double[FP0_BASIS];
@@ -617,7 +624,7 @@ std::cout<<"ffff" << std::endl;
         {
 
             RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
-            Kptr[kpt]->Subdiag (vtot_psi, ct.subdiag_driver);
+            Kptr[kpt]->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
 
             // Force reinit of MainSp in case initialzation matrices are
             // not the same size
@@ -636,7 +643,7 @@ std::cout<<"ffff" << std::endl;
             delete RT2;
 
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
-            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local);
+            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates*ct.noncoll_factor, Kptr[kpt]->newsint_local);
             delete RT3;
             if(ct.ldaU_mode != LDA_PLUS_U_NONE)
             {   
@@ -668,6 +675,7 @@ std::cout<<"ffff" << std::endl;
         /*Release vtot memory */
         delete [] vtot_psi;
         delete [] vtot;
+        if(ct.noncoll) delete [] vxc_psi;
 
 
     }

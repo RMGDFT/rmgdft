@@ -151,7 +151,6 @@ void InitPseudo ()
             L->latgen(celldm, &omega, a0, a1, a2, true);
 
             sp->prj_pwave = new Pw(*OG, *L, 1, false);
-            delete L;
         }
         else
         {

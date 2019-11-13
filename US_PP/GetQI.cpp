@@ -175,8 +175,9 @@ void GetQI (void)
 
             if (!icount) continue;
 
-            Atoms[ion].Qindex.resize(icount);
-            for (idx1 = 0; idx1 < icount; idx1++) Atoms[ion].Qindex[idx1] = (int) pvec[idx1];
+         //   Atoms[ion].Qindex.resize(icount);
+            //for (idx1 = 0; idx1 < icount; idx1++) Atoms[ion].Qindex[idx1] = (int) pvec[idx1];
+            for (idx1 = 0; idx1 < icount; idx1++) Atoms[ion].Qindex.push_back( pvec[idx1] );
 
 
             size = nh * (nh + 1) / 2;

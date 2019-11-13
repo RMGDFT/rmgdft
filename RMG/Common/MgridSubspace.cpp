@@ -49,11 +49,11 @@
 // Solver that uses multigrid preconditioning and subspace rotations
 // Part of Kpoint class
 
-template void Kpoint<double>::MgridSubspace(double *);
-template void Kpoint<std::complex<double>>::MgridSubspace(double *);
+template void Kpoint<double>::MgridSubspace(double *, double *);
+template void Kpoint<std::complex<double>>::MgridSubspace(double *, double *);
 
 
-template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot_psi)
+template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot_psi, double *vxc_psi)
 {
     RmgTimer RT0("3-MgridSubspace"), *RT1;
     BaseThread *T = BaseThread::getBaseThread(0);
@@ -252,7 +252,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
 
     RT1 = new RmgTimer("3-MgridSubspace: Diagonalization");
-    this->Subdiag (vtot_psi, ct.subdiag_driver);
+    this->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
     delete(RT1);
 
     // wavefunctions have changed, projectors have to be recalculated */
