@@ -114,7 +114,7 @@ template <> void Exxbase<std::complex<double>>::fftpair(std::complex<double> *ps
 // This implements different ways of handling the divergence at G=0
 template <> void Exxbase<double>::setup_gfac(void)
 {
-    gfac = new double[pbasis];
+    gfac = new double[pbasis]();
 
     const std::string &dftname = Functional::get_dft_name_rmg();
     erfc_scrlen = Functional::get_screening_parameter_rmg();
@@ -149,8 +149,6 @@ template <> void Exxbase<double>::setup_gfac(void)
         {
             if((pwave->gmags[ig] > 1.0e-6) && pwave->gmask[ig])
                 gfac[ig] = 1.0/(pwave->gmags[ig] *tpiba2);
-            else
-                gfac[ig] = 0.0;
         }
     }
 
