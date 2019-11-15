@@ -896,6 +896,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.");
 #endif
 
+    If.RegisterInputKey("write_orbital_overlaps", &lc.write_orbital_overlaps, false,
+            "If true the orbital overlap matrix from successive MD steps is written.");
+
     If.RegisterInputKey("kohn_sham_ke_fft", &lc.kohn_sham_ke_fft, false,
             "Special purpose flag which will force use of an FFT for the kinetic energy operator.");
 

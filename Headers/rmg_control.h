@@ -58,6 +58,8 @@ public:
     bool spin_manager_thread;
     bool spin_worker_threads;
 
+    bool write_orbital_overlaps;
+
     /** Description of the run. */
     std::string description;
 
