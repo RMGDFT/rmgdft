@@ -36,6 +36,7 @@
 #include "transition.h"
 #include "rmgtypedefs.h"
 #include "pe_control.h"
+#include "GpuAlloc.h"
 
 // This class implements exact exchange for delocalized orbitals.
 // The wavefunctions are stored in a single file and are not domain
@@ -112,7 +113,8 @@ template <> void Exxbase<std::complex<double>>::fftpair(std::complex<double> *ps
 // This implements different ways of handling the divergence at G=0
 template <> void Exxbase<double>::setup_gfac(void)
 {
-    gfac = new double[pwave->pbasis]();
+    gfac = (double *)GpuMallocManaged(pwave->pbasis*sizeof(double));
+    std::fill(gfac, gfac+pwave->pbasis, 0.0);
 
     const std::string &dftname = Functional::get_dft_name_rmg();
     erfc_scrlen = Functional::get_screening_parameter_rmg();
@@ -208,13 +210,17 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 //        rmg_error_handler (__FILE__,__LINE__,"Exx potential mode not programmed yet. Terminating.");
         // Write serial wavefunction files. May need to do some numa optimization here at some point
         for(int idx=0;idx < nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
+        RmgTimer *RT1 = new RmgTimer("5-Functional: Exx writewfs");
         WriteWfsToSingleFile();
+        delete RT1;
 
         // Mmap wavefunction array
         std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe);
+        RT1 = new RmgTimer("5-Functional: mmap");
         serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
         if(serial_fd < 0)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+        delete RT1;
 
         size_t length = (size_t)nstates_occ * pwave->pbasis * sizeof(double);
         psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
@@ -267,6 +273,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         int gdimz = G.get_NZ_GRID(1);
         G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
 
+        RT2 = new RmgTimer("5-Functional: Exx remap");
         for(int i=0;i < nstates_occ;i++)
         {
             for(int ix=0;ix < dimx;ix++)
@@ -282,6 +289,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 }
             }
         }
+        delete RT2;
 
         fftw_free(w);
         fftw_free(p);
@@ -551,6 +559,7 @@ template <class T> Exxbase<T>::~Exxbase(void)
     //std::string filename= wavefile + "_spin"+ std::to_string(pct.spinpe);
     //unlink(filename.c_str());
 
+    GpuFreeManaged(gfac);
     delete LG;
     MPI_Comm_free(&lcomm); 
     delete pwave;
