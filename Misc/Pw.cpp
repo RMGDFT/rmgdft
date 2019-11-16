@@ -167,6 +167,22 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
                      reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
                 FFTW_BACKWARD, FFTW_MEASURE);
 
+      fftwf_forward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftwf_backward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+      fftwf_forward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftwf_backward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
       delete [] out;
       delete [] in;
 
@@ -485,6 +501,10 @@ Pw::~Pw(void)
       fftw_destroy_plan(fftw_forward_plan_inplace);
       fftw_destroy_plan(fftw_backward_plan);
       fftw_destroy_plan(fftw_forward_plan);
+      fftwf_destroy_plan(fftwf_backward_plan_inplace);
+      fftwf_destroy_plan(fftwf_forward_plan_inplace);
+      fftwf_destroy_plan(fftwf_backward_plan);
+      fftwf_destroy_plan(fftwf_forward_plan);
 #if GPU_ENABLED
       for (int i = 0; i < num_streams; i++)
       {

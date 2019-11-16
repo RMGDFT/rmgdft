@@ -64,10 +64,10 @@ template <class T> Exxbase<T>::Exxbase (
     tpiba = 2.0 * PI / L.celldm[0];
     tpiba2 = tpiba * tpiba;
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
+    pbasis = G.get_P0_BASIS(1);
 
     if(mode == EXX_DIST_FFT) 
     {
-        pbasis = G.get_P0_BASIS(1);
         pbasis_h = G_h.get_P0_BASIS(1);
         pwave = coarse_pwaves;
         pwave_h = half_pwaves;
@@ -76,14 +76,12 @@ template <class T> Exxbase<T>::Exxbase (
     }
     else
     {
-        pbasis = G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1);
         LG = new BaseGrid(G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), 1, 1, 1, 0, 1);
         int rank = G.get_rank();
         MPI_Comm_split(G.comm, rank+1, rank, &lcomm);
         LG->set_rank(0, lcomm);
         pwave = new Pw(*LG, L, 1, false);
-
-
+        vexx_global = new T[pwave->pbasis * nstates]();
     }
 
     setup_gfac();
@@ -92,19 +90,19 @@ template <class T> Exxbase<T>::Exxbase (
 
 template <> void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p)
 {
-    for(int idx=0;idx < pbasis;idx++) p[idx] = std::complex<double>(psi_i[idx] * psi_j[idx], 0.0);
+    for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = std::complex<double>(psi_i[idx] * psi_j[idx], 0.0);
     pwave->FftForward(p, p);
-    for(int ig=0;ig < pbasis;ig++) p[ig] *= gfac[ig];
+    for(int ig=0;ig < pwave->pbasis;ig++) p[ig] *= gfac[ig];
     pwave->FftInverse(p, p);
 }
 
 template <> void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, std::complex<float> *workbuf)
 {
-    for(int idx=0;idx < pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * psi_j[idx], 0.0);
+    for(int idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * psi_j[idx], 0.0);
     pwave->FftForward(workbuf, workbuf);
-    for(int ig=0;ig < pbasis;ig++) workbuf[ig] *= gfac[ig];
+    for(int ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= gfac[ig];
     pwave->FftInverse(workbuf, workbuf);
-    for(int idx=0;idx < pbasis;idx++) p[idx] = (std::complex<double>)workbuf[idx];
+    for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = (std::complex<double>)workbuf[idx];
 }
 
 template <> void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p)
@@ -114,7 +112,7 @@ template <> void Exxbase<std::complex<double>>::fftpair(std::complex<double> *ps
 // This implements different ways of handling the divergence at G=0
 template <> void Exxbase<double>::setup_gfac(void)
 {
-    gfac = new double[pbasis]();
+    gfac = new double[pwave->pbasis]();
 
     const std::string &dftname = Functional::get_dft_name_rmg();
     erfc_scrlen = Functional::get_screening_parameter_rmg();
@@ -128,7 +126,7 @@ template <> void Exxbase<double>::setup_gfac(void)
         if (gau_scrlen < 1.0e-5) gau_scrlen = 0.15;
         double a0 = pow(PI / gau_scrlen, 1.5);
 
-        for(int ig=0;ig < pbasis;ig++)
+        for(int ig=0;ig < pwave->pbasis;ig++)
         {
             if(pwave->gmask[ig])
                 gfac[ig] = a0 * exp(-tpiba2*pwave->gmags[ig] / 4.0 / gau_scrlen);
@@ -137,7 +135,7 @@ template <> void Exxbase<double>::setup_gfac(void)
     else if(scr_type == ERFC_SCREENING)
     {
         double a0 = 4.0 * PI;
-        for(int ig=0;ig < pbasis;ig++)
+        for(int ig=0;ig < pwave->pbasis;ig++)
         {
             if((pwave->gmags[ig] > 1.0e-6) && pwave->gmask[ig])
                 gfac[ig] = a0 * (1.0 - exp(-tpiba2*pwave->gmags[ig] / 4.0 / (erfc_scrlen*erfc_scrlen))) / (tpiba2*pwave->gmags[ig]);
@@ -145,7 +143,7 @@ template <> void Exxbase<double>::setup_gfac(void)
     }
     else if(scr_type == NO_SCREENING) // Default is probably wrong
     {
-        for(int ig=0;ig < pbasis;ig++)
+        for(int ig=0;ig < pwave->pbasis;ig++)
         {
             if((pwave->gmags[ig] > 1.0e-6) && pwave->gmask[ig])
                 gfac[ig] = 1.0/(pwave->gmags[ig] *tpiba2);
@@ -207,10 +205,97 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
     }
     else
     {
-        rmg_error_handler (__FILE__,__LINE__,"Exx potential mode not programmed yet. Terminating.");
+//        rmg_error_handler (__FILE__,__LINE__,"Exx potential mode not programmed yet. Terminating.");
+        // Write serial wavefunction files. May need to do some numa optimization here at some point
+        for(int idx=0;idx < nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
+        WriteWfsToSingleFile();
+
+        // Mmap wavefunction array
+        std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe);
+        serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
+        if(serial_fd < 0)
+            throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+
+        size_t length = (size_t)nstates_occ * pwave->pbasis * sizeof(double);
+        psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+
+        std::complex<double> *p = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
+        std::complex<float> *w = (std::complex<float> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
+
+        MPI_Barrier(G.comm);
+
+
+        // Loop over blocks and process fft pairs I am responsible for
+        int my_rank = G.get_rank();
+        int npes = G.get_NPES();
+        for(int i=0;i < nstates_occ;i++)
+        {
+            for(int j=i;j < nstates_occ;j++)
+            {
+                int fft_index = i*nstates_occ + j;
+                if(my_rank == (fft_index % npes))
+                {
+                    double *psi_i = (double *)&psi_s[i*pwave->pbasis];
+                    double *psi_j = (double *)&psi_s[j*pwave->pbasis];
+                    RmgTimer RT1("5-Functional: Exx potential fft");
+                    if(use_float_fft)
+                        fftpair(psi_i, psi_j, p, w);
+                    else
+                        fftpair(psi_i, psi_j, p);
+
+                    for(int idx = 0;idx < pwave->pbasis;idx++) vexx_global[i*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_j[idx];
+                    if(i!=j)
+                        for(int idx = 0;idx < pwave->pbasis;idx++) vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
+                }
+            }
+        }
+
+        MPI_Barrier(G.comm);
+
+        // Global reduction on vexx
+        RmgTimer *RT2 = new RmgTimer("5-Functional: Exx allreduce");
+        MPI_Allreduce(MPI_IN_PLACE, vexx_global, nstates_occ*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
+        delete RT2;
+
+        // Map my portion of vexx into 
+        int xoffset, yoffset, zoffset;
+        int dimx = G.get_PX0_GRID(1);
+        int dimy = G.get_PY0_GRID(1);
+        int dimz = G.get_PZ0_GRID(1);
+        int gdimx = G.get_NX_GRID(1);
+        int gdimy = G.get_NY_GRID(1);
+        int gdimz = G.get_NZ_GRID(1);
+        G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
+
+        for(int i=0;i < nstates_occ;i++)
+        {
+            for(int ix=0;ix < dimx;ix++)
+            {
+                for(int iy=0;iy < dimy;iy++)
+                {
+                    double *tvexx = &vexx[i*pbasis];
+                    double *tvexx_global = &vexx_global[i*pwave->pbasis];
+                    for(int iz=0;iz < dimz;iz++)
+                    {
+                        tvexx[ix*dimy*dimz + iy*dimz + iz] = tvexx_global[(ix+xoffset)*gdimy*gdimz + (iy+yoffset)*gdimz + iz + zoffset];
+                    }
+                }
+            }
+        }
+
+        fftw_free(w);
+        fftw_free(p);
+
+        MPI_Barrier(G.comm);
+
+        // munmap wavefunction array
+        munmap(psi_s, length);
+        close(serial_fd);
+
     }
 
 }
+
 
 template <> double Exxbase<double>::Exxenergy(double *vexx)
 {
@@ -469,6 +554,7 @@ template <class T> Exxbase<T>::~Exxbase(void)
     delete LG;
     MPI_Comm_free(&lcomm); 
     delete pwave;
+    delete [] vexx_global;
 }
 
 template void Exxbase<double>::ReadWfsFromSingleFile();
