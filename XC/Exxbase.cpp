@@ -234,14 +234,20 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         // Loop over blocks and process fft pairs I am responsible for
         int my_rank = G.get_rank();
         int npes = G.get_NPES();
+        int rows = 0, trows=0, reqcount=0;
+        MPI_Request reqs[1024];
+        MPI_Status mrstatus[1024];
+        int flag=0;
+        double *arptr = vexx_global;
         for(int i=0;i < nstates_occ;i++)
         {
+            double *psi_i = (double *)&psi_s[i*pwave->pbasis];
+
             for(int j=i;j < nstates_occ;j++)
             {
                 int fft_index = i*nstates_occ + j;
                 if(my_rank == (fft_index % npes))
                 {
-                    double *psi_i = (double *)&psi_s[i*pwave->pbasis];
                     double *psi_j = (double *)&psi_s[j*pwave->pbasis];
                     RmgTimer RT1("5-Functional: Exx potential fft");
                     if(use_float_fft)
@@ -249,19 +255,32 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                     else
                         fftpair(psi_i, psi_j, p);
 
-                    for(int idx = 0;idx < pwave->pbasis;idx++) vexx_global[i*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_j[idx];
+                    for(int idx = 0;idx < pwave->pbasis;idx++) 
+                        vexx_global[i*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_j[idx];
                     if(i!=j)
-                        for(int idx = 0;idx < pwave->pbasis;idx++) vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
+                        for(int idx = 0;idx < pwave->pbasis;idx++) 
+                            vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
                 }
             }
+
+            rows++;
+            if(rows == 40)
+            {
+                MPI_Barrier(G.comm);
+                MPI_Iallreduce(MPI_IN_PLACE, arptr, rows*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm, &reqs[reqcount]);
+                reqcount++;
+                arptr += rows*pwave->pbasis;
+                trows += rows;
+                rows = 0;
+            }
+            MPI_Testall(reqcount, reqs, &flag, mrstatus);
         }
-
+        MPI_Waitall(reqcount, reqs, mrstatus);
         MPI_Barrier(G.comm);
-
-        // Global reduction on vexx
-        RmgTimer *RT2 = new RmgTimer("5-Functional: Exx allreduce");
-        MPI_Allreduce(MPI_IN_PLACE, vexx_global, nstates_occ*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
-        delete RT2;
+        int count = nstates_occ - trows;
+        RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
+        MPI_Allreduce(MPI_IN_PLACE, arptr, count*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
+        delete RT3;
 
         // Map my portion of vexx into 
         int xoffset, yoffset, zoffset;
@@ -273,7 +292,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         int gdimz = G.get_NZ_GRID(1);
         G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
 
-        RT2 = new RmgTimer("5-Functional: Exx remap");
+        RmgTimer *RT2 = new RmgTimer("5-Functional: Exx remap");
         for(int i=0;i < nstates_occ;i++)
         {
             for(int ix=0;ix < dimx;ix++)
