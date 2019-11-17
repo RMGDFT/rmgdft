@@ -55,6 +55,10 @@ void constrain (void)
                 double Mag_R = 0.0;
                 double FdotT = 0.0;
 
+                double Eleft = Atoms[0].constraint.setA_weight;
+                double Eright = Atoms[0].constraint.setB_weight;
+                double Eself = ct.TOTAL;
+                   
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
                     iptr = &Atoms[ion];
@@ -79,8 +83,7 @@ void constrain (void)
 
                 }
 
-                if( ( iptr->constraint.setA_weight >= ct.TOTAL && ct.TOTAL <= iptr->constraint.setB_weight) || \
-                        ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight) )
+                if( ( Eleft >= Eself && Eself <= Eright) || ( Eleft < Eself && Eself > Eright) )
                 {   /* this image energy is an extrema along the band */
                     /* Calculate tangent vector Tau */
                     for (ion=0; ion < ct.num_ions; ion++)
@@ -95,7 +98,7 @@ void constrain (void)
                     }
 
                 }
-                else if ( iptr->constraint.setA_weight > iptr->constraint.setB_weight)
+                else if ( Eleft> Eright)
                 {   /* this image energy is in a decreasing to the right section */
                     /* Calculate tangent vector Tau */
                     for (ion=0; ion < ct.num_ions; ion++)
@@ -107,7 +110,7 @@ void constrain (void)
 
                     Mag_T = Mag_L;
                 }
-                else if ( iptr->constraint.setA_weight < iptr->constraint.setB_weight)
+                else if ( Eleft < Eright )
                 {   /* this image energy is in a decreasing to the left section */
                     /* Calculate tangent vector Tau */
                     for (ion=0; ion < ct.num_ions; ion++)
@@ -146,11 +149,11 @@ void constrain (void)
                 }
 
                 /* determine image motion along band */
-                if  ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
+                if(  Eleft < Eself && Eself > Eright) 
                 {   /* this image energy is a maxima - climb image */
                     Mag_T = -FdotT;
                 }
-                else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL < iptr->constraint.setB_weight)
+                if(  Eleft > Eself && Eself < Eright) 
                 { /* this image energy is a minima - descend image */
                     Mag_T = 2*FdotT;
                 }
@@ -159,7 +162,7 @@ void constrain (void)
                     /*Calculate vector norms */
                     Mag_L =  sqrt(Mag_L) ;
                     Mag_R =  sqrt(Mag_R) ;
-                    Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
+                    Mag_T = ct.neb_spring_constant*(Mag_L -Mag_R);
                 }
 
                 /* Remove physical force along Tau, replace it with the restoring force */
