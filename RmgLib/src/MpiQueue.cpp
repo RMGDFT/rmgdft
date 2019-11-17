@@ -179,7 +179,10 @@ MpiQueue::~MpiQueue(void)
 
 bool MpiQueue::push(int tid, mpi_queue_item_t &item)
 {
-    return this->queue[tid]->push(item);
+    bool ret = this->queue[tid]->push(item);
+    if(this->running.load(std::memory_order_acquire)) return ret;
+    this->run_manager();
+    return ret;
 }
 
 bool MpiQueue::pop(int tid, mpi_queue_item_t &item)

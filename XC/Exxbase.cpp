@@ -26,6 +26,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <iterator>
+#include <omp.h>
 
 
 #include "const.h"
@@ -176,17 +177,31 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
     MPI_Allreduce(MPI_IN_PLACE, &nstates_occ, 1, MPI_INT, MPI_MAX, G.comm);
 
+    std::vector<std::complex<double> *> pvec;
+    std::vector<std::complex<float> *> wvec;
+    pvec.resize(ct.OMP_THREADS_PER_NODE);
+    wvec.resize(ct.OMP_THREADS_PER_NODE);
+    for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
+    {
+        pvec[tid] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
+        wvec[tid] = (std::complex<float> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
+    }
+
     if(mode == EXX_DIST_FFT)
     {
-        std::complex<double> *p = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pbasis);
-        std::complex<float> *w = (std::complex<float> *)fftw_malloc(sizeof(std::complex<float>) * pbasis);
         // Loop over fft pairs and compute Kij(r) 
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi_s[i*pbasis];
+#pragma omp parallel
+{
+#pragma omp parallel for schedule(static, 1) num_threads(ct.OMP_THREADS_PER_NODE)
             for(int j=i;j < nstates_occ;j++)
             {   
                 double *psi_j = (double *)&psi_s[j*pbasis];
+                int omp_tid = omp_get_thread_num();
+                std::complex<double> *p = pvec[omp_tid];
+                std::complex<float> *w = wvec[omp_tid];
                 RmgTimer RT1("5-Functional: Exx potential fft");
 
                 if(use_float_fft)
@@ -194,20 +209,16 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 else
                     fftpair(psi_i, psi_j, p);
 
-                //if(G.get_rank()==0)printf("TTTT  %d  %d  %e\n",i,j,std::real(p[1]));
                 for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi_s[j*pbasis + idx];
                 if(i!=j)
                     for(int idx = 0;idx < pbasis;idx++)vexx[j*pbasis +idx] += scale * std::real(p[idx]) * psi_s[i*pbasis + idx];
             }
         }
-
-        fftw_free(w);
-        fftw_free(p);
+}
 
     }
     else
     {
-//        rmg_error_handler (__FILE__,__LINE__,"Exx potential mode not programmed yet. Terminating.");
         // Write serial wavefunction files. May need to do some numa optimization here at some point
         for(int idx=0;idx < nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
         RmgTimer *RT1 = new RmgTimer("5-Functional: Exx writewfs");
@@ -225,9 +236,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         size_t length = (size_t)nstates_occ * pwave->pbasis * sizeof(double);
         psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
-        std::complex<double> *p = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
-        std::complex<float> *w = (std::complex<float> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
-
         MPI_Barrier(G.comm);
 
 
@@ -242,9 +250,14 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi_s[i*pwave->pbasis];
-
+#pragma omp parallel
+{
+#pragma omp parallel for schedule(static, 1) num_threads(ct.OMP_THREADS_PER_NODE)
             for(int j=i;j < nstates_occ;j++)
             {
+                int omp_tid = omp_get_thread_num();
+                std::complex<double> *p = pvec[omp_tid];
+                std::complex<float> *w = wvec[omp_tid];
                 int fft_index = i*nstates_occ + j;
                 if(my_rank == (fft_index % npes))
                 {
@@ -262,6 +275,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                             vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
                 }
             }
+}
 
             rows++;
             if(rows == 40)
@@ -310,15 +324,18 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         }
         delete RT2;
 
-        fftw_free(w);
-        fftw_free(p);
-
         MPI_Barrier(G.comm);
 
         // munmap wavefunction array
         munmap(psi_s, length);
         close(serial_fd);
 
+    }
+
+    for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
+    {
+       fftw_free(wvec[tid]);
+       fftw_free(pvec[tid]);
     }
 
 }
