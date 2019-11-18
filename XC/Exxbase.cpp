@@ -207,9 +207,12 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 else
                     fftpair(psi_i, psi_j, p);
 
-#pragma omp critical
+#pragma omp critical(part1)
 {
                 for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi_s[j*pbasis + idx];
+}
+#pragma omp critical(part2)
+{
                 if(i!=j)
                     for(int idx = 0;idx < pbasis;idx++)vexx[j*pbasis +idx] += scale * std::real(p[idx]) * psi_s[i*pbasis + idx];
 }
@@ -266,10 +269,14 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                         fftpair(psi_i, psi_j, p, w);
                     else
                         fftpair(psi_i, psi_j, p);
-#pragma omp critical
+// We can speed this up by adding more critical sections if it proves to be a bottleneck
+#pragma omp critical(part3)
 {
                     for(int idx = 0;idx < pwave->pbasis;idx++) 
                         vexx_global[i*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_j[idx];
+}
+#pragma omp critical(part4)
+{
                     if(i!=j)
                         for(int idx = 0;idx < pwave->pbasis;idx++) vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
 }
