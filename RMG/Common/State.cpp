@@ -86,7 +86,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
     if(ct.norm_conserving_pp) {
 
         double sum1 = 0.0, sum2;
-        for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
+        for(int idx = 0;idx < this->Kptr->pbasis * ct.noncoll_factor;idx++) {
             sum1 = sum1 + std::norm(tpsi[idx]);
         }
 
@@ -94,7 +94,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         sum2 = sqrt(1.0 / sum2);
 
         StateType tscale(sum2);
-        for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
+        for(int idx = 0;idx < this->Kptr->pbasis * ct.noncoll_factor;idx++) {
             tpsi[idx] = tpsi[idx] * tscale;
         }
 
@@ -107,7 +107,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         StateType *sint;
         ION *iptr;
 
-        sidx_local = istate * num_nonloc_ions * ct.max_nl;
+        sidx_local = istate * num_nonloc_ions * ct.max_nl * ct.noncoll_factor;
 
         sumpsi = 0.0;
         sumbeta = 0.0;
@@ -154,7 +154,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         }
 
 
-        for (int idx = 0; idx < this->Kptr->pbasis; idx++)
+        for (int idx = 0; idx < this->Kptr->pbasis * ct.noncoll_factor; idx++)
         {
             sumpsi += std::norm(tpsi[idx]);
         }
@@ -169,7 +169,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         }
 
         t1 = sqrt (sum);
-        for(int idx = 0;idx < this->Kptr->pbasis;idx++) {
+        for(int idx = 0;idx < this->Kptr->pbasis * ct.noncoll_factor;idx++) {
             tpsi[idx] = tpsi[idx] * t1;
         }
 

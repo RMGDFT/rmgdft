@@ -218,7 +218,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         boost::algorithm::split( AtomComponents, Atom, boost::is_any_of(whitespace_delims), boost::token_compress_on );
 
         size_t ncomp = AtomComponents.size();
-        if((ncomp < 4) || (ncomp > 8)) throw RmgFatalException() << "Synax error in ionic information near " << Atom << "\n";
+        if((ncomp < 4) || (ncomp > 10)) throw RmgFatalException() << "Synax error in ionic information near " << Atom << "\n";
 
         // First field should be an atomic symbol
         it1 = AtomComponents.begin();
@@ -265,6 +265,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
                 break;
             case 7:
             case 8:
+            case 10:
             {
                 it1++;
                 smov = *it1;

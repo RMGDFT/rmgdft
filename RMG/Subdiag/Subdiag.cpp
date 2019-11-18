@@ -95,6 +95,14 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     // Apply Nls
     AppNls(this, newsint_local, Kstates[0].psi, nv, ns, Bns, 0, std::min(ct.non_local_block_size, nstates));
+    if(pct.gridpe == 0)
+    {
+        for(int i = 0; i < 64; i++)
+            printf("\n n1v %d %f %f", i, std::real(nv[i]), std::real(nv[pbasis+i]));
+        for(int i = 0; i < 64; i++)
+            printf("\n n4v %d %f %f", i, std::real(nv[4*pbasis_noncoll+ i]), std::real(nv[4*pbasis_noncoll+ pbasis+i]));
+    }
+
     delete RT2;
     int first_nls = 0;
 
@@ -120,20 +128,20 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     for(int st1=0;st1 < istop;st1 += active_threads) {
         SCF_THREAD_CONTROL thread_control;
         // Make sure the non-local operators are applied for the next block if needed
-         int check = first_nls + active_threads;
-         if(check > ct.non_local_block_size) {
-             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
+        int check = first_nls + active_threads;
+        if(check > ct.non_local_block_size) {
+            RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 #if GPU_ENABLED
-             cudaDeviceSynchronize();
+            cudaDeviceSynchronize();
 #endif
-             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns,
+            AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns,
                     st1, std::min(ct.non_local_block_size, nstates - st1));
 #if GPU_ENABLED
-             cudaDeviceSynchronize();
+            cudaDeviceSynchronize();
 #endif
-             first_nls = 0;
-             delete RT3;
-         }
+            first_nls = 0;
+            delete RT3;
+        }
 
         for(int ist = 0;ist < active_threads;ist++) {
             thread_control.job = HYBRID_SUBDIAG_APP_AB;
@@ -163,27 +171,27 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Process any remaining orbitals serially
     for(int st1 = istop;st1 < nstates;st1++) {
         // Make sure the non-local operators are applied for the next state if needed
-         int check = first_nls + 1;
-         if(check > ct.non_local_block_size) {
-             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
+        int check = first_nls + 1;
+        if(check > ct.non_local_block_size) {
+            RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 #if GPU_ENABLED
-             cudaDeviceSynchronize();
+            cudaDeviceSynchronize();
 #endif
-             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns, st1, std::min(ct.non_local_block_size, nstates - st1));
+            AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns, st1, std::min(ct.non_local_block_size, nstates - st1));
 #if GPU_ENABLED
-             cudaDeviceSynchronize();
+            cudaDeviceSynchronize();
 #endif
-             first_nls = 0;
-             delete RT3;
-         }
+            first_nls = 0;
+            delete RT3;
+        }
         ApplyOperators (this, st1, &a_psi[st1 * pbasis_noncoll], &b_psi[st1 * pbasis_noncoll], vtot_eig, vxc_psi, 
-                       &nv[first_nls * pbasis_noncoll], &Bns[first_nls * pbasis_noncoll]);
+                &nv[first_nls * pbasis_noncoll], &Bns[first_nls * pbasis_noncoll]);
         first_nls++;
     }
     delete(RT1);
     /* Operators applied and we now have
-         tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
-         tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
+tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
+tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
 #if GPU_ENABLED
     cudaDeviceSynchronize();
@@ -205,9 +213,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     MPI_Request MPI_reqSij;
     MPI_Request MPI_reqBij;
     if(ct.use_async_allreduce)
-       MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqAij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqAij);
     else
-       MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #else
     MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #endif
@@ -265,6 +273,22 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     // Free up tmp_array2T
     GpuFreeManaged(tmp_array2T);
+
+    if(pct.gridpe == 0)
+    {
+        for(int i = 0; i < 8; i++)
+        {   printf("\n  aaaa ");
+            for(int j = 0; j < 8; j++)
+                printf(" %f ", std::real(Aij[i*8+j]));
+        }
+        for(int i = 0; i < 8; i++)
+        {   printf("\n  bbbb ");
+            for(int j = 0; j < 8; j++)
+                printf(" %f ", std::real(Sij[i*8+j]));
+        }
+
+    }
+
 
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix1 will hold the eigenvectors.
     // The eigenvectors may be stored in row-major or column-major format depending on the type of diagonaliztion method
@@ -355,9 +379,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(ct.xc_is_hybrid)
     {
         tlen = nstates * pbasis_noncoll * sizeof(KpointType);
-// vexx is not in managed memory yet so that might create an issue
+        // vexx is not in managed memory yet so that might create an issue
         RmgGemm(trans_n, trans_b, pbasis_noncoll, nstates, nstates, alpha, 
-            this->vexx, pbasis_noncoll, global_matrix1, nstates, beta, tmp_arrayT, pbasis_noncoll);
+                this->vexx, pbasis_noncoll, global_matrix1, nstates, beta, tmp_arrayT, pbasis_noncoll);
         memcpy(this->vexx, tmp_arrayT, tlen);
     }
 
