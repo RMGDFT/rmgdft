@@ -49,8 +49,8 @@
 // Solver that uses multigrid preconditioning and subspace rotations
 // Part of Kpoint class
 
-template void Kpoint<double>::MgridSubspace(double *, double *);
-template void Kpoint<std::complex<double>>::MgridSubspace(double *, double *);
+template void Kpoint<double>::MgridSubspace(double *, double *vxc_psi);
+template void Kpoint<std::complex<double>>::MgridSubspace(double *, double *vxc_psi);
 
 
 template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot_psi, double *vxc_psi)

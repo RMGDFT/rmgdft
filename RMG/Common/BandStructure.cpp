@@ -53,7 +53,7 @@ template <typename KpointType>
 void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc)
 {
     
-    double *vtot, *vtot_psi, *vxc_psi = NULL;
+    double *vtot, *vtot_psi, *vxc_psi=NULL;
     double max_res;
     int FP0_BASIS, P0_BASIS;
     
@@ -74,6 +74,12 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
     get_ddd (vtot, vxc);
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+    if(ct.noncoll)
+    {
+        vxc_psi = new double[4*P0_BASIS];
+        for(int is = 0; is < 4; is++)
+            GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
+    }
 
     if(ct.noncoll)
     {   

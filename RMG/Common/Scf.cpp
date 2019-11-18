@@ -70,7 +70,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     bool CONVERGED = false;
     double t3;
     double *vtot, *vtot_psi, *new_rho, *new_rho_oppo;
-    double *vxc_psi;
+    double *vxc_psi=NULL;
     double t[3];                  /* SCF checks and average potential */
     double max_unocc_res = 0.0;
 
@@ -92,6 +92,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     new_rho_oppo = &new_rho[FP0_BASIS];
     vtot = new double[FP0_BASIS];
     vtot_psi = new double[P0_BASIS];
+    if(ct.noncoll) vxc_psi = new double[4 * P0_BASIS];
 
     /* save old vhxc + vnuc */
     for (int idx = 0; idx < FP0_BASIS; idx++) {
@@ -195,6 +196,11 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     // Transfer vtot from the fine grid to the wavefunction grid
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+    if(ct.noncoll)
+        for(int is = 0; is < ct.nspin; is++)
+        {
+            GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
+        }
 
     /*Generate the Dnm_I */
     get_ddd (vtot, vxc);
@@ -372,6 +378,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     delete [] new_rho;
     delete [] vtot;
     delete [] vtot_psi;
+    if(ct.noncoll) delete [] vxc_psi;
 
     if (ct.num_tfions > 0)
     {

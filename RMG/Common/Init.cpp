@@ -565,6 +565,13 @@ std::cout<<"ffff" << std::endl;
         F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
         // Initial vxc and vh can be very noisy
         FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+
+        if(ct.noncoll)
+        {
+            FftFilter(&vxc[1*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+            FftFilter(&vxc[2*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+            FftFilter(&vxc[3*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+        }
         delete F;
         delete RT1;
 
@@ -601,6 +608,7 @@ std::cout<<"ffff" << std::endl;
         vtot = new double[FP0_BASIS];
         double *vtot_psi = new double[P0_BASIS];
         double *vxc_psi = NULL;
+    
 
         for (idx = 0; idx < FP0_BASIS; idx++)
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
@@ -612,11 +620,10 @@ std::cout<<"ffff" << std::endl;
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
         if(ct.noncoll)
         {
-            vxc_psi = new double[ct.nspin * P0_BASIS];
-            for(int is = 0; is < ct.nspin; is++)
+            vxc_psi = new double[4*P0_BASIS];
+            for(int is = 0; is < 4; is++)
                 GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
         }
-                
 
         /*Now we can do subspace diagonalization */
         double *new_rho=new double[FP0_BASIS];
@@ -643,7 +650,7 @@ std::cout<<"ffff" << std::endl;
             delete RT2;
 
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
-            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates*ct.noncoll_factor, Kptr[kpt]->newsint_local);
+            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
             delete RT3;
             if(ct.ldaU_mode != LDA_PLUS_U_NONE)
             {   

@@ -85,7 +85,7 @@ option(RMG_GPU_ENABLED "Enable GPU support." OFF)
 option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
 option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
 option(USE_INTERNAL_PSEUDOPOTENTIALS "Include internal pseudopotentials in binary." ON)
-option(QMCPACK_SUPPORT "Generates a QMCPACK restart file." ON)
+option(QMCPACK_SUPPORT "Generates a QMCPACK restart file." OFF)
 
 
 # Now that the scalapack source has been included in the RMG distribution this should

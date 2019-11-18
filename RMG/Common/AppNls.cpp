@@ -71,6 +71,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     if(num_states > ct.non_local_block_size)
         throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
  
+//   sintR:  <beta | psi_up, psi_down>, dimensiont is numProj * 2 * num_states in noncollinear case.
+//   nv : |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
+//   ns : |psi_up, psu_down > + |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
+//   Bns: history
+
     int P0_BASIS = kpoint->pbasis;
     int num_nonloc_ions = kpoint->BetaProjector->get_num_nonloc_ions();
     int *nonloc_ions_list = kpoint->BetaProjector->get_nonloc_ions_list();
@@ -84,7 +89,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     double *dnmI;
     double *qqq;
     KpointType *psintR;
-    size_t stop = (size_t)num_states * (size_t)P0_BASIS;
+    size_t stop = (size_t)num_states * (size_t)P0_BASIS * (size_t) ct.noncoll_factor;
 
     if(num_tot_proj == 0)
     {
@@ -104,25 +109,19 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     }
 
 
-    size_t alloc = (size_t)num_tot_proj * (size_t)num_states;
+    size_t alloc = (size_t)num_tot_proj * (size_t)num_states * ct.noncoll_factor;
     size_t M_cols = 1;
-    if(ct.is_ddd_non_diagonal) M_cols = (size_t)num_tot_proj;
-    size_t alloc1 = (size_t)num_tot_proj * (size_t)M_cols;
+    if(ct.is_ddd_non_diagonal) M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
+    size_t alloc1 = (size_t)num_tot_proj * (size_t)M_cols * ct.noncoll_factor;
 
-#if GPU_ENABLED
     KpointType *sint_compack = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc);
     KpointType *nwork = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc);
     KpointType *M_dnm = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc1);
     KpointType *M_qqq = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc1);
     for(int i = 0;i < alloc;i++) sint_compack[i] = 0.0;
-#else
-    KpointType *sint_compack = new KpointType[alloc]();
-    KpointType *nwork = new KpointType[alloc];
-    KpointType *M_dnm = new KpointType [alloc1];
-    KpointType *M_qqq = new KpointType [alloc1];
-#endif
+    std::complex<double> *M_dnm_C = (std::complex<double> *) M_dnm;
 
-    for(int istate = 0; istate < num_states; istate++)
+    for(int istate = 0; istate < num_states * ct.noncoll_factor; istate++)
     {
         int sindex = (istate + first_state) * num_nonloc_ions * ct.max_nl;
         for (int ion = 0; ion < num_nonloc_ions; ion++)
@@ -175,12 +174,23 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                     int idx = (proj_index + i) * num_tot_proj + proj_index + j;
                     M_dnm[idx] = (KpointType)dnmI[inh+j];
                     M_qqq[idx] = (KpointType)qqq[inh+j];
+                    if(ct.noncoll)
+                    {
+                        M_dnm_C[idx + 0 * alloc1/4] = dnmI[inh+j + 0 * nh * nh] + dnmI[inh+j + 3 * nh * nh];
+                        M_dnm_C[idx + 1 * alloc1/4] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], dnmI[inh+j + 2 * nh * nh]);
+                        M_dnm_C[idx + 2 * alloc1/4] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], -dnmI[inh+j + 2 * nh * nh]);
+                        M_dnm_C[idx + 3 * alloc1/4] = dnmI[inh+j + 0 * nh * nh] - dnmI[inh+j + 3 * nh * nh];
+                        M_qqq[idx + 0 * alloc1/4] = (KpointType)qqq[inh+j];
+                        M_qqq[idx + 1 * alloc1/4] = 0.0;
+                        M_qqq[idx + 2 * alloc1/4] = 0.0;
+                        M_qqq[idx + 3 * alloc1/4] = (KpointType)qqq[inh+j];
+                    }
                 }
                 else {
                     // Diagonal for norm conserving so just save those.
                     if((proj_index + i) == (proj_index + j)) {
-                        M_dnm[proj_index + j] = (KpointType)dnmI[inh+j];
-                        M_qqq[proj_index + j] = (KpointType)qqq[inh+j];
+                        M_dnm[proj_index + j ] = (KpointType)dnmI[inh+j ];
+                        M_qqq[proj_index + j ] = (KpointType)qqq[inh+j ];
                     }
                 }
 
@@ -190,15 +200,24 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 
 
+    int dim_dnm = num_tot_proj * ct.noncoll_factor;
+    int tot_states = num_states * ct.noncoll_factor;
     if(!ct.norm_conserving_pp) {
 
-        RmgGemm (transa, transa, num_tot_proj, num_states, num_tot_proj,
-                    ONE_t, M_dnm,  num_tot_proj, sint_compack, num_tot_proj,
-                    ZERO_t,  nwork, num_tot_proj);
+        //M_dnm: dim_dnm * dim_dnm matrxi
+        //sint_compack: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
+        //nwork: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
+        //  in the first RmgGemm, nwork is a matrix of (dim_dnm) * num_states 
+        //  in the second RmgGemm, nwork is a matrix of num_tot_proj * (tot_states) 
 
-        RmgGemm (transa, transa, P0_BASIS, num_states, num_tot_proj,
-                    ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, num_tot_proj,
-                    ZERO_t,  nv, P0_BASIS);
+        // leading dimension is num_tot_proj * 2 for noncollinear
+        RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm,
+                ONE_t, M_dnm,  dim_dnm, sint_compack, dim_dnm,
+                ZERO_t,  nwork, dim_dnm);
+
+        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
+                ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, num_tot_proj,
+                ZERO_t,  nv, P0_BASIS);
 
 #if GPU_ENABLED
         cudaMemcpy(ns, psi, stop*sizeof(KpointType), cudaMemcpyDefault);
@@ -206,11 +225,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         memcpy(ns, psi, stop*sizeof(KpointType));
 #endif
 
-        RmgGemm (transa, transa, num_tot_proj, num_states, num_tot_proj, 
-                ONE_t, M_qqq,  num_tot_proj, sint_compack, num_tot_proj,
-                ZERO_t,  nwork, num_tot_proj);
+        RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm, 
+                ONE_t, M_qqq,  dim_dnm, sint_compack, dim_dnm,
+                ZERO_t,  nwork, dim_dnm);
 
-        RmgGemm (transa, transa, P0_BASIS, num_states, num_tot_proj, 
+        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
                 ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
 
@@ -226,26 +245,26 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
         if(ct.is_ddd_non_diagonal)
         {
-            RmgGemm (transa, transa, num_tot_proj, num_states, num_tot_proj,
-                        ONE_t, M_dnm,  num_tot_proj, sint_compack, num_tot_proj,
-                        ZERO_t,  nwork, num_tot_proj);
+            RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm,
+                    ONE_t, M_dnm,  dim_dnm, sint_compack, dim_dnm,
+                    ZERO_t,  nwork, dim_dnm);
         }
         else
         {
-// Optimize for GPU's!
+            // Optimize for GPU's!
             for(int jj = 0;jj < num_states;jj++) {
-                for(int ii = 0;ii < num_tot_proj;ii++) {
-                    nwork[jj*num_tot_proj + ii] = M_dnm[ii] * sint_compack[jj*num_tot_proj + ii];
+                for(int ii = 0;ii < dim_dnm;ii++) {
+                    nwork[jj*dim_dnm + ii] = M_dnm[ii] * sint_compack[jj*dim_dnm + ii];
                 }
             }
         }
 
-        RmgGemm (transa, transa, P0_BASIS, num_states, num_tot_proj,
-                    ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, num_tot_proj,
-                    ZERO_t,  nv, P0_BASIS);
+        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
+                ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, num_tot_proj,
+                ZERO_t,  nv, P0_BASIS);
 
 #if GPU_ENABLED
-// For norm conserving and gamma ns=psi so other parts of code were updated to not require this
+        // For norm conserving and gamma ns=psi so other parts of code were updated to not require this
         if(!ct.is_gamma)
             cudaMemcpy(ns, psi, stop*sizeof(KpointType), cudaMemcpyDefault);
 #else
@@ -260,17 +279,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[i];
     }
 
-#if GPU_ENABLED
     GpuFreeManaged(M_qqq);
     GpuFreeManaged(M_dnm);
     GpuFreeManaged(nwork);
     GpuFreeManaged(sint_compack);
-#else
-    delete [] nwork;
-    delete [] sint_compack;
-    delete [] M_qqq;
-    delete [] M_dnm;
-#endif
 
 
     // Add in ldaU contributions to nv

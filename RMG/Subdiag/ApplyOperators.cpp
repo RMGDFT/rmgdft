@@ -38,13 +38,14 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-template void ApplyOperators<double>(Kpoint<double> *, int, double *, double *, double *, double *, double *);
-template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>> *, int, std::complex<double> *, std::complex<double> *, double *, 
-              std::complex<double> *, std::complex<double> *);
+template void ApplyOperators<double>(Kpoint<double> *, int, double *, double *, double *, double *, double *, double *);
+template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>> *, int, std::complex<double> *, 
+        std::complex<double> *, double *, double *,
+        std::complex<double> *, std::complex<double> *);
 
 // Applies A and B operators to one wavefunction
-template <typename KpointType>
-void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot, KpointType *nv, KpointType *Bns)
+    template <typename KpointType>
+void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot, double *vxc_psi,  KpointType *nv, KpointType *Bns)
 {
     // We want a clean exit if user terminates early
     CheckShutdown();
@@ -87,8 +88,8 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
         for(int idx = 0;idx < pbasis;idx++) {
 
             kdr[idx] = -I_t * (kptr->kp.kvec[0] * (std::complex<double>)gx[idx] +
-                               kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
-                               kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
+                    kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
+                    kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
         }
 
         delete [] gz;

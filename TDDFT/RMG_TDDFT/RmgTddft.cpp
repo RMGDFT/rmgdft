@@ -61,7 +61,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr)
 {
 
-    double *vtot, *vtot_psi;
+    double *vtot, *vtot_psi, *vxc_psi=NULL;
 
     int dimx = Rmg_G->get_PX0_GRID(Rmg_G->get_default_FG_RATIO());
     int dimy = Rmg_G->get_PY0_GRID(Rmg_G->get_default_FG_RATIO());
@@ -141,6 +141,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     vtot = new double[FP0_BASIS];
     vtot_psi = new double[P0_BASIS];
+    if(ct.noncoll) vxc_psi = new double[4*P0_BASIS];
+    
     double time_step =ct.tddft_time_step;
 
     if(ct.restart_tddft)
@@ -166,11 +168,16 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         // Transfer vtot from the fine grid to the wavefunction grid
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+        if(ct.noncoll)
+        {
+            for(int is = 0; is < 4; is++)
+                GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
+        }
 
         /*Generate the Dnm_I */
         get_ddd (vtot, vxc);
 
-        HSmatrix (Kptr[0], vtot_psi, (OrbitalType *)Hmatrix, (OrbitalType *)Smatrix);
+        HSmatrix (Kptr[0], vtot_psi, vxc_psi, (OrbitalType *)Hmatrix, (OrbitalType *)Smatrix);
 
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 

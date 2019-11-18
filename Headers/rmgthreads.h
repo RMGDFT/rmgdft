@@ -29,6 +29,7 @@ typedef struct
     void *sp;
 
     double *vtot;
+    double *vxc_psi;
 
     double *rho_neutral;
     int boundaryflag;
