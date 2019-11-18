@@ -668,6 +668,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         Kptr[kpt]->nstates = ct.run_states;
         Kptr[kpt]->dvh_skip = 8;
+        Kptr[kpt]->dvh_size = 0;
         // Set up potential acceleration arrays if required
         if(potential_acceleration) {
             if(ct.run_states <= 256) Kptr[kpt]->dvh_skip = 4;
@@ -681,8 +682,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             }
 
             Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
-            size_t sizr = Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor * sizeof(double);
-            MPI_Alloc_mem(sizr , MPI_INFO_NULL, &Kptr[kpt]->dvh);
+            Kptr[kpt]->dvh_size = (size_t)Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor;
+            MPI_Alloc_mem(Kptr[kpt]->dvh_size * sizeof(double), MPI_INFO_NULL, &Kptr[kpt]->dvh);
+            
 
         }
     }

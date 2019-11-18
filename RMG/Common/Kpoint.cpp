@@ -82,6 +82,8 @@ template void Kpoint<std::complex <double> >::get_ldaUop(int);
 
 template void Kpoint<double>::DeleteNvmeArrays(void);
 template void Kpoint<std::complex <double> >::DeleteNvmeArrays(void);
+template void Kpoint<double>::ClearPotentialAcceleration(void);
+template void Kpoint<std::complex <double> >::ClearPotentialAcceleration(void);
 
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
@@ -1395,3 +1397,10 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
 
 }
 
+template <class KpointType> void Kpoint<KpointType>::ClearPotentialAcceleration(void)
+{
+    for(size_t idx=0;idx < this->dvh_size;idx++)
+    {
+        this->dvh[idx] = 0.0;
+    }
+}
