@@ -193,7 +193,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi_s[i*pbasis];
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
             for(int j=i;j < nstates_occ;j++)
             {   
                 double *psi_j = (double *)&psi_s[j*pbasis];
@@ -252,7 +252,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         {
             double *psi_i = (double *)&psi_s[i*pwave->pbasis];
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
             for(int j=i;j < nstates_occ;j++)
             {
                 int omp_tid = omp_get_thread_num();

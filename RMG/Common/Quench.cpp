@@ -97,7 +97,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     ct.FOCK = 0.0;
     ct.exx_delta = DBL_MAX;
-    double f1,f2=0.0;
+    double f0=0.0,f1,f2=0.0,exxen=0.0;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     { 
 
@@ -146,14 +146,17 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             F->start_exx_rmg();
             for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
             {
+                // FIXME -- this is not right for non-gamma case
                 // f1 is fock energy calculated using vexx from previous orbitals and the current orbitals
                 f1 = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
                 Exx_scf[kpt]->Vexx(Kptr[kpt]->vexx, (fabs(ct.exx_delta) > ct.vexx_fft_threshold));
-                ct.FOCK = f2;
                 // f2 is fock energy calculated using vexx from current orbitals and the current orbitals
                 f2 = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
-                ct.exx_delta = f1 - 0.5*(ct.FOCK + f2);
-                if(ct.exx_steps == 0) ct.FOCK = f2;
+                ct.exx_delta = f1 - 0.5*(f2 + f0);
+                //if(ct.exx_steps == 0) f0 = f2;
+                f0 = f2;
+                ct.FOCK = exxen + f2 - f1;
+                exxen = f2;
             }
 
             if(ct.exx_steps)
@@ -166,8 +169,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
             if(ct.exx_delta < ct.exx_convergence_criterion)
             { 
-                printf("Finished EXX inner loop in %3d scf steps. Convergence criteria exx_delta = %e reached.\n", 
+                printf("Finished EXX outer loop in %3d scf steps. Convergence criteria exx_delta = %e reached.\n", 
                         ct.scf_steps, fabs(ct.exx_delta));
+                ct.FOCK = f2;
                 break;
             }
             else
