@@ -184,7 +184,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
         pvec[tid] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
-        wvec[tid] = (std::complex<float> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
+        wvec[tid] = (std::complex<float> *)fftw_malloc(sizeof(std::complex<float>) * pwave->pbasis);
     }
 
     if(mode == EXX_DIST_FFT)
@@ -193,9 +193,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi_s[i*pbasis];
-#pragma omp parallel
-{
-#pragma omp parallel for schedule(static, 1) num_threads(ct.OMP_THREADS_PER_NODE)
+#pragma omp parallel for 
             for(int j=i;j < nstates_occ;j++)
             {   
                 double *psi_j = (double *)&psi_s[j*pbasis];
@@ -214,8 +212,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                     for(int idx = 0;idx < pbasis;idx++)vexx[j*pbasis +idx] += scale * std::real(p[idx]) * psi_s[i*pbasis + idx];
             }
         }
-}
-
     }
     else
     {
@@ -247,12 +243,12 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         MPI_Status mrstatus[1024];
         int flag=0;
         double *arptr = vexx_global;
+
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi_s[i*pwave->pbasis];
-#pragma omp parallel
-{
-#pragma omp parallel for schedule(static, 1) num_threads(ct.OMP_THREADS_PER_NODE)
+            RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
+#pragma omp parallel for
             for(int j=i;j < nstates_occ;j++)
             {
                 int omp_tid = omp_get_thread_num();
@@ -262,7 +258,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 if(my_rank == (fft_index % npes))
                 {
                     double *psi_j = (double *)&psi_s[j*pwave->pbasis];
-                    RmgTimer RT1("5-Functional: Exx potential fft");
                     if(use_float_fft)
                         fftpair(psi_i, psi_j, p, w);
                     else
@@ -275,10 +270,10 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                             vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
                 }
             }
-}
+            delete RT1;
 
             rows++;
-            if(rows == 40)
+            if(rows == 4000)
             {
                 MPI_Barrier(G.comm);
                 MPI_Iallreduce(MPI_IN_PLACE, arptr, rows*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm, &reqs[reqcount]);

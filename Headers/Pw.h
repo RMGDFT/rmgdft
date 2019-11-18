@@ -66,6 +66,7 @@ private:
     const static int num_streams = 8;
     cudaStream_t streams[num_streams];
     cufftHandle gpu_plans[num_streams];
+    cufftHandle gpu_plans_f[num_streams];
     std::complex<double> *host_bufs[num_streams];
     std::complex<double> *dev_bufs[num_streams];
 
