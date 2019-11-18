@@ -193,7 +193,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi_s[i*pbasis];
-#pragma omp parallel for 
+#pragma omp parallel for
             for(int j=i;j < nstates_occ;j++)
             {   
                 double *psi_j = (double *)&psi_s[j*pbasis];
@@ -207,9 +207,13 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 else
                     fftpair(psi_i, psi_j, p);
 
+#pragma omp critical
+{
                 for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi_s[j*pbasis + idx];
                 if(i!=j)
                     for(int idx = 0;idx < pbasis;idx++)vexx[j*pbasis +idx] += scale * std::real(p[idx]) * psi_s[i*pbasis + idx];
+}
+
             }
         }
     }
@@ -262,12 +266,13 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                         fftpair(psi_i, psi_j, p, w);
                     else
                         fftpair(psi_i, psi_j, p);
-
+#pragma omp critical
+{
                     for(int idx = 0;idx < pwave->pbasis;idx++) 
                         vexx_global[i*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_j[idx];
                     if(i!=j)
-                        for(int idx = 0;idx < pwave->pbasis;idx++) 
-                            vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
+                        for(int idx = 0;idx < pwave->pbasis;idx++) vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
+}
                 }
             }
             delete RT1;
