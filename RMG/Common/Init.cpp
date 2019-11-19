@@ -255,7 +255,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         ct.nvme_work_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
         if(need_ns) ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType));
         if(!ns) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for work arrays. \n");
-        madvise(ns, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType), MADV_NORMAL|MADV_HUGEPAGE);
+        madvise(ns, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType), MADV_NORMAL);
     }
     else
     {
