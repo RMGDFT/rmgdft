@@ -23,7 +23,6 @@
 #include <math.h>
 #include <omp.h>
 #include "Pw.h"
-//#include "main.h"
 #include "transition.h"
 #include "rmg_error.h"
 #include "ErrorFuncs.h"
@@ -188,11 +187,16 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       delete [] in;
 
 #if GPU_ENABLED
+      num_streams = ct.OMP_THREADS_PER_NODE;
       // Gpu streams and plans
+      streams.resize(num_streams);
+      gpu_plans.resize(num_streams);
+      gpu_plans_f.resize(num_streams);
+      host_bufs.resize(num_streams);
+      dev_bufs.resize(num_streams);
+
       for (int i = 0; i < num_streams; i++)
           RmgCudaError(__FILE__, __LINE__, cudaStreamCreateWithFlags(&streams[i],cudaStreamNonBlocking), "Problem creating cuda stream.");
-          //RmgCudaError(__FILE__, __LINE__, cudaStreamCreate(&streams[i]), "Problem creating cuda stream.");
-
 
       for (int i = 0; i < num_streams; i++)
       {

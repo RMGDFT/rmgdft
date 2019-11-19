@@ -245,9 +245,10 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         // Loop over blocks and process fft pairs I am responsible for
         int my_rank = G.get_rank();
         int npes = G.get_NPES();
-        int rows = 0, trows=0, reqcount=0;
-        MPI_Request reqs[1024];
-        MPI_Status mrstatus[1024];
+        int rows = 0, trows=0, reqcount=0, max_rows=40;
+        MPI_Request *reqs = new MPI_Request[nstates_occ/max_rows+1];
+        MPI_Status *mrstatus = new MPI_Status[nstates_occ/max_rows+1];
+
         int flag=0;
         double *arptr = vexx_global;
 
@@ -285,7 +286,8 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             delete RT1;
 
             rows++;
-            if(rows == 4000)
+            // This enables some concurrency with calculations and communication
+            if(rows == max_rows)
             {
                 MPI_Barrier(G.comm);
                 MPI_Iallreduce(MPI_IN_PLACE, arptr, rows*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm, &reqs[reqcount]);
@@ -299,9 +301,14 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         MPI_Waitall(reqcount, reqs, mrstatus);
         MPI_Barrier(G.comm);
         int count = nstates_occ - trows;
+
+        // This timer only picks up the last MPI_Allreduce since the ones above are asynchronous
         RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
         MPI_Allreduce(MPI_IN_PLACE, arptr, count*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
         delete RT3;
+
+        delete [] mrstatus;
+        delete [] reqs;
 
         // Map my portion of vexx into 
         int xoffset, yoffset, zoffset;

@@ -62,15 +62,6 @@ typedef struct {
 class Pw {
 
 private:
-#if GPU_ENABLED
-    const static int num_streams = 8;
-    cudaStream_t streams[num_streams];
-    cufftHandle gpu_plans[num_streams];
-    cufftHandle gpu_plans_f[num_streams];
-    std::complex<double> *host_bufs[num_streams];
-    std::complex<double> *dev_bufs[num_streams];
-
-#endif    
 
     // Pending ffts
     WaitQueue<FftPair> FftQ;
@@ -139,6 +130,15 @@ public:
     gvector *g;
     double *gmags;
     bool *gmask;
+
+#if GPU_ENABLED
+    int num_streams;
+    std::vector<cudaStream_t> streams;
+    std::vector<cufftHandle> gpu_plans;
+    std::vector<cufftHandle> gpu_plans_f;
+    std::vector<std::complex<double> *> host_bufs;
+    std::vector<std::complex<double> *> dev_bufs;
+#endif    
 
 };
 
