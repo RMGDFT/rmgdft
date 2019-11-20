@@ -62,6 +62,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 {
 
     bool CONVERGED = false;
+    ct.exx_convergence_factor = 1.0;  // FIXME or rather check if doing relaxations or MD
     static std::vector<double> RMSdV;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
 
@@ -103,6 +104,16 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         exx_step_time = my_crtc ();
         RMSdV.clear();
+
+        // Adjust exx convergence threshold
+        if(ct.xc_is_hybrid)
+        {
+            if(ct.exx_steps)
+                ct.exx_convergence_factor = std::min(1.0e-8, ct.exx_delta / 100000.0) / ct.thr_energy;
+            else
+                ct.exx_convergence_factor = 1.0e-8 / ct.thr_energy;
+        }
+
         for (ct.scf_steps = 0, CONVERGED = false;
                 ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++, ct.total_scf_steps++)
         {
