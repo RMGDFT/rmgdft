@@ -647,7 +647,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
             for(int is=0;is < ns;is++)
             {
                 for(int idx = 0;idx < grid_size;idx++) Kptr[ik]->Kstates[is].psi[idx] = 
-                        Kptr[ik]->Kstates[is].psi[idx] - Kptr[ik]->Kstates[is+ns].psi[idx];
+                        2.0*Kptr[ik]->Kstates[is].psi[idx] - Kptr[ik]->Kstates[is+ns].psi[idx];
             }
 
         }
