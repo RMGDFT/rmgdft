@@ -108,6 +108,9 @@ std::atomic<bool> shutdown_request(false);
 extern "C" void term_handler(int signal)
 {
     shutdown_request.store(true); 
+    // Give threads a chance to exit gracefully
+    sleep(3);
+    kill(getpid(), SIGKILL);
 }
 
 void CheckShutdown(void)
