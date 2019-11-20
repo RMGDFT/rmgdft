@@ -151,6 +151,9 @@ public:
     /* Exx computation mode */
     int exx_mode;
 
+    /* Exx convergence multiplier. Threshold checked in the inner (Scf) is multiplied by this */
+    double exx_convergence_factor;
+
     /** Boundary condition flag. Read from the input file. 0=periodic, 1=cluster, 2=surface */
     int boundaryflag;
 
