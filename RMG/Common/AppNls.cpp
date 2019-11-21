@@ -38,6 +38,7 @@
 #include "Kpoint.h"
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
+#include "Functional.h"
 
 #include "GlobalSums.h"
 #include "blas.h"
@@ -92,9 +93,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION) && ct.is_gamma) need_ns = false;
         if(!ct.norm_conserving_pp) for(size_t i = 0; i < stop; i++) Bns[i] = ZERO_t;
         if(need_ns) for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
-        if(ct.xc_is_hybrid) 
+        if(ct.xc_is_hybrid && Functional::is_exx_active()) 
         {
-            for(size_t i = 0; i < stop; i++) nv[i] = ct.exx_fraction * kpoint->vexx[i];
+            for(size_t i = 0; i < stop; i++) nv[i] = ct.exx_fraction * kpoint->vexx[first_state*P0_BASIS + i];
         }
         else
         {
@@ -255,9 +256,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     }
 
-    if(ct.xc_is_hybrid)
+    if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
-        for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[i];
+        for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[first_state*P0_BASIS + i];
     }
 
 #if GPU_ENABLED
