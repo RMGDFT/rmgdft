@@ -384,11 +384,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "md_nose_oscillation_frequency_THz must be a positive real number.", MD_OPTIONS);
 
-    If.RegisterInputKey("discretization_type", &DiscretizationType, &lc.discretization, "Central",
-            CHECK_AND_FIX, OPTIONAL, discretization_type,
-            "Type of discretization to use for the Kohn-Sham equations. "
-            "Mehrstellen or Central types are implemented.", 
-            "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Central\". ");
+//    If.RegisterInputKey("discretization_type", &DiscretizationType, &lc.discretization, "Central",
+//            CHECK_AND_FIX, OPTIONAL, discretization_type,
+//            "Type of discretization to use for the Kohn-Sham equations. "
+//            "Mehrstellen or Central types are implemented.", 
+//            "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Central\". ");
+    // Force central
+    lc.discretization = CENTRAL_DISCRETIZATION;
 
     If.RegisterInputKey("energy_output_units", &EnergyOutputType, &lc.energy_output_units, "Hartrees",
             CHECK_AND_FIX, OPTIONAL, energy_output_units,

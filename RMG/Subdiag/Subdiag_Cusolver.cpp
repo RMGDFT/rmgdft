@@ -88,7 +88,7 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 //    if(pct.is_local_master || (use_folded && (nodes < 12))) {
 if(1){
 
-        if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION))
+        if(!ct.norm_conserving_pp) {
         {
 
             // Inverse of B should be in eigvectors after this call

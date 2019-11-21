@@ -139,7 +139,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         // distribute unitary matrix
         MainSp->CopySquareMatrixToDistArray(Cij, distCij, num_states, desca);
 
-        if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
+        if(!ct.norm_conserving_pp) {
 
             RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
             // Get matrix that is inverse to B

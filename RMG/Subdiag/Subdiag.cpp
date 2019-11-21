@@ -229,7 +229,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     // Compute S matrix
     KpointType alpha1(vel);
-    if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION) && ct.is_gamma)
+    if(ct.norm_conserving_pp && ct.is_gamma)
     {
         RmgSyrkx("L", "T", nstates, pbasis, alpha1, orbital_storage, pbasis,  orbital_storage, pbasis, beta, Sij, nstates);
     }
@@ -250,8 +250,8 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 #endif
 
 
-    // We need B matrix for US pseudopotentials and/or MEHRSTELLEN_DISCRETIZATION
-    if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
+    // We need B matrix for US pseudopotentials
+    if(!ct.norm_conserving_pp) {
 
         // Compute B matrix
         RmgGemm (trans_a, trans_n, nstates, nstates, pbasis, alpha1, orbital_storage, pbasis, tmp_array2T, pbasis, beta, Bij, nstates);
@@ -272,7 +272,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Wait for S request to finish and when done store copy in Sij
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
-    if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION))
+    if(!ct.norm_conserving_pp)
         if(ct.use_async_allreduce) MPI_Wait(&MPI_reqBij, MPI_STATUS_IGNORE);
 #endif
 
