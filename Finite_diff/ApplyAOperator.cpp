@@ -228,17 +228,8 @@ double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int
         return fd_diag;
     }
 
-    if(ct.discretization == MEHRSTELLEN_DISCRETIZATION) {
-
-        return CPP_app_cil_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
-
-    }
-    else if(ct.discretization == CENTRAL_DISCRETIZATION) {
-
-        double cc = CPP_app_del2_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, ct.alt_laplacian);
-        return cc;
-
-    }
+    double cc = CPP_app_del2_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, ct.alt_laplacian);
+    return cc;
     
     throw RmgFatalException() << "Error! Unknown discretization method " << " in "
                                  << __FILE__ << " at line " << __LINE__ << "\n";

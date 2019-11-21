@@ -110,21 +110,5 @@ void ApplyBOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeIma
 template <typename RmgType>
 void ApplyBOperator (Lattice *L, TradeImages *T, RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz, int order)
 {
-
-    if(ct.discretization == MEHRSTELLEN_DISCRETIZATION) {
-
-        CPP_app_cir_driver (L, T, a, b, dimx, dimy, dimz, order);
-
-    }
-    else if(ct.discretization == CENTRAL_DISCRETIZATION) {
-
-        for(int ix = 0;ix < dimx*dimy*dimz;ix++) b[ix] = a[ix];
-
-    }
-    else {
-
-        rmg_error_handler(__FILE__, __LINE__, "Unknown discretization method.");
-
-    }
-
+    for(int ix = 0;ix < dimx*dimy*dimz;ix++) b[ix] = a[ix];
 }
