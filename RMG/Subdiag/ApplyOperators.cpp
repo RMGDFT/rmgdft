@@ -164,9 +164,9 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
         for(int idx = 0; idx < pbasis; idx++) 
         {
             a_psi_C[idx] += 2.0 * psi[idx] * vxc_z[idx];
-            a_psi_C[idx] += 2.0 * psi[idx+pbasis] * std::complex<double>(vxc_x[idx], vxc_y[idx]); 
+            a_psi_C[idx] += 2.0 * psi[idx+pbasis] * std::complex<double>(vxc_x[idx], -vxc_y[idx]); 
             a_psi_C[idx + pbasis] += -2.0 * psi[idx + pbasis] * vxc_z[idx];
-            a_psi_C[idx + pbasis] += 2.0 * psi[pbasis] * std::complex<double>(vxc_x[idx], -vxc_y[idx]); 
+            a_psi_C[idx + pbasis] += 2.0 * psi[idx] * std::complex<double>(vxc_x[idx], vxc_y[idx]); 
         } 
 
     }

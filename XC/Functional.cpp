@@ -294,7 +294,6 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
 
     for(int ix=0;ix < this->pbasis;ix++)rho[ix] = rho_in[ix];
     // for collinear case, spin up and down are in different processor groups.
-std::cout<< "nspin = " << nspin<<std::endl;
     if(nspin==2)
     {
         for(int ix=0;ix < this->pbasis;ix++)rho[ix+this->pbasis] = rho_in[ix+this->pbasis];
@@ -319,14 +318,15 @@ std::cout<< "nspin = " << nspin<<std::endl;
         v_up = v;
         v_down = &v[this->pbasis];
         double mrho;
+        
         for(int idx = 0; idx < this->pbasis; idx++)
         {
             mrho = rho_in[idx + this->pbasis] *rho_in[idx + this->pbasis];
             mrho += rho_in[idx + 2*this->pbasis] *rho_in[idx + 2*this->pbasis];
             mrho += rho_in[idx + 3*this->pbasis] *rho_in[idx + 3*this->pbasis];
             mrho = std::sqrt(mrho);
-            rho_up[idx] = 0.5 * rho_in[idx] + mrho;
-            rho_down[idx] = 0.5* rho_in[idx] - mrho;
+            rho_up[idx] = 0.5 * (rho_in[idx] + mrho);
+            rho_down[idx] = 0.5* (rho_in[idx] - mrho);
         }
 
     }
@@ -445,6 +445,12 @@ std::cout<< "nspin = " << nspin<<std::endl;
                 v[idx +   this->pbasis] = rho_in[idx +   this->pbasis] /mrho * vd;
                 v[idx + 2*this->pbasis] = rho_in[idx + 2*this->pbasis] /mrho * vd;
                 v[idx + 3*this->pbasis] = rho_in[idx + 3*this->pbasis] /mrho * vd;
+            }
+            else
+            {
+                v[idx +   this->pbasis] = 0.0;
+                v[idx + 2*this->pbasis] = 0.0;
+                v[idx + 3*this->pbasis] = 0.0;
             }
         }    
     }

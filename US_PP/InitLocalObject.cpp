@@ -201,6 +201,7 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         /* Generate ion pointer */
         iptr = &Atoms[ion];
 
+        if(pct.gridpe == 0) printf("\n aaaa %d %f %f", ion, iptr->init_spin_rho, iptr->init_spin_z);
         /* Get species type */
         sp = &Species[iptr->species];
         Zv = sp->zvalence;
@@ -306,8 +307,9 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
                                         sumobject[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
                                     else
                                         sumobject[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
+
                                 }
-                                if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                else if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
                                 { 
                                         sumobject[idx] += t1;
                                         sumobject[idx+FP0_BASIS] += t1 * iptr->init_spin_x   ;
@@ -352,6 +354,9 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         }
 
         for(int idx = 0;idx < FP0_BASIS;idx++) sumobject[idx] *= t1;
+        if(!compute_lobject)
+            for(int is = 1; is < ct.noncoll_factor * ct.noncoll_factor; is++)
+                for(int idx = 0;idx < FP0_BASIS;idx++) sumobject[idx + is * FP0_BASIS] *= t1;
 
     }
 

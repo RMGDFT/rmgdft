@@ -70,6 +70,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
 
 
+    int pbasis_noncoll = pbasis * ct.noncoll_factor;
     double *nvtot_psi = vtot_psi;;
     if(pct.coalesce_factor > 1)
     {
@@ -82,20 +83,24 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
 
+        if(pct.gridpe == 0)
+        {
+            for(int idx = 0; idx < 128; idx+=16) printf("\n aaaa %d %d %f %f",vcycle, idx, this->Kstates[0].psi[idx]); 
+        }
         int active_threads = ct.MG_THREADS_PER_NODE;
         if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
         // Zero out dvh array if potential acceleration is enabled
         if(potential_acceleration)
         {
-           int stop = this->ndvh * this->pbasis * pct.coalesce_factor;
+           int stop = this->ndvh * pbasis_noncoll * pct.coalesce_factor;
            for(int i=0;i < stop;i++) this->dvh[i] = 0.0;
            PotentialAccelerationReset(my_pe_offset*active_threads + this->dvh_skip/pct.coalesce_factor);
         }
 
         // Update betaxpsi        
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        this->BetaProjector->project(this, this->newsint_local, 0, nstates, this->nl_weight);
+        this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight);
         delete(RT1);
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -142,7 +147,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
             if(check > ct.non_local_block_size) 
             {
                 RT1 = new RmgTimer("3-MgridSubspace: AppNls");
-                AppNls(this, this->newsint_local, this->Kstates[st1].psi, this->nv, &this->ns[st1 * pbasis], this->Bns,
+                AppNls(this, this->newsint_local, this->Kstates[st1].psi, this->nv, &this->ns[st1 * pbasis_noncoll], this->Bns,
                        st1, std::min(ct.non_local_block_size, this->nstates - st1));
                 first_nls = 0;
                 delete(RT1);
@@ -154,11 +159,12 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
                 if((st1 + ist + istart) >= this->nstates) break;
                 thread_control.job = HYBRID_EIG;
                 thread_control.vtot = nvtot_psi;
+                thread_control.vxc_psi = vxc_psi;
                 thread_control.vcycle = vcycle;
                 thread_control.sp = &this->Kstates[st1 + ist + istart];
                 thread_control.p3 = (void *)this;
-                thread_control.nv = (void *)&this->nv[(first_nls + ist + istart) * pbasis];
-                thread_control.ns = (void *)&this->ns[(st1 + ist + istart) * pbasis];  // ns is not blocked!
+                thread_control.nv = (void *)&this->nv[(first_nls + ist + istart) * pbasis_noncoll];
+                thread_control.ns = (void *)&this->ns[(st1 + ist + istart) * pbasis_noncoll];  // ns is not blocked!
                 thread_control.basetag = this->Kstates[st1 + ist + istart].istate;
                 thread_control.extratag1 = active_threads;
                 thread_control.extratag2 = st1;
@@ -239,7 +245,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     if(!potential_acceleration || (potential_acceleration && (ct.rms <  5.0e-6)))
     {
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        this->BetaProjector->project(this, this->newsint_local, 0, nstates, this->nl_weight);
+        this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight);
         delete(RT1);
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -257,7 +263,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
     // wavefunctions have changed, projectors have to be recalculated */
     RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-    this->BetaProjector->project(this, this->newsint_local, 0, nstates, this->nl_weight);
+    this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight);
     delete(RT1);
 
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)

@@ -97,10 +97,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     AppNls(this, newsint_local, Kstates[0].psi, nv, ns, Bns, 0, std::min(ct.non_local_block_size, nstates));
     if(pct.gridpe == 0)
     {
+        for(int j = 0; j < 8; j++)
         for(int i = 0; i < 64; i++)
-            printf("\n n1v %d %f %f", i, std::real(nv[i]), std::real(nv[pbasis+i]));
-        for(int i = 0; i < 64; i++)
-            printf("\n n4v %d %f %f", i, std::real(nv[4*pbasis_noncoll+ i]), std::real(nv[4*pbasis_noncoll+ pbasis+i]));
+            printf("\n n%dv %d %f %f", j, i, std::real(nv[j*pbasis_noncoll + i]), std::real(nv[j*pbasis_noncoll + pbasis+i]));
     }
 
     delete RT2;
@@ -165,6 +164,12 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         first_nls += active_threads;
 
     }
+
+    if(pct.gridpe == 0)
+    for(int iz = 0; iz < 128; iz+=16) printf("\n cccc %d %e %e %e %e", iz, a_psi[iz], a_psi[pbasis+ iz]);
+
+    if(pct.gridpe == 0)
+    for(int iz = 0; iz < 128; iz+=16) printf("\n dddd %d %e %e %e %e", iz, a_psi[iz + 4*pbasis_noncoll], a_psi[pbasis+ iz + 4*pbasis_noncoll]);
 
     if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 

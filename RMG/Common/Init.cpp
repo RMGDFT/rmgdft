@@ -562,15 +562,21 @@ std::cout<<"ffff" << std::endl;
         double etxc, vtxc;
         RT1 = new RmgTimer("2-Init: exchange/correlation");
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+
         F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
+        if(pct.gridpe ==0) 
+        for(int idx = 0; idx < 256; idx+=16) printf("\n aaaa %d %f %f", idx, vxc[idx], vxc[idx+FP0_BASIS]);
         // Initial vxc and vh can be very noisy
         FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
 
         if(ct.noncoll)
         {
+        if(pct.gridpe ==0) 
+        for(int idx = 0; idx < 256; idx+=16) printf("\n bbbb %d %f %f", idx, vxc[idx+2*FP0_BASIS], vxc[idx+3*FP0_BASIS]);
             FftFilter(&vxc[1*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
             FftFilter(&vxc[2*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
             FftFilter(&vxc[3*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+            
         }
         delete F;
         delete RT1;
@@ -626,7 +632,7 @@ std::cout<<"ffff" << std::endl;
         }
 
         /*Now we can do subspace diagonalization */
-        double *new_rho=new double[FP0_BASIS];
+        double *new_rho=new double[FP0_BASIS *ct.noncoll_factor * ct.noncoll_factor];
         for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
 
@@ -662,7 +668,7 @@ std::cout<<"ffff" << std::endl;
         }
 
 
-        if (ct.spin_flag)
+        if (ct.nspin == 2)
             GetOppositeEigvals (Kptr);
 
 
@@ -673,8 +679,12 @@ std::cout<<"ffff" << std::endl;
         // Get new density 
         RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
         GetNewRho(Kptr, new_rho);
+
+    int pbasis = P0_BASIS;
+   if(pct.gridpe == 0) 
+    for(int iz = 0; iz < 128; iz+=16)printf("\n rhooo %d %f %f %f %f", iz, new_rho[iz], new_rho[iz+pbasis], new_rho[iz+2*pbasis], new_rho[iz+3*pbasis]);
         MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
-        if (ct.spin_flag) get_rho_oppo (rho,  rho_oppo);
+        if (ct.nspin == 2) get_rho_oppo (rho,  rho_oppo);
 
         delete RT2;
         delete [] new_rho;
