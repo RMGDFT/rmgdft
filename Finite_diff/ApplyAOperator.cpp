@@ -66,12 +66,8 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
         FftLaplacianCoarse(a, b);    
         if(!ct.is_gamma) FftGradientCoarse(a, gx, gy, gz);
        
-        FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
-        DataType *ptr = NULL;
-        // When ptr=NULL this does not do the finite differencing but just
-        // returns the value of the diagonal element.
-        double fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        return fd_diag;
+        // Diagonal needed for multigrid smoothings
+        return LC->coeff_and_index[0].coeff;
     }
 
     double cc = 0.0;

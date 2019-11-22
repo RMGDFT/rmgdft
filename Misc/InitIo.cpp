@@ -204,7 +204,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     bool special = ((Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
                     (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
                     (Rmg_L.get_ibrav_type() == HEXAGONAL));
-    if(!special) SetLaplacian();
+    if(!special || ct.kohn_sham_ke_fft) SetLaplacian();
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
 
