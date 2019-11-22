@@ -127,5 +127,5 @@ image_infos="
 
     ctrl_init +="\"\n"
     with open("ctrl_init.dat", "w") as f: f.write(ctrl_init)
-    with open("ctrl_init_restart.dat", "w") as f: f.write(ctrl_init.replace("input", "input_restart", num_images))
+    with open("ctrl_init_restart.dat", "w") as f: f.write(ctrl_init.replace(" input ", " input_restart ", num_images))
 

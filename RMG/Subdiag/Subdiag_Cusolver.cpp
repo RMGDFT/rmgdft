@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-*/
+ */
 
 #include <complex>
 #include "FiniteDiff.h"
@@ -42,11 +42,11 @@
 #include "RmgMatrix.h"
 
 #if GPU_ENABLED
-    #include <cuda.h>
-    #include <cuda_runtime_api.h>
-    #include <cublas_v2.h>
-    #include <thrust/fill.h>
-    #include <thrust/device_vector.h>
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cublas_v2.h>
+#include <thrust/fill.h>
+#include <thrust/device_vector.h>
 #endif
 
 
@@ -54,7 +54,7 @@ template char * Subdiag_Cusolver<double> (Kpoint<double> *kptr, double *Aij, dou
 template char * Subdiag_Cusolver<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors);
 
 // eigvectors holds Bij on input and the eigenvectors of the matrix on output
-template <typename KpointType>
+    template <typename KpointType>
 char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
 {
 
@@ -85,87 +85,86 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
     // long as there are at least 12 nodes.
     int nodes = pct.grid_npes / pct.procs_per_host;
 
-//    if(pct.is_local_master || (use_folded && (nodes < 12))) {
-if(1){
+    //    if(pct.is_local_master || (use_folded && (nodes < 12))) {
 
-        if(!ct.norm_conserving_pp) {
-        {
+    if(!ct.norm_conserving_pp) 
+    {
 
-            // Inverse of B should be in eigvectors after this call
-            RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-            InvertMatrix(Bij, eigvectors, num_states);
-            delete(RT1);
+        // Inverse of B should be in eigvectors after this call
+        RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
+        InvertMatrix(Bij, eigvectors, num_states);
+        delete(RT1);
 
-            /*Multiply inverse of B and and A */
-            /*B^-1*A */
-            KpointType alpha(1.0);
-            KpointType beta(0.0);;
+        /*Multiply inverse of B and and A */
+        /*B^-1*A */
+        KpointType alpha(1.0);
+        KpointType beta(0.0);;
 
-            RmgTimer *RT2 = new RmgTimer("4-Diagonalization: matrix setup");
-            RmgGemm ("n", "n", num_states, num_states, num_states, alpha, eigvectors,
-                      num_states, Aij, num_states, beta, Bij, num_states);
+        RmgTimer *RT2 = new RmgTimer("4-Diagonalization: matrix setup");
+        RmgGemm ("n", "n", num_states, num_states, num_states, alpha, eigvectors,
+                num_states, Aij, num_states, beta, Bij, num_states);
 
-            /*Multiply the result with Sij, result is in eigvectors */
-            RmgGemm ("n", "n", num_states, num_states, num_states, alpha, Sij, 
-                      num_states, Bij, num_states, beta, eigvectors, num_states);
-            delete(RT2);
+        /*Multiply the result with Sij, result is in eigvectors */
+        RmgGemm ("n", "n", num_states, num_states, num_states, alpha, Sij, 
+                num_states, Bij, num_states, beta, eigvectors, num_states);
+        delete(RT2);
 
-        }
-        else {
+    }
+    else {
 
-            // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into eigvectors
-            memcpy(eigvectors, Aij, num_states * num_states * sizeof(KpointType));
+        // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into eigvectors
+        memcpy(eigvectors, Aij, num_states * num_states * sizeof(KpointType));
 
-        }
+    }
 
-        RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
+    RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
 
-        int *ifail = new int[num_states];
-        int liwork = 6 * num_states + 4;
-        int *iwork = new int[2*liwork];
+    int *ifail = new int[num_states];
+    int liwork = 6 * num_states + 4;
+    int *iwork = new int[2*liwork];
 
-        if(ct.is_gamma) {
+    if(ct.is_gamma) {
 
-            if(use_folded) {
+        if(use_folded) {
 
-                int lwork = num_states * num_states / 3 + num_states;
-                lwork = std::max(lwork, 128000);
-                double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));        
-                FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, (double *)Aij, (double *)Bij, eigs, work, lwork, iwork, liwork, SUBDIAG_CUSOLVER);
-                GpuFreeManaged(work);
-
-            }
-            else {
-
-                int lwork = 3 * num_states * num_states + 8 * num_states;
-                lwork = std::max(lwork, 128000);
-                double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
-                if(ct.cuda_version >= 9020)
-                    DsygvjDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
-                else
-                    DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
-                GpuFreeManaged(work);
-
-            }
+            int lwork = num_states * num_states / 3 + num_states;
+            lwork = std::max(lwork, 128000);
+            double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));        
+            FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, (double *)Aij, (double *)Bij, eigs, work, lwork, iwork, liwork, SUBDIAG_CUSOLVER);
+            GpuFreeManaged(work);
 
         }
         else {
 
             int lwork = 3 * num_states * num_states + 8 * num_states;
             lwork = std::max(lwork, 128000);
-            ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, NULL, lwork, num_states);
+            double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
+            if(ct.cuda_version >= 9020)
+                DsygvjDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
+            else
+                DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
+            GpuFreeManaged(work);
 
         }
 
-        delete [] iwork;
-        delete [] ifail;
-        delete RT1;
+    }
+    else {
 
-    } // end if is_local_master
+        int lwork = 3 * num_states * num_states + 8 * num_states;
+        lwork = std::max(lwork, 128000);
+        ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, NULL, lwork, num_states);
+
+    }
+
+    delete [] iwork;
+    delete [] ifail;
+    delete RT1;
+
+    // end if is_local_master
 
     // If only one proc on this host participated broadcast results to the rest
-//    if((pct.procs_per_host > 1) && !(use_folded && (nodes < 12))) {
-if(1){
+    //    if((pct.procs_per_host > 1) && !(use_folded && (nodes < 12))) {
+    if(1){
         int factor = 2;
         if(ct.is_gamma) factor = 1;
         MPI_Bcast(eigvectors, factor * num_states*num_states, MPI_DOUBLE, 0, pct.local_comm);
@@ -177,6 +176,6 @@ if(1){
     return trans_n;
 
 #endif
-     
+
 }
 
