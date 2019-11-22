@@ -30,7 +30,7 @@
 #include "rmg_error.h"
 #include "transition.h"
 
-// Applies Mehrstellen right hand side operator to a and returns result in b
+// Applies right hand side operator to a and returns result in b
 // The first set of functions takes the input and output grids and a char string that defines
 // the grid. More detailed parameters are then passed to the second set which may be accessed
 // directly if more control is required.

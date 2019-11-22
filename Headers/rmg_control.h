@@ -34,9 +34,6 @@ public:
     double energy_output_conversion[2];
     std::string energy_output_string[2];
 
-    // Discretization type flag
-    int discretization;
-
     // Special variables when running with multiple images per node
     // The number of images stacked on a single node
     int images_per_node;

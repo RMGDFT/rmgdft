@@ -231,8 +231,5 @@ double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int
     double cc = CPP_app_del2_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, ct.alt_laplacian);
     return cc;
     
-    throw RmgFatalException() << "Error! Unknown discretization method " << " in "
-                                 << __FILE__ << " at line " << __LINE__ << "\n";
-    return 0.0;
 }
 

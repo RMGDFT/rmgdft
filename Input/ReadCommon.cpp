@@ -384,9 +384,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "md_nose_oscillation_frequency_THz must be a positive real number.", MD_OPTIONS);
 
-    // Force central
-    lc.discretization = CENTRAL_DISCRETIZATION;
-
     If.RegisterInputKey("energy_output_units", &EnergyOutputType, &lc.energy_output_units, "Hartrees",
             CHECK_AND_FIX, OPTIONAL, energy_output_units,
             "Units to be used when writing energy values to the output file. "
