@@ -119,8 +119,6 @@ template <typename KpointType>
 void Betaxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *);
 template <typename KpointType>
 void LdaplusUxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *);
-template <typename RmgType>
-void AppCirDriverBeta (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
 template <typename DataType>
 double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>

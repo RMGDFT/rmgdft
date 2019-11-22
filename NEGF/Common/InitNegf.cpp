@@ -137,10 +137,6 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     MPI_Barrier(pct.img_comm);
 
-    /* Initialize the mehrstellen weights */
-    /*get_mehr (); */
-
-
     init_state_size (states);
 
     state_corner_xyz (states);

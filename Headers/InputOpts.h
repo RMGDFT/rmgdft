@@ -29,10 +29,6 @@ static std::unordered_map<std::string, int> energy_output_units = {
         {"Hartrees", 0},
         {"Rydbergs", 1}};
 
-static std::unordered_map<std::string, int> discretization_type = {
-        {"Mehrstellen", 0},
-        {"Central", 1}};
-
 static std::unordered_map<std::string, int> crds_units = {
         {"Bohr", 0},
         {"Angstrom", 1}};

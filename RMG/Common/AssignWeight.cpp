@@ -112,9 +112,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
         }
     }
 
-
-    // Apply B operator then map weights back
-    AppCirDriverBeta (L, T, tem_array, Btem_array, nlxdim, nlydim, nlzdim, ct.kohn_sham_fd_order);
+    for(int ix = 0; ix < nlxdim * nlydim * nlzdim; ix++) Btem_array[ix] = tem_array[ix];
 
     int ixstart = iptr->nl_global_grid_xstart;
     int iystart = iptr->nl_global_grid_ystart;
