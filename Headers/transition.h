@@ -52,8 +52,6 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old,
 
 int init_kpoints (int *mesh, int *is_shift);
 
-template <typename RmgType> void AppCir (RmgType * a, RmgType * b, char * grid);
-template <typename RmgType> double AppCil (RmgType * a, RmgType * b, char * grid);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, DataType *gz, int, int, int, double, double, double, int);

@@ -1117,52 +1117,20 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
         cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
     }
     for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
+    this->nl_Bweight = this->nl_weight;
 
-    if(ct.need_Bweight) 
-    {
-        if(ct.pin_nonlocal_weights)
-        {
-            custat = cudaMallocHost((void **)&this->nl_Bweight , this->nl_weight_size * sizeof(KpointType));
-            RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
-        }
-        else
-        {
-            this->nl_Bweight = (KpointType *)GpuMallocManaged(this->nl_weight_size * sizeof(KpointType));
-            int device = -1;
-            cudaGetDevice(&device);
-            cudaMemAdvise ( this->nl_Bweight, this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
-        }
-        for(int idx = 0;idx < this->nl_weight_size;idx++) this->nl_Bweight[idx] = 0.0;
-    }
-    else 
-    {
-        this->nl_Bweight = this->nl_weight;
-    }
 #else
     if(ct.nvme_weights)
     {
         this->nl_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
         if(!this->nl_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
         madvise(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(KpointType), MADV_RANDOM);
-
-        if(ct.need_Bweight) {
-            this->nl_Bweight = (KpointType *)CreateMmapArray(nvme_Bweight_fd, this->nl_weight_size*sizeof(KpointType));
-            if(!this->nl_Bweight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for bweights. \n");
-        }
-        else 
-        {
-            this->nl_Bweight = this->nl_weight;
-        }
+        this->nl_Bweight = this->nl_weight;
     }
     else
     {
         this->nl_weight = new KpointType[stress_factor * this->nl_weight_size]();
-        if(ct.need_Bweight) {
-            this->nl_Bweight = new KpointType[this->nl_weight_size]();
-        }
-        else {
-            this->nl_Bweight = this->nl_weight;
-        }
+        this->nl_Bweight = this->nl_weight;
     }
 #endif
 
@@ -1217,28 +1185,6 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
         }
 #endif
         this->nl_weight = NULL;
-    }
-    if ((this->nl_Bweight != NULL) && ct.need_Bweight) {
-#if GPU_ENABLED
-        if(ct.pin_nonlocal_weights)
-        {
-            cudaFreeHost(this->nl_Bweight);
-        }
-        else
-        {
-            cudaFree(this->nl_Bweight);
-        }
-#else
-        if(ct.nvme_weights)
-        {
-            munmap(this->nl_Bweight, this->nl_weight_size*sizeof(double));
-        }
-        else
-        {
-            delete [] this->nl_Bweight;
-        }
-#endif
-        this->nl_Bweight = NULL;
     }
 
 }

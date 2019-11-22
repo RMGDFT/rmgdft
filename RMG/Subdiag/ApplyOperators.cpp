@@ -113,19 +113,8 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
         CPP_genvpsi (psi, sg_twovpsi_t, vtot, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
     }
 
-    // B operating on 2*V*psi stored in work
-    if(ct.discretization == CENTRAL_DISCRETIZATION)
-    {
-        // For central FD B is just the identity
-        for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = sg_twovpsi_t[idx] - a_psi[idx];
-    }
-    else
-    {
-        KpointType *work_t = new KpointType[pbasis];
-        ApplyBOperator (sg_twovpsi_t, work_t, "Coarse");
-        for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = work_t[idx] - a_psi[idx];
-        delete [] work_t;
-    }
+    // For central FD B is just the identity
+    for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = sg_twovpsi_t[idx] - a_psi[idx];
 
     // Add in non-local which has already had B applied in AppNls
     for(int idx = 0; idx < pbasis; idx++) a_psi[idx] += TWO * nv[idx];
