@@ -52,7 +52,7 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
 //delete F;
 //delete [] rho_temp;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.spin_flag );
+    F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
     delete F;
 
 
@@ -69,7 +69,7 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     GetVtotPsi (vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
     FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
-    get_ddd(vtot);
+    get_ddd(vtot, vxc);
 
 
 }

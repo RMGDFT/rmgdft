@@ -78,7 +78,7 @@ template void GetTe (double *, double *, double *, double *, double *, double *,
 template <typename KpointType>
 void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, double * vh_in, double * vxc_in, Kpoint<KpointType> **Kptr, int ii_flag)
 {
-    int state, kpt, idx, nspin = (ct.spin_flag + 1), FP0_BASIS;
+    int state, kpt, idx, FP0_BASIS;
     double t1;
     double vel;
     Kpoint<KpointType> *kptr;
@@ -99,6 +99,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double ldaU_E = 0.0;
     double ldaU_H = 0.0;
 
+    int nspin = 1;
+    if(ct.nspin == 2) nspin = 2;
     for (idx = 0; idx < nspin; idx++)
     {
     	for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
@@ -129,7 +131,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     /* Evaluate electrostatic energy correction terms */
     ct.ES = 0.0;
-    if (ct.spin_flag)
+    if (ct.nspin==2)
     {
 	/* Add the compensating charge to total charge to calculation electrostatic energy */    
     	for (idx = 0; idx < FP0_BASIS; idx++)
@@ -148,7 +150,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     double absmag = 0.0;
     double xcstate = 0.0;
 
-    if (ct.spin_flag)
+    if (ct.nspin == 2)
     {
     	for (idx = 0; idx < FP0_BASIS; idx++)
 	{
@@ -158,6 +160,12 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
         }
         mag = vel * RmgSumAll(mag, pct.grid_comm);
         absmag = vel * RmgSumAll(absmag, pct.grid_comm);
+    }
+    else if(ct.nspin == 4)
+    {
+        for(int is = 0; is < 4; is++)
+            for (idx = 0; idx < FP0_BASIS; idx++)
+                xcstate += rho[idx + is* FP0_BASIS] * vxc_in[idx + is*FP0_BASIS];
     }
     else
     {
@@ -179,18 +187,17 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     /* Sum them all up */
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_E + ct.scf_correction;
     if(ct.xc_is_hybrid && Functional::is_exx_active()) ct.TOTAL -= ct.FOCK;
-//    ct.TOTAL = eigsum - ct.ES - ct.vtxc + ct.XC + ct.II + ct.scf_correction;
     
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
-//rmg_printf ("@@ SCF CORRECTION     = %15.6f %s\n", efactor*ct.scf_correction, eunits);
+    //rmg_printf ("@@ SCF CORRECTION     = %15.6f %s\n", efactor*ct.scf_correction, eunits);
     rmg_printf ("@@ EIGENVALUE SUM     = %15.6f %s\n", efactor*eigsum, eunits);
     rmg_printf ("@@ ION_ION            = %15.6f %s\n", efactor*ct.II, eunits);
     rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", -efactor*ct.ES, eunits);
     rmg_printf ("@@ VXC                = %15.6f %s\n",  efactor*xcstate, eunits);
     rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-    if(ct.xc_is_hybrid && Functional::is_exx_active())
+    if(ct.xc_is_hybrid && Functional::is_exx_active()
         rmg_printf ("@@ FOCK               = %15.6f %s\n", efactor*ct.FOCK, eunits);
 
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
@@ -203,16 +210,16 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     else {
         rmg_printf ("@@ estimated error    =   ****************\n");
     }
-        
+
     if (ct.spin_flag)
     {
-	/* Print the total magetization and absolute magnetization into output file */
-       	rmg_printf ("@@ TOTAL MAGNETIZATION    = %12.8f Bohr mag/cell\n", mag );
-       	rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %12.8f Bohr mag/cell\n", absmag );
+        /* Print the total magetization and absolute magnetization into output file */
+        rmg_printf ("@@ TOTAL MAGNETIZATION    = %12.8f Bohr mag/cell\n", mag );
+        rmg_printf ("@@ ABSOLUTE MAGNETIZATION = %12.8f Bohr mag/cell\n", absmag );
     }
 
     //rmg_printf("CHECK  %12.6f  %12.6f\n", xcstate, ct.vtxc);
-   
+
 
     /* Release our memory */
     delete [] vh;

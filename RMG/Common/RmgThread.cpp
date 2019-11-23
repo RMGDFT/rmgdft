@@ -193,16 +193,18 @@ void *run_threads(void *v) {
                 if(ct.is_gamma) {
                     kptr_d = (Kpoint<double> *)ss.p3;
                     if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<double,float> (kptr_d, (State<double> *)ss.sp, ss.vtot, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
+                        MgEigState<double,float> (kptr_d, (State<double> *)ss.sp, ss.vtot, ss.vxc_psi, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
                     else
-                        MgEigState<double,double> (kptr_d, (State<double> *)ss.sp, ss.vtot, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
+                        MgEigState<double,double> (kptr_d, (State<double> *)ss.sp, ss.vtot, ss.vxc_psi, (double *)ss.nv, (double *)ss.ns, ss.vcycle);
                 }
                 else {
                     kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
                     if(ct.rms > ct.preconditioner_thr)
-                        MgEigState<std::complex<double>, std::complex<float> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcycle);
+                        MgEigState<std::complex<double>, std::complex<float> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot,
+ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcycle);
                     else
-                        MgEigState<std::complex<double>, std::complex<double> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcycle);
+                        MgEigState<std::complex<double>, std::complex<double> > (kptr_c, (State<std::complex<double> > *)ss.sp, ss.vtot,
+ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcycle);
                 }
                 break;
             case HYBRID_SKIP:
@@ -211,13 +213,14 @@ void *run_threads(void *v) {
                 if(ct.is_gamma) {
                     kptr_d = (Kpoint<double> *)ss.p3;
                     State<double> *spd = (State<double> *)ss.sp;
-                    ApplyOperators<double> (kptr_d, spd->istate, (double *)ss.p1, (double *)ss.p2, ss.vtot, 
+                    ApplyOperators<double> (kptr_d, spd->istate, (double *)ss.p1, (double *)ss.p2, ss.vtot, ss.vxc_psi, 
                                           (double *)ss.nv, (double *)ss.Bns);
                 }
                 else {
                     kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
                     State<std::complex<double> > *spc = (State<std::complex<double> > *)ss.sp;
-                    ApplyOperators<std::complex<double> > (kptr_c, spc->istate, (std::complex<double> *)ss.p1, (std::complex<double> *)ss.p2, ss.vtot,
+                    ApplyOperators<std::complex<double> > (kptr_c, spc->istate, (std::complex<double> *)ss.p1, (std::complex<double> *)ss.p2,
+ss.vtot, ss.vxc_psi,
                                                           (std::complex<double> *)ss.nv, (std::complex<double> *)ss.Bns);
                 } 
                 break;

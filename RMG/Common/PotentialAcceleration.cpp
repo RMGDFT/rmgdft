@@ -87,7 +87,7 @@ void PotentialAccelerationWait(int istate, int nstates, int skip)
 }
 
 template <typename OrbitalType, typename CalcType>
-void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *dvtot_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi)
+void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, double *vtot_psi, double *vxc_z_psi, CalcType *tmp_psi_t, OrbitalType *saved_psi)
 {
     // Return if we are in the last slot
     int check = (kptr->nstates / kptr->dvh_skip)*kptr->dvh_skip;
@@ -110,7 +110,11 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
 
     vtot_sync_mutex.lock();
     for(int idx = 0;idx <pbasis;idx++) {
-       kptr->dvh[idx + offset] += t1 * PI * sp->occupation[0] * std::real(tmp_psi_t[idx] * std::conj((tmp_psi_t[idx] - (CalcType)saved_psi[idx])));
+       kptr->dvh[idx + offset] += t1 * PI * sp->occupation[0] * 
+           std::real(tmp_psi_t[idx] * std::conj((tmp_psi_t[idx] - (CalcType)saved_psi[idx])));
+       if(ct.noncoll)
+           kptr->dvh[idx + offset] += t1 * PI * sp->occupation[0] * 
+               std::real(tmp_psi_t[idx+pbasis] * std::conj((tmp_psi_t[idx+pbasis] - (CalcType)saved_psi[idx+pbasis])));
     }
     vtot_sync_mutex.unlock();
 
@@ -132,13 +136,13 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
                 qi.comm = get_unique_coalesced_local_comm(base_state);
                 Rmg_Q->queue[tid]->push(qi);
                 while(!is_completed.load(std::memory_order_acquire)){Rmg_Q->spin(500);}
-           }
-           else
-           {
-               T->thread_barrier_wait(false);
-               if(tid == 0) MPI_Allreduce(MPI_IN_PLACE, &kptr->dvh[offset], pbasis, MPI_DOUBLE, MPI_SUM, pct.coalesced_local_comm);
-               T->thread_barrier_wait(false);
-           }
+            }
+            else
+            {
+                T->thread_barrier_wait(false);
+                if(tid == 0) MPI_Allreduce(MPI_IN_PLACE, &kptr->dvh[offset], pbasis, MPI_DOUBLE, MPI_SUM, pct.coalesced_local_comm);
+                T->thread_barrier_wait(false);
+            }
         }
         for(int i = 0;i <pbasis;i++)
         {

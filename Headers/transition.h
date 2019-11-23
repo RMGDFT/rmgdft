@@ -44,7 +44,8 @@ void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt,
 void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 void  get_rho_oppo (double * rho, double * rho_oppo);
-void get_ddd (double *veff);
+void get_ddd (double *veff, double *vxc);
+
 void rmg_lbfgs (void);
 void lbfgs_init(int num_ions, int num_images);
 void write_restart (char *name, double * vh, double *vxc, double *vh_old, 

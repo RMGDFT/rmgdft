@@ -38,13 +38,14 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-template void ApplyOperators<double>(Kpoint<double> *, int, double *, double *, double *, double *, double *);
-template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>> *, int, std::complex<double> *, std::complex<double> *, double *, 
-              std::complex<double> *, std::complex<double> *);
+template void ApplyOperators<double>(Kpoint<double> *, int, double *, double *, double *, double *, double *, double *);
+template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>> *, int, std::complex<double> *, 
+        std::complex<double> *, double *, double *,
+        std::complex<double> *, std::complex<double> *);
 
 // Applies A and B operators to one wavefunction
-template <typename KpointType>
-void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot, KpointType *nv, KpointType *Bns)
+    template <typename KpointType>
+void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot, double *vxc_psi,  KpointType *nv, KpointType *Bns)
 {
     // We want a clean exit if user terminates early
     CheckShutdown();
@@ -60,6 +61,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
     int pbasis = dimx * dimy * dimz;
+    int pbasis_noncoll = pbasis * ct.noncoll_factor;
 
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
     potential_acceleration = potential_acceleration & (ct.scf_steps > 0);
@@ -68,27 +70,44 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     // Apply A operator to psi
     ApplyAOperator (psi, a_psi, "Coarse");
 
-
     // Apply B operator to psi
     ApplyBOperator (psi, b_psi, "Coarse");
+
+    if(ct.noncoll)
+    {
+        ApplyAOperator (&psi[pbasis], &a_psi[pbasis], "Coarse");
+        ApplyBOperator (&psi[pbasis], &b_psi[pbasis], "Coarse");
+    }
 
     // if complex orbitals apply gradient to orbital and compute dot products
     std::complex<double> *kdr = NULL;
     if(typeid(KpointType) == typeid(std::complex<double>)) {
 
-        kdr = new std::complex<double>[pbasis]();
+        kdr = new std::complex<double>[pbasis *ct.noncoll_factor]();
+        std::complex<double> I_t(0.0, 1.0);
         KpointType *gx = new KpointType[pbasis];
         KpointType *gy = new KpointType[pbasis];
         KpointType *gz = new KpointType[pbasis];
 
         ApplyGradient (psi, gx, gy, gz, APP_CI_EIGHT, "Coarse");
 
-        std::complex<double> I_t(0.0, 1.0);
         for(int idx = 0;idx < pbasis;idx++) {
 
             kdr[idx] = -I_t * (kptr->kp.kvec[0] * (std::complex<double>)gx[idx] +
-                               kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
-                               kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
+                    kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
+                    kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
+        }
+
+        if(ct.noncoll)
+        {
+            ApplyGradient (&psi[pbasis], gx, gy, gz, APP_CI_EIGHT, "Coarse");
+
+            for(int idx = 0;idx < pbasis;idx++) {
+
+                kdr[idx+pbasis] = -I_t * (kptr->kp.kvec[0] * (std::complex<double>)gx[idx] +
+                        kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
+                        kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
+            }
         }
 
         delete [] gz;
@@ -100,6 +119,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
     // Generate 2*V*psi
     KpointType *sg_twovpsi_t = new KpointType[pbasis];
+    double *veff= NULL;
     if(potential_acceleration) {
         int active_threads = ct.MG_THREADS_PER_NODE;
         if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
@@ -107,22 +127,46 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
         int my_pe_x, my_pe_y, my_pe_z;
         kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
         int my_pe_offset = my_pe_x % pct.coalesce_factor;
-        CPP_genvpsi (psi, sg_twovpsi_t, &kptr->dvh[offset*pct.coalesce_factor + my_pe_offset*pbasis], (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
+        veff = &kptr->dvh[offset*pct.coalesce_factor + my_pe_offset*pbasis];
     }
     else {
-        CPP_genvpsi (psi, sg_twovpsi_t, vtot, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
+        veff = vtot;
     }
 
-    // For central FD B is just the identity
-    for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = sg_twovpsi_t[idx] - a_psi[idx];
 
+    CPP_genvpsi (psi, sg_twovpsi_t, veff, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
+
+        // For central FD B is just the identity
+    for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = sg_twovpsi_t[idx] - a_psi[idx];
+   
+      
+      if(ct.noncoll)
+    {
+        std::complex<double> *kdr_down = kdr + pbasis;
+        CPP_genvpsi (&psi[pbasis], sg_twovpsi_t, veff, (void *)kdr_down, kptr->kp.kmag, dimx, dimy, dimz);
+        for(int idx = 0; idx < pbasis; idx++) a_psi[idx + pbasis] = sg_twovpsi_t[idx] - a_psi[idx + pbasis];
+
+        double *vxc_x = &vxc_psi[pbasis];
+        double *vxc_y = &vxc_psi[2*pbasis];
+        double *vxc_z = &vxc_psi[3*pbasis];
+        std::complex<double> *a_psi_C = (std::complex<double> *)a_psi;
+
+        for(int idx = 0; idx < pbasis; idx++) 
+        {
+            a_psi_C[idx] += 2.0 * psi[idx] * vxc_z[idx];
+            a_psi_C[idx] += 2.0 * psi[idx+pbasis] * std::complex<double>(vxc_x[idx], -vxc_y[idx]); 
+            a_psi_C[idx + pbasis] += -2.0 * psi[idx + pbasis] * vxc_z[idx];
+            a_psi_C[idx + pbasis] += 2.0 * psi[idx] * std::complex<double>(vxc_x[idx], vxc_y[idx]); 
+        } 
+
+    }
     // Add in non-local which has already had B applied in AppNls
-    for(int idx = 0; idx < pbasis; idx++) a_psi[idx] += TWO * nv[idx];
+    for(int idx = 0; idx < pbasis_noncoll; idx++) a_psi[idx] += TWO * nv[idx];
     // Scale correctly.
-    for (int idx = 0; idx < pbasis; idx++) a_psi[idx] = 0.5 * vel * a_psi[idx];
+    for (int idx = 0; idx < pbasis_noncoll; idx++) a_psi[idx] = 0.5 * vel * a_psi[idx];
 
     // Add in already applied Bns to b_psi for US
-    if(!ct.norm_conserving_pp) for(int idx = 0; idx < pbasis; idx++) b_psi[idx] += Bns[idx];
+    if(!ct.norm_conserving_pp) for(int idx = 0; idx < pbasis_noncoll; idx++) b_psi[idx] += Bns[idx];
 
     if(kdr) delete [] kdr;
     delete [] sg_twovpsi_t;

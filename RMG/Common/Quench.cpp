@@ -68,7 +68,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
     double *vh_in = new double[FP0_BASIS];
-    double *vxc_in = new double[FP0_BASIS];
+    double *vxc_in = new double[FP0_BASIS * ct.nspin];
 
     /* ---------- begin scf loop ---------- */
     

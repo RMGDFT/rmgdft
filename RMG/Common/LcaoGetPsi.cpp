@@ -52,7 +52,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
     for (int st = 0; st < nstates; st++)
     {
-        for (int idx = 0; idx < pbasis; idx++)
+        for (int idx = 0; idx < pbasis * ct.noncoll_factor; idx++)
         {
             states[st].psi[idx] = 0.0;
         }
@@ -78,96 +78,70 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
     state_count = CountAtomicOrbitals();
 
-    if(state_count <= nstates)
+    KpointType *npsi = (KpointType *)GpuMallocManaged(state_count * pbasis * sizeof(KpointType));
+
+    double coeff = 1.0;
+    int wave_idx = 0;
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-        double coeff = 1.0;
-        int st = 0;
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+        /* Generate ion pointer */
+        ION &Atom = Atoms[ion];
+
+        /* Get species type */
+        SPECIES &AtomType = Species[Atom.species];
+
+        if(ct.atomic_orbital_type == DELOCALIZED)
         {
-            /* Generate ion pointer */
-            ION &Atom = Atoms[ion];
-
-            /* Get species type */
-            SPECIES &AtomType = Species[Atom.species];
-
-            if(ct.atomic_orbital_type == DELOCALIZED)
+            // Delocalized orbitals
+            get_ion_orbitals(&Atom, &npsi[wave_idx * pbasis]);
+            wave_idx += AtomType.num_orbitals;
+        }
+        else
+        {
+            /*Loop over atomic wavefunctions for given ion*/
+            for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
             {
-                // Delocalized orbitals
-                get_ion_orbitals(&Atom, states[st].psi);
-                st += AtomType.num_orbitals;
-            }
-            else
-            {
-                /*Loop over atomic wavefunctions for given ion*/
-                for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
-                {
-                    int l = AtomType.atomic_wave_l[ip];
-                    if(AtomType.atomic_wave_oc[ip] > 0.0)
+                int l = AtomType.atomic_wave_l[ip];
+                if(AtomType.atomic_wave_oc[ip] > 0.0) {
+
+                    /*Loop over all m values for given l and get wavefunctions */
+                    for (int m=0; m < 2*l+1; m++)
                     {
-                        /*Loop over all m values for given l and get wavefunctions */
-                        for (int m=0; m < 2*l+1; m++)
-                        {
-                            LcaoGetAwave(states[st].psi, &Atom, ip, l, m, coeff, kvec);
-                            st++;
-                        }
+                        for(int idx = 0;idx < pbasis;idx++)  npsi[wave_idx * pbasis + idx] = 0.0;
+                        LcaoGetAwave(&npsi[wave_idx * pbasis], &Atom, ip, l, m, coeff, kvec);
+                        wave_idx++;
                     }
+
                 }
             }
         }
     }
+
+    // in the case of noncollinear, the first state_count wavefunctions will have (atomic_psi, 0) and the second state_count wavefuntions will
+    // have (0, atomic_psi). 
+    if(state_count * ct.noncoll_factor <= nstates)
+    {
+        for(int st = 0;st < state_count;st++)
+        {
+            for(int idx = 0; idx < pbasis; idx++)
+                states[st].psi[idx] = npsi[st * pbasis + idx];
+
+            if(ct.noncoll)
+                for(int idx = 0; idx < pbasis; idx++)
+                    states[st+state_count].psi[idx+pbasis] = npsi[st * pbasis + idx];
+
+        }
+    }
     else
     {
-        KpointType *npsi = new KpointType[pbasis * state_count];      // The array for orbital storage is 4x run_state which should be big enough
         long *aidum = new long[state_count];
         for(int st = 0;st < state_count;st++)
         {
             aidum[st] = idum = st + 3314;
         }
 
-        double coeff = 1.0;
-        int wave_idx = 0;
-        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-        {
-            /* Generate ion pointer */
-            ION &Atom = Atoms[ion];
-
-            /* Get species type */
-            SPECIES &AtomType = Species[Atom.species];
-
-            if(ct.atomic_orbital_type == DELOCALIZED)
-            {
-                // Delocalized orbitals
-                get_ion_orbitals(&Atom, &npsi[wave_idx * pbasis]);
-                wave_idx += AtomType.num_orbitals;
-            }
-            else
-            {
-                /*Loop over atomic wavefunctions for given ion*/
-                for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
-                {
-                    int l = AtomType.atomic_wave_l[ip];
-                    if(AtomType.atomic_wave_oc[ip] > 0.0) {
-
-                        /*Loop over all m values for given l and get wavefunctions */
-                        for (int m=0; m < 2*l+1; m++)
-                        {
-                            for(int idx = 0;idx < pbasis;idx++)  npsi[wave_idx * pbasis + idx] = 0.0;
-                            LcaoGetAwave(&npsi[wave_idx * pbasis], &Atom, ip, l, m, coeff, kvec);
-                            wave_idx++;
-                        }
-
-                    }
-                }
-            }
-        }
-
-
         // Now generate a random mix
-#if GPU_ENABLED
         KpointType *rmatrix = (KpointType *)GpuMallocManaged(state_count * nstates * sizeof(KpointType));
-#else
-        KpointType *rmatrix = new KpointType[state_count * nstates];
-#endif
 
         for(int st = 0;st < state_count;st++) {
             for(int idx = 0;idx < nstates;idx++) {
@@ -179,25 +153,30 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         KpointType alpha(1.0);
         KpointType beta(0.0);
 
-    
+
+        int lda = pbasis * ct.noncoll_factor;
         RmgGemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
-            npsi, pbasis, rmatrix, state_count, beta, states[0].psi, pbasis);
+                npsi, pbasis, rmatrix, state_count, beta, states[0].psi, lda);
 
-#if GPU_ENABLED
+        if(ct.noncoll)
+            RmgGemm(trans_n, trans_n, pbasis, nstates, state_count, alpha,
+                    npsi, pbasis, rmatrix, state_count, beta, states[state_count].psi+pbasis, lda);
+
+
         GpuFreeManaged(rmatrix);
-#else
-        delete [] rmatrix;
-#endif
-
-
-        delete [] npsi;
         delete [] aidum;
-
     }
+    GpuFreeManaged(npsi);
+
 
     /*Initialize any additional states to random start*/
-    if ( nstates > state_count)
+    if ( nstates > state_count * ct.noncoll_factor)
     {
+        if(ct.noncoll) 
+        {
+            rmg_printf("in the case of noncollinear, nstates cannot be bigger than number of atomic wavefunctions\n");
+            rmg_error_handler(__FILE__,__LINE__,"Terminating.");
+        }
         int ix, iy, iz;
         int xoff, yoff, zoff;
         State<KpointType> *state_p;

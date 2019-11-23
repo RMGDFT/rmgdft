@@ -149,7 +149,8 @@ void Vdd(double * rho)
 
 
     /*Get atomic charge density*/
-    atomic_rho = new double[FP0_BASIS];
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
+    atomic_rho = new double[FP0_BASIS * factor];
     LcaoGetAtomicRho(atomic_rho);
 
 

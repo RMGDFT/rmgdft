@@ -178,6 +178,10 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         for(int idx = 0; idx < 3* FP0_BASIS; idx++) sumobject[idx] = 0.0;
     }
 
+    if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
+    {
+        for(int idx = 0; idx < 4* FP0_BASIS; idx++) sumobject[idx] = 0.0;
+    }
 
     if(object_type == ATOMIC_RHOCOMP) {
         int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
@@ -296,12 +300,20 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
 
                                 }
 
-                                if( (ct.spin_flag == 1) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                if( (ct.nspin == 2) && (object_type == ATOMIC_RHO) && !compute_lobject)
                                 { 
                                     if (pct.spinpe == 0)
                                         sumobject[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
                                     else
                                         sumobject[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
+
+                                }
+                                else if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                { 
+                                        sumobject[idx] += t1;
+                                        sumobject[idx+FP0_BASIS] += t1 * iptr->init_spin_x   ;
+                                        sumobject[idx+2*FP0_BASIS] += t1 * iptr->init_spin_y ;
+                                        sumobject[idx+3*FP0_BASIS] += t1 * iptr->init_spin_z ;
                                 }
                                 else if(object_type == ATOMIC_RHOCORE_STRESS)
                                 {
@@ -341,6 +353,9 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         }
 
         for(int idx = 0;idx < FP0_BASIS;idx++) sumobject[idx] *= t1;
+        if(!compute_lobject)
+            for(int is = 1; is < ct.noncoll_factor * ct.noncoll_factor; is++)
+                for(int idx = 0;idx < FP0_BASIS;idx++) sumobject[idx + is * FP0_BASIS] *= t1;
 
     }
 

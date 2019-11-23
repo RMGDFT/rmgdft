@@ -29,11 +29,11 @@
 #endif
 
 
-template void HSmatrix<double>(Kpoint<double> *, double *, double *, double *);
-template void HSmatrix<std::complex<double> >(Kpoint<std::complex<double>> *, double *, std::complex<double> *, std::complex<double> *); 
+template void HSmatrix<double>(Kpoint<double> *, double *, double *, double *, double *);
+template void HSmatrix<std::complex<double> >(Kpoint<std::complex<double>> *, double *,double *,  std::complex<double> *, std::complex<double> *); 
 
     template <typename KpointType>
-void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, KpointType *Smat) 
+void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  KpointType *Hmat, KpointType *Smat) 
 {
     RmgTimer RT0("4-Diagonalization");
 
@@ -46,7 +46,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
     KpointType *ns = kptr->ns;
     KpointType *nv = kptr->nv;
     KpointType *newsint_local = kptr->newsint_local;
-    int pbasis = kptr->pbasis;
+    int pbasis_noncoll = kptr->pbasis * ct.noncoll_factor;
 
     // For MPI routines
     int factor = 1;
@@ -58,7 +58,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
     // the first set of nstates is unused in this routine so we can use it
     // as temporary space.
     KpointType *tmp_arrayT = kptr->Kstates[0].psi;
-    tmp_arrayT += kptr->nstates * pbasis;
+    tmp_arrayT += kptr->nstates * pbasis_noncoll;
 
     static KpointType *global_matrix1;
 
@@ -67,7 +67,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
     KpointType *Aij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *Bij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *Sij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
-    KpointType *tmp_array2T = (KpointType *)GpuMallocManaged(pbasis * nstates * sizeof(KpointType));     
+    KpointType *tmp_array2T = (KpointType *)GpuMallocManaged(pbasis_noncoll * nstates * sizeof(KpointType));     
     if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));     
     GpuFill((double *)Aij, factor*nstates * nstates, 0.0);
     GpuFill((double *)Sij, factor*nstates * nstates, 0.0);
@@ -76,7 +76,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
     KpointType *Aij = new KpointType[nstates * nstates]();
     KpointType *Bij = new KpointType[nstates * nstates];
     KpointType *Sij = new KpointType[nstates * nstates];
-    KpointType *tmp_array2T = new KpointType[pbasis * nstates];
+    KpointType *tmp_array2T = new KpointType[pbasis_noncoll * nstates];
     if(!global_matrix1) {
         int retval1 = MPI_Alloc_mem(ct.max_states * ct.max_states * sizeof(KpointType) , MPI_INFO_NULL, &global_matrix1);
         if(retval1 != MPI_SUCCESS) rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag");
@@ -109,8 +109,8 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
     // Until the finite difference operators are being applied on the GPU it's faster
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
-    cudaMemPrefetchAsync ( a_psi, nstates*pbasis*sizeof(KpointType), device, NULL);
-    cudaMemPrefetchAsync ( b_psi, nstates*pbasis*sizeof(KpointType), device, NULL);
+    cudaMemPrefetchAsync ( a_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
+    cudaMemPrefetchAsync ( b_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
     cudaDeviceSynchronize();
 #endif
 
@@ -129,7 +129,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
 #if GPU_ENABLED
              cudaDeviceSynchronize();
 #endif
-             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis], Bns,
+             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns,
                     st1, std::min(ct.non_local_block_size, nstates - st1));
 #if GPU_ENABLED
              cudaDeviceSynchronize();
@@ -141,12 +141,13 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
         for(int ist = 0;ist < active_threads;ist++) {
             thread_control.job = HYBRID_SUBDIAG_APP_AB;
             thread_control.sp = &kptr->Kstates[st1 + ist];
-            thread_control.p1 = (void *)&a_psi[(st1 + ist) * pbasis];
-            thread_control.p2 = (void *)&b_psi[(st1 + ist) * pbasis];
+            thread_control.p1 = (void *)&a_psi[(st1 + ist) * pbasis_noncoll];
+            thread_control.p2 = (void *)&b_psi[(st1 + ist) * pbasis_noncoll];
             thread_control.p3 = (void *)kptr;
             thread_control.vtot = vtot_eig;
-            thread_control.nv = (void *)&nv[(first_nls + ist) * pbasis];
-            thread_control.Bns = (void *)&Bns[(first_nls + ist) * pbasis];
+            thread_control.vxc_psi = vxc_psi;
+            thread_control.nv = (void *)&nv[(first_nls + ist) * pbasis_noncoll];
+            thread_control.Bns = (void *)&Bns[(first_nls + ist) * pbasis_noncoll];
             thread_control.basetag = kptr->Kstates[st1 + ist].istate;
             QueueThreadTask(ist, thread_control);
         }
@@ -171,15 +172,15 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
 #if GPU_ENABLED
              cudaDeviceSynchronize();
 #endif
-             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis], Bns, st1, std::min(ct.non_local_block_size, nstates - st1));
+             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns, st1, std::min(ct.non_local_block_size, nstates - st1));
 #if GPU_ENABLED
              cudaDeviceSynchronize();
 #endif
              first_nls = 0;
              delete RT3;
          }
-        ApplyOperators (kptr, st1, &a_psi[st1 * pbasis], &b_psi[st1 * pbasis], vtot_eig, 
-                       &nv[first_nls * pbasis], &Bns[first_nls * pbasis]);
+        ApplyOperators (kptr, st1, &a_psi[st1 * pbasis_noncoll], &b_psi[st1 * pbasis_noncoll], vtot_eig, vxc_psi,
+                       &nv[first_nls * pbasis_noncoll], &Bns[first_nls * pbasis_noncoll]);
         first_nls++;
     }
     delete(RT1);
@@ -197,9 +198,9 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
     KpointType beta(0.0);
 
     if(ct.is_gamma)
-        RmgSyrkx("L", "T", nstates, pbasis, alpha, orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, nstates);
+        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
     else
-        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis, alpha, orbital_storage, pbasis, tmp_arrayT, pbasis, beta, Aij, nstates);
+        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -218,11 +219,11 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
     KpointType alpha1(vel);
     if(ct.norm_conserving_pp)
     {
-        RmgSyrkx("L", "T", nstates, pbasis, alpha1, orbital_storage, pbasis,  orbital_storage, pbasis, beta, Sij, nstates);
+        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll,  orbital_storage, pbasis_noncoll, beta, Sij, nstates);
     }
     else
     {
-        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis, alpha1, orbital_storage, pbasis, ns, pbasis, beta, Sij, nstates);
+        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
     }
 
 
@@ -241,7 +242,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Hmat, Kpo
     if(!ct.norm_conserving_pp) {
 
         // Compute B matrix
-        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis, alpha1, orbital_storage, pbasis, tmp_array2T, pbasis, beta, Bij, nstates);
+        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, tmp_array2T, pbasis_noncoll, beta, Bij, nstates);
 
         // Reduce matrix and store copy in Bij
 #if HAVE_ASYNC_ALLREDUCE

@@ -86,7 +86,7 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
 
 
 
-    get_vtot_psi(vtot_c, vtot, get_FG_RATIO());
+    GetVtotPsi(vtot_c, vtot, get_FG_RATIO());
 
     get_ddd_update (vtot);
 
@@ -291,7 +291,7 @@ void update_pot (double *vxc, double *vh, double * vxc_old, double * vh_old, dou
     double vtxc, etxc;
     RmgTimer *RT1 = new RmgTimer("2-Init: exchange/correlation");
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+    F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
     delete F;
     delete RT1;
 

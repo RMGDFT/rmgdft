@@ -74,7 +74,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
 {
 
-    RmgTimer RT0("Init");
+   RmgTimer RT0("Init");
     int kpt, ic, idx, state, st1, P0_BASIS, FP0_BASIS;
     int species;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
@@ -216,11 +216,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Wavefunctions are actually stored here
     ct.non_local_block_size = std::max(ct.non_local_block_size, ct.max_states);
 
-    rptr = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024) * sizeof(OrbitalType));
-    nv = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * sizeof(OrbitalType));
-    if(need_ns) ns = (OrbitalType *)GpuMallocManaged((size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType));
+    rptr = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
+    nv = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
+    if(need_ns) ns = (OrbitalType *)GpuMallocManaged((size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
     if(!ct.norm_conserving_pp) {
-        Bns = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * sizeof(OrbitalType));
+        Bns = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
     }
 #else
     // Wavefunctions are actually stored here
@@ -237,13 +237,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         newpath = ct.nvme_orbitals_path + std::string("rmg_orbital") + std::to_string(pct.spinpe) + "_" +
                   std::to_string(pct.kstart) + "_" + std::to_string(pct.gridpe);
         ct.nvme_orbital_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS + 1024) * sizeof(OrbitalType));
+        rptr = (OrbitalType *)CreateMmapArray(ct.nvme_orbital_fd, (kpt_storage * ct.alloc_states * P0_BASIS * ct.noncoll_factor + 1024) * sizeof(OrbitalType));
         if(!rptr) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for orbitals. \n");
-        madvise(rptr, ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024) * sizeof(OrbitalType), MADV_RANDOM);
+        madvise(rptr, ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType), MADV_RANDOM);
     }
     else
     {
-        rptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024]();
+        rptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
     }
 
     if(ct.nvme_work)
@@ -253,22 +253,22 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         newpath = ct.nvme_work_path + std::string("rmg_work") + std::to_string(pct.spinpe) +
                   std::to_string(pct.kstart) + std::to_string(pct.gridpe);
         ct.nvme_work_fd = FileOpenAndCreate(newpath, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-        if(need_ns) ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType));
+        if(need_ns) ns = (OrbitalType *)CreateMmapArray(ct.nvme_work_fd, (size_t)ct.max_states * (size_t)P0_BASIS  * ct.noncoll_factor* sizeof(OrbitalType));
         if(!ns) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for work arrays. \n");
         madvise(ns, (size_t)ct.max_states * (size_t)P0_BASIS * sizeof(OrbitalType), MADV_NORMAL);
     }
     else
     {
-        if(need_ns) ns = new OrbitalType[(size_t)ct.max_states * (size_t)P0_BASIS]();
+        if(need_ns) ns = new OrbitalType[(size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor]();
     }
 
-    nv = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS]();
+    nv = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor]();
     if(!ct.norm_conserving_pp) {
-        Bns = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS]();
+        Bns = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor]();
     }
 #endif
 
-    ct.psi_alloc[0] = sizeof(OrbitalType) * (size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS + (size_t)1024;
+    ct.psi_alloc[0] = sizeof(OrbitalType) * (size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024;
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
     MPI_Allreduce(&ct.psi_alloc[0], &ct.psi_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, &ct.psi_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
@@ -280,7 +280,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         if(ct.xc_is_hybrid)
         {
-            Kptr[kpt]->vexx = new OrbitalType[ct.alloc_states * (size_t)P0_BASIS]();
+            Kptr[kpt]->vexx = new OrbitalType[ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor]();
         }
 
     // for band structure calculation only one k point storage is initilized.
@@ -300,7 +300,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->Kstates[st1].vnuc = vnuc;
             Kptr[kpt]->Kstates[st1].pbasis = P0_BASIS;
             Kptr[kpt]->Kstates[st1].istate = st1;
-            rptr_k +=P0_BASIS;
+            rptr_k +=P0_BASIS * ct.noncoll_factor;
         }
     }
 
@@ -315,7 +315,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             ReadData (ct.infile, vh, rho, vxc, Kptr);
 
         /*For spin polarized calculation we need to get opposite charge density, eigenvalues and occupancies*/
-        if (ct.spin_flag)
+        if (ct.nspin == 2)
         {
             get_rho_oppo (rho, rho_oppo);
             GetOppositeEigvals (Kptr);
@@ -420,7 +420,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ReinitIonicPotentials (Kptr, vnuc, rhocore, rhoc);
     delete(RT1);
 
-
     /* Initialize orbitals */
     if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE))
     {
@@ -502,7 +501,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /*For random start, use charge density equal to compensating charge */
     if (ct.runflag == RANDOM_START)
     {
-        if (ct.spin_flag)
+        if(ct.noncoll) 
+        {
+            printf("\n no random start for noncollinear case \n");
+            rmg_error_handler (__FILE__, __LINE__, "no random start for noncoll");
+            
+        }
+        if (ct.nspin == 2)
         {   
             fac = (2.0 - ct.init_equal_density_flag) / (3.0 - ct.init_equal_density_flag);
             for (idx = 0; idx < FP0_BASIS; idx++)
@@ -521,7 +526,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             }
 
         }
-
         else
         {
             for (idx = 0; idx < FP0_BASIS; idx++)
@@ -533,7 +537,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         RT1 = new RmgTimer("2-Init: LcaoGetRho");
         InitLocalObject (rho, pct.localatomicrho, ATOMIC_RHO, false);
 
-        if(ct.spin_flag) {
+        if(ct.nspin == 2) {
             get_rho_oppo (rho,  rho_oppo);
         }
 
@@ -555,9 +559,18 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         double etxc, vtxc;
         RT1 = new RmgTimer("2-Init: exchange/correlation");
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+
+        F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
         // Initial vxc and vh can be very noisy
         FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+
+        if(ct.noncoll)
+        {
+            FftFilter(&vxc[1*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+            FftFilter(&vxc[2*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+            FftFilter(&vxc[3*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
+            
+        }
         delete F;
         delete RT1;
 
@@ -573,10 +586,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
-        Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local);
+        Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
         delete RT3;
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {   
+            if(ct.noncoll)
+            {
+            }
             RmgTimer("3-MgridSubspace: ldaUop x psi"); 
             LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
             Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
@@ -590,23 +606,31 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         /*dnmI has to be stup before calling subdiag */
         vtot = new double[FP0_BASIS];
         double *vtot_psi = new double[P0_BASIS];
+        double *vxc_psi = NULL;
+    
 
         for (idx = 0; idx < FP0_BASIS; idx++)
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
         /*Generate the Dnm_I */
-        get_ddd (vtot);
+        get_ddd (vtot, vxc);
 
         // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+        if(ct.noncoll)
+        {
+            vxc_psi = new double[4*P0_BASIS];
+            for(int is = 0; is < 4; is++)
+                GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
+        }
 
         /*Now we can do subspace diagonalization */
-        double *new_rho=new double[FP0_BASIS];
+        double *new_rho=new double[FP0_BASIS *ct.noncoll_factor * ct.noncoll_factor];
         for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
 
             RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
-            Kptr[kpt]->Subdiag (vtot_psi, ct.subdiag_driver);
+            Kptr[kpt]->Subdiag (vtot_psi, vxc_psi, ct.subdiag_driver);
 
             // Force reinit of MainSp in case initialzation matrices are
             // not the same size
@@ -625,7 +649,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             delete RT2;
 
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
-            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->newsint_local);
+            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
             delete RT3;
             if(ct.ldaU_mode != LDA_PLUS_U_NONE)
             {   
@@ -637,7 +661,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
 
 
-        if (ct.spin_flag)
+        if (ct.nspin == 2)
             GetOppositeEigvals (Kptr);
 
 
@@ -648,8 +672,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         // Get new density 
         RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
         GetNewRho(Kptr, new_rho);
+
         MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
-        if (ct.spin_flag) get_rho_oppo (rho,  rho_oppo);
+        if (ct.nspin == 2) get_rho_oppo (rho,  rho_oppo);
 
         delete RT2;
         delete [] new_rho;
@@ -657,6 +682,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         /*Release vtot memory */
         delete [] vtot_psi;
         delete [] vtot;
+        if(ct.noncoll) delete [] vxc_psi;
 
 
     }
@@ -684,7 +710,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
             Kptr[kpt]->dvh_size = (size_t)Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor;
             MPI_Alloc_mem(Kptr[kpt]->dvh_size * sizeof(double), MPI_INFO_NULL, &Kptr[kpt]->dvh);
-            
+         
 
         }
     }

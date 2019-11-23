@@ -181,7 +181,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
         /*Generate the Dnm_I */
-        get_ddd (vtot);
+        get_ddd (vtot, vxc);
 
         LO_x_LO(LP, Phi, Kbpsi_mat, *Rmg_G);
         GetHS_proj(Phi, H_Phi, vtot_psi, Hmatrix, Smatrix, Kbpsi_mat);

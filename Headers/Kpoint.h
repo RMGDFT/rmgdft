@@ -60,8 +60,8 @@ public:
     void get_ion_orbitals(ION *iptr, KpointType *orbitals);
     void reset_beta_arrays(void);
     void reset_orbital_arrays(void);
-    void Subdiag (double *vtot_eig, int subdiag_driver);
-    void MgridSubspace (double *vtot_psi);
+    void Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver);
+    void MgridSubspace (double *vtot_psi, double *vxc_psi);
     void Davidson(double *vtot, int &notconv);
     void GetLocalizedWeight (void);
     void GetDelocalizedWeight (void);

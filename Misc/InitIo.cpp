@@ -153,8 +153,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
     ReadPseudo(ct.num_species, ct, ControlMap);
 
+    if(ct.noncoll) ct.is_ddd_non_diagonal = true;
     // If fine/coarse grid ratio is not set then autoset it. By default we
     // use 1 for norm conserving pseudopotentials and 2 for ultrasoft.
+   
     ct.norm_conserving_pp = true;
     int nc_count = 0;
     int us_count = 0;

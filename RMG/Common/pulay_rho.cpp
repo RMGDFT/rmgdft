@@ -175,16 +175,13 @@ void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, doub
         //int lwork = MAX_STEPS*20;
         //dgels("N", &A_size, &A_size, &ione, A, &A_size, b, &A_size, work, &lwork, &info);
 	/*Print pulay constants*/
-#if 0
         printf ("\n\nPulay Constants:");
 	for (i = 0; i < size; i++)
 	{
-	    if (i % 5 == 0)
-		printf("\n");
 	    
-	    printf("b[%d]:%.4f  ", i, b[i]);
+    if(pct.gridpe == 0)
+	    printf("\nb[%d]:%.8f  ", i, b[i]);
 	}
-#endif
 
 	/*Now that the vector b[i] is determined we determine new charge density as
 	 * a linear combination of previous and current density and residuals

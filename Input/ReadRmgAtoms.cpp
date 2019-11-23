@@ -218,7 +218,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         boost::algorithm::split( AtomComponents, Atom, boost::is_any_of(whitespace_delims), boost::token_compress_on );
 
         size_t ncomp = AtomComponents.size();
-        if((ncomp < 4) || (ncomp > 8)) throw RmgFatalException() << "Synax error in ionic information near " << Atom << "\n";
+        if((ncomp < 4) || (ncomp > 10)) throw RmgFatalException() << "Synax error in ionic information near " << Atom << "\n";
 
         // First field should be an atomic symbol
         it1 = AtomComponents.begin();
@@ -244,6 +244,8 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         int movable[3] = {1,1,1};
         std::string smov;
         double init_spin_ratio = 0.0;
+        double init_spin_angle1 = 0.0;
+        double init_spin_angle2 = 0.0;
         switch(ncomp)
         {
 
@@ -263,6 +265,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
                 break;
             case 7:
             case 8:
+            case 10:
             {
                 it1++;
                 smov = *it1;
@@ -287,25 +290,48 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         {
             case 6:
             case 8:
-            {
-                it1++;
-                std::string rho_updown_diff = *it1;
-                sp += rho_updown_diff;
-                init_spin_ratio = std::atof(rho_updown_diff.c_str());
-            }
+            case 10:
+                {
+                    it1++;
+                    std::string rho_updown_diff = *it1;
+                    sp += rho_updown_diff;
+                    init_spin_ratio = std::atof(rho_updown_diff.c_str());
+                }
                 break;
             default :
-                if(lc.spin_flag == 1)  
+                if(lc.nspin > 1)
                 {
-                    throw RmgFatalException() << 
-                        "for spin-polarization, one needs to have init_spin density setup near " << Atom << "\n";
+                    throw RmgFatalException() << "nspin = " << lc.nspin <<
+                        "\nfor spin-polarization, one needs to have init_spin density setup near " << Atom << "\n";
                 }
+        }
+
+        if(ct.noncoll)
+        {
+            if(ncomp == 10)
+            {
+                it1++;
+                std::string rho_spin_theta = *it1;
+                init_spin_angle1 = std::atof(rho_spin_theta.c_str());
+                it1++;
+                std::string rho_spin_phi = *it1;
+                init_spin_angle2 = std::atof(rho_spin_phi.c_str());
+            }
+            else 
+            {
+                throw RmgFatalException() << 
+                    "noncollinear require 10 iterm in atom lines:\n" << Atom << "\n"; 
+
+            }
         }
 
         Atoms_read[nions].movable[0] = movable[0];
         Atoms_read[nions].movable[1] = movable[1];
         Atoms_read[nions].movable[2] = movable[2];
         Atoms_read[nions].init_spin_rho = init_spin_ratio;
+        Atoms_read[nions].init_spin_x = 2.0*init_spin_ratio * std::sin(init_spin_angle1/180.0 * PI) * std::cos(init_spin_angle2/180.0*PI) ;
+        Atoms_read[nions].init_spin_y = 2.0*init_spin_ratio * std::sin(init_spin_angle1/180.0 * PI) * std::sin(init_spin_angle2/180.0*PI) ;
+        Atoms_read[nions].init_spin_z = 2.0*init_spin_ratio * std::cos(init_spin_angle1/180.0 * PI);
 
         if(init_spin_ratio > 0.5 || init_spin_ratio < -0.5) 
             throw RmgFatalException() << 

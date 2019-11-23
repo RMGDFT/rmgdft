@@ -57,6 +57,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     double t1, nspin = (ct.spin_flag + 1.0);
     int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
+    int pbasis_noncoll = ct.noncoll_factor * ct.noncoll_factor * pbasis;
     int length_x = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
     int length_y = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
     int length_z = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
@@ -68,20 +69,20 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || ((ct.scf_steps < 4) && (ct.md_steps == 0) && (ct.runflag != RESTART )))
     {
         if(reset) return;
-	RmgTimer RT1("Mix rho: Linear");
-	/* Scale old charge density first*/
-	t1 = ct.mix;
-        for(int ix = 0;ix < pbasis;ix++) rho[ix] *= (1.0 - t1);
+        RmgTimer RT1("Mix rho: Linear");
+        /* Scale old charge density first*/
+        t1 = ct.mix;
+        for(int ix = 0;ix < pbasis_noncoll;ix++) rho[ix] *= (1.0 - t1);
 
-	/*Add the new density*/
-        for(int ix = 0;ix < pbasis;ix++) rho[ix] += t1 * new_rho[ix];
+        /*Add the new density*/
+        for(int ix = 0;ix < pbasis_noncoll;ix++) rho[ix] += t1 * new_rho[ix];
         rmg_printf("Charge density mixing: Linear with a constant of %.2f \n", t1);
     }
     else if (Verify("charge_mixing_type","Pulay", ControlMap))
     {
 
         static double **rhohist=NULL, **residhist=NULL;
-	RmgTimer RT1("Mix rho: Pulay");
+        RmgTimer RT1("Mix rho: Pulay");
         if (ct.charge_pulay_refresh)
             pulay_step = pulay_step % ct.charge_pulay_refresh;
         if(reset) {
@@ -90,22 +91,22 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
         }
 
         /*Use pulay mixing, result will be in rho*/
-        pulay_rho(pulay_step, pbasis, length_x, length_y, length_z, 
-                  new_rho, rho, ct.charge_pulay_order, &rhohist, &residhist, 
-                  ct.charge_pulay_special_metrics, ct.charge_pulay_special_metrics_weight);
-	    
-            pulay_step++;
+        pulay_rho(pulay_step, pbasis_noncoll, length_x, length_y, length_z, 
+                new_rho, rho, ct.charge_pulay_order, &rhohist, &residhist, 
+                ct.charge_pulay_special_metrics, ct.charge_pulay_special_metrics_weight);
+
+        pulay_step++;
         rmg_printf("Charge density mixing: Pulay\n");
 
     }
     else if (Verify("charge_mixing_type","Broyden", ControlMap))
     {
-	RmgTimer RT1("Mix rho: Broyden");
+        RmgTimer RT1("Mix rho: Broyden");
         BroydenPotential(rho, new_rho, rhoc, vh_in, vh_out, ct.charge_broyden_order, reset);
         if(reset) return;
         rmg_printf("Charge density mixing: Broyden\n");
     }
-    
+
 
     /*Find charge minimum */
     double min = ZERO;
@@ -114,10 +115,10 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     {
         if (rho[idx] < min)
             min = rho[idx];
-        
-	/*Here we check charge density with rhocore added*/
-	if ((rho[idx] + rhocore[idx] / nspin) < min2)
-         	min2 = rho[idx] + rhocore[idx] / nspin;
+
+        /*Here we check charge density with rhocore added*/
+        if ((rho[idx] + rhocore[idx] / nspin) < min2)
+            min2 = rho[idx] + rhocore[idx] / nspin;
     }
 
 
@@ -145,9 +146,9 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
 
 /*
 
-                  mix_johnson.c
+   mix_johnson.c
 
-*/
+ */
 
 /*  w1, w0,wj, mixing parameters                 */
 #define         w1            0.5
@@ -163,7 +164,7 @@ double *xm1=NULL;
 double *fm1=NULL;
 double *aij=NULL;
 double *aij2=NULL;
- 
+
 void mix_johnson(double *xm, double *fm, int NDIM, int ittot)
 {
 

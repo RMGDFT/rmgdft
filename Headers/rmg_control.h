@@ -65,6 +65,9 @@ public:
     
     /* Flag indicating if this is a spin polarized calculation */
     bool spin_polarization;
+    bool noncoll;
+    int noncoll_factor;
+    int nspin;
 
     /* determine if this image is processing spin up or spin down. */
     bool spin_flag;

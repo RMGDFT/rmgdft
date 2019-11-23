@@ -77,23 +77,24 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
 
         // Get atomic rho for this ionic configuration and subtract from current rho
         int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
-        double *arho = new double[FP0_BASIS];
+        int factor = ct.noncoll_factor * ct.noncoll_factor;
+        double *arho = new double[FP0_BASIS * factor];
         LcaoGetAtomicRho(arho);
 
         // If first step allocate rhodiff
-        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] -= arho[idx];
+        for(int idx = 0;idx < FP0_BASIS * factor;idx++) rho[idx] -= arho[idx];
 
         if(rhodiff == NULL)
         {
-            rhodiff = new double[FP0_BASIS];
-            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = rho[idx];
+            rhodiff = new double[FP0_BASIS * factor];
+            for(int idx = 0;idx < FP0_BASIS * factor;idx++) rhodiff[idx] = rho[idx];
         }
         else
         {
-            double *trho = new double[FP0_BASIS];
-            for(int idx = 0;idx < FP0_BASIS;idx++) trho[idx] = rho[idx];
-            for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
-            for(int idx = 0;idx < FP0_BASIS;idx++) rhodiff[idx] = trho[idx];
+            double *trho = new double[FP0_BASIS * factor];
+            for(int idx = 0;idx < FP0_BASIS * factor;idx++) trho[idx] = rho[idx];
+            for(int idx = 0;idx < FP0_BASIS * factor;idx++) rho[idx] = 2.0*rho[idx] - rhodiff[idx];
+            for(int idx = 0;idx < FP0_BASIS * factor;idx++) rhodiff[idx] = trho[idx];
             delete [] trho;
         }
 
@@ -135,7 +136,7 @@ template <typename OrbitalType> void Relax (int steps, double * vxc, double * vh
         delete RT0;
 
         LcaoGetAtomicRho(arho);
-         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
+         for(int idx = 0;idx < FP0_BASIS * factor;idx++) rho[idx] += arho[idx];
         delete [] arho;
 
         // Reset mixing
