@@ -119,23 +119,21 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
     // Generate 2*V*psi
     KpointType *sg_twovpsi_t = new KpointType[pbasis];
-    double *veff_up, *veff_down = NULL;
+    double *veff= NULL;
     if(potential_acceleration) {
         int active_threads = ct.MG_THREADS_PER_NODE;
         if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
-        int offset = (sp->istate / kptr->dvh_skip) * pbasis_noncoll;
+        int offset = (sp->istate / kptr->dvh_skip) * pbasis;
         int my_pe_x, my_pe_y, my_pe_z;
         kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
         int my_pe_offset = my_pe_x % pct.coalesce_factor;
-        veff_up = &kptr->dvh[offset*pct.coalesce_factor + my_pe_offset*pbasis_noncoll];
-        if(ct.noncoll) veff_down = veff_up + pbasis;
+        veff = &kptr->dvh[offset*pct.coalesce_factor + my_pe_offset*pbasis];
     }
     else {
-        veff_up = vtot;
-        veff_down = vtot;
+        veff = vtot;
     }
 
-    CPP_genvpsi (psi, sg_twovpsi_t, veff_up, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
+    CPP_genvpsi (psi, sg_twovpsi_t, veff, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
 
     // B operating on 2*V*psi stored in work
     if(ct.discretization == CENTRAL_DISCRETIZATION)
@@ -153,7 +151,7 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     if(ct.noncoll)
     {
         std::complex<double> *kdr_down = kdr + pbasis;
-        CPP_genvpsi (&psi[pbasis], sg_twovpsi_t, veff_down, (void *)kdr_down, kptr->kp.kmag, dimx, dimy, dimz);
+        CPP_genvpsi (&psi[pbasis], sg_twovpsi_t, veff, (void *)kdr_down, kptr->kp.kmag, dimx, dimy, dimz);
         for(int idx = 0; idx < pbasis; idx++) a_psi[idx + pbasis] = sg_twovpsi_t[idx] - a_psi[idx + pbasis];
 
         double *vxc_x = &vxc_psi[pbasis];

@@ -201,7 +201,6 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
         /* Generate ion pointer */
         iptr = &Atoms[ion];
 
-        if(pct.gridpe == 0) printf("\n aaaa %d %f %f", ion, iptr->init_spin_rho, iptr->init_spin_z);
         /* Get species type */
         sp = &Species[iptr->species];
         Zv = sp->zvalence;

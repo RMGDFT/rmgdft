@@ -430,7 +430,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete(RT2);
     }
 
-std::cout<<"dddd" << std::endl;
     if (ct.runflag == RANDOM_START)
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: RandomStart");
@@ -473,13 +472,11 @@ std::cout<<"dddd" << std::endl;
 
     
     /* Write header, do it here rather than later, otherwise other information is printed first*/
-std::cout<<"eeee" << std::endl;
     if (pct.imgpe == 0)
     {
         WriteHeader (); 
     }
 
-std::cout<<"ffff" << std::endl;
     if (ct.forceflag == BAND_STRUCTURE) 
     {
         ct.num_states = ct.run_states;
@@ -564,15 +561,11 @@ std::cout<<"ffff" << std::endl;
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
 
         F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
-        if(pct.gridpe ==0) 
-        for(int idx = 0; idx < 256; idx+=16) printf("\n aaaa %d %f %f", idx, vxc[idx], vxc[idx+FP0_BASIS]);
         // Initial vxc and vh can be very noisy
         FftFilter(vxc, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
 
         if(ct.noncoll)
         {
-        if(pct.gridpe ==0) 
-        for(int idx = 0; idx < 256; idx+=16) printf("\n bbbb %d %f %f", idx, vxc[idx+2*FP0_BASIS], vxc[idx+3*FP0_BASIS]);
             FftFilter(&vxc[1*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
             FftFilter(&vxc[2*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
             FftFilter(&vxc[3*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
@@ -680,9 +673,6 @@ std::cout<<"ffff" << std::endl;
         RmgTimer *RT2 = new RmgTimer("2-Init: GetNewRho");
         GetNewRho(Kptr, new_rho);
 
-    int pbasis = P0_BASIS;
-   if(pct.gridpe == 0) 
-    for(int iz = 0; iz < 128; iz+=16)printf("\n rhooo %d %f %f %f %f", iz, new_rho[iz], new_rho[iz+pbasis], new_rho[iz+2*pbasis], new_rho[iz+3*pbasis]);
         MixRho(new_rho, rho, rhocore, vh, vh, rhoc, Kptr[0]->ControlMap, false);
         if (ct.nspin == 2) get_rho_oppo (rho,  rho_oppo);
 
@@ -717,7 +707,7 @@ std::cout<<"ffff" << std::endl;
             }
 
             Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
-            size_t sizr = Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor * sizeof(double);
+            size_t sizr = Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor * sizeof(double) * ct.noncoll_factor;
             MPI_Alloc_mem(sizr , MPI_INFO_NULL, &Kptr[kpt]->dvh);
 
         }

@@ -271,7 +271,6 @@ void initialize(int argc, char **argv)
         ct.kp[kpt].kidx = kpt;
     }
 
-std::cout<<"aaaa"<<std::endl;
 
     MPI_Barrier (pct.img_comm);
 
@@ -285,8 +284,6 @@ std::cout<<"aaaa"<<std::endl;
     else {
         Init (vh, rho, rho_oppo, rhocore, rhoc, vnuc, vxc, Kptr_c);
     }
-
-std::cout<<"bbbb"<<std::endl;
 
     /* Flush the results immediately */
     fflush (NULL);

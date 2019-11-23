@@ -220,6 +220,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     else
         GatherPsi(G, pbasis_noncoll, 0, nv, nv_t);
 
+
     // For USPP copy double precision ns into correct precision temp array. For NCPP ns=psi. */
     if(ct.norm_conserving_pp)
     {
@@ -385,7 +386,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         CalcType f1(TWO * eig);
         for (int idx = 0; idx <pbasis_noncoll; idx++) res_t[idx] = f1 * res_t[idx] - work1_t[idx];
 
-
         for(int is = 0; is < ct.noncoll_factor; is++)
         {
             /* Now either smooth the wavefunction or do a multigrid cycle */
@@ -414,7 +414,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                     // We use a residual correction multigrid scheme where the right hand side is the residual
                     // so single precision is adequate for the correction since the errors from lower precision
                     // will be approximately 7 decimal digits smaller than the original error we are correcting for
-                    if(typeid(CalcType) == typeid(float))
+                    if(typeid(CalcType) == typeid(double))
                     {
                         float *v_mat = (float *)&sg_twovpsi_t[sbasis];
                         float *f_mat = (float *)&work1_t[sbasis];
@@ -434,7 +434,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                         for(int idx = 0;idx < sbasis;idx++) sg_twovpsi_t[idx] = std::real(twork_tf[idx]);
 
                     }
-                    else if(typeid(CalcType) == typeid(std::complex<float>))
+                    else if(typeid(CalcType) == typeid(std::complex<double>))
                     {
                         std::complex<float> *v_mat = (std::complex<float> *)&sg_twovpsi_t[sbasis];
                         std::complex<float> *f_mat = (std::complex<float> *)&work1_t[sbasis];

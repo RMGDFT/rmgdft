@@ -44,6 +44,7 @@
 #include "rmg_error.h"
 #include "Kpoint.h"
 #include "GatherScatter.h"
+#include "blas.h"
 
 
 // Solver that uses multigrid preconditioning and subspace rotations
@@ -83,10 +84,6 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     for(int vcycle = 0;vcycle < ct.eig_parm.mucycles;vcycle++)
     {
 
-        if(pct.gridpe == 0)
-        {
-            for(int idx = 0; idx < 128; idx+=16) printf("\n aaaa %d %d %f %f",vcycle, idx, this->Kstates[0].psi[idx]); 
-        }
         int active_threads = ct.MG_THREADS_PER_NODE;
         if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
 
