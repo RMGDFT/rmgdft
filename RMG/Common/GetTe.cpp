@@ -103,9 +103,9 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     if(ct.nspin == 2) nspin = 2;
     for (idx = 0; idx < nspin; idx++)
     {
-    	for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
-    	{
-            
+        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        {
+
             kptr = Kptr[kpt];
             t1 = 0.0;
             for (state = 0; state < ct.num_states; state++)
@@ -121,7 +121,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
                 ldaU_E += kptr->ldaU->Ecorrect * kptr->kp.kweight;
                 ldaU_H += kptr->ldaU->Ehub * kptr->kp.kweight;
             }
-    	}
+        }
     }
 
 
@@ -133,18 +133,18 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     ct.ES = 0.0;
     if (ct.nspin==2)
     {
-	/* Add the compensating charge to total charge to calculation electrostatic energy */    
-    	for (idx = 0; idx < FP0_BASIS; idx++)
-	    	ct.ES += (rho[idx] + rho_oppo[idx] + rhoc[idx]) * vh[idx];
+        /* Add the compensating charge to total charge to calculation electrostatic energy */    
+        for (idx = 0; idx < FP0_BASIS; idx++)
+            ct.ES += (rho[idx] + rho_oppo[idx] + rhoc[idx]) * vh[idx];
 
     }
     else 
     {
-    	for (idx = 0; idx < FP0_BASIS; idx++)
-        	ct.ES += (rho[idx] + rhoc[idx]) * vh[idx];
+        for (idx = 0; idx < FP0_BASIS; idx++)
+            ct.ES += (rho[idx] + rhoc[idx]) * vh[idx];
     }
     ct.ES = 0.5 * vel * RmgSumAll(ct.ES, pct.grid_comm);
-    
+
 
     double mag = 0.0;    
     double absmag = 0.0;
@@ -152,11 +152,11 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
     if (ct.nspin == 2)
     {
-    	for (idx = 0; idx < FP0_BASIS; idx++)
-	{
-        	xcstate += rho[idx]*vxc_up[idx] + rho_oppo[idx]*vxc_down[idx];
-		mag += ( rho[idx] - rho_oppo[idx] );       /* calculate the magnetization */
-                absmag += fabs(rho[idx] - rho_oppo[idx]);
+        for (idx = 0; idx < FP0_BASIS; idx++)
+        {
+            xcstate += rho[idx]*vxc_up[idx] + rho_oppo[idx]*vxc_down[idx];
+            mag += ( rho[idx] - rho_oppo[idx] );       /* calculate the magnetization */
+            absmag += fabs(rho[idx] - rho_oppo[idx]);
         }
         mag = vel * RmgSumAll(mag, pct.grid_comm);
         absmag = vel * RmgSumAll(absmag, pct.grid_comm);
@@ -187,7 +187,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     /* Sum them all up */
     ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_E + ct.scf_correction;
     if(ct.xc_is_hybrid && Functional::is_exx_active()) ct.TOTAL -= ct.FOCK;
-    
+
     /* Print contributions to total energies into output file */
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
@@ -197,7 +197,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", -efactor*ct.ES, eunits);
     rmg_printf ("@@ VXC                = %15.6f %s\n",  efactor*xcstate, eunits);
     rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
-    if(ct.xc_is_hybrid && Functional::is_exx_active()
+    if(ct.xc_is_hybrid && Functional::is_exx_active())
         rmg_printf ("@@ FOCK               = %15.6f %s\n", efactor*ct.FOCK, eunits);
 
     if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
