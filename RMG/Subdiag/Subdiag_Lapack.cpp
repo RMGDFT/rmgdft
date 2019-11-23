@@ -92,7 +92,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         KpointType *Cij = new KpointType[num_states * num_states]();
     #endif
 
-        if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
+        if(!ct.norm_conserving_pp) {
 
             // Inverse of eigvectors should be in Cij
             RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");

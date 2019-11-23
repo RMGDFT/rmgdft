@@ -41,13 +41,15 @@
 #define GAU_SCREENING 1
 #define ERF_SCREENING 2
 #define ERFC_SCREENING 3
+#define YUKAWA_SCREENING 4
 
 
 template <typename T> class Exxbase {
 
 private:
-    // BaseGrid class (distributed)
+    // BaseGrid class (distributed) and half grid
     BaseGrid &G;
+    BaseGrid &G_h;
 
     // Lattice object
     Lattice &L;
@@ -65,21 +67,21 @@ private:
 
     // Grid points on this processing node
     int pbasis;
-
-    // Total number of grid points
-    size_t N;
+    int pbasis_h;
 
     // Number of occupied orbitals
     int nstates;
 
     // Occupations for the orbitals
-    double *occ;
+    double *init_occ;
+    std::vector<double> occ;
 
     // Base of domain distributed wavefunction array
     T *psi;
 
     // Mmapped serial wavefunction array
     T *psi_s;
+T *vexx_global;
 
     // File descriptor for serial wavefile
     int serial_fd;
@@ -98,15 +100,21 @@ private:
     // Plane wave object for local grids
     Pw *pwave;
 
+    // Plane wave object for half density grids
+    Pw *pwave_h;
+
     // <psi_i, psi_j> pairs that this MPI task is responsible for
     std::vector< std::pair <int,int> > pairs;
 
     std::mutex pair_mutex;
-    int scr_type =1;
+    double erfc_scrlen=0.0;
+    double gau_scrlen=0.0;
+    int scr_type = ERFC_SCREENING;
 
     double *gfac;
 
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p);
+    void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, std::complex<float> *workbuf);
     void setup_gfac(void);
 
     std::vector< std::pair <int,int> > wf_pairs;
@@ -117,19 +125,21 @@ private:
     double *Summedints;
     std::complex<double> *wf_fft;
 
+    double eps_qdiv = 1.0e-8;
 
 public:
     Exxbase (
             BaseGrid &G, 
+            BaseGrid &G_h, 
             Lattice &L, 
             const std::string &wavefile,
             int nstates,
-            double *occ,
+            double *init_occ,
             T *psi_in, int mode_in);
 
     ~Exxbase(void);
 
-    void Vexx(T *vexx);
+    void Vexx(T *vexx, bool use_float_fft);
     double Exxenergy(T *vexx);
     void Vexx_integrals(std::string &ifile);
     void Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end);

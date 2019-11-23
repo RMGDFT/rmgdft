@@ -1,5 +1,6 @@
 add_library (XC
 constants.f90
+coulomb_vcut.f90
 funct.f90
 kind.f90
 io_global.f90

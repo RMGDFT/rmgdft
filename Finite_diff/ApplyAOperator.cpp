@@ -66,12 +66,8 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
         FftLaplacianCoarse(a, b);    
         if(!ct.is_gamma) FftGradientCoarse(a, gx, gy, gz);
        
-        FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
-        DataType *ptr = NULL;
-        // When ptr=NULL this does not do the finite differencing but just
-        // returns the value of the diagonal element.
-        double fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        return fd_diag;
+        // Diagonal needed for multigrid smoothings
+        return LC->coeff_and_index[0].coeff;
     }
 
     double cc = 0.0;
@@ -228,20 +224,8 @@ double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int
         return fd_diag;
     }
 
-    if(ct.discretization == MEHRSTELLEN_DISCRETIZATION) {
-
-        return CPP_app_cil_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order);
-
-    }
-    else if(ct.discretization == CENTRAL_DISCRETIZATION) {
-
-        double cc = CPP_app_del2_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, ct.alt_laplacian);
-        return cc;
-
-    }
+    double cc = CPP_app_del2_driver (L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, order, ct.alt_laplacian);
+    return cc;
     
-    throw RmgFatalException() << "Error! Unknown discretization method " << " in "
-                                 << __FILE__ << " at line " << __LINE__ << "\n";
-    return 0.0;
 }
 

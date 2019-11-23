@@ -30,7 +30,7 @@
 #include "rmg_error.h"
 #include "transition.h"
 
-// Applies Mehrstellen right hand side operator to a and returns result in b
+// Applies right hand side operator to a and returns result in b
 // The first set of functions takes the input and output grids and a char string that defines
 // the grid. More detailed parameters are then passed to the second set which may be accessed
 // directly if more control is required.
@@ -110,21 +110,5 @@ void ApplyBOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeIma
 template <typename RmgType>
 void ApplyBOperator (Lattice *L, TradeImages *T, RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz, int order)
 {
-
-    if(ct.discretization == MEHRSTELLEN_DISCRETIZATION) {
-
-        CPP_app_cir_driver (L, T, a, b, dimx, dimy, dimz, order);
-
-    }
-    else if(ct.discretization == CENTRAL_DISCRETIZATION) {
-
-        for(int ix = 0;ix < dimx*dimy*dimz;ix++) b[ix] = a[ix];
-
-    }
-    else {
-
-        rmg_error_handler(__FILE__, __LINE__, "Unknown discretization method.");
-
-    }
-
+    for(int ix = 0;ix < dimx*dimy*dimz;ix++) b[ix] = a[ix];
 }

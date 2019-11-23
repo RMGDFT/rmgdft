@@ -384,12 +384,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "md_nose_oscillation_frequency_THz must be a positive real number.", MD_OPTIONS);
 
-    If.RegisterInputKey("discretization_type", &DiscretizationType, &lc.discretization, "Central",
-            CHECK_AND_FIX, OPTIONAL, discretization_type,
-            "Type of discretization to use for the Kohn-Sham equations. "
-            "Mehrstellen or Central types are implemented.", 
-            "discretization_type must be either \"Mehrstellen\" or \"Central\". Setting to \"Central\". ");
-
     If.RegisterInputKey("energy_output_units", &EnergyOutputType, &lc.energy_output_units, "Hartrees",
             CHECK_AND_FIX, OPTIONAL, energy_output_units,
             "Units to be used when writing energy values to the output file. "
@@ -899,6 +893,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.");
 #endif
 
+    If.RegisterInputKey("write_orbital_overlaps", &lc.write_orbital_overlaps, false,
+            "If true the orbital overlap matrix from successive MD steps is written.");
+
     If.RegisterInputKey("kohn_sham_ke_fft", &lc.kohn_sham_ke_fft, false,
             "Special purpose flag which will force use of an FFT for the kinetic energy operator.");
 
@@ -1047,6 +1044,17 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "The RMS value of the estimated change in the total energy per step where we assume self "
             "consistency has been achieved. ",
             "rms_convergence_criterion must lie in the range (1.0e-07,1.0e-20). Resetting to default value of 1.0e-10. ", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("exx_convergence_criterion", &lc.exx_convergence_criterion, 1.0e-12, 1.0e-6, 1.0e-9,
+            CHECK_AND_FIX, OPTIONAL,
+            "Convergence criterion for the EXX delta from step to step where we assume EXX "
+            "consistency has been achieved. ",
+            "exx_convergence_criterion must lie in the range (1.0e-12,1.0e-6). Resetting to default value of 1.0e-9. ", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("vexx_fft_threshold", &lc.vexx_fft_threshold, 1.0e-12, 1.0e-1, 1.0e-9,
+            CHECK_AND_FIX, OPTIONAL,
+            "The value for the EXX delta where we switch from single to double precision ffts. ",
+            "vexx_fft_threshold must lie in the range (1.0e-10,1.0e-1). Resetting to default value of 1.0e-9. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-9, 1.0e-1, 1.0e-1,
             CHECK_AND_FIX, OPTIONAL,

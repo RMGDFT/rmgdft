@@ -80,6 +80,8 @@ template void Kpoint<std::complex <double> >::get_ldaUop(int);
 
 template void Kpoint<double>::DeleteNvmeArrays(void);
 template void Kpoint<std::complex <double> >::DeleteNvmeArrays(void);
+template void Kpoint<double>::ClearPotentialAcceleration(void);
+template void Kpoint<std::complex <double> >::ClearPotentialAcceleration(void);
 
 
 template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex, MPI_Comm newcomm, BaseGrid *newG, TradeImages *newT, Lattice *newL, std::unordered_map<std::string, InputKey *>& ControlMap) : kp(kpin), ControlMap(ControlMap)
@@ -256,6 +258,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     if (Verify ("start_mode","LCAO Start", ControlMap)) ct.max_states = std::max(ct.max_states, 2*ct.init_states);
     if (Verify ("start_mode","Modified LCAO Start", ControlMap)) ct.max_states = std::max(ct.max_states, ct.init_states);
     if(ct.forceflag == BAND_STRUCTURE) ct.max_states = std::max(ct.max_states, 3*ct.num_states);
+    ct.max_states = std::max(ct.max_states, 2*ct.num_states);
 
 
     /* Allocate memory for the state structures */
@@ -1102,52 +1105,20 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
         cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
     }
     for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
+    this->nl_Bweight = this->nl_weight;
 
-    if(ct.need_Bweight) 
-    {
-        if(ct.pin_nonlocal_weights)
-        {
-            custat = cudaMallocHost((void **)&this->nl_Bweight , this->nl_weight_size * sizeof(KpointType));
-            RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
-        }
-        else
-        {
-            this->nl_Bweight = (KpointType *)GpuMallocManaged(this->nl_weight_size * sizeof(KpointType));
-            int device = -1;
-            cudaGetDevice(&device);
-            cudaMemAdvise ( this->nl_Bweight, this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
-        }
-        for(int idx = 0;idx < this->nl_weight_size;idx++) this->nl_Bweight[idx] = 0.0;
-    }
-    else 
-    {
-        this->nl_Bweight = this->nl_weight;
-    }
 #else
     if(ct.nvme_weights)
     {
         this->nl_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
         if(!this->nl_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
         madvise(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(KpointType), MADV_RANDOM);
-
-        if(ct.need_Bweight) {
-            this->nl_Bweight = (KpointType *)CreateMmapArray(nvme_Bweight_fd, this->nl_weight_size*sizeof(KpointType));
-            if(!this->nl_Bweight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for bweights. \n");
-        }
-        else 
-        {
-            this->nl_Bweight = this->nl_weight;
-        }
+        this->nl_Bweight = this->nl_weight;
     }
     else
     {
         this->nl_weight = new KpointType[stress_factor * this->nl_weight_size]();
-        if(ct.need_Bweight) {
-            this->nl_Bweight = new KpointType[this->nl_weight_size]();
-        }
-        else {
-            this->nl_Bweight = this->nl_weight;
-        }
+        this->nl_Bweight = this->nl_weight;
     }
 #endif
 
@@ -1202,28 +1173,6 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
         }
 #endif
         this->nl_weight = NULL;
-    }
-    if ((this->nl_Bweight != NULL) && ct.need_Bweight) {
-#if GPU_ENABLED
-        if(ct.pin_nonlocal_weights)
-        {
-            cudaFreeHost(this->nl_Bweight);
-        }
-        else
-        {
-            cudaFree(this->nl_Bweight);
-        }
-#else
-        if(ct.nvme_weights)
-        {
-            munmap(this->nl_Bweight, this->nl_weight_size*sizeof(double));
-        }
-        else
-        {
-            delete [] this->nl_Bweight;
-        }
-#endif
-        this->nl_Bweight = NULL;
     }
 
 }
@@ -1383,3 +1332,10 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
 
 }
 
+template <class KpointType> void Kpoint<KpointType>::ClearPotentialAcceleration(void)
+{
+    for(size_t idx=0;idx < this->dvh_size;idx++)
+    {
+        this->dvh[idx] = 0.0;
+    }
+}

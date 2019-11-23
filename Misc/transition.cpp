@@ -12,6 +12,7 @@
 LaplacianCoeff *LC;
 LaplacianCoeff *HLC;
 BaseGrid *Rmg_G;
+BaseGrid *Rmg_halfgrid;
 TradeImages *Rmg_T;
 Lattice Rmg_L;
 MpiQueue *Rmg_Q;

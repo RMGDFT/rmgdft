@@ -216,7 +216,7 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
     // Compute S matrix
     KpointType alpha1(vel);
-    if(ct.norm_conserving_pp && (ct.discretization != MEHRSTELLEN_DISCRETIZATION) && ct.is_gamma)
+    if(ct.norm_conserving_pp && ct.is_gamma)
     {
         RmgSyrkx("L", "T", nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll,  orbital_storage, pbasis_noncoll, beta, Sij, nstates);
     }
@@ -237,8 +237,8 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 #endif
 
 
-    // We need B matrix for US pseudopotentials and/or MEHRSTELLEN_DISCRETIZATION
-    if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION)) {
+    // We need B matrix for US pseudopotentials
+    if(!ct.norm_conserving_pp) {
 
         // Compute B matrix
         RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, tmp_array2T, pbasis_noncoll, beta, Bij, nstates);
@@ -259,7 +259,7 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
     // Wait for S request to finish and when done store copy in Sij
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
-    if(!ct.norm_conserving_pp || (ct.norm_conserving_pp && ct.discretization == MEHRSTELLEN_DISCRETIZATION))
+    if(!ct.norm_conserving_pp)
         if(ct.use_async_allreduce) MPI_Wait(&MPI_reqBij, MPI_STATUS_IGNORE);
 #endif
 

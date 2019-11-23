@@ -34,9 +34,6 @@ public:
     double energy_output_conversion[2];
     std::string energy_output_string[2];
 
-    // Discretization type flag
-    int discretization;
-
     // Special variables when running with multiple images per node
     // The number of images stacked on a single node
     int images_per_node;
@@ -57,6 +54,8 @@ public:
     bool mpi_queue_mode;
     bool spin_manager_thread;
     bool spin_worker_threads;
+
+    bool write_orbital_overlaps;
 
     /** Description of the run. */
     std::string description;
@@ -151,6 +150,9 @@ public:
 
     /* Exx computation mode */
     int exx_mode;
+
+    /* Exx convergence multiplier. Threshold checked in the inner (Scf) is multiplied by this */
+    double exx_convergence_factor;
 
     /** Boundary condition flag. Read from the input file. 0=periodic, 1=cluster, 2=surface */
     int boundaryflag;
@@ -537,6 +539,15 @@ public:
     double FOCK;
     double TOTAL;
 
+    // EXX convergence measure
+    double exx_delta;
+
+    // Exit criteria from EXX loop
+    double exx_convergence_criterion;
+
+    // Single/double precision delta fft threshold for EXX Vexx computation
+    double vexx_fft_threshold;
+
     /* fermi energy */
     double efermi;
 
@@ -573,10 +584,6 @@ public:
     int max_nldim;
 
     double max_nlradius, min_nlradius, max_qradius, min_qradius;
-
-
-    /* Whether or not Bweight is required (not needed for Central FD operator with NCPP */
-    bool need_Bweight;
 
     /*Interpolation flags */
     int interp_flag;

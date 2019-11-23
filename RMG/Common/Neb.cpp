@@ -339,10 +339,14 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += arho[idx];
         delete [] arho;
 
+        /* save data to file for future restart */
+        WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
+
         // Extrapolate orbitals after first step
         ExtrapolateOrbitals(ct.outfile, Kptr);
 
     }
 
 }                               /* end neb_relax */
+
 

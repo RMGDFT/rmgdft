@@ -68,7 +68,7 @@ public:
     void GetDelocalizedOrbital (void);
     void LcaoGetPsi (void);
     void DeleteNvmeArrays(void);
-
+    void ClearPotentialAcceleration(void);
 
 
     // Minimal kpoint structure
@@ -138,8 +138,9 @@ public:
     KpointType *orbital_weight;
     size_t orbital_weight_size;
 
-    // Pointer to potential acceleration arrays
+    // Pointer to potential acceleration arrays and size
     double *dvh;
+    size_t dvh_size;
 
     // Number of potential acceleration arrays and the skip factor
     int ndvh;

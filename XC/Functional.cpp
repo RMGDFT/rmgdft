@@ -146,8 +146,8 @@ Functional::Functional (
 
     if(this->dft_is_gradient_rmg()) 
     {
-        vxc2 = new double[2 * this->pbasis];
-        v2cud = new double[this->pbasis];
+        vxc2 = new double[2 * this->pbasis]();
+        v2cud = new double[this->pbasis]();
     }
     else
     {

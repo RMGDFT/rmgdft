@@ -101,7 +101,6 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
             std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 
             // Apply B operator then map weights back
-            // FIX: Only works for central operator right now. Have to fix AppCirDriverBeta for Mehrstellen
             if(ct.is_gamma) {
                 for (int idx = 0; idx < pbasis; idx++) Nlweight_R[idx] = std::real(nbeptr[idx]);
             }
@@ -134,7 +133,6 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
                 std::complex<double> *nbeptr = (std::complex<double> *)beptr;
 
                 // Apply B operator then map weights back
-                // FIX: Only works for central operator right now. Have to fix AppCirDriverBeta for Mehrstellen
                 if(ct.is_gamma) {
                     for (int idx = 0; idx < pbasis; idx++) Nlweight_R[idx] = std::real(nbeptr[idx]);
                 }

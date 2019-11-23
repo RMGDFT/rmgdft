@@ -231,7 +231,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         GatherPsi(G, pbasis_noncoll, sp->istate, kptr->ns, work1_t);
     }
 
-    /*Apply double precision Mehrstellen right hand operator to ns and save in res2 */
+    /*Apply A operator to ns and save in res2 */
     {
         RmgTimer RT1("Mg_eig: apply B operator");
         ApplyBOperator<CalcType>(L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);

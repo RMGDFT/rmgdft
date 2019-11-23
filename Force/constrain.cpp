@@ -55,6 +55,10 @@ void constrain (void)
                 double Mag_R = 0.0;
                 double FdotT = 0.0;
 
+                double Eleft = Atoms[0].constraint.setA_weight;
+                double Eright = Atoms[0].constraint.setB_weight;
+                double Eself = ct.TOTAL;
+                   
                 for (ion=0; ion < ct.num_ions; ion++)
                 {
                     iptr = &Atoms[ion];
@@ -79,15 +83,31 @@ void constrain (void)
 
                 }
 
-                if( ( iptr->constraint.setA_weight >= ct.TOTAL && ct.TOTAL <= iptr->constraint.setB_weight) || \
-                        ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight) )
+                if( ( Eleft >= Eself && Eself <= Eright) || ( Eleft < Eself && Eself > Eright) )
                 {   /* this image energy is an extrema along the band */
                     /* Calculate tangent vector Tau */
+                    double abs_vl = std::abs(Eleft - Eself);
+                    double abs_vr = std::abs(Eright - Eself);
+                    double vmax = std::max(abs_vl, abs_vr);
+                    double vmin = std::min(abs_vl, abs_vr);
+                    double delta_left, delta_right;
+
+                    if (Eleft > Eright) 
+                    {
+                        delta_left = vmax;
+                        delta_right = vmin;
+                    }
+                    else
+                    {
+                        delta_left = vmin;
+                        delta_right = vmin;
+                    }
+
                     for (ion=0; ion < ct.num_ions; ion++)
                     {
-                        Tau[3*ion+X] = Img_L[3*ion+X]/Mag_L + Img_R[3*ion+X]/Mag_R;
-                        Tau[3*ion+Y] = Img_L[3*ion+Y]/Mag_L + Img_R[3*ion+Y]/Mag_R;
-                        Tau[3*ion+Z] = Img_L[3*ion+Z]/Mag_L + Img_R[3*ion+Z]/Mag_R;
+                        Tau[3*ion+X] = Img_L[3*ion+X] * delta_left + Img_R[3*ion+X] * delta_right;
+                        Tau[3*ion+Y] = Img_L[3*ion+Y] * delta_left + Img_R[3*ion+Y] * delta_right;
+                        Tau[3*ion+Z] = Img_L[3*ion+Z] * delta_left + Img_R[3*ion+Z] * delta_right;
 
                         Mag_T += Tau[3*ion+X]*Tau[3*ion+X]
                             + Tau[3*ion+Y]*Tau[3*ion+Y]
@@ -95,7 +115,7 @@ void constrain (void)
                     }
 
                 }
-                else if ( iptr->constraint.setA_weight > iptr->constraint.setB_weight)
+                else if ( Eleft> Eright)
                 {   /* this image energy is in a decreasing to the right section */
                     /* Calculate tangent vector Tau */
                     for (ion=0; ion < ct.num_ions; ion++)
@@ -107,7 +127,7 @@ void constrain (void)
 
                     Mag_T = Mag_L;
                 }
-                else if ( iptr->constraint.setA_weight < iptr->constraint.setB_weight)
+                else if ( Eleft < Eright )
                 {   /* this image energy is in a decreasing to the left section */
                     /* Calculate tangent vector Tau */
                     for (ion=0; ion < ct.num_ions; ion++)
@@ -146,11 +166,11 @@ void constrain (void)
                 }
 
                 /* determine image motion along band */
-                if  ( iptr->constraint.setA_weight < ct.TOTAL && ct.TOTAL > iptr->constraint.setB_weight)
+                if(  Eleft < Eself && Eself > Eright) 
                 {   /* this image energy is a maxima - climb image */
                     Mag_T = -FdotT;
                 }
-                else if ( iptr->constraint.setA_weight > ct.TOTAL && ct.TOTAL < iptr->constraint.setB_weight)
+                if(  Eleft > Eself && Eself < Eright) 
                 { /* this image energy is a minima - descend image */
                     Mag_T = 2*FdotT;
                 }
@@ -159,7 +179,7 @@ void constrain (void)
                     /*Calculate vector norms */
                     Mag_L =  sqrt(Mag_L) ;
                     Mag_R =  sqrt(Mag_R) ;
-                    Mag_T = ct.neb_spring_constant*(Mag_R - Mag_L);
+                    Mag_T = ct.neb_spring_constant*(Mag_R -Mag_L);
                 }
 
                 /* Remove physical force along Tau, replace it with the restoring force */

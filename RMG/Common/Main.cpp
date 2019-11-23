@@ -108,6 +108,9 @@ std::atomic<bool> shutdown_request(false);
 extern "C" void term_handler(int signal)
 {
     shutdown_request.store(true); 
+    // Give threads a chance to exit gracefully
+    sleep(3);
+    kill(getpid(), SIGKILL);
 }
 
 void CheckShutdown(void)
@@ -243,11 +246,6 @@ void initialize(int argc, char **argv)
     /* for spin polarized calculation set pointer to memory for density of the opposite spin */
     rho_oppo = rho + FP0_BASIS;
 
-    /* Check if Bweight is needed */
-    ct.need_Bweight = true;
-//    if((ct.discretization == CENTRAL_DISCRETIZATION) && ct.norm_conserving_pp) ct.need_Bweight = false;
-    if(ct.discretization == CENTRAL_DISCRETIZATION) ct.need_Bweight = false;
-
     /* Initialize some k-point stuff */
     Kptr_g = new Kpoint<double> * [ct.num_kpts_pe];
     Kptr_c = new Kpoint<std::complex<double> > * [ct.num_kpts_pe];
@@ -350,7 +348,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                 std::vector<double> occs;
                 occs.resize(Kptr[0]->nstates);
                 for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
-                Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), 
+                Exxbase<OrbitalType> Exx(*Kptr[0]->G, *Rmg_halfgrid, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(), 
                         Kptr[0]->orbital_storage, ct.exx_mode);
                 if(ct.exx_mode == EXX_DIST_FFT)
                     Exx.ReadWfsFromSingleFile();

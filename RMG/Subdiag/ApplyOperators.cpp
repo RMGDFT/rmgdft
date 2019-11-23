@@ -133,22 +133,14 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
         veff = vtot;
     }
 
+
     CPP_genvpsi (psi, sg_twovpsi_t, veff, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
 
-    // B operating on 2*V*psi stored in work
-    if(ct.discretization == CENTRAL_DISCRETIZATION)
-    {
         // For central FD B is just the identity
-        for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = sg_twovpsi_t[idx] - a_psi[idx];
-    }
-    else
-    {
-        KpointType *work_t = new KpointType[pbasis];
-        ApplyBOperator (sg_twovpsi_t, work_t, "Coarse");
-        for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = work_t[idx] - a_psi[idx];
-        delete [] work_t;
-    }
-    if(ct.noncoll)
+    for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = sg_twovpsi_t[idx] - a_psi[idx];
+   
+      
+      if(ct.noncoll)
     {
         std::complex<double> *kdr_down = kdr + pbasis;
         CPP_genvpsi (&psi[pbasis], sg_twovpsi_t, veff, (void *)kdr_down, kptr->kp.kmag, dimx, dimy, dimz);

@@ -29,7 +29,6 @@ LcaoGetPsi.cpp
 ReadData.cpp
 ReadSerialData.cpp
 OutputBandPlot.cpp
-AppCirDriverBeta.cpp
 AssignWeight.cpp
 GatherScatter.cpp
 GetDelocalizedWeight.cpp

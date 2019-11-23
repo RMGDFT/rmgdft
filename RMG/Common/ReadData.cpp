@@ -36,6 +36,8 @@
 #include "Kpoint.h"
 #include "transition.h"
 #include "ZfpCompress.h"
+#include "RmgGemm.h"
+#include "RmgException.h"
 
 static void read_double (int fhand, double * rp, int count);
 static void read_int (int fhand, int *ip, int count);
@@ -458,8 +460,8 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     int grid_size;
     int fgrid_size;
     int gamma;
-    int nk, ik;
-    int ns, is;
+    int nk;
+    int ns;
 
     pgrid[0] = Kptr[0]->G->get_PX0_GRID(1);
     pgrid[1] = Kptr[0]->G->get_PY0_GRID(1);
@@ -570,9 +572,9 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
         double *tbuf = new double[wvfn_size];
         KpointType *tptr = (KpointType *)tbuf;
 
-        for (ik = 0; ik < ct.num_kpts_pe; ik++)
+        for (int ik = 0; ik < ct.num_kpts_pe; ik++)
         {
-            for (is = 0; is < ns; is++)
+            for (int is = 0; is < ns; is++)
             {
                 if(ct.compressed_infile)
                 {
@@ -592,11 +594,65 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
                 {
                     read_double (fhand, (double *)tbuf, wvfn_size);
                 }
-                for(int idx = 0;idx < grid_size;idx++) Kptr[ik]->Kstates[is].psi[idx] = 2.0*Kptr[ik]->Kstates[is].psi[idx] - tptr[idx];
+                // Store the old orbitals in the upper part of the orbital array so that we
+                // have both new and old in memory and can compute overlaps if needed
+                for(int idx = 0;idx < grid_size;idx++) Kptr[ik]->Kstates[is+ns].psi[idx] = tptr[idx];
             }
 
         }
 
+        KpointType *C = new KpointType[ns*ns];
+
+        double vel = Rmg_L.get_omega() / (double)Rmg_G->get_GLOBAL_BASIS(1);
+        KpointType alpha(vel);
+
+        int factor = 1;
+        if(typeid(KpointType) == typeid(std::complex<double>)) factor = 2;
+        char *trans_t = "t";
+        char *trans_n = "n";
+        char *trans_c = "c";
+        char *trans_a = trans_t;
+        if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
+
+        KpointType ZERO_t(0.0);
+        
+        for (int ik = 0; ik < ct.num_kpts_pe; ik++)
+        {
+            KpointType *A = (KpointType *)Kptr[ik]->Kstates[0].psi;
+            KpointType *B = (KpointType *)Kptr[ik]->Kstates[ns].psi;
+            RmgGemm(trans_a, trans_n, ns, ns, grid_size, alpha, A, grid_size, B, grid_size, ZERO_t, C, ns);
+            MPI_Allreduce(MPI_IN_PLACE, (double *)C, ns * ns * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+            if(ct.write_orbital_overlaps)
+            {
+                // Write overlaps to log file
+                std::string fname = std::string("md_overlaps") + "_spin" + std::to_string(pct.spinpe) +
+                                            "_kpt" + std::to_string(pct.kstart+ik);
+                FILE *fhand = NULL;
+                if(NULL == (fhand = fopen (fname.c_str(), "a+")))
+                     throw RmgFatalException() << "Unable to open md_overlap file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
+                for(int i=0;i < ns;i++)
+                {
+                    for(int j=0;j < ns;j++)
+                    {
+                        if(pct.gridpe==0)fprintf(fhand, "(%d, %d), %12.8e\n",i,j,std::real(C[i*ns + j]));
+                    }
+                }
+                if(pct.gridpe==0)fprintf(fhand,"--MARK--\n");
+                fclose(fhand);
+            }
+
+            // Now extrapolate
+            for(int is=0;is < ns;is++)
+            {
+                for(int idx = 0;idx < grid_size;idx++) Kptr[ik]->Kstates[is].psi[idx] = 
+                        2.0*Kptr[ik]->Kstates[is].psi[idx] - Kptr[ik]->Kstates[is+ns].psi[idx];
+            }
+
+        }
+
+        delete [] C;
         delete [] tbuf;
         delete [] psi_I;
         delete [] psi_R;

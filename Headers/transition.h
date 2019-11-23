@@ -26,11 +26,12 @@
 extern PulayMixing *Pulay_rho;
 extern PulayMixing *Pulay_orbital;
 extern BaseGrid *Rmg_G;
+extern BaseGrid *Rmg_halfgrid;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
 
-extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves;
+extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
 
 double my_crtc (void);
@@ -52,8 +53,6 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old,
 
 int init_kpoints (int *mesh, int *is_shift);
 
-template <typename RmgType> void AppCir (RmgType * a, RmgType * b, char * grid);
-template <typename RmgType> double AppCil (RmgType * a, RmgType * b, char * grid);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, DataType *gz, int, int, int, double, double, double, int);
@@ -119,8 +118,6 @@ template <typename KpointType>
 void Betaxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *);
 template <typename KpointType>
 void LdaplusUxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *);
-template <typename RmgType>
-void AppCirDriverBeta (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
 template <typename DataType>
 double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
 template <typename RmgType>
