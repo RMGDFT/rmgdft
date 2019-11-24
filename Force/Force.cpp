@@ -103,7 +103,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     /* Add in the local. No need to sum over spin or kpoint. */
     RmgTimer *RT2 = new RmgTimer("2-Force: local");
     for(int i = 0; i < num_ions * 3; i++) force_tmp[i] = 0.0;
-    if (ct.nspin = 2)
+    if (ct.nspin == 2)
     {
         rho_tot = new double[get_FP0_BASIS()];
         for (idx = 0; idx < get_FP0_BASIS(); idx++)
