@@ -63,7 +63,8 @@ void read_orbital (STATE * states)
             {
                 if(st_new == st)
                 {
-                    sprintf (newname, "%s%s%d", lcr[idx0].name, ".orbit_", st1);
+                    sprintf (newname, "%s_spin%d%s%d", lcr[idx0].name, pct.spinpe, ".orbit_", st1);
+
                     my_open( fhand, newname, O_RDWR, S_IREAD | S_IWRITE );
                     if (fhand < 0)
                     {

@@ -133,7 +133,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
                 Cij_local, &LocalOrbital->num_thispe, &zero, psi, &pbasis);
 
 
-        Exxbase<double> Exx(*Rmg_G, Rmg_L, "tempwave", nstates_occ, occs.data(), psi, ct.exx_mode);
+        Exxbase<double> Exx(*Rmg_G, *Rmg_halfgrid, Rmg_L, "tempwave", nstates_occ, occs.data(), psi, ct.exx_mode);
         if(ct.exx_mode == EXX_LOCAL_FFT)
             Exx.WriteWfsToSingleFile();
 

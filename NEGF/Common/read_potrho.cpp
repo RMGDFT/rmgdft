@@ -130,7 +130,14 @@ void read_potrho (double *vh, int iflag, char *file_ex)
         amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
         MPI_File mpi_fhand ;
 
-        sprintf(newname, "%s.%s", lcr[subsystem].lead_name, file_ex);
+        if(file_ex == "vh")
+        {
+            sprintf(newname, "%s.%s", lcr[subsystem].lead_name, file_ex);
+        }
+        else
+        {
+            sprintf(newname, "%s_spin%d.%s", lcr[subsystem].lead_name, pct.spinpe, file_ex);
+        }
         MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
         disp=0;
         MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);

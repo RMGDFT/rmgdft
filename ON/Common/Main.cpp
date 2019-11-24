@@ -65,9 +65,11 @@
 #include "../Headers/common_prototypes1.h"
 #include "LocalObject.h"
 #include "LdaU_on.h"
-#include "WriteEshdf.h"
 #include "Exxbase.h"
 
+#if QMCPACK_SUPPORT
+    #include "WriteEshdf.h"
+#endif
 
 
 LocalObject<double> *LocalOrbital;
@@ -275,7 +277,7 @@ int main(int argc, char **argv)
                 {
                     quench(states, states1, vxc, vh, vnuc, vh_old, vxc_old, rho, rho_oppo, rhoc, rhocore);
                 }
-                
+
                 OnTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, *LocalOrbital, 
                         *H_LocalOrbital, *LocalProj);
                 break;
@@ -298,7 +300,7 @@ int main(int argc, char **argv)
                     }
 
                     double *psi = new double[Rmg_G->get_P0_BASIS(1) * ct.num_states];
-                    Exxbase<double> Exx(*Rmg_G, Rmg_L, "tempwave", nstates_occ, occs.data(), psi, ct.exx_mode);
+                    Exxbase<double> Exx(*Rmg_G, *Rmg_halfgrid, Rmg_L, "tempwave", nstates_occ, occs.data(), psi, ct.exx_mode);
                     if(ct.exx_mode == EXX_DIST_FFT)
                         Exx.ReadWfsFromSingleFile();
 

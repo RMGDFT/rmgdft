@@ -90,6 +90,12 @@ static void rmg_alloc_initialize (void *ptr, size_t n, char *type)
             p++;
         }
     }
+    else if (strcmp (type, "std::complex<double>") == 0)
+    {
+        std::complex<double> *p = (std::complex<double> *) ptr;
+        for (i = 0; i < n; i++)
+            p[i] = 0.0;
+    }
     else
     {
         printf ("!!!! warning: requested initialization of data pointed to by '%p' not done.\n", ptr);

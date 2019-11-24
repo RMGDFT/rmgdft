@@ -280,6 +280,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     /* Initialize the nuclear local potential and the compensating charges */
 //    init_nuc (vnuc, rhoc, rhocore);
+    pct.loc_ions_list = new int[ct.num_ions];
     double *dum_array = NULL;
     InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
     InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);

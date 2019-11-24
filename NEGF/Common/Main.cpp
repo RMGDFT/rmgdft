@@ -186,6 +186,7 @@ int main (int argc, char **argv)
     InitIo(argc, argv, ControlMap);
 
     ReadBranchNEGF(ct.cfile, ct, cei, potentialCompass, chargeDensityCompass);
+    states = new STATE[ct.num_states];
     allocate_states();
 
     perm_ion_index = (unsigned int *) malloc(ct.num_ions * sizeof(int));
