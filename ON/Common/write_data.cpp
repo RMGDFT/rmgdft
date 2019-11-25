@@ -154,176 +154,137 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	hygrid = get_hygrid() * get_yside();
 	hzgrid = get_hzgrid() * get_zside();
 
-	for (state = ct.state_begin; state < ct.state_end; state++)
-	{
+    for (state = ct.state_begin; state < ct.state_end; state++)
+    {
         int state_permuted = perm_state_index[state];
-		sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
-		amode = S_IREAD | S_IWRITE;
-		int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
-		if (fhand < 0)
-			error_handler(" Unable to write file ");
+        sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
+        amode = S_IREAD | S_IWRITE;
+        int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+        if (fhand < 0)
+            error_handler(" Unable to write file ");
 
-		write(fhand, states[state].psiR, states[state].size * sizeof(double));
+        write(fhand, states[state].psiR, states[state].size * sizeof(double));
 
-		write(fhand, &states[state].ixmin, sizeof(int));
-		write(fhand, &states[state].ixmax, sizeof(int));
-		write(fhand, &states[state].iymin, sizeof(int));
-		write(fhand, &states[state].iymax, sizeof(int));
-		write(fhand, &states[state].izmin, sizeof(int));
-		write(fhand, &states[state].izmax, sizeof(int));
-		write(fhand, &hxgrid, sizeof(double));
-		write(fhand, &hygrid, sizeof(double));
-		write(fhand, &hzgrid, sizeof(double));
-		write(fhand, &states[state].crds[0], 3 * sizeof(double));
-
-
-
-		close(fhand);
-	}
-
-	/* write out the charge density around first atom 
-	 * mainly for building the initial charge density for FIREBALL start
-	 */
-
-
-	hxgrid = get_hxxgrid() * get_xside();
-	hygrid = get_hyygrid() * get_yside();
-	hzgrid = get_hzzgrid() * get_zside();
-
-
-	ixmin = 2 * states[0].ixmin;
-	ixmax = 2 * states[0].ixmax;
-	iymin = 2 * states[0].iymin;
-	iymax = 2 * states[0].iymax;
-	izmin = 2 * states[0].izmin;
-	izmax = 2 * states[0].izmax;
-	ixdim = ixmax - ixmin;
-	iydim = iymax - iymin;
-	izdim = izmax - izmin;
-
-	my_malloc_init( rho_tem, ixdim * iydim * izdim, double );
-	for(idx = 0; idx < ixdim * iydim * izdim; idx++)
-	{
-		rho_tem[idx] = 0.0;
-	}
-
-	pe2xyz (pct.gridpe, &pex, &pey, &pez);
-	PNX0 = pex * get_FPX0_GRID();
-	PNY0 = pey * get_FPY0_GRID();
-	PNZ0 = pez * get_FPZ0_GRID();
-	for (ix = ixmin; ix < ixmax; ix++)
-		for (iy = iymin; iy < iymax; iy++)
-			for (iz = izmin; iz < izmax; iz++)
-			{
-				ixx = ix;
-				iyy = iy;
-				izz = iz;
-				if (ixx < 0)
-					ixx += get_FNX_GRID();
-				if (iyy < 0)
-					iyy += get_FNY_GRID();
-				if (izz < 0)
-					izz += get_FNZ_GRID();
-
-				if (ixx >= get_FNX_GRID())
-					ixx -= get_FNX_GRID();
-				if (iyy >= get_FNY_GRID())
-					iyy -= get_FNY_GRID();
-				if (izz >= get_FNZ_GRID())
-					izz -= get_FNZ_GRID();
-
-				idx = ixx * get_FNY_GRID() * get_FNZ_GRID() + iyy * get_FNZ_GRID() + izz;
-				idx1 = (ix - ixmin) * iydim * izdim + (iy - iymin) * izdim + (iz - izmin);
-
-				ixx -= PNX0;
-				iyy -= PNY0;
-				izz -= PNZ0;
-				idx = ixx *get_FPY0_GRID() * get_FPZ0_GRID() + iyy * get_FPZ0_GRID() + izz;
-				if(     ixx >= 0 && ixx < get_FPX0_GRID() &&
-						iyy >= 0 && iyy < get_FPY0_GRID() &&
-						izz >= 0 && izz < get_FPZ0_GRID()  )
-				{
-
-					rho_tem[idx1] = rho[idx];
-
-				}
-			}
+        write(fhand, &states[state].ixmin, sizeof(int));
+        write(fhand, &states[state].ixmax, sizeof(int));
+        write(fhand, &states[state].iymin, sizeof(int));
+        write(fhand, &states[state].iymax, sizeof(int));
+        write(fhand, &states[state].izmin, sizeof(int));
+        write(fhand, &states[state].izmax, sizeof(int));
+        write(fhand, &hxgrid, sizeof(double));
+        write(fhand, &hygrid, sizeof(double));
+        write(fhand, &hzgrid, sizeof(double));
+        write(fhand, &states[state].crds[0], 3 * sizeof(double));
 
 
 
-	idx = ixdim * iydim * izdim ;
-	global_sums(rho_tem, &idx, pct.grid_comm);
-	idx = ixdim * iydim * izdim * sizeof(double);
-	if (pct.gridpe == 0)
-	{
-		sprintf(newname, "%s%s", name, ".rho_firstatom");
-		amode = S_IREAD | S_IWRITE;
-
-		int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
-		if (fhand < 0)
-			error_handler(" Unable to write file ");
-
-		write(fhand, &ixmin, sizeof(int));
-		write(fhand, &ixmax, sizeof(int));
-		write(fhand, &iymin, sizeof(int));
-		write(fhand, &iymax, sizeof(int));
-		write(fhand, &izmin, sizeof(int));
-		write(fhand, &izmax, sizeof(int));
-		write(fhand, &hxgrid, sizeof(double));
-		write(fhand, &hygrid, sizeof(double));
-		write(fhand, &hzgrid, sizeof(double));
-		write(fhand, &states[0].crds[0], 3 * sizeof(double));
-
-		write(fhand, rho_tem, idx);
-		close(fhand);
-	}
+        close(fhand);
+    }
+    /* write out the charge density around first atom 
+     * mainly for building the initial charge density for FIREBALL start
+     */
 
 
-
-	my_free(rho_tem);
-
-
-	MPI_Barrier(pct.img_comm);
+    hxgrid = get_hxxgrid() * get_xside();
+    hygrid = get_hyygrid() * get_yside();
+    hzgrid = get_hzzgrid() * get_zside();
 
 
-#if 0
-	sprintf(newname, "%s%s", name, ".rho_matrix");
+    ixmin = 2 * states[0].ixmin;
+    ixmax = 2 * states[0].ixmax;
+    iymin = 2 * states[0].iymin;
+    iymax = 2 * states[0].iymax;
+    izmin = 2 * states[0].izmin;
+    izmax = 2 * states[0].izmax;
+    ixdim = ixmax - ixmin;
+    iydim = iymax - iymin;
+    izdim = izmax - izmin;
 
-	/* this datatype describes the mapping of the local array
-	 * to the global array (file)
-	 * */
+    my_malloc_init( rho_tem, ixdim * iydim * izdim, double );
+    for(idx = 0; idx < ixdim * iydim * izdim; idx++)
+    {
+        rho_tem[idx] = 0.0;
+    }
 
-	sizes[0] = ct.num_states;
-	sizes[1] = ct.num_states;
+    pe2xyz (pct.gridpe, &pex, &pey, &pez);
+    PNX0 = pex * get_FPX0_GRID();
+    PNY0 = pey * get_FPY0_GRID();
+    PNZ0 = pez * get_FPZ0_GRID();
+    for (ix = ixmin; ix < ixmax; ix++)
+        for (iy = iymin; iy < iymax; iy++)
+            for (iz = izmin; iz < izmax; iz++)
+            {
+                ixx = ix;
+                iyy = iy;
+                izz = iz;
+                if (ixx < 0)
+                    ixx += get_FNX_GRID();
+                if (iyy < 0)
+                    iyy += get_FNY_GRID();
+                if (izz < 0)
+                    izz += get_FNZ_GRID();
 
-	subsizes[0] = ct.state_end - ct.state_begin;
-	subsizes[1] = ct.num_states;
+                if (ixx >= get_FNX_GRID())
+                    ixx -= get_FNX_GRID();
+                if (iyy >= get_FNY_GRID())
+                    iyy -= get_FNY_GRID();
+                if (izz >= get_FNZ_GRID())
+                    izz -= get_FNZ_GRID();
 
-	starts[0] = pct.gridpe * (ct.state_end - ct.state_begin);
-	starts[1] = 0;
+                idx = ixx * get_FNY_GRID() * get_FNZ_GRID() + iyy * get_FNZ_GRID() + izz;
+                idx1 = (ix - ixmin) * iydim * izdim + (iy - iymin) * izdim + (iz - izmin);
 
-	/*int order = MPI_ORDER_FORTRAN;*/
-	MPI_Type_create_subarray(2, sizes, subsizes, starts, order, MPI_DOUBLE, &filetype);
+                ixx -= PNX0;
+                iyy -= PNY0;
+                izz -= PNZ0;
+                idx = ixx *get_FPY0_GRID() * get_FPZ0_GRID() + iyy * get_FPZ0_GRID() + izz;
+                if(     ixx >= 0 && ixx < get_FPX0_GRID() &&
+                        iyy >= 0 && iyy < get_FPY0_GRID() &&
+                        izz >= 0 && izz < get_FPZ0_GRID()  )
+                {
 
-	MPI_Type_commit(&filetype);
+                    rho_tem[idx1] = rho[idx];
 
-	MPI_Info_create(&fileinfo);
-
-
-	amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
-	MPI_File_open(pct.grid_comm, newname, amode, fileinfo, &mpi_fhand);
+                }
+            }
 
 
-	disp=0;
-	MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, filetype, "native", MPI_INFO_NULL);
 
-    
-    idx = (ct.state_end - ct.state_begin) * ct.num_states;
-	MPI_File_write_all(mpi_fhand, work_matrix_row, idx,MPI_DOUBLE, &status);
-	MPI_File_close(&mpi_fhand);
+    idx = ixdim * iydim * izdim ;
+    global_sums(rho_tem, &idx, pct.grid_comm);
+    idx = ixdim * iydim * izdim * sizeof(double);
+    if (pct.gridpe == 0)
+    {
+        sprintf(newname, "%s%s", name, ".rho_firstatom");
+        amode = S_IREAD | S_IWRITE;
 
-#endif
-	MPI_Barrier(pct.img_comm);
+        int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+        if (fhand < 0)
+            error_handler(" Unable to write file ");
+
+        write(fhand, &ixmin, sizeof(int));
+        write(fhand, &ixmax, sizeof(int));
+        write(fhand, &iymin, sizeof(int));
+        write(fhand, &iymax, sizeof(int));
+        write(fhand, &izmin, sizeof(int));
+        write(fhand, &izmax, sizeof(int));
+        write(fhand, &hxgrid, sizeof(double));
+        write(fhand, &hygrid, sizeof(double));
+        write(fhand, &hzgrid, sizeof(double));
+        write(fhand, &states[0].crds[0], 3 * sizeof(double));
+
+        write(fhand, rho_tem, idx);
+        close(fhand);
+    }
+
+
+
+    my_free(rho_tem);
+
+
+
+
+    MPI_Barrier(pct.img_comm);
 }
 
 
