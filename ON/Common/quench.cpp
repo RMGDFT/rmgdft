@@ -51,7 +51,6 @@ void quench(STATE * states, STATE * states1, double * vxc, double * vh,
             double * vnuc, double * vh_old, double *
 vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 {
-    int outcount = 0;
     static int CONVERGENCE = FALSE;
 
 

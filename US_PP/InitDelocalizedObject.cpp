@@ -132,9 +132,6 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
                             kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
                             strfac =  std::exp(std::complex<double>(0.0, -kr));
                             temp_g[(size_t)ion * (size_t)FP0_BASIS + ig] += strfac * t1;
-                    if(object_type == ATOMIC_RHO) {
-                        if(pct.gridpe == 0 && ig%100 ==0) printf("\n ffff %d %e %e %e", ig, t1,strfac);
-                    }
                         }
                     }
                 }
@@ -151,10 +148,6 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
                             kr = iptr1->crds[0] * k[0] + iptr1->crds[1] * k[1] + iptr1->crds[2] * k[2];
                             strfac +=  std::exp(std::complex<double>(0.0, -kr));
                         }
-                    }
-
-                    if(object_type == ATOMIC_RHO) {
-                        if(pct.gridpe == 0 && ig%100 ==0) printf("\n ffff %d %e %e %e", ig, t1,strfac);
                     }
 
                     temp_g[ig] += strfac * t1 ;

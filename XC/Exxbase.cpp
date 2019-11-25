@@ -117,7 +117,6 @@ template <> void Exxbase<double>::setup_gfac(void)
     gfac = (double *)GpuMallocManaged(pwave->pbasis*sizeof(double));
     std::fill(gfac, gfac+pwave->pbasis, 0.0);
 
-    const std::string &dftname = Functional::get_dft_name_rmg();
     erfc_scrlen = Functional::get_screening_parameter_rmg();
     gau_scrlen = Functional::get_gau_parameter_rmg();
 
@@ -165,10 +164,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 {
     RmgTimer RT0("5-Functional: Exx potential");
     double scale = - 1.0 / (double)pwave->global_basis;
-
-    double ZERO_t(0.0), ONE_T(1.0);
-    char *trans_a = "t";
-    char *trans_n = "n";
 
     // Clear vexx
     for(int idx=0;idx < nstates*pbasis;idx++) vexx[idx] = 0.0;
@@ -315,7 +310,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         int dimx = G.get_PX0_GRID(1);
         int dimy = G.get_PY0_GRID(1);
         int dimz = G.get_PZ0_GRID(1);
-        int gdimx = G.get_NX_GRID(1);
         int gdimy = G.get_NY_GRID(1);
         int gdimz = G.get_NZ_GRID(1);
         G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
@@ -378,6 +372,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
 template <> double Exxbase<std::complex<double>>::Exxenergy(std::complex<double> *vexx)
 {
+    return 0.0;
 }
 
 template <> void Exxbase<std::complex<double>>::Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end)
@@ -473,7 +468,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     wf_fft = new std::complex<double> [pbasis];
 
 
-    char *buf;
+    char *buf=NULL;
     FILE *fp=NULL;
     if(LG->get_rank()==0)
     {
@@ -542,7 +537,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         int ib = *it;
         int ij_start = ib * block_size;
         int ij_end = (ib+1) * block_size;
-        if (ij_end > wf_pairs.size()) ij_end = wf_pairs.size();
+        if ((size_t)ij_end > wf_pairs.size()) ij_end = wf_pairs.size();
         RmgTimer *RT1 = new RmgTimer("5-Functional: Exx: ij+fft");
         for(int ij = ij_start; ij < ij_end; ij++)
         {
@@ -573,7 +568,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
             int kl_start = ic * block_size;
             int kl_end = (ic+1) * block_size;
-            if (kl_end > wf_pairs.size()) kl_end = wf_pairs.size();
+            if ((size_t)kl_end > wf_pairs.size()) kl_end = wf_pairs.size();
             Vexx_integrals_block(fp, ij_start, ij_end, kl_start, kl_end);
         }
     }

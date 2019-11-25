@@ -119,10 +119,11 @@ void cnpy::parse_zip_footer(FILE* fp, unsigned short& nrecs, unsigned int& globa
     global_header_offset = *(unsigned int*) &footer[16];
     comment_len = *(unsigned short*) &footer[20];
 
-    assert(disk_no == 0);
-    assert(disk_start == 0);
-    assert(nrecs_on_disk == nrecs);
-    assert(comment_len == 0);
+    if(disk_no != 0 || disk_start != 0 || nrecs_on_disk !=0 || comment_len != 0)
+    {
+        printf("\n WARNGING some numbers in cnpy is not correct %d %d %d %d\n", 
+                disk_no, disk_start, nrecs_on_disk, comment_len);
+    }
 }
 
 cnpy::NpyArray load_the_npy_file(FILE* fp) {

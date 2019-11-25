@@ -133,7 +133,7 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
         idx = states[state].size * sizeof(double);
         if (nbytes != (size_t)idx)
         {
-            printf("\n read %d is different from %d for state %d", nbytes, idx, state);
+            printf("\n read %zd is different from %d for state %d", nbytes, idx, state);
             error_handler("Unexpected end of file orbit");
         }
 

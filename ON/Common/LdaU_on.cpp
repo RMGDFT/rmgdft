@@ -91,7 +91,7 @@ LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
     this->Ecorrect = 0.0;
 
     if(tot_orbitals_ldaU == 0) return;
-    int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
+    int *ixmin=NULL, *iymin=NULL, *izmin=NULL, *dimx=NULL, *dimy=NULL, *dimz=NULL;
     int density = 1;
     this->tot_orbitals_ldaU = tot_orbitals_ldaU;
     this->AtomicOrbital = new LocalObject<double>(tot_orbitals_ldaU, ixmin, iymin, izmin,

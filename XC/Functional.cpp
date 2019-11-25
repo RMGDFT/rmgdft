@@ -288,8 +288,8 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     RmgTimer RT1("5-Functional: vxc");
     const double epsr=1.0e-6;
     double rhoneg[2]{0.0,0.0};
-    double *rho_up, *rho_down;
-    double *v_up, *v_down;
+    double *rho_up=NULL, *rho_down=NULL;
+    double *v_up=NULL, *v_down=NULL;
     double *rho = new double[nspin*this->pbasis];
 
     for(int ix=0;ix < this->pbasis;ix++)rho[ix] = rho_in[ix];
