@@ -67,14 +67,14 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 		if (fhand_vh < 0)
 			error_handler (" Unable to write file for vh ");
 
-		sprintf (newname, "%s%s", name, ".vxc");
+		sprintf (newname, "%s_spin%d%s", name, pct.spinpe, ".vxc");
 		amode = S_IREAD | S_IWRITE;
 
 		fhand_vxc = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
 		if (fhand_vxc < 0)
 			error_handler (" Unable to write file for vxc ");
 
-		sprintf (newname, "%s%s", name, ".rho");
+		sprintf (newname, "%s_spin%d%s", name, pct.spinpe, ".rho");
 		amode = S_IREAD | S_IWRITE;
 
 		fhand_rho = open (newname, O_CREAT | O_TRUNC | O_RDWR, amode);
