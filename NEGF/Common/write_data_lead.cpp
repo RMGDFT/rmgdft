@@ -39,18 +39,18 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 {
 	int amode;
 	char newname[MAX_PATH + 20];
-	int fhand_rho, fhand_vxc, fhand_vh;
+	int fhand_rho=0, fhand_vxc=0, fhand_vh=0;
     FILE *fhand_EF;
 
 	int size, rank, ndims, gsizes[2], distribs[2];
 	int order,  dargs[2], psizes[2];
 	MPI_Datatype mpi_darray_lead;
-	int idx, i, iprobe;
+	int idx;
 	int mpi_amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
 	MPI_File mpi_fhand ;
 	MPI_Info fileinfo;
 	MPI_Status status;
-	MPI_Offset disp, offset;
+	MPI_Offset disp;
 
 
 	/* Wait until everyone gets here */
@@ -111,7 +111,6 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 
 
 	int ictxt = pmo.ictxt[pmo.myblacs];
-	int mb = pmo.mblock;
 
 	int nprow, npcol, myrow, mycol;
 

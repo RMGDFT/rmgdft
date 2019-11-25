@@ -33,23 +33,17 @@ Apply linear potential drop
 void apply_potential_drop (double *vbias)
 {
     int idx;
-    int i, j, k, xoff, yoff;
-    int ii, jj, kk;
+    int i, j, xoff;
     double V1, V2, V3, V4;
-    double Vx, Vxp, Vy, Vyp, xx, xx2, yy, yy2;
-    int x1, y1, x2, y2, x3, y3, x4, y4, FPYZ0_GRID;
-    int x, y;
-
+    int x1, y1, x2, y2;
 
     MPI_Barrier(pct.img_comm);
 
     xoff = get_FPX_OFFSET();
-    yoff = get_FPY_OFFSET();
 
     V1 = (lcr[1].bias) * eV_Ha;
     V2 = (lcr[2].bias) * eV_Ha;
 
-    FPYZ0_GRID = get_FPY0_GRID() * get_FPZ0_GRID();
     x1 = potentialCompass.box1.x1;   
     x2 = potentialCompass.box1.x2;   
     y1 = potentialCompass.box1.y1;   
@@ -373,22 +367,6 @@ void apply_potential_drop (double *vbias)
 
 
                 global_to_distribute3 (vtemp, vbias);
-/*
-
-                for (i = 0; i < get_FPX0_GRID(); i++)
-                {
-                    for (j = 0; j < get_FPY0_GRID(); j++)
-                    {
-                        idx = j + i * get_FPY0_GRID();
-
-                        for (k = 0; k < get_FPZ0_GRID(); k++)
-                        {
-                            idx2 = k + j * get_FPZ0_GRID() + i * FPYZ0_GRID;
-                            vtot[idx2] += vbias[idx];
-                        }
-                    }
-                }
-*/
 
                 break;
             }

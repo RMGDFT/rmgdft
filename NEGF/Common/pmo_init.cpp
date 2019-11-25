@@ -22,9 +22,9 @@
 void pmo_init ()
 {
 
-    int ndims, *tgmap, *pmap, dims[2], periods[2], reorder, coords[2], *ictxt, i;
+    int ndims, *tgmap, *pmap, dims[2], periods[2], reorder, coords[2], i;
     int myrank, mxllda, *desca, info;
-    int iprobe, rsrc =0, csrc =0, maxblocks, nblocks, numst;
+    int iprobe, rsrc =0, csrc =0, numst;
     int idx, nb, mycol, myrow, nprow, npcol;
     int ip, j;
     int izero = 0;

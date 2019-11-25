@@ -27,9 +27,9 @@ int min_distance_index(double *, int);
 void green_kpoint_phase (std::complex<double> *green, double kvecy, double kvecz, int up_and_low)
 {
 
-    int ntot, i, j, n, ii, jj, li, lj,nstart,idx, index;
+    int i, j, n, ii, jj, li, lj,nstart,idx, index;
     int *desca, ictxt, mb, nb, nprow, npcol, myrow, mycol;
-    double distance[9], *Htem, *Stem, *Stem1, *Htem1;
+    double distance[9];
     double blength, clength, yvec, zvec;
 
    std::complex<double>  ctem[9];
@@ -151,17 +151,13 @@ void green_kpoint_phase (std::complex<double> *green, double kvecy, double kvecz
 
 //  lower tridigonal block should be ene * conj(S) - conj(H)
 
-    int maxsize, maxrow = 0, maxcol = 0, *descb;
-    int ione = 1;
-    double one = 1.0, zero = 0.0;
+    int maxrow = 0, maxcol = 0;
 
     for(n = 0; n < ct.num_blocks; n++)
     {
         maxrow = rmg_max(maxrow, pmo.mxllda_cond[n]);
         maxcol = rmg_max(maxcol, pmo.mxlocc_cond[n]);
     }
-
-    maxsize = maxrow * maxcol;
 
     if(up_and_low == 1)
     {

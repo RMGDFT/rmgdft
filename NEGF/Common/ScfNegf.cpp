@@ -43,7 +43,6 @@
 
 
 
-static double t[2];
 
 void update_pot (double *, double *, double *, double *, double *, double *, double *, double *, double *, double *,
                  int *);
@@ -56,15 +55,13 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
           double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore, double *rho_tf,
           double * vxc_old, double * vh_old, double * vbias, int *CONVERGENCE)
 {
-    int st1, st2, idx, idx1, ione = 1;
-    int st11, st22;
+    int idx, idx1, ione = 1;
     double tem;
     int *desca;
     double one = 1.0, zero = 0.0;
-    int i, j, k, jj, kk;
-    int ictxt, mb, nprow, npcol, myrow, mycol;
-    int j1, k1, jdiff, kdiff, iprobe, idx_C;
-    int idx2, FPYZ0_GRID;
+    int j, k; 
+    int ictxt, nprow, npcol, myrow, mycol;
+    int idx2;
 
     int fpbasis;
     fpbasis = get_FP0_BASIS();
@@ -108,7 +105,6 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
 
 
     ictxt = pmo.ictxt[pmo.myblacs];
-    mb = pmo.mblock;
 
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
 

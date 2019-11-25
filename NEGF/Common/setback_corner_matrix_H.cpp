@@ -28,12 +28,10 @@
 
 void  setback_corner_matrix_H()
 {
-    int i, j, ii, jj, iii, jjj, li, lj, maxli;
-    int iistart, jjstart, limb, ljnb;
+    int i, j, li, lj;
     int mycol, myrow, nprow, npcol;
-    int ictxt, mb, nb, *desca, n0;
-    int idx_local, idx_global, item;
-    int iprobe, jprobe, idx, ni, nL, nR;
+    int mb, nb;
+    int iprobe, idx, ni;
     int ni0, ni1 ;
     int nmax,idx1, nlead0, n2;
 

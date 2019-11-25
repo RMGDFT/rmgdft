@@ -32,37 +32,24 @@ void read_lead_matrix ()
 {
     int iprobe, idx;
     int fhand;
-    long nbytes, position;
+    size_t nbytes;
     char *name;
     char newname[MAX_PATH + 200];
-    int m,n, nprow, npcol, myrow, mycol, icrow, iccol;
-    int i, j, k, ii, jj, ictxt, mb, nb, *desca;
-    int nsize;
-    double *temp, one = 1.0, zero = 0.0, *identity_matrix;
-    int nL, ione = 1, dum;
-    int idx_C, j1, jdiff;
-    int t1, t2, jprobe;
-    double *temp2;
+    int nprow, npcol, myrow, mycol;
+    int i, j, ictxt, *desca;
+    int dum;
     int idx1;
     double *tem_H00,  *tem_S00, *tem_H01, *tem_S01;
     double tem;
-
-    int size, rank, ndims, gsizes[2], distribs[2];
 
     /* Wait until everyone gets here */
     MPI_Barrier(pct.img_comm);
 
 
     ictxt = pmo.ictxt[pmo.myblacs];
-    mb = pmo.mblock;
 
 
     Cblacs_gridinfo(ictxt, &nprow, &npcol, &myrow, &mycol);
-    rank = myrow * pmo.ncol + mycol;
-
-    size = pmo.nrow*pmo.ncol;
-    ndims = 2;  
-
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
@@ -87,7 +74,7 @@ void read_lead_matrix ()
         nbytes = read(fhand, tem_S00, idx * sizeof(double));
         nbytes = read(fhand, tem_H01, idx * sizeof(double));
         nbytes = read(fhand, tem_S01, idx * sizeof(double));
-        if(nbytes != idx * sizeof(double) )
+        if(nbytes != (size_t)idx * sizeof(double) )
         {
             printf("\n end of file in lead matrix probe = %d\n", iprobe);
             exit(0);

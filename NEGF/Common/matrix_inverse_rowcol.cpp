@@ -38,7 +38,7 @@ std::complex<double> *G_col_host)
  *               Hi,i+1 is a ni[i] x ni[i+1] matrix 
  */
 
-    int  i, j, n1, n2, n3, n4, n5, n6, n7, n8;
+    int  i, n1, n2;
     std::complex<double> *Gii, *Hlower, *Hupper;
     std::complex<double> *Gii_host, *Grow, *Gcol;
     std::complex<double> *Gdiag, *Gdiag_host;
@@ -52,8 +52,6 @@ std::complex<double> *G_col_host)
     int *ni, N;
     int ncopy;
     int m;
-
-    std::complex<double> tttt[1];
 
     ni = ct.block_dim;
     N = ct.num_blocks;

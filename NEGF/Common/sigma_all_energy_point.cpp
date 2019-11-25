@@ -20,19 +20,15 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
 {
     int iprobe, jprobe, idx_delta, j;
     int iene;
-    int st1, n2;
+    int st1;
     std::complex<double> *sigma;          
 
     std::complex<double> *work;
     std::complex<double> ene, ctem;
 
     int idx_sigma, idx_C;
-    int  maxrow, maxcol, maxrow2, maxcol2;
+    int  maxrow, maxcol;
     int max_sigma_col, max_sigma_row;
-    int t1, t2;
-    std::complex<double> one = 1.0, zero = 0.0;
-    int ione = 1;
-    int *desca, *descb, numst, numstC;
 
 
 
@@ -60,9 +56,6 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
     my_malloc_init( sigma, max_sigma_row * max_sigma_col, std::complex<double>);
 
     /************************/
-    int idx, i;
-
-
 
     /*  Calculating the equilibrium term eq. 32 of PRB 65, 165401  */
 

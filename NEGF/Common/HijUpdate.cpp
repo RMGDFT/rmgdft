@@ -32,21 +32,13 @@
 
 void HijUpdate (STATE * states, double *vtot_c, double *Aij)
 {
-    int idx, st1, st2, idx1, idx2;
-    int st11, st22;
+    int st1;
     int maxst, n2;
-    STATE *sp;
     int ione = 1;
     double t1;
-    double tem, tem1;
     int ixx, iyy, izz;
-    char msg[100];
-    double *psi, one = 1.0, zero = 0.0;
-
-    int ix, iy,iz;
 
     maxst = ct.num_states;
-    int pbasis = get_P0_BASIS();
 
     RmgTimer *RT = new RmgTimer("2-SCF: HijUpdate");
 
@@ -62,7 +54,6 @@ void HijUpdate (STATE * states, double *vtot_c, double *Aij)
 
     for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
     {
-        sp = &states[st1];
         ixx = states[st1].ixmax - states[st1].ixmin + 1;
         iyy = states[st1].iymax - states[st1].iymin + 1;
         izz = states[st1].izmax - states[st1].izmin + 1;

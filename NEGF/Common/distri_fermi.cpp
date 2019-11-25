@@ -37,8 +37,6 @@
 void distri_fermi (std::complex<double> ene,  double EF, std::complex<double> *distri)
 {
 
-    double temR, temI, tem1, tem2;
-    
     std::complex<double> ctem;
     double KT;
 

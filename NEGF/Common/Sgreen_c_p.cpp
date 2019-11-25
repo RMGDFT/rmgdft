@@ -31,11 +31,8 @@ void Sgreen_c_p (double * Htri, double * Stri, std::complex<double> * sigma, int
     std::complex<double> *H_tri;
 
 
-    int info;
-    int i, j, nprobe;
+    int i, nprobe;
     int ntot, N1, N2; 
-    int idx, idx2, ioff, joff;
-    
 
     ntot = pmo.ntot_low;
 

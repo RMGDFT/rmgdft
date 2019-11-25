@@ -31,8 +31,7 @@ void Sgreen_semi_infinite_p (std::complex<double> * green_host, std::complex<dou
     double converge1, converge2, tem;
     std::complex<double> *chtem, *chtem_host, *green, *ch00, *ch01, *ch10;
     std::complex<double> one=1.0, zero=0.0, mone=-1.0;
-    int info;
-    int i, j, step;
+    int step;
     int ione = 1, n1;
     int maxrow, maxcol, *desca, nmax;
 

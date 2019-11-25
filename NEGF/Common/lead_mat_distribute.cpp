@@ -26,10 +26,9 @@
 void lead_mat_distribute (double *a_local, int *desca, double *a_global,
 int iprobe)
 {
-    int i, j, ii, jj, iii, jjj, li, lj, maxli;
-    int iistart, jjstart, limb, ljnb;
+    int i, j, li, lj;
     int mycol, myrow, nprow, npcol;
-    int ictxt = desca[1], mb = desca[4], nb = desca[5], mxllda = desca[8];
+    int ictxt = desca[1], mb = desca[4], nb = desca[5];
     int idx_local, idx_global;
 
 

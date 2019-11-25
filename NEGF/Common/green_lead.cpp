@@ -33,8 +33,7 @@ void green_lead (std::complex<double> *ch0_host, std::complex<double> *ch01_host
     std::complex<double> one = 1.0, zero = 0.0, mone = -1.0;
     std::complex<double> *green, *tot, *tott, *ch0, *ch01, *ch10; 
     std::complex<double> *temp_host, *Imatrix_host, *Imatrix;
-    int info;
-    int i, j, step;
+    int step;
     int ione = 1, n1;
     int nrow, ncol, nmax;
     int *desca;
@@ -163,7 +162,7 @@ void green_lead (std::complex<double> *ch0_host, std::complex<double> *ch01_host
         comm_sums(&converge1, &ione, COMM_EN2);
         comm_sums(&converge2, &ione, COMM_EN2);
 
-        if(converge1 > 1.0E06 | converge2 > 1.0E06) 
+        if(converge1 > 1.0E06 || converge2 > 1.0E06) 
             dprintf("\n WARNING Green function in green_lead.c diverging %d %e %e", step, converge1, converge2);
         if (converge1 < 1.0E-7 && converge2 < 1.0E-7)
             break;

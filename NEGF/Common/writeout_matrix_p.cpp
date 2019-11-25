@@ -32,7 +32,6 @@ void writeout_matrix_p ()
     char newname[100];
 
     int ictxt = pmo.ictxt[pmo.myblacs];
-    int mb = pmo.mblock;
 
     int nprow, npcol, myrow, mycol;
 

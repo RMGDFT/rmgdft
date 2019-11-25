@@ -36,7 +36,6 @@ void tri_to_whole_complex (std::complex<double> * H_tri, std::complex<double> * 
 
     int i, j, ntem, k;
     int *n_begin;
-    int ione = 1;
     int ntot;
 
 

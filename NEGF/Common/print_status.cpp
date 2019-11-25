@@ -74,14 +74,13 @@ void print_state_sum (STATE * states)
 
 void print_state (STATE * state)
 {
-    int st;
     int i;
     double temp;
 
     temp = 0.0;
     for (i = 0; i < state->size; i++)
         temp += state->psiR[i];
-    printf ("\n PE: %d.STATE: %d---sum---: %22.16f", pct.gridpe, temp);
+    printf ("\n PE: %d.STATE: %d---sum---: %22.16f", pct.gridpe, state->istate, temp);
     fflush (NULL);
 }
 

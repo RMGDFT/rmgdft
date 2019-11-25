@@ -35,37 +35,30 @@
 
 void read_potrho (double *vh, int iflag, char *file_ex)
 {
-    long fhand;
-    long nbytes, nbytes_first, nbytes_last;
     char newname[MAX_PATH + 200];
-    char msg[200];
-    MPI_Offset position;
 
-    int idx0, idx, idx1, idx_sub;
+    int idx0, idx, idx1;
     double x0_old, hx_new, hx_old;
     double y0_old, hy_new, hy_old;
     int NX0, NY0, NZ0;
 
     int subsystem, ix, iy, iz;
-    int x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3;
-    int FNYZ, NYZ0, NXZ0, FPYZ0, FNYPZ;
+    int x0, y0, x1, y1, x2, y2, x3, y3;
+    int NYZ0, NXZ0, FPYZ0, FNYPZ;
     double *array_tmp, tem;
-    double *array_tmp_tmp;
-    double *vh_global, *vh_all;
+    double *vh_global;
     double *xold_global, *xold, xseed, sfit;
     double *yold_global, *yold, yseed;
     double *vh_old, *vh_new;
     int dis1, dis2, dis12;
-    double fac1, fac2, V1, V2;
+    double V1, V2;
     int i, ii, jj, kk;
-    int MaxNumBytes = 2000000000;  //maximum number of bytes one can read from ON calculation for each read
-    long NumBytesLeft;  //number of bytes one need to read from ON calculation for each read
 
     
     int amode,  subsizes[1], starts[1];
     int *rcount, *rdisp;
     MPI_Info fileinfo;
-    MPI_Datatype  filetype, newtype;
+    MPI_Datatype  filetype;
     MPI_Status status;
     MPI_Offset disp;
 
@@ -78,7 +71,6 @@ void read_potrho (double *vh, int iflag, char *file_ex)
 
     FPYZ0 = get_FPZ0_GRID() * get_FPY0_GRID();
     FNYPZ = get_FPZ0_GRID() * get_FNY_GRID(); 
-    FNYZ = get_FNY_GRID() * get_FNZ_GRID(); 
 
     ii = get_FPX_OFFSET();
     jj = get_FPY_OFFSET();
@@ -130,7 +122,7 @@ void read_potrho (double *vh, int iflag, char *file_ex)
         amode = MPI_MODE_RDWR|MPI_MODE_CREATE;
         MPI_File mpi_fhand ;
 
-        if(file_ex == "vh")
+        if(strcmp(file_ex, "vh") == 0)
         {
             sprintf(newname, "%s.%s", lcr[subsystem].lead_name, file_ex);
         }
@@ -155,7 +147,6 @@ void read_potrho (double *vh, int iflag, char *file_ex)
 
         x0 = lcr[subsystem].x0 * get_FG_RATIO();
         y0 = lcr[subsystem].y0 * get_FG_RATIO();
-        z0 = lcr[subsystem].z0 * get_FG_RATIO();
         /*if(pct.gridpe ==0) printf (" x0, y0, z0 = %d %d %d %d \n", subsystem, x0, y0, z0 );*/
 
 
@@ -167,7 +158,6 @@ void read_potrho (double *vh, int iflag, char *file_ex)
 
         x2 = lcr[subsystem].x2 * get_FG_RATIO();
         y2 = lcr[subsystem].y2 * get_FG_RATIO();
-        z2 = lcr[subsystem].z2 * get_FG_RATIO();
         /*if(pct.gridpe ==0) printf (" x2, y2, z2 = %d %d %d %d \n", subsystem, x2, y2, z2 );*/
 
         x3 = x2 + x1 - x0;
@@ -189,7 +179,7 @@ void read_potrho (double *vh, int iflag, char *file_ex)
 
         tem = (lcr[subsystem].EF_new - lcr[subsystem].EF_old) * eV_Ha; /* update */
 
-        if(subsystem <= 2 | subsystem > cei.num_probe) /* Satisfies left probe, central parta & right probe */
+        if(subsystem <= 2 || subsystem > cei.num_probe) /* Satisfies left probe, central parta & right probe */
         {
 
             for(ix = x2; ix < x3; ix++)

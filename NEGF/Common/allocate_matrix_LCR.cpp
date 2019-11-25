@@ -34,23 +34,8 @@ R: right lead
 
 void allocate_matrix_LCR ()
 {
-    int st, st1;
-    long nbytes;
-    char newname[MAX_PATH + 200];
-    char msg[200];
 
     int idx, ntot, iprobe, idx_delta;
-    int ixmin, ixmax;
-    int pex, pey, pez;
-    int NX, NY, NZ, PNX0, PNX1, PNY0, PNY1, PNZ0, PNZ1;
-    int data_indicator;
-    double x0_old, x_start, hx_new, hx_old, *potrho;
-    int NX1, NX0, NX2, NY0, NY1, NY2, NZ0, NZ1, NZ2;
-    int X0, X1, NX_start0, NX_start2;
-
-    double tem;
-    int ix, iy;
-
 
     int  ndim, i;
 
@@ -110,7 +95,7 @@ void allocate_matrix_LCR ()
 
     my_malloc_init( lcr[0].density_matrix_tri, ntot, double );
 
-    if (ct.runflag == 111 | ct.runflag == 112 | ct.runflag == 1121)
+    if (ct.runflag == 111 || ct.runflag == 112 || ct.runflag == 1121)
     {
         for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
         {
@@ -157,7 +142,7 @@ void allocate_matrix_LCR ()
 
 
     int size  = (ct.state_end - ct.state_begin) * ct.num_states;
-    if(size == 0 ) st = ct.num_states;
+    if(size == 0 ) size = ct.num_states;
     my_malloc(Hij_00, size, double);
     my_malloc(Bij_00, size, double);
 

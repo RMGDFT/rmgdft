@@ -67,7 +67,7 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 {
     int i;
     int cycl;
-    int incx, incy, incz, size, idx;
+    int size, idx;
     double scale;
     int ione = 1;
     int dx2, dy2, dz2, siz2;
@@ -76,17 +76,9 @@ void mgrid_solv_negf(double * v_mat, double * f_mat, double * work,
 
     int ncycl;
 
-    int iz, ix;
-
-    double tem1, tem;
-
 
 /* precalc some boundaries */
     size = (dimx + 2) * (dimy + 2) * (dimz + 2);
-    incx = (dimy + 2) * (dimz + 2);
-    incy = (dimz + 2);
-    incz = 1;
-
     resid = work + 2 * size;
 
     /*   my_malloc_init( resid, size, double ); */

@@ -38,13 +38,12 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
 
     int ntot, ndim;
     int  xoff, yoff, zoff;
-    double *Green_store, *rho_energy, *rho_energy2;
+    double *Green_store, *rho_energy;
     int root_pe, idx, ix, iy, iz;
 
     int E_POINTS, nkp[3];
     double E_imag, KT;
     int FPYZ = get_FPY0_GRID() * get_FPZ0_GRID();
-    int nx1, nx2, ny1, ny2, nz1, nz2; 
     double *kvecx, *kvecy, *kvecz, *kweight;
 
 
@@ -159,19 +158,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
     my_malloc_init( density_matrix, pmo.ntot, double );
 /*===================================================================*/
 
-    nx1 = cei.dos_window_start[0] * get_FG_RATIO();
-    nx2 = cei.dos_window_end[0] * get_FG_RATIO();
-    ny1 = cei.dos_window_start[1] * get_FG_RATIO();
-    ny2 = cei.dos_window_end[1] * get_FG_RATIO();
-    nz1 = cei.dos_window_start[2] * get_FG_RATIO();
-    nz2 = cei.dos_window_end[2] * get_FG_RATIO();
-                                                                                              
-                                                                                              
-                                                                                              
-                                                                                              
     my_malloc_init( rho_energy, get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID(), double );
-                                                                                              
-                                                                                              
                                                                                               
     xoff = get_FPX_OFFSET();
     yoff = get_FPY_OFFSET();
@@ -199,7 +186,7 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
             {
 
                 sigma_one_energy_point(sigma, iprobe, ene, kvecy[kp], kvecz[kp], work);
-
+                idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
                 for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                 {
                     sigma_all[sigma_idx[iprobe - 1] + i] = sigma[i];
@@ -274,7 +261,6 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
         double dx = get_celldm(0) / get_NX_GRID();
         double dy = get_celldm(0) * get_celldm(1) / get_NY_GRID();
         double dz = get_celldm(0) * get_celldm(2) / get_NZ_GRID();
-        double B_A = 0.52917721;
         int count = 0;
         int level = 1; 
         char output[80];

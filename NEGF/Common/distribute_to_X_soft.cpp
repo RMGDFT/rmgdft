@@ -26,11 +26,10 @@ get X  array  get_FNX_GRID() * get_FPY0_GRID() * get_FPZ0_GRID()
 void distribute_to_X_soft (double * distr_array, double * global_array)
 {
 
-    int ix, iy, iz, ii, jj, kk;
-    int idx2, idx1, incx, incx1, incy, incy1;
+    int ix, iy, ii;
+    int idx2, idx1, incx;
 
     incx = get_FPY0_GRID() * get_FPZ0_GRID();
-    incy = get_FPZ0_GRID();
 
     ii = get_FPX_OFFSET();
 

@@ -26,9 +26,8 @@
 void find_fermi (std::complex<double> * sigma_all)
 {
 
-    int fermi_step, st1, st2;
-    double tem1, tem2, bias1, bias1a, tchargea;
-    double tem3;
+    int fermi_step, st1;
+    double bias1, bias1a=0.0, tchargea=0.0;
     int ione = 1;
     static double density = 0.0;
 

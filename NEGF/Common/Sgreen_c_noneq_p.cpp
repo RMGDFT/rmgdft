@@ -29,14 +29,11 @@ void Sgreen_c_noneq_p (double *Htri, double *Stri, std::complex<double> * sigma,
  *   nC: number of states in conductor region
  */
 
-    std::complex<double> *H_tri, *H_whole, *H_inv;
+    std::complex<double> *H_tri;
 
-    int *ipiv, idx, idx1;
-    int i, j, nprobe; 
+    int i, nprobe; 
     int ni[MAX_BLOCKS], ntot, ndim;
     int N, N1, N2;
-    double tem;
-    
 
     N = ct.num_blocks;
     for (i = 0; i < N; i++)

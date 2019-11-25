@@ -33,7 +33,7 @@ void plane_average_rho (double *rho)
 
     int ix, iy, iz;
     double t1;
-    double *zvec;
+    double *zvec=NULL;
     int pxoff, pyoff, pzoff;
     FILE *file;
 

@@ -24,11 +24,9 @@
 
 void  zero_lead_image(double *tri)
 {
-    int i, j, ii, jj, iii, jjj, li, lj, maxli;
-    int iistart, jjstart, limb, ljnb;
+    int i, j, li, lj;
     int mycol, myrow, nprow, npcol;
-    int ictxt, mb, nb, *desca, n0;
-    int idx_local, idx_global, item;
+    int mb, nb;
     int iprobe, jprobe, idx, ni, nj, nL, nR;
     int ni0, ni1, nj0, nj1;
     Cblacs_gridinfo (pmo.ictxt[pmo.myblacs], &nprow, &npcol, &myrow, &mycol);

@@ -16,7 +16,7 @@ void get_inverse_block_p (std::complex<double> *Hii, std::complex<double> *Gii, 
 {
 /*  direct inverse of a small matrix  Hii  */
 
-    int i, j, info;
+    int info;
     int ione =1;
     int nn = desca[2];
 

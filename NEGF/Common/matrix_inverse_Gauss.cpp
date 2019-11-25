@@ -37,7 +37,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<doubl
  *               Hi,i+1 is a ni[i] x ni[i+1] matrix 
  */
 
-    int  i, j, n1, n2, n3, n4, n5, n6, n7, n8;
+    int  i, n1, n2, n3, n4;
     std::complex<double> *Gii, *Hlower, *Hupper;
     std::complex<double> *Gii_host;
     std::complex<double> *Gdiag, *Gdiag_host;
@@ -50,8 +50,6 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<doubl
     int *desca, *descb, *descc, *descd;
     int *ni, N;
     int ncopy;
-
-    std::complex<double> tttt[1];
 
     ni = ct.block_dim;
     N = ct.num_blocks;

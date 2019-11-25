@@ -29,10 +29,9 @@ void Sigma_p (std::complex<double> *sigma, std::complex<double> *ch, std::comple
         *ch01, std::complex<double> *ch10, std::complex<double> *green, int iprobe)
 {
 
-    int i;
-    char fcd_n = 'N', fcd_t = 'T';
+    char fcd_n = 'N';
     std::complex<double> alpha, beta;
-    int nmax, ndim, ione =1, nrow, ncol, n0, n1; 
+    int nmax, ndim, ione =1, n0;
 	int *desca, *descb, *descc, *descd;
 
 
@@ -45,9 +44,6 @@ void Sigma_p (std::complex<double> *sigma, std::complex<double> *ch, std::comple
     nmax = lcr[iprobe].num_states;
 
 	
-    nrow = pmo.mxllda_cond[n0];
-    ncol = pmo.mxlocc_lead[iprobe-1];
-    n1 = nrow * ncol;
 
     desca = &pmo.desc_cond_lead[ (n0 + (iprobe - 1) * ct.num_blocks) * DLEN ]; /* (C,L) */
     descb = &pmo.desc_lead[ ( iprobe-1)       * DLEN ];                        /* (L,L) */

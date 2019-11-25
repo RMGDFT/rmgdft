@@ -21,7 +21,7 @@
 
 void pmo_unitary_matrix_double(double *a_local, int *desca)
 {
-    int i, j, ii, jj, iii, jjj, li, lj, maxli;
+    int i, j, ii, jj, iii, jjj, li, lj;
     int iistart, jjstart, limb, ljnb;
     int mycol, myrow, nprow, npcol;
     int ictxt = desca[1], mb = desca[4], nb = desca[5], mxllda = desca[8];

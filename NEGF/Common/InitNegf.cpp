@@ -75,23 +75,12 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
                 double * vxc_old, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
-    int kpt, ic, idx, ion, ispin, kpt1;
-    int flag, level;
-    double cut_init;
+    int ic, idx, ion;
+    int level;
     double tem;
-    int item;
-    char *nameL, *nameC, *nameR;
     int st1, iprobe, i;
-        int ione = 1;
-
-
 
     ct.psi_nbasis = Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1);
-
-
-
-    flag = 0;
-
 
     ct.states = states;
 

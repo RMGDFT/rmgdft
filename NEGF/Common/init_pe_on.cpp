@@ -43,8 +43,8 @@ void init_pe_on (void)
 {
 
     int npes, ii, jj, kk;
-    int ndims, dims[3], periods[3], reorder, kpdelta, remains[3];
-    int coords[3], item, rank, PE_X, PE_Y, PE_Z;
+    int ndims, dims[3], periods[3], reorder, remains[3];
+    int coords[3], PE_X, PE_Y;
 
 
  /* get total mpi core count  */

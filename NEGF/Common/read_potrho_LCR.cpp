@@ -35,10 +35,7 @@
 
 void read_potrho_LCR (double *vh, double *vxc, double *rho)
 {
-    int fhand;
-    long nbytes;
     char newname[MAX_PATH + 200];
-    char msg[200];
 
 
 

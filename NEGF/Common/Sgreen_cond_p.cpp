@@ -29,20 +29,9 @@ void Sgreen_cond_p (std::complex<double> *H_tri, std::complex<double> *G_tri, st
  *   nC: number of states in conductor region
  */
 
-    int info;
     int i, nprobe;
-    int ni[MAX_BLOCKS] ;
-    int N, N1, N2;
-    int j, idx, idx1;
-    int n1, n2, maxcol;
-
-    N = ct.num_blocks;
-    for (i = 0; i < N; i++)
-    {
-        ni[i] = ct.block_dim[i];
-    }
-
-
+    int N1, N2;
+    int n1, n2;
 
 /* --------------------------------------------------- */
 	
@@ -70,10 +59,5 @@ void Sgreen_cond_p (std::complex<double> *H_tri, std::complex<double> *G_tri, st
 
 
     /*  Green_C store the (n2,n1) block of Green function */
-
-
-
-
-
 
 }

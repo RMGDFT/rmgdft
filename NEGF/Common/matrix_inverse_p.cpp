@@ -50,8 +50,6 @@ void matrix_inverse_p (std::complex<double> * H_tri_host, std::complex<double> *
     int *desci, *descj, *desck, *descl;
     int *ni, N;
 
-    std::complex<double> tttt[1];
-
     ni = ct.block_dim;
     N = ct.num_blocks;
     mone = -1.0;

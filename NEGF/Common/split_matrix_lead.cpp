@@ -25,7 +25,7 @@
 void split_matrix_lead (int iprobe)
 {
 
-    int ntot, i, j, n, ii, jj, li, lj,nstart,idx, index;
+    int ntot, i, j, ii, jj, li, lj,nstart,idx, index;
     int *desca, ictxt, mb, nb, nprow, npcol, myrow, mycol;
     double distance[9];
     double *H00yz[9], *S00yz[9], *H01yz[9], *S01yz[9], *SCLyz[9], *HCLyz[9];

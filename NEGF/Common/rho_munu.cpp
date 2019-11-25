@@ -30,9 +30,9 @@ void rho_munu (std::complex<double> * rho_mn_host, std::complex<double> * G_row_
     std::complex<double> *Grow, *Gcol, *gamma, *temp, *rho_mn;
     int *desca, *descb, *descc, *descd, *desce, *descl;
 
-    int i, j, n_green, n1, n2;
+    int i, n_green, n1, n2;
 
-    int N, *ni, nrow, ncol, nL, N1;
+    int N, *ni, nL, N1;
     int maxrow, maxcol, ione =1;
 
     N = ct.num_blocks;
@@ -41,8 +41,6 @@ void rho_munu (std::complex<double> * rho_mn_host, std::complex<double> * G_row_
 
     N1 = cei.probe_in_block[iprobe - 1];
     nL = ct.block_dim[N1];
-    nrow = pmo.mxllda_cond[N1];
-    ncol = pmo.mxlocc_cond[N1];
 
 
     maxrow = 0;

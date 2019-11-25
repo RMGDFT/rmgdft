@@ -20,8 +20,7 @@
 
 void H01_to_HCL (double *H01_global, double *HCL_local, int iprobe)
 {
-    int i, j, ii, jj, iii, jjj, li, lj, maxli;
-    int iistart, jjstart, limb, ljnb;
+    int i, j, li, lj;
     int mycol, myrow, nprow, npcol;
     int ictxt, mb, nb, *desca, n0;
     int idx_local, idx_global, item;

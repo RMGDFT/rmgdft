@@ -29,7 +29,7 @@ void read_matrix_pp ()
     int size, rank, ndims, gsizes[2], distribs[2];
     int order,  dargs[2], psizes[2];
     MPI_Datatype *mpi_darray_lead, *mpi_darray_diag, *mpi_darray_offdiag;
-    int j, idx, i, k, iprobe;
+    int idx, i, iprobe;
     int amode = MPI_MODE_RDWR;
     MPI_File mpi_fhand ;
     MPI_Info fileinfo;
@@ -38,9 +38,8 @@ void read_matrix_pp ()
     char newname[100];
 
     int ictxt = pmo.ictxt[pmo.myblacs];
-    int mb = pmo.mblock;
-    int ione = 1, fhand, *desca;
-    long nbytes;
+    int fhand, *desca;
+    size_t nbytes;
     double *tem_H00, *tem_S00, *tem_H01, *tem_S01;
 
     int nprow, npcol, myrow, mycol;
@@ -114,7 +113,7 @@ void read_matrix_pp ()
         nbytes = read(fhand, tem_S00, idx * sizeof(double));
         nbytes = read(fhand, tem_H01, idx * sizeof(double));
         nbytes = read(fhand, tem_S01, idx * sizeof(double));
-        if(nbytes != idx * sizeof(double) )
+        if(nbytes != (size_t)idx * sizeof(double) )
         {
             printf("\n end of file in lead matrix probe = %d\n", iprobe + 1);
             exit(0);

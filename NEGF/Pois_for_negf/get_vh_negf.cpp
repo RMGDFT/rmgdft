@@ -73,9 +73,9 @@ void get_vh_negf (double * rho, double * rhoc, double * vh_eig, int min_sweeps, 
 {
 
     int idx, its, nits, sbasis, pbasis;
-    double t1, vavgcor, diag;
+    double t1, diag=1.0;
     double *mgrhsarr, *mglhsarr, *mgresarr, *work;
-    double *sg_rho, *sg_vh, *sg_res, *nrho,  diff, residual = 100.0;
+    double *sg_rho, *sg_vh, *sg_res, *nrho,  residual = 100.0;
     int incx = 1, cycles;
     double k_vh;
 

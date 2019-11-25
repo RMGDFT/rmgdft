@@ -24,8 +24,8 @@ get  global array  get_FNX_GRID() * get_FNY_GRID() * get_FNZ_GRID()
 void X_to_distribute_soft (double * global_array, double * distr_array)
 {
 
-    int ix, iy, iz, ii;
-    int idx2, idx1, incx, incx1, incy, incy1;
+    int ix, iy, ii;
+    int idx2, idx1, incx;
 
     incx = get_FPY0_GRID() * get_FPZ0_GRID();
 

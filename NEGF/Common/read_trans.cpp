@@ -23,7 +23,7 @@ char *get_line (char *buf, FILE * fh);
 void read_trans (complex_energy_integral * cei)
 {
 
-    char *tptr, *tptr1;
+    char *tptr;
     FILE *fhand;
     char tbuf[200];
     int idx;

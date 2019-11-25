@@ -28,9 +28,6 @@ void confine (double * mat, int size_x, int size_y, int size_z, COMPASS compass,
     int test;
     int idx, xgrid, ygrid, zgrid;
     int ioffset, ix, iy,iz;
-    double tem;
-
-
 
     /* find the offset  */
     pe2xyz (pct.gridpe, &pex, &pey, &pez);

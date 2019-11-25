@@ -36,7 +36,6 @@ void whole_to_tri_real (double * A_tri, double * Aii, int N, int *ni)
 
     int i, j, ntem, k;
     int *n_begin;
-    int ione = 1;
     int ntot, ndim;
 
 

@@ -33,20 +33,19 @@ void  pmo_unitary_matrix_double(double *, int *);
 
 void lead_bandstructure ()
 {
-    double de, emin, emax, E_image, kbt, current;
+    double emin, emax, E_image, kbt;
 
 
-    int nmax, nC, nL, nR;
-    int i, j, idx, idx1, idx2, idx3, E_POINTS;
+    int nL;
+    int i, idx, E_POINTS;
     char jobz = 'N', uplo = 'U';
-    FILE *file, *fhand;
+    FILE *file;
     int *desca, mxllda, mxlocc, ndim;
-    char tbuf[200], *tptr;
 
-    std::complex<double> *matH, *matS, *work, *z_vec;
-    double *ener_band, *rwork, *eig_val;
-    double kvec, coskvec, sinkvec, kmin, kmax, dk;
-    double *temp,  *unitary_matrix;
+    std::complex<double> *matH, *matS, *z_vec;
+    double *ener_band, *eig_val;
+    double kvec, kmin, kmax, dk;
+    double *unitary_matrix;
     std::complex<double> one = 1.0, zero = 0.0;
     std::complex<double> I(0.0, 1.0);
 
@@ -58,11 +57,11 @@ void lead_bandstructure ()
     int IU, nL1, nL2 ;       
     double tol = 1.0e-15, orfac = 1.0e-3;
     std::complex<double> *WORK, WORK_tmp ;
-    int LWORK, LRWORK, *IWORK, IWORK_tmp, LIWORK, *IFAIL, *ICLUSTR;
-    double *RWORK, RWORK_tmp, *GAP;
+    int LWORK, LRWORK, *IWORK, LIWORK, *IFAIL, *ICLUSTR;
+    double *RWORK, *GAP;
     int NB = pmo.mblock, NP0;
 
-    int st1, st2, ik, kpoints[3], info;
+    int st1, ik, kpoints[3], info;
 
     int ntot, iprobe;
 
@@ -152,7 +151,6 @@ void lead_bandstructure ()
     my_malloc_init( matS, mxllda * mxlocc, std::complex<double> );
     my_malloc_init( z_vec, mxllda * mxlocc, std::complex<double> );
     my_malloc_init( unitary_matrix, mxllda * mxlocc, double );
-    my_malloc_init( temp, mxllda * mxlocc, double );
 
 
     idx = mxllda * mxlocc;

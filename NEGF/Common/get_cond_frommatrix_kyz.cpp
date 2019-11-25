@@ -26,9 +26,9 @@ void kpoints(int *nkp, double *kvecx, double *kvecy, double *kvecz, int *nkp_tot
 
 void get_cond_frommatrix_kyz ()
 {
-	int iprobe, iprobe1, iprobe2, iter;
-	int iene, icond, count, insert_num;
-	std::complex<double> *H_tri,*G_tri, *g;
+	int iprobe, iprobe1, iprobe2;
+	int iene, icond;
+	std::complex<double> *H_tri,*G_tri;
 	std::complex<double> *green_C;
 	std::complex<double> *temp_matrix1, *temp_matrix2;
 	std::complex<double> *Gamma1, *Gamma2, *sigma;
@@ -36,9 +36,8 @@ void get_cond_frommatrix_kyz ()
 
 	double E_imag, KT, current;
 	double *ener1, *cond, *ener1_temp, *cond_temp;
-        int *have_cond, *have_cond_temp;
-	int ntot, ndim, nC, idx_C, *sigma_idx;
-	double cons, EF1, EF2, f1, f2;
+	int ntot, nC, idx_C, *sigma_idx;
+	double EF1, EF2, f1, f2;
 
 	std::complex<double> *work;
 	std::complex<double> ene, ctem;
@@ -46,20 +45,17 @@ void get_cond_frommatrix_kyz ()
 	std::complex<double> alpha, beta;
 	std::complex<double> one, zero;
 	int i, j, idx, E_POINTS, nkp[3];
-	char fcd_n = 'N', fcd_c = 'C', newname[100];
+	char fcd_n = 'N', fcd_c = 'C', newname[600];
 	FILE *file;
-	int ione =1, *desca, *descb, *descc, *descd;
-	int n1, n2, nC_1, nC_2, nC_11, nC_22, nC_max;
-	int idx1, idx2;
-	int num_offdiag_yz;
-	int numst, numstC;
+	int ione =1, *desca, *descb, *descc;
+	int n1, n2, nC_1, nC_2, nC_max;
 	int kp, nkp_tot;
-    double cond_value, de, emin, emax;
+    double de, emin, emax;
 	double *kvecx, *kvecy, *kvecz, *kweight;
     int *energy_insert_index;
     int tot_energy_point;
     int simpson_depth, simpson_loop;
-    double simpson_tol, max_tol;
+    double simpson_tol, max_tol = 199.0;
 
 	/*=============== Reading input and then print them ==============*/ 
 
@@ -284,6 +280,7 @@ void get_cond_frommatrix_kyz ()
                         sigma_one_energy_point(sigma, iprobe, ene, kvecy[kp], kvecz[kp], work); 
 
 
+                        idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
                         for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                         {
                             sigma_all[sigma_idx[iprobe - 1] + i] = sigma[i];
@@ -330,7 +327,6 @@ void get_cond_frommatrix_kyz ()
                     desca = &pmo.desc_cond[( n1 + n1 * ct.num_blocks) * DLEN];   /* nC_1 * nC_1 matrix */
                     descb = &pmo.desc_cond[( n2 + n2 * ct.num_blocks) * DLEN];   /* nC_2 * nC_2 matrix */
                     descc = &pmo.desc_cond[( n2 + n1 * ct.num_blocks) * DLEN];   /* nC_2 * nC_1 matrix */
-                    descd = &pmo.desc_cond[( n1 + n2 * ct.num_blocks) * DLEN];   /* nC_1 * nC_2 matrix */
 
 
 

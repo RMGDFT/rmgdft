@@ -16,7 +16,7 @@ void get_inverse_block (std::complex<double> *Hii, std::complex<double> *Gii, in
 {
 /*  direct inverse of a small matrix  Hii  */
 
-    int i, j, info;
+    int i,info;
 
     for (i = 0; i < nn * nn; i++)
     {

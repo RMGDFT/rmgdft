@@ -19,9 +19,7 @@
 void read_rho_and_pot (char *name, double *vh, double *vxc, 
         double *vh_old, double *vxc_old, double *rho)
 {
-    int fhand;
     char newname[MAX_PATH + 200];
-    int idx;
 
     double tem1, tem2;
 
@@ -33,7 +31,7 @@ void read_rho_and_pot (char *name, double *vh, double *vxc,
     MPI_Info fileinfo;
     MPI_Datatype  filetype; 
     MPI_Status status;
-    MPI_Offset disp, offset;
+    MPI_Offset disp;
 
 
     /* this datatype describes the mapping of the local array

@@ -36,7 +36,7 @@ void get_dos (STATE * states)
 
     int ntot, ndim;
     int  xoff, yoff, zoff;
-    double *Green_store, *rho_energy, *rho_energy2;
+    double *Green_store, *rho_energy, *rho_energy2=NULL;
     int root_pe, idx, ix, iy, iz;
 
     int E_POINTS, nkp[3];
@@ -204,6 +204,7 @@ void get_dos (STATE * states)
 
                 sigma_one_energy_point(sigma, iprobe, ene, kvecy[kp], kvecz[kp], work);
 
+                idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
                 for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
                 {
                     sigma_all[sigma_idx[iprobe - 1] + i] = sigma[i];

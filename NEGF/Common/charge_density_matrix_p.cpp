@@ -31,11 +31,9 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
     std::complex<double> *green_C_row, *green_C_col;
     double *ptrdouble;
     int maxrow, maxcol;
-    double one, zero, half;
+    double half;
     int ione =1;
-    one =1.0;
     std::complex<double> cone(1.0,0.0), czero(0.0,0.0);
-    zero =0.0;
     half = 0.5;
 
 
@@ -119,8 +117,8 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
 
 
         if(cei.probe_noneq > 0) break;
-                if (ct.runflag == 111 | ct.runflag == 112 |ct.runflag ==1121)
-                   break;
+        if (ct.runflag == 111 || ct.runflag == 112 ||ct.runflag ==1121)
+            break;
 
     }
 
@@ -299,9 +297,9 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
             }   /* nprobe loop ends here    */
 
 
-     //       if(pct.gridpe == 0) 
-     //           printf (" \n omega %d %f %f %f %f %f \n", st1, wmn[0], wmn[1], wmn[2], wmn[3], wmn[0]+wmn[1]+wmn[2]+wmn[3]);
-      //      printf (" \n omega %d %f %f %f \n", st1, wmn[0], wmn[1], wmn[0]+wmn[1]); 
+            //       if(pct.gridpe == 0) 
+            //           printf (" \n omega %d %f %f %f %f %f \n", st1, wmn[0], wmn[1], wmn[2], wmn[3], wmn[0]+wmn[1]+wmn[2]+wmn[3]);
+            //      printf (" \n omega %d %f %f %f \n", st1, wmn[0], wmn[1], wmn[0]+wmn[1]); 
 
             /* Finally, calculates density matrix */ 
 
@@ -348,9 +346,9 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
     comm_sums (lcr[0].density_matrix_tri, &ntot, pct.kpsub_comm);
 
 
-// for off-diagonal parts, we have already average the upper and lower
-// off-diagonal to take care of G(k) + G(-k) being symmetric. For
-// diagoanl blocks, we should also make it symmetric.
+    // for off-diagonal parts, we have already average the upper and lower
+    // off-diagonal to take care of G(k) + G(-k) being symmetric. For
+    // diagoanl blocks, we should also make it symmetric.
 
     if(!ct.is_gamma)
     {
@@ -359,7 +357,6 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
         for(i = 0; i < ct.num_blocks ; i++)
         {
             int n1 = ct.block_dim[i];
-            int n2 = pmo.diag_begin[i];
 
             int nsize = n1 * n1;
 

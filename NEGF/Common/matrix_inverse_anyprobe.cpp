@@ -38,14 +38,14 @@ void matrix_inverse_anyprobe (std::complex<double> * H_tri_host, int N, int * ni
      *               Hi,i+1 is a ni[i] x ni[i+1] matrix 
      */
 
-    int nmax, i, j, n1, n2, n3, n4, m;
+    int i, j, n1, n2, n3, n4, m;
     int *n_begin1, *n_begin2;
     std::complex<double> *H_tri, *Hii, *Gii, *temp, *Hii1, *Hi1i;
     std::complex<double> *Hii_host, *Gii_host, *temp_host;
     std::complex<double> *Imatrix, *Imatrix_host;
     std::complex<double> *Grow, *Gcol;
     std::complex<double> mone, one, zero;
-    int ione = 1, ntot, k, maxrow, maxcol, totrow, totcol; 
+    int ione = 1, maxrow, maxcol, totrow, totcol; 
     int *desca, *descb, *descc, *descd;
     int *desce, *descf, nz;
 
@@ -56,7 +56,6 @@ void matrix_inverse_anyprobe (std::complex<double> * H_tri_host, int N, int * ni
     /*  find the maximum dimension of the blocks  */
 
 
-    ntot = pmo.ntot;
     maxrow = 0;
     maxcol = 0;
     totcol = 0;
@@ -252,7 +251,7 @@ void matrix_inverse_anyprobe (std::complex<double> * H_tri_host, int N, int * ni
             desca = &pmo.desc_cond[ (i-1 +  i    * N ) * DLEN ];
             descb = &pmo.desc_cond[ (i   +  i    * N ) * DLEN ];
             descc = &pmo.desc_cond[ (i-1 + (i-1) * N ) * DLEN ];
-            descc = &pmo.desc_cond[ (i   + (i-1) * N ) * DLEN ];
+            descd = &pmo.desc_cond[ (i   + (i-1) * N ) * DLEN ];
 
             /* calculate Hi-1,i * Gii^0 = tempi-1,i */
             zgemm_driver ("N", "N", n1, n2, n2, one, Hii1, ione, ione, desca, 
@@ -476,12 +475,6 @@ void matrix_inverse_anyprobe (std::complex<double> * H_tri_host, int N, int * ni
     getvector_device_host(n4, sizeof(std::complex<double>), ct.gpu_Grow, ione, G_row_host, ione);
     n4 = totcol * maxrow;
     getvector_device_host(n4, sizeof(std::complex<double>), ct.gpu_Gcol, ione, G_col_host, ione);
-
-    for(i = 0; i < N; i++)
-    {
-     dprintf("\n saadddcol %d %d %f %f %f %f", pct.gridpe, i, G_col_host[n_begin2[i]+1], G_col_host[n_begin2[i]]);
-     dprintf("\n saadddrow %d %d %f %f %f %f", pct.gridpe, i, G_row_host[n_begin1[i]+1], G_row_host[n_begin1[i]]);
-}
 
 
     my_free(n_begin1);

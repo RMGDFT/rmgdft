@@ -27,7 +27,7 @@ void matrix_kpoint_center (std::complex<double> *H_tri, double *Stri, double
         *Htri, std::complex<double> ene, double kvecy, double kvecz)
 {
 
-    int ntot, i, j, n, ii, jj, li, lj,nstart,idx, index;
+    int i, j, n, ii, jj, li, lj,nstart,idx, index;
     int *desca, ictxt, mb, nb, nprow, npcol, myrow, mycol;
     double distance[9], *Htem, *Stem, *Stem1, *Htem1;
     double blength, clength, yvec, zvec;

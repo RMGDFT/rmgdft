@@ -27,7 +27,7 @@ void matrix_kpoint_lead (std::complex<double> *S00, std::complex<double> *H00,
         std::complex<double> *HCL, double kvecy, double kvecz, int iprobe)
 {
 
-    int ntot, i, j, n, ii, jj, li, lj,nstart,idx, index;
+    int ntot, i, j, ii, jj, li, lj,nstart,idx, index;
     int *desca, ictxt, mb, nb, nprow, npcol, myrow, mycol;
     double distance[9];
     double blength, clength, yvec, zvec;

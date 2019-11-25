@@ -22,7 +22,7 @@ to the distributed array get_FPX0_GRID() * get_FPY0_GRID()
 void global_to_distribute3 (double *global_array, double *distr_array)
 {
 
-    int ix, iy, ii, jj, kk;
+    int ix, iy, ii, jj;
     int idx2, idx1, incy, incy1;
 
     incy = get_FPY0_GRID();

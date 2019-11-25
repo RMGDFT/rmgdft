@@ -21,14 +21,14 @@
 void sigma_one_energy_point (std::complex<double> *sigma, int jprobe, std::complex<double> ene, 
 double kvecy, double kvecz, std::complex<double> *work)
 {
-    int iprobe, idx_delta, j;
-    int st1, n2;
+    int iprobe;
+    int n2;
     std::complex<double> *g;          
     std::complex<double> *ch0, *ch01, *ch10;
     std::complex<double> *S00, *H00, *H10, *S10, *H01, *S01, *HCL, *SCL;
 
-    int idx_sigma, idx_C;
-    int  maxrow, maxcol, maxrow2, maxcol2;
+    int idx_C;
+    int  maxrow, maxcol;
     std::complex<double> one = 1.0, zero = 0.0;
     int ione = 1;
     int *desca, *descb, numst, numstC;

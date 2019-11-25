@@ -25,12 +25,10 @@ void Sgreen_c (double * Htri, double * Stri, std::complex<double> * sigma1, std:
 
     std::complex<double> *H_tri, *ch00;
 
-    int info;
     int i, j;
     int nmax, *ipiv;
     int ni[MAX_BLOCKS], ntot, ndim;
     int N;
-    double tem;
 
 
     nmax = nC;

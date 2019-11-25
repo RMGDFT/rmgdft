@@ -28,12 +28,11 @@
 
 void write_global_data (int file_handle, double *data, int fnx, int fny, int fnz)
 {
-    int i, j, k;
-    int amode;
+    int i, j;
     double *x_plane;
     int size;
     int x_off, y_off, z_off;
-    int ix, iy, iz;
+    int iy, iz;
     int global_index, local_index;
 
     MPI_Barrier(pct.img_comm);
@@ -81,14 +80,12 @@ void write_global_data (int file_handle, double *data, int fnx, int fny, int fnz
 
 void write_global_data_lead (int file_handle, double *data, int fnx, int fny, int fnz)
 {
-    int i, j, k;
-    int amode;
+    int i, j;
     double *x_plane;
     int size;
     int x_off, y_off, z_off;
-    int ix, iy, iz;
+    int iy, iz;
     int global_index, local_index;
-    double sum;
 
     MPI_Barrier(pct.img_comm);
     size = fny * fnz;

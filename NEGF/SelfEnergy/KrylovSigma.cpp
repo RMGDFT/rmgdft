@@ -79,6 +79,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
 
     A = new std::complex<double>[n2*n2];
     VR = new std::complex<double>[n2*n2];
+    VL = new std::complex<double>[n2*n2];
     W = new std::complex<double>[n2];
     lamda = new std::complex<double>[n2];
     work = new std::complex<double>[lwork];
@@ -205,6 +206,7 @@ void KrylovSigma(int n, std::complex<double> *H00, std::complex<double> *H10,
 
     delete [] A;
     delete [] VR;
+    delete [] VL;
     delete [] W;
     delete [] lamda;
     delete [] work;

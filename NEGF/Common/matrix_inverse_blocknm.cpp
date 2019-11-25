@@ -42,14 +42,14 @@ void matrix_inverse_blocknm (std::complex<double> * H_tri_host, int N_blocks, in
  *               Hi,i+1 is a ni[i] x ni[i+1] matrix 
  */
 
-    int nz, nmax, i, j, n1, n2, n3, n4;
+    int nz, i, n1, n2, n3, n4;
     int *n_begin1;
     std::complex<double> *temp, *Hii1;
     std::complex<double> *Hmm1, *temp2;
     std::complex<double> *Gmm, *Gnm, *Gnn, *H_tri, *Green_C;
     std::complex<double> *temp_host, *Imatrix, *Imatrix_host;
     std::complex<double> mone, one, zero;
-    int ione = 1, k, maxrow, maxcol; 
+    int ione = 1, maxrow, maxcol; 
 	int *desca, *descb, *descc, *descd;
 
     mone = -1.0;

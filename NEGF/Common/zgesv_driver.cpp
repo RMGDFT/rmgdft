@@ -54,7 +54,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
     int d_ipiv, *ipiv, info, ione =1, izero = 0;
     int nprow, npcol, myrow, mycol;
     int ictxt = desca[1];
-    int nn = desca[2], mb= desca[4], nb=desca[5];
+    int nn = desca[2], mb= desca[4];
     int nhrs = descb[3];
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
 

@@ -19,7 +19,7 @@ void multi_GHG_munu (double *GHG_tri, double *GHG_en_tri)
 {
     int iprobe, jprobe, iene;
     int st1, st2, idx_sigma;
-    int nC, nL, i, ntot, ion;
+    int nC, nL, i, ntot;
     int idx1, idx2, nmax, size;
     std::complex<double> ene, weight;
     double wmn, wmn1, wmn2;
@@ -136,8 +136,8 @@ void multi_GHG_munu (double *GHG_tri, double *GHG_en_tri)
             {
                 if (ct.runflag == 113)
                 {
-                    wmn1 = lcr[1].lcr_ne[0].density_matrix_ne_tri[st1];
-                    wmn2 = lcr[2].lcr_ne[0].density_matrix_ne_tri[st1];
+                    wmn1 = lcr[1].lcr_ne[0].density_matrix_ne_tri[idx1];
+                    wmn2 = lcr[2].lcr_ne[0].density_matrix_ne_tri[idx1];
                     wmn1 = wmn1 * wmn1;
                     wmn2 = wmn2 * wmn2;
 
@@ -173,7 +173,7 @@ void multi_GHG_munu (double *GHG_tri, double *GHG_en_tri)
 
         }
 
-        if (ct.runflag == 111 | ct.runflag == 112)
+        if (ct.runflag == 111 || ct.runflag == 112)
             break;
 
     }

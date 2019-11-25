@@ -35,7 +35,6 @@ void read_orbital (STATE * states)
     int st, st1, st_new;
     long nbytes;
     char newname[MAX_PATH + 200];
-    char msg[200];
 
     int idx, idx0, idx2, subsystem;
     int ixmin, ixmax, iymin, iymax;
@@ -76,7 +75,7 @@ void read_orbital (STATE * states)
 
                     /* ====================== Reading orbitals ======================= */                    
 
-                    if(idx0 <= 2 | idx0 > cei.num_probe) /* Satisfies left probe, central parta & right probe */
+                    if(idx0 <= 2 || idx0 > cei.num_probe) /* Satisfies left probe, central parta & right probe */
                     {
  
                         nbytes = read (fhand, states[st].psiR, idx);

@@ -33,7 +33,7 @@ void interpolation_orbit (STATE * states)
 
 
     int ix, iy, iz, subsystem, idx0;
-    int idx1, incx, incy;
+    int idx1, incx;
     int NX, NY, NZ;
     int ixmin_old, ixmin_new, iymin_old, iymin_new;
     int st, st1, st_new, max_orbit_nx_ny;
@@ -71,7 +71,6 @@ void interpolation_orbit (STATE * states)
         NZ = states[st].orbit_nz;
 
         incx = NY * NZ;
-        incy = NZ * NX;
 
         ixmin_new = states[st].ixmin;
         ixmin_old = states[st].ixmin_old;

@@ -38,7 +38,7 @@ void set_energy_weight_ne (std::complex<double> * ene, std::complex<double> * we
                            double EF2, int *nenergy)
 {
 
-    double a, b, tem;
+    double a, b;
     std::complex<double>  distri1, distri2, ctem;
     std::complex<double> I(0.0, 1.0);
     int i, nen;
@@ -79,8 +79,6 @@ void set_energy_weight_ne (std::complex<double> * ene, std::complex<double> * we
         ctem = xc[i] + I * DELTA;
         distri_fermi (ctem, EF1, &distri1);
         distri_fermi (ctem, EF2, &distri2);
-        tem = std::abs(distri1 - distri2) ;
-    //    if (tem > 0.000001)
         {
 
             ene[nen] = xc[i] + I * DELTA;
