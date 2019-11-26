@@ -77,6 +77,7 @@
 
 #include "init_var.h"
 #include "Kbpsi.h"
+#include "rmgthreads.h"
 
 std::vector<ION> Atoms;
 std::vector<SPECIES> Species;
@@ -208,7 +209,7 @@ int main (int argc, char **argv)
 
     MPI_Finalize ();
 
-
+    RmgTerminateThreads();
     return 0;
 }                               /*   end main */
 
