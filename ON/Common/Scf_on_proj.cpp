@@ -87,7 +87,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     int num_tot = LocalOrbital->num_tot;
     double *Hij_glob = new double[num_tot * num_tot];
     double *Sij_glob = new double[num_tot * num_tot];
-    GetHS_proj(*LocalOrbital, *H_LocalOrbital, vtot_c, Hij_glob, Sij_glob, Kbpsi_mat);
+    GetHS_proj(*LocalOrbital, *LocalOrbital, *H_LocalOrbital, vtot_c, Hij_glob, Sij_glob, Kbpsi_mat, Kbpsi_mat);
 
     mat_global_to_dist(Hij, pct.desca, Hij_glob);
     mat_global_to_dist(matB, pct.desca, Sij_glob);
@@ -231,6 +231,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         RT0 = new RmgTimer("2-SCF: orbital precond and mixing");
 
         Pulay_orbital->Mixing(LocalOrbital->storage_proj, H_LocalOrbital->storage_proj);
+        LocalOrbital->Normalize();
         delete RT0;
 
     }

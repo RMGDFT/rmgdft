@@ -184,7 +184,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         get_ddd (vtot, vxc);
 
         LO_x_LO(LP, Phi, Kbpsi_mat, *Rmg_G);
-        GetHS_proj(Phi, H_Phi, vtot_psi, Hmatrix, Smatrix, Kbpsi_mat);
+        GetHS_proj(Phi, Phi, H_Phi, vtot_psi, Hmatrix, Smatrix, Kbpsi_mat, Kbpsi_mat);
 
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
