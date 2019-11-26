@@ -39,6 +39,7 @@
 #include <complex>
 #include "RmgParallelFft.h"
 #include "GlobalSums.h"
+#include "Prolong.h"
 
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
@@ -47,68 +48,81 @@ template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, 
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho)
 {
 
-    int pbasis = Kpts[0]->pbasis;
-    int nstates = Kpts[0]->nstates;
-
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
 
-    std::complex<double> psiud;
-    int factor = ct.noncoll_factor * ct.noncoll_factor;
-    double *work = new double[pbasis * factor];
+    int pbasis = Kpts[0]->pbasis;
+    int nstates = Kpts[0]->nstates;
+    int ratio = Rmg_G->default_FG_RATIO;
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
+    Prolong P(ratio, 10, *Rmg_T);
 
-    for(int idx = 0;idx < pbasis * factor;idx++)
-        work[idx] = 0.0;
+    int dimx = Rmg_G->get_PX0_GRID(ratio);
+    int dimy = Rmg_G->get_PY0_GRID(ratio);
+    int dimz = Rmg_G->get_PZ0_GRID(ratio);
+    int half_dimx = Rmg_G->get_PX0_GRID(1);
+    int half_dimy = Rmg_G->get_PY0_GRID(1);
+    int half_dimz = Rmg_G->get_PZ0_GRID(1);
+
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
+    double *work = new double[FP0_BASIS * factor]();
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-#pragma omp parallel
+//#pragma omp parallel
         {
-            double *tarr = new double[pbasis * factor]();
-#pragma omp barrier
+            std::complex<double> psiud;
+            double *tarr = new double[FP0_BASIS * factor]();
+            OrbitalType *psi_f = new OrbitalType[FP0_BASIS];
 
             /* Loop over states and accumulate charge */
-#pragma omp for schedule(static, 1) nowait
+//#pragma omp for schedule(dynamic)
             for (int istate = 0; istate < nstates; istate++)
             {
 
                 double scale = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kp.kweight;
-
                 OrbitalType *psi = Kpts[kpt]->Kstates[istate].psi;
 
-                for (int idx = 0; idx < pbasis; idx++)
+//#pragma omp critical(GNR_part1)
+                P.prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+
+                for (int idx = 0; idx < FP0_BASIS; idx++)
                 {
-                    tarr[idx] += scale * std::norm(psi[idx]);
+                    tarr[idx] += scale * std::norm(psi_f[idx]);
                     if(ct.noncoll)
                     {
-                        psiud = 2.0 * psi[idx] * std::conj(psi[idx + pbasis]);
-                        tarr[idx + 1 * pbasis] += scale * std::real(psiud);
-                        tarr[idx + 2 * pbasis] += scale * std::imag(psiud);
-                        tarr[idx + 3 * pbasis] += scale * std::norm(psi[idx + pbasis]);
+                        psiud = 2.0 * psi_f[idx] * std::conj(psi_f[idx + FP0_BASIS]);
+                        tarr[idx + 1 * FP0_BASIS] += scale * std::real(psiud);
+                        tarr[idx + 2 * FP0_BASIS] += scale * std::imag(psiud);
+                        tarr[idx + 3 * FP0_BASIS] += scale * std::norm(psi_f[idx + FP0_BASIS]);
                     }
                 }                   /* end for */
 
             }                       /*end for istate */
-#pragma omp critical
-            for(int idx = 0; idx < pbasis * factor; idx++) work[idx] += tarr[idx];
+
+//#pragma omp critical(GNR_part2)
+            for(int idx = 0; idx < FP0_BASIS * factor; idx++) work[idx] += tarr[idx];
+
+            delete [] psi_f;
             delete [] tarr;
         }
     }                           /*end for kpt */
 
-    MPI_Allreduce(MPI_IN_PLACE, (double *)work, pbasis, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)work, FP0_BASIS, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     if(ct.noncoll)
     {
         double rho_up, rho_down;
-        for(int idx = 0; idx < pbasis; idx++)
+        for(int idx = 0; idx < FP0_BASIS; idx++)
         {
             rho_up = work[idx];
-            rho_down = work[idx+3 * pbasis];
+            rho_down = work[idx+3 * FP0_BASIS];
             work[idx] = rho_up + rho_down;
-            work[idx+3*pbasis] = rho_up - rho_down;
+            work[idx+3*FP0_BASIS] = rho_up - rho_down;
         }
     }
 
+    for(int idx = 0; idx < FP0_BASIS * factor; idx++) rho[idx] = work[idx];
 
-    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+#if 0
     /* Interpolate onto fine grid, result will be stored in rho*/
     for(int is = 0; is < factor; is++)
     {
@@ -131,7 +145,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
         }
     }
-
+#endif
 
     if(!ct.norm_conserving_pp) {
         if(ct.noncoll)
