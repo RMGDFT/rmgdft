@@ -46,6 +46,7 @@
 
 #include "LocalObject.h"
 #include "GpuAlloc.h"
+#include "blas.h"
 
 
 template LocalObject<double>::~LocalObject(void);
@@ -743,4 +744,40 @@ template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
     delete [] onerow;
     delete [] assigned;
 
+}
+
+
+
+template void LocalObject<double>::Normalize();
+template void LocalObject<std::complex<double>>::Normalize();
+template <class KpointType> void LocalObject<KpointType>::Normalize()
+{
+
+    double t1 = Rmg_G->get_NX_GRID(this->density);
+    t1 *= Rmg_G->get_NY_GRID(this->density);
+    t1 *= Rmg_G->get_NZ_GRID(this->density);
+
+    double vol = Rmg_L.get_omega() /t1;
+
+    int P0_BASIS = Rmg_G->get_P0_BASIS(this->density);
+    double *norm_coef = new double[this->num_tot]();
+    for(int st = 0; st < this->num_thispe; st++)
+    {
+        int st_glob = this->index_proj_to_global[st];
+        for(int idx = 0; idx < P0_BASIS; idx++)
+            norm_coef[st_glob] += std::norm(this->storage_proj[st*P0_BASIS + idx]);
+    }
+
+    MPI_Allreduce(MPI_IN_PLACE, norm_coef, this->num_tot, MPI_DOUBLE, MPI_SUM, this->comm);
+
+    int ione = 1;
+    for(int st = 0; st < this->num_thispe; st++)
+    {
+        int st_glob = this->index_proj_to_global[st];
+        double alpha = std::sqrt(norm_coef[st_glob] * vol);
+        for(int idx = 0; idx < P0_BASIS; idx++)
+            this->storage_proj[st*P0_BASIS + idx] /= alpha;
+    }
+
+    delete [] norm_coef;
 }

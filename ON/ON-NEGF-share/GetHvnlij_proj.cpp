@@ -28,7 +28,8 @@ potential, and add them into Aij.
 
 
 
-void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat, int num_orb, int num_proj)
+void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_mat2, 
+        int num_orb1, int num_orb2, int num_proj)
 {
     double zero = 0.0, one = 1.0;
     double *dnmI, *qnmI;
@@ -37,7 +38,7 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat, int num_orb, in
 
     dnm = new double[num_proj * num_proj];
     qnm = new double[num_proj * num_proj];
-    temA = new double[num_orb * num_proj];
+    temA = new double[num_orb1 * num_proj];
 
     for(int idx = 0; idx < num_proj * num_proj; idx++) 
     {
@@ -70,12 +71,12 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat, int num_orb, in
     }
            
 
-    dgemm ("T", "N", &num_orb, &num_proj, &num_proj, &one, Kbpsi_mat, &num_proj, dnm, &num_proj, &zero, temA, &num_orb);
-    dgemm ("N", "N", &num_orb, &num_orb, &num_proj, &one, temA, &num_orb, Kbpsi_mat, &num_proj, &one, Aij, &num_orb);
+    dgemm ("T", "N", &num_orb1, &num_proj, &num_proj, &one, Kbpsi_mat1, &num_proj, dnm, &num_proj, &zero, temA, &num_orb1);
+    dgemm ("N", "N", &num_orb1, &num_orb2, &num_proj, &one, temA, &num_orb1, Kbpsi_mat2, &num_proj, &one, Aij, &num_orb1);
 
 
-    dgemm ("T", "N", &num_orb, &num_proj, &num_proj, &one, Kbpsi_mat, &num_proj, qnm, &num_proj, &zero, temA, &num_orb);
-    dgemm ("N", "N", &num_orb, &num_orb, &num_proj, &one, temA, &num_orb, Kbpsi_mat, &num_proj, &one, Bij, &num_orb);
+    dgemm ("T", "N", &num_orb1, &num_proj, &num_proj, &one, Kbpsi_mat1, &num_proj, qnm, &num_proj, &zero, temA, &num_orb1);
+    dgemm ("N", "N", &num_orb1, &num_orb2, &num_proj, &one, temA, &num_orb1, Kbpsi_mat, &num_proj, &one, Bij, &num_orb1);
 
 
 
