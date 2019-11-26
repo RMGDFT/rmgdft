@@ -59,6 +59,7 @@ src/get_vh.cpp
 src/vh_fmg.cpp
 src/packfuncs.cpp
 src/ZfpCompress.cpp
+src/Prolong.cpp
 )
 
 #if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
