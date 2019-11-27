@@ -43,48 +43,33 @@
 #include "GpuAlloc.h"
 
 
-void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat_local, BaseGrid &Rmg_G)
+void mat_local_to_glob(double *mat_local, double *mat_glob, LocalObject<double> &A, LocalObject<double> &B, 
+    int st_start1, int st_end1, int st_start2, int st_end2)
 {
 
-    double t1 = Rmg_G.get_NX_GRID(A.density);
-    t1 *= Rmg_G.get_NY_GRID(A.density);
-    t1 *= Rmg_G.get_NZ_GRID(A.density);
+//  st_start1 ... are global index for orbitals 
+    int na = st_end1 - st_start1;
+    int nb = st_end2 - st_start2;
 
-    double vol = Rmg_L.get_omega() /t1;
-
-    int na = A.num_thispe ;
-    int nb = B.num_thispe;
     if(A.density != B.density)
         throw RmgFatalException() << "density is different "<< " at file " << __FILE__ << "\n";
         
-    int P0_BASIS = Rmg_G.get_P0_BASIS(A.density);
-    
-    double zero = 0.0;
 
-    RmgGemm("T", "N", na, nb, P0_BASIS, vol, A.storage_proj, P0_BASIS,
-                B.storage_proj, P0_BASIS, zero, mat_local, na);
-
-
-}
-
-void mat_global_to_local(LocalObject<double> &A, LocalObject<double> &B, double *mat_glob, double *mat_local)
-{
-    for (int j = 0; j < B.num_thispe; j++)
-    for (int i = 0; i < A.num_thispe; i++)
+    for(int idx = 0; idx < na * nb; idx++) mat_glob[idx] = 0.0;
+    for(int st1 = st_start1; st1 < st_end1; st1++)
     {
-        int i_glob = A.index_proj_to_global[i];
-        int j_glob = B.index_proj_to_global[j];
-        mat_local[j*A.num_thispe+i] = mat_glob[j_glob * A.num_tot + i_glob];
+        int st1_local = A.index_global_to_proj[st1];
+        if (st1_local < 0 ) continue;
 
+        for(int st2 = st_start2; st2 < st_end2; st2++)
+        {
+            int st2_local = B.index_global_to_proj[st2];
+            if (st2_local < 0 ) continue;
+
+            mat_glob[ (st2-st_start2) * na + st1-st_start1 ] += mat_local[st2_local * A.num_thispe + st1_local];
+        }
     }
-}
 
-void mat_dist_to_local(double *mat_dist, int *desca, double *mat_local, LocalObject<double> &A)
-{
-
-    double *tem_global = new double[A.num_tot * A.num_tot];
-    mat_dist_to_global(mat_dist, desca, tem_global);
-    mat_global_to_local(A, A, tem_global, mat_local);
-    delete [] tem_global;
-
+    int idx = na * nb;
+    MPI_Allreduce(MPI_IN_PLACE, mat_glob, idx, MPI_DOUBLE, MPI_SUM, A.comm);
 }

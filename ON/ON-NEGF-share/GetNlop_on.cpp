@@ -93,31 +93,31 @@ void GetNlop_on(void)
     /*  pct.n_ion_center: number of ions whose nl projector overlap
      *  with the states on this processor */
 
-    pct.n_ion_center = 0;
-    tot_prj = 0;
-    for (ion = 0; ion < ct.num_ions; ion++)
-    {
-        overlap = 0;
-        for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
-        {
-            index = (st1 - ct.state_begin) * ct.num_ions + ion;
-            if (ion_orbit_overlap_region_nl[index].flag == 1)
-                overlap = 1;
-        }
-        if (overlap == 1)
-        {
-            pct.ionidx[pct.n_ion_center] = ion;
-            pct.n_ion_center += 1;
-            tot_prj += Species[Atoms[ion].species].num_projectors;
-        }
-    }
-
-    PROJECTOR_SPACE = (size_t)ct.max_nlpoints * (size_t)tot_prj;
-
-
-//    printf("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
     if(ct.LocalizedOrbitalLayout != LO_projection)
     {
+        pct.n_ion_center = 0;
+        tot_prj = 0;
+        for (ion = 0; ion < ct.num_ions; ion++)
+        {
+            overlap = 0;
+            for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+            {
+                index = (st1 - ct.state_begin) * ct.num_ions + ion;
+                if (ion_orbit_overlap_region_nl[index].flag == 1)
+                    overlap = 1;
+            }
+            if (overlap == 1)
+            {
+                pct.ionidx[pct.n_ion_center] = ion;
+                pct.n_ion_center += 1;
+                tot_prj += Species[Atoms[ion].species].num_projectors;
+            }
+        }
+
+        PROJECTOR_SPACE = (size_t)ct.max_nlpoints * (size_t)tot_prj;
+
+
+        //    printf("\n proj  %d %d %lu\n", ct.max_nlpoints, tot_prj, PROJECTOR_SPACE);
         std::string newpath;
 
         if(ct.nvme_weights)
@@ -151,7 +151,7 @@ void GetNlop_on(void)
 
     mkdir("PROJECTORS",S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-   // beta = projectors;
+    // beta = projectors;
 
     for (ion = pct.imgpe; ion < ct.num_ions; ion+=pct.image_npes[pct.thisimg])
     {

@@ -9,6 +9,7 @@
 #include "LCR.h"
 #include "blacs.h"
 
+void ReadInterpolateOrbitals();
 void H01_to_HCL (double *H01_global, double *HCL_local, int iprobe);
 void Sgreen_c (double * Htri, double * Stri, std::complex<double> * sigma1, std::complex<double> * sigma2, std::complex<double> ene, std::complex<double> * Green_C, int nC);
 void Sgreen_c_noneq_p (double *Htri, double *Stri, std::complex<double> * sigma, int *sigma_idx, std::complex<double> ene, std::complex<double> *Green_C, std::complex<double> *Green_C_row, std::complex<double> *Green_C_col, int nC, int iprobe);

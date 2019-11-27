@@ -55,6 +55,7 @@
 #include "prototypes_on.h"
 #include "blas.h"
 #include "transition.h"
+#include "GpuAlloc.h"
 
 
 LdaU_on::~LdaU_on(void)
@@ -97,9 +98,10 @@ LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
     this->AtomicOrbital = new LocalObject<double>(tot_orbitals_ldaU, ixmin, iymin, izmin,
             dimx, dimy, dimz, 1, BG, density, pct.grid_comm);
     this->AtomicOrbital->GetAtomicOrbitals(ct.num_ions, BG);
-    this->Upsi_mat = new double[tot_orbitals_ldaU * LO.num_tot];
-    this->Upsi_mat_local = new double[this->AtomicOrbital->num_thispe * LO.num_thispe];
-
+    size_t size = tot_orbitals_ldaU * LO.num_tot * sizeof(double);
+    this->Upsi_mat = (double *)GpuMallocManaged(size);
+    size = this->AtomicOrbital->num_thispe * LO.num_thispe * sizeof(double);
+    this->Upsi_mat_local = (double *)GpuMallocManaged(size);
 
     // now only works for atomic orbital expanded in whole space.
     assert(this->AtomicOrbital->num_thispe == tot_orbitals_ldaU);
@@ -118,8 +120,10 @@ LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
 
 void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, BaseGrid &BG)
 {
-    LO_x_LO(*this->AtomicOrbital, LocalOrbital, this->Upsi_mat, BG);
+    LO_x_LO(*this->AtomicOrbital, LocalOrbital, this->Upsi_mat_local, BG);
 
+    mat_local_to_glob(this->Upsi_mat_local, this->Upsi_mat, *this->AtomicOrbital, LocalOrbital, 
+            0, this->AtomicOrbital->num_tot, 0, LocalOrbital.num_tot);
 
     int nldaU = this->tot_orbitals_ldaU;
     int norb = LocalOrbital.num_tot;
@@ -220,3 +224,5 @@ void LdaU_on::ReadLdaU(std::string file_prefix, LocalObject<double> &LO)
         for(int i = 0; i < nldaU; i++)
             this->Upsi_mat_local[j * nldaU + i] *= this->Hubbard_U[i] * (1.0-2.0*this->ns_occ[i * nldaU + i]);
 }
+
+

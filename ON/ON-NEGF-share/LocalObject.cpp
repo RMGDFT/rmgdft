@@ -781,3 +781,57 @@ template <class KpointType> void LocalObject<KpointType>::Normalize()
 
     delete [] norm_coef;
 }
+template void LocalObject<double>::AssignOrbital(int st, double *psi);
+template void LocalObject<std::complex<double>>::AssignOrbital(int st, std::complex<double> *psi);
+template <class KpointType> void LocalObject<KpointType>::AssignOrbital(int st, KpointType *psi)
+{
+
+    int density = this->density;
+    int PX0_GRID = Rmg_G->get_PX0_GRID(density);
+    int PY0_GRID = Rmg_G->get_PY0_GRID(density);
+    int PZ0_GRID = Rmg_G->get_PZ0_GRID(density);
+    int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+    int PX_OFFSET = Rmg_G->get_PX_OFFSET(density);
+    int PY_OFFSET = Rmg_G->get_PY_OFFSET(density);
+    int PZ_OFFSET = Rmg_G->get_PZ_OFFSET(density);
+    int NX_GRID = Rmg_G->get_NX_GRID(density);
+    int NY_GRID = Rmg_G->get_NY_GRID(density);
+    int NZ_GRID = Rmg_G->get_NZ_GRID(density);
+    int ilow = PX_OFFSET;
+    int ihigh = ilow + PX0_GRID;
+    int jlow = PY_OFFSET;
+    int jhigh = jlow + PY0_GRID;
+    int klow = PZ_OFFSET;
+    int khigh = klow + PZ0_GRID;
+
+
+    for(int idx = 0; idx < P0_BASIS; idx++) this->storage_proj[st * P0_BASIS + idx] = 0.0;
+
+    int st_glob = this->index_proj_to_global[st];
+
+    for(int ix = 0; ix < this->dimx[st_glob]; ix++)
+        for(int iy = 0; iy < this->dimy[st_glob]; iy++)
+            for(int iz = 0; iz < this->dimz[st_glob]; iz++)
+            {
+                int ixx = ix + this->ixmin[st_glob]; 
+                int iyy = iy + this->iymin[st_glob]; 
+                int izz = iz + this->izmin[st_glob]; 
+
+                if (ixx < 0) ixx += NX_GRID;
+                if (iyy < 0) iyy += NY_GRID;
+                if (izz < 0) izz += NZ_GRID;
+                if (ixx >= NX_GRID) ixx -=NX_GRID;
+                if (iyy >= NY_GRID) iyy -=NY_GRID;
+                if (izz >= NZ_GRID) izz -=NZ_GRID;
+
+                if(ixx >=ilow && ixx < ihigh && iyy >=jlow && iyy <jhigh && izz >=klow && izz < khigh)
+                {
+                    int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
+                    int idx0 = ix * this->dimy[st_glob] * this->dimz[st_glob] + iy * this->dimz[st_glob] + iz;
+                    this->storage_proj[st * P0_BASIS + idx] = psi[idx0];
+                }
+
+            }
+
+}
+

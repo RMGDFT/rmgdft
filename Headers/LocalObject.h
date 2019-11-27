@@ -44,6 +44,7 @@ public:
     void GetAtomicOrbitals(int num_ions, BaseGrid &Rmg_G);
     void SetZeroBoundary(BaseGrid &Rmg_G, int multi_grid_level, int fd_order);
     void ReAssign(BaseGrid &BG);
+    void AssignOrbital(int st, KpointType *psi);
     void Normalize();
 
 
@@ -57,9 +58,5 @@ extern LocalObject<double> *LocalOrbital;
 extern LocalObject<double> *H_LocalOrbital;
 extern LocalObject<double> *LocalProj;
 extern LocalObject<double> *LocalAtomicOrbital;
-
-// used for localized orbitals in NEGF, all of the orbitals are divided into blocks: ct.num_blocks
-extern std::vector<LocalObject<double>> LO_blocks;
-extern std::vector<LocalObject<double>> HLO_blocks;
 
 #endif

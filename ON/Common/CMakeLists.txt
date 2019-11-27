@@ -2,7 +2,6 @@ add_library (ON_Common
  Scf_on_proj.cpp
  Preconditioner.cpp
  WriteWaveFunctions.cpp
- LdaU_on.cpp
  read_orbitals_on.cpp
  CalculateResidual.cpp
  get_te.cpp

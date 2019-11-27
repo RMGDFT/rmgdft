@@ -25,6 +25,7 @@ struct parallel_matrix_operation
  
     int myblacs;
         
+    int *orb_index;
     int *diag_begin; /* start address of the diagonal blocks in Htri ...*/
     int *offdiag_begin; /* start address of the diagonal blocks in Htri ...*/
     int *lowoffdiag_begin;

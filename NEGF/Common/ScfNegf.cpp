@@ -51,7 +51,7 @@ extern int it_scf;
 
 
 
-void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
+void ScfNegf (DoubleC *sigma_all, double *rho_matrix_local, double *vxc,
           double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore, double *rho_tf,
           double * vxc_old, double * vh_old, double * vbias, int *CONVERGENCE)
 {
@@ -81,28 +81,19 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
     for (idx = 0; idx < fpbasis; idx++)
         vtot[idx] = vh[idx] + vxc[idx] -vh_old[idx] - vxc_old[idx];
 
-
-
     GetVtotPsi(vtot_c, vtot, get_FG_RATIO());
 
     get_ddd_update (vtot);
 
-
-    idx = ct.num_states - lcr[2].num_states;
-    idx1 = ct.num_states - lcr[2].num_states / 2;
-
     /* get lcr[0].H00 part */
-    HijUpdate (states, vtot_c, work_matrix);
+    // Only add the Hamiltonian matrix change due to the potential difference 
+    HijUpdate (vtot_c);
 
 
 
 /* ========= interaction between L3-L4 is zero ========== */
 
-      zero_lead_image(lcr[0].Htri);  
-
-
-
-
+    zero_lead_image(lcr[0].Htri);  
 
     ictxt = pmo.ictxt[pmo.myblacs];
 
@@ -191,8 +182,8 @@ void ScfNegf (DoubleC *sigma_all, STATE * states, double *vxc,
     //    get_new_rho_soft (states, rho);
     RmgTimer *RT4 = new RmgTimer("3-SCF: rho");
 //    get_new_rho_soft (states, rho);
-    tri_to_row (lcr[0].density_matrix_tri, work_matrix, ct.num_blocks, ct.block_dim);
-    GetNewRho_on(states, rho, work_matrix);
+    tri_to_local (lcr[0].density_matrix_tri, rho_matrix_local, *LocalOrbital);
+    GetNewRho_proj(*LocalOrbital, *H_LocalOrbital, rho, rho_matrix_local);
 //    get_new_rho_local (states_distribute, rho);
     delete(RT4);
 

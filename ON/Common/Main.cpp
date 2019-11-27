@@ -79,6 +79,7 @@ LocalObject<double> *LocalAtomicOrbital;
 LdaU_on *ldaU_on;
 
 double *Kbpsi_mat;
+double *Kbpsi_mat_local;
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */

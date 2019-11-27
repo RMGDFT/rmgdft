@@ -54,6 +54,7 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 #include "Kbpsi.h"
+#include "GpuAlloc.h"
 
 
 
@@ -102,12 +103,16 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     double *vxc_old = new double[FP0_BASIS];
     double *vh_corr_old = new double[FP0_BASIS];
     double *vh_corr = new double[FP0_BASIS];
+
+   
     //    double *vh_x = new double[FP0_BASIS];
     //    double *vh_y = new double[FP0_BASIS];
     //    double *vh_z = new double[FP0_BASIS];
 
     int num_orb = Phi.num_thispe;
     double *rho_matrix_local = new double[num_orb * num_orb];
+    double *Hij_local = (double *)GpuMallocManaged(num_orb * num_orb * sizeof(double));
+    double *Sij_local = (double *)GpuMallocManaged(num_orb * num_orb * sizeof(double));
     double dipole_ele[3];
 
 
@@ -183,10 +188,20 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         /*Generate the Dnm_I */
         get_ddd (vtot, vxc);
 
-        LO_x_LO(LP, Phi, Kbpsi_mat, *Rmg_G);
-        GetHS_proj(Phi, Phi, H_Phi, vtot_psi, Hmatrix, Smatrix, Kbpsi_mat, Kbpsi_mat);
+        LO_x_LO(LP, Phi, Kbpsi_mat_local, *Rmg_G);
+        mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, LP, Phi, 0, LP.num_tot, 0, Phi.num_tot);
+        ApplyHphi(Phi, H_Phi, vtot_psi);
 
-        dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
+        LO_x_LO(Phi, Phi, Sij_local, *Rmg_G);
+        mat_local_to_glob(Sij_local, Smatrix, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot);
+
+        LO_x_LO(Phi, H_Phi, Hij_local, *Rmg_G);
+        mat_local_to_glob(Hij_local, Hmatrix, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot);
+
+        GetHvnlij_proj(Hmatrix, Smatrix, Kbpsi_mat, Kbpsi_mat,
+                Phi.num_tot, Phi.num_tot, LP.num_tot, true);
+
+            dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
         if(pct.gridpe == 0 && ct.verbose)
         { 
@@ -238,19 +253,19 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         tot_steps = pre_steps + tddft_steps;
         RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
-        
+
 
         dgemm("T", "N", &numst, &numst, &numst,  &one, Cmatrix, &numst,
                 Hmatrix, &numst, &zero, Akick, &numst);
         dgemm("N", "N", &numst, &numst, &numst,  &one, Akick, &numst,
                 Cmatrix, &numst, &zero, Hmatrix, &numst);
 
-     //   printf("\n HHH \n");
-     //   for(i = 0; i < 10; i++) 
-     //   { printf("\n");
-     //       for(int j = 0; j < 10; j++) printf(" %8.2e", Hmatrix[i*numst + j]);
-     //   }
-     //   printf("\n\n");
+        //   printf("\n HHH \n");
+        //   for(i = 0; i < 10; i++) 
+        //   { printf("\n");
+        //       for(int j = 0; j < 10; j++) printf(" %8.2e", Hmatrix[i*numst + j]);
+        //   }
+        //   printf("\n\n");
 
         dscal(&n2, &time_step, Hmatrix, &ione);
         eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
@@ -266,12 +281,12 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         delete(RT2a);
 
-//      printf("\n PPP \n");
-//      for(i = 0; i < 10; i++) 
-//      { printf("\n");
-//          for(int j = 0; j < 10; j++) printf(" %8.2e", Pn1[i*numst + j]);
-//      }
-//      printf("\n\n");
+        //      printf("\n PPP \n");
+        //      for(i = 0; i < 10; i++) 
+        //      { printf("\n");
+        //          for(int j = 0; j < 10; j++) printf(" %8.2e", Pn1[i*numst + j]);
+        //      }
+        //      printf("\n\n");
 
 
         RT2a = new RmgTimer("2-TDDFT: mat_glob_to_local");

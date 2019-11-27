@@ -80,15 +80,44 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     RT0 = new RmgTimer("2-SCF: Kbpsi");
 
 
-    LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat, *Rmg_G);
+    LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
+    mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 0, LocalProj->num_tot, 
+            0, LocalOrbital->num_tot);
     delete RT0;
 
     RT0 = new RmgTimer("2-SCF: HS mat");
+    // mat_X charge density matrix in distributed way
+    // uu_dis theta = (S^-1 H) in distributed way.
+    double *Hij_local, *Sij_local, *rho_matrix_local, *theta_local;
+
+    int num_orb = LocalOrbital->num_thispe;
+    rho_matrix_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
+    theta_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
+    Hij_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
+    Sij_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
+
     int num_tot = LocalOrbital->num_tot;
     double *Hij_glob = new double[num_tot * num_tot];
     double *Sij_glob = new double[num_tot * num_tot];
-    GetHS_proj(*LocalOrbital, *LocalOrbital, *H_LocalOrbital, vtot_c, Hij_glob, Sij_glob, Kbpsi_mat, Kbpsi_mat);
 
+
+    ApplyHphi(*LocalOrbital, *H_LocalOrbital, vtot_c);
+
+    LO_x_LO(*LocalOrbital, *H_LocalOrbital, Hij_local, *Rmg_G);
+    LO_x_LO(*LocalOrbital, *LocalOrbital, Sij_local, *Rmg_G);
+
+    mat_local_to_glob(Hij_local, Hij_glob, *LocalOrbital, *LocalOrbital, 0, num_tot, 0, num_tot);
+    mat_local_to_glob(Sij_local, Sij_glob, *LocalOrbital, *LocalOrbital, 0, num_tot, 0, num_tot);
+
+
+
+    GetHvnlij_proj(Hij_glob, Sij_glob, Kbpsi_mat, Kbpsi_mat, 
+            num_tot, num_tot, LocalProj->num_tot, true);
+    if (pct.gridpe == 0)
+    {
+        print_matrix(Hij_glob, 6, num_tot);
+        print_matrix(Sij_glob, 6, num_tot);
+    }
     mat_global_to_dist(Hij, pct.desca, Hij_glob);
     mat_global_to_dist(matB, pct.desca, Sij_glob);
     delete [] Hij_glob;
@@ -99,13 +128,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     RT0 = new RmgTimer("2-SCF: DiagScalapack");
 
     DiagScalapack(states, ct.num_states, Hij, matB);
-    // mat_X charge density matrix in distributed way
-    // uu_dis theta = (S^-1 H) in distributed way.
-    double *rho_matrix_local, *theta_local;
-
-    int num_orb = LocalOrbital->num_thispe;
-    rho_matrix_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
-    theta_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
 
     mat_dist_to_local(mat_X, pct.desca, rho_matrix_local, *LocalOrbital);
     mat_dist_to_local(uu_dis, pct.desca, theta_local, *LocalOrbital);
@@ -241,6 +263,8 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     delete [] rho_pre;
     GpuFreeManaged(rho_matrix_local);
     GpuFreeManaged(theta_local);
+    GpuFreeManaged(Hij_local);
+    GpuFreeManaged(Sij_local);
 
 }                               /* end scf */
 

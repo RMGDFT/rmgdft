@@ -29,7 +29,7 @@ potential, and add them into Aij.
 
 
 void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_mat2, 
-        int num_orb1, int num_orb2, int num_proj)
+        int num_orb1, int num_orb2, int num_proj, bool flag_overlap)
 {
     double zero = 0.0, one = 1.0;
     double *dnmI, *qnmI;
@@ -75,13 +75,16 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_
     dgemm ("N", "N", &num_orb1, &num_orb2, &num_proj, &one, temA, &num_orb1, Kbpsi_mat2, &num_proj, &one, Aij, &num_orb1);
 
 
-    dgemm ("T", "N", &num_orb1, &num_proj, &num_proj, &one, Kbpsi_mat1, &num_proj, qnm, &num_proj, &zero, temA, &num_orb1);
-    dgemm ("N", "N", &num_orb1, &num_orb2, &num_proj, &one, temA, &num_orb1, Kbpsi_mat, &num_proj, &one, Bij, &num_orb1);
+    if(!ct.norm_conserving_pp && flag_overlap)
+    {
+        dgemm ("T", "N", &num_orb1, &num_proj, &num_proj, &one, Kbpsi_mat1, &num_proj, qnm, &num_proj, &zero, temA, &num_orb1);
+        dgemm ("N", "N", &num_orb1, &num_orb2, &num_proj, &one, temA, &num_orb1, Kbpsi_mat, &num_proj, &one, Bij, &num_orb1);
+    }
 
 
 
     delete [] temA;
     delete [] qnm;
     delete [] dnm;
-    
+
 }

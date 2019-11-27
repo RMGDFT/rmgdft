@@ -27,78 +27,77 @@
 #include "FiniteDiff.h"
 
 #include "pmo.h"
+#include "LocalObject.h"
+#include "GpuAlloc.h"
 
 
 
-void HijUpdate (STATE * states, double *vtot_c, double *Aij)
+void HijUpdate (double *vtot_c)
 {
-    int st1;
-    int maxst, n2;
-    int ione = 1;
-    double t1;
-    int ixx, iyy, izz;
-
-    maxst = ct.num_states;
 
     RmgTimer *RT = new RmgTimer("2-SCF: HijUpdate");
 
-    for (st1 = 0; st1 < ct.num_states * (ct.state_end-ct.state_begin); st1++)
+    int pbasis = Rmg_G->get_P0_BASIS(1);
+    double alpha = 1.0;
+    int ione = 1;
+
+    int max_block_size = *std::max_element(ct.block_dim, ct.block_dim + ct.num_blocks);
+    double *H_tem, *H_local, *H_dist;
+    size_t size = max_block_size * max_block_size * sizeof(double);
+    H_tem = (double *)GpuMallocManaged(size);
+    H_dist = (double *)GpuMallocManaged(size);
+
+    size = LocalOrbital->num_thispe * LocalOrbital->num_thispe * sizeof(double);
+    H_local = (double *)GpuMallocManaged(size);
+
+    for(int st1 = 0; st1 < LocalOrbital->num_thispe; st1++)
     {
-        Hij_00[st1] = 0.;
-        Bij_00[st1] = 0.;
+        double *a_phi = &LocalOrbital->storage_proj[st1 * pbasis];
+        double *h_phi = &H_LocalOrbital->storage_proj[st1 * pbasis];
+
+        for (int idx = 0; idx < pbasis; idx++)
+        {
+            h_phi[idx] = a_phi[idx] * vtot_c[idx];
+        }
     }
-    DistributeToGlobal(vtot_c, vtot_global);
 
-    /* Loop over states */
-    /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
+    LO_x_LO(*LocalOrbital, *H_LocalOrbital, H_local, *Rmg_G);
 
-    for (st1 = ct.state_begin; st1 < ct.state_end; st1++)
+    for(int ib = 0; ib < ct.num_blocks; ib++)
     {
-        ixx = states[st1].ixmax - states[st1].ixmin + 1;
-        iyy = states[st1].iymax - states[st1].iymin + 1;
-        izz = states[st1].izmax - states[st1].izmin + 1;
 
-        /* Generate 2*V*psi and store it  in orbit_tem */
-        GenVxPsi(states[st1].psiR, st1, states1[st1].psiR, vtot_global, states);
-        n2 = ixx * iyy * izz;
-        t1 = 0.5;
-        dscal(&n2, &t1, states1[st1].psiR, &ione);
+        int st0 = pmo.orb_index[ib];
+        int st1 = pmo.orb_index[ib+1];
+        mat_local_to_glob(H_local, H_tem, *LocalOrbital, *LocalOrbital, st0, st1, st0, st1);
+        GetHvnlij_proj(H_tem, NULL, Kbpsi_mat_blocks[ib], Kbpsi_mat_blocks[ib],
+                ct.block_dim[ib], ct.block_dim[ib], LocalProj->num_tot, false);
 
-    }                           /* end for st1 = .. */
+        int *desca = &pmo.desc_cond[(ib + ib * ct.num_blocks) * DLEN];
+        mat_global_to_dist(H_dist, desca, H_tem);
+
+        int length = pmo.mxllda_cond[ib] * pmo.mxlocc_cond[ib];
+        daxpy(&length, &alpha, H_dist, &ione, &lcr[0].Htri[pmo.diag_begin[ib]], &ione);
+
+        // offdiag part
+        if (ib == ct.num_blocks -1) break;
+        int st2 = pmo.orb_index[ib+2];
+
+        mat_local_to_glob(H_local, H_tem, *LocalOrbital, *LocalOrbital, st0, st1, st1, st2);
+        GetHvnlij_proj(H_tem, NULL, Kbpsi_mat_blocks[ib], Kbpsi_mat_blocks[ib+1],
+                ct.block_dim[ib], ct.block_dim[ib+1], LocalProj->num_tot, false);
 
 
-    /* calculate the < states.psiR | states1.psiR>  */
+        desca = &pmo.desc_cond[(ib + (ib+1) * ct.num_blocks) * DLEN];
+        mat_global_to_dist(H_dist, desca, H_tem);
+        length = pmo.mxllda_cond[ib] * pmo.mxlocc_cond[ib+1];
+        daxpy(&length, &alpha, H_dist, &ione, &lcr[0].Htri[pmo.offdiag_begin[ib]], &ione);
 
-
-    RmgTimer *RT1 = new RmgTimer("4-get_HS: orbit_dot_orbit");
-    OrbitDotOrbit(states, states1, Hij_00, Bij_00);
-    delete(RT1);
-
-
-    RmgTimer *RT3 = new RmgTimer("4-get_HS: Hvnlij");
-    GetHvnlij(Hij_00, Bij_00);
-
-    delete(RT3);
-
-    fflush(NULL);
-
-    n2 = (ct.state_end-ct.state_begin) * ct.num_states;
-
-    t1 = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
-    double vel = Rmg_L.get_omega() / t1;
-
-    dscal (&n2, &vel, Hij_00, &ione);
-    dscal (&n2, &vel, Bij_00, &ione);
-    row_to_tri_p (lcr[0].Htri, Hij_00, ct.num_blocks, ct.block_dim);
-
-    if (pct.gridpe == 0)
-    {
-        print_matrix(Hij_00, 5, maxst);
-        print_matrix(Bij_00, 5, maxst);
     }
+
+    GpuFreeManaged(H_tem);
+    GpuFreeManaged(H_local);
+    GpuFreeManaged(H_dist);
 
     delete(RT);
 
 }
-
-

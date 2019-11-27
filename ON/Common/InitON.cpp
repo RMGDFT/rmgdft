@@ -264,6 +264,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         
         delete [] proj_per_ion;
         Kbpsi_mat = new double[LocalProj->num_tot * LocalOrbital->num_tot]; 
+        Kbpsi_mat_local = new double[LocalProj->num_thispe * LocalOrbital->num_thispe]; 
     }
 
     delete RTa;

@@ -1,4 +1,6 @@
 add_library (NEGF_Common
+ReadInterpolateOrbitals.cpp
+InitNegf.cpp
 #SetEnergyWeight.cpp
 #SetEnergyWeightNoneq.cpp
 matrix_inverse_blocknm_Gauss.cpp
@@ -31,8 +33,6 @@ get_inverse_block_p.cpp
 get_ion_orbit_overlap_loc.cpp
 get_line.cpp
 get_state_to_proc.cpp
-#get_new_rho_local.cpp
-#get_new_rho_soft.cpp
 global_to_distribute3.cpp
 H01_to_HCL.cpp
 init_comp.cpp
@@ -40,16 +40,11 @@ init_ext.cpp
 init_gpu.cpp
 init_loc_xyz.cpp
 init_pe_on.cpp
-InitNegf.cpp
-#init_state_distribute.cpp
 interpolation_orbit.cpp
-#ion_partial_Hij_and_Sij.cpp
 is_vloc_state_overlap.cpp
 kpoints.cpp
 lead_bandstructure.cpp
 lead_mat_distribute.cpp
-#local_to_tri.cpp
-#map_orbital_to_process.cpp
 matrix_inverse_anyprobe.cpp
 matrix_inverse_blocknm.cpp
 matrix_inverse_p.cpp
@@ -61,11 +56,6 @@ min_distance_index.cpp
 modify_rho.cpp
 multi_GHG_munu.cpp
 nlforce.cpp
-#nlforce_par_D.cpp
-#nlforce_par_Q.cpp
-#nlforce_partial_H_part2.cpp
-#partial_vloc.cpp
-#partial_vlocpsi.cpp
 plane_average_rho.cpp
 pmo_init.cpp
 pmo_trace.cpp
@@ -106,7 +96,7 @@ split_matrix_center.cpp
 split_matrix_lead.cpp
 tools_submat.cpp
 trace_AB_tri.cpp
-#tri_to_local.cpp
+tri_to_local.cpp
 tri_to_row.cpp
 tri_to_whole_complex.cpp
 tri_to_whole_complex_p.cpp

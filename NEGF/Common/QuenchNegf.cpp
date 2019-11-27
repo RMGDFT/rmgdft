@@ -66,6 +66,7 @@
 #include "FiniteDiff.h"
 
 #include "pmo.h"
+#include "GpuAlloc.h"
 
 
 void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, double * vnuc, double * vext,
@@ -164,21 +165,81 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
 
     get_ddd (vtot, vxc);
 
-    RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
-    OrbitalComm(states);
-    delete(RT0);
-
     RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
-    KbpsiUpdate(states);
+    LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
+    mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital,
+            0, LocalProj->num_tot, 0, LocalOrbital->num_tot);
+
     delete(RTk);
-
-    RmgTimer *RT3 = new RmgTimer("2-Quench: set H and S first");
-    GetHS(states, states1, vtot_c, Hij_00, Bij_00);
-
 
     for(i = 0; i < pmo.ntot;i++) lcr[0].Htri[i] = 0.0;
     for(i = 0; i < pmo.ntot;i++) lcr[0].Stri[i] = 0.0;
-    row_to_tri_p (lcr[0].Htri, Hij_00, ct.num_blocks, ct.block_dim);
+
+    int max_block_size = *std::max_element(ct.block_dim, ct.block_dim + ct.num_blocks);
+    double *H_tem, *S_tem, *H_local, *S_local, *rho_matrix_local;
+    size_t size = max_block_size * max_block_size * sizeof(double);
+    H_tem = (double *)GpuMallocManaged(size);
+    S_tem = (double *)GpuMallocManaged(size);
+    size = LocalOrbital->num_thispe * LocalOrbital->num_thispe * sizeof(double);
+    H_local = (double *)GpuMallocManaged(size);
+    S_local = (double *)GpuMallocManaged(size);
+    rho_matrix_local = (double *)GpuMallocManaged(size);
+    
+
+
+    RmgTimer *RT3 = new RmgTimer("2-Quench: set H and S first");
+
+    ApplyHphi(*LocalOrbital, *H_LocalOrbital, vtot_c);
+
+    LO_x_LO(*LocalOrbital, *H_LocalOrbital, H_local, *Rmg_G);
+    LO_x_LO(*LocalOrbital, *LocalOrbital, S_local, *Rmg_G);
+
+    if (pct.gridpe == 0)
+    {
+        print_matrix(Kbpsi_mat, 6, LocalProj->num_tot);
+    }
+
+    fflush(NULL);
+    for(int ib = 0; ib < ct.num_blocks; ib++)
+    {
+
+        int st0 = pmo.orb_index[ib];
+        int st1 = pmo.orb_index[ib+1];
+        mat_local_to_glob(H_local, H_tem, *LocalOrbital, *LocalOrbital, st0, st1, st0, st1);
+        mat_local_to_glob(S_local, S_tem, *LocalOrbital, *LocalOrbital, st0, st1, st0, st1);
+        GetHvnlij_proj(H_tem, S_tem, Kbpsi_mat_blocks[ib], Kbpsi_mat_blocks[ib],
+                ct.block_dim[ib], ct.block_dim[ib], LocalProj->num_tot, true);
+
+        if (pct.gridpe == 0)
+        {
+            print_matrix(H_tem, 6, ct.block_dim[ib]);
+            print_matrix(S_tem, 6, ct.block_dim[ib]);
+        }
+
+        int *desca = &pmo.desc_cond[(ib + ib * ct.num_blocks) * DLEN];
+        mat_global_to_dist(&lcr[0].Htri[pmo.diag_begin[ib]], desca, H_tem);
+        mat_global_to_dist(&lcr[0].Stri[pmo.diag_begin[ib]], desca, S_tem);
+
+        // offdiag part
+        if (ib == ct.num_blocks -1) break;
+        int st2 = pmo.orb_index[ib+2];
+
+        mat_local_to_glob(H_local, H_tem, *LocalOrbital, *LocalOrbital, st0, st1, st1, st2);
+        mat_local_to_glob(S_local, S_tem, *LocalOrbital, *LocalOrbital, st0, st1, st1, st2);
+        GetHvnlij_proj(H_tem, S_tem, Kbpsi_mat_blocks[ib], Kbpsi_mat_blocks[ib+1],
+                ct.block_dim[ib], ct.block_dim[ib+1], LocalProj->num_tot, true);
+
+
+        desca = &pmo.desc_cond[(ib + (ib+1) * ct.num_blocks) * DLEN];
+        mat_global_to_dist(&lcr[0].Htri[pmo.offdiag_begin[ib]], desca, H_tem);
+        mat_global_to_dist(&lcr[0].Stri[pmo.offdiag_begin[ib]], desca, S_tem);
+
+    }
+
+    GpuFreeManaged(H_tem);
+    GpuFreeManaged(S_tem);
+    GpuFreeManaged(H_local);
+    GpuFreeManaged(S_local);
 
 
     /* ========= interaction between L3-L4 is zero ========== */
@@ -188,10 +249,6 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     /* corner elements keep unchanged */
     setback_corner_matrix_H();  
 
-    /*******************************************/
-
-
-    row_to_tri_p (lcr[0].Stri, Bij_00, ct.num_blocks, ct.block_dim);
 
     /* ========= interaction between leads is zero ========== */
     zero_lead_image(lcr[0].Stri);
@@ -238,7 +295,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         {
 
             RmgTimer *RT4 = new RmgTimer("2-Quench: SCF");
-            ScfNegf (sigma_all, states, vxc, vh, vnuc, vext, rho, rhoc,
+            ScfNegf (sigma_all, rho_matrix_local, vxc, vh, vnuc, vext, rho, rhoc,
                     rhocore, rho_tf, vxc_old, vh_old, vbias, &CONVERGENCE);
 
             delete(RT4);
@@ -273,6 +330,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     }                           /* end for */
 
 
+    GpuFreeManaged(rho_matrix_local);
 
     if (pct.imgpe == 0)
         printf ("\n Quench is done \n");

@@ -63,6 +63,7 @@
 #include "prototypes_on.h"
 #include "prototypes_negf.h"
 #include "transition.h"
+#include "rmgthreads.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -77,10 +78,23 @@
 
 #include "init_var.h"
 #include "Kbpsi.h"
-#include "rmgthreads.h"
+#include "LocalObject.h"
+
+
+#include "LdaU_on.h"
+LdaU_on *ldaU_on;
+
+
+LocalObject<double> *LocalOrbital;
+LocalObject<double> *H_LocalOrbital;
+LocalObject<double> *LocalProj;
 
 std::vector<ION> Atoms;
 std::vector<SPECIES> Species;
+
+double *Kbpsi_mat;
+double *Kbpsi_mat_local;
+std::vector<double *> Kbpsi_mat_blocks;
 
 /* Main control structure which is declared extern in main.h so any module */
 /* may access it.					                 */
@@ -210,6 +224,7 @@ int main (int argc, char **argv)
     MPI_Finalize ();
 
     RmgTerminateThreads();
+
     return 0;
 }                               /*   end main */
 

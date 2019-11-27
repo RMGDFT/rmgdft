@@ -55,6 +55,7 @@
 #include "blas.h"
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
+#include "LocalObject.h"
 
 
 
@@ -137,12 +138,14 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
         if (ct.runflag == 200)
         {
-            RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
-            OrbitalComm(states);
-            delete(RT0);
 
             RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
-            KbpsiUpdate(states);
+            for(int ib = 0; ib < ct.num_blocks; ib++)
+            {
+                LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
+                mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 
+                    0, LocalProj->num_tot, 0, LocalOrbital->num_tot);
+            }
             delete(RTk);
 
             get_dos(states);
@@ -150,12 +153,14 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
         }
         if (ct.runflag == 300)
         {
-            RmgTimer *RT0 = new RmgTimer("2-SCF: orbital_comm");
-            OrbitalComm(states);
-            delete(RT0);
 
             RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
-            KbpsiUpdate(states);
+            for(int ib = 0; ib < ct.num_blocks; ib++)
+            {
+                LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
+                mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 
+                    0, LocalProj->num_tot, 0, LocalOrbital->num_tot);
+            }
             delete(RTk);
 
 

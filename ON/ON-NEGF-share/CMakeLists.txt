@@ -2,9 +2,11 @@ set_source_files_properties(write_header.cpp
 PROPERTIES
 COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 add_library (ON_NEGF_share
+ApplyHphi.cpp
+mat_local_to_glob.cpp
 MyCpdgemr2d.cpp
+LdaU_on.cpp
 LO_x_LO.cpp
-GetHS_proj.cpp
 LocalObject.cpp
 OrbitalComm.cpp
 DistributeTasks.cpp

@@ -51,6 +51,7 @@ void pmo_init ()
     periods[1] = 0;
     reorder = 0;
 
+    pmo.orb_index = new int[ct.num_blocks+1];
 
     my_malloc( pmo.ictxt, pmo.npe_energy, int);
     my_malloc( pmo.mxllda_cond, ct.num_blocks, int);
@@ -223,6 +224,10 @@ void pmo_init ()
         pmo.mxlocc_cond[i] = numroc(&ct.block_dim[i], &pmo.mblock, &mycol, &izero, &npcol);
     }
 
+    pmo.orb_index[0] = 0;
+
+    for (int ib = 0; ib < ct.num_blocks; ib++)
+        pmo.orb_index[ib+1] = pmo.orb_index[ib] + ct.block_dim[ib];
 
     pmo.diag_begin[0] = 0;
 

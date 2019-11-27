@@ -65,6 +65,9 @@
 #include "RmgException.h"
 #include "RmgParallelFft.h"
 #include "Atomic.h"
+#include "LocalObject.h"
+#include "GpuAlloc.h"
+
 
 
 
@@ -76,7 +79,6 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 {
 
     int ic, idx, ion;
-    int level;
     double tem;
     int st1, iprobe, i;
 
@@ -130,38 +132,46 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     state_corner_xyz (states);
 
-
-
-    int size = (ct.state_end - ct.state_begin) * ct.num_states;
-
-    state_overlap_or_not = new char[size];
-
-
-    is_state_overlap (states, state_overlap_or_not);
-    get_orbit_overlap_region (states);
-    GetOrbitalPairs(states);
-    init_comm (states);
-    init_comm_res (states);
-
-    AllocatePsi (states, states1);
-
-    duplicate_states_info (states, states1);
     MPI_Barrier(pct.img_comm);
 
-
     pmo_init();
-/*
-    nameL = lcr[1].name;
-    nameC = lcr[0].name;
-    nameR = lcr[2].name;
-*/
+
+
+    int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
+    ixmin = new int[6*ct.num_states];
+    iymin = ixmin + ct.num_states;
+    izmin = ixmin + 2*ct.num_states;
+    dimx  = ixmin + 3*ct.num_states;
+    dimy  = ixmin + 4*ct.num_states;
+    dimz  = ixmin + 5*ct.num_states;
+
+    int density = 1;
+    for(int st = 0; st < ct.num_states; st++)
+    {
+
+        ixmin[st] = states[st].ixmin;
+        iymin[st] = states[st].iymin;
+        izmin[st] = states[st].izmin;
+        dimx[st] = states[st].orbit_nx;
+        dimy[st] = states[st].orbit_ny;
+        dimz[st] = states[st].orbit_nz;
+
+    }
+
+    LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
+            dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
+    H_LocalOrbital = new LocalObject<double>(ct.num_states, ixmin, iymin, izmin,
+            dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
+    LocalOrbital->ReAssign(*Rmg_G);
+    H_LocalOrbital->ReAssign(*Rmg_G);
+
+
+    delete [] ixmin;
+
 
     RmgTimer *RT1 = new RmgTimer("1-TOTAL: init:  read_orbital");
-    read_orbital(states);
-    interpolation_orbit (states);
+    ReadInterpolateOrbitals();
     delete(RT1);
-
-    scale_orbital(states);
 
     if (pct.imgpe == 0) printf ("completed: read_orbital \n");
     allocate_matrix_LCR();
@@ -195,7 +205,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     if(ct.runflag == 300) 
     {
         plane_average_rho(rho); 
-//        exit(0);
+        //        exit(0);
     }
 
     write_rho_x (vh, "vh_init");  // information about vh_init is recorded in zvec array
@@ -210,19 +220,6 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
         write_rho_x (vh, "vh_vcomp_init");
     }
-
-    /*  interpolation for the orbits if the grid space is slightly different between lead and conductor */
-
-
-    allocate_masks (states);
-
-    for (level = 0; level < ct.eig_parm.levels + 1; level++)
-        make_mask_grid_state (level, states);
-
-
-    /*    normalize_orbits(states);
-     */
-    //    ortho_norm_local (states);
 
 
     /*modify the lead Hamiltonia by bias and Fermi energy */
@@ -252,8 +249,6 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     MPI_Barrier(pct.img_comm);
 
 
-    for (level = 0; level < ct.eig_parm.levels + 1; level++)
-        make_mask_grid_state (level, states);
     // Initialize some commonly used plans
     FftInitPlans();
 
@@ -268,7 +263,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     //init_sym ();
 
     /* Initialize the nuclear local potential and the compensating charges */
-//    init_nuc (vnuc, rhoc, rhocore);
+    //    init_nuc (vnuc, rhoc, rhocore);
     pct.loc_ions_list = new int[ct.num_ions];
     double *dum_array = NULL;
     InitLocalObject (vnuc, dum_array, ATOMIC_LOCAL_PP, false);
@@ -286,20 +281,61 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     RmgTimer *RT5 = new RmgTimer("1-TOTAL: init:  non-local");
     /* Initialize Non-local operators */
     init_nl_xyz ();
-    get_ion_orbit_overlap_nl (states);
 
     GetNlop_on ();
-    init_nonlocal_comm ();
-    InitNonlocalComm ();
 
     /* Initialize qfuction in Cartesin coordinates */
     GetQI ();
 
     /* Get the qqq */
     get_qqq ();
+
+    int tot_prj = 0;
+    for (int ion=0; ion < ct.num_ions; ion++)
+    {
+        tot_prj += Species[Atoms[ion].species].num_projectors;
+    }
+    ixmin = new int[6*tot_prj];
+    iymin = ixmin + tot_prj;
+    izmin = ixmin + 2*tot_prj;
+    dimx = ixmin + 3*tot_prj;
+    dimy = ixmin + 4*tot_prj;
+    dimz = ixmin + 5*tot_prj;
+    int proj_count = 0;
+    int *proj_per_ion = new int[ct.num_ions];
+    for (int ion=0; ion < ct.num_ions; ion++)
+    {
+        ION *iptr = &Atoms[ion];
+        SPECIES *sp = &Species[iptr->species];
+        proj_per_ion[ion] = sp->num_projectors;
+        for (int ip = 0; ip < sp->num_projectors; ip++)
+        {
+            ixmin[proj_count] = iptr->ixstart;
+            iymin[proj_count] = iptr->iystart;
+            izmin[proj_count] = iptr->izstart;
+            dimx[proj_count] = sp->nldim;
+            dimy[proj_count] = sp->nldim;
+            dimz[proj_count] = sp->nldim;
+            proj_count++;
+        }
+    }
+
+    LocalProj = new LocalObject<double>(tot_prj, ixmin, iymin, izmin,
+            dimx, dimy, dimz, 0, *Rmg_G, density, pct.grid_comm);
+    LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, *Rmg_G);
+
+    delete [] ixmin;
+    delete [] proj_per_ion;
+
+    size_t size = LocalProj->num_thispe * LocalOrbital->num_thispe * sizeof(double);
+    Kbpsi_mat_local = (double *) GpuMallocManaged(size);
+
+    size = LocalProj->num_tot * LocalOrbital->num_tot * sizeof(double);
+    Kbpsi_mat = (double *) GpuMallocManaged(size);
+    for(int ib = 0; ib < ct.num_blocks; ib++)
+        Kbpsi_mat_blocks.push_back(&Kbpsi_mat[ pmo.orb_index[ib] * LocalProj->num_tot]); 
+
     delete(RT5);
-
-
 
     if (pct.imgpe == 0) printf ("completed: initnegf \n");
 

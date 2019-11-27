@@ -42,7 +42,8 @@ void setback_corner_matrix_S();
 void row_to_tri_p(double *, double *, int, int*);
 void sigma_all_energy_point(DoubleC *, double, double);
 
-void ScfNegf (DoubleC * sigma_all, STATE * states, double *vxc,
+void tri_to_local(double *, double *, LocalObject<double> &);
+void ScfNegf (DoubleC * sigma_all, double *rho_matrix_local, double *vxc,
         double *vh, double *vnuc, double *vext, double *rho, double *rhoc, double *rhocore, double *rho_tf,
         double * vxc_old, double * vh_old, double * vbias, int *CONVERGENCE);
 
@@ -72,7 +73,7 @@ void set_energy_weight (DoubleC *ene, DoubleC *weight, double EF, int *nenergy);
 void set_energy_weight_ne (DoubleC *ene, DoubleC *weight, double EF1, double EF, int *nenergy);
 
 void get_ddd_update (double *);
-void HijUpdate (STATE *, double *, double*);
+void HijUpdate (double *);
 void find_fermi (DoubleC *);
 void charge_density_matrix_p (DoubleC*);
 void get_new_rho_local (STATE*, double *);

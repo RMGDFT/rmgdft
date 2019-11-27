@@ -139,17 +139,5 @@ void allocate_matrix_LCR ()
         }
     }
 
-
-
-    int size  = (ct.state_end - ct.state_begin) * ct.num_states;
-    if(size == 0 ) size = ct.num_states;
-    my_malloc(Hij_00, size, double);
-    my_malloc(Bij_00, size, double);
-
-
-
-    fflush (NULL);
-
-
 }    
 

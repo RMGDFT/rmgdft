@@ -19,7 +19,7 @@ void KbpsiComm();
 void InitNonlocalComm();
 void GetHS(STATE * states, STATE * states1, double *vtot_c, double *Aij, double *Bij);
 void GetHvnlij (double *Aij, double *Bij);
-void GetHvnlij_proj (double *Aij, double *Bij, double *kbpsimat, double *kbpsimat2, int norb1, int norb2, int nproj);
+void GetHvnlij_proj (double *Aij, double *Bij, double *kbpsimat, double *kbpsimat2, int norb1, int norb2, int nproj, bool flag_overlap);
 void OrbitalOptimize (STATE * states, STATE * states1, double *vxc, double *vh,
         double *vnuc, double *rho, double *rhoc, double * vxc_old,
         double * vh_old);
@@ -52,8 +52,8 @@ void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void DotProductOrbitNl (STATE *st1, int ion2, double * psi,
         double * prjptr, ION_ORBIT_OVERLAP *, int num_proj, double *kbpsi);
 void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G);
-void GetHS_proj(LocalObject<double> &A, LocalObject<double> &B, LocalObject<double> &HB, 
-        double *vtot_c, double *H, double *S, double *kbpsi, double *kbpsi2);
+void mat_local_to_glob(double *, double *, LocalObject<double> &A, LocalObject<double> &B, int, int, int, int);
+void ApplyHphi(LocalObject<double> &A, LocalObject<double> &HB, double *vtot_c);
 void GetNewRho_proj(LocalObject<double> &A, LocalObject<double> &B, double *rho, double *mat_local);
 void mat_global_to_local(LocalObject<double> &A, LocalObject<double> &B, double *mat_glob, double *mat_local);
 void mat_dist_to_local(double *mat_dist, int *desca, double *mat_local, LocalObject<double> &A);

@@ -42,10 +42,11 @@ typedef struct
 
 extern KBPSI Kbpsi_str;
 extern double *Kbpsi_mat;
+extern double *Kbpsi_mat_local;
 extern double *Upsi_mat;
 extern double *Upsi_mat_dist;
 extern double *Upsi_mat_local;
 
 // used for NEGF now, potentially can be used in ON when the Localized orbitals can be blocked. 
-extern std::vector<double *> Kbpsi_mat_block;
+extern std::vector<double *> Kbpsi_mat_blocks;
 #endif
