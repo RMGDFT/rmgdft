@@ -32,6 +32,7 @@
 #include "Kpoint.h"
 #include "Subdiag.h"
 #include "Solvers.h"
+#include "Prolong.h"
 #include <boost/lockfree/queue.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 
@@ -189,6 +190,12 @@ void *run_threads(void *v) {
 
         // Switch that controls what we do
         switch(ss.job) {
+            case HYBRID_GET_RHO:
+                if(ct.is_gamma)
+                    GetNewRhoOne((double *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
+                else
+                    GetNewRhoOne((std::complex<double> *)ss.p1, (Prolong *)ss.p2, (double *)ss.p3, ss.fd_diag);
+                break;
             case HYBRID_EIG:       // Performs a single multigrid sweep over an orbital
                 if(ct.is_gamma) {
                     kptr_d = (Kpoint<double> *)ss.p3;
@@ -241,6 +248,8 @@ ss.vtot, ss.vxc_psi,
                     DavPreconditionerOne<double> (kptr_d, (double *)ss.p2, ss.fd_diag, ss.eig, ss.vtot, ss.avg_potential);
                 }
                 else {
+                    kptr_c = (Kpoint<std::complex<double>> *)ss.p1;
+                    DavPreconditionerOne<std::complex<double>> (kptr_c, (std::complex<double> *)ss.p2, ss.fd_diag, ss.eig, ss.vtot, ss.avg_potential);
                 } 
                 break;
             case HYBRID_THREAD_EXIT:

@@ -40,72 +40,84 @@
 #include "RmgParallelFft.h"
 #include "GlobalSums.h"
 #include "Prolong.h"
+#include "rmgthreads.h"
+#include "RmgThread.h"
+
 
 
 template void GetNewRho<double>(Kpoint<double> **, double *);
 template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
+
+template void GetNewRhoOne<double>(double *, Prolong *, double *, double);
+template void GetNewRhoOne<std::complex<double>>(std::complex<double> *, Prolong *, double *, double);
 
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho)
 {
 
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
 
-    int pbasis = Kpts[0]->pbasis;
+    BaseThread *T = BaseThread::getBaseThread(0);
     int nstates = Kpts[0]->nstates;
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
     Prolong P(ratio, 10, *Rmg_T);
 
-    int dimx = Rmg_G->get_PX0_GRID(ratio);
-    int dimy = Rmg_G->get_PY0_GRID(ratio);
-    int dimz = Rmg_G->get_PZ0_GRID(ratio);
-    int half_dimx = Rmg_G->get_PX0_GRID(1);
-    int half_dimy = Rmg_G->get_PY0_GRID(1);
-    int half_dimz = Rmg_G->get_PZ0_GRID(1);
-
     int factor = ct.noncoll_factor * ct.noncoll_factor;
-    double *work = new double[FP0_BASIS * factor]();
+    double *work = new double[FP0_BASIS * factor * ct.MG_THREADS_PER_NODE]();
+
+
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode) active_threads--;
+    if(active_threads < 1) active_threads = 1;
+
+    int istop = nstates / active_threads;
+    istop = istop * active_threads;
 
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
-//#pragma omp parallel
+
+        /* Loop over states and accumulate charge */
+        for(int st1=0;st1 < istop;st1+=active_threads)
         {
-            std::complex<double> psiud;
-            double *tarr = new double[FP0_BASIS * factor]();
-            OrbitalType *psi_f = new OrbitalType[FP0_BASIS];
 
-            /* Loop over states and accumulate charge */
-//#pragma omp for schedule(dynamic)
-            for (int istate = 0; istate < nstates; istate++)
+            SCF_THREAD_CONTROL thread_control;
+
+            for(int ist = 0;ist < active_threads;ist++)
             {
+                thread_control.job = HYBRID_GET_RHO;
+                double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
+                OrbitalType *psi = Kpts[kpt]->Kstates[st1+ist].psi;
+                thread_control.p1 = (void *)psi;
+                thread_control.p2 = (void *)&P;
+                thread_control.p3 = (void *)&work[ist*FP0_BASIS * factor];
+                thread_control.fd_diag = scale;
+                thread_control.basetag = st1 + ist;
+                QueueThreadTask(ist, thread_control);
+            }
+            // Thread tasks are set up so wake them
+            if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
 
-                double scale = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kp.kweight;
-                OrbitalType *psi = Kpts[kpt]->Kstates[istate].psi;
+        } 
+        if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
-//#pragma omp critical(GNR_part1)
-                P.prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
-
-                for (int idx = 0; idx < FP0_BASIS; idx++)
-                {
-                    tarr[idx] += scale * std::norm(psi_f[idx]);
-                    if(ct.noncoll)
-                    {
-                        psiud = 2.0 * psi_f[idx] * std::conj(psi_f[idx + FP0_BASIS]);
-                        tarr[idx + 1 * FP0_BASIS] += scale * std::real(psiud);
-                        tarr[idx + 2 * FP0_BASIS] += scale * std::imag(psiud);
-                        tarr[idx + 3 * FP0_BASIS] += scale * std::norm(psi_f[idx + FP0_BASIS]);
-                    }
-                }                   /* end for */
-
-            }                       /*end for istate */
-
-//#pragma omp critical(GNR_part2)
-            for(int idx = 0; idx < FP0_BASIS * factor; idx++) work[idx] += tarr[idx];
-
-            delete [] psi_f;
-            delete [] tarr;
+        // Process any remaining states in serial fashion
+        for(int st1 = istop;st1 < nstates;st1++) 
+        {
+            double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
+            OrbitalType *psi = Kpts[kpt]->Kstates[st1].psi;
+            GetNewRhoOne(psi, &P, work, scale);
         }
+
     }                           /*end for kpt */
+
+    // Combine contributions from all of the threads
+    for(int st2=1;st2 < active_threads;st2++)
+    {
+        for(int idx=0;idx < FP0_BASIS*factor;idx++)
+        {
+            work[idx] += work[st2*FP0_BASIS*factor+idx];
+        } 
+    }
 
     MPI_Allreduce(MPI_IN_PLACE, (double *)work, FP0_BASIS, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     if(ct.noncoll)
@@ -120,32 +132,9 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         }
     }
 
+
     for(int idx = 0; idx < FP0_BASIS * factor; idx++) rho[idx] = work[idx];
 
-#if 0
-    /* Interpolate onto fine grid, result will be stored in rho*/
-    for(int is = 0; is < factor; is++)
-    {
-        switch (ct.interp_flag)
-        {
-            case CUBIC_POLYNOMIAL_INTERPOLATION:
-                pack_rho_ctof (&work[is*pbasis], &rho[is*FP0_BASIS]);
-                break;
-            case PROLONG_INTERPOLATION:
-                mg_prolong_MAX10 (&rho[is*FP0_BASIS], &work[is*pbasis], get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
-                break;
-            case FFT_INTERPOLATION:
-                FftInterpolation (*Kpts[0]->G, &work[is*pbasis], &rho[is*FP0_BASIS], Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
-                break;
-            default:
-
-                //Dprintf ("charge interpolation is set to %d", ct.interp_flag);
-                rmg_error_handler (__FILE__, __LINE__, "ct.interp_flag is set to an invalid value.");
-
-
-        }
-    }
-#endif
 
     if(!ct.norm_conserving_pp) {
         if(ct.noncoll)
@@ -157,6 +146,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += augrho[idx];
         delete [] augrho;
     }
+
 
     for(int is = 0; is < factor; is++)
         symmetrize_rho (&rho[is*FP0_BASIS]);
@@ -183,4 +173,50 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
 
 
     delete [] work;
+}
+
+
+
+template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, double *work, double scale)
+{
+
+    int ratio = Rmg_G->default_FG_RATIO;
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
+    int dimx = Rmg_G->get_PX0_GRID(ratio);
+    int dimy = Rmg_G->get_PY0_GRID(ratio);
+    int dimz = Rmg_G->get_PZ0_GRID(ratio);
+    int half_dimx = Rmg_G->get_PX0_GRID(1);
+    int half_dimy = Rmg_G->get_PY0_GRID(1);
+    int half_dimz = Rmg_G->get_PZ0_GRID(1);
+    int pbasis = half_dimx*half_dimy*half_dimz;
+    double norms[2];
+
+    std::complex<double> psiud;
+    OrbitalType *psi_f = new OrbitalType[FP0_BASIS];
+
+    norms[0] = 0.0;
+    for(int idx=0;idx < pbasis;idx++) norms[0] += std::norm(psi[idx]);
+
+    P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
+
+    norms[1] = 0.0;
+    for(int idx=0;idx < FP0_BASIS;idx++) norms[1] += std::norm(psi_f[idx]);
+    GlobalSums(norms, 2, pct.grid_comm);
+
+    double renorm = scale * (double)(ratio*ratio*ratio) * norms[0] / norms[1];
+
+    for (int idx = 0; idx < FP0_BASIS; idx++)
+    {
+        work[idx] += renorm * std::norm(psi_f[idx]);
+        if(ct.noncoll)
+        {
+            psiud = 2.0 * psi_f[idx] * std::conj(psi_f[idx + FP0_BASIS]);
+            work[idx + 1 * FP0_BASIS] += renorm * std::real(psiud);
+            work[idx + 2 * FP0_BASIS] += renorm * std::imag(psiud);
+            work[idx + 3 * FP0_BASIS] += renorm * std::norm(psi_f[idx + FP0_BASIS]);
+        }
+    }                   /* end for */
+
+    delete [] psi_f;
+
 }
