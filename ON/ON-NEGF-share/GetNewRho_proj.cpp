@@ -79,7 +79,7 @@ void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double 
 
     RmgTimer *RT5 = new RmgTimer("3-get_new_rho: augmented");
 
-//    RhoAugmented(rho, rho_matrix_local);
+    RhoAugmented_proj(rho, rho_matrix_local);
 
 
     delete(RT5);

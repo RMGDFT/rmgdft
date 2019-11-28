@@ -169,6 +169,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
     mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital,
             0, LocalProj->num_tot, 0, LocalOrbital->num_tot);
+    mat_global_to_local( *LocalProj, *LocalOrbital, Kbpsi_mat, Kbpsi_mat_local);
 
     delete(RTk);
 

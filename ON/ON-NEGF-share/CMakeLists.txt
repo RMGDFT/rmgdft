@@ -17,6 +17,7 @@ GetNewRho_proj.cpp
 FillOrbitalBorders.cpp
 KbpsiUpdate.cpp
 RhoQnmMat.cpp
+RhoAugmented_proj.cpp
 RhoAugmented.cpp
 KbpsiComm.cpp
 InitNonlocalComm.cpp

@@ -81,8 +81,13 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
 
     LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
+    //  now Kbpsi_mat_local stores the results from different processors, need to be summer over all processors.
     mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 0, LocalProj->num_tot, 
             0, LocalOrbital->num_tot);
+
+    mat_global_to_local(*LocalProj, *LocalOrbital, Kbpsi_mat, Kbpsi_mat_local); 
+
+    // now Kbpsi_mat_local store the correct values.
     delete RT0;
 
     RT0 = new RmgTimer("2-SCF: HS mat");
