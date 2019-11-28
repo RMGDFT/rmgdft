@@ -68,6 +68,7 @@ BaseThread::BaseThread(int nthreads)
 
         BaseThread::THREADS_PER_NODE = nthreads;
         BaseThread::in_threaded_region.store(false);
+        BaseThread::in_omp_threaded_region.store(false);
         BaseThread::init_flag = 1;
 
     }
