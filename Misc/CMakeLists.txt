@@ -52,7 +52,7 @@ DsyevdDriver.cpp
 DsygvdDriver.cpp
 DsygvjDriver.cpp
 ZhegvdDriver.cpp
-BaseThread_Cbindings.cpp
+#BaseThread_Cbindings.cpp
 TradeImages_Cbindings.cpp
 RmgSumAll_Cbindings.cpp
 packfuncs_Cbindings.cpp

@@ -27,6 +27,7 @@
  * 
 */
 
+#include <omp.h>
 #include "BaseThread.h"
 #include "rmg_error.h"
 #include "BaseThreadControl.h"
@@ -47,8 +48,6 @@ std::condition_variable BaseThread::thread_cv;
 // Condition variable and mutex for main
 std::mutex BaseThread::main_mutex;
 std::condition_variable BaseThread::main_cv;
-
-std::mutex BaseThread::mpi_mutex;
 
 // Pointer to the singleton
 BaseThread *BaseThread::instance = NULL;
@@ -207,6 +206,8 @@ int BaseThread::get_thread_tid(void) {
 
     BaseThreadControl *ss;
 
+    if(BaseThread::in_omp_threaded_region.load()) return omp_get_thread_num();
+
     if(!BaseThread::in_threaded_region.load()) return -1;
     ss = rmg_get_tsd();
     if(!ss) return -1;
@@ -227,15 +228,6 @@ MPI_Comm BaseThread::get_unique_comm(int index) {
     return this->comm_pool[comm_index]; 
 }
 
-
-
-void BaseThread::RMG_MPI_lock(void) {
-    BaseThread::mpi_mutex.lock();
-}
-
-void BaseThread::RMG_MPI_unlock(void) {
-    BaseThread::mpi_mutex.unlock();
-}
 
 int BaseThread::is_loop_over_states(void)
 {

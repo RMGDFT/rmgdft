@@ -58,12 +58,9 @@ private:
     // Threads to use on each MPI node
     int THREADS_PER_NODE;
 
-    // This is used when running with MPI_THREAD_SERIALIZED to ensure 
-    // proper serialization
-    static std::mutex mpi_mutex;
-
     std::atomic<int> jobs;
     std::atomic<bool> in_threaded_region;
+    std::atomic<bool> in_omp_threaded_region;
 
     // Parent grid_comm returned from get_grid_comm when not in threaded region
     MPI_Comm parent_grid_comm;
@@ -122,8 +119,6 @@ public:
     // value of index.
     MPI_Comm get_unique_comm(int index);
 
-    void RMG_MPI_lock(void);
-    void RMG_MPI_unlock(void);
     void set_pptr(int tid, void *p);
     void *get_pptr(int tid);
     int is_loop_over_states(void);

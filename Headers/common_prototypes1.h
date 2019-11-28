@@ -283,7 +283,6 @@ void reduce_and_dist_matrix(int n, double *global_matrix, double *dist_matrix, d
 void init_efield (double * vnuc);
 void pulay_rho(int step, int N, int N_x, int N_y, int N_z, double *rho_new, double *rho_old, int NsavedSteps, double ***hist, double ***rhist, int special_metric, double weight);
 int claim_ion (double *xtal,  int pxgrid, int pygrid, int pzgrid, int nxgrid, int nygrid, int nzgrid);
-int is_loop_over_states(void);
 void fastrelax (double *dt, double dt_max, double dt_inc, double dt_dec, int n_min, int *n_count);
 void fire (double *step, double step_max, double f_inc, double f_dec, int n_min, int *n_count );
 int int_sum_all (int x, MPI_Comm comm);

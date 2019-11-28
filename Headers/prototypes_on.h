@@ -156,8 +156,6 @@ void global_to_distribute(double * global_array, double * distr_array);
 
 void diag_eig_matrix(double *eig_matrix, double *eig, int *desca);
 
-void thread_barrier_wait(void);
-int is_loop_over_states(void);
 void cgen_prolong(double coef[], double fraction, int order);
 void xbsmovie (FILE *movie);
 
