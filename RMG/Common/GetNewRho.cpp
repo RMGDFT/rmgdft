@@ -64,7 +64,10 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     int ratio = Rmg_G->default_FG_RATIO;
     int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
 
-    GetNewRhoPre(Kpts, rho);
+    if(ct.fast_density)
+        GetNewRhoPost(Kpts, rho);
+    else
+        GetNewRhoPre(Kpts, rho);
 
     if(!ct.norm_conserving_pp) {
         if(ct.noncoll)

@@ -834,6 +834,9 @@ public:
     // Use square root technique for density interpolation
     bool sqrt_interpolation;
 
+    // Use a faster but less accurate method for generating the charge density
+    bool fast_density;
+
     // Filter density dependent potentials
     bool filter_dpot;
 
