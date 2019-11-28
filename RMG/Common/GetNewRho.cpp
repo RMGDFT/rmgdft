@@ -48,10 +48,64 @@
 template void GetNewRho<double>(Kpoint<double> **, double *);
 template void GetNewRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
 
+template void GetNewRhoPre<double>(Kpoint<double> **, double *);
+template void GetNewRhoPre<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
+
+template void GetNewRhoPost<double>(Kpoint<double> **, double *);
+template void GetNewRhoPost<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
+
 template void GetNewRhoOne<double>(double *, Prolong *, double *, double);
 template void GetNewRhoOne<std::complex<double>>(std::complex<double> *, Prolong *, double *, double);
 
+
 template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, double *rho)
+{
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
+    int ratio = Rmg_G->default_FG_RATIO;
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(ratio);
+
+    GetNewRhoPre(Kpts, rho);
+
+    if(!ct.norm_conserving_pp) {
+        if(ct.noncoll)
+        {
+            rmg_error_handler (__FILE__, __LINE__, "ultrasoft with noncollinear is in progress");
+        }
+        double *augrho = new double[FP0_BASIS]();
+        GetAugRho(Kpts, augrho);
+        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += augrho[idx];
+        delete [] augrho;
+    }
+
+
+    for(int is = 0; is < factor; is++)
+        symmetrize_rho (&rho[is*FP0_BASIS]);
+
+
+    /* Check total charge. */
+    ct.tcharge = ZERO;
+    for (int idx = 0; idx < FP0_BASIS; idx++)
+        ct.tcharge += rho[idx];
+
+    /* ct.tcharge = real_sum_all (ct.tcharge); */
+    ct.tcharge = real_sum_all (ct.tcharge, pct.grid_comm);
+    ct.tcharge = real_sum_all (ct.tcharge, pct.spin_comm);
+    ct.tcharge = ct.tcharge * get_vel_f();
+
+    /* Renormalize charge, there could be some discrepancy because of interpolation */
+    double t1 = ct.nel / ct.tcharge;
+    for(int i = 0;i < FP0_BASIS * factor;i++) rho[i] *= t1;
+
+    /*Write out normalization constant if needed*/
+    double difference = fabs(t1 - 1.0);
+    if ((ct.verbose == 1) || (difference > 0.01))
+        rmg_printf ("Charge normalization constant: %f\n", t1);
+
+}
+
+// Generates the new density by interpolating each orbital to the fine grid and then squaring
+// and summing them. 
+template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, double *rho)
 {
 
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
@@ -132,46 +186,7 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         }
     }
 
-
     for(int idx = 0; idx < FP0_BASIS * factor; idx++) rho[idx] = work[idx];
-
-
-    if(!ct.norm_conserving_pp) {
-        if(ct.noncoll)
-        {
-            rmg_error_handler (__FILE__, __LINE__, "ultrasoft with noncollinear is in progress");
-        }
-        double *augrho = new double[FP0_BASIS]();
-        GetAugRho(Kpts, augrho);
-        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += augrho[idx];
-        delete [] augrho;
-    }
-
-
-    for(int is = 0; is < factor; is++)
-        symmetrize_rho (&rho[is*FP0_BASIS]);
-
-
-    /* Check total charge. */
-    ct.tcharge = ZERO;
-    for (int idx = 0; idx < FP0_BASIS; idx++)
-        ct.tcharge += rho[idx];
-
-    /* ct.tcharge = real_sum_all (ct.tcharge); */
-    ct.tcharge = real_sum_all (ct.tcharge, pct.grid_comm);
-    ct.tcharge = real_sum_all (ct.tcharge, pct.spin_comm);
-    ct.tcharge = ct.tcharge * get_vel_f();
-
-    /* Renormalize charge, there could be some discrepancy because of interpolation */
-    double t1 = ct.nel / ct.tcharge;
-    for(int i = 0;i < FP0_BASIS * factor;i++) rho[i] *= t1;
-
-    /*Write out normalization constant if needed*/
-    double difference = fabs(t1 - 1.0);
-    if ((ct.verbose == 1) || (difference > 0.01))
-        rmg_printf ("Charge normalization constant: %f\n", t1);
-
-
     delete [] work;
 }
 
@@ -188,35 +203,119 @@ template <typename OrbitalType> void GetNewRhoOne(OrbitalType *psi, Prolong *P, 
     int half_dimx = Rmg_G->get_PX0_GRID(1);
     int half_dimy = Rmg_G->get_PY0_GRID(1);
     int half_dimz = Rmg_G->get_PZ0_GRID(1);
-    int pbasis = half_dimx*half_dimy*half_dimz;
-    double norms[2];
 
     std::complex<double> psiud;
-    OrbitalType *psi_f = new OrbitalType[FP0_BASIS];
-
-    norms[0] = 0.0;
-    for(int idx=0;idx < pbasis;idx++) norms[0] += std::norm(psi[idx]);
+    OrbitalType *psi_f = new OrbitalType[FP0_BASIS]();
 
     P->prolong(psi_f, psi, dimx, dimy, dimz, half_dimx, half_dimy, half_dimz);
 
-    norms[1] = 0.0;
-    for(int idx=0;idx < FP0_BASIS;idx++) norms[1] += std::norm(psi_f[idx]);
-    GlobalSums(norms, 2, pct.grid_comm);
-
-    double renorm = scale * (double)(ratio*ratio*ratio) * norms[0] / norms[1];
-
     for (int idx = 0; idx < FP0_BASIS; idx++)
     {
-        work[idx] += renorm * std::norm(psi_f[idx]);
+        work[idx] += scale * std::norm(psi_f[idx]);
         if(ct.noncoll)
         {
             psiud = 2.0 * psi_f[idx] * std::conj(psi_f[idx + FP0_BASIS]);
-            work[idx + 1 * FP0_BASIS] += renorm * std::real(psiud);
-            work[idx + 2 * FP0_BASIS] += renorm * std::imag(psiud);
-            work[idx + 3 * FP0_BASIS] += renorm * std::norm(psi_f[idx + FP0_BASIS]);
+            work[idx + 1 * FP0_BASIS] += scale * std::real(psiud);
+            work[idx + 2 * FP0_BASIS] += scale * std::imag(psiud);
+            work[idx + 3 * FP0_BASIS] += scale * std::norm(psi_f[idx + FP0_BASIS]);
         }
     }                   /* end for */
 
     delete [] psi_f;
 
+}
+
+
+// Computes the sum of the squares of the orbitals on the coarse grid and then does a single
+// interpolation of the resulting charge density to the fine grid. Faster but less accurate.
+
+template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, double *rho)
+{
+
+    int pbasis = Kpts[0]->pbasis;
+    int nstates = Kpts[0]->nstates;
+
+    if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
+
+    std::complex<double> psiud;
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
+    double *work = new double[pbasis * factor];
+
+    for(int idx = 0;idx < pbasis * factor;idx++)
+        work[idx] = 0.0;
+
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+#pragma omp parallel
+        {
+            double *tarr = new double[pbasis * factor]();
+#pragma omp barrier
+
+            /* Loop over states and accumulate charge */
+#pragma omp for schedule(static, 1) nowait
+            for (int istate = 0; istate < nstates; istate++)
+            {
+
+                double scale = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kp.kweight;
+
+                OrbitalType *psi = Kpts[kpt]->Kstates[istate].psi;
+
+                for (int idx = 0; idx < pbasis; idx++)
+                {
+                    tarr[idx] += scale * std::norm(psi[idx]);
+                    if(ct.noncoll)
+                    {
+                        psiud = 2.0 * psi[idx] * std::conj(psi[idx + pbasis]);
+                        tarr[idx + 1 * pbasis] += scale * std::real(psiud);
+                        tarr[idx + 2 * pbasis] += scale * std::imag(psiud);
+                        tarr[idx + 3 * pbasis] += scale * std::norm(psi[idx + pbasis]);
+                    }
+                }                   /* end for */
+
+            }                       /*end for istate */
+#pragma omp critical
+            for(int idx = 0; idx < pbasis * factor; idx++) work[idx] += tarr[idx];
+            delete [] tarr;
+        }
+    }                           /*end for kpt */
+
+    MPI_Allreduce(MPI_IN_PLACE, (double *)work, pbasis, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    if(ct.noncoll)
+    {
+        double rho_up, rho_down;
+        for(int idx = 0; idx < pbasis; idx++)
+        {
+            rho_up = work[idx];
+            rho_down = work[idx+3 * pbasis];
+            work[idx] = rho_up + rho_down;
+            work[idx+3*pbasis] = rho_up - rho_down;
+        }
+    }
+
+
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    /* Interpolate onto fine grid, result will be stored in rho*/
+    for(int is = 0; is < factor; is++)
+    {
+        switch (ct.interp_flag)
+        {
+            case CUBIC_POLYNOMIAL_INTERPOLATION:
+                pack_rho_ctof (&work[is*pbasis], &rho[is*FP0_BASIS]);
+                break;
+            case PROLONG_INTERPOLATION:
+                mg_prolong_MAX10 (&rho[is*FP0_BASIS], &work[is*pbasis], get_FPX0_GRID(), get_FPY0_GRID(), get_FPZ0_GRID(), get_PX0_GRID(), get_PY0_GRID(), get_PZ0_GRID(), get_FG_RATIO(), 6);
+                break;
+            case FFT_INTERPOLATION:
+                FftInterpolation (*Kpts[0]->G, &work[is*pbasis], &rho[is*FP0_BASIS], Rmg_G->default_FG_RATIO, ct.sqrt_interpolation);
+                break;
+            default:
+
+                //Dprintf ("charge interpolation is set to %d", ct.interp_flag);
+                rmg_error_handler (__FILE__, __LINE__, "ct.interp_flag is set to an invalid value.");
+
+
+        }
+    }
+
+    delete [] work;
 }

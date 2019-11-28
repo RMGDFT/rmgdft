@@ -30,6 +30,10 @@ template void Prolong::prolong (double *full, double *half, int dimx, int dimy, 
                        int half_dimy, int half_dimz);
 template void Prolong::prolong (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
                        int half_dimy, int half_dimz);
+template void Prolong::prolong_ortho_10 (double *full, double *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz);
+template void Prolong::prolong_ortho_10 (std::complex<double> *full, std::complex<double> *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz);
 
 Prolong::Prolong(int ratio_in, int order_in, TradeImages &TR_in) : ratio(ratio_in), order(order_in), TR(TR_in)
 {
@@ -201,6 +205,102 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
         }
     }
 
+
+    delete [] fulla;
+    delete [] fullb;
+    delete [] sg_half;
+
+}
+
+
+template <typename T> void Prolong::prolong_ortho_10 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx,
+                       int half_dimy, int half_dimz)
+{
+    T *sg_half = new T[(half_dimx + 10) * (half_dimy + 10) * (half_dimz + 10)];
+
+    TR.trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, 5, FULL_TRADE);
+
+    int incy = dimz / ratio + 10;
+    int incx = (dimz / ratio + 10) * (dimy / ratio + 10);
+
+    int incy2 = dimz;
+    int incx2 = dimz * dimy;
+
+    int incx3 = (dimz / ratio + 10) * dimy;
+
+
+
+    T* fulla = new T[dimx * (dimy / ratio + 10) * (dimz / ratio + 10)];
+    T* fullb = new T[ dimx * dimy * (dimz / ratio + 10)];
+
+
+    for (int ix = 0; ix < dimx / ratio; ix++)
+    {
+        for (int iy = 0; iy < dimy / ratio + 10; iy++)
+        {
+            for (int iz = 0; iz < dimz / ratio + 10; iz++)
+            {
+                fulla[(ratio * ix) * incx + iy * incy + iz] = sg_half[(ix + 5) * incx + iy * incy + iz];
+                fulla[((ratio * ix) + 1) * incx + iy * incy + iz] =
+                    a[1][0] * sg_half[(ix + 1) * incx + iy * incy + iz] +
+                    a[1][1] * sg_half[(ix + 2) * incx + iy * incy + iz] +
+                    a[1][2] * sg_half[(ix + 3) * incx + iy * incy + iz] +
+                    a[1][3] * sg_half[(ix + 4) * incx + iy * incy + iz] +
+                    a[1][4] * sg_half[(ix + 5) * incx + iy * incy + iz] +
+                    a[1][5] * sg_half[(ix + 6) * incx + iy * incy + iz] +
+                    a[1][6] * sg_half[(ix + 7) * incx + iy * incy + iz] +
+                    a[1][7] * sg_half[(ix + 8) * incx + iy * incy + iz] +
+                    a[1][8] * sg_half[(ix + 9) * incx + iy * incy + iz] +
+                    a[1][9] * sg_half[(ix + 10) * incx + iy * incy + iz];
+            }
+        }
+    }
+
+
+    for (int ix = 0; ix < dimx; ix++)
+    {
+        for (int iy = 0; iy < dimy / ratio; iy++)
+        {
+            for (int iz = 0; iz < dimz / ratio + 10; iz++)
+            {
+                fullb[ix * incx3 + (ratio * iy) * incy + iz] = fulla[ix * incx + (iy + 5) * incy + iz];
+                fullb[ix * incx3 + (ratio * iy + 1) * incy + iz] =
+                    a[1][0] * fulla[ix * incx + (iy + 1) * incy + iz] +
+                    a[1][1] * fulla[ix * incx + (iy + 2) * incy + iz] +
+                    a[1][2] * fulla[ix * incx + (iy + 3) * incy + iz] +
+                    a[1][3] * fulla[ix * incx + (iy + 4) * incy + iz] +
+                    a[1][4] * fulla[ix * incx + (iy + 5) * incy + iz] +
+                    a[1][5] * fulla[ix * incx + (iy + 6) * incy + iz] +
+                    a[1][6] * fulla[ix * incx + (iy + 7) * incy + iz] +
+                    a[1][7] * fulla[ix * incx + (iy + 8) * incy + iz] +
+                    a[1][8] * fulla[ix * incx + (iy + 9) * incy + iz] +
+                    a[1][9] * fulla[ix * incx + (iy + 10) * incy + iz];
+            }
+        }
+    }
+
+
+    for (int ix = 0; ix < dimx; ix++)
+    {
+        for (int iy = 0; iy < dimy; iy++)
+        {
+            for (int iz = 0; iz < dimz / ratio; iz++)
+            {
+                full[ix * incx2 + iy * incy2 + ratio * iz] = fullb[ix * incx3 + iy * incy + iz + 5];
+                full[ix * incx2 + iy * incy2 + ratio * iz + 1] =
+                    a[1][0] * fullb[ix * incx3 + iy * incy + iz + 1] +
+                    a[1][1] * fullb[ix * incx3 + iy * incy + iz + 2] +
+                    a[1][2] * fullb[ix * incx3 + iy * incy + iz + 3] +
+                    a[1][3] * fullb[ix * incx3 + iy * incy + iz + 4] +
+                    a[1][4] * fullb[ix * incx3 + iy * incy + iz + 5] +
+                    a[1][5] * fullb[ix * incx3 + iy * incy + iz + 6] +
+                    a[1][6] * fullb[ix * incx3 + iy * incy + iz + 7] +
+                    a[1][7] * fullb[ix * incx3 + iy * incy + iz + 8] +
+                    a[1][8] * fullb[ix * incx3 + iy * incy + iz + 9] +
+                    a[1][9] * fullb[ix * incx3 + iy * incy + iz + 10];
+            }
+        }
+    }
 
     delete [] fulla;
     delete [] fullb;

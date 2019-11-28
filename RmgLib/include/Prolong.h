@@ -43,6 +43,8 @@ public:
     ~Prolong(void);
     template<typename T>
     void prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
+    template<typename T>
+    void prolong_ortho_10 (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
 
 private:
