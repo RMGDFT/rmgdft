@@ -80,10 +80,6 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         if( (ct.scf_steps+1)%ct.checkpoint == 0)
         {
             write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]);
-            if(ct.LocalizedOrbitalLayout == LO_projection)
-            {
-                LocalOrbital->WriteOrbitals(std::string(ct.outfile), *Rmg_G);
-            }
         }
 
 

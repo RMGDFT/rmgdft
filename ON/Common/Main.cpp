@@ -320,10 +320,6 @@ int main(int argc, char **argv)
         RmgTimer *RTw = new RmgTimer("1-TOTAL: write");
 
         write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]); 
-        if(ct.LocalizedOrbitalLayout == LO_projection)
-        {
-            LocalOrbital->WriteOrbitals(std::string(ct.outfile), *Rmg_G);
-        }
 
         if(ct.write_qmcpack_restart)
         {

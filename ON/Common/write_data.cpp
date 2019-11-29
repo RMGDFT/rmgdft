@@ -144,46 +144,48 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 	if(pct.gridpe == 0) fflush(NULL);
 
 
-
-	/* Force change mode of output file */
-	amode = S_IREAD | S_IWRITE;
-	if (pct.gridpe == 0)
-		chmod(newname, amode);
-
-	hxgrid = get_hxgrid() * get_xside();
-	hygrid = get_hygrid() * get_yside();
-	hzgrid = get_hzgrid() * get_zside();
-
-    for (state = ct.state_begin; state < ct.state_end; state++)
+    if(ct.LocalizedOrbitalLayout == LO_projection)
     {
-        int state_permuted = perm_state_index[state];
-        sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
-        amode = S_IREAD | S_IWRITE;
-        int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
-        if (fhand < 0)
-            error_handler(" Unable to write file ");
+        LocalOrbital->WriteOrbitals(std::string(ct.outfile), *Rmg_G);
+    }
+    else
+    {
+        hxgrid = get_hxgrid() * get_xside();
+        hygrid = get_hygrid() * get_yside();
+        hzgrid = get_hzgrid() * get_zside();
 
-        write(fhand, states[state].psiR, states[state].size * sizeof(double));
+        for (state = ct.state_begin; state < ct.state_end; state++)
+        {
+            int state_permuted = perm_state_index[state];
+            sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
+            amode = S_IREAD | S_IWRITE;
+            int fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+            if (fhand < 0)
+                error_handler(" Unable to write file ");
 
-        write(fhand, &states[state].ixmin, sizeof(int));
-        write(fhand, &states[state].ixmax, sizeof(int));
-        write(fhand, &states[state].iymin, sizeof(int));
-        write(fhand, &states[state].iymax, sizeof(int));
-        write(fhand, &states[state].izmin, sizeof(int));
-        write(fhand, &states[state].izmax, sizeof(int));
-        write(fhand, &hxgrid, sizeof(double));
-        write(fhand, &hygrid, sizeof(double));
-        write(fhand, &hzgrid, sizeof(double));
-        write(fhand, &states[state].crds[0], 3 * sizeof(double));
+            write(fhand, states[state].psiR, states[state].size * sizeof(double));
+
+            write(fhand, &states[state].ixmin, sizeof(int));
+            write(fhand, &states[state].ixmax, sizeof(int));
+            write(fhand, &states[state].iymin, sizeof(int));
+            write(fhand, &states[state].iymax, sizeof(int));
+            write(fhand, &states[state].izmin, sizeof(int));
+            write(fhand, &states[state].izmax, sizeof(int));
+            write(fhand, &hxgrid, sizeof(double));
+            write(fhand, &hygrid, sizeof(double));
+            write(fhand, &hzgrid, sizeof(double));
+            write(fhand, &states[state].crds[0], 3 * sizeof(double));
 
 
 
-        close(fhand);
+            close(fhand);
+        }
     }
     /* write out the charge density around first atom 
      * mainly for building the initial charge density for FIREBALL start
      */
 
+    if(ct.num_ions > 1) return;
 
     hxgrid = get_hxxgrid() * get_xside();
     hygrid = get_hyygrid() * get_yside();
@@ -280,8 +282,6 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
 
 
     my_free(rho_tem);
-
-
 
 
     MPI_Barrier(pct.img_comm);
