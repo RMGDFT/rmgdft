@@ -26,6 +26,8 @@
 #include "prototypes_on.h"
 #include "init_var.h"
 #include "LdaU_on.h"
+#include "transition.h"
+#include "LocalObject.h"
 
 
 
@@ -118,40 +120,33 @@ void read_data(char *name, double *vh, double *vxc, double *vh_old,
 
     MPI_Barrier(pct.img_comm);
 
-    for (state = ct.state_begin; state < ct.state_end; state++)
+    if(ct.LocalizedOrbitalLayout == LO_projection)
     {
-        int state_permuted = perm_state_index[state];
-        sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
-        fhand = open(newname, O_RDWR);
-        if (fhand < 0)
+        LocalOrbital->ReadProjectedOrbitals(name, *Rmg_G);
+    }
+    else
+    {
+        for (state = ct.state_begin; state < ct.state_end; state++)
         {
-            dprintf("\n  unable to open file %s", newname);
-            exit(0);
+            int state_permuted = perm_state_index[state];
+            sprintf(newname, "%s_spin%d%s%d", name, pct.spinpe, ".orbit_", state_permuted);
+            fhand = open(newname, O_RDWR);
+            if (fhand < 0)
+            {
+                dprintf("\n  unable to open file %s", newname);
+                exit(0);
+            }
+
+            nbytes = read(fhand, states[state].psiR, states[state].size * sizeof(double));
+            idx = states[state].size * sizeof(double);
+            if (nbytes != (size_t)idx)
+            {
+                printf("\n read %zd is different from %d for state %d", nbytes, idx, state);
+                error_handler("Unexpected end of file orbit");
+            }
+
+            close(fhand);
         }
-
-        nbytes = read(fhand, states[state].psiR, states[state].size * sizeof(double));
-        idx = states[state].size * sizeof(double);
-        if (nbytes != (size_t)idx)
-        {
-            printf("\n read %zd is different from %d for state %d", nbytes, idx, state);
-            error_handler("Unexpected end of file orbit");
-        }
-
-
-//      read(fhand, &states[state].ixmin, sizeof(int));
-//      read(fhand, &states[state].ixmax, sizeof(int));
-//      read(fhand, &states[state].iymin, sizeof(int));
-//      read(fhand, &states[state].iymax, sizeof(int));
-//      read(fhand, &states[state].izmin, sizeof(int));
-//      read(fhand, &states[state].izmax, sizeof(int));
-//      double hxgrid, hygrid, hzgrid;
-//      read(fhand, &hxgrid, sizeof(double));
-//      read(fhand, &hygrid, sizeof(double));
-//      read(fhand, &hzgrid, sizeof(double));
-//      read(fhand, &states[state].crds[0], 3 * sizeof(double));
-
-
-        close(fhand);
     }
 
 

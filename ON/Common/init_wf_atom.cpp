@@ -32,34 +32,71 @@ void init_wf_atom(STATE * states)
         printf(" readin initial wavefunction \n");
     MPI_Barrier(pct.img_comm);
 
-    for (state = ct.state_begin; state < ct.state_end; state++)
+    if(ct.LocalizedOrbitalLayout == LO_projection)
     {
-        ion = states[state].atom_index;
-        species = Atoms[ion].species;
-        ist = states[state].atomic_orbital_index;
-
-
-
-        sprintf(newname, "%s%s%s%d", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), "_spin0.orbit_", ist);
-        fhand = open(newname, O_RDWR);
-        if (fhand < 0)
+        double *phi = new double[ct.max_orbit_size];
+        for (int st = 0; st < LocalOrbital->num_thispe; st++)
         {
-            printf("\n ddd %d %d %d", state, ion, species);
-            printf("\n unable to open file: %s \n", newname);
-            error_handler(" Unable to open file ");
-        }
+            int st_glob = LocalOrbital->index_proj_to_global[st];
 
-        idx = states[state].size * sizeof(double);
-        nbytes = read(fhand, states[state].psiR, idx);
-        if (nbytes != idx)
+            ion = states[st_glob].atom_index;
+            species = Atoms[ion].species;
+            ist = states[st_glob].atomic_orbital_index;
+
+            sprintf(newname, "%s%s%s%d", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), "_spin0.orbit_", ist);
+            fhand = open(newname, O_RDWR);
+            if (fhand < 0)
+            {
+                printf("\n ddd %d %d %d", st_glob, ion, species);
+                printf("\n unable to open file: %s \n", newname);
+                error_handler(" Unable to open file ");
+            }
+
+            idx = states[st_glob].size * sizeof(double);
+            nbytes = read(fhand, phi, idx);
+            if (nbytes != idx)
+            {
+                printf("\n read %d is different from %d ", nbytes, idx);
+                printf("\n file name: %s\n", newname);
+
+                error_handler("Unexpected end of file orbit");
+            }
+            LocalOrbital->AssignOrbital(st, phi);
+        }
+        delete [] phi;
+        
+    }
+    else
+    {
+        for (state = ct.state_begin; state < ct.state_end; state++)
         {
-            printf("\n read %d is different from %d ", nbytes, idx);
-            printf("\n file name: %s\n", newname);
+            ion = states[state].atom_index;
+            species = Atoms[ion].species;
+            ist = states[state].atomic_orbital_index;
 
-            error_handler("Unexpected end of file orbit");
+
+
+            sprintf(newname, "%s%s%s%d", pct.image_path[pct.thisimg], ct.file_atomic_orbit[species].c_str(), "_spin0.orbit_", ist);
+            fhand = open(newname, O_RDWR);
+            if (fhand < 0)
+            {
+                printf("\n ddd %d %d %d", state, ion, species);
+                printf("\n unable to open file: %s \n", newname);
+                error_handler(" Unable to open file ");
+            }
+
+            idx = states[state].size * sizeof(double);
+            nbytes = read(fhand, states[state].psiR, idx);
+            if (nbytes != idx)
+            {
+                printf("\n read %d is different from %d ", nbytes, idx);
+                printf("\n file name: %s\n", newname);
+
+                error_handler("Unexpected end of file orbit");
+            }
+
+
         }
-
-
     }
 
 
@@ -70,5 +107,6 @@ void init_wf_atom(STATE * states)
 
 
 }                               /* end init_wf_atom */
+
 
 

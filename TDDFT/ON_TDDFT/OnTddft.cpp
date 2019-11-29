@@ -166,7 +166,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Cmatrix, &pre_steps);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
-        Phi.ReadOrbitals(std::string(ct.infile), *Rmg_G);
+        Phi.ReadOrbitalsFromSingleFiles(std::string(ct.infile), *Rmg_G);
     }
     else
     {

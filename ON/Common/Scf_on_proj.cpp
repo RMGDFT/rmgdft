@@ -55,9 +55,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
                 ct.orbital_pulay_mixfirst, ct.orbital_pulay_scale, pct.grid_comm); 
         Pulay_orbital->SetPrecond(Preconditioner);
         Pulay_orbital->SetNstates(LocalOrbital->num_thispe);
-        write_data (ct.outfile, vh, vxc, vh_old, vxc_old, rho, vh_corr, states);
-        MPI_Barrier(pct.img_comm);
-        LocalOrbital->ReadOrbitals(std::string(ct.outfile), *Rmg_G);
     }
 
     rho_pre = new double[nfp0];

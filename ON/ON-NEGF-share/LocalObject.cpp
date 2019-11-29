@@ -198,9 +198,9 @@ template <class KpointType> LocalObject<KpointType>::~LocalObject(void)
 
 }
 
-template void LocalObject<double>::ReadOrbitals(std::string filename, BaseGrid &BG);
-template void LocalObject<std::complex<double>>::ReadOrbitals(std::string filename, BaseGrid &BG);
-template <class KpointType> void LocalObject<KpointType>::ReadOrbitals(std::string filename, BaseGrid &BG)
+template void LocalObject<double>::ReadOrbitalsFromSingleFiles(std::string filename, BaseGrid &BG);
+template void LocalObject<std::complex<double>>::ReadOrbitalsFromSingleFiles(std::string filename, BaseGrid &BG);
+template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingleFiles(std::string filename, BaseGrid &BG)
 {
 
     int density = this->density;
@@ -484,7 +484,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
 }
 
 //localized orbitals are projected on 3D domain decompostion, writing for each orbital here is not very 
-//efficient 
+//efficient  so we write the orbitals for each processor 
 template void LocalObject<double>::WriteOrbitals(std::string filename, BaseGrid &BG);
 template void LocalObject<std::complex<double>>::WriteOrbitals(std::string filename, BaseGrid &BG);
 template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::string filename, BaseGrid &BG)
@@ -498,78 +498,41 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::str
     int PX_OFFSET = BG.get_PX_OFFSET(density);
     int PY_OFFSET = BG.get_PY_OFFSET(density);
     int PZ_OFFSET = BG.get_PZ_OFFSET(density);
-    int NX_GRID = BG.get_NX_GRID(density);
-    int NY_GRID = BG.get_NY_GRID(density);
-    int NZ_GRID = BG.get_NZ_GRID(density);
-    int ilow = PX_OFFSET;
-    int ihigh = ilow + PX0_GRID;
-    int jlow = PY_OFFSET;
-    int jhigh = jlow + PY0_GRID;
-    int klow = PZ_OFFSET;
-    int khigh = klow + PZ0_GRID;
 
     int fhand;
 
-    int factor = sizeof(KpointType) /sizeof(double);
-    for(int st_glob = 0; st_glob < this->num_tot; st_glob++)
+    for(int st = 0; st < this->num_thispe; st++)
     {
 
-        int st = this->index_global_to_proj[st_glob];
-        int nxyz = this->dimx[st_glob] * this->dimy[st_glob] * this->dimz[st_glob];
-        KpointType *psi = new KpointType[nxyz];
+        int st_glob = this->index_proj_to_global[st];
+        // 6 digits number will cover 999k oribtials
+        size_t num_digits = 6;
+        std::string st_string, st_string6;
+        st_string = std::to_string(st_glob);
+        st_string6.assign(num_digits - st_string.size(), '0');
+        st_string6 += st_string;
 
-        for(int idx = 0; idx < nxyz; idx++) psi[idx] = 0.0;
-
-        for(int ix = 0; ix < this->dimx[st_glob]; ix++)
-            for(int iy = 0; iy < this->dimy[st_glob]; iy++)
-                for(int iz = 0; iz < this->dimz[st_glob]; iz++)
-                {
-                    int ixx = ix + this->ixmin[st_glob]; 
-                    int iyy = iy + this->iymin[st_glob]; 
-                    int izz = iz + this->izmin[st_glob]; 
-
-                    if (ixx < 0) ixx += NX_GRID;
-                    if (iyy < 0) iyy += NY_GRID;
-                    if (izz < 0) izz += NZ_GRID;
-                    if (ixx >= NX_GRID) ixx -=NX_GRID;
-                    if (iyy >= NY_GRID) iyy -=NY_GRID;
-                    if (izz >= NZ_GRID) izz -=NZ_GRID;
-
-                    if(ixx >=ilow && ixx < ihigh && iyy >=jlow && iyy <jhigh && izz >=klow && izz < khigh)
-                    {
-                        int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
-                        int idx0 = ix * this->dimy[st_glob] * this->dimz[st_glob] + iy * this->dimz[st_glob] + iz;
-                        psi[idx0] = this->storage_proj[st * P0_BASIS + idx];
-                    }
-
-                }
-
-        MPI_Allreduce(MPI_IN_PLACE, psi, nxyz*factor, MPI_DOUBLE, MPI_SUM, this->comm);
-
-        std::string newname= filename + "_spin" + std::to_string(pct.spinpe) + ".orbit_"+std::to_string(st_glob);
+        std::string newname= filename + "_spin" + std::to_string(pct.spinpe) + ".orbit_"+ st_string6;
+        newname =  newname + "_gridpe" + std::to_string(pct.gridpe);
         fhand = open(newname.c_str(), O_CREAT |O_TRUNC| O_RDWR, S_IREAD | S_IWRITE);
         if(fhand < 0)
         {
-            printf ("\n %s \n", newname.c_str());
+            printf ("\n cannot open file: %s \n", newname.c_str());
             fflush(NULL);
             exit(0);
         }
 
-        size_t size = nxyz * sizeof(KpointType);
-        write(fhand, psi, size);
+        write(fhand, &PX0_GRID, sizeof(int));
+        write(fhand, &PY0_GRID, sizeof(int));
+        write(fhand, &PZ0_GRID, sizeof(int));
+        write(fhand, &PX_OFFSET, sizeof(int));
+        write(fhand, &PY_OFFSET, sizeof(int));
+        write(fhand, &PZ_OFFSET, sizeof(int));
 
-        int ixmax = this->ixmin[st_glob] + this->dimx[st_glob];
-        int iymax = this->iymin[st_glob] + this->dimy[st_glob];
-        int izmax = this->izmin[st_glob] + this->dimz[st_glob];
-        write(fhand, &this->ixmin[st_glob], sizeof(int));
-        write(fhand, &ixmax, sizeof(int));
-        write(fhand, &this->iymin[st_glob], sizeof(int));
-        write(fhand, &iymax, sizeof(int));
-        write(fhand, &this->izmin[st_glob], sizeof(int));
-        write(fhand, &izmax, sizeof(int));
+        size_t size = P0_BASIS * sizeof(KpointType);
+        write(fhand, &this->storage_proj[st * P0_BASIS], size);
 
         close(fhand);
-        delete []psi;
     }
 }
 
@@ -770,7 +733,6 @@ template <class KpointType> void LocalObject<KpointType>::Normalize()
 
     MPI_Allreduce(MPI_IN_PLACE, norm_coef, this->num_tot, MPI_DOUBLE, MPI_SUM, this->comm);
 
-    int ione = 1;
     for(int st = 0; st < this->num_thispe; st++)
     {
         int st_glob = this->index_proj_to_global[st];
@@ -835,3 +797,53 @@ template <class KpointType> void LocalObject<KpointType>::AssignOrbital(int st, 
 
 }
 
+template void LocalObject<double>::ReadProjectedOrbitals(std::string filename, BaseGrid &BG);
+template void LocalObject<std::complex<double>>::ReadProjectedOrbitals(std::string filename, BaseGrid &BG);
+template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(std::string filename, BaseGrid &BG)
+{
+
+    int density = this->density;
+    int PX0_GRID = BG.get_PX0_GRID(density);
+    int PY0_GRID = BG.get_PY0_GRID(density);
+    int PZ0_GRID = BG.get_PZ0_GRID(density);
+    int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+    int PX_OFFSET = BG.get_PX_OFFSET(density);
+    int PY_OFFSET = BG.get_PY_OFFSET(density);
+    int PZ_OFFSET = BG.get_PZ_OFFSET(density);
+
+    int fhand;
+
+    for(int st = 0; st < this->num_thispe; st++)
+    {
+
+        int st_glob = this->index_proj_to_global[st];
+        // 6 digits number will cover 999k oribtials
+        size_t num_digits = 6;
+        std::string st_string, st_string6;
+        st_string = std::to_string(st_glob);
+        st_string6.assign(num_digits - st_string.size(), '0');
+        st_string6 += st_string;
+
+        std::string newname= filename + "_spin" + std::to_string(pct.spinpe) + ".orbit_"+ st_string6;
+        newname =  newname + "_gridpe" + std::to_string(pct.gridpe);
+        fhand = open(newname.c_str(),  O_RDWR, S_IREAD | S_IWRITE);
+        if(fhand < 0)
+        {
+            printf ("\n cannot open file: %s \n", newname.c_str());
+            fflush(NULL);
+            exit(0);
+        }
+
+        read(fhand, &PX0_GRID, sizeof(int));
+        read(fhand, &PY0_GRID, sizeof(int));
+        read(fhand, &PZ0_GRID, sizeof(int));
+        read(fhand, &PX_OFFSET, sizeof(int));
+        read(fhand, &PY_OFFSET, sizeof(int));
+        read(fhand, &PZ_OFFSET, sizeof(int));
+
+        size_t size = P0_BASIS * sizeof(KpointType);
+        read(fhand, &this->storage_proj[st * P0_BASIS], size);
+
+        close(fhand);
+    }
+}
