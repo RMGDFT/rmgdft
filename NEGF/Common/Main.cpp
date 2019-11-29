@@ -152,10 +152,8 @@ double *sg_orbit;
 double *sg_orbit_res;
 int *state_begin;
 int *state_end;
-double *vtot_global;
 double *work_memory;
 double *wave_global;
-double *rho_global;
 double *vh_old, *vxc_old;
 
 double *vcomp, *peaks, *vext ;
@@ -165,7 +163,7 @@ double *work_matrix;
 double *vnuc_x, *vnuc_y, *vnuc_z;
 int peakNum;
 
-DoubleC *sigma_all;
+std::complex<double> *sigma_all;
 
 NON_LINEAR_THREE_PART lcr[NUM_SUBSYSTEM_MAX];
 

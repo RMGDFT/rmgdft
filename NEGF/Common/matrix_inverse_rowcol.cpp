@@ -12,11 +12,10 @@
 #include "LCR.h"
 #include "pmo.h"
 #include "Scalapack.h"
+#include "GpuAlloc.h"
 
-void *memory_ptr_host_device(void *ptr_host, void *ptr_device);
-void matrix_inverse_driver(double *, int *);
-void matrix_inverse_rowcol (std::complex<double> * H_tri_host, int iprobe, std::complex<double> *G_tri_host, std::complex<double> *G_row_host, 
-std::complex<double> *G_col_host)
+void matrix_inverse_rowcol (std::complex<double> * H_tri, int iprobe, std::complex<double> *G_tri, 
+        std::complex<double> *Grow, std::complex<double> *Gcol)
 {
 /*  Calculate the inverse of a semi-tridiagonal complex matrix
  *
@@ -40,9 +39,7 @@ std::complex<double> *G_col_host)
 
     int  i, n1, n2;
     std::complex<double> *Gii, *Hlower, *Hupper;
-    std::complex<double> *Gii_host, *Grow, *Gcol;
-    std::complex<double> *Gdiag, *Gdiag_host;
-    std::complex<double> *H_tri, *G_tri;
+    std::complex<double> *Gdiag;
     std::complex<double> half, mone, one, zero;
     int ione = 1;
     int *ndiag_begin, *n_begin1, *n_begin2;
@@ -82,7 +79,7 @@ std::complex<double> *G_col_host)
     my_malloc_init( n_begin2, ct.num_blocks, int);
     size_t n_alloc;
     n_alloc = maxrow * maxcol * sizeof(std::complex<double>);
-    Gii_host = (std::complex<double> *) malloc(n_alloc);
+    Gii = (std::complex<double> *)GpuMallocManaged (n_alloc);
 
 
     n_alloc = 0;
@@ -91,15 +88,8 @@ std::complex<double> *G_col_host)
         n_alloc += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
     }
 
-    Gdiag_host = (std::complex<double> *) malloc(n_alloc * sizeof(std::complex<double>));
+    Gdiag = (std::complex<double> *)GpuMallocManaged(n_alloc * sizeof(std::complex<double>));
 
-    Gii = memory_ptr_host_device(Gii_host, ct.gpu_Gii);
-
-    H_tri = memory_ptr_host_device(H_tri_host, ct.gpu_Htri);
-    G_tri = memory_ptr_host_device(G_tri_host, ct.gpu_Gtri);
-    Gdiag = memory_ptr_host_device(Gdiag_host, ct.gpu_GdiagBlocks);
-    Grow = memory_ptr_host_device(G_row_host, ct.gpu_Grow);
-    Gcol = memory_ptr_host_device(G_col_host, ct.gpu_Gcol);
 
     /*
      *  ndiag_begin[i]:  pointer address for i-th diagonal block in Gdiag
@@ -120,8 +110,6 @@ std::complex<double> *G_col_host)
 
 
     /*  calculate the inverse of the first block  */
-
-    setvector_host_device (pmo.ntot_low, sizeof(std::complex<double>), H_tri_host, ione, ct.gpu_Htri, ione);
 
     //  right side Gauss elimination  
     ncopy = pmo.mxllda_cond[N-1] * pmo.mxlocc_cond[N-1];
@@ -267,7 +255,6 @@ std::complex<double> *G_col_host)
 
         
     ncopy = ntot_row * maxcol;
-    getvector_device_host (ncopy, sizeof(std::complex<double>),ct.gpu_Grow,ione, G_row_host, ione);
 
     // for gamma point, Gcol_ij = Transpose(Grow_ji)
 
@@ -279,8 +266,8 @@ std::complex<double> *G_col_host)
             n2 = ni[i];
             desca = &pmo.desc_cond[ ( i +  m  * ct.num_blocks) * DLEN];
             descb = &pmo.desc_cond[ ( m +  i    * ct.num_blocks) * DLEN];
-            pztranu_(&n1, &n2, &one, &G_row_host[n_begin1[i]], &ione, &ione, desca, 
-                    &zero, &G_col_host[n_begin2[i]], &ione, &ione, descb);
+            pztranu_(&n1, &n2, &one, &Grow[n_begin1[i]], &ione, &ione, desca, 
+                    &zero, &Gcol[n_begin2[i]], &ione, &ione, descb);
 
 
         }
@@ -436,7 +423,6 @@ std::complex<double> *G_col_host)
 
 
     ncopy = ntot_col * maxrow;
-    getvector_device_host (ncopy, sizeof(std::complex<double>),ct.gpu_Gcol,ione, G_col_host, ione);
 
     // for gamma point, Gcol_ij = Transpose(Grow_ji)
 
@@ -445,7 +431,7 @@ std::complex<double> *G_col_host)
     my_free( ndiag_begin );
     my_free( n_begin1 );
     my_free( n_begin2 );
-    free( Gdiag_host );
-    free( Gii_host );
+    GpuFreeManaged( Gdiag );
+    GpuFreeManaged( Gii);
 }
 

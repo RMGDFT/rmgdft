@@ -80,9 +80,6 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
 
     pmo_init();
 
-#if GPU_ENABLED
-    init_gpu();
-#endif
     if (ct.runflag == 100)
     {
 

@@ -19,6 +19,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "GpuAlloc.h"
 
 double pmo_trace(std::complex<double>*, int*);
 
@@ -140,8 +141,8 @@ void get_cond_frommatrix_kyz ()
 	/*======================== Reading Matrices ===============================*/
 
 
-	my_malloc_init( H_tri, pmo.ntot_low, std::complex<double> );
-	my_malloc_init( G_tri, pmo.ntot_low, std::complex<double> );
+	H_tri = (std::complex<double> *)GpuMallocManaged( pmo.ntot_low *sizeof(std::complex<double>) );
+	G_tri = (std::complex<double> *)GpuMallocManaged( pmo.ntot_low *sizeof(std::complex<double>) );
 	my_malloc_init( lcr[0].Htri, pmo.ntot, double );
 	my_malloc_init( lcr[0].Stri, pmo.ntot, double );
 
@@ -153,13 +154,12 @@ void get_cond_frommatrix_kyz ()
         nC_max = rmg_max(nC_max, idx);
     }
     
-    my_malloc_init( Gamma1, nC_max, std::complex<double> ); 
-    my_malloc_init( Gamma2, nC_max, std::complex<double> ); 
-    my_malloc_init( green_C, nC_max, std::complex<double>); 
-    my_malloc_init( temp_matrix1, nC_max, std::complex<double> );
-    my_malloc_init( temp_matrix2, nC_max, std::complex<double> );
-
-
+    Gamma1 = (std::complex<double> *)GpuMallocManaged( 5 *nC_max *sizeof( std::complex<double>) ); 
+    Gamma2 = Gamma1 + nC_max;
+    green_C =  Gamma1 + 2*nC_max;
+    temp_matrix1 =  Gamma1 + 3*nC_max;
+    temp_matrix2 =  Gamma1 + 4*nC_max;
+    
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {	
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
@@ -191,7 +191,6 @@ void get_cond_frommatrix_kyz ()
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
         idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
-    my_malloc_init( sigma, idx, std::complex<double> );
 
 
     my_malloc_init( sigma_idx, cei.num_probe, int ); 
@@ -204,7 +203,7 @@ void get_cond_frommatrix_kyz ()
         idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
     }
 
-    my_malloc_init( sigma_all, idx, std::complex<double> );
+    sigma_all = (std::complex<double> *) GpuMallocManaged( idx * sizeof( std::complex<double> ) );
 
 
     /*============== Allocate memory for tot, tott, g ====================*/
@@ -217,7 +216,7 @@ void get_cond_frommatrix_kyz ()
     }
 
 
-    my_malloc_init(work,    12*idx, std::complex<double> );
+    work = (std::complex<double> *) GpuMallocManaged( 12*idx * sizeof( std::complex<double> ));
 
     /*===================================================================*/
 
@@ -277,14 +276,11 @@ void get_cond_frommatrix_kyz ()
                     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
                     {
 
+                        sigma = &sigma_all[sigma_idx[iprobe - 1]];
                         sigma_one_energy_point(sigma, iprobe, ene, kvecy[kp], kvecz[kp], work); 
 
 
                         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-                        for (i = 0; i < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; i++)
-                        {
-                            sigma_all[sigma_idx[iprobe - 1] + i] = sigma[i];
-                        }
 
                         if(iprobe == iprobe1)
                         {
@@ -475,17 +471,13 @@ void get_cond_frommatrix_kyz ()
     my_free(ener1_temp);
     my_free(cond_temp);
 
-    my_free(work);
-    my_free(sigma);
-    my_free(sigma_all);
+    GpuFreeManaged(work);
+    GpuFreeManaged(sigma_all);
     my_free(sigma_idx);
 
-    my_free(Gamma1);
-    my_free(Gamma2);
-    my_free(temp_matrix1);
-    my_free(temp_matrix2);
-    my_free(green_C);
-    my_free(H_tri);
+    GpuFreeManaged(Gamma1);
+    GpuFreeManaged(H_tri);
+    GpuFreeManaged(G_tri);
     my_free(lcr[0].Htri);
     my_free(lcr[0].Stri);
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)

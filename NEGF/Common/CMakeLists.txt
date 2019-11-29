@@ -45,9 +45,6 @@ is_vloc_state_overlap.cpp
 kpoints.cpp
 lead_bandstructure.cpp
 lead_mat_distribute.cpp
-matrix_inverse_anyprobe.cpp
-matrix_inverse_blocknm.cpp
-matrix_inverse_p.cpp
 matrix_kpoint.cpp
 matrix_kpoint_center.cpp
 green_kpoint_phase.cpp

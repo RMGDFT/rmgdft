@@ -41,7 +41,7 @@
 
 void allocate_matrix_soft ()
 {
-    int ispin, sizeofmatrix, item, item1, item2, lwork;
+    int ispin, item, item1, item2, lwork;
     int ictxt, nproc, myrow, mycol, icrow, iccol;
     int izero = 0, ione = 1, itwo = 2, nb = ct.scalapack_block_factor, nn = ct.num_states;
     int nprow = pct.scalapack_nprow, npcol = pct.scalapack_npcol, npes = pct.grid_npes;
@@ -51,7 +51,7 @@ void allocate_matrix_soft ()
     int sbasis;
 
     int NB = ct.scalapack_block_factor;
-    ispin = ct.spin_flag + 1;
+    ispin = ct.nspin;
 
     sbasis = (get_PX0_GRID() +2) * (get_PY0_GRID() +2) * (get_PZ0_GRID() +2);
     my_malloc_init( peaks, 100, double );
@@ -66,23 +66,15 @@ void allocate_matrix_soft ()
     my_malloc_init( vtot, get_FP0_BASIS(), double );
     my_malloc_init( vtot_c, get_P0_BASIS(), double );
     my_malloc_init( rhocore, get_FP0_BASIS(), double );
-    my_malloc_init( vtot_global, get_NX_GRID() * get_NY_GRID() * get_NZ_GRID(), double );
-    rho_global = vtot_global;
-/*  my_malloc_init( nlarray1, get_P0_BASIS()/MAX_FUNC_PE, double );*/
     
     if (ct.num_tfions > 0)
     {
-	my_malloc_init( rho_tf, get_FP0_BASIS(), double );
+        my_malloc_init( rho_tf, get_FP0_BASIS(), double );
     }
 
     my_malloc_init( rho_old, get_FP0_BASIS() * ispin, double );
 
     my_malloc_init( sg_res, sbasis, double );
-    sizeofmatrix = ct.num_states * ct.num_states;
-
-#if !GAMMA_PT
-    sizeofmatrix *= 2.0;
-#endif
 
 
     /*  allocate memory for other uses  */

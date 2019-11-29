@@ -20,19 +20,20 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "GpuAlloc.h"
 
 #define 	MAX_STEP 	100
 
 
-void green_lead (std::complex<double> *ch0_host, std::complex<double> *ch01_host, 
-                std::complex<double> *ch10_host, std::complex<double> *green_host, int iprobe)
+void green_lead (std::complex<double> *ch0, std::complex<double> *ch01, 
+                std::complex<double> *ch10, std::complex<double> *green, int iprobe)
 {
 
     double converge1, converge2;
     std::complex<double> *tau, *taut, *tsum, *tsumt, *t11, *t12, *s1;
     std::complex<double> one = 1.0, zero = 0.0, mone = -1.0;
-    std::complex<double> *green, *tot, *tott, *ch0, *ch01, *ch10; 
-    std::complex<double> *temp_host, *Imatrix_host, *Imatrix;
+    std::complex<double> *tot, *tott;
+    std::complex<double> *temp,  *Imatrix;
     int step;
     int ione = 1, n1;
     int nrow, ncol, nmax;
@@ -47,39 +48,20 @@ void green_lead (std::complex<double> *ch0_host, std::complex<double> *ch01_host
     n1 = nrow * ncol;
 
     /* allocate matrix and initialization  */
-    my_malloc_init( temp_host, n1 * 11, std::complex<double> );
-    my_malloc_init( Imatrix_host, n1, std::complex<double> );
+    temp = (std::complex<double> *) GpuMallocManaged( n1 * 11 * sizeof(std::complex<double>));
+    Imatrix = (std::complex<double> *) GpuMallocManaged( n1  * sizeof(std::complex<double>));
 
-#if GPU_ENABLED
-    if(pmo.ntot_low < 7 * n1)
-    {
-        printf("\n the central part is even smaller than lead, don't use gpu version \n");
-        fflush(NULL);
-        exit(0);
-    }
-#endif
-
-    ch0 = memory_ptr_host_device(ch0_host, ct.gpu_Htri);
-    ch10 = memory_ptr_host_device(ch10_host, &ct.gpu_Htri[n1]);
-    ch01 = memory_ptr_host_device(ch01_host, ct.gpu_Hii);
-    setvector_host_device (n1, sizeof(std::complex<double>), ch0_host, ione, ct.gpu_Htri, ione);
-    setvector_host_device (n1, sizeof(std::complex<double>), ch10_host, ione, &ct.gpu_Htri[n1], ione);
-    setvector_host_device (n1, sizeof(std::complex<double>), ch01_host, ione, ct.gpu_Hii, ione);
-
-    tot  = memory_ptr_host_device(&temp_host[0*n1], &ct.gpu_Gtri[0*n1]);
-    tott = memory_ptr_host_device(&temp_host[1*n1], &ct.gpu_Gtri[1*n1]);
-    t11  = memory_ptr_host_device(&temp_host[2*n1], &ct.gpu_Gtri[2*n1]);
-    t12  = memory_ptr_host_device(&temp_host[3*n1], &ct.gpu_Gtri[3*n1]);
-    tsum = memory_ptr_host_device(&temp_host[4*n1], &ct.gpu_Gtri[4*n1]);
-    tsumt= memory_ptr_host_device(&temp_host[5*n1], &ct.gpu_Gtri[5*n1]);
-    s1   = memory_ptr_host_device(&temp_host[6*n1], &ct.gpu_Gtri[6*n1]);
-    tau  = memory_ptr_host_device(&temp_host[7*n1], ct.gpu_Grow);
-    taut = memory_ptr_host_device(&temp_host[9*n1], ct.gpu_Gcol);
-    green= memory_ptr_host_device(green_host, ct.gpu_Gii);
-    Imatrix = memory_ptr_host_device(Imatrix_host, ct.gpu_Imatrix);
+    tot  = &temp[0*n1];
+    tott = &temp[1*n1];
+    t11  = &temp[2*n1];
+    t12  = &temp[3*n1];
+    tsum = &temp[4*n1];
+    tsumt= &temp[5*n1];
+    s1   = &temp[6*n1];
+    tau  = &temp[7*n1];
+    taut = &temp[9*n1];
     
-    pmo_unitary_matrix(Imatrix_host, desca);
-    setvector_host_device (n1, sizeof(std::complex<double>), Imatrix_host, ione, ct.gpu_Imatrix, ione);
+    pmo_unitary_matrix(Imatrix, desca);
 
     /* t11 = (ene-ch0)^-1  */
 
@@ -185,12 +167,9 @@ void green_lead (std::complex<double> *ch0_host, std::complex<double> *ch01_host
     zcopy_driver(n1, ch0, ione, green, ione);
     matrix_inverse_driver(green, desca);
 
-    getvector_device_host (n1, sizeof(std::complex<double>), green, ione, green_host, ione);
 
-
-
-    my_free(temp_host);
-    my_free(Imatrix_host);
+    GpuFreeManaged(temp);
+    GpuFreeManaged(Imatrix);
 
 }
 

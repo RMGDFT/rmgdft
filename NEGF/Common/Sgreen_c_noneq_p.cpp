@@ -17,6 +17,7 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "GpuAlloc.h"
 
 
 void Sgreen_c_noneq_p (double *Htri, double *Stri, std::complex<double> * sigma,
@@ -57,7 +58,7 @@ void Sgreen_c_noneq_p (double *Htri, double *Stri, std::complex<double> * sigma,
 
     ntot = pmo.ntot_low;
     /* allocate matrix and initialization  */
-    my_malloc_init( H_tri, ntot, std::complex<double> );
+    H_tri = (std::complex<double> *)GpuMallocManaged( ntot *  sizeof(std::complex<double> ));
  
     matrix_kpoint_center(H_tri, Stri, Htri, ene, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
 
@@ -76,17 +77,9 @@ void Sgreen_c_noneq_p (double *Htri, double *Stri, std::complex<double> * sigma,
 
 
 
-  matrix_inverse_rowcol (H_tri, iprobe, Green_C, Green_C_row, Green_C_col); 
- //matrix_inverse_anyprobe (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
-//#if GPU_ENABLED
- // matrix_inverse_anyprobe_cuda (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
-//#else
-//   matrix_inverse_anyprobe_p (H_tri, N, ni, iprobe, Green_C_row, Green_C_col); 
-//#endif
+    matrix_inverse_rowcol (H_tri, iprobe, Green_C, Green_C_row, Green_C_col); 
 
 
-
-
-    my_free( H_tri );
+    GpuFreeManaged( H_tri );
 
 }

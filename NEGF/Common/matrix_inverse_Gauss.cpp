@@ -12,10 +12,9 @@
 #include "LCR.h"
 #include "pmo.h"
 #include "Scalapack.h"
+#include "GpuAlloc.h"
 
-void *memory_ptr_host_device(void *ptr_host, void *ptr_device);
-void matrix_inverse_driver(double *, int *);
-void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<double> * G_tri_host)
+void matrix_inverse_Gauss (std::complex<double> * H_tri, std::complex<double> * G_tri)
 {
 /*  Calculate the inverse of a semi-tridiagonal complex matrix
  *
@@ -39,9 +38,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<doubl
 
     int  i, n1, n2, n3, n4;
     std::complex<double> *Gii, *Hlower, *Hupper;
-    std::complex<double> *Gii_host;
-    std::complex<double> *Gdiag, *Gdiag_host;
-    std::complex<double> *H_tri, *G_tri;
+    std::complex<double> *Gdiag;
     std::complex<double> half, mone, one, zero;
     int ione = 1;
     int *ndiag_begin;
@@ -78,7 +75,8 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<doubl
     my_malloc_init( ndiag_begin, ct.num_blocks, int);
     size_t n_alloc;
     n_alloc = maxrow * maxcol * sizeof(std::complex<double>);
-    Gii_host = (std::complex<double> *) malloc(n_alloc);
+
+    Gii = (std::complex<double> *)GpuMallocManaged(n_alloc);
 
 
     n_alloc = 0;
@@ -87,13 +85,8 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<doubl
         n_alloc += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
     }
 
-    Gdiag_host = (std::complex<double> *) malloc(n_alloc * sizeof(std::complex<double>));
+    Gdiag = (std::complex<double> *) GpuMallocManaged(n_alloc * sizeof(std::complex<double>));
 
-    Gii = memory_ptr_host_device(Gii_host, ct.gpu_Gii);
-
-    H_tri = memory_ptr_host_device(H_tri_host, ct.gpu_Htri);
-    G_tri = memory_ptr_host_device(G_tri_host, ct.gpu_Gtri);
-    Gdiag = memory_ptr_host_device(Gdiag_host, ct.gpu_GdiagBlocks);
 
     /*
      *  ndiag_begin[i]:  pointer address for i-th diagonal block in Gdiag
@@ -108,7 +101,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<doubl
 
     /*  calculate the inverse of the first block  */
 
-    setvector_host_device (pmo.ntot_low, sizeof(std::complex<double>), H_tri_host, ione, ct.gpu_Htri, ione);
+    //setvector_host_device (pmo.ntot_low, sizeof(std::complex<double>), H_tri_host, ione, ct.gpu_Htri, ione);
 
     //  right side Gauss elimination  
 
@@ -265,12 +258,12 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<doubl
 
 
 
-    getvector_device_host (pmo.ntot_low, sizeof(std::complex<double>),ct.gpu_Gtri,ione, G_tri_host, ione);
+   // getvector_device_host (pmo.ntot_low, sizeof(std::complex<double>),ct.gpu_Gtri,ione, G_tri_host, ione);
 
     if(!ct.is_gamma)
     {
         int up_and_low = 1;
-        green_kpoint_phase(G_tri_host, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
+        green_kpoint_phase(G_tri, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
 
         for(i = 0; i < ct.num_blocks - 1; i++)
         {
@@ -282,8 +275,8 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<doubl
             desca = &pmo.desc_cond[ ( i +  (i+1)  * ct.num_blocks) * DLEN];
             descc = &pmo.desc_cond[ ( i+1 +  i    * ct.num_blocks) * DLEN];
 
-            pztranu_(&n1, &n2, &half, &G_tri_host[n4], &ione, &ione, descc, 
-                    &half, &G_tri_host[n3], &ione, &ione, desca);
+            pztranu_(&n1, &n2, &half, &G_tri[n4], &ione, &ione, descc, 
+                    &half, &G_tri[n3], &ione, &ione, desca);
 
         }
     }
@@ -291,7 +284,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri_host, std::complex<doubl
 
 
     my_free( ndiag_begin );
-    free( Gdiag_host );
-    free( Gii_host );
+    free( Gdiag );
+    free( Gii );
 }
 

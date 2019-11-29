@@ -1,4 +1,5 @@
 add_library (ON_Common
+ GetNewRho_on.cpp
  Scf_on_proj.cpp
  Preconditioner.cpp
  WriteWaveFunctions.cpp
