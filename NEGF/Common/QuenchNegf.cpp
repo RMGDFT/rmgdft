@@ -124,7 +124,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
 
 
 
-    sigma_all = new DoubleC[idx1];
+    sigma_all = (std::complex<double> *)GpuMallocManaged(idx1*sizeof(std::complex<double>));
 
     if (ct.runflag != 111)
     {

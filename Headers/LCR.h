@@ -10,7 +10,7 @@ typedef std::complex<double> DoubleC;
 #define 	NUM_PROBE_MAX 	4 
 #define 	NUM_SUBSYSTEM_MAX   15
 
-extern DoubleC *sigma_all;
+extern std::complex<double> *sigma_all;
 
 struct NON_LINEAR_THREE_PART2
 {

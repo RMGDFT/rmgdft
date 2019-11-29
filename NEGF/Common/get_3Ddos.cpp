@@ -236,7 +236,10 @@ void get_3Ddos (STATE * states, double EMIN, double EMAX, int EPoints, int numbe
                 COMM_EN1);
 
         tri_to_row (density_matrix, work_matrix, ct.num_blocks, ct.block_dim);
-        GetNewRho_on(states, rho, work_matrix);
+
+printf("\n 3Ddos broken now \n");
+exit(0);
+//        GetNewRho_on(states, rho, work_matrix);
 
         for (ix = 0; ix < get_FPX0_GRID(); ix++)
         {

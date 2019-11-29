@@ -12,14 +12,12 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "GpuAlloc.h"
 
 
 
-void *memory_ptr_host_device(void *ptr_host, void *ptr_device);
-void matrix_inverse_driver(double *, int *);
-
-void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_host, std::complex<double> *G_tri_host, 
-        int m, int n, std::complex<double> * Green_C_host)
+void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri, std::complex<double> *G_tri, 
+        int m, int n, std::complex<double> * Green_C)
 {
 /*  Calculate the inverse of a semi-tridiagonal complex matrix
  *
@@ -44,8 +42,7 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_host, std::compl
 
     int  i, n1, n2;
     std::complex<double> *Gii, *Hlower, *Hupper;
-    std::complex<double> *Gdiag, *Gdiag_host;
-    std::complex<double> *H_tri, *G_tri;
+    std::complex<double> *Gdiag;
     std::complex<double> half, mone, one, zero;
     int ione = 1;
     int *ndiag_begin;
@@ -89,13 +86,9 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_host, std::compl
         n_alloc += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
     }
 
-    Gdiag_host = (std::complex<double> *) malloc(n_alloc * sizeof(std::complex<double>));
+    Gdiag = (std::complex<double> *) GpuMallocManaged(n_alloc * sizeof(std::complex<double>));
 
-    Gii = memory_ptr_host_device(Green_C_host, ct.gpu_Gii);
-
-    H_tri = memory_ptr_host_device(H_tri_host, ct.gpu_Htri);
-    G_tri = memory_ptr_host_device(G_tri_host, ct.gpu_Gtri);
-    Gdiag = memory_ptr_host_device(Gdiag_host, ct.gpu_GdiagBlocks);
+    Gii = Green_C;
 
     /*
      *  ndiag_begin[i]:  pointer address for i-th diagonal block in Gdiag
@@ -109,8 +102,6 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_host, std::compl
     
 
     /*  calculate the inverse of the first block  */
-
-    setvector_host_device (pmo.ntot_low, sizeof(std::complex<double>), H_tri_host, ione, ct.gpu_Htri, ione);
 
     //  right side Gauss elimination  
 
@@ -266,10 +257,8 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri_host, std::compl
 
 
     ncopy = pmo.mxllda_cond[n] * pmo.mxlocc_cond[m]; 
-    getvector_device_host (ncopy, sizeof(std::complex<double>),ct.gpu_Gii,ione, Green_C_host, ione);
-
 
     my_free( ndiag_begin );
-    free( Gdiag_host );
+    GpuFreeManaged( Gdiag );
 }
 

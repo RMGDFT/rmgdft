@@ -14,13 +14,13 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "GpuAlloc.h"
 
 
 void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, double kvecz)
 {
     int iprobe, jprobe, idx_delta, j;
     int iene;
-    int st1;
     std::complex<double> *sigma;          
 
     std::complex<double> *work;
@@ -42,7 +42,7 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
     }
 
 
-    my_malloc_init( work, 12*maxrow * maxcol, std::complex<double>);
+    work = (std::complex<double> *)GpuMallocManaged(12*maxrow * maxcol *sizeof( std::complex<double>));
 
     max_sigma_col = 0;
     max_sigma_row = 0;
@@ -53,7 +53,6 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
         max_sigma_col = rmg_max(max_sigma_col, pmo.mxlocc_cond[idx_C]);
     }
 
-    my_malloc_init( sigma, max_sigma_row * max_sigma_col, std::complex<double>);
 
     /************************/
 
@@ -75,15 +74,12 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
             for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)
             {
 
+                sigma = &sigma_all[idx_sigma];
                 sigma_one_energy_point(sigma, jprobe, ene, kvecy, kvecz, work);
 
                 /*-------------------------------------------------------------------*/
 
                 idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
-                for (st1 = 0; st1 < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; st1++)
-                {
-                    sigma_all[idx_sigma + st1] = sigma[st1];
-                }
                 idx_sigma += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
 
 
@@ -114,19 +110,14 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
 
                     ene = lcr[iprobe].lcr_ne[j].ene_ne[iene];
 
-
-
                     for (jprobe = 1; jprobe <= cei.num_probe; jprobe++)
                     {
 
+                        sigma = &sigma_all[idx_sigma];
                         sigma_one_energy_point(sigma, jprobe, ene, kvecy, kvecz, work);
 
 
                         idx_C = cei.probe_in_block[jprobe - 1];  /* block index */
-                        for (st1 = 0; st1 < pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]; st1++)
-                        {
-                            sigma_all[idx_sigma + st1] = sigma[st1];
-                        }
                         idx_sigma += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
 
 
@@ -144,9 +135,6 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
     }        /* iprobe loop ends here */
 
 
-
-
-    my_free(work);
-    my_free(sigma);
+    GpuFreeManaged(work);
 
 }

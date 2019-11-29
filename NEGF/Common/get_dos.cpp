@@ -253,7 +253,9 @@ void get_dos (STATE * states)
                 COMM_EN1);
 
         tri_to_row (density_matrix, work_matrix, ct.num_blocks, ct.block_dim);
-        GetNewRho_on(states, rho, work_matrix);
+printf("\n 200 dos calculation is broken now \n");
+exit(0);
+        //GetNewRho_on(states, rho, work_matrix);
 
         //get_new_rho_soft (states, rho);
 

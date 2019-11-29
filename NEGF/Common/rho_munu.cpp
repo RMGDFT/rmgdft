@@ -14,20 +14,17 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
-
-void *memory_ptr_host_device(void *ptr_host, void *ptr_device);
-void matrix_inverse_driver(double *, int *);
+#include "GpuAlloc.h"
 
 // for GPU run, ct.gpu_Grow and ct.gpu_Gcol are already in device after Sgreen_c_noneq.c 
 // Sgreen_c_noneq.c calls matrix_inverse_anyprobe.c with GPU 
 
-void rho_munu (std::complex<double> * rho_mn_host, std::complex<double> * G_row_host, 
-        std::complex<double> *G_col_host, std::complex<double> * gamma_host, int iprobe)
+void rho_munu (std::complex<double> * rho_mn, std::complex<double> * Grow, 
+        std::complex<double> *Gcol, std::complex<double> * gamma, int iprobe)
 {
 
     std::complex<double> one = 1.0, zero=0.0, half=0.5;
-    std::complex<double> *temp_host;
-    std::complex<double> *Grow, *Gcol, *gamma, *temp, *rho_mn;
+    std::complex<double> *temp;
     int *desca, *descb, *descc, *descd, *desce, *descl;
 
     int i, n_green, n1, n2;
@@ -52,20 +49,10 @@ void rho_munu (std::complex<double> * rho_mn_host, std::complex<double> * G_row_
     }
 
     n1 = maxrow * maxcol;
-    my_malloc_init( temp_host, n1, std::complex<double> );
-
-    gamma = memory_ptr_host_device(gamma_host, ct.gpu_Gii);
-    temp = memory_ptr_host_device(temp_host, ct.gpu_temp);
-
-    Grow = memory_ptr_host_device(G_row_host, ct.gpu_Grow);
-    Gcol = memory_ptr_host_device(G_col_host, ct.gpu_Gcol);
-    rho_mn = memory_ptr_host_device(rho_mn_host, ct.gpu_Gtri);
+    temp = (std::complex<double> *) GpuMallocManaged(n1 * sizeof(std::complex<double>));
 
 
     n1 = nL * nL;
-    setvector_host_device (n1, sizeof(std::complex<double>), gamma_host, ione, ct.gpu_Gii, ione);
-
-
 
     n_green = 0;
     descl = &pmo.desc_cond[ (N1  + N1 * ct.num_blocks ) * DLEN ];
@@ -158,13 +145,12 @@ void rho_munu (std::complex<double> * rho_mn_host, std::complex<double> * G_row_
 
     }
 
-    getvector_device_host(pmo.ntot, sizeof( std::complex<double> ), ct.gpu_Gtri, ione, rho_mn_host, ione );
 
 
     int up_and_low = 0;
-    green_kpoint_phase(rho_mn_host, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
+    green_kpoint_phase(rho_mn, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
 
-    my_free(temp_host);
+    GpuFreeManaged(temp);
 
 
 }

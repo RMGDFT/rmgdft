@@ -16,20 +16,17 @@
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
+#include "GpuAlloc.h"
 
 
 #define 	MAX_STEP 	40
 
-void *memory_ptr_host_device(void *ptr_host, void *ptr_device);
-void matrix_inverse_driver(double *, int *);
-
-
-void Sgreen_semi_infinite_p (std::complex<double> * green_host, std::complex<double>
-        *ch00_host, std::complex<double> *ch01_host, std::complex<double> *ch10_host, int jprobe)
+void Sgreen_semi_infinite_p (std::complex<double> *green, std::complex<double>
+        *ch00, std::complex<double> *ch01, std::complex<double> *ch10, int jprobe)
 {
 
     double converge1, converge2, tem;
-    std::complex<double> *chtem, *chtem_host, *green, *ch00, *ch01, *ch10;
+    std::complex<double> *chtem;
     std::complex<double> one=1.0, zero=0.0, mone=-1.0;
     int step;
     int ione = 1, n1;
@@ -47,20 +44,7 @@ void Sgreen_semi_infinite_p (std::complex<double> * green_host, std::complex<dou
 
     /* allocate matrix and initialization  */
 
-    my_malloc_init( chtem_host, n1, std::complex<double> );
-
-
-    ch00 = memory_ptr_host_device(ch00_host, ct.gpu_Htri);
-    ch10 = memory_ptr_host_device(ch10_host, &ct.gpu_Htri[n1]);
-    ch01 = memory_ptr_host_device(ch01_host, ct.gpu_Hii);
-    setvector_host_device (n1, sizeof(std::complex<double>), ch00_host, ione, ct.gpu_Htri, ione);
-    setvector_host_device (n1, sizeof(std::complex<double>), ch10_host, ione, &ct.gpu_Htri[n1], ione);
-    setvector_host_device (n1, sizeof(std::complex<double>), ch01_host, ione, ct.gpu_Hii, ione);
-
-    chtem  = memory_ptr_host_device(chtem_host, ct.gpu_Gtri);
-    green= memory_ptr_host_device(green_host, ct.gpu_Gii);
-
-
+    chtem = (std::complex<double> *)GpuMallocManaged(n1 * sizeof(std::complex<double>));
 
     /*  green = (e S00- H00)^-1  */
 
@@ -105,8 +89,6 @@ void Sgreen_semi_infinite_p (std::complex<double> * green_host, std::complex<dou
     }
     /*    printf("\n %d %f %f converge\n", step, eneR, eneI); */
 
-    
-    getvector_device_host (n1, sizeof(std::complex<double>), green, ione, green_host, ione);
 
-    my_free( chtem_host );
+    GpuFreeManaged( chtem );
 }

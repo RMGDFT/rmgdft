@@ -12,7 +12,6 @@ OrbitalComm.cpp
 DistributeTasks.cpp
 RmgThread.cpp
 make_mask_grid_state.cpp
-GetNewRho_on.cpp
 GetNewRho_proj.cpp
 FillOrbitalBorders.cpp
 KbpsiUpdate.cpp
