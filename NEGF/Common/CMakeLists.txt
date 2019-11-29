@@ -37,7 +37,6 @@ global_to_distribute3.cpp
 H01_to_HCL.cpp
 init_comp.cpp
 init_ext.cpp
-init_gpu.cpp
 init_loc_xyz.cpp
 init_pe_on.cpp
 interpolation_orbit.cpp

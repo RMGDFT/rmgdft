@@ -103,10 +103,10 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
         cuerr = cudaMalloc((void **)&devInfo, sizeof(int) );
 
         cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, &Lwork);
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (" cusolverDnZgetrf_bufferSize failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf_bufferSize failed.");
         cuerr = cudaMalloc((void **) &Workspace, sizeof(cuDoubleComplex) *Lwork);
         cu_status = cusolverDnZgetrf(ct.cusolver_handle, nn, nn, (cuDoubleComplex *)A, nn, Workspace, devIpiv, devInfo );
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (" cusolverDnZgetrf failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
         info = 0;
         if (info != 0)
         {
@@ -117,11 +117,11 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
 
 
         cudaDeviceSynchronize();
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (" cusolverDnZgetrf failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
         
         cublasOperation_t trans =CUBLAS_OP_N;
         cu_status = cusolverDnZgetrs(ct.cusolver_handle, trans, nn, nhrs, (const cuDoubleComplex *)A, nn, devIpiv, (cuDoubleComplex *)B, nn, devInfo ); 
-        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (" cusolverDnZgetrs failed.");
+        if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrs failed.");
 
 
         info = 0;

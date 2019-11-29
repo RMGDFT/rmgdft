@@ -659,22 +659,22 @@ public:
     cusolverDnHandle_t cusolver_handle;
     cudaStream_t cusolver_stream;
 
-    cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow;
-    cuDoubleComplex *gpu_GdiagBlocks;
-    cuDoubleComplex *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
-    cuDoubleComplex *gpu_Gcol;
+//    cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow;
+//    cuDoubleComplex *gpu_GdiagBlocks;
+//    cuDoubleComplex *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
+//    cuDoubleComplex *gpu_Gcol;
 
-    int *gpu_ipiv;
+//    int *gpu_ipiv;
 
     // Default is to use managed memory for non-local weights but if GPU memory
     // is constrained performance is much better using pinned memory.
     bool pin_nonlocal_weights;
 
 #else
-    std::complex<double> *gpu_Htri, *gpu_Gtri, *gpu_GdiagBlocks;
-    std::complex<double> *gpu_Grow;
-    std::complex<double> *gpu_Gcol;
-    std::complex<double> *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
+//    std::complex<double> *gpu_Htri, *gpu_Gtri, *gpu_GdiagBlocks;
+//    std::complex<double> *gpu_Grow;
+//    std::complex<double> *gpu_Gcol;
+//    std::complex<double> *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
 #endif
 
     

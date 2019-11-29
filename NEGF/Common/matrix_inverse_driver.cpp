@@ -38,6 +38,7 @@
 #include "Gpufuncs.h"
 #include "blas.h"
 #include "Scalapack.h"
+#include "GpuAlloc.h"
 
 
 
@@ -103,9 +104,11 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     free(ipiv);
 #else
     
-    pmo_unitary_matrix((std::complex<double> *)ct.gpu_temp, desca);
-    zgesv_driver (Hii, desca, (std::complex<double> *) ct.gpu_temp, desca);
-    zcopy_driver (nn*nn, (std::complex<double> *)ct.gpu_temp, ione, Hii, ione);
+    std::complex<double> *gpu_temp = (std::complex<double> *)GpuMallocManaged(nn*nn*sizeof(std::complex<double>));
+    pmo_unitary_matrix(gpu_temp, desca);
+    zgesv_driver (Hii, desca, gpu_temp, desca);
+    zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
+    GpuFreeManaged(gpu_temp);
 
 #endif
 

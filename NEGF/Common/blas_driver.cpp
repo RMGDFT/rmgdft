@@ -27,7 +27,7 @@ void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> 
 {
 
 #if GPU_ENABLED
-    cublasZcopy (ct.cublas_handle, n, A, ia, B, ib);
+    cublasZcopy (ct.cublas_handle, n, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
 #else
     zcopy (&n, A, &ia, B, &ib);
 #endif
@@ -38,7 +38,7 @@ void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, i
 {
 
 #if GPU_ENABLED
-    cublasZaxpy (ct.cublas_handle, n, &alpha, A, ia, B, ib);
+    cublasZaxpy (ct.cublas_handle, n, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
 #else
     zaxpy (&n, &alpha, A, &ia, B, &ib);
 #endif
@@ -47,7 +47,7 @@ void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, i
 void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 {
 #if GPU_ENABLED
-    cublasDzasum (ct.cublas_handle, n, A, ia, sum);
+    cublasDzasum (ct.cublas_handle, n, (cuDoubleComplex *)A, ia, sum);
 #else
     *sum = dzasum(&n, (double *)A, &ia);
 #endif

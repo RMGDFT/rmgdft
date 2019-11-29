@@ -66,8 +66,8 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri, std::complex<double> * 
     {
         ntot_row += pmo.mxllda_cond[i];
         ntot_col += pmo.mxlocc_cond[i];
-        maxrow = rmg_max(maxrow, pmo.mxllda_cond[i]);
-        maxcol = rmg_max(maxcol, pmo.mxlocc_cond[i]);
+        maxrow = std::max(maxrow, pmo.mxllda_cond[i]);
+        maxcol = std::max(maxcol, pmo.mxlocc_cond[i]);
 
     }
 
@@ -284,7 +284,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri, std::complex<double> * 
 
 
     my_free( ndiag_begin );
-    free( Gdiag );
-    free( Gii );
+    GpuFreeManaged( Gdiag );
+    GpuFreeManaged( Gii );
 }
 
