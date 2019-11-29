@@ -42,7 +42,7 @@ void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
 {
     void *ptr;
     cudaError_t custat;
-    custat = cudaMallocManaged ( &ptr, size, cudaMemAttachGlobal );
+    custat = cudaMallocManaged ( &ptr, size+16, cudaMemAttachGlobal );
     RmgCudaError(fname, line, custat, "Error: cudaMallocManaged failed.\n");
     return ptr;
 }
@@ -57,7 +57,7 @@ void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
 void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
 {
     void *ptr;
-    if(NULL == (ptr = malloc(size))) {
+    if(NULL == (ptr = malloc(size + 16))) {
         printf("\n memory size required %lu ", size);
         throw RmgFatalException() << "memory cannot be allocated: " << fname << " at line " << line << ".\n";
     }

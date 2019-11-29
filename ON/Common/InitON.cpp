@@ -263,8 +263,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         LocalProj->ReadProjectors(ct.num_ions, ct.max_nlpoints, proj_per_ion, *Rmg_G);
         
         delete [] proj_per_ion;
-        Kbpsi_mat = new double[LocalProj->num_tot * LocalOrbital->num_tot]; 
-        Kbpsi_mat_local = new double[LocalProj->num_thispe * LocalOrbital->num_thispe]; 
+        Kbpsi_mat = (double *)GpuMallocManaged(LocalProj->num_tot * LocalOrbital->num_tot * sizeof(double)); 
+        Kbpsi_mat_local = (double *) GpuMallocManaged(LocalProj->num_thispe * LocalOrbital->num_thispe * sizeof(double)); 
     }
 
     delete RTa;

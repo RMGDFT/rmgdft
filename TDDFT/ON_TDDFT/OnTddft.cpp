@@ -110,7 +110,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     //    double *vh_z = new double[FP0_BASIS];
 
     int num_orb = Phi.num_thispe;
-    double *rho_matrix_local = new double[num_orb * num_orb];
+    double *rho_matrix_local = (double *)GpuMallocManaged(num_orb * num_orb * sizeof(double));
     double *Hij_local = (double *)GpuMallocManaged(num_orb * num_orb * sizeof(double));
     double *Sij_local = (double *)GpuMallocManaged(num_orb * num_orb * sizeof(double));
     double dipole_ele[3];

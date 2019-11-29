@@ -120,9 +120,9 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
         int pbasis = Rmg_G->get_P0_BASIS(1);
         //  calculate the wavefuctions from localized orbitals
-        double *psi = new double[2* LocalOrbital->num_tot * pbasis];
+        double *psi = new double[2* LocalOrbital->num_tot * pbasis]();
         double *Cij_global = new double[LocalOrbital->num_tot * LocalOrbital->num_tot];
-        double *Cij_local = new double[LocalOrbital->num_tot * LocalOrbital->num_thispe];
+        double *Cij_local = new double[LocalOrbital->num_tot * LocalOrbital->num_thispe + 1];
 
         mat_dist_to_global(zz_dis, pct.desca, Cij_global);
 
@@ -135,7 +135,8 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
 
         double one(1.0), zero(0.0);
-        dgemm("N", "N", &pbasis, &LocalOrbital->num_tot, &LocalOrbital->num_thispe, &one, LocalOrbital->storage_proj, &pbasis,
+        if(LocalOrbital->num_thispe > 0)
+            dgemm("N", "N", &pbasis, &LocalOrbital->num_tot, &LocalOrbital->num_thispe, &one, LocalOrbital->storage_proj, &pbasis,
                 Cij_local, &LocalOrbital->num_thispe, &zero, psi, &pbasis);
 
 

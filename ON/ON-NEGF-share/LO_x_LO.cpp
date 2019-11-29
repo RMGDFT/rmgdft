@@ -54,6 +54,7 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat_local, 
 
     int na = A.num_thispe ;
     int nb = B.num_thispe;
+    if(na < 1 || nb < 1) return;
     if(A.density != B.density)
         throw RmgFatalException() << "density is different "<< " at file " << __FILE__ << "\n";
         

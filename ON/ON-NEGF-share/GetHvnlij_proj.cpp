@@ -36,6 +36,7 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_
     double *temA;
     double *dnm, *qnm;
 
+    if(num_orb1 < 1 || num_orb2 < 1 || num_proj < 1) return;
     dnm = new double[num_proj * num_proj];
     qnm = new double[num_proj * num_proj];
     temA = new double[num_orb1 * num_proj];

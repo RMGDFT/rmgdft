@@ -51,6 +51,7 @@ void mat_local_to_glob(double *mat_local, double *mat_glob, LocalObject<double> 
     int na = st_end1 - st_start1;
     int nb = st_end2 - st_start2;
 
+    if(na < 1 || nb < 1) return;
     if(A.density != B.density)
         throw RmgFatalException() << "density is different "<< " at file " << __FILE__ << "\n";
         

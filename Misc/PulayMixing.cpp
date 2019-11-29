@@ -73,13 +73,22 @@ void PulayMixing::Mixing(double *xm, double *fm)
 
     // copy the xm and fm to the last history pointer.
     int current_pos = std::min(this->step, this->pulay_order-1);
-    dcopy(&N, xm, &ione, this->hist_ptr[current_pos], &ione);
-    dcopy(&N, fm, &ione, this->res_hist_ptr[current_pos], &ione);
-
+    if(N > 0)
+    {
+        dcopy(&N, xm, &ione, this->hist_ptr[current_pos], &ione);
+        dcopy(&N, fm, &ione, this->res_hist_ptr[current_pos], &ione);
+    }
     if (this->step == 0)
     {
-        daxpy(&N, &this->mix_first, fm, &ione, xm, &ione);
-        A_mat[this->step * lda + this->step] = ddot(&N, fm, &ione, fm, &ione);
+        if(N > 0)
+        {
+
+            daxpy(&N, &this->mix_first, fm, &ione, xm, &ione);
+            A_mat[this->step * lda + this->step] = ddot(&N, fm, &ione, fm, &ione);
+        }
+        else
+            A_mat[this->step * lda + this->step] = 0.0;
+
         this->step++;
         return;
     }
@@ -133,31 +142,34 @@ void PulayMixing::Mixing(double *xm, double *fm)
     //    std::cout << "Pulay_b:" << i <<"  "<< b[i]<<std::endl;
     //printf("\n");
 
-    dscal(&N, &b[size-1], xm, &ione);
-    for (int i = 0; i < size - 1; i++)
+    if(N > 0)
     {
-        daxpy(&N, &b[i], this->hist_ptr[i], &ione, xm, &ione);
+        dscal(&N, &b[size-1], xm, &ione);
+        for (int i = 0; i < size - 1; i++)
+        {
+            daxpy(&N, &b[i], this->hist_ptr[i], &ione, xm, &ione);
+        }
+
+        dscal(&N, &b[size-1], fm, &ione);
+        for (int i = 0; i < size - 1; i++)
+        {
+            daxpy(&N, &b[i], this->res_hist_ptr[i], &ione, fm, &ione);
+        }
+
+        if(this->need_precond) this->Precond(fm, this->nstates);
+
+        daxpy(&N, &this->beta, fm, &ione, xm, &ione);
+
+        // if the this->step larger than pulay_order, rotate the hist_ptr so that 
+        //the first pointer becomes the last pointer which will be used for next step xm and fm.
+        // otherwise the history pointers don't need to rotate.
+        if (this->step >= this->pulay_order -1) 
+        {
+            std::rotate(this->hist_ptr.begin(),this->hist_ptr.begin()+1,this->hist_ptr.end());
+            std::rotate(this->res_hist_ptr.begin(),this->res_hist_ptr.begin()+1,this->res_hist_ptr.end());
+        }
+
     }
-
-    dscal(&N, &b[size-1], fm, &ione);
-    for (int i = 0; i < size - 1; i++)
-    {
-        daxpy(&N, &b[i], this->res_hist_ptr[i], &ione, fm, &ione);
-    }
-
-    if(this->need_precond) this->Precond(fm, this->nstates);
-
-    daxpy(&N, &this->beta, fm, &ione, xm, &ione);
-
-    // if the this->step larger than pulay_order, rotate the hist_ptr so that 
-    //the first pointer becomes the last pointer which will be used for next step xm and fm.
-    // otherwise the history pointers don't need to rotate.
-    if (this->step >= this->pulay_order -1) 
-    {
-        std::rotate(this->hist_ptr.begin(),this->hist_ptr.begin()+1,this->hist_ptr.end());
-        std::rotate(this->res_hist_ptr.begin(),this->res_hist_ptr.begin()+1,this->res_hist_ptr.end());
-    }
-
     this->step++;
 
 }

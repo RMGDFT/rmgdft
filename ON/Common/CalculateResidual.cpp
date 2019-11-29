@@ -42,7 +42,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     RmgTimer *RT = new RmgTimer("3-OrbitalOptimize: calculate");
 
-
+    if(Phi.num_thispe < 1) return;
     double one = 1.0, zero = 0.0, mtwo = -2.0;
 
 
@@ -68,6 +68,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     if(ct.num_ldaU_ions > 0 )
         ldaU_on->app_vhubbard(H_Phi, *Rmg_G);
 
+    if(NlProj.num_thispe < 1) return;
     double *kbpsi_local = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
     double *kbpsi_work = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
     double *kbpsi_work1 = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));

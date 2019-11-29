@@ -29,6 +29,8 @@ void RhoAugmented_proj(double * rho, double *rho_matrix_local)
     int num_orb = LocalOrbital->num_thispe;
     int num_prj = LocalProj->num_thispe;
 
+    if(num_orb < 1 || num_prj < 1) return;
+
     double *rho_kbpsi = (double *)GpuMallocManaged(num_orb * num_prj * sizeof(double));
     double *Qnm_coeff = (double *)GpuMallocManaged(num_prj * num_prj * sizeof(double));
 

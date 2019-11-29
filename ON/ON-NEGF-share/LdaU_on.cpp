@@ -188,6 +188,7 @@ void LdaU_on::app_vhubbard(LocalObject<double> &HLO, BaseGrid &BG)
     int pbasis = BG.get_P0_BASIS(1);
     int nldaU = this->AtomicOrbital->num_thispe;
     int norb = HLO.num_thispe;
+    if(norb < 1 || nldaU < 1) return;
     double one = 1.0;
     dgemm("N", "N", &pbasis, &norb, &nldaU, &one, this->AtomicOrbital->storage_proj, &pbasis, 
             this->Upsi_mat_local, &nldaU, &one, HLO.storage_proj, &pbasis);
