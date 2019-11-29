@@ -970,7 +970,7 @@ void center_of_mass_velocity(double &vx, double &vy, double &vz)
         double mass = Species[Atom.species].atomic_mass * mu_me;
         px += mass * Atom.velocity[0];
         py += mass * Atom.velocity[1];
-        pz += mass * Atom.velocity[1];
+        pz += mass * Atom.velocity[2];
         total_mass += mass;
     }
 
