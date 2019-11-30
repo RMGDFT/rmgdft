@@ -142,34 +142,31 @@ void PulayMixing::Mixing(double *xm, double *fm)
     //    std::cout << "Pulay_b:" << i <<"  "<< b[i]<<std::endl;
     //printf("\n");
 
-    if(N > 0)
+    dscal(&N, &b[size-1], xm, &ione);
+    for (int i = 0; i < size - 1; i++)
     {
-        dscal(&N, &b[size-1], xm, &ione);
-        for (int i = 0; i < size - 1; i++)
-        {
-            daxpy(&N, &b[i], this->hist_ptr[i], &ione, xm, &ione);
-        }
-
-        dscal(&N, &b[size-1], fm, &ione);
-        for (int i = 0; i < size - 1; i++)
-        {
-            daxpy(&N, &b[i], this->res_hist_ptr[i], &ione, fm, &ione);
-        }
-
-        if(this->need_precond) this->Precond(fm, this->nstates);
-
-        daxpy(&N, &this->beta, fm, &ione, xm, &ione);
-
-        // if the this->step larger than pulay_order, rotate the hist_ptr so that 
-        //the first pointer becomes the last pointer which will be used for next step xm and fm.
-        // otherwise the history pointers don't need to rotate.
-        if (this->step >= this->pulay_order -1) 
-        {
-            std::rotate(this->hist_ptr.begin(),this->hist_ptr.begin()+1,this->hist_ptr.end());
-            std::rotate(this->res_hist_ptr.begin(),this->res_hist_ptr.begin()+1,this->res_hist_ptr.end());
-        }
-
+        daxpy(&N, &b[i], this->hist_ptr[i], &ione, xm, &ione);
     }
+
+    dscal(&N, &b[size-1], fm, &ione);
+    for (int i = 0; i < size - 1; i++)
+    {
+        daxpy(&N, &b[i], this->res_hist_ptr[i], &ione, fm, &ione);
+    }
+
+    if(this->need_precond) this->Precond(fm, this->nstates);
+
+    daxpy(&N, &this->beta, fm, &ione, xm, &ione);
+
+    // if the this->step larger than pulay_order, rotate the hist_ptr so that 
+    //the first pointer becomes the last pointer which will be used for next step xm and fm.
+    // otherwise the history pointers don't need to rotate.
+    if (this->step >= this->pulay_order -1) 
+    {
+        std::rotate(this->hist_ptr.begin(),this->hist_ptr.begin()+1,this->hist_ptr.end());
+        std::rotate(this->res_hist_ptr.begin(),this->res_hist_ptr.begin()+1,this->res_hist_ptr.end());
+    }
+
     this->step++;
 
 }

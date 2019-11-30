@@ -212,7 +212,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         if(ct.spin_flag)
             get_rho_oppo(rho, rho_oppo);
         //get_te(rho, rho_oppo, rhocore, rhoc, vh, vxc, states, !ct.scf_steps);
-        if(ct.scf_steps >=ct.freeze_orbital_step)
+        if(ct.scf_steps ==ct.freeze_orbital_step)
         {
             if(ct.charge_pulay_order ==1 )  ct.charge_pulay_order++;
             Pulay_rho->Refresh();
