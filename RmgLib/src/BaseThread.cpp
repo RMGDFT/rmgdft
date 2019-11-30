@@ -139,6 +139,26 @@ void BaseThread::run_thread_tasks(int rjobs)
     BaseThread::run_thread_tasks(rjobs, NULL);
 }
 
+void BaseThread::rmg_enter_omp_region(MpiQueue *Queue)
+{
+    int nthreads = omp_get_num_threads();
+    if(nthreads == 1) return;
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    if(Queue) Queue->run_manager();
+    BaseThread::in_omp_threaded_region.store(true);
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+}
+
+void BaseThread::rmg_leave_omp_region(MpiQueue *Queue)
+{
+    int nthreads = omp_get_num_threads();
+    if(nthreads == 1) return;
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    BaseThread::in_omp_threaded_region.store(false);
+    if(Queue) Queue->stop_manager();
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+}
+
 // Called from main when we terminate all threads
 void BaseThread::wake_all_threads(void)
 {
@@ -171,7 +191,12 @@ void BaseThread::thread_joinall(void)
 
 // Blocks all threads until nthreads specified in the init call have reached this point
 void BaseThread::thread_barrier_wait(bool spin) {
-    if(!BaseThread::in_threaded_region.load()) return;
+    if(!BaseThread::in_threaded_region.load() && !BaseThread::in_omp_threaded_region.load()) return;
+    if(BaseThread::in_omp_threaded_region.load())
+    {
+#pragma omp barrier
+        ;
+    }
     BaseThread::barrier->wait_for_threads(spin);
 }
 
@@ -179,9 +204,14 @@ void BaseThread::thread_barrier_wait(bool spin) {
 // a parallel region. Meant to be called from a thread.
 int BaseThread::get_thread_basetag(void) {
     BaseThreadControl *ss;
-    if(!BaseThread::in_threaded_region.load()) return 0;
+    if(!BaseThread::in_threaded_region.load() && !BaseThread::in_omp_threaded_region.load()) return 0;
+    if(BaseThread::in_omp_threaded_region.load())
+    {
+        int tid = omp_get_thread_num();
+        return thread_controls[tid].basetag.load();
+    }
     ss = rmg_get_tsd();
-    if(!ss) return 0;
+    if(!ss) return false;
 
     return ss->basetag.load();
 }
@@ -217,7 +247,12 @@ int BaseThread::get_thread_tid(void) {
 }
 
 MPI_Comm BaseThread::get_grid_comm(void) {
-    if(!BaseThread::in_threaded_region.load()) return this->parent_grid_comm;
+    if(!BaseThread::in_threaded_region.load() && !BaseThread::in_omp_threaded_region.load()) return this->parent_grid_comm;
+    if(BaseThread::in_omp_threaded_region.load())
+    {
+        int tid = omp_get_thread_num();
+        return thread_controls[tid].grid_comm;
+    }
     BaseThreadControl *ss;
     ss = rmg_get_tsd();
     if(!ss) return this->parent_grid_comm;
@@ -233,10 +268,11 @@ MPI_Comm BaseThread::get_unique_comm(int index) {
 int BaseThread::is_loop_over_states(void)
 {
     BaseThreadControl *ss;
-    if(!BaseThread::in_threaded_region.load()) return 0;
+    if(!BaseThread::in_threaded_region.load() && !BaseThread::in_omp_threaded_region.load()) return false;
+    if(BaseThread::in_omp_threaded_region.load()) return true;
     ss = rmg_get_tsd();
-    if(!ss) return 0;
-    return 1;
+    if(!ss) return false;
+    return true;
 }
 
 int BaseThread::get_threads_per_node(void)

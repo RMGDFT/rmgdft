@@ -128,6 +128,9 @@ public:
     void wake_all_threads(void);
     void thread_joinall(void);
 
+    void rmg_enter_omp_region(MpiQueue *Queue);
+    void rmg_leave_omp_region(MpiQueue *Queue);
+
 };
 
 void rmg_set_tsd(BaseThreadControl *p);
