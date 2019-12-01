@@ -108,22 +108,22 @@ void Preconditioner (double *res, int num_states)
             daxpy(&pbasis, &one, &res[st*pbasis], &ione, res_t2, &ione);
             for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
                 res_t2[idx] = 0.0;
-            CPP_pack_ptos (work1_t, res_t2, dimx, dimy, dimz);
 
             double t1; 
             /* Now either smooth the wavefunction or do a multigrid cycle */
             if (cycles == ct.eig_parm.gl_pre)
             {
-
-                MG.mgrid_solv (work2_t, work1_t, work_t,
+                CPP_pack_ptos_convert ((float *)work1_t, (double *)res_t2, dimx, dimy, dimz);
+                MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
                         dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                         0, levels, pre, post, 1,
-                        tstep, 1.0*Zfac, 0.0, NULL,     // which one is best?
-                        //tstep, 1.0, 0.0, vtot,
+                        //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
+                        tstep, 1.0, 0.0, vtot,
                         G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                         G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
                         G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-                CPP_pack_stop (work2_t, res_t2, dimx, dimy, dimz);
+                CPP_pack_stop_convert((float *)work2_t, (double *)res_t2, dimx, dimy, dimz);
+
                 t1 = -1.;
 
             }
@@ -149,4 +149,5 @@ void Preconditioner (double *res, int num_states)
     delete []res_t;
     delete []res_t2;
 }
+
 
