@@ -141,15 +141,18 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
 
             for(int ist = 0;ist < active_threads;ist++)
             {
-                thread_control.job = HYBRID_GET_RHO;
-                double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
-                OrbitalType *psi = Kpts[kpt]->Kstates[st1+ist].psi;
-                thread_control.p1 = (void *)psi;
-                thread_control.p2 = (void *)&P;
-                thread_control.p3 = (void *)&work[ist*FP0_BASIS * factor];
-                thread_control.fd_diag = scale;
-                thread_control.basetag = st1 + ist;
-                QueueThreadTask(ist, thread_control);
+                if(fabs(Kpts[kpt]->Kstates[st1+ist].occupation[0]) > 1.0e-10)
+                {
+		    thread_control.job = HYBRID_GET_RHO;
+                    double scale = Kpts[kpt]->Kstates[st1+ist].occupation[0] * Kpts[kpt]->kp.kweight;
+                    OrbitalType *psi = Kpts[kpt]->Kstates[st1+ist].psi;
+                    thread_control.p1 = (void *)psi;
+                    thread_control.p2 = (void *)&P;
+                    thread_control.p3 = (void *)&work[ist*FP0_BASIS * factor];
+                    thread_control.fd_diag = scale;
+                    thread_control.basetag = st1 + ist;
+                    QueueThreadTask(ist, thread_control);
+                }
             }
             // Thread tasks are set up so wake them
             if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
@@ -160,9 +163,12 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
         // Process any remaining states in serial fashion
         for(int st1 = istop;st1 < nstates;st1++) 
         {
-            double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
-            OrbitalType *psi = Kpts[kpt]->Kstates[st1].psi;
-            GetNewRhoOne(psi, &P, work, scale);
+            if(fabs(Kpts[kpt]->Kstates[st1].occupation[0]) > 1.0e-10)
+            {
+                double scale = Kpts[kpt]->Kstates[st1].occupation[0] * Kpts[kpt]->kp.kweight;
+                OrbitalType *psi = Kpts[kpt]->Kstates[st1].psi;
+                GetNewRhoOne(psi, &P, work, scale);
+            }
         }
 
     }                           /*end for kpt */

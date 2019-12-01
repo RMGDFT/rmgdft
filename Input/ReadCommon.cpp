@@ -899,7 +899,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("kohn_sham_ke_fft", &lc.kohn_sham_ke_fft, false,
             "Special purpose flag which will force use of an FFT for the kinetic energy operator.");
 
-    If.RegisterInputKey("fast_density", &lc.fast_density, false,
+    If.RegisterInputKey("fast_density", &lc.fast_density, true,
             "Use a faster but less accurate method to generate the charge density from the electronic wavefunctions. "
             "As the cutoff (grid-density) increases this method improves in accuracy. This option should be set to "
             "false if you receive warnings about negative charge densities after interpolation.");

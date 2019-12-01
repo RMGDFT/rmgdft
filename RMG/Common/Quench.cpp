@@ -109,7 +109,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         if(ct.xc_is_hybrid)
         {
             if(ct.exx_steps)
-                ct.exx_convergence_factor = std::min(1.0e-8, std::max(1.0e-15, fabs(ct.exx_delta)) / 100000.0) / ct.thr_energy;
+                ct.exx_convergence_factor = std::min(1.0e-8, std::max(1.0e-15, fabs(ct.exx_delta)) / 1000000.0) / ct.thr_energy;
             else
                 ct.exx_convergence_factor = 1.0e-7 / ct.thr_energy;
             if(fabs(ct.exx_delta) < 1.0e-6) ct.exx_convergence_factor /= 10.0;
@@ -181,7 +181,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             if(ct.exx_delta < 0.0)
             {
                 printf("WARNING: negative ct.exx_delta = %e. This may indicate a problem.\n", ct.exx_delta);
-                fprintf(stdout, "WARNING: negative ct.exx_delta = %f. This may indicate a problem.\n");
+                fprintf(stdout, "WARNING: negative ct.exx_delta = %f. This may indicate a problem.\n", ct.exx_delta);
             }
 
             if(fabs(ct.exx_delta) < ct.exx_convergence_criterion)

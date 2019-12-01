@@ -191,13 +191,15 @@ void BaseThread::thread_joinall(void)
 
 // Blocks all threads until nthreads specified in the init call have reached this point
 void BaseThread::thread_barrier_wait(bool spin) {
-    if(!BaseThread::in_threaded_region.load() && !BaseThread::in_omp_threaded_region.load()) return;
-    if(BaseThread::in_omp_threaded_region.load())
+    if(BaseThread::in_threaded_region.load())
+    {
+        BaseThread::barrier->wait_for_threads(spin);
+    }
+    else if(BaseThread::in_omp_threaded_region.load())
     {
 #pragma omp barrier
-        ;
+        return;
     }
-    BaseThread::barrier->wait_for_threads(spin);
 }
 
 // Reads the basetag from the thread specific data. Returns 0 if we are not in
@@ -267,12 +269,9 @@ MPI_Comm BaseThread::get_unique_comm(int index) {
 
 int BaseThread::is_loop_over_states(void)
 {
-    BaseThreadControl *ss;
-    if(!BaseThread::in_threaded_region.load() && !BaseThread::in_omp_threaded_region.load()) return false;
     if(BaseThread::in_omp_threaded_region.load()) return true;
-    ss = rmg_get_tsd();
-    if(!ss) return false;
-    return true;
+    if(BaseThread::in_threaded_region.load()) return true;
+    return false;
 }
 
 int BaseThread::get_threads_per_node(void)
