@@ -501,39 +501,20 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::str
 
     int fhand;
 
-    for(int st = 0; st < this->num_thispe; st++)
+    std::string newname= filename + "_spin" + std::to_string(pct.spinpe); 
+    newname =  newname + "_gridpe" + std::to_string(pct.gridpe);
+    fhand = open(newname.c_str(), O_CREAT |O_TRUNC| O_RDWR, S_IREAD | S_IWRITE);
+    if(fhand < 0)
     {
-
-        int st_glob = this->index_proj_to_global[st];
-        // 6 digits number will cover 999k oribtials
-        size_t num_digits = 6;
-        std::string st_string, st_string6;
-        st_string = std::to_string(st_glob);
-        st_string6.assign(num_digits - st_string.size(), '0');
-        st_string6 += st_string;
-
-        std::string newname= filename + "_spin" + std::to_string(pct.spinpe) + ".orbit_"+ st_string6;
-        newname =  newname + "_gridpe" + std::to_string(pct.gridpe);
-        fhand = open(newname.c_str(), O_CREAT |O_TRUNC| O_RDWR, S_IREAD | S_IWRITE);
-        if(fhand < 0)
-        {
-            printf ("\n cannot open file: %s \n", newname.c_str());
-            fflush(NULL);
-            exit(0);
-        }
-
-        write(fhand, &PX0_GRID, sizeof(int));
-        write(fhand, &PY0_GRID, sizeof(int));
-        write(fhand, &PZ0_GRID, sizeof(int));
-        write(fhand, &PX_OFFSET, sizeof(int));
-        write(fhand, &PY_OFFSET, sizeof(int));
-        write(fhand, &PZ_OFFSET, sizeof(int));
-
-        size_t size = P0_BASIS * sizeof(KpointType);
-        write(fhand, &this->storage_proj[st * P0_BASIS], size);
-
-        close(fhand);
+        printf ("\n cannot open file: %s \n", newname.c_str());
+        fflush(NULL);
+        exit(0);
     }
+
+    size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType);
+    write(fhand, this->storage_proj, size);
+
+    close(fhand);
 }
 
 template void LocalObject<double>::SetZeroBoundary(BaseGrid&, int kh_level, int fd_order);
@@ -560,7 +541,7 @@ template <class KpointType> void LocalObject<KpointType>::SetZeroBoundary(BaseGr
 
     //int dim = 1 << kh_level;
     //if( (PX0_GRID % dim != 0) || (PY0_GRID % dim != 0) || (PZ0_GRID % dim != 0) )
-   // {
+    // {
     //    std::cout << " multigrid level of " << kh_level << " require grid on each processor divisible by " << dim << std::endl;
     //}
 
@@ -813,37 +794,19 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(
 
     int fhand;
 
-    for(int st = 0; st < this->num_thispe; st++)
+
+    std::string newname= filename + "_spin" + std::to_string(pct.spinpe);
+    newname =  newname + "_gridpe" + std::to_string(pct.gridpe);
+    fhand = open(newname.c_str(),  O_RDWR, S_IREAD | S_IWRITE);
+    if(fhand < 0)
     {
-
-        int st_glob = this->index_proj_to_global[st];
-        // 6 digits number will cover 999k oribtials
-        size_t num_digits = 6;
-        std::string st_string, st_string6;
-        st_string = std::to_string(st_glob);
-        st_string6.assign(num_digits - st_string.size(), '0');
-        st_string6 += st_string;
-
-        std::string newname= filename + "_spin" + std::to_string(pct.spinpe) + ".orbit_"+ st_string6;
-        newname =  newname + "_gridpe" + std::to_string(pct.gridpe);
-        fhand = open(newname.c_str(),  O_RDWR, S_IREAD | S_IWRITE);
-        if(fhand < 0)
-        {
-            printf ("\n cannot open file: %s \n", newname.c_str());
-            fflush(NULL);
-            exit(0);
-        }
-
-        read(fhand, &PX0_GRID, sizeof(int));
-        read(fhand, &PY0_GRID, sizeof(int));
-        read(fhand, &PZ0_GRID, sizeof(int));
-        read(fhand, &PX_OFFSET, sizeof(int));
-        read(fhand, &PY_OFFSET, sizeof(int));
-        read(fhand, &PZ_OFFSET, sizeof(int));
-
-        size_t size = P0_BASIS * sizeof(KpointType);
-        read(fhand, &this->storage_proj[st * P0_BASIS], size);
-
-        close(fhand);
+        printf ("\n cannot open file: %s \n", newname.c_str());
+        fflush(NULL);
+        exit(0);
     }
+
+    size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType);
+    read(fhand, this->storage_proj, size);
+
+    close(fhand);
 }

@@ -65,29 +65,23 @@ void PulayMixing::Mixing(double *xm, double *fm)
     int lda = this->max_order +1;
     double *A_mat = this->A_mat;
 
+    if(this->need_precond) this->Precond(fm, this->nstates);
     if(this->pulay_order <=1)
     {
+    //    if(this->need_precond) this->Precond(fm, this->nstates);
         daxpy(&N, &this->mix_first, fm, &ione, xm, &ione);
         return;
     }
 
     // copy the xm and fm to the last history pointer.
     int current_pos = std::min(this->step, this->pulay_order-1);
-    if(N > 0)
-    {
-        dcopy(&N, xm, &ione, this->hist_ptr[current_pos], &ione);
-        dcopy(&N, fm, &ione, this->res_hist_ptr[current_pos], &ione);
-    }
+    dcopy(&N, xm, &ione, this->hist_ptr[current_pos], &ione);
+    dcopy(&N, fm, &ione, this->res_hist_ptr[current_pos], &ione);
     if (this->step == 0)
     {
-        if(N > 0)
-        {
-
-            daxpy(&N, &this->mix_first, fm, &ione, xm, &ione);
-            A_mat[this->step * lda + this->step] = ddot(&N, fm, &ione, fm, &ione);
-        }
-        else
-            A_mat[this->step * lda + this->step] = 0.0;
+        A_mat[this->step * lda + this->step] = ddot(&N, fm, &ione, fm, &ione);
+ //       if(this->need_precond) this->Precond(fm, this->nstates);
+        daxpy(&N, &this->mix_first, fm, &ione, xm, &ione);
 
         this->step++;
         return;
@@ -154,8 +148,7 @@ void PulayMixing::Mixing(double *xm, double *fm)
         daxpy(&N, &b[i], this->res_hist_ptr[i], &ione, fm, &ione);
     }
 
-    if(this->need_precond) this->Precond(fm, this->nstates);
-
+//    if(this->need_precond) this->Precond(fm, this->nstates);
     daxpy(&N, &this->beta, fm, &ione, xm, &ione);
 
     // if the this->step larger than pulay_order, rotate the hist_ptr so that 
