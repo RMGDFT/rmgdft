@@ -972,7 +972,6 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
                     int ixx = ix - xoff;
                     if( ixx < 0 || ixx >= this->dimx[st_glob])
                     {
-                        if(xb != 1) continue;
                         ixx = (ixx + NX_GRID) % NX_GRID;
                         if( ixx < 0 || ixx >= this->dimx[st_glob]) continue;
                     }
@@ -982,7 +981,6 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
                         int iyy = iy - yoff;
                         if(iyy < 0 || iyy >= this->dimy[st_glob]) 
                         {
-                            if(yb != 1) continue;
                             iyy = (iyy + NY_GRID) % NY_GRID;
                             if( iyy < 0 || iyy >= this->dimy[st_glob]) continue;
                         }
@@ -992,7 +990,6 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
                             int izz = iz - zoff;
                             if(izz < 0 || izz >= this->dimz[st_glob])
                             {
-                                if(zb != 1) continue;
                                 izz = (izz + NZ_GRID) % NZ_GRID;
                                 if( izz < 0 || izz >= this->dimz[st_glob])continue;
                             }
