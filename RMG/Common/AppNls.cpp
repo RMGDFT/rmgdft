@@ -119,7 +119,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     KpointType *nwork = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc);
     KpointType *M_dnm = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc1);
     KpointType *M_qqq = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc1);
-    for(int i = 0;i < alloc;i++) sint_compack[i] = 0.0;
+    for(size_t i = 0;i < alloc;i++) sint_compack[i] = 0.0;
     std::complex<double> *M_dnm_C = (std::complex<double> *) M_dnm;
 
     for(int istate = 0; istate < num_states * ct.noncoll_factor; istate++)
