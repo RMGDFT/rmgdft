@@ -36,6 +36,13 @@ public:
     bool delocalized;
     MPI_Comm comm;
 
+    //OrbitalsOwnedProce[st][pe_list][pe, offset_x, offset_y, offset_z]
+    //which processor has the data for a orbital, had its offset in x,y, z index.]
+    std::vector<int> *OrbitalOwnedProcs_pelist;
+    std::vector<int> *OrbitalOwnedProcs_xoffset;
+    std::vector<int> *OrbitalOwnedProcs_yoffset;
+    std::vector<int> *OrbitalOwnedProcs_zoffset;
+
     // Type LOCALIZED or DELOCALIZED
     int type;
     void ReadOrbitalsFromSingleFiles(std::string filename, BaseGrid &Rmg_G);
@@ -47,11 +54,14 @@ public:
     void ReAssign(BaseGrid &BG);
     void AssignOrbital(int st, KpointType *psi);
     void Normalize();
+    void SetOrbitalProjToSingle(BaseGrid &);
+    void WriteOrbitalsToSingleFiles(std::string filename, BaseGrid &Rmg_G);
 
 
 
 private:
     int *ixmin, *iymin, *izmin, *dimx, *dimy, *dimz;
+    int max_dimx, max_dimy, max_dimz;
 
 };
 

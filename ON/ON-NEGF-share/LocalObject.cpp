@@ -104,10 +104,16 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects
             this->dimy[i] = NY_GRID; 
             this->dimz[i] = NZ_GRID; 
         }
+        this->max_dimx = NX_GRID;
+        this->max_dimy = NY_GRID;
+        this->max_dimz = NZ_GRID;
 
     }
     else
     {
+        this->max_dimx = *std::max_element(dimx, dimx+this->num_tot);
+        this->max_dimy = *std::max_element(dimy, dimy+this->num_tot);
+        this->max_dimz = *std::max_element(dimz, dimz+this->num_tot);
         for (int i = 0; i < this->num_tot; i++)
         {
             this->index_global_to_proj[i] = -1;
@@ -495,9 +501,6 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::str
     int PY0_GRID = BG.get_PY0_GRID(density);
     int PZ0_GRID = BG.get_PZ0_GRID(density);
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
-    int PX_OFFSET = BG.get_PX_OFFSET(density);
-    int PY_OFFSET = BG.get_PY_OFFSET(density);
-    int PZ_OFFSET = BG.get_PZ_OFFSET(density);
 
     int fhand;
 
@@ -616,8 +619,11 @@ template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
         orbital_proj[i_glob * npes + rank] = 1;
     }
 
+    
+    
     int size_mat = npes * this->num_tot;
     MPI_Allreduce(MPI_IN_PLACE, orbital_proj, size_mat, MPI_INT, MPI_SUM, this->comm);
+
 
     int num_proj = 0;
     bool can_be_assigned, no_left;
@@ -788,9 +794,6 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(
     int PY0_GRID = BG.get_PY0_GRID(density);
     int PZ0_GRID = BG.get_PZ0_GRID(density);
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
-    int PX_OFFSET = BG.get_PX_OFFSET(density);
-    int PY_OFFSET = BG.get_PY_OFFSET(density);
-    int PZ_OFFSET = BG.get_PZ_OFFSET(density);
 
     int fhand;
 
@@ -809,4 +812,211 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(
     read(fhand, this->storage_proj, size);
 
     close(fhand);
+}
+
+template void LocalObject<double>::SetOrbitalProjToSingle(BaseGrid &BG);
+template void LocalObject<std::complex<double>>::SetOrbitalProjToSingle(BaseGrid &BG);
+template <class KpointType> void LocalObject<KpointType>::SetOrbitalProjToSingle(BaseGrid &BG)
+{
+    int rank,npes;
+
+    MPI_Comm_size(this->comm, &npes);
+    MPI_Comm_rank(this->comm, &rank);
+    int *orbital_proj = new int[npes * this->num_tot];
+    for(int idx = 0; idx < npes * this->num_tot; idx++) orbital_proj[idx] = 0;
+
+    for(int i = 0; i < this->num_thispe; i++)
+    {
+        int i_glob = this->index_proj_to_global[i];
+        orbital_proj[i_glob * npes + rank] = 1;
+    }
+
+    
+    
+    int size_mat = npes * this->num_tot;
+    MPI_Allreduce(MPI_IN_PLACE, orbital_proj, size_mat, MPI_INT, MPI_SUM, this->comm);
+
+    int NX_GRID = BG.get_NX_GRID(this->density);
+    int NY_GRID = BG.get_NY_GRID(this->density);
+    int NZ_GRID = BG.get_NZ_GRID(this->density);
+    int PX_OFFSET, PY_OFFSET, PZ_OFFSET;
+
+    this->OrbitalOwnedProcs_pelist = new std::vector<int>[this->num_tot];
+    this->OrbitalOwnedProcs_xoffset = new std::vector<int>[this->num_tot];
+    this->OrbitalOwnedProcs_yoffset = new std::vector<int>[this->num_tot];
+    this->OrbitalOwnedProcs_zoffset = new std::vector<int>[this->num_tot];
+    for (int st = 0; st < this->num_tot; st++)
+    {
+        for(int pe = 0; pe < npes; pe++)
+        {
+            if(orbital_proj[st * npes + pe] == 1)
+            {
+                BG.find_node_offsets(pe, NX_GRID, NY_GRID, NZ_GRID,
+                          &PX_OFFSET, &PY_OFFSET, &PZ_OFFSET);
+                int xoff = this->ixmin[st] - PX_OFFSET;
+                int yoff = this->iymin[st] - PY_OFFSET;
+                int zoff = this->izmin[st] - PZ_OFFSET;
+
+                if( xoff >= NX_GRID/2) xoff -= NX_GRID;
+                if( yoff >= NY_GRID/2) yoff -= NY_GRID;
+                if( zoff >= NZ_GRID/2) zoff -= NZ_GRID;
+
+                if( xoff <= -NX_GRID/2) xoff += NX_GRID;
+                if( yoff <= -NY_GRID/2) yoff += NY_GRID;
+                if( zoff <= -NZ_GRID/2) zoff += NZ_GRID;
+
+                this->OrbitalOwnedProcs_pelist[st].push_back(pe);
+                this->OrbitalOwnedProcs_xoffset[st].push_back(xoff);
+                this->OrbitalOwnedProcs_yoffset[st].push_back(yoff);
+                this->OrbitalOwnedProcs_zoffset[st].push_back(zoff);
+            }
+        }
+        if(pct.gridpe == 0 && 0)
+        {
+            printf("\n orbital %d: proc  xoffset  yoffset  zoffset", st);
+            for(size_t i = 0; i < this->OrbitalOwnedProcs_pelist[st].size(); i++)
+            printf("\n             %d    %d   %d   %d", 
+                this->OrbitalOwnedProcs_pelist[st][i], 
+                this->OrbitalOwnedProcs_xoffset[st][i], 
+                this->OrbitalOwnedProcs_yoffset[st][i], 
+                this->OrbitalOwnedProcs_zoffset[st][i]); 
+        }
+    }
+    delete [] orbital_proj;
+}
+
+
+template void LocalObject<double>::WriteOrbitalsToSingleFiles(std::string filename, BaseGrid &BG);
+template void LocalObject<std::complex<double>>::WriteOrbitalsToSingleFiles(std::string filename, BaseGrid &BG);
+template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleFiles(std::string filename, BaseGrid &BG)
+{
+
+    int density = this->density;
+    int PX0_GRID = BG.get_PX0_GRID(density);
+    int PY0_GRID = BG.get_PY0_GRID(density);
+    int PZ0_GRID = BG.get_PZ0_GRID(density);
+    int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+
+// max number of procs in one direction
+    int xb = (this->max_dimx + PX0_GRID -1)/PX0_GRID +1;
+    int yb = (this->max_dimy + PY0_GRID -1)/PY0_GRID +1;
+    int zb = (this->max_dimz + PZ0_GRID -1)/PZ0_GRID +1;
+    xb = std::min(xb, BG.get_PE_X());
+    yb = std::min(yb, BG.get_PE_Y());
+    zb = std::min(zb, BG.get_PE_Z());
+
+    
+    MPI_Request *request = new MPI_Request[xb*yb*zb];
+    KpointType *phi = new KpointType[this->max_dimx * this->max_dimy * this->max_dimz];
+
+    KpointType *phi_proj = new KpointType[xb*yb*zb*P0_BASIS];
+
+    int fhand;
+    int factor = sizeof(KpointType)/sizeof(double);
+
+    for(int st_glob = 0; st_glob < this->num_tot; st_glob++)
+    {
+
+        int st = this->index_global_to_proj[st_glob];
+
+        int num_pelist = this->OrbitalOwnedProcs_pelist[st_glob].size();
+        if(num_pelist > xb * yb * zb)
+        {
+            std::cout << "something wrong with pelist "<< std::endl;
+            exit(0);
+        }
+        int recv_pe = st_glob%pct.grid_npes;
+        if(recv_pe== pct.gridpe)
+        {
+
+            for(int irecv = 0; irecv < num_pelist; irecv++)
+            {
+
+                int pe =  this->OrbitalOwnedProcs_pelist[st_glob][irecv];
+                int tag = recv_pe * pct.grid_npes + pe;
+
+                MPI_Irecv(&phi_proj[irecv * P0_BASIS], factor *P0_BASIS, MPI_DOUBLE, pe, tag, this->comm, &request[irecv]); 
+            }
+        }
+
+        for(int irecv = 0; irecv < num_pelist; irecv++)
+        {
+
+            int pe =  this->OrbitalOwnedProcs_pelist[st_glob][irecv];
+            if(pe == pct.gridpe )
+            {
+
+                KpointType *sendbuf = &this->storage_proj[st * P0_BASIS];
+                int tag = recv_pe * pct.grid_npes + pe;
+                MPI_Send(sendbuf, factor * P0_BASIS, MPI_DOUBLE, recv_pe, tag, this->comm);
+            }
+
+        }
+
+        if(recv_pe== pct.gridpe)
+        {
+
+            for(int i = 0; i < num_pelist; i++)
+            {
+                int irecv;
+                MPI_Waitany(num_pelist, request, &irecv, MPI_STATUS_IGNORE);
+                int xoff = this->OrbitalOwnedProcs_xoffset[st_glob][irecv];
+                int yoff = this->OrbitalOwnedProcs_yoffset[st_glob][irecv];
+                int zoff = this->OrbitalOwnedProcs_zoffset[st_glob][irecv];
+                for(int ix = 0; ix < PX0_GRID; ix++)
+                {
+                    int ixx = ix - xoff;
+                    if(ixx < 0 || ixx >= this->dimx[st_glob]) continue;
+                    for(int iy = 0; iy < PY0_GRID; iy++)
+                    {
+                        int iyy = iy - yoff;
+                        if(iyy < 0 || iyy >= this->dimy[st_glob]) continue;
+
+                        for(int iz = 0; iz < PZ0_GRID; iz++)
+                        {
+                            int izz = iz - zoff;
+                            if(izz < 0 || izz >= this->dimz[st_glob]) continue;
+                            int idx1 = ix * PY0_GRID * PZ0_GRID;
+                            int idx2 = ixx * this->dimy[st_glob] * this->dimz[st_glob];
+                            idx1 += iy * PZ0_GRID;
+                            idx2 += iyy * this->dimz[st_glob];
+
+                            phi[idx2 + izz] = phi_proj[irecv * P0_BASIS + idx1 + iz];
+                        } 
+                    }
+                }
+
+            }
+
+            std::string newname= filename + "_spin"+std::to_string(pct.spinpe)+".orbit_"+std::to_string(st_glob);
+            fhand = open(newname.c_str(),  O_CREAT | O_TRUNC |O_RDWR, S_IREAD | S_IWRITE);
+            if(fhand < 0)
+            {
+                printf ("\n cannot open file: %s \n", newname.c_str());
+                fflush(NULL);
+                exit(0);
+            }
+
+            size_t size = this->dimx[st_glob] * this->dimy[st_glob] * this->dimz[st_glob] *sizeof(KpointType);
+            write(fhand, phi, size);
+
+            int ix0 = this->ixmin[st_glob];
+            int ix1 = this->ixmin[st_glob] + this->dimx[st_glob];
+            int iy0 = this->iymin[st_glob];
+            int iy1 = this->iymin[st_glob] + this->dimy[st_glob];
+            int iz0 = this->izmin[st_glob];
+            int iz1 = this->izmin[st_glob] + this->dimz[st_glob];
+            write(fhand, &ix0, sizeof(int));
+            write(fhand, &ix1, sizeof(int));
+            write(fhand, &iy0, sizeof(int));
+            write(fhand, &iy1, sizeof(int));
+            write(fhand, &iz0, sizeof(int));
+            write(fhand, &iz1, sizeof(int));
+
+            close(fhand);
+        }
+    }
+    delete [] request;
+    delete [] phi_proj;
+    delete [] phi;
 }

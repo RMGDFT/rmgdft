@@ -321,6 +321,11 @@ int main(int argc, char **argv)
 
         write_restart(ct.outfile, vh, vxc, vh_old, vxc_old, rho, rho_oppo, &states[0]); 
 
+        RmgTimer *RTO = new RmgTimer("WriteOrbitals");
+        LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
+        delete RTO;
+
+
         if(ct.write_qmcpack_restart)
         {
 
