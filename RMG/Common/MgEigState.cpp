@@ -413,62 +413,32 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                     // We use a residual correction multigrid scheme where the right hand side is the residual
                     // so single precision is adequate for the correction since the errors from lower precision
-                    // will be approximately 7 decimal digits smaller than the original error we are correcting for
-                    if(typeid(CalcType) == typeid(double))
-                    {
-                        float *v_mat = (float *)&sg_twovpsi_t[sbasis];
-                        float *f_mat = (float *)&work1_t[sbasis];
-                        float *twork_tf = (float *)twork_t;
-                        for(int idx = 0;idx < sbasis;idx++) twork_tf[idx] = std::real(work1_t[idx]);
-                        MG.mg_restrict<float> (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                    // will be approximately 7 decimal digits smaller than the original error we are correcting
+                    // for. The std::conditional_t typdefs allow us to cleanly handle the multiple versions of
+                    // CalcType.
+                    typedef typename std::conditional_t< std::is_same<CalcType, double>::value, float,
+                                     std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<float>, float> > mgtype_t;
+                    typedef typename std::conditional_t< std::is_same<CalcType, double>::value, double,
+                                     std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<double>, float> > convert_type_t;
 
-                        MG.mgrid_solv<float> (v_mat, f_mat, (float *)work2_t,
-                                dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                                1, levels, eig_pre, eig_post, 1, 
-                                ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
-                                NX_GRID, NY_GRID, NZ_GRID,
-                                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                                dimx, dimy, dimz, ct.boundaryflag);
+                    mgtype_t *v_mat = (mgtype_t *)&sg_twovpsi_t[sbasis];
+                    mgtype_t *f_mat = (mgtype_t *)&work1_t[sbasis];
+                    mgtype_t *twork_tf = (mgtype_t *)twork_t;
+                    mgtype_t *work2_tf = (mgtype_t *)work2_t;
+                    CopyAndConvert(sbasis, (convert_type_t *)work1_t, (mgtype_t *)twork_tf);
+                    MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
-                        MG.mg_prolong<float> (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-                        for(int idx = 0;idx < sbasis;idx++) sg_twovpsi_t[idx] = std::real(twork_tf[idx]);
+                    MG.mgrid_solv (v_mat, f_mat, work2_tf,
+                            dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
+                            1, levels, eig_pre, eig_post, 1, 
+                            ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
+                            NX_GRID, NY_GRID, NZ_GRID,
+                            G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                            dimx, dimy, dimz, ct.boundaryflag);
 
-                    }
-                    else if(typeid(CalcType) == typeid(std::complex<double>))
-                    {
-                        std::complex<float> *v_mat = (std::complex<float> *)&sg_twovpsi_t[sbasis];
-                        std::complex<float> *f_mat = (std::complex<float> *)&work1_t[sbasis];
-                        std::complex<float> *twork_tf = (std::complex<float> *)twork_t;
-                        for(int idx = 0;idx < sbasis;idx++) twork_tf[idx] = work1_t[idx];
-                        MG.mg_restrict<std::complex<float>> (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                    MG.mg_prolong (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+                    CopyAndConvert(sbasis, (mgtype_t *)twork_tf, (convert_type_t *)sg_twovpsi_t);
 
-                        MG.mgrid_solv<std::complex<float>> (v_mat, f_mat, (std::complex<float> *)work2_t,
-                                dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                                1, levels, eig_pre, eig_post, 1, 
-                                ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
-                                NX_GRID, NY_GRID, NZ_GRID,
-                                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                                dimx, dimy, dimz, ct.boundaryflag);
-
-                        MG.mg_prolong<std::complex<float>> (twork_tf, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-                        CopyAndConvert(sbasis, (std::complex<float> *)twork_tf, (std::complex<double> *)sg_twovpsi_t);
-                    }
-                    else
-                    {
-                        CalcType *v_mat = &sg_twovpsi_t[sbasis];
-                        CalcType *f_mat = &work1_t[sbasis];
-                        MG.mg_restrict (work1_t, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-
-                        MG.mgrid_solv<CalcType> (v_mat, f_mat, work2_t,
-                                dx2, dy2, dz2, 2.0*hxgrid, 2.0*hygrid, 2.0*hzgrid, 
-                                1, levels, eig_pre, eig_post, 1, 
-                                ct.eig_parm.sb_step, 2.0*Zfac, 0.0, NULL,
-                                NX_GRID, NY_GRID, NZ_GRID,
-                                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                                dimx, dimy, dimz, ct.boundaryflag);
-
-                        MG.mg_prolong (sg_twovpsi_t, v_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
-                    }
                 }
 
                 /* The correction is in a smoothing grid so we use this

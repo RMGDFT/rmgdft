@@ -39,12 +39,14 @@ template <typename CalcType, typename OrbitalType> void ScatterPsi(BaseGrid *G, 
 template <typename DataType> void GatherGrid(BaseGrid *G, int n, DataType *A, DataType *B);
 template <typename OrbitalType> void GatherEigs (Kpoint<OrbitalType> *kptr);
 
+void CopyAndConvert(int n, float *A, float *B);
 void CopyAndConvert(int n, double *A, float *B);
 void CopyAndConvert(int n, double *A, double *B);
 void CopyAndConvert(int n, std::complex<double> *A, std::complex<float> *B);
 void CopyAndConvert(int n, std::complex<double> *A, std::complex<double> *B);
 void CopyAndConvert(int n, float *A, double *B);
 void CopyAndConvert(int n, std::complex<float> *A, std::complex<double> *B);
+void CopyAndConvert(int n, std::complex<float> *A, std::complex<float> *B);
 
 
 #endif
