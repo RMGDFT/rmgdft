@@ -417,9 +417,11 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                     // for. The std::conditional_t typdefs allow us to cleanly handle the multiple versions of
                     // CalcType.
                     typedef typename std::conditional_t< std::is_same<CalcType, double>::value, float,
-                                     std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<float>, float> > mgtype_t;
+                                     std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<float>,
+                                     std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, float> > > mgtype_t;
                     typedef typename std::conditional_t< std::is_same<CalcType, double>::value, double,
-                                     std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<double>, float> > convert_type_t;
+                                     std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<double>,
+                                     std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, float> > > convert_type_t;
 
                     mgtype_t *v_mat = (mgtype_t *)&sg_twovpsi_t[sbasis];
                     mgtype_t *f_mat = (mgtype_t *)&work1_t[sbasis];
