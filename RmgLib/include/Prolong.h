@@ -44,7 +44,6 @@ public:
     template<typename T>
     void prolong (T *full, T *half, int dimx, int dimy, int dimz, int half_dimx, int half_dimy, int half_dimz);
 
-
 private:
     void cgen_prolong (double *coef, double fraction);
 
@@ -52,6 +51,7 @@ private:
     int order;
     TradeImages &TR;
     double a[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
+    float af[MAX_PROLONG_ORDER][MAX_PROLONG_ORDER];
 };
 
 #endif

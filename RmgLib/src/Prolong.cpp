@@ -23,6 +23,7 @@
 #include "Prolong.h"
 #include "blas.h"
 #include <complex>
+#include <cmath>
 
 // This is a high order interpolation/prolongation operators used when constructing the
 // charge density on the high density grid.
@@ -40,13 +41,13 @@ Prolong::Prolong(int ratio_in, int order_in, TradeImages &TR_in) : ratio(ratio_i
         rmg_error_handler (__FILE__, __LINE__, "This function works only for even orders.");
 
 
-    double c[MAX_PROLONG_ORDER];
 
     for (int ix = 0; ix < MAX_PROLONG_ORDER; ix++)
     {
         for (int iy = 0; iy < MAX_PROLONG_ORDER; iy++)
         {
             a[ix][iy] = 0.0;
+            af[ix][iy] = 0.0;
         }
     }
 
@@ -54,12 +55,13 @@ Prolong::Prolong(int ratio_in, int order_in, TradeImages &TR_in) : ratio(ratio_i
     for (int i = 0; i < ratio; i++)
     {
         double fraction = (double) i / (double)ratio;
+        double c[MAX_PROLONG_ORDER] = {0.0};
         cgen_prolong (c, fraction);
 
-        for (int iy = 0; iy < order; iy++)
+        for (int iy = 0; iy < MAX_PROLONG_ORDER; iy++)
         {
-            int k = iy + (MAX_PROLONG_ORDER - order) / 2;
             a[i][iy] = c[iy];
+            if(fabs(c[iy]) > 1.0e-20) af[i][iy] = (float)c[iy];
         }
     }
 }
@@ -129,7 +131,6 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
     T* fulla = new T[dimx * (dimy / ratio + order) * (dimz / ratio + order)];
     T* fullb = new T[ dimx * dimy * (dimz / ratio + order)];
 
-
     for (int i = 0; i < ratio; i++)
     {
         for (int ix = 0; ix < dimx / ratio; ix++)
@@ -139,8 +140,8 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
                 for (int iz = 0; iz < dimz / ratio + order; iz++)
                 {
                     T sum = 0.0;
-                    T *half = &sg_half[(ix + 1) * incx + iy * incy + iz];
-                    for(int k = 0;k < order;k++) sum+= a[i][k] * half[k*incx];
+                    T *halfptr = &sg_half[(ix + 1) * incx + iy * incy + iz];
+                    for(int k = 0;k < order;k++) sum+= a[i][k] * halfptr[k*incx];
                     fulla[((ratio * ix) + i) * incx + iy * incy + iz] = sum;
                 }
             }
@@ -189,5 +190,4 @@ template <typename T> void Prolong::prolong (T *full, T *half, int dimx, int dim
     delete [] sg_half;
 
 }
-
 
