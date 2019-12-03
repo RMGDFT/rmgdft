@@ -45,7 +45,6 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
     double c[MAX_ORDER];
     double fraction;
 
-    for(ix = 0; ix < half_dimx * half_dimy * half_dimz; ix++) half[ix] = sqrt(fabs(half[ix]));
     sg_half = new double[(half_dimx + 10) * (half_dimy + 10) * (half_dimz + 10)];
     trade_imagesx (half, sg_half, half_dimx, half_dimy, half_dimz, 5, FULL_TRADE);
 
@@ -212,7 +211,6 @@ void mg_prolong_MAX10 (double *full, double *half, int dimx, int dimy, int dimz,
     }                           /* end for */
 
 
-    for(ix = 0; ix < dimx * dimy * dimz; ix++) full[ix] = full[ix] * full[ix];
     delete [] fulla;
     delete [] fullb;
     delete [] sg_half;
