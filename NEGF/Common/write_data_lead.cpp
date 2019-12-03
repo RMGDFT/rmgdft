@@ -28,6 +28,8 @@
 #include "LCR.h"
 #include "pmo.h"
 
+#include <libgen.h>
+#include <unistd.h>
 
 
 
@@ -37,10 +39,12 @@
 void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, double *vxc_old,
 		double *rho)
 {
-	int amode;
+    int amode;
 	char newname[MAX_PATH + 20];
+	char tmpname[MAX_PATH + 20];
+
 	int fhand_rho=0, fhand_vxc=0, fhand_vh=0;
-    FILE *fhand_EF;
+	FILE *fhand_EF;
 
 	int size, rank, ndims, gsizes[2], distribs[2];
 	int order,  dargs[2], psizes[2];
@@ -53,8 +57,12 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 	MPI_Offset disp;
 
 
+
 	/* Wait until everyone gets here */
 	MPI_Barrier(pct.img_comm);
+
+	strcpy(tmpname, name);
+	mkdir(dirname(tmpname),S_IRWXU);
 
 	/* Make the new output file name */
 
@@ -82,9 +90,9 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 			error_handler (" Unable to write file for rho ");
 
 		sprintf (newname, "%s%s", name, ".EF");
-        fhand_EF = fopen (newname, "w");
-        fprintf(fhand_EF, "%15.8f\n", lcr[1].EF_new);
-        fclose(fhand_EF);
+		fhand_EF = fopen (newname, "w");
+		fprintf(fhand_EF, "%15.8f\n", lcr[1].EF_new);
+		fclose(fhand_EF);
 
 
 	}
@@ -103,11 +111,11 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 
 
 	if (pct.gridpe == 0) 
-    {
-        close(fhand_vh);
-        close(fhand_vxc);
-        close(fhand_rho);
-    }
+	{
+		close(fhand_vh);
+		close(fhand_vxc);
+		close(fhand_rho);
+	}
 
 
 	int ictxt = pmo.ictxt[pmo.myblacs];
@@ -156,4 +164,67 @@ void write_data_lead (char *name, double *vh, double *vxc, double *vh_old, doubl
 
 		MPI_File_close(&mpi_fhand);
 	}
+}
+
+
+/************************** SVN Revision Information **************************
+ **    $Id$    **
+ ******************************************************************************/
+
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <libgen.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include "main.h"
+#include "prototypes_on.h"
+
+
+
+/*This opens s file for writing, returns a file handle
+ * If opening the file fails, PE 0 tries to create a directory, since it is possible that
+ * the reason for failure is that the directory does not exist*/
+
+int open_wave_file (char *filename)
+{
+
+    char tmpname[MAX_PATH];
+    int amode;
+    int fhand;
+
+    amode = S_IREAD | S_IWRITE;
+
+    fhand = open (filename, O_CREAT | O_TRUNC | O_RDWR, amode);
+
+    /*Previous call may have failed because directory did not exist
+     * Let us try to to create it*/
+    if (fhand < 0)
+    {
+
+        /*Make a copy of output filename, dirname overwrites it*/
+        strcpy(tmpname, filename);
+
+        printf( "\n write_data: Opening output file '%s' failed\n" 
+                "  Trying to create subdirectory in case it does not exist\n", 
+                filename );
+
+
+        if (!mkdir(dirname(tmpname),S_IRWXU))
+            printf ("\n Creating directory '%s' succesful\n\n", dirname(tmpname));
+        else
+            printf ("\n Creating directory '%s' FAILED\n\n", dirname(tmpname));
+
+        fflush (NULL);
+
+        /*try opening file again */
+        fhand = open (filename, O_CREAT | O_TRUNC | O_RDWR, amode);
+
+    }
+
+    return fhand;
+
 }

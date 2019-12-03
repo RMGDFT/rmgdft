@@ -896,6 +896,9 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
     int PY0_GRID = BG.get_PY0_GRID(density);
     int PZ0_GRID = BG.get_PZ0_GRID(density);
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
+    int NX_GRID = BG.get_NX_GRID(this->density);
+    int NY_GRID = BG.get_NY_GRID(this->density);
+    int NZ_GRID = BG.get_NZ_GRID(this->density);
 
 // max number of procs in one direction
     int xb = (this->max_dimx + PX0_GRID -1)/PX0_GRID +1;
@@ -955,7 +958,8 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
 
         if(recv_pe== pct.gridpe)
         {
-
+            for(int idx = 0; idx < this->dimx[st_glob] * this->dimy[st_glob] * this->dimz[st_glob]; idx++)
+                phi[idx] = 0.0;
             for(int i = 0; i < num_pelist; i++)
             {
                 int irecv;
@@ -966,16 +970,30 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
                 for(int ix = 0; ix < PX0_GRID; ix++)
                 {
                     int ixx = ix - xoff;
-                    if(ixx < 0 || ixx >= this->dimx[st_glob]) continue;
+                    if( ixx < 0 || ixx >= this->dimx[st_glob])
+                    {
+                        ixx = (ixx + NX_GRID) % NX_GRID;
+                        if( ixx < 0 || ixx >= this->dimx[st_glob]) continue;
+                    }
+                
                     for(int iy = 0; iy < PY0_GRID; iy++)
                     {
                         int iyy = iy - yoff;
-                        if(iyy < 0 || iyy >= this->dimy[st_glob]) continue;
+                        if(iyy < 0 || iyy >= this->dimy[st_glob]) 
+                        {
+                            iyy = (iyy + NY_GRID) % NY_GRID;
+                            if( iyy < 0 || iyy >= this->dimy[st_glob]) continue;
+                        }
 
                         for(int iz = 0; iz < PZ0_GRID; iz++)
                         {
                             int izz = iz - zoff;
-                            if(izz < 0 || izz >= this->dimz[st_glob]) continue;
+                            if(izz < 0 || izz >= this->dimz[st_glob])
+                            {
+                                izz = (izz + NZ_GRID) % NZ_GRID;
+                                if( izz < 0 || izz >= this->dimz[st_glob])continue;
+                            }
+
                             int idx1 = ix * PY0_GRID * PZ0_GRID;
                             int idx2 = ixx * this->dimy[st_glob] * this->dimz[st_glob];
                             idx1 += iy * PZ0_GRID;
