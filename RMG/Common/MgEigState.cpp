@@ -263,15 +263,9 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         }
 
 
-        /* Generate 2 * V * psi */
+        /* Generate 2 * V * psi and save in work1 */
         CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
-
-        /* B operating on 2*V*psi stored in work1 */
-        {
-            RmgTimer RT1("Mg_eig: apply B operator");
-            ApplyBOperator<CalcType>(L, T, sg_twovpsi_t, work1_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
-
-        }
+        for(int ix=0;ix < pbasis;ix++) work1_t[ix] = sg_twovpsi_t[ix];
 
         if(ct.noncoll)
         {
