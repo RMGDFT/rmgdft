@@ -231,14 +231,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         GatherPsi(G, pbasis_noncoll, sp->istate, kptr->ns, work1_t);
     }
 
-    /*Apply A operator to ns and save in res2 */
-    {
-        RmgTimer RT1("Mg_eig: apply B operator");
-        ApplyBOperator<CalcType>(L, T, work1_t, res2_t, dimx, dimy, dimz, ct.kohn_sham_fd_order);
-        if(ct.noncoll)
-            ApplyBOperator<CalcType>(L, T, &work1_t[pbasis], &res2_t[pbasis], dimx, dimy, dimz, ct.kohn_sham_fd_order);
-    }
-
+    /* Save in res2 */
+    for(int ix=0;ix < pbasis_noncoll;ix++) res2_t[ix] = work1_t[ix];
 
     // Setup some potential acceleration stuff
     potential_acceleration = (ct.potential_acceleration_constant_step > 0.0);
