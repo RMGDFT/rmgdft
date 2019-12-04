@@ -90,7 +90,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         // Zero out dvh array if potential acceleration is enabled
         if(potential_acceleration)
         {
-           int stop = this->ndvh * pbasis_noncoll * pct.coalesce_factor;
+           int stop = this->ndvh * pbasis * pct.coalesce_factor;
            for(int i=0;i < stop;i++) this->dvh[i] = 0.0;
            PotentialAccelerationReset(my_pe_offset*active_threads + this->dvh_skip/pct.coalesce_factor);
         }

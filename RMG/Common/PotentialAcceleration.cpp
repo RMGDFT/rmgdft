@@ -109,11 +109,12 @@ void PotentialAcceleration(Kpoint<OrbitalType> *kptr, State<OrbitalType> *sp, do
     if(sp->occupation[0] < 0.5) t1 = 0.0;
 
     vtot_sync_mutex.lock();
+    double scale = 1.0 / (double)ct.noncoll_factor;
     for(int idx = 0;idx <pbasis;idx++) {
-       kptr->dvh[idx + offset] += t1 * PI * sp->occupation[0] * 
+       kptr->dvh[idx + offset] += scale * t1 * PI * sp->occupation[0] * 
            std::real(tmp_psi_t[idx] * std::conj((tmp_psi_t[idx] - (CalcType)saved_psi[idx])));
        if(ct.noncoll)
-           kptr->dvh[idx + offset] += t1 * PI * sp->occupation[0] * 
+           kptr->dvh[idx + offset] += scale * t1 * PI * sp->occupation[0] * 
                std::real(tmp_psi_t[idx+pbasis] * std::conj((tmp_psi_t[idx+pbasis] - (CalcType)saved_psi[idx+pbasis])));
     }
     vtot_sync_mutex.unlock();
