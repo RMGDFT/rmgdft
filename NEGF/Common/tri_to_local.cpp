@@ -78,6 +78,7 @@ void tri_to_local (double * A_tri, double * Aii_local, LocalObject<double> &Phi)
     //
 
     /* for diagonal blocks */
+    for(int idx = 0; idx < Phi.num_thispe * Phi.num_thispe; idx++) Aii_local[idx] = 0.0;
 
     int max_block_size = *std::max_element(ct.block_dim, ct.block_dim+ct.num_blocks);
     double *matrix_tem = new double[max_block_size * max_block_size];
@@ -187,5 +188,6 @@ void tri_to_local (double * A_tri, double * Aii_local, LocalObject<double> &Phi)
         dscal(&size, &spin_degenerate, Aii_local, &ione);
     }
 
+    delete [] matrix_tem;
 }
 

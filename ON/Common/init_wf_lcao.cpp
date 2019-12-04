@@ -44,6 +44,7 @@ void init_wf_lcao(STATE * states)
         for (int st = 0; st < LocalOrbital->num_thispe; st++)
         {
             int st_glob = LocalOrbital->index_proj_to_global[st];
+            if(st_glob < 0) continue;
             get_one_orbital(states, st_glob, phi);
             
             LocalOrbital->AssignOrbital(st, phi);

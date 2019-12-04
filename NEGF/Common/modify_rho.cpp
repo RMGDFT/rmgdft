@@ -49,7 +49,7 @@ void modify_rho (double * rho, double * rho_old)
                 idx1 = (i + item) * get_FPY0_GRID() * get_FPZ0_GRID() + j;
                 idx2 = (i - item) * get_FPY0_GRID() * get_FPZ0_GRID() + j;
 
-                if (i <= item)
+                if (i < item)
                     array_global[idx] = array_global[idx1];
                 if (i >= 2 * item)
                     array_global[idx] = array_global[idx2];
