@@ -101,15 +101,16 @@ void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, Kpoint
     H.nz = sizes_c[2];
 
 //  calculate the wavefuctions from localized orbitals
-    KpointType *psi = new KpointType[Phi.num_tot * pbasis];
-    KpointType *Cij_global = new KpointType[Phi.num_tot * Phi.num_tot];
-    KpointType *Cij_local = new KpointType[Phi.num_tot * Phi.num_thispe];
+    KpointType *psi = new KpointType[Phi.num_tot * pbasis]();
+    KpointType *Cij_global = new KpointType[Phi.num_tot * Phi.num_tot]();
+    KpointType *Cij_local = new KpointType[Phi.num_tot * Phi.num_thispe]();
 
     mat_dist_to_global(Cij_dist, pct.desca, Cij_global);
 
     for(int i = 0; i < Phi.num_thispe; i++)
     {
         int i_glob = Phi.index_proj_to_global[i];
+        if(i_glob < 0) continue;
         for(int j = 0; j < Phi.num_tot; j++)
             Cij_local[j * Phi.num_thispe + i] = Cij_global[j * Phi.num_tot + i_glob];
     }

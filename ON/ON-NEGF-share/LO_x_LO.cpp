@@ -75,7 +75,12 @@ void mat_global_to_local(LocalObject<double> &A, LocalObject<double> &B, double 
     {
         int i_glob = A.index_proj_to_global[i];
         int j_glob = B.index_proj_to_global[j];
-        mat_local[j*A.num_thispe+i] = mat_glob[j_glob * A.num_tot + i_glob];
+        if(i_glob < 0 || j_glob < 0)
+        {
+            mat_local[j*A.num_thispe+i] = 0.0;
+        }
+        else
+            mat_local[j*A.num_thispe+i] = mat_glob[j_glob * A.num_tot + i_glob];
 
     }
 }

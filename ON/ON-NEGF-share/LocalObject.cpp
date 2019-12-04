@@ -186,7 +186,7 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects
         }
     }
 
-    size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType);
+    size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType) +8;
     this->storage_proj = (KpointType *) GpuMallocManaged(size);
 }
 
@@ -234,6 +234,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingle
     {
 
         int st_glob = this->index_proj_to_global[st];
+        if(st_glob < 0) continue;
         size_t size = this->dimx[st_glob] * this->dimy[st_glob] * this->dimz[st_glob] *sizeof(KpointType);
 
         std::string newname= filename + "_spin"+std::to_string(pct.spinpe)+".orbit_"+std::to_string(st_glob);
@@ -561,6 +562,7 @@ template <class KpointType> void LocalObject<KpointType>::SetZeroBoundary(BaseGr
         for(int iz = 0; iz < PZ0_GRID; iz++) mask_z[iz] = 0;
 
         int i = this->index_proj_to_global[i_local];
+        if(i < 0) continue;
 
         for(int ix = ixmin[i] + fd_order/2; ix < ixmin[i] + dimx[i] - fd_order/2; ix++) 
         {
@@ -609,8 +611,8 @@ template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
     MPI_Comm_rank(this->comm, &rank);
     int *orbital_proj = new int[npes * this->num_tot];
     char *onerow = new char[npes];
-    bool *assigned = new bool[this->num_tot];
-    int *orbital_index = new int[npes];
+    int *assigned = new int[this->num_tot];
+
     for(int idx = 0; idx < npes * this->num_tot; idx++) orbital_proj[idx] = 0;
 
     for(int i = 0; i < this->num_thispe; i++)
@@ -627,15 +629,20 @@ template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
 
     int num_proj = 0;
     bool can_be_assigned, no_left;
-    for(int i = 0; i < this->num_tot; i++) assigned[i] = false;
+    for(int i = 0; i < this->num_tot; i++) assigned[i] = 0;
 
+    for(int i = 0; i < this->num_tot; i++) 
+    {
+        this->index_global_to_proj[i] = -1;
+        this->index_proj_to_global[i] = -1;
+    }
     for(int i = 0; i < this->num_tot; i++)   // maximu number of projected orbitals will be the num_tot
     {
         for (int ip = 0; ip < npes; ip++) onerow[ip] = 0;
 
+        no_left = true;
         for(int j = i; j < this->num_tot; j++)  
         {
-            no_left = true;
             if( assigned[j] ) continue;
             no_left = false;
             // check if this orbital can assign to this processor's nmu_proj orbital
@@ -654,27 +661,30 @@ template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
 
                 for (int ip = 0; ip < npes; ip++) 
                 {
-
-                    if( onerow[ip] == 0) orbital_index[ip] = j;
                     if( orbital_proj[j * npes + ip] ) 
                     {
                         onerow[ip] = 1;
                     }
                 }
-                assigned[j] = true;
+
+                if(orbital_proj[j * npes + rank])
+                {
+                    this->index_proj_to_global[i] = j;
+                    this->index_global_to_proj[j] = i;
+                }
+
+                assigned[j] = 1;
             }
         }
 
         if(no_left) break;
-
-        this->index_proj_to_global[num_proj] = orbital_index[rank];
-        this->index_global_to_proj[orbital_index[rank]] = num_proj;
 
         num_proj++;
 
     }
 
     this->num_thispe = num_proj;
+
 
     for(int i = 0; i < this->num_thispe; i++)
     {
@@ -687,7 +697,7 @@ template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
 
     GpuFreeManaged(this->storage_proj);
-    size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType);
+    size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType) + 8;
     this->storage_proj = (KpointType *) GpuMallocManaged(size);
 
     delete [] orbital_proj;
@@ -831,8 +841,8 @@ template <class KpointType> void LocalObject<KpointType>::SetOrbitalProjToSingle
         orbital_proj[i_glob * npes + rank] = 1;
     }
 
-    
-    
+
+
     int size_mat = npes * this->num_tot;
     MPI_Allreduce(MPI_IN_PLACE, orbital_proj, size_mat, MPI_INT, MPI_SUM, this->comm);
 
@@ -852,7 +862,7 @@ template <class KpointType> void LocalObject<KpointType>::SetOrbitalProjToSingle
             if(orbital_proj[st * npes + pe] == 1)
             {
                 BG.find_node_offsets(pe, NX_GRID, NY_GRID, NZ_GRID,
-                          &PX_OFFSET, &PY_OFFSET, &PZ_OFFSET);
+                        &PX_OFFSET, &PY_OFFSET, &PZ_OFFSET);
                 int xoff = this->ixmin[st] - PX_OFFSET;
                 int yoff = this->iymin[st] - PY_OFFSET;
                 int zoff = this->izmin[st] - PZ_OFFSET;
@@ -875,11 +885,11 @@ template <class KpointType> void LocalObject<KpointType>::SetOrbitalProjToSingle
         {
             printf("\n orbital %d: proc  xoffset  yoffset  zoffset", st);
             for(size_t i = 0; i < this->OrbitalOwnedProcs_pelist[st].size(); i++)
-            printf("\n             %d    %d   %d   %d", 
-                this->OrbitalOwnedProcs_pelist[st][i], 
-                this->OrbitalOwnedProcs_xoffset[st][i], 
-                this->OrbitalOwnedProcs_yoffset[st][i], 
-                this->OrbitalOwnedProcs_zoffset[st][i]); 
+                printf("\n             %d    %d   %d   %d", 
+                        this->OrbitalOwnedProcs_pelist[st][i], 
+                        this->OrbitalOwnedProcs_xoffset[st][i], 
+                        this->OrbitalOwnedProcs_yoffset[st][i], 
+                        this->OrbitalOwnedProcs_zoffset[st][i]); 
         }
     }
     delete [] orbital_proj;
@@ -900,7 +910,7 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
     int NY_GRID = BG.get_NY_GRID(this->density);
     int NZ_GRID = BG.get_NZ_GRID(this->density);
 
-// max number of procs in one direction
+    // max number of procs in one direction
     int xb = (this->max_dimx + PX0_GRID -1)/PX0_GRID +1;
     int yb = (this->max_dimy + PY0_GRID -1)/PY0_GRID +1;
     int zb = (this->max_dimz + PZ0_GRID -1)/PZ0_GRID +1;
@@ -908,7 +918,7 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
     yb = std::min(yb, BG.get_PE_Y());
     zb = std::min(zb, BG.get_PE_Z());
 
-    
+
     MPI_Request *request = new MPI_Request[xb*yb*zb];
     KpointType *phi = new KpointType[this->max_dimx * this->max_dimy * this->max_dimz];
 
@@ -975,7 +985,7 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
                         ixx = (ixx + NX_GRID) % NX_GRID;
                         if( ixx < 0 || ixx >= this->dimx[st_glob]) continue;
                     }
-                
+
                     for(int iy = 0; iy < PY0_GRID; iy++)
                     {
                         int iyy = iy - yoff;

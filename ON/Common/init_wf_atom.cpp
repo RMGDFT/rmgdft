@@ -39,6 +39,8 @@ void init_wf_atom(STATE * states)
         {
             int st_glob = LocalOrbital->index_proj_to_global[st];
 
+            if(st_glob < 0) continue;
+
             ion = states[st_glob].atom_index;
             species = Atoms[ion].species;
             ist = states[st_glob].atomic_orbital_index;

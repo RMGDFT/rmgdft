@@ -129,6 +129,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
     RT0 = new RmgTimer("2-SCF: DiagScalapack");
 
+ //   get_cholesky_real(matB);
     DiagScalapack(states, ct.num_states, Hij, matB);
 
     mat_dist_to_local(mat_X, pct.desca, rho_matrix_local, *LocalOrbital);
