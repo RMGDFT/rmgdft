@@ -41,6 +41,7 @@
 #include "BaseThread.h"
 #include "MpiQueue.h"
 #include "GatherScatter.h"
+#include "rmg_complex.h"
 
 
 void ComputeEig(int n, float *A, float *B, float *D, double *rval)
@@ -290,33 +291,22 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             double *vxc_x = &vxc_psi[pbasis];
             double *vxc_y = &vxc_psi[2*pbasis];
             double *vxc_z = &vxc_psi[3*pbasis];
-            std::complex<double> *a_psi_C = (std::complex<double> *)work1_t;
-            std::complex<float> *a_psi_F = (std::complex<float> *)work1_t;
-            std::complex<double> *psi_C = (std::complex<double> *)tmp_psi_t;
-            std::complex<float> *psi_F = (std::complex<float> *)tmp_psi_t;
 
-            if(typeid(CalcType) == typeid(std::complex<double>)) 
-            {
-                for(int idx = 0; idx < pbasis; idx++) 
-                {
-                    a_psi_C[idx] += 2.0 * psi_C[idx] * vxc_z[idx];
-                    a_psi_C[idx] += 2.0 * psi_C[idx+pbasis] * std::complex<double>(vxc_x[idx], -vxc_y[idx]); 
-                    a_psi_C[idx + pbasis] += -2.0 * psi_C[idx + pbasis] * vxc_z[idx];
-                    a_psi_C[idx + pbasis] += 2.0 * psi_C[idx] * std::complex<double>(vxc_x[idx], vxc_y[idx]); 
-                } 
-            }
-            if(typeid(CalcType) == typeid(std::complex<float>)) 
-            {
-                float two_F(2.0);
-                for(int idx = 0; idx < pbasis; idx++) 
-                {
-                    a_psi_F[idx] += two_F * psi_F[idx] * (float)vxc_z[idx];
-                    a_psi_F[idx] += two_F * psi_F[idx+pbasis] * std::complex<float>(vxc_x[idx], -vxc_y[idx]); 
-                    a_psi_F[idx + pbasis] += -two_F * psi_F[idx + pbasis] * (float)vxc_z[idx];
-                    a_psi_F[idx + pbasis] += two_F * psi_F[idx] * std::complex<float>(vxc_x[idx], vxc_y[idx]); 
-                } 
-            }   
+            // Needed for all of the template variations. Non-complex variants are never actually used but are needed to keep
+            // the compiler from throwing errors.
+            typedef typename std::conditional_t< std::is_same<CalcType, double>::value, std::complex<double>,
+                             std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<double>,
+                             std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, std::complex<float> >>> nctype_t;
+            nctype_t *a_psi_C = (nctype_t *)work1_t;
+            nctype_t *psi_C = (nctype_t *)tmp_psi_t;
 
+            for(int idx = 0; idx < pbasis; idx++) 
+            {
+                a_psi_C[idx] += 2.0 * psi_C[idx] * vxc_z[idx];
+                a_psi_C[idx] += 2.0 * psi_C[idx+pbasis] * std::complex<double>(vxc_x[idx], -vxc_y[idx]); 
+                a_psi_C[idx + pbasis] += -2.0 * psi_C[idx + pbasis] * vxc_z[idx];
+                a_psi_C[idx + pbasis] += 2.0 * psi_C[idx] * std::complex<double>(vxc_x[idx], vxc_y[idx]); 
+            } 
         }
 
         // Add in non-local which has already had B applied in AppNls
