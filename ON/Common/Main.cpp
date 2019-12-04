@@ -325,6 +325,26 @@ int main(int argc, char **argv)
         {
             RmgTimer *RTO = new RmgTimer("WriteOrbitals");
             LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
+            if(ct.num_ions == 1)
+            {
+                int pbasis = Rmg_G->get_P0_BASIS(1);
+                int num_orb = LocalOrbital->num_tot;
+                if(num_orb != LocalOrbital->num_thispe)
+                {
+                    printf("Main.cpp:  num_tot %d != num_thispe %d", num_orb, LocalOrbital->num_thispe);
+                    exit(0);
+                }
+                double *Cij_glob = new double[num_orb * num_orb];
+                mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
+
+                double one = 1.0, zero = 0.0;
+                dgemm("N", "N", &pbasis, &num_orb, &num_orb , &one, LocalOrbital->storage_proj, &pbasis, 
+                        Cij_glob, &num_orb, &zero, H_LocalOrbital->storage_proj, &pbasis);
+
+                for(int idx = 0; idx < num_orb * pbasis; idx++) 
+                    LocalOrbital->storage_proj[idx] = H_LocalOrbital->storage_proj[idx];
+                LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
+            }
             delete RTO;
         }
 
