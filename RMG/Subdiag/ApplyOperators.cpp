@@ -69,15 +69,14 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
     // Apply A operator to psi
     ApplyAOperator (psi, a_psi, "Coarse");
-
-    // Apply B operator to psi
-    ApplyBOperator (psi, b_psi, "Coarse");
-
+    for(int idx = 0;idx < pbasis;idx++) b_psi[idx] = psi[idx];
     if(ct.noncoll)
     {
         ApplyAOperator (&psi[pbasis], &a_psi[pbasis], "Coarse");
-        ApplyBOperator (&psi[pbasis], &b_psi[pbasis], "Coarse");
+        for(int idx = 0;idx < pbasis;idx++) b_psi[idx+pbasis] = psi[idx+pbasis];
     }
+
+
 
     // if complex orbitals apply gradient to orbital and compute dot products
     std::complex<double> *kdr = NULL;

@@ -55,8 +55,6 @@ int init_kpoints (int *mesh, int *is_shift);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, DataType *gz, int, int, int, double, double, double, int);
-template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid);
-template <typename RmgType> void ApplyBOperator (RmgType * a, RmgType * b, char *grid, BaseGrid *G, TradeImages *T);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid);
 template <typename DataType> void SumGradientKvec (DataType *a, DataType *b, double *kvec, const char *grid);
 template <typename DataType> void ApplyGradient (DataType *a, DataType *gx, DataType *gy, DataType *gz, int order, const char *grid, BaseGrid *G, TradeImages *T);
@@ -119,8 +117,6 @@ template <typename KpointType>
 void LdaplusUxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *);
 template <typename DataType>
 double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order);
-template <typename RmgType>
-void ApplyBOperator (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
 void LoadPseudo(SPECIES *sp);
 void LoadUpfPseudo(SPECIES *sp);
 void LoadXmlPseudo(SPECIES *sp);
