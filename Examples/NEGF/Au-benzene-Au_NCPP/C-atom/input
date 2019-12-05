@@ -1,0 +1,110 @@
+
+# number of grids in space 
+
+wavefunction_grid ="48 72 72"
+
+# **** SCF controls ****  
+  
+max_scf_steps = "100"
+freeze_orbital_step="90"
+
+rms_convergence_criterion = "1e-7"
+
+# **** MD/Relax controls  **** 
+  
+max_md_steps = "10"
+fast_relax_max_force = "1e-3"
+ionic_time_step = "45"
+relax_dynamic_timestep = "true"
+
+# **** Mixing controls **** 
+  
+charge_density_mixing = "0.1"
+projector_mixing = "0.1"
+charge_mixing_type = "Pulay"
+charge_pulay_order = "5"
+charge_pulay_scale = "0.5"
+charge_pulay_refresh = "100"
+
+# **** Setup  ****
+
+description = "Short description of the input file"
+exchange_correlation_type = "LDA"
+bravais_lattice_type = "Orthorhombic Primitive"
+system_charge = "0.0"
+
+# *****Occupation *****
+
+states_count_and_occupation="1  2.0  3 0.66666666666666  20 0.0"
+
+
+# ****  Multigrid **** 
+
+kohn_sham_mg_levels  = "2"
+poisson_mg_levels    = "2"
+kohn_sham_time_step  = "1.0"
+poisson_time_step    = "1.35"
+
+#  **** IO control  ****
+
+write_eigvals_period = "10"
+md_steps_til_write_waves = "10"
+input_wave_function_file = "Wave/wave"
+output_wave_function_file = "Wave/wave"
+
+# **** Pseudopotential **** 
+pseudopotential = "
+C ../C.UPF"
+
+# **** Units  ****
+
+length_units = "Bohr"
+atomic_coordinate_type = "Absolute"
+
+
+# Lattice constants in (x, y, z) directions
+# a, b, c, cos(alpha), cos(beta), cos(gamma)
+a_length="15.4126124151" b_length="23.1189186227" c_length="23.1189186227"
+alpha="0.0" beta="0.0" gamma="0.0"
+
+atoms=
+"
+C   0.0  0.0 0.0  1  
+"
+
+orbitals=
+"
+20  0.0  0.0  0.0 6.5  1  1
+"
+
+number_of_orbitals="20"
+
+
+#  **** default parameters for one atom input  ***** 
+
+num_processor ="1"
+processor_grid="1 1 1"
+kpoints_per_processor="1"
+Hamiltonia_processor_grid="1 1"
+start_mode="LCAO Start"
+number_of_atoms="1"
+number_of_species="1"
+
+#  **** default parameters for order-n input  ***** 
+
+kpoints_per_processor="1"
+calculation_mode="Quench Electrons"
+potential_grid_refinement = "1"
+do_sort_wavefunctions="false"
+number_of_kpoints="1"
+kpoints= "0.0  0.0  0.0   1.0 "
+do_spin_polarized="false"
+kohn_sham_pre_smoothing="3"
+kohn_sham_post_smoothing="3"
+poisson_pre_smoothing="2"
+poisson_post_smoothing="2"
+do_write_waves_to_file="true"
+do_movable_orbital_centers="false"
+movable_orbital_centers_steps="1"
+
+ocalizedOrbitalLayout="Projection"

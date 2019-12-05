@@ -1,0 +1,4 @@
+rmgnegf="/home/wlu/rmgdft.git/trunk/build/rmg-negf-cpu"
+cd 3lead_lead1
+mpirun -n 8 ${rmgnegf} input
+cd ..

@@ -1,0 +1,148 @@
+#start_mode="FIREBALL Start"
+start_mode="LCAO Start"
+#start_mode="Restart From File"
+#space grid and processor grid control
+
+wavefunction_grid ="48 72 72"
+num_processor ="8"
+processor_grid="2 2 2"
+Hamiltonia_processor_grid ="2 4"
+
+threads_per_node = "1"
+
+# **** SCF controls ****  
+  
+max_scf_steps = "100"
+freeze_orbital_step="80"
+rms_convergence_criterion = "1e-7"
+
+# **** MD/Relax controls  **** 
+  
+max_md_steps = "10"
+fast_relax_max_force = "1e-3"
+ionic_time_step = "45"
+relax_dynamic_timestep = "true"
+
+# **** Mixing controls **** 
+  
+charge_density_mixing = "0.1"
+projector_mixing = "0.1"
+charge_mixing_type = "Pulay"
+charge_pulay_order = "5"
+charge_pulay_scale = "0.1"
+charge_pulay_refresh = "100"
+
+# **** Setup  ****
+
+description = "Short description of the input file"
+exchange_correlation_type = "LDA"
+bravais_lattice_type = "Orthorhombic Primitive"
+system_charge = "0.0"
+
+# *****Occupation *****
+
+occupations_type = "Fermi Dirac"
+occupation_electron_temperature_eV = "0.1"
+occupation_number_mixing = "0.3"
+
+# ****  Multigrid **** 
+
+kohn_sham_mg_levels  = "2"
+poisson_mg_levels    = "2"
+kohn_sham_time_step  = "1.0"
+poisson_time_step    = "1.35"
+
+#  **** IO control  ****
+
+write_eigvals_period = "10"
+md_steps_til_write_waves = "10"
+input_wave_function_file = "Wave/wave"
+output_wave_function_file = "Wave/wave"
+
+# **** Pseudopotential **** 
+pseudopotential = "
+Au ../Au.UPF"
+
+atomic_orbital_files="
+ Au    ../Au-atom/Wave/wave 
+"
+
+# **** Units  ****
+
+length_units = "Bohr"
+atomic_coordinate_type = "Absolute"
+
+
+# Lattice constants in (x, y, z) directions
+# a, b, c, cos(alpha), cos(beta), cos(gamma)
+a_length="15.4126124151" b_length="23.1189186227" c_length="23.1189186227"
+alpha="0.0" beta="0.0" gamma="0.0"
+
+
+ #  atomic coordinates  
+atoms=
+"
+ Au     0.000000000000e+00    7.706306207564e+00    7.706306207564e+00      1 
+ Au     0.000000000000e+00    1.541261241513e+01    7.706306207564e+00      1 
+ Au     0.000000000000e+00    1.155945931135e+01    1.155945931135e+01      1 
+ Au     0.000000000000e+00    7.706306207564e+00    1.541261241513e+01      1 
+ Au     0.000000000000e+00    1.541261241513e+01    1.541261241513e+01      1 
+ Au     3.853153103782e+00    1.155945931135e+01    7.706306207564e+00      1 
+ Au     3.853153103782e+00    7.706306207564e+00    1.155945931135e+01      1 
+ Au     3.853153103782e+00    1.541261241513e+01    1.155945931135e+01      1 
+ Au     3.853153103782e+00    1.155945931135e+01    1.541261241513e+01      1 
+ Au     7.706306207564e+00    7.706306207564e+00    7.706306207564e+00      1 
+ Au     7.706306207564e+00    1.541261241513e+01    7.706306207564e+00      1 
+ Au     7.706306207564e+00    1.155945931135e+01    1.155945931135e+01      1 
+ Au     7.706306207564e+00    7.706306207564e+00    1.541261241513e+01      1 
+ Au     7.706306207564e+00    1.541261241513e+01    1.541261241513e+01      1 
+ Au     1.155945931135e+01    1.155945931135e+01    7.706306207564e+00      1 
+ Au     1.155945931135e+01    7.706306207564e+00    1.155945931135e+01      1 
+ Au     1.155945931135e+01    1.541261241513e+01    1.155945931135e+01      1 
+ Au     1.155945931135e+01    1.155945931135e+01    1.541261241513e+01      1 
+"
+
+ #  orbital centers  
+orbitals=
+"
+ 9     0.000000000000e+00    7.706306207564e+00    7.706306207564e+00  6.5  1  1  
+ 9     0.000000000000e+00    1.541261241513e+01    7.706306207564e+00  6.5  1  1  
+ 9     0.000000000000e+00    1.155945931135e+01    1.155945931135e+01  6.5  1  1  
+ 9     0.000000000000e+00    7.706306207564e+00    1.541261241513e+01  6.5  1  1  
+ 9     0.000000000000e+00    1.541261241513e+01    1.541261241513e+01  6.5  1  1  
+ 9     3.853153103782e+00    1.155945931135e+01    7.706306207564e+00  6.5  1  1  
+ 9     3.853153103782e+00    7.706306207564e+00    1.155945931135e+01  6.5  1  1  
+ 9     3.853153103782e+00    1.541261241513e+01    1.155945931135e+01  6.5  1  1  
+ 9     3.853153103782e+00    1.155945931135e+01    1.541261241513e+01  6.5  1  1  
+ 9     7.706306207564e+00    7.706306207564e+00    7.706306207564e+00  6.5  1  1  
+ 9     7.706306207564e+00    1.541261241513e+01    7.706306207564e+00  6.5  1  1  
+ 9     7.706306207564e+00    1.155945931135e+01    1.155945931135e+01  6.5  1  1  
+ 9     7.706306207564e+00    7.706306207564e+00    1.541261241513e+01  6.5  1  1  
+ 9     7.706306207564e+00    1.541261241513e+01    1.541261241513e+01  6.5  1  1  
+ 9     1.155945931135e+01    1.155945931135e+01    7.706306207564e+00  6.5  1  1  
+ 9     1.155945931135e+01    7.706306207564e+00    1.155945931135e+01  6.5  1  1  
+ 9     1.155945931135e+01    1.541261241513e+01    1.155945931135e+01  6.5  1  1  
+ 9     1.155945931135e+01    1.155945931135e+01    1.541261241513e+01  6.5  1  1  
+"
+
+number_of_atoms="18"
+number_of_species="1"
+number_of_orbitals="162"
+
+#  **** default parameters for order-n input  ***** 
+
+localize_localpp = "true"
+localize_projectors = "true"
+
+
+kpoints_per_processor="1"
+potential_grid_refinement="1"
+number_of_kpoints="1"
+kpoints= "0.0  0.0  0.0   1.0 "
+kohn_sham_pre_smoothing="3"
+kohn_sham_post_smoothing="3"
+poisson_pre_smoothing="2"
+poisson_post_smoothing="2"
+do_write_waves_to_file="true"
+movable_orbital_centers_steps="1"
+LocalizedOrbitalLayout="Projection"

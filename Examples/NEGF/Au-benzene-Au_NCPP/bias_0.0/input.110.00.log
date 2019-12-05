@@ -1,0 +1,99 @@
+RMG initialization ... 1 image(s) total, 1 per node. 8 MPI processes/image. Thread level 0.
+
+  PARAMETERS control the complex energy integral  
+ number of probe:                     2 
+ probe in which block?:   0 
+ probe in which block?:   2 
+ number of subsystem:                     3 
+ Order of subsystem in the input file?:   1 
+ Order of subsystem in the input file?:   0 
+ Order of subsystem in the input file?:   2 
+ energy point in semicircle:          50 
+ energy point in strait line:         50 
+ energy point in noneq calc:          128 
+ bottom of valance band :             -30.000000 eV 
+ Fermi Dirac temperature :            0.025000 eV 
+ parameter GAMMA         :            0.500000 eV 
+ imaginary energy for strait line:    2.050000 eV 
+ imaginary energy for noneq calc :    0.000001 eV 
+ pulay steps in rho:                  5 
+ pulay refresh steps in rho:          100 
+ pulay mixing parameter in rho:       0.500000 
+ 
+ parallel matrix grid nrow, ncol:  1 1 
+ diag/offdiag begin: 0 26244 55566 
+ diag/offdiag begin: 1 88327 117649 
+
+ nkp  1 1 1
+ transmission calculations from known matrix 
+Calculating transmission from probe 1 to 2 
+ct.num_states     = 505 
+lcr[iprobe].num_states = 162 
+lcr[iprobe].num_states = 162 
+num of blocks     = 3 
+blocks dim        =    162  181  162 
+enengy from -2.000000 to 2.000000 with 200 points
+small imaginary part = 0.000500 
+KT = 0.050000 eV
+kpoint in x,y,z = 1 1 1
+ total number of kpoints = 1 kx       ky      kz      kweight
+ 0.000000, 0.000000,  0.000000, 1.000000  
+ THE MATRICES are read in 
+ with Simpson depth of 0, tol = 1.990000e+02 
+ number of peaks: 6
+
+ peaks[0]: -1.979899
+
+ peaks[1]: -1.919598
+
+ peaks[2]: -1.758794
+
+ peaks[3]: -1.236181
+
+ peaks[4]: -0.010050
+
+ peaks[5]: 1.959799
+
+ ********
+ bias = 0.000000 eV    current = 0.000000e+00 microA
+
+
+--------TIMING INFORMATION FOR Processor owned the most atoms----------------
+                                        Total time               Per SCF/step
+
+1-TOTAL                                            12.34                 inf
+
+5-Functional                                        0.00                 inf
+
+Ax=B                                                0.17                 inf
+
+Conductance Calculation                            12.16                 inf
+
+GlobalSums                                          0.00                 inf
+
+matrix inverse                                      2.18                 inf
+
+
+------------------------- TIMING INFORMATION FOR THREADS  -------------------
+
+                                           Min            Max            Avg
+
+--------TIMING INFORMATION FOR Processor owned the least atoms----------------
+                                        Total time               Per SCF/step
+
+1-TOTAL                                            12.34                 inf
+
+5-Functional                                        0.00                 inf
+
+Ax=B                                                0.17                 inf
+
+Conductance Calculation                            12.16                 inf
+
+GlobalSums                                          0.00                 inf
+
+matrix inverse                                      2.18                 inf
+
+
+------------------------- TIMING INFORMATION FOR THREADS  -------------------
+
+                                           Min            Max            Avg

@@ -1,0 +1,6 @@
+rmgon="/home/wlu/rmgdft.git/trunk/build/rmg-on-cpu"
+cd lead1
+mpirun -n 8 ${rmgon} input
+cd ../center
+mpirun -n 8 ${rmgon} input
+cd ..
