@@ -205,7 +205,7 @@ MPI_Comm TradeImages::get_MPI_comm(void)
 
 
 template <typename RmgType>
-void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type)
+void TradeImages::trade_imagesx (RmgType * __restrict__ f, RmgType * __restrict__ w, int dimx, int dimy, int dimz, int images, int type)
 {
     RmgTimer *RT=NULL;
     if(this->timer_mode) RT = new RmgTimer("Trade images: trade_imagesx");
@@ -508,7 +508,7 @@ void TradeImages::trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int
 
 // Local trade images when the object is only defined on one MPI process
 template <typename RmgType>
-void TradeImages::trade_imagesx_central_local (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images)
+void TradeImages::trade_imagesx_central_local (RmgType * __restrict__ f, RmgType * __restrict__ w, int dimx, int dimy, int dimz, int images)
 {
 
     int tim = 2 * images;
@@ -1128,7 +1128,7 @@ void TradeImages::init_trade_imagesx_async(size_t elem_len)
 }
 
 template <typename RmgType>
-void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images)
+void TradeImages::trade_imagesx_async (RmgType * __restrict__ f, RmgType * __restrict__ w, int dimx, int dimy, int dimz, int images)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
@@ -1758,7 +1758,7 @@ void TradeImages::trade_imagesx_async (RmgType * f, RmgType * w, int dimx, int d
 
 // Asynchronous image trades for central finite difference operators
 template <typename RmgType>
-void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images)
+void TradeImages::trade_imagesx_central_async (RmgType * __restrict__ f, RmgType * __restrict__ w, int dimx, int dimy, int dimz, int images)
 {
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
@@ -2031,7 +2031,7 @@ void TradeImages::trade_imagesx_central_async (RmgType * f, RmgType * w, int dim
 
 // Asynchronous image trades for central finite difference operators using the queue manager
 template <typename RmgType>
-void TradeImages::trade_imagesx_central_async_managed (RmgType * f, RmgType * w, int dimx, int dimy, int dimz, int images)
+void TradeImages::trade_imagesx_central_async_managed (RmgType * __restrict__ f, RmgType * __restrict__ w, int dimx, int dimy, int dimz, int images)
 {
     if(images > MAX_TRADE_IMAGES) {
        rmg_error_handler (__FILE__, __LINE__, "Images count too high in trade_imagesx_async. Modify and recompile may be required.\n");
@@ -4333,7 +4333,7 @@ void TradeImages::trade_images_async_managed (RmgType * mat, int dimx, int dimy,
 
 
 template <typename RmgType>
-void TradeImages::trade_imagesx_async_managed (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images)
+void TradeImages::trade_imagesx_async_managed (RmgType * __restrict__ f, RmgType * __restrict__ w, int dimx, int dimy, int dimz, int images)
 {
 
     if(images > MAX_TRADE_IMAGES) {

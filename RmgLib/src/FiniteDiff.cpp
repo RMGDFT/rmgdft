@@ -991,7 +991,7 @@ void FiniteDiff::app_cir_sixth (RmgType * rptr, RmgType * b, int dimx, int dimy,
 
 
 template <typename RmgType>
-double FiniteDiff::app2_del2 (RmgType * a, RmgType * b, int dimx, int dimy, int dimz,
+double FiniteDiff::app2_del2 (RmgType * __restrict__ a, RmgType * __restrict__  b, int dimx, int dimy, int dimz,
                 double gridhx, double gridhy, double gridhz)
 {
 
@@ -2456,7 +2456,7 @@ void FiniteDiff::app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr
 }
 
     template <typename RmgType>
-void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __restrict__ wxr, RmgType * __restrict__ wyr, RmgType * __restrict__ wzr, int dimx, int dimy, int dimz,
         double gridhx, double gridhy, double gridhz)
 {
 
@@ -2595,7 +2595,7 @@ void FiniteDiff::app_gradient_eighth (RmgType * rptr, RmgType * wxr, RmgType *wy
 
 
     template <typename RmgType>
-void FiniteDiff::app_gradient_tenth (RmgType * rptr, RmgType * wxr, RmgType *wyr, RmgType *wzr, int dimx, int dimy, int dimz,
+void FiniteDiff::app_gradient_tenth (RmgType * __restrict__ rptr, RmgType * __restrict__ wxr, RmgType * __restrict__ wyr, RmgType * __restrict__ wzr, int dimx, int dimy, int dimz,
         double gridhx, double gridhy, double gridhz)
 {
 
