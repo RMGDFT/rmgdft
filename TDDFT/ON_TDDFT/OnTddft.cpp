@@ -189,19 +189,26 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         get_ddd (vtot, vxc);
 
         LO_x_LO(LP, Phi, Kbpsi_mat_local, *Rmg_G);
-        mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, LP, Phi, 0, LP.num_tot, 0, Phi.num_tot);
+        mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, LP, Phi, 0, LP.num_tot, 0, Phi.num_tot, true);
         ApplyHphi(Phi, H_Phi, vtot_psi);
 
         LO_x_LO(Phi, Phi, Sij_local, *Rmg_G);
-        mat_local_to_glob(Sij_local, Smatrix, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot);
 
         LO_x_LO(Phi, H_Phi, Hij_local, *Rmg_G);
-        mat_local_to_glob(Hij_local, Hmatrix, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot);
+
+        mat_local_to_glob(Sij_local, Smatrix, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot, false);
+        mat_local_to_glob(Hij_local, Hmatrix, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot, false);
+
+
 
         GetHvnlij_proj(Hmatrix, Smatrix, Kbpsi_mat, Kbpsi_mat,
                 Phi.num_tot, Phi.num_tot, LP.num_tot, true);
 
-            dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
+        int idx = Phi.num_tot * Phi.num_tot;
+        MPI_Allreduce(MPI_IN_PLACE, Hmatrix, idx, MPI_DOUBLE, MPI_SUM, Phi.comm);
+        MPI_Allreduce(MPI_IN_PLACE, Smatrix, idx, MPI_DOUBLE, MPI_SUM, Phi.comm);
+
+        dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
 
         if(pct.gridpe == 0 && ct.verbose)
         { 

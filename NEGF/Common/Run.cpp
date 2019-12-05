@@ -141,7 +141,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
             {
                 LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
                 mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 
-                    0, LocalProj->num_tot, 0, LocalOrbital->num_tot);
+                    0, LocalProj->num_tot, 0, LocalOrbital->num_tot, true);
             }
             delete(RTk);
 
@@ -156,7 +156,7 @@ void Run (STATE * states, STATE * states1, std::unordered_map<std::string, Input
             {
                 LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
                 mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 
-                    0, LocalProj->num_tot, 0, LocalOrbital->num_tot);
+                    0, LocalProj->num_tot, 0, LocalOrbital->num_tot, true);
             }
             delete(RTk);
 

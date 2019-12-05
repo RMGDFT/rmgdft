@@ -44,7 +44,7 @@
 
 
 void mat_local_to_glob(double *mat_local, double *mat_glob, LocalObject<double> &A, LocalObject<double> &B, 
-    int st_start1, int st_end1, int st_start2, int st_end2)
+    int st_start1, int st_end1, int st_start2, int st_end2, bool reduce_flag)
 {
 
 //  st_start1 ... are global index for orbitals 
@@ -71,6 +71,9 @@ void mat_local_to_glob(double *mat_local, double *mat_glob, LocalObject<double> 
         }
     }
 
-    int idx = na * nb;
-    MPI_Allreduce(MPI_IN_PLACE, mat_glob, idx, MPI_DOUBLE, MPI_SUM, A.comm);
+    if(reduce_flag)
+    {
+        int idx = na * nb;
+        MPI_Allreduce(MPI_IN_PLACE, mat_glob, idx, MPI_DOUBLE, MPI_SUM, A.comm);
+    }
 }

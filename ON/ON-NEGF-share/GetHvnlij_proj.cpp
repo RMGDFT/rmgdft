@@ -47,6 +47,12 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_
         int nh = sp->num_projectors;
 
         if(nh == 0) continue;
+        if(ion % pct.grid_npes != pct.gridpe) 
+        {
+            proj_count += nh;
+            continue;
+        }
+
         dnmI = pct.dnmI[ion];
         qnmI = pct.qqq[ion];
 

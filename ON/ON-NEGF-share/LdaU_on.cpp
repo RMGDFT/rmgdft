@@ -123,7 +123,7 @@ void LdaU_on::calc_ns_occ(LocalObject<double> &LocalOrbital, double *mat_X, Base
     LO_x_LO(*this->AtomicOrbital, LocalOrbital, this->Upsi_mat_local, BG);
 
     mat_local_to_glob(this->Upsi_mat_local, this->Upsi_mat, *this->AtomicOrbital, LocalOrbital, 
-            0, this->AtomicOrbital->num_tot, 0, LocalOrbital.num_tot);
+            0, this->AtomicOrbital->num_tot, 0, LocalOrbital.num_tot, true);
 
     int nldaU = this->tot_orbitals_ldaU;
     int norb = LocalOrbital.num_tot;
