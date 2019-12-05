@@ -34,6 +34,9 @@
 #include "main.h"
 #include "init_var.h"
 #include "LCR.h"
+#include <iostream>
+#include <fstream>
+
 
 
 
@@ -209,6 +212,14 @@ void read_LCR ()
         {
             lcr[iprobe].y_shift = atof (tptr);
         }
+
+        fclose(fhand);
+
+        lcr[iprobe].EF_new = 0.0;
+
+        sprintf (newname, "%s%s", lcr[iprobe].lead_name, ".EF");
+        std::ifstream Ef_file(newname);
+        Ef_file >> lcr[iprobe].EF_old;
 
 
     }
