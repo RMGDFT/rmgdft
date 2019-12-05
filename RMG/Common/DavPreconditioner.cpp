@@ -157,45 +157,25 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
 
     // neutralize cell
     for(int idx = 0;idx <pbasis;idx++) res[idx] -= OrbitalType(t1);
-    if(typeid(OrbitalType) == typeid(double))
-    {
-        CPP_pack_ptos_convert ((float *)work1_t, (double *)res, dimx, dimy, dimz);
-        MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
-                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                    0, levels, pre, post, 1,
-                    //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
-                    tstep, 1.0, 0.0, vtot,
-                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-        CPP_pack_stop_convert((float *)work2_t, (double *)res, dimx, dimy, dimz);
-    }
-    else if(typeid(OrbitalType) == typeid(std::complex<double>))
-    {
-        CPP_pack_ptos_convert ((std::complex<float> *)work1_t, (std::complex<double> *)res, dimx, dimy, dimz);
-        MG.mgrid_solv<std::complex<float>>((std::complex<float> *)work2_t, (std::complex<float> *)work1_t, (std::complex<float> *)work_t,
-                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                    0, levels, pre, post, 1,
-                    //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
-                    tstep, 1.0, 0.0, vtot,
-                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-        CPP_pack_stop_convert((std::complex<float> *)work2_t, (std::complex<double> *)res, dimx, dimy, dimz);
-    }
-    else
-    {
-        CPP_pack_ptos (work1_t, res, dimx, dimy, dimz);
-        MG.mgrid_solv (work2_t, work1_t, work_t,
-                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                    0, levels, pre, post, 1,
-                    tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
-                    //tstep, 1.0*Zfac, 0.0, nvtot,
-                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-        CPP_pack_stop (work2_t, res, dimx, dimy, dimz);
-    }
+
+    // Typedefs to map different data types to correct MG template.
+    typedef typename std::conditional_t< std::is_same<OrbitalType, double>::value, float,
+                     std::conditional_t< std::is_same<OrbitalType, std::complex<double>>::value, std::complex<float>,
+                     std::conditional_t< std::is_same<OrbitalType, std::complex<float>>::value, std::complex<float>, float> > > mgtype_t;
+    typedef typename std::conditional_t< std::is_same<OrbitalType, double>::value, double,
+                     std::conditional_t< std::is_same<OrbitalType, std::complex<double>>::value, std::complex<double>,
+                     std::conditional_t< std::is_same<OrbitalType, std::complex<float>>::value, std::complex<float>, float> > > convert_type_t;
+
+    CPP_pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)res, dimx, dimy, dimz);
+    MG.mgrid_solv<mgtype_t>((mgtype_t *)work2_t, (mgtype_t *)work1_t, (mgtype_t *)work_t,
+                dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
+                0, levels, pre, post, 1,
+                //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
+                tstep, 1.0, 0.0, vtot,
+                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+    CPP_pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)res, dimx, dimy, dimz);
 
     for(int idx = 0;idx <pbasis;idx++) res[idx] += eig * t1;;
 
