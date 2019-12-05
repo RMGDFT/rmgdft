@@ -101,20 +101,25 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     int num_tot = LocalOrbital->num_tot;
     double *Hij_glob = new double[num_tot * num_tot];
     double *Sij_glob = new double[num_tot * num_tot];
-
-
+    RmgTimer *RT1 = new RmgTimer("2-SCF: HS mat: ApplyH");
     ApplyHphi(*LocalOrbital, *H_LocalOrbital, vtot_c);
+    delete RT1;
 
+    RT1 = new RmgTimer("2-SCF: HS mat: LOxLO");
     LO_x_LO(*LocalOrbital, *H_LocalOrbital, Hij_local, *Rmg_G);
     LO_x_LO(*LocalOrbital, *LocalOrbital, Sij_local, *Rmg_G);
 
+    delete RT1;
+
+    RT1 = new RmgTimer("2-SCF: HS mat: reduce");
     mat_local_to_glob(Hij_local, Hij_glob, *LocalOrbital, *LocalOrbital, 0, num_tot, 0, num_tot);
     mat_local_to_glob(Sij_local, Sij_glob, *LocalOrbital, *LocalOrbital, 0, num_tot, 0, num_tot);
+    delete RT1;
 
-
-
+    RT1 = new RmgTimer("2-SCF: HS mat: Hvnl");
     GetHvnlij_proj(Hij_glob, Sij_glob, Kbpsi_mat, Kbpsi_mat, 
             num_tot, num_tot, LocalProj->num_tot, true);
+    delete RT1;
     if (pct.gridpe == 0)
     {
         print_matrix(Hij_glob, 6, num_tot);
