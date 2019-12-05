@@ -130,6 +130,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     std::string field_delims = " \t";
     Key = NewMap.at("atomic_orbital_files");
     boost::algorithm::split( lines, Key->Readstr, boost::is_any_of(delims), boost::token_compress_on );
+    lc.file_atomic_orbit.resize(lc.num_species);
     std::vector<std::string>::iterator it;
     for (it = lines.begin(); it != lines.end(); ++it) {
         std::string pline = *it;
@@ -142,7 +143,7 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
             boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
             for(int isp = 0;isp < lc.num_species;isp++) {
                 if(!std::strcmp(fields[0].c_str(), Species[isp].atomic_symbol)) {
-                    lc.file_atomic_orbit.push_back(fields[1]);
+                    lc.file_atomic_orbit.at(isp) = fields[1];
                 }
             }
 

@@ -377,6 +377,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             ct.tcharge *= get_vel_f();
 
             double t2 = ct.nel / ct.tcharge;
+            if(pct.imgpe == 0 && std::abs(t2-1.0) > 1.0e-5 )
+                printf("\n initialize rho normalize constant %18.10e", t2);
             int iii = get_FP0_BASIS();
             dscal(&iii, &t2, &rho[0], &ione);
 

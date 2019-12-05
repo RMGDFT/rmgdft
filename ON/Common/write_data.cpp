@@ -192,12 +192,12 @@ void write_data(char *name, double *vh, double *vxc, double *vh_old,
     hzgrid = get_hzzgrid() * get_zside();
 
 
-    ixmin = 2 * states[0].ixmin;
-    ixmax = 2 * states[0].ixmax;
-    iymin = 2 * states[0].iymin;
-    iymax = 2 * states[0].iymax;
-    izmin = 2 * states[0].izmin;
-    izmax = 2 * states[0].izmax;
+    ixmin = Rmg_G->default_FG_RATIO * states[0].ixmin;
+    ixmax = Rmg_G->default_FG_RATIO * states[0].ixmax;
+    iymin = Rmg_G->default_FG_RATIO * states[0].iymin;
+    iymax = Rmg_G->default_FG_RATIO * states[0].iymax;
+    izmin = Rmg_G->default_FG_RATIO * states[0].izmin;
+    izmax = Rmg_G->default_FG_RATIO * states[0].izmax;
     ixdim = ixmax - ixmin;
     iydim = iymax - iymin;
     izdim = izmax - izmin;
