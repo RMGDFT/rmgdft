@@ -50,9 +50,6 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_
         dnmI = pct.dnmI[ion];
         qnmI = pct.qqq[ion];
 
-
-
-
         dgemm ("T", "N", &num_orb1, &nh, &nh, &one, &Kbpsi_mat1[proj_count], &num_proj, dnmI, &nh, &zero, temA, &num_orb1);
         dgemm ("N", "N", &num_orb1, &num_orb2, &nh, &one, temA, &num_orb1, &Kbpsi_mat2[proj_count], &num_proj, &one, Aij, &num_orb1);
 
@@ -60,7 +57,7 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_
         if(!ct.norm_conserving_pp && flag_overlap)
         {
             dgemm ("T", "N", &num_orb1, &nh, &nh, &one, &Kbpsi_mat1[proj_count], &num_proj, qnmI, &nh, &zero, temA, &num_orb1);
-            dgemm ("N", "N", &num_orb1, &num_orb2, &nh, &one, temA, &num_orb1, &Kbpsi_mat2[proj_count], &num_proj, &one, Aij, &num_orb1);
+            dgemm ("N", "N", &num_orb1, &num_orb2, &nh, &one, temA, &num_orb1, &Kbpsi_mat2[proj_count], &num_proj, &one, Bij, &num_orb1);
         }
 
         proj_count += nh;
