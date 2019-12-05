@@ -34,18 +34,9 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_
     double zero = 0.0, one = 1.0;
     double *dnmI, *qnmI;
     double *temA;
-    double *dnm, *qnm;
 
     if(num_orb1 < 1 || num_orb2 < 1 || num_proj < 1) return;
-    dnm = new double[num_proj * num_proj];
-    qnm = new double[num_proj * num_proj];
-    temA = new double[num_orb1 * num_proj];
-
-    for(int idx = 0; idx < num_proj * num_proj; idx++) 
-    {
-        dnm[idx] = 0.0;
-        qnm[idx] = 0.0;
-    }
+    temA = new double[num_orb1 * ct.max_nl];
 
     int proj_count = 0;
     for (int ion = 0; ion < ct.num_ions; ion++)
@@ -59,33 +50,23 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_
         dnmI = pct.dnmI[ion];
         qnmI = pct.qqq[ion];
 
-        for(int i = 0; i < nh; i++)
-        for(int j = 0; j < nh; j++)
+
+
+
+        dgemm ("T", "N", &num_orb1, &nh, &nh, &one, &Kbpsi_mat1[proj_count], &num_proj, dnmI, &nh, &zero, temA, &num_orb1);
+        dgemm ("N", "N", &num_orb1, &num_orb2, &nh, &one, temA, &num_orb1, &Kbpsi_mat2[proj_count], &num_proj, &one, Aij, &num_orb1);
+
+
+        if(!ct.norm_conserving_pp && flag_overlap)
         {
-            int ii = i + proj_count;
-            int jj = j + proj_count;
-            dnm[ii *num_proj + jj] = dnmI[i * nh + j];
-            qnm[ii *num_proj + jj] = qnmI[i * nh + j];
+            dgemm ("T", "N", &num_orb1, &nh, &nh, &one, &Kbpsi_mat1[proj_count], &num_proj, qnmI, &nh, &zero, temA, &num_orb1);
+            dgemm ("N", "N", &num_orb1, &num_orb2, &nh, &one, temA, &num_orb1, &Kbpsi_mat2[proj_count], &num_proj, &one, Aij, &num_orb1);
         }
 
         proj_count += nh;
     }
-           
-
-    dgemm ("T", "N", &num_orb1, &num_proj, &num_proj, &one, Kbpsi_mat1, &num_proj, dnm, &num_proj, &zero, temA, &num_orb1);
-    dgemm ("N", "N", &num_orb1, &num_orb2, &num_proj, &one, temA, &num_orb1, Kbpsi_mat2, &num_proj, &one, Aij, &num_orb1);
-
-
-    if(!ct.norm_conserving_pp && flag_overlap)
-    {
-        dgemm ("T", "N", &num_orb1, &num_proj, &num_proj, &one, Kbpsi_mat1, &num_proj, qnm, &num_proj, &zero, temA, &num_orb1);
-        dgemm ("N", "N", &num_orb1, &num_orb2, &num_proj, &one, temA, &num_orb1, Kbpsi_mat2, &num_proj, &one, Bij, &num_orb1);
-    }
-
 
 
     delete [] temA;
-    delete [] qnm;
-    delete [] dnm;
 
 }

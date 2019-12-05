@@ -191,6 +191,7 @@ int main(int argc, char **argv)
 #endif
 
         ReadBranchON(ct.cfile, ct, ControlMap);
+        WriteXyz(ct.cfile);
         states = init_states();
         allocate_states();
         get_state_to_proc(states);

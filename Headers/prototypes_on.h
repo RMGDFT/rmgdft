@@ -1,6 +1,7 @@
 #define GAMMA_PT 1
 //#include "typedefs.h"
 #include "LocalObject.h"
+void WriteXyz(char *);
 void Preconditioner(double *, int);
 template <typename KpointType>
 void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dis, BaseGrid &BG,
