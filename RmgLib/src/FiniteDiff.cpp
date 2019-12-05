@@ -2505,8 +2505,17 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
                             t2x * ( B[iz + 2*ixs] - B[iz - 2*ixs]) +
                             t1x * ( B[iz + ixs] - B[iz - ixs]);
                     }
+                }                   /* end for */
+            }                       /* end for */
 
-                    A = &wyr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+            for (int ix = 4; ix < dimx + 4; ix++)
+            {
+
+                for (int iy = 4; iy < dimy + 4; iy++)
+                {
+
+                    RmgType *A = &wyr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    RmgType *B = &rptr[ix * ixs + iy * iys];
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         A[iz] =
@@ -2516,8 +2525,17 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
                             t1y * ( B[iz + iys] - B[iz - iys]);
                     
                     }
+                }                   /* end for */
+            }                       /* end for */
 
-                    A = &wzr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+            for (int ix = 4; ix < dimx + 4; ix++)
+            {
+
+                for (int iy = 4; iy < dimy + 4; iy++)
+                {
+
+                    RmgType *A = &wzr[(ix - 4) * ix1 + (iy - 4) * iy1 - 4];
+                    RmgType *B = &rptr[ix * ixs + iy * iys];
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         A[iz] =
