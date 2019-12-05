@@ -2,6 +2,7 @@ set_source_files_properties(write_header.cpp
 PROPERTIES
 COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 add_library (ON_NEGF_share
+WriteXyz.cpp
 ApplyHphi.cpp
 mat_local_to_glob.cpp
 MyCpdgemr2d.cpp

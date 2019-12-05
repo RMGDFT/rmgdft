@@ -199,6 +199,7 @@ int main (int argc, char **argv)
     InitIo(argc, argv, ControlMap);
 
     ReadBranchNEGF(ct.cfile, ct, cei, potentialCompass, chargeDensityCompass);
+    WriteXyz(ct.cfile);
     states = new STATE[ct.num_states];
     allocate_states();
 
