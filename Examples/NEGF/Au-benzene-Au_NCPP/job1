@@ -1,0 +1,12 @@
+rmgon="/home/wlu/rmgdft.git/trunk/build/rmg-on-cpu"
+cd Au-atom
+mpirun -n 8 ${rmgon} input
+cd ../C-atom
+mpirun -n 8 ${rmgon} input
+cd ../S-atom
+mpirun -n 8 ${rmgon} input
+cd ../H-atom
+mpirun -n 8 ${rmgon} input
+cd ..
+
+

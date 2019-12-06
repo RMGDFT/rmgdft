@@ -168,7 +168,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
     LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
     mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital,
-            0, LocalProj->num_tot, 0, LocalOrbital->num_tot);
+            0, LocalProj->num_tot, 0, LocalOrbital->num_tot, 1);
     mat_global_to_local( *LocalProj, *LocalOrbital, Kbpsi_mat, Kbpsi_mat_local);
 
     delete(RTk);
@@ -206,10 +206,14 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
 
         int st0 = pmo.orb_index[ib];
         int st1 = pmo.orb_index[ib+1];
-        mat_local_to_glob(H_local, H_tem, *LocalOrbital, *LocalOrbital, st0, st1, st0, st1);
-        mat_local_to_glob(S_local, S_tem, *LocalOrbital, *LocalOrbital, st0, st1, st0, st1);
+        mat_local_to_glob(H_local, H_tem, *LocalOrbital, *LocalOrbital, st0, st1, st0, st1, 0);
+        mat_local_to_glob(S_local, S_tem, *LocalOrbital, *LocalOrbital, st0, st1, st0, st1, 0);
         GetHvnlij_proj(H_tem, S_tem, Kbpsi_mat_blocks[ib], Kbpsi_mat_blocks[ib],
                 ct.block_dim[ib], ct.block_dim[ib], LocalProj->num_tot, true);
+        int idx = (st1-st0) * (st1-st0);
+        MPI_Allreduce(MPI_IN_PLACE, H_tem, idx, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
+        MPI_Allreduce(MPI_IN_PLACE, S_tem, idx, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
+
 
         if (pct.gridpe == 0)
         {
@@ -225,10 +229,13 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         if (ib == ct.num_blocks -1) break;
         int st2 = pmo.orb_index[ib+2];
 
-        mat_local_to_glob(H_local, H_tem, *LocalOrbital, *LocalOrbital, st0, st1, st1, st2);
-        mat_local_to_glob(S_local, S_tem, *LocalOrbital, *LocalOrbital, st0, st1, st1, st2);
+        mat_local_to_glob(H_local, H_tem, *LocalOrbital, *LocalOrbital, st0, st1, st1, st2, 0);
+        mat_local_to_glob(S_local, S_tem, *LocalOrbital, *LocalOrbital, st0, st1, st1, st2, 0);
         GetHvnlij_proj(H_tem, S_tem, Kbpsi_mat_blocks[ib], Kbpsi_mat_blocks[ib+1],
                 ct.block_dim[ib], ct.block_dim[ib+1], LocalProj->num_tot, true);
+        int idx = (st1-st0) * (st2-st1);
+        MPI_Allreduce(MPI_IN_PLACE, H_tem, idx, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
+        MPI_Allreduce(MPI_IN_PLACE, S_tem, idx, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
 
 
         desca = &pmo.desc_cond[(ib + (ib+1) * ct.num_blocks) * DLEN];

@@ -1,0 +1,64 @@
+#
+
+#num of probes and which block the probe attached to
+2  0  2
+
+#num of sub systems and their atomic order in NEGF calculations
+#need to edit for multi-probe calclations
+3  1  0  2
+# num_probe_potential_window & their ranges[in the order of lead 1, 2, 3 ...]
+#they are dummy for 2-probe calculations and 
+#need to edit for multi-probe calclations
+4  40 120  40 120  40 120  40 120
+
+# num_dos_axis_window for integration along x,y,z axis
+# (required for mode 200)
+3  0 110  0 72 0 72
+
+#ncircle 
+ 50 
+
+
+#nmax_gq1 
+ 50 
+
+
+#nmax_gq2 
+ 128 
+
+
+#Enery Low Bound 
+ -30.0 
+
+
+#KT 
+ 0.025 
+
+
+#GAMMA 
+ 0.5 
+
+
+#DELTA2 
+ 2.05 
+
+
+#DELTA 
+ 1.0E-6 
+
+
+#Charge density Pulay order 
+ 5 
+
+
+#Charge density Pulay refresh steps 
+ 100 
+
+
+#Charge density Pulay beta 
+ 0.5 
+
+
+#processor grids for block matrix operation  
+1 
+1

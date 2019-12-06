@@ -54,7 +54,7 @@ void DistributeToGlobal(double *vtot_c, double *vtot_global);
 void DotProductOrbitNl (STATE *st1, int ion2, double * psi,
         double * prjptr, ION_ORBIT_OVERLAP *, int num_proj, double *kbpsi);
 void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat, BaseGrid &Rmg_G);
-void mat_local_to_glob(double *, double *, LocalObject<double> &A, LocalObject<double> &B, int, int, int, int);
+void mat_local_to_glob(double *, double *, LocalObject<double> &A, LocalObject<double> &B, int, int, int, int, bool);
 void ApplyHphi(LocalObject<double> &A, LocalObject<double> &HB, double *vtot_c);
 void GetNewRho_proj(LocalObject<double> &A, LocalObject<double> &B, double *rho, double *mat_local);
 void mat_global_to_local(LocalObject<double> &A, LocalObject<double> &B, double *mat_glob, double *mat_local);

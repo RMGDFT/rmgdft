@@ -80,7 +80,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
     //  now Kbpsi_mat_local stores the results from different processors, need to be summer over all processors.
     mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 0, LocalProj->num_tot, 
-            0, LocalOrbital->num_tot);
+            0, LocalOrbital->num_tot, true);
 
     mat_global_to_local(*LocalProj, *LocalOrbital, Kbpsi_mat, Kbpsi_mat_local); 
 
@@ -112,14 +112,21 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     delete RT1;
 
     RT1 = new RmgTimer("2-SCF: HS mat: reduce");
-    mat_local_to_glob(Hij_local, Hij_glob, *LocalOrbital, *LocalOrbital, 0, num_tot, 0, num_tot);
-    mat_local_to_glob(Sij_local, Sij_glob, *LocalOrbital, *LocalOrbital, 0, num_tot, 0, num_tot);
+    mat_local_to_glob(Hij_local, Hij_glob, *LocalOrbital, *LocalOrbital, 0, num_tot, 0, num_tot, false);
+    mat_local_to_glob(Sij_local, Sij_glob, *LocalOrbital, *LocalOrbital, 0, num_tot, 0, num_tot, false);
     delete RT1;
 
     RT1 = new RmgTimer("2-SCF: HS mat: Hvnl");
     GetHvnlij_proj(Hij_glob, Sij_glob, Kbpsi_mat, Kbpsi_mat, 
             num_tot, num_tot, LocalProj->num_tot, true);
     delete RT1;
+
+    RT1 = new RmgTimer("2-SCF: HS mat: reduce");
+    int sum_dim = num_tot * num_tot;
+    MPI_Allreduce(MPI_IN_PLACE, Hij_glob, sum_dim, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
+    MPI_Allreduce(MPI_IN_PLACE, Sij_glob, sum_dim, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
+    delete RT1;
+
     if (pct.gridpe == 0)
     {
         print_matrix(Hij_glob, 6, num_tot);
