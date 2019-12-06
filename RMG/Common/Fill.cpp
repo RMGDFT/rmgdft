@@ -86,7 +86,12 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) weight[kpt] = Kptr[kpt]->kp.kweight;
 
-
+    // Methfessel Paxton can be unstable on the first step when eigenvalues may be crazy
+    // so use FD in that case.
+    if((ct.scf_steps < 2) && (ct.exx_steps == 0) && (occ_flag == OCC_MP))
+    {
+        if((ct.runflag != RESTART) && (ct.runflag != Restart_TDDFT)) occ_flag = OCC_FD;
+    }
 
     // Fill eigs
     for(int ispin = 0; ispin<nspin; ispin++)
