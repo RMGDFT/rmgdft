@@ -233,7 +233,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
         mat_local_to_glob(S_local, S_tem, *LocalOrbital, *LocalOrbital, st0, st1, st1, st2, 0);
         GetHvnlij_proj(H_tem, S_tem, Kbpsi_mat_blocks[ib], Kbpsi_mat_blocks[ib+1],
                 ct.block_dim[ib], ct.block_dim[ib+1], LocalProj->num_tot, true);
-        int idx = (st1-st0) * (st2-st1);
+        idx = (st1-st0) * (st2-st1);
         MPI_Allreduce(MPI_IN_PLACE, H_tem, idx, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
         MPI_Allreduce(MPI_IN_PLACE, S_tem, idx, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
 
