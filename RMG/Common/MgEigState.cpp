@@ -44,84 +44,26 @@
 #include "rmg_complex.h"
 
 
-void ComputeEig(int n, float *A, float *B, float *D, double *rval)
+
+template <typename T>
+double ComputeEig(int n, T *A, T *B, T *D)
 {
     double s1[2];
     s1[0] = 0.0;
     s1[1] = 0.0;
 
-    for(int idx = 0;idx < n;idx++) {
-        s1[0] += (double)A[idx] * (double)B[idx];
-        s1[1] += (double)A[idx] * (double)D[idx];
+    for(int idx = 0;idx < n;idx++)
+    {
+        s1[0] += std::real(A[idx]*B[idx]) + std::imag(A[idx]*B[idx]);
+        s1[1] += std::real(A[idx]*D[idx]) + std::imag(A[idx]*D[idx]);
     }
 
     int length = 2;
     GlobalSums (s1, length, pct.coalesced_grid_comm);
-
-    *rval = (s1[0] / (2.0 * s1[1]));
-
-}
-
-void ComputeEig(int n, double *A, double *B, double *D, double *rval)
-{
-    double s1[2];
-    s1[0] = 0.0;
-    s1[1] = 0.0;
-
-    for(int idx = 0;idx < n;idx++) {
-        s1[0] += (double)A[idx] * (double)B[idx];
-        s1[1] += (double)A[idx] * (double)D[idx];
-    }
-
-    int length = 2;
-    GlobalSums (s1, length, pct.coalesced_grid_comm);
-
-    *rval = (s1[0] / (2.0 * s1[1]));
+    return  s1[0] / (2.0 * s1[1]);
 
 }
 
-void ComputeEig(int n, std::complex<float> *A, std::complex<float> *B, std::complex<float> *D, double *rval)
-{
-    double s1[4];
-    s1[0] = 0.0;
-    s1[1] = 0.0;
-    s1[2] = 0.0;
-    s1[3] = 0.0;
-
-    for(int idx = 0;idx < n;idx++) {
-        s1[0] = s1[0] + ((double)std::real(A[idx]) * (double)std::real(B[idx]));
-        s1[1] = s1[1] + ((double)std::imag(A[idx]) * (double)std::imag(B[idx]));
-        s1[2] = s1[2] + ((double)std::real(A[idx]) * (double)std::real(D[idx]));
-        s1[3] = s1[3] + ((double)std::imag(A[idx]) * (double)std::imag(D[idx]));
-    }
-
-    int length = 4;
-    GlobalSums (s1, length, pct.coalesced_grid_comm);
-    *rval = ((s1[0] + s1[1]) / (2.0 * (s1[2] + s1[3])));
-
-}
-void ComputeEig(int n, std::complex<double> *A, std::complex<double> *B, std::complex<double> *D, double *rval)
-{
-    double s1[4];
-    s1[0] = 0.0;
-    s1[1] = 0.0;
-    s1[2] = 0.0;
-    s1[3] = 0.0;
-
-    for(int idx = 0;idx < n;idx++) {
-        s1[0] = s1[0] + ((double)std::real(A[idx]) * (double)std::real(B[idx]));
-        s1[1] = s1[1] + ((double)std::imag(A[idx]) * (double)std::imag(B[idx]));
-        s1[2] = s1[2] + ((double)std::real(A[idx]) * (double)std::real(D[idx]));
-        s1[3] = s1[3] + ((double)std::imag(A[idx]) * (double)std::imag(D[idx]));
-    }
-
-    int length = 4;
-    GlobalSums (s1, length, pct.coalesced_grid_comm);
-    *rval = ((s1[0] + s1[1]) / (2.0 * (s1[2] + s1[3])));
-
-}
-
-extern std::mutex vtot_sync_mutex;
 
 template void MgEigState<double,float>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, int);
 template void MgEigState<double,double>(Kpoint<double> *, State<double> *, double *, double *, double *, double *, int);
@@ -132,7 +74,7 @@ template void MgEigState<std::complex<double>, std::complex<double> >(Kpoint<std
 
 
 
-    template <typename OrbitalType, typename CalcType>
+template <typename OrbitalType, typename CalcType>
 void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vtot_psi, double *vxc_psi, OrbitalType *nv, OrbitalType *ns, int vcycle)
 {
     RmgTimer RT("Mg_eig");
@@ -320,7 +262,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         /* If this is the first time through compute the eigenvalue */
         if ((cycles == 0) || (potential_acceleration != 0) || (using_davidson && (cycles == 0))) 
         {
-            ComputeEig(pbasis_noncoll, tmp_psi_t, work1_t, res_t, &eig);
+            eig = ComputeEig(pbasis_noncoll, tmp_psi_t, work1_t, res_t);
             // Save this for variational energy correction
             if((cycles == 0) && (vcycle == 0)) sp->feig[0]=eig;
 
@@ -392,8 +334,14 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                     // We use a residual correction multigrid scheme where the right hand side is the residual
                     // so single precision is adequate for the correction since the errors from lower precision
                     // will be approximately 7 decimal digits smaller than the original error we are correcting
-                    // for. The std::conditional_t typdefs allow us to cleanly handle the multiple versions of
-                    // CalcType.
+                    // for. The std::conditional_t typdefs allow us to cleanly handle the multiple combinations
+                    // of OrbitalType and CalcType. The combinations are as follows.
+                    //
+                    //   OrbitalType = double, CalcType = double
+                    //   OrbitalType = double, CalcType = float
+                    //   OrbitalType = std::complex<double>, CalcType = std::complex<double>
+                    //   OrbitalType = std::complex<double>, CalcType = std::complex<float>
+                    // with mg_type always float or std::complex<float>
                     typedef typename std::conditional_t< std::is_same<CalcType, double>::value, float,
                                      std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<float>,
                                      std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, float> > > mgtype_t;
