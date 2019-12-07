@@ -312,24 +312,10 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             if ((cycles == ct.eig_parm.gl_pre) && do_mgrid )
             {
 
-                /* Pack the residual data into multigrid array */
-                CPP_pack_ptos<CalcType> (work1_t, &res_t[is*pbasis], dimx, dimy, dimz);
-                T->trade_images (work1_t, dimx, dimy, dimz, FULL_TRADE);
-
-
                 /* Do multigrid step with solution returned in sg_twovpsi */
                 {
+
                     RmgTimer RT1("Mg_eig: mgrid_solv");
-                    int ixoff, iyoff, izoff;
-                    int dx2 = MG.MG_SIZE (dimx, 0, NX_GRID, G->get_PX_OFFSET(1), dimx, &ixoff, ct.boundaryflag);
-                    int dy2 = MG.MG_SIZE (dimy, 0, NY_GRID, G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
-                    int dz2 = MG.MG_SIZE (dimz, 0, NZ_GRID, G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
-
-                    if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
-                        printf("Multigrid error: Grid cannot be coarsened. Most likely the current grid is not divisable by 2 or 4. It is recommended to use grid that is, at minimum, divisable by 4. The current grid is %d %d %d" , NX_GRID, NY_GRID, NZ_GRID);
-                        exit(0);
-                    }
-
 
                     // We use a residual correction multigrid scheme where the right hand side is the residual
                     // so single precision is adequate for the correction since the errors from lower precision
@@ -353,7 +339,21 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
                     mgtype_t *f_mat = (mgtype_t *)&work1_t[sbasis];
                     mgtype_t *twork_tf = (mgtype_t *)twork_t;
                     mgtype_t *work2_tf = (mgtype_t *)work2_t;
-                    CopyAndConvert(sbasis, (convert_type_t *)work1_t, (mgtype_t *)twork_tf);
+
+
+                    int ixoff, iyoff, izoff;
+                    int dx2 = MG.MG_SIZE (dimx, 0, NX_GRID, G->get_PX_OFFSET(1), dimx, &ixoff, ct.boundaryflag);
+                    int dy2 = MG.MG_SIZE (dimy, 0, NY_GRID, G->get_PY_OFFSET(1), dimy, &iyoff, ct.boundaryflag);
+                    int dz2 = MG.MG_SIZE (dimz, 0, NZ_GRID, G->get_PZ_OFFSET(1), dimz, &izoff, ct.boundaryflag);
+
+                    if((dx2 < 0) || (dy2 < 0) || (dz2 < 0)) {
+                        printf("Multigrid error: Grid cannot be coarsened. Most likely the current grid is not divisable by 2 or 4. It is recommended to use grid that is, at minimum, divisable by 4. The current grid is %d %d %d" , NX_GRID, NY_GRID, NZ_GRID);
+                        exit(0);
+                    }
+
+                    /* Pack the residual data into multigrid array */
+                    CPP_pack_ptos_convert (twork_tf, &res_t[is*pbasis], dimx, dimy, dimz);
+                    T->trade_images (twork_tf, dimx, dimy, dimz, FULL_TRADE);
                     MG.mg_restrict (twork_tf, f_mat, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
 
                     MG.mgrid_solv (v_mat, f_mat, work2_tf,
