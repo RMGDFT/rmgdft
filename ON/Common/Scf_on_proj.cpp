@@ -50,6 +50,8 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     {
         Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
                 ct.mix, ct.charge_pulay_scale, pct.grid_comm); 
+        if(ct.charge_pulay_Gspace)
+            Pulay_rho->SetGspace();
         int tot_size = LocalOrbital->num_thispe * pbasis;
         Pulay_orbital = new PulayMixing(tot_size, ct.orbital_pulay_order, ct.orbital_pulay_refresh, 
                 ct.orbital_pulay_mixfirst, ct.orbital_pulay_scale, pct.grid_comm); 
@@ -65,11 +67,11 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
     RmgTimer *RT = new RmgTimer("2-SCF");
     RT0 = new RmgTimer("2-SCF: set zero boundary");
-    
+
     for(int st = 0; st < LocalOrbital->num_thispe; st++)
     {
         for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-        LocalOrbital->storage_proj[st * pbasis + idx] = 0.0;
+            LocalOrbital->storage_proj[st * pbasis + idx] = 0.0;
     }
 
     delete RT0;
@@ -141,7 +143,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
     RT0 = new RmgTimer("2-SCF: DiagScalapack");
 
- //   get_cholesky_real(matB);
+    //   get_cholesky_real(matB);
     DiagScalapack(states, ct.num_states, Hij, matB);
 
     mat_dist_to_local(mat_X, pct.desca, rho_matrix_local, *LocalOrbital);

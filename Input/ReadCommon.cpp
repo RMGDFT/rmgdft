@@ -422,6 +422,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "FFT mode for exact exchange computations.",
             "exx mode not supported. Terminating. ", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("charge_pulay_Gspace", &lc.charge_pulay_Gspace, false, 
+            "if set true, charge density mixing the residual in G space ");
     If.RegisterInputKey("exx_int_flag", &lc.exx_int_flag, false, 
             "if set true, calculate the exact exchange integrals ");
 

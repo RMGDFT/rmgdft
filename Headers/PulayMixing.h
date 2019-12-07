@@ -2,6 +2,8 @@
 #define RMG_Pulay_H 1
 
 #include<functional>
+#include<complex>
+
 class PulayMixing {
 
 private:
@@ -21,6 +23,11 @@ private:
     bool need_precond;
     int nstates;
 
+    bool Gspace = false;
+    // q0 for Kerker mixing  1 A^-1
+    double ktf = 0.529177;
+    std::complex<double> *c_fm;
+
 public:
 
     PulayMixing(size_t Nsize, int pulay_order, int refresh_steps, double mix_init, double beta, MPI_Comm comm);
@@ -28,6 +35,7 @@ public:
     void Mixing(double *xm, double *fm);
     void SetPrecond(std::function<void(double*, int)> precon);
     void SetNstates(int nstates){ this->nstates = nstates;}
+    void SetGspace();
     void Refresh();
 
 };
