@@ -52,48 +52,34 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
 {
     int pbasis = kptr->pbasis;
     double fd_diag;
+    KpointType *gx = NULL, *gy = NULL, *gz = NULL;
+    std::complex<double> *kdr = NULL;
 
-    // Apply Laplacian to psi
-    if(ct.kohn_sham_ke_fft)
+    if(typeid(KpointType) == typeid(std::complex<double>))
     {
-        KpointType *ptr = NULL;
-        int density = 1;
-        int dimx = kptr->G->get_PX0_GRID(density);
-        int dimy = kptr->G->get_PY0_GRID(density);
-        int dimz = kptr->G->get_PZ0_GRID(density);
-        double gridhx = kptr->G->get_hxgrid(density);
-        double gridhy = kptr->G->get_hygrid(density);
-        double gridhz = kptr->G->get_hzgrid(density);
-        FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
-        FftLaplacianCoarse(psi, h_psi);
-        // When ptr=NULL this does not do the finite differencing but just
-        // returns the value of the diagonal element.
-        fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        kdr = new std::complex<double>[pbasis]();
+        gx = new KpointType[pbasis];
+        gy = new KpointType[pbasis];
+        gz = new KpointType[pbasis];
     }
-    else
-    {
-        fd_diag = ApplyLaplacian (psi, h_psi, ct.kohn_sham_fd_order, "Coarse");
-    }
+
+    int density = 1;
+    int dimx = kptr->G->get_PX0_GRID(density);
+    int dimy = kptr->G->get_PY0_GRID(density);
+    int dimz = kptr->G->get_PZ0_GRID(density);
+    double gridhx = kptr->G->get_hxgrid(density);
+    double gridhy = kptr->G->get_hygrid(density);
+    double gridhz = kptr->G->get_hzgrid(density);
+    fd_diag = ApplyAOperator<KpointType>(psi, h_psi, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order);
 
 
     // Factor of -0.5 and add in potential terms
     for(int idx = 0;idx < pbasis;idx++){ 
         h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + vtot[idx]*psi[idx];
     }
-    // if complex orbitals apply gradient to orbital and compute dot products
 
+    // if complex orbitals use applied gradient to compute dot products
     if(typeid(KpointType) == typeid(std::complex<double>)) {
-
-        std::complex<double> *kdr = new std::complex<double>[pbasis]();
-        KpointType *gx = new KpointType[pbasis];
-        KpointType *gy = new KpointType[pbasis];
-        KpointType *gz = new KpointType[pbasis];
-
-
-        if(ct.kohn_sham_ke_fft)
-            FftGradientCoarse(psi, gx, gy, gz);
-        else
-            ApplyGradient (psi, gx, gy, gz, APP_CI_EIGHT, "Coarse");
 
         std::complex<double> I_t(0.0, 1.0);
         for(int idx = 0;idx < pbasis;idx++) {
@@ -103,11 +89,10 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
                                kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
         }
 
-        std::complex<double> *tkdr = (std::complex<double> *)kdr;
         std::complex<double> *thpsi = (std::complex<double> *)h_psi;
         std::complex<double> *tpsi = (std::complex<double> *)psi;
         std::complex<double> tmag(0.5*kptr->kp.kmag, 0.0);
-        for(int idx=0;idx < pbasis;idx++) thpsi[idx] = thpsi[idx]  + tkdr[idx] + tmag * tpsi[idx];
+        for(int idx=0;idx < pbasis;idx++) thpsi[idx] = thpsi[idx]  + kdr[idx] + tmag * tpsi[idx];
 
         delete [] gz;
         delete [] gy;
