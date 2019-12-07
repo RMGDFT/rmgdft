@@ -97,7 +97,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     Lattice *L = kptr->L;
     TradeImages *T = kptr->T;
 
-    double eig=0.0, diag, t1, t2, t4;
+    double eig=0.0, diag, t1;
     int eig_pre[MAX_MG_LEVELS] = { 0, 8, 8, 8, 8, 8, 8, 8 };
     int eig_post[MAX_MG_LEVELS] = { 0, 0, 4, 4, 4, 4, 4, 4 };
 
@@ -251,10 +251,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             } 
         }
 
-        // Add in non-local which has already had B applied in AppNls
-        for(int idx=0;idx < pbasis_noncoll;idx++) work1_t[idx] += 2.0 * nv_t[idx];
-
-        for(int idx=0;idx < pbasis_noncoll;idx++) work1_t[idx] = work1_t[idx] - work2_t[idx];
+        // Add in non-local which has already had B applied in AppNls and subtract off A operator (Laplacian)
+        for(int idx=0;idx < pbasis_noncoll;idx++) work1_t[idx] += 2.0 * nv_t[idx] - work2_t[idx];
 
         // Copy saved application to ns to res
         memcpy(res_t, res2_t, pbasis_noncoll * sizeof(CalcType));
@@ -381,13 +379,11 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             {
 
                 t1 = TWO * eig;
-                t2 = ZERO;
                 double t5 = diag - Zfac;
                 t5 = -1.0 / t5;
-                t4 = ct.eig_parm.gl_step * t5;
+                double t4 = ct.eig_parm.gl_step * t5;
                 for (int idx = 0; idx <pbasis; idx++)
                 {
-                    t2 += std::norm(res_t[idx]);
                     OrbitalType t5 = t4 * (OrbitalType)res_t[idx + is * pbasis];
                     tmp_psi_t[idx + is * pbasis] += t5;
                 }
@@ -397,6 +393,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
                     // If occupied orbitals are frozen we compute residuals 
                     if(freeze_occupied) {
+                        //double t2 = ZERO;
+                        //for (int idx = 0; idx <pbasis; idx++) t2 += std::norm(res_t[idx]);
                         //GlobalSums (&t2, 1, pct.coalesced_grid_comm);
                         //t2 = RmgSumAll (t2, pct.coalesced_grid_comm);
                         //t1 = (double) (ct.psi_nbasis);
