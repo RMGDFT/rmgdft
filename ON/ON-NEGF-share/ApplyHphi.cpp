@@ -41,7 +41,7 @@ void ApplyHphi(LocalObject<double> &Phi, LocalObject<double> &H_Phi, double *vto
     {
         double *a_phi = &Phi.storage_proj[st1 * pbasis];
         double *h_phi = &H_Phi.storage_proj[st1 * pbasis];
-        ApplyAOperator (a_phi, h_phi, "Coarse");
+        ApplyAOperator (a_phi, h_phi);
 
         for (int idx = 0; idx < pbasis; idx++)
         {

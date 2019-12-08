@@ -42,15 +42,15 @@ template double ApplyAOperator<double>(double *, double *, double *, double *, d
 template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *,int, int, int, double, double, double, int);
 template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *,int, int, int, double, double, double, int);
 
-template double ApplyAOperator<float>(float *, float *, char *grid);
-template double ApplyAOperator<double>(double *, double *, char *grid);
-template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, char *grid);
-template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, char *grid);
+template double ApplyAOperator<float>(float *, float *);
+template double ApplyAOperator<double>(double *, double *);
+template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *);
+template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *);
 
-template double ApplyAOperator<float>(float *, float *, char *grid, BaseGrid *G, TradeImages *T);
-template double ApplyAOperator<double>(double *, double *, char *grid, BaseGrid *G, TradeImages *T);
-template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, char *grid, BaseGrid *G, TradeImages *T);
-template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, char *grid, BaseGrid *G, TradeImages *T);
+template double ApplyAOperator<float>(float *, float *, BaseGrid *G, TradeImages *T);
+template double ApplyAOperator<double>(double *, double *, BaseGrid *G, TradeImages *T);
+template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, BaseGrid *G, TradeImages *T);
+template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, BaseGrid *G, TradeImages *T);
 
 template double ApplyAOperator<float>(Lattice *, TradeImages *, float *, float *, int, int, int, double, double, double, int);
 template double ApplyAOperator<double>(Lattice *, TradeImages *, double *, double *, int, int, int, double, double, double, int);
@@ -149,22 +149,9 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
 }
 
 template <typename DataType>
-double ApplyAOperator (DataType *a, DataType *b, char *grid)
+double ApplyAOperator (DataType *a, DataType *b)
 {
-    int density;
-    const char *coarse = "Coarse";
-    const char *fine = "Fine";
-
-    if(!strcmp(grid, coarse)) {
-        density = 1;
-    }
-    else if(!strcmp(grid, fine)) {
-        density = Rmg_G->default_FG_RATIO;
-    }
-    else {
-        throw RmgFatalException() << "Error! Grid type " << grid << " not defined in "
-                                 << __FILE__ << " at line " << __LINE__ << "\n";
-    }
+    int density = 1;
 
     int dimx = Rmg_G->get_PX0_GRID(density);
     int dimy = Rmg_G->get_PY0_GRID(density);
@@ -179,22 +166,9 @@ double ApplyAOperator (DataType *a, DataType *b, char *grid)
 }
 
 template <typename DataType>
-double ApplyAOperator (DataType *a, DataType *b, char *grid, BaseGrid *G, TradeImages *T)
+double ApplyAOperator (DataType *a, DataType *b, BaseGrid *G, TradeImages *T)
 {
-    int density;
-    const char *coarse = "Coarse";
-    const char *fine = "Fine";
-
-    if(!strcmp(grid, coarse)) {
-        density = 1;
-    }
-    else if(!strcmp(grid, fine)) {
-        density = G->default_FG_RATIO;
-    }
-    else {
-        throw RmgFatalException() << "Error! Grid type " << grid << " not defined in "
-                                 << __FILE__ << " at line " << __LINE__ << "\n";
-    }
+    int density = 1;
 
     int dimx = G->get_PX0_GRID(density);
     int dimy = G->get_PY0_GRID(density);

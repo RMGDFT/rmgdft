@@ -68,11 +68,11 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
 
     // Apply A operator to psi
-    ApplyAOperator (psi, a_psi, "Coarse");
+    ApplyAOperator (psi, a_psi);
     for(int idx = 0;idx < pbasis;idx++) b_psi[idx] = psi[idx];
     if(ct.noncoll)
     {
-        ApplyAOperator (&psi[pbasis], &a_psi[pbasis], "Coarse");
+        ApplyAOperator (&psi[pbasis], &a_psi[pbasis]);
         for(int idx = 0;idx < pbasis;idx++) b_psi[idx+pbasis] = psi[idx+pbasis];
     }
 
