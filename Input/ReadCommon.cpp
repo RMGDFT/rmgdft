@@ -834,11 +834,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Number of folded spectrum iterations to perform. ",
             "folded_spectrum_iterations must lie in the range (0,10). Resetting to the default value of 2. ", DIAG_OPTIONS);
 
-    If.RegisterInputKey("charge_pulay_special_metrics_weight", &lc.charge_pulay_special_metrics_weight, -DBL_MAX, DBL_MAX, 100.0,
-            CHECK_AND_FIX, OPTIONAL,
-            "",
-            "charge_pulay_special_metrics_weight must be a real number.", MIXING_OPTIONS);
-
     If.RegisterInputKey("laplacian_offdiag", &lc.laplacian_offdiag, false, 
             "if set to true, we use LaplacianCoeff.cpp to generate coeff");
     If.RegisterInputKey("laplacian_autocoeff", &lc.laplacian_autocoeff, false, 
@@ -970,9 +965,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "truncating the real-space representation for large cells can lead "
             "to significant computational savings with a small loss of accuracy "
             "but it should be set to false for small cells.");
-
-    If.RegisterInputKey("charge_pulay_special_metrics", &lc.charge_pulay_special_metrics, false,
-            "Flag to test whether or not the modified metrics should be used in Pulay mixing.", MIXING_OPTIONS);
 
     If.RegisterInputKey("write_pseudopotential_plots", &lc.write_pp_flag, false,
             "Flag to indicate whether or not to write pseudopotential plots. ", CONTROL_OPTIONS);

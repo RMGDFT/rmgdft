@@ -46,7 +46,6 @@
 #include <boost/circular_buffer.hpp>
 
 
-static int pulay_step = 0;
 
 void mix_johnson(double *xm, double *fm, int NDIM, int ittot);
 
@@ -58,9 +57,6 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     int pbasis = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     int pbasis_noncoll = ct.noncoll_factor * ct.noncoll_factor * pbasis;
-    int length_x = Rmg_G->get_PX0_GRID(Rmg_G->default_FG_RATIO);
-    int length_y = Rmg_G->get_PY0_GRID(Rmg_G->default_FG_RATIO);
-    int length_z = Rmg_G->get_PZ0_GRID(Rmg_G->default_FG_RATIO);
 
 
     if(Verify ("freeze_occupied", true, ControlMap)) return;
@@ -80,22 +76,27 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     }
     else if (Verify("charge_mixing_type","Pulay", ControlMap))
     {
-
-        static double **rhohist=NULL, **residhist=NULL;
         RmgTimer RT1("Mix rho: Pulay");
-        if (ct.charge_pulay_refresh)
-            pulay_step = pulay_step % ct.charge_pulay_refresh;
+        if(!Pulay_rho)
+        {
+            Pulay_rho = new PulayMixing(pbasis_noncoll, ct.charge_pulay_order, ct.charge_pulay_refresh,
+                    ct.mix, ct.charge_pulay_scale, pct.grid_comm);
+            if(ct.charge_pulay_Gspace)
+                Pulay_rho->SetGspace();
+        }
+
         if(reset) {
-            pulay_step = 0;
+            Pulay_rho->Refresh();
             return;
         }
 
-        /*Use pulay mixing, result will be in rho*/
-        pulay_rho(pulay_step, pbasis_noncoll, length_x, length_y, length_z, 
-                new_rho, rho, ct.charge_pulay_order, &rhohist, &residhist, 
-                ct.charge_pulay_special_metrics, ct.charge_pulay_special_metrics_weight);
+        double mone = -1.0;
+        int ione = 1;
+        daxpy(&pbasis_noncoll, &mone, rho, &ione, new_rho, &ione);
 
-        pulay_step++;
+        // rho_new store thr rho resudyke,
+        Pulay_rho->Mixing(rho, new_rho);
+
         rmg_printf("Charge density mixing: Pulay\n");
 
     }

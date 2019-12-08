@@ -361,12 +361,6 @@ public:
     /*Scale parameter for residuals in Pulay mixing*/
     double charge_pulay_scale;
 
-    /*Flag to test whether or not the modified metrics should be used in Pulay mixing*/
-    bool charge_pulay_special_metrics;
-
-    /*Weight for Pulay special metrics*/
-    double charge_pulay_special_metrics_weight;
-
     /*Order of Broyden mixing for charge density*/
     int charge_broyden_order;
 

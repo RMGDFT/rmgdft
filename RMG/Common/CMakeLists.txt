@@ -78,7 +78,6 @@ write_avgv.cpp
 move_ions.cpp
 print_density_z_direction.cpp
 set_pbc.cpp
-pulay_rho.cpp
 PartialGamma.cpp
 fire.cpp
 WriteHeader.cpp
