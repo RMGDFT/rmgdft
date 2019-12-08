@@ -53,6 +53,7 @@ void write_rho_y(double * rho, char *ab)
             t1 = ix * get_hxxgrid();
             printf(" %d %f %s\n", ix, zvec[ix] / get_FNX_GRID() / get_FNZ_GRID(), ab);
         }
+        printf(" & %s\n", ab);
         fflush(NULL);
     }
 

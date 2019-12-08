@@ -57,6 +57,7 @@ void write_rho_z(double * rho, char *ab)
             //printf(" %d %f %s\n", ix, zvec[ix] / get_FNX_GRID() / get_FNZ_GRID(), ab);
             printf(" %d %e %s\n", ix, zvec[ix], ab);
         }
+        printf(" & %s\n", ab);
         fflush(NULL);
     }
 

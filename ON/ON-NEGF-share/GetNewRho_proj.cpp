@@ -23,6 +23,7 @@
 #include "blas.h"
 #include "RmgParallelFft.h"
 #include "BaseGrid.h"
+#include "RmgGemm.h"
 
 void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double *rho, double *rho_matrix_local)
 {
@@ -42,9 +43,9 @@ void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double 
     {
 
         int num_orb = Phi.num_thispe;
-        dgemm ("N", "N", &pbasis, &num_orb, &num_orb, &one, 
-                Phi.storage_proj, &pbasis, rho_matrix_local, &num_orb,
-                &zero, HPhi.storage_proj, &pbasis);
+        RmgGemm ("N", "N", pbasis, num_orb, num_orb, one, 
+                Phi.storage_proj, pbasis, rho_matrix_local, num_orb,
+                zero, HPhi.storage_proj, pbasis);
 
 
         for(int st1 = 0; st1 < num_orb; st1++)

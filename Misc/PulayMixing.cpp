@@ -72,28 +72,28 @@ void PulayMixing::Mixing(double *xm, double *fm)
     double *A_mat = this->A_mat;
 
     if(this->need_precond) this->Precond(fm, this->nstates);
+    if(this->Gspace)
+    {
+        double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+        double tpiba2 = tpiba * tpiba;
+        for(int ig=0; ig < pbasis; ig++) c_fm[ig] = std::complex<double>(fm[ig], 0.0);
+        fine_pwaves->FftForward(c_fm, c_fm);
+
+        for(int ig=0;ig < pbasis;ig++) {
+            // fm is the charge density difference, sums of them always equal to zero
+            // so there is no G= 0 term.
+            double g2 = fine_pwaves->gmags[ig] * tpiba2;
+
+            double alpha = std::max(0.0, g2/(g2+this->ktf * this->ktf));
+            c_fm[ig] = c_fm[ig] * alpha;
+            // if(!fine_pwaves->gmask[ig]) c_fm[ig]  = 0.0;
+            //c_fm[ig] = c_fm[ig] * g2/(g2+this->ktf * this->ktf);
+        }
+        fine_pwaves->FftInverse(c_fm, c_fm);
+        for(size_t i = 0;i < this->Nsize;i++) fm[i] = std::real(c_fm[i])/(double)fine_pwaves->global_basis;
+    }
     if(this->pulay_order <=1)
     {
-        if(this->Gspace)
-        {
-            double tpiba = 2.0 * PI / Rmg_L.celldm[0];
-            double tpiba2 = tpiba * tpiba;
-            for(int ig=0; ig < pbasis; ig++) c_fm[ig] = std::complex<double>(fm[ig], 0.0);
-            fine_pwaves->FftForward(c_fm, c_fm);
-
-            for(int ig=0;ig < pbasis;ig++) {
-                // fm is the charge density difference, sums of them always equal to zero
-                // so there is no G= 0 term.
-                double g2 = fine_pwaves->gmags[ig] * tpiba2;
-
-                double alpha = std::max(0.0, g2/(g2+this->ktf * this->ktf));
-                c_fm[ig] = c_fm[ig] * alpha;
-               // if(!fine_pwaves->gmask[ig]) c_fm[ig]  = 0.0;
-                //c_fm[ig] = c_fm[ig] * g2/(g2+this->ktf * this->ktf);
-            }
-            fine_pwaves->FftInverse(c_fm, c_fm);
-            for(size_t i = 0;i < this->Nsize;i++) fm[i] = std::real(c_fm[i])/(double)fine_pwaves->global_basis;
-        }
 
         daxpy(&N, &this->mix_first, fm, &ione, xm, &ione);
 
@@ -108,28 +108,6 @@ void PulayMixing::Mixing(double *xm, double *fm)
     {
         A_mat[this->step * lda + this->step] = ddot(&N, fm, &ione, fm, &ione);
         //       if(this->need_precond) this->Precond(fm, this->nstates);
-        if(this->Gspace)
-        {
-            double tpiba = 2.0 * PI / Rmg_L.celldm[0];
-            double tpiba2 = tpiba * tpiba;
-            for(int ig=0; ig < pbasis; ig++) c_fm[ig] = std::complex<double>(fm[ig], 0.0);
-            fine_pwaves->FftForward(c_fm, c_fm);
-
-            for(int ig=0;ig < pbasis;ig++) {
-                // fm is the charge density difference, sums of them always equal to zero
-                // so there is no G= 0 term.
-                double g2 = fine_pwaves->gmags[ig] * tpiba2;
-
-                double alpha = std::max(0.0, g2/(g2+this->ktf * this->ktf));
-                c_fm[ig] = c_fm[ig] * alpha;
-              //  if(!fine_pwaves->gmask[ig]) c_fm[ig]  = 0.0;
-                //c_fm[ig] = c_fm[ig] * g2/(g2+this->ktf * this->ktf);
-                //c_fm[ig] = c_fm[ig];
-            }
-            fine_pwaves->FftInverse(c_fm, c_fm);
-            for(size_t i = 0;i < this->Nsize;i++) fm[i] = std::real(c_fm[i])/(double)fine_pwaves->global_basis;
-
-        }
 
         daxpy(&N, &this->mix_first, fm, &ione, xm, &ione);
 
@@ -196,64 +174,10 @@ void PulayMixing::Mixing(double *xm, double *fm)
         daxpy(&N, &b[i], this->hist_ptr[i], &ione, xm, &ione);
     }
 
-    if(this->Gspace)
+    dscal(&N, &b[size-1], fm, &ione);
+    for (int i = 0; i < size - 1; i++)
     {
-        double tpiba = 2.0 * PI / Rmg_L.celldm[0];
-        double tpiba2 = tpiba * tpiba;
-
-        for(int ig=0; ig < pbasis; ig++) c_fm[ig] = std::complex<double>(fm[ig], 0.0);
-        fine_pwaves->FftForward(c_fm, c_fm);
-
-        for(int ig=0;ig < pbasis;ig++) {
-            // fm is the charge density difference, sums of them always equal to zero
-            // so there is no G= 0 term.
-            double g2 = fine_pwaves->gmags[ig] * tpiba2;
-            // if(g2 < 1.0e-6) continue;
-
-            double alpha = std::max(0.0, g2/(g2+this->ktf * this->ktf));
-            c_fm[ig] = c_fm[ig] * alpha;
-            //if(!fine_pwaves->gmask[ig]) c_fm[ig]  = 0.0;
-            //c_fm[ig] = c_fm[ig] * g2/(g2+this->ktf * this->ktf);
-            //c_fm[ig] = c_fm[ig];
-        }
-        fine_pwaves->FftInverse(c_fm, c_fm);
-
-        for(size_t ix = 0;ix < this->Nsize;ix++) 
-            fm[ix] = b[size-1] * std::real(c_fm[ix])/(double)fine_pwaves->global_basis;
-
-
-
-        for (int i = 0; i < size - 1; i++)
-        {
-            for(int ig=0;ig < pbasis;ig++)
-                c_fm[ig] = std::complex<double>(this->res_hist_ptr[i][ig], 0.0);
-
-            fine_pwaves->FftForward(c_fm, c_fm);
-
-            for(int ig=0;ig < pbasis;ig++) {
-                double g2 = fine_pwaves->gmags[ig] * tpiba2;
-                double alpha = std::max(0.0, g2/(g2+this->ktf * this->ktf));
-                c_fm[ig] = c_fm[ig] * alpha;
-             //   if(!fine_pwaves->gmask[ig]) c_fm[ig]  = 0.0;
-                //c_fm[ig] = c_fm[ig] * g2/(g2+this->ktf * this->ktf);
-                //c_fm[ig] = c_fm[ig];
-            }
-
-            fine_pwaves->FftInverse(c_fm, c_fm);
-
-            for(size_t ix = 0;ix < this->Nsize;ix++) 
-                fm[ix] += b[i] * std::real(c_fm[ix])/(double)fine_pwaves->global_basis;
-
-        }
-
-    }
-    else
-    {
-        dscal(&N, &b[size-1], fm, &ione);
-        for (int i = 0; i < size - 1; i++)
-        {
-            daxpy(&N, &b[i], this->res_hist_ptr[i], &ione, fm, &ione);
-        }
+        daxpy(&N, &b[i], this->res_hist_ptr[i], &ione, fm, &ione);
     }
 
     daxpy(&N, &this->beta, fm, &ione, xm, &ione);
