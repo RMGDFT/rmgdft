@@ -2961,6 +2961,10 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                double gridhx, double gridhy, double gridhz, double *kvec)
 {
 
+    double xside = L->get_xside();
+    double yside = L->get_yside();
+    double zside = L->get_zside();
+
     RmgType I_t;
     if(typeid(RmgType) == typeid(double))
     {
@@ -3002,9 +3006,9 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     double dr = d1 / d2;
     double k2 = PI*PI/8.0;
 
-    double h2x = gridhx * gridhx * L->get_xside() * L->get_xside();
-    double h2y = gridhy * gridhy * L->get_yside() * L->get_yside();
-    double h2z = gridhz * gridhz * L->get_zside() * L->get_zside();
+    double h2x = gridhx * gridhx * xside * xside;
+    double h2y = gridhy * gridhy * yside * yside;
+    double h2z = gridhz * gridhz * zside * zside;
 
     double maxh = std::max(h2x, h2y);
     maxh = std::max(maxh, h2z);
@@ -3042,35 +3046,51 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     // When kvec[i] != 0 this includes the gradient component
     double s1 = 2.0;
-    RmgType gpt1x = t1x + s1*kvec[0] * I_t * (4.0 / ( 5.0 * gridhx * L->get_xside()));
-    RmgType gpt2x = t2x + s1*kvec[0] * I_t * (-1.0 / (5.0 * gridhx * L->get_xside()));
-    RmgType gpt3x = t3x + s1*kvec[0] * I_t * (4.0 / (105.0 * gridhx * L->get_xside()));
-    RmgType gpt4x = t4x + s1*kvec[0] * I_t * (-1.0 / (280.0 * gridhx * L->get_xside()));
+    RmgType gpt1x = t1x + s1*kvec[0] * I_t * (4.0 / ( 5.0 * gridhx * xside));
+    RmgType gpt2x = t2x + s1*kvec[0] * I_t * (-1.0 / (5.0 * gridhx * xside));
+    RmgType gpt3x = t3x + s1*kvec[0] * I_t * (4.0 / (105.0 * gridhx * xside));
+    RmgType gpt4x = t4x + s1*kvec[0] * I_t * (-1.0 / (280.0 * gridhx * xside));
 
-    RmgType gmt1x = t1x - s1*kvec[0] * I_t * (4.0 / ( 5.0 * gridhx * L->get_xside()));
-    RmgType gmt2x = t2x - s1*kvec[0] * I_t * (-1.0 / (5.0 * gridhx * L->get_xside()));
-    RmgType gmt3x = t3x - s1*kvec[0] * I_t * (4.0 / (105.0 * gridhx * L->get_xside()));
-    RmgType gmt4x = t4x - s1*kvec[0] * I_t * (-1.0 / (280.0 * gridhx * L->get_xside()));
+    RmgType gmt1x = t1x - s1*kvec[0] * I_t * (4.0 / ( 5.0 * gridhx * xside));
+    RmgType gmt2x = t2x - s1*kvec[0] * I_t * (-1.0 / (5.0 * gridhx * xside));
+    RmgType gmt3x = t3x - s1*kvec[0] * I_t * (4.0 / (105.0 * gridhx * xside));
+    RmgType gmt4x = t4x - s1*kvec[0] * I_t * (-1.0 / (280.0 * gridhx * xside));
 
-    RmgType gpt1y = t1y + s1*kvec[1] * I_t * (4.0 / ( 5.0 * gridhy * L->get_yside()));
-    RmgType gpt2y = t2y + s1*kvec[1] * I_t * (-1.0 / (5.0 * gridhy * L->get_yside()));
-    RmgType gpt3y = t3y + s1*kvec[1] * I_t * (4.0 / (105.0 * gridhy * L->get_yside()));
-    RmgType gpt4y = t4y + s1*kvec[1] * I_t *  (-1.0 / (280.0 * gridhy * L->get_yside()));
+    RmgType gpt1y = t1y + s1*kvec[1] * I_t * (4.0 / ( 5.0 * gridhy * yside));
+    RmgType gpt2y = t2y + s1*kvec[1] * I_t * (-1.0 / (5.0 * gridhy * yside));
+    RmgType gpt3y = t3y + s1*kvec[1] * I_t * (4.0 / (105.0 * gridhy * yside));
+    RmgType gpt4y = t4y + s1*kvec[1] * I_t *  (-1.0 / (280.0 * gridhy * yside));
 
-    RmgType gmt1y = t1y - s1*kvec[1] * I_t * (4.0 / ( 5.0 * gridhy * L->get_yside()));
-    RmgType gmt2y = t2y - s1*kvec[1] * I_t * (-1.0 / (5.0 * gridhy * L->get_yside()));
-    RmgType gmt3y = t3y - s1*kvec[1] * I_t * (4.0 / (105.0 * gridhy * L->get_yside()));
-    RmgType gmt4y = t4y - s1*kvec[1] * I_t *  (-1.0 / (280.0 * gridhy * L->get_yside()));
+    RmgType gmt1y = t1y - s1*kvec[1] * I_t * (4.0 / ( 5.0 * gridhy * yside));
+    RmgType gmt2y = t2y - s1*kvec[1] * I_t * (-1.0 / (5.0 * gridhy * yside));
+    RmgType gmt3y = t3y - s1*kvec[1] * I_t * (4.0 / (105.0 * gridhy * yside));
+    RmgType gmt4y = t4y - s1*kvec[1] * I_t *  (-1.0 / (280.0 * gridhy * yside));
 
-    RmgType gpt1z = t1z + s1*kvec[2] * I_t * (4.0/ ( 5.0 * gridhz * L->get_zside()));
-    RmgType gpt2z = t2z + s1*kvec[2] * I_t * (-1.0 / (5.0 * gridhz * L->get_zside()));
-    RmgType gpt3z = t3z + s1*kvec[2] * I_t * (4.0 / (105.0 * gridhz * L->get_zside()));
-    RmgType gpt4z = t4z + s1*kvec[2] * I_t * (-1.0 / (280.0 * gridhz * L->get_zside()));
+    RmgType gpt1z = t1z + s1*kvec[2] * I_t * (4.0/ ( 5.0 * gridhz * zside));
+    RmgType gpt2z = t2z + s1*kvec[2] * I_t * (-1.0 / (5.0 * gridhz * zside));
+    RmgType gpt3z = t3z + s1*kvec[2] * I_t * (4.0 / (105.0 * gridhz * zside));
+    RmgType gpt4z = t4z + s1*kvec[2] * I_t * (-1.0 / (280.0 * gridhz * zside));
 
-    RmgType gmt1z = t1z - s1*kvec[2] * I_t * (4.0/ ( 5.0 * gridhz * L->get_zside()));
-    RmgType gmt2z = t2z - s1*kvec[2] * I_t * (-1.0 / (5.0 * gridhz * L->get_zside()));
-    RmgType gmt3z = t3z - s1*kvec[2] * I_t * (4.0 / (105.0 * gridhz * L->get_zside()));
-    RmgType gmt4z = t4z - s1*kvec[2] * I_t * (-1.0 / (280.0 * gridhz * L->get_zside()));
+    RmgType gmt1z = t1z - s1*kvec[2] * I_t * (4.0/ ( 5.0 * gridhz * zside));
+    RmgType gmt2z = t2z - s1*kvec[2] * I_t * (-1.0 / (5.0 * gridhz * zside));
+    RmgType gmt3z = t3z - s1*kvec[2] * I_t * (4.0 / (105.0 * gridhz * zside));
+    RmgType gmt4z = t4z - s1*kvec[2] * I_t * (-1.0 / (280.0 * gridhz * zside));
+
+    RmgType t1hy (4.0 * s1*kvec[1] * I_t / ( 5.0 * gridhy * yside));
+    RmgType t2hy (-1.0 * s1*kvec[1] * I_t / (5.0 * gridhy * yside));
+    RmgType t3hy (4.0 * s1*kvec[1] * I_t / (105.0 * gridhy * yside));
+    RmgType t4hy (-1.0 * s1*kvec[1] * I_t / (280.0 * gridhy * yside));
+
+    RmgType gpt1xh = t1x + hex_t * t1hy;
+    RmgType gpt2xh = t2x + hex_t * t2hy;
+    RmgType gpt3xh = t3x + hex_t * t3hy;
+    RmgType gpt4xh = t4x + hex_t * t4hy;
+
+    RmgType gmt1xh = t1x - hex_t * t1hy;
+    RmgType gmt2xh = t2x - hex_t * t2hy;
+    RmgType gmt3xh = t3x - hex_t * t3hy;
+    RmgType gmt4xh = t4x - hex_t * t4hy;
+
 
     // NULL b means we just want the diagonal component.
     if(b == NULL) return (double)std::real(t0);
@@ -3131,7 +3151,6 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                     RmgType *A = &a[iy*iys + ix*ixs];
                     RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
                     // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
-                    // First loop handles laplacian and gradient component
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] = t0 * A[iz] +
@@ -3141,17 +3160,15 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                                 gpt4z * A[iz + 4] + gmt4z * A[iz - 4];
                     }
 
-                    // Laplacian only
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
-                                t1x * (A[iz + iys] + A[iz - iys]) +
-                                t2x * (A[iz + 2*iys] + A[iz - 2*iys]) +
-                                t3x * (A[iz + 3*iys] + A[iz - 3*iys]) +
-                                t4x * (A[iz + 4*iys] + A[iz - 4*iys]);
+                                gpt1xh * A[iz + iys] + gmt1xh * A[iz - iys] +
+                                gpt2xh * A[iz + 2*iys] + gmt2xh * A[iz - 2*iys] +
+                                gpt3xh * A[iz + 3*iys] + gmt3xh * A[iz - 3*iys] +
+                                gpt4xh * A[iz + 4*iys] + gmt4xh * A[iz - 4*iys];
                     }
 
-                    // Laplacian and gradient
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
@@ -3161,38 +3178,14 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                                 gpt4x * A[iz + 4*ixs] + gmt4x * A[iz - 4*ixs];
                     }                   /* end for */
 
-                    // Laplacian only
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
-                                t1x * (A[iz + ixs + iys] + A[iz - ixs - iys]) +
-                                t2x * (A[iz + 2*ixs + 2*iys] + A[iz - 2*ixs - 2*iys]) +
-                                t3x * (A[iz + 3*ixs + 3*iys] + A[iz - 3*ixs - 3*iys]) +
-                                t4x * (A[iz + 4*ixs + 4*iys] + A[iz - 4*ixs - 4*iys]);
+                                gpt1xh * A[iz + ixs + iys] + gmt1xh * A[iz - ixs - iys] +
+                                gpt2xh * A[iz + 2*ixs + 2*iys] + gmt2xh * A[iz - 2*ixs - 2*iys] +
+                                gpt3xh * A[iz + 3*ixs + 3*iys] + gmt3xh * A[iz - 3*ixs - 3*iys] +
+                                gpt4xh * A[iz + 4*ixs + 4*iys] + gmt4xh * A[iz - 4*ixs - 4*iys];
                     }                   /* end for */
-////////////////////////
-                    RmgType t1y (4.0 * s1*kvec[1] * I_t / ( 5.0 * gridhy * L->get_yside()));
-                    RmgType t2y (-1.0 * s1*kvec[1] * I_t / (5.0 * gridhy * L->get_yside()));
-                    RmgType t3y (4.0 * s1*kvec[1] * I_t / (105.0 * gridhy * L->get_yside()));
-                    RmgType t4y (-1.0 * s1*kvec[1] * I_t / (280.0 * gridhy * L->get_yside()));
-
-                    for (int iz = 4; iz < dimz + 4; iz++)
-                    {
-                        B[iz] +=
-                            hex_t * t4y * ( A[iz + 4*iys] - A[iz - 4*iys]) +
-                            hex_t * t3y * ( A[iz + 3*iys] - A[iz - 3*iys]) +
-                            hex_t * t2y * ( A[iz + 2*iys] - A[iz - 2*iys]) +
-                            hex_t * t1y * ( A[iz + iys] - A[iz - iys]) +
-
-                            hex_t * t4y * ( -A[iz - 4*ixs - 4*iys] + A[iz + 4*ixs + 4*iys]) +
-                            hex_t * t3y * ( -A[iz - 3*ixs - 3*iys] + A[iz + 3*ixs + 3*iys]) +
-                            hex_t * t2y * ( -A[iz - 2*ixs - 2*iys] + A[iz + 2*ixs + 2*iys]) +
-                            hex_t * t1y * ( -A[iz - ixs - iys] + A[iz + ixs + iys]);
-
-
-                    }
-
-
                 }
             }
 
