@@ -23,6 +23,7 @@
 #include <float.h>
 #include <math.h>
 #include <assert.h>
+#include <cstdint>
 
 #include "main.h"
 #include "RmgTimer.h"
@@ -34,7 +35,7 @@ static int *s = NULL;
 static int *sym_atom;  //  atom B = sym(atom A)
 static int *ftau;
 static int nsym;
-static int *sym_index_x, *sym_index_y, *sym_index_z ;
+static uint16_t *sym_index_x, *sym_index_y, *sym_index_z ;
 
 
 extern "C" int spg_get_multiplicity(const double *lattice,
@@ -446,9 +447,9 @@ void init_symm_ijk(void)
     int incx = FPY0_GRID * FPZ0_GRID;
     int incy = FPZ0_GRID;
 
-    sym_index_x = new int[nsym * FPX0_GRID * FPY0_GRID * FPZ0_GRID];
-    sym_index_y = new int[nsym * FPX0_GRID * FPY0_GRID * FPZ0_GRID];
-    sym_index_z = new int[nsym * FPX0_GRID * FPY0_GRID * FPZ0_GRID];
+    sym_index_x = new uint16_t[nsym * FPX0_GRID * FPY0_GRID * FPZ0_GRID];
+    sym_index_y = new uint16_t[nsym * FPX0_GRID * FPY0_GRID * FPZ0_GRID];
+    sym_index_z = new uint16_t[nsym * FPX0_GRID * FPY0_GRID * FPZ0_GRID];
 
     for(isy = 0; isy < nsym; isy++)
     {
