@@ -107,7 +107,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
 
 
     // Handle special combined operator first
-    if(special && (order == APP_CI_EIGHT) && (Rmg_L.get_ibrav_type() != HEXAGONAL))
+    if(special && (order == APP_CI_EIGHT))
     {
         cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
         if(alloc > 110592) delete [] rptr;

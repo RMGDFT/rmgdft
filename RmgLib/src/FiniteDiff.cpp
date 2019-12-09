@@ -3037,7 +3037,8 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     RmgType t4z (c1*w1[ic+4] / h2z);
 
     RmgType t0 (th2);
-    RmgType hex_t(0.5*1.154700538379);
+    RmgType hex_t = 1.0;
+    if(ibrav == HEXAGONAL) hex_t = (0.5*1.154700538379);
 
     // When kvec[i] != 0 this includes the gradient component
     double s1 = 2.0;
@@ -3130,16 +3131,17 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                     RmgType *A = &a[iy*iys + ix*ixs];
                     RmgType *B = &b[(iy - 4)*dimz + (ix - 4)*dimy*dimz - 4];
                     // z-direction is orthogonal to xy-plane and only requires increments/decrements along z
+                    // First loop handles laplacian and gradient component
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] = t0 * A[iz] +
-                                t1z * (A[iz + 1] + A[iz - 1]) +
-                                t2z * (A[iz + 2] + A[iz - 2]) +
-                                t3z * (A[iz + 3] + A[iz - 3]) +
-                                t4z * (A[iz + 4] + A[iz - 4]);
+                                gpt1z * A[iz + 1] + gmt1z * A[iz - 1] +
+                                gpt2z * A[iz + 2] + gmt2z * A[iz - 2] +
+                                gpt3z * A[iz + 3] + gmt3z * A[iz - 3] +
+                                gpt4z * A[iz + 4] + gmt4z * A[iz - 4];
                     }
 
-// needs hex_t added in to t1x (use modified coefficient)
+                    // Laplacian only
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
@@ -3149,21 +3151,17 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                                 t4x * (A[iz + 4*iys] + A[iz - 4*iys]);
                     }
 
+                    // Laplacian and gradient
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
-                                t1x * (A[iz + ixs] + A[iz - ixs]) +
-                                t2x * (A[iz + 2*ixs] + A[iz - 2*ixs]) +
-                                t3x * (A[iz + 3*ixs] + A[iz - 3*ixs]) +
-                                t4x * (A[iz + 4*ixs] + A[iz - 4*ixs]);
+                                gpt1x * A[iz + ixs] + gmt1x * A[iz - ixs] +
+                                gpt2x * A[iz + 2*ixs] + gmt2x * A[iz - 2*ixs] +
+                                gpt3x * A[iz + 3*ixs] + gmt3x * A[iz - 3*ixs] +
+                                gpt4x * A[iz + 4*ixs] + gmt4x * A[iz - 4*ixs];
                     }                   /* end for */
 
-//                        B[iz] =
-//                            hex_t * t4y * ( -A[iz - 4*ixs - 4*iys] + A[iz + 4*ixs + 4*iys]) +
-//                            hex_t * t3y * ( -A[iz - 3*ixs - 3*iys] + A[iz + 3*ixs + 3*iys]) +
-//                            hex_t * t2y * ( -A[iz - 2*ixs - 2*iys] + A[iz + 2*ixs + 2*iys]) +
-//                            hex_t * t1y * ( -A[iz - ixs - iys] + A[iz + ixs + iys]);
-
+                    // Laplacian only
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
@@ -3172,6 +3170,28 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                                 t3x * (A[iz + 3*ixs + 3*iys] + A[iz - 3*ixs - 3*iys]) +
                                 t4x * (A[iz + 4*ixs + 4*iys] + A[iz - 4*ixs - 4*iys]);
                     }                   /* end for */
+////////////////////////
+                    RmgType t1y (4.0 * s1*kvec[1] * I_t / ( 5.0 * gridhy * L->get_yside()));
+                    RmgType t2y (-1.0 * s1*kvec[1] * I_t / (5.0 * gridhy * L->get_yside()));
+                    RmgType t3y (4.0 * s1*kvec[1] * I_t / (105.0 * gridhy * L->get_yside()));
+                    RmgType t4y (-1.0 * s1*kvec[1] * I_t / (280.0 * gridhy * L->get_yside()));
+
+                    for (int iz = 4; iz < dimz + 4; iz++)
+                    {
+                        B[iz] +=
+                            hex_t * t4y * ( A[iz + 4*iys] - A[iz - 4*iys]) +
+                            hex_t * t3y * ( A[iz + 3*iys] - A[iz - 3*iys]) +
+                            hex_t * t2y * ( A[iz + 2*iys] - A[iz - 2*iys]) +
+                            hex_t * t1y * ( A[iz + iys] - A[iz - iys]) +
+
+                            hex_t * t4y * ( -A[iz - 4*ixs - 4*iys] + A[iz + 4*ixs + 4*iys]) +
+                            hex_t * t3y * ( -A[iz - 3*ixs - 3*iys] + A[iz + 3*ixs + 3*iys]) +
+                            hex_t * t2y * ( -A[iz - 2*ixs - 2*iys] + A[iz + 2*ixs + 2*iys]) +
+                            hex_t * t1y * ( -A[iz - ixs - iys] + A[iz + ixs + iys]);
+
+
+                    }
+
 
                 }
             }
