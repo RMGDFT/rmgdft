@@ -185,10 +185,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     // Initialize some commonly used plans
     FftInitPlans();
 
-    if (pct.imgpe == 0)
-    {
-        WriteHeader();
-    }
     /* Initialize the radial potential stuff */
     InitPseudo();
 
@@ -206,6 +202,10 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     InitLocalObject (rhoc, dum_array, ATOMIC_RHOCOMP, false);
     InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
 
+    if (pct.imgpe == 0)
+    {
+        WriteHeader();
+    }
 
     /* Initialize Non-local operators */
     init_nl_xyz();
