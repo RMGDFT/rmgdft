@@ -46,7 +46,6 @@
 #include "packfuncs.h"
 #include "boundary_conditions.h"
 
-
 template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
 template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
@@ -54,6 +53,14 @@ template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int
 template void Mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
 
 template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int);
+
+template void Mgrid::mgrid_solv<float>(float*, float*, float*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int, double *);
+
+template void Mgrid::mgrid_solv<double>(double*, double*, double*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int, double *);
+
+template void Mgrid::mgrid_solv<std::complex <double> >(std::complex<double>*, std::complex<double>*, std::complex<double>*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int, double *);
+
+template void Mgrid::mgrid_solv<std::complex <float> >(std::complex<float>*, std::complex<float>*, std::complex<float>*, int, int, int, double, double, double, int, int, int*, int*, int, double, double, double, double *, int, int, int, int, int, int, int, int, int, int, double *);
 
 template void Mgrid::mgrid_solv_pois<float>(float*, float*, float*, int, int, int, double, double, double, int, int, int*, int*, int, double, int, int, int, int, int, int, int, int, int, int);
 
@@ -167,7 +174,6 @@ void Mgrid::mgrid_solv_schrodinger (RmgType * v_mat, RmgType * f_mat, RmgType * 
 
 }
 
-
 template <typename RmgType>
 void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
@@ -177,6 +183,27 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
                  int gxsize, int gysize, int gzsize,
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundaryflag)
+{
+    double kvec[3] = {0.0, 0.0, 0.0};
+    Mgrid::mgrid_solv (v_mat, f_mat, work,
+                 dimx, dimy, dimz,
+                 gridhx, gridhy, gridhz,
+                 level, max_levels, pre_cyc,
+                 post_cyc, mu_cyc, step, Zfac, k, pot,
+                 gxsize, gysize, gzsize,
+                 gxoffset, gyoffset, gzoffset,
+                 pxdim, pydim, pzdim, boundaryflag, kvec);
+}
+
+template <typename RmgType>
+void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_mat, RmgType * work,
+                 int dimx, int dimy, int dimz,
+                 double gridhx, double gridhy, double gridhz,
+                 int level, int max_levels, int *pre_cyc,
+                 int *post_cyc, int mu_cyc, double step, double Zfac, double k, double *pot,
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim, int boundaryflag, double *kvec)
 {
     RmgTimer *RT = NULL;
     BaseThread *Threads = BaseThread::getBaseThread(0);
@@ -315,7 +342,7 @@ void Mgrid::mgrid_solv (RmgType * __restrict__ v_mat, RmgType * __restrict__ f_m
                     max_levels, pre_cyc, post_cyc, mu_cyc, step, 2.0*Zfac, k, newpot,
                     gxsize, gysize, gzsize,
                     gxoffset, gyoffset, gzoffset,
-                    pxdim, pydim, pzdim, boundaryflag);
+                    pxdim, pydim, pzdim, boundaryflag, kvec);
 
         mg_prolong (resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         for(int idx = 0;idx < size;idx++) v_mat[idx] += resid[idx];

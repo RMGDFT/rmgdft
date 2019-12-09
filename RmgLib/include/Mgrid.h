@@ -85,6 +85,15 @@ public:
                  int gxoffset, int gyoffset, int gzoffset,
                  int pxdim, int pydim, int pzdim, int boundary_flag);
 
+    template <typename RmgType> void mgrid_solv (RmgType * v_mat, RmgType * f_mat, RmgType * work,
+                 int dimx, int dimy, int dimz,
+                 double gridhx, double gridhy, double gridhz,
+                 int level, int max_levels, int *pre_cyc,
+                 int *post_cyc, int mu_cyc, double step, double Zfac, double k, double *pot,
+                 int gxsize, int gysize, int gzsize,
+                 int gxoffset, int gyoffset, int gzoffset,
+                 int pxdim, int pydim, int pzdim, int boundary_flag, double *kvec);
+
     template <typename RmgType> void mgrid_solv_pois (RmgType * v_mat, RmgType * f_mat, RmgType * work,
                  int dimx, int dimy, int dimz,
                  double gridhx, double gridhy, double gridhz,
