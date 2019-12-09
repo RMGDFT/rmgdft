@@ -30,28 +30,23 @@
 
 
 // Gamma point float version
-void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, void * kdp,
-              double kmag, int dimx, int dimy, int dimz)
+void CPP_genvpsi (float * psi, float * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz)
 {
     for(int ix = 0;ix < dimx*dimy*dimz;ix++) sg_twovpsi[ix] = TWO * psi[ix] * vtot[ix];
 }                               /* end genvpsi */
 
 // Gamma point double version
-void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, void * kdp,
-              double kmag, int dimx, int dimy, int dimz)
+void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz)
 {
     for(int ix = 0;ix < dimx*dimy*dimz;ix++) sg_twovpsi[ix] = TWO * psi[ix] * vtot[ix];
 }
 
 // complex float version
-void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, void * kdp,
-              double kmag, int dimx, int dimy, int dimz)
+void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
     int incx, incy;
-
-    std::complex<double> *kd = (std::complex<double> *)kdp;
 
     incy = dimz;
     incx = (dimy) * (dimz);
@@ -68,8 +63,7 @@ void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, d
                 sg_twovpsi[ix * incx + iy * incy + iz] = (std::complex<float>)
                     (
                     2.0 * (std::complex<double>)psi[ix * incx + iy * incy + iz] *
-                    (vtot[ix * incx + iy * incy + iz] + 0.5 * kmag) +
-                    2.0 * kd[ix * incx + iy * incy + iz]);
+                    (vtot[ix * incx + iy * incy + iz] + 0.5 * kmag));
             }                   /* end for */
 
         }                       /* end for */
@@ -80,14 +74,11 @@ void CPP_genvpsi (std::complex<float> * psi, std::complex<float> * sg_twovpsi, d
 
 
 // complex double version
-void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi, double * vtot, void * kdp,
-              double kmag, int dimx, int dimy, int dimz)
+void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz)
 {
 
     int ix, iy, iz;
     int incx, incy;
-
-    std::complex<double> *kd = (std::complex<double> *)kdp;
 
     incy = dimz;
     incx = (dimy) * (dimz);
@@ -104,8 +95,7 @@ void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi,
                 sg_twovpsi[ix * incx + iy * incy + iz] = (std::complex<double>)
                     (
                     2.0 * (std::complex<double>)psi[ix * incx + iy * incy + iz] *
-                    (vtot[ix * incx + iy * incy + iz] + 0.5 * kmag) +
-                    2.0 * kd[ix * incx + iy * incy + iz]);
+                    (vtot[ix * incx + iy * incy + iz] + 0.5 * kmag));
             }                   /* end for */
 
         }                       /* end for */

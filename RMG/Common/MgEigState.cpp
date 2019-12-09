@@ -54,8 +54,8 @@ double ComputeEig(int n, T *A, T *B, T *D)
 
     for(int idx = 0;idx < n;idx++)
     {
-        s1[0] += std::real(A[idx]*B[idx]) + std::imag(A[idx]*B[idx]);
-        s1[1] += std::real(A[idx]*D[idx]) + std::imag(A[idx]*D[idx]);
+        s1[0] += std::real(A[idx])*std::real(B[idx]) + std::imag(A[idx])*std::imag(B[idx]);
+        s1[1] += std::real(A[idx])*std::real(D[idx]) + std::imag(A[idx])*std::imag(D[idx]);
     }
 
     int length = 2;
@@ -131,7 +131,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // after that which reduces contention when many threads are running. Automatically frees
     // the allocated memory when it goes out of scope.
     int pool_blocks = 24;
-    if(!ct.is_gamma) pool_blocks += 3;
     boost::pool<> p(sbasis_noncoll*aratio*sizeof(CalcType), pool_blocks);
     CalcType *res2_t = (CalcType *)p.ordered_malloc(1);
     CalcType *work2_t = (CalcType *)p.ordered_malloc(4);
@@ -143,16 +142,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     CalcType *res_t  =  (CalcType *)p.ordered_malloc(1);
     CalcType *twork_t  = (CalcType *)p.ordered_malloc(1);
     OrbitalType *nv_t  = (OrbitalType *)p.ordered_malloc(aratio);
-    CalcType *gx=NULL, *gy=NULL, *gz=NULL;
-    if(!ct.is_gamma)
-    {
-        gx = (CalcType *)p.ordered_malloc(1);
-        gy = (CalcType *)p.ordered_malloc(1);
-        gz = (CalcType *)p.ordered_malloc(1);
-    }
-
-    std::complex<double> *kdr = NULL;
-    if(typeid(OrbitalType) == typeid(std::complex<double>)) kdr = new std::complex<double>[2*sbasis]();
 
     // Copy double precision psi into correct precison array
     GatherPsi(G, pbasis_noncoll, sp->istate, kptr->orbital_storage, tmp_psi_t);
@@ -190,46 +179,22 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         /* Apply left hand operators */
         {
             RmgTimer RT1("Mg_eig: apply A operator");
-            diag = ApplyAOperator<CalcType>(tmp_psi_t, work2_t, gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
-
-            // if complex orbitals compute dot products as well
-            if(typeid(OrbitalType) == typeid(std::complex<double>)) {
-
-                std::complex<double> I_t(0.0, 1.0);
-                for(int idx = 0;idx < pbasis;idx++) {
-
-                    kdr[idx] = -I_t * (kptr->kp.kvec[0] * (std::complex<double>)gx[idx] +
-                            kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
-                            kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
-                }
-            }
+            diag = ApplyAOperator<CalcType>(tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order, kptr->kp.kvec);
         }
 
 
         /* Generate 2 * V * psi and save in work1 */
-        CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
+        CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, kptr->kp.kmag, dimx, dimy, dimz);
         for(int ix=0;ix < pbasis;ix++) work1_t[ix] = sg_twovpsi_t[ix];
 
         if(ct.noncoll)
         {
             RmgTimer *RT1 = new RmgTimer("Mg_eig: apply A operator");
-            diag = ApplyAOperator<CalcType>(&tmp_psi_t[pbasis], &work2_t[pbasis], gx, gy, gz, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order);
-
-            // if complex orbitals compute dot products as well
-            if(typeid(OrbitalType) == typeid(std::complex<double>)) {
-
-                std::complex<double> I_t(0.0, 1.0);
-                for(int idx = 0;idx < pbasis;idx++) {
-
-                    kdr[idx] = -I_t * (kptr->kp.kvec[0] * (std::complex<double>)gx[idx] +
-                            kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
-                            kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
-                }
-            }
+            diag = ApplyAOperator<CalcType>(&tmp_psi_t[pbasis], &work2_t[pbasis], dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order, kptr->kp.kvec);
             delete RT1;
 
             /* Generate 2 * V * psi */
-            CPP_genvpsi (&tmp_psi_t[pbasis], &work1_t[pbasis], vtot_psi, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
+            CPP_genvpsi (&tmp_psi_t[pbasis], &work1_t[pbasis], vtot_psi, kptr->kp.kmag, dimx, dimy, dimz);
             double *vxc_x = &vxc_psi[pbasis];
             double *vxc_y = &vxc_psi[2*pbasis];
             double *vxc_z = &vxc_psi[3*pbasis];
@@ -415,9 +380,6 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     // Copy single precision orbital back to double precision
     if(freeze_occupied)
         ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage);
-
-    /* Release our memory */
-    if(typeid(OrbitalType) == typeid(std::complex<double>)) delete [] kdr;
 
 } // end MgEigState
 

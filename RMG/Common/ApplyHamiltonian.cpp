@@ -52,16 +52,6 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
 {
     int pbasis = kptr->pbasis;
     double fd_diag;
-    KpointType *gx = NULL, *gy = NULL, *gz = NULL;
-    std::complex<double> *kdr = NULL;
-
-    if(typeid(KpointType) == typeid(std::complex<double>))
-    {
-        kdr = new std::complex<double>[pbasis]();
-        gx = new KpointType[pbasis];
-        gy = new KpointType[pbasis];
-        gz = new KpointType[pbasis];
-    }
 
     int density = 1;
     int dimx = kptr->G->get_PX0_GRID(density);
@@ -70,7 +60,7 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
     double gridhx = kptr->G->get_hxgrid(density);
     double gridhy = kptr->G->get_hygrid(density);
     double gridhz = kptr->G->get_hzgrid(density);
-    fd_diag = ApplyAOperator<KpointType>(psi, h_psi, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order);
+    fd_diag = ApplyAOperator<KpointType>(psi, h_psi, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
 
 
     // Factor of -0.5 and add in potential terms
@@ -81,23 +71,10 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
     // if complex orbitals use applied gradient to compute dot products
     if(typeid(KpointType) == typeid(std::complex<double>)) {
 
-        std::complex<double> I_t(0.0, 1.0);
-        for(int idx = 0;idx < pbasis;idx++) {
-
-            kdr[idx] = -I_t * (kptr->kp.kvec[0] * (std::complex<double>)gx[idx] +
-                               kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
-                               kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
-        }
-
         std::complex<double> *thpsi = (std::complex<double> *)h_psi;
         std::complex<double> *tpsi = (std::complex<double> *)psi;
         std::complex<double> tmag(0.5*kptr->kp.kmag, 0.0);
-        for(int idx=0;idx < pbasis;idx++) thpsi[idx] = thpsi[idx]  + kdr[idx] + tmag * tpsi[idx];
-
-        delete [] gz;
-        delete [] gy;
-        delete [] gx;
-        delete [] kdr;
+        for(int idx=0;idx < pbasis;idx++) thpsi[idx] = thpsi[idx]  + tmag * tpsi[idx];
 
     }
 

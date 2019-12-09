@@ -44,7 +44,7 @@ template void ApplyOperators<std::complex<double> >(Kpoint<std::complex<double>>
         std::complex<double> *, std::complex<double> *);
 
 // Applies A and B operators to one wavefunction
-    template <typename KpointType>
+template <typename KpointType>
 void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, KpointType *b_psi, double *vtot, double *vxc_psi,  KpointType *nv, KpointType *Bns)
 {
     // We want a clean exit if user terminates early
@@ -68,51 +68,12 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
 
 
     // Apply A operator to psi
-    ApplyAOperator (psi, a_psi);
+    ApplyAOperator (psi, a_psi, kptr->kp.kvec);
     for(int idx = 0;idx < pbasis;idx++) b_psi[idx] = psi[idx];
     if(ct.noncoll)
     {
-        ApplyAOperator (&psi[pbasis], &a_psi[pbasis]);
+        ApplyAOperator (&psi[pbasis], &a_psi[pbasis], kptr->kp.kvec);
         for(int idx = 0;idx < pbasis;idx++) b_psi[idx+pbasis] = psi[idx+pbasis];
-    }
-
-
-
-    // if complex orbitals apply gradient to orbital and compute dot products
-    std::complex<double> *kdr = NULL;
-    if(typeid(KpointType) == typeid(std::complex<double>)) {
-
-        kdr = new std::complex<double>[pbasis *ct.noncoll_factor]();
-        std::complex<double> I_t(0.0, 1.0);
-        KpointType *gx = new KpointType[pbasis];
-        KpointType *gy = new KpointType[pbasis];
-        KpointType *gz = new KpointType[pbasis];
-
-        ApplyGradient (psi, gx, gy, gz, APP_CI_EIGHT, "Coarse");
-
-        for(int idx = 0;idx < pbasis;idx++) {
-
-            kdr[idx] = -I_t * (kptr->kp.kvec[0] * (std::complex<double>)gx[idx] +
-                    kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
-                    kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
-        }
-
-        if(ct.noncoll)
-        {
-            ApplyGradient (&psi[pbasis], gx, gy, gz, APP_CI_EIGHT, "Coarse");
-
-            for(int idx = 0;idx < pbasis;idx++) {
-
-                kdr[idx+pbasis] = -I_t * (kptr->kp.kvec[0] * (std::complex<double>)gx[idx] +
-                        kptr->kp.kvec[1] * (std::complex<double>)gy[idx] +
-                        kptr->kp.kvec[2] * (std::complex<double>)gz[idx]);
-            }
-        }
-
-        delete [] gz;
-        delete [] gy;
-        delete [] gx;
-
     }
 
 
@@ -133,16 +94,15 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     }
 
 
-    CPP_genvpsi (psi, sg_twovpsi_t, veff, (void *)kdr, kptr->kp.kmag, dimx, dimy, dimz);
+    CPP_genvpsi (psi, sg_twovpsi_t, veff, kptr->kp.kmag, dimx, dimy, dimz);
 
-        // For central FD B is just the identity
+    // For central FD B is just the identity
     for(int idx = 0; idx < pbasis; idx++) a_psi[idx] = sg_twovpsi_t[idx] - a_psi[idx];
    
       
-      if(ct.noncoll)
+    if(ct.noncoll)
     {
-        std::complex<double> *kdr_down = kdr + pbasis;
-        CPP_genvpsi (&psi[pbasis], sg_twovpsi_t, veff, (void *)kdr_down, kptr->kp.kmag, dimx, dimy, dimz);
+        CPP_genvpsi (&psi[pbasis], sg_twovpsi_t, veff, kptr->kp.kmag, dimx, dimy, dimz);
         for(int idx = 0; idx < pbasis; idx++) a_psi[idx + pbasis] = sg_twovpsi_t[idx] - a_psi[idx + pbasis];
 
         double *vxc_x = &vxc_psi[pbasis];
@@ -167,7 +127,6 @@ void ApplyOperators (Kpoint<KpointType> *kptr, int istate, KpointType *a_psi, Kp
     // Add in already applied Bns to b_psi for US
     if(!ct.norm_conserving_pp) for(int idx = 0; idx < pbasis_noncoll; idx++) b_psi[idx] += Bns[idx];
 
-    if(kdr) delete [] kdr;
     delete [] sg_twovpsi_t;
 
 } // end ApplyOperators

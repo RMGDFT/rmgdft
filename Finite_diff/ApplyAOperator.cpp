@@ -26,6 +26,7 @@
 #include "FiniteDiff.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
+#include "rmg_complex.h"
 
 // Applies Mehrstellen left hand side operator to a and returns result in b
 // The first set of functions takes the input and output grids and a char string that defines
@@ -37,20 +38,20 @@
 // IN:    grid = "Coarse" or "Fine" for grid type
 
 
-template double ApplyAOperator<float>(float *, float *, float *, float *, float *, int, int, int, double, double, double, int);
-template double ApplyAOperator<double>(double *, double *, double *, double *, double *,int, int, int, double, double, double, int);
-template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *, std::complex<float> *,int, int, int, double, double, double, int);
-template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *,int, int, int, double, double, double, int);
+template double ApplyAOperator<float>(float *, float *, int, int, int, double, double, double, int, double *kvec);
+template double ApplyAOperator<double>(double *, double *,int, int, int, double, double, double, int, double *kvec);
+template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *,int, int, int, double, double, double, int, double *kvec);
+template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *,int, int, int, double, double, double, int, double *kvec);
 
 template double ApplyAOperator<float>(float *, float *);
 template double ApplyAOperator<double>(double *, double *);
 template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *);
 template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *);
 
-template double ApplyAOperator<float>(float *, float *, BaseGrid *G, TradeImages *T);
-template double ApplyAOperator<double>(double *, double *, BaseGrid *G, TradeImages *T);
-template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, BaseGrid *G, TradeImages *T);
-template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, BaseGrid *G, TradeImages *T);
+template double ApplyAOperator<float>(float *, float *, double *);
+template double ApplyAOperator<double>(double *, double *, double *);
+template double ApplyAOperator<std::complex<float> >(std::complex<float> *, std::complex<float> *, double *);
+template double ApplyAOperator<std::complex<double> >(std::complex<double> *, std::complex<double> *, double *);
 
 template double ApplyAOperator<float>(Lattice *, TradeImages *, float *, float *, int, int, int, double, double, double, int);
 template double ApplyAOperator<double>(Lattice *, TradeImages *, double *, double *, int, int, int, double, double, double, int);
@@ -59,17 +60,25 @@ template double ApplyAOperator<std::complex<double> >(Lattice *, TradeImages *, 
 
 
 template <typename DataType>
-double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, DataType *gz, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
+double ApplyAOperator (DataType *a, DataType *b, double *kvec)
 {
-    if(ct.kohn_sham_ke_fft)
-    {
-        FftLaplacianCoarse(a, b);    
-        if(!ct.is_gamma) FftGradientCoarse(a, gx, gy, gz);
-       
-        // Diagonal needed for multigrid smoothings
-        return LC->coeff_and_index[0].coeff;
-    }
+    int density = 1;
 
+    int dimx = Rmg_G->get_PX0_GRID(density);
+    int dimy = Rmg_G->get_PY0_GRID(density);
+    int dimz = Rmg_G->get_PZ0_GRID(density);
+
+    double gridhx = Rmg_G->get_hxgrid(density);
+    double gridhy = Rmg_G->get_hygrid(density);
+    double gridhz = Rmg_G->get_hzgrid(density);
+                                                              
+    return ApplyAOperator (a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kvec);
+
+}
+
+template <typename DataType>
+double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, double *kvec)
+{
     double cc = 0.0;
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
     int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
@@ -90,10 +99,20 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
     }
 
 
+
     if(!special || (Rmg_L.get_ibrav_type() == HEXAGONAL))
         Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
     else
        Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
+
+
+    // Handle special combined operator first
+    if(special && (order == APP_CI_EIGHT) && (Rmg_L.get_ibrav_type() != HEXAGONAL))
+    {
+        cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
+        if(alloc > 110592) delete [] rptr;
+        return cc;
+    }
 
     // First apply the laplacian
     if(order == APP_CI_SIXTH) {
@@ -101,39 +120,18 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
             cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
         else
             cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        if(!ct.is_gamma)
-        {
-            if(special)
-                FD.app_gradient_sixth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-            else
-                FiniteDiffGrad(rptr, gx, gy, gz, dimx, dimy, dimz, LC);
-        }
     }
     else if(order == APP_CI_EIGHT) {
         if(!special)
             cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
         else
             cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        if(!ct.is_gamma)
-        {
-            if(special)
-                FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-            else
-                FiniteDiffGrad(rptr, gx, gy, gz, dimx, dimy, dimz, LC);
-        }
     }
     else if(order == APP_CI_TEN) {
         if(!special)
             cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
         else
             cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        if(!ct.is_gamma)
-        {
-            if(special)
-                FD.app_gradient_tenth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-            else
-                FiniteDiffGrad(rptr, gx, gy, gz, dimx, dimy, dimz, LC);
-        }
     }
     else {
 
@@ -142,12 +140,53 @@ double ApplyAOperator (DataType *a, DataType *b, DataType *gx, DataType *gy, Dat
 
     }
 
+    if(!ct.is_gamma)
+    {
+        int pbasis = dimx*dimy*dimz;
+        DataType *gx = new DataType[pbasis];
+        DataType *gy = new DataType[pbasis];
+        DataType *gz = new DataType[pbasis];
+        std::complex<double> *kdr = new std::complex<double>[pbasis];
+
+
+        if(special)
+            FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        else
+            FiniteDiffGrad(rptr, gx, gy, gz, dimx, dimy, dimz, LC);
+
+        // if complex orbitals compute dot products as well
+        std::complex<double> I_t(0.0, 1.0);
+        for(int idx = 0;idx < pbasis;idx++)
+        {
+            kdr[idx] = -I_t * (kvec[0] * std::complex<double>(std::real(gx[idx]), std::imag(gx[idx])) +
+                               kvec[1] * std::complex<double>(std::real(gy[idx]), std::imag(gy[idx])) +
+                               kvec[2] * std::complex<double>(std::real(gz[idx]), std::imag(gz[idx])));
+        }
+        if(typeid(DataType) == typeid(std::complex<double>))
+        {
+            std::complex<double> *pptr = (std::complex<double> *)b;
+            for(int idx = 0;idx < pbasis;idx++) pptr[idx] = pptr[idx] - 2.0*kdr[idx];
+        }
+        if(typeid(DataType) == typeid(std::complex<float>))
+        {
+            std::complex<float> *pptr = (std::complex<float> *)b;
+            for(int idx = 0;idx < pbasis;idx++) pptr[idx] = pptr[idx] - 2.0*kdr[idx];
+        }
+        
+        delete [] kdr;
+        delete [] gz;
+        delete [] gy;
+        delete [] gx;
+    }
+
     if(alloc > 110592) delete [] rptr;
 
     return cc;
 
 }
 
+
+// The following two functions are for gamma point only
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b)
 {
@@ -164,24 +203,6 @@ double ApplyAOperator (DataType *a, DataType *b)
     return ApplyAOperator (&Rmg_L, Rmg_T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order);
 
 }
-
-template <typename DataType>
-double ApplyAOperator (DataType *a, DataType *b, BaseGrid *G, TradeImages *T)
-{
-    int density = 1;
-
-    int dimx = G->get_PX0_GRID(density);
-    int dimy = G->get_PY0_GRID(density);
-    int dimz = G->get_PZ0_GRID(density);
-
-    double gridhx = G->get_hxgrid(density);
-    double gridhy = G->get_hygrid(density);
-    double gridhz = G->get_hzgrid(density);
-                                                              
-    return ApplyAOperator (&Rmg_L, T, a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order);
-
-}
-
 
 template <typename DataType>
 double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order)
@@ -202,4 +223,3 @@ double ApplyAOperator (Lattice *L, TradeImages *T, DataType *a, DataType *b, int
     return cc;
     
 }
-
