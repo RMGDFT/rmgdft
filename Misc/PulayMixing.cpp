@@ -76,21 +76,24 @@ void PulayMixing::Mixing(double *xm, double *fm)
     {
         double tpiba = 2.0 * PI / Rmg_L.celldm[0];
         double tpiba2 = tpiba * tpiba;
-        for(int ig=0; ig < pbasis; ig++) c_fm[ig] = std::complex<double>(fm[ig], 0.0);
-        fine_pwaves->FftForward(c_fm, c_fm);
+        for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
+        {
+            for(int ig=0; ig < pbasis; ig++) c_fm[ig] = std::complex<double>(fm[is*pbasis + ig], 0.0);
+            fine_pwaves->FftForward(c_fm, c_fm);
 
-        for(int ig=0;ig < pbasis;ig++) {
-            // fm is the charge density difference, sums of them always equal to zero
-            // so there is no G= 0 term.
-            double g2 = fine_pwaves->gmags[ig] * tpiba2;
+            for(int ig=0;ig < pbasis;ig++) {
+                // fm is the charge density difference, sums of them always equal to zero
+                // so there is no G= 0 term.
+                double g2 = fine_pwaves->gmags[ig] * tpiba2;
 
-            double alpha = std::max(0.0, g2/(g2+this->ktf * this->ktf));
-            c_fm[ig] = c_fm[ig] * alpha;
-            // if(!fine_pwaves->gmask[ig]) c_fm[ig]  = 0.0;
-            //c_fm[ig] = c_fm[ig] * g2/(g2+this->ktf * this->ktf);
+                double alpha = std::max(0.0, g2/(g2+this->ktf * this->ktf));
+                c_fm[ig] = c_fm[ig] * alpha;
+                // if(!fine_pwaves->gmask[ig]) c_fm[ig]  = 0.0;
+                //c_fm[ig] = c_fm[ig] * g2/(g2+this->ktf * this->ktf);
+            }
+            fine_pwaves->FftInverse(c_fm, c_fm);
+            for(size_t i = 0;i < this->Nsize;i++) fm[is*pbasis + i] = std::real(c_fm[i])/(double)fine_pwaves->global_basis;
         }
-        fine_pwaves->FftInverse(c_fm, c_fm);
-        for(size_t i = 0;i < this->Nsize;i++) fm[i] = std::real(c_fm[i])/(double)fine_pwaves->global_basis;
     }
     if(this->pulay_order <=1)
     {

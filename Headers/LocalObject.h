@@ -23,6 +23,7 @@ public:
     LocalObject(int num_objects, int *ixmin, int *iymin, int *izmin, 
                 int *dimx, int *dimy, int *dimz, bool delocalized,
                 BaseGrid &Rmg_G, int density, MPI_Comm comm);
+    LocalObject(const LocalObject &);
     ~LocalObject(void);
 
     KpointType *storage_proj;
@@ -35,6 +36,7 @@ public:
     int *index_global_to_proj;
     bool delocalized;
     MPI_Comm comm;
+    int pbasis;
 
     //OrbitalsOwnedProce[st][pe_list][pe, offset_x, offset_y, offset_z]
     //which processor has the data for a orbital, had its offset in x,y, z index.]

@@ -34,6 +34,8 @@ extern MpiQueue *Rmg_Q;
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 
 
+void ProgressTag(double, double);
+void ExxProgressTag(double, double);
 double my_crtc (void);
 void get_vxc (double * rho, double * rho_oppo, double * rhocore, double * vxc);
 void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt,

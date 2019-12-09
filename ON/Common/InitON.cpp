@@ -95,10 +95,6 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
             Atoms[ion].ixtal[ic] = Atoms[ion].xtal[ic];
         }
 
-    if (pct.imgpe == 0)
-    {
-        write_header();
-    }
 
     MPI_Barrier(pct.img_comm);
 
@@ -188,6 +184,11 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     // Initialize some commonly used plans
     FftInitPlans();
+
+    if (pct.imgpe == 0)
+    {
+        WriteHeader();
+    }
     /* Initialize the radial potential stuff */
     InitPseudo();
 

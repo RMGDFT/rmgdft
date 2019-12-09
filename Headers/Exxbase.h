@@ -62,6 +62,9 @@ private:
     // File path for wavefunction file. Spin and kpoint identifiers should be added by parent.
     const std::string &wavefile;
 
+    // Base of domain distributed wavefunction array
+    T *psi;
+
     // Exx mode
     int mode;
 
@@ -75,9 +78,6 @@ private:
     // Occupations for the orbitals
     double *init_occ;
     std::vector<double> occ;
-
-    // Base of domain distributed wavefunction array
-    T *psi;
 
     // Mmapped serial wavefunction array
     T *psi_s;
@@ -97,12 +97,6 @@ T *vexx_global;
     // BaseGrid instance for local grids
     BaseGrid *LG;
 
-    // Plane wave object for local grids
-    Pw *pwave;
-
-    // Plane wave object for half density grids
-    Pw *pwave_h;
-
     // <psi_i, psi_j> pairs that this MPI task is responsible for
     std::vector< std::pair <int,int> > pairs;
 
@@ -111,7 +105,6 @@ T *vexx_global;
     double gau_scrlen=0.0;
     int scr_type = ERFC_SCREENING;
 
-    double *gfac;
 
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p);
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, std::complex<float> *workbuf);
@@ -145,6 +138,14 @@ public:
     void Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end);
     void WriteWfsToSingleFile(void);
     void ReadWfsFromSingleFile(void);
+
+    // Plane wave object for local grids
+    Pw *pwave;
+
+    // Plane wave object for half density grids
+    Pw *pwave_h;
+
+    double *gfac;
 
 };
 

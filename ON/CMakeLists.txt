@@ -9,6 +9,7 @@ if(QMCPACK_SUPPORT)
     list(APPEND RMGLIBS Interfaces)
 endif()
 
+include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 add_executable(${rmg-on} EXCLUDE_FROM_ALL Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
 set_target_properties(${rmg-on} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 

@@ -49,7 +49,7 @@ double get_gamma_precond(double *vtot, double small_eig)
 //gamma = ct.eig_parm.gl_step * t5;
 
     if (pct.gridpe == 0)
-        printf("\n get_gamma %22.16f ", gamma);
+        printf("\n get_gamma %22.16f\n ", gamma);
 
 
     return gamma;

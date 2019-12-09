@@ -49,8 +49,6 @@
 // Local function prototypes
 void PlotConvergence(std::vector<double> &RMSdV, bool CONVERGED);
 void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& ControlMap);
-void ProgressTag(double step_time, double elapsed_time);
-void ExxProgressTag(double step_time, double elapsed_time);
 
 
 // Instantiate gamma and non-gamma versions
@@ -388,28 +386,3 @@ void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& Co
     }
 }
 
-void ProgressTag(double step_time, double elapsed_time)
-{
-    if (pct.imgpe == 0) {
-        rmg_printf (" quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]\n\n\n",
-                ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
-
-        /*Also print to stdout*/
-        if(pct.images == 1)
-            fprintf (stdout,"\n quench: [md: %3d/%-d  scf: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  RMS[dV]: %8.2e ]",
-                    ct.md_steps, ct.max_md_steps, ct.scf_steps, ct.max_scf_steps, step_time, elapsed_time, ct.rms);
-    }
-}
-
-void ExxProgressTag(double step_time, double elapsed_time)
-{
-    if (pct.imgpe == 0) {
-        rmg_printf (" quench: [md: %3d/%-d  exx: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  EXX[dV]: %8.2e ]\n\n\n",
-                ct.md_steps, ct.max_md_steps, ct.exx_steps, ct.max_exx_steps, step_time, elapsed_time, ct.exx_delta);
-
-        /*Also print to stdout*/
-        if(pct.images == 1)
-            fprintf (stdout,"\n quench: [md: %3d/%-d  exx: %3d/%-d  step time: %6.2f  scf time: %8.2f secs  EXX[dV]: %8.2e ]",
-                    ct.md_steps, ct.max_md_steps, ct.exx_steps, ct.max_exx_steps, step_time, elapsed_time, ct.exx_delta);
-    }
-}

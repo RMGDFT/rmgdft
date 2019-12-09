@@ -1,6 +1,3 @@
-set_source_files_properties(WriteHeader.cpp
-PROPERTIES
-COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 add_library (RMG_Common
 Reinit.cpp
 Stress.cpp
@@ -80,7 +77,6 @@ print_density_z_direction.cpp
 set_pbc.cpp
 PartialGamma.cpp
 fire.cpp
-WriteHeader.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/RMG/Headers/")
 include_directories("${RMG_BINARY_DIR}/RMG/Headers/")

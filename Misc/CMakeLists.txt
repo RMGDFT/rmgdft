@@ -1,4 +1,10 @@
+set_source_files_properties(WriteHeader.cpp
+PROPERTIES
+COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
+
 add_library (Misc
+WriteHeader.cpp
+ProgressTag.cpp
 PulayMixing.cpp
 SetLaplacian.cpp
 IonIonEnergy_Ewald.cpp

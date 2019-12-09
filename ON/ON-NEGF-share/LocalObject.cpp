@@ -90,6 +90,7 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects
     int klow = PZ_OFFSET;
     int khigh = klow + PZ0_GRID;
 
+    this->pbasis = P0_BASIS;
     if(this->delocalized)
     {
         this->num_thispe = this->num_tot;
@@ -1047,4 +1048,22 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
     delete [] request;
     delete [] phi_proj;
     delete [] phi;
+}
+
+
+template LocalObject<double>::LocalObject(const LocalObject<double> &);
+template LocalObject<std::complex<double>>::LocalObject(const LocalObject<std::complex<double>> &);
+template <class KpointType> LocalObject<KpointType>::LocalObject(const LocalObject<KpointType> &Old_LO)
+{
+    int num_tot = Old_LO.num_tot;
+    this->index_global_to_proj = new int[num_tot];
+    this->index_proj_to_global = new int[num_tot];
+    for(int i = 0; i < num_tot; i++)
+    {
+        this->index_global_to_proj[i]  = Old_LO.index_global_to_proj[i];
+        this->index_proj_to_global[i]  = Old_LO.index_proj_to_global[i];
+
+    }
+    size_t size = Old_LO.num_thispe * Old_LO.pbasis *sizeof(KpointType) +8;
+    this->storage_proj = (KpointType *) GpuMallocManaged(size);
 }
