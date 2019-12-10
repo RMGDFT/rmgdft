@@ -2968,13 +2968,11 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     RmgType I_t;
     if(typeid(RmgType) == typeid(double))
     {
-        double *iptr = (double *)&I_t;
-        *iptr = 0.0;
+        I_t = 0.0;
     }
     else if(typeid(RmgType) == typeid(float))
     {
-        float *iptr = (float *)&I_t;
-        *iptr = 0.0;
+        I_t = 0.0;
     }
     else if(typeid(RmgType) == typeid(std::complex<double>))
     {
