@@ -674,7 +674,7 @@ void Scf_on(STATE * states, STATE * states1, double *vxc, double *vh,
         double * vxc_old, double * vh_old, int *CONVERGENCE);
 void Scf_on_proj(STATE *states, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
-        double * vxc_old, double * vh_old, int *CONVERGENCE);
+        double * vxc_old, double * vh_old, int *CONVERGENCE, bool freeze_orbital);
 
 
 

@@ -66,10 +66,13 @@ template <class T> Exx_on<T>::Exx_on (
           int mode_in) : G(G_in), G_h(G_h_in), L(L_in), wavefile(wavefile_in), Phi(Phi_in), mode(mode_in)
 {
     RmgTimer RT0("5-Functional: Exx init");
-    Exxb = new Exxbase<T>(G, G_h, L, wavefile, Phi.num_tot, NULL, NULL, ct.exx_mode);
-    DePhi = (T *)GpuMallocManaged(ct.num_states * ct.num_states * sizeof(T));
+    Exxb = new Exxbase<T>(G, G_h, L, wavefile, 0, NULL, NULL, ct.exx_mode);
+    DePhi = (T *)GpuMallocManaged(ct.num_states * Phi.pbasis * sizeof(T));
     Omega_j = (T *)GpuMallocManaged(Phi.num_thispe * Phi.pbasis * sizeof(T));
+    PreOrbital = (T *)GpuMallocManaged(Phi.num_thispe * Phi.pbasis * sizeof(T));
     Xij_mat =  (T *)GpuMallocManaged(Phi.num_tot * Phi.num_tot * sizeof(T));
+    Xij_mat_Sinv =  (T *)GpuMallocManaged(Phi.num_tot * Phi.num_tot * sizeof(T));
+    for(int i = 0; i < Phi.num_tot * Phi.num_tot; i++) Xij_mat[i] = 0.0;
 }
 
 template <> void Exx_on<double>::Omega(double *rho_matrix, bool use_float_fft)
@@ -100,7 +103,7 @@ template <> void Exx_on<double>::Omega(double *rho_matrix, bool use_float_fft)
         pvec[tid] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * Exxb->pwave->pbasis);
         wvec[tid] = (std::complex<float> *)fftw_malloc(sizeof(std::complex<float>) * Exxb->pwave->pbasis);
     }
-
+    
     if(mode != EXX_DIST_FFT)
     {
         throw RmgFatalException() << "only dist_fft mode for Hybrid now" << "\n";
@@ -176,8 +179,8 @@ template <> void Exx_on<std::complex<double>>::Omega(std::complex<double> *rho_m
 {
 }
 
-template <> void Exx_on<std::complex<double>>::Xij(LocalObject<std::complex<double>> &Phi){};
-template <> void Exx_on<double>::Xij(LocalObject<double> &Phi)
+template <> void Exx_on<std::complex<double>>::Xij(std::complex<double> *Sij_inverse, LocalObject<std::complex<double>> &Phi){};
+template <> void Exx_on<double>::Xij(double *Sij_inverse, LocalObject<double> &Phi)
 {
     
     double t1 = Rmg_G->get_NX_GRID(Phi.density);
@@ -187,18 +190,24 @@ template <> void Exx_on<double>::Xij(LocalObject<double> &Phi)
     double vol = Rmg_L.get_omega() /t1;
 
     int na = Phi.num_thispe ;
+    int ntot = Phi.num_tot; 
 
     int pbasis = Phi.pbasis;
 
-    double zero = 0.0;
+    double zero = 0.0, one = 1.0;
 
-    double *mat_local = (double *)GpuMallocManaged(na*na*sizeof(double));
+    double *mat_tem = (double *)GpuMallocManaged(ntot*ntot*sizeof(double));
     RmgGemm("C", "N", na, na, pbasis, vol, Phi.storage_proj, pbasis,
-               (double *)Omega_j, pbasis, zero, mat_local, na);
+               (double *)Omega_j, pbasis, zero, mat_tem, na);
 
-    mat_local_to_glob(mat_local, Xij_mat, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot, true);
+    mat_local_to_glob(mat_tem, Xij_mat, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot, true);
 
-    GpuFreeManaged(mat_local);
+    RmgGemm("N", "N", ntot, ntot, ntot, one, Sij_inverse, ntot,
+               Xij_mat, ntot, zero, mat_tem, ntot);
+    RmgGemm("N", "N", ntot, ntot, ntot, one, mat_tem, ntot,
+               Sij_inverse, ntot, zero, Xij_mat_Sinv, ntot);
+
+    GpuFreeManaged(mat_tem);
 
 };
 
@@ -207,6 +216,101 @@ template <> double Exx_on<std::complex<double>>::Exxenergy(std::complex<double> 
 template <> double Exx_on<double>::Exxenergy(double *rho_mat_global)
 {
     double exx = 0.0;
-    for(int idx = 0; idx < Phi.num_tot * Phi.num_tot; idx++) exx += rho_mat_global[idx] * this->Xij_mat[idx];
+    for(int idx = 0; idx < Phi.num_tot * Phi.num_tot; idx++) exx += ct.exx_fraction * rho_mat_global[idx] * this->Xij_mat[idx];
     return exx;
+}
+template <> void Exx_on<std::complex<double>>::HijExx(std::complex<double> *, LocalObject<std::complex<double>> &Phi){};
+template <> void Exx_on<double>::HijExx(double *Hij_glob, LocalObject<double> &Phi)
+{
+    // calculte the overlap <PreOrbital| current Phi>
+
+    double t1 = Rmg_G->get_NX_GRID(Phi.density);
+    t1 *= Rmg_G->get_NY_GRID(Phi.density);
+    t1 *= Rmg_G->get_NZ_GRID(Phi.density);
+
+    double vol = Rmg_L.get_omega() /t1;
+
+    int na = Phi.num_thispe ;
+    int ntot = Phi.num_tot ;
+
+    int pbasis = Phi.pbasis;
+
+    double zero = 0.0, one = 1.0;
+
+    double *mat_glob = (double *)GpuMallocManaged(ntot*ntot*sizeof(double));
+    double *mat_tem = (double *)GpuMallocManaged(ntot*ntot*sizeof(double));
+    RmgGemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
+               Phi.storage_proj, pbasis, zero, mat_tem, na);
+
+    mat_local_to_glob(mat_tem, mat_glob, Phi, Phi, 0, ntot, 0, ntot, true);
+
+    RmgGemm("N", "N", ntot, ntot, ntot, one, Xij_mat_Sinv, ntot,
+            mat_glob, ntot, zero, mat_tem, ntot);
+
+    RmgGemm("T", "N", ntot, ntot, ntot, ct.exx_fraction, mat_glob, ntot,
+            mat_tem, ntot, one, Hij_glob, ntot);
+
+
+    GpuFreeManaged(mat_tem);
+    GpuFreeManaged(mat_glob);
+
+}
+
+
+template <> void Exx_on<std::complex<double>>::OmegaSinv(std::complex<double> *, LocalObject<std::complex<double>> &Phi){};
+template <> void Exx_on<double>::OmegaSinv(double *Sij_reverse, LocalObject<double> &Phi)
+{
+    int na = Phi.num_thispe ;
+
+    int pbasis = Phi.pbasis;
+
+    double zero = 0.0, one = 1.0;
+
+    double *mat_local = (double *)GpuMallocManaged(na*na*sizeof(double));
+    double *phi_tem = (double *)GpuMallocManaged(na*pbasis*sizeof(double));
+
+    mat_global_to_local(Phi, Phi, Sij_reverse, mat_local);
+
+    RmgGemm("N", "N", pbasis, na, na, one, Omega_j, pbasis,
+               mat_local, na, zero, phi_tem, pbasis);
+
+    size_t size = na * pbasis * sizeof(double);
+    memcpy(Omega_j, phi_tem, size);
+
+    GpuFreeManaged(mat_local);
+    GpuFreeManaged(phi_tem);
+
+}
+
+
+template <> void Exx_on<std::complex<double>>::OmegaRes(std::complex<double> *, LocalObject<std::complex<double>> &Phi){};
+template <> void Exx_on<double>::OmegaRes(double *res, LocalObject<double> &Phi)
+{
+    double t1 = Rmg_G->get_NX_GRID(Phi.density);
+    t1 *= Rmg_G->get_NY_GRID(Phi.density);
+    t1 *= Rmg_G->get_NZ_GRID(Phi.density);
+
+    double vol = Rmg_L.get_omega() /t1;
+
+    int na = Phi.num_thispe ;
+    int ntot = Phi.num_tot ;
+
+    int pbasis = Phi.pbasis;
+
+    double zero = 0.0, one = 1.0;
+
+    double *mat_glob = (double *)GpuMallocManaged(ntot*ntot*sizeof(double));
+    double *mat_local = (double *)GpuMallocManaged(na*na*sizeof(double));
+    RmgGemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
+               Phi.storage_proj, pbasis, zero, mat_local, na);
+
+    mat_local_to_glob(mat_local, mat_glob, Phi, Phi, 0, ntot, 0, ntot, true);
+    mat_global_to_local(Phi, Phi, mat_glob, mat_local);
+
+    RmgGemm("N", "N", pbasis, na, na, ct.exx_fraction, Omega_j, pbasis,
+               mat_local, na, one, res, pbasis);
+
+    GpuFreeManaged(mat_local);
+    GpuFreeManaged(mat_glob);
+
 }

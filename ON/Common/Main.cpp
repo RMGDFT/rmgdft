@@ -66,6 +66,7 @@
 #include "LocalObject.h"
 #include "LdaU_on.h"
 #include "Exxbase.h"
+#include "Exx_on.h"
 
 #if QMCPACK_SUPPORT
     #include "WriteEshdf.h"
@@ -77,6 +78,7 @@ LocalObject<double> *H_LocalOrbital;
 LocalObject<double> *LocalProj;
 LocalObject<double> *LocalAtomicOrbital;
 LdaU_on *ldaU_on;
+Exx_on<double> *Exx_onscf;
 
 double *Kbpsi_mat;
 double *Kbpsi_mat_local;

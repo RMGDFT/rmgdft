@@ -27,6 +27,7 @@
 #include "Kbpsi.h"
 #include "LdaU_on.h"
 #include "GpuAlloc.h"
+#include "Exx_on.h"
 
 #define DELTA_V_MAX 1.0
 
@@ -36,7 +37,7 @@ void update_pot(double *, double *, double *, double *, double *, double *, doub
 
 void Scf_on_proj(STATE * states, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
-        double * vxc_old, double * vh_old, int *CONVERGENCE)
+        double * vxc_old, double * vh_old, int *CONVERGENCE, bool freeze_orbital)
 {
     int numst = ct.num_states;
     int idx, ione = 1;
@@ -133,6 +134,10 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     {
         print_matrix(Hij_glob, 6, num_tot);
         print_matrix(Sij_glob, 6, num_tot);
+    }
+    if(ct.xc_is_hybrid && Functional::is_exx_active())
+    {
+         Exx_onscf->HijExx(Hij_glob, *LocalOrbital);
     }
     mat_global_to_dist(Hij, pct.desca, Hij_glob);
     mat_global_to_dist(matB, pct.desca, Sij_glob);
@@ -251,7 +256,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     CheckConvergence(vxc, vh, vxc_old, vh_old, rho, rho_pre, CONVERGENCE);
 
     /* Update the orbitals */
-    if(ct.scf_steps < ct.freeze_orbital_step)
+    if(!freeze_orbital)
     {
         if(ct.scf_steps == ct.freeze_rho_steps ) 
             ct.restart_mix = 1;

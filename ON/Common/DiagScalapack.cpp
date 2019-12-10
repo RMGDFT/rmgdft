@@ -43,7 +43,6 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     int mb= pct.desca[4];
     int  mxllda2;
     mxllda2 = MXLLDA * MXLCOL;
-    double *work1 = new double[mxllda2]();
 
 
 
@@ -172,15 +171,24 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     pdgetrs("N", &numst, &numst, Sij_dist, &ione, &ione, pct.desca, ipiv, 
             uu_dis, &ione, &ione, pct.desca, &info);
 
-    delete [] ipiv;
-
-
     double t1 = 2.0;
     dscal(&mxllda2, &t1, uu_dis, &ione);
 
+    lwork = -1;
+    liwork = -1;
+    pdgetri(&numst, Sij_dist, &ione, &ione, pct.desca, ipiv, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
+    lwork = (int)lwork_tmp + 8;
+    liwork = (int)liwork_tmp + 8;
+    nwork = new double[lwork];
+    iwork = new int[liwork];
+    pdgetri(&numst, Sij_dist, &ione, &ione, pct.desca, ipiv, nwork, &lwork, iwork, &liwork, &info);
+
+
     delete(RT1b);
 
-    delete [] work1;
+    delete [] nwork;
+    delete [] iwork;
+    delete [] ipiv;
 
 
     delete(RT0);

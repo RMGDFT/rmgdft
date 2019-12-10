@@ -165,6 +165,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 ct.exx_delta = f1 - 0.5*(f2 + f0);
                 f0 = f2;
                 ct.FOCK = exxen + f2 - f1;
+std::cout << "Fock: " << ct.FOCK <<" " << f2 << " " << f1<< std::endl;
                 exxen = f2;
             }
 

@@ -71,8 +71,6 @@ private:
     Exxbase<T> *Exxb;
     //  Dephi_k = sum_l  K_kl * Phi_l 
     T *DePhi;
-    T *Omega_j;
-    T *Xij_mat;
 
 public:
     Exx_on (
@@ -84,11 +82,19 @@ public:
 
     ~Exx_on(void);
     void Omega(T *rho_matrix, bool use_fft_float);
-    void Xij(LocalObject<T> &Phi);
+    void Xij(T *Sij_inverse, LocalObject<T> &Phi);
     double Exxenergy(T *rho_matrix);
+    void HijExx(T *Hij_glob, LocalObject<T> &Phi);
+    void OmegaSinv(T *Sij_inverse, LocalObject<T> &Phi);
+    void OmegaRes(T *res, LocalObject<T> &Phi);
+    T *Xij_mat;
+    T *Xij_mat_Sinv;
+    T *Omega_j;
+    T *PreOrbital;
 
 };
 
 #endif
 
+extern Exx_on<double> *Exx_onscf;
 

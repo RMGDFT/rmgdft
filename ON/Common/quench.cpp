@@ -64,7 +64,6 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
     int outer_steps = 1;
 
-    Exx_on<double> *Exx_onscf;
     if(ct.xc_is_hybrid)
     {
         outer_steps = ct.max_exx_steps;
@@ -73,7 +72,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
     ct.FOCK = 0.0;
     ct.exx_delta = DBL_MAX;
-    double f0=0.0,f1,f2=0.0;
+    double f0=0.0,f1,f2=0.0, exxen = 0.0;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     {
 
@@ -98,13 +97,17 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
             step_time = my_crtc();
 
+            bool freeze_orbital = false;
+
+            if(ct.scf_steps >= ct.freeze_orbital_step) freeze_orbital = true;
+            if(ct.exx_steps >= ct.exx_freeze_orbital_step) freeze_orbital = true;
             /* Perform a single self-consistent step */
             if (!CONVERGENCE || ct.scf_steps <= ct.freeze_rho_steps)
             {
                 if(ct.LocalizedOrbitalLayout == LO_projection)
                 {
                     Scf_on_proj(states, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
-                            rhocore, vxc_old, vh_old, &CONVERGENCE);
+                            rhocore, vxc_old, vh_old, &CONVERGENCE, freeze_orbital);
                     //Scf_on(states, states1, vxc, vh, vnuc, rho, rho_oppo, rhoc, 
                     //        rhocore, vxc_old, vh_old, &CONVERGENCE);
                 }
@@ -138,12 +141,24 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         if(ct.xc_is_hybrid)
         {
             
+            size_t size = LocalOrbital->num_thispe * LocalOrbital->pbasis * sizeof(double);
+            memcpy(Exx_onscf->PreOrbital, LocalOrbital->storage_proj, size);
             F->start_exx_rmg();
 
-            double *rho_mat_global = new double[LocalOrbital->num_tot * LocalOrbital->num_tot];
+            double *rho_mat_global = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
             double *rho_mat_local = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_thispe * sizeof(double) + 8);
+            double *Sij_inverse = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
 
             mat_dist_to_global(mat_X, pct.desca, rho_mat_global);
+            mat_dist_to_global(matB, pct.desca, Sij_inverse);
+
+            
+            if(ct.nspin == 1) 
+            {
+                double half = 0.5; 
+                int ione = 1, nmat = LocalOrbital->num_tot * LocalOrbital->num_tot;
+                dscal(&nmat, &half, rho_mat_global, &ione);
+            }
 
             for(int i = 0; i < LocalOrbital->num_thispe; i++)
             {
@@ -152,27 +167,26 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
                     rho_mat_local[j * LocalOrbital->num_thispe + i] = rho_mat_global[j * LocalOrbital->num_tot + i_glob];
             }
 
-            f1 = Exx_onscf->Exxenergy(rho_mat_local);
+            //f1 = Exx_onscf->Exxenergy(rho_mat_global);
             Exx_onscf->Omega(rho_mat_local, (std::abs(ct.exx_delta) > ct.vexx_fft_threshold) );
-            Exx_onscf->Xij(*LocalOrbital);
-            f2 = Exx_onscf->Exxenergy(rho_mat_local);
-            ct.exx_delta = f1 - 0.5 * (f2+f0);
-            f0 = f2;
-            ct.FOCK = 2*f2 - f1;
+            Exx_onscf->Xij(Sij_inverse, *LocalOrbital);
+            Exx_onscf->OmegaSinv(Sij_inverse, *LocalOrbital);
+            f2 = Exx_onscf->Exxenergy(rho_mat_global);
+            ct.exx_delta = f2 - f0;
+            ct.FOCK = f2;
 
+            f0 = f2;
             exx_step_time = my_crtc () - exx_step_time;
             // Write out progress info
             double exx_elapsed_time = my_crtc() - exx_start_time;
             ExxProgressTag(exx_step_time, exx_elapsed_time);
 
-            delete [] rho_mat_global;
             GpuFreeManaged(rho_mat_local);
+            GpuFreeManaged(rho_mat_global);
+            GpuFreeManaged(Sij_inverse);
 
-            if(ct.exx_delta < 0.0)
-            {
-                printf("WARNING: negative ct.exx_delta = %e. This may indicate a problem.\n", ct.exx_delta);
-                fprintf(stdout, "WARNING: negative ct.exx_delta = %f. This may indicate a problem.\n", ct.exx_delta);
-            }
+            if(ct.exx_steps == 0)
+                UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);
 
             if(fabs(ct.exx_delta) < ct.exx_convergence_criterion)
             {

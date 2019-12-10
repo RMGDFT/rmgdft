@@ -682,6 +682,7 @@ public:
     int vxc_diag_nmax;
 
     int freeze_orbital_step;
+    int exx_freeze_orbital_step;
 
     /* override occupations */
     int override_occ;

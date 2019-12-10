@@ -64,6 +64,10 @@ void ReadBranchON(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
                      CHECK_AND_FIX, OPTIONAL, 
                      "freeze orbital after this step", 
                      "");
+    If.RegisterInputKey("exx_freeze_orbital_step", &lc.exx_freeze_orbital_step, 0, 100000, 5, 
+                     CHECK_AND_FIX, OPTIONAL, 
+                     "freeze orbital after this step", 
+                     "");
     If.RegisterInputKey("freeze_rho_steps", &lc.freeze_rho_steps, 0, 100, 0, 
                      CHECK_AND_FIX, OPTIONAL, 
                      "freeze rho which read from RMG for a number of steps",""); 

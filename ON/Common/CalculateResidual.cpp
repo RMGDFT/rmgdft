@@ -28,6 +28,7 @@
 #include "LdaU_on.h"
 #include "GpuAlloc.h"
 #include "RmgGemm.h"
+#include "Exx_on.h"
 
 
 //template void CalculateResidual(LocalObject<std::complex<double>> &Phi, LocalObject<std::complex<double_> &H_Phi,
@@ -60,9 +61,12 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
         for (int idx = 0; idx < pbasis; idx++)
         {
-            h_phi[idx] = a_phi[idx] * vtot_c[idx] - 0.5 * h_phi[idx];
+            h_phi[idx] = a_phi[idx] * vtot_c[idx] - 0.5 * h_phi[idx] ;
         }
+
     }
+    if(ct.xc_is_hybrid)
+        Exx_onscf->OmegaRes(H_Phi.storage_proj,  Phi);
 
 
     if(ct.num_ldaU_ions > 0 )
