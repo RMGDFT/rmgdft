@@ -118,13 +118,6 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
 
 
-    if (pct.gridpe == 0)
-    {
-
-        /* Write header to stdout */
-        write_header ();
-
-    }                           /* endif */
 
     MPI_Barrier(pct.img_comm);
 
@@ -271,6 +264,11 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     InitLocalObject (rhocore, dum_array, ATOMIC_RHOCORE, false);
 
 
+    if (pct.gridpe == 0)
+    {
+        /* Write header to stdout */
+        WriteHeader ();
+    }                           /* endif */
 
     delete(RT4);
 
