@@ -68,6 +68,7 @@ write_pdb.cpp
 xbsmovie.cpp
 write_zstates.cpp
 symmetry.cpp
+Symmetry.cpp
 lbfgs.cpp
 rmg_lbfgs.cpp
 test_overlap.cpp
