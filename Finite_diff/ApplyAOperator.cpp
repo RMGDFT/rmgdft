@@ -28,14 +28,11 @@
 #include "RmgParallelFft.h"
 #include "rmg_complex.h"
 
-// Applies Mehrstellen left hand side operator to a and returns result in b
-// The first set of functions takes the input and output grids and a char string that defines
-// the grid. More detailed parameters are then passed to the second set which may be accessed
-// directly if more control is required.
+//  Applies the A operator to a wavefunction. The A operator is defined as
 //
-// IN:    Input array a defined on coarse or fine grid
-// OUT:   Output array b defined on coarse or fine grid
-// IN:    grid = "Coarse" or "Fine" for grid type
+//  A(psi) = Laplacian(psi) + 2.0*i*[k dot Gradient(psi)]
+//
+//  For gamma this is just the laplacian.
 
 
 template double ApplyAOperator<float>(float *, float *, int, int, int, double, double, double, int, double *kvec);
