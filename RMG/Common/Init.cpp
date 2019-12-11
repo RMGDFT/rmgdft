@@ -355,7 +355,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(ct.is_use_symmetry)
     {
         RmgTimer *RT1 = new RmgTimer("2-Init: symmetry");
-        init_sym ();
+        Rmg_Symm = new Symmetry(*Rmg_G, Rmg_L, ct.FG_RATIO);
         delete(RT1);
     }
 

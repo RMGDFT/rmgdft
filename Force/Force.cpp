@@ -45,6 +45,7 @@
 #include "common_prototypes1.h"
 #include "rmg_error.h"
 #include "Kpoint.h"
+#include "Symmetry.h"
 
 
 
@@ -198,7 +199,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
     if (!ct.is_gamma) {
         RmgTimer *RT5 = new RmgTimer("2-Force: symmetrization");
-        symforce ();
+        Rmg_Symm->symforce ();
         delete RT5;
     }
     delete[] vtott;

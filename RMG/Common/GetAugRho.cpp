@@ -134,7 +134,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
         }                           /*end for ion */
 
         GlobalSums(augrho, pbasis, pct.kpsub_comm);
-        symmetrize_rho (augrho);
+        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object (augrho);
 
         delete [] sint;
         delete [] product;

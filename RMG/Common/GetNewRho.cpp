@@ -42,6 +42,7 @@
 #include "Prolong.h"
 #include "rmgthreads.h"
 #include "RmgThread.h"
+#include "Symmetry.h"
 
 
 
@@ -80,9 +81,8 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         delete [] augrho;
     }
 
-
     for(int is = 0; is < factor; is++)
-        symmetrize_rho (&rho[is*FP0_BASIS]);
+        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(&rho[is*FP0_BASIS]);
 
 
     /* Check total charge. */

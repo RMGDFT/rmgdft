@@ -22,7 +22,7 @@
 
 
 #ifndef RMG_Symmetry_H
-#define RMG_Symmetry 1
+#define RMG_Symmetry_H 1
 
 #include <vector>
 #include <cstdint>
@@ -105,5 +105,9 @@ public:
 
     template <typename T>
     void symmetrize_grid_object(T *object);
+
+    void symforce(void);
+    void symmetrize_tensor(double *mat_tensor);
+
 };
 #endif

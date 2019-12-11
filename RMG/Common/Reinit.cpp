@@ -127,7 +127,9 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     {
         RmgTimer *RT1 = new RmgTimer("2-ReInit: symmetry");
         int nsym_old = ct.nsym;
-        init_sym ();
+        //init_sym ();
+        delete Rmg_Symm;
+        Rmg_Symm = new Symmetry(*Rmg_G, Rmg_L, ct.FG_RATIO);
         if(ct.nsym != nsym_old)
         {
             if(pct.imgpe == 0) std::cout << "num_sym: old="<<nsym_old<<"  new="<< ct.nsym<<std::endl;

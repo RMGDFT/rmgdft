@@ -27,6 +27,9 @@
 #include "RmgException.h"
 #include "GlobalSums.h"
 #include "Symmetry.h"
+#include "rmg_error.h"
+
+Symmetry *Rmg_Symm;
 
 template void Symmetry::symmetrize_grid_object<double>(double *);
 template void Symmetry::symmetrize_grid_object<std::complex<double>>(std::complex<double> *);
@@ -185,6 +188,74 @@ Symmetry::Symmetry (
         init_symm_ijk(sym_index_x16, sym_index_y16, sym_index_z16);
     }
 
+    ct.nsym = nsym;
+    if(ct.verbose) printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
+    if(ct.verbose) printf("\n number of sym operation  after considering real space grid: %d",nsym);
+    assert(nsym >0);
+    if(nsym == 1) ct.is_use_symmetry = 0;
+
+    sym_atom.resize(ct.num_ions* nsym);
+
+    //  determine equivenlent ions after symmetry operation
+    double xtal[3];
+    double ndim[3];
+    ndim[0] = (double)nx_grid;
+    ndim[1] = (double)ny_grid;
+    ndim[2] = (double)nz_grid;
+    for(int isym = 0; isym < nsym; isym++)
+    {
+        for (int ion = 0; ion < ct.num_ions; ion++)
+        {
+
+            // xtal is the coordinates of atom operated by symmetry operatio isym.
+            for(int i = 0; i < 3; i++)
+            {
+                xtal[i] = s[isym *9 + i *3 + 0] * Atoms[ion].xtal[0]
+                    + s[isym *9 + i *3 + 1] * Atoms[ion].xtal[1]
+                    + s[isym *9 + i *3 + 2] * Atoms[ion].xtal[2] +ftau[isym *3 + i]/ndim[i];
+
+                if(xtal[i] + symprec  < 0.0) xtal[i]= xtal[i] + 1.0;
+                if(xtal[i] + symprec >= 1.0) xtal[i]= xtal[i] - 1.0;
+            }
+
+            bool find_atom = false;
+            bool cond_x = false;
+            bool cond_y = false;
+            bool cond_z = false;
+            int ionb;
+            for (ionb = 0; ionb < ct.num_ions; ionb++)
+            {
+                if(ityp[ion] == ityp[ionb])
+                {
+                    //                    r =  (xtal[0] - Atoms[ionb].xtal[0]) *(xtal[0] - Atoms[ionb].xtal[0])
+                    //                        +(xtal[1] - Atoms[ionb].xtal[1]) *(xtal[1] - Atoms[ionb].xtal[1])
+                    //                        +(xtal[2] - Atoms[ionb].xtal[2]) *(xtal[2] - Atoms[ionb].xtal[2]);
+                    double mod_x = (xtal[0] - Atoms[ionb].xtal[0]) *(xtal[0] - Atoms[ionb].xtal[0]);
+                    double mod_y = (xtal[1] - Atoms[ionb].xtal[1]) *(xtal[1] - Atoms[ionb].xtal[1]);
+                    double mod_z = (xtal[2] - Atoms[ionb].xtal[2]) *(xtal[2] - Atoms[ionb].xtal[2]);
+
+                    cond_x = fabs(mod_x - (int) mod_x) < symprec*10 || fabs(mod_x - (int)mod_x) > 1.0-symprec*10;
+                    cond_y = fabs(mod_y - (int) mod_y) < symprec*10 || fabs(mod_y - (int)mod_y) > 1.0-symprec*10;
+                    cond_z = fabs(mod_z - (int) mod_z) < symprec*10 || fabs(mod_z - (int)mod_z) > 1.0-symprec*10;
+                    if(cond_x && cond_y && cond_z)
+                    {
+                        sym_atom[isym * ct.num_ions + ion] = ionb;
+                        find_atom = true;
+                    }
+
+                }
+
+                if(find_atom) break;
+
+            }
+            if(!find_atom)
+            {
+                printf("\n Equivalent atom not found %d %d %d %d %e %e %e \n", ion, ionb,isym, nsym, xtal[0],xtal[1], xtal[2]);
+                rmg_error_handler(__FILE__, __LINE__, "Exiting.\n");
+            }
+        }
+    }
+
     delete [] sa;
     delete [] tau;
     delete [] ityp;
@@ -278,6 +349,104 @@ void Symmetry::symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x
 
     delete [] da;
 
+}
+
+void Symmetry::symforce ()
+{
+
+
+    double *force = new double[3* ct.num_ions];
+
+    for (int ion = 0; ion < ct.num_ions; ion++)
+    {
+        for (int ir = 0; ir < 3; ir++)
+        {
+            force[ion *3 + ir] = Atoms[ion].force[ct.fpt[0]][0] * L.b0[ir] +
+                Atoms[ion].force[ct.fpt[0]][1] * L.b1[ir] +
+                Atoms[ion].force[ct.fpt[0]][2] * L.b2[ir];
+        }                       /* end for ir */
+
+        Atoms[ion].force[ct.fpt[0]][0] = 0.0;
+        Atoms[ion].force[ct.fpt[0]][1] = 0.0;
+        Atoms[ion].force[ct.fpt[0]][2] = 0.0;
+    }
+    for (int ion = 0; ion < ct.num_ions; ion++)
+    {
+        for(int isy = 0; isy < nsym; isy++)
+        {
+            int ion1 = sym_atom[isy * ct.num_ions + ion];
+            for(int i = 0; i < 3; i++)
+                for(int j = 0; j < 3; j++)
+                    Atoms[ion1].force[ct.fpt[0]][i] += s[isy *9 + i* 3 + j] * force[ion*3 + j];
+        }
+
+    }
+    for (int ion = 0; ion < ct.num_ions; ion++)
+    {
+        for (int ir = 0; ir < 3; ir++)
+        {
+            force[ion *3 + ir] = Atoms[ion].force[ct.fpt[0]][0] * L.a0[ir] +
+                Atoms[ion].force[ct.fpt[0]][1] * L.a1[ir] +
+                Atoms[ion].force[ct.fpt[0]][2] * L.a2[ir];
+        }                       /* end for ir */
+    }
+
+    for (int ion = 0; ion < ct.num_ions; ion++)
+        for(int i = 0; i < 3; i++)
+            Atoms[ion].force[ct.fpt[0]][i] = force[3*ion + i] /nsym;
+
+    delete [] force;
+}                               /* end symforce */
+
+void Symmetry::symmetrize_tensor(double *mat_tensor)
+{
+    // symmetrize the stress tensor matrix
+    double work[9], b[9], a[9];
+    for (int i = 0; i < 3; i++)
+    {
+        b[0 * 3 + i] = L.b0[i];
+        b[1 * 3 + i] = L.b1[i];
+        b[2 * 3 + i] = L.b2[i];
+        a[0 * 3 + i] = L.a0[i];
+        a[1 * 3 + i] = L.a1[i];
+        a[2 * 3 + i] = L.a2[i];
+    }
+
+    for(int i = 0; i < 9; i++) work[i] = 0.0;
+
+    // transfer to crystal coordinate
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            for(int k = 0; k < 3; k++)
+                for(int l = 0; l < 3; l++)
+                {
+                    work[i*3 + j] += mat_tensor[k * 3 +l] *b[i*3 + k] * b[j*3 + l];
+                }
+
+    for(int i = 0; i < 9; i++) mat_tensor[i] = 0.0;
+    for(int isy = 0; isy < nsym; isy++)
+    {
+
+        for(int i = 0; i < 3; i++)
+            for(int j = 0; j < 3; j++)
+                for(int k = 0; k < 3; k++)
+                    for(int l = 0; l < 3; l++)
+                    {
+                        mat_tensor[i*3+j] += s[isy * 9 + i * 3 + k] * work[k * 3 + l] * s[isy*9 + j*3 +l];
+                    }
+    }
+
+    for(int i = 0; i < 9; i++) work[i] = 0.0;
+    //transfer bact to cartesian 
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            for(int k = 0; k < 3; k++)
+                for(int l = 0; l < 3; l++)
+                {
+                    work[i*3 + j] += mat_tensor[k * 3 +l] *a[k*3 + i] * a[l*3 + j];
+                }
+
+    for(int i = 0; i < 9; i++) mat_tensor[i] = work[i] / nsym;
 }
 
 

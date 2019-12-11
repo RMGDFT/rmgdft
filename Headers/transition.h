@@ -21,6 +21,7 @@
 #include "typedefs.h"
 #include "LaplacianCoeff.h"
 #include "PulayMixing.h"
+#include "Symmetry.h"
 
 
 extern PulayMixing *Pulay_rho;
@@ -30,6 +31,7 @@ extern BaseGrid *Rmg_halfgrid;
 extern TradeImages *Rmg_T;
 extern Lattice Rmg_L;
 extern MpiQueue *Rmg_Q;
+extern Symmetry *Rmg_Symm;
 
 extern Pw *coarse_pwaves, *fine_pwaves, *beta_pwaves, *ewald_pwaves, *half_pwaves;
 

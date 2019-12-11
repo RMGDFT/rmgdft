@@ -67,7 +67,7 @@ debug_write_rho_z.cpp
 write_pdb.cpp
 xbsmovie.cpp
 write_zstates.cpp
-symmetry.cpp
+#symmetry.cpp
 Symmetry.cpp
 lbfgs.cpp
 rmg_lbfgs.cpp
