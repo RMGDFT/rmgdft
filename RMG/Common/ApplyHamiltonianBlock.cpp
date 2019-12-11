@@ -67,7 +67,7 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
 
     // Apply Hamiltonian to state 0 to get the diagonal from the finite diff operator. Work is repeated
     // in the thread loop below but that's not much extra work.
-    double fd_diag = ApplyHamiltonian (kptr, kptr->Kstates[first_state].psi, &h_psi[first_state*pbasis_noncoll], vtot, vxc_psi, kptr->nv);
+    double fd_diag = ApplyHamiltonian<KpointType, KpointType> (kptr, kptr->Kstates[first_state].psi, &h_psi[first_state*pbasis_noncoll], vtot, vxc_psi, kptr->nv);
 
     for(int st1=first_state;st1 < first_state + istop;st1+=active_threads) {
         SCF_THREAD_CONTROL thread_control;
@@ -116,7 +116,7 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
                    st1, std::min(ct.non_local_block_size, num_states + first_state - st1), false);
             first_nls = 0;
         }
-        ApplyHamiltonian (kptr, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], vtot, vxc_psi, &kptr->nv[first_nls * pbasis_noncoll]);
+        ApplyHamiltonian<KpointType, KpointType> (kptr, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], vtot, vxc_psi, &kptr->nv[first_nls * pbasis_noncoll]);
         first_nls++;
     }
     

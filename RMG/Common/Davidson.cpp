@@ -135,7 +135,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     }
 
     RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
-    double fd_diag = ApplyHamiltonianBlock (this, 0, nstates, h_psi, vtot, vxc_psi); 
+    double fd_diag = ApplyHamiltonianBlock<KpointType> (this, 0, nstates, h_psi, vtot, vxc_psi); 
     delete RT1;
     KpointType *s_psi = this->ns;
     if(ct.norm_conserving_pp && ct.is_gamma) s_psi = this->orbital_storage;
@@ -251,7 +251,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
             LdaplusUxpsi(this, nbase, notconv, newsint);
         }
         RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
-        ApplyHamiltonianBlock (this, nbase, notconv, h_psi, vtot, vxc_psi);
+        ApplyHamiltonianBlock<KpointType> (this, nbase, notconv, h_psi, vtot, vxc_psi);
         delete RT1;
 
 

@@ -33,11 +33,12 @@
 #include "rmg_complex.h"
 
 
-template double ApplyHamiltonian<float>(Kpoint<float> *, float *, float *, double *, double *, float *);
-template double ApplyHamiltonian<std::complex<float> >(Kpoint<std::complex<float>> *, std::complex<float> *, 
-                             std::complex<float> *, double *, double *, std::complex<float> *);
-template double ApplyHamiltonian<double>(Kpoint<double> *, double *, double *, double *, double *, double *);
-template double ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
+template double ApplyHamiltonian<double,float>(Kpoint<double> *, float *, float *, double *, double *, double *);
+template double ApplyHamiltonian<double,double>(Kpoint<double> *, double *, double *, double *, double *, double *);
+
+template double ApplyHamiltonian<std::complex<double>,std::complex<float>>(Kpoint<std::complex<double>> *, std::complex<float> *, 
+                             std::complex<float> *, double *, double *, std::complex<double> *);
+template double ApplyHamiltonian<std::complex<double>,std::complex<double>>(Kpoint<std::complex<double>> *, std::complex<double> *, 
                              std::complex<double> *, double *, double *, std::complex<double> *);
 
 // Applies Hamiltonian operator to one orbital
@@ -50,8 +51,8 @@ template double ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<doub
 //  OUTPUT
 //    h_psi  = H|psi>
 //
-template <typename KpointType>
-double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi, KpointType * __restrict__ h_psi, double * __restrict__ vtot, double *vxc_psi, KpointType * __restrict__ nv)
+template <typename KpointType, typename CalcType>
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, CalcType * __restrict__ psi, CalcType * __restrict__ h_psi, double * __restrict__ vtot, double *vxc_psi, KpointType * __restrict__ nv)
 {
     int pbasis = kptr->pbasis;
     double fd_diag;
@@ -63,7 +64,7 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
     double gridhx = kptr->G->get_hxgrid(density);
     double gridhy = kptr->G->get_hygrid(density);
     double gridhz = kptr->G->get_hzgrid(density);
-    fd_diag = ApplyAOperator<KpointType>(psi, h_psi, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
+    fd_diag = ApplyAOperator<CalcType>(psi, h_psi, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
 
     // Factor of -0.5 and add in potential terms
     double tmag(0.5*kptr->kp.kmag);
@@ -74,7 +75,7 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
 
     if(ct.noncoll)
     {
-        ApplyAOperator<KpointType>(&psi[pbasis], &h_psi[pbasis], dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
+        ApplyAOperator<CalcType>(&psi[pbasis], &h_psi[pbasis], dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
         for(int idx = 0;idx < pbasis;idx++){ 
             h_psi[idx+pbasis] = -0.5 * h_psi[idx+pbasis] + nv[idx+pbasis] + (vtot[idx] + tmag)*psi[idx+pbasis];
         }
