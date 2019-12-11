@@ -86,17 +86,17 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, CalcType * __restrict__ psi, 
 
         // Needed for all of the template variations. Non-complex variants are never actually used but are needed to keep
         // the compiler from throwing errors.
-        typedef typename std::conditional_t< std::is_same<KpointType, double>::value, std::complex<double>,
-                         std::conditional_t< std::is_same<KpointType, std::complex<double>>::value, std::complex<double>,
-                         std::conditional_t< std::is_same<KpointType, std::complex<float>>::value, std::complex<float>, std::complex<float> >>> nctype_t;
+        typedef typename std::conditional_t< std::is_same<CalcType, double>::value, std::complex<double>,
+                         std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<double>,
+                         std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, std::complex<float> >>> nctype_t;
         nctype_t *a_psi_C = (nctype_t *)h_psi;
         nctype_t *psi_C = (nctype_t *)psi;
 
         for(int idx = 0; idx < pbasis; idx++)
         {
-            a_psi_C[idx] += psi_C[idx] * vxc_z[idx];
+            a_psi_C[idx] += psi_C[idx] * std::complex<double>(vxc_z[idx], 0.0);
             a_psi_C[idx] += psi_C[idx+pbasis] * std::complex<double>(vxc_x[idx], -vxc_y[idx]);
-            a_psi_C[idx + pbasis] += - psi_C[idx + pbasis] * vxc_z[idx];
+            a_psi_C[idx + pbasis] += - psi_C[idx + pbasis] * std::complex<double>(vxc_z[idx], 0.0);
             a_psi_C[idx + pbasis] += psi_C[idx] * std::complex<double>(vxc_x[idx], vxc_y[idx]);
         }
 

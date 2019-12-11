@@ -41,6 +41,7 @@
 #include "BaseThread.h"
 #include "MpiQueue.h"
 #include "GatherScatter.h"
+#include "Solvers.h"
 #include "rmg_complex.h"
 
 
@@ -60,7 +61,7 @@ double ComputeEig(int n, T *A, T *B, T *D)
 
     int length = 2;
     GlobalSums (s1, length, pct.coalesced_grid_comm);
-    return  s1[0] / (2.0 * s1[1]);
+    return  s1[0] / s1[1];
 
 }
 
@@ -176,48 +177,11 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     /* Smoothing cycles */
     for (int cycles = 0; cycles <= nits; cycles++)
     {
-        /* Apply left hand operators */
+        /* Apply Hamiltonian */
         {
-            RmgTimer RT1("Mg_eig: apply A operator");
-            diag = ApplyAOperator<CalcType>(tmp_psi_t, work2_t, dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order, kptr->kp.kvec);
+            RmgTimer RT1("Mg_eig: apply hamiltonian");
+            diag=ApplyHamiltonian<OrbitalType,CalcType> (kptr, tmp_psi_t, work1_t, vtot_psi, vxc_psi, nv);
         }
-
-
-        /* Generate 2 * V * psi and save in work1 */
-        CPP_genvpsi (tmp_psi_t, sg_twovpsi_t, vtot_psi, kptr->kp.kmag, dimx, dimy, dimz);
-        for(int ix=0;ix < pbasis;ix++) work1_t[ix] = sg_twovpsi_t[ix];
-
-        if(ct.noncoll)
-        {
-            RmgTimer *RT1 = new RmgTimer("Mg_eig: apply A operator");
-            diag = ApplyAOperator<CalcType>(&tmp_psi_t[pbasis], &work2_t[pbasis], dimx, dimy, dimz, hxgrid, hygrid, hzgrid, ct.kohn_sham_fd_order, kptr->kp.kvec);
-            delete RT1;
-
-            /* Generate 2 * V * psi */
-            CPP_genvpsi (&tmp_psi_t[pbasis], &work1_t[pbasis], vtot_psi, kptr->kp.kmag, dimx, dimy, dimz);
-            double *vxc_x = &vxc_psi[pbasis];
-            double *vxc_y = &vxc_psi[2*pbasis];
-            double *vxc_z = &vxc_psi[3*pbasis];
-
-            // Needed for all of the template variations. Non-complex variants are never actually used but are needed to keep
-            // the compiler from throwing errors.
-            typedef typename std::conditional_t< std::is_same<CalcType, double>::value, std::complex<double>,
-                             std::conditional_t< std::is_same<CalcType, std::complex<double>>::value, std::complex<double>,
-                             std::conditional_t< std::is_same<CalcType, std::complex<float>>::value, std::complex<float>, std::complex<float> >>> nctype_t;
-            nctype_t *a_psi_C = (nctype_t *)work1_t;
-            nctype_t *psi_C = (nctype_t *)tmp_psi_t;
-
-            for(int idx = 0; idx < pbasis; idx++) 
-            {
-                a_psi_C[idx] += 2.0 * psi_C[idx] * vxc_z[idx];
-                a_psi_C[idx] += 2.0 * psi_C[idx+pbasis] * std::complex<double>(vxc_x[idx], -vxc_y[idx]); 
-                a_psi_C[idx + pbasis] += -2.0 * psi_C[idx + pbasis] * vxc_z[idx];
-                a_psi_C[idx + pbasis] += 2.0 * psi_C[idx] * std::complex<double>(vxc_x[idx], vxc_y[idx]); 
-            } 
-        }
-
-        // Add in non-local which has already had B applied in AppNls and subtract off A operator (Laplacian)
-        for(int idx=0;idx < pbasis_noncoll;idx++) work1_t[idx] += 2.0 * nv_t[idx] - work2_t[idx];
 
         // Copy saved application to ns to res
         memcpy(res_t, res2_t, pbasis_noncoll * sizeof(CalcType));
@@ -266,8 +230,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         }
 
         // Get the residual
-        CalcType f1(TWO * eig);
-        for (int idx = 0; idx <pbasis_noncoll; idx++) res_t[idx] = f1 * res_t[idx] - work1_t[idx];
+        CalcType f1(2.0*eig);
+        for (int idx = 0; idx <pbasis_noncoll; idx++) res_t[idx] = f1 * res_t[idx] - 2.0*work1_t[idx];
 
         for(int is = 0; is < ct.noncoll_factor; is++)
         {
@@ -343,7 +307,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
             else
             {
 
-                t1 = TWO * eig;
+                t1 = eig;
                 double t5 = diag - Zfac;
                 t5 = -1.0 / t5;
                 double t4 = ct.eig_parm.gl_step * t5;
