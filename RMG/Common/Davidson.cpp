@@ -50,15 +50,15 @@
 
 
 // Davidson diagonalization solver part of Kpoint class
-template void Kpoint<double>::Davidson(double *vtot, int &notconv);
-template void Kpoint<std::complex<double>>::Davidson(double *vtot, int &notconv);
+template void Kpoint<double>::Davidson(double *vtot, double *vxc_psi, int &notconv);
+template void Kpoint<std::complex<double>>::Davidson(double *vtot, double *vxc_psi, int &notconv);
 
 
 #define DAVIDSON_DEBUG 0
 
 static double occupied_tol = 0.01;
 
-template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int &notconv)
+template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, double *vxc_psi, int &notconv)
 {
     RmgTimer RT0("6-Davidson"), *RT1;
 
@@ -105,12 +105,12 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
     bool *converged = new bool[ct.max_states]();
 
 #if GPU_ENABLED
-    KpointType *h_psi = (KpointType *)GpuMallocManaged(pbasis * ct.max_states * sizeof(KpointType));
+    KpointType *h_psi = (KpointType *)GpuMallocManaged(pbasis_noncoll * ct.max_states * sizeof(KpointType));
     KpointType *hr = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
     KpointType *sr = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
     KpointType *vr = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
 #else
-    KpointType *h_psi = new KpointType[pbasis * ct.max_states];
+    KpointType *h_psi = new KpointType[pbasis_noncoll * ct.max_states];
     KpointType *hr = new KpointType[ct.max_states * ct.max_states]();
     KpointType *sr = new KpointType[ct.max_states * ct.max_states]();
     KpointType *vr = new KpointType[ct.max_states * ct.max_states]();
@@ -124,7 +124,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
     // Apply Hamiltonian to current set of eigenvectors. At the current time
     // this->ns is also computed in ApplyHamiltonianBlock by AppNls and stored in this->ns
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
-    this->BetaProjector->project(this, this->newsint_local, 0, nstates, this->nl_weight);
+    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, this->nl_weight);
     delete RT1;
 
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -135,7 +135,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
     }
 
     RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
-    double fd_diag = ApplyHamiltonianBlock (this, 0, nstates, h_psi, vtot); 
+    double fd_diag = ApplyHamiltonianBlock (this, 0, nstates, h_psi, vtot, vxc_psi); 
     delete RT1;
     KpointType *s_psi = this->ns;
     if(ct.norm_conserving_pp && ct.is_gamma) s_psi = this->orbital_storage;
@@ -145,7 +145,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
 
     // Compute A matrix
     RT1 = new RmgTimer("6-Davidson: matrix setup/reduce");
-    RmgGemm(trans_a, trans_n, nbase, nbase, pbasis, alphavel, psi, pbasis, h_psi, pbasis, beta, hr, ct.max_states);
+    RmgGemm(trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, h_psi, pbasis_noncoll, beta, hr, ct.max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -156,7 +156,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
 #endif
 
     // Compute S matrix
-    RmgGemm (trans_a, trans_n, nbase, nbase, pbasis, alphavel, psi, pbasis, s_psi, pbasis, beta, sr, ct.max_states);
+    RmgGemm (trans_a, trans_n, nbase, nbase, pbasis_noncoll, alphavel, psi, pbasis_noncoll, s_psi, pbasis_noncoll, beta, sr, ct.max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
@@ -202,19 +202,19 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
 
         // expand the basis set with the residuals ( H - e*S )|psi>
         RT1 = new RmgTimer("6-Davidson: generate residuals");
-        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nbase*pbasis], pbasis);
+        RmgGemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, s_psi, pbasis_noncoll, vr, ct.max_states, beta, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
 
 #pragma omp parallel for
         for(int st1=0;st1 < notconv;st1++) {
-            for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis + idx];
+            for(int idx=0;idx < pbasis_noncoll;idx++) psi[(st1 + nbase)*pbasis_noncoll + idx] = -eigsw[nbase + st1] * psi[(st1 + nbase)*pbasis_noncoll + idx];
         }
 
-        RmgGemm(trans_n, trans_n, pbasis, notconv, nbase, alpha, h_psi, pbasis, vr, ct.max_states, alpha, &psi[nbase*pbasis], pbasis);
+        RmgGemm(trans_n, trans_n, pbasis_noncoll, notconv, nbase, alpha, h_psi, pbasis_noncoll, vr, ct.max_states, alpha, &psi[nbase*pbasis_noncoll], pbasis_noncoll);
         delete RT1;
 
         // Apply preconditioner
         RT1 = new RmgTimer("6-Davidson: precondition");
-        DavPreconditioner (this, &psi[nbase*pbasis], fd_diag, &eigsw[nbase], vtot, notconv, avg_potential);
+        DavPreconditioner (this, &psi[nbase*pbasis_noncoll], fd_diag, &eigsw[nbase], vtot, notconv, avg_potential);
         delete RT1;
 
         // Normalize correction vectors. Not an exact normalization for norm conserving pseudopotentials
@@ -224,7 +224,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
         double *norms = new double[notconv]();
 #pragma omp parallel for
         for(int st1=0;st1 < notconv;st1++) {
-            for(int idx=0;idx < pbasis;idx++) norms[st1] += vel * std::norm(psi[(st1 + nbase)*pbasis + idx]);
+            for(int idx=0;idx < pbasis_noncoll;idx++) norms[st1] += vel * std::norm(psi[(st1 + nbase)*pbasis_noncoll + idx]);
         }
 
         MPI_Allreduce(MPI_IN_PLACE, (double *)norms, notconv, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
@@ -232,7 +232,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
 #pragma omp parallel for
         for(int st1=0;st1 < notconv;st1++) {
              norms[st1] = 1.0 / sqrt(norms[st1]);
-             for(int idx=0;idx < pbasis;idx++) psi[(st1 + nbase)*pbasis + idx] *= norms[st1];
+             for(int idx=0;idx < pbasis_noncoll;idx++) psi[(st1 + nbase)*pbasis_noncoll + idx] *= norms[st1];
         }
         delete [] norms;
         delete RT1;
@@ -241,7 +241,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
         // Apply Hamiltonian to the new vectors
         RT1 = new RmgTimer("6-Davidson: Betaxpsi");
         newsint = this->newsint_local + nbase * this->BetaProjector->get_num_nonloc_ions() * ct.max_nl;
-        this->BetaProjector->project(this, newsint, nbase, notconv, nl_weight);
+        this->BetaProjector->project(this, newsint, nbase*ct.noncoll_factor, notconv*ct.noncoll_factor, nl_weight);
         delete RT1;
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -251,13 +251,13 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
             LdaplusUxpsi(this, nbase, notconv, newsint);
         }
         RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
-        ApplyHamiltonianBlock (this, nbase, notconv, h_psi, vtot);
+        ApplyHamiltonianBlock (this, nbase, notconv, h_psi, vtot, vxc_psi);
         delete RT1;
 
 
         // Update the reduced Hamiltonian and S matrices
         RT1 = new RmgTimer("6-Davidson: matrix setup/reduce");
-        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alphavel, psi, pbasis, &h_psi[nbase*pbasis], pbasis, beta, &hr[nbase*ct.max_states], ct.max_states);
+        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &h_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &hr[nbase*ct.max_states], ct.max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
         // Asynchronously reduce it
@@ -267,7 +267,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
         MPI_Allreduce(MPI_IN_PLACE, (double *)&hr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 #endif
 
-        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis, alphavel, psi, pbasis, &s_psi[nbase*pbasis], pbasis, beta, &sr[nbase*ct.max_states], ct.max_states);
+        RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &s_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &sr[nbase*ct.max_states], ct.max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
         // Wait for Aij request to finish
@@ -384,12 +384,12 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
             // Rotate orbitals
             RT1 = new RmgTimer("6-Davidson: rotate orbitals");
 #if GPU_ENABLED
-            KpointType *npsi = (KpointType *)GpuMallocManaged(nstates*pbasis*sizeof(KpointType));
+            KpointType *npsi = (KpointType *)GpuMallocManaged(nstates*pbasis_noncoll*sizeof(KpointType));
 #else
-            KpointType *npsi = new KpointType[nstates*pbasis];
+            KpointType *npsi = new KpointType[nstates*pbasis_noncoll];
 #endif
-            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, psi, pbasis, vr, ct.max_states, beta, npsi, pbasis);
-            for(int idx=0;idx < nstates*pbasis;idx++)psi[idx] = npsi[idx];
+            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, psi, pbasis_noncoll, vr, ct.max_states, beta, npsi, pbasis_noncoll);
+            for(int idx=0;idx < nstates*pbasis_noncoll;idx++)psi[idx] = npsi[idx];
 #if GPU_ENABLED
             GpuFreeManaged(npsi);
 #else
@@ -415,11 +415,11 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
 
             // refresh s_psi and h_psi
             RT1 = new RmgTimer("6-Davidson: refresh h_psi and s_psi");
-            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, s_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis);
-            if(!ct.norm_conserving_pp) for(int idx=0;idx < nstates*pbasis;idx++)s_psi[idx] = psi[nstates*pbasis + idx];
+            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, s_psi, pbasis_noncoll, vr, ct.max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
+            if(!ct.norm_conserving_pp) for(int idx=0;idx < nstates*pbasis_noncoll;idx++)s_psi[idx] = psi[nstates*pbasis_noncoll + idx];
 
-            RmgGemm(trans_n, trans_n, pbasis, nstates, nbase, alpha, h_psi, pbasis, vr, ct.max_states, beta, &psi[nstates*pbasis], pbasis);
-            for(int idx=0;idx < nstates*pbasis;idx++)h_psi[idx] = psi[nstates*pbasis + idx];
+            RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, h_psi, pbasis_noncoll, vr, ct.max_states, beta, &psi[nstates*pbasis_noncoll], pbasis_noncoll);
+            for(int idx=0;idx < nstates*pbasis_noncoll;idx++)h_psi[idx] = psi[nstates*pbasis_noncoll + idx];
             delete RT1;
 
 
@@ -462,7 +462,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, int 
     delete [] eigs;
 
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
-    this->BetaProjector->project(this, this->newsint_local, 0, nstates, this->nl_weight);
+    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, this->nl_weight);
     delete RT1;
 
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)

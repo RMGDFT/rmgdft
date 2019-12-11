@@ -94,7 +94,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
               thread_control.job = HYBRID_DAV_PRECONDITIONER;
               thread_control.vtot = nvtot;
               thread_control.p1 = (void *)kptr;
-              thread_control.p2 = (void *)&res[(st1 + ist) * kptr->pbasis];
+              thread_control.p2 = (void *)&res[(st1 + ist) * kptr->pbasis_noncoll];
               thread_control.avg_potential = avg_potential;
               thread_control.fd_diag = fd_diag;
               thread_control.eig = eigs[st1 + ist];
@@ -111,7 +111,7 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     // Process any remaining states in serial fashion
     for(int st1 = istop;st1 < notconv;st1++) {
-        DavPreconditionerOne (kptr, &res[st1 * kptr->pbasis], fd_diag, eigs[st1], nvtot, avg_potential);
+        DavPreconditionerOne (kptr, &res[st1 * kptr->pbasis_noncoll], fd_diag, eigs[st1], nvtot, avg_potential);
     }
 
     delete [] nvtot;
@@ -138,6 +138,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
     int pbasis = kptr->pbasis;
+    int pbasis_noncoll = kptr->pbasis;
 
     double hxgrid = G->get_hxgrid(1);
     double hygrid = G->get_hygrid(1);
@@ -149,35 +150,38 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
 
 
     // Apply preconditioner
-    double t1 = 0.0;
-    for(int idx = 0;idx <pbasis;idx++) t1 += std::real(res[idx]);
+    for(int is=0;is < ct.noncoll_factor;is++)
+    {
+        OrbitalType *nres = &res[is*pbasis];
+        double t1 = 0.0;
+        for(int idx = 0;idx <pbasis;idx++) t1 += std::real(nres[idx]);
 
-    GlobalSums (&t1, 1, pct.grid_comm);
-    t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
+        GlobalSums (&t1, 1, pct.grid_comm);
+        t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
 
-    // neutralize cell
-    for(int idx = 0;idx <pbasis;idx++) res[idx] -= OrbitalType(t1);
+        // neutralize cell
+        for(int idx = 0;idx <pbasis;idx++) nres[idx] -= OrbitalType(t1);
 
-    // Typedefs to map different data types to correct MG template.
-    typedef typename std::conditional_t< std::is_same<OrbitalType, double>::value, float,
-                     std::conditional_t< std::is_same<OrbitalType, std::complex<double>>::value, std::complex<float>,
-                     std::conditional_t< std::is_same<OrbitalType, std::complex<float>>::value, std::complex<float>, float> > > mgtype_t;
-    typedef typename std::conditional_t< std::is_same<OrbitalType, double>::value, double,
-                     std::conditional_t< std::is_same<OrbitalType, std::complex<double>>::value, std::complex<double>,
-                     std::conditional_t< std::is_same<OrbitalType, std::complex<float>>::value, std::complex<float>, float> > > convert_type_t;
+        // Typedefs to map different data types to correct MG template.
+        typedef typename std::conditional_t< std::is_same<OrbitalType, double>::value, float,
+                         std::conditional_t< std::is_same<OrbitalType, std::complex<double>>::value, std::complex<float>,
+                         std::conditional_t< std::is_same<OrbitalType, std::complex<float>>::value, std::complex<float>, float> > > mgtype_t;
+        typedef typename std::conditional_t< std::is_same<OrbitalType, double>::value, double,
+                         std::conditional_t< std::is_same<OrbitalType, std::complex<double>>::value, std::complex<double>,
+                         std::conditional_t< std::is_same<OrbitalType, std::complex<float>>::value, std::complex<float>, float> > > convert_type_t;
 
-    CPP_pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)res, dimx, dimy, dimz);
-    MG.mgrid_solv<mgtype_t>((mgtype_t *)work2_t, (mgtype_t *)work1_t, (mgtype_t *)work_t,
-                dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                0, levels, pre, post, 1,
-                //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
-                tstep, 1.0, 0.0, vtot,
-                G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-    CPP_pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)res, dimx, dimy, dimz);
+        CPP_pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)nres, dimx, dimy, dimz);
+        MG.mgrid_solv<mgtype_t>((mgtype_t *)work2_t, (mgtype_t *)work1_t, (mgtype_t *)work_t,
+                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
+                    0, levels, pre, post, 1,
+                    //tstep, 1.0*Zfac, -avg_potential, NULL,     // which one is best?
+                    tstep, 1.0, 0.0, vtot,
+                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+        CPP_pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)nres, dimx, dimy, dimz);
 
-    for(int idx = 0;idx <pbasis;idx++) res[idx] += eig * t1;;
-
+        for(int idx = 0;idx <pbasis;idx++) nres[idx] += eig * t1;;
+    }
     free(work_t);
 }

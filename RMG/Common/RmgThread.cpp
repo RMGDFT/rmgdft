@@ -234,11 +234,11 @@ ss.vtot, ss.vxc_psi,
             case HYBRID_APPLY_HAMILTONIAN:
                 if(ct.is_gamma) {
                     kptr_d = (Kpoint<double> *)ss.p3;
-                    ApplyHamiltonian<double> (kptr_d, (double *)ss.p1, (double *)ss.p2, ss.vtot, (double *)ss.nv);
+                    ApplyHamiltonian<double> (kptr_d, (double *)ss.p1, (double *)ss.p2, ss.vtot, ss.vxc_psi, (double *)ss.nv);
                 }
                 else {
                     kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
-                    ApplyHamiltonian<std::complex<double> > (kptr_c, (std::complex<double> *)ss.p1, (std::complex<double> *)ss.p2, ss.vtot, 
+                    ApplyHamiltonian<std::complex<double> > (kptr_c, (std::complex<double> *)ss.p1, (std::complex<double> *)ss.p2, ss.vtot, ss.vxc_psi, 
                                           (std::complex<double> *)ss.nv);
                 } 
                 break;

@@ -33,9 +33,9 @@
 #include "Kpoint.h"
 
 template <typename KpointType>
-double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, KpointType *nv);
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType *psi, KpointType *h_psi, double *vtot, double *vxc_psi, KpointType *nv);
 template <typename KpointType>
-double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot);
+double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot, double *vxc_psi);
 template <typename OrbitalType>
 void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, 
                         double fd_diag, double *eigs, double *vtot, int notconv, double avg_potential);

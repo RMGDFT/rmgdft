@@ -38,17 +38,18 @@
 #include "transition.h"
 
 
-template double ApplyHamiltonianBlock<double>(Kpoint<double> *, int, int, double *, double *);
-template double ApplyHamiltonianBlock<std::complex<double> >(Kpoint<std::complex<double>> *, int, int, std::complex<double> *, double *);
+template double ApplyHamiltonianBlock<double>(Kpoint<double> *, int, int, double *, double *, double *);
+template double ApplyHamiltonianBlock<std::complex<double> >(Kpoint<std::complex<double>> *, int, int, std::complex<double> *, double *, double *);
 
 
 // Threaded routine that applies Hamiltonian operator to a block of orbitals of size num_states
 // starting from first_state. 
 
 template <typename KpointType>
-double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot)
+double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot, double *vxc_psi)
 {
     int pbasis = kptr->pbasis;
+    int pbasis_noncoll = kptr->pbasis_noncoll;
     BaseThread *T = BaseThread::getBaseThread(0);
 
     int active_threads = ct.MG_THREADS_PER_NODE;
@@ -59,14 +60,14 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
     istop = istop * active_threads;
 
     // Apply the non-local operators to this block of orbitals
-    AppNls(kptr, kptr->newsint_local, kptr->Kstates[first_state].psi, kptr->nv, &kptr->ns[first_state*pbasis], kptr->Bns,
+    AppNls(kptr, kptr->newsint_local, kptr->Kstates[first_state].psi, kptr->nv, &kptr->ns[first_state*pbasis_noncoll], kptr->Bns,
            first_state, std::min(ct.non_local_block_size, num_states), false);
 
     int first_nls = 0;
 
     // Apply Hamiltonian to state 0 to get the diagonal from the finite diff operator. Work is repeated
     // in the thread loop below but that's not much extra work.
-    double fd_diag = ApplyHamiltonian (kptr, kptr->Kstates[first_state].psi, &h_psi[first_state*pbasis], vtot, kptr->nv);
+    double fd_diag = ApplyHamiltonian (kptr, kptr->Kstates[first_state].psi, &h_psi[first_state*pbasis_noncoll], vtot, vxc_psi, kptr->nv);
 
     for(int st1=first_state;st1 < first_state + istop;st1+=active_threads) {
         SCF_THREAD_CONTROL thread_control;
@@ -74,7 +75,7 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
         // Make sure the non-local operators are applied for the next block if needed
         int check = first_nls + active_threads;
         if(check > ct.non_local_block_size) {
-            AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
+            AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis_noncoll], kptr->Bns,
                    st1, std::min(ct.non_local_block_size, num_states + first_state - st1), false);
             first_nls = 0;
         }
@@ -82,13 +83,14 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
         for(int ist = 0;ist < active_threads;ist++) {
             thread_control.job = HYBRID_APPLY_HAMILTONIAN;
             thread_control.vtot = vtot;
+            thread_control.vxc_psi = vxc_psi;
             thread_control.istate = st1 + ist;
             thread_control.sp = &kptr->Kstates[st1 + ist];
             thread_control.p1 = (void *)kptr->Kstates[st1 + ist].psi;
-            thread_control.p2 = (void *)&h_psi[(st1 + ist) * pbasis];
+            thread_control.p2 = (void *)&h_psi[(st1 + ist) * pbasis_noncoll];
             thread_control.p3 = (void *)kptr;
-            thread_control.nv = (void *)&kptr->nv[(first_nls + ist) * pbasis];
-            thread_control.ns = (void *)&kptr->ns[(st1 + ist) * pbasis];  // ns is not blocked!
+            thread_control.nv = (void *)&kptr->nv[(first_nls + ist) * pbasis_noncoll];
+            thread_control.ns = (void *)&kptr->ns[(st1 + ist) * pbasis_noncoll];  // ns is not blocked!
             thread_control.basetag = kptr->Kstates[st1 + ist].istate;
             QueueThreadTask(ist, thread_control);
         }
@@ -110,11 +112,11 @@ double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num
         // Make sure the non-local operators are applied for the next state if needed
         int check = first_nls + 1;
         if(check > ct.non_local_block_size) {
-            AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis], kptr->Bns,
+            AppNls(kptr, kptr->newsint_local, kptr->Kstates[st1].psi, kptr->nv, &kptr->ns[st1 * pbasis_noncoll], kptr->Bns,
                    st1, std::min(ct.non_local_block_size, num_states + first_state - st1), false);
             first_nls = 0;
         }
-        ApplyHamiltonian (kptr, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis], vtot, &kptr->nv[first_nls * pbasis]);
+        ApplyHamiltonian (kptr, kptr->Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], vtot, vxc_psi, &kptr->nv[first_nls * pbasis_noncoll]);
         first_nls++;
     }
     

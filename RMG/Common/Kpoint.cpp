@@ -104,6 +104,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->T = newT;
     this->L = newL;
     this->pbasis = this->G->get_P0_BASIS(1);
+    this->pbasis_noncoll = ct.noncoll_factor * this->pbasis;
 
     this->init_states();
 

@@ -29,13 +29,16 @@
 #include "GlobalSums.h"
 #include "Subdiag.h"
 #include "Solvers.h"
-
 #include "transition.h"
+#include "rmg_complex.h"
 
 
-template double ApplyHamiltonian<double>(Kpoint<double> *, double *, double *, double *, double *);
+template double ApplyHamiltonian<float>(Kpoint<float> *, float *, float *, double *, double *, float *);
+template double ApplyHamiltonian<std::complex<float> >(Kpoint<std::complex<float>> *, std::complex<float> *, 
+                             std::complex<float> *, double *, double *, std::complex<float> *);
+template double ApplyHamiltonian<double>(Kpoint<double> *, double *, double *, double *, double *, double *);
 template double ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
-                             std::complex<double> *, double *, std::complex<double> *);
+                             std::complex<double> *, double *, double *, std::complex<double> *);
 
 // Applies Hamiltonian operator to one orbital
 //
@@ -48,7 +51,7 @@ template double ApplyHamiltonian<std::complex<double> >(Kpoint<std::complex<doub
 //    h_psi  = H|psi>
 //
 template <typename KpointType>
-double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi, KpointType * __restrict__ h_psi, double * __restrict__ vtot, KpointType * __restrict__ nv)
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi, KpointType * __restrict__ h_psi, double * __restrict__ vtot, double *vxc_psi, KpointType * __restrict__ nv)
 {
     int pbasis = kptr->pbasis;
     double fd_diag;
@@ -63,9 +66,39 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
     fd_diag = ApplyAOperator<KpointType>(psi, h_psi, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
 
     // Factor of -0.5 and add in potential terms
-    KpointType tmag(0.5*kptr->kp.kmag);
+    double tmag(0.5*kptr->kp.kmag);
     for(int idx = 0;idx < pbasis;idx++){ 
         h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + (vtot[idx] + tmag)*psi[idx];
+    }
+
+
+    if(ct.noncoll)
+    {
+        ApplyAOperator<KpointType>(&psi[pbasis], &h_psi[pbasis], dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
+        for(int idx = 0;idx < pbasis;idx++){ 
+            h_psi[idx+pbasis] = -0.5 * h_psi[idx+pbasis] + nv[idx+pbasis] + (vtot[idx] + tmag)*psi[idx+pbasis];
+        }
+
+        double *vxc_x = &vxc_psi[pbasis];
+        double *vxc_y = &vxc_psi[2*pbasis];
+        double *vxc_z = &vxc_psi[3*pbasis];
+
+        // Needed for all of the template variations. Non-complex variants are never actually used but are needed to keep
+        // the compiler from throwing errors.
+        typedef typename std::conditional_t< std::is_same<KpointType, double>::value, std::complex<double>,
+                         std::conditional_t< std::is_same<KpointType, std::complex<double>>::value, std::complex<double>,
+                         std::conditional_t< std::is_same<KpointType, std::complex<float>>::value, std::complex<float>, std::complex<float> >>> nctype_t;
+        nctype_t *a_psi_C = (nctype_t *)h_psi;
+        nctype_t *psi_C = (nctype_t *)psi;
+
+        for(int idx = 0; idx < pbasis; idx++)
+        {
+            a_psi_C[idx] += psi_C[idx] * vxc_z[idx];
+            a_psi_C[idx] += psi_C[idx+pbasis] * std::complex<double>(vxc_x[idx], -vxc_y[idx]);
+            a_psi_C[idx + pbasis] += - psi_C[idx + pbasis] * vxc_z[idx];
+            a_psi_C[idx + pbasis] += psi_C[idx] * std::complex<double>(vxc_x[idx], vxc_y[idx]);
+        }
+
     }
 
     return fd_diag;

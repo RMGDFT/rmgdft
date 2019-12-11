@@ -62,7 +62,7 @@ public:
     void reset_orbital_arrays(void);
     void Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver);
     void MgridSubspace (double *vtot_psi, double *vxc_psi);
-    void Davidson(double *vtot, int &notconv);
+    void Davidson(double *vtot, double *vxc_psi, int &notconv);
     void GetLocalizedWeight (void);
     void GetDelocalizedWeight (void);
     void GetDelocalizedOrbital (void);
@@ -148,6 +148,8 @@ public:
 
     // Number of points in orbital basis
     int pbasis;
+    int pbasis_noncoll;
+
 
     // Highest occupied orbital
     int highest_occupied;
