@@ -116,8 +116,8 @@ Symmetry::Symmetry (
     s.resize(9 * nsym_atom);
     ftau.resize(3 * nsym_atom);
 
-    ct.sym_trans = new double[3 * nsym_atom];
-    ct.sym_rotate = new int[9 * nsym_atom];
+    sym_trans.resize(3 * nsym_atom);
+    sym_rotate.resize(9 * nsym_atom);
 
     nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
 
@@ -139,16 +139,16 @@ Symmetry::Symmetry (
                 for(int j = 0; j < 3; j++)
                 {
                     s[nsym * 9 + i *3 + j] = sa[kpt * 9 + i *3 + j];
-                    ct.sym_rotate[nsym * 9 + i *3 + j] = sa[kpt * 9 + i *3 + j];
+                    sym_rotate[nsym * 9 + i *3 + j] = sa[kpt * 9 + i *3 + j];
                 }
 
             ftau[nsym*3 + 0] = translation[kpt*3 + 0] * nx_grid + symprec;
             ftau[nsym*3 + 1] = translation[kpt*3 + 1] * ny_grid + symprec;
             ftau[nsym*3 + 2] = translation[kpt*3 + 2] * nz_grid + symprec;
 
-            ct.sym_trans[nsym*3+0] = translation[kpt*3+0];
-            ct.sym_trans[nsym*3+1] = translation[kpt*3+1];
-            ct.sym_trans[nsym*3+2] = translation[kpt*3+2];
+            sym_trans[nsym*3+0] = translation[kpt*3+0];
+            sym_trans[nsym*3+1] = translation[kpt*3+1];
+            sym_trans[nsym*3+2] = translation[kpt*3+2];
 
             if(ct.verbose)
             {
@@ -452,6 +452,4 @@ void Symmetry::symmetrize_tensor(double *mat_tensor)
 
 Symmetry::~Symmetry(void)
 {
-    delete [] ct.sym_trans;
-    delete [] ct.sym_rotate;
 }

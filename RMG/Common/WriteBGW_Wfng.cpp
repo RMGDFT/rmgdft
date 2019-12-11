@@ -319,13 +319,13 @@ void WriteBGW_Wfng (int kpt, Kpoint<KpointType> * kptr)
         length = 9*ct.nsym * sizeof(int);
         write(fhand, &length, sizeof(int));
 
-        write(fhand, ct.sym_rotate, sizeof(int) * 9 * ct.nsym);
+        write(fhand, Rmg_Symm->sym_rotate.data(), sizeof(int) * 9 * ct.nsym);
 
         write(fhand, &length, sizeof(int));
         length = 3*ct.nsym * sizeof(double);
         write(fhand, &length, sizeof(int));
 
-        write(fhand, ct.sym_trans, sizeof(double) * 3 * ct.nsym);
+        write(fhand, Rmg_Symm->sym_trans.data(), sizeof(double) * 3 * ct.nsym);
 
         write(fhand, &length, sizeof(int));
         length = ct.num_ions *( 3 * sizeof(double) + sizeof(int));

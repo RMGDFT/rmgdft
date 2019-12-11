@@ -803,8 +803,7 @@ public:
 
     // Flag indicating whether or not to calculate dipole moment for the entrire cell. Default is off
     bool dipole_moment;
-    int nsym, *sym_rotate;
-    double *sym_trans;
+    int nsym;
 
     // In case system has numa whether or not to use it
     // (may not want to try setting it up internally since the user may want to
