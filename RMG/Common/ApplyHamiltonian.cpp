@@ -62,20 +62,10 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, KpointType * __restrict__ psi
     double gridhz = kptr->G->get_hzgrid(density);
     fd_diag = ApplyAOperator<KpointType>(psi, h_psi, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
 
-
     // Factor of -0.5 and add in potential terms
+    KpointType tmag(0.5*kptr->kp.kmag);
     for(int idx = 0;idx < pbasis;idx++){ 
-        h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + vtot[idx]*psi[idx];
-    }
-
-    // if complex orbitals use applied gradient to compute dot products
-    if(typeid(KpointType) == typeid(std::complex<double>)) {
-
-        std::complex<double> *thpsi = (std::complex<double> *)h_psi;
-        std::complex<double> *tpsi = (std::complex<double> *)psi;
-        std::complex<double> tmag(0.5*kptr->kp.kmag, 0.0);
-        for(int idx=0;idx < pbasis;idx++) thpsi[idx] = thpsi[idx]  + tmag * tpsi[idx];
-
+        h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + (vtot[idx] + tmag)*psi[idx];
     }
 
     return fd_diag;
