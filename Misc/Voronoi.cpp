@@ -90,4 +90,5 @@ void Voronoi::LocalCharge(double *rho, double *localrho)
     for(size_t ion = 0; ion < Atoms.size(); ion++) localrho[ion] = 0.0;
     for(int idx = 0; idx < pbasis; idx++) localrho[grid_to_atom[idx]] += vol * rho[idx];
     GlobalSums(localrho, (int)Atoms.size(), pct.grid_comm);  
+    GlobalSums(localrho, (int)Atoms.size(), pct.spin_comm);  
 }
