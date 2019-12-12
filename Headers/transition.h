@@ -40,10 +40,6 @@ void ProgressTag(double, double);
 void ExxProgressTag(double, double);
 double my_crtc (void);
 void get_vxc (double * rho, double * rho_oppo, double * rhocore, double * vxc);
-void symmetry (int *ibrav, int *s, int *nsym, int *irg, int *irt,
-               int *ftau, int *nat, double * tau, int *ityp, int *nks,
-               double * xk, double * wk, double * celldm, int *nr1, int *nr2,
-               int *nr3, double *a1, double *a2, double *a3, double *omega, int *wflag);
 void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 void  get_rho_oppo (double * rho, double * rho_oppo);
