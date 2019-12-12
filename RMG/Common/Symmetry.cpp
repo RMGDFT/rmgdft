@@ -351,7 +351,7 @@ void Symmetry::symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x
 
 }
 
-void Symmetry::symforce ()
+void Symmetry::symforce (void)
 {
 
 

@@ -193,7 +193,7 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
 
     for(int i = 0; i < 9; i++) stress_tensor_R[i] = std::real(stress_tensor_T[i])/L.omega;
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_R, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
-    if(!ct.is_gamma) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
+    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_R);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
@@ -620,7 +620,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     // img_comm includes kpoint, spin, and grid (num_owned_ions) sum
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nl, 9, MPI_DOUBLE, MPI_SUM, pct.img_comm);
 
-    if(!ct.is_gamma) Rmg_Symm->symmetrize_tensor(stress_tensor_nl);
+    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nl);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nl[i];
     if(ct.verbose) print_stress("Nonlocal term", stress_tensor_nl);
 
@@ -942,7 +942,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nlq, 9, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, stress_tensor_nlq, 9, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
-    if(!ct.is_gamma) Rmg_Symm->symmetrize_tensor(stress_tensor_nlq);
+    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor_nlq);
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_nlq[i];
     if(ct.verbose) print_stress("NonlocalQfunc term", stress_tensor_nlq);
     delete [] sum;

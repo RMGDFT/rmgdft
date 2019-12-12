@@ -199,9 +199,10 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
 
     if (!ct.is_gamma) {
         RmgTimer *RT5 = new RmgTimer("2-Force: symmetrization");
-        Rmg_Symm->symforce ();
+        if(Rmg_Symm) Rmg_Symm->symforce ();
         delete RT5;
     }
+
     delete[] vtott;
     delete[] force_sum;
     delete[] force_tmp;
