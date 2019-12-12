@@ -65,7 +65,7 @@ Voronoi::Voronoi()
             }
 
     localrho_atomic = new double[Atoms.size()];
-    double *atomic_rho = new double[pbasis];
+    double *atomic_rho = new double[ct.nspin*pbasis];
     InitLocalObject (atomic_rho, pct.localatomicrho, ATOMIC_RHO, false);
     LocalCharge(atomic_rho, localrho_atomic);
     delete [] atomic_rho;
