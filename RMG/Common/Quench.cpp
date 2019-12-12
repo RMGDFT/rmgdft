@@ -45,10 +45,11 @@
 #include "Exxbase.h"
 #include "../Headers/macros.h"
 #include "Stress.h"
+#include "Voronoi.h"
 
 // Local function prototypes
 void PlotConvergence(std::vector<double> &RMSdV, bool CONVERGED);
-void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& ControlMap);
+void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& ControlMap, Voronoi &);
 
 
 // Instantiate gamma and non-gamma versions
@@ -75,6 +76,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     double step_time;
     double exx_step_time;
 
+    RmgTimer *RT = new RmgTimer("Init Voronoi");
+    Voronoi *Voronoi_charge = new Voronoi();
+    delete RT;
     int outer_steps = 1;
     std::vector<Exxbase<OrbitalType> *> Exx_scf;
     Exx_scf.resize(ct.num_kpts_pe);
@@ -136,7 +140,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             }
 
             /*Perform charge analysis if requested*/
-            ChargeAnalysis(rho, Kptr[0]->ControlMap);
+            ChargeAnalysis(rho, Kptr[0]->ControlMap, *Voronoi_charge);
 
 #if PLPLOT_LIBS
             // Generate convergence plots
@@ -165,7 +169,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 ct.exx_delta = f1 - 0.5*(f2 + f0);
                 f0 = f2;
                 ct.FOCK = exxen + f2 - f1;
-std::cout << "Fock: " << ct.FOCK <<" " << f2 << " " << f1<< std::endl;
                 exxen = f2;
             }
 
@@ -313,7 +316,12 @@ std::cout << "Fock: " << ct.FOCK <<" " << f2 << " " << f1<< std::endl;
     if (Verify("charge_analysis","Voronoi", Kptr[0]->ControlMap))
     {
         double timex = my_crtc ();
-        Vdd(rho);
+        double *localrho = new double[Atoms.size()];
+        Voronoi_charge->LocalCharge(rho, localrho);
+        for(size_t ion = 0; ion < Atoms.size(); ion++)
+            Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho[ion];
+        delete [] localrho;
+
         rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
     }
 
@@ -369,7 +377,7 @@ void PlotConvergence(std::vector<double> &RMSdV, bool CONVERGED)
 #endif
 
 
-void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& ControlMap)
+void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& ControlMap, Voronoi &Vdd)
 {
     /*Perform charge analysis if requested*/
     if (ct.charge_analysis_period)
@@ -379,7 +387,11 @@ void ChargeAnalysis(double *rho, std::unordered_map<std::string, InputKey *>& Co
             if (Verify("charge_analysis","Voronoi", ControlMap))
             {
                 double timex = my_crtc ();
-                Vdd(rho);
+                double *localrho = new double[Atoms.size()];
+                Vdd.LocalCharge(rho, localrho);
+                for(size_t ion = 0; ion < Atoms.size(); ion++)
+                    Atoms[ion].partial_charge = Vdd.localrho_atomic[ion] - localrho[ion];
+                delete [] localrho;
                 WriteChargeAnalysis();
                 rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);
             }

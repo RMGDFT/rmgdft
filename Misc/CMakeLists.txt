@@ -3,6 +3,7 @@ PROPERTIES
 COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 
 add_library (Misc
+Voronoi.cpp
 WriteHeader.cpp
 ProgressTag.cpp
 PulayMixing.cpp
@@ -80,7 +81,6 @@ get_opposite_occupancies.cpp
 get_opposite_eigvals.cpp
 remap.cpp
 get_tf_rho.cpp
-Vdd.cpp
 WriteChargeAnalysis.cpp
 get_dipole.cpp
 get_rho_oppo.cpp

@@ -70,7 +70,7 @@ double Fill_on (STATE *states, double width, double nel, double mix, int num_st,
 
     int iter, st, st1, idx, nks, nspin = (ct.spin_flag + 1);
     STATE *sp;
-    double mu, dmu, mu1, mu2, f, fmid;
+    double mu = 0.0, dmu, mu1, mu2, f, fmid;
 
     double *occ;
 
@@ -112,7 +112,15 @@ double Fill_on (STATE *states, double width, double nel, double mix, int num_st,
         return(mu);
     }
 
-    if(occ_flag == OCC_NONE ) return 0.0;
+    if(occ_flag == OCC_NONE ) 
+    {
+        for (st1 = 0; st1 < ct.num_states; st1++)
+        {
+            sp = &ct.kp[0].kstate[st1];
+            if(sp->occupation[0] > 0.0) mu = sp->eig[0];
+        }
+        return mu;
+    }
 
     occ = new double[nspin * nks];
 

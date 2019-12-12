@@ -218,9 +218,15 @@ void Vdd(double * rho)
 			min_ion = xtal_index[ionct];
 		    }
 
+            
+if(ix == 1 && iy == 0 && iz ==9) printf("\n bbb %f %d %d ", std::sqrt(dist), ionct, xtal_index[ionct]);
+
+
 
 		}
 
+       
+//if(min_ion == 0) printf("\n %d %d %d aaaa", ix, iy, iz);
 
 		/*Check if index is already recorded*/
 		for (i = 0; i < rel_index_size; i++) 
