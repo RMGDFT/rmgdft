@@ -32,12 +32,12 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-template void AssignWeight<double> (Kpoint<double> *, SPECIES *, int, fftw_complex *, double *, double *);
-template void AssignWeight<std::complex<double> >(Kpoint<std::complex<double>> *, SPECIES *, int, fftw_complex *, std::complex<double> *, std::complex<double> *);
+template void AssignWeight<double> (Kpoint<double> *, SPECIES *, int, fftw_complex *, double *);
+template void AssignWeight<std::complex<double> >(Kpoint<std::complex<double>> *, SPECIES *, int, fftw_complex *, std::complex<double> *);
 
 
 template <typename KpointType>
-void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Bweight, KpointType *Nlweight)
+void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Nlweight)
 {
 
     if((kptr->BetaProjector->idxptrlen[ion] == 0) && (ct.localize_projectors==true)) return;    // No points in the local region map to the processors space
@@ -86,13 +86,10 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
     KpointType ZERO_t(0.0);
 
     std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
-    std::complex<double> *Bweight_C = (std::complex<double> *)Bweight;
 
     double *Nlweight_R = (double *)Nlweight;
-    double *Bweight_R = (double *)Bweight;
 
 
-    for(int idx = 0; idx < pbasis; idx++) Bweight[idx] = ZERO_t;
     for(int idx = 0; idx < pbasis; idx++) Nlweight[idx] = ZERO_t;
 
     std::complex<double> *nbeptr = (std::complex<double> *)beptr;
@@ -178,16 +175,12 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
                 int idx2 = (igx-ilow) * dimy * dimz +(igy - jlow) * dimz + igz-klow;
                 if(ct.is_gamma) {
                     Nlweight_R[idx2] = std::real(nbeptr[idx1]);
-                    Bweight_R[idx2] = Btem_array_R[idx1];
                     Nlweight_R[idx2] *= w1*w2*w3;
-                    Bweight_R[idx2] *= w1*w2*w3;
 
                 }
                 else {
                     Nlweight_C[idx2] = nbeptr[idx1];
-                    Bweight_C[idx2] = Btem_array_C[idx1];
                     Nlweight_C[idx2] *= w1*w2*w3;
-                    Bweight_C[idx2] *= w1*w2*w3;
                 }
 
             }

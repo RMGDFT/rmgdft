@@ -128,7 +128,6 @@ public:
 
     // Pointers to weight and Bweight
     KpointType *nl_weight;
-    KpointType *nl_Bweight;
     size_t nl_weight_size;
 
     //Pointer to vexx

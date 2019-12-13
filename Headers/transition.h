@@ -106,7 +106,7 @@ template <typename KpointType>
 void ReinitIonicPotentials (Kpoint<KpointType> **kptr, double * vnuc, double * rhocore, double * rhoc);
 
 template <typename KpointType>
-void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Bweight, KpointType *Nlweight);
+void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex * beptr, KpointType *Nlweight);
 template <typename KpointType>
 void Betaxpsi (Kpoint<KpointType> *kptr, int, int, KpointType *);
 template <typename KpointType>

@@ -41,7 +41,7 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 {
 
     int max_size;
-    KpointType *Bweight, *Nlweight;
+    KpointType *Nlweight;
     std::complex<double> I_t(0.0, 1.0);
 
     int num_nonloc_ions = BetaProjector->get_num_nonloc_ions();
@@ -86,7 +86,6 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
         /* Get species type */
         sp = &Species[iptr->species];
 
-        Bweight = &nl_Bweight[ion1 * ct.max_nl * P0_BASIS];
         Nlweight = &nl_weight[ion1 * ct.max_nl * P0_BASIS];
 
         int nlxdim = P->get_nldim(iptr->species);
@@ -123,12 +122,11 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
             sp->prj_pwave->FftInverse(gbptr, beptr);
 
             /*This takes and stores the part of beta that is useful for this PE */
-            AssignWeight (this, sp, ion, reinterpret_cast<fftw_complex*>(beptr), Bweight, Nlweight);
+            AssignWeight (this, sp, ion, reinterpret_cast<fftw_complex*>(beptr), Nlweight);
 
 
             /*Advance the temp pointers */
             fptr += coarse_size;
-            Bweight += P0_BASIS;
             Nlweight += P0_BASIS;
 
         }                   /*end for(ip = 0;ip < sp->num_projectors;ip++) */

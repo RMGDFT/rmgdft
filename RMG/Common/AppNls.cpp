@@ -216,8 +216,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 ONE_t, M_dnm,  dim_dnm, sint_compack, dim_dnm,
                 ZERO_t,  nwork, dim_dnm);
 
+// This was bweight
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
-                ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, num_tot_proj,
+                ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
                 ZERO_t,  nv, P0_BASIS);
 
 #if GPU_ENABLED
@@ -235,8 +236,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 ONE_t,  ns, P0_BASIS);
 
         if(need_bns) {
+// This was bweight
             RmgGemm (transa, transa, P0_BASIS, num_states, num_tot_proj, 
-                    ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, num_tot_proj,
+                    ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
                     ZERO_t,  Bns, P0_BASIS);
         }
 
@@ -260,8 +262,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             }
         }
 
+// This was bweight
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
-                ONE_t, kpoint->nl_Bweight,  P0_BASIS, nwork, num_tot_proj,
+                ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
                 ZERO_t,  nv, P0_BASIS);
 
 #if GPU_ENABLED

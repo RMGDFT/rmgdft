@@ -91,14 +91,12 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->kidx = kindex;
     this->nl_weight = NULL;
     this->orbital_weight = NULL;
-    this->nl_Bweight = NULL;
     this->BetaProjector = NULL;
     this->OrbitalProjector = NULL;
     this->ldaU = NULL;
     this->newsint_local = NULL;
     this->orbitalsint_local = NULL;
     this->nvme_weight_fd = -1;
-    this->nvme_Bweight_fd = -1;
     this->nvme_ldaU_fd = -1;
     this->G = newG;
     this->T = newT;
@@ -1068,15 +1066,10 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     if(ct.nvme_weights)
     {
         if(nvme_weight_fd != -1) close(nvme_weight_fd);
-        if(nvme_Bweight_fd != -1) close(nvme_Bweight_fd);
 
         nvme_weight_path = ct.nvme_weights_path + std::string("rmg_weight") + std::to_string(pct.spinpe) + "_" +
             std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
         nvme_weight_fd = FileOpenAndCreate(nvme_weight_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-
-        nvme_Bweight_path = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-        nvme_Bweight_fd = FileOpenAndCreate(nvme_Bweight_path, O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
     }
 
     this->nl_weight_size = (size_t)this->BetaProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
@@ -1106,20 +1099,16 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
         cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
     }
     for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
-    this->nl_Bweight = this->nl_weight;
-
 #else
     if(ct.nvme_weights)
     {
         this->nl_weight = (KpointType *)CreateMmapArray(nvme_weight_fd, this->nl_weight_size*sizeof(KpointType));
         if(!this->nl_weight) rmg_error_handler(__FILE__,__LINE__,"Error: CreateMmapArray failed for weights. \n");
         madvise(this->nl_weight, stress_factor * this->nl_weight_size*sizeof(KpointType), MADV_RANDOM);
-        this->nl_Bweight = this->nl_weight;
     }
     else
     {
         this->nl_weight = new KpointType[stress_factor * this->nl_weight_size]();
-        this->nl_Bweight = this->nl_weight;
     }
 #endif
 
@@ -1305,18 +1294,6 @@ template <class KpointType> void Kpoint<KpointType>::DeleteNvmeArrays(void)
             unlink(weight_path.c_str());
         }
         nvme_weight_fd = -1;
-    }
-
-    if(nvme_Bweight_fd > 0)
-    {
-        std::string weight_path = ct.nvme_weights_path + std::string("rmg_Bweight") + std::to_string(pct.spinpe) + "_" +
-            std::to_string(pct.kstart + this->kidx) + "_" + std::to_string(pct.gridpe);
-
-        if(boost::filesystem::exists(weight_path.c_str()))
-        {
-            unlink(weight_path.c_str());
-        }
-        nvme_Bweight_fd = -1;
     }
 
     if(nvme_ldaU_fd > 0)

@@ -109,7 +109,6 @@ public:
     int nvme_orbital_fd;
     int nvme_work_fd;
     int nvme_weight_fd;
-    int nvme_Bweight_fd;
     std::string nvme_weights_path;
     std::string nvme_work_path;
     std::string nvme_orbitals_path;
