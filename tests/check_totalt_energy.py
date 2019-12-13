@@ -13,7 +13,7 @@ if __name__ == '__main__':
       Eref = float(line.split("=")[1].split()[0])
 
   delta = Etot - Eref
-  print "Refernece TOTAL ENERGY: %15.8f"%Eref
+  print "Reference TOTAL ENERGY: %15.8f"%Eref
   print "Current   TOTAL ENERGY: %15.8f"%Etot
   print "deviation             : %15.8f"%(Etot-Eref)
 
