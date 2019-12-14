@@ -107,7 +107,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
     cudaMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
-    cudaMemPrefetchAsync ( b_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
     cudaDeviceSynchronize();
 #endif
 
