@@ -256,7 +256,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         double vtxc, etxc;
         RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
         Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-        F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.spin_flag );
+        F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin );
         delete F;
         delete RT1;
 
