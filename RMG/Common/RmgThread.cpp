@@ -216,21 +216,6 @@ ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcy
                 break;
             case HYBRID_SKIP:
                 break;
-            case HYBRID_SUBDIAG_APP_AB:
-                if(ct.is_gamma) {
-                    kptr_d = (Kpoint<double> *)ss.p3;
-                    State<double> *spd = (State<double> *)ss.sp;
-                    ApplyOperators<double> (kptr_d, spd->istate, (double *)ss.p1, (double *)ss.p2, ss.vtot, ss.vxc_psi, 
-                                          (double *)ss.nv, (double *)ss.Bns);
-                }
-                else {
-                    kptr_c = (Kpoint<std::complex<double>> *)ss.p3;
-                    State<std::complex<double> > *spc = (State<std::complex<double> > *)ss.sp;
-                    ApplyOperators<std::complex<double> > (kptr_c, spc->istate, (std::complex<double> *)ss.p1, (std::complex<double> *)ss.p2,
-ss.vtot, ss.vxc_psi,
-                                                          (std::complex<double> *)ss.nv, (std::complex<double> *)ss.Bns);
-                } 
-                break;
             case HYBRID_APPLY_HAMILTONIAN:
                 if(ct.is_gamma) {
                     kptr_d = (Kpoint<double> *)ss.p3;
