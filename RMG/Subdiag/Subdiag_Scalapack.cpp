@@ -57,7 +57,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 #else
 
     KpointType ZERO_t(0.0);
-    KpointType ONE_t(1.0);
 
     //static char *trans_t = "t";
     static char *trans_n = "n";
@@ -91,9 +90,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     static KpointType *distAij;
     static KpointType *distBij;
     static KpointType *distSij;
-    static KpointType *distCij;
-    KpointType *Cij = new KpointType[num_states * num_states]();
-
 
     RmgTimer *RT1;
 
@@ -108,7 +104,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
         if(dist_length != saved_dist_length)
         {
-            if(distCij) {MPI_Free_mem(distCij);distCij = NULL;}
             if(distSij) {MPI_Free_mem(distSij);distSij = NULL;}
             if(distBij) {MPI_Free_mem(distBij);distBij = NULL;}
             if(distAij) {MPI_Free_mem(distAij);distAij = NULL;}
@@ -117,8 +112,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             int retval1 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distAij);
             int retval2 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distBij);
             int retval3 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distSij);
-            int retval4 = MPI_Alloc_mem(dist_length * sizeof(KpointType) , MPI_INFO_NULL, &distCij);
-            if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS) || (retval4 != MPI_SUCCESS)) {
+            if((retval1 != MPI_SUCCESS) || (retval2 != MPI_SUCCESS) || (retval3 != MPI_SUCCESS)) {
                 rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in Subdiag_Scalapack");
             }
             saved_dist_length = dist_length;
@@ -131,70 +125,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
         MainSp->CopySquareMatrixToDistArray(Bij, distBij, num_states, desca);
         delete(RT1);
 
-        // Create unitary matrix
-        for (int idx = 0; idx < num_states; idx++) {
-            Cij[idx * num_states + idx] = ONE_t;
-        }
-
-        // distribute unitary matrix
-        MainSp->CopySquareMatrixToDistArray(Cij, distCij, num_states, desca);
-
-        if(!ct.norm_conserving_pp) {
-
-            RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-            // Get matrix that is inverse to B
-            {
-                int info=0;
-
-                int ipiv_size = MainSp->GetIpivSize();
-                int *ipiv = new int[ipiv_size]();
-
-                /*Inverse of B should be in Cij */
-                MainSp->Pgesv (&num_states, &num_states, distBij, &ione, &ione, desca, ipiv, distCij, &ione,
-                            &ione, desca, &info);
-
-                if (info)
-                {
-                    rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
-                    rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
-                }
-
-                delete [] ipiv;
-            }
-            delete(RT1);
-
-
-            RT1 = new RmgTimer("4-Diagonalization: matrix setup");
-            /*Multiply inverse of B and and A */
-            {
-                char *trans = "n";
-                KpointType alpha(1.0);
-                KpointType beta(0.0);
-
-                /*B^-1*A */
-                MainSp->Pgemm(trans, trans, &num_states, &num_states, &num_states, &alpha,
-                            distCij, &ione, &ione, desca, distAij, &ione, 
-                            &ione, desca, &beta, distBij, &ione, &ione, desca);
-
-                /*Multiply the result with Sij, result is in distCij */
-                MainSp->Pgemm (trans, trans, &num_states, &num_states, &num_states, &alpha,
-                            distSij, &ione, &ione, desca, distBij, &ione, 
-                            &ione, desca, &beta, distCij, &ione, &ione, desca);
-
-                // Copy result into Bij
-                for(int idx=0;idx < dist_length;idx++) distBij[idx] = distCij[idx];
-
-            }
-            delete(RT1);
-
-        }
-        else {
-
-            // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into Cij
-            // to pass to eigensolver
-            for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
-
-        }
+        // Copy Aij into Bij to pass to eigensolver
+        for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
 
     }
 
@@ -335,8 +267,6 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
     }
 
-
-    delete [] Cij;
 
 //    if(use_folded) return trans_t;   // Currently using pdsyngst in lower level routine. If
 //    switch to FOLDED_GSE must uncomment

@@ -84,45 +84,8 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 #endif
 
 
-    #if GPU_ENABLED
-        KpointType ZERO_t(0.0);
-        KpointType *Cij = (KpointType *)GpuMallocManaged(num_states * num_states * sizeof(KpointType));
-        for(int ix = 0;ix < num_states * num_states;ix++) Cij[ix] = ZERO_t;
-    #else
-        KpointType *Cij = new KpointType[num_states * num_states]();
-    #endif
-
-        if(!ct.norm_conserving_pp) {
-
-            // Inverse of eigvectors should be in Cij
-            RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-            InvertMatrix(Bij, eigvectors, num_states);
-            delete(RT1);
-
-            /*Multiply inverse of B and and A */
-            /*B^-1*A */
-            KpointType alpha(1.0);
-            KpointType beta(0.0);;
-
-            RmgTimer *RT2 = new RmgTimer("4-Diagonalization: matrix setup");
-            RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                            eigvectors, num_states, Aij, num_states, beta, Bij,
-                            num_states);
-
-            /*Multiply the result with Sij, result is in Cij */
-            RmgGemm ("n", "n", num_states, num_states, num_states, alpha,
-                            Sij, num_states, Bij, num_states, beta, Cij,
-                            num_states);
-            delete(RT2);
-
-        }
-        else {
-
-            // norm-conserving and central FD
-            for(int ix=0;ix < num_states*num_states;ix++) Cij[ix] = Aij[ix];
-
-        }
-
+        // Copy Aij into eigvectors
+        for(int ix=0;ix < num_states*num_states;ix++) eigvectors[ix] = Aij[ix];
 
         RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
         int lwork = 2 * num_states * num_states + 6 * num_states + 2;
@@ -134,22 +97,19 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         if(ct.is_gamma) {
 
             if(use_folded) {
-                FoldedSpectrum<double> (kptr->G, num_states, (double *)Cij, num_states, (double *)Sij, num_states, (double *)Aij, (double *)Bij, eigs, work2, lwork, iwork, liwork, SUBDIAG_LAPACK);
-                for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Cij[idx]; 
+                FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, (double *)Aij, (double *)Bij, eigs, work2, lwork, iwork, liwork, SUBDIAG_LAPACK);
 
             }
             else {
 
-                  DsygvdDriver((double *)Cij, (double *)Sij, eigs, work2, lwork, num_states);
-                  for(int i=0;i<num_states*num_states;i++)eigvectors[i] = Cij[i];
+                  DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work2, lwork, num_states);
 
             }
 
         }
         else {
 
-            ZhegvdDriver((std::complex<double> *)Cij, (std::complex<double> *)Sij, eigs, work2, lwork, num_states);
-            for(int i=0;i<num_states*num_states;i++)eigvectors[i] = Cij[i];
+            ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, work2, lwork, num_states);
 
         }
 
@@ -157,12 +117,6 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         delete [] work2;
 
         delete(RT1);
-    #if GPU_ENABLED
-        GpuFreeManaged(Cij);
-    #else
-        delete [] Cij;
-    #endif
-
 
         if (info) {
             rmg_printf ("\n Lapack eigensolver failed, info is %d", info);

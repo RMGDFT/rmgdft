@@ -33,7 +33,7 @@
 #include "Kpoint.h"
 
 template <typename KpointType, typename CalcType>
-double ApplyHamiltonian (Kpoint<KpointType> *kptr, CalcType *psi, CalcType *h_psi, double *vtot, double *vxc_psi, KpointType *nv);
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, int istate, CalcType *psi, CalcType *h_psi, double *vtot, double *vxc_psi, KpointType *nv, bool potential_acceleration);
 
 template <typename KpointType>
 double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot, double *vxc_psi);

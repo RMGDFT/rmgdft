@@ -87,35 +87,8 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 
     //    if(pct.is_local_master || (use_folded && (nodes < 12))) {
 
-    if(!ct.norm_conserving_pp) 
-    {
-
-        // Inverse of B should be in eigvectors after this call
-        RmgTimer *RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-        InvertMatrix(Bij, eigvectors, num_states);
-        delete(RT1);
-
-        /*Multiply inverse of B and and A */
-        /*B^-1*A */
-        KpointType alpha(1.0);
-        KpointType beta(0.0);;
-
-        RmgTimer *RT2 = new RmgTimer("4-Diagonalization: matrix setup");
-        RmgGemm ("n", "n", num_states, num_states, num_states, alpha, eigvectors,
-                num_states, Aij, num_states, beta, Bij, num_states);
-
-        /*Multiply the result with Sij, result is in eigvectors */
-        RmgGemm ("n", "n", num_states, num_states, num_states, alpha, Sij, 
-                num_states, Bij, num_states, beta, eigvectors, num_states);
-        delete(RT2);
-
-    }
-    else {
-
-        // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into eigvectors
-        memcpy(eigvectors, Aij, num_states * num_states * sizeof(KpointType));
-
-    }
+    // Copy A into eigvectors
+    memcpy(eigvectors, Aij, num_states * num_states * sizeof(KpointType));
 
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
 

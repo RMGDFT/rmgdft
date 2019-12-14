@@ -33,13 +33,13 @@
 #include "rmg_complex.h"
 
 
-template double ApplyHamiltonian<double,float>(Kpoint<double> *, float *, float *, double *, double *, double *);
-template double ApplyHamiltonian<double,double>(Kpoint<double> *, double *, double *, double *, double *, double *);
+template double ApplyHamiltonian<double,float>(Kpoint<double> *, int, float *, float *, double *, double *, double *, bool);
+template double ApplyHamiltonian<double,double>(Kpoint<double> *, int, double *, double *, double *, double *, double *, bool);
 
-template double ApplyHamiltonian<std::complex<double>,std::complex<float>>(Kpoint<std::complex<double>> *, std::complex<float> *, 
-                             std::complex<float> *, double *, double *, std::complex<double> *);
-template double ApplyHamiltonian<std::complex<double>,std::complex<double>>(Kpoint<std::complex<double>> *, std::complex<double> *, 
-                             std::complex<double> *, double *, double *, std::complex<double> *);
+template double ApplyHamiltonian<std::complex<double>,std::complex<float>>(Kpoint<std::complex<double>> *, int, std::complex<float> *, 
+                             std::complex<float> *, double *, double *, std::complex<double> *, bool);
+template double ApplyHamiltonian<std::complex<double>,std::complex<double>>(Kpoint<std::complex<double>> *, int, std::complex<double> *, 
+                             std::complex<double> *, double *, double *, std::complex<double> *, bool);
 
 // Applies Hamiltonian operator to one orbital
 //
@@ -52,10 +52,14 @@ template double ApplyHamiltonian<std::complex<double>,std::complex<double>>(Kpoi
 //    h_psi  = H|psi>
 //
 template <typename KpointType, typename CalcType>
-double ApplyHamiltonian (Kpoint<KpointType> *kptr, CalcType * __restrict__ psi, CalcType * __restrict__ h_psi, double * __restrict__ vtot, double *vxc_psi, KpointType * __restrict__ nv)
+double ApplyHamiltonian (Kpoint<KpointType> *kptr, int istate, CalcType * __restrict__ psi, CalcType * __restrict__ h_psi, double * __restrict__ vtot, double *vxc_psi, KpointType * __restrict__ nv, bool potential_acceleration)
 {
     int pbasis = kptr->pbasis;
     double fd_diag;
+    double *veff = NULL;
+
+    potential_acceleration = potential_acceleration && (ct.potential_acceleration_constant_step > 0.0);
+    potential_acceleration = potential_acceleration & (ct.scf_steps > 0);
 
     int density = 1;
     int dimx = kptr->G->get_PX0_GRID(density);
@@ -66,10 +70,23 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, CalcType * __restrict__ psi, 
     double gridhz = kptr->G->get_hzgrid(density);
     fd_diag = ApplyAOperator<CalcType>(psi, h_psi, dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
 
+    if(potential_acceleration) {
+        int active_threads = ct.MG_THREADS_PER_NODE;
+        if(ct.mpi_queue_mode && (active_threads > 1)) active_threads--;
+        int offset = (istate / kptr->dvh_skip) * pbasis;
+        int my_pe_x, my_pe_y, my_pe_z;
+        kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+        int my_pe_offset = my_pe_x % pct.coalesce_factor;
+        veff = &kptr->dvh[offset*pct.coalesce_factor + my_pe_offset*pbasis];
+    }
+    else {
+        veff = vtot;
+    }
+
     // Factor of -0.5 and add in potential terms
     double tmag(0.5*kptr->kp.kmag);
     for(int idx = 0;idx < pbasis;idx++){ 
-        h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + (vtot[idx] + tmag)*psi[idx];
+        h_psi[idx] = -0.5 * h_psi[idx] + nv[idx] + (veff[idx] + tmag)*psi[idx];
     }
 
 
@@ -77,7 +94,7 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, CalcType * __restrict__ psi, 
     {
         ApplyAOperator<CalcType>(&psi[pbasis], &h_psi[pbasis], dimx, dimy, dimz, gridhx, gridhy, gridhz, ct.kohn_sham_fd_order, kptr->kp.kvec);
         for(int idx = 0;idx < pbasis;idx++){ 
-            h_psi[idx+pbasis] = -0.5 * h_psi[idx+pbasis] + nv[idx+pbasis] + (vtot[idx] + tmag)*psi[idx+pbasis];
+            h_psi[idx+pbasis] = -0.5 * h_psi[idx+pbasis] + nv[idx+pbasis] + (veff[idx] + tmag)*psi[idx+pbasis];
         }
 
         double *vxc_x = &vxc_psi[pbasis];

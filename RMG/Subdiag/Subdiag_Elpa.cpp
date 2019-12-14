@@ -138,62 +138,8 @@ char * Subdiag_Elpa (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij,
         // distribute unitary matrix
         MainElpa->CopySquareMatrixToDistArray(Cij, distCij, num_states, desca);
 
-        if(!ct.norm_conserving_pp) {
-
-            RT1 = new RmgTimer("4-Diagonalization: Invert Bij");
-            // Get matrix that is inverse to B
-            {
-                int info=0;
-
-                int ipiv_size = MainElpa->GetIpivSize();
-                int *ipiv = new int[ipiv_size]();
-
-                /*Inverse of B should be in Cij */
-                MainElpa->Pgesv (&num_states, &num_states, distBij, &ione, &ione, desca, ipiv, distCij, &ione,
-                            &ione, desca, &info);
-
-                if (info)
-                {
-                    rmg_printf ("\n PE %d: p{d,z}gesv failed, info is %d", pct.gridpe, info);
-                    rmg_error_handler (__FILE__, __LINE__, " p{d,z}gesv failed");
-                }
-
-                delete [] ipiv;
-            }
-            delete(RT1);
-
-
-            RT1 = new RmgTimer("4-Diagonalization: matrix setup");
-            /*Multiply inverse of B and and A */
-            {
-                char *trans = "n";
-                KpointType alpha(1.0);
-                KpointType beta(0.0);
-
-                /*B^-1*A */
-                MainElpa->Pgemm(trans, trans, &num_states, &num_states, &num_states, &alpha,
-                            distCij, &ione, &ione, desca, distAij, &ione,
-                            &ione, desca, &beta, distBij, &ione, &ione, desca);
-
-                /*Multiply the result with Sij, result is in distCij */
-                MainElpa->Pgemm (trans, trans, &num_states, &num_states, &num_states, &alpha,
-                            distSij, &ione, &ione, desca, distBij, &ione, 
-                            &ione, desca, &beta, distCij, &ione, &ione, desca);
-
-                // Copy result into Bij and Aij
-                for(int idx=0;idx < dist_length;idx++) distBij[idx] = distCij[idx];
-
-            }
-            delete(RT1);
-
-        }
-        else {
-
-            // For norm conserving S=B so no need to invert and S*(B-1)*A=A so just copy A into Cij
-            // to pass to eigensolver
-            for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
-
-        }
+        // Copy A into Bij to pass to eigensolver
+        for(int ix=0;ix < dist_length;ix++) distBij[ix] = distAij[ix];
 
     }
 

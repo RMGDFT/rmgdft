@@ -47,6 +47,10 @@ template void AppNls<double>(Kpoint<double> *, double *, double *, double *, dou
 template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
                 std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int, bool);
 
+template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, int, int);
+template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
+                std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int);
+
 template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, double *, int, int);
 template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
                 std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int);
@@ -59,6 +63,15 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             int first_state, int num_states)
 {
     AppNls(kpoint, sintR, psi, nv, ns, Bns, first_state, num_states, true);
+}
+
+// Version that does not compute BNS
+template <typename KpointType>
+void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
+            KpointType *psi, KpointType *nv, KpointType *ns, int first_state, int num_states)
+{
+    KpointType *Bns = NULL;
+    AppNls(kpoint, sintR, psi, nv, ns, Bns, first_state, num_states, false);
 }
 
 // Version that lets you choose to return Bns
@@ -96,7 +109,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     {
         bool need_ns = true;
         if(ct.norm_conserving_pp && ct.is_gamma) need_ns = false;
-        if(!ct.norm_conserving_pp) for(size_t i = 0; i < stop; i++) Bns[i] = ZERO_t;
+        if(!ct.norm_conserving_pp && Bns) for(size_t i = 0; i < stop; i++) Bns[i] = ZERO_t;
         if(need_ns) for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
         if(ct.xc_is_hybrid && Functional::is_exx_active()) 
         {

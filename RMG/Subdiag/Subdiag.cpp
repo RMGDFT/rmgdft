@@ -37,7 +37,7 @@
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "blas.h"
-#include "RmgParallelFft.h"
+#include "Solvers.h"
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -57,6 +57,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 {
     RmgTimer RT0("4-Diagonalization");
 
+    bool potential_acceleration = (ct.potential_acceleration_constant_step > 0.0) && (ct.scf_steps > 0);
     double vel = L->get_omega() / ((double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1)));
 
 
@@ -75,10 +76,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     static KpointType *global_matrix1;
 
 
-    KpointType *Aij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
+    KpointType *Hij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *Bij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *Sij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
-    KpointType *tmp_array2T = (KpointType *)GpuMallocManaged(pbasis_noncoll * nstates * sizeof(KpointType));     
     if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));     
     double *eigs = (double *)GpuMallocManaged(2*nstates * sizeof(double));
 
@@ -100,14 +100,13 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     int first_nls = 0;
 
     // Each thread applies the operator to one wavefunction
-    KpointType *a_psi = (KpointType *)tmp_arrayT;
-    KpointType *b_psi = (KpointType *)tmp_array2T;
+    KpointType *h_psi = (KpointType *)tmp_arrayT;
 
 #if GPU_ENABLED
     // Until the finite difference operators are being applied on the GPU it's faster
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
-    cudaMemPrefetchAsync ( a_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
+    cudaMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
     cudaMemPrefetchAsync ( b_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
     cudaDeviceSynchronize();
 #endif
@@ -137,15 +136,17 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         }
 
         for(int ist = 0;ist < active_threads;ist++) {
-            thread_control.job = HYBRID_SUBDIAG_APP_AB;
-            thread_control.sp = &Kstates[st1 + ist];
-            thread_control.p1 = (void *)&a_psi[(st1 + ist) * pbasis_noncoll];
-            thread_control.p2 = (void *)&b_psi[(st1 + ist) * pbasis_noncoll];
-            thread_control.p3 = (void *)this;
+            thread_control.job = HYBRID_APPLY_HAMILTONIAN;
             thread_control.vtot = vtot_eig;
             thread_control.vxc_psi = vxc_psi;
+            thread_control.extratag1 = potential_acceleration;
+            thread_control.istate = st1 + ist;
+            thread_control.sp = &Kstates[st1 + ist];
+            thread_control.p1 = (void *)Kstates[st1 + ist].psi;
+            thread_control.p2 = (void *)&h_psi[(st1 + ist) * pbasis_noncoll];
+            thread_control.p3 = (void *)this;
             thread_control.nv = (void *)&nv[(first_nls + ist) * pbasis_noncoll];
-            thread_control.Bns = (void *)&Bns[(first_nls + ist) * pbasis_noncoll];
+            thread_control.ns = (void *)&ns[(st1 + ist) * pbasis_noncoll];  // ns is not blocked!
             thread_control.basetag = Kstates[st1 + ist].istate;
             QueueThreadTask(ist, thread_control);
         }
@@ -178,14 +179,13 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
             first_nls = 0;
             delete RT3;
         }
-        ApplyOperators (this, st1, &a_psi[st1 * pbasis_noncoll], &b_psi[st1 * pbasis_noncoll], vtot_eig, vxc_psi, 
-                &nv[first_nls * pbasis_noncoll], &Bns[first_nls * pbasis_noncoll]);
+        ApplyHamiltonian<KpointType, KpointType> (this, st1, Kstates[st1].psi, &h_psi[st1 * pbasis_noncoll], vtot_eig, vxc_psi, &nv[first_nls * pbasis_noncoll], potential_acceleration);
+
         first_nls++;
     }
     delete(RT1);
     /* Operators applied and we now have
-tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
-tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
+tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
 #if GPU_ENABLED
     cudaDeviceSynchronize();
@@ -194,35 +194,34 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
     // Compute A matrix
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
     KpointType alpha(1.0);
+    KpointType alphavel(vel);
     KpointType beta(0.0);
 
     if(ct.is_gamma)
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
+        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
     else
-        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Aij, nstates);
+        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, ns, pbasis_noncoll, beta, Hij, nstates);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
-    MPI_Request MPI_reqAij;
+    MPI_Request MPI_reqHij;
     MPI_Request MPI_reqSij;
-    MPI_Request MPI_reqBij;
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqAij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)Hij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqHij);
     else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, (double *)Hij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)Hij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
 #endif
 
     // Compute S matrix
-    KpointType alpha1(vel);
     if(ct.norm_conserving_pp && ct.is_gamma)
     {
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll,  orbital_storage, pbasis_noncoll, beta, Sij, nstates);
+        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll,  orbital_storage, pbasis_noncoll, beta, Sij, nstates);
     }
     else
     {
-        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
+        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
     }
 
 
@@ -237,36 +236,13 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 #endif
 
 
-    // We need B matrix for US pseudopotentials
-    if(!ct.norm_conserving_pp) {
-
-        // Compute B matrix
-        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alpha1, orbital_storage, pbasis_noncoll, tmp_array2T, pbasis_noncoll, beta, Bij, nstates);
-
-        // Reduce matrix and store copy in Bij
-#if HAVE_ASYNC_ALLREDUCE
-        if(ct.use_async_allreduce)
-            MPI_Iallreduce(MPI_IN_PLACE, (double *)Bij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqBij);
-        else
-            MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
-#else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
-#endif
-
-    }
-
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for S request to finish and when done store copy in Sij
-    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
+    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqHij, MPI_STATUS_IGNORE);
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
-    if(!ct.norm_conserving_pp)
-        if(ct.use_async_allreduce) MPI_Wait(&MPI_reqBij, MPI_STATUS_IGNORE);
 #endif
 
     delete(RT1);
-
-    // Free up tmp_array2T
-    GpuFreeManaged(tmp_array2T);
 
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix1 will hold the eigenvectors.
     // The eigenvectors may be stored in row-major or column-major format depending on the type of diagonaliztion method
@@ -276,20 +252,20 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
     switch(subdiag_driver) {
 
         case SUBDIAG_LAPACK:
-            trans_b = Subdiag_Lapack (this, Aij, Bij, Sij, eigs, global_matrix1);
+            trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
         case SUBDIAG_SCALAPACK:
-            trans_b = Subdiag_Scalapack (this, Aij, Bij, Sij, eigs, global_matrix1);
+            trans_b = Subdiag_Scalapack (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
         case SUBDIAG_ELPA:
-            trans_b = Subdiag_Elpa (this, Aij, Bij, Sij, eigs, global_matrix1);
+            trans_b = Subdiag_Elpa (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
         case SUBDIAG_MAGMA:
         case SUBDIAG_CUSOLVER:
 #if GPU_ENABLED
-            trans_b = Subdiag_Cusolver (this, Aij, Bij, Sij, eigs, global_matrix1);
+            trans_b = Subdiag_Cusolver (this, Hij, Bij, Sij, eigs, global_matrix1);
 #else
-            trans_b = Subdiag_Lapack (this, Aij, Bij, Sij, eigs, global_matrix1);
+            trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, global_matrix1);
 #endif
             break;
         default:
@@ -309,7 +285,7 @@ tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
     // free memory
     GpuFreeManaged(Sij);
     GpuFreeManaged(Bij);
-    GpuFreeManaged(Aij);
+    GpuFreeManaged(Hij);
 
 
     // Update the orbitals

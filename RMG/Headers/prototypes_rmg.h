@@ -62,6 +62,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_correct, dou
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, int first_state, int num_states, bool need_bns);
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
+            KpointType *psi, KpointType *nv, KpointType *ns, int first_state, int num_states);
+template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, int first_state, int num_states);
 template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **Kptr,
           double *rho, double *new_rho, double *vh, double *vh_in);
