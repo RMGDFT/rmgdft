@@ -204,6 +204,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
 #pragma omp critical(part1)
 {
+                if(j < nstates_occ)
                 for(int idx = 0;idx < pbasis;idx++)vexx[i*pbasis +idx] += scale * std::real(p[idx]) * psi_s[j*pbasis + idx];
 }
 #pragma omp critical(part2)
@@ -268,6 +269,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 // We can speed this up by adding more critical sections if it proves to be a bottleneck
 #pragma omp critical(part3)
 {
+                    if(j < nstates_occ)
                     for(int idx = 0;idx < pwave->pbasis;idx++) 
                         vexx_global[i*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_j[idx];
 }
