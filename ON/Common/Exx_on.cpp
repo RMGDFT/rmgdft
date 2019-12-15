@@ -73,6 +73,7 @@ template <class T> Exx_on<T>::Exx_on (
     Xij_mat =  (T *)GpuMallocManaged(Phi.num_tot * Phi.num_tot * sizeof(T));
     Xij_mat_Sinv =  (T *)GpuMallocManaged(Phi.num_tot * Phi.num_tot * sizeof(T));
     for(int i = 0; i < Phi.num_tot * Phi.num_tot; i++) Xij_mat[i] = 0.0;
+    for(int i = 0; i < Phi.num_tot * Phi.pbasis; i++) Omega_j[i] = 0.0;
 }
 
 template <> void Exx_on<double>::Omega(double *rho_matrix, bool use_float_fft)
