@@ -189,7 +189,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         {
             double *psi_i = (double *)&psi_s[i*pbasis];
 #pragma omp parallel for schedule(dynamic)
-            for(int j=i;j < nstates_occ;j++)
+            for(int j=i;j < nstates;j++)
             {   
                 double *psi_j = (double *)&psi_s[j*pbasis];
                 int omp_tid = omp_get_thread_num();
@@ -231,7 +231,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
         delete RT1;
 
-        size_t length = (size_t)nstates_occ * pwave->pbasis * sizeof(double);
+        size_t length = (size_t)nstates * pwave->pbasis * sizeof(double);
         psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
         MPI_Barrier(G.comm);
@@ -241,8 +241,8 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         int my_rank = G.get_rank();
         int npes = G.get_NPES();
         int rows = 0, trows=0, reqcount=0, max_rows=40;
-        MPI_Request *reqs = new MPI_Request[nstates_occ/max_rows+1];
-        MPI_Status *mrstatus = new MPI_Status[nstates_occ/max_rows+1];
+        MPI_Request *reqs = new MPI_Request[nstates/max_rows+1];
+        MPI_Status *mrstatus = new MPI_Status[nstates/max_rows+1];
 
         int flag=0;
         double *arptr = vexx_global;
@@ -252,12 +252,12 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             double *psi_i = (double *)&psi_s[i*pwave->pbasis];
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
-            for(int j=i;j < nstates_occ;j++)
+            for(int j=i;j < nstates;j++)
             {
                 int omp_tid = omp_get_thread_num();
                 std::complex<double> *p = pvec[omp_tid];
                 std::complex<float> *w = wvec[omp_tid];
-                int fft_index = i*nstates_occ + j;
+                int fft_index = i*nstates + j;
                 if(my_rank == (fft_index % npes))
                 {
                     double *psi_j = (double *)&psi_s[j*pwave->pbasis];
@@ -295,7 +295,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         }
         MPI_Waitall(reqcount, reqs, mrstatus);
         MPI_Barrier(G.comm);
-        int count = nstates_occ - trows;
+        int count = nstates - trows;
 
         // This timer only picks up the last MPI_Allreduce since the ones above are asynchronous
         RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
@@ -315,7 +315,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
 
         RmgTimer *RT2 = new RmgTimer("5-Functional: Exx remap");
-        for(int i=0;i < nstates_occ;i++)
+        for(int i=0;i < nstates;i++)
         {
             for(int ix=0;ix < dimx;ix++)
             {
