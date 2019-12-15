@@ -41,7 +41,6 @@ typedef struct
     void *p4;
     void *nv;         // Non-local operator applied to a specific wavefunction
     void *ns;         // S-operator applied to a specific wavefunction
-    void *Bns;        // Bapplied to S-operator applied to a specific wavefunction
     double eig;            // Used for Davidson preconditioner
     double avg_potential;  // Used for Davidson preconditioner
     double fd_diag;        // Used for Davidson preconditioner

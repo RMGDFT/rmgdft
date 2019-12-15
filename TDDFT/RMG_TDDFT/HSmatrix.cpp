@@ -43,7 +43,6 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     int nstates = kptr->nstates;
     MPI_Comm grid_comm = kptr->grid_comm;
     KpointType *orbital_storage = kptr->orbital_storage;
-    KpointType *Bns = kptr->Bns;
     KpointType *ns = kptr->ns;
     KpointType *nv = kptr->nv;
     KpointType *newsint_local = kptr->newsint_local;
@@ -94,7 +93,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     RmgTimer *RT2 = new RmgTimer("4-Diagonalization: AppNls");
 
     // Apply Nls
-    AppNls(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, Bns, 0, std::min(ct.non_local_block_size, nstates));
+    AppNls(kptr, newsint_local, kptr->Kstates[0].psi, nv, ns, 0, std::min(ct.non_local_block_size, nstates));
     delete RT2;
     int first_nls = 0;
 
@@ -125,7 +124,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
 #if GPU_ENABLED
              cudaDeviceSynchronize();
 #endif
-             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns,
+             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
 #if GPU_ENABLED
              cudaDeviceSynchronize();
@@ -170,7 +169,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
 #if GPU_ENABLED
              cudaDeviceSynchronize();
 #endif
-             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns, st1, std::min(ct.non_local_block_size, nstates - st1));
+             AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
 #if GPU_ENABLED
              cudaDeviceSynchronize();
 #endif

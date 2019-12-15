@@ -43,42 +43,14 @@
 #include "GlobalSums.h"
 #include "blas.h"
 
-template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, double *, int, int, bool);
-template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
-                std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int, bool);
-
 template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, int, int);
 template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
                 std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int);
 
-template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, double *, int, int);
-template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
-                std::complex<double> *, std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int);
-
-
-// Version that computes and returns Bns
 template <typename KpointType>
 void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
-            KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, 
+            KpointType *psi, KpointType *nv, KpointType *ns,
             int first_state, int num_states)
-{
-    AppNls(kpoint, sintR, psi, nv, ns, Bns, first_state, num_states, true);
-}
-
-// Version that does not compute BNS
-template <typename KpointType>
-void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
-            KpointType *psi, KpointType *nv, KpointType *ns, int first_state, int num_states)
-{
-    KpointType *Bns = NULL;
-    AppNls(kpoint, sintR, psi, nv, ns, Bns, first_state, num_states, false);
-}
-
-// Version that lets you choose to return Bns
-template <typename KpointType>
-void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
-            KpointType *psi, KpointType *nv, KpointType *ns, KpointType *Bns, 
-            int first_state, int num_states, bool need_bns)
 {
 
     // Sanity check
@@ -88,7 +60,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 //   sintR:  <beta | psi_up, psi_down>, dimensiont is numProj * 2 * num_states in noncollinear case.
 //   nv : |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
 //   ns : |psi_up, psu_down > + |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
-//   Bns: history
 
     int P0_BASIS = kpoint->pbasis;
     int num_nonloc_ions = kpoint->BetaProjector->get_num_nonloc_ions();
@@ -109,7 +80,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     {
         bool need_ns = true;
         if(ct.norm_conserving_pp && ct.is_gamma) need_ns = false;
-        if(!ct.norm_conserving_pp && Bns) for(size_t i = 0; i < stop; i++) Bns[i] = ZERO_t;
         if(need_ns) for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
         if(ct.xc_is_hybrid && Functional::is_exx_active()) 
         {
@@ -247,13 +217,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
                 ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
-
-        if(need_bns) {
-// This was bweight
-            RmgGemm (transa, transa, P0_BASIS, num_states, num_tot_proj, 
-                    ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
-                    ZERO_t,  Bns, P0_BASIS);
-        }
 
     }
     else 

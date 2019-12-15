@@ -94,7 +94,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     RmgTimer *RT2 = new RmgTimer("4-Diagonalization: AppNls");
 
     // Apply Nls
-    AppNls(this, newsint_local, Kstates[0].psi, nv, ns, Bns, 0, std::min(ct.non_local_block_size, nstates));
+    AppNls(this, newsint_local, Kstates[0].psi, nv, ns, 0, std::min(ct.non_local_block_size, nstates));
 
     delete RT2;
     int first_nls = 0;
@@ -125,7 +125,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 #if GPU_ENABLED
             cudaDeviceSynchronize();
 #endif
-            AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns,
+            AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
 #if GPU_ENABLED
             cudaDeviceSynchronize();
@@ -171,7 +171,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 #if GPU_ENABLED
             cudaDeviceSynchronize();
 #endif
-            AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], Bns, st1, std::min(ct.non_local_block_size, nstates - st1));
+            AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
 #if GPU_ENABLED
             cudaDeviceSynchronize();
 #endif
@@ -199,7 +199,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     if(ct.is_gamma)
         RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
     else
-        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, ns, pbasis_noncoll, beta, Hij, nstates);
+        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it

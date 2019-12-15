@@ -83,7 +83,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.nvme_work_fd = -1;
 
     SPECIES *sp;
-    OrbitalType *rptr = NULL, *nv, *ns = NULL, *Bns = NULL;
+    OrbitalType *rptr = NULL, *nv, *ns = NULL;
     double *vtot;
     double time2=0.0, fac;
     bool need_ns = true;
@@ -221,9 +221,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     rptr = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
     nv = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
     if(need_ns) ns = (OrbitalType *)GpuMallocManaged((size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
-    if(!ct.norm_conserving_pp) {
-        Bns = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
-    }
 #else
     // Wavefunctions are actually stored here
     // mpi_queue_mode has a bug for this case which can cause hangs so put the check in place
@@ -266,9 +263,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     nv = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor]();
-    if(!ct.norm_conserving_pp) {
-        Bns = new OrbitalType[(size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor]();
-    }
 #endif
 
     ct.psi_alloc[0] = sizeof(OrbitalType) * (size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024;
@@ -291,8 +285,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         Kptr[kpt]->set_pool(rptr_k);
         Kptr[kpt]->nv = nv;
         Kptr[kpt]->ns = ns;
-
-        if(!ct.norm_conserving_pp) Kptr[kpt]->Bns = Bns;
 
         for (st1 = 0; st1 < ct.max_states; st1++)
         {

@@ -114,7 +114,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
         // Apply the non-local operators to a block of orbitals
         RT1 = new RmgTimer("3-MgridSubspace: AppNls");
-        AppNls(this, this->newsint_local, this->Kstates[0].psi, this->nv, this->ns, this->Bns,
+        AppNls(this, this->newsint_local, this->Kstates[0].psi, this->nv, this->ns,
                0, std::min(ct.non_local_block_size, this->nstates));
         delete(RT1);
         int first_nls = 0;
@@ -144,7 +144,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
             if(check > ct.non_local_block_size) 
             {
                 RT1 = new RmgTimer("3-MgridSubspace: AppNls");
-                AppNls(this, this->newsint_local, this->Kstates[st1].psi, this->nv, &this->ns[st1 * pbasis_noncoll], this->Bns,
+                AppNls(this, this->newsint_local, this->Kstates[st1].psi, this->nv, &this->ns[st1 * pbasis_noncoll],
                        st1, std::min(ct.non_local_block_size, this->nstates - st1));
                 first_nls = 0;
                 delete(RT1);
