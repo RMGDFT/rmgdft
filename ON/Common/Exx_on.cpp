@@ -40,6 +40,7 @@
 #include "GpuAlloc.h"
 #include "Exx_on.h"
 #include "prototypes_on.h"
+#include "blas.h"
 
 // This class implements exact exchange for ON module using the Exxbase clase
 // DelocalOrbital: is delocalized and store K_kl * Phi_l(r), 
@@ -47,9 +48,9 @@
 // K_kl dimension: num_tot * num_thispe for LocalOrbital
 
 
-template Exx_on<double>::Exx_on(BaseGrid &, BaseGrid &, Lattice &, const std::string &, LocalObject<double> &phi, int);
+template Exx_on<double>::Exx_on(BaseGrid &, BaseGrid &, Lattice &, const std::string &, LocalObject<double> &phi, double *, int);
 template Exx_on<std::complex<double>>::Exx_on(BaseGrid &, BaseGrid &, Lattice &, const std::string &, 
-    LocalObject<std::complex<double>> &phi, int );
+    LocalObject<std::complex<double>> &phi, double *, int );
 
 template Exx_on<double>::~Exx_on(void);
 template Exx_on<std::complex<double>>::~Exx_on(void);
@@ -62,12 +63,12 @@ template <class T> Exx_on<T>::Exx_on (
           BaseGrid &G_h_in,
           Lattice &L_in,
           const std::string &wavefile_in,
-          LocalObject<T> &Phi_in, 
-          int mode_in) : G(G_in), G_h(G_h_in), L(L_in), wavefile(wavefile_in), Phi(Phi_in), mode(mode_in)
+          LocalObject<T> &Phi_in, double *occ_in, 
+          int mode_in) : G(G_in), G_h(G_h_in), L(L_in), wavefile(wavefile_in), Phi(Phi_in), occ(occ_in), mode(mode_in)
 {
     RmgTimer RT0("5-Functional: Exx init");
-    Exxb = new Exxbase<T>(G, G_h, L, wavefile, 0, NULL, NULL, ct.exx_mode);
-    DePhi = (T *)GpuMallocManaged(ct.num_states * Phi.pbasis * sizeof(T));
+    DePhi = (T *)GpuMallocManaged(Phi.num_tot * Phi.pbasis * sizeof(T));
+    Exxb = new Exxbase<T>(G, G_h, L, wavefile, Phi.num_tot, occ, DePhi, ct.exx_mode);
     Omega_j = (T *)GpuMallocManaged(Phi.num_tot * Phi.pbasis * sizeof(T));
     PreOrbital = (T *)GpuMallocManaged(Phi.num_thispe * Phi.pbasis * sizeof(T));
     Xij_mat =  (T *)GpuMallocManaged(Phi.num_tot * Phi.num_tot * sizeof(T));
@@ -332,4 +333,66 @@ template <> void Exx_on<double>::OmegaRes(double *res, LocalObject<double> &Phi)
     GpuFreeManaged(mat_local);
     GpuFreeManaged(mat_glob);
 
+}
+
+template <> void Exx_on<double>::Omega_rmg(double *Cij_local, double *Cij_global, bool use_float_fft)
+{
+    double one = 1.0, zero = 0.0;
+    int num_tot = Phi.num_tot;
+    int num_thispe = Phi.num_thispe;
+    int pbasis = Phi.pbasis;
+    RmgTimer RT0("5-Functional: Exx potential");
+
+    // DePhi: waveufnctions: Phi * C
+    RmgGemm("N", "N", pbasis, num_tot, num_thispe, one, Phi.storage_proj, pbasis,
+            Cij_local, num_thispe, zero, DePhi, pbasis);
+
+
+    // Clear vexx
+    for(int idx=0;idx < Phi.num_tot*pbasis;idx++) Omega_j[idx] = 0.0;
+    this->Exxb->Vexx(Omega_j, true);
+    //this->Exxb->Vexx(Omega_j, use_float_fft);
+
+    RmgGemm("T", "N", num_tot, num_tot, pbasis, one, Omega_j, pbasis,
+            DePhi, pbasis, zero, Cij_local, num_tot);
+    size_t size = num_tot * num_tot;
+    MPI_Allreduce(MPI_IN_PLACE, Cij_local, size, MPI_DOUBLE, MPI_SUM, Phi.comm);
+    
+
+    int info;
+    int lwork = num_tot * num_tot;
+    int *ipiv = new int[num_tot];
+    double *work = new double[lwork];
+
+    dgetrf(&num_tot, &num_tot, Cij_global, &num_tot, ipiv, &info);
+    if (info != 0)
+    {
+        printf ("error in dgetrf in Exx_on::Omega_rmg  with INFO = %d \n", info);
+        fflush (NULL);
+        exit (0);
+    }
+    dgetri(&num_tot, Cij_global, &num_tot, ipiv, (double *)work, &lwork, &info);
+    if (info != 0)
+    {
+        printf ("error in dgetri in Exx_on::Omega_rmg  with INFO = %d \n", info);
+        fflush (NULL);
+        exit (0);
+    }
+
+    RmgGemm("N", "N", pbasis, num_tot, num_tot, one, Omega_j, pbasis,
+            Cij_global, num_tot, zero, DePhi, pbasis);
+
+
+    size = num_tot * pbasis * sizeof(double);
+    memcpy(Omega_j, DePhi, size);
+    
+    delete [] ipiv; 
+    delete [] work;
+
+
+
+}
+
+template <> void Exx_on<std::complex<double>>::Omega_rmg(std::complex<double> *rho_matrix, std::complex<double> *cij_glob,  bool use_fft_float)
+{
 }

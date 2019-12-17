@@ -59,6 +59,7 @@ private:
     const std::string &wavefile;
     LocalObject<T> &Phi;
 
+    double *occ;
     // Exx mode
     int mode;
 
@@ -78,10 +79,11 @@ public:
             BaseGrid &G_h, 
             Lattice &L, 
             const std::string &wavefile,
-            LocalObject<T> &Phi, int mode_in);
+            LocalObject<T> &Phi, double *occ, int mode_in);
 
     ~Exx_on(void);
     void Omega(T *rho_matrix, bool use_fft_float);
+    void Omega_rmg(T *Cij_local, T *Cij_glob, bool use_fft_float);
     void Xij(T *Sij_inverse, LocalObject<T> &Phi);
     double Exxenergy(T *rho_matrix);
     void HijExx(T *Hij_glob, LocalObject<T> &Phi);

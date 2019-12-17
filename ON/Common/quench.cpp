@@ -67,7 +67,9 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
     if(ct.xc_is_hybrid)
     {
         outer_steps = ct.max_exx_steps;
-        Exx_onscf = new Exx_on<double>(*Rmg_G, *Rmg_halfgrid, Rmg_L, "temwave", *LocalOrbital, ct.exx_mode);
+        double *occ = new double[LocalOrbital->num_tot]();
+        for(int st = 0; st< LocalOrbital->num_tot; st++) occ[st] = states[st].occupation[0]; 
+        Exx_onscf = new Exx_on<double>(*Rmg_G, *Rmg_halfgrid, Rmg_L, "temwave", *LocalOrbital, occ, ct.exx_mode);
     }
 
     ct.FOCK = 0.0;
@@ -146,12 +148,14 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             F->start_exx_rmg();
 
             double *rho_mat_global = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
+            double *Cij_global = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
             double *rho_mat_local = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_thispe * sizeof(double) + 8);
+            double *Cij_local = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_thispe * sizeof(double) + 8);
             double *Sij_inverse = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
 
             mat_dist_to_global(mat_X, pct.desca, rho_mat_global);
             mat_dist_to_global(matB, pct.desca, Sij_inverse);
-
+            mat_dist_to_global(zz_dis, pct.desca, Cij_global);
             
             if(ct.nspin == 1) 
             {
@@ -164,11 +168,15 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             {
                 int i_glob = LocalOrbital->index_proj_to_global[i];
                 for(int j = 0; j < LocalOrbital->num_tot; j++)
+                {
                     rho_mat_local[j * LocalOrbital->num_thispe + i] = rho_mat_global[j * LocalOrbital->num_tot + i_glob];
+                    Cij_local[j * LocalOrbital->num_thispe + i] = Cij_global[j * LocalOrbital->num_tot + i_glob];
+                }
             }
 
             //f1 = Exx_onscf->Exxenergy(rho_mat_global);
             Exx_onscf->Omega(rho_mat_local, (std::abs(ct.exx_delta) > ct.vexx_fft_threshold) );
+            //Exx_onscf->Omega_rmg(Cij_local, Cij_global, std::abs(ct.exx_delta) > ct.vexx_fft_threshold);
             Exx_onscf->Xij(Sij_inverse, *LocalOrbital);
             Exx_onscf->OmegaSinv(Sij_inverse, *LocalOrbital);
             f2 = Exx_onscf->Exxenergy(rho_mat_global);
@@ -182,7 +190,9 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             ExxProgressTag(exx_step_time, exx_elapsed_time);
 
             GpuFreeManaged(rho_mat_local);
+            GpuFreeManaged(Cij_local);
             GpuFreeManaged(rho_mat_global);
+            GpuFreeManaged(Cij_global);
             GpuFreeManaged(Sij_inverse);
 
             if(ct.exx_steps == 0)
