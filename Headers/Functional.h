@@ -52,6 +52,7 @@ private:
     // Total number of grid points
     int N;
 
+    int fd_order;
 
     bool gammaflag;
     static bool dft_set;

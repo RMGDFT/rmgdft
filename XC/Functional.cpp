@@ -136,6 +136,7 @@ Functional::Functional (
     this->L = &L;
     this->gammaflag = gamma_flag;
 
+    this->fd_order = ct.kohn_sham_fd_order;
     this->pbasis = G.get_P0_BASIS(G.default_FG_RATIO);
     this->N = G.get_NX_GRID(G.default_FG_RATIO) *
               G.get_NY_GRID(G.default_FG_RATIO) *
@@ -526,14 +527,14 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
 
     // calculate the gradient of rho + rho_core
     RmgTimer *RT2 = new RmgTimer("5-Functional: apply gradient");
-    ApplyGradient (rhoout, gx, gy, gz, APP_CI_EIGHT, "Fine");
+    ApplyGradient (rhoout, gx, gy, gz, fd_order, "Fine");
 
     delete RT2;
 
 
     // and the Laplacian
     RmgTimer *RT3 = new RmgTimer("5-Functional: apply laplacian");
-    ApplyLaplacian (rhoout, d2rho, APP_CI_EIGHT, "Fine");
+    ApplyLaplacian (rhoout, d2rho, fd_order, "Fine");
 
     delete RT3;
 
@@ -579,7 +580,7 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     // 
 
     RmgTimer *RT5 = new RmgTimer("5-Functional: apply gradient");
-    ApplyGradient (vxc2, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
+    ApplyGradient (vxc2, h, &h[this->pbasis], &h[2*this->pbasis], fd_order, "Fine");
     delete RT5;
 
 #pragma omp parallel for
@@ -644,14 +645,14 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
 
     // calculate the gradient of rho + rho_core up
     RmgTimer *RT2 = new RmgTimer("5-Functional: apply gradient");
-    ApplyGradient (rhoout_up, gx_up, gy_up, gz_up, APP_CI_EIGHT, "Fine");
-    ApplyGradient (rhoout_down, gx_down, gy_down, gz_down, APP_CI_EIGHT, "Fine");
+    ApplyGradient (rhoout_up, gx_up, gy_up, gz_up, fd_order, "Fine");
+    ApplyGradient (rhoout_down, gx_down, gy_down, gz_down, fd_order, "Fine");
     delete RT2;
 
     // and the Laplacian
     RmgTimer *RT3 = new RmgTimer("5-Functional: apply laplacian");
-    ApplyLaplacian (rhoout_up, d2rho_up, APP_CI_EIGHT, "Fine");
-    ApplyLaplacian (rhoout_down, d2rho_down, APP_CI_EIGHT, "Fine");
+    ApplyLaplacian (rhoout_up, d2rho_up, fd_order, "Fine");
+    ApplyLaplacian (rhoout_down, d2rho_down, fd_order, "Fine");
     delete RT3;
 
 
@@ -733,7 +734,7 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
 
     // second term of the gradient correction
     RmgTimer *RT5 = new RmgTimer("5-Functional: apply gradient");
-    ApplyGradient (vxc2_up, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
+    ApplyGradient (vxc2_up, h, &h[this->pbasis], &h[2*this->pbasis], fd_order, "Fine");
     delete RT5;
 
 #pragma omp parallel for 
@@ -748,7 +749,7 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
     }
 
     RmgTimer *RT6 = new RmgTimer("5-Functional: apply gradient");
-    ApplyGradient (vxc2_down, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
+    ApplyGradient (vxc2_down, h, &h[this->pbasis], &h[2*this->pbasis], fd_order, "Fine");
     delete RT6;
 
 #pragma omp parallel for 
@@ -762,7 +763,7 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
 
     }
 
-    ApplyGradient (v2cud, h, &h[this->pbasis], &h[2*this->pbasis], APP_CI_EIGHT, "Fine");
+    ApplyGradient (v2cud, h, &h[this->pbasis], &h[2*this->pbasis], fd_order, "Fine");
 #pragma omp parallel for 
     for(int ix=0;ix < this->pbasis;ix++) {
         v_up[ix] -= ( h[ix] * gx_down[ix] +
