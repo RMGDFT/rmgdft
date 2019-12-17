@@ -211,23 +211,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if(ct.forceflag == BAND_STRUCTURE && (!ct.rmg2bgw)) kpt_storage = 1;
 
     /* Set state pointers and initialize state data */
-#if GPU_ENABLED
-
-    // Wavefunctions are actually stored here
-    ct.non_local_block_size = std::max(ct.non_local_block_size, ct.max_states);
-    if(ct.xc_is_hybrid) ct.non_local_block_size = std::max(ct.non_local_block_size, ct.max_states);
+    if(ct.xc_is_hybrid) ct.non_local_block_size = ct.max_states;
+    // mpi_queue_mode has a bug for this case which can cause hangs so put the check in place
+    if(ct.mpi_queue_mode) ct.non_local_block_size = ct.max_states;
     if(ct.non_local_block_size > ct.max_states) ct.non_local_block_size = ct.max_states;
-
+#if GPU_ENABLED
+    // Wavefunctions are actually stored here
     rptr = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
     nv = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
     if(need_ns) ns = (OrbitalType *)GpuMallocManaged((size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
 #else
     // Wavefunctions are actually stored here
-    // mpi_queue_mode has a bug for this case which can cause hangs so put the check in place
-    if(ct.mpi_queue_mode) ct.non_local_block_size = std::max(ct.non_local_block_size, ct.max_states);
-    if(ct.xc_is_hybrid) ct.non_local_block_size = std::max(ct.non_local_block_size, ct.max_states);
-    if(ct.non_local_block_size > ct.max_states) ct.non_local_block_size = ct.max_states;
-
     std::string newpath;
 
     if(ct.nvme_orbitals)
@@ -374,7 +368,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 	fflush (NULL);
     }
-
 
     /*Do forward transform for each species and store results on the coarse grid */
     RT1 = new RmgTimer("2-Init: weights");
