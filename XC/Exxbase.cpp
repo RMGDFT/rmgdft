@@ -356,12 +356,12 @@ template <> double Exxbase<double>::Exxenergy(double *vexx)
     double energy = 0.0;
     for(int st=0;st < nstates;st++)
     {
-        double scale = 0.0;
-        if(occ[st] > 1.0e-1) scale = 1.0;
+        double scale = 0.5 * occ[st];
         for(int i=0;i < pbasis;i++) energy += scale*vexx[st*pbasis + i]*psi[st*pbasis + i];
     }
     energy = ct.exx_fraction*energy * this->L.get_omega() / (double)this->G.get_GLOBAL_BASIS(1);
     MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
+    MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
     return energy;
 }

@@ -231,6 +231,10 @@ template <> double Exx_on<double>::Exxenergy(double *rho_mat_global)
 {
     double exx = 0.0;
     for(int idx = 0; idx < Phi.num_tot * Phi.num_tot; idx++) exx += ct.exx_fraction * rho_mat_global[idx] * this->Xij_mat[idx];
+    // for spin polarized, rho_mat_global use the true occupation, for spin non polarized, we use occ[] *0.5 
+    // so the energy should be scale correctly.
+    MPI_Allreduce(MPI_IN_PLACE, &exx, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    if(ct.nspin == 2) exx *= 0.5;
     return exx;
 }
 template <> void Exx_on<std::complex<double>>::HijExx(std::complex<double> *, LocalObject<std::complex<double>> &Phi){};
@@ -274,7 +278,6 @@ template <> void Exx_on<double>::HijExx(double *Hij_glob, LocalObject<double> &P
 template <> void Exx_on<std::complex<double>>::OmegaSinv(std::complex<double> *, LocalObject<std::complex<double>> &Phi){};
 template <> void Exx_on<double>::OmegaSinv(double *Sij_inverse, LocalObject<double> &Phi)
 {
-    int na = Phi.num_thispe ;
     int ntot = Phi.num_thispe ;
 
     int pbasis = Phi.pbasis;
