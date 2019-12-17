@@ -87,6 +87,7 @@ public:
     void GetPointList1D (std::vector<GridPoint>& points, double a, int Ngrid, int Lorder, int direction);
 
     void GetPointListFCC (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
+    void GetPointListBCC (std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder);
     void GetDerListFCC(std::vector<GridPoint>& der_list, int Lorder);
 
 };

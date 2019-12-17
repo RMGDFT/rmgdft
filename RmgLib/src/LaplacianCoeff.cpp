@@ -124,6 +124,18 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
 
         this->BuildSolveLinearEq(points, der_list, dimension);
     }
+    else if( this->ibrav == CUBIC_BC && !this->offdiag )
+    {
+        
+        dimension = 3;
+        der_list.clear();
+        points.clear();
+        // derivates does not include the cross terms, such as d^2/dxdy, so the fcc and bcc have the same deravite list
+        GetDerListFCC(der_list, Lorder);
+        GetPointListBCC(points, a, Ngrid, Lorder);
+
+        this->BuildSolveLinearEq(points, der_list, dimension);
+    }
     else
     {
         dimension = 3;
@@ -913,6 +925,88 @@ void LaplacianCoeff::GetPointListFCC(std::vector<GridPoint>& points, double a[3]
             points.push_back(point);
 
         }
+    }
+
+
+    std::stable_sort(points.begin(), points.end(), customLess_dist);
+
+}
+
+void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
+    GridPoint point;
+    double dx, dy,dz, dist;    
+    // along lattuce vectirs a = (+-0,5, +-0.5, +-0.5)
+    for(int i = -Lorder/2; i <= Lorder/2; i++){
+
+        if (i == 0) continue;
+        dx = i*a[0][0]/Ngrid[0];
+        dy = i*a[0][1]/Ngrid[0];
+        dz = i*a[0][2]/Ngrid[0];
+
+        dist = sqrt(dx * dx  + dy * dy + dz * dz);
+        point.dist = dist;
+        point.delta[0] = dx;
+        point.delta[1] = dy;
+        point.delta[2] = dz;
+        point.index[0] = i;
+        point.index[1] = i;
+        point.index[2] = i;
+        point.ijk = std::abs(i);
+        point.weight_factor = 1.0/std::pow(dist, this->weight_power);
+        point.coeff = 0.0;
+        points.push_back(point);
+
+        dx = -i*a[0][0]/Ngrid[0];
+        dy = i*a[0][1]/Ngrid[0];
+        dz = i*a[0][2]/Ngrid[0];
+
+        dist = sqrt(dx * dx  + dy * dy + dz * dz);
+        point.dist = dist;
+        point.delta[0] = dx;
+        point.delta[1] = dy;
+        point.delta[2] = dz;
+        point.index[0] = -i;
+        point.index[1] = i;
+        point.index[2] = i;
+        point.ijk = std::abs(i);
+        point.weight_factor = 1.0/std::pow(dist, this->weight_power);
+        point.coeff = 0.0;
+        points.push_back(point);
+
+        dx = i*a[0][0]/Ngrid[0];
+        dy = -i*a[0][1]/Ngrid[0];
+        dz = i*a[0][2]/Ngrid[0];
+
+        dist = sqrt(dx * dx  + dy * dy + dz * dz);
+        point.dist = dist;
+        point.delta[0] = dx;
+        point.delta[1] = dy;
+        point.delta[2] = dz;
+        point.index[0] = i;
+        point.index[1] = -i;
+        point.index[2] = i;
+        point.ijk = std::abs(i);
+        point.weight_factor = 1.0/std::pow(dist, this->weight_power);
+        point.coeff = 0.0;
+        points.push_back(point);
+
+        dx = i*a[0][0]/Ngrid[0];
+        dy = i*a[0][1]/Ngrid[0];
+        dz = -i*a[0][2]/Ngrid[0];
+
+        dist = sqrt(dx * dx  + dy * dy + dz * dz);
+        point.dist = dist;
+        point.delta[0] = dx;
+        point.delta[1] = dy;
+        point.delta[2] = dz;
+        point.index[0] = i;
+        point.index[1] = i;
+        point.index[2] = -i;
+        point.ijk = std::abs(i);
+        point.weight_factor = 1.0/std::pow(dist, this->weight_power);
+        point.coeff = 0.0;
+        points.push_back(point);
+
     }
 
 
