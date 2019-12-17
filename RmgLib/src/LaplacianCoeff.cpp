@@ -113,6 +113,17 @@ void LaplacianCoeff::CalculateCoeff(double a[3][3], int Ngrid[3], int Lorder, in
 
         std::stable_sort(points.begin(), points.end(), customLess_dist);
     }
+    else if( this->ibrav == CUBIC_FC && !this->offdiag )
+    {
+        
+        dimension = 3;
+        der_list.clear();
+        points.clear();
+        GetDerListFCC(der_list, Lorder);
+        GetPointListFCC(points, a, Ngrid, Lorder);
+
+        this->BuildSolveLinearEq(points, der_list, dimension);
+    }
     else
     {
         dimension = 3;
@@ -290,6 +301,8 @@ void LaplacianCoeff::GetPointList3D(std::vector<GridPoint>& points, double a[3][
 void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const std::vector<GridPoint>& der_list, int dimension){
 
     int num_derivative = der_list.size();
+    
+    bool iprint = false;
     int info, index;
     std::vector<int> num_points;
 
@@ -300,17 +313,21 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
             num_points.push_back(i+1);
         }
     }
+    
     num_points.push_back((int)points.size());
 
 
-//      for(auto a:num_points) std::cout << "numpoint" << "  " << a<<std::endl;
-//
-//            index = 0;
-//           for(auto a:points)
-//          {   
-//             std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<std::endl;
-//            index++;
-//       }
+    if(iprint)
+    {
+      for(auto a:num_points) std::cout << "numpoint" << "  " << a<<std::endl;
+
+            index = 0;
+           for(auto a:points)
+          {   
+             std::cout << index <<"  "<<a.dist << "    "<<a.index[0]<<"  " <<a.index[1]<<"  " <<a.index[2] << "  "<<std::endl;
+            index++;
+       }
+    }
 
 
 
@@ -367,7 +384,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
       //  {   printf("\n");
       //  for(int j = 0; j < num_derivative; j++)
       //      printf("%d %e", i, Bm[i*num_derivative + j]);
-      //   }
+       // }
 
         Uii = true;
         for(int i = 0; i < num_derivative; i++)
@@ -468,12 +485,15 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
 
     points.resize(point_end);
 
-//        index  =0;
-//        for(auto a:points)
-//        {   
-//            std::cout << index <<"  "<<a.dist << "    "<<a.i<<"  " <<a.j<<"  " <<a.k << "  "<<a.coeff<<std::endl;
-//            index++;
-//        }
+    if(iprint)
+    {
+        index  =0;
+        for(auto a:points)
+        {   
+            std::cout << index <<"  "<<a.dist << "    "<<a.index[0]<<"  " <<a.index[1]<<"  " <<a.index[2] << "  "<<a.coeff<<std::endl;
+            index++;
+        }
+    }
 
 
     delete []Am;
@@ -764,7 +784,6 @@ void LaplacianCoeff::UpdateIndex(int dim[3])
     //  }
 
 }
-
 void LaplacianCoeff::GetDerList(std::vector<GridPoint>& der_list, int Lorder, int dimension, int direction){
 
     GridPoint point;
@@ -828,3 +847,76 @@ void LaplacianCoeff::GetDerList(std::vector<GridPoint>& der_list, int Lorder, in
     std::stable_sort(der_list.begin(), der_list.end(), customLess_dist);
 
 }
+
+void LaplacianCoeff::GetDerListFCC(std::vector<GridPoint>& der_list, int Lorder)
+{
+    der_list.clear();
+
+    std::vector<GridPoint> der_list1;
+    GetDerList(der_list1, Lorder, 1, 0);
+    der_list.insert(der_list.end(), der_list1.begin(), der_list1.end());
+    GetDerList(der_list1, Lorder, 1, 1);
+    der_list.insert(der_list.end(), der_list1.begin(), der_list1.end());
+    GetDerList(der_list1, Lorder, 1, 2);
+    der_list.insert(der_list.end(), der_list1.begin(), der_list1.end());
+
+    std::stable_sort(der_list.begin(), der_list.end(), customLess_ijk);
+    std::stable_sort(der_list.begin(), der_list.end(), customLess_dist);
+
+}
+
+void LaplacianCoeff::GetPointListFCC(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
+    GridPoint point;
+    double dx, dy,dz, dist;    
+    // along lattuce vectirs a1 = (0,5, 0.5, 0), a2 = (0.5, 0.0, 0.5), and a3 = (0.0, 0.5, 0.5)
+    for(int direction = 0; direction < 3; direction++){
+        for(int i = -Lorder/2; i <= Lorder/2; i++){
+
+            if (i == 0) continue;
+            dx = i*a[direction][0]/Ngrid[0];
+            dy = i*a[direction][1]/Ngrid[0];
+            dz = i*a[direction][2]/Ngrid[0];
+
+            dist = sqrt(dx * dx  + dy * dy + dz * dz);
+            point.dist = dist;
+            point.delta[0] = dx;
+            point.delta[1] = dy;
+            point.delta[2] = dz;
+            point.index[0] = 0;
+            point.index[1] = 0;
+            point.index[2] = 0;
+            point.index[direction] = i;
+            point.ijk = std::abs(i);
+            point.weight_factor = 1.0/std::pow(dist, this->weight_power);
+            point.coeff = 0.0;
+            points.push_back(point);
+
+            int direction1 = (direction + 1) %3;
+
+            dx = i*a[direction][0]/Ngrid[0] - i*a[direction1][0]/Ngrid[0];
+            dy = i*a[direction][1]/Ngrid[0] - i*a[direction1][1]/Ngrid[0];
+            dz = i*a[direction][2]/Ngrid[0] - i*a[direction1][2]/Ngrid[0];
+
+            dist = sqrt(dx * dx  + dy * dy + dz * dz);
+            point.dist = dist;
+            point.delta[0] = dx;
+            point.delta[1] = dy;
+            point.delta[2] = dz;
+            point.index[0] = 0;
+            point.index[1] = 0;
+            point.index[2] = 0;
+            point.index[direction] = i;
+            point.index[direction1] = -i;
+            point.ijk = std::abs(i);
+            point.weight_factor = 1.0/std::pow(dist, this->weight_power);
+            point.coeff = 0.0;
+            points.push_back(point);
+
+        }
+    }
+
+
+    std::stable_sort(points.begin(), points.end(), customLess_dist);
+
+}
+
