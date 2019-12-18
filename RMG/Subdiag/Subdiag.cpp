@@ -38,6 +38,7 @@
 #include "ErrorFuncs.h"
 #include "blas.h"
 #include "Solvers.h"
+#include "Functional.h"
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -329,7 +330,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 #endif
 
     // Rotate EXX
-    if(ct.xc_is_hybrid)
+    if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
         tlen = nstates * pbasis_noncoll * sizeof(KpointType);
         // vexx is not in managed memory yet so that might create an issue
