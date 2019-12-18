@@ -880,6 +880,7 @@ public:
     size_t q_alloc[3];
     size_t beta_alloc[3];
     size_t psi_alloc[3];
+    size_t vexx_alloc[3];
     int LocalizedOrbitalLayout=1;
 
     std::string input_initial, input_final;

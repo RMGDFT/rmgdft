@@ -271,7 +271,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         if(ct.xc_is_hybrid)
         {
-            Kptr[kpt]->vexx = new OrbitalType[ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor]();
+            Kptr[kpt]->vexx = new OrbitalType[ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor]();
+            ct.vexx_alloc[0] += sizeof(OrbitalType) * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor;
+            MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
+            MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
+            MPI_Allreduce(MPI_IN_PLACE, &ct.vexx_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
         }
 
     // for band structure calculation only one k point storage is initilized.
@@ -531,7 +535,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         delete RT1;
     }
-
 
     ct.rms = 0.0;
 

@@ -575,6 +575,13 @@ void WriteHeader (void)
                                 (double)ct.q_alloc[2] / 1000.0 / 1000.0,
                                 (double)ct.q_alloc[0] / 1000.0 / 1000.0);
     }
+    if(ct.xc_is_hybrid)
+    {
+        printf("    vexx                %8.2f   %8.2f   %8.2f\n",
+                                (double)ct.vexx_alloc[1] / 1000.0 / 1000.0,
+                                (double)ct.vexx_alloc[2] / 1000.0 / 1000.0,
+                                (double)ct.vexx_alloc[0] / 1000.0 / 1000.0);
+    }
 
     printf("\n");
 
