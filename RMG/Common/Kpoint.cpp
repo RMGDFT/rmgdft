@@ -267,8 +267,9 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     // Set the size of the wavefunction array to allocate. This needs to be 4 times
     // the number of run_states for force calculations right now but will be updated later
     //ct.alloc_states = std::max(4*ct.run_states, ct.max_states);
-    ct.alloc_states = std::max(2*ct.init_states + 3 * ct.state_block_size, ct.max_states + 3 * ct.state_block_size);
-
+    ct.alloc_states = ct.run_states + 3 * ct.state_block_size;
+    ct.alloc_states = std::max(2*ct.init_states, ct.alloc_states);
+    if(ct.alloc_states < ct.max_states) ct.alloc_states = ct.max_states;
     if(ct.init_states > ct.non_local_block_size)
     {
         if(ct.coalesce_states)
