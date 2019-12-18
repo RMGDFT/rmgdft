@@ -138,6 +138,7 @@ public:
     void set_timer_mode(bool verbose);
     void set_MPI_comm(MPI_Comm comm);
     void set_coalesce_factor(int factor);
+    int get_coalesce_factor(void);
     MPI_Comm get_MPI_comm(void);
     void set_gridpe(int gridpe);
     template <typename RmgType> void trade_imagesx (RmgType *f, RmgType *w, int dimx, int dimy, int dimz, int images, int type);

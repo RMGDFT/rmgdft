@@ -198,6 +198,10 @@ void TradeImages::set_coalesce_factor(int factor)
 {
     TradeImages::cfactor = factor;
 }
+int TradeImages::get_coalesce_factor(void)
+{
+    return TradeImages::cfactor;
+}
 MPI_Comm TradeImages::get_MPI_comm(void)
 {
     return TradeImages::comm;

@@ -54,7 +54,6 @@ template double ApplyHamiltonian<std::complex<double>,std::complex<double>>(Kpoi
 template <typename KpointType, typename CalcType>
 double ApplyHamiltonian (Kpoint<KpointType> *kptr, int istate, CalcType * __restrict__ psi, CalcType * __restrict__ h_psi, double * __restrict__ vtot, double *vxc_psi, KpointType * __restrict__ nv, bool potential_acceleration)
 {
-    int pbasis = kptr->pbasis;
     double fd_diag;
     double *veff = NULL;
 
@@ -62,9 +61,10 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, int istate, CalcType * __rest
     potential_acceleration = potential_acceleration & (ct.scf_steps > 0);
 
     int density = 1;
-    int dimx = kptr->G->get_PX0_GRID(density);
+    int dimx = kptr->G->get_PX0_GRID(density) * kptr->T->get_coalesce_factor();
     int dimy = kptr->G->get_PY0_GRID(density);
     int dimz = kptr->G->get_PZ0_GRID(density);
+    int pbasis = dimx*dimy*dimz;
     double gridhx = kptr->G->get_hxgrid(density);
     double gridhy = kptr->G->get_hygrid(density);
     double gridhz = kptr->G->get_hzgrid(density);
