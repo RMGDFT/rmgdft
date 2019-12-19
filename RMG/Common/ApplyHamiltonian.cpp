@@ -112,9 +112,9 @@ double ApplyHamiltonian (Kpoint<KpointType> *kptr, int istate, CalcType * __rest
         for(int idx = 0; idx < pbasis; idx++)
         {
             a_psi_C[idx] += psi_C[idx] * std::complex<double>(vxc_z[idx], 0.0);
-            a_psi_C[idx] += psi_C[idx+pbasis] * std::complex<double>(vxc_x[idx], -vxc_y[idx]);
+            a_psi_C[idx] += psi_C[idx+pbasis] * std::complex<double>(vxc_x[idx], vxc_y[idx]);
             a_psi_C[idx + pbasis] += - psi_C[idx + pbasis] * std::complex<double>(vxc_z[idx], 0.0);
-            a_psi_C[idx + pbasis] += psi_C[idx] * std::complex<double>(vxc_x[idx], vxc_y[idx]);
+            a_psi_C[idx + pbasis] += psi_C[idx] * std::complex<double>(vxc_x[idx], -vxc_y[idx]);
         }
 
     }

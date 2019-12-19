@@ -107,7 +107,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     for(int istate = 0; istate < num_states * ct.noncoll_factor; istate++)
     {
-        int sindex = (istate + first_state) * num_nonloc_ions * ct.max_nl;
+        int sindex = (istate + first_state * ct.noncoll_factor) * num_nonloc_ions * ct.max_nl;
         for (int ion = 0; ion < num_nonloc_ions; ion++)
         {
             int proj_index = ion * ct.max_nl;
@@ -155,19 +155,26 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             {
 
                 if(ct.is_ddd_non_diagonal) {
-                    int idx = (proj_index + i) * num_tot_proj + proj_index + j;
-                    M_dnm[idx] = (KpointType)dnmI[inh+j];
-                    M_qqq[idx] = (KpointType)qqq[inh+j];
-                    if(ct.noncoll)
+                    if(!ct.noncoll)
                     {
-                        M_dnm_C[idx + 0 * alloc1/4] = dnmI[inh+j + 0 * nh * nh] + dnmI[inh+j + 3 * nh * nh];
-                        M_dnm_C[idx + 1 * alloc1/4] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], dnmI[inh+j + 2 * nh * nh]);
-                        M_dnm_C[idx + 2 * alloc1/4] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], -dnmI[inh+j + 2 * nh * nh]);
-                        M_dnm_C[idx + 3 * alloc1/4] = dnmI[inh+j + 0 * nh * nh] - dnmI[inh+j + 3 * nh * nh];
-                        M_qqq[idx + 0 * alloc1/4] = (KpointType)qqq[inh+j];
-                        M_qqq[idx + 1 * alloc1/4] = 0.0;
-                        M_qqq[idx + 2 * alloc1/4] = 0.0;
-                        M_qqq[idx + 3 * alloc1/4] = (KpointType)qqq[inh+j];
+                        int idx = (proj_index + i) * num_tot_proj + proj_index + j;
+                        M_dnm[idx] = (KpointType)dnmI[inh+j];
+                        M_qqq[idx] = (KpointType)qqq[inh+j];
+                    }
+                    else
+                    {
+                        int it0 = proj_index + i;
+                        int jt0 = proj_index + j;
+                        int it1 = proj_index + i + num_tot_proj;
+                        int jt1 = proj_index + j + num_tot_proj;
+                        M_dnm_C[it0 * num_tot_proj * 2 + jt0] = dnmI[inh+j + 0 * nh * nh] + dnmI[inh+j + 3 * nh * nh];
+                        M_dnm_C[it1 * num_tot_proj * 2 + jt0] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], dnmI[inh+j + 2 * nh * nh]);
+                        M_dnm_C[it0 * num_tot_proj * 2 + jt1] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], -dnmI[inh+j + 2 * nh * nh]);
+                        M_dnm_C[it1 * num_tot_proj * 2 + jt1] = dnmI[inh+j + 0 * nh * nh] - dnmI[inh+j + 3 * nh * nh];
+                        M_qqq[it0 * num_tot_proj * 2 + jt0] = (KpointType)qqq[inh+j];
+                        M_qqq[it1 * num_tot_proj * 2 + jt0] = 0.0;
+                        M_qqq[it0 * num_tot_proj * 2 + jt1] = 0.0;
+                        M_qqq[it1 * num_tot_proj * 2 + jt1] = (KpointType)qqq[inh+j];
                     }
                 }
                 else {
@@ -199,7 +206,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 ONE_t, M_dnm,  dim_dnm, sint_compack, dim_dnm,
                 ZERO_t,  nwork, dim_dnm);
 
-// This was bweight
+        // This was bweight
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
                 ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
                 ZERO_t,  nv, P0_BASIS);
@@ -238,7 +245,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             }
         }
 
-// This was bweight
+        // This was bweight
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
                 ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
                 ZERO_t,  nv, P0_BASIS);

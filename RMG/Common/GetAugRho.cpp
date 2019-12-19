@@ -53,92 +53,107 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
     int num_nonloc_ions = Kpts[0]->BetaProjector->get_num_nonloc_ions();
     int *nonloc_ions_list = Kpts[0]->BetaProjector->get_nonloc_ions_list();
 
-    for(int idx = 0;idx < pbasis;idx++) augrho[idx] = 0.0;
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
+    for(int idx = 0;idx < pbasis*factor;idx++) augrho[idx] = 0.0;
 
 
-    if(!ct.norm_conserving_pp) {
+    if(ct.norm_conserving_pp) return;
 
-        double *product = new double[max_product];
-        KpointType *sint = new KpointType[2 * ct.max_nl];
+    double *product = new double[max_product * factor];
+    KpointType *sint = new KpointType[2 * ct.max_nl];
 
-        for (int ion = 0; ion < num_nonloc_ions; ion++)
+    for (int ion = 0; ion < num_nonloc_ions; ion++)
+    {
+        int gion = nonloc_ions_list[ion];
+
+        if (Atoms[gion].Qindex.size())
         {
-            int gion = nonloc_ions_list[ion];
-            
-            if (Atoms[gion].Qindex.size())
+
+            ION *iptr = &Atoms[gion];
+
+            int nh = Species[iptr->species].nh;
+
+            int *ivec = Atoms[gion].Qindex.data();
+
+            int ncount = Atoms[gion].Qindex.size();
+
+            for (int i=0; i < max_product * factor; i++)
+                product[i] = 0.0;
+
+            for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
             {
-                
-                ION *iptr = &Atoms[gion];
-           
-                int nh = Species[iptr->species].nh;
-                
-                int *ivec = Atoms[gion].Qindex.data();
 
-                int ncount = Atoms[gion].Qindex.size();
-
-                for (int i=0; i < max_product; i++)
-                    product[i] = 0.0;
-
-                for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+                /* Loop over states and accumulate charge */
+                for (int istate = 0; istate < ct.num_states; istate++)
                 {
+                    double t1 = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kp.kweight;
 
-                    /* Loop over states and accumulate charge */
-                    for (int istate = 0; istate < ct.num_states; istate++)
-                    {
-                        double t1 = Kpts[kpt]->Kstates[istate].occupation[0] * Kpts[kpt]->kp.kweight;
-
+                    for(int is = 0; is < ct.noncoll_factor; is++)
+                    {    
                         for (int i = 0; i < ct.max_nl; i++)
                         {
-                            sint[i] = Kpts[kpt]->newsint_local[istate*num_nonloc_ions*ct.max_nl + ion * ct.max_nl + i];
+                            sint[i + is * ct.max_nl] = Kpts[kpt]->newsint_local[(ct.noncoll_factor * istate + is)*num_nonloc_ions*ct.max_nl + ion * ct.max_nl + i];
                         }               /*end for i */
+                    }
 
-                        int idx = 0;
-                        for (int i = 0; i < nh; i++)
-                        {
-                            for (int j = i; j < nh; j++)
-                            {
-
-                                if(i == j) {
-
-                                        product[idx] += t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
-
-                                }
-                                else {
-
-                                        product[idx] += 2.0 * t1 * (std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j]));
-
-                                }
-                                idx++;
-                            }           /*end for j */
-                        }               /*end for i */
-                    }                   /*end for istate */
-                }                       /*end for kpt */
-
-
-                int idx = 0;
-                for (int i = 0; i < nh; i++)
-                {
-                    for (int j = i; j < nh; j++)
+                    int idx = 0;
+                    for (int i = 0; i < nh; i++)
                     {
-                        for (int icount = 0; icount < ncount; icount++)
+                        for (int j = i; j < nh; j++)
                         {
-                            augrho[ivec[icount]] += Atoms[gion].augfunc[icount + idx * ncount] * product[idx];
-                        }           /*end for icount */
-                        idx++;
-                    }               /*end for j */
-                }                   /*end for i */
+
+                            double t2 = t1;
+                            if(i != j) t2 = 2.0 * t1;
+
+                            product[idx] += t2 * std::real(sint[i] * std::conj(sint[j]));
+
+                            if(ct.noncoll)
+                            {
+                                std::complex<double> updown = 2.0 * sint[i] * std::conj(sint[j+ct.max_nl]);
+                                product[idx + 1 * max_product] += t2 * std::real(updown);
+                                product[idx + 2 * max_product] += t2 * std::imag(updown);
+                                product[idx + 3 * max_product] += t2 * std::real(sint[i+ct.max_nl] * std::conj(sint[j+ct.max_nl]) );
+                            }
+
+                            idx++;
+
+                        }           /*end for j */
+                    }               /*end for i */
+                }                   /*end for istate */
+            }                       /*end for kpt */
 
 
-            }                       /*end if */
+            int idx = 0;
+            for (int i = 0; i < nh; i++)
+            {
+                for (int j = i; j < nh; j++)
+                {
+                    for (int icount = 0; icount < ncount; icount++)
+                    {
+                        double Qr = Atoms[gion].augfunc[icount + idx * ncount];
+                        augrho[ivec[icount]] += Qr * product[idx];
+                        if(ct.noncoll)
+                        {
+                            augrho[ivec[icount]] += Qr * product[idx + 3 * max_product];
+                            augrho[ivec[icount] + 1 * pbasis ] += Qr * product[idx + 1 * max_product];
+                            augrho[ivec[icount] + 2 * pbasis ] += Qr * product[idx + 2 * max_product];
+                            augrho[ivec[icount] + 3 * pbasis ] += Qr * (product[idx] - product[idx + 3 * max_product]);
 
-        }                           /*end for ion */
+                        }
+                    }           /*end for icount */
+                    idx++;
+                }               /*end for j */
+            }                   /*end for i */
 
-        GlobalSums(augrho, pbasis, pct.kpsub_comm);
-        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object (augrho);
 
-        delete [] sint;
-        delete [] product;
+        }                       /*end if */
 
-    }
+    }                           /*end for ion */
+
+    GlobalSums(augrho, pbasis * factor, pct.kpsub_comm);
+
+    delete [] sint;
+    delete [] product;
+
 
 }

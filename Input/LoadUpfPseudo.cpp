@@ -221,6 +221,13 @@ void LoadUpfPseudo(SPECIES *sp)
     if(!s_is_ultrasoft.compare(0,1,"T")) sp->is_norm_conserving = false;
     if(!s_is_ultrasoft.compare(0,4,"TRUE")) sp->is_norm_conserving = false;
 
+    std::string s_is_spinorb = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.has_so"); 
+    boost::to_upper(s_is_spinorb);
+    if(!s_is_spinorb.compare(0,1,"F")) sp->is_spinorb = false;
+    if(!s_is_spinorb.compare(0,5,"FALSE")) sp->is_spinorb = false;
+    if(!s_is_spinorb.compare(0,1,"T")) sp->is_spinorb = true;
+    if(!s_is_spinorb.compare(0,4,"TRUE")) sp->is_spinorb = true;
+
     // Check for full relativistic and thrown an error if found
     std::string s_is_relativistic = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.relativistic");
     boost::to_upper(s_is_relativistic);
@@ -436,6 +443,15 @@ void LoadUpfPseudo(SPECIES *sp)
        }
     }
 
+    if(sp->is_spinorb)
+    {
+        typedef ptree::path_type path;
+       for(int i = 0;i < sp->nbeta;i++) {
+           std::string pp_rel = "UPF/PP_SPIN_ORB/PP_RELBETA." + boost::lexical_cast<std::string>(i + 1);
+            sp->jjbeta[i] = upf_tree.get<double>(path(pp_rel + "/<xmlattr>/jjj", '/'));
+
+       }
+    }
 
     for (int j = 0; j < MAX_NL; j++)
     {
@@ -443,6 +459,7 @@ void LoadUpfPseudo(SPECIES *sp)
         sp->nhtom[j] = 0;
         sp->indv[j] = 0;
         sp->nh_l2m[j] = 0;
+        sp->nhtoj[j] = 0.0;
     }
 
     int ih = 0;
@@ -455,6 +472,7 @@ void LoadUpfPseudo(SPECIES *sp)
             sp->nhtom[ih] = k;
             sp->indv[ih] = j;
             sp->nh_l2m[ih] = l*l + k;
+            sp->nhtoj[ih] = sp->jjbeta[j];
             ++ih;
         }
     }
@@ -511,11 +529,5 @@ void LoadUpfPseudo(SPECIES *sp)
     sp->rg_points = iend - ibegin + 1;
     if(pp_buffer) delete [] pp_buffer;
     if(!sp->is_ddd_diagonal) ct.is_ddd_non_diagonal = true;
-}
-
-// C binding
-extern "C" void LoadUpf_C(SPECIES *sp)
-{
-    LoadUpfPseudo(sp);
 }
 

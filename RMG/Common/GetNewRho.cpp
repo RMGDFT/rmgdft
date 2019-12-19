@@ -43,6 +43,7 @@
 #include "rmgthreads.h"
 #include "RmgThread.h"
 #include "Symmetry.h"
+#include "Voronoi.h"
 
 
 
@@ -69,17 +70,14 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
         GetNewRhoPost(Kpts, rho);
     else
         GetNewRhoPre(Kpts, rho);
-
+        
     if(!ct.norm_conserving_pp) {
-        if(ct.noncoll)
-        {
-            rmg_error_handler (__FILE__, __LINE__, "ultrasoft with noncollinear is in progress");
-        }
-        double *augrho = new double[FP0_BASIS]();
+        double *augrho = new double[FP0_BASIS*factor]();
         GetAugRho(Kpts, augrho);
-        for(int idx = 0;idx < FP0_BASIS;idx++) rho[idx] += augrho[idx];
+        for(int idx = 0;idx < FP0_BASIS*factor;idx++) rho[idx] += augrho[idx];
         delete [] augrho;
     }
+
 
     for(int is = 0; is < factor; is++)
         if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(&rho[is*FP0_BASIS]);

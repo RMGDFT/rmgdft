@@ -43,6 +43,8 @@ public:
     /** is included in ldaU projections */
     int is_ldaU;
 
+    int is_spinorb;
+
     /** Number of ldaU orbitals */
     int num_ldaU_orbitals;
 
@@ -155,6 +157,13 @@ public:
     /*matrix qqq(nbeta,nbeta) */
     double qqq[MAX_NL][MAX_NL];
 
+//  the following for arrays are for spin-orbit coupling  
+//see ref. Dal Corso Mosca Conte PRB 71, 115106
+    std::complex<double> ddd0_so[MAX_NL][MAX_NL][4];
+    std::complex<double> ddd_so[MAX_NL][MAX_NL][4];
+    std::complex<double> qqq_so[MAX_NL][MAX_NL][4];
+    std::complex<double> fcoeff_so[MAX_NL][MAX_NL][4];
+
     /*the number of L=|l1-l2|.....|l1+l2|, we limit nlc <=5 */
     int nlc;
 
@@ -189,6 +198,7 @@ public:
 
     /*the L-value for the beta function */
     int llbeta[MAX_NB];
+    double jjbeta[MAX_NB];
 
     /* Projectors on radial grid. KB for norm-conserving and beta_n(r) for Vanderbilt Ultrasoft. */
     double *beta[MAX_NB];
@@ -265,6 +275,7 @@ public:
     int indv[MAX_NL];
     int nhtol[MAX_NL];
     int nhtom[MAX_NL];
+    double nhtoj[MAX_NL];
     int nh_l2m[MAX_NL];
     int nh;
 
