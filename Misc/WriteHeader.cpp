@@ -60,7 +60,6 @@ void WriteHeader (void)
 
     int kpt, idx, i;
     time_t tt;
-    double t1;
     double crho_fract;
     int max_funct_length, funct_legend_length, funct_spacing, funct_padding_left, funct_padding_right;
 
@@ -225,13 +224,10 @@ void WriteHeader (void)
     /* We compute the equivalent energy cutoff using the density of grid
      * points in the cell with a correction for the grid anisotropy.
      */
-    t1 = pow (get_vel(), 0.333333333333);
-    t1 = PI / (t1 * get_anisotropy());
-    t1 = t1 * t1 / 2.0;
     double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
-    double t2 = ct.filter_factor*coarse_pwaves->gcut * tpiba2 / 2.0;
-    //printf("TTTT  %f  %f\n",coarse_pwaves->gcut,tpiba2);
-    printf ("    Equivalent energy cutoff:  %8.3f   %8.3f Ry\n", t1, t2);
+    double t1 = ct.filter_factor*coarse_pwaves->gcut * tpiba2;
+    double t2 = ct.filter_factor*fine_pwaves->gcut * tpiba2;
+    printf ("    Equivalent energy cutoffs (psi,rho):  %8.3f   %8.3f Ry\n", t1, t2);
     printf ("\n");
     printf ("    Charge density grid:         %d times finer\n", get_FG_RATIO());
 
