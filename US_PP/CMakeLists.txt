@@ -1,4 +1,5 @@
 add_library (US_PP
+InitSpinOrbit.cpp
 PackGftoc.cpp
 GetPhaseSpecies.cpp
 InitClebschGordan.cpp

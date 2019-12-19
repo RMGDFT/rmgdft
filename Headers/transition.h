@@ -154,6 +154,7 @@ extern "C" int FilenameIncrement(char *pathname);
 
 int CountAtomicOrbitals(void);
 void InitPseudo ();
+void InitSpinOrbit();
 void InitQfunct ();
 void FindPhase (SPECIES *sp, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double> *phase);
 void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw, bool localize);

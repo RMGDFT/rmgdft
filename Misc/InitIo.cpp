@@ -153,10 +153,23 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
     ReadPseudo(ct.num_species, ct, ControlMap);
 
+    if(ct.spinorbit)
+    {
+        bool pp_has_so = false;
+        for(int isp = 0;isp < ct.num_species;isp++)
+        {
+            SPECIES *sp = &Species[isp];
+            if(sp->is_spinorb) pp_has_so = true; 
+        }
+        if(!pp_has_so)
+        {
+            rmg_error_handler (__FILE__, __LINE__, "no pseudopotential has spin-orbit.\n");
+        }
+    }
     if(ct.noncoll) ct.is_ddd_non_diagonal = true;
     // If fine/coarse grid ratio is not set then autoset it. By default we
     // use 1 for norm conserving pseudopotentials and 2 for ultrasoft.
-   
+
     ct.norm_conserving_pp = true;
     int nc_count = 0;
     int us_count = 0;
@@ -204,8 +217,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
     Rmg_halfgrid->set_rank(pct.gridpe, pct.grid_comm);
     bool special = ((Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
-                    (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
-                    (Rmg_L.get_ibrav_type() == HEXAGONAL));
+            (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
+            (Rmg_L.get_ibrav_type() == HEXAGONAL));
     if(!special || ct.kohn_sham_ke_fft) SetLaplacian();
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
@@ -217,12 +230,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
        high ratios of communication/computation in the multigrid solver. An alternate coalesced grid
        setup would be a processor grid of 4*(8,4,4) where the coalesced wavefunction grids are now
        (12,24,24) but each MPI process only handles a subset of the wavefunctions. In particlar.
- 
-         PE_X = 0,4  handles orbitals 0,4,8,12,16 ...
-         PE_X = 1,5  handles orbitals 1,5,9,13,17 ...
-         PE_X = 2,6  handles orbitals 2,6,10,14,18 ...
-         PE_X = 3,7  handles orbitals 3,7,11,15,19 ...
-    
+
+       PE_X = 0,4  handles orbitals 0,4,8,12,16 ...
+       PE_X = 1,5  handles orbitals 1,5,9,13,17 ...
+       PE_X = 2,6  handles orbitals 2,6,10,14,18 ...
+       PE_X = 3,7  handles orbitals 3,7,11,15,19 ...
+
        Threads introduce an additional complication. With non-coalesced grids individual orbitals are assigned
        to a separate thread with each orbital having a thread assigned on each PE. Since orbitals are only assigned
        to a subset of the PE's using coalesced grids some convention needs to be followed. The chosen convention is
@@ -231,30 +244,30 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
        PE/Thread|  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7
        ----------------------------------------------------------
-          0     | S0  | S4  | S0  | S4  | S0  | S4  | S0  | S4
-          1     | S1  | S5  | S1  | S5  | S1  | S5  | S1  | S5
-          2     | S2  | S6  | S2  | S6  | S2  | S6  | S2  | S6
-          3     | S3  | S7  | S3  | S7  | S3  | S7  | S3  | S7
+       0     | S0  | S4  | S0  | S4  | S0  | S4  | S0  | S4
+       1     | S1  | S5  | S1  | S5  | S1  | S5  | S1  | S5
+       2     | S2  | S6  | S2  | S6  | S2  | S6  | S2  | S6
+       3     | S3  | S7  | S3  | S7  | S3  | S7  | S3  | S7
 
        The current implementation only handles coalesce factors up to 16. While it is possible to coalesce
        in more than one coordinate dimension that would require repacking the orbitals so for now this
        implementation is limited to the x-direction.
 
        Implementation details.
-         The standard global TradeImages object can be used. The only difference is that the offset of the
-         neighboring PE's in the x-direction is multiplied by the coalesce factor.
+       The standard global TradeImages object can be used. The only difference is that the offset of the
+       neighboring PE's in the x-direction is multiplied by the coalesce factor.
 
-         We have to perform an MPI reduction in MgEigState in order to compute the eigenvalue for a given
-         orbital so we need another communicator that only spans the required subset of MPI procs.
+       We have to perform an MPI reduction in MgEigState in order to compute the eigenvalue for a given
+       orbital so we need another communicator that only spans the required subset of MPI procs.
 
-         The Gather and Scatter grid functions also need to pass data back and forth between MPI procs
-         with the same y and z proc coordinates so we create a local coalesced communicator for that.
+       The Gather and Scatter grid functions also need to pass data back and forth between MPI procs
+       with the same y and z proc coordinates so we create a local coalesced communicator for that.
 
-         The number of states must be an integral multiple of the coalesce factor.
+       The number of states must be an integral multiple of the coalesce factor.
 
-         The numer of PE's in the x-direction must be evenly divisible by the coalesce factor.
+       The numer of PE's in the x-direction must be evenly divisible by the coalesce factor.
 
-*/
+     */
 
     // processors in x must be an integral multiple of coalesce factor and grid points in x must be evenly
     // divisible by processors in x. And for now the number of orbitals must be evenly divisible by the
@@ -327,7 +340,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if(fd_check_err) 
         rmg_error_handler (__FILE__, __LINE__, "The Number of grid points per PE must be >= kohn_sham_fd_order/2.\n");
 
-    
+
 
 
 
@@ -439,7 +452,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             next_gpu++;
             next_gpu = next_gpu % ct.num_usable_gpu_devices;
         }
-        
+
     }
     else
     {

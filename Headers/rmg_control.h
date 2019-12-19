@@ -66,6 +66,7 @@ public:
     /* Flag indicating if this is a spin polarized calculation */
     bool spin_polarization;
     bool noncoll;
+    bool spinorbit;
     int noncoll_factor;
     int nspin;
 

@@ -429,6 +429,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("noncollinear", &lc.noncoll, false, 
             "if set true, calculate noncollinear ");
+    If.RegisterInputKey("spinorbit", &lc.spinorbit, false, 
+            "if set true, calculate with spinorbit coupling ");
 
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
             CHECK_AND_TERMINATE, OPTIONAL, 
@@ -1187,6 +1189,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         rmg_error_handler (__FILE__, __LINE__, "You have specified occupations for spin-up spin-down and non-spin cases which is ambiguous. Terminating.");
     }
 
+    if(lc.spinorbit) ct.noncoll = true;
     lc.nspin = 1;
     lc.noncoll_factor = 1;
     if(lc.noncoll) 
