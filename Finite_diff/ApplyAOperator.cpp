@@ -76,6 +76,45 @@ double ApplyAOperator (DataType *a, DataType *b, double *kvec)
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, double *kvec)
 {
+    if(ct.kohn_sham_ke_fft)
+    {
+        FftLaplacianCoarse(a, b);    
+        if(!ct.is_gamma)
+        {
+            int pbasis = dimx*dimy*dimz;
+            DataType *gx = new DataType[pbasis];
+            DataType *gy = new DataType[pbasis];
+            DataType *gz = new DataType[pbasis];
+            std::complex<double> *kdr = new std::complex<double>[pbasis];
+
+            FftGradientCoarse(a, gx, gy, gz);
+            // if complex orbitals compute dot products as well
+            std::complex<double> I_t(0.0, 1.0);
+            for(int idx = 0;idx < pbasis;idx++)
+            {
+                kdr[idx] = -I_t * (kvec[0] * std::complex<double>(std::real(gx[idx]), std::imag(gx[idx])) +
+                                   kvec[1] * std::complex<double>(std::real(gy[idx]), std::imag(gy[idx])) +
+                                   kvec[2] * std::complex<double>(std::real(gz[idx]), std::imag(gz[idx])));
+            }
+            if(typeid(DataType) == typeid(std::complex<double>))
+            {
+                std::complex<double> *pptr = (std::complex<double> *)b;
+                for(int idx = 0;idx < pbasis;idx++) pptr[idx] = pptr[idx] - 2.0*kdr[idx];
+            }
+            if(typeid(DataType) == typeid(std::complex<float>))
+            {
+                std::complex<float> *pptr = (std::complex<float> *)b;
+                for(int idx = 0;idx < pbasis;idx++) pptr[idx] = pptr[idx] - 2.0*kdr[idx];
+            }
+        }
+
+        FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
+        DataType *ptr = NULL;
+        // When ptr=NULL this does not do the finite differencing but just
+        // returns the value of the diagonal element.
+        double fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+        return fd_diag;
+    }
     double cc = 0.0;
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
     int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
