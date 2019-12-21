@@ -208,7 +208,8 @@ public:
     double *dnmI_y=NULL;
     double *dnmI_z=NULL;
     double *qqq=NULL;
-    
+    std::complex<double> *dnmI_so=NULL;
+    std::complex<double> *qqq_so=NULL;
 
 };
 

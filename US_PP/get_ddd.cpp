@@ -83,6 +83,8 @@ void get_ddd (double * veff, double *vxc)
     int num_sums = sum_dim * ct.noncoll_factor * ct.noncoll_factor;
     global_sums (sum, &num_sums, pct.grid_comm);
 
+    for(int idx = 0; idx < num_sums; idx++) sum[idx] *= get_vel_f();
+
     sum_idx = 0;
 
     for (ion = 0; ion < ct.num_ions; ion++)
@@ -102,21 +104,21 @@ void get_ddd (double * veff, double *vxc)
                 /*if (fabs (sum[sum_idx]) < 1.0e-10)
                   sum[sum_idx] = 0.0; */
 
-                dnmI[i * nh + j] = sp->ddd0[i][j] + sum[sum_idx] * get_vel_f();
+                dnmI[i * nh + j] = sp->ddd0[i][j] + sum[sum_idx];
                 if (i != j)
                     dnmI[j * nh + i] = dnmI[i * nh + j];
 
                 if(ct.noncoll)
                 {
-                    dnmI[i * nh + j+ 1*nh*nh] = sum[1*sum_dim + sum_idx] * get_vel_f();
+                    dnmI[i * nh + j+ 1*nh*nh] = sum[1*sum_dim + sum_idx];
                     if (i != j)
                         dnmI[j * nh + i + 1*nh*nh] = dnmI[i * nh + j + 1* nh*nh];
 
-                    dnmI[i * nh + j+ 2*nh*nh] = sum[2*sum_dim + sum_idx] * get_vel_f();
+                    dnmI[i * nh + j+ 2*nh*nh] = sum[2*sum_dim + sum_idx];
                     if (i != j)
                         dnmI[j * nh + i + 2*nh*nh] = dnmI[i * nh + j + 2* nh*nh];
 
-                    dnmI[i * nh + j+ 3*nh*nh] = sum[3*sum_dim + sum_idx] * get_vel_f();
+                    dnmI[i * nh + j+ 3*nh*nh] = sum[3*sum_dim + sum_idx];
                     if (i != j)
                         dnmI[j * nh + i + 3*nh*nh] = dnmI[i * nh + j + 3* nh*nh];
                 }

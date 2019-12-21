@@ -9,6 +9,7 @@
 
 static void InitUmm(int lmax, std::complex<double> *Umm);
 static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM);
+static void Init_ddd0_so(SPECIES &sp);
 void InitSpinOrbit ()
 {
     int tot_LM = (ct.max_l +1) *(ct.max_l +1);
@@ -20,21 +21,47 @@ void InitSpinOrbit ()
     {
         SPECIES *sp = &Species[isp];
         Init_fcoef(*sp, Umm, tot_LM);
+        Init_ddd0_so(*sp);
     }
     delete [] Umm;
 }
 
+static void Init_ddd0_so(SPECIES &sp)
+{
+
+    //implement eq. 8 in Corso and Conte, PRB 71 115106(2005)
+    if(!sp.is_spinorb)
+    {
+        for(int ih = 0; ih < sp.nh; ih++)
+            for(int jh = 0; jh < sp.nh; jh++)
+            {
+                sp.ddd0_so[ih][jh][0] = sp.ddd0[ih][jh];
+                sp.ddd0_so[ih][jh][1] = 0.0;
+                sp.ddd0_so[ih][jh][2] = 0.0;
+                sp.ddd0_so[ih][jh][3] = sp.ddd0[ih][jh];
+            }
+    }
+    else
+    {
+        for(int ih = 0; ih < sp.nh; ih++)
+            for(int jh = 0; jh < sp.nh; jh++)
+            {
+                for(int is = 0; is < 4; is++)
+                    sp.ddd0_so[ih][jh][is] = sp.ddd0[ih][jh] *sp.fcoef_so[ih][jh][is];
+            }
+    }
+}
 static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
 {
     for(int ih = 0; ih < sp.nh; ih++)
-    for(int jh = 0; jh < sp.nh; jh++)
-    {
-        sp.fcoef_so[ih][jh][0] = 0.0;
-        sp.fcoef_so[ih][jh][1] = 0.0;
-        sp.fcoef_so[ih][jh][2] = 0.0;
-        sp.fcoef_so[ih][jh][3] = 0.0;
-    }
-    
+        for(int jh = 0; jh < sp.nh; jh++)
+        {
+            sp.fcoef_so[ih][jh][0] = 0.0;
+            sp.fcoef_so[ih][jh][1] = 0.0;
+            sp.fcoef_so[ih][jh][2] = 0.0;
+            sp.fcoef_so[ih][jh][3] = 0.0;
+        }
+
     if(!sp.is_spinorb)  return;
 
     double alpha_up, alpha_dn;
@@ -53,7 +80,7 @@ static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
 
             //  fcoef != 0.0 only when l and j are the same. 
             if( li != lj || std::abs(ji - jj) > 1.0-5) continue;
-         // case: j = l + 1/2, mj =[-j,j], m = mj-1/2 = [-l-1, l]
+            // case: j = l + 1/2, mj =[-j,j], m = mj-1/2 = [-l-1, l]
             if( std::abs(ji -li - 0.5) < 1.0e-5)
             {
                 for(int m = -li -1; m <= li; m++)
@@ -91,7 +118,7 @@ static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
 
                 }
             }
-        //  case: j = l - 1/2, mj =[-j,j], m = mj+1/2 = [-l+1, l]
+            //  case: j = l - 1/2, mj =[-j,j], m = mj+1/2 = [-l+1, l]
             else if( std::abs(ji -li + 0.5) < 1.0e-5)
             {
                 for(int m = -li+1; m <= li; m++)
@@ -126,7 +153,7 @@ static void InitUmm(int lmax, std::complex<double> *Umm)
 
     // total number of harmonic for LM 
     int tot_LM = (lmax +1) *(lmax +1);
-    int idx, idx1, lm, num_lm;
+    int lm;
     double r[3];
 
     double *ylm_real = new double[tot_LM * tot_LM];

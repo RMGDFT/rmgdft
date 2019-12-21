@@ -151,7 +151,6 @@ public:
 
     /*matrix ddd0(nbeta,nbeta) */
     double ddd0[MAX_NL][MAX_NL];
-    double ddd[MAX_NL][MAX_NL];
     bool is_ddd_diagonal;   // Per species. We also have is_ddd_non_diagonal in the main control structure
 
     /*matrix qqq(nbeta,nbeta) */
@@ -160,8 +159,6 @@ public:
 //  the following for arrays are for spin-orbit coupling  
 //see ref. Dal Corso Mosca Conte PRB 71, 115106
     std::complex<double> ddd0_so[MAX_NL][MAX_NL][4];
-    std::complex<double> ddd_so[MAX_NL][MAX_NL][4];
-    std::complex<double> qqq_so[MAX_NL][MAX_NL][4];
     std::complex<double> fcoef_so[MAX_NL][MAX_NL][4];
 
     /*the number of L=|l1-l2|.....|l1+l2|, we limit nlc <=5 */

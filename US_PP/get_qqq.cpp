@@ -99,16 +99,52 @@ void get_qqq ()
         if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
             fprintf (ftpr, "\n");
     }                           /*end for ion */
-/*
-	for(i=0;i<ct.num_species;i++) {
-		if(pct.gridpe==0) {
-			fprintf(ftpr,"%% for Specie %d :\",i);
-			fprintf(ftpr,"N    M    ");
-			for(j=0;j<ct.num_ions,j++) 
-				iptr=&Atoms[ion];
-				if(i==iptr->species) fprintf(ftpr,"ION%d   ",j);
-			}
-	*/
     if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
         fclose (ftpr);
+
+    if(!ct.spinorbit) return;
+
+  //implement eq. 18 in Corso and Conte, PRB 71 115106(2005)
+
+    for (ion = 0; ion < ct.num_ions; ion++)
+    {
+        iptr = &Atoms[ion];
+        sp = &Species[iptr->species];
+
+        nh = sp->nh;
+        qqq = iptr->qqq;
+        if(iptr->qqq_so == NULL) 
+            iptr->qqq_so = new std::complex<double>[nh*nh*4];
+
+        for(int idx = 0; idx < nh*nh*4; idx++) iptr->qqq_so[idx] = 0.0;
+        boost::multi_array_ref<std::complex<double>, 3> qqq_so{iptr->qqq_so, boost::extents[nh][nh][4]};
+
+
+        if(sp->is_spinorb)
+        {
+            for(int ih =0; ih < nh; ih++)
+                for(int jh =0; jh < nh; jh++)
+                    for(int is1 = 0; is1 < 2; is1++)
+                        for(int is2 = 0; is2 < 2; is2++)
+                        {
+                            for(int m1 = 0; m1 < nh; m1++)
+                                for(int m2 = 0; m2 < nh; m2++)
+                                    for(int is0 = 0; is0 < 2; is0++)
+                                    {
+                                        qqq_so[ih][jh][is1*2 + is2] += 
+                                            qqq[m1*nh+m2] * sp->fcoef_so[ih][m1][is1*2+is0] *
+                                            sp->fcoef_so[m2][jh][is0*2+is2];  
+                                    }
+                        }
+        }
+        else
+        {
+            for(int idx = 0; idx < nh*nh; idx++)
+            {
+                iptr->qqq_so[idx + 0 * nh*nh] = qqq[idx];
+                iptr->qqq_so[idx + 3 * nh*nh] = qqq[idx];
+            }
+        }
+    }
+
 }
