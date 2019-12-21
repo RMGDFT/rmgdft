@@ -203,6 +203,12 @@ public:
 
     // An index array which maps the q-functions onto the 3-d grid associated with each processor.
     std::vector<int> Qindex;
+    double *dnmI=NULL;
+    double *dnmI_x=NULL;
+    double *dnmI_y=NULL;
+    double *dnmI_z=NULL;
+    double *qqq=NULL;
+    
 
 };
 

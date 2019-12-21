@@ -667,7 +667,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(double *tpsi)
 
                     } while (nonloc_ions_list[nidx] != oion);
 
-                    double *qqq = pct.qqq[oion];
+                    double *qqq = Atoms[oion].qqq;
 
                     /* get<beta|psi1> and <beta|psi2> */
                     double *sint1R = &this->newsint_local[sidx1 + nidx * ct.max_nl];
@@ -822,7 +822,7 @@ template <class KpointType> void Kpoint<KpointType>::orthogonalize(std::complex<
 
                     } while (nonloc_ions_list[nidx] != oion);
 
-                    double *qqq = pct.qqq[oion];
+                    double *qqq = Atoms[oion].qqq;
 
                     /* get<beta|psi1> and <beta|psi2> */
                     KpointType *sint1 = &this->newsint_local[sidx1 + nidx * ct.max_nl];

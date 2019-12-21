@@ -37,7 +37,6 @@ fill_orbit_borders4.cpp
 GenVxPsi.cpp
 GetAllKbpsi.cpp
 get_all_partial_kbpsi.cpp
-get_Hvnlij.cpp
 get_ion_orbit_overlap_nl.cpp
 GetNlop_on.cpp
 GetOrbitalPairs.cpp

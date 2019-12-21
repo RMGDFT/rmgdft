@@ -24,7 +24,7 @@ void nlforce_par_omega(double * par_omega_x, double * par_omega_y, double * par_
     omega_y = par_omega_y + ion * size;
     omega_z = par_omega_z + ion * size;
 
-    qqq = pct.qqq[ion];
+    qqq = Atoms[ion].qqq;
     iptr = &Atoms[ion];
 
     for (idx = 0; idx < 3; idx++)

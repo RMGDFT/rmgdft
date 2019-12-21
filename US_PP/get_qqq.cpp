@@ -54,12 +54,12 @@ void get_qqq ()
         nh = sp->nh;
         ncount = Atoms[ion].Qindex.size();
 
-        if (pct.qqq[ion] == NULL) {
-            pct.qqq[ion] = new double[nh * nh];
-            qqq = pct.qqq[ion];
+        if (iptr->qqq == NULL) {
+            iptr->qqq = new double[nh * nh];
+            qqq = iptr->qqq;
             for(idx = 0;idx < nh * nh;idx++) qqq[idx] = 0.0;
         }
-        qqq = pct.qqq[ion];
+        qqq = iptr->qqq;
 
         if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
             fprintf (ftpr, "%% for ion %d :\n", ion);

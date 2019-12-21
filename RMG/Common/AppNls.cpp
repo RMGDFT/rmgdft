@@ -145,8 +145,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
         int nh = AtomType.nh;
 
-        dnmI = pct.dnmI[gion];
-        qqq = pct.qqq[gion];
+        dnmI = Atoms[gion].dnmI;
+        qqq = Atoms[gion].qqq;
 
         for (int i = 0; i < nh; i++)
         {

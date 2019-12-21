@@ -130,13 +130,13 @@ typedef struct
     int *lptrlen;
 
     /** points to start of DnmI function storage for this ion*/
-    double **dnmI;
-    double **dnmI_x;
-    double **dnmI_y;
-    double **dnmI_z;
+//    double **dnmI;
+//    double **dnmI_x;
+//    double **dnmI_y;
+//    double **dnmI_z;
 
     /** points to start of qqq storage for this ion*/
-    double **qqq;
+//    double **qqq;
 
     int num_owned_ions;
     int num_loc_ions;

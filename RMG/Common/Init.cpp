@@ -716,18 +716,12 @@ static void init_alloc_nonloc_mem (void)
 
     pct.lptrlen = new int [Atoms.size()];
 
-    pct.dnmI = new double *[Atoms.size()];
-    pct.qqq = new double *[Atoms.size()];
-
 
     /*Initialize pointer arrays to NULL */
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
 
         pct.lptrlen[ion] = 0;
-
-        pct.dnmI[ion] = NULL;
-        pct.qqq[ion] = NULL;
 
     }                           /*end for(ion=0; ion<Atoms.size(); ion++) */
 

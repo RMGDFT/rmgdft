@@ -64,8 +64,8 @@ void GetHvnlij(double *Aij, double *Bij)
         ion1 = pct.ionidx[ion];
         nh = pct.prj_per_ion[ion1];
         if(nh == 0) continue;
-        dnmI = pct.dnmI[ion1];
-        qnmI = pct.qqq[ion1];
+        dnmI = Atoms[ion1].dnmI;
+        qnmI = Atoms[ion1].qqq;
         double_ptr = Kbpsi_str.kbpsi_ion[ion].data();
         int_ptr = Kbpsi_str.orbital_index[ion].data();
         num_orb = Kbpsi_str.num_orbital_thision[ion]; 

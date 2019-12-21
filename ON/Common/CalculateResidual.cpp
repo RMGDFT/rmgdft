@@ -119,8 +119,8 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
         {
 
 
-            dnmI = pct.dnmI[ion];
-            qnmI = pct.qqq[ion];
+            dnmI = iptr->dnmI;
+            qnmI = iptr->qqq;
 
             for(int i = 0; i < nh; i++)
                 for(int j = 0; j < nh; j++)

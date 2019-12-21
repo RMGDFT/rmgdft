@@ -131,7 +131,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
             
             } while (nonloc_ions_list[nidx] != oion);
 
-            qqq = pct.qqq[oion];
+            qqq = Atoms[oion].qqq;
 
 
             /*nidx adds offset due to current ion*/

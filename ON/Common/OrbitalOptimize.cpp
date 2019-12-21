@@ -382,8 +382,8 @@ void get_dnmpsi(STATE *states1)
         int ion = pct.ionidx[ion2];
         int num_prj = pct.prj_per_ion[ion];
         if (num_prj == 0) continue;
-        double *qqq = pct.qqq[ion];
-        double * ddd = pct.dnmI[ion];
+        double *qqq = Atoms[ion].qqq;
+        double *ddd = Atoms[ion].dnmI;
         int num_orb = Kbpsi_str.num_orbital_thision[ion2]; 
 
         dgemm("N", "N", &num_prj, &num_orb, &num_prj, &one, qqq, &num_prj, 

@@ -43,8 +43,8 @@ void get_ddd (double * veff, double *vxc)
         nh = sp->nh;
         ncount = Atoms[ion].Qindex.size();
 
-        if (pct.dnmI[ion] == NULL)
-            pct.dnmI[ion] = new double[nh * nh * ct.noncoll_factor * ct.noncoll_factor];
+        if (iptr->dnmI == NULL)
+            iptr->dnmI = new double[nh * nh * ct.noncoll_factor * ct.noncoll_factor];
 
         idx = 0;
         for (i = 0; i < nh; i++)
@@ -92,7 +92,7 @@ void get_ddd (double * veff, double *vxc)
 
         nh = sp->nh;
 
-        dnmI = pct.dnmI[ion];
+        dnmI = iptr->dnmI;
 
         for (i = 0; i < nh; i++)
         {

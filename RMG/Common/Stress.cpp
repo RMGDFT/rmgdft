@@ -585,8 +585,8 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                         ION *iptr = &Atoms[gion];
 
                         int nh = Species[iptr->species].nh;
-                        double *dnmI = pct.dnmI[gion];
-                        double *qnmI = pct.qqq[gion];
+                        double *dnmI = iptr->dnmI;
+                        double *qnmI = iptr->qqq;
 
 
                         for(int n = 0; n <nh; n++)

@@ -71,18 +71,18 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
                 {
                     nh = pct.prj_per_ion[ion1];
 
-                    qqq = pct.qqq[ion1];
-                    dnmI = pct.dnmI[ion1];
+                    qqq = Atoms[ion1].qqq;
+                    dnmI = Atoms[ion1].dnmI;
                     switch (flag)
                     {
                         case 1:
-                            dnmI_R = pct.dnmI_x[ion1];
+                            dnmI_R = Atoms[ion1].dnmI_x;
                             break;
                         case 2:
-                            dnmI_R = pct.dnmI_y[ion1];
+                            dnmI_R = Atoms[ion1].dnmI_y;
                             break;
                         case 3:
-                            dnmI_R = pct.dnmI_z[ion1];
+                            dnmI_R = Atoms[ion1].dnmI_z;
                             break;
                         default:
                             error_handler("Undefined flag");
@@ -154,18 +154,18 @@ void ion_partial_Hij_and_Sij (int iion, int flag,  double *Hij, double *Sij)
 
                             nh = pct.prj_per_ion[ion1_global];
 
-                            qqq = pct.qqq[ion1_global];
-                            dnmI = pct.dnmI[ion1_global];
+                            qqq = Atoms[ion1_global].qqq;
+                            dnmI = AtomsI[ion1_global].dnmI;
                             switch (flag)
                             {
                                 case 1:
-                                    dnmI_R = pct.dnmI_x[ion1_global];
+                                    dnmI_R = Atoms[ion1_global].dnmI_x;
                                     break;
                                 case 2:
-                                    dnmI_R = pct.dnmI_y[ion1_global];
+                                    dnmI_R = Atoms[ion1_global].dnmI_y;
                                     break;
                                 case 3:
-                                    dnmI_R = pct.dnmI_z[ion1_global];
+                                    dnmI_R = Atoms[ion1_global].dnmI_z;
                                     break;
                                 default:
                                     error_handler("Undefined flag");

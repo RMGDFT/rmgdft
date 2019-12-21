@@ -427,7 +427,7 @@ void nlforce_par_gamma (double * par_gamma, int ion, int nh, double *force)
     gamma_y = gamma_x + size;
     gamma_z = gamma_y + size;
 
-    dnmI = pct.dnmI[ion];
+    dnmI = Atoms[ion].dnmI;
 
     for (idx = 0; idx < 3; idx++)
         forces[idx] = 0.0;
@@ -474,7 +474,7 @@ void nlforce_par_omega (double * par_omega, int ion, int nh, double *force)
     omega_y = omega_x + size;
     omega_z = omega_y + size;
 
-    qqq = pct.qqq[ion];
+    qqq = Atoms[ion].qqq;
 
     for (idx = 0; idx < 3; idx++)
         forces[idx] = 0.0;

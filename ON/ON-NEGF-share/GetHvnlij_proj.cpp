@@ -53,8 +53,8 @@ void GetHvnlij_proj(double *Aij, double *Bij, double *Kbpsi_mat1, double *Kbpsi_
             continue;
         }
 
-        dnmI = pct.dnmI[ion];
-        qnmI = pct.qqq[ion];
+        dnmI = iptr->dnmI;
+        qnmI = iptr->qqq;
 
         dgemm ("T", "N", &num_orb1, &nh, &nh, &one, &Kbpsi_mat1[proj_count], &num_proj, dnmI, &nh, &zero, temA, &num_orb1);
         dgemm ("N", "N", &num_orb1, &num_orb2, &nh, &one, temA, &num_orb1, &Kbpsi_mat2[proj_count], &num_proj, &one, Aij, &num_orb1);

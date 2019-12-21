@@ -55,8 +55,8 @@ void get_ddd_update (double * veff)
         nh = sp->nh;
         ncount = Atoms[ion].Qindex.size();
 
-        if (pct.dnmI[ion] == NULL)
-            my_malloc (pct.dnmI[ion], nh * nh, double);
+        if (iptr->dnmI == NULL)
+            iptr->dnmI = new double[nh * nh];
 
         idx = 0;
         for (i = 0; i < nh; i++)
@@ -97,7 +97,7 @@ void get_ddd_update (double * veff)
 
         nh = sp->nh;
 
-        dnmI = pct.dnmI[ion];
+        dnmI = iptr->dnmI;
 
         for (i = 0; i < nh; i++)
         {
