@@ -42,6 +42,7 @@
 #include <complex>
 
 
+void betapsi_so(std::complex<double> *sint, std::complex<double> *sint_tem, SPECIES &sp);
 template State<double>::State(void);
 template State<std::complex<double> >::State(void);
 
@@ -104,10 +105,10 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         int ion, nh, i, j, inh, sidx_local, nidx, oion;
         double sumbeta, sumpsi, sum, t1;
         double *qqq;
-        StateType *sint;
+        StateType *sint = new StateType[2 * ct.max_nl];
+        std::complex<double> *sint_tem = new std::complex<double>[2*ct.max_nl];
         ION *iptr;
 
-        sidx_local = istate * num_nonloc_ions * ct.max_nl * ct.noncoll_factor;
 
         sumpsi = 0.0;
         sumbeta = 0.0;
@@ -120,6 +121,7 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
             
             iptr = &Atoms[oion];
            
+            SPECIES &sp = Species[iptr->species];
             nh = Species[iptr->species].nh;
             
             /* Figure out index of owned ion in nonloc_ions_list array*/
@@ -133,9 +135,17 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
 
             qqq = Atoms[oion].qqq;
 
-
             /*nidx adds offset due to current ion*/
-            sint = &this->Kptr->newsint_local[sidx_local + nidx * ct.max_nl];
+            for(int is = 0; is < ct.noncoll_factor; is++)
+            {
+                for (int i = 0; i < ct.max_nl; i++)
+                {
+                    sint[i + is * ct.max_nl] = this->Kptr->newsint_local[(ct.noncoll_factor * istate + is)*num_nonloc_ions*ct.max_nl + ion * ct.max_nl + i];
+                }               /*end for i */
+            }
+
+            if(ct.spinorbit)
+                betapsi_so((std::complex<double> *)sint, sint_tem, sp);
 
             for (i = 0; i < nh; i++)
             {
@@ -145,8 +155,9 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
                     if (qqq[inh + j] != 0.0)
                     {
 
-                        sumbeta += qqq[inh + j] * std::real((std::real(sint[i]) * std::real(sint[j]) + std::imag(sint[i]) * std::imag(sint[j])));
-                        sumbeta += qqq[inh + j] * std::real((std::real(sint[i]) * std::imag(sint[j]) - std::imag(sint[i]) * std::real(sint[j])));
+                        sumbeta += qqq[inh + j] * std::real( sint[i] * std::conj(sint[j]) );
+                        if(ct.noncoll)
+                            sumbeta += qqq[inh + j] * std::real( sint[i+ct.max_nl] * std::conj(sint[j+ct.max_nl]) );
 
                     }
                 }
@@ -174,16 +185,23 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
         }
 
         /* update <beta|psi> - Local version*/
-        
+
+        sidx_local = istate * num_nonloc_ions * ct.max_nl * ct.noncoll_factor;
         for (ion = 0; ion < num_nonloc_ions; ion++)
         {
 
             StateType *tsint_ptr = &this->Kptr->newsint_local[sidx_local + ion * ct.max_nl];
             for(int jdx = 0;jdx < ct.max_nl;jdx++) {
                 tsint_ptr[jdx] = tsint_ptr[jdx] * t1;
+                if(ct.noncoll)
+                    tsint_ptr[jdx + num_nonloc_ions * ct.max_nl] = tsint_ptr[jdx + num_nonloc_ions * ct.max_nl] * t1;
+
             }
 
         }
+
+        delete []sint;
+        delete []sint_tem;
 
     }
 }

@@ -104,6 +104,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     KpointType *M_qqq = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc1);
     for(size_t i = 0;i < alloc;i++) sint_compack[i] = 0.0;
     std::complex<double> *M_dnm_C = (std::complex<double> *) M_dnm;
+    std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq;
 
     for(int istate = 0; istate < num_states * ct.noncoll_factor; istate++)
     {
@@ -155,26 +156,41 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             {
 
                 if(ct.is_ddd_non_diagonal) {
-                    if(!ct.noncoll)
+                    if(ct.spinorbit)
                     {
-                        int idx = (proj_index + i) * num_tot_proj + proj_index + j;
-                        M_dnm[idx] = (KpointType)dnmI[inh+j];
-                        M_qqq[idx] = (KpointType)qqq[inh+j];
+                        int it0 = proj_index + i;
+                        int jt0 = proj_index + j;
+                        int it1 = proj_index + i + num_tot_proj;
+                        int jt1 = proj_index + j + num_tot_proj;
+                        M_dnm_C[it0 * num_tot_proj * 2 + jt0] = Atoms[gion].dnmI_so[inh+j + 0 * nh *nh];
+                        M_dnm_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].dnmI_so[inh+j + 1 * nh *nh];
+                        M_dnm_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].dnmI_so[inh+j + 2 * nh *nh];
+                        M_dnm_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].dnmI_so[inh+j + 3 * nh *nh];
+                        M_qqq_C[it0 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 0 * nh *nh];
+                        M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 1 * nh *nh];
+                        M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 2 * nh *nh];
+                        M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 3 * nh *nh];
                     }
-                    else
+                    else if(ct.noncoll)
                     {
                         int it0 = proj_index + i;
                         int jt0 = proj_index + j;
                         int it1 = proj_index + i + num_tot_proj;
                         int jt1 = proj_index + j + num_tot_proj;
                         M_dnm_C[it0 * num_tot_proj * 2 + jt0] = dnmI[inh+j + 0 * nh * nh] + dnmI[inh+j + 3 * nh * nh];
-                        M_dnm_C[it1 * num_tot_proj * 2 + jt0] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], dnmI[inh+j + 2 * nh * nh]);
                         M_dnm_C[it0 * num_tot_proj * 2 + jt1] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], -dnmI[inh+j + 2 * nh * nh]);
+                        M_dnm_C[it1 * num_tot_proj * 2 + jt0] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], dnmI[inh+j + 2 * nh * nh]);
                         M_dnm_C[it1 * num_tot_proj * 2 + jt1] = dnmI[inh+j + 0 * nh * nh] - dnmI[inh+j + 3 * nh * nh];
                         M_qqq[it0 * num_tot_proj * 2 + jt0] = (KpointType)qqq[inh+j];
                         M_qqq[it1 * num_tot_proj * 2 + jt0] = 0.0;
                         M_qqq[it0 * num_tot_proj * 2 + jt1] = 0.0;
                         M_qqq[it1 * num_tot_proj * 2 + jt1] = (KpointType)qqq[inh+j];
+                    }
+                    else
+                    {
+                        int idx = (proj_index + i) * num_tot_proj + proj_index + j;
+                        M_dnm[idx] = (KpointType)dnmI[inh+j];
+                        M_qqq[idx] = (KpointType)qqq[inh+j];
                     }
                 }
                 else {

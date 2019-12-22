@@ -41,6 +41,8 @@
 #include "GlobalSums.h"
 
 
+void betapsi_so(std::complex<double> *sint, std::complex<double> *sint_tem, SPECIES &sp);
+
 template void GetAugRho<double>(Kpoint<double> **, double *);
 template void GetAugRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
 
@@ -62,6 +64,8 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
     double *product = new double[max_product * factor];
     KpointType *sint = new KpointType[2 * ct.max_nl];
 
+    std::complex<double> *sint_tem = new std::complex<double>[2*ct.max_nl];
+
     for (int ion = 0; ion < num_nonloc_ions; ion++)
     {
         int gion = nonloc_ions_list[ion];
@@ -71,6 +75,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
             ION *iptr = &Atoms[gion];
 
+            SPECIES &sp = Species[iptr->species];
             int nh = Species[iptr->species].nh;
 
             int *ivec = Atoms[gion].Qindex.data();
@@ -95,6 +100,8 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                             sint[i + is * ct.max_nl] = Kpts[kpt]->newsint_local[(ct.noncoll_factor * istate + is)*num_nonloc_ions*ct.max_nl + ion * ct.max_nl + i];
                         }               /*end for i */
                     }
+
+                    if(sp.is_spinorb) betapsi_so( (std::complex<double> *)sint, sint_tem, sp);
 
                     int idx = 0;
                     for (int i = 0; i < nh; i++)
@@ -155,5 +162,25 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
     delete [] sint;
     delete [] product;
 
+}
+
+//  <beta|psi>  = sum_ fcoef_so * <beta|psi> 
+// eq. 16 Corso and Conte, PRB 71, 115106 (2005)
+void betapsi_so(std::complex<double> *sint, std::complex<double> *sint_tem, SPECIES &sp)
+{
+    for(int idx = 0; idx < 2*ct.max_nl; idx++) sint_tem[idx] = sint[idx];
+    for(int idx = 0; idx < 2*ct.max_nl; idx++) sint[idx] = 0.0;
+
+    for(int ih = 0; ih < sp.nh; ih++)
+        for(int is = 0; is < 2; is++)
+        {
+            for(int jh = 0; jh < sp.nh; jh++)
+                for(int is1 = 0; is1 < 2; is1++)
+                {
+                    sint[is * ct.max_nl + ih] += 
+                        sp.fcoef_so[ih][jh][is*2+is1] * sint_tem[jh + is1 * ct.max_nl]; 
+                }
+        }
 
 }
+
