@@ -231,9 +231,9 @@ void LoadUpfPseudo(SPECIES *sp)
     // Check for full relativistic and thrown an error if found
     std::string s_is_relativistic = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.relativistic");
     boost::to_upper(s_is_relativistic);
-    if(!s_is_relativistic.compare(0,4,"FULL")) {
-        throw RmgFatalException() << "RMG does not support fully relativistic pseudopotentials. Terminating.\n";
-    }
+    if(!s_is_relativistic.compare(0,4,"FULL") && !ct.spinorbit ) {
+        throw RmgFatalException() << "RMG does not support fully relativistic pseudopotentials without spinorbit. Terminating.\n";
+   }
 
     // Core correction flag
     std::string s_core_correction = upf_tree.get<std::string>("UPF.PP_HEADER.<xmlattr>.core_correction");
@@ -282,6 +282,7 @@ void LoadUpfPseudo(SPECIES *sp)
         sp->atomic_wave = new double *[MAX_INITWF];
         sp->awave_lig = new double *[MAX_INITWF];
         sp->atomic_wave_l = new int [MAX_INITWF];
+        sp->atomic_wave_j = new double [MAX_INITWF];
         sp->atomic_wave_oc = new double [MAX_INITWF]();
         sp->aradius = new double [MAX_INITWF];
 
@@ -446,11 +447,16 @@ void LoadUpfPseudo(SPECIES *sp)
     if(sp->is_spinorb)
     {
         typedef ptree::path_type path;
-       for(int i = 0;i < sp->nbeta;i++) {
-           std::string pp_rel = "UPF/PP_SPIN_ORB/PP_RELBETA." + boost::lexical_cast<std::string>(i + 1);
+        for(int i = 0;i < sp->nbeta;i++) {
+            std::string pp_rel = "UPF/PP_SPIN_ORB/PP_RELBETA." + boost::lexical_cast<std::string>(i + 1);
             sp->jjbeta[i] = upf_tree.get<double>(path(pp_rel + "/<xmlattr>/jjj", '/'));
 
-       }
+        }
+
+        for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++) {
+            std::string pp_rel = "UPF/PP_SPIN_ORB/PP_RELWFC." + boost::lexical_cast<std::string>(iwf + 1);
+            sp->atomic_wave_j[iwf] = upf_tree.get<double>(path(pp_rel + "/<xmlattr>/jchi", '/'));
+        }
     }
 
     for (int j = 0; j < MAX_NL; j++)

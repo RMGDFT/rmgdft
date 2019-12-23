@@ -37,7 +37,6 @@ int CountAtomicOrbitals(void)
     int total_atomic_orbitals = 0;
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
-
         /* Generate ion pointer */
         ION *iptr = &Atoms[ion];
 
@@ -47,9 +46,14 @@ int CountAtomicOrbitals(void)
         for (int ip = 0; ip < sp->num_atomic_waves; ip++) {
             if(sp->atomic_wave_oc[ip] > 0.0) {
                 int l = sp->atomic_wave_l[ip];
-                for (int m=0; m < 2*l+1; m++) {
-                    total_atomic_orbitals ++;
-                }
+                double jj = sp->atomic_wave_j[ip];
+
+                if( sp->is_spinorb )
+                   total_atomic_orbitals += (int)(2 * jj + 1 + 0.1);
+                else if(ct.noncoll)
+                    total_atomic_orbitals += 2*(2 * l + 1);
+                else
+                    total_atomic_orbitals += 2 * l + 1;
             }
         }
 

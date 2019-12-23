@@ -117,13 +117,12 @@ void get_qqq ()
             iptr->qqq_so = new std::complex<double>[nh*nh*4];
 
         for(int idx = 0; idx < nh*nh*4; idx++) iptr->qqq_so[idx] = 0.0;
-        boost::multi_array_ref<std::complex<double>, 3> qqq_so{iptr->qqq_so, boost::extents[nh][nh][4]};
-
 
         if(sp->is_spinorb)
         {
             for(int ih =0; ih < nh; ih++)
                 for(int jh =0; jh < nh; jh++)
+                {
                     for(int is1 = 0; is1 < 2; is1++)
                         for(int is2 = 0; is2 < 2; is2++)
                         {
@@ -131,11 +130,12 @@ void get_qqq ()
                                 for(int m2 = 0; m2 < nh; m2++)
                                     for(int is0 = 0; is0 < 2; is0++)
                                     {
-                                        qqq_so[ih][jh][is1*2 + is2] += 
+                                        iptr->qqq_so[ih*nh + jh + (is1*2 + is2) * nh * nh] += 
                                             qqq[m1*nh+m2] * sp->fcoef_so[ih][m1][is1*2+is0] *
                                             sp->fcoef_so[m2][jh][is0*2+is2];  
                                     }
                         }
+                }
         }
         else
         {

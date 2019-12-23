@@ -225,7 +225,7 @@ template <class KpointType> void Kpoint<KpointType>::init_states(void)
     // here and allocate state structures for the largest possible number of states
     ct.total_atomic_orbitals = CountAtomicOrbitals();
     if (Verify ("start_mode","LCAO Start", ControlMap) || (ct.forceflag == BAND_STRUCTURE)) {
-        ct.init_states = ct.total_atomic_orbitals * ct.noncoll_factor + ct.extra_random_lcao_states;
+        ct.init_states = ct.total_atomic_orbitals + ct.extra_random_lcao_states;
         if(ct.init_states < ct.num_states) {
             ct.init_states = ct.num_states;
         }

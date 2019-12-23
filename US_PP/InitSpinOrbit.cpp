@@ -20,7 +20,10 @@ void InitSpinOrbit ()
     for(int isp = 0; isp < ct.num_species; isp++)
     {
         SPECIES *sp = &Species[isp];
+        sp->Umm = new std::complex<double>[tot_LM * tot_LM]();
+        for(int idx = 0; idx < tot_LM * tot_LM; idx++) sp->Umm[idx] = Umm[idx];
         Init_fcoef(*sp, Umm, tot_LM);
+
         Init_ddd0_so(*sp);
     }
     delete [] Umm;
@@ -46,8 +49,15 @@ static void Init_ddd0_so(SPECIES &sp)
         for(int ih = 0; ih < sp.nh; ih++)
             for(int jh = 0; jh < sp.nh; jh++)
             {
+                int ibeta = sp.indv[ih];
+                int jbeta = sp.indv[jh];
                 for(int is = 0; is < 4; is++)
+                {
                     sp.ddd0_so[ih][jh][is] = sp.ddd0[ih][jh] *sp.fcoef_so[ih][jh][is];
+                    if(ibeta != jbeta)
+                        sp.fcoef_so[ih][jh][is] = 0.0;
+
+                }
             }
     }
 }
@@ -78,9 +88,11 @@ static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
             double jj = sp.nhtoj[jh];
             int lmj = sp.nh_l2m[jh];
 
+
             //  fcoef != 0.0 only when l and j are the same. 
-            if( li != lj || std::abs(ji - jj) > 1.0-5) continue;
+            if( li != lj || std::abs(ji - jj) > 1.0e-5) continue;
             // case: j = l + 1/2, mj =[-j,j], m = mj-1/2 = [-l-1, l]
+
             if( std::abs(ji -li - 0.5) < 1.0e-5)
             {
                 for(int m = -li -1; m <= li; m++)
@@ -193,7 +205,7 @@ static void InitUmm(int lmax, std::complex<double> *Umm)
     for(int i = 0; i < tot_LM; i++)
         for(int j = 0; j < tot_LM; j++)
             for(int k = 0; k < tot_LM; k++)
-                Umm[i * tot_LM + j] += ylm_complex[k * tot_LM + j] * ylm_invert[i * tot_LM + k];
+                Umm[i * tot_LM + j] += ylm_complex[k * tot_LM + i] * ylm_invert[j * tot_LM + k];
 
     if(pct.gridpe == 0 && 0)
     {

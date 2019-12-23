@@ -144,8 +144,8 @@ template <class StateType> void State<StateType>::normalize(StateType *tpsi, int
                 }               /*end for i */
             }
 
-            if(ct.spinorbit)
-                betapsi_so((std::complex<double> *)sint, sint_tem, sp);
+           // if(ct.spinorbit)
+           //     betapsi_so((std::complex<double> *)sint, sint_tem, sp);
 
             for (i = 0; i < nh; i++)
             {

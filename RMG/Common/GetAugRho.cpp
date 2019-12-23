@@ -41,7 +41,7 @@
 #include "GlobalSums.h"
 
 
-void betapsi_so(std::complex<double> *sint, std::complex<double> *sint_tem, SPECIES &sp);
+void transform_so(std::complex<double> *product, std::complex<double> *product_tem, SPECIES &sp);
 
 template void GetAugRho<double>(Kpoint<double> **, double *);
 template void GetAugRho<std::complex<double> >(Kpoint<std::complex<double>> **, double *);
@@ -49,7 +49,7 @@ template void GetAugRho<std::complex<double> >(Kpoint<std::complex<double>> **, 
 template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double *augrho)
 {
 
-    int max_product = (ct.max_nl + 1) * ct.max_nl / 2;
+    int max_product = ct.max_nl  * ct.max_nl ;
 
     int pbasis = Kpts[0]->G->get_P0_BASIS(Kpts[0]->G->default_FG_RATIO);
     int num_nonloc_ions = Kpts[0]->BetaProjector->get_num_nonloc_ions();
@@ -61,10 +61,9 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
     if(ct.norm_conserving_pp) return;
 
-    double *product = new double[max_product * factor];
+    std::complex<double> *product = new std::complex<double>[max_product * factor];
+    std::complex<double> *product_tem = new std::complex<double>[max_product * factor];
     KpointType *sint = new KpointType[2 * ct.max_nl];
-
-    std::complex<double> *sint_tem = new std::complex<double>[2*ct.max_nl];
 
     for (int ion = 0; ion < num_nonloc_ions; ion++)
     {
@@ -101,25 +100,23 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                         }               /*end for i */
                     }
 
-                    if(sp.is_spinorb) betapsi_so( (std::complex<double> *)sint, sint_tem, sp);
 
                     int idx = 0;
                     for (int i = 0; i < nh; i++)
                     {
-                        for (int j = i; j < nh; j++)
+                        for (int j = 0; j < nh; j++)
                         {
 
                             double t2 = t1;
-                            if(i != j) t2 = 2.0 * t1;
+                            //if(i != j) t2 = 2.0 * t1;
 
-                            product[idx] += t2 * std::real(sint[i] * std::conj(sint[j]));
+                            product[idx] += t2 * sint[i] * std::conj(sint[j]);
 
                             if(ct.noncoll)
                             {
-                                std::complex<double> updown = 2.0 * sint[i] * std::conj(sint[j+ct.max_nl]);
-                                product[idx + 1 * max_product] += t2 * std::real(updown);
-                                product[idx + 2 * max_product] += t2 * std::imag(updown);
-                                product[idx + 3 * max_product] += t2 * std::real(sint[i+ct.max_nl] * std::conj(sint[j+ct.max_nl]) );
+                                product[idx + 1 * max_product] += t2 * sint[i] * std::conj(sint[j+ct.max_nl]);
+                                product[idx + 2 * max_product] += t2 * sint[i+ct.max_nl] * std::conj(sint[j]);
+                                product[idx + 3 * max_product] += t2 * sint[i+ct.max_nl] * std::conj(sint[j+ct.max_nl]);
                             }
 
                             idx++;
@@ -129,6 +126,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                 }                   /*end for istate */
             }                       /*end for kpt */
 
+            if(sp.is_spinorb) transform_so(product, product_tem, sp);
 
             int idx = 0;
             for (int i = 0; i < nh; i++)
@@ -138,13 +136,21 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                     for (int icount = 0; icount < ncount; icount++)
                     {
                         double Qr = Atoms[gion].augfunc[icount + idx * ncount];
-                        augrho[ivec[icount]] += Qr * product[idx];
+                        augrho[ivec[icount]] += Qr * std::real(product[i * nh+j]);
+                        if(i != j) augrho[ivec[icount]] += Qr * std::real(product[j * nh+i]);
                         if(ct.noncoll)
                         {
-                            augrho[ivec[icount]] += Qr * product[idx + 3 * max_product];
-                            augrho[ivec[icount] + 1 * pbasis ] += Qr * product[idx + 1 * max_product];
-                            augrho[ivec[icount] + 2 * pbasis ] += Qr * product[idx + 2 * max_product];
-                            augrho[ivec[icount] + 3 * pbasis ] += Qr * (product[idx] - product[idx + 3 * max_product]);
+                            augrho[ivec[icount]] += Qr * std::real(product[i*nh+j + 3 * max_product]);
+                            augrho[ivec[icount] + 1 * pbasis ] += Qr * std::real( product[i*nh+j + 1 * max_product]+product[i*nh+j + 2 * max_product]);
+                            augrho[ivec[icount] + 2 * pbasis ] += Qr * std::imag( product[i*nh+j + 1 * max_product]-product[i*nh+j + 2 * max_product]);
+                            augrho[ivec[icount] + 3 * pbasis ] += Qr * std::real(product[i*nh+j] - product[i*nh+j + 3 * max_product]);
+                            if(i != j)
+                            {
+                                augrho[ivec[icount]] += Qr *std::real( product[j*nh+i + 3 * max_product]);
+                                augrho[ivec[icount] + 1 * pbasis ] += Qr * std::real( product[j*nh+i + 1 * max_product]+product[j*nh+i + 2 * max_product]);
+                                augrho[ivec[icount] + 2 * pbasis ] += Qr * std::imag( product[j*nh+i + 1 * max_product]-product[j*nh+i + 2 * max_product]);
+                                augrho[ivec[icount] + 3 * pbasis ] += Qr * std::real(product[j*nh+i] - product[j*nh+i + 3 * max_product]);
+                            }
 
                         }
                     }           /*end for icount */
@@ -161,26 +167,35 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
     delete [] sint;
     delete [] product;
+    delete [] product_tem;
 
 }
 
 //  <beta|psi>  = sum_ fcoef_so * <beta|psi> 
 // eq. 16 Corso and Conte, PRB 71, 115106 (2005)
-void betapsi_so(std::complex<double> *sint, std::complex<double> *sint_tem, SPECIES &sp)
+void transform_so(std::complex<double> *product, std::complex<double> *product_tem, SPECIES &sp)
 {
-    for(int idx = 0; idx < 2*ct.max_nl; idx++) sint_tem[idx] = sint[idx];
-    for(int idx = 0; idx < 2*ct.max_nl; idx++) sint[idx] = 0.0;
+    int max_product = ct.max_nl  * ct.max_nl ;
+    for(int idx = 0; idx < 4*max_product; idx++) product_tem[idx] = product[idx];
+    for(int idx = 0; idx < 4*max_product; idx++) product[idx] = 0.0;
 
+    int nh = sp.nh; 
     for(int ih = 0; ih < sp.nh; ih++)
-        for(int is = 0; is < 2; is++)
-        {
-            for(int jh = 0; jh < sp.nh; jh++)
-                for(int is1 = 0; is1 < 2; is1++)
+        for(int jh = 0; jh < sp.nh; jh++)
+            for(int is = 0; is < 2; is++)
+                for(int isp = 0; isp < 2; isp++)
                 {
-                    sint[is * ct.max_nl + ih] += 
-                        sp.fcoef_so[ih][jh][is*2+is1] * sint_tem[jh + is1 * ct.max_nl]; 
+                    for(int m1 = 0; m1 < sp.nh; m1++)
+                        for(int m2 = 0; m2 < sp.nh; m2++)
+                            for(int is1 = 0; is1 < 2; is1++)
+                                for(int is2 = 0; is2 < 2; is2++)
+                                {
+                                    product[ih * nh + jh + (is *2 + isp) * max_product] += 
+                                        product_tem[m1*nh + m2 + (is1*2+is2) * max_product] *
+                                        sp.fcoef_so[m1][ih][is1*2+is] * sp.fcoef_so[jh][m2][isp*2+is2];
+
+                                }
                 }
-        }
 
 }
 

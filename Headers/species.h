@@ -101,6 +101,7 @@ public:
 
     /*l-numbers for states for which we have atomic orbitals*/
     int *atomic_wave_l;
+    double *atomic_wave_j;
 
     /* total number of atomic wave functions including m-dependence */
     int num_atomic_waves_m;
@@ -160,6 +161,7 @@ public:
 //see ref. Dal Corso Mosca Conte PRB 71, 115106
     std::complex<double> ddd0_so[MAX_NL][MAX_NL][4];
     std::complex<double> fcoef_so[MAX_NL][MAX_NL][4];
+    std::complex<double> *Umm;
 
     /*the number of L=|l1-l2|.....|l1+l2|, we limit nlc <=5 */
     int nlc;

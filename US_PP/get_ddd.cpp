@@ -173,6 +173,9 @@ void get_ddd (double * veff, double *vxc)
                     }
 
                 iptr->dnmI_so[ih *nh + jh + 0 * nh * nh] += sp->ddd0_so[ih][jh][0];
+                iptr->dnmI_so[ih *nh + jh + 1 * nh * nh] += sp->ddd0_so[ih][jh][1];
+                iptr->dnmI_so[ih *nh + jh + 2 * nh * nh] += sp->ddd0_so[ih][jh][2];
+                iptr->dnmI_so[ih *nh + jh + 3 * nh * nh] += sp->ddd0_so[ih][jh][3];
 
             }                   /*end for j */
         }                       /*end for i */

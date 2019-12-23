@@ -80,6 +80,12 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
     KpointType *npsi = (KpointType *)GpuMallocManaged(state_count * pbasis * sizeof(KpointType));
 
+    if(ct.spinorbit && state_count != nstates)
+    {
+        rmg_printf("state_count %d != nstates %d", state_count, nstates);
+        rmg_error_handler(__FILE__,__LINE__," state_count != nstates Terminating.");
+
+    }
     double coeff = 1.0;
     int wave_idx = 0;
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
@@ -117,23 +123,125 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         }
     }
 
+    if(ct.spinorbit)
+    {
+        wave_idx = 0;
+        int state_idx = 0;
+        int tot_LM = (ct.max_l +1) *(ct.max_l +1);
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+        {
+            ION &Atom = Atoms[ion];
+            SPECIES &AtomType = Species[Atom.species];
+            if(AtomType.is_spinorb)
+            {
+                std::complex<double> *Umm = AtomType.Umm;
+                for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
+                {
+                    int li = AtomType.atomic_wave_l[ip];
+                    double ji = AtomType.atomic_wave_j[ip];
+
+                    if( std::abs(ji -li - 0.5) < 1.0e-5)
+                    {
+                        for(int m = -li -1; m <= li; m++)
+                        {
+                            double alpha_up = std::sqrt( (li + m + 1.0)/(2*li + 1.0));
+                            double alpha_dn = std::sqrt( (li - m )/(2*li + 1.0));
+                            int lmm_up = li * li + li-m;
+                            int lmm_dn = li * li + li - (m+1);
+                            std::complex<double> *psi_C = (std::complex<double> *)states[state_idx].psi;
+
+                            for(int mp = 0; mp < 2*li+1; mp++)
+                            {
+
+                                int lmp = li * li + mp;
+
+                                for(int idx = 0; idx < pbasis; idx++)
+                                {
+                                    if(m  >=-li) 
+                                        psi_C[idx] += alpha_up * Umm[lmm_up * tot_LM + lmp] *  npsi[(wave_idx+mp) * pbasis + idx];
+                                    if(m  < li) 
+                                        psi_C[idx + pbasis] += alpha_dn * Umm[lmm_dn * tot_LM + lmp] *  npsi[(wave_idx+mp) * pbasis + idx];
+                                }
+                            }
+                            state_idx++;
+                        }
+                    }
+                    //  case: j = l - 1/2, mj =[-j,j], m = mj+1/2 = [-l+1, l]
+                    else if( std::abs(ji -li + 0.5) < 1.0e-5)
+                    {
+                        for(int m = -li+1; m <= li; m++)
+                        {
+                            double alpha_up = std::sqrt( (li - m + 1.0)/(2*li + 1.0));
+                            double alpha_dn = -std::sqrt( (li + m )/(2*li + 1.0));
+                            int lmm_up = li * li + li-(m-1);
+                            int lmm_dn = li * li + li-m;
+                            std::complex<double> *psi_C = (std::complex<double> *)states[state_idx].psi;
+
+                            for(int mp = 0; mp < 2*li+1; mp++)
+                            {
+
+                                int lmp = li * li + mp;
+
+                                for(int idx = 0; idx < pbasis; idx++)
+                                {
+                                    psi_C[idx] += alpha_up * Umm[lmm_up * tot_LM + lmp] *  npsi[(wave_idx+mp) * pbasis + idx];
+                                    psi_C[idx + pbasis] += alpha_dn * Umm[lmm_dn * tot_LM + lmp] *  npsi[(wave_idx+mp) * pbasis + idx];
+                                }
+                            }
+                            state_idx++;
+
+                        }
+                    }
+
+                    wave_idx += 2 * li + 1;
+                }
+            }
+            else
+            {
+                for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
+                {
+                    int l = AtomType.atomic_wave_l[ip];
+                    for (int m=0; m < 2*l+1; m++)
+                    {
+                        for(int idx = 0; idx < pbasis; idx++)
+                        {
+                            states[state_idx   ].psi[idx] = npsi[wave_idx * pbasis + idx];
+                            states[state_idx +1].psi[idx+pbasis] = npsi[wave_idx * pbasis + idx];
+                        }
+
+                        state_idx += 2;
+                        wave_idx ++;
+                    }
+                }
+            }
+
+
+        }
+        return;
+    }
+
     // in the case of noncollinear, the first state_count wavefunctions will have (atomic_psi, 0) and the second state_count wavefuntions will
     // have (0, atomic_psi). 
-    if(state_count * ct.noncoll_factor <= nstates)
+    if(state_count <= nstates)
     {
-        for(int st = 0;st < state_count;st++)
+        for(int st = 0;st < wave_idx;st++)
         {
             for(int idx = 0; idx < pbasis; idx++)
                 states[st].psi[idx] = npsi[st * pbasis + idx];
 
             if(ct.noncoll)
                 for(int idx = 0; idx < pbasis; idx++)
-                    states[st+state_count].psi[idx+pbasis] = npsi[st * pbasis + idx];
+                    states[st+wave_idx].psi[idx+pbasis] = npsi[st * pbasis + idx];
 
         }
     }
     else
     {
+        if(ct.spinorbit) 
+        {
+            rmg_printf("in the case of spinorbit, only LCAO start\n");
+            rmg_error_handler(__FILE__,__LINE__,"Terminating.");
+        }
         long *aidum = new long[state_count];
         for(int st = 0;st < state_count;st++)
         {
@@ -170,7 +278,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
 
     /*Initialize any additional states to random start*/
-    if ( nstates > state_count * ct.noncoll_factor)
+    if ( nstates > state_count)
     {
         if(ct.noncoll) 
         {
@@ -237,4 +345,4 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
 
 }
-/******/
+
