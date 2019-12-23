@@ -76,7 +76,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     static KpointType *global_matrix1;
 
-
     KpointType *Hij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *Bij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *Sij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
@@ -247,25 +246,6 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix1 will hold the eigenvectors.
     // The eigenvectors may be stored in row-major or column-major format depending on the type of diagonaliztion method
     // used. This is handled during the rotation of the orbitals by trans_b which is set by the driver routine.
-    if(0)
-    {
-    for(int i = 0; i < 12; i++)
-    {
-        printf("\n  real Bij: ");
-        for(int j = 0; j < 12; j++) printf(" %5.3f ", std::real(Bij[i*12 + j]));
-    }
-    for(int i = 0; i < 12; i++)
-    {
-        printf("\n  real Hij: ");
-        for(int j = 0; j < 12; j++) printf(" %5.3f ", std::real(Hij[i*12 + j]));
-    }
-    for(int i = 0; i < 12; i++)
-    {
-        printf("\n  real Sij: ");
-        for(int j = 0; j < 12; j++) printf(" %5.3f ", std::real(Sij[i*12 + j]));
-    }
-
-}
     RT1 = new RmgTimer("4-Diagonalization: Eigensolver");
     char *trans_b = "n";
     switch(subdiag_driver) {

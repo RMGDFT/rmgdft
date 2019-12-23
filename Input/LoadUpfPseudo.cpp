@@ -493,13 +493,11 @@ void LoadUpfPseudo(SPECIES *sp)
     {
         for (int k = 0; k < ih; k++)
         {
-            if ((sp->nhtol[j] == sp->nhtol[k]) && (sp->nhtom[j] == sp->nhtom[k]))
-            {
-                sp->ddd0[j][k] = ddd0[sp->indv[j]][sp->indv[k]];
-                sp->qqq[j][k] = qqq[sp->indv[j]][sp->indv[k]];
-                /*                          sp->ddd[j][k]=ddd[indv[j]][indv[k]]; */
-            }
-            else
+            sp->ddd0[j][k] = ddd0[sp->indv[j]][sp->indv[k]];
+            sp->qqq[j][k] = qqq[sp->indv[j]][sp->indv[k]];
+            /*                          sp->ddd[j][k]=ddd[indv[j]][indv[k]]; */
+            if(sp->is_spinorb) continue;
+            if ((sp->nhtol[j] != sp->nhtol[k]) || (sp->nhtom[j] != sp->nhtom[k]))
             {
                 sp->ddd0[j][k] = 0.0;
                 sp->qqq[j][k] = 0.0;

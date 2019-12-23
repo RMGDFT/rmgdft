@@ -73,16 +73,17 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     const int maxit = 100;
     const double charge_tol = 1.0e-10;
 
-    int iter, st, st1, idx, nspin = (ct.spin_flag + 1);
+    int iter, st, st1;
     State<KpointType> *sp;
     double mu, dmu, mu1, mu2, f, fmid;
 
     int nks = ct.num_kpts_pe * ct.num_states;
-    int ntot_states = nspin * nks;
+    int ntot_states = nks;
+    if(ct.nspin == 2) ntot_states *=2;
 
-    double *eigs = new double[ct.num_states*ct.num_kpts_pe*nspin]();
+    double *eigs = new double[ntot_states]();
     double *weight = new double[ct.num_kpts_pe];
-    double *occ = new double[nspin * nks]();
+    double *occ = new double[ntot_states]();
 
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) weight[kpt] = Kptr[kpt]->kp.kweight;
 
@@ -94,14 +95,14 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     }
 
     // Fill eigs
-    for(int ispin = 0; ispin<nspin; ispin++)
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
     {
-        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
+        for(int st = 0;st < ct.num_states;st++)
         {
-            for(int st = 0;st < ct.num_states;st++)
-            {
-                eigs[ispin * nks + kpt*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[ispin];
-            }
+            eigs[kpt*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[0];
+            if(ct.nspin == 2)
+                eigs[nks + kpt*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[1];
+
         }
     }
 
@@ -134,7 +135,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     mu1 = 1.0e30;
     mu2 = -mu1; 
 
-    for(idx = 0; idx < ntot_states; idx++)
+    for(int idx = 0; idx < ntot_states; idx++)
     {
         mu1 = std::min (eigs[idx], mu1);
         mu2 = std::max (eigs[idx], mu2); 
@@ -194,21 +195,22 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 
     fmid = 0.0; 
 
-    for (idx = 0; idx < nspin; idx++)
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) 
     {
-        st = -1;
-        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) 
+        for (st1 = 0; st1 < ct.num_states; st1++)
         {
-            for (st1 = 0; st1 < ct.num_states; st1++)
-            {
-                st = kpt * ct.num_states + st1;
-                sp = &Kptr[kpt]->Kstates[st1];
+            st = kpt * ct.num_states + st1;
+            sp = &Kptr[kpt]->Kstates[st1];
 
-                sp->occupation[idx] = mix * occ[st + idx * nks] + (1.0 - mix) * sp->occupation[idx];
-                fmid += sp->occupation[idx] * Kptr[kpt]->kp.kweight;
+            sp->occupation[0] = mix * occ[st] + (1.0 - mix) * sp->occupation[0];
+            fmid += sp->occupation[0] * Kptr[kpt]->kp.kweight;
+            if(ct.nspin == 2)
+            {
+                sp->occupation[1] = mix * occ[st + nks] + (1.0 - mix) * sp->occupation[1];
+                fmid += sp->occupation[1] * Kptr[kpt]->kp.kweight;
             }
-        }                           /* st and kpt */
-    }
+        }
+    }                           /* st and kpt */
 
     fmid = RmgSumAll(fmid, pct.kpsub_comm);
 
@@ -234,9 +236,10 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
 static double occ_allstates (double mu, double * occ, double *eigs, double width, double nel, 
         int num_st, double *weight, int occ_flag, int mp_order)
 {
-    int st, kpt, st1, idx, nks, nspin = (ct.spin_flag + 1);
-    double t1, sumf, eig, fac = (2.0 - ct.spin_flag);
+    int st, kpt, st1, nks;
+    double t1, sumf, eig, fac = 1.0;
 
+    if(ct.nspin == 1) fac = 2.0;
     /* fermi-dirac occupations:
        f(x) = 2 / (1 + Exp[x/T]) */
 
@@ -244,23 +247,27 @@ static double occ_allstates (double mu, double * occ, double *eigs, double width
 
     sumf = 0.0; 
 
-    for (idx = 0; idx < nspin; idx++)
+    for (kpt = 0; kpt < ct.num_kpts_pe ; kpt++)
     {
-        st = -1;
-        for (kpt = 0; kpt < ct.num_kpts_pe ; kpt++)
+        for (st1 = 0; st1 < ct.num_states; st1++)
         {
-            for (st1 = 0; st1 < ct.num_states; st1++)
-            {
-                st = kpt * ct.num_states + st1;
-                eig = eigs[st + idx * nks];
-                t1 = (eig - mu) / width;
-                
-                occ[st + idx * nks ] = fac * dist_func(t1, occ_flag, mp_order);
-                sumf += occ[st + idx * nks] * weight[kpt];
-            }
-        }                           /* st1 and kpt */
+            st = kpt * ct.num_states + st1;
 
-    }    
+            eig = eigs[st];
+            t1 = (eig - mu) / width;
+            occ[st] = fac * dist_func(t1, occ_flag, mp_order);
+            sumf += occ[st] * weight[kpt];
+
+            if(ct.nspin == 2)
+            {
+                eig = eigs[st + nks];
+                t1 = (eig - mu) / width;
+                occ[st + nks ] = fac * dist_func(t1, occ_flag, mp_order);
+                sumf += occ[st + nks] * weight[kpt];
+            }
+        }
+    }                           /* st1 and kpt */
+
 
     sumf = RmgSumAll(sumf, pct.kpsub_comm);
     return (sumf - nel);
@@ -335,7 +342,7 @@ static inline double dist_func(double t1, int occ_flag, int mp_order)
                 h0 = 2.0 * t1 * h1 - 2.0 * (2*n-1) * h0;    // h0 = H_2n(x)
                 h1 = 2.0* t1 * h0 - 2.0 * (2.0*n) * h1; // h1 = H_2n+1(x)
             }
-            
+
             return oc; 
             break;
 

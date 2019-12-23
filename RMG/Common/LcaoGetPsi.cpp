@@ -80,7 +80,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
     KpointType *npsi = (KpointType *)GpuMallocManaged(state_count * pbasis * sizeof(KpointType));
 
-    if(ct.spinorbit && state_count != nstates)
+    if(ct.spinorbit && state_count > nstates)
     {
         rmg_printf("state_count %d != nstates %d", state_count, nstates);
         rmg_error_handler(__FILE__,__LINE__," state_count != nstates Terminating.");
@@ -123,7 +123,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         }
     }
 
-    if(ct.spinorbit)
+    if(ct.spinorbit || ct.noncoll)
     {
         wave_idx = 0;
         int state_idx = 0;
@@ -205,8 +205,8 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
                     {
                         for(int idx = 0; idx < pbasis; idx++)
                         {
-                            states[state_idx   ].psi[idx] = npsi[wave_idx * pbasis + idx];
-                            states[state_idx +1].psi[idx+pbasis] = npsi[wave_idx * pbasis + idx];
+                            states[state_idx   ].psi[idx] += npsi[wave_idx * pbasis + idx];
+                            states[state_idx +1].psi[idx+pbasis] += npsi[wave_idx * pbasis + idx];
                         }
 
                         state_idx += 2;
@@ -217,31 +217,17 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
 
         }
-        return;
     }
-
-    // in the case of noncollinear, the first state_count wavefunctions will have (atomic_psi, 0) and the second state_count wavefuntions will
-    // have (0, atomic_psi). 
-    if(state_count <= nstates)
+    else if(state_count <= nstates)
     {
         for(int st = 0;st < wave_idx;st++)
         {
             for(int idx = 0; idx < pbasis; idx++)
                 states[st].psi[idx] = npsi[st * pbasis + idx];
-
-            if(ct.noncoll)
-                for(int idx = 0; idx < pbasis; idx++)
-                    states[st+wave_idx].psi[idx+pbasis] = npsi[st * pbasis + idx];
-
         }
     }
     else
     {
-        if(ct.spinorbit) 
-        {
-            rmg_printf("in the case of spinorbit, only LCAO start\n");
-            rmg_error_handler(__FILE__,__LINE__,"Terminating.");
-        }
         long *aidum = new long[state_count];
         for(int st = 0;st < state_count;st++)
         {
@@ -280,18 +266,16 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
     /*Initialize any additional states to random start*/
     if ( nstates > state_count)
     {
-        if(ct.noncoll) 
-        {
-            rmg_printf("in the case of noncollinear, nstates cannot be bigger than number of atomic wavefunctions\n");
-            rmg_error_handler(__FILE__,__LINE__,"Terminating.");
-        }
         int ix, iy, iz;
         int xoff, yoff, zoff;
         State<KpointType> *state_p;
 
-        double *xrand = new double[2 * get_NX_GRID()];
-        double *yrand = new double[2 * get_NY_GRID()];
-        double *zrand = new double[2 * get_NZ_GRID()];
+        int NX_GRID = get_NX_GRID();
+        int NY_GRID = get_NY_GRID();
+        int NZ_GRID = get_NZ_GRID();
+        double *xrand = new double[2 * NX_GRID];
+        double *yrand = new double[2 * NY_GRID];
+        double *zrand = new double[2 * NZ_GRID];
 
         pe2xyz (pct.gridpe, &ix, &iy, &iz);
         xoff = PX_OFFSET;
@@ -307,11 +291,11 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         {
 
             /* Generate x, y, z random number sequences */
-            for (int idx = 0; idx < get_NX_GRID(); idx++)
+            for (int idx = 0; idx < 2*NX_GRID; idx++)
                 xrand[idx] = rand0 (&idum) - 0.5;
-            for (int idx = 0; idx < get_NY_GRID(); idx++)
+            for (int idx = 0; idx < 2*NY_GRID; idx++)
                 yrand[idx] = rand0 (&idum) - 0.5;
-            for (int idx = 0; idx < get_NZ_GRID(); idx++)
+            for (int idx = 0; idx < 2*NZ_GRID; idx++)
                 zrand[idx] = rand0 (&idum) - 0.5;
 
             state_p = &states[st];
@@ -326,13 +310,19 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
                     for (int iz = 0; iz < PZ0_GRID; iz++)
                     {
 
-                        state_p->psi[idx] = xrand[xoff + ix] * yrand[yoff + iy] * zrand[zoff + iz];
-                        state_p->psi[idx] = state_p->psi[idx] * state_p->psi[idx];
+                        for(int is = 0; is < ct.noncoll_factor; is++)
+                        {
+                            state_p->psi[idx + is * pbasis] = xrand[is * NX_GRID + xoff + ix] * 
+                                yrand[is * NY_GRID + yoff + iy] * zrand[is * NZ_GRID + zoff + iz];
+                            state_p->psi[idx + is * pbasis] = state_p->psi[idx + is * pbasis] * state_p->psi[idx + is * pbasis];
+                        }
                         idx++;
 
                     }               /* end for */
                 }                   /* end for */
             }                       /* end for */
+
+
 
 
         }                           /* end for */

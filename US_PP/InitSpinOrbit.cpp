@@ -24,6 +24,14 @@ void InitSpinOrbit ()
         for(int idx = 0; idx < tot_LM * tot_LM; idx++) sp->Umm[idx] = Umm[idx];
         Init_fcoef(*sp, Umm, tot_LM);
 
+        if(0)
+        for(int ih = 0; ih < sp->nh; ih++)
+        for(int jh = 0; jh < sp->nh; jh++)
+        {
+            printf("\n fcoef: %4d %4d %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f", ih, jh,
+sp->fcoef_so[ih][jh][0],sp->fcoef_so[ih][jh][1],sp->fcoef_so[ih][jh][2],sp->fcoef_so[ih][jh][3]);
+        }
+
         Init_ddd0_so(*sp);
     }
     delete [] Umm;
@@ -54,6 +62,7 @@ static void Init_ddd0_so(SPECIES &sp)
                 for(int is = 0; is < 4; is++)
                 {
                     sp.ddd0_so[ih][jh][is] = sp.ddd0[ih][jh] *sp.fcoef_so[ih][jh][is];
+                    //  QE do this but I don't understand Wenchang
                     if(ibeta != jbeta)
                         sp.fcoef_so[ih][jh][is] = 0.0;
 
@@ -111,7 +120,8 @@ static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
                         Umj_up = std::conj(Umm[lmm * tot_LM + lmj]);
                     }
 
-                    lmm = li * li + li - (m+1);
+                    lmm = li *li + li-(m+1);
+    
                     if( m +1 > li) 
                     {
                         Umi_dn = 0.0;

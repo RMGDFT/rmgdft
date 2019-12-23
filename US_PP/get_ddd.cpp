@@ -201,7 +201,7 @@ static std::complex<double> DnmTransform(int ih, int jh, int is1, int is2, doubl
                 value += Ia[m1*nh+m2 + 1*nh*nh] *
                     (sp.fcoef_so[ih][m1][is1 *2 +1] * sp.fcoef_so[m2][jh][0*2 + is2] +
                      sp.fcoef_so[ih][m1][is1 *2 +0] * sp.fcoef_so[m2][jh][1*2 + is2]);
-                value += Ia[m1*nh+m2 + 2*nh*nh] * std::complex<double>(0.0, 1.0) * 
+                value += Ia[m1*nh+m2 + 2*nh*nh] * std::complex<double>(0.0, -1.0) * 
                     (sp.fcoef_so[ih][m1][is1 *2 +1] * sp.fcoef_so[m2][jh][0*2 + is2] -
                      sp.fcoef_so[ih][m1][is1 *2 +0] * sp.fcoef_so[m2][jh][1*2 + is2]);
                 value += Ia[m1*nh+m2 + 3*nh*nh] *
