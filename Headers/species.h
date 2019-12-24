@@ -173,7 +173,9 @@ public:
     double *rinner;
 
     /* ultrosoft Vanderbilt Qnm_rad(r) function and */
+    bool q_with_l;
     double *qnm;
+    double *qnm_l;
     double *qnmlig;
 
     /* the coefficient for pseudosation of Qnm_L(r) */

@@ -43,7 +43,6 @@ void InitQfunct ()
 {
     if(ct.norm_conserving_pp) return;
     int idx, i, j, k, num, il, jl, ll;
-    double *work = new double[MAX_RGRID]();
     double *qnmlig_tpr, *qnm_tpr;
     SPECIES *sp;
     char newname1[MAX_PATH];
@@ -55,7 +54,6 @@ void InitQfunct ()
     double *rgrid = A->GetRgrid();
 
 
-    double *workr = new double[MAX_LOGGRID];
 
     for (int isp = 0; isp < ct.num_species; isp++)
     {
@@ -73,19 +71,55 @@ void InitQfunct ()
             }
         }
 
-
-        // Get range of q-functions. Assumes that all of them have roughly the same range
-        qnm_tpr = sp->qnm;
-        for (k = 0; k < sp->rg_points; k++)
+        //  change from qnm to qnm_l
+        if(!sp->q_with_l)
         {
-            work[k] = qnm_tpr[k];
-            if(sp->nqf > 0)
-                if (sp->r[k] < sp->rinner[0])
-                    work[k] = get_QnmL (0, 0, sp->r[k], sp);
+            for (i = 0; i < sp->nbeta; i++)
+            {
+                il = sp->llbeta[i];
+                for (j = i; j < sp->nbeta; j++)
+                {
+                    jl = sp->llbeta[j];
+                    idx = j * (j + 1) / 2 + i;
+                    qnm_tpr = sp->qnm + idx * MAX_RGRID;
+                    for (ll = abs (il - jl); ll <= il + jl; ll = ll + 2)
+                    {
+
+                        qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_LOGGRID;
+
+                        for (k = 0; k < MAX_RGRID; k++)
+                            sp->qnm_l[k + (idx * sp->nlc + ll) * MAX_RGRID ] = 0.0;
+
+                        for (k = 0; k < sp->rg_points; k++)
+                        {
+                            sp->qnm_l[k + (idx * sp->nlc + ll) * MAX_RGRID ] = qnm_tpr[k]/sp->r[k]/sp->r[k];
+                            if(sp->nqf > 0 && sp->r[k] < sp->rinner[ll])
+                                sp->qnm_l[k + (idx * sp->nlc + ll) * MAX_RGRID ] = get_QnmL (idx, ll, sp->r[k], sp);
+                        }
+                    }
+                }
+            }
         }
-        sp->qradius = 2.5 * A->GetRange(work, sp->r, sp->rab, sp->rg_points, 0.999999999);
+        else
+        {
+            for(i = 0; i < (sp->nlc * sp->nbeta *(sp->nbeta +1)) /2; i++)
+            for (k = 0; k < sp->rg_points; k++)
+            {
+                sp->qnm_l[k + i * MAX_RGRID ] /= sp->r[k]*sp->r[k];
+            }
+        }
+
+        double qradius = ct.min_qradius;
+        for(i = 0; i < (sp->nlc * sp->nbeta *(sp->nbeta +1)) /2; i++)
+        {
+            qnm_tpr = &sp->qnm_l[i * MAX_RGRID];
+            sp->qradius = 2.5 * A->GetRange(qnm_tpr, sp->r, sp->rab, sp->rg_points, 0.999999999);
+            sp->qradius = std::max(sp->qradius, qradius);
+            qradius = sp->qradius;
+
+        }
+
         sp->qradius = std::min(sp->qradius, ct.max_qradius);
-        sp->qradius = std::max(sp->qradius, ct.min_qradius);
 
         // Make adjustments so radii terminates on a grid point
         sp->qdim = Radius2grid (sp->qradius, ct.hmingrid/(double)Rmg_G->default_FG_RATIO, Rmg_L.get_ibrav_type(), false);
@@ -111,31 +145,20 @@ void InitQfunct ()
             {
                 jl = sp->llbeta[j];
                 idx = j * (j + 1) / 2 + i;
-                qnm_tpr = sp->qnm + idx * MAX_RGRID;
                 for (ll = abs (il - jl); ll <= il + jl; ll = ll + 2)
                 {
 
                     qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_LOGGRID;
-
-                    for (k = 0; k < MAX_RGRID; k++)
-                        work[k] = 0.0;
-
-                    for (k = 0; k < sp->rg_points; k++)
-                    {
-                        work[k] = qnm_tpr[k]/sp->r[k]/sp->r[k];
-                        if(sp->nqf > 0)
-                            if (sp->r[k] < sp->rinner[ll])
-                                work[k] = get_QnmL (idx, ll, sp->r[k], sp);
-                    }
+                    qnm_tpr = sp->qnm_l + (idx * sp->nlc + ll) *  MAX_RGRID;
 
                     if (pct.gridpe == 0 && ct.write_pp_flag)
                     {
                         for (k = 0; k < sp->kkbeta; k++)
-                            fprintf (fqq, "%e  %e\n", sp->r[k], work[k]);
+                            fprintf (fqq, "%e  %e\n", sp->r[k], qnm_tpr[k]);
                         fprintf (fqq, "&\n");
                     }
 
-                    A->FilterPotential(work, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
+                    A->FilterPotential(qnm_tpr, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
                             sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
 
                     /*Write final filtered Q function if requested*/
@@ -163,7 +186,5 @@ void InitQfunct ()
     }                           /*end for isp */ 
 
     delete A;
-    delete [] workr;
-    delete [] work;
 
 }

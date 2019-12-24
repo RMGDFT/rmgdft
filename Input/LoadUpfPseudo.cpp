@@ -365,7 +365,7 @@ void LoadUpfPseudo(SPECIES *sp)
        std::string q_with_l = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.<xmlattr>.q_with_l");
        boost::to_upper(q_with_l);
        if(!q_with_l.compare(0,1,"T") || !q_with_l.compare(0,4,"TRUE")) {
-           throw RmgFatalException() << "RMG does not support pseudopotentials with an angular momentum dependence of the augmentation charges. Terminating.\n";  
+           sp->q_with_l = true;
        }
 
 
@@ -424,24 +424,57 @@ void LoadUpfPseudo(SPECIES *sp)
 
        // PP_Q.i.j
        sp->qnm = new double[tnlc * MAX_RGRID]();
-       for(int i = 0;i < sp->nbeta;i++) {
-           for(int j = i;j < sp->nbeta;j++) {
-               typedef ptree::path_type path;
-               std::string pp_qij = "UPF/PP_NONLOCAL/PP_AUGMENTATION/PP_QIJ." + boost::lexical_cast<std::string>(i + 1);
-               pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(j + 1);
-               std::string PP_Qij = upf_tree.get<std::string>(path(pp_qij, '/'));
-               double *tmatrix2 = UPF_read_mesh_array(PP_Qij, r_total, ibegin);
+       sp->qnm_l = new double[tnlc * MAX_RGRID * sp->nlc ]();
+       if(sp->q_with_l)
+       {
+           for(int i = 0;i < sp->nbeta;i++) {
+               for(int j = i;j < sp->nbeta;j++) {
+                   typedef ptree::path_type path;
+                   int li = sp->llbeta[i];
+                   int lj = sp->llbeta[j];
+                   for(int L = std::abs(li-lj); L <= li+lj; L+=2)
+                   {
+                       std::string pp_qij = "UPF/PP_NONLOCAL/PP_AUGMENTATION/PP_QIJL." + boost::lexical_cast<std::string>(i + 1);
+                       pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(j + 1);
+                       pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(L);
+                       std::string PP_Qij = upf_tree.get<std::string>(path(pp_qij, '/'));
+                       double *tmatrix2 = UPF_read_mesh_array(PP_Qij, r_total, ibegin);
 
 
-               int nmb = j * (j + 1) / 2 + i;
-               for (int idx = 0; idx < sp->kkbeta; idx++)
-               {
-                   sp->qnm[nmb * MAX_RGRID + idx] = tmatrix2[idx];
+                       int nmb = j * (j + 1) / 2 + i;
+                       for (int idx = 0; idx < sp->kkbeta; idx++)
+                       {
+                           sp->qnm_l[ (nmb * sp->nlc + L) * MAX_RGRID + idx] = tmatrix2[idx];
+                       }
+
+                       delete [] tmatrix2;
+                   }
+
                }
-
-               delete [] tmatrix2;
            }
        }
+       else
+       {
+           for(int i = 0;i < sp->nbeta;i++) {
+               for(int j = i;j < sp->nbeta;j++) {
+                   typedef ptree::path_type path;
+                   std::string pp_qij = "UPF/PP_NONLOCAL/PP_AUGMENTATION/PP_QIJ." + boost::lexical_cast<std::string>(i + 1);
+                   pp_qij = pp_qij + "." + boost::lexical_cast<std::string>(j + 1);
+                   std::string PP_Qij = upf_tree.get<std::string>(path(pp_qij, '/'));
+                   double *tmatrix2 = UPF_read_mesh_array(PP_Qij, r_total, ibegin);
+
+
+                   int nmb = j * (j + 1) / 2 + i;
+                   for (int idx = 0; idx < sp->kkbeta; idx++)
+                   {
+                       sp->qnm[nmb * MAX_RGRID + idx] = tmatrix2[idx];
+                   }
+
+                   delete [] tmatrix2;
+               }
+           }
+       }
+
     }
 
     if(sp->is_spinorb)

@@ -240,14 +240,15 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
         // Apply Hamiltonian to the new vectors
         RT1 = new RmgTimer("6-Davidson: Betaxpsi");
-        newsint = this->newsint_local + nbase * this->BetaProjector->get_num_nonloc_ions() * ct.max_nl;
+        newsint = this->newsint_local + nbase * this->BetaProjector->get_num_nonloc_ions() * ct.max_nl * ct.noncoll_factor;
         this->BetaProjector->project(this, newsint, nbase*ct.noncoll_factor, notconv*ct.noncoll_factor, nl_weight);
         delete RT1;
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {   
             RmgTimer RTL("6-Davidson: ldaUop x psi"); 
-            newsint = this->orbitalsint_local + nbase * this->OrbitalProjector->get_num_nonloc_ions() * this->OrbitalProjector->get_pstride();
+            newsint = this->orbitalsint_local + nbase * this->OrbitalProjector->get_num_nonloc_ions() * 
+                this->OrbitalProjector->get_pstride() * ct.noncoll_factor;
             LdaplusUxpsi(this, nbase, notconv, newsint);
         }
         RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
