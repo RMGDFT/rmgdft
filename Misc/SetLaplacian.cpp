@@ -46,7 +46,7 @@ void SetLaplacian()
 
     LC = new LaplacianCoeff(a, Ngrid, Lorder, dim);
     LC->SetBrav(Rmg_L.get_ibrav_type());
-
+    if(Rmg_L.get_ibrav_type() == CUBIC_BC) LC->SetWeightPower(1);
     LC->SetOffdiag(ct.laplacian_offdiag);
 
     LC->CalculateCoeff();

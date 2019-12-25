@@ -366,6 +366,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
     index = 0;
     while(!Uii)
     {
+        std::cout << point_start << " point " << point_end<< std::endl;
         for(int ip = point_start; ip < point_end; ip++)
         {
             dx = points[ip].delta[0];
@@ -945,83 +946,53 @@ void LaplacianCoeff::GetPointListFCC(std::vector<GridPoint>& points, double a[3]
 void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3][3], int Ngrid[3], int Lorder){
     GridPoint point;
     double dx, dy,dz, dist;    
-    // along lattuce vectirs a = (+-0,5, +-0.5, +-0.5)
-    for(int direction = 0; direction < 3; direction++){
-        for(int i = -Lorder/2; i <= Lorder/2; i++){
+    double h = a[0][0]/Ngrid[0], eps=1.0e-5;;
+    for(int i = -Lorder; i <= Lorder; i++){
+        for(int j = -Lorder; j <= Lorder; j++){
+            for(int k = -Lorder; k <= Lorder; k++){
+                if(i == 0 && j == 0 && k == 0) continue;
 
-            if (i == 0) continue;
-            dx = i*a[direction][0]/Ngrid[0];
-            dy = i*a[direction][1]/Ngrid[0];
-            dz = i*a[direction][2]/Ngrid[0];
+                dx = i*a[0][0]/Ngrid[0] + j*a[1][0]/Ngrid[1] + k*a[2][0]/Ngrid[2];
+                dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1] + k*a[2][1]/Ngrid[2];
+                dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
+                double check1 = fabs(fabs(dx) - fabs(dy));
+                double check11 = fabs(fabs(dx) - fabs(h));
+                double check2 = fabs(fabs(dx) - fabs(dz));
+                double check22 = fabs(fabs(dy) - fabs(h));
+                double check3 = fabs(fabs(dy) - fabs(dz));
+                
+                if(((check1 < eps) && (check11 < eps)) ||
+                   ((check2 < eps) && (check11 < eps)) ||
+                   ((check3 < eps) && (check22 < eps)) ||
+                   ((fabs(dx) < eps) && (fabs(dy) < eps)) ||
+                   ((fabs(dx) < eps) && (fabs(dz) < eps)) ||
+                   ((fabs(dy) < eps) && (fabs(dz) < eps)))
+//                   ((fabs(dx) < eps) && (fabs(dy) < eps) && (fabs(dz) < 5.1*fabs(h))) ||
+//                   ((fabs(dx) < eps) && (fabs(dz) < eps) && (fabs(dy) < 5.1*fabs(h))) ||
+//                   ((fabs(dy) < eps) && (fabs(dz) < eps) && (fabs(dx) < 5.1*fabs(h))))
 
-            dist = sqrt(dx * dx  + dy * dy + dz * dz);
-            point.dist = dist;
-            point.delta[0] = dx;
-            point.delta[1] = dy;
-            point.delta[2] = dz;
-            point.index[0] = 0;
-            point.index[1] = 0;
-            point.index[2] = 0;
-            point.index[direction] = i;
-            point.ijk = std::abs(i);
-            point.weight_factor = 1.0/std::pow(dist, this->weight_power);
-            point.coeff = 0.0;
-            points.push_back(point);
+                { 
 
+                    dist = sqrt(dx * dx  + dy * dy + dz * dz);
+                    point.dist = dist;
+                    point.delta[0] = dx;
+                    point.delta[1] = dy;
+                    point.delta[2] = dz;
+                    point.index[0] = i;
+                    point.index[1] = j;
+                    point.index[2] = k;
+                    point.ijk = std::abs(i) + std::abs(j) + std::abs(k);
+                    point.weight_factor = 1.0/std::pow(dist, this->weight_power);
+                    point.coeff = 0.0;
+                    points.push_back(point);
+                }
+            }
         }
     }
-
-    for(int i = -Lorder/2; i <= Lorder/2; i++){
-        if (i == 0) continue;
-        dx = i*a[0][0]/Ngrid[0];
-        dy = i*a[0][0]/Ngrid[0];
-        dz = i*a[0][0]/Ngrid[0];
-
-        dist = sqrt(dx * dx  + dy * dy + dz * dz);
-        point.dist = dist;
-        point.delta[0] = dx;
-        point.delta[1] = dy;
-        point.delta[2] = dz;
-        point.index[0] = i;
-        point.index[1] = i;
-        point.index[2] = i;
-        point.ijk = std::abs(i);
-        point.weight_factor = 1.0/std::pow(dist, this->weight_power);
-        point.coeff = 0.0;
-        points.push_back(point);
-
-    }
-
-
-    for(int direction = 0; direction < 3; direction++){
-        for(int i = -Lorder/2; i <= Lorder/2; i++){
-
-            if (i == 0) continue;
-            int direction1 = (direction + 1) %3;
-            dx = i*a[direction][0]/Ngrid[0] + i*a[direction1][0]/Ngrid[0];
-            dy = i*a[direction][1]/Ngrid[0] + i*a[direction1][1]/Ngrid[0];
-            dz = i*a[direction][2]/Ngrid[0] + i*a[direction1][2]/Ngrid[0];
-
-            dist = sqrt(dx * dx  + dy * dy + dz * dz);
-            point.dist = dist;
-            point.delta[0] = dx;
-            point.delta[1] = dy;
-            point.delta[2] = dz;
-            point.index[0] = 0;
-            point.index[1] = 0;
-            point.index[2] = 0;
-            point.index[direction] = i;
-            point.index[direction1] = i;
-            point.ijk = std::abs(i);
-            point.weight_factor = 1.0/std::pow(dist, this->weight_power);
-            point.coeff = 0.0;
-            points.push_back(point);
-
-
-        }
-    }
-
+    std::stable_sort(points.begin(), points.end(), customLess_z);
+    std::stable_sort(points.begin(), points.end(), customLess_y);
+    std::stable_sort(points.begin(), points.end(), customLess_x);
+    std::stable_sort(points.begin(), points.end(), customLess_ijk);
     std::stable_sort(points.begin(), points.end(), customLess_dist);
 
 }
-
