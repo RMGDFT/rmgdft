@@ -180,7 +180,7 @@ template <typename OrbitalType> void GetNewRhoPre(Kpoint<OrbitalType> **Kpts, do
         } 
     }
 
-    MPI_Allreduce(MPI_IN_PLACE, (double *)work, FP0_BASIS, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)work, FP0_BASIS * factor, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     if(ct.noncoll)
     {
         double rho_up, rho_down;
@@ -288,7 +288,7 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
         }
     }                           /*end for kpt */
 
-    MPI_Allreduce(MPI_IN_PLACE, (double *)work, pbasis, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)work, pbasis * factor, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
     if(ct.noncoll)
     {
         double rho_up, rho_down;
