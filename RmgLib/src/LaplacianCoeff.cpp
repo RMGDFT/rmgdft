@@ -366,6 +366,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
     index = 0;
     while(!Uii)
     {
+        std::cout << point_start << " point " << point_end<< std::endl;
         for(int ip = point_start; ip < point_end; ip++)
         {
             dx = points[ip].delta[0];
@@ -398,25 +399,28 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
         for(int i = 0; i < num_derivative * num_derivative; i++) Bm[i] = Am[i];
         dgetrf(&num_derivative, &num_derivative, Am, &num_derivative, ipvt,  &info );
 
-     //   printf("\n point_end %d", point_end);
-     //   for(int i = 0; i < num_derivative; i++)
-     //   {   printf("\n");
-     //       for(int j = 0; j < num_derivative; j++)
-     //           printf("%5.2f", Bm[i*num_derivative + j]);
-     //   }
+      //printf("\n point_end %d", point_end);
+      //for(int i = 0; i < num_derivative; i++)
+      //{   printf("\n");
+      //    for(int j = 0; j < num_derivative; j++)
+      //        printf("%5.2f", Bm[i*num_derivative + j]);
+      //}
 
         Uii = true;
-        for(int i = 0; i < num_derivative; i++)
+        if(info != 0)
         {
-            if(std::abs(Am[i * num_derivative + i] ) < 1.0e-10)
+            Uii = false;
+            index++;
+            if(index >= (int)num_points.size()) 
             {
-                index++;
-                point_start = point_end;
-                point_end = num_points[index];
-                Uii = false;
-                for(int i = 0; i < num_derivative * num_derivative; i++) Am[i] = Bm[i];
-                break;
+                printf ("error in LaplacianCoeff.cpp dgetrf INFO = %d \n", info);
+                printf ("not enough grid points in LaplacianCoeff.cpp\n");
+                fflush (NULL);
+                exit (0);
             }
+            point_start = point_end;
+            point_end = num_points[index];
+            for(int i = 0; i < num_derivative * num_derivative; i++) Am[i] = Bm[i];
         }
 
     }
@@ -989,7 +993,7 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
 
     }
 
-    
+
     for(int direction = 0; direction < 3; direction++){
         for(int i = -Lorder/2; i <= Lorder/2; i++){
 

@@ -107,9 +107,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
               g[idx].a[1] = gvec[1];
               g[idx].a[2] = gvec[2];
 
-              if(abs(ivec[0]) > ivx) continue;
-              if(abs(ivec[1]) > ivy) continue;
-              if(abs(ivec[2]) > ivz) continue;
+  //            if(abs(ivec[0]) > ivx) continue;
+  //            if(abs(ivec[1]) > ivy) continue;
+  //            if(abs(ivec[2]) > ivz) continue;
 
               // Gamma only exclude volume with x<0
               if((ivec[0] < 0) && this->is_gamma) continue;
@@ -117,9 +117,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
               if((ivec[0] == 0) && (ivec[1] < 0) && this->is_gamma) continue;
               // Gamma only exclude line with x = 0, y = 0, z < 0
               if((ivec[0] == 0) && (ivec[1] == 0) && (ivec[2] < 0) && this->is_gamma) continue;
-              if((abs(ivec[0]) == this->global_dimx/2) || 
-                 (abs(ivec[1]) == this->global_dimy/2) || 
-                 (abs(ivec[2]) == this->global_dimz/2)) continue;
+   //           if((abs(ivec[0]) == this->global_dimx/2) || 
+    //             (abs(ivec[1]) == this->global_dimy/2) || 
+    //             (abs(ivec[2]) == this->global_dimz/2)) continue;
 
               this->gmask[idx] = true;
               this->ng++;
