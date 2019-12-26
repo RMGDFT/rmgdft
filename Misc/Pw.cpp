@@ -129,6 +129,10 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   }
 
   MPI_Allreduce(MPI_IN_PLACE, &this->gmax, 1, MPI_DOUBLE, MPI_MAX, comm);
+
+  if(L.get_ibrav_type() == CUBIC_FC) gmax /= sqrt(2.0);
+  if(L.get_ibrav_type() == CUBIC_BC) gmax /= sqrt(6.0);
+
   this->gcut = this->gmax;
   for(int idx = 0;idx < this->dimx*this->dimy*this->dimz;idx++)
   {
