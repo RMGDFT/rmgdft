@@ -58,7 +58,7 @@ public:
     RmgFatalException( const RmgFatalException &that )
     {
         What += that.ss.str();
-        printf("%s",What.c_str());
+        printf("%s",What.c_str());fflush(NULL);
         std::raise(SIGTERM);
     }
 
