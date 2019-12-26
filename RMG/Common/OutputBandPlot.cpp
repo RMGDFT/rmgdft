@@ -57,7 +57,8 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     char filename[4*MAX_PATH];
     FILE *bs_f;
     double *eig_all;
-    int nspin = ct.spin_flag +1;
+    int nspin = 1;
+    if(ct.nspin == 2) nspin = 2;
 
     int tot_num_eigs = nspin * ct.num_kpts * ct.num_states;
     eig_all = new double[tot_num_eigs];

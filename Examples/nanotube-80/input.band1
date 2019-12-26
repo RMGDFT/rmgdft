@@ -1,28 +1,35 @@
 description="Carbon Nanotube"
 
-#processor_grid="4 2 1"
-
 wavefunction_grid="72 72 20"
 
-subdiag_driver = "scalapack"
+subdiag_driver = "lapack"
+kohn_sham_mg_levels = "2"
 potential_grid_refinement="2"
 
 localize_localpp = "false"
 localize_projectors = "false"
 
+
+
 occupations_type=
 "Fixed" 
 #"Fermi Dirac"
 
-potential_acceleration_constant_step = "1.0"
+#potential_acceleration_constant_step = "1.0"
 unoccupied_states_per_kpoint="64"
 system_charge="0"
 
 occupation_electron_temperature_eV="0.025"
 occupation_number_mixing="1.00"
 
-kpoint_mesh="1 1 4"
+kpoint_mesh="-1 1 8"
 kpoint_is_shift="0 0 0"
+
+kpoints_bandstructure = "
+  0.0   0.0   0.0  1 G
+  0.0   0.0   0.5    25   X
+"
+
 
 
 length_units=
@@ -33,6 +40,8 @@ bravais_lattice_type=
 "Orthorhombic Primitive"
 
 # Lattice constants 
+
+# Lattice constants 
 a_length="28.93846312"
 b_length="28.93846312"
 c_length="8.038461979"
@@ -41,30 +50,37 @@ atomic_coordinate_type=
 "Absolute"
 #"Cell Relative"
 
+#pseudopotential="
+#	C   ./C.UPF
+#"
+
 start_mode=
 #"Random Start"
 #"Restart From File"
 "LCAO Start"
 
 calculation_mode=
-"Quench Electrons"
-#"Band Structure Only"
+#"Quench Electrons"
+"Band Structure Only"
 
-#exchange_correlation_type=
-#"LDA"
+
+exchange_correlation_type=
+"LDA"
 
 rms_convergence_criterion="1e-7"
 
-charge_density_mixing="0.5"
-kohn_sham_mucycles = "2"
-kohn_sham_mg_levels = "2"
+charge_density_mixing="0.2"
+projector_mixing="0.4"
 
 charge_mixing_type=
-#"Linear"
-"Broyden"
+"Linear"
 #"Pulay"
 
-max_scf_steps="50"
+charge_pulay_order="5"
+charge_pulay_scale="0.2"
+
+max_scf_steps="10"
+
 
 #freeze_occupied="true"
 #gw_residual_convergence_criterion="1e-6"
@@ -82,12 +98,6 @@ max_scf_steps="50"
 
 #vxc_diag_nmin="1"
 #vxc_diag_nmax="47"
-
-#pseudopotential="
-#	C   ./C.UPF
-#"
-
-
 atoms =
 "
  C 2.12913387e+01 1.53699890e+01 5.37007735e+00  1

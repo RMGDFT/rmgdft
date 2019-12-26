@@ -118,6 +118,33 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
 
     }
 
+    lc.is_gamma = true;
+    for (int kpt = 0; kpt < lc.num_kpts; kpt++) {
+        double v1, v2, v3;
+        v1 = 0.0;
+        v2 = 0.0;
+        v3 = 0.0;
+
+        for(int ir = 0; ir<3; ir++)
+        {
+            v1 = lc.kp[kpt].kpt[0] *Rmg_L.b0[0]
+                + lc.kp[kpt].kpt[1] *Rmg_L.b1[0] 
+                + lc.kp[kpt].kpt[2] *Rmg_L.b2[0];
+            v2 = lc.kp[kpt].kpt[0] *Rmg_L.b0[1]
+                + lc.kp[kpt].kpt[1] *Rmg_L.b1[1] 
+                + lc.kp[kpt].kpt[2] *Rmg_L.b2[1];
+            v3 = lc.kp[kpt].kpt[0] *Rmg_L.b0[2]
+                + lc.kp[kpt].kpt[1] *Rmg_L.b1[2] 
+                + lc.kp[kpt].kpt[2] *Rmg_L.b2[2];
+        }
+
+        lc.kp[kpt].kvec[0] = v1 * twoPI;
+        lc.kp[kpt].kvec[1] = v2 * twoPI;
+        lc.kp[kpt].kvec[2] = v3 * twoPI;
+        lc.kp[kpt].kmag = (v1 * v1 + v2 * v2 + v3 * v3) * twoPI * twoPI;
+
+        if(lc.kp[kpt].kmag != 0.0) lc.is_gamma = false;
+    }
         
     //rmg_printf("\n num_k %d", ct.num_kpts);
     //for(int kpt = 0; kpt < ct.num_kpts; kpt++)
@@ -126,3 +153,4 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
 
 
 }
+
