@@ -333,7 +333,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             break;
 
         case BAND_STRUCTURE:
-            BandStructure (Kptr, vxc, vh, vnuc);
+            BandStructure (Kptr, vh, vxc, vnuc);
             if(ct.rmg2bgw) WriteBGW_Rhog(rho, rho_oppo);
             OutputBandPlot(Kptr);
             break;

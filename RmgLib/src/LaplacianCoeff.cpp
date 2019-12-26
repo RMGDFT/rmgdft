@@ -366,7 +366,7 @@ void LaplacianCoeff::BuildSolveLinearEq(std::vector<GridPoint>& points, const st
     index = 0;
     while(!Uii)
     {
-        std::cout << point_start << " point " << point_end<< std::endl;
+        //std::cout << point_start << " point " << point_end<< std::endl;
         for(int ip = point_start; ip < point_end; ip++)
         {
             dx = points[ip].delta[0];
