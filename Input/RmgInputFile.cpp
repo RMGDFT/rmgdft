@@ -269,7 +269,6 @@ void RmgInputFile::LoadInputKeys(void) {
     po::notify(vm);
     auto unregistered = po::collect_unrecognized(parsedOptions.options, po::include_positional);
 
-
     // Process the results
     for (auto item = InputMap.begin();item != InputMap.end();item++) {
 
@@ -305,7 +304,10 @@ void RmgInputFile::LoadInputKeys(void) {
                 // enumerated string so check if the value is allowed
                 boost::trim_if(Ik->Readstr, boost::algorithm::is_any_of("\"^"));
                 if(Ik->Range.count(Ik->Readstr) == 0) {
-                    throw RmgFatalException() << Ik->KeyName << " " << Ik->errmsg;
+                    std::cout << "\"" << Ik->Readstr << "\" is not a valid value for input option " 
+                              << Ik->KeyName << ". Terminating." << std::endl;
+                    MPI_Finalize();
+                    exit(0);
                 }
                 // If integer val associated with the enum is desired set it
                 if(Ik->Readintval) *Ik->Readintval = Ik->Range[Ik->Readstr];
