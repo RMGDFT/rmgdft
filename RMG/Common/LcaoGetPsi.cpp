@@ -273,9 +273,9 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         int NX_GRID = get_NX_GRID();
         int NY_GRID = get_NY_GRID();
         int NZ_GRID = get_NZ_GRID();
-        double *xrand = new double[2 * NX_GRID];
-        double *yrand = new double[2 * NY_GRID];
-        double *zrand = new double[2 * NZ_GRID];
+        double *xrand = new double[NX_GRID];
+        double *yrand = new double[NY_GRID];
+        double *zrand = new double[NZ_GRID];
 
         pe2xyz (pct.gridpe, &ix, &iy, &iz);
         xoff = PX_OFFSET;
@@ -291,11 +291,11 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         {
 
             /* Generate x, y, z random number sequences */
-            for (int idx = 0; idx < 2*NX_GRID; idx++)
+            for (int idx = 0; idx < NX_GRID; idx++)
                 xrand[idx] = rand0 (&idum) - 0.5;
-            for (int idx = 0; idx < 2*NY_GRID; idx++)
+            for (int idx = 0; idx < NY_GRID; idx++)
                 yrand[idx] = rand0 (&idum) - 0.5;
-            for (int idx = 0; idx < 2*NZ_GRID; idx++)
+            for (int idx = 0; idx < NZ_GRID; idx++)
                 zrand[idx] = rand0 (&idum) - 0.5;
 
             state_p = &states[st];
