@@ -120,14 +120,18 @@ void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     if(ct.compressed_outfile)
     {
         write_compressed_buffer(fhand, vh, fpgrid[0], fpgrid[1], fpgrid[2]);
-        write_compressed_buffer(fhand, rho, fpgrid[0], fpgrid[1], fpgrid[2]);
-        write_compressed_buffer(fhand, vxc, fpgrid[0], fpgrid[1], fpgrid[2]);
+        for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
+            write_compressed_buffer(fhand, &rho[is*fgrid_size], fpgrid[0], fpgrid[1], fpgrid[2]);
+        for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
+            write_compressed_buffer(fhand, &vxc[is*fgrid_size], fpgrid[0], fpgrid[1], fpgrid[2]);
     }
     else
     {
         write_double (fhand, vh, fgrid_size);
-        write_double (fhand, rho, fgrid_size);
-        write_double (fhand, vxc, fgrid_size);
+        for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
+            write_double (fhand, &rho[is*fgrid_size], fgrid_size);
+        for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
+            write_double (fhand, &vxc[is * fgrid_size], fgrid_size);
     }
 
     /* write wavefunctions */
@@ -137,6 +141,7 @@ void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<Kpoin
 
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
 
+        wvfn_size *= ct.noncoll_factor;
         for (ik = 0; ik < ct.num_kpts_pe; ik++)
         {
             for (is = 0; is < ns; is++)
@@ -149,10 +154,14 @@ void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                     }
                     else
                     {
-                        for(int idx=0;idx < grid_size;idx++) psi_R[idx] = std::real(Kptr[ik]->Kstates[is].psi[idx]);
-                        for(int idx=0;idx < grid_size;idx++) psi_I[idx] = std::imag(Kptr[ik]->Kstates[is].psi[idx]);
-                        write_compressed_buffer(fhand, psi_R, pgrid[0], pgrid[1], pgrid[2]);
-                        write_compressed_buffer(fhand, psi_I, pgrid[0], pgrid[1], pgrid[2]);
+
+                        for(int ic = 0; ic < ct.noncoll_factor; ic++)
+                        {
+                            for(int idx=0;idx < grid_size;idx++) psi_R[idx] = std::real(Kptr[ik]->Kstates[is].psi[idx + ic * grid_size]);
+                            for(int idx=0;idx < grid_size;idx++) psi_I[idx] = std::imag(Kptr[ik]->Kstates[is].psi[idx + ic * grid_size]);
+                            write_compressed_buffer(fhand, psi_R, pgrid[0], pgrid[1], pgrid[2]);
+                            write_compressed_buffer(fhand, psi_I, pgrid[0], pgrid[1], pgrid[2]);
+                        }
                     }
                 }
                 else
@@ -170,32 +179,32 @@ void WriteData (int fhand, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     /* write the state occupations, in spin-polarized calculation, 
      * it's occupation for the processor's own spin */ 
     {
-	for (ik = 0; ik < ct.num_kpts_pe; ik++)
-	    for (is = 0; is < ns; is++)
-	    {
-		write_double (fhand, &Kptr[ik]->Kstates[is].occupation[0], 1); 
-	    }
+        for (ik = 0; ik < ct.num_kpts_pe; ik++)
+            for (is = 0; is < ns; is++)
+            {
+                write_double (fhand, &Kptr[ik]->Kstates[is].occupation[0], 1); 
+            }
     }
-    
+
 
     /* write the state eigenvalues, while in spin-polarized case, 
      * it's eigenvalues of processor's own spin */
     {
-	for (ik = 0; ik < ct.num_kpts_pe; ik++)
-	    for (is = 0; is < ns; is++)
-	    {
-		write_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
-	    }
+        for (ik = 0; ik < ct.num_kpts_pe; ik++)
+            for (is = 0; is < ns; is++)
+            {
+                write_double (fhand, &Kptr[ik]->Kstates[is].eig[0], 1);
+            }
 
     }
 
 
     write_time = my_crtc () - time0;
-    
+
     rmg_printf ("WriteData: total size of each of the %d files = %.1f Mb\n", npe,
-	    ((double) totalsize) / (1024 * 1024));
+            ((double) totalsize) / (1024 * 1024));
     rmg_printf ("WriteData: writing took %.1f seconds, writing speed %.3f Mbps \n", write_time,
-	    ((double) totalsize) / (1024 * 1024) / write_time);
+            ((double) totalsize) / (1024 * 1024) / write_time);
 
 
 

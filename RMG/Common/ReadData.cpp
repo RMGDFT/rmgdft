@@ -159,18 +159,23 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     {
         read_compressed_buffer(fhand, vh, fpgrid[0], fpgrid[1], fpgrid[2]);
         if(ct.verbose) rmg_printf ("read_data: read 'vh'\n");
-        read_compressed_buffer(fhand, rho, fpgrid[0], fpgrid[1], fpgrid[2]);
+        for(int ic = 0; ic < ct.noncoll_factor * ct.noncoll_factor; ic++)
+            read_compressed_buffer(fhand, &rho[ic * fgrid_size], fpgrid[0], fpgrid[1], fpgrid[2]);
         if(ct.verbose) rmg_printf ("read_data: read 'rho'\n");
-        read_compressed_buffer(fhand, vxc, fpgrid[0], fpgrid[1], fpgrid[2]);
+        for(int ic = 0; ic < ct.noncoll_factor * ct.noncoll_factor; ic++)
+            read_compressed_buffer(fhand, &vxc[ic * fgrid_size], fpgrid[0], fpgrid[1], fpgrid[2]);
+    
         if(ct.verbose) rmg_printf ("read_data: read 'vxc'\n");
     }
     else
     {
         read_double (fhand, vh, fgrid_size);
         if(ct.verbose) rmg_printf ("read_data: read 'vh'\n");
-        read_double (fhand, rho, fgrid_size);
+        for(int ic = 0; ic < ct.noncoll_factor * ct.noncoll_factor; ic++)
+            read_double (fhand, &rho[ic * fgrid_size], fgrid_size);
         if(ct.verbose) rmg_printf ("read_data: read 'rho'\n");
-        read_double (fhand, vxc, fgrid_size);
+        for(int ic = 0; ic < ct.noncoll_factor * ct.noncoll_factor; ic++)
+            read_double (fhand, &vxc[ic * fgrid_size], fgrid_size);
         if(ct.verbose) rmg_printf ("read_data: read 'vxc'\n");
     }
 
@@ -180,6 +185,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
         double *psi_I = new double[grid_size];
 
         int wvfn_size = (gamma) ? grid_size : 2 * grid_size;
+        wvfn_size *= ct.noncoll_factor;
         double *tbuf = new double[wvfn_size];
         std::complex<double> *tptr;
 
@@ -197,10 +203,13 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                         }
                         else
                         {
-                            std::complex<double> *cptr = (std::complex<double> *)Kptr[ik]->Kstates[is].psi;
-                            read_compressed_buffer(fhand, (double *)psi_R, pgrid[0], pgrid[1], pgrid[2]);
-                            read_compressed_buffer(fhand, (double *)psi_I, pgrid[0], pgrid[1], pgrid[2]);
-                            for(int idx=0;idx < grid_size;idx++) cptr[idx] = std::complex<double>(psi_R[idx], psi_I[idx]);
+                            for(int ic = 0; ic < ct.noncoll_factor; ic++)
+                            {
+                                std::complex<double> *cptr = (std::complex<double> *)&Kptr[ik]->Kstates[is].psi[ic * grid_size];
+                                read_compressed_buffer(fhand, (double *)psi_R, pgrid[0], pgrid[1], pgrid[2]);
+                                read_compressed_buffer(fhand, (double *)psi_I, pgrid[0], pgrid[1], pgrid[2]);
+                                for(int idx=0;idx < grid_size;idx++) cptr[idx] = std::complex<double>(psi_R[idx], psi_I[idx]);
+                            }
                         }
                     }
                     else
@@ -211,7 +220,7 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
                 else {
                     // If wavefunctions on disk are complex but current calc is real then throw error
                     if(ct.is_gamma)
-                         rmg_error_handler (__FILE__, __LINE__,"Can't convert complex wavefunctions to real.");
+                        rmg_error_handler (__FILE__, __LINE__,"Can't convert complex wavefunctions to real.");
 
                     // Wavefunctions on disk are real but current calc is complex so convert them
                     ssize_t wanted = sizeof (double) * (ssize_t)wvfn_size;
@@ -241,6 +250,8 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     // If we have added unoccupied orbitals initialize them to a random state
     if(ct.num_states > ns) {
 
+        if(ct.noncoll) 
+            rmg_error_handler (__FILE__, __LINE__,"noncollinear case: ct.num_state differenecec.");
         for (ik = 0; ik < ct.num_kpts_pe; ik++){
 
             int PX0_GRID = Kptr[0]->G->get_PX0_GRID(1);
@@ -448,7 +459,7 @@ void read_compressed_buffer(int fh, double *array, int nx, int ny, int nz)
 }
 
 
-template <typename KpointType>
+    template <typename KpointType>
 void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
 {
     char newname[MAX_PATH + 200];
@@ -470,12 +481,15 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
     fpgrid[1] = Kptr[0]->G->get_PY0_GRID(Kptr[0]->G->default_FG_RATIO);
     fpgrid[2] = Kptr[0]->G->get_PZ0_GRID(Kptr[0]->G->default_FG_RATIO);
 
+    if(ct.noncoll)
+        rmg_printf("\n WARNING: noncollinear wavefunction extrapolation not complete");
+    
     /* wait until everybody gets here */
     MPI_Barrier(pct.img_comm);	
 
     /* Get the previous wavefunction file name */
     if(ct.verbose) rmg_printf("\nspin flag =%d\n", ct.spin_flag);
-    
+
     int kstart = pct.kstart;
     sprintf (newname, "%s_spin%d_kpt%d_gridpe%d_1", name, pct.spinpe, kstart, pct.gridpe);
 
@@ -615,7 +629,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
         if(typeid(KpointType) == typeid(std::complex<double>)) trans_a = trans_c;
 
         KpointType ZERO_t(0.0);
-        
+
         for (int ik = 0; ik < ct.num_kpts_pe; ik++)
         {
             KpointType *A = (KpointType *)Kptr[ik]->Kstates[0].psi;
@@ -627,10 +641,10 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
             {
                 // Write overlaps to log file
                 std::string fname = std::string("md_overlaps") + "_spin" + std::to_string(pct.spinpe) +
-                                            "_kpt" + std::to_string(pct.kstart+ik);
+                    "_kpt" + std::to_string(pct.kstart+ik);
                 FILE *fhand = NULL;
                 if(NULL == (fhand = fopen (fname.c_str(), "a+")))
-                     throw RmgFatalException() << "Unable to open md_overlap file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+                    throw RmgFatalException() << "Unable to open md_overlap file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
                 for(int i=0;i < ns;i++)
                 {
@@ -647,7 +661,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
             for(int is=0;is < ns;is++)
             {
                 for(int idx = 0;idx < grid_size;idx++) Kptr[ik]->Kstates[is].psi[idx] = 
-                        2.0*Kptr[ik]->Kstates[is].psi[idx] - Kptr[ik]->Kstates[is+ns].psi[idx];
+                    2.0*Kptr[ik]->Kstates[is].psi[idx] - Kptr[ik]->Kstates[is+ns].psi[idx];
             }
 
         }

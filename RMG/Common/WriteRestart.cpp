@@ -103,8 +103,8 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
 	{
             ION &Atom = Atoms[ion];
 	    SPECIES &AtomType = Species[Atom.species];
-            fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %d %d %d %f", AtomType.atomic_symbol, Atom.crds[0], Atom.crds[1], 
-                    Atom.crds[2],  Atom.movable[0], Atom.movable[1], Atom.movable[2], Atom.init_spin_rho);
+            fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %d %d %d %f %f %f", AtomType.atomic_symbol, Atom.crds[0], Atom.crds[1], 
+                    Atom.crds[2],  Atom.movable[0], Atom.movable[1], Atom.movable[2], Atom.init_spin_rho, 0.0, 0.0);
 	}
 
 	fprintf(fhandle,"\n\"\n");
