@@ -336,7 +336,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             BandStructure (Kptr, vxc, vh, vnuc);
             if(ct.rmg2bgw) WriteBGW_Rhog(rho, rho_oppo);
             OutputBandPlot(Kptr);
-            return;
+            break;
 
         case TDDFT:
             if(!ct.restart_tddft) Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);

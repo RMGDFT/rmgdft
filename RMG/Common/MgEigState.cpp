@@ -232,6 +232,8 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
         // Get the residual
         CalcType f1(2.0*eig);
         for (int idx = 0; idx <pbasis_noncoll; idx++) res_t[idx] = f1 * res_t[idx] - 2.0*work1_t[idx];
+        sp->res = 0.0;
+        for (int idx = 0; idx <pbasis_noncoll; idx++) sp->res += std::real(res_t[idx] * std::conj(res_t[idx]));
 
         for(int is = 0; is < ct.noncoll_factor; is++)
         {
