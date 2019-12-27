@@ -53,7 +53,7 @@ void InitPseudo ()
     Atomic *A = new Atomic();
     double *rgrid = A->GetRgrid();
 
-    if(ct.spinorbit)
+    if(ct.noncoll)
         InitSpinOrbit();
 
     bool write_flag = ct.write_pp_flag;

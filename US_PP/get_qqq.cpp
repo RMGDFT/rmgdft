@@ -102,7 +102,7 @@ void get_qqq ()
     if (pct.gridpe == 0 && verify_boolean ("write_pseudopotential_plots", &SET))
         fclose (ftpr);
 
-    if(!ct.spinorbit) return;
+    if(!ct.noncoll) return;
 
   //implement eq. 18 in Corso and Conte, PRB 71 115106(2005)
 

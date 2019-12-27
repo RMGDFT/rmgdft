@@ -109,21 +109,6 @@ void get_ddd (double * veff, double *vxc)
                 if (i != j)
                     dnmI[j * nh + i] = dnmI[i * nh + j];
 
-                if(ct.noncoll)
-                {
-                    dnmI[i * nh + j+ 1*nh*nh] = sum[1*sum_dim + sum_idx];
-                    if (i != j)
-                        dnmI[j * nh + i + 1*nh*nh] = dnmI[i * nh + j + 1* nh*nh];
-
-                    dnmI[i * nh + j+ 2*nh*nh] = sum[2*sum_dim + sum_idx];
-                    if (i != j)
-                        dnmI[j * nh + i + 2*nh*nh] = dnmI[i * nh + j + 2* nh*nh];
-
-                    dnmI[i * nh + j+ 3*nh*nh] = sum[3*sum_dim + sum_idx];
-                    if (i != j)
-                        dnmI[j * nh + i + 3*nh*nh] = dnmI[i * nh + j + 3* nh*nh];
-                }
-
                 sum_idx++;
 
             }                   /*end for j */
@@ -132,7 +117,7 @@ void get_ddd (double * veff, double *vxc)
 
 // implement eq 19 Corso and Conte PRB 75 115106(2005)
 
-    if(!ct.spinorbit) 
+    if(!ct.noncoll) 
     {
         delete [] sum;
         return;

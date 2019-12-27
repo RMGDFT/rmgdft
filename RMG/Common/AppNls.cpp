@@ -156,7 +156,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             {
 
                 if(ct.is_ddd_non_diagonal) {
-                    if(ct.spinorbit)
+                    if(ct.noncoll)
                     {
                         int it0 = proj_index + i;
                         int jt0 = proj_index + j;
@@ -170,21 +170,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                         M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 1 * nh *nh];
                         M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 2 * nh *nh];
                         M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 3 * nh *nh];
-                    }
-                    else if(ct.noncoll)
-                    {
-                        int it0 = proj_index + i;
-                        int jt0 = proj_index + j;
-                        int it1 = proj_index + i + num_tot_proj;
-                        int jt1 = proj_index + j + num_tot_proj;
-                        M_dnm_C[it0 * num_tot_proj * 2 + jt0] = dnmI[inh+j + 0 * nh * nh] + dnmI[inh+j + 3 * nh * nh];
-                        M_dnm_C[it0 * num_tot_proj * 2 + jt1] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], -dnmI[inh+j + 2 * nh * nh]);
-                        M_dnm_C[it1 * num_tot_proj * 2 + jt0] = std::complex<double>(dnmI[inh+j + 1 * nh * nh], dnmI[inh+j + 2 * nh * nh]);
-                        M_dnm_C[it1 * num_tot_proj * 2 + jt1] = dnmI[inh+j + 0 * nh * nh] - dnmI[inh+j + 3 * nh * nh];
-                        M_qqq[it0 * num_tot_proj * 2 + jt0] = (KpointType)qqq[inh+j];
-                        M_qqq[it1 * num_tot_proj * 2 + jt0] = 0.0;
-                        M_qqq[it0 * num_tot_proj * 2 + jt1] = 0.0;
-                        M_qqq[it1 * num_tot_proj * 2 + jt1] = (KpointType)qqq[inh+j];
                     }
                     else
                     {

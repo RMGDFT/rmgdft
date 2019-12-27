@@ -409,8 +409,7 @@ template void nlforce_par_gamma<double> (double * par_gamma, int ion, int nh, do
 template void nlforce_par_gamma<std::complex<double>> (std::complex<double> * par_gamma, int ion, int nh, double *force);
 template <typename T> void nlforce_par_gamma (T * par_gamma, int ion, int nh, double *force)
 {
-    int idx, idx1, size, n, m;
-    double forces[3];
+    int idx1, size, n, m;
     if(ct.noncoll) 
     {
         printf("WARNING noncoll forces are not correct");
@@ -419,7 +418,7 @@ template <typename T> void nlforce_par_gamma (T * par_gamma, int ion, int nh, do
     T *gamma_x, *gamma_y, *gamma_z;
     double  *dnmI;
 
-    size = nh * nh;
+    size = nh * nh * ct.noncoll_factor * ct.noncoll_factor;
 
     gamma_x = par_gamma;
     gamma_y = gamma_x + size;
@@ -427,23 +426,16 @@ template <typename T> void nlforce_par_gamma (T * par_gamma, int ion, int nh, do
 
     dnmI = Atoms[ion].dnmI;
 
-    for (idx = 0; idx < 3; idx++)
-        forces[idx] = 0.0;
-
     for (n = 0; n < nh; n++)
     {
         for (m = 0; m < nh; m++)
         {
             idx1 = n * nh + m;
-            forces[0] += dnmI[idx1] * std::real(gamma_x[idx1]);
-            forces[1] += dnmI[idx1] * std::real(gamma_y[idx1]);
-            forces[2] += dnmI[idx1] * std::real(gamma_z[idx1]);
+            force[0] += dnmI[idx1] * std::real(gamma_x[idx1]);
+            force[1] += dnmI[idx1] * std::real(gamma_y[idx1]);
+            force[2] += dnmI[idx1] * std::real(gamma_z[idx1]);
         }
     }
-
-    force[0] += forces[0];
-    force[1] += forces[1];
-    force[2] += forces[2];
 
 }
 
@@ -452,43 +444,35 @@ template void nlforce_par_omega<std::complex<double>> (std::complex<double> *par
 template void nlforce_par_omega<double> (double *par_omega, int ion, int nh, double *force);
 template <typename OrbitalType> void nlforce_par_omega (OrbitalType *par_omega, int ion, int nh, double *force)
 {
-    int idx, idx1, size, n, m;
-    double forces[3];
+    int idx1, size, n, m;
 
-    if(ct.noncoll)
-    {
-        printf("WARNING noncoll forces are not correct");
-    }
     OrbitalType *omega_x, *omega_y, *omega_z;
-    double *qqq;
 
-    size = nh * nh;
+    size = nh * nh * ct.noncoll_factor * ct.noncoll_factor;
 
     omega_x = par_omega;
     omega_y = omega_x + size;
     omega_z = omega_y + size;
 
-    qqq = Atoms[ion].qqq;
+    if(ct.noncoll)
+    {
+        printf("WARNING noncoll forces are not correct");
+    }
 
-    for (idx = 0; idx < 3; idx++)
-        forces[idx] = 0.0;
+    double *qqq;
+    qqq = Atoms[ion].qqq;
 
     for (n = 0; n < nh; n++)
     {
         for (m = 0; m < nh; m++)
         {
             idx1 = n * nh + m;
-            forces[0] += qqq[idx1] * std::real(omega_x[idx1]);
-            forces[1] += qqq[idx1] * std::real(omega_y[idx1]);
-            forces[2] += qqq[idx1] * std::real(omega_z[idx1]);
+            force[0] -= qqq[idx1] * std::real(omega_x[idx1]);
+            force[1] -= qqq[idx1] * std::real(omega_y[idx1]);
+            force[2] -= qqq[idx1] * std::real(omega_z[idx1]);
 
         }
     }
-
-
-    force[0] -= forces[0];
-    force[1] -= forces[1];
-    force[2] -= forces[2];
 
 }
 
