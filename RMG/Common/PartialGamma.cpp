@@ -53,7 +53,7 @@ template <typename OrbitalType> void PartialGamma (int kidx,
         int ion, OrbitalType * par_gammaR, OrbitalType * par_omegaR, int nion, int nh,
         Kpoint<OrbitalType> **Kptr, int state_start, int state_end, OrbitalType *sint_derx, OrbitalType *sint_dery, OrbitalType *sint_derz)
 {
-    int i, j, idx,  istate, size;
+    int i, j, istate, size;
     OrbitalType *gamma_x, *gamma_y, *gamma_z;
     OrbitalType *omega_x, *omega_y, *omega_z;
     double t1, t2;
@@ -63,7 +63,7 @@ template <typename OrbitalType> void PartialGamma (int kidx,
     int num_nonloc_ions = Kptr[kidx]->BetaProjector->get_num_nonloc_ions();
 
 
-    size = (nh * (nh + 1)) / 2 * ct.noncoll_factor * ct.noncoll_factor;
+    size = nh * nh * ct.noncoll_factor * ct.noncoll_factor;
     gamma_x = par_gammaR;
     gamma_y = gamma_x + size;
     gamma_z = gamma_y + size;
@@ -73,57 +73,57 @@ template <typename OrbitalType> void PartialGamma (int kidx,
     omega_z = omega_y + size;
 
 
-        for (istate = state_start; istate < state_end; istate++)
+    for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
+    for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
+    for (istate = state_start; istate < state_end; istate++)
+    {
+        int istate_local = istate - state_start;
+        t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kp.kweight;
+        t2 = t1 * Kptr[kidx]->Kstates[istate].eig[0];
+
+        int sint_index1 = ((istate +is1)* num_nonloc_ions * ct.max_nl +nion * ct.max_nl) * ct.noncoll_factor;
+        int dersint_index1 = ((istate_local+is1) * num_nonloc_ions * ct.max_nl +nion * ct.max_nl) * ct.noncoll_factor;
+        int sint_index2 = ((istate +is2)* num_nonloc_ions * ct.max_nl +nion * ct.max_nl) * ct.noncoll_factor;
+        int dersint_index2 = ((istate_local+is2) * num_nonloc_ions * ct.max_nl +nion * ct.max_nl) * ct.noncoll_factor;
+
+
+
+        for (i = 0; i < nh; i++)
         {
-            int istate_local = istate - state_start;
-            t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kp.kweight;
-            t2 = t1 * Kptr[kidx]->Kstates[istate].eig[0];
-            
-            int sint_index = istate * num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
-            int dersint_index = istate_local * num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
-
-
-
-            idx = 0;
-            for (i = 0; i < nh; i++)
+            for (j = 0; j < nh; j++)
             {
-                for (j = i; j < nh; j++)
-                {
-                    betaxpsiN = Kptr[kidx]->newsint_local[ sint_index + i]; 
-                    betaxpsiM = Kptr[kidx]->newsint_local[ sint_index + j];
+                int idx = i * nh + j;
+                betaxpsiN = Kptr[kidx]->newsint_local[ sint_index1 + i]; 
+                betaxpsiM = Kptr[kidx]->newsint_local[ sint_index2 + j];
 
-                    betaxpsiN_der = sint_derx[ dersint_index + i];
-                    betaxpsiM_der = sint_derx[ dersint_index + j];
+                betaxpsiN_der = sint_derx[ dersint_index1 + i];
+                betaxpsiM_der = sint_derx[ dersint_index2 + j];
 
-
-                    beta_pbeta =  betaxpsiN_der * MyConj(betaxpsiM) +
-                        betaxpsiM_der * MyConj(betaxpsiN);
-                    gamma_x[idx] += t1 * beta_pbeta;
-                    omega_x[idx] += t2 * beta_pbeta;
-
-                    betaxpsiN_der = sint_dery[ dersint_index + i];
-                    betaxpsiM_der = sint_dery[ dersint_index + j];
+                beta_pbeta =  betaxpsiN_der * MyConj(betaxpsiM) +
+                    betaxpsiM_der * MyConj(betaxpsiN);
+                gamma_x[idx] += t1 * beta_pbeta;
+                omega_x[idx] += t2 * beta_pbeta;
 
 
-                    beta_pbeta =  betaxpsiN_der * MyConj(betaxpsiM) +
-                            betaxpsiM_der * MyConj(betaxpsiN);
-                    gamma_y[idx] += t1 * beta_pbeta;
-                    omega_y[idx] += t2 * beta_pbeta;
+                betaxpsiN_der = sint_dery[ dersint_index1 + i];
+                betaxpsiM_der = sint_dery[ dersint_index2 + j];
 
-                    betaxpsiN_der = sint_derz[ dersint_index + i]; 
-                    betaxpsiM_der = sint_derz[ dersint_index + j];
-
-
-                    beta_pbeta =  betaxpsiN_der * MyConj(betaxpsiM) +
-                            betaxpsiM_der * MyConj(betaxpsiN);
-                    gamma_z[idx] += t1 * beta_pbeta;
-                    omega_z[idx] += t2 * beta_pbeta;
+                beta_pbeta =  betaxpsiN_der * MyConj(betaxpsiM) +
+                    betaxpsiM_der * MyConj(betaxpsiN);
+                gamma_y[idx] += t1 * beta_pbeta;
+                omega_y[idx] += t2 * beta_pbeta;
 
 
-                    ++idx;
-                }               /* end for j */
-            }                   /*end for i */
-        }                       /*end for istate */
+                betaxpsiN_der = sint_derz[ dersint_index1 + i]; 
+                betaxpsiM_der = sint_derz[ dersint_index2 + j];
 
+                beta_pbeta =  betaxpsiN_der * MyConj(betaxpsiM) +
+                    betaxpsiM_der * MyConj(betaxpsiN);
+                gamma_z[idx] += t1 * beta_pbeta;
+                omega_z[idx] += t2 * beta_pbeta;
+
+            }               /* end for j */
+        }                   /*end for i */
+    }                       /*end for istate */
 
 }

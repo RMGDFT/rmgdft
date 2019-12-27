@@ -96,14 +96,15 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
 
     /*max for nh * (nh + 1) / 2 */
-    int max_nl2 = (ct.max_nl + 1) * ct.max_nl / 2;
+    int max_nl2 = ct.max_nl * ct.max_nl;
     
     gamma = new OrbitalType[ max_nl2];
 //    par_gamma = new double[ 6 * max_nl2];
 //    par_omega = par_gamma + 3 * max_nl2;
-    OrbitalType *par_gamma_allions = new OrbitalType[3 * num_owned_ions * max_nl2];
-    OrbitalType *par_omega_allions = new OrbitalType[3 * num_owned_ions * max_nl2];
-    for(int i = 0; i < 3 * num_owned_ions * max_nl2; i++)
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
+    OrbitalType *par_gamma_allions = new OrbitalType[3 * num_owned_ions * max_nl2 * factor];
+    OrbitalType *par_omega_allions = new OrbitalType[3 * num_owned_ions * max_nl2 * factor];
+    for(int i = 0; i < 3 * num_owned_ions * max_nl2 * factor; i++)
     {
         par_gamma_allions[i] = 0.0;
         par_omega_allions[i] = 0.0;
@@ -200,7 +201,7 @@ ct.state_block_size);
             Betaxpsi(Kptr[kpt], st_start +   st_block, st_thisblock, sint_dery);
             Betaxpsi(Kptr[kpt], st_start + 2*st_block, st_thisblock, sint_derz);
 
-            for(int i = 0; i < num_nonloc_ions * num_state_thisblock * ct.max_nl * ct.noncoll_factor; i++)
+            for(int i = 0; i < num_nonloc_ions * st_thisblock * ct.max_nl; i++)
             {
                 sint_derx[i] *= -1.0;
                 sint_dery[i] *= -1.0;
@@ -233,8 +234,8 @@ ct.state_block_size);
                 nh = Species[iptr->species].nh;
 
                 /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
-                par_gamma = &par_gamma_allions[ion * 3 * max_nl2];
-                par_omega = &par_omega_allions[ion * 3 * max_nl2];
+                par_gamma = &par_gamma_allions[ion * 3 * max_nl2 * factor];
+                par_omega = &par_omega_allions[ion * 3 * max_nl2 * factor];
 
                 PartialGamma (kpt, gion, par_gamma, par_omega, nion, nh, Kptr, state_start[ib], state_end[ib], sint_derx, sint_dery, sint_derz);
 
@@ -248,7 +249,7 @@ ct.state_block_size);
     delete [] state_end;
     delete [] state_start;
 
-    int factor = sizeof(OrbitalType)/sizeof(double);
+    factor *= sizeof(OrbitalType)/sizeof(double);
     GlobalSums(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
     GlobalSums(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
 
@@ -418,7 +419,7 @@ template <typename T> void nlforce_par_gamma (T * par_gamma, int ion, int nh, do
     T *gamma_x, *gamma_y, *gamma_z;
     double  *dnmI;
 
-    size = nh * (nh + 1) / 2;
+    size = nh * nh;
 
     gamma_x = par_gamma;
     gamma_y = gamma_x + size;
@@ -429,26 +430,14 @@ template <typename T> void nlforce_par_gamma (T * par_gamma, int ion, int nh, do
     for (idx = 0; idx < 3; idx++)
         forces[idx] = 0.0;
 
-    idx = 0;
     for (n = 0; n < nh; n++)
     {
-        for (m = n; m < nh; m++)
+        for (m = 0; m < nh; m++)
         {
             idx1 = n * nh + m;
-            if (n == m)
-            {
-                forces[0] += dnmI[idx1] * std::real(gamma_x[idx]);
-                forces[1] += dnmI[idx1] * std::real(gamma_y[idx]);
-                forces[2] += dnmI[idx1] * std::real(gamma_z[idx]);
-            }
-            else
-            {
-                forces[0] += 2.0 * dnmI[idx1] * std::real(gamma_x[idx]);
-                forces[1] += 2.0 * dnmI[idx1] * std::real(gamma_y[idx]);
-                forces[2] += 2.0 * dnmI[idx1] * std::real(gamma_z[idx]);
-            }
-
-            ++idx;
+            forces[0] += dnmI[idx1] * std::real(gamma_x[idx1]);
+            forces[1] += dnmI[idx1] * std::real(gamma_y[idx1]);
+            forces[2] += dnmI[idx1] * std::real(gamma_z[idx1]);
         }
     }
 
@@ -473,7 +462,7 @@ template <typename OrbitalType> void nlforce_par_omega (OrbitalType *par_omega, 
     OrbitalType *omega_x, *omega_y, *omega_z;
     double *qqq;
 
-    size = nh * (nh + 1) / 2;
+    size = nh * nh;
 
     omega_x = par_omega;
     omega_y = omega_x + size;
@@ -484,26 +473,15 @@ template <typename OrbitalType> void nlforce_par_omega (OrbitalType *par_omega, 
     for (idx = 0; idx < 3; idx++)
         forces[idx] = 0.0;
 
-    idx = 0;
     for (n = 0; n < nh; n++)
     {
-        for (m = n; m < nh; m++)
+        for (m = 0; m < nh; m++)
         {
             idx1 = n * nh + m;
-            if (n == m)
-            {
-                forces[0] += qqq[idx1] * std::real(omega_x[idx]);
-                forces[1] += qqq[idx1] * std::real(omega_y[idx]);
-                forces[2] += qqq[idx1] * std::real(omega_z[idx]);
-            }
-            else
-            {
-                forces[0] += 2.0 * qqq[idx1] * std::real(omega_x[idx]);
-                forces[1] += 2.0 * qqq[idx1] * std::real(omega_y[idx]);
-                forces[2] += 2.0 * qqq[idx1] * std::real(omega_z[idx]);
-            }
+            forces[0] += qqq[idx1] * std::real(omega_x[idx1]);
+            forces[1] += qqq[idx1] * std::real(omega_y[idx1]);
+            forces[2] += qqq[idx1] * std::real(omega_z[idx1]);
 
-            ++idx;
         }
     }
 
