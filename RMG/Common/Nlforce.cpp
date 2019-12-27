@@ -42,13 +42,10 @@
 #include "FiniteDiff.h"
 #include "transition.h"
 #include "GlobalSums.h"
+#include "prototypes_rmg.h"
 
 
 void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion, ION * iptr, int nh, double * forces);
-void nlforce_par_gamma (double * par_gamma, int ion, int nh, double *force);
-void nlforce_par_omega (double * par_omega, int ion, int nh, double *force);
-
-
 
 
 /*Set this to 1 to write out true NL force and the part
@@ -61,7 +58,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 {
     int ion, isp, gion, nion;
     int nh, size;
-    double *gamma, *par_gamma, *par_omega;
+    OrbitalType *gamma, *par_gamma, *par_omega;
     ION *iptr;
     int num_ions;
     double  *qforce;
@@ -72,7 +69,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     int num_occupied;
     std::complex<double> I_t(0.0, 1.0);
 
-    int P0_BASIS = Rmg_G->get_P0_BASIS(1);
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
@@ -102,11 +98,11 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     /*max for nh * (nh + 1) / 2 */
     int max_nl2 = (ct.max_nl + 1) * ct.max_nl / 2;
     
-    gamma = new double[ max_nl2];
+    gamma = new OrbitalType[ max_nl2];
 //    par_gamma = new double[ 6 * max_nl2];
 //    par_omega = par_gamma + 3 * max_nl2;
-    double *par_gamma_allions = new double[3 * num_owned_ions * max_nl2];
-    double *par_omega_allions = new double[3 * num_owned_ions * max_nl2];
+    OrbitalType *par_gamma_allions = new OrbitalType[3 * num_owned_ions * max_nl2];
+    OrbitalType *par_omega_allions = new OrbitalType[3 * num_owned_ions * max_nl2];
     for(int i = 0; i < 3 * num_owned_ions * max_nl2; i++)
     {
         par_gamma_allions[i] = 0.0;
@@ -114,21 +110,12 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     }
 
     
-    size =  num_nonloc_ions * ct.state_block_size * ct.max_nl; 
+    size =  num_nonloc_ions * ct.state_block_size * ct.max_nl * ct.noncoll_factor; 
     size += 1;
-#if GPU_ENABLED
     OrbitalType *sint_der = (OrbitalType *)GpuMallocManaged(3*size * sizeof(OrbitalType));
     OrbitalType *sint_derx = sint_der + 0 * size;
     OrbitalType *sint_dery = sint_der + 1 * size;
     OrbitalType *sint_derz = sint_der + 2 * size;
-#else
-    OrbitalType *sint_der = new OrbitalType[3*size];
-    OrbitalType *sint_derx = sint_der + 0 * size;
-    OrbitalType *sint_dery = sint_der + 1 * size;
-    OrbitalType *sint_derz = sint_der + 2 * size;
-#endif
-
-    
 
 
 //  determine the number of occupied states for all kpoints.
@@ -158,6 +145,7 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     }
 
     int pbasis = Kptr[0]->pbasis;
+    int pbasis_noncoll = pbasis * ct.noncoll_factor;
 
 
     if(ct.alloc_states < ct.num_states + 3 * ct.state_block_size)     
@@ -175,10 +163,12 @@ ct.state_block_size);
             for(int st = state_start[ib]; st < state_end[ib]; st++)
             {
                 psi = Kptr[kpt]->Kstates[st].psi;
-                psi_x = Kptr[kpt]->Kstates[ct.num_states].psi + (st-state_start[ib]) * pbasis;
-                psi_y = psi_x + ct.state_block_size*pbasis;
-                psi_z = psi_x +2* ct.state_block_size*pbasis;
+                psi_x = Kptr[kpt]->Kstates[ct.num_states].psi + (st-state_start[ib]) * pbasis_noncoll;
+                psi_y = psi_x + ct.state_block_size*pbasis_noncoll;
+                psi_z = psi_x +2* ct.state_block_size*pbasis_noncoll;
                 ApplyGradient(psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
+                if(ct.noncoll)
+                    ApplyGradient(psi+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Coarse");
 
                 if(!ct.is_gamma)
                 {
@@ -187,7 +177,7 @@ ct.state_block_size);
                     psi_xC = (std::complex<double> *) psi_x;
                     psi_yC = (std::complex<double> *) psi_y;
                     psi_zC = (std::complex<double> *) psi_z;
-                    for(int i = 0; i < P0_BASIS; i++) 
+                    for(int i = 0; i < pbasis_noncoll; i++) 
                     {
                         psi_xC[i] += I_t *  Kptr[kpt]->kp.kvec[0] * psi_C[i];
                         psi_yC[i] += I_t *  Kptr[kpt]->kp.kvec[1] * psi_C[i];
@@ -203,11 +193,14 @@ ct.state_block_size);
 
 
             RT1 = new RmgTimer("2-Force: non-local-betaxpsi");
-            Betaxpsi(Kptr[kpt], ct.num_states,                       num_state_thisblock, sint_derx);
-            Betaxpsi(Kptr[kpt], ct.num_states+ ct.state_block_size,  num_state_thisblock, sint_dery);
-            Betaxpsi(Kptr[kpt], ct.num_states+2*ct.state_block_size, num_state_thisblock, sint_derz);
+            int st_start = ct.num_states * ct.noncoll_factor;
+            int st_thisblock = num_state_thisblock * ct.noncoll_factor;
+            int st_block = ct.state_block_size * ct.noncoll_factor;
+            Betaxpsi(Kptr[kpt], st_start,              st_thisblock, sint_derx);
+            Betaxpsi(Kptr[kpt], st_start +   st_block, st_thisblock, sint_dery);
+            Betaxpsi(Kptr[kpt], st_start + 2*st_block, st_thisblock, sint_derz);
 
-            for(int i = 0; i < num_nonloc_ions * num_state_thisblock * ct.max_nl; i++)
+            for(int i = 0; i < num_nonloc_ions * num_state_thisblock * ct.max_nl * ct.noncoll_factor; i++)
             {
                 sint_derx[i] *= -1.0;
                 sint_dery[i] *= -1.0;
@@ -255,8 +248,9 @@ ct.state_block_size);
     delete [] state_end;
     delete [] state_start;
 
-    GlobalSums(par_gamma_allions, 3*num_owned_ions*max_nl2, pct.kpsub_comm);
-    GlobalSums(par_omega_allions, 3*num_owned_ions*max_nl2, pct.kpsub_comm);
+    int factor = sizeof(OrbitalType)/sizeof(double);
+    GlobalSums(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    GlobalSums(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
 
     RT1 = new RmgTimer("2-Force: non-local-veff grad");
     OrbitalType *gx = new OrbitalType[FP0_BASIS];
@@ -278,10 +272,10 @@ ct.state_block_size);
         nh = Species[iptr->species].nh;
 
         RT1 = new RmgTimer("2-Force: non-local-get gamma");
-        GetGamma (gamma, ion, nh, Kptr);
+        GetGamma ((double *)gamma, ion, nh, Kptr);
         delete RT1;
         RT1 = new RmgTimer("2-Force: non-local-nlforce_par_Q");
-        nlforce_par_Q ((double *)gx, (double *)gy, (double *)gz, gamma, gion, iptr, nh, &qforce[3 * gion]);
+        nlforce_par_Q ((double *)gx, (double *)gy, (double *)gz, (double *)gamma, gion, iptr, nh, &qforce[3 * gion]);
         delete RT1;
 
     }                           /*end for(ion=0; ion<ions_max; ion++) */
@@ -355,11 +349,7 @@ ct.state_block_size);
     //    delete[] par_gamma;
     delete[] par_gamma_allions;
     delete[] par_omega_allions;
-#if GPU_ENABLED
     GpuFreeManaged(sint_der);
-#else
-    delete[] sint_der;
-#endif
 
     delete[] gamma;
     delete[] tmp_force_omega;
@@ -414,12 +404,19 @@ void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion,
 
 }
 
-
-void nlforce_par_gamma (double * par_gamma, int ion, int nh, double *force)
+template void nlforce_par_gamma<double> (double * par_gamma, int ion, int nh, double *force);
+template void nlforce_par_gamma<std::complex<double>> (std::complex<double> * par_gamma, int ion, int nh, double *force);
+template <typename T> void nlforce_par_gamma (T * par_gamma, int ion, int nh, double *force)
 {
     int idx, idx1, size, n, m;
     double forces[3];
-    double *gamma_x, *gamma_y, *gamma_z, *dnmI;
+    if(ct.noncoll) 
+    {
+        printf("WARNING noncoll forces are not correct");
+    }
+
+    T *gamma_x, *gamma_y, *gamma_z;
+    double  *dnmI;
 
     size = nh * (nh + 1) / 2;
 
@@ -440,15 +437,15 @@ void nlforce_par_gamma (double * par_gamma, int ion, int nh, double *force)
             idx1 = n * nh + m;
             if (n == m)
             {
-                forces[0] += dnmI[idx1] * gamma_x[idx];
-                forces[1] += dnmI[idx1] * gamma_y[idx];
-                forces[2] += dnmI[idx1] * gamma_z[idx];
+                forces[0] += dnmI[idx1] * std::real(gamma_x[idx]);
+                forces[1] += dnmI[idx1] * std::real(gamma_y[idx]);
+                forces[2] += dnmI[idx1] * std::real(gamma_z[idx]);
             }
             else
             {
-                forces[0] += 2.0 * dnmI[idx1] * gamma_x[idx];
-                forces[1] += 2.0 * dnmI[idx1] * gamma_y[idx];
-                forces[2] += 2.0 * dnmI[idx1] * gamma_z[idx];
+                forces[0] += 2.0 * dnmI[idx1] * std::real(gamma_x[idx]);
+                forces[1] += 2.0 * dnmI[idx1] * std::real(gamma_y[idx]);
+                forces[2] += 2.0 * dnmI[idx1] * std::real(gamma_z[idx]);
             }
 
             ++idx;
@@ -462,11 +459,19 @@ void nlforce_par_gamma (double * par_gamma, int ion, int nh, double *force)
 }
 
 
-void nlforce_par_omega (double * par_omega, int ion, int nh, double *force)
+template void nlforce_par_omega<std::complex<double>> (std::complex<double> *par_omega, int ion, int nh, double *force);
+template void nlforce_par_omega<double> (double *par_omega, int ion, int nh, double *force);
+template <typename OrbitalType> void nlforce_par_omega (OrbitalType *par_omega, int ion, int nh, double *force)
 {
     int idx, idx1, size, n, m;
     double forces[3];
-    double *omega_x, *omega_y, *omega_z, *qqq;
+
+    if(ct.noncoll)
+    {
+        printf("WARNING noncoll forces are not correct");
+    }
+    OrbitalType *omega_x, *omega_y, *omega_z;
+    double *qqq;
 
     size = nh * (nh + 1) / 2;
 
@@ -487,15 +492,15 @@ void nlforce_par_omega (double * par_omega, int ion, int nh, double *force)
             idx1 = n * nh + m;
             if (n == m)
             {
-                forces[0] += qqq[idx1] * omega_x[idx];
-                forces[1] += qqq[idx1] * omega_y[idx];
-                forces[2] += qqq[idx1] * omega_z[idx];
+                forces[0] += qqq[idx1] * std::real(omega_x[idx]);
+                forces[1] += qqq[idx1] * std::real(omega_y[idx]);
+                forces[2] += qqq[idx1] * std::real(omega_z[idx]);
             }
             else
             {
-                forces[0] += 2.0 * qqq[idx1] * omega_x[idx];
-                forces[1] += 2.0 * qqq[idx1] * omega_y[idx];
-                forces[2] += 2.0 * qqq[idx1] * omega_z[idx];
+                forces[0] += 2.0 * qqq[idx1] * std::real(omega_x[idx]);
+                forces[1] += 2.0 * qqq[idx1] * std::real(omega_y[idx]);
+                forces[2] += 2.0 * qqq[idx1] * std::real(omega_z[idx]);
             }
 
             ++idx;
@@ -508,3 +513,4 @@ void nlforce_par_omega (double * par_omega, int ion, int nh, double *force)
     force[2] -= forces[2];
 
 }
+

@@ -17,6 +17,7 @@
 
 #include "rmgtypedefs.h"
 
+template <typename T> T MyConj(T val);
 
 /* Blas wrappers */
 void QMD_daxpy (int n, double alpha, double *x, int incx, double *y, int incy);

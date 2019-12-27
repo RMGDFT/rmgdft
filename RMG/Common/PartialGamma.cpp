@@ -44,26 +44,26 @@
 
 template void PartialGamma<double> ( int kidx,int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
                      Kpoint<double> **Kptr, int state_start, int state_end, double * sint_derx, double * sint_dery, double * sint_derz );
-template void PartialGamma<std::complex<double>> ( int kidx,int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
+template void PartialGamma<std::complex<double>> ( int kidx,int ion, std::complex<double> * par_gammaR, std::complex<double> * par_omegaR, int nion, int nh,
                     Kpoint<std::complex<double>> **Kptr, int state_start, int state_end, std::complex<double> *sint_derx,
                     std::complex<double> *sint_dery, std::complex<double> *sint_derz);
 
 
 template <typename OrbitalType> void PartialGamma (int kidx,
-        int ion, double * par_gammaR, double * par_omegaR, int nion, int nh,
+        int ion, OrbitalType * par_gammaR, OrbitalType * par_omegaR, int nion, int nh,
         Kpoint<OrbitalType> **Kptr, int state_start, int state_end, OrbitalType *sint_derx, OrbitalType *sint_dery, OrbitalType *sint_derz)
 {
     int i, j, idx,  istate, size;
-    double *gamma_x, *gamma_y, *gamma_z;
-    double *omega_x, *omega_y, *omega_z;
-    double t1;
+    OrbitalType *gamma_x, *gamma_y, *gamma_z;
+    OrbitalType *omega_x, *omega_y, *omega_z;
+    double t1, t2;
     OrbitalType betaxpsiN, betaxpsiM;
     OrbitalType betaxpsiN_der, betaxpsiM_der;
-    double beta_pbeta;
+    OrbitalType beta_pbeta;
     int num_nonloc_ions = Kptr[kidx]->BetaProjector->get_num_nonloc_ions();
 
 
-    size = (nh * (nh + 1)) / 2;
+    size = (nh * (nh + 1)) / 2 * ct.noncoll_factor * ct.noncoll_factor;
     gamma_x = par_gammaR;
     gamma_y = gamma_x + size;
     gamma_z = gamma_y + size;
@@ -77,6 +77,10 @@ template <typename OrbitalType> void PartialGamma (int kidx,
         {
             int istate_local = istate - state_start;
             t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kp.kweight;
+            t2 = t1 * Kptr[kidx]->Kstates[istate].eig[0];
+            
+            int sint_index = istate * num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
+            int dersint_index = istate_local * num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
 
 
 
@@ -85,43 +89,35 @@ template <typename OrbitalType> void PartialGamma (int kidx,
             {
                 for (j = i; j < nh; j++)
                 {
-                    betaxpsiN = Kptr[kidx]->newsint_local[ istate * num_nonloc_ions * ct.max_nl +
-                        nion * ct.max_nl + i];
-                    betaxpsiM = Kptr[kidx]->newsint_local[ istate * num_nonloc_ions * ct.max_nl +
-                        nion * ct.max_nl + j];
+                    betaxpsiN = Kptr[kidx]->newsint_local[ sint_index + i]; 
+                    betaxpsiM = Kptr[kidx]->newsint_local[ sint_index + j];
 
-                    betaxpsiN_der = sint_derx[ istate_local * num_nonloc_ions * ct.max_nl +
-                        nion * ct.max_nl + i];
-                    betaxpsiM_der = sint_derx[ istate_local * num_nonloc_ions * ct.max_nl +
-                        nion * ct.max_nl + j];
+                    betaxpsiN_der = sint_derx[ dersint_index + i];
+                    betaxpsiM_der = sint_derx[ dersint_index + j];
 
 
-                    beta_pbeta = std::real( betaxpsiN_der * std::conj(betaxpsiM) +
-                            betaxpsiM_der * std::conj(betaxpsiN));
+                    beta_pbeta =  betaxpsiN_der * MyConj(betaxpsiM) +
+                        betaxpsiM_der * MyConj(betaxpsiN);
                     gamma_x[idx] += t1 * beta_pbeta;
-                    omega_x[idx] += t1 * Kptr[kidx]->Kstates[istate].eig[0] * beta_pbeta;
+                    omega_x[idx] += t2 * beta_pbeta;
 
-                    betaxpsiN_der = sint_dery[ istate_local * num_nonloc_ions * ct.max_nl +
-                        nion * ct.max_nl + i];
-                    betaxpsiM_der = sint_dery[ istate_local * num_nonloc_ions * ct.max_nl +
-                        nion * ct.max_nl + j];
+                    betaxpsiN_der = sint_dery[ dersint_index + i];
+                    betaxpsiM_der = sint_dery[ dersint_index + j];
 
 
-                    beta_pbeta = std::real( betaxpsiN_der * std::conj(betaxpsiM) +
-                            betaxpsiM_der * std::conj(betaxpsiN));
+                    beta_pbeta =  betaxpsiN_der * MyConj(betaxpsiM) +
+                            betaxpsiM_der * MyConj(betaxpsiN);
                     gamma_y[idx] += t1 * beta_pbeta;
-                    omega_y[idx] += t1 * Kptr[kidx]->Kstates[istate].eig[0] * beta_pbeta;
+                    omega_y[idx] += t2 * beta_pbeta;
 
-                    betaxpsiN_der = sint_derz[ istate_local * num_nonloc_ions * ct.max_nl +
-                        nion * ct.max_nl + i];
-                    betaxpsiM_der = sint_derz[ istate_local * num_nonloc_ions * ct.max_nl +
-                        nion * ct.max_nl + j];
+                    betaxpsiN_der = sint_derz[ dersint_index + i]; 
+                    betaxpsiM_der = sint_derz[ dersint_index + j];
 
 
-                    beta_pbeta = std::real( betaxpsiN_der * std::conj(betaxpsiM) +
-                            betaxpsiM_der * std::conj(betaxpsiN));
+                    beta_pbeta =  betaxpsiN_der * MyConj(betaxpsiM) +
+                            betaxpsiM_der * MyConj(betaxpsiN);
                     gamma_z[idx] += t1 * beta_pbeta;
-                    omega_z[idx] += t1 * Kptr[kidx]->Kstates[istate].eig[0] * beta_pbeta;
+                    omega_z[idx] += t2 * beta_pbeta;
 
 
                     ++idx;
