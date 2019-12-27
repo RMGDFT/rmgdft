@@ -218,7 +218,9 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     Rmg_halfgrid->set_rank(pct.gridpe, pct.grid_comm);
     bool special = ((Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
             (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
-            (Rmg_L.get_ibrav_type() == HEXAGONAL));
+            (Rmg_L.get_ibrav_type() == HEXAGONAL) ||
+            (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
+
     if(!special || ct.kohn_sham_ke_fft) SetLaplacian();
 
     InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);

@@ -1024,6 +1024,7 @@ double FiniteDiff::app2_del2 (RmgType * __restrict__ a, RmgType * __restrict__  
 
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             if (FiniteDiff::check_anisotropy(gridhx, gridhy, gridhz, 0.0000001))
             {
@@ -1309,6 +1310,7 @@ double FiniteDiff::app2_del2_offset (RmgType * a, RmgType * b, int dimx, int dim
 
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             if (FiniteDiff::check_anisotropy(gridhx, gridhy, gridhz, 0.0000001))
             {
@@ -1534,7 +1536,7 @@ double FiniteDiff::app6_del2(RmgType * a, RmgType * b, int dimx, int dimy, int d
 {
 
     int ibrav = L->get_ibrav_type();
-    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)) {
+    if((ibrav != CUBIC_PRIMITIVE) && (ibrav != ORTHORHOMBIC_PRIMITIVE)  && (ibrav != TETRAGONAL_PRIMITIVE)) {
         rmg_error_handler (__FILE__, __LINE__, "Lattice type not implemented");
     }
 
@@ -1673,6 +1675,8 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     {
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
+
 
             for (int ix = 4; ix < dimx + 4; ix++)
             {
@@ -1848,6 +1852,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     {
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             for (ix = 5; ix < dimx + 5; ix++)
             {
@@ -2010,6 +2015,7 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
 
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             if (FiniteDiff::check_anisotropy(gridhx, gridhy, gridhz, 0.0000001))
             {
@@ -2275,6 +2281,8 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
 
         case CUBIC_PRIMITIVE: 
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
+
             for (int ix = 1; ix < dimx + 1; ix++)
             {
                 ixs = ix * incx;
@@ -2414,6 +2422,7 @@ void FiniteDiff::app_gradient_sixth (RmgType * rptr, RmgType * wxr, RmgType *wyr
 
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             for (int ix = 3; ix < dimx + 3; ix++)
             {
@@ -2493,6 +2502,7 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
 
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             for (int ix = 4; ix < dimx + 4; ix++)
             {
@@ -2653,6 +2663,7 @@ void FiniteDiff::app_gradient_tenth (RmgType * __restrict__ rptr, RmgType * __re
 
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             for (int ix = 5; ix < dimx + 5; ix++)
             {
@@ -2759,6 +2770,7 @@ double FiniteDiff::app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dim
 
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             /* Compute coefficients for this grid spacing */
             cc = (-FOUR_t / THREE_t) * (ihx + ihy + ihz);
@@ -3097,6 +3109,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     {
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             for (int ix = 4; ix < dimx + 4; ix++)
             {

@@ -114,7 +114,9 @@ Mgrid::Mgrid(Lattice *lptr, TradeImages *tptr)
     this->ibrav = L->get_ibrav_type();
     this->timer_mode = false;
     this->central_trade = false;
-    if((this->ibrav == CUBIC_PRIMITIVE) || (this->ibrav == ORTHORHOMBIC_PRIMITIVE)) this->central_trade = true;
+    if((this->ibrav == CUBIC_PRIMITIVE) || 
+       (this->ibrav == ORTHORHOMBIC_PRIMITIVE) || 
+       (this->ibrav == TETRAGONAL_PRIMITIVE)) this->central_trade = true;
 }
 
 Mgrid::~Mgrid(void)
@@ -433,6 +435,7 @@ void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
         case CUBIC_PRIMITIVE:
         case CUBIC_FC:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             scale = 1.0 / 64.0;
             for (ix = 1; ix <= dx2; ix++)
@@ -704,6 +707,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
         case CUBIC_FC:
         case CUBIC_BC:
         case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
 
             /* transfer coarse grid points to fine grid along with the
              * high side image point

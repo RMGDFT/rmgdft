@@ -52,7 +52,8 @@ void CPP_app_grad_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * bx,
     int images = order / 2;
     int ibrav = L->get_ibrav_type();
     size_t alloc = (sbasis + 64) * sizeof(RmgType);
-    int special = ((ibrav == HEXAGONAL) || (ibrav == ORTHORHOMBIC_PRIMITIVE) || (ibrav == CUBIC_PRIMITIVE));
+    int special = ((ibrav == HEXAGONAL) || (ibrav == ORTHORHOMBIC_PRIMITIVE) || 
+                   (ibrav == CUBIC_PRIMITIVE) || (ibrav == TETRAGONAL_PRIMITIVE));
 
 
     // while alloca is dangerous it's very fast for small arrays and the 110k limit

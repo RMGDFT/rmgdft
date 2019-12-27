@@ -121,7 +121,8 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
     int images = order / 2;
     size_t alloc = (sbasis + 64) * sizeof(DataType);
     DataType *rptr;
-    int special = ((Rmg_L.get_ibrav_type() == HEXAGONAL) || (Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE));
+    int special = ((Rmg_L.get_ibrav_type() == HEXAGONAL) || (Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
+                   (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) || (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
 
     // while alloca is dangerous it's very fast for small arrays and the 110k limit
     // is fine for linux and 64bit power

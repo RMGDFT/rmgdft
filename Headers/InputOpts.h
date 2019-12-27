@@ -11,7 +11,7 @@ static std::unordered_map<std::string, int> bravais_lattice_type = {
         {"Cubic Body Centered", 3},
         {"Hexagonal Primitive", 4},
 //        {"Hexagonal Rhombohedral (Trigonal)", 5},
-//        {"Tetragonal Primitive", 6},
+        {"Tetragonal Primitive", 6},
 //        {"Tetragonal Body Centered", 7},
         {"Orthorhombic Primitive", 8}};
 //        {"Orthorhombic Base Centered", 9},
