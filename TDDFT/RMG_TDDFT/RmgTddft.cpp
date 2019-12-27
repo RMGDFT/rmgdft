@@ -175,7 +175,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         }
 
         /*Generate the Dnm_I */
-        get_ddd (vtot, vxc);
+        get_ddd (vtot, vxc, true);
 
         HSmatrix (Kptr[0], vtot_psi, vxc_psi, (OrbitalType *)Hmatrix, (OrbitalType *)Smatrix);
 

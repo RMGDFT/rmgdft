@@ -163,7 +163,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
 
     GetVtotPsi(vtot_c, vtot, get_FG_RATIO());
 
-    get_ddd (vtot, vxc);
+    get_ddd (vtot, vxc, true);
 
     RmgTimer *RTk = new RmgTimer("2-SCF: kbpsi");
     LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);

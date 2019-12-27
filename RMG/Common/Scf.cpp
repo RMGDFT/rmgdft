@@ -201,7 +201,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         }
 
     /*Generate the Dnm_I */
-    get_ddd (vtot, vxc);
+    get_ddd (vtot, vxc, true);
 
 
     // Loop over k-points
@@ -324,7 +324,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
             /*Generate the Dnm_I */
-            get_ddd (vtot, vxc);
+            get_ddd (vtot, vxc, true);
 
             // Set davidson parameters
             ct.davidx = 1;

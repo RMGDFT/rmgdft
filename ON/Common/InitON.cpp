@@ -409,7 +409,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
 
     GetVtotPsi(vtot_c, vtot, get_FG_RATIO());
 
-    get_ddd(vtot, vxc);
+    get_ddd(vtot, vxc, true);
     delete(RT8);
 
 

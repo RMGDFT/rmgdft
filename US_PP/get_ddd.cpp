@@ -6,7 +6,7 @@
 #include "transition.h"
 
 static std::complex<double> DnmTransform(int ih, int jh, int is1, int is2, double *Ia, SPECIES &sp);
-void get_ddd (double * veff, double *vxc)
+void get_ddd (double * veff, double *vxc, bool ddd0_flag)
 {
     int idx, ion;
     int nh, ncount, icount;
@@ -105,7 +105,9 @@ void get_ddd (double * veff, double *vxc)
                 /*if (fabs (sum[sum_idx]) < 1.0e-10)
                   sum[sum_idx] = 0.0; */
 
-                dnmI[i * nh + j] = sp->ddd0[i][j] + sum[sum_idx];
+                dnmI[i * nh + j] = sum[sum_idx];
+                if(ddd0_flag)
+                    dnmI[i * nh + j] += sp->ddd0[i][j];
                 if (i != j)
                     dnmI[j * nh + i] = dnmI[i * nh + j];
 
@@ -157,10 +159,13 @@ void get_ddd (double * veff, double *vxc)
                         iptr->dnmI_so[ih *nh + jh + (is1*2+is2) * nh * nh] = DnmTransform(ih,jh,is1,is2,Ia,*sp);
                     }
 
-                iptr->dnmI_so[ih *nh + jh + 0 * nh * nh] += sp->ddd0_so[ih][jh][0];
-                iptr->dnmI_so[ih *nh + jh + 1 * nh * nh] += sp->ddd0_so[ih][jh][1];
-                iptr->dnmI_so[ih *nh + jh + 2 * nh * nh] += sp->ddd0_so[ih][jh][2];
-                iptr->dnmI_so[ih *nh + jh + 3 * nh * nh] += sp->ddd0_so[ih][jh][3];
+                if(ddd0_flag)
+                {
+                    iptr->dnmI_so[ih *nh + jh + 0 * nh * nh] += sp->ddd0_so[ih][jh][0];
+                    iptr->dnmI_so[ih *nh + jh + 1 * nh * nh] += sp->ddd0_so[ih][jh][1];
+                    iptr->dnmI_so[ih *nh + jh + 2 * nh * nh] += sp->ddd0_so[ih][jh][2];
+                    iptr->dnmI_so[ih *nh + jh + 3 * nh * nh] += sp->ddd0_so[ih][jh][3];
+                }
 
             }                   /*end for j */
         }                       /*end for i */

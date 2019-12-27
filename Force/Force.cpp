@@ -125,7 +125,7 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     /* Add in the non-local stuff. Needs to be summed over spins. Already summed over kpoints in lower level routines */
     RmgTimer *RT3 = new RmgTimer("2-Force: non-local");
     for(int i = 0; i < num_ions * 3; i++) force_tmp[i] = 0.0;
-    Nlforce (vtott, Kptr, force_tmp);
+    Nlforce (vtott, vxc, Kptr, force_tmp);
     global_sums (force_tmp, &size1, pct.spin_comm);
 
     for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];

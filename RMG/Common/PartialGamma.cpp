@@ -92,7 +92,7 @@ template <typename OrbitalType> void PartialGamma (int kidx,
         {
             for (j = 0; j < nh; j++)
             {
-                int idx = i * nh + j;
+                int idx = i * nh + j + (is1 * ct.noncoll_factor + is2) * nh *nh;
                 betaxpsiN = Kptr[kidx]->newsint_local[ sint_index1 + i]; 
                 betaxpsiM = Kptr[kidx]->newsint_local[ sint_index2 + j];
 

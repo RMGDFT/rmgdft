@@ -113,7 +113,7 @@ template <typename OrbitalType>
     void Force (double * rho, double * rho_oppo, double * rhoc, double * vh, double *vh_in,
         double * vxc, double *vxc_in, double * vnuc, Kpoint<OrbitalType> **Kptr);
 template <typename OrbitalType>
-    void Nlforce (double * , Kpoint<OrbitalType> **Kptr, double *force);
+    void Nlforce (double *, double *, Kpoint<OrbitalType> **Kptr, double *force);
 
 template <typename OrbitalType> void nlforce_par_gamma (OrbitalType * par_gamma, int ion, int nh, double *force);
 template <typename OrbitalType> void nlforce_par_omega (OrbitalType * par_omega, int ion, int nh, double *force);
@@ -123,7 +123,7 @@ template <typename OrbitalType> void PartialBetaxpsi (int ion, fftw_plan p2, dou
                        double * newsintR_z, double * newsintI_x, double * newsintI_y, double * newsintI_z,
                        ION * iptr,Kpoint<OrbitalType> **Kptr);
 
-template <typename OrbitalType> void GetGamma (double * gammaR, int ion, int nh , Kpoint<OrbitalType> **Kptr);
+template <typename OrbitalType> void GetGamma (OrbitalType *gammaR, int ion, int nh , Kpoint<OrbitalType> **Kptr);
 
 
 template <typename OrbitalType> void PartialGamma (int kpt,
@@ -137,7 +137,6 @@ template <typename OrbitalType> void AssignDerweight (Kpoint<OrbitalType> *kptr,
 template <typename KpointType>
 void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc);
 
-void nlforce_par_Q (double *veff, double *, double *, double *gamma, int ion, ION *iptr, int nh,
-                     double *forces);
+template <typename T> void nlforce_par_Q (double *veff, double *vxc, T *gamma_allions, double *forces, int num_owned_ions, int *owned_ion_list);
 
 #endif

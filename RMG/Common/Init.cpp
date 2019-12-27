@@ -604,7 +604,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
         /*Generate the Dnm_I */
-        get_ddd (vtot, vxc);
+        get_ddd (vtot, vxc, true);
 
         // Transfer vtot from the fine grid to the wavefunction grid for Subdiag
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);

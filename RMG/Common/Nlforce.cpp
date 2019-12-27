@@ -45,16 +45,14 @@
 #include "prototypes_rmg.h"
 
 
-void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion, ION * iptr, int nh, double * forces);
-
 
 /*Set this to 1 to write out true NL force and the part
  * that comes from eigenvalues*/
 
-template void Nlforce<double> (double *, Kpoint<double> **Kptr, double *force_nl);
-template void Nlforce<std::complex<double> > (double * , Kpoint<std::complex<double>> **Kptr, double *force_nl);
+template void Nlforce<double> (double *, double *vxc, Kpoint<double> **Kptr, double *force_nl);
+template void Nlforce<std::complex<double> > (double * ,double *vxc,  Kpoint<std::complex<double>> **Kptr, double *force_nl);
 
-template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType> **Kptr, double *force_nl)
+template <typename OrbitalType> void Nlforce (double * veff, double *vxc, Kpoint<OrbitalType> **Kptr, double *force_nl)
 {
     int ion, isp, gion, nion;
     int nh, size;
@@ -69,7 +67,6 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
     int num_occupied;
     std::complex<double> I_t(0.0, 1.0);
 
-    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
     int num_nonloc_ions = Kptr[0]->BetaProjector->get_num_nonloc_ions();
     int num_owned_ions = Kptr[0]->BetaProjector->get_num_owned_ions();
@@ -97,15 +94,16 @@ template <typename OrbitalType> void Nlforce (double * veff, Kpoint<OrbitalType>
 
     /*max for nh * (nh + 1) / 2 */
     int max_nl2 = ct.max_nl * ct.max_nl;
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
     
-    gamma = new OrbitalType[ max_nl2];
 //    par_gamma = new double[ 6 * max_nl2];
 //    par_omega = par_gamma + 3 * max_nl2;
-    int factor = ct.noncoll_factor * ct.noncoll_factor;
     OrbitalType *par_gamma_allions = new OrbitalType[3 * num_owned_ions * max_nl2 * factor];
     OrbitalType *par_omega_allions = new OrbitalType[3 * num_owned_ions * max_nl2 * factor];
+    OrbitalType *gamma_allions = new OrbitalType[3 * num_owned_ions * max_nl2 * factor];
     for(int i = 0; i < 3 * num_owned_ions * max_nl2 * factor; i++)
     {
+        gamma_allions[i] = 0.0;
         par_gamma_allions[i] = 0.0;
         par_omega_allions[i] = 0.0;
     }
@@ -249,50 +247,41 @@ ct.state_block_size);
     delete [] state_end;
     delete [] state_start;
 
-    factor *= sizeof(OrbitalType)/sizeof(double);
-    GlobalSums(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
-    GlobalSums(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
-
-    RT1 = new RmgTimer("2-Force: non-local-veff grad");
-    OrbitalType *gx = new OrbitalType[FP0_BASIS];
-    OrbitalType *gy = new OrbitalType[FP0_BASIS];
-    OrbitalType *gz = new OrbitalType[FP0_BASIS];
-
-    ApplyGradient (veff, (double *)gx, (double *)gy, (double *)gz, ct.force_grad_order, "Fine");
-
-    delete RT1;
-
-
-    for (ion = 0; ion < num_nonloc_ions; ion++)
+    nion = -1;
+    for (ion = 0; ion < num_owned_ions; ion++)
     {
-        /*Actual index of the ion under consideration*/
-        gion = nonloc_ions_list[ion];
+        /*Global index of owned ion*/
+        gion = owned_ions_list[ion];
+        do {
+
+            nion++;
+            if (nion >= num_nonloc_ions)
+            {
+                printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
+                rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+            }
+        } while (nonloc_ions_list[nion] != gion);
+
 
         iptr = &Atoms[gion];
 
         nh = Species[iptr->species].nh;
 
         RT1 = new RmgTimer("2-Force: non-local-get gamma");
-        GetGamma ((double *)gamma, ion, nh, Kptr);
+        gamma = &gamma_allions[ion * 3 * max_nl2 * factor];
+        GetGamma (gamma, nion, nh, Kptr);
         delete RT1;
-        RT1 = new RmgTimer("2-Force: non-local-nlforce_par_Q");
-        nlforce_par_Q ((double *)gx, (double *)gy, (double *)gz, (double *)gamma, gion, iptr, nh, &qforce[3 * gion]);
-        delete RT1;
+    }
 
-    }                           /*end for(ion=0; ion<ions_max; ion++) */
-
-    delete [] gz;
-    delete [] gy;
-    delete [] gx;
-
-
-    double vel_f = get_vel_f();
-    for(int i = 0; i < num_ions * 3; i++) qforce[i] *= vel_f;
-
+    factor *= sizeof(OrbitalType)/sizeof(double);
+    GlobalSums(gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    GlobalSums(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
+    GlobalSums(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
 
 
     /*Loop over ions again */
     nion = -1;
+    factor = ct.noncoll_factor * ct.noncoll_factor;
     for (ion = 0; ion < num_owned_ions; ion++)
     {
         /*Global index of owned ion*/
@@ -317,8 +306,8 @@ ct.state_block_size);
 
         /*partial_gamma(ion,par_gamma,par_omega, iptr, nh, p1, p2); */
         //PartialGamma (gion, par_gamma, par_omega, nion, nh, Kptr);
-        par_gamma = &par_gamma_allions[ion * 3 * max_nl2];
-        par_omega = &par_omega_allions[ion * 3 * max_nl2];
+        par_gamma = &par_gamma_allions[ion * 3 * max_nl2 * factor];
+        par_omega = &par_omega_allions[ion * 3 * max_nl2 * factor];
         RT1 = new RmgTimer("2-Force: non-local-nlforce_par_gamma");
         nlforce_par_gamma (par_gamma, gion, nh, &tmp_force_gamma[3*gion]);
         delete RT1;
@@ -330,6 +319,9 @@ ct.state_block_size);
     }                           /*end for(ion=0; ion<num_ions; ion++) */
 
 
+    RT1 = new RmgTimer("2-Force: non-local-nlforce_par_Q");
+    nlforce_par_Q (veff, vxc, gamma_allions, qforce, num_owned_ions, owned_ions_list);
+    delete RT1;
 
     for(int i = 0; i < num_ions * 3; i++) 
     {
@@ -348,11 +340,11 @@ ct.state_block_size);
 
 
     //    delete[] par_gamma;
+    delete[] gamma_allions;
     delete[] par_gamma_allions;
     delete[] par_omega_allions;
     GpuFreeManaged(sint_der);
 
-    delete[] gamma;
     delete[] tmp_force_omega;
     delete[] tmp_force_gamma;
     delete[] qforce;
@@ -361,47 +353,65 @@ ct.state_block_size);
 }
 
 
-void nlforce_par_Q (double *gx, double *gy, double *gz, double * gamma, int ion, ION * iptr, int nh, double * forces)
+template  void nlforce_par_Q<double> (double *veff, double *vxc, double * gamma, double * forces, int num_owned_ions, int *owned_ion_list);
+template  void nlforce_par_Q<std::complex<double>> (double *veff, double *vxc, std::complex<double> * gamma, 
+        double * forces, int num_owned_ions, int *owned_ion_list);
+template <typename T> void nlforce_par_Q (double *veff, double *vxc, T *gamma_allions, double *qforces, int num_owned_ions, int *owned_ions_list)
 {
-    int idx2, n, m, count, icount, size;
-    int *pidx;
 
-    count = Atoms[ion].Qindex.size();
-    pidx = Atoms[ion].Qindex.data();
+    int max_nl2 = ct.max_nl * ct.max_nl;
+    int factor = ct.noncoll_factor * ct.noncoll_factor;
+    RmgTimer *RT1 = new RmgTimer("2-Force: non-local-veff grad");
+    int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    double *gx = new double[FP0_BASIS];
+    double *gy = new double[FP0_BASIS];
+    double *gz = new double[FP0_BASIS];
+    T *gamma;
 
-    double *Qnm;
+    ApplyGradient (veff, gx, gy, gz, ct.force_grad_order, "Fine");
+    delete RT1;
 
-    Qnm = Atoms[ion].augfunc.data();
+    get_ddd(gx, vxc, false);
 
-    if (count)
+    for (int ion = 0; ion < num_owned_ions; ion++)
     {
-        size = (nh * (nh + 1)) / 2;
-
-        idx2 = 0;
-        for (n = 0; n < nh; n++)
+        gamma = &gamma_allions[ion * 3 * max_nl2 * factor];
+        int gion = owned_ions_list[ion];
+        int nh = Species[Atoms[gion].species].nh;
+        for (int n = 0; n < nh * nh; n++)
         {
-            for (m = n; m < nh; m++)
-            {
-                if (m != n) gamma[idx2] *= 2.0;
-                idx2++;
-            }
+            qforces[gion * 3 + 0] -=std::real(Atoms[gion].dnmI[n] * gamma[n]);
         }
-
-        double one = 1.0, zero = 0.0, *tmp_arr;
-        int ione = 1;
-        tmp_arr = new double[count];
-
-        dgemm("N", "N", &count, &ione, &size, &one, Qnm, &count, gamma, &size, &zero, tmp_arr, &count); 
-
-        for (icount = 0; icount < count; icount++)
-        {
-            forces[0] -= gx[pidx[icount]] * tmp_arr[icount];
-            forces[1] -= gy[pidx[icount]] * tmp_arr[icount];
-            forces[2] -= gz[pidx[icount]] * tmp_arr[icount];
-        }
-        delete [] tmp_arr;
     }
 
+    get_ddd(gy, vxc, false);
+    for (int ion = 0; ion < num_owned_ions; ion++)
+    {
+        gamma = &gamma_allions[ion * 3 * max_nl2 * factor];
+        int gion = owned_ions_list[ion];
+        int nh = Species[Atoms[gion].species].nh;
+        for (int n = 0; n < nh * nh; n++)
+        {
+            qforces[gion * 3 + 1] -=std::real(Atoms[gion].dnmI[n] * gamma[n]);
+        }
+    }
+
+    get_ddd(gz, vxc, false);
+    for (int ion = 0; ion < num_owned_ions; ion++)
+    {
+        gamma = &gamma_allions[ion * 3 * max_nl2 * factor];
+        int gion = owned_ions_list[ion];
+        int nh = Species[Atoms[gion].species].nh;
+        for (int n = 0; n < nh * nh; n++)
+        {
+            qforces[gion * 3 + 2] -=std::real(Atoms[gion].dnmI[n] * gamma[n]);
+        }
+
+    }
+
+    delete [] gz;
+    delete [] gy;
+    delete [] gx;
 
 }
 

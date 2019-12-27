@@ -69,7 +69,7 @@ void UpdatePot(double *vxc, double *vh, double * vxc_old, double * vh_old,
     GetVtotPsi (vtot_c, vtot, Rmg_G->default_FG_RATIO);
 
     FftFilter(vtot, *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
-    get_ddd(vtot, vxc);
+    get_ddd(vtot, vxc, true);
 
 
 }

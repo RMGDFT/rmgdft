@@ -43,7 +43,7 @@ void get_vxc (double * rho, double * rho_oppo, double * rhocore, double * vxc);
 void get_vtot_psi (double * vtot_psi, double * vtot, int grid_ratio);
 void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 void  get_rho_oppo (double * rho, double * rho_oppo);
-void get_ddd (double *veff, double *vxc);
+void get_ddd (double *veff, double *vxc, bool ddd0_flag);
 
 void rmg_lbfgs (void);
 void lbfgs_init(int num_ions, int num_images);
