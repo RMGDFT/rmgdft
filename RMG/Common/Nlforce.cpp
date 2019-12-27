@@ -363,15 +363,28 @@ template <typename T> void nlforce_par_Q (double *veff, double *vxc, T *gamma_al
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     RmgTimer *RT1 = new RmgTimer("2-Force: non-local-veff grad");
     int FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
+    double *vxc_gx  = NULL, *vxc_gy=NULL, *vxc_gz=NULL;
     double *gx = new double[FP0_BASIS];
     double *gy = new double[FP0_BASIS];
     double *gz = new double[FP0_BASIS];
     T *gamma;
 
     ApplyGradient (veff, gx, gy, gz, ct.force_grad_order, "Fine");
+
+    if(ct.noncoll)
+    {
+        vxc_gx = new double[4*FP0_BASIS];
+        vxc_gy = new double[4*FP0_BASIS];
+        vxc_gz = new double[4*FP0_BASIS];
+        for(int is = 1; is < 4; is++)
+            ApplyGradient (&vxc[is*FP0_BASIS], &vxc_gx[is*FP0_BASIS], &vxc_gy[is*FP0_BASIS], 
+                    &vxc_gz[is*FP0_BASIS], ct.force_grad_order, "Fine");
+    
+    }
     delete RT1;
 
-    get_ddd(gx, vxc, false);
+
+    get_ddd(gx, vxc_gx, false);
 
     for (int ion = 0; ion < num_owned_ions; ion++)
     {
@@ -380,11 +393,14 @@ template <typename T> void nlforce_par_Q (double *veff, double *vxc, T *gamma_al
         int nh = Species[Atoms[gion].species].nh;
         for (int n = 0; n < nh * nh; n++)
         {
-            qforces[gion * 3 + 0] -=std::real(Atoms[gion].dnmI[n] * gamma[n]);
+            if(ct.noncoll)
+                qforces[gion * 3 + 0] -=std::real(Atoms[gion].dnmI_so[n] * gamma[n]);
+            else
+                qforces[gion * 3 + 0] -=std::real(Atoms[gion].dnmI[n] * gamma[n]);
         }
     }
 
-    get_ddd(gy, vxc, false);
+    get_ddd(gy, vxc_gy, false);
     for (int ion = 0; ion < num_owned_ions; ion++)
     {
         gamma = &gamma_allions[ion * 3 * max_nl2 * factor];
@@ -392,11 +408,14 @@ template <typename T> void nlforce_par_Q (double *veff, double *vxc, T *gamma_al
         int nh = Species[Atoms[gion].species].nh;
         for (int n = 0; n < nh * nh; n++)
         {
-            qforces[gion * 3 + 1] -=std::real(Atoms[gion].dnmI[n] * gamma[n]);
+            if(ct.noncoll)
+                qforces[gion * 3 + 1] -=std::real(Atoms[gion].dnmI_so[n] * gamma[n]);
+            else
+                qforces[gion * 3 + 1] -=std::real(Atoms[gion].dnmI[n] * gamma[n]);
         }
     }
 
-    get_ddd(gz, vxc, false);
+    get_ddd(gz, vxc_gz, false);
     for (int ion = 0; ion < num_owned_ions; ion++)
     {
         gamma = &gamma_allions[ion * 3 * max_nl2 * factor];
@@ -404,7 +423,10 @@ template <typename T> void nlforce_par_Q (double *veff, double *vxc, T *gamma_al
         int nh = Species[Atoms[gion].species].nh;
         for (int n = 0; n < nh * nh; n++)
         {
-            qforces[gion * 3 + 2] -=std::real(Atoms[gion].dnmI[n] * gamma[n]);
+            if(ct.noncoll)
+                qforces[gion * 3 + 2] -=std::real(Atoms[gion].dnmI_so[n] * gamma[n]);
+            else
+                qforces[gion * 3 + 2] -=std::real(Atoms[gion].dnmI[n] * gamma[n]);
         }
 
     }
@@ -412,6 +434,12 @@ template <typename T> void nlforce_par_Q (double *veff, double *vxc, T *gamma_al
     delete [] gz;
     delete [] gy;
     delete [] gx;
+    if(ct.noncoll)
+    {
+        delete [] vxc_gz;
+        delete [] vxc_gy;
+        delete [] vxc_gx;
+    }
 
 }
 
