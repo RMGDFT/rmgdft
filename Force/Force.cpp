@@ -47,7 +47,7 @@
 #include "Kpoint.h"
 #include "Symmetry.h"
 
-
+void vdw_d2_forces(Lattice &, std::vector<ION> &Atoms, double *force_tmp);
 
 template void Force<double> (double * rho, double * rho_oppo, double * rhoc, double * vh, double*vh_in,
         double * vxc, double *vxc_in, double * vnuc, Kpoint<double> **Kptr);
@@ -151,6 +151,13 @@ template <typename OrbitalType> void Force (double * rho, double * rho_oppo, dou
     delete RT5;
 
     if(ct.verbose) output_force(force_tmp, "Correction force:");
+
+    RT5 = new RmgTimer("2-Force: vdw corr");
+    if(ct.vdw_corr == DFT_D2)
+        vdw_d2_forces(Rmg_L, Atoms, force_tmp);
+    for(int i = 0; i < num_ions * 3; i++) force_sum[i] += force_tmp[i];
+    if(ct.verbose) output_force(force_tmp, "vdw correction force:");
+    delete RT5;
 
 //   sum over grid_comm for nl_force part, because each grid_proc only calculates the owned_ions' force, 
 //                      nlforce for other ions on the proc is  zero

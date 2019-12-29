@@ -71,9 +71,9 @@
 #include "transition.h"
 #include "RmgSumAll.h"
 #include "RmgParallelFft.h"
-#include "vdw_Grimme.h"
 
 
+double  vdw_d2_energy(Lattice &, std::vector<ION> &);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<double> **, int);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double> > **, int);
 
@@ -185,7 +185,7 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
         ct.Evdw = 0.0;
         if(ct.vdw_corr == DFT_D2)
         {
-            ct.Evdw = vdw_Grimme::energy_d2(Rmg_L, Atoms);
+            ct.Evdw = vdw_d2_energy(Rmg_L, Atoms);
         }
 
     }

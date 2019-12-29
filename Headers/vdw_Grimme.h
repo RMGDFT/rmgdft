@@ -214,46 +214,6 @@ namespace  vdw_Grimme
             {"Rn",  3.636},
     });
 
-    double energy_d2(Lattice &L,  std::vector<ION>& Atoms_in)
-    {
-        double Rij, energy, c6i, c6j, c6ij, dist, f6d;
-        double xtal[3], xtal_tot[3];
-        energy = 0.0;
-        int maxnx = 1 + rcut/L.celldm[0];
-        int maxny = 1 + rcut/(L.celldm[0] * L.celldm[1]);
-        int maxnz = 1 + rcut/(L.celldm[0] * L.celldm[2]);
-        for(size_t i = 0; i < Atoms_in.size(); i++)
-            for(size_t j = 0; j < Atoms_in.size(); j++)
-            {
-
-                c6i = C6[Atoms_in[i].symbol];
-                c6j = C6[Atoms_in[j].symbol];
-                // C6 is in unit of Ry/au^6, change to Ha/au^6
-                c6ij = std::sqrt(c6i * c6j) * 0.5; 
-                Rij = Ri[Atoms_in[i].symbol] + Ri[Atoms_in[j].symbol];
-                xtal[0] = Atoms_in[i].xtal[0] - Atoms_in[j].xtal[0];
-                xtal[1] = Atoms_in[i].xtal[1] - Atoms_in[j].xtal[1];
-                xtal[2] = Atoms_in[i].xtal[2] - Atoms_in[j].xtal[2];
-                for(int ix = -maxnx; ix <= maxnx; ix++)
-                    for(int iy = -maxny; iy <= maxny; iy++)
-                        for(int iz = -maxnz; iz <= maxnz; iz++)
-                        {
-                            if(i == j && ix == 0 && iy == 0 && iz == 0) continue;
-                            xtal_tot[0] = xtal[0] + ix;
-                            xtal_tot[1] = xtal[1] + iy;
-                            xtal_tot[2] = xtal[2] + iz;
-                            dist = L.metric(xtal_tot);
-                            if(dist < rcut)
-                            {
-                                f6d = scale6/(1.0 + std::exp(-damp * (dist/Rij -1.0)));
-                                energy -=  0.5 * c6ij/std::pow(dist, 6) * f6d;
-                            }
-                        }
-
-            }
-
-        return energy;
-    }
 }
 
 #endif
