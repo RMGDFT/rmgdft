@@ -947,14 +947,14 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
     GridPoint point;
     double dx, dy,dz, dist;    
     double h = a[0][0]/Ngrid[0], eps=1.0e-5;;
-    for(int i = -Lorder; i <= Lorder; i++){
-        for(int j = -Lorder; j <= Lorder; j++){
-            for(int k = -Lorder; k <= Lorder; k++){
+    for(int i = -Lorder/2; i <= Lorder/2; i++){
+        for(int j = -Lorder/2; j <= Lorder/2; j++){
+            for(int k = -Lorder/2; k <= Lorder/2; k++){
                 if(i == 0 && j == 0 && k == 0) continue;
-
                 dx = i*a[0][0]/Ngrid[0] + j*a[1][0]/Ngrid[1] + k*a[2][0]/Ngrid[2];
                 dy = i*a[0][1]/Ngrid[0] + j*a[1][1]/Ngrid[1] + k*a[2][1]/Ngrid[2];
                 dz = i*a[0][2]/Ngrid[0] + j*a[1][2]/Ngrid[1] + k*a[2][2]/Ngrid[2];
+
                 double check1 = fabs(fabs(dx) - fabs(dy));
                 double check11 = fabs(fabs(dx) - fabs(h));
                 double check2 = fabs(fabs(dx) - fabs(dz));
@@ -967,10 +967,6 @@ void LaplacianCoeff::GetPointListBCC(std::vector<GridPoint>& points, double a[3]
                    ((fabs(dx) < eps) && (fabs(dy) < eps)) ||
                    ((fabs(dx) < eps) && (fabs(dz) < eps)) ||
                    ((fabs(dy) < eps) && (fabs(dz) < eps)))
-//                   ((fabs(dx) < eps) && (fabs(dy) < eps) && (fabs(dz) < 5.1*fabs(h))) ||
-//                   ((fabs(dx) < eps) && (fabs(dz) < eps) && (fabs(dy) < 5.1*fabs(h))) ||
-//                   ((fabs(dy) < eps) && (fabs(dz) < eps) && (fabs(dx) < 5.1*fabs(h))))
-
                 { 
 
                     dist = sqrt(dx * dx  + dy * dy + dz * dz);
