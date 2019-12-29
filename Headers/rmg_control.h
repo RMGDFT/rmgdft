@@ -143,6 +143,8 @@ public:
     /* Hybrid EXC flag */
     int xc_is_hybrid;
     double exx_fraction;
+    int vdw_corr;
+    double Evdw;
 
     /* EXX integral file */
     std::string exx_int_file;

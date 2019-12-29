@@ -267,6 +267,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Bravais Lattice Type. ", 
                      "bravais_lattice_type not found. ");
 
+    If.RegisterInputKey("vdw_corr", NULL, &lc.vdw_corr, "None",
+                     CHECK_AND_TERMINATE, OPTIONAL, vdw_corr,
+                     "Type of vdw correction  ", 
+                     "Only Grimme D2 is implemented now ", CONTROL_OPTIONS);
+
     If.RegisterInputKey("start_mode", NULL, &lc.runflag, "LCAO Start",
                      CHECK_AND_TERMINATE, OPTIONAL, start_mode,
                      "Type of run. ", 
@@ -301,6 +306,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      CHECK_AND_FIX, OPTIONAL, crds_units,
                      "Units for the atomic coordinates. ", 
                      "Coordinates must be specified in either Bohr or Angstrom. ");
+
     If.RegisterInputKey("lattice_units", NULL, NULL, "Bohr",
                      CHECK_AND_FIX, OPTIONAL, lattice_units,
                      "Units for the lattice vectors ", 

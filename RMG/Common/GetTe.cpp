@@ -71,6 +71,8 @@
 #include "transition.h"
 #include "RmgSumAll.h"
 #include "RmgParallelFft.h"
+#include "vdw_Grimme.h"
+
 
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<double> **, int);
 template void GetTe (double *, double *, double *, double *, double *, double *, Kpoint<std::complex<double> > **, int);
@@ -180,12 +182,17 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
         /* Evaluate total ion-ion energy */
         ct.II = IonIonEnergy_Ewald();
+        ct.Evdw = 0.0;
+        if(ct.vdw_corr == DFT_D2)
+        {
+            ct.Evdw = vdw_Grimme::energy_d2(Rmg_L, Atoms);
+        }
 
     }
 
 
     /* Sum them all up */
-    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_E + ct.scf_correction;
+    ct.TOTAL = eigsum - ct.ES - xcstate + ct.XC + ct.II + ldaU_E + ct.scf_correction + ct.Evdw;
     if(ct.xc_is_hybrid && Functional::is_exx_active()) ct.TOTAL -= ct.FOCK;
 
     /* Print contributions to total energies into output file */
@@ -197,6 +204,8 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
     rmg_printf ("@@ ELECTROSTATIC      = %15.6f %s\n", -efactor*ct.ES, eunits);
     rmg_printf ("@@ VXC                = %15.6f %s\n",  efactor*xcstate, eunits);
     rmg_printf ("@@ EXC                = %15.6f %s\n", efactor*ct.XC, eunits);
+    if(ct.vdw_corr)
+        rmg_printf ("@@ vdw_corr           = %15.6f %s\n", efactor*ct.Evdw, eunits);
     if(ct.xc_is_hybrid && Functional::is_exx_active())
         rmg_printf ("@@ FOCK               = %15.6f %s\n", efactor*ct.FOCK, eunits);
 

@@ -1,4 +1,5 @@
 add_library (XC
+#vdw_Grimme.cpp
 constants.f90
 coulomb_vcut.f90
 funct.f90

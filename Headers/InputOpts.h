@@ -33,6 +33,12 @@ static std::unordered_map<std::string, int> crds_units = {
         {"Bohr", 0},
         {"Angstrom", 1}};
 
+static std::unordered_map<std::string, int> vdw_corr = {
+        {"None", 0},
+        {"DFT-D2", 1},
+        {"Grimme-D2", 1}
+        };
+
 static std::unordered_map<std::string, int> lattice_units = {
         {"Bohr", 0},
         {"Angstrom", 1},

@@ -155,6 +155,8 @@
 #define       	VDW             6
 #define       	AUTO_XC         99
 
+#define NONE 0
+#define DFT_D2 1
 
 /******/
 

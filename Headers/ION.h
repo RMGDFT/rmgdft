@@ -122,6 +122,7 @@ public:
 
     /* Integer species type when using a raw pseudopotential */
     int species;
+    std::string symbol;
 
     /* Pointer to species class. Would prefer a reference to a pointer but
      * Species is setup after Atoms so can't use a reference right now. Fix later.

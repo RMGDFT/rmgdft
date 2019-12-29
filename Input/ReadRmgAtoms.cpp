@@ -227,7 +227,7 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
 
         // Valid atomic symbol? GetAtomicMass will throw a fatal exception if the symbol is not valid.
         GetAtomicMass(sp);
-
+        Atoms_read[nions].symbol = sp;
         // Look for the coordinates
         it1++;
         std::string xstr = *it1;
