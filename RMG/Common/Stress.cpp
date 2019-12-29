@@ -56,6 +56,7 @@
 
 extern "C" int get_inlc(void);
 
+void  vdw_d2_stress(Lattice &, std::vector<ION> &atoms, double *stress_d2);
 static void print_stress(char *w, double *stress_term);
 
 template Stress<double>::~Stress(void);
@@ -113,6 +114,17 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     RT2 = new RmgTimer("2-Stress: Ewald");
     Ewald_term(atoms, species, L, pwaves);
     delete RT2;
+
+    if(ct.vdw_corr == DFT_D2)
+    {
+        RT2 = new RmgTimer("2-Stress: vdw D2 correction");
+        double stress_d2[9];
+        vdw_d2_stress(L, atoms, stress_d2);
+        for(int i = 0; i < 9; i++) stress_tensor[i] += stress_d2[i];
+    
+        delete RT2;
+    }
+
     delete RT1;
     print_stress("total ", stress_tensor);
 
