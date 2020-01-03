@@ -157,6 +157,7 @@
 
 #define NONE 0
 #define DFT_D2 1
+#define DFT_D3 2
 
 /******/
 

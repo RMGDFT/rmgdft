@@ -272,6 +272,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Type of vdw correction  ", 
                      "Only Grimme D2 is implemented now ", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("dftd3_version", &lc.dftd3_version, 2, 6, 3, 
+            CHECK_AND_FIX, OPTIONAL, 
+            "Grimme's DFT-D3 versions,", 
+            "version 2: DFT-D2, version 3: DFT-D3 zero damp, version 4: DFT-D3 BJ damp. ", MISC_OPTIONS);
+
     If.RegisterInputKey("start_mode", NULL, &lc.runflag, "LCAO Start",
                      CHECK_AND_TERMINATE, OPTIONAL, start_mode,
                      "Type of run. ", 

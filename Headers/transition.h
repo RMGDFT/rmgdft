@@ -94,6 +94,8 @@ int FileOpenAndCreate(std::string &pathname, int flags, mode_t mode);
 void *CreateMmapArray(int &fd, size_t length);
 void DeleteNvmeArrays(void);
 
+//void RmgDft3(std::vector<ION> &ion);
+void RmgDftd3(double *disp, double *grads, double *stress, int version);
 
 
 template  <typename OrbitalType> double AppCilrFourth (OrbitalType *psi, OrbitalType *a_psi, OrbitalType *b_psi, double *vtot, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz);

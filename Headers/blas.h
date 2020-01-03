@@ -40,6 +40,7 @@
 #include "rmgtypedefs.h"
 #include "rmg_mangling.h"
 
+#define		rrr		RMG_FC_GLOBAL(rrr, RRR)
 
 #define		sger		RMG_FC_GLOBAL(sger, SGER)
 #define		dger		RMG_FC_GLOBAL(dger, DGER)
@@ -104,6 +105,7 @@
 extern "C" {
 #endif
 
+void rrr(int n);
 void my_copy(double *in, double *out, int length);
 void my_scal(double alpha, double *vect, int length);
 void my_axpy(double alpha, double *in, double *out, int length);

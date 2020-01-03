@@ -183,9 +183,16 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
         /* Evaluate total ion-ion energy */
         ct.II = IonIonEnergy_Ewald();
         ct.Evdw = 0.0;
+        if(ct.force_vdw == NULL) ct.force_vdw = new double[3 * ct.num_ions];
+
         if(ct.vdw_corr == DFT_D2)
         {
             ct.Evdw = vdw_d2_energy(Rmg_L, Atoms);
+        }
+
+        if(ct.vdw_corr == DFT_D3)
+        {
+            RmgDftd3(&ct.Evdw, ct.force_vdw, ct.stress_vdw, ct.dftd3_version);
         }
 
     }

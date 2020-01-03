@@ -144,7 +144,10 @@ public:
     int xc_is_hybrid;
     double exx_fraction;
     int vdw_corr;
+    int dftd3_version;
     double Evdw;
+    double *force_vdw=NULL;
+    double stress_vdw[9];
 
     /* EXX integral file */
     std::string exx_int_file;

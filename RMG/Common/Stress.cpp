@@ -125,6 +125,9 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
         delete RT2;
     }
 
+    if(ct.vdw_corr == DFT_D3)
+        for(int i = 0; i < 9; i++) stress_tensor[i] += ct.stress_vdw[i];
+
     delete RT1;
     print_stress("total ", stress_tensor);
 

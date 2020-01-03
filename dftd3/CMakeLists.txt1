@@ -1,0 +1,19 @@
+set(CMAKE_MACOSX_RPATH 1)
+#set(CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} " -DSPGDEBUG -DSPGWARNING")
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif(NOT CMAKE_BUILD_TYPE)
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+
+# Source code
+include_directories("${PROJECT_SOURCE_DIR}/dftd3/lib")
+set(SOURCES ${PROJECT_SOURCE_DIR}/dftd3/lib/api.f90
+            ${PROJECT_SOURCE_DIR}/dftd3/lib/ommon.f90
+            ${PROJECT_SOURCE_DIR}/dftd3/lib/core.f90
+            ${PROJECT_SOURCE_DIR}/dftd3/lib/pars.f90
+            ${PROJECT_SOURCE_DIR}/dftd3/lib/sizes.f90)
+
+add_library(dftd3 STATIC ${SOURCES})

@@ -143,6 +143,7 @@ int main (int argc, char **argv)
     ct.rmg_branch = RMG_BASE;
     ct.save_args(argc, argv);
 
+    //rrr(1);
     // Signal handlers to cleanup in case user terminates
     std::signal(SIGTERM, term_handler);
     std::signal(SIGINT, term_handler);
