@@ -5,7 +5,7 @@
 #include "main.h"
 #include "transition.h"
 
-static std::complex<double> DnmTransform(int ih, int jh, int is1, int is2, double *Ia, SPECIES &sp);
+std::complex<double> DnmTransform(int ih, int jh, int is1, int is2, double *Ia, SPECIES &sp);
 void get_ddd (double * veff, double *vxc, bool ddd0_flag)
 {
     int idx, ion;
@@ -175,7 +175,7 @@ void get_ddd (double * veff, double *vxc, bool ddd0_flag)
     delete [] sum;
 }
 
-static std::complex<double> DnmTransform(int ih, int jh, int is1, int is2, double *Ia, SPECIES &sp)
+std::complex<double> DnmTransform(int ih, int jh, int is1, int is2, double *Ia, SPECIES &sp)
 {
     std::complex<double> value;
     value = 0.0;

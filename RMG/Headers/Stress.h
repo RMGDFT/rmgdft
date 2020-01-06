@@ -49,7 +49,7 @@ public:
     void Local_term1(double *rho, double *vnuc);
     void Hartree_term(double *rho, Pw &pwaves);
     void NonLocal_term(Kpoint<T> **Kpin, std::vector<ION> &atoms, std::vector<SPECIES> &species);
-    void NonLocalQfunc_term(Kpoint<T> **Kpin, std::vector<ION> &atoms, std::vector<SPECIES> &species, double *vtot);
+    void NonLocalQfunc_term(Kpoint<T> **Kpin, std::vector<ION> &atoms, std::vector<SPECIES> &species, double *vtot, double *vxc);
     void Exc_term(double Exc, double *vxc, double *rho);
     void Exc_gradcorr(double Exc, double *vxc, double *rho, double *rhocore);
     void Exc_Nlcc(double *vxc, double *rhocore);
