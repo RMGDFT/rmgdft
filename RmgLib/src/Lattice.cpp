@@ -421,8 +421,18 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
         case ORTHORHOMBIC_BC:
 
-            /* not programmed */
-            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
+            if(celldm[1] <= 0.0) rmg_error_handler (__FILE__, __LINE__, "celldm[1] must be positive.");
+            if(celldm[2] <= 0.0) rmg_error_handler (__FILE__, __LINE__, "celldm[2] must be positive.");
+            
+            Lattice::a0[0] = 0.5 * celldm[0];
+            Lattice::a0[1] = Lattice::a0[0] * celldm[1];
+            Lattice::a0[2] = Lattice::a0[0] * celldm[2];
+            Lattice::a1[0] = - Lattice::a0[0];
+            Lattice::a1[1] = Lattice::a0[1];
+            Lattice::a1[2] = Lattice::a0[2];
+            Lattice::a2[0] = - Lattice::a0[0];
+            Lattice::a2[1] = - Lattice::a0[1];
+            Lattice::a2[2] = Lattice::a0[2];
             break;
 
         case ORTHORHOMBIC_FC:
