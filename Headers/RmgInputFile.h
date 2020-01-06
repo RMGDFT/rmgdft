@@ -32,6 +32,7 @@ namespace po = boost::program_options;
 #define PERF_OPTIONS 6
 #define LDAU_OPTIONS 7 
 #define MISC_OPTIONS 8 
+#define TESTING_OPTIONS 9
 
 class RmgInputFile {
     public:

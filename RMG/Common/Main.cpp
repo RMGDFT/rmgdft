@@ -57,6 +57,8 @@ void initialize (int argc, char **argv);
 
 template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr);
 
+void check_tests (void);
+
 void report (void);
 
 void finish (void);
@@ -203,6 +205,9 @@ int main (int argc, char **argv)
         finish ();
         exit(0);
     } 
+
+    // test conditions
+    check_tests();
 
     delete(RT);   // Destructor has to run before report
     report ();
@@ -411,6 +416,24 @@ void report ()
 
 
 }                               /* end report */
+
+void check_tests(void)
+{
+    if(!std::isnan(ct.test_energy))
+    {
+        double eps = fabs(ct.TOTAL - ct.test_energy);
+        if(eps > ct.test_energy_tolerance && pct.gridpe==0)
+        {
+            fprintf(ct.logfile, "\nRMG ENERGY TEST FAILED eps = %14.8e, tolerance = %14.8e\n", eps, ct.test_energy_tolerance);
+            fprintf(stdout, "\nRMG ENERGY TEST FAILED eps = %14.8e, tolerance = %14.8e\n", eps, ct.test_energy_tolerance);
+        }
+        else if(pct.gridpe==0)
+        {
+            fprintf(ct.logfile, "\nRMG ENERGY TEST PASSED eps = %14.8e\n", eps);
+            fprintf(stdout, "\nRMG ENERGY TEST PASSED eps = %14.8e\n", eps);
+        }
+    }
+}
 
 
 void finish ()

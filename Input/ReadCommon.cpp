@@ -896,6 +896,17 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "minimum radius for qfunc in ultra-pseudopotential ",
             " ");
 
+    // Testing options
+    If.RegisterInputKey("test_energy", &lc.test_energy, -1.0e9, 1.0e9, (double)NAN,
+            CHECK_AND_FIX, OPTIONAL,
+            "Expected final energy for testing. ",
+            "test_energy must lie in the range (-1.0e9,1.0e9). Ignoring. ", TESTING_OPTIONS);
+
+    If.RegisterInputKey("test_energy_tolerance", &lc.test_energy_tolerance, 1.0e-8, 1.0e-4, 1.0e-7,
+            CHECK_AND_FIX, OPTIONAL,
+            "Test final energy tolerance. ",
+            "test_energy_tolerance must lie in the range (1.0e-8,1.0e-4). Resetting to the default value of 1.0e-7. ", TESTING_OPTIONS);
+
     // Booleans next. Booleans are never required.
 #if GPU_ENABLED
     // If GPU memory is constrained this one should be set to true.

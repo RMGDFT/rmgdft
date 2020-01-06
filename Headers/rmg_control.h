@@ -891,6 +891,11 @@ public:
 
     std::string input_initial, input_final;
     double totale_initial, totale_final;
+
+    // Testing options
+    double test_energy=NAN;
+    double test_energy_tolerance=1.0e-7;
+
 };
 
 
