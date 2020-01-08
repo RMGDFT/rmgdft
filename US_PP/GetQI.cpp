@@ -188,7 +188,7 @@ void GetQI (void)
                 Atoms[ion].augfunc_xyz[1].resize(size * icount);
                 Atoms[ion].augfunc_xyz[2].resize(size * icount);
             }
-            ct.q_alloc[0] += (size_t)(size * icount) * sizeof(double);
+            ct.q_alloc[0] += (size_t)(size * icount) * sizeof(decltype(Atoms[ion].augfunc)::value_type);
 
             qnmlig = sp->qnmlig;
 
