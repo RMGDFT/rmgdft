@@ -106,9 +106,11 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
     RT2 = new RmgTimer("2-Stress: XC Local");
     Exc_term(Exc, vxc, rho);
     delete RT2;
+
     RT2 = new RmgTimer("2-Stress: XC gradient");
     Exc_gradcorr(Exc, vxc, rho, rhocore);
     delete RT2;
+
     RT2 = new RmgTimer("2-Stress: XC nlcc");
     Exc_Nlcc(vxc, rhocore);
     delete RT2;
@@ -122,13 +124,14 @@ template <class T> Stress<T>::Stress(Kpoint<T> **Kpin, Lattice &L, BaseGrid &BG,
         double stress_d2[9];
         vdw_d2_stress(L, atoms, stress_d2);
         for(int i = 0; i < 9; i++) stress_tensor[i] += stress_d2[i];
-    
+
         delete RT2;
     }
 
     if(ct.vdw_corr == DFT_D3)
         for(int i = 0; i < 9; i++) stress_tensor[i] += ct.stress_vdw[i];
 
+    if(!ct.is_gamma && Rmg_Symm) Rmg_Symm->symmetrize_tensor(stress_tensor);
     delete RT1;
     print_stress("total ", stress_tensor);
 
@@ -285,12 +288,14 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
 {
     double stress_tensor_xcgrad[9];
     for(int i = 0; i < 9; i++) stress_tensor_xcgrad[i] = 0.0;
+    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+    if(!F->dft_is_gradient_rmg() ) return;
 
     int grid_ratio = Rmg_G->default_FG_RATIO;
     int pbasis = Rmg_G->get_P0_BASIS(grid_ratio);
 
-    int fac = 1.0;
-    if(ct.spin_flag ) fac = 2;
+    int fac = 1;
+    if(ct.nspin == 2 ) fac = 2;
     double *rho_grad = new double[fac*3*pbasis];
     double *rho_gx = rho_grad;
     double *rho_gy = rho_grad + pbasis ;
@@ -304,7 +309,6 @@ template <class T> void Stress<T>::Exc_gradcorr(double Exc, double *vxc, double 
     double malpha = -alpha;
     int ione = 1;
 
-    Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
     F->v_xc(rho, rhocore, ct.XC, ct.vtxc, vxc, ct.nspin );
 
     // get gradient of rho+rhocore
@@ -557,7 +561,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                         for (int iproj = 0; iproj < num_proj_noncoll; iproj++)
                         {
                             sint_der[ (st-state_start[ib]) * num_proj_noncoll + iproj] *= 2.0*t1;
-                            if(id1 == id2 )
+                            if(id1 == id2 && 1)
                             {
                                 sint_der[ (st-state_start[ib]) * num_proj_noncoll + iproj] += 
                                     sint[ (st-state_start[ib]) * num_proj_noncoll + iproj] * t1; 
@@ -617,12 +621,12 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                                         for(int m = 0; m <nh; m++)
                                         {
                                             int idx1 = (is1 * 2 + is2) * nh * nh + n * nh + m;
-                                            int ng = nion * ct.max_nl * 2 + n * 2 + is1;
-                                            int mg = nion * ct.max_nl * 2 + m * 2 + is2;
+                                            int ng = nion * ct.max_nl  + n  + is1 *num_proj;
+                                            int mg = nion * ct.max_nl  + m  + is2 *num_proj;
 
                                             stress_tensor_nl[id1 * 3 + id2] += 
-                                                std::real(dnmI_so[idx1] * proj_mat[ng * num_proj_noncoll + mg]) -
-                                                std::real(qnmI_so[idx1] * proj_mat_q[ng * num_proj_noncoll + mg]);
+                                                std::real(dnmI_so[idx1] * proj_mat[ng * num_proj_noncoll + mg])
+                                               -std::real(qnmI_so[idx1] * proj_mat_q[ng * num_proj_noncoll + mg]);
                                         }
                         }
                         else
@@ -906,9 +910,9 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
         vxc_gx = vxc_grad;
         vxc_gy = vxc_grad + FP0_BASIS * 3;
         vxc_gz = vxc_grad + FP0_BASIS * 6;
-        ApplyGradient(&vxc[FP0_BASIS], veff_gx, veff_gy, veff_gz, ct.force_grad_order, "Fine");
+        ApplyGradient(&vxc[FP0_BASIS], vxc_gx, vxc_gy, vxc_gz, ct.force_grad_order, "Fine");
         ApplyGradient(&vxc[2*FP0_BASIS], vxc_gx+FP0_BASIS, vxc_gy+FP0_BASIS, vxc_gz+FP0_BASIS, ct.force_grad_order, "Fine");
-        ApplyGradient(&vxc[3*FP0_BASIS], vxc_gx+FP0_BASIS, vxc_gy+FP0_BASIS, vxc_gz+FP0_BASIS, ct.force_grad_order, "Fine");
+        ApplyGradient(&vxc[3*FP0_BASIS], vxc_gx+2*FP0_BASIS, vxc_gy+2*FP0_BASIS, vxc_gz+2*FP0_BASIS, ct.force_grad_order, "Fine");
     }
 
     ApplyGradient(veff, veff_gx, veff_gy, veff_gz, ct.force_grad_order, "Fine");
@@ -918,7 +922,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
 
             veff_gxyz = veff_grad + id1 * FP0_BASIS;
             if(ct.noncoll) vxc_gxyz = vxc_grad + id1 * 3 * FP0_BASIS;
-            for(int i = 0; i < sum_dim*ct.noncoll_factor * ct.noncoll_factor; i++) sum[i] = 0.0;
+            for(int i = 0; i < sum_dim_noncoll; i++) sum[i] = 0.0;
 
             for (ion = 0; ion < ct.num_ions; ion++)
             {
@@ -955,7 +959,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
                             }
                             // switching the derivative from Q to veff introduce Q * Veff term 
                             // cancelling out the original Q * Veff term
-                            if(id1 == id2 && 0)  
+                            if(id1 == id2 && 0 )  
                                 for (icount = 0; icount < ncount; icount++)
                                 {
                                     sum[ion * num_q_max + idx] += Atoms[ion].augfunc[icount + idx * ncount] * veff[ivec[icount]];
@@ -1030,21 +1034,21 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
                             idx1++;
                         }
 
-
-                    for (int ih = 0; ih < nh; ih++)
-                    {
-                        for (int jh = 0; jh < nh; jh++)
+                    for(int is1 = 0; is1 <2; is1++)
+                        for(int is2 = 0; is2 <2; is2++)
                         {
-                            for(int is1 = 0; is1 <2; is1++)
-                                for(int is2 = 0; is2 <2; is2++)
+
+                            for (int ih = 0; ih < nh; ih++)
+                            {
+                                for (int jh = 0; jh < nh; jh++)
                                 {
-                                    int ng = nion * ct.max_nl * 2 + ih *2 +is1;
-                                    int mg = nion * ct.max_nl * 2 + jh *2 +is2;
+                                    int ng = nion * ct.max_nl + ih + is1 * num_proj;
+                                    int mg = nion * ct.max_nl + jh + is2 * num_proj;
                                     dnmI_so = DnmTransform(ih,jh,is1,is2,Ia,*sp);
                                     stress_tensor_nlq[id1 * 3 + id2] += std::real(dnmI_so * proj_mat[ng * num_proj_noncoll + mg]);
                                 }
-                        }           
-                    }              
+                            }           
+                        }              
 
                 }
 
@@ -1134,5 +1138,6 @@ static void print_stress(char *w, double *stress_term)
         printf("\n");
         fprintf(ct.logfile, "\n");
     }
+    fflush(NULL);
 }
 

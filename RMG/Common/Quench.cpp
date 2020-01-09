@@ -285,7 +285,14 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     }
 
-
+    if(ct.stress)
+    {
+        double *vtot = new double[FP0_BASIS];
+        for(int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = vh[idx] + vnuc[idx] + vxc[idx];
+        Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, 
+                ct.XC, vxc, rho, rhocore, vtot);
+        delete [] vtot;
+    }
 
     /*When running MD, force pointers need to be rotated before calculating new forces */
     if(compute_forces)
@@ -302,14 +309,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         Force (rho, rho_oppo, rhoc, vh, vh_in, vxc, vxc_in, vnuc, Kptr);
     }
 
-    if(ct.stress)
-    {
-        double *vtot = new double[FP0_BASIS];
-        for(int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = vh[idx] + vnuc[idx] + vxc[idx];
-        Stress<OrbitalType> Stress_cal(Kptr, Rmg_L, *Rmg_G, *fine_pwaves, Atoms, Species, 
-                ct.XC, vxc, rho, rhocore, vtot);
-        delete [] vtot;
-    }
 
     rmg_printf (" volume and energy per atom = %18.8f  %18.8f eV\n", Rmg_L.get_omega()*a0_A*a0_A*a0_A/Atoms.size(),ct.TOTAL * Ha_eV/Atoms.size());
 
@@ -320,6 +319,19 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         Voronoi_charge->LocalCharge(rho, localrho);
         for(size_t ion = 0; ion < Atoms.size(); ion++)
             Atoms[ion].partial_charge = Voronoi_charge->localrho_atomic[ion] - localrho[ion];
+        if(ct.noncoll)
+        {
+            Voronoi_charge->LocalCharge(&rho[FP0_BASIS], localrho);
+            for(size_t ion = 0; ion < Atoms.size(); ion++)
+                printf("\n Voronoi rho_x %d %f", ion, localrho[ion]);
+            Voronoi_charge->LocalCharge(&rho[2*FP0_BASIS], localrho);
+            for(size_t ion = 0; ion < Atoms.size(); ion++)
+                printf("\n Voronoi rho_y %d %f", ion, localrho[ion]);
+            Voronoi_charge->LocalCharge(&rho[3*FP0_BASIS], localrho);
+            for(size_t ion = 0; ion < Atoms.size(); ion++)
+                printf("\n Voronoi rho_z %d %f", ion, localrho[ion]);
+        
+        }
         delete [] localrho;
 
         rmg_printf("\n Vdd took %f seconds\n", my_crtc () - timex);

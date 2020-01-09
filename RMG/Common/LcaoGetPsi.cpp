@@ -268,7 +268,6 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
     {
         int ix, iy, iz;
         int xoff, yoff, zoff;
-        State<KpointType> *state_p;
 
         int NX_GRID = get_NX_GRID();
         int NY_GRID = get_NY_GRID();
@@ -287,7 +286,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         rand0 (&idum);
 
 
-        for (int st = state_count; st < nstates; st++)
+        for (int st = state_count; st < nstates; st+=ct.noncoll_factor)
         {
 
             /* Generate x, y, z random number sequences */
@@ -297,8 +296,6 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
                 yrand[idx] = rand0 (&idum) - 0.5;
             for (int idx = 0; idx < ct.noncoll_factor*NZ_GRID; idx++)
                 zrand[idx] = rand0 (&idum) - 0.5;
-
-            state_p = &states[st];
 
             int idx = 0;
             for (int ix = 0; ix < PX0_GRID; ix++)
@@ -310,11 +307,13 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
                     for (int iz = 0; iz < PZ0_GRID; iz++)
                     {
 
-                        for(int is = 0; is < ct.noncoll_factor; is++)
+                        states[st].psi[idx] = xrand[xoff + ix] * yrand[yoff + iy] * zrand[zoff + iz];
+                        states[st].psi[idx] = states[st].psi[idx] * states[st].psi[idx];
+                        if(ct.noncoll)
                         {
-                            state_p->psi[idx + is * pbasis] = xrand[is * NX_GRID + xoff + ix] * 
-                                yrand[is * NY_GRID + yoff + iy] * zrand[is * NZ_GRID + zoff + iz];
-                            state_p->psi[idx + is * pbasis] = state_p->psi[idx + is * pbasis] * state_p->psi[idx + is * pbasis];
+                            states[st].psi[idx + pbasis] = 0.0;
+                            states[st+1].psi[idx] = 0.0;
+                            states[st+1].psi[idx + pbasis] = states[st].psi[idx];
                         }
                         idx++;
 
