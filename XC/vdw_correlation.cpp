@@ -970,6 +970,23 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
 
 }
 
+void stress_vdW_DF (double *rho_valence, double *rho_core, int nspin, double *sigma)
+{
+}
+
+void stress_vdW_DF_gradient (double *total_rho, double *grad_rho, double *q0, double *dq0_drho,
+                                     double *dq0_dgradrho, std::complex<double> *thetas, double *sigma)
+{
+}
+
+void stress_vdW_DF_kernel (double *total_rho, double *q0, std::complex<double> *thetas, double *sigma)
+{
+}
+
+void interpolate_Dkernel_Dk (double k, double *dkernel_of_dk)
+{
+}
+
 
 void Vdw::info(void) {
   // --------------------------------------------------------------------

@@ -129,17 +129,6 @@ private:
 
     Pw *pwaves;
 
-public:
-    Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
-    ~Vdw(void);
-
-    void get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> *thetas, 
-                         int ibasis, double *gx, double *gy, double *gz);
-    void saturate_q(double q, double q_cut, double &q0, double &dq0_dq);
-    double vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int N_calc);
-    void get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW, 
-                       int ibasis, int N_calc, double *gx, double *gy, double *gz);
-
     double Fs(double s);
     double dFs_ds(double s);
     double kF(double rho);
@@ -147,9 +136,25 @@ public:
     double ds_drho(double rho, double s);
     double ds_dgradrho(double rho);
     double dqx_drho(double rho, double s);
+    void get_q0_on_grid (double *total_rho, double *q0, double *dq0_drho, double *dq0_dgradrho, std::complex<double> *thetas, 
+                         int ibasis, double *gx, double *gy, double *gz);
+    void saturate_q(double q, double q_cut, double &q0, double &dq0_dq);
     void pw(double rs, int iflag, double &ec, double &vc);
-    void index_to_gvector(int *index, double *gvec);
     void interpolate_kernel(double k, double *kernel_of_k);
+    void interpolate_Dkernel_Dk (double k, double *dkernel_of_dk);
+    void stress_vdW_DF_gradient (double *total_rho, double *grad_rho, double *q0, double *dq0_drho,
+                                     double *dq0_dgradrho, std::complex<double> *thetas, double *sigma);
+    void stress_vdW_DF_kernel (double *total_rho, double *q0, std::complex<double> *thetas, double *sigma);
+
+public:
+    Vdw (BaseGrid &G, Lattice &L, TradeImages &T, int type, double *rho_valence, double *rho_core, double &etxc, double &vtxc, double *v, bool gamma_flag);
+    ~Vdw(void);
+
+    double vdW_energy(double *q0, std::complex<double> *thetas, int ibasis, int N_calc);
+    void get_potential(double *q0, double *dq0_drho, double *dq0_dgradrho, double *potential, std::complex<double> *u_vdW, 
+                       int ibasis, int N_calc, double *gx, double *gy, double *gz);
+
+    void stress_vdW_DF (double *rho_valence, double *rho_core, int nspin, double *sigma);
     void info(void);
 
 
