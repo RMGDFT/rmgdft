@@ -970,21 +970,78 @@ void Vdw::interpolate_kernel(double k, double *kernel_of_k)
 
 }
 
-void stress_vdW_DF (double *rho_valence, double *rho_core, int nspin, double *sigma)
+void Vdw::stress_vdW_DF (double *rho_valence, double *rho_core, int nspin, double *sigma)
 {
 }
 
-void stress_vdW_DF_gradient (double *total_rho, double *grad_rho, double *q0, double *dq0_drho,
+void Vdw::stress_vdW_DF_gradient (double *total_rho, double *grad_rho, double *q0, double *dq0_drho,
                                      double *dq0_dgradrho, std::complex<double> *thetas, double *sigma)
 {
 }
 
-void stress_vdW_DF_kernel (double *total_rho, double *q0, std::complex<double> *thetas, double *sigma)
+void Vdw::stress_vdW_DF_kernel (double *total_rho, double *q0, std::complex<double> *thetas, double *sigma)
 {
+    double *dkernel_of_dk = new double[Nqs*Nqs]();
+
+    double tpiba = 2.0 * PI / this->L->celldm[0];
+    double tpiba2 = tpiba*tpiba;
+
+    double G_multiplier = 1.0;
+    if(is_gamma) G_multiplier = 2.0;
+
+    for(int ig=0;ig < pwaves->pbasis;ig++)
+    {
+        double gval = sqrt(pwaves->gmags[ig] * tpiba2);
+        this->interpolate_Dkernel_Dk(gval, dkernel_of_dk);  // Gets the derivatives.
+
+        for(int q2_i=0;q2_i < Nqs;q2_i++)
+        {
+            for(int q1_i=0;q1_i < Nqs;q1_i++)
+            {
+                for(int l=0;l < 3;l++)
+                {
+                    for(int m=0;m < 3;m++)
+                    {
+                        sigma [l*3 + m] = sigma[l*3 + m] - 
+                                       std::real(G_multiplier * 0.5 * thetas[ig + q1_i * pwaves->pbasis] *
+                                       dkernel_of_dk[q1_i*Nqs + q2_i] *
+                                       std::conj(thetas[ig + q2_i*pwaves->pbasis]) *
+                                       (pwaves->g[ig].a[l] * pwaves->g[ig].a[m] * tpiba2) / gval);
+                    }
+                }
+            }
+        }
+    }
+
+// Sum needed here or will it be done in upper level routines?
+    delete [] dkernel_of_dk;
 }
 
-void interpolate_Dkernel_Dk (double k, double *dkernel_of_dk)
+void Vdw::interpolate_Dkernel_Dk (double k, double *dkernel_of_dk)
 {
+    std::fill(dkernel_of_dk, dkernel_of_dk + Nqs*Nqs, 0.0);
+    int k_i = (int)(k/dk);
+    double A = (dk*(k_i+1.0) - k)/dk;
+    double B = (k - dk*k_i)/dk;
+
+    double  dAdk = -1.0/dk;
+    double  dBdk = 1.0/dk;
+    double  dCdk = -((3.0*A*A -1.0)/6.0)*dk;
+    double  dDdk = ((3.0*B*B -1.0)/6.0)*dk;
+
+    for(int q1_i=0;q1_i < Nqs;q1_i++)
+    {
+        for(int q2_i=0;q2_i <= q1_i;q2_i++)
+        {
+            dkernel_of_dk[q1_i + q2_i*Nqs] = dAdk*kernel[k_i][q1_i][q2_i] + 
+                                             dBdk*kernel[k_i+1][q1_i][q2_i] +
+                                             dCdk*d2phi_dk2[k_i][q1_i][q2_i] + 
+                                             dDdk*d2phi_dk2[k_i+1][q1_i][q2_i];
+
+            dkernel_of_dk[q2_i + q1_i*Nqs] = dkernel_of_dk[q1_i*Nqs + q2_i];
+        }
+    }
+
 }
 
 
