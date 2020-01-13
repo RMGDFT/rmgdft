@@ -130,6 +130,9 @@ int init_kpoints (int *mesh, int *is_shift)
             ct.kp[count].kpt[ 0 ] = (grid_address[kpt*3 + 0] + is_shift[0]*0.5)/mesh[0];
             ct.kp[count].kpt[ 1 ] = (grid_address[kpt*3 + 1] + is_shift[1]*0.5)/mesh[1];
             ct.kp[count].kpt[ 2 ] = (grid_address[kpt*3 + 2] + is_shift[2]*0.5)/mesh[2];
+            if(ct.kp[count].kpt[ 0 ] >0.5) ct.kp[count].kpt[ 0 ] -= 1.0;
+            if(ct.kp[count].kpt[ 1 ] >0.5) ct.kp[count].kpt[ 1 ] -= 1.0;
+            if(ct.kp[count].kpt[ 2 ] >0.5) ct.kp[count].kpt[ 2 ] -= 1.0;
             ct.kp[count].kweight = (double)weight[kpt]/meshsize;
             count++;
         }
