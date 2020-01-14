@@ -323,13 +323,13 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         {
             Voronoi_charge->LocalCharge(&rho[FP0_BASIS], localrho);
             for(size_t ion = 0; ion < Atoms.size(); ion++)
-                printf("\n Voronoi rho_x %d %f", ion, localrho[ion]);
+                printf("\n Voronoi rho_x %ld %f", ion, localrho[ion]);
             Voronoi_charge->LocalCharge(&rho[2*FP0_BASIS], localrho);
             for(size_t ion = 0; ion < Atoms.size(); ion++)
-                printf("\n Voronoi rho_y %d %f", ion, localrho[ion]);
+                printf("\n Voronoi rho_y %ld %f", ion, localrho[ion]);
             Voronoi_charge->LocalCharge(&rho[3*FP0_BASIS], localrho);
             for(size_t ion = 0; ion < Atoms.size(); ion++)
-                printf("\n Voronoi rho_z %d %f", ion, localrho[ion]);
+                printf("\n Voronoi rho_z %ld %f", ion, localrho[ion]);
         
         }
         delete [] localrho;

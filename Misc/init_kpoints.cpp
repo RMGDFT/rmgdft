@@ -144,22 +144,16 @@ int init_kpoints (int *mesh, int *is_shift)
     ct.is_gamma = true;
     for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
         double v1, v2, v3;
-        v1 = 0.0;
-        v2 = 0.0;
-        v3 = 0.0;
 
-        for(int ir = 0; ir<3; ir++)
-        {
-            v1 = ct.kp[kpt].kpt[0] *Rmg_L.b0[0]
-                + ct.kp[kpt].kpt[1] *Rmg_L.b1[0] 
-                + ct.kp[kpt].kpt[2] *Rmg_L.b2[0];
-            v2 = ct.kp[kpt].kpt[0] *Rmg_L.b0[1]
-                + ct.kp[kpt].kpt[1] *Rmg_L.b1[1] 
-                + ct.kp[kpt].kpt[2] *Rmg_L.b2[1];
-            v3 = ct.kp[kpt].kpt[0] *Rmg_L.b0[2]
-                + ct.kp[kpt].kpt[1] *Rmg_L.b1[2] 
-                + ct.kp[kpt].kpt[2] *Rmg_L.b2[2];
-        }
+        v1 = ct.kp[kpt].kpt[0] *Rmg_L.b0[0]
+            + ct.kp[kpt].kpt[1] *Rmg_L.b1[0] 
+            + ct.kp[kpt].kpt[2] *Rmg_L.b2[0];
+        v2 = ct.kp[kpt].kpt[0] *Rmg_L.b0[1]
+            + ct.kp[kpt].kpt[1] *Rmg_L.b1[1] 
+            + ct.kp[kpt].kpt[2] *Rmg_L.b2[1];
+        v3 = ct.kp[kpt].kpt[0] *Rmg_L.b0[2]
+            + ct.kp[kpt].kpt[1] *Rmg_L.b1[2] 
+            + ct.kp[kpt].kpt[2] *Rmg_L.b2[2];
 
         ct.kp[kpt].kvec[0] = v1 * twoPI;
         ct.kp[kpt].kvec[1] = v2 * twoPI;
@@ -179,7 +173,7 @@ int init_kpoints (int *mesh, int *is_shift)
     {
         printf("\n num_k %d", count);
         for(kpt = 0; kpt < num_kpts; kpt++)
-          printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+            printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
     }
 
     delete [] grid_address;

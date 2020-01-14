@@ -52,7 +52,6 @@ class Symmetry
 {
 
 private:
-    int nsym;
     int max_pdim;
 
     BaseGrid &G;
@@ -97,6 +96,7 @@ private:
     void symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
 
 public:
+    int nsym;
     Symmetry(BaseGrid &G_in, Lattice &L_in, int density);
     ~Symmetry(void);
 

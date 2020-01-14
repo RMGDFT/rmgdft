@@ -48,6 +48,13 @@ template <typename T> class Exxbase {
 
 private:
     // BaseGrid class (distributed) and half grid
+    int num_q;
+    double *qvec;
+    double *kqvec;
+    int *q_to_kindex;
+    int *q_to_k_symindex;
+    int *kq_index;
+
     BaseGrid &G;
     BaseGrid &G_h;
 
@@ -61,6 +68,10 @@ private:
 
     // File path for wavefunction file. Spin and kpoint identifiers should be added by parent.
     const std::string &wavefile;
+    // Number of occupied orbitals
+    int nstates;
+    // Occupations for the orbitals
+    double *init_occ;
 
     // Base of domain distributed wavefunction array
     T *psi;
@@ -72,16 +83,12 @@ private:
     int pbasis;
     int pbasis_h;
 
-    // Number of occupied orbitals
-    int nstates;
 
-    // Occupations for the orbitals
-    double *init_occ;
     std::vector<double> occ;
 
     // Mmapped serial wavefunction array
     T *psi_s;
-T *vexx_global;
+    T *vexx_global;
 
     // File descriptor for serial wavefile
     int serial_fd;
@@ -138,6 +145,7 @@ public:
     void Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end);
     void WriteWfsToSingleFile(void);
     void ReadWfsFromSingleFile(void);
+    void kpoints_setup();
 
     // Plane wave object for local grids
     Pw *pwave;
