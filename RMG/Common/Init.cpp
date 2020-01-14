@@ -266,19 +266,24 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     OrbitalType *rptr_k;
     rptr_k = rptr;
+    OrbitalType *vexx_ptr = NULL;
+    if(ct.xc_is_hybrid)
+    {
+        vexx_ptr = (OrbitalType *)GpuMallocManaged(((size_t)ct.num_kpts_pe * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
+        ct.vexx_alloc[0] = sizeof(OrbitalType) * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor * ct.num_kpts_pe;
+        MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
+        MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, &ct.vexx_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
+    }
     for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
         if(ct.xc_is_hybrid)
         {
-            Kptr[kpt]->vexx = new OrbitalType[ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor]();
-            ct.vexx_alloc[0] += sizeof(OrbitalType) * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor;
-            MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
-            MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
-            MPI_Allreduce(MPI_IN_PLACE, &ct.vexx_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
+            Kptr[kpt]->vexx = &vexx_ptr[kpt*ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor];
         }
 
-    // for band structure calculation only one k point storage is initilized.
+        // for band structure calculation only one k point storage is initilized.
         if(ct.forceflag == BAND_STRUCTURE ) rptr_k = rptr;
         Kptr[kpt]->set_pool(rptr_k);
         Kptr[kpt]->nv = nv;
@@ -366,11 +371,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     if (ct.verbose == 1)
     {
-	time2 = my_crtc ();
+        time2 = my_crtc ();
 
-	rmg_printf ("\n\n init: Starting FFTW initialization ...");
+        rmg_printf ("\n\n init: Starting FFTW initialization ...");
 
-	fflush (NULL);
+        fflush (NULL);
     }
 
     /*Do forward transform for each species and store results on the coarse grid */
@@ -397,8 +402,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     if (ct.verbose == 1)
     {
-	rmg_printf (" finished in %.1f s", my_crtc () - time2);
-	fflush (NULL);
+        rmg_printf (" finished in %.1f s", my_crtc () - time2);
+        fflush (NULL);
     }
 
     /* Initialize the qfunction stuff */
@@ -434,16 +439,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /*Write out warnings, do it here before header otherwise they are hard to find*/
     /*if(Verify ("charge_mixing_type","pulay", Kptr[0]->ControlMap) &&	    
-	    (ct.potential_acceleration_constant_step > 0.0))*/
-    
+      (ct.potential_acceleration_constant_step > 0.0))*/
+
     /*Switch to lapack if magma specified but not built with gpu support
      * Write warning as we are overriding user's choice*/
 
 #if !MAGMA_LIBS
     if (ct.subdiag_driver == SUBDIAG_MAGMA)
     {
-	rmg_printf("\n WARNING: MAGMA specified as subspace diagonalization driver, but RMG was not built with MAGMA support. Diagonalization driver will be auto selected");
-       ct.subdiag_driver = SUBDIAG_AUTO;
+        rmg_printf("\n WARNING: MAGMA specified as subspace diagonalization driver, but RMG was not built with MAGMA support. Diagonalization driver will be auto selected");
+        ct.subdiag_driver = SUBDIAG_AUTO;
     }
 #endif    
 
@@ -452,17 +457,17 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (ct.subdiag_driver ==  SUBDIAG_AUTO)
     {
 #if GPU_ENABLED && MAGMA_LIBS
-	ct.subdiag_driver = SUBDIAG_MAGMA;
+        ct.subdiag_driver = SUBDIAG_MAGMA;
 #else
-	if (ct.num_states < 128) 
-	    ct.subdiag_driver = SUBDIAG_LAPACK;
-	else
-	    ct.subdiag_driver = SUBDIAG_SCALAPACK;
+        if (ct.num_states < 128) 
+            ct.subdiag_driver = SUBDIAG_LAPACK;
+        else
+            ct.subdiag_driver = SUBDIAG_SCALAPACK;
 #endif
     }
 
 
-    
+
     /* Write header, do it here rather than later, otherwise other information is printed first*/
     if (pct.imgpe == 0)
     {
@@ -497,7 +502,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {
             printf("\n no random start for noncollinear case \n");
             rmg_error_handler (__FILE__, __LINE__, "no random start for noncoll");
-            
+
         }
         if (ct.nspin == 2)
         {   
@@ -560,7 +565,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             FftFilter(&vxc[1*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
             FftFilter(&vxc[2*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
             FftFilter(&vxc[3*FP0_BASIS], *fine_pwaves, sqrt(ct.filter_factor) / (double)ct.FG_RATIO, LOW_PASS);
-            
+
         }
         delete F;
         delete RT1;
@@ -598,7 +603,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         vtot = new double[FP0_BASIS];
         double *vtot_psi = new double[P0_BASIS];
         double *vxc_psi = NULL;
-    
+
 
         for (idx = 0; idx < FP0_BASIS; idx++)
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
@@ -701,7 +706,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             Kptr[kpt]->ndvh = ct.run_states / Kptr[kpt]->dvh_skip + 1;
             Kptr[kpt]->dvh_size = (size_t)Kptr[kpt]->ndvh * P0_BASIS * pct.coalesce_factor;
             MPI_Alloc_mem(Kptr[kpt]->dvh_size * sizeof(double), MPI_INFO_NULL, &Kptr[kpt]->dvh);
-         
+
 
         }
     }

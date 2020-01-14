@@ -47,67 +47,69 @@ extern "C" int spg_get_symmetry(int *rotation,
         const double symprec,
         const double angprec);
 
+void symm_ijk(int *srotate, int *strans, int &ix, int &iy, int &iz, 
+        int &ixx, int &iyy, int &izz, int &nx, int &ny, int &nz);
 
 class Symmetry
 {
 
-private:
-    int max_pdim;
+    private:
+        int max_pdim;
 
-    BaseGrid &G;
-    Lattice &L;
+        BaseGrid &G;
+        Lattice &L;
 
-    // Grid sizes per MPI task
-    int px_grid;
-    int py_grid;
-    int pz_grid;
+        // Grid sizes per MPI task
+        int px_grid;
+        int py_grid;
+        int pz_grid;
 
-    // Global grid sizes
-    int nx_grid;
-    int ny_grid;
-    int nz_grid;
+        // Global grid sizes
+        int nx_grid;
+        int ny_grid;
+        int nz_grid;
 
-    int xoff;
-    int yoff;
-    int zoff;
+        int xoff;
+        int yoff;
+        int zoff;
 
-    // basis sizes
-    int pbasis;
-    int nbasis;
+        // basis sizes
+        int pbasis;
+        int nbasis;
 
-    std::vector<int> ftau;
-    std::vector<int> s;
-    std::vector<int> sym_atom;
- 
-    double symprec;
-    double angprec;
+        std::vector<int> sym_atom;
 
-    std::vector<uint8_t> sym_index_x8;
-    std::vector<uint8_t> sym_index_y8;
-    std::vector<uint8_t> sym_index_z8;
-    std::vector<uint8_t> sym_index_x16;
-    std::vector<uint8_t> sym_index_y16;
-    std::vector<uint8_t> sym_index_z16;
+        double symprec;
+        double angprec;
 
-    template <typename T>
-    void init_symm_ijk(std::vector<T> &sym_x_idx, std::vector<T> &sym_y_idx, std::vector<T> &sym_z_idx);
+        std::vector<uint8_t> sym_index_x8;
+        std::vector<uint8_t> sym_index_y8;
+        std::vector<uint8_t> sym_index_z8;
+        std::vector<uint8_t> sym_index_x16;
+        std::vector<uint8_t> sym_index_y16;
+        std::vector<uint8_t> sym_index_z16;
 
-    template <typename T, typename U>
-    void symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
+        template <typename T>
+            void init_symm_ijk(std::vector<T> &sym_x_idx, std::vector<T> &sym_y_idx, std::vector<T> &sym_z_idx);
 
-public:
-    int nsym;
-    Symmetry(BaseGrid &G_in, Lattice &L_in, int density);
-    ~Symmetry(void);
+        template <typename T, typename U>
+            void symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
 
-    std::vector<int> sym_rotate;
-    std::vector<double> sym_trans;
+    public:
+        int nsym;
+        std::vector<int> ftau;
+        std::vector<int> s;
+        Symmetry(BaseGrid &G_in, Lattice &L_in, int density);
+        ~Symmetry(void);
 
-    template <typename T>
-    void symmetrize_grid_object(T *object);
+        std::vector<int> sym_rotate;
+        std::vector<double> sym_trans;
 
-    void symforce(void);
-    void symmetrize_tensor(double *mat_tensor);
+        template <typename T>
+            void symmetrize_grid_object(T *object);
+
+        void symforce(void);
+        void symmetrize_tensor(double *mat_tensor);
 
 };
 #endif

@@ -87,7 +87,7 @@ template <class T> Exxbase<T>::Exxbase (
         MPI_Comm_split(G.comm, rank+1, rank, &lcomm);
         LG->set_rank(0, lcomm);
         pwave = new Pw(*LG, L, 1, false);
-        vexx_global = new T[pwave->pbasis * nstates * ct.num_kpts_pe]();
+        vexx_global = new T[pwave->pbasis * nstates]();
     }
 
     setup_gfac();
@@ -171,12 +171,13 @@ template <class T> void Exxbase<T>::setup_gfac(void)
 
 // These compute the action of the exact exchange operator on all wavefunctions
 // and writes the result into vfile.
-template void Exxbase<double>::Vexx(double *vexx, bool use_float_fft);
-template void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx, bool use_float_fft);
-template <class T> void Exxbase<T>::Vexx(T *vexx, bool use_float_fft)
+template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 {
     RmgTimer RT0("5-Functional: Exx potential");
     double scale = - 1.0 / (double)pwave->global_basis;
+
+    if(!ct.is_gamma) 
+        throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
 
     // Clear vexx
     for(int idx=0;idx < nstates*pbasis * ct.num_kpts_pe;idx++) vexx[idx] = 0.0;
@@ -197,16 +198,14 @@ template <class T> void Exxbase<T>::Vexx(T *vexx, bool use_float_fft)
 
     if(mode == EXX_DIST_FFT)
     {
-        if(!ct.is_gamma) 
-             throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
         // Loop over fft pairs and compute Kij(r) 
         for(int i=0;i < nstates_occ;i++)
         {
-            T *psi_i = &psi_s[i*pbasis];
+            double *psi_i = (double *)&psi_s[i*pbasis];
 #pragma omp parallel for schedule(dynamic)
             for(int j=i;j < nstates;j++)
             {   
-                T *psi_j = &psi_s[j*pbasis];
+                double *psi_j = (double *)&psi_s[j*pbasis];
                 int omp_tid = omp_get_thread_num();
                 std::complex<double> *p = pvec[omp_tid];
                 std::complex<float> *w = wvec[omp_tid];
@@ -234,21 +233,22 @@ template <class T> void Exxbase<T>::Vexx(T *vexx, bool use_float_fft)
     else
     {
         // Write serial wavefunction files. May need to do some numa optimization here at some point
-        for(int idx=0;idx < nstates*pwave->pbasis * ct.num_kpts_pe;idx++) vexx_global[idx] = 0.0;
+        for(int idx=0;idx < nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
         RmgTimer *RT1 = new RmgTimer("5-Functional: Exx writewfs");
         WriteWfsToSingleFile();
         delete RT1;
 
         // Mmap wavefunction array
-        std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe);
+        std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt0";
+
         RT1 = new RmgTimer("5-Functional: mmap");
         serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
         if(serial_fd < 0)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
         delete RT1;
 
-        size_t length = (size_t)nstates * pwave->pbasis * sizeof(T);
-        psi_s = (T *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+        size_t length = (size_t)nstates * pwave->pbasis * sizeof(double);
+        psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
         MPI_Barrier(G.comm);
 
@@ -261,75 +261,65 @@ template <class T> void Exxbase<T>::Vexx(T *vexx, bool use_float_fft)
         MPI_Status *mrstatus = new MPI_Status[nstates/max_rows+1];
 
         int flag=0;
-        T *arptr = vexx_global;
+        double *arptr = vexx_global;
 
         int ikq = 0;
-        for(int iq = 0; iq < num_q; iq++)
+
+        for(int i=0;i < nstates_occ;i++)
         {
-            for(int ik = 0; ik < ct.num_kpts_pe; ik++)
-            {
-                int ik_glob = ik + pct.kstart;
-                ikq = kq_index[ik_glob * num_q + iq];
-
-                for(int i=0;i < nstates_occ;i++)
-                {
-                    T *psi_i = &psi_s[i*pwave->pbasis];
-                    RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
+            double *psi_i = (double *)&psi_s[i*pwave->pbasis];
+            RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
-                    for(int j=i;j < nstates;j++)
-                    {
-                        int omp_tid = omp_get_thread_num();
-                        std::complex<double> *p = pvec[omp_tid];
-                        std::complex<float> *w = wvec[omp_tid];
-                        int fft_index = i*nstates + j;
-                        if(my_rank == (fft_index % npes))
-                        {
-                            T *psi_j = &psi_s[j*pwave->pbasis];
-                            if(use_float_fft)
-                                fftpair(psi_i, psi_j, p, w, ikq);
-                            else
-                                fftpair(psi_i, psi_j, p, ikq);
-                            // We can speed this up by adding more critical sections if it proves to be a bottleneck
+            for(int j=i;j < nstates;j++)
+            {
+                int omp_tid = omp_get_thread_num();
+                std::complex<double> *p = pvec[omp_tid];
+                std::complex<float> *w = wvec[omp_tid];
+                int fft_index = i*nstates + j;
+                if(my_rank == (fft_index % npes))
+                {
+                    double *psi_j = (double *)&psi_s[j*pwave->pbasis];
+                    if(use_float_fft)
+                        fftpair(psi_i, psi_j, p, w, ikq);
+                    else
+                        fftpair(psi_i, psi_j, p, ikq);
+                    // We can speed this up by adding more critical sections if it proves to be a bottleneck
 #pragma omp critical(part3)
-                            {
-                                if(j < nstates_occ)
-                                    for(int idx = 0;idx < pwave->pbasis;idx++) 
-                                        vexx_global[i*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_j[idx];
-                            }
-#pragma omp critical(part4)
-                            {
-                                if(i!=j)
-                                    for(int idx = 0;idx < pwave->pbasis;idx++) vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
-                            }
-                        }
-                    }
-                    delete RT1;
-
-                    rows++;
-                    // This enables some concurrency with calculations and communication
-                    if(rows == max_rows)
                     {
-                        MPI_Barrier(G.comm);
-                        int fac = sizeof(T)/sizeof(double);
-                        MPI_Iallreduce(MPI_IN_PLACE, arptr, rows*pwave->pbasis*fac, MPI_DOUBLE, MPI_SUM, G.comm, &reqs[reqcount]);
-                        reqcount++;
-                        arptr += rows*pwave->pbasis;
-                        trows += rows;
-                        rows = 0;
+                        if(j < nstates_occ)
+                            for(int idx = 0;idx < pwave->pbasis;idx++) 
+                                vexx_global[i*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_j[idx];
                     }
-                    MPI_Testall(reqcount, reqs, &flag, mrstatus);
+#pragma omp critical(part4)
+                    {
+                        if(i!=j)
+                            for(int idx = 0;idx < pwave->pbasis;idx++) vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
+                    }
                 }
-                MPI_Waitall(reqcount, reqs, mrstatus);
-                MPI_Barrier(G.comm);
-                int count = nstates - trows;
-
-                // This timer only picks up the last MPI_Allreduce since the ones above are asynchronous
-                RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
-                int fac = sizeof(T)/sizeof(double);
-                MPI_Allreduce(MPI_IN_PLACE, arptr, count*pwave->pbasis*fac, MPI_DOUBLE, MPI_SUM, G.comm);
-                delete RT3;
             }
+            delete RT1;
+
+            rows++;
+            // This enables some concurrency with calculations and communication
+            if(rows == max_rows)
+            {
+                MPI_Barrier(G.comm);
+                MPI_Iallreduce(MPI_IN_PLACE, arptr, rows*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm, &reqs[reqcount]);
+                reqcount++;
+                arptr += rows*pwave->pbasis;
+                trows += rows;
+                rows = 0;
+            }
+            MPI_Testall(reqcount, reqs, &flag, mrstatus);
         }
+        MPI_Waitall(reqcount, reqs, mrstatus);
+        MPI_Barrier(G.comm);
+        int count = nstates - trows;
+
+        // This timer only picks up the last MPI_Allreduce since the ones above are asynchronous
+        RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
+        MPI_Allreduce(MPI_IN_PLACE, arptr, count*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
+        delete RT3;
 
         delete [] mrstatus;
         delete [] reqs;
@@ -350,8 +340,8 @@ template <class T> void Exxbase<T>::Vexx(T *vexx, bool use_float_fft)
             {
                 for(int iy=0;iy < dimy;iy++)
                 {
-                    T *tvexx = &vexx[i*pbasis];
-                    T *tvexx_global = &vexx_global[i*pwave->pbasis];
+                    double *tvexx = &vexx[i*pbasis];
+                    double *tvexx_global = &vexx_global[i*pwave->pbasis];
                     for(int iz=0;iz < dimz;iz++)
                     {
                         tvexx[ix*dimy*dimz + iy*dimz + iz] = tvexx_global[(ix+xoffset)*gdimy*gdimz + (iy+yoffset)*gdimz + iz + zoffset];
@@ -746,8 +736,8 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
         int dis_dim = G.get_P0_BASIS(1);
         for(int st=0;st < nstates;st++)
         {
-            wfptr = &psi[ik * nstates * dis_dim + st * dis_dim];
-            MPI_File_write_all(mpi_fhand, wfptr, dis_dim, MPI_DOUBLE, &status);
+            wfptr = &psi[ik * ct.max_states * dis_dim + st * dis_dim];
+            MPI_File_write_all(mpi_fhand, wfptr, dis_dim, wftype, &status);
         }
         MPI_Barrier(G.comm);
         MPI_File_close(&mpi_fhand);
@@ -941,4 +931,174 @@ template <class T> void Exxbase<T>::kpoints_setup()
         kqvec[ikq * 3 + 1] = v2;
         kqvec[ikq * 3 + 2] = v3;
     }
+}
+template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx, bool use_float_fft)
+{
+    RmgTimer RT0("5-Functional: Exx potential");
+    double scale = - 1.0 / (double)pwave->global_basis;
+
+    if(mode == EXX_DIST_FFT)
+        throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
+
+    int nstates_occ = 0;
+    for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
+    MPI_Allreduce(MPI_IN_PLACE, &nstates_occ, 1, MPI_INT, MPI_MAX, G.comm);
+
+    std::vector<std::complex<double> *> pvec;
+    std::vector<std::complex<float> *> wvec;
+    pvec.resize(ct.OMP_THREADS_PER_NODE);
+    wvec.resize(ct.OMP_THREADS_PER_NODE);
+    for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
+    {
+        pvec[tid] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
+        wvec[tid] = (std::complex<float> *)fftw_malloc(sizeof(std::complex<float>) * pwave->pbasis);
+    }
+
+    // Write serial wavefunction files. May need to do some numa optimization here at some point
+    RmgTimer *RT1 = new RmgTimer("5-Functional: Exx writewfs");
+    WriteWfsToSingleFile();
+    delete RT1;
+
+    // Loop over blocks and process fft pairs I am responsible for
+    int my_rank = G.get_rank();
+    int npes = G.get_NPES();
+
+    size_t length = (size_t)nstates * pwave->pbasis * sizeof(std::complex<double>);
+    std::complex<double> *psi_q = (std::complex<double> *)GpuMallocManaged(length);
+    std::complex<double> *psi_q_map;
+    for(int ik = 0; ik < ct.num_kpts_pe; ik++)
+    {
+        for(int idx=0;idx < nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
+        int ik_glob = ik + pct.kstart;
+        // Mmap wavefunction array
+        std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ik_glob);
+        RT1 = new RmgTimer("5-Functional: mmap");
+        serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
+        if(serial_fd < 0)
+            throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+        delete RT1;
+
+        psi_s = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+
+        MPI_Barrier(G.comm);
+
+        for(int iq = 0; iq < num_q; iq++)
+        {
+
+            int ikindex = q_to_kindex[iq];
+            int isym = q_to_k_symindex[iq];
+
+            int ikq = kq_index[ik * num_q + iq];
+
+            std::string filename_q = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ikindex);
+            RT1 = new RmgTimer("5-Functional: mmap");
+            int serial_fd_q = open(filename_q.c_str(), O_RDONLY, (mode_t)0600);
+            if(serial_fd_q < 0)
+                throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+            delete RT1;
+
+            psi_q_map = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+
+            MPI_Barrier(G.comm);
+
+            int nx_grid = G.get_NX_GRID(1);
+            int ny_grid = G.get_NY_GRID(1);
+            int nz_grid = G.get_NZ_GRID(1);
+            int nbasis = nx_grid * ny_grid * nz_grid;
+            int ixx, iyy, izz;
+            for (int ix = 0; ix < nx_grid; ix++) {
+                for (int iy = 0; iy < ny_grid; iy++) {
+                    for (int iz = 0; iz < nz_grid; iz++) {
+
+                        symm_ijk(&Rmg_Symm->s[isym *9], &Rmg_Symm->ftau[isym*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+
+                        for(int st = 0; st < nstates_occ; st++)
+                        {
+                            psi_q[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]
+                                = psi_q_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz];
+                        }
+                    }
+                }
+            }
+
+
+            for(int i=0;i < nstates;i++)
+            {
+                std::complex<double> *psi_i = &psi_s[i*pwave->pbasis];
+                RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
+#pragma omp parallel for schedule(dynamic)
+                for(int j=0;j < nstates_occ;j++)
+                {
+                    int omp_tid = omp_get_thread_num();
+                    std::complex<double> *p = pvec[omp_tid];
+                    std::complex<float> *w = wvec[omp_tid];
+                    int fft_index = i*nstates + j;
+                    if(my_rank == (fft_index % npes))
+                    {
+                        std::complex<double> *psi_j = &psi_q[j*pwave->pbasis];
+                        if(use_float_fft)
+                            fftpair(psi_i, psi_j, p, w, ikq);
+                        else
+                            fftpair(psi_i, psi_j, p, ikq);
+                        // We can speed this up by adding more critical sections if it proves to be a bottleneck
+#pragma omp critical(part3)
+                        {
+                            for(int idx = 0;idx < pwave->pbasis;idx++) 
+                                vexx_global[i*pwave->pbasis +idx] += scale * p[idx] * psi_j[idx];
+                        }
+                    }
+                }
+                delete RT1;
+            }
+
+            munmap(psi_q_map, length);
+            close(serial_fd_q);
+        }
+
+        MPI_Barrier(G.comm);
+        RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
+        MPI_Allreduce(MPI_IN_PLACE, vexx_global, 2*nstates*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
+        delete RT3;
+
+        // Map my portion of vexx into 
+        int xoffset, yoffset, zoffset;
+        int dimx = G.get_PX0_GRID(1);
+        int dimy = G.get_PY0_GRID(1);
+        int dimz = G.get_PZ0_GRID(1);
+        int gdimy = G.get_NY_GRID(1);
+        int gdimz = G.get_NZ_GRID(1);
+        G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
+
+        RmgTimer *RT2 = new RmgTimer("5-Functional: Exx remap");
+        for(int i=0;i < nstates;i++)
+        {
+            std::complex<double> *tvexx = &vexx[ik * nstates * pbasis + i*pbasis];
+            std::complex<double> *tvexx_global = &vexx_global[i*pwave->pbasis];
+            for(int ix=0;ix < dimx;ix++)
+            {
+                for(int iy=0;iy < dimy;iy++)
+                {
+                    for(int iz=0;iz < dimz;iz++)
+                    {
+                        tvexx[ix*dimy*dimz + iy*dimz + iz] = tvexx_global[(ix+xoffset)*gdimy*gdimz + (iy+yoffset)*gdimz + iz + zoffset];
+                    }
+                }
+            }
+        }
+        delete RT2;
+
+        MPI_Barrier(G.comm);
+
+        // munmap wavefunction array
+        munmap(psi_s, length);
+        close(serial_fd);
+
+    }
+
+    for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
+    {
+        fftw_free(wvec[tid]);
+        fftw_free(pvec[tid]);
+    }
+
 }

@@ -80,22 +80,19 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     Voronoi *Voronoi_charge = new Voronoi();
     delete RT;
     int outer_steps = 1;
-    std::vector<Exxbase<OrbitalType> *> Exx_scf;
-    Exx_scf.resize(ct.num_kpts_pe);
+    Exxbase<OrbitalType> *Exx_scf = NULL;
     if(ct.xc_is_hybrid)
     {
         outer_steps = ct.max_exx_steps;
-        for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
-        {
-            std::vector<double> occs;
-            occs.resize(Kptr[kpt]->nstates);
-            for(int i=0;i < Kptr[kpt]->nstates;i++) occs[i] = Kptr[kpt]->Kstates[i].occupation[0];
 
-            Exx_scf[kpt] = new Exxbase<OrbitalType>(*Kptr[kpt]->G, *Rmg_halfgrid, *Kptr[kpt]->L, "tempwave", Kptr[kpt]->nstates, occs.data(),
-                Kptr[kpt]->orbital_storage, ct.exx_mode);
+        std::vector<double> occs;
+        occs.resize(Kptr[0]->nstates);
+        for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
 
-            occs.clear();
-        }
+        Exx_scf = new Exxbase<OrbitalType>(*Kptr[0]->G, *Rmg_halfgrid, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(),
+                Kptr[0]->orbital_storage, ct.exx_mode);
+
+        occs.clear();
     }
 
     ct.FOCK = 0.0;
@@ -124,7 +121,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             /* perform a single self-consistent step */
             step_time = my_crtc ();
             CONVERGED = Scf (vxc, vxc_in, vh, vh_in, ct.vh_ext, vnuc, rho, rho_oppo,
-                             rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
+                    rhocore, rhoc, ct.spin_flag, ct.boundaryflag, Kptr, RMSdV);
             step_time = my_crtc () - step_time;
 
             // Save data to file for future restart at checkpoint interval if this is a quench run.
@@ -158,19 +155,16 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         if(ct.xc_is_hybrid)
         {
             F->start_exx_rmg();
-            for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
-            {
-                // FIXME -- this is not right for non-gamma case
-                // f1 is fock energy calculated using vexx from previous orbitals and the current orbitals
-                f1 = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
-                Exx_scf[kpt]->Vexx(Kptr[kpt]->vexx, (fabs(ct.exx_delta) > ct.vexx_fft_threshold));
-                // f2 is fock energy calculated using vexx from current orbitals and the current orbitals
-                f2 = Exx_scf[kpt]->Exxenergy(Kptr[kpt]->vexx);
-                ct.exx_delta = f1 - 0.5*(f2 + f0);
-                f0 = f2;
-                ct.FOCK = exxen + f2 - f1;
-                exxen = f2;
-            }
+            // FIXME -- this is not right for non-gamma case
+            // f1 is fock energy calculated using vexx from previous orbitals and the current orbitals
+            f1 = Exx_scf->Exxenergy(Kptr[0]->vexx);
+            Exx_scf->Vexx(Kptr[0]->vexx, (fabs(ct.exx_delta) > ct.vexx_fft_threshold));
+            // f2 is fock energy calculated using vexx from current orbitals and the current orbitals
+            f2 = Exx_scf->Exxenergy(Kptr[0]->vexx);
+            ct.exx_delta = f1 - 0.5*(f2 + f0);
+            f0 = f2;
+            ct.FOCK = exxen + f2 - f1;
+            exxen = f2;
 
             if(ct.exx_steps)
             {
@@ -330,7 +324,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             Voronoi_charge->LocalCharge(&rho[3*FP0_BASIS], localrho);
             for(size_t ion = 0; ion < Atoms.size(); ion++)
                 printf("\n Voronoi rho_z %ld %f", ion, localrho[ion]);
-        
+
         }
         delete [] localrho;
 

@@ -35,6 +35,7 @@
 #include "fftw3.h"
 #include "Pw.h"
 #include "Functional.h"
+#include "Symmetry.h"
 
 // Screening types
 #define NO_SCREENING 0

@@ -35,7 +35,7 @@ template void Symmetry::symmetrize_grid_object<double>(double *);
 template void Symmetry::symmetrize_grid_object<std::complex<double>>(std::complex<double> *);
 
 
-void inline symm_ijk(int *srotate, int *strans, int &ix, int &iy, int &iz, int &ixx, int &iyy, int &izz,
+void symm_ijk(int *srotate, int *strans, int &ix, int &iy, int &iz, int &ixx, int &iyy, int &izz,
         int &nx, int &ny, int &nz)
 {
 
