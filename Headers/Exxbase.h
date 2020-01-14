@@ -113,8 +113,8 @@ private:
     int scr_type = ERFC_SCREENING;
 
 
-    void fftpair(T *psi_i, T*psi_j, std::complex<double> *p);
-    void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, std::complex<float> *workbuf);
+    void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, int ikq);
+    void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, std::complex<float> *workbuf, int ikq);
     void setup_gfac(void);
 
     std::vector< std::pair <int,int> > wf_pairs;

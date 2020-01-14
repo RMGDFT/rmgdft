@@ -94,26 +94,27 @@ template <class T> Exxbase<T>::Exxbase (
 
 }
 
-template <> void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p)
+template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, int ikq);
+template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p, int ikq);
+template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, int ikq)
 {
-    for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = std::complex<double>(psi_i[idx] * psi_j[idx], 0.0);
+    for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = std::conj(psi_i[idx]) * psi_j[idx];
     pwave->FftForward(p, p);
-    for(int ig=0;ig < pwave->pbasis;ig++) p[ig] *= gfac[ig];
+    for(int ig=0;ig < pwave->pbasis;ig++) p[ig] *= gfac[ikq * pwave->pbasis + ig];
     pwave->FftInverse(p, p);
 }
 
-template <> void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, std::complex<float> *workbuf)
+template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, std::complex<float> *workbuf, int ikq);
+template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p, std::complex<float> *workbuf, int ikq);
+template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, std::complex<float> *workbuf, int ikq)
 {
-    for(int idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * psi_j[idx], 0.0);
+    for(int idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(std::conj(psi_i[idx]) * psi_j[idx]);
     pwave->FftForward(workbuf, workbuf);
-    for(int ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= gfac[ig];
+    for(int ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= gfac[ikq * pwave->pbasis + ig];
     pwave->FftInverse(workbuf, workbuf);
     for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = (std::complex<double>)workbuf[idx];
 }
 
-template <> void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p)
-{
-}
 
 // This implements different ways of handling the divergence at G=0
 template void Exxbase<double>::setup_gfac(void);
@@ -208,9 +209,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 RmgTimer RT1("5-Functional: Exx potential fft");
 
                 if(use_float_fft)
-                    fftpair(psi_i, psi_j, p, w);
+                    fftpair(psi_i, psi_j, p, w, 0);
                 else
-                    fftpair(psi_i, psi_j, p);
+                    fftpair(psi_i, psi_j, p, 0);
 
 #pragma omp critical(part1)
                 {
@@ -258,6 +259,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         int flag=0;
         double *arptr = vexx_global;
 
+        int ikq = 0;
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi_s[i*pwave->pbasis];
@@ -273,9 +275,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 {
                     double *psi_j = (double *)&psi_s[j*pwave->pbasis];
                     if(use_float_fft)
-                        fftpair(psi_i, psi_j, p, w);
+                        fftpair(psi_i, psi_j, p, w, ikq);
                     else
-                        fftpair(psi_i, psi_j, p);
+                        fftpair(psi_i, psi_j, p, ikq);
                     // We can speed this up by adding more critical sections if it proves to be a bottleneck
 #pragma omp critical(part3)
                     {
@@ -544,6 +546,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
     }
 
+    int ikq = 0;
     for(std::vector<int>::iterator it = blocks_in_thispe.begin(); it != blocks_in_thispe.end(); it++)
     {
         int ib = *it;
@@ -559,7 +562,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
             int j = wf_pairs[ij].second;
             double *psi_i = (double *)&psi_s[i*pbasis];
             double *psi_j = (double *)&psi_s[j*pbasis];
-            fftpair(psi_i, psi_j, wf_fft);
+            fftpair(psi_i, psi_j, wf_fft, ikq);
 
             // store (i,j) fft pair in ij_pair
             // forward and then backward fft should not have the scale, Wenchang
