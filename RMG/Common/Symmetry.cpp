@@ -134,7 +134,7 @@ Symmetry::Symmetry (
         if(frac1 < symprec && frac2 < symprec &&frac3 < symprec)
         {
 
-            if(ct.verbose) printf("\n sym operation after considering real space grid # %d",nsym);
+            if(ct.verbose && pct.imgpe == 0) printf("\n sym operation after considering real space grid # %d",nsym);
             for(int i = 0; i < 3; i++)
                 for(int j = 0; j < 3; j++)
                 {
@@ -150,7 +150,7 @@ Symmetry::Symmetry (
             sym_trans[nsym*3+1] = translation[kpt*3+1];
             sym_trans[nsym*3+2] = translation[kpt*3+2];
 
-            if(ct.verbose)
+            if(ct.verbose && pct.imgpe == 0)
             {
                 for(int i = 0; i < 3; i++)
                 {
@@ -160,7 +160,7 @@ Symmetry::Symmetry (
             }
             nsym++;
         }
-        else if(ct.verbose)
+        else if(ct.verbose && pct.imgpe == 0)
         {
             printf("\n translation break a symmetry") ;
             for(int i = 0; i < 3; i++)
@@ -189,8 +189,8 @@ Symmetry::Symmetry (
     }
 
     ct.nsym = nsym;
-    if(ct.verbose) printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
-    if(ct.verbose) printf("\n number of sym operation  after considering real space grid: %d",nsym);
+    if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
+    if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation  after considering real space grid: %d",nsym);
     assert(nsym >0);
     if(nsym == 1) ct.is_use_symmetry = 0;
 

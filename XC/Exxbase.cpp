@@ -98,7 +98,7 @@ template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::comple
 template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p, int ikq);
 template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, int ikq)
 {
-    for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = std::conj(psi_i[idx]) * psi_j[idx];
+    for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = psi_i[idx] * std::conj(psi_j[idx]);
     pwave->FftForward(p, p);
     for(int ig=0;ig < pwave->pbasis;ig++) p[ig] *= gfac[ikq * pwave->pbasis + ig];
     pwave->FftInverse(p, p);
@@ -108,7 +108,7 @@ template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::comple
 template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p, std::complex<float> *workbuf, int ikq);
 template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, std::complex<float> *workbuf, int ikq)
 {
-    for(int idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(std::conj(psi_i[idx]) * psi_j[idx]);
+    for(int idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * std::conj(psi_j[idx]));
     pwave->FftForward(workbuf, workbuf);
     for(int ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= gfac[ikq * pwave->pbasis + ig];
     pwave->FftInverse(workbuf, workbuf);
@@ -385,7 +385,23 @@ template <> double Exxbase<double>::Exxenergy(double *vexx)
 
 template <> double Exxbase<std::complex<double>>::Exxenergy(std::complex<double> *vexx)
 {
-    return 0.0;
+    double energy = 0.0;
+    for(int ik = 0; ik < ct.num_kpts_pe; ik++)
+    {
+        int ik_glob = ik + pct.kstart;
+        for(int st=0;st < nstates;st++)
+        {
+            double scale = 0.5 * occ[st] * ct.kp[ik_glob].kweight;
+            for(int i=0;i < pbasis;i++) 
+                energy += scale*std::real(vexx[ik * ct.run_states * pbasis + st*pbasis + i]*std::conj(psi[ik * ct.max_states * pbasis + st*pbasis + i]));
+        }
+    }
+    energy = ct.exx_fraction*energy * this->L.get_omega() / (double)this->G.get_GLOBAL_BASIS(1);
+    MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
+    MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+    return energy;
 }
 
 template <> void Exxbase<std::complex<double>>::Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end)
@@ -865,6 +881,12 @@ template <class T> void Exxbase<T>::kpoints_setup()
 
         }
 
+    if(ct.verbose && pct.imgpe == 0)
+    {
+        for(int iq = 0; iq < num_q_temp; iq++)
+            printf("\n qvec %f %f %f", qvec[iq*3], qvec[iq*3+1], qvec[iq*3+2]);
+    }
+
     if(num_q_temp != num_q)
         throw RmgFatalException() << num_q_temp << " num_q wrong in exx " << num_q <<"\n";
 
@@ -889,6 +911,7 @@ template <class T> void Exxbase<T>::kpoints_setup()
                 dk[2] = dk[2] - std::round(dk[2]);
                 if( (std::abs(dk[0]) < 1.0e-10) && (std::abs(dk[1]) < 1.0e-10) && (std::abs(dk[2]) < 1.0e-10) )
                 {
+                    kq_index[ik * num_q + iq] = ikq;
                     is_assigned = true;
                     break;
                 }
@@ -941,7 +964,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
         throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
 
     int nstates_occ = 0;
-    for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
+    for(int st=0;st < nstates;st++) if(std::abs(occ[st]) > 1.0e-6) nstates_occ++;
     MPI_Allreduce(MPI_IN_PLACE, &nstates_occ, 1, MPI_INT, MPI_MAX, G.comm);
 
     std::vector<std::complex<double> *> pvec;
@@ -987,6 +1010,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
             int ikindex = q_to_kindex[iq];
             int isym = q_to_k_symindex[iq];
+            int isyma = std::abs(isym);
 
             int ikq = kq_index[ik * num_q + iq];
 
@@ -997,7 +1021,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                 throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
             delete RT1;
 
-            psi_q_map = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+            psi_q_map = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd_q, 0);
 
             MPI_Barrier(G.comm);
 
@@ -1010,12 +1034,23 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                 for (int iy = 0; iy < ny_grid; iy++) {
                     for (int iz = 0; iz < nz_grid; iz++) {
 
-                        symm_ijk(&Rmg_Symm->s[isym *9], &Rmg_Symm->ftau[isym*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+                        symm_ijk(&Rmg_Symm->s[isyma *9], &Rmg_Symm->ftau[isyma*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
 
-                        for(int st = 0; st < nstates_occ; st++)
+                        if(isym >= 0)
                         {
-                            psi_q[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]
-                                = psi_q_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz];
+                            for(int st = 0; st < nstates_occ; st++)
+                            {
+                                psi_q[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]
+                                    = psi_q_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz];
+                            }
+                        }
+                        else
+                        {
+                            for(int st = 0; st < nstates_occ; st++)
+                            {
+                                psi_q[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]
+                                    = std::conj(psi_q_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]);
+                            }
                         }
                     }
                 }
@@ -1072,7 +1107,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
         RmgTimer *RT2 = new RmgTimer("5-Functional: Exx remap");
         for(int i=0;i < nstates;i++)
         {
-            std::complex<double> *tvexx = &vexx[ik * nstates * pbasis + i*pbasis];
+            std::complex<double> *tvexx = &vexx[ik * ct.run_states * pbasis + i*pbasis];
             std::complex<double> *tvexx_global = &vexx_global[i*pwave->pbasis];
             for(int ix=0;ix < dimx;ix++)
             {
@@ -1080,7 +1115,8 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                 {
                     for(int iz=0;iz < dimz;iz++)
                     {
-                        tvexx[ix*dimy*dimz + iy*dimz + iz] = tvexx_global[(ix+xoffset)*gdimy*gdimz + (iy+yoffset)*gdimz + iz + zoffset];
+                        tvexx[ix*dimy*dimz + iy*dimz + iz] = 
+                            tvexx_global[(ix+xoffset)*gdimy*gdimz + (iy+yoffset)*gdimz + iz + zoffset]/(double)num_q;
                     }
                 }
             }
@@ -1095,6 +1131,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
     }
 
+    GpuFreeManaged(psi_q);
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
         fftw_free(wvec[tid]);
