@@ -52,13 +52,13 @@ template Exxbase<double>::~Exxbase(void);
 template Exxbase<std::complex<double>>::~Exxbase(void);
 
 template <class T> Exxbase<T>::Exxbase (
-          BaseGrid &G_in,
-          BaseGrid &G_h_in,
-          Lattice &L_in,
-          const std::string &wavefile_in,
-          int nstates_in,
-          double *occ_in,
-          T *psi_in, int mode_in) : G(G_in), G_h(G_h_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), init_occ(occ_in), psi(psi_in), mode(mode_in)
+        BaseGrid &G_in,
+        BaseGrid &G_h_in,
+        Lattice &L_in,
+        const std::string &wavefile_in,
+        int nstates_in,
+        double *occ_in,
+        T *psi_in, int mode_in) : G(G_in), G_h(G_h_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), init_occ(occ_in), psi(psi_in), mode(mode_in)
 {
     RmgTimer RT0("5-Functional: Exx init");
 
@@ -72,7 +72,7 @@ template <class T> Exxbase<T>::Exxbase (
     if(mode == EXX_DIST_FFT) 
     {
         if(!ct.is_gamma) 
-             throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
+            throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
 
         pbasis_h = G_h.get_P0_BASIS(1);
         pwave = coarse_pwaves;
@@ -90,39 +90,46 @@ template <class T> Exxbase<T>::Exxbase (
         vexx_global = new T[pwave->pbasis * nstates]();
     }
 
-    setup_gfac();
+    gfac = (double *)GpuMallocManaged(pwave->pbasis*sizeof(double));
+    double kq[3] = {0.0, 0.0, 0.0};
+    setup_gfac(kq);
 
 }
 
-template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, int ikq);
-template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p, int ikq);
-template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, int ikq)
+template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, 
+        std::complex<double> *p, double *coul_fac);
+template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, 
+        std::complex<double> *psi_j, std::complex<double> *p,double *coul_fac);
+template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, double *coul_fac)
 {
     for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = psi_i[idx] * std::conj(psi_j[idx]);
     pwave->FftForward(p, p);
-    for(int ig=0;ig < pwave->pbasis;ig++) p[ig] *= gfac[ikq * pwave->pbasis + ig];
+    for(int ig=0;ig < pwave->pbasis;ig++) p[ig] *= coul_fac[ig];
     pwave->FftInverse(p, p);
 }
 
-template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, std::complex<float> *workbuf, int ikq);
-template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, std::complex<double> *psi_j, std::complex<double> *p, std::complex<float> *workbuf, int ikq);
-template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, std::complex<float> *workbuf, int ikq)
+template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, 
+        std::complex<float> *workbuf, double *coul_fac);
+template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, 
+        std::complex<double> *psi_j, std::complex<double> *p,
+        std::complex<float> *workbuf, double *coul_fac);
+template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, 
+        std::complex<float> *workbuf, double *coul_fac)
 {
     for(int idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * std::conj(psi_j[idx]));
     pwave->FftForward(workbuf, workbuf);
-    for(int ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= gfac[ikq * pwave->pbasis + ig];
+    for(int ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= coul_fac[ig];
     pwave->FftInverse(workbuf, workbuf);
     for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = (std::complex<double>)workbuf[idx];
 }
 
 
 // This implements different ways of handling the divergence at G=0
-template void Exxbase<double>::setup_gfac(void);
-template void Exxbase<std::complex<double>>::setup_gfac(void);
-template <class T> void Exxbase<T>::setup_gfac(void)
+template void Exxbase<double>::setup_gfac(double *kq);
+template void Exxbase<std::complex<double>>::setup_gfac(double *kq);
+template <class T> void Exxbase<T>::setup_gfac(double *kq)
 {
-    gfac = (double *)GpuMallocManaged(pwave->pbasis*sizeof(double) * num_q);
-    std::fill(gfac, gfac+pwave->pbasis * num_q, 0.0);
+    std::fill(gfac, gfac+pwave->pbasis, 0.0);
 
     erfc_scrlen = Functional::get_screening_parameter_rmg();
     gau_scrlen = Functional::get_gau_parameter_rmg();
@@ -141,32 +148,30 @@ template <class T> void Exxbase<T>::setup_gfac(void)
         a0 = 4.0 * PI;
     }
 
-    for(int ikq = 0; ikq < num_q; ikq++)
-        for(int ig=0;ig < pwave->pbasis;ig++)
+    for(int ig=0;ig < pwave->pbasis;ig++)
+    {
+        double qq, v0, v1, v2;
+        v0 = kq[0] + pwave->g[ig].a[0] * tpiba; 
+        v1 = kq[1] + pwave->g[ig].a[1] * tpiba; 
+        v2 = kq[2] + pwave->g[ig].a[2] * tpiba; 
+        qq = v0* v0 + v1 * v1 + v2 * v2;
+        if(!pwave->gmask[ig]) continue;
+
+        if(scr_type == GAU_SCREENING)
         {
-            double qq, v0, v1, v2;
-            v0 = kqvec[ikq*3 + 0] + pwave->g[ig].a[0]; 
-            v1 = kqvec[ikq*3 + 1] + pwave->g[ig].a[1]; 
-            v2 = kqvec[ikq*3 + 2] + pwave->g[ig].a[2]; 
-            qq = v0* v0 + v1 * v1 + v2 * v2;
-            qq *= tpiba2;
-            if(!pwave->gmask[ig]) continue;
-
-            if(scr_type == GAU_SCREENING)
-            {
-                gfac[ikq * pwave->pbasis + ig] = a0 * exp(-qq / 4.0 / gau_scrlen);
-            }
-            else if(scr_type == ERFC_SCREENING)
-            {
-                if(qq> 1.0e-6)
-                    gfac[ikq * pwave->pbasis + ig] = a0 * (1.0 - exp(-qq / 4.0 / (erfc_scrlen*erfc_scrlen))) /qq;
-            }
-            else
-            {
-                throw RmgFatalException() << " Exx screen type not programmed \n";
-            }
-
+            gfac[ig] = a0 * exp(-qq / 4.0 / gau_scrlen);
         }
+        else if(scr_type == ERFC_SCREENING)
+        {
+            if(qq> 1.0e-6)
+                gfac[ig] = a0 * (1.0 - exp(-qq / 4.0 / (erfc_scrlen*erfc_scrlen))) /qq;
+        }
+        else
+        {
+            throw RmgFatalException() << " Exx screen type not programmed \n";
+        }
+
+    }
 }
 
 // These compute the action of the exact exchange operator on all wavefunctions
@@ -212,9 +217,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 RmgTimer RT1("5-Functional: Exx potential fft");
 
                 if(use_float_fft)
-                    fftpair(psi_i, psi_j, p, w, 0);
+                    fftpair(psi_i, psi_j, p, w, gfac);
                 else
-                    fftpair(psi_i, psi_j, p, 0);
+                    fftpair(psi_i, psi_j, p, gfac);
 
 #pragma omp critical(part1)
                 {
@@ -263,8 +268,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         int flag=0;
         double *arptr = vexx_global;
 
-        int ikq = 0;
-
         for(int i=0;i < nstates_occ;i++)
         {
             double *psi_i = (double *)&psi_s[i*pwave->pbasis];
@@ -280,9 +283,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 {
                     double *psi_j = (double *)&psi_s[j*pwave->pbasis];
                     if(use_float_fft)
-                        fftpair(psi_i, psi_j, p, w, ikq);
+                        fftpair(psi_i, psi_j, p, w, gfac);
                     else
-                        fftpair(psi_i, psi_j, p, ikq);
+                        fftpair(psi_i, psi_j, p, gfac);
                     // We can speed this up by adding more critical sections if it proves to be a bottleneck
 #pragma omp critical(part3)
                     {
@@ -561,7 +564,6 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
     }
 
-    int ikq = 0;
     for(std::vector<int>::iterator it = blocks_in_thispe.begin(); it != blocks_in_thispe.end(); it++)
     {
         int ib = *it;
@@ -577,7 +579,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
             int j = wf_pairs[ij].second;
             double *psi_i = (double *)&psi_s[i*pbasis];
             double *psi_j = (double *)&psi_s[j*pbasis];
-            fftpair(psi_i, psi_j, wf_fft, ikq);
+            fftpair(psi_i, psi_j, wf_fft, gfac);
 
             // store (i,j) fft pair in ij_pair
             // forward and then backward fft should not have the scale, Wenchang
@@ -840,10 +842,12 @@ template <class T> void Exxbase<T>::kpoints_setup()
             if(!is_assigned)
             {
                 if(num_q_temp + 1 > num_q)
+                {
                     throw RmgFatalException() << num_q_temp << " num_q larger than mesh in exx " << num_q <<"\n";
-                qvec[num_q_temp * 3 + 0] = sym_qvec[0] - std::round(sym_qvec[0]);
-                qvec[num_q_temp * 3 + 1] = sym_qvec[1] - std::round(sym_qvec[1]);
-                qvec[num_q_temp * 3 + 2] = sym_qvec[2] - std::round(sym_qvec[2]);
+                }
+                qvec[num_q_temp * 3 + 0] = sym_qvec[0] ;
+                qvec[num_q_temp * 3 + 1] = sym_qvec[1] ;
+                qvec[num_q_temp * 3 + 2] = sym_qvec[2] ;
                 q_to_kindex[num_q_temp] = ik;
                 q_to_k_symindex[num_q_temp] = isym;
                 num_q_temp++;
@@ -870,9 +874,9 @@ template <class T> void Exxbase<T>::kpoints_setup()
             {
                 if(num_q_temp + 1 > num_q)
                     throw RmgFatalException() << num_q_temp << " num_q larger than mesh in -exx " << num_q <<"\n";
-                qvec[num_q_temp * 3 + 0] = -sym_qvec[0] - std::round(-sym_qvec[0]);
-                qvec[num_q_temp * 3 + 1] = -sym_qvec[1] - std::round(-sym_qvec[1]);
-                qvec[num_q_temp * 3 + 2] = -sym_qvec[2] - std::round(-sym_qvec[2]);
+                qvec[num_q_temp * 3 + 0] = -sym_qvec[0];
+                qvec[num_q_temp * 3 + 1] = -sym_qvec[1];
+                qvec[num_q_temp * 3 + 2] = -sym_qvec[2];
                 q_to_kindex[num_q_temp] = ik;
                 q_to_k_symindex[num_q_temp] = -isym;
                 num_q_temp++;
@@ -884,75 +888,29 @@ template <class T> void Exxbase<T>::kpoints_setup()
     if(ct.verbose && pct.imgpe == 0)
     {
         for(int iq = 0; iq < num_q_temp; iq++)
-            printf("\n qvec %f %f %f", qvec[iq*3], qvec[iq*3+1], qvec[iq*3+2]);
+            printf("\n qvec %f %f %f %d %d", qvec[iq*3], qvec[iq*3+1], qvec[iq*3+2], q_to_kindex[iq], q_to_k_symindex[iq]);
     }
 
     if(num_q_temp != num_q)
         throw RmgFatalException() << num_q_temp << " num_q wrong in exx " << num_q <<"\n";
 
-    //  k-q should be in the first BZ and number k-q should be same as num_q
-    num_q_temp = 0;
-    double kq_tem[3];
-    for(int ik = 0; ik < ct.num_kpts; ik++)
-        for(int iq = 0; iq < num_q; iq++)
-        {
-            kq_tem[0] = ct.kp[ik].kpt[0] - qvec[iq * 3 + 0];
-            kq_tem[1] = ct.kp[ik].kpt[1] - qvec[iq * 3 + 1];
-            kq_tem[2] = ct.kp[ik].kpt[2] - qvec[iq * 3 + 2];
-
-            bool is_assigned = false;
-            for(int ikq = 0; ikq < num_q_temp; ikq++)
-            {
-                dk[0] = kq_tem[0] - kqvec[ikq * 3 + 0];
-                dk[1] = kq_tem[1] - kqvec[ikq * 3 + 1];
-                dk[2] = kq_tem[2] - kqvec[ikq * 3 + 2];
-                dk[0] = dk[0] - std::round(dk[0]);
-                dk[1] = dk[1] - std::round(dk[1]);
-                dk[2] = dk[2] - std::round(dk[2]);
-                if( (std::abs(dk[0]) < 1.0e-10) && (std::abs(dk[1]) < 1.0e-10) && (std::abs(dk[2]) < 1.0e-10) )
-                {
-                    kq_index[ik * num_q + iq] = ikq;
-                    is_assigned = true;
-                    break;
-                }
-            }
-
-            if(!is_assigned)
-            {
-                if(num_q_temp + 1 > num_q)
-                    throw RmgFatalException() << num_q_temp << " num_q larger than mesh in kq_exx " << num_q <<"\n";
-                kqvec[num_q_temp * 3 + 0] = kq_tem[0] - std::round(kq_tem[0]);
-                kqvec[num_q_temp * 3 + 1] = kq_tem[1] - std::round(kq_tem[1]);
-                kqvec[num_q_temp * 3 + 2] = kq_tem[2] - std::round(kq_tem[2]);
-                kq_index[ik * num_q + iq] = num_q_temp;
-                num_q_temp++;
-            }
-
-        }
-
-    if(num_q_temp != num_q)
-        throw RmgFatalException() << num_q_temp << " num_q wrong in kq_exx " << num_q <<"\n";
-    // change the kqvec from crystal unit to the unit of 2Pi/a
-    for(int ikq = 0; ikq < num_q; ikq++)
+    for(int iq = 0; iq < num_q; iq++)
     {
         double v1, v2, v3;
 
-        v1 = kqvec[ikq * 3 + 0] *Rmg_L.b0[0]
-            +kqvec[ikq * 3 + 1] *Rmg_L.b1[0] 
-            +kqvec[ikq * 3 + 2] *Rmg_L.b2[0];
-        v2 = kqvec[ikq * 3 + 0] *Rmg_L.b0[1]
-            +kqvec[ikq * 3 + 1] *Rmg_L.b1[1] 
-            +kqvec[ikq * 3 + 2] *Rmg_L.b2[1];
-        v3 = kqvec[ikq * 3 + 0] *Rmg_L.b0[2]
-            +kqvec[ikq * 3 + 1] *Rmg_L.b1[2] 
-            +kqvec[ikq * 3 + 2] *Rmg_L.b2[2];
+        v1 = qvec[iq * 3 + 0] *Rmg_L.b0[0]
+            +qvec[iq * 3 + 1] *Rmg_L.b1[0] 
+            +qvec[iq * 3 + 2] *Rmg_L.b2[0];
+        v2 = qvec[iq * 3 + 0] *Rmg_L.b0[1]
+            +qvec[iq * 3 + 1] *Rmg_L.b1[1] 
+            +qvec[iq * 3 + 2] *Rmg_L.b2[1];
+        v3 = qvec[iq * 3 + 0] *Rmg_L.b0[2]
+            +qvec[iq * 3 + 1] *Rmg_L.b1[2] 
+            +qvec[iq * 3 + 2] *Rmg_L.b2[2];
 
-        v1 *= L.celldm[0];
-        v2 *= L.celldm[0];
-        v3 *= L.celldm[0];
-        kqvec[ikq * 3 + 0] = v1;
-        kqvec[ikq * 3 + 1] = v2;
-        kqvec[ikq * 3 + 2] = v3;
+        qvec[iq * 3 + 0] = v1 * twoPI;
+        qvec[iq * 3 + 1] = v2 * twoPI;
+        qvec[iq * 3 + 2] = v3 * twoPI;
     }
 }
 template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx, bool use_float_fft)
@@ -989,9 +947,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     size_t length = (size_t)nstates * pwave->pbasis * sizeof(std::complex<double>);
     std::complex<double> *psi_q = (std::complex<double> *)GpuMallocManaged(length);
     std::complex<double> *psi_q_map;
+    double kq[3];
     for(int ik = 0; ik < ct.num_kpts_pe; ik++)
     {
-        for(int idx=0;idx < nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
         int ik_glob = ik + pct.kstart;
         // Mmap wavefunction array
         std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ik_glob);
@@ -1005,6 +963,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
         MPI_Barrier(G.comm);
 
+        for(int idx=0;idx < nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
         for(int iq = 0; iq < num_q; iq++)
         {
 
@@ -1012,7 +971,12 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             int isym = q_to_k_symindex[iq];
             int isyma = std::abs(isym);
 
-            int ikq = kq_index[ik * num_q + iq];
+
+            kq[0] = ct.kp[ik_glob].kvec[0] - qvec[iq * 3 +0];
+            kq[1] = ct.kp[ik_glob].kvec[1] - qvec[iq * 3 +1];
+            kq[2] = ct.kp[ik_glob].kvec[2] - qvec[iq * 3 +2];
+
+            setup_gfac(kq);
 
             std::string filename_q = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ikindex);
             RT1 = new RmgTimer("5-Functional: mmap");
@@ -1025,9 +989,13 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
             MPI_Barrier(G.comm);
 
+
+            // rotate wavefunctions for q point from symmetry-related k point.
+            // define exp(-i (k-q) r) 
             int nx_grid = G.get_NX_GRID(1);
             int ny_grid = G.get_NY_GRID(1);
             int nz_grid = G.get_NZ_GRID(1);
+
             int nbasis = nx_grid * ny_grid * nz_grid;
             int ixx, iyy, izz;
             for (int ix = 0; ix < nx_grid; ix++) {
@@ -1041,7 +1009,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                             for(int st = 0; st < nstates_occ; st++)
                             {
                                 psi_q[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]
-                                    = psi_q_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz];
+                                    = (psi_q_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]);
                             }
                         }
                         else
@@ -1072,10 +1040,11 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                     {
                         std::complex<double> *psi_j = &psi_q[j*pwave->pbasis];
                         if(use_float_fft)
-                            fftpair(psi_i, psi_j, p, w, ikq);
+                            fftpair(psi_i, psi_j, p, w, gfac);
                         else
-                            fftpair(psi_i, psi_j, p, ikq);
+                            fftpair(psi_i, psi_j, p, gfac);
                         // We can speed this up by adding more critical sections if it proves to be a bottleneck
+
 #pragma omp critical(part3)
                         {
                             for(int idx = 0;idx < pwave->pbasis;idx++) 
