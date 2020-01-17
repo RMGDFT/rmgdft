@@ -6,10 +6,11 @@ output_wave_function_file = "Wave/wave"
 input_tddft_file = "Wave/wave_tddft"
 output_tddft_file = "Wave/wave_tddft"
 
+verbose="true"
 restart_tddft = "false"
 #restart_tddft = "true"
 max_scf_steps = "100"
-tddft_steps = "100"
+tddft_steps = "10000"
 poisson_solver="pfft"
 
 unoccupied_states_per_kpoint = "50"
