@@ -98,6 +98,7 @@ class Symmetry
     public:
         int nsym;
         std::vector<int> ftau;
+        std::vector<int> ftau_wave;
         std::vector<int> s;
         Symmetry(BaseGrid &G_in, Lattice &L_in, int density);
         ~Symmetry(void);

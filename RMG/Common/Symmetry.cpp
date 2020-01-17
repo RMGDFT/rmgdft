@@ -82,6 +82,10 @@ Symmetry::Symmetry (
     ny_grid = G.get_NY_GRID(density);
     nz_grid = G.get_NZ_GRID(density);
 
+    int nx_grid_c = G.get_NX_GRID(1);
+    int ny_grid_c = G.get_NY_GRID(1);
+    int nz_grid_c = G.get_NZ_GRID(1);
+
     xoff = G.get_PX_OFFSET(density);
     yoff = G.get_PY_OFFSET(density);
     zoff = G.get_PZ_OFFSET(density);
@@ -115,6 +119,7 @@ Symmetry::Symmetry (
     std::vector<double> translation(3 * nsym_atom);
     s.resize(9 * nsym_atom);
     ftau.resize(3 * nsym_atom);
+    ftau_wave.resize(3 * nsym_atom);
 
     sym_trans.resize(3 * nsym_atom);
     sym_rotate.resize(9 * nsym_atom);
@@ -145,6 +150,9 @@ Symmetry::Symmetry (
             ftau[nsym*3 + 0] = translation[kpt*3 + 0] * nx_grid + symprec;
             ftau[nsym*3 + 1] = translation[kpt*3 + 1] * ny_grid + symprec;
             ftau[nsym*3 + 2] = translation[kpt*3 + 2] * nz_grid + symprec;
+            ftau_wave[nsym*3 + 0] = translation[kpt*3 + 0] * nx_grid_c + symprec;
+            ftau_wave[nsym*3 + 1] = translation[kpt*3 + 1] * ny_grid_c + symprec;
+            ftau_wave[nsym*3 + 2] = translation[kpt*3 + 2] * nz_grid_c + symprec;
 
             sym_trans[nsym*3+0] = translation[kpt*3+0];
             sym_trans[nsym*3+1] = translation[kpt*3+1];
