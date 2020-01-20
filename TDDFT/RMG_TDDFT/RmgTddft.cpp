@@ -52,126 +52,126 @@
 #include "RmgException.h"
 
 
-///////////////////////////////////////
+void  init_point_charge_pot(double *vtot_psi, int density);
 
-  void print_matrix_d(double *matrix,  int  *nblock, int *ldim ){
-  /*    
-       Print the block [0:nblock-1,0:nblock-1]  of an  array of size
-       ldim*ldim.  Array (matrix) is stored as a vector.
+void print_matrix_d(double *matrix,  int  *nblock, int *ldim ){
+    /*    
+          Print the block [0:nblock-1,0:nblock-1]  of an  array of size
+          ldim*ldim.  Array (matrix) is stored as a vector.
 
-  */ 
+     */ 
 
-      int  N  = *nblock ;   // block size to be printed 
-      int  LD = *ldim   ;   // leaading dimension of matrix
+    int  N  = *nblock ;   // block size to be printed 
+    int  LD = *ldim   ;   // leaading dimension of matrix
 
-      int i,j, ij   ;
+    int i,j, ij   ;
 
-  if (pct.gridpe ==0 ) {
-      for     ( i = 0; i< N  ; i++){   // row
-         //printf("\n   %d  : ", i);
-         printf("\n"); 
-         for  ( j = 0; j< N  ; j++){   // column
-             ij = i*LD  + j  ;
-             printf(" %14.6e", matrix[ij]) ;
-         }
-     }
-     printf("\n");
-   }
-}
-
-///////////////////////////////////////
-
-  void print_matrix_z(double *matrix,  int  *nblock, int *ldim ){
-  /*    
-       Print the block [0:nblock-1,0:nblock-1]  of a complex  array of size
-       ldim*ldim.  Array (matrix) is stored as a ldim*ldim vector or real  
-        values followed by ldim*ldim vector of imaginary values
-
-  */ 
-
-      int  N  = *nblock ;   // block size to be printed 
-      int  LD = *ldim   ;   // leaading dimension of matrix
-
-      int i,j, ij   ;
-      int i0_re = 0 ; 
-      int i0_im = i0_re + LD*LD  ; 
-
-  if (pct.gridpe ==0 ) {
-
-     // print  real part  
-     printf("***  real:\n");
-     for     ( i = 0; i< N  ; i++){         // row
-         printf("\n");                      // printf("   %d  : ", i);
-         for  ( j = 0; j< N  ; j++){        // column
-             ij = i*LD  + j  ;
-             printf(" %14.6e", matrix[i0_re+ ij]) ;
-         }
-     }
-     printf("\n") ;   
-    
-     // print  imaginary  part  
-     printf("***  imag:\n ") ;   
-     for     ( i = 0; i< N  ; i++){         // row
-        printf("\n");                       // printf("   %d  : ", i);
-        for  ( j = 0; j< N  ; j++){         // column
-            ij = i*LD  + j  ;
-            printf(" %14.6e", matrix[ i0_im+ij ]) ;
+    if (pct.gridpe ==0 ) {
+        for     ( i = 0; i< N  ; i++){   // row
+            //printf("\n   %d  : ", i);
+            printf("\n"); 
+            for  ( j = 0; j< N  ; j++){   // column
+                ij = i*LD  + j  ;
+                printf(" %14.6e", matrix[ij]) ;
+            }
         }
-     }
-     printf("\n");
-   }
+        printf("\n");
+    }
+}
+
+///////////////////////////////////////
+
+void print_matrix_z(double *matrix,  int  *nblock, int *ldim ){
+    /*    
+          Print the block [0:nblock-1,0:nblock-1]  of a complex  array of size
+          ldim*ldim.  Array (matrix) is stored as a ldim*ldim vector or real  
+          values followed by ldim*ldim vector of imaginary values
+
+     */ 
+
+    int  N  = *nblock ;   // block size to be printed 
+    int  LD = *ldim   ;   // leaading dimension of matrix
+
+    int i,j, ij   ;
+    int i0_re = 0 ; 
+    int i0_im = i0_re + LD*LD  ; 
+
+    if (pct.gridpe ==0 ) {
+
+        // print  real part  
+        printf("***  real:\n");
+        for     ( i = 0; i< N  ; i++){         // row
+            printf("\n");                      // printf("   %d  : ", i);
+            for  ( j = 0; j< N  ; j++){        // column
+                ij = i*LD  + j  ;
+                printf(" %14.6e", matrix[i0_re+ ij]) ;
+            }
+        }
+        printf("\n") ;   
+
+        // print  imaginary  part  
+        printf("***  imag:\n ") ;   
+        for     ( i = 0; i< N  ; i++){         // row
+            printf("\n");                       // printf("   %d  : ", i);
+            for  ( j = 0; j< N  ; j++){         // column
+                ij = i*LD  + j  ;
+                printf(" %14.6e", matrix[ i0_im+ij ]) ;
+            }
+        }
+        printf("\n");
+    }
 }
 
 
 ///////////////////////////////////////
-   void  magnus( double *H0, double *H1, double *p_time_step , double *Hdt, int *ldim){
-      /*  
-           This is a first order Magnus  expansion, wchih is equivalent to   mid-point propagator
-           F*dt =   Integrate_0^t   H(t) dt   
-                ~= 1/2*(H0 +H1) *dt
+void  magnus( double *H0, double *H1, double *p_time_step , double *Hdt, int *ldim){
+    /*  
+        This is a first order Magnus  expansion, wchih is equivalent to   mid-point propagator
+        F*dt =   Integrate_0^t   H(t) dt   
+        ~= 1/2*(H0 +H1) *dt
 
-           It works for real  Hamiltonian matrices only.  Complex are required for bybrid functions with exact exchange
-     
-      */  
-   
-      double  dt     =    *p_time_step  ;   // time step
-      int     Nbasis =    *ldim         ;     // leaading dimension of matrix
+        It works for real  Hamiltonian matrices only.  Complex are required for bybrid functions with exact exchange
 
-      int     Nsq =    Nbasis*Nbasis    ; 
-      //double  dminus_one  = -1.0e0      ; 
-      double  one         =  1.0e0      ; 
-      double  half_dt     =  0.5e0*dt   ;
-      int    ione = 1 ;
-      //printf("magnus,  dt, ldim =  %f   %d  \n", dt,Nbasis ) ;
+     */  
 
-      dcopy_ ( &Nsq ,   H0      ,     &ione , Hdt ,  &ione) ;
-      daxpy_ ( &Nsq , &one      , H1, &ione , Hdt ,  &ione) ;   
-      dscal_ ( &Nsq , &half_dt  ,             Hdt ,  &ione) ;
-    
+    double  dt     =    *p_time_step  ;   // time step
+    int     Nbasis =    *ldim         ;     // leaading dimension of matrix
+
+    int     Nsq =    Nbasis*Nbasis    ; 
+    //double  dminus_one  = -1.0e0      ; 
+    double  one         =  1.0e0      ; 
+    double  half_dt     =  0.5e0*dt   ;
+    int    ione = 1 ;
+    //printf("magnus,  dt, ldim =  %f   %d  \n", dt,Nbasis ) ;
+
+    dcopy_ ( &Nsq ,   H0      ,     &ione , Hdt ,  &ione) ;
+    daxpy_ ( &Nsq , &one      , H1, &ione , Hdt ,  &ione) ;   
+    dscal_ ( &Nsq , &half_dt  ,             Hdt ,  &ione) ;
+
 
 }
 ///////////////////////////////////////
-   void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int *ldim) {  
-      /* 
-          Test convergemce: calculate  infty error for convergence:   || H1 - H0||_infty
-          Here error is  L_infty norm of a difference matrix dH =H1-H0:
-          *p_err    :  [out]  returns absolute value of the largest matrix element of  dH  where dH = H1-H0 
-          *p_ij_err :  [out]  returns position  of err in the  matrix dH
-          H0, H1    :  [in]   tested matrices
-          ldim      :  [in]   leading dimension of  H0, H1  (= Nbasis)
-      */
+void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int *ldim) {  
+    /* 
+       Test convergemce: calculate  infty error for convergence:   || H1 - H0||_infty
+       Here error is  L_infty norm of a difference matrix dH =H1-H0:
+     *p_err    :  [out]  returns absolute value of the largest matrix element of  dH  where dH = H1-H0 
+     *p_ij_err :  [out]  returns position  of err in the  matrix dH
+     H0, H1    :  [in]   tested matrices
+ldim      :  [in]   leading dimension of  H0, H1  (= Nbasis)
+     */
 
 
-     int    Nbasis     =   *ldim         ;  
-     int    Nsq        =   Nbasis*Nbasis ;  
-  
-     double err        =  fabs( H1[0] - H0[0]) ; 
-     int    ij_err     =  0                    ;  // position/ location  in matrix
+    int    Nbasis     =   *ldim         ;  
+    int    Nsq        =   Nbasis*Nbasis ;  
 
-     for (int i =1 ;  i < Nsq ; i++ )  {
+    double err        =  fabs( H1[0] - H0[0]) ; 
+    int    ij_err     =  0                    ;  // position/ location  in matrix
+
+    for (int i =1 ;  i < Nsq ; i++ )  {
         double  tst = fabs(H1[i]-H0[i])  ;
         if (  tst  > err)   { err = tst ; ij_err = i ; } 
-     } 
+    } 
 
     //  pass back the max  error and its location:
     * p_err    =  err   ;
@@ -179,35 +179,35 @@
 
 } 
 ///////////////////////////////////////
-   void extrapolate_Hmatrix   (double  *Hm1, double *H0, double *H1,  int *ldim) {  
-      /* 
-        Linear extrapolation of  H(1) from H(0) and  H(-1):
-          H(1) =   H(0) + dH   =  H(0) + ( H(0)-H(-1) )  =  2*H(0) - H(-1) 
-          H1   =  2*H0 - Hm1
- 
-          Hm1,H0  : [in]
-          H1      : [out]
-      */
+void extrapolate_Hmatrix   (double  *Hm1, double *H0, double *H1,  int *ldim) {  
+    /* 
+       Linear extrapolation of  H(1) from H(0) and  H(-1):
+       H(1) =   H(0) + dH   =  H(0) + ( H(0)-H(-1) )  =  2*H(0) - H(-1) 
+       H1   =  2*H0 - Hm1
 
-     int    Nbasis     =   *ldim         ;  
-     int    Nsq        =   Nbasis*Nbasis ;  
-  
-     int    ione       = 1 ;
-     double  neg_one   = -1.0e0   ;
-     double  two       =  2.0e0   ;
+       Hm1,H0  : [in]
+H1      : [out]
+     */
 
-     dcopy_ ( &Nsq ,            Hm1 , &ione , H1 ,  &ione) ;    //  
-     dscal_ ( &Nsq , &neg_one , H1  , &ione )              ;    //  H1 = -H(-1)  
-     daxpy_ ( &Nsq , &two     , H0  , &ione , H1  , &ione) ;    //  H1 =  2*H0 + H1 =  2*H0 -Hm1 
+    int    Nbasis     =   *ldim         ;  
+    int    Nsq        =   Nbasis*Nbasis ;  
+
+    int    ione       = 1 ;
+    double  neg_one   = -1.0e0   ;
+    double  two       =  2.0e0   ;
+
+    dcopy_ ( &Nsq ,            Hm1 , &ione , H1 ,  &ione) ;    //  
+    dscal_ ( &Nsq , &neg_one , H1  , &ione )              ;    //  H1 = -H(-1)  
+    daxpy_ ( &Nsq , &two     , H0  , &ione , H1  , &ione) ;    //  H1 =  2*H0 + H1 =  2*H0 -Hm1 
 
 }
 ///////////////////////////////////////
 
 /////////////////////
 template void RmgTddft<double> (double *, double *, double *,
-          double *, double *, double *, double *, Kpoint<double> **);
+        double *, double *, double *, double *, Kpoint<double> **);
 template void RmgTddft<std::complex<double> > (double *, double *, double *,
-          double *, double *, double *, double *, Kpoint<std::complex<double>> **);
+        double *, double *, double *, double *, Kpoint<std::complex<double>> **);
 template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double * vnuc, 
         double * rho, double * rho_oppo, double * rhocore, double * rhoc, Kpoint<OrbitalType> **Kptr)
 {
@@ -243,7 +243,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     double *vxc_old     = new double[FP0_BASIS];
     double *vh_corr_old = new double[FP0_BASIS];
     double *vh_corr     = new double[FP0_BASIS];
-// Jacek: 
+    // Jacek: 
     //double *dHmatrix    = new double[n2];   // storage for  H1 -H1_old 
     double *Hmatrix_m1  = new double[n2];
     double *Hmatrix_0   = new double[n2];
@@ -254,12 +254,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     double   thrs_dHmat =1.0e-5 ;
 
     if(pct.gridpe == 0) {
-    printf("\n Number of states used for TDDFT: Nbasis =  %d \n",numst);
+        printf("\n Number of states used for TDDFT: Nbasis =  %d \n",numst);
     }
 
-//    double *vh_x = new double[FP0_BASIS];
-//    double *vh_y = new double[FP0_BASIS];
-//    double *vh_z = new double[FP0_BASIS];
+    //    double *vh_x = new double[FP0_BASIS];
+    //    double *vh_y = new double[FP0_BASIS];
+    //    double *vh_z = new double[FP0_BASIS];
     double *xpsi = new double[P0_BASIS * numst];
     double dipole_ele[3];
 
@@ -319,8 +319,19 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     else
     {
         for (int idx = 0; idx < FP0_BASIS; idx++) vtot[idx] = 0.0;
-        init_efield(vtot);
-        GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+        if(ct.tddft_mode == EFIELD)
+        {
+            init_efield(vtot);
+            GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+        }
+        else if(ct.tddft_mode == POINT_CHARGE)
+        {
+            init_point_charge_pot(vtot_psi, 1);
+        }
+        else
+        {
+            throw RmgFatalException() << " TDDFT mode not defined: "<< ct.tddft_mode<< __FILE__ << " at line " << __LINE__ << "\n";
+        }
 
         HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Akick);
 
@@ -374,106 +385,106 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
         rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
 
- //         for(int i = 0; i < 10; i++) 
- //         { printf("Akick\n");
- //        for(int j = 0; j < 10; j++) printf(" %8.1e", i, Akick[i*numst + j]);
- //       }
+        //         for(int i = 0; i < 10; i++) 
+        //         { printf("Akick\n");
+        //        for(int j = 0; j < 10; j++) printf(" %8.1e", i, Akick[i*numst + j]);
+        //       }
 
     }
 
- //  initialize   data for rt-td-dft
+    //  initialize   data for rt-td-dft
     int nblock = 10 ;   //  size of tthe block for printing (debug!)
     dcopy(&n2, Hmatrix, &ione, Hmatrix_m1, &ione);
     dcopy(&n2, Hmatrix, &ione, Hmatrix_0 , &ione);
 
- /*
-    if(pct.gridpe == 0) { printf("**** Smat  : \n");  print_matrix_d(Smatrix,   &nblock, &numst)   ; }
-    if(pct.gridpe == 0) { printf("**** Hmat  : \n");  print_matrix_d(Hmatrix,   &nblock, &numst)   ; }
-    if(pct.gridpe == 0) { printf("**** Hmat0 : \n");  print_matrix_d(Hmatrix_0, &nblock, &numst)   ; }
-    if(pct.gridpe == 0) { printf("**** Hmat1 : \n");  print_matrix_d(Hmatrix_1, &nblock, &numst)   ; }
- */
+    /*
+       if(pct.gridpe == 0) { printf("**** Smat  : \n");  print_matrix_d(Smatrix,   &nblock, &numst)   ; }
+       if(pct.gridpe == 0) { printf("**** Hmat  : \n");  print_matrix_d(Hmatrix,   &nblock, &numst)   ; }
+       if(pct.gridpe == 0) { printf("**** Hmat0 : \n");  print_matrix_d(Hmatrix_0, &nblock, &numst)   ; }
+       if(pct.gridpe == 0) { printf("**** Hmat1 : \n");  print_matrix_d(Hmatrix_1, &nblock, &numst)   ; }
+     */
 
- //  run rt-td-dft
+    //  run rt-td-dft
     for(tddft_steps = 0; tddft_steps < ct.tddft_steps; tddft_steps++)
     {
         //if(pct.gridpe == 0) printf("=========================================================================\n   step:  %d\n", tddft_steps);
 
         tot_steps = pre_steps + tddft_steps;
 
-    /* 
-         //Wenchang: 
-         dscal(&n2, &time_step, Hmatrix, &ione);   
-         eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
-    */
+        /* 
+        //Wenchang: 
+        dscal(&n2, &time_step, Hmatrix, &ione);   
+        eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
+         */
         //  guess H1 from  H(0) and H(-1):
         extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , &numst) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
 
         //  SCF loop 
-         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
-         err =1.0e0   ;  thrs_dHmat  = 1e-7  ;
+        int  Max_iter_scf = 10 ; int  iter_scf =0 ;
+        err =1.0e0   ;  thrs_dHmat  = 1e-7  ;
 
         RmgTimer *RT2a ;    // timer type  declaration
 
-//-----   SCF loop  starts here: 
+        //-----   SCF loop  starts here: 
         while (err > thrs_dHmat &&  iter_scf <  Max_iter_scf)  {
 
-             //RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
-             RT2a = new RmgTimer("2-TDDFT: ELDYN");
-             magnus (Hmatrix_0,    Hmatrix_1 , &time_step, Hmatrix_dt , &numst) ; 
-             eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
-             delete(RT2a);
-             
-             // if(pct.gridpe == 0) { printf("**** Pn1 : \n");   print_matrix_z(Pn1,  &nblock, &numst)  ; }
+            //RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
+            RT2a = new RmgTimer("2-TDDFT: ELDYN");
+            magnus (Hmatrix_0,    Hmatrix_1 , &time_step, Hmatrix_dt , &numst) ; 
+            eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
+            delete(RT2a);
 
-             //            for(i = 0; i < 10; i++) 
-             //            { printf("Pn\n");
-             //           for(int j = 0; j < 10; j++) printf(" %8.1e", i, Pn1[i*numst + j]);
-             //          }
+            // if(pct.gridpe == 0) { printf("**** Pn1 : \n");   print_matrix_z(Pn1,  &nblock, &numst)  ; }
+
+            //            for(i = 0; i < 10; i++) 
+            //            { printf("Pn\n");
+            //           for(int j = 0; j < 10; j++) printf(" %8.1e", i, Pn1[i*numst + j]);
+            //          }
 
 
-             /////// <----- update Hamiltonian from  Pn1
-             RT2a = new RmgTimer("2-TDDFT: Rho");
-             GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, Pn1, numst);
-             delete(RT2a);
+            /////// <----- update Hamiltonian from  Pn1
+            RT2a = new RmgTimer("2-TDDFT: Rho");
+            GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, Pn1, numst);
+            delete(RT2a);
 
-             dcopy(&FP0_BASIS, vh_corr, &ione, vh_corr_old, &ione);
-             dcopy(&FP0_BASIS, vh, &ione, vh_old, &ione);
-             dcopy(&FP0_BASIS, vxc, &ione, vxc_old, &ione);
+            dcopy(&FP0_BASIS, vh_corr, &ione, vh_corr_old, &ione);
+            dcopy(&FP0_BASIS, vh, &ione, vh_old, &ione);
+            dcopy(&FP0_BASIS, vxc, &ione, vxc_old, &ione);
 
-             //get_vxc(rho, rho_oppo, rhocore, vxc);
-             double vtxc, etxc;
-             RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
-             Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-             F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin);
-             delete F;
-             delete RT1;
+            //get_vxc(rho, rho_oppo, rhocore, vxc);
+            double vtxc, etxc;
+            RmgTimer *RT1 = new RmgTimer("2-TDDFT: exchange/correlation");
+            Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
+            F->v_xc(rho, rhocore, etxc, vtxc, vxc, ct.nspin);
+            delete F;
+            delete RT1;
 
-             RT1 = new RmgTimer("2-TDDFT: Vh");
-             VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0-12);
-             delete RT1;
-             for (int idx = 0; idx < FP0_BASIS; idx++) {
-                 vtot[idx] = vxc[idx] + vh[idx]
-                     -vxc_old[idx] -vh_old[idx];
-             }
+            RT1 = new RmgTimer("2-TDDFT: Vh");
+            VhDriver(rho, rhoc, vh, ct.vh_ext, 1.0-12);
+            delete RT1;
+            for (int idx = 0; idx < FP0_BASIS; idx++) {
+                vtot[idx] = vxc[idx] + vh[idx]
+                    -vxc_old[idx] -vh_old[idx];
+            }
 
-             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
-             RT2a = new RmgTimer("2-TDDFT: Hupdate");
-             HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Hmatrix);                                     
-             delete(RT2a);
+            GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
+            RT2a = new RmgTimer("2-TDDFT: Hupdate");
+            HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Hmatrix);                                     
+            delete(RT2a);
 
-             for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];   // final update of  Hmatrix
-             dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);         // saves Hmatrix to Hmatrix_old   
+            for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];   // final update of  Hmatrix
+            dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);         // saves Hmatrix to Hmatrix_old   
 
-             //////////  < ---  end of Hamiltonian update
+            //////////  < ---  end of Hamiltonian update
 
-             // check error and update Hmatrix_1:
-             tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  &numst) ;  //  check error  how close  H and H_old are
-             dcopy(&n2, Hmatrix  , &ione, Hmatrix_1, &ione);
+            // check error and update Hmatrix_1:
+            tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  &numst) ;  //  check error  how close  H and H_old are
+            dcopy(&n2, Hmatrix  , &ione, Hmatrix_1, &ione);
 
-             if(pct.gridpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
-                     tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err); } 
-             //err= -1.0e0 ;  
-             iter_scf ++ ;
+            if(pct.gridpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
+                    tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err); } 
+            //err= -1.0e0 ;  
+            iter_scf ++ ;
         } //---- end of  SCF/while loop 
 
 

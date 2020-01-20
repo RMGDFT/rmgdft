@@ -21,6 +21,10 @@ static std::unordered_map<std::string, int> bravais_lattice_type = {
 //        {"Monoclinic Base Centered", 13},
 //        {"Triclinic Primitive", 14}};
 
+static std::unordered_map<std::string, int> tddft_mode = {
+        {"electric field", EFIELD},
+        {"point charge", POINT_CHARGE}};
+
 static std::unordered_map<std::string, int> atomic_orbital_type = {
         {"localized", LOCALIZED},
         {"delocalized", DELOCALIZED}};

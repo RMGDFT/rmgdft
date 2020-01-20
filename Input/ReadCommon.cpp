@@ -230,6 +230,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "Output file/path to store wavefunctions and other binary data. ", 
                      "", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("tddft_mode", NULL, &lc.tddft_mode, "electric field",
+                     CHECK_AND_TERMINATE, OPTIONAL,tddft_mode, 
+                     "TDDFT mode ", 
+                     "either electric field kick or point charge kick");
+
     If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
                         "restart TDDFT");
     If.RegisterInputKey("stress", &lc.stress, false, 
@@ -1106,6 +1111,16 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Magnitude of external electric field. ",
             "electric_field_magnitude must be a postive value. ");
 
+    Ri::ReadVector<double> def_tddft_qpos({{0.0,0.0,0.0}});
+    Ri::ReadVector<double> tddft_qpos;
+    If.RegisterInputKey("tddft_qpos", &tddft_qpos, &def_tddft_qpos, 3, OPTIONAL,
+            "cartesian coordinate of the point charge for tddft",
+            "You must specify a triplet of (X,Y,Z) dimensions. ");
+    If.RegisterInputKey("tddft_qgau", &lc.tddft_qgau, 0.0, DBL_MAX, 1.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Gaussian parameter for point charge to Gaussian charge",
+            "");
+
     Ri::ReadVector<double> def_electric_field({{0.0,0.0,1.0}});
     Ri::ReadVector<double> electric_field;
     If.RegisterInputKey("electric_field_vector", &electric_field, &def_electric_field, 3, OPTIONAL,
@@ -1340,6 +1355,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     CheckAndTerminate(pelc.pe_y, 1, INT_MAX, "The value given for the global processor grid Y dimension is " + boost::lexical_cast<std::string>(NY_GRID) + " and only postive values are allowed.");
     CheckAndTerminate(pelc.pe_z, 1, INT_MAX, "The value given for the global processor grid Z dimension is " + boost::lexical_cast<std::string>(NZ_GRID) + " and only postive values are allowed.");
 
+    ct.tddft_qpos[0] = tddft_qpos.vals.at(0);
+    ct.tddft_qpos[1] = tddft_qpos.vals.at(1);
+    ct.tddft_qpos[2] = tddft_qpos.vals.at(2);
     /* read the electric field vector */
     try {
         ct.x_field_0 = electric_field.vals.at(0);

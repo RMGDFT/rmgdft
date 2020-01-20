@@ -1,4 +1,5 @@
 add_library (RmgTddft
+init_point_charge_pot.cpp
 RmgTddft.cpp
 HmatrixUpdate.cpp
 HSmatrix.cpp

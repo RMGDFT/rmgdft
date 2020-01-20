@@ -124,6 +124,10 @@ public:
     char infile_tddft[2*MAX_PATH];
     char outfile_tddft[2*MAX_PATH];
     bool restart_tddft;
+    int tddft_mode;
+    double tddft_qpos[3];
+    double tddft_qgau;
+    
 
     /** Prepended to pseudopotential name */
     std::string pseudo_dir;
