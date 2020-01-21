@@ -99,6 +99,8 @@ template <class T> Exxbase<T>::Exxbase (
 
     gfac = (double *)GpuMallocManaged(pwave->pbasis*sizeof(double));
     double kq[3] = {0.0, 0.0, 0.0};
+    erfc_scrlen = Functional::get_screening_parameter_rmg();
+    gau_scrlen = Functional::get_gau_parameter_rmg();
     setup_exxdiv();
     setup_gfac(kq);
 
@@ -139,8 +141,6 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
 {
     std::fill(gfac, gfac+pwave->pbasis, 0.0);
 
-    erfc_scrlen = Functional::get_screening_parameter_rmg();
-    gau_scrlen = Functional::get_gau_parameter_rmg();
 
     gamma_extrapolation = true;
     double eps = 1.0e-5;
