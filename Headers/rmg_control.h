@@ -567,6 +567,7 @@ public:
     */
     std::vector<KSTRUCT> kp;
     int kpoint_mesh[3];
+    int qpoint_mesh[3];
     int kpoint_is_shift[3];
 
     /** The maximum number of projectors for any species */

@@ -56,6 +56,8 @@ private:
     int *q_to_k_symindex;
     int *kq_index;
 
+    bool gamma_extrapolation;
+
     BaseGrid &G;
     BaseGrid &G_h;
 
@@ -112,11 +114,14 @@ private:
     double erfc_scrlen=0.0;
     double gau_scrlen=0.0;
     int scr_type = ERFC_SCREENING;
+    double yukawa = 0.0;
+    double exxdiv = 0.0;
 
 
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, double *);
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, std::complex<float> *workbuf, double *);
     void setup_gfac(double *kq);
+    void setup_exxdiv();
 
     std::vector< std::pair <int,int> > wf_pairs;
     int block_size = 64;

@@ -63,6 +63,13 @@ template <class T> Exxbase<T>::Exxbase (
     RmgTimer RT0("5-Functional: Exx init");
 
     for(int st=0;st < nstates;st++) occ.push_back(init_occ[st]);
+    if(ct.qpoint_mesh[0] <= 0 || ct.qpoint_mesh[1] <= 0 || ct.qpoint_mesh[2] <=0)
+    {
+        ct.qpoint_mesh[0] = ct.kpoint_mesh[0];
+        ct.qpoint_mesh[1] = ct.kpoint_mesh[1];
+        ct.qpoint_mesh[2] = ct.kpoint_mesh[2];
+    }
+      
     tpiba = 2.0 * PI / L.celldm[0];
     tpiba2 = tpiba * tpiba;
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
@@ -92,6 +99,7 @@ template <class T> Exxbase<T>::Exxbase (
 
     gfac = (double *)GpuMallocManaged(pwave->pbasis*sizeof(double));
     double kq[3] = {0.0, 0.0, 0.0};
+    setup_exxdiv();
     setup_gfac(kq);
 
 }
@@ -134,18 +142,22 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
     erfc_scrlen = Functional::get_screening_parameter_rmg();
     gau_scrlen = Functional::get_gau_parameter_rmg();
 
-    scr_type = ERFC_SCREENING;
-    if(gau_scrlen > 0.0) scr_type = GAU_SCREENING;
+    gamma_extrapolation = true;
+    double eps = 1.0e-5;
+    // for HSE
+    if(std::abs(erfc_scrlen) > eps) scr_type = ERFC_SCREENING;
+    // for Gaupbe
+    if(std::abs(gau_scrlen) > eps)
+    {
+         scr_type = GAU_SCREENING;
+         gamma_extrapolation = false;
+    }
 
-    double a0;
+    double a0 = 1.0;
     if(scr_type == GAU_SCREENING)
     {
-        if (gau_scrlen < 1.0e-5) gau_scrlen = 0.15;
+        if (gau_scrlen < eps) gau_scrlen = 0.15;
         a0 = pow(PI / gau_scrlen, 1.5);
-    }
-    else if(scr_type == ERFC_SCREENING)
-    {
-        a0 = 4.0 * PI;
     }
 
     for(int ig=0;ig < pwave->pbasis;ig++)
@@ -156,19 +168,42 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         v2 = kq[2] + pwave->g[ig].a[2] * tpiba; 
         qq = v0* v0 + v1 * v1 + v2 * v2;
         if(!pwave->gmask[ig]) continue;
+        double fac = 1.0;
+        if (gamma_extrapolation)
+        {
+            bool on_double_grid = true;
+            double qa0 = (v0 * Rmg_L.a0[0] + v1 * Rmg_L.a0[1] +v2 * Rmg_L.a0[2])/twoPI;
+            double qa1 = (v0 * Rmg_L.a1[0] + v1 * Rmg_L.a1[1] +v2 * Rmg_L.a1[2])/twoPI;
+            double qa2 = (v0 * Rmg_L.a2[0] + v1 * Rmg_L.a2[1] +v2 * Rmg_L.a2[2])/twoPI;
+            qa0 = qa0/(2.0 * ct.qpoint_mesh[0]);
+            qa1 = qa1/(2.0 * ct.qpoint_mesh[1]);
+            qa2 = qa2/(2.0 * ct.qpoint_mesh[2]);
+            if( std::abs(qa0 - std::round(qa0)) > eps )
+                on_double_grid = false;
+            if( std::abs(qa1 - std::round(qa1)) > eps )
+                on_double_grid = false;
+            if( std::abs(qa2 - std::round(qa2)) > eps )
+                on_double_grid = false;
 
+            fac = 7.0/8.0;
+            if(on_double_grid) fac = 0.0;
+        }
         if(scr_type == GAU_SCREENING)
         {
             gfac[ig] = a0 * exp(-qq / 4.0 / gau_scrlen);
         }
+        else if (qq < eps)
+        {
+            gfac[ig] = -exxdiv;
+        }
         else if(scr_type == ERFC_SCREENING)
         {
-            if(qq> 1.0e-6)
-                gfac[ig] = a0 * (1.0 - exp(-qq / 4.0 / (erfc_scrlen*erfc_scrlen))) /qq;
+            
+            gfac[ig] = fourPI * (1.0 - exp(-qq / 4.0 / (erfc_scrlen*erfc_scrlen))) /qq * fac;
         }
         else
         {
-            throw RmgFatalException() << " Exx screen type not programmed \n";
+            gfac[ig] = fourPI/(qq + yukawa) * fac; 
         }
 
     }
@@ -770,7 +805,7 @@ template void Exxbase<double>::kpoints_setup();
 template void Exxbase<std::complex<double>>::kpoints_setup();
 template <class T> void Exxbase<T>::kpoints_setup()
 {
-    num_q = ct.kpoint_mesh[0] * ct.kpoint_mesh[1] * ct.kpoint_mesh[2];
+    num_q = ct.qpoint_mesh[0] * ct.qpoint_mesh[1] * ct.qpoint_mesh[2];
     qvec = new double[3* num_q];
     kqvec = new double[3* num_q];
     q_to_kindex = new int[num_q];
@@ -1107,4 +1142,117 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
         fftw_free(pvec[tid]);
     }
 
+}
+
+template void Exxbase<double>::setup_exxdiv();
+template void Exxbase<std::complex<double>>::setup_exxdiv();
+template <class T> void Exxbase<T>::setup_exxdiv()
+{
+    double dqx = 1.0/(double)ct.qpoint_mesh[0]; 
+    double dqy = 1.0/(double)ct.qpoint_mesh[1]; 
+    double dqz = 1.0/(double)ct.qpoint_mesh[2]; 
+    double xq[3];
+    double eps = 1.0e-5;
+    double grid_factor = 7.0/8.0;
+    bool on_double_grid = false;
+    double alpha = 10.0/(coarse_pwaves->gcut * ct.filter_factor * tpiba2);
+    exxdiv = 0.0;
+    for(int iqx = 0; iqx < ct.qpoint_mesh[0];iqx++)
+        for(int iqy = 0; iqy < ct.qpoint_mesh[1];iqy++)
+            for(int iqz = 0; iqz < ct.qpoint_mesh[2];iqz++)
+            {
+                xq[0] = Rmg_L.b0[0] * iqx * dqx + 
+                    Rmg_L.b1[0] * iqy * dqy + 
+                    Rmg_L.b2[0] * iqz * dqz;
+                xq[1] = Rmg_L.b0[1] * iqx * dqx + 
+                    Rmg_L.b1[1] * iqy * dqy + 
+                    Rmg_L.b2[1] * iqz * dqz;
+                xq[2] = Rmg_L.b0[2] * iqx * dqx + 
+                    Rmg_L.b1[2] * iqy * dqy + 
+                    Rmg_L.b2[2] * iqz * dqz;
+
+                for(int ig=0;ig < coarse_pwaves->pbasis;ig++)
+                {
+                    double qq, v0, v1, v2;
+                    v0 = (xq[0] + coarse_pwaves->g[ig].a[0]) * tpiba;
+                    v1 = (xq[1] + coarse_pwaves->g[ig].a[1]) * tpiba;
+                    v2 = (xq[2] + coarse_pwaves->g[ig].a[2]) * tpiba;
+                    qq = v0*v0 + v1 * v1 + v2 * v2;
+                    if (gamma_extrapolation)
+                    {
+                        on_double_grid = true;
+                        double qa0 = (v0 * Rmg_L.a0[0] + v1 * Rmg_L.a0[1] +v2 * Rmg_L.a0[2])/twoPI;
+                        double qa1 = (v0 * Rmg_L.a1[0] + v1 * Rmg_L.a1[1] +v2 * Rmg_L.a1[2])/twoPI;
+                        double qa2 = (v0 * Rmg_L.a2[0] + v1 * Rmg_L.a2[1] +v2 * Rmg_L.a2[2])/twoPI;
+                        qa0 = qa0/(2.0 * ct.qpoint_mesh[0]);
+                        qa1 = qa1/(2.0 * ct.qpoint_mesh[1]);
+                        qa2 = qa2/(2.0 * ct.qpoint_mesh[2]);
+                        if( std::abs(qa0 - std::round(qa0)) > eps )
+                            on_double_grid = false;
+                        if( std::abs(qa1 - std::round(qa1)) > eps )
+                            on_double_grid = false;
+                        if( std::abs(qa2 - std::round(qa2)) > eps )
+                            on_double_grid = false;
+                    }
+                
+                    if(!on_double_grid && qq > eps)
+                    {
+                        if(scr_type == ERFC_SCREENING)
+                        {
+                            exxdiv += grid_factor * std::exp(-alpha * qq)/qq * 
+                                (1.0 - std::exp(-qq /4.0/erfc_scrlen/erfc_scrlen));
+                        }
+                        else
+                        {
+                            exxdiv += grid_factor * std::exp(-alpha * qq)/(qq + yukawa);
+                        }
+
+                    }
+                }
+
+
+            }
+    MPI_Allreduce(MPI_IN_PLACE, &exxdiv, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
+
+    if(!gamma_extrapolation)
+    {
+        if(scr_type == ERFC_SCREENING)
+            exxdiv += 1.0/4.0/erfc_scrlen/erfc_scrlen;
+        else if( std::abs(yukawa) > eps )
+            exxdiv += 1.0/yukawa;
+        else
+            exxdiv += -alpha;
+    }
+    exxdiv *= fourPI /num_q;
+
+    
+
+    int nqq = 100000;
+    double dq = 5.0/std::sqrt(alpha) /nqq;
+    double aa = 0.0;
+    for(int iq = 0; iq < nqq; iq++)
+    {
+        double qq = dq *(iq+0.5) ;
+        qq = qq * qq;
+        if(scr_type == ERFC_SCREENING)
+        {
+            aa -= std::exp(-alpha * qq) * std::exp(-qq/4.0/erfc_scrlen/erfc_scrlen) * dq;
+        }
+        else
+        {
+            aa -= std::exp(-alpha * qq) * yukawa /(qq+yukawa) * dq;
+        }
+
+
+    }
+    aa = aa * 2.0/PI;
+    aa += 1.0/sqrt(alpha * PI);
+    exxdiv -= aa * L.get_omega();
+
+    exxdiv *= num_q;
+    if(ct.verbose && pct.gridpe == 0) 
+    {
+        printf("\n exxdiv = %f", exxdiv);
+        printf("\n erfc_scrlen = %f", erfc_scrlen);
+    }
 }
