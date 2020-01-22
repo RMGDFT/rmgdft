@@ -52,6 +52,7 @@ void write_restart (char *name, double * vh, double *vxc, double *vh_old,
 
 int init_kpoints (int *mesh, int *is_shift);
 
+template <typename DataType> void OutputCubeFile(DataType *a, int grid, std::string filename);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, double *kvec);
 template <typename DataType> double ApplyAOperator (DataType *a, DataType *b, int, int, int, double, double, double, int, double *kvec);

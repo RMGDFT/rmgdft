@@ -440,6 +440,19 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("charge_pulay_Gspace", &lc.charge_pulay_Gspace, false, 
             "if set true, charge density mixing the residual in G space ");
+    If.RegisterInputKey("cube_rho", &lc.cube_rho, true, 
+            "if set true, charge density is printed out in cube format ");
+    If.RegisterInputKey("cube_vh", &lc.cube_vh, false, 
+            "if set true, hatree potential is printed out in cube format ");
+    If.RegisterInputKey("cube_pot", &lc.cube_vh, false, 
+            "if set true, total potential is printed out in cube format ");
+
+    std::string states_list;
+
+    If.RegisterInputKey("cube_states_list", &states_list, "",
+            CHECK_AND_FIX, OPTIONAL,
+            "plot the states listed here", "");
+
     If.RegisterInputKey("exx_int_flag", &lc.exx_int_flag, false, 
             "if set true, calculate the exact exchange integrals ");
 
@@ -1401,4 +1414,37 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     lc.energy_output_string[1] = "Ry";
 
     ct.use_vdwdf_finegrid = Verify ("vdwdf_grid_type", "Fine", InputMap);
+
+    if(states_list.length() != 0 )
+    {
+        size_t pos = 0;
+        while (states_list.size() > 0)
+        {
+            pos = states_list.find(",");
+            pos = std::min(pos, states_list.size());
+            std::string stcount = states_list.substr(0, pos);
+            states_list.erase(0, pos + 1);
+
+            pos = stcount.find("-");
+            if(pos > stcount.length() )
+            {
+                
+                ct.cube_states_list.push_back(std::stoi(stcount));
+            }
+            else
+            {
+                int st_start = std::stoi(stcount.substr(0,pos));
+                int st_end = std::stoi(stcount.substr(pos+1));
+                
+                for(int st = st_start; st <= st_end; st++)
+                    ct.cube_states_list.push_back(st);
+            }
+        }
+    }
+
+    if(ct.verbose && pct.imgpe == 0)
+    {
+        for(size_t st = 0; st < ct.cube_states_list.size(); st++)
+            printf("\n state list %d", ct.cube_states_list[st]);
+    }
 }

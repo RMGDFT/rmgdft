@@ -744,9 +744,11 @@ public:
     STATE *states;
 
 
-    /* number of waves to plot in ON calculation */
-    int num_waves;
-   
+    bool cube_rho;
+    bool cube_vh;
+    bool cube_pot;
+    std::vector<int> cube_states_list;
+    
     std::vector<std::string> file_atomic_orbit;
 
     /* output information for GW calculations.  --Xiaohong */

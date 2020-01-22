@@ -372,6 +372,38 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
     if(Verify ("output_rho_xsf", true, Kptr[0]->ControlMap))
         Output_rho_xsf(rho, pct.grid_comm);
 
+    std::string spinindex = "";
+    if(ct.nspin==2)
+    {
+        if(pct.spinpe==0) spinindex = "a";
+        if(pct.spinpe==1) spinindex = "b";
+    }
+
+    if(ct.cube_rho)
+    {
+        std::string filename = "density"+spinindex+".cube";
+        OutputCubeFile(rho, Rmg_G->default_FG_RATIO, filename);
+    }
+    if(ct.cube_vh)
+    {
+        std::string filename = "vh"+spinindex+".cube";
+        OutputCubeFile(vh, Rmg_G->default_FG_RATIO, filename);
+    }
+
+    for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    {
+        int kpt_glob = kpt + pct.kstart;
+        for(size_t idx = 0; idx < ct.cube_states_list.size(); idx++)
+        {
+            int st = ct.cube_states_list[idx];
+            std::string filename = "kpt"+std::to_string(kpt_glob);
+            filename += "_mo"+std::to_string(st)+ spinindex + ".cube";
+            OutputCubeFile(Kptr[kpt]->Kstates[st].psi, 1, filename);
+
+        }
+    }
+
+
 }                               /* end run */
 
 void report ()
