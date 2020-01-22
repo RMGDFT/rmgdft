@@ -101,6 +101,7 @@ template <class T> Exxbase<T>::Exxbase (
     double kq[3] = {0.0, 0.0, 0.0};
     erfc_scrlen = Functional::get_screening_parameter_rmg();
     gau_scrlen = Functional::get_gau_parameter_rmg();
+    gamma_extrapolation = true;
     setup_exxdiv();
     setup_gfac(kq);
 
@@ -142,7 +143,6 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
     std::fill(gfac, gfac+pwave->pbasis, 0.0);
 
 
-    gamma_extrapolation = true;
     double eps = 1.0e-5;
     // for HSE
     if(std::abs(erfc_scrlen) > eps) scr_type = ERFC_SCREENING;
@@ -175,9 +175,9 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
             double qa0 = (v0 * Rmg_L.a0[0] + v1 * Rmg_L.a0[1] +v2 * Rmg_L.a0[2])/twoPI;
             double qa1 = (v0 * Rmg_L.a1[0] + v1 * Rmg_L.a1[1] +v2 * Rmg_L.a1[2])/twoPI;
             double qa2 = (v0 * Rmg_L.a2[0] + v1 * Rmg_L.a2[1] +v2 * Rmg_L.a2[2])/twoPI;
-            qa0 = qa0/(2.0 * ct.qpoint_mesh[0]);
-            qa1 = qa1/(2.0 * ct.qpoint_mesh[1]);
-            qa2 = qa2/(2.0 * ct.qpoint_mesh[2]);
+            qa0 = qa0/2.0 * ct.qpoint_mesh[0];
+            qa1 = qa1/2.0 * ct.qpoint_mesh[1];
+            qa2 = qa2/2.0 * ct.qpoint_mesh[2];
             if( std::abs(qa0 - std::round(qa0)) > eps )
                 on_double_grid = false;
             if( std::abs(qa1 - std::round(qa1)) > eps )
@@ -185,7 +185,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
             if( std::abs(qa2 - std::round(qa2)) > eps )
                 on_double_grid = false;
 
-            fac = 7.0/8.0;
+            fac = 8.0/7.0;
             if(on_double_grid) fac = 0.0;
         }
         if(scr_type == GAU_SCREENING)
@@ -1153,9 +1153,10 @@ template <class T> void Exxbase<T>::setup_exxdiv()
     double dqz = 1.0/(double)ct.qpoint_mesh[2]; 
     double xq[3];
     double eps = 1.0e-5;
-    double grid_factor = 7.0/8.0;
+    double grid_factor = 8.0/7.0;
     bool on_double_grid = false;
     double alpha = 10.0/(coarse_pwaves->gcut * ct.filter_factor * tpiba2);
+//    alpha = 0.833333333333;
     exxdiv = 0.0;
     for(int iqx = 0; iqx < ct.qpoint_mesh[0];iqx++)
         for(int iqy = 0; iqy < ct.qpoint_mesh[1];iqy++)
@@ -1174,9 +1175,9 @@ template <class T> void Exxbase<T>::setup_exxdiv()
                 for(int ig=0;ig < coarse_pwaves->pbasis;ig++)
                 {
                     double qq, v0, v1, v2;
-                    v0 = (xq[0] + coarse_pwaves->g[ig].a[0]) * tpiba;
-                    v1 = (xq[1] + coarse_pwaves->g[ig].a[1]) * tpiba;
-                    v2 = (xq[2] + coarse_pwaves->g[ig].a[2]) * tpiba;
+                    v0 = xq[0]*twoPI + coarse_pwaves->g[ig].a[0] * tpiba;
+                    v1 = xq[1]*twoPI + coarse_pwaves->g[ig].a[1] * tpiba;
+                    v2 = xq[2]*twoPI + coarse_pwaves->g[ig].a[2] * tpiba;
                     qq = v0*v0 + v1 * v1 + v2 * v2;
                     if (gamma_extrapolation)
                     {
@@ -1184,9 +1185,9 @@ template <class T> void Exxbase<T>::setup_exxdiv()
                         double qa0 = (v0 * Rmg_L.a0[0] + v1 * Rmg_L.a0[1] +v2 * Rmg_L.a0[2])/twoPI;
                         double qa1 = (v0 * Rmg_L.a1[0] + v1 * Rmg_L.a1[1] +v2 * Rmg_L.a1[2])/twoPI;
                         double qa2 = (v0 * Rmg_L.a2[0] + v1 * Rmg_L.a2[1] +v2 * Rmg_L.a2[2])/twoPI;
-                        qa0 = qa0/(2.0 * ct.qpoint_mesh[0]);
-                        qa1 = qa1/(2.0 * ct.qpoint_mesh[1]);
-                        qa2 = qa2/(2.0 * ct.qpoint_mesh[2]);
+                        qa0 = qa0/2.0 * ct.qpoint_mesh[0];
+                        qa1 = qa1/2.0 * ct.qpoint_mesh[1];
+                        qa2 = qa2/2.0 * ct.qpoint_mesh[2];
                         if( std::abs(qa0 - std::round(qa0)) > eps )
                             on_double_grid = false;
                         if( std::abs(qa1 - std::round(qa1)) > eps )
@@ -1246,13 +1247,13 @@ template <class T> void Exxbase<T>::setup_exxdiv()
 
     }
     aa = aa * 2.0/PI;
-    aa += 1.0/sqrt(alpha * PI);
+    aa += 1.0/std::sqrt(alpha * PI);
     exxdiv -= aa * L.get_omega();
 
     exxdiv *= num_q;
     if(ct.verbose && pct.gridpe == 0) 
     {
-        printf("\n exxdiv = %f", exxdiv);
+        printf("\n exxdiv = %f %f %f", exxdiv, aa, alpha);
         printf("\n erfc_scrlen = %f", erfc_scrlen);
     }
 }
