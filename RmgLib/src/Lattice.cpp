@@ -101,7 +101,7 @@
  * SOURCE
  */
 
-#include <math.h>
+#include <cmath>
 #include "Lattice.h"
 #include "rmg_error.h"
 
@@ -308,8 +308,8 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         distance += a0[1] * a0[1] + a0[2] * a0[2];
         distance += a1[2] * a1[2];
         distance += a2[0] * a2[0] + a2[1] * a2[1];
-        if(distance < 1.0e-10 && abs(abs(a1[0]) - 0.5* a0[0]) < 1.0e-10 
-                && abs(abs(a1[1]) - 0.5 * sqrt(3.0) * a0[0]) < 1.0e-10   ) 
+        if(distance < 1.0e-10 && std::abs(std::abs(a1[0]) - 0.5* a0[0]) < 1.0e-10 
+                && std::abs(std::abs(a1[1]) - 0.5 * sqrt(3.0) * a0[0]) < 1.0e-10   ) 
             Lattice::ibrav = HEXAGONAL;
         alat = Lattice::celldm[0];
 
