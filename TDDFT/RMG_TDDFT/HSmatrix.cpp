@@ -191,7 +191,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
 
     // Compute A matrix
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");
-    KpointType alpha(1.0);
+    KpointType alpha(vel);
     KpointType beta(0.0);
 
     if(ct.is_gamma)
