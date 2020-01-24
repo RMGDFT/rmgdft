@@ -27,7 +27,6 @@ init_efield.cpp
 ylmr2.cpp
 linint.cpp
 get_QnmL.cpp
-ylm.cpp
 GetQI.cpp
 get_qqq.cpp
 radint1.cpp

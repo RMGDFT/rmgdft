@@ -48,7 +48,6 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
 {
 
 
-    int  yindex;
     double r, vector[3];
 
     int ix, iy, iz, ixx, iyy, izz;
@@ -96,12 +95,6 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
     ihi = ilow + PX0_GRID;
     jhi = jlow + PY0_GRID;
     khi = klow + PZ0_GRID;
-
-
-
-
-    /*Starting index for ylm function: Indexing is as follows: 0:s, 1:px, 2:py, 3:pz, 4:dxx, etc.*/
-    yindex = l*l + m;
 
     /* Get species type */
     sp = &Species[iptr->species];
@@ -197,11 +190,11 @@ void LcaoGetAwave (StateType *psi, ION *iptr, int awave_idx, int l, int m, doubl
 
                             if(ct.is_gamma)
                             {
-                                psi_R[idx] += coeff * fradius * ylm(yindex, vector);
+                                psi_R[idx] += coeff * fradius * Ylm(l, m, vector);
                             }
                             else
                             {
-                                psi_C[idx] += phase_kr * coeff * fradius * ylm(yindex, vector);
+                                psi_C[idx] += phase_kr * coeff * fradius * Ylm(l, m, vector);
                             }
 
 
