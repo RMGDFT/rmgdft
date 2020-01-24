@@ -168,7 +168,10 @@ FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h MACRO_NAMESP
 
 
 # Generic Release or Debug
-set(CMAKE_BUILD_TYPE Release)
+# This should normally be set automatically to release. It can also be set when cmake is invoked
+# by using -DCMAKE_BUILD_TYPE=Release or -DCMAKE_BUILD_TYPE=Debug
+#
+#set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_BUILD_TYPE Debug)
 
 
