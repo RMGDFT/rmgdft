@@ -1,0 +1,101 @@
+#start_mode="Restart From File"
+start_mode="LCAO Start"
+input_wave_function_file = "Wave/wave"
+output_wave_function_file = "Wave/wave"
+input_tddft_file = "Wave/wave_tddft"
+output_tddft_file = "Wave/wave_tddft"
+max_scf_steps = "100"
+tddft_steps = "2000"
+calculation_mode="TDDFT"
+unoccupied_states_per_kpoint = "100"
+electric_field_vector="1.0 0.0 0.0"
+electric_field_magnitude="0.001000"
+
+
+wavefunction_grid ="96 96 80"
+number_of_atoms="12"
+number_of_species="2"
+number_of_orbitals="156"
+pseudo_dir = "../.."
+pseudopotential="
+H  H.UPF
+C  C.UPF
+"
+
+
+# Lattice constants in (x, y, z) directions
+# a, b, c, cos(alpha), cos(beta), cos(gamma)
+a_length="36." b_length="36." c_length="30.0"
+
+
+ #  atomic coordinates  
+atoms=
+"
+ C     1.820000000000e+01    2.085075663005e+01    1.400000000000e+01      1  
+ H     1.820000000000e+01    2.290596607181e+01    1.400000000000e+01      1  
+ C     1.590437960062e+01    1.952537831503e+01    1.400000000000e+01      1  
+ H     1.412450325527e+01    2.055299248454e+01    1.400000000000e+01      1  
+ C     1.590437960062e+01    1.687462168497e+01    1.400000000000e+01      1  
+ H     1.412450325527e+01    1.584700751546e+01    1.400000000000e+01      1  
+ C     1.820000000000e+01    1.554924336995e+01    1.400000000000e+01      1  
+ H     1.820000000000e+01    1.349403392819e+01    1.400000000000e+01      1  
+ C     2.049562039938e+01    1.687462168497e+01    1.400000000000e+01      1  
+ H     2.227549674473e+01    1.584700751546e+01    1.400000000000e+01      1  
+ C     2.049562039938e+01    1.952537831503e+01    1.400000000000e+01      1  
+ H     2.227549674473e+01    2.055299248454e+01    1.400000000000e+01      1  
+"
+
+# **** SCF controls ****  
+  
+rms_convergence_criterion = "1e-7"
+
+
+# **** MD/Relax controls  **** 
+  
+max_md_steps = "10"
+fast_relax_max_force = "1e-3"
+ionic_time_step = "45"
+relax_dynamic_timestep = "true"
+
+# **** Mixing controls **** 
+  
+charge_density_mixing = "0.2"
+projector_mixing = "0.1"
+charge_mixing_type = "Pulay"
+charge_pulay_order = "5"
+charge_pulay_scale = "0.2"
+charge_pulay_refresh = "100"
+
+# **** Setup  ****
+
+description = "Short description of the input file"
+exchange_correlation_type = "LDA"
+bravais_lattice_type = "Orthorhombic Primitive"
+system_charge = "0.0"
+
+# *****Occupation *****
+
+occupations_type = "Fermi Dirac"
+occupation_electron_temperature_eV = "1.0e-6"
+occupation_number_mixing = "0.3"
+
+# ****  Multigrid **** 
+
+
+write_eigvals_period = "10"
+md_steps_til_write_waves = "10"
+input_wave_function_file = "Wave/wave"
+output_wave_function_file = "Wave/wave"
+
+
+length_units = "Bohr"
+crds_units = "Bohr"
+atomic_coordinate_type = "Absolute"
+
+#  **** default parameters for order-n input  ***** 
+
+potential_grid_refinement="1"
+mg_method="Pulay"
+mg_steps="2"
+
+write_data_period="20"

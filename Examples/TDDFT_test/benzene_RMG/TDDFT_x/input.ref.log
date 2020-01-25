@@ -1,0 +1,2762 @@
+RMG initialization ... 1 image(s) total, 1 per node. 12 MPI processes/image. Thread level 2.
+
+
+                     * * * * * * * * * *
+                     *    R   M   G    *
+                     * * * * * * * * * *
+
+     -- A Real Space Multigrid Electronic structure code --
+     --      More information at www.rmgdft.org          --
+
+Code Revision:     v4.0.0_beta_522_g2e7fb495
+Build Date:        Jan 23 2020  17:23:25
+Start time:        Sat Jan 25 10:04:07 2020
+
+Files
+   Control input file:        input
+   Data output file:          Wave/wave
+
+Run Setup
+    Calculation type:         Time dependent DFT (TDDFT) calculation 
+    Description:              Short description of the input file
+    Orbital Initialization:   LCAO (30 LCAO and 0 random orbitals)
+    Exchange Correlation:     pz
+    Spin Polarization:        OFF
+    System charge:            Neutral
+
+Processor Topology
+   Total PEs:                 12
+   X direction:               3
+   Y direction:               2
+   Z direction:               2
+   MG Threads/PE:             1
+   OMP Threads/PE:            1
+
+Grid Points
+    X:  Total: 96   Per PE: 32   Spacing:0.375 a0  
+    Y:  Total: 96   Per PE: 48   Spacing:0.375 a0  
+    Z:  Total: 80   Per PE: 40   Spacing:0.375 a0  
+
+    Equivalent energy cutoffs (psi,rho):    52.638     52.638 Ry
+
+    Charge density grid:         1 times finer
+
+
+Lattice (Cell) Setup
+    Type:                       Orthorhombic_primitive
+    Volume (a0^3):              38880.00
+    Boundary conditions:        Periodic
+
+    X Basis Vector:      36.000       0.000       0.000 a0
+    Y Basis Vector:       0.000      36.000       0.000 a0
+    Z Basis Vector:       0.000       0.000      30.000 a0
+
+K-points
+    Gamma Point Only (real orbitals)
+
+Atoms and States
+    Number of ions:                          12
+    Number of species:                       2
+    Number of states:                        115
+
+Run Parameters
+    SCF Convergence criterion (potential):   1.00e-07
+    SCF Convergence criterion (energy):      1.00e-10
+    Max SCF steps:                           100
+    Max MD steps                             10
+    Timestep for molecular dynamics:          45.00000000
+    Restart data write frequency:            20 MD steps
+
+SCF Cycle Settings
+    Charge density mixing:                   Pulay  (Order:5 Scale:0.20 Refresh:100)
+    Hartree Solver:                          PFFT
+    Interpolation type:                      FFT
+
+Subspace Diagonalization Options
+    Frequency:                               every 1 SCF step(s)
+    Driver:                                  Lapack
+    Initial diagonalization:                 ON
+    Folded spectrum:                         OFF
+
+Filtering Cutoff  Parameters
+    Wavefunction grid (cparm):               0.800
+    Charge density grid (rhocparm):          1.000
+    Filter factor:                           0.250
+
+Multigrid (MG) Parameters
+    Psi MG levels:                           3
+    Psi global step:                         0.660 
+    Psi pre:                                 2
+    Psi post:                                2
+
+Davidson Parameters
+    Davidson multiplier:                     4
+    Davidson max step:                       8
+    Davidson unocc tol factor:               1000.000
+
+
+Atomic Species Information
+(PP = Pseudopotential, US = Ultrasoft, NC = Norm Conserving)
+-------------------------------------------------------------------------
+|Index|Symbol| Mass|Valence| PP |  Comp  |Local| Local|Nlocal|    PP    |
+|     |      |     |       |Type|Gaussian|  l  |Radius|Radius|Functional|
+-------------------------------------------------------------------------
+|    1|     C| 12.0|   4.00|  NC|    0.63|    2|  8.06|  6.56|       LDA|
+|    2|     H|  1.0|   1.00|  NC|    0.53|    1|  8.06|  5.81|       LDA|
+-------------------------------------------------------------------------
+
+
+Memory usage (Mbytes):     Min        Max       Total
+    wave functions        226.10     226.10    2713.20
+    beta-functions          7.87      23.59     180.89
+
+
+
+Initial Ionic Positions And Displacements
+Species      X           Y           Z           dX          dY          dZ
+  C       18.2000     20.8508     14.0000      0.0000      0.0000      0.0000
+  H       18.2000     22.9060     14.0000      0.0000      0.0000      0.0000
+  C       15.9044     19.5254     14.0000      0.0000      0.0000      0.0000
+  H       14.1245     20.5530     14.0000      0.0000      0.0000      0.0000
+  C       15.9044     16.8746     14.0000      0.0000      0.0000      0.0000
+  H       14.1245     15.8470     14.0000      0.0000      0.0000      0.0000
+  C       18.2000     15.5492     14.0000      0.0000      0.0000      0.0000
+  H       18.2000     13.4940     14.0000      0.0000      0.0000      0.0000
+  C       20.4956     16.8746     14.0000      0.0000      0.0000      0.0000
+  H       22.2755     15.8470     14.0000      0.0000      0.0000      0.0000
+  C       20.4956     19.5254     14.0000      0.0000      0.0000      0.0000
+  H       22.2755     20.5530     14.0000      0.0000      0.0000      0.0000
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    crho -2.699356e-08  -2.699356e-08    WARNING: FRACTIONAL PART OF COMPENSATING CHARGES IS LARGER THAN TOLERANCE!!!
+    THIS WILL SET A LIMIT ON THE CONVERGENCE OF THE HARTREE POTENTIAL!!!
+    THIS CAN USUALLY BE CORRECTED BY INCREASING THE RADII IN THE PSEUDOPOTENTIAL FILES.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  -1   0]   -25.5766 [2.000]   -22.8881 [2.000]   -22.8870 [2.000]   -18.9914 [2.000]   -18.9778 [2.000]
+[kpt   0  -1   1]   -16.3773 [2.000]   -15.9959 [2.000]   -14.8973 [2.000]   -14.2890 [2.000]   -14.2881 [2.000]
+[kpt   0  -1   2]   -12.8161 [2.000]   -12.8088 [2.000]   -12.5784 [2.000]   -10.4977 [2.000]   -10.4963 [2.000]
+[kpt   0  -1   3]    -5.3905 [0.000]    -5.3880 [0.000]    -1.5587 [0.000]     0.4255 [0.000]     2.3388 [0.000]
+[kpt   0  -1   4]     2.3542 [0.000]     3.0784 [0.000]     3.0920 [0.000]     3.8450 [0.000]     6.0609 [0.000]
+[kpt   0  -1   5]     6.0627 [0.000]     6.7339 [0.000]     6.7450 [0.000]    10.6713 [0.000]    12.2315 [0.000]
+[kpt   0  -1   6]    22.2614 [0.000]   302.7932 [0.000]   306.4078 [0.000]   315.0603 [0.000]   325.5748 [0.000]
+[kpt   0  -1   7]   328.4984 [0.000]   332.5703 [0.000]   336.8156 [0.000]   342.9611 [0.000]   349.7542 [0.000]
+[kpt   0  -1   8]   355.6816 [0.000]   357.8818 [0.000]   363.0806 [0.000]   364.7575 [0.000]   372.7032 [0.000]
+[kpt   0  -1   9]   374.0303 [0.000]   377.5716 [0.000]   383.0294 [0.000]   391.0650 [0.000]   394.2730 [0.000]
+[kpt   0  -1  10]   396.8921 [0.000]   397.7258 [0.000]   403.1728 [0.000]   407.0297 [0.000]   409.8248 [0.000]
+[kpt   0  -1  11]   411.7901 [0.000]   414.8235 [0.000]   421.0147 [0.000]   425.1438 [0.000]   427.3222 [0.000]
+[kpt   0  -1  12]   431.5611 [0.000]   434.5933 [0.000]   439.1377 [0.000]   440.2976 [0.000]   444.7831 [0.000]
+[kpt   0  -1  13]   449.0845 [0.000]   451.1563 [0.000]   454.9522 [0.000]   457.4553 [0.000]   461.2430 [0.000]
+[kpt   0  -1  14]   464.3647 [0.000]   467.6350 [0.000]   472.9837 [0.000]   475.7782 [0.000]   477.6288 [0.000]
+[kpt   0  -1  15]   480.1176 [0.000]   483.2172 [0.000]   485.3293 [0.000]   490.5474 [0.000]   491.7527 [0.000]
+[kpt   0  -1  16]   495.6952 [0.000]   497.1274 [0.000]   498.5258 [0.000]   505.5152 [0.000]   505.9040 [0.000]
+[kpt   0  -1  17]   514.1397 [0.000]   515.6118 [0.000]   521.3215 [0.000]   522.4260 [0.000]   524.5060 [0.000]
+[kpt   0  -1  18]   527.4038 [0.000]   530.1377 [0.000]   533.6017 [0.000]   534.7359 [0.000]   536.8448 [0.000]
+[kpt   0  -1  19]   542.5935 [0.000]   544.8254 [0.000]   546.8753 [0.000]   551.2623 [0.000]   552.7939 [0.000]
+[kpt   0  -1  20]   554.5429 [0.000]   556.6557 [0.000]   559.8583 [0.000]   563.9910 [0.000]   567.2348 [0.000]
+[kpt   0  -1  21]   569.9262 [0.000]   571.1933 [0.000]   576.4605 [0.000]   580.4894 [0.000]   588.5654 [0.000]
+[kpt   0  -1  22]   589.0052 [0.000]   593.6933 [0.000]   595.8137 [0.000]   606.9904 [0.000]   610.2909 [0.000]
+
+
+
+Charge density mixing: Linear with a constant of 0.20 
+
+FERMI ENERGY =    -10.26463124 eV
+@@ EIGENVALUE SUM     =      -18.349812 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       42.000922 Ha
+@@ VXC                =      -15.030754 Ha
+@@ EXC                =      -11.504395 Ha
+@@ TOTAL ENERGY       =      -37.896387 Ha
+@@ estimated error    =   ****************
+Charge density mixing: Linear with a constant of 0.20 
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0   0   0]   -26.0092 [2.000]   -23.1744 [2.000]   -23.1734 [2.000]   -19.5129 [2.000]   -19.5041 [2.000]
+[kpt   0   0   1]   -17.2433 [2.000]   -16.2727 [2.000]   -15.3739 [2.000]   -14.8252 [2.000]   -14.8248 [2.000]
+[kpt   0   0   2]   -13.0578 [2.000]   -13.0533 [2.000]   -12.8837 [2.000]   -10.3771 [2.000]   -10.3762 [2.000]
+[kpt   0   0   3]    -5.2410 [0.000]    -5.2373 [0.000]    -1.4306 [0.000]    -1.1868 [0.000]     0.2032 [0.000]
+[kpt   0   0   4]     0.3180 [0.000]     0.3880 [0.000]     0.8493 [0.000]     1.1221 [0.000]     1.1930 [0.000]
+[kpt   0   0   5]     1.2599 [0.000]     1.3285 [0.000]     1.4321 [0.000]     1.5398 [0.000]     1.5896 [0.000]
+[kpt   0   0   6]     2.1622 [0.000]     2.4493 [0.000]     2.6109 [0.000]     2.6260 [0.000]     2.8957 [0.000]
+[kpt   0   0   7]     3.1617 [0.000]     3.3388 [0.000]     4.2683 [0.000]     4.2836 [0.000]     4.3178 [0.000]
+[kpt   0   0   8]     4.5924 [0.000]     4.6923 [0.000]     4.9863 [0.000]     5.0041 [0.000]     5.1630 [0.000]
+[kpt   0   0   9]     6.3326 [0.000]     6.7876 [0.000]     7.6073 [0.000]     8.0180 [0.000]     8.1931 [0.000]
+[kpt   0   0  10]     8.5087 [0.000]     9.9518 [0.000]    10.4947 [0.000]    10.8661 [0.000]    10.9425 [0.000]
+[kpt   0   0  11]    11.3663 [0.000]    11.8832 [0.000]    12.6465 [0.000]    12.8679 [0.000]    13.1142 [0.000]
+[kpt   0   0  12]    13.9872 [0.000]    14.4329 [0.000]    15.2139 [0.000]    15.8317 [0.000]    16.1151 [0.000]
+[kpt   0   0  13]    16.6869 [0.000]    16.7824 [0.000]    17.0530 [0.000]    17.6601 [0.000]    18.1562 [0.000]
+[kpt   0   0  14]    18.2540 [0.000]    18.9292 [0.000]    19.1850 [0.000]    20.2674 [0.000]    20.5322 [0.000]
+[kpt   0   0  15]    21.1623 [0.000]    21.5355 [0.000]    21.8179 [0.000]    21.9990 [0.000]    22.7078 [0.000]
+[kpt   0   0  16]    23.0484 [0.000]    24.1402 [0.000]    24.2311 [0.000]    24.9727 [0.000]    26.0063 [0.000]
+[kpt   0   0  17]    26.4919 [0.000]    27.3147 [0.000]    27.4774 [0.000]    27.6858 [0.000]    28.4581 [0.000]
+[kpt   0   0  18]    28.7659 [0.000]    29.5441 [0.000]    30.5239 [0.000]    31.2646 [0.000]    31.3842 [0.000]
+[kpt   0   0  19]    32.8053 [0.000]    34.1221 [0.000]    34.3119 [0.000]    35.1628 [0.000]    36.2994 [0.000]
+[kpt   0   0  20]    37.0855 [0.000]    37.4980 [0.000]    38.9650 [0.000]    40.0477 [0.000]    40.8381 [0.000]
+[kpt   0   0  21]    42.1899 [0.000]    43.0260 [0.000]    43.5874 [0.000]    44.4021 [0.000]    45.2155 [0.000]
+[kpt   0   0  22]    46.6915 [0.000]    48.6820 [0.000]    51.9207 [0.000]    53.4788 [0.000]    57.9617 [0.000]
+
+
+
+
+Total charge in supercell =      30.00000000
+ quench: [md:   0/10  scf:   0/100  step time:   9.79  scf time:     9.82 secs  RMS[dV]: 3.22e-03 ]
+
+
+average potential <V> = -1.08e-18
+
+FERMI ENERGY =     -8.22214170 eV
+@@ EIGENVALUE SUM     =      -16.985758 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       40.590255 Ha
+@@ VXC                =      -15.262297 Ha
+@@ EXC                =      -11.680342 Ha
+@@ TOTAL ENERGY       =      -37.887404 Ha
+@@ estimated error    =        3.57e-01 Ha
+Charge density mixing: Linear with a constant of 0.20 
+ quench: [md:   0/10  scf:   1/100  step time:  10.01  scf time:    19.83 secs  RMS[dV]: 1.65e-02 ]
+
+
+average potential <V> = -1.80e-17
+
+FERMI ENERGY =     -4.62027242 eV
+@@ EIGENVALUE SUM     =      -15.653747 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       39.281024 Ha
+@@ VXC                =      -15.506195 Ha
+@@ EXC                =      -11.865626 Ha
+@@ TOTAL ENERGY       =      -37.806011 Ha
+@@ estimated error    =        3.38e-01 Ha
+Charge density mixing: Linear with a constant of 0.20 
+ quench: [md:   0/10  scf:   2/100  step time:   9.81  scf time:    29.64 secs  RMS[dV]: 1.45e-02 ]
+
+
+average potential <V> = -2.78e-18
+
+FERMI ENERGY =     -4.89161200 eV
+@@ EIGENVALUE SUM     =      -14.710171 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       38.329993 Ha
+@@ VXC                =      -15.702465 Ha
+@@ EXC                =      -12.014720 Ha
+@@ TOTAL ENERGY       =      -37.766289 Ha
+@@ estimated error    =        2.03e-01 Ha
+Charge density mixing: Linear with a constant of 0.20 
+ quench: [md:   0/10  scf:   3/100  step time:   9.82  scf time:    39.46 secs  RMS[dV]: 1.02e-02 ]
+
+
+average potential <V> = -3.08e-19
+Davidson converged in 3 steps
+
+FERMI ENERGY =     -4.96103727 eV
+@@ EIGENVALUE SUM     =      -14.127324 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       37.721018 Ha
+@@ VXC                =      -15.841805 Ha
+@@ EXC                =      -12.120573 Ha
+@@ TOTAL ENERGY       =      -37.758930 Ha
+@@ estimated error    =        1.01e-01 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:   4/100  step time:  19.55  scf time:    59.01 secs  RMS[dV]: 6.58e-03 ]
+
+
+average potential <V> = 1.03e-17
+Davidson converged in 1 steps
+
+FERMI ENERGY =     -2.03409295 eV
+@@ EIGENVALUE SUM     =      -13.899869 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       37.483460 Ha
+@@ VXC                =      -15.910335 Ha
+@@ EXC                =      -12.172665 Ha
+@@ TOTAL ENERGY       =      -37.752595 Ha
+@@ estimated error    =        3.47e-02 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:   5/100  step time:  15.40  scf time:    74.41 secs  RMS[dV]: 3.18e-03 ]
+
+
+average potential <V> = 4.63e-19
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -1.98108441 eV
+@@ EIGENVALUE SUM     =      -13.176992 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.711657 Ha
+@@ VXC                =      -16.144950 Ha
+@@ EXC                =      -12.350943 Ha
+@@ TOTAL ENERGY       =      -37.745184 Ha
+@@ estimated error    =        2.01e-02 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:   6/100  step time:  16.49  scf time:    90.90 secs  RMS[dV]: 2.62e-03 ]
+
+
+average potential <V> = 1.34e-17
+Davidson converged in 6 steps
+
+FERMI ENERGY =     -2.36060339 eV
+@@ EIGENVALUE SUM     =      -13.341085 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.888378 Ha
+@@ VXC                =      -16.093555 Ha
+@@ EXC                =      -12.311905 Ha
+@@ TOTAL ENERGY       =      -37.744913 Ha
+@@ estimated error    =        9.02e-04 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:   7/100  step time:  28.36  scf time:   119.26 secs  RMS[dV]: 5.12e-04 ]
+
+
+average potential <V> = -3.08e-18
+Davidson converged in 3 steps
+
+FERMI ENERGY =     -2.34670027 eV
+@@ EIGENVALUE SUM     =      -13.279927 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.822853 Ha
+@@ VXC                =      -16.111911 Ha
+@@ EXC                =      -12.325858 Ha
+@@ TOTAL ENERGY       =      -37.744876 Ha
+@@ estimated error    =        1.72e-04 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:   8/100  step time:  16.88  scf time:   136.14 secs  RMS[dV]: 6.28e-04 ]
+
+
+average potential <V> = 4.78e-18
+Davidson incomplete convergence steps = 8
+
+FERMI ENERGY =     -2.35877813 eV
+@@ EIGENVALUE SUM     =      -13.271290 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.814064 Ha
+@@ VXC                =      -16.112559 Ha
+@@ EXC                =      -12.326353 Ha
+@@ TOTAL ENERGY       =      -37.744876 Ha
+@@ estimated error    =        1.25e-05 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:   9/100  step time:  28.88  scf time:   165.02 secs  RMS[dV]: 2.61e-04 ]
+
+
+average potential <V> = -5.40e-18
+Davidson converged in 5 steps
+
+FERMI ENERGY =     -2.35712516 eV
+@@ EIGENVALUE SUM     =      -13.274774 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.818273 Ha
+@@ VXC                =      -16.109562 Ha
+@@ EXC                =      -12.324078 Ha
+@@ TOTAL ENERGY       =      -37.744874 Ha
+@@ estimated error    =        5.96e-06 Ha
+Charge density mixing: Pulay
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  10   0]   -20.9753 [2.000]   -18.2110 [2.000]   -18.2095 [2.000]   -14.7137 [2.000]   -14.7004 [2.000]
+[kpt   0  10   1]   -12.8873 [2.000]   -11.0898 [2.000]   -10.9656 [2.000]   -10.2036 [2.000]   -10.2033 [2.000]
+[kpt   0  10   2]    -9.1149 [2.000]    -8.2430 [2.000]    -8.2416 [2.000]    -6.4268 [2.000]    -6.4266 [2.000]
+[kpt   0  10   3]    -1.4066 [0.000]    -1.4022 [0.000]    -0.4246 [0.000]     0.0933 [0.000]     0.0943 [0.000]
+[kpt   0  10   4]     0.2080 [0.000]     0.3747 [0.000]     0.4418 [0.000]     0.5094 [0.000]     0.6082 [0.000]
+[kpt   0  10   5]     0.6540 [0.000]     0.6559 [0.000]     0.7864 [0.000]     0.8703 [0.000]     0.8816 [0.000]
+[kpt   0  10   6]     0.8868 [0.000]     0.9295 [0.000]     0.9299 [0.000]     0.9596 [0.000]     0.9633 [0.000]
+[kpt   0  10   7]     1.0429 [0.000]     1.2096 [0.000]     1.2709 [0.000]     1.2981 [0.000]     1.3197 [0.000]
+[kpt   0  10   8]     1.3223 [0.000]     1.3614 [0.000]     1.3634 [0.000]     1.3934 [0.000]     1.4202 [0.000]
+[kpt   0  10   9]     1.4423 [0.000]     1.5120 [0.000]     1.5332 [0.000]     1.7465 [0.000]     1.7466 [0.000]
+[kpt   0  10  10]     1.8803 [0.000]     1.8967 [0.000]     1.8985 [0.000]     1.9917 [0.000]     1.9920 [0.000]
+[kpt   0  10  11]     2.0564 [0.000]     2.1031 [0.000]     2.1287 [0.000]     2.1684 [0.000]     2.1814 [0.000]
+[kpt   0  10  12]     2.1827 [0.000]     2.1837 [0.000]     2.1926 [0.000]     2.1930 [0.000]     2.2277 [0.000]
+[kpt   0  10  13]     2.2753 [0.000]     2.2907 [0.000]     2.4036 [0.000]     2.4592 [0.000]     2.4647 [0.000]
+[kpt   0  10  14]     2.5146 [0.000]     2.5284 [0.000]     2.5349 [0.000]     2.5638 [0.000]     2.5726 [0.000]
+[kpt   0  10  15]     2.5809 [0.000]     2.5812 [0.000]     2.6156 [0.000]     2.6376 [0.000]     2.6496 [0.000]
+[kpt   0  10  16]     2.6518 [0.000]     2.6750 [0.000]     2.6842 [0.000]     2.6899 [0.000]     2.6976 [0.000]
+[kpt   0  10  17]     2.7167 [0.000]     2.7526 [0.000]     2.7530 [0.000]     2.7817 [0.000]     2.8249 [0.000]
+[kpt   0  10  18]     2.8286 [0.000]     3.0530 [0.000]     3.0710 [0.000]     3.0797 [0.000]     3.1051 [0.000]
+[kpt   0  10  19]     3.1055 [0.000]     3.1111 [0.000]     3.1417 [0.000]     3.1431 [0.000]     3.1707 [0.000]
+[kpt   0  10  20]     3.1800 [0.000]     3.1896 [0.000]     3.2094 [0.000]     3.3433 [0.000]     3.4542 [0.000]
+[kpt   0  10  21]     3.4648 [0.000]     3.4942 [0.000]     3.6339 [0.000]     3.6913 [0.000]     3.7009 [0.000]
+[kpt   0  10  22]     3.7143 [0.000]     3.8040 [0.000]     3.8084 [0.000]     3.8422 [0.000]     3.8489 [0.000]
+
+
+
+
+Total charge in supercell =      30.00000000
+ quench: [md:   0/10  scf:  10/100  step time:  17.45  scf time:   182.46 secs  RMS[dV]: 3.38e-04 ]
+
+
+average potential <V> = -1.16e-17
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -2.35621155 eV
+@@ EIGENVALUE SUM     =      -13.277716 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.821187 Ha
+@@ VXC                =      -16.109679 Ha
+@@ EXC                =      -12.324168 Ha
+@@ TOTAL ENERGY       =      -37.744874 Ha
+@@ estimated error    =        1.19e-06 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:  11/100  step time:  16.61  scf time:   199.07 secs  RMS[dV]: 1.54e-04 ]
+
+
+average potential <V> = -1.13e-17
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -2.35599955 eV
+@@ EIGENVALUE SUM     =      -13.277790 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.821273 Ha
+@@ VXC                =      -16.109629 Ha
+@@ EXC                =      -12.324130 Ha
+@@ TOTAL ENERGY       =      -37.744874 Ha
+@@ estimated error    =        2.14e-07 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:  12/100  step time:  15.73  scf time:   214.81 secs  RMS[dV]: 2.64e-05 ]
+
+
+average potential <V> = 1.20e-17
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -2.35433376 eV
+@@ EIGENVALUE SUM     =      -13.276888 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.820348 Ha
+@@ VXC                =      -16.109725 Ha
+@@ EXC                =      -12.324203 Ha
+@@ TOTAL ENERGY       =      -37.744874 Ha
+@@ estimated error    =        1.25e-07 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:  13/100  step time:  17.06  scf time:   231.87 secs  RMS[dV]: 1.12e-04 ]
+
+
+average potential <V> = 1.73e-17
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -2.35320029 eV
+@@ EIGENVALUE SUM     =      -13.277119 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.820583 Ha
+@@ VXC                =      -16.109711 Ha
+@@ EXC                =      -12.324192 Ha
+@@ TOTAL ENERGY       =      -37.744874 Ha
+@@ estimated error    =        1.35e-08 Ha
+Charge density mixing: Pulay
+ quench: [md:   0/10  scf:  14/100  step time:  16.64  scf time:   248.51 secs  RMS[dV]: 8.50e-05 ]
+
+
+average potential <V> = 1.73e-17
+Davidson converged in 2 steps
+
+FERMI ENERGY =     -2.35220864 eV
+@@ EIGENVALUE SUM     =      -13.277053 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.820513 Ha
+@@ VXC                =      -16.109725 Ha
+@@ EXC                =      -12.324203 Ha
+@@ TOTAL ENERGY       =      -37.744874 Ha
+@@ estimated error    =        1.77e-09 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -7.572415e-12
+ minimum charge density with core charge added is -7.572415e-12
+ quench: [md:   0/10  scf:  15/100  step time:  16.25  scf time:   264.76 secs  RMS[dV]: 7.01e-05 ]
+
+
+average potential <V> = 6.17e-18
+Davidson converged in 1 steps
+
+FERMI ENERGY =     -2.35101621 eV
+@@ EIGENVALUE SUM     =      -13.277045 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.820504 Ha
+@@ VXC                =      -16.109727 Ha
+@@ EXC                =      -12.324204 Ha
+@@ TOTAL ENERGY       =      -37.744874 Ha
+@@ estimated error    =        1.13e-09 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -4.828070e-12
+ minimum charge density with core charge added is -4.828070e-12
+ quench: [md:   0/10  scf:  16/100  step time:  15.53  scf time:   280.29 secs  RMS[dV]: 9.16e-05 ]
+
+
+average potential <V> = 9.71e-18
+Davidson converged in 1 steps
+
+FERMI ENERGY =     -2.35098383 eV
+@@ EIGENVALUE SUM     =      -13.277150 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.820612 Ha
+@@ VXC                =      -16.109716 Ha
+@@ EXC                =      -12.324196 Ha
+@@ TOTAL ENERGY       =      -37.744874 Ha
+@@ estimated error    =        7.40e-10 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -2.968638e-13
+ minimum charge density with core charge added is -2.968638e-13
+ quench: [md:   0/10  scf:  17/100  step time:  15.51  scf time:   295.80 secs  RMS[dV]: 1.89e-05 ]
+
+
+average potential <V> = -8.64e-18
+Davidson converged in 3 steps
+
+FERMI ENERGY =     -2.35119505 eV
+@@ EIGENVALUE SUM     =      -13.277180 Ha
+@@ ION_ION            =      -65.073856 Ha
+@@ ELECTROSTATIC      =       36.820642 Ha
+@@ VXC                =      -16.109717 Ha
+@@ EXC                =      -12.324197 Ha
+@@ TOTAL ENERGY       =      -37.744874 Ha
+@@ estimated error    =        1.35e-10 Ha
+Charge density mixing: Pulay
+
+ charge density is NEGATIVE after interpolation, minimum is -8.430676e-13
+ minimum charge density with core charge added is -8.430676e-13
+ quench: [md:   0/10  scf:  18/100  step time:  17.26  scf time:   313.06 secs  RMS[dV]: 3.59e-05 ]
+
+
+
+ Convergence criterion reached: Energy variation (3.15e-11) is lower than threshold (1.00e-10)
+
+potential convergence has been achieved. stopping ...
+
+[   0  19   19      320 ] Quench.cpp: final total energy =     -37.74487367 Ha
+
+
+KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:       0.000000      0.000000      0.000000
+
+[kpt   0  19   0]   -20.9797 [2.000]   -18.2140 [2.000]   -18.2124 [2.000]   -14.7154 [2.000]   -14.7020 [2.000]
+[kpt   0  19   1]   -12.8887 [2.000]   -11.0891 [2.000]   -10.9686 [2.000]   -10.2054 [2.000]   -10.2052 [2.000]
+[kpt   0  19   2]    -9.1183 [2.000]    -8.2443 [2.000]    -8.2429 [2.000]    -6.4298 [2.000]    -6.4294 [2.000]
+[kpt   0  19   3]    -1.4088 [0.000]    -1.4045 [0.000]    -0.4233 [0.000]     0.0954 [0.000]     0.0963 [0.000]
+[kpt   0  19   4]     0.2227 [0.000]     0.3846 [0.000]     0.4447 [0.000]     0.5182 [0.000]     0.6118 [0.000]
+[kpt   0  19   5]     0.6677 [0.000]     0.6698 [0.000]     0.7992 [0.000]     0.8829 [0.000]     0.8949 [0.000]
+[kpt   0  19   6]     0.8971 [0.000]     0.9344 [0.000]     0.9347 [0.000]     0.9712 [0.000]     0.9751 [0.000]
+[kpt   0  19   7]     1.0551 [0.000]     1.2211 [0.000]     1.2824 [0.000]     1.3059 [0.000]     1.3337 [0.000]
+[kpt   0  19   8]     1.3366 [0.000]     1.3733 [0.000]     1.3754 [0.000]     1.4069 [0.000]     1.4273 [0.000]
+[kpt   0  19   9]     1.4562 [0.000]     1.5179 [0.000]     1.5396 [0.000]     1.7565 [0.000]     1.7574 [0.000]
+[kpt   0  19  10]     1.8888 [0.000]     1.9048 [0.000]     1.9130 [0.000]     2.0048 [0.000]     2.0051 [0.000]
+[kpt   0  19  11]     2.0652 [0.000]     2.1091 [0.000]     2.1363 [0.000]     2.1729 [0.000]     2.1912 [0.000]
+[kpt   0  19  12]     2.1914 [0.000]     2.1947 [0.000]     2.2046 [0.000]     2.2059 [0.000]     2.2360 [0.000]
+[kpt   0  19  13]     2.2765 [0.000]     2.3028 [0.000]     2.4151 [0.000]     2.4695 [0.000]     2.4747 [0.000]
+[kpt   0  19  14]     2.5249 [0.000]     2.5424 [0.000]     2.5459 [0.000]     2.5717 [0.000]     2.5845 [0.000]
+[kpt   0  19  15]     2.5928 [0.000]     2.5965 [0.000]     2.6261 [0.000]     2.6493 [0.000]     2.6635 [0.000]
+[kpt   0  19  16]     2.6658 [0.000]     2.6851 [0.000]     2.6956 [0.000]     2.7015 [0.000]     2.7069 [0.000]
+[kpt   0  19  17]     2.7257 [0.000]     2.7597 [0.000]     2.7604 [0.000]     2.7939 [0.000]     2.8381 [0.000]
+[kpt   0  19  18]     2.8419 [0.000]     3.0651 [0.000]     3.0836 [0.000]     3.0933 [0.000]     3.1148 [0.000]
+[kpt   0  19  19]     3.1165 [0.000]     3.1195 [0.000]     3.1549 [0.000]     3.1562 [0.000]     3.1782 [0.000]
+[kpt   0  19  20]     3.1887 [0.000]     3.2039 [0.000]     3.2180 [0.000]     3.3518 [0.000]     3.4637 [0.000]
+[kpt   0  19  21]     3.4743 [0.000]     3.5025 [0.000]     3.6440 [0.000]     3.6989 [0.000]     3.7120 [0.000]
+[kpt   0  19  22]     3.7224 [0.000]     3.8121 [0.000]     3.8177 [0.000]     3.8522 [0.000]     3.8583 [0.000]
+
+
+
+
+Total charge in supercell =      30.00000000
+ volume and energy per atom =       480.11846489        -85.59085586 eV
+
+ Vdd took 0.000342 seconds
+
+
+
+  IONIC POSITIONS [a0] AND FORCES [Ha/a0]
+  Charge analysis using: Voronoi Deformation Density
+
+@ION  Ion  Species       X           Y           Z       Charge       FX          FY         FZ      Movable
+@ION    1     C     18.2000000  20.8507566  14.0000000   -0.076    0.0003123  -0.0201789  -0.0004034  1 1 1
+@ION    2     H     18.2000000  22.9059661  14.0000000    0.056   -0.0001837   0.0004521   0.0004565  1 1 1
+@ION    3     C     15.9043796  19.5253783  14.0000000   -0.048    0.0169893  -0.0104166  -0.0004621  1 1 1
+@ION    4     H     14.1245033  20.5529925  14.0000000    0.058   -0.0002248   0.0002655   0.0004532  1 1 1
+@ION    5     C     15.9043796  16.8746217  14.0000000   -0.047    0.0170043   0.0098698  -0.0004620  1 1 1
+@ION    6     H     14.1245033  15.8470075  14.0000000    0.057   -0.0002300  -0.0001071   0.0004509  1 1 1
+@ION    7     C     18.2000000  15.5492434  14.0000000   -0.072    0.0003132   0.0208374  -0.0003931  1 1 1
+@ION    8     H     18.2000000  13.4940339  14.0000000    0.056   -0.0001864  -0.0003186   0.0004555  1 1 1
+@ION    9     C     20.4956204  16.8746217  14.0000000   -0.052   -0.0167481   0.0099100  -0.0004962  1 1 1
+@ION   10     H     22.2754967  15.8470075  14.0000000    0.058   -0.0001529  -0.0000526   0.0004486  1 1 1
+@ION   11     C     20.4956204  19.5253783  14.0000000   -0.044   -0.0167357  -0.0104685  -0.0004980  1 1 1
+@ION   12     H     22.2754967  20.5529925  14.0000000    0.054   -0.0001576   0.0002074   0.0004501  1 1 1
+
+ mean FX      =   0.00576985 Ha/a0
+ mean FY      =   0.00692370 Ha/a0
+ mean FZ      =   0.00045246 Ha/a0
+
+ max FX       =   0.01700428 Ha/a0   (ion 5)
+ max FY       =   0.02083739 Ha/a0   (ion 7)
+ max FZ       =   0.00049796 Ha/a0   (ion 11)
+ max F[x,y,z] =   0.02083739 Ha/a0
+ max |F|      =   0.02084345 Ha/a0   (ion 7)
+
+
+ write_data: Opening output file 'Wave/wave.restart' failed
+  Trying to create subdirectory in case it does not exist
+
+ Creating directory Wave successfully
+
+WriteRestart: Restart file Wave/wave opened...
+WriteData: total size of each of the 12 files = 11.7 Mb
+WriteData: writing took 0.5 seconds, writing speed 23.408 Mbps 
+WriteRestart: writing took 0.5 seconds 
+
+ EXTERNAL ELECTRIC FIELD INITIALIZATION 
+ ====================================== 
+
+ E_field =       0.00003675
+ Electric Field Direction: (  1.00000000,   0.00000000,   0.00000000)
+ Potential Slope:       0.00003675 Hartree/a.u
+ Potential Slope:       0.00188973 eV/A
+
+  x dipolll  0.001553 
+  y dipolll  0.000091 
+  z dipolll  0.003863 normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+normalization constant-1 for new charge is -0.000000
+
+
+--------TIMING INFORMATION FOR Processor owned the most atoms----------------
+                                        Total time               Per SCF/step
+
+1-TOTAL                                          5525.26              290.80
+-----------------------------------------------------------------------------
+  1-TOTAL: Init                                     7.33                0.39
+  1-TOTAL: run                                   5517.93              290.42
+  ---------------------------------------------------------------------------
+    1-TOTAL: run: Force                             0.34                0.02
+    1-TOTAL: run: Scf steps                       313.03               16.48
+
+2-Force                                             0.34                0.02
+-----------------------------------------------------------------------------
+  2-Force: core correction                          0.01                0.00
+  2-Force: corrections                              0.02                0.00
+  2-Force: ion-ion                                  0.00                0.00
+  2-Force: local                                    0.02                0.00
+  2-Force: non-local                                0.29                0.02
+  2-Force: non-local-betaxpsi                       0.25                0.01
+  2-Force: non-local-nlforce_par_Q                  0.00                0.00
+  2-Force: non-local-partial gamma                  0.00                0.00
+  2-Force: non-local-veff grad                      0.00                0.00
+
+2-Init                                              7.33                0.39
+-----------------------------------------------------------------------------
+  2-Init: GetNewRho                                 0.02                0.00
+  2-Init: KpointClass                               0.53                0.03
+  2-Init: LcaoGetPsi                                0.35                0.02
+  2-Init: LcaoGetRho                                0.01                0.00
+  2-Init: ReinitIonicPotentials                     0.05                0.00
+  2-Init: betaxpsi                                  0.96                0.05
+  2-Init: exchange/correlation                      0.03                0.00
+  2-Init: hartree                                   0.03                0.00
+  2-Init: normalization                             0.03                0.00
+  2-Init: qfunct                                    0.00                0.00
+  2-Init: radial potentials                         0.71                0.04
+  2-Init: subdiag                                   4.23                0.22
+  2-Init: weights                                   0.04                0.00
+
+2-Scf steps                                       313.03               16.48
+-----------------------------------------------------------------------------
+  2-Scf steps: Davidson                           272.73               14.35
+  2-Scf steps: GetNewRho                            0.27                0.01
+  2-Scf steps: Hartree                              0.49                0.03
+  2-Scf steps: MgridSubspace                       39.22                2.06
+  2-Scf steps: MixRho                               0.05                0.00
+  2-Scf steps: exchange/correlation                 0.20                0.01
+
+2-TDDFT                                          5203.64              273.88
+-----------------------------------------------------------------------------
+  2-TDDFT: ELDYN                                   64.97                3.42
+  2-TDDFT: Hupdate                               2482.68              130.67
+  2-TDDFT: Rho                                   2598.35              136.76
+  2-TDDFT: Vh                                      25.13                1.32
+  2-TDDFT: Write                                    1.49                0.08
+  2-TDDFT: exchange/correlation                    22.01                1.16
+
+3-MgridSubspace                                    39.22                2.06
+-----------------------------------------------------------------------------
+  3-MgridSubspace: AppNls                           0.99                0.05
+  3-MgridSubspace: Beta x psi                       7.68                0.40
+  3-MgridSubspace: Diagonalization                 17.05                0.90
+  3-MgridSubspace: Mg_eig                          13.50                0.71
+
+3-ReinitIonicPotentials                             0.05                0.00
+-----------------------------------------------------------------------------
+  3-ReinitIonicPotentials: GetNlop                  0.01                0.00
+  3-ReinitIonicPotentials: GetWeight                0.02                0.00
+  3-ReinitIonicPotentials: get_QI                   0.00                0.00
+  3-ReinitIonicPotentials: get_qqq                  0.00                0.00
+  3-ReinitIonicPotentials: init_nuc                 0.02                0.00
+
+4-Diagonalization                                  24.21                1.27
+-----------------------------------------------------------------------------
+  4-Diagonalization: AppNls                         0.74                0.04
+  4-Diagonalization: Eigensolver                    0.05                0.00
+  4-Diagonalization: Update orbitals                6.47                0.34
+  4-Diagonalization: apply operators                3.12                0.16
+  4-Diagonalization: dsygvx/zhegvx/folded           0.05                0.00
+  4-Diagonalization: matrix setup/reduce           14.58                0.77
+
+5-Functional                                       22.21                1.17
+-----------------------------------------------------------------------------
+  5-Functional: vxc                                22.21                1.17
+  5-Functional: vxc grad                            0.00                0.00
+  5-Functional: vxc local                          21.14                1.11
+  5-Functional: vxc nonlocal                        0.00                0.00
+
+6-Davidson                                        272.73               14.35
+-----------------------------------------------------------------------------
+  6-Davidson: Betaxpsi                             23.42                1.23
+  6-Davidson: apply hamiltonian                    17.24                0.91
+  6-Davidson: diagonalization                       3.06                0.16
+  6-Davidson: generate residuals                   53.10                2.79
+  6-Davidson: matrix setup/reduce                 123.63                6.51
+  6-Davidson: normalization                         0.59                0.03
+  6-Davidson: precondition                          9.91                0.52
+  6-Davidson: rotate orbitals                      41.55                2.19
+
+App_gradient                                        0.05                0.00
+
+GlobalSums                                          0.04                0.00
+
+Init                                                6.80                0.36
+
+Init Voronoi                                        0.02                0.00
+
+Mix rho                                             0.05                0.00
+-----------------------------------------------------------------------------
+  Mix rho: Linear                                   0.00                0.00
+  Mix rho: Pulay                                    0.04                0.00
+
+Orbital                                             0.02                0.00
+-----------------------------------------------------------------------------
+  Orbital: phase and set                            0.02                0.00
+  Orbital: proj cal                                 0.02                0.00
+
+VhPfft                                             24.88                1.31
+
+Weight                                              0.02                0.00
+-----------------------------------------------------------------------------
+  Weight: bcast                                     0.00                0.00
+  Weight: phase and set                             0.00                0.00
+  Weight: proj cal                                  0.01                0.00
+
+radial beta                                         0.08                0.00
+
+weight fft_forward                                  0.00                0.00
+
+weight fft_nldim                                    0.00                0.00
+
+weight fold                                         0.00                0.00
+
+
+------------------------- TIMING INFORMATION FOR THREADS  -------------------
+
+                                           Min            Max            Avg
+GlobalSums                               1.21           1.21           1.21
+-----------------------------------------------------------------------------
+
+Mg_eig                                  13.46          13.46          13.46
+-----------------------------------------------------------------------------
+  Mg_eig: apply hamiltonian              8.58           8.58           8.58
+  Mg_eig: mgrid_solv                     1.47           1.47           1.47
