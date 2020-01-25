@@ -187,8 +187,8 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
                      reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
                 FFTW_BACKWARD, FFTW_MEASURE);
 
-      delete [] out;
-      delete [] in;
+      fftw_free(out);
+      fftw_free(in);
 
 #if GPU_ENABLED
       num_streams = ct.OMP_THREADS_PER_NODE;
