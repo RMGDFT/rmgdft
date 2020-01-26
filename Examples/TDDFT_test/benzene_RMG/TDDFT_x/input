@@ -16,10 +16,10 @@ wavefunction_grid ="96 96 80"
 number_of_atoms="12"
 number_of_species="2"
 number_of_orbitals="156"
-pseudo_dir = "../.."
+pseudo_dir = "../../../Pseudopotentials"
 pseudopotential="
-H  H.UPF
-C  C.UPF
+H  H_ONCV_PBE_sr.UPF
+C  C_ONCV_PBE_sr.UPF
 "
 
 
