@@ -75,13 +75,13 @@ Symmetry::Symmetry (
     px_grid = G.get_PX0_GRID(density);
     py_grid = G.get_PY0_GRID(density);
     pz_grid = G.get_PZ0_GRID(density);
-    max_pdim = std::max(px_grid, py_grid);
-    max_pdim = std::max(max_pdim, pz_grid);
 
     nx_grid = G.get_NX_GRID(density);
     ny_grid = G.get_NY_GRID(density);
     nz_grid = G.get_NZ_GRID(density);
 
+    max_pdim = std::max(nx_grid, ny_grid);
+    max_pdim = std::max(max_pdim, nz_grid);
     int nx_grid_c = G.get_NX_GRID(1);
     int ny_grid_c = G.get_NY_GRID(1);
     int nz_grid_c = G.get_NZ_GRID(1);

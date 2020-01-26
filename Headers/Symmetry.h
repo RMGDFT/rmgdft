@@ -85,9 +85,9 @@ class Symmetry
         std::vector<uint8_t> sym_index_x8;
         std::vector<uint8_t> sym_index_y8;
         std::vector<uint8_t> sym_index_z8;
-        std::vector<uint8_t> sym_index_x16;
-        std::vector<uint8_t> sym_index_y16;
-        std::vector<uint8_t> sym_index_z16;
+        std::vector<uint16_t> sym_index_x16;
+        std::vector<uint16_t> sym_index_y16;
+        std::vector<uint16_t> sym_index_z16;
 
         template <typename T>
             void init_symm_ijk(std::vector<T> &sym_x_idx, std::vector<T> &sym_y_idx, std::vector<T> &sym_z_idx);

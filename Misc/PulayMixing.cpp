@@ -92,7 +92,7 @@ void PulayMixing::Mixing(double *xm, double *fm)
                 //c_fm[ig] = c_fm[ig] * g2/(g2+this->ktf * this->ktf);
             }
             fine_pwaves->FftInverse(c_fm, c_fm);
-            for(size_t i = 0;i < this->Nsize;i++) fm[is*pbasis + i] = std::real(c_fm[i])/(double)fine_pwaves->global_basis;
+            for(size_t i = 0;i < pbasis;i++) fm[is*pbasis + i] = std::real(c_fm[i])/(double)fine_pwaves->global_basis;
         }
     }
     if(this->pulay_order <=1)
