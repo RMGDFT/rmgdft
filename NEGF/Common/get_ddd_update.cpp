@@ -15,7 +15,8 @@ void get_ddd_update (double * veff)
 {
     int idx, i, j, ion;
     int nh, ncount, icount;
-    double *qnmI, *dnmI, *sum;
+    float *qnmI;
+    double *dnmI, *sum;
     int *ivec, sum_dim, sum_idx;
     ION *iptr;
     SPECIES *sp;
