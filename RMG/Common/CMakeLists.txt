@@ -67,7 +67,6 @@ debug_write_rho_z.cpp
 write_pdb.cpp
 xbsmovie.cpp
 write_zstates.cpp
-Symmetry.cpp
 lbfgs.cpp
 rmg_lbfgs.cpp
 test_overlap.cpp
