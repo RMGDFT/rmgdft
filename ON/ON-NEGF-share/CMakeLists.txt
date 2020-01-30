@@ -60,7 +60,6 @@ OrbitDotOrbit.cpp
 OrbitDotOrbitBlock.cpp
 partial_Mat_nm_R.cpp
 print_matrix.cpp
-rho_augmented.cpp
 rho_Qnm_mat.cpp
 state_corner_xyz.cpp
 write_force.cpp

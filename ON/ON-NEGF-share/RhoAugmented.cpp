@@ -24,7 +24,7 @@ void RhoAugmented(double * rho, double * global_mat_X)
     int idx;
     int *ivec, size, idx1, idx2;
     int nh, icount, ncount, i, j, ion;
-    double *qnmI, *qtpr;
+    float *qnmI, *qtpr;
     double *product, *ptr_product;
     ION *iptr;
     SPECIES *sp;

@@ -48,7 +48,7 @@ void RhoAugmented_proj(double * rho, double *rho_matrix_local)
     int idx;
     int *ivec,  idx1, idx2;
     int nh, icount, ncount, i, j, ion;
-    double *qnmI, *qtpr;
+    float *qnmI, *qtpr;
     ION *iptr;
     SPECIES *sp;
 

@@ -327,9 +327,6 @@ void get_matB_qnm (double *Aij);
 void pack_vtot_ftoc (double * vtot, double * vtot_c);
 void qnm_beta_betapsi (STATE *sp, int ion2, double * prjptr);
 void pack_rho_ctof (double * rho1, double * rho_f);
-void rho_augmented (double * rho, double * global_mat_X,
-int *state_begin, int *state_end, int *num_nonlocal_ion, double *kbpsi,
-int max_ion_nonlocal, double *kbpsi_comm, int *ionidx_allproc);
 
 void rho_Qnm_mat (double *Aij, double * global_mat_X,
 int *state_begin, int *state_end, int *num_nonlocal_ion, double *kbpsi,

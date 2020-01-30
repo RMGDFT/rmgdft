@@ -16,6 +16,7 @@
 #include <assert.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "transition.h"
 #include "init_var.h"
 
 
@@ -153,15 +154,12 @@ static void atomic_wave_to_orbital(STATE *st, double *phi, SPECIES *sp, int ip, 
     int ixx, iyy, izz;
 
     double crds[3], hx, hy, hz, x, y, z;
-    int  i_r, yindex;
+    int  i_r;
     double a,b,c, r, vector[3];
 
     double r1, r2, fradius, coef1, coef2;
     double dr = sp->r[1] - sp->r[0];
 
-
-
-    yindex = l*l + m;
     hx = get_hxgrid() * get_xside();
     hy = get_hygrid() * get_yside();
     hz = get_hzgrid() * get_zside();
@@ -231,7 +229,7 @@ static void atomic_wave_to_orbital(STATE *st, double *phi, SPECIES *sp, int ip, 
                         + coef2 * sp->atomic_wave[ip][i_r+1];
                 }
 
-                phi[idx] = fradius * ylm(yindex, vector);
+                phi[idx] = fradius * Ylm(l, m, vector);
 
 
             }
