@@ -294,16 +294,16 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
             orbital_storage, pbasis_noncoll, global_matrix1, nstates, beta, tmp_arrayT, pbasis_noncoll);
 
     // And finally copy them back
-    int istart = 0;
-    int tlen = nstates * pbasis_noncoll * sizeof(KpointType); 
+    size_t istart = 0;
+    size_t tlen = (size_t)nstates * (size_t)pbasis_noncoll * sizeof(KpointType); 
     if(Verify ("freeze_occupied", true, ControlMap))
     {
         for(int istate = 0;istate < nstates;istate++)
         {
             if(Kstates[istate].occupation[0] > 1.0e-10) highest_occupied = istate;
         }
-        istart = (highest_occupied + 1)*pbasis_noncoll;
-        tlen = nstates * pbasis_noncoll - (highest_occupied + 1) * pbasis_noncoll;
+        istart = (size_t)(highest_occupied + 1)*(size_t)pbasis_noncoll;
+        tlen = (size_t)nstates * (size_t)pbasis_noncoll - (size_t)(highest_occupied + 1) * (size_t)pbasis_noncoll;
     }
 
     // And finally make sure they follow the same sign convention when using hybrid XC
