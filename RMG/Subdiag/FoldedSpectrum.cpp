@@ -124,13 +124,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #else
     double *Vdiag = new double[n];
     double *tarr = new double[n];
-    memcpy(Bsave, B, n*n*sizeof(double));
+    memcpy(Bsave, B, (size_t)n*(size_t)n*sizeof(double));
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
 
     //  Transform problem to standard eigenvalue problem
     RmgTimer *RT2 = new RmgTimer("4-Diagonalization: fs: transform");
     int its=7;
-    memcpy(Asave, A, n*n*sizeof(double));
+    memcpy(Asave, A, (size_t)n*(size_t)n*sizeof(double));
     FoldedSpectrumGSE<double> (Asave, Bsave, A, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver, fs_comm);
     delete(RT2);
 
@@ -242,11 +242,11 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 #if GPU_ENABLED
     cudaDeviceSynchronize();
-    cudaMemcpy(A, V, n*n*sizeof(double), cudaMemcpyDefault);
-    //memcpy(A, V, n*n*sizeof(double));
+    cudaMemcpy(A, V, (size_t)n*(size_t)n*sizeof(double), cudaMemcpyDefault);
+    //memcpy(A, V, (size_t)n*(size_t)n*sizeof(double));
     cudaDeviceSynchronize();
 #else
-    memcpy(A, V, n*n*sizeof(double));
+    memcpy(A, V, (size_t)n*(size_t)n*sizeof(double));
 #endif
     delete(RT2);
 

@@ -147,7 +147,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     }
 //    cublasDgeam(ct.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, n, eig_step, &alpha, &V[eig_start], n, &beta, C, n, G, n);
 //    cudaDeviceSynchronize();
-    memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
+    memcpy(&V[eig_start*n], &G[eig_start*n], (size_t)eig_step*(size_t)n*sizeof(KpointType));
     delete(RT1);
 #else
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
@@ -184,7 +184,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 } // end omp section
 
-    memcpy(&V[eig_start*n], &G[eig_start*n], eig_step*n*sizeof(KpointType));
+    memcpy(&V[eig_start*n], &G[eig_start*n], (size_t)eig_step*(size_t)n*sizeof(KpointType));
     delete(RT1);
 #endif
 
