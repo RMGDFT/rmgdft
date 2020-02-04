@@ -264,6 +264,16 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     double dipole_ele[3];
 
 
+    if(0)
+    {
+        XyzMatrix(Kptr[0], (OrbitalType *)Hmatrix_0, 1, 0, 0);
+        if(pct.gridpe == 0)
+            for(int i = 0; i < 5; i++) 
+            { printf("xyz\n");
+                for(int j = 0; j < 5; j++) printf(" %10.4e", 0.001* Hmatrix_0[i*numst + j]);
+            }
+    }
+
     RmgTimer *RT0 = new RmgTimer("2-TDDFT");
 
     // Loop over k-points
@@ -385,15 +395,16 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         rmg_printf("\n  y dipolll  %f ", dipole_ele[1]);
         rmg_printf("\n  z dipolll  %f ", dipole_ele[2]);
 
-        //         for(int i = 0; i < 10; i++) 
-        //         { printf("Akick\n");
-        //        for(int j = 0; j < 10; j++) printf(" %8.1e", i, Akick[i*numst + j]);
-        //       }
+        //   if(pct.gridpe == 0)
+        //   for(int i = 0; i < 5; i++) 
+        //   { printf("Akick\n");
+        //       for(int j = 0; j < 5; j++) printf(" %10.4e", Akick[i*numst + j]);
+        //   }
 
     }
 
     //  initialize   data for rt-td-dft
-    int nblock = 10 ;   //  size of tthe block for printing (debug!)
+    //int nblock = 10 ;   //  size of tthe block for printing (debug!)
     dcopy(&n2, Hmatrix, &ione, Hmatrix_m1, &ione);
     dcopy(&n2, Hmatrix, &ione, Hmatrix_0 , &ione);
 

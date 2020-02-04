@@ -36,6 +36,8 @@ FILE *my_fopen_increment(char *name);
 }
 #endif
 
+template <typename KpointType>
+void XyzMatrix (Kpoint<KpointType> *kptr, KpointType *Aij, int n, int m, int l);
 
 template <typename OrbitalType> 
 void RmgTddft (double * vxc, double *, double * vnuc, double * rho, double * rho_oppo,
