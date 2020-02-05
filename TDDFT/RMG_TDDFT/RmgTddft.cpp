@@ -123,87 +123,6 @@ void print_matrix_z(double *matrix,  int  *nblock, int *ldim ){
 }
 
 
-///////////////////////////////////////
-void  magnus( double *H0, double *H1, double *p_time_step , double *Hdt, int *ldim){
-    /*  
-        This is a first order Magnus  expansion, wchih is equivalent to   mid-point propagator
-        F*dt =   Integrate_0^t   H(t) dt   
-        ~= 1/2*(H0 +H1) *dt
-
-        It works for real  Hamiltonian matrices only.  Complex are required for bybrid functions with exact exchange
-
-     */  
-
-    double  dt     =    *p_time_step  ;   // time step
-    int     Nbasis =    *ldim         ;     // leaading dimension of matrix
-
-    int     Nsq =    Nbasis*Nbasis    ; 
-    //double  dminus_one  = -1.0e0      ; 
-    double  one         =  1.0e0      ; 
-    double  half_dt     =  0.5e0*dt   ;
-    int    ione = 1 ;
-    //printf("magnus,  dt, ldim =  %f   %d  \n", dt,Nbasis ) ;
-
-    dcopy_ ( &Nsq ,   H0      ,     &ione , Hdt ,  &ione) ;
-    daxpy_ ( &Nsq , &one      , H1, &ione , Hdt ,  &ione) ;   
-    dscal_ ( &Nsq , &half_dt  ,             Hdt ,  &ione) ;
-
-
-}
-///////////////////////////////////////
-void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int *ldim) {  
-    /* 
-       Test convergemce: calculate  infty error for convergence:   || H1 - H0||_infty
-       Here error is  L_infty norm of a difference matrix dH =H1-H0:
-     *p_err    :  [out]  returns absolute value of the largest matrix element of  dH  where dH = H1-H0 
-     *p_ij_err :  [out]  returns position  of err in the  matrix dH
-     H0, H1    :  [in]   tested matrices
-ldim      :  [in]   leading dimension of  H0, H1  (= Nbasis)
-     */
-
-
-    int    Nbasis     =   *ldim         ;  
-    int    Nsq        =   Nbasis*Nbasis ;  
-
-    double err        =  fabs( H1[0] - H0[0]) ; 
-    int    ij_err     =  0                    ;  // position/ location  in matrix
-
-    for (int i =1 ;  i < Nsq ; i++ )  {
-        double  tst = fabs(H1[i]-H0[i])  ;
-        if (  tst  > err)   { err = tst ; ij_err = i ; } 
-    } 
-
-    //  pass back the max  error and its location:
-    * p_err    =  err   ;
-    * p_ij_err = ij_err ; 
-
-} 
-///////////////////////////////////////
-void extrapolate_Hmatrix   (double  *Hm1, double *H0, double *H1,  int *ldim) {  
-    /* 
-       Linear extrapolation of  H(1) from H(0) and  H(-1):
-       H(1) =   H(0) + dH   =  H(0) + ( H(0)-H(-1) )  =  2*H(0) - H(-1) 
-       H1   =  2*H0 - Hm1
-
-       Hm1,H0  : [in]
-H1      : [out]
-     */
-
-    int    Nbasis     =   *ldim         ;  
-    int    Nsq        =   Nbasis*Nbasis ;  
-
-    int    ione       = 1 ;
-    double  neg_one   = -1.0e0   ;
-    double  two       =  2.0e0   ;
-
-    dcopy_ ( &Nsq ,            Hm1 , &ione , H1 ,  &ione) ;    //  
-    dscal_ ( &Nsq , &neg_one , H1  , &ione )              ;    //  H1 = -H(-1)  
-    daxpy_ ( &Nsq , &two     , H0  , &ione , H1  , &ione) ;    //  H1 =  2*H0 + H1 =  2*H0 -Hm1 
-
-}
-///////////////////////////////////////
-
-/////////////////////
 template void RmgTddft<double> (double *, double *, double *,
         double *, double *, double *, double *, Kpoint<double> **);
 template void RmgTddft<std::complex<double> > (double *, double *, double *,
@@ -428,7 +347,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
          */
         //  guess H1 from  H(0) and H(-1):
-        extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , &numst) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
+        extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , numst) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
 
         //  SCF loop 
         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
@@ -441,7 +360,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             //RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
             RT2a = new RmgTimer("2-TDDFT: ELDYN");
-            magnus (Hmatrix_0,    Hmatrix_1 , &time_step, Hmatrix_dt , &numst) ; 
+            magnus (Hmatrix_0,    Hmatrix_1 , time_step, Hmatrix_dt , numst) ; 
             eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
             delete(RT2a);
 
@@ -489,7 +408,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             //////////  < ---  end of Hamiltonian update
 
             // check error and update Hmatrix_1:
-            tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  &numst) ;  //  check error  how close  H and H_old are
+            tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  numst) ;  //  check error  how close  H and H_old are
             dcopy(&n2, Hmatrix  , &ione, Hmatrix_1, &ione);
 
             if(pct.gridpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
