@@ -1,4 +1,5 @@
 add_library (Eldyn
+Magnus.cpp
 initmd.f90
 timing.f90
 utilmod2.f90
