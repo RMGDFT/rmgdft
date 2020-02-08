@@ -104,6 +104,13 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     double *vh_corr_old = new double[FP0_BASIS];
     double *vh_corr = new double[FP0_BASIS];
 
+    double *Hmatrix_m1 = new double[n2];
+    double *Hmatrix_0 = new double[n2];
+    double *Hmatrix_1 = new double[n2];
+    double *Hmatrix_dt = new double[n2];
+
+    double err, thrs_dHmat = 1.0e-5;
+    int ij_err;
    
     //    double *vh_x = new double[FP0_BASIS];
     //    double *vh_y = new double[FP0_BASIS];
@@ -164,7 +171,8 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     if(ct.restart_tddft)
     {
 
-        ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Cmatrix, &pre_steps);
+        ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
+                Cmatrix, Hmatrix_m1, Hmatrix_0, &pre_steps);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
         Phi.ReadOrbitalsFromSingleFiles(std::string(ct.infile), *Rmg_G);
     }
@@ -248,10 +256,13 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         //         { printf("Akick\n");
         //        for(int j = 0; j < 10; j++) printf(" %8.1e", i, Akick[i*numst + j]);
         //       }
+        dcopy(&n2, Hmatrix, &ione, Hmatrix_m1, &ione);
+        dcopy(&n2, Hmatrix, &ione, Hmatrix_0 , &ione);
 
     }
     for(int i = 0; i < n2; i++) Smatrix[i] = 0.0;
     for(int i = 0; i < numst; i++) Smatrix[i*numst + i] = 1.0;
+
 
 
 
@@ -260,7 +271,6 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         tot_steps = pre_steps + tddft_steps;
         RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
-
 
         dgemm("T", "N", &numst, &numst, &numst,  &one, Cmatrix, &numst,
                 Hmatrix, &numst, &zero, Akick, &numst);
@@ -359,7 +369,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         {
             RT1 = new RmgTimer("2-TDDFT: WriteData");
             WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,
-                    Cmatrix, tot_steps);
+                Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps);
             delete RT1;
             fflush(NULL);
         }
@@ -369,6 +379,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
     if(pct.gridpe == 0) fclose(dfi);
 
 
-    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Cmatrix, tot_steps+1);
+    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
+                Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps+1);
     delete RT0;
 }

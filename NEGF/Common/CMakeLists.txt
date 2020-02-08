@@ -9,8 +9,6 @@ zgesv_driver.cpp
 matrix_inverse_Gauss.cpp
 green_lead.cpp
 host_device_wraper.cpp
-blas_driver.cpp
-zgemm_driver.cpp
 matrix_inverse_driver.cpp
 allocate_matrix_LCR.cpp
 allocate_matrix_soft.cpp

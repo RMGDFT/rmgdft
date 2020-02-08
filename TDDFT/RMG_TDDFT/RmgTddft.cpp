@@ -240,7 +240,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     if(ct.restart_tddft)
     {
 
-        ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,Smatrix, &pre_steps);
+        ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,Smatrix, Hmatrix_m1, Hmatrix_0, &pre_steps);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
         ReadData (ct.infile, vh, rho, vxc, Kptr);
 
@@ -320,12 +320,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //       for(int j = 0; j < 5; j++) printf(" %10.4e", Akick[i*numst + j]);
         //   }
 
+        dcopy(&n2, Hmatrix, &ione, Hmatrix_m1, &ione);
+        dcopy(&n2, Hmatrix, &ione, Hmatrix_0 , &ione);
     }
 
     //  initialize   data for rt-td-dft
     //int nblock = 10 ;   //  size of tthe block for printing (debug!)
-    dcopy(&n2, Hmatrix, &ione, Hmatrix_m1, &ione);
-    dcopy(&n2, Hmatrix, &ione, Hmatrix_0 , &ione);
 
     /*
        if(pct.gridpe == 0) { printf("**** Smat  : \n");  print_matrix_d(Smatrix,   &nblock, &numst)   ; }
@@ -432,7 +432,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         if((tddft_steps +1) % ct.checkpoint == 0)
         {   
             RT2a = new RmgTimer("2-TDDFT: Write");
-            WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, tot_steps);
+            WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, 
+                    Hmatrix_m1, Hmatrix_0, tot_steps);
             delete RT2a;
             // fflush(NULL);
         }
@@ -448,7 +449,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
     RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
-    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, tot_steps+1);
+    WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, 
+                    Hmatrix_m1, Hmatrix_0, tot_steps+1);
     delete RT2a;
     delete RT0;
 }
