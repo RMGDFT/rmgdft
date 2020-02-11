@@ -32,7 +32,7 @@
 
 // These are used to pack and unpack symmetric and Hermetian matrices from a full NxN
 // format to a packed format. Lower triangular format is assumed for the NxN matrix.
-void PackSqToTr(char *uplo, int N, double *Sq, double *Tr)
+void PackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
 {
 #if GPU_ENABLED
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
@@ -40,16 +40,16 @@ void PackSqToTr(char *uplo, int N, double *Sq, double *Tr)
     if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    cublasDtrttp ( ct.cublas_handle, cu_uplo, N, Sq, N, Tr);
+    cublasDtrttp ( ct.cublas_handle, cu_uplo, N, Sq, lda, Tr);
     cudaDeviceSynchronize();
 #else
     int info; 
-    dtrttp(uplo, &N, Sq, &N, Tr, &info);
+    dtrttp(uplo, &N, Sq, &lda, Tr, &info);
 #endif
 
 }
 
-void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, std::complex<double> *Tr)
+void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr)
 {
 #if GPU_ENABLED
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
@@ -57,15 +57,15 @@ void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, std::complex<double
     if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    cublasZtrttp ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Sq, N, (cuDoubleComplex*)Tr);
+    cublasZtrttp ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Sq, lda, (cuDoubleComplex*)Tr);
     cudaDeviceSynchronize();
 #else
     int info; 
-    ztrttp(uplo, &N, Sq, &N, Tr, &info);
+    ztrttp(uplo, &N, Sq, &lda, Tr, &info);
 #endif
 }
 
-void UnPackSqToTr(char *uplo, int N, double *Sq, double *Tr)
+void UnPackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
 {
 #if GPU_ENABLED
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
@@ -73,15 +73,15 @@ void UnPackSqToTr(char *uplo, int N, double *Sq, double *Tr)
     if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    cublasDtpttr ( ct.cublas_handle, cu_uplo, N, Tr, Sq, N);
+    cublasDtpttr ( ct.cublas_handle, cu_uplo, N, Tr, Sq, lda);
     cudaDeviceSynchronize();
 #else
     int info;
-    dtpttr(uplo, &N, Tr, Sq, &N, &info);
+    dtpttr(uplo, &N, Tr, Sq, &lda, &info);
 #endif
 }
 
-void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, std::complex<double> *Tr)
+void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr)
 {
 #if GPU_ENABLED
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
@@ -89,10 +89,10 @@ void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, std::complex<doub
     if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    cublasZtpttr ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Tr, (cuDoubleComplex*)Sq, N);
+    cublasZtpttr ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Tr, (cuDoubleComplex*)Sq, lda);
     cudaDeviceSynchronize();
 #else
     int info;
-    ztpttr(uplo, &N, Tr, Sq, &N, &info);
+    ztpttr(uplo, &N, Tr, Sq, &lda, &info);
 #endif
 }

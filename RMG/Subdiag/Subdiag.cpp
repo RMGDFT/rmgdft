@@ -204,7 +204,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
         RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
     // Hij is symmetric or Hermetian so pack into triangular array for reduction call. Use Bij for scratch space
-    PackSqToTr("L", nstates, Hij, Bij);
+    PackSqToTr("L", nstates, Hij, nstates, Bij);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
@@ -229,7 +229,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     }
 
     // Sij is symmetric or Hermetian so pack into triangular array for reduction call. Use global_matrix1 for scratch space
-    PackSqToTr("L", nstates, Sij, global_matrix1);
+    PackSqToTr("L", nstates, Sij, nstates, global_matrix1);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
@@ -248,8 +248,8 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
 
-    UnPackSqToTr("L", nstates, Hij, Bij);
-    UnPackSqToTr("L", nstates, Sij, global_matrix1);
+    UnPackSqToTr("L", nstates, Hij, nstates, Bij);
+    UnPackSqToTr("L", nstates, Sij, nstates, global_matrix1);
 
     delete(RT1);
 
