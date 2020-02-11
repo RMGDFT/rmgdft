@@ -100,6 +100,10 @@
 #define		dsytrf		RMG_FC_GLOBAL(dsytrf, DSYTRF)
 #define		dsytri		RMG_FC_GLOBAL(dsytri, DSYTRI)
 #define		dlange		RMG_FC_GLOBAL(dlange, DLANGE)
+#define		dtrttp		RMG_FC_GLOBAL(dtrttp, DTRTTP)
+#define		dtpttr		RMG_FC_GLOBAL(dtpttr, DTPTTR)
+#define		ztrttp		RMG_FC_GLOBAL(ztrttp, ZTRTTP)
+#define		ztpttr		RMG_FC_GLOBAL(ztpttr, ZTPTTR)
 
 #if __cplusplus
 extern "C" {
@@ -111,6 +115,10 @@ void my_scal(double alpha, double *vect, int length);
 void my_axpy(double alpha, double *in, double *out, int length);
 void my_swap(double *vec1, double *vec2, int length);
 
+void dtrttp(const char *, int *, double *, int *, double *, int *);
+void dtpttr( const char *, int *, double *, double *, int *, int *);
+void ztrttp(const char *, int *, std::complex<double> *, int *, std::complex<double> *, int *);
+void ztpttr( const char *, int *, std::complex<double> *, std::complex<double> *, int *, int *);
 
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);

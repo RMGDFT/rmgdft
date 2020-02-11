@@ -39,6 +39,7 @@
 #include "blas.h"
 #include "Solvers.h"
 #include "Functional.h"
+#include "RmgMatrix.h"
 
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
@@ -76,6 +77,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     static KpointType *global_matrix1;
 
+    // We pad Bij since we use it as scratch space for the all reduce ops on Hij and Sij
     KpointType *Hij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *Bij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *Sij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
@@ -201,16 +203,19 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     else
         RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
+    // Hij is symmetric or Hermetian so pack into triangular array for reduction call. Use Bij for scratch space
+    PackSqToTr("L", nstates, Hij, Bij);
+
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqHij;
     MPI_Request MPI_reqSij;
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)Hij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqHij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)Bij, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqHij);
     else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)Hij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)Hij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm);
 #endif
 
     // Compute S matrix
@@ -223,15 +228,17 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
         RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
     }
 
+    // Sij is symmetric or Hermetian so pack into triangular array for reduction call. Use global_matrix1 for scratch space
+    PackSqToTr("L", nstates, Sij, global_matrix1);
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     if(ct.use_async_allreduce)
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqSij);
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqSij);
     else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+        MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)Sij, nstates * nstates * factor, MPI_DOUBLE, MPI_SUM, grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm);
 #endif
 
 
@@ -240,6 +247,9 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqHij, MPI_STATUS_IGNORE);
     if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
+
+    UnPackSqToTr("L", nstates, Hij, Bij);
+    UnPackSqToTr("L", nstates, Sij, global_matrix1);
 
     delete(RT1);
 
