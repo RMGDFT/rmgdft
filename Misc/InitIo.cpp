@@ -438,7 +438,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
         }
     }
-    else if(pct.procs_per_host > ct.num_usable_gpu_devices)
+    else if(pct.procs_per_host >= ct.num_usable_gpu_devices)
     {
         // Round robin
         int next_gpu = 0;

@@ -40,7 +40,7 @@
 // that if one thread is running much slower than the others we will still get the max throughput. Per thread queues
 // will reduce contention on the queue though. Also have to consider how big to make the queue. If it becomes full
 // main could pause and let the queue drain but that means that main must somehow start the threads running.
-boost::lockfree::spsc_queue<SCF_THREAD_CONTROL, boost::lockfree::fixed_sized<false>, boost::lockfree::capacity<16000> > Tasks[MAX_RMG_THREADS];
+boost::lockfree::spsc_queue<SCF_THREAD_CONTROL, boost::lockfree::fixed_sized<false>, boost::lockfree::capacity<32000> > Tasks[MAX_RMG_THREADS];
 
 // Called from main to setup thread tasks
 void QueueThreadTask(int tid, SCF_THREAD_CONTROL &task)
