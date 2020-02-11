@@ -15,6 +15,9 @@
 #include "blacs.h"
 #include "Scalapack.h"
 
+#include "typedefs.h"
+#include "rmg_control.h"
+
 
 
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
@@ -72,7 +75,7 @@ void daxpy_driver (int n, double alpha, double *A, int ia, double *B, int ib)
 void dscal_driver(int n, double beta, double *A, int ione)
 {
 #if GPU_ENABLED
-    cublasDaxpy (ct.cublas_handle, n, &beta, A, ione);
+    cublasDscal (ct.cublas_handle, n, &beta, A, ione);
 #else
     dscal(&n, &beta, A, &ione);
 #endif
@@ -107,7 +110,6 @@ double *C, int ic, int jc, int *descc)
     }
 
 
-    cublasStatus_t custat;
     cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
 
     if(!strcmp(transa, "t")) cu_transA = CUBLAS_OP_T;
@@ -116,7 +118,7 @@ double *C, int ic, int jc, int *descc)
     if(!strcmp(transb, "t")) cu_transB = CUBLAS_OP_T;
     if(!strcmp(transb, "T")) cu_transB = CUBLAS_OP_T;
 
-    custat = cublasDgemm (ct.cublas_handle, cu_transA, cu_transB, m, n, k, 
+    cublasDgemm (ct.cublas_handle, cu_transA, cu_transB, m, n, k, 
             &alpha, A, lda, B, ldb, &beta, C, ldc );
 
 #else
@@ -165,7 +167,6 @@ std::complex<double> *C, int ic, int jc, int *descc)
     }
 
 
-    cublasStatus_t custat;
     cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
 
     if(!strcmp(transa, "t")) cu_transA = CUBLAS_OP_T;
@@ -178,7 +179,7 @@ std::complex<double> *C, int ic, int jc, int *descc)
     if(!strcmp(transb, "c")) cu_transB = CUBLAS_OP_C;
     if(!strcmp(transb, "C")) cu_transB = CUBLAS_OP_C;
 
-    custat = cublasZgemm (ct.cublas_handle, cu_transA, cu_transB, m, n, k, 
+    cublasZgemm (ct.cublas_handle, cu_transA, cu_transB, m, n, k, 
             (cuDoubleComplex *)&alpha,
             (cuDoubleComplex*)A, lda,
             (cuDoubleComplex*)B, ldb,

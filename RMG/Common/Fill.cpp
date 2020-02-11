@@ -180,7 +180,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
         }                       /* end if */
 
     }
-    while ((iter < maxit) && (fmid > charge_tol));
+    while ((iter < maxit) && (std::abs(fmid) > charge_tol));
 
     if (iter == maxit)
         rmg_error_handler (__FILE__,__LINE__,"too many bisections");

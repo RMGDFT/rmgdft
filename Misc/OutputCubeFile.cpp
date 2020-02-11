@@ -97,7 +97,7 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
                     fprintf(fhand, " %g ", std::real(array_glob[idx]));
                     if(nval == 2) 
                         fprintf(fhand, " %g ", std::imag(array_glob[idx]));
-                    if(k * nval % 6 == 5) fprintf(fhand, "\n");
+                    if(k % (6/nval) == 6/nval-1) fprintf(fhand, "\n");
                 }
 
                 fprintf(fhand, "\n");

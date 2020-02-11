@@ -373,7 +373,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
         Output_rho_xsf(rho, pct.grid_comm);
 
     std::string spinindex = "";
-    if(ct.nspin==2)
+    if(ct.nspin==2 || ct.nspin == 4)
     {
         if(pct.spinpe==0) spinindex = "a";
         if(pct.spinpe==1) spinindex = "b";
@@ -386,7 +386,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
     }
     if(ct.cube_vh)
     {
-        std::string filename = "vh"+spinindex+".cube";
+        std::string filename = "vh.cube";
         OutputCubeFile(vh, Rmg_G->default_FG_RATIO, filename);
     }
 
@@ -399,6 +399,13 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             std::string filename = "kpt"+std::to_string(kpt_glob);
             filename += "_mo"+std::to_string(st)+ spinindex + ".cube";
             OutputCubeFile(Kptr[kpt]->Kstates[st].psi, 1, filename);
+
+            if(ct.nspin == 4)
+            {
+                std::string filename = "kpt"+std::to_string(kpt_glob);
+                filename += "_mo"+std::to_string(st)+ "b.cube";
+                OutputCubeFile(Kptr[kpt]->Kstates[st].psi+Kptr[kpt]->pbasis, 1, filename);
+            }
 
         }
     }
