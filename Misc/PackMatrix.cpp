@@ -21,7 +21,8 @@
 */
 
 #include <complex>
-#include <blas.h>
+#include "blas.h"
+#include "main.h"
 
 #if GPU_ENABLED
     #include <cuda.h>
@@ -33,25 +34,65 @@
 // format to a packed format. Lower triangular format is assumed for the NxN matrix.
 void PackSqToTr(char *uplo, int N, double *Sq, double *Tr)
 {
+#if GPU_ENABLED
+    cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+    if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+    cublasDtrttp ( ct.cublas_handle, cu_uplo, N, Sq, N, Tr);
+    cudaDeviceSynchronize();
+#else
     int info; 
     dtrttp(uplo, &N, Sq, &N, Tr, &info);
+#endif
 
 }
 
 void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, std::complex<double> *Tr)
 {
+#if GPU_ENABLED
+    cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+    if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+    cublasZtrttp ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Sq, N, (cuDoubleComplex*)Tr);
+    cudaDeviceSynchronize();
+#else
     int info; 
     ztrttp(uplo, &N, Sq, &N, Tr, &info);
+#endif
 }
 
 void UnPackSqToTr(char *uplo, int N, double *Sq, double *Tr)
 {
+#if GPU_ENABLED
+    cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+    if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+    cublasDtpttr ( ct.cublas_handle, cu_uplo, N, Tr, Sq, N);
+    cudaDeviceSynchronize();
+#else
     int info;
     dtpttr(uplo, &N, Tr, Sq, &N, &info);
+#endif
 }
 
 void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, std::complex<double> *Tr)
 {
+#if GPU_ENABLED
+    cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+    if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+    if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+    cublasZtpttr ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Tr, (cuDoubleComplex*)Sq, N);
+    cudaDeviceSynchronize();
+#else
     int info;
     ztpttr(uplo, &N, Tr, Sq, &N, &info);
+#endif
 }
