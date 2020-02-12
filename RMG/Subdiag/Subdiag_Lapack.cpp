@@ -78,6 +78,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
         // will be idle
         int nthreads = ct.OMP_THREADS_PER_NODE;
         if((pct.procs_per_host > 1) && !use_folded) nthreads = pct.ncpus;
+        nthreads = std::min(nthreads, 4);
         omp_set_num_threads(nthreads);
 #if OPENBLAS_SET_NUM_THREADS
         openblas_set_num_threads(nthreads);
