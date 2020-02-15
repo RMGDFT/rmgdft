@@ -88,7 +88,9 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
     //    if(pct.is_local_master || (use_folded && (nodes < 12))) {
 
     // Copy A into eigvectors
-    memcpy(eigvectors, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
+//    memcpy(eigvectors, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
+    cudaMemcpy(eigvectors, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), cudaMemcpyDefault);
+
 
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
 

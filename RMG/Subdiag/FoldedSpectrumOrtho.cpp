@@ -123,7 +123,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf_bufferSize failed.");
     if(Lwork > n*n) rmg_error_handler (__FILE__, __LINE__, " something wrong with cusolverDnDpotrf workspace allocation.");
     cu_status = cusolverDnDpotrf(ct.cusolver_handle, cu_uplo, n, C, n, G, Lwork, dev_info );
-    cudaDeviceSynchronize();
+    //cudaDeviceSynchronize();
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
     cudaFree(dev_info);
     delete(RT1);
@@ -135,19 +135,13 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 
 #if GPU_ENABLED
-    cudaDeviceSynchronize();
+    //cudaDeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
     cudaMemPrefetchAsync ( V, n*n*sizeof(double), device, NULL);
     gramsch_update_psi(V, C, n, eig_start, eig_stop, ct.cublas_handle);
+    cublasDgeam(ct.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, n, eig_step, &alpha, &V[eig_start], n, &beta, C, n, &G[eig_start*n], n);
+    cudaMemcpy(&V[eig_start*n], &G[eig_start*n], (size_t)eig_step*(size_t)n*sizeof(KpointType), cudaMemcpyDefault);
     cudaDeviceSynchronize();
-#pragma omp for schedule(static, 1) nowait
-    for(int st1=eig_start;st1 < eig_stop;st1++)
-    {
-        for(int st2=0;st2 < n;st2++)G[st1*n + st2] = V[st1 + st2*n];
-    }
-//    cublasDgeam(ct.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, n, eig_step, &alpha, &V[eig_start], n, &beta, C, n, G, n);
-//    cudaDeviceSynchronize();
-    memcpy(&V[eig_start*n], &G[eig_start*n], (size_t)eig_step*(size_t)n*sizeof(KpointType));
     delete(RT1);
 #else
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
