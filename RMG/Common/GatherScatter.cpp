@@ -38,14 +38,14 @@
 static void *bufptr_r[MAX_RMG_THREADS];
 static void *bufptr_s[MAX_RMG_THREADS];
 
-template void GatherPsi<double, float>(BaseGrid *, int, int, double *, float *);
-template void GatherPsi<double, double>(BaseGrid *, int, int, double *, double *);
-template void GatherPsi<std::complex<double>, std::complex<float> >(BaseGrid *, int, int, std::complex<double> *, std::complex<float> *);
-template void GatherPsi<std::complex<double>, std::complex<double> >(BaseGrid *, int, int, std::complex<double> *, std::complex<double> *);
-template void ScatterPsi<float, double>(BaseGrid *, int, int, float *, double *);
-template void ScatterPsi<double, double>(BaseGrid *, int, int, double *, double *);
-template void ScatterPsi<std::complex<double>, std::complex<double> >(BaseGrid *, int, int, std::complex<double> *, std::complex<double> *);
-template void ScatterPsi<std::complex<float>, std::complex<double> >(BaseGrid *, int, int, std::complex<float> *, std::complex<double> *);
+template void GatherPsi<double, float>(BaseGrid *, int, int, double *, float *, int);
+template void GatherPsi<double, double>(BaseGrid *, int, int, double *, double *, int);
+template void GatherPsi<std::complex<double>, std::complex<float> >(BaseGrid *, int, int, std::complex<double> *, std::complex<float> *, int);
+template void GatherPsi<std::complex<double>, std::complex<double> >(BaseGrid *, int, int, std::complex<double> *, std::complex<double> *, int);
+template void ScatterPsi<float, double>(BaseGrid *, int, int, float *, double *, int);
+template void ScatterPsi<double, double>(BaseGrid *, int, int, double *, double *, int);
+template void ScatterPsi<std::complex<double>, std::complex<double> >(BaseGrid *, int, int, std::complex<double> *, std::complex<double> *, int);
+template void ScatterPsi<std::complex<float>, std::complex<double> >(BaseGrid *, int, int, std::complex<float> *, std::complex<double> *, int);
 template void GatherGrid<double>(BaseGrid *, int, double *, double *);
 template void GatherGrid<std::complex<double>>(BaseGrid *, int, std::complex<double> *, std::complex<double> *);
 template void GatherEigs<double>(Kpoint<double> *);
@@ -112,14 +112,14 @@ void GatherScatterInit(size_t n)
 
 
 template <typename OrbitalType, typename CalcType>
-void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
+void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int factor)
 {
-    int chunksize = n / pct.coalesce_factor;
+    int chunksize = n / factor;
     int my_pe_x, pe_y, pe_z;
     G->pe2xyz(pct.gridpe, &my_pe_x, &pe_y, &pe_z);
-    int pe_offset = my_pe_x % pct.coalesce_factor;
+    int pe_offset = my_pe_x % factor;
     CopyAndConvert(chunksize, &A[istate*chunksize], &B[pe_offset*chunksize]);
-    if(!ct.coalesce_states || (pct.coalesce_factor == 1)) return;
+    if(!ct.coalesce_states || (factor == 1)) return;
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
@@ -134,7 +134,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
     std::atomic_bool is_completed_r[MAX_CFACTOR];
     std::atomic_bool is_completed_s[MAX_CFACTOR];
     std::atomic_int group_count{0};
-    group_count.fetch_add(2*(pct.coalesce_factor-1), std::memory_order_seq_cst);
+    group_count.fetch_add(2*(factor-1), std::memory_order_seq_cst);
 
     mpi_queue_item_t qitems_r[MAX_CFACTOR];
     mpi_queue_item_t qitems_s[MAX_CFACTOR];
@@ -149,7 +149,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
 
 
     // States are coalesced so we have to get the remote parts of istate
-    for(int i=0;i < pct.coalesce_factor;i++)
+    for(int i=0;i < factor;i++)
     {
         // Queue receives
         if(i != pe_offset)
@@ -183,7 +183,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
     }
 
     // Next we send the parts of states that other MPI procs require
-    for(int i=0;i < pct.coalesce_factor;i++)
+    for(int i=0;i < factor;i++)
     {
         // Queue sends
         int remote_istate = base_istate + i * active_threads + istate % active_threads;
@@ -220,7 +220,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
     }
     else
     {
-        for(int i=0;i < pct.coalesce_factor;i++)
+        for(int i=0;i < factor;i++)
         {
             if(i != pe_offset)
             {
@@ -234,7 +234,7 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
         }
     }
     //delete [] sbuf;
-    for(int i=0;i < pct.coalesce_factor;i++)
+    for(int i=0;i < factor;i++)
     {
         // Unpack
         if(i != pe_offset)
@@ -246,14 +246,14 @@ void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B)
 }
 
 template <typename CalcType, typename OrbitalType>
-void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
+void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B, int factor)
 {
-    int chunksize = n / pct.coalesce_factor;
+    int chunksize = n / factor;
     int my_pe_x, pe_y, pe_z;
     G->pe2xyz(pct.gridpe, &my_pe_x, &pe_y, &pe_z);
-    int pe_offset = my_pe_x % pct.coalesce_factor;
+    int pe_offset = my_pe_x % factor;
     CopyAndConvert(chunksize, &A[pe_offset*chunksize], &B[istate*chunksize]);
-    if(!ct.coalesce_states || (pct.coalesce_factor == 1)) return;
+    if(!ct.coalesce_states || (factor == 1)) return;
 
     BaseThread *T = BaseThread::getBaseThread(0);
     int tid = T->get_thread_tid();
@@ -268,7 +268,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
     std::atomic_bool is_completed_r[MAX_CFACTOR];
     std::atomic_bool is_completed_s[MAX_CFACTOR];
     std::atomic_int group_count{0};
-    group_count.fetch_add(2*(pct.coalesce_factor-1), std::memory_order_seq_cst);
+    group_count.fetch_add(2*(factor-1), std::memory_order_seq_cst);
 
     mpi_queue_item_t qitems_r[MAX_CFACTOR];
     mpi_queue_item_t qitems_s[MAX_CFACTOR];
@@ -283,7 +283,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
     }
 
     // States are coalesced so we have to get the remote parts of istate
-    for(int i=0;i < pct.coalesce_factor;i++)
+    for(int i=0;i < factor;i++)
     {
         // Queue receives
         int remote_istate = base_istate + i * active_threads + istate % active_threads;
@@ -314,7 +314,7 @@ void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B)
     }
 
     // Next we send the parts of states that other MPI procs require
-    for(int i=0;i < pct.coalesce_factor;i++)
+    for(int i=0;i < factor;i++)
     {
         // Queue sends
         if(i != pe_offset)
@@ -347,10 +347,10 @@ memcpy(&sbuf[i*chunksize], &A[i*chunksize], chunksize * sizeof(CalcType));
 
     if(ct.mpi_queue_mode)
     {
-        int items_completed = pct.coalesce_factor - 1;
+        int items_completed = factor - 1;
         while(items_completed)
         {
-            for(int i=0;i < pct.coalesce_factor;i++)
+            for(int i=0;i < factor;i++)
             {
                 int remote_istate = base_istate + i * active_threads + istate % active_threads;
                 if(istate != remote_istate)
@@ -371,7 +371,7 @@ memcpy(&sbuf[i*chunksize], &A[i*chunksize], chunksize * sizeof(CalcType));
     }
     else
     {
-        for(int i=0;i < pct.coalesce_factor;i++)
+        for(int i=0;i < factor;i++)
         {
             if(i != pe_offset)
             {

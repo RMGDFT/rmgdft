@@ -42,7 +42,7 @@ template <typename OrbitalType>
 void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, 
                         double fd_diag, double *eigs, double *vtot, int notconv, double avg_potential);
 template <typename OrbitalType>
-void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, 
+void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
                         double fd_diag, double eig, double *vtot, double avg_potential);
 
 

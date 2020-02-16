@@ -145,13 +145,13 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     OrbitalType *nv_t  = (OrbitalType *)p.ordered_malloc(aratio);
 
     // Copy double precision psi into correct precison array
-    GatherPsi(G, pbasis_noncoll, sp->istate, kptr->orbital_storage, tmp_psi_t);
+    GatherPsi(G, pbasis_noncoll, sp->istate, kptr->orbital_storage, tmp_psi_t, pct.coalesce_factor);
 
     // Copy nv into local array
     if(ct.coalesce_states)
-        GatherPsi(G, pbasis_noncoll, sp->istate, kptr->nv, nv_t);
+        GatherPsi(G, pbasis_noncoll, sp->istate, kptr->nv, nv_t, pct.coalesce_factor);
     else
-        GatherPsi(G, pbasis_noncoll, 0, nv, nv_t);
+        GatherPsi(G, pbasis_noncoll, 0, nv, nv_t, pct.coalesce_factor);
 
 
     // For USPP copy double precision ns into correct precision temp array. For NCPP ns=psi. */
@@ -161,7 +161,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
     }
     else
     {
-        GatherPsi(G, pbasis_noncoll, sp->istate, kptr->ns, work1_t);
+        GatherPsi(G, pbasis_noncoll, sp->istate, kptr->ns, work1_t, pct.coalesce_factor);
     }
 
     /* Save in res2 */
@@ -345,7 +345,7 @@ void MgEigState (Kpoint<OrbitalType> *kptr, State<OrbitalType> * sp, double * vt
 
     // Copy single precision orbital back to double precision
     if(freeze_occupied)
-        ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage);
+        ScatterPsi(G, pbasis_noncoll, sp->istate, tmp_psi_t, kptr->orbital_storage, pct.coalesce_factor);
 
 } // end MgEigState
 

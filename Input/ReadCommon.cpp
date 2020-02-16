@@ -842,7 +842,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "");
 
-    If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 8, 4,
+    If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 16, 4,
             CHECK_AND_FIX, OPTIONAL,
             "Grid coalescing factor.",
             "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.", CONTROL_OPTIONS);

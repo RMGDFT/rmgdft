@@ -49,7 +49,7 @@
 
 /* Maximum number of images for finite difference routines */
 #define MAX_TRADE_IMAGES 5
-#define MAX_CFACTOR 8
+#define MAX_CFACTOR 16
 
 #if __cplusplus
 

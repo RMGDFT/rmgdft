@@ -34,8 +34,8 @@
 
 #include <complex>
 void GatherScatterInit(size_t n);
-template <typename OrbitalType, typename CalcType> void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B);
-template <typename CalcType, typename OrbitalType> void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B);
+template <typename OrbitalType, typename CalcType> void GatherPsi(BaseGrid *G, int n, int istate, OrbitalType *A, CalcType *B, int factor);
+template <typename CalcType, typename OrbitalType> void ScatterPsi(BaseGrid *G, int n, int istate, CalcType *A, OrbitalType *B, int factor);
 template <typename DataType> void GatherGrid(BaseGrid *G, int n, DataType *A, DataType *B);
 template <typename OrbitalType> void GatherEigs (Kpoint<OrbitalType> *kptr);
 

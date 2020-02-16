@@ -43,6 +43,7 @@
 #include "ErrorFuncs.h"
 #include "RmgParallelFft.h"
 #include "TradeImages.h"
+#include "GatherScatter.h"
 #include "packfuncs.h"
 
 #include "transition.h"
@@ -60,8 +61,8 @@ template void DavPreconditioner<double>(Kpoint<double> *, double *, double, doub
 template void DavPreconditioner<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
                                double, double *, double *, int, double);
 
-template void DavPreconditionerOne<double>(Kpoint<double> *, double *, double, double, double *, double);
-template void DavPreconditionerOne<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
+template void DavPreconditionerOne<double>(Kpoint<double> *, int, double *, double, double, double *, double);
+template void DavPreconditionerOne<std::complex<double> >(Kpoint<std::complex<double>> *, int, std::complex<double> *, 
                                double, double, double *, double);
 
 template <typename OrbitalType>
@@ -75,18 +76,32 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
     if(ct.mpi_queue_mode) active_threads--;
     if(active_threads < 1) active_threads = 1;
 
+    int my_pe_x, my_pe_y, my_pe_z;
+    kptr->G->pe2xyz(pct.gridpe, &my_pe_x, &my_pe_y, &my_pe_z);
+    int my_pe_offset = my_pe_x % pct.coalesce_factor;
+
+
     int dimx = kptr->G->get_PX0_GRID(1);
     int dimy = kptr->G->get_PY0_GRID(1);
     int dimz = kptr->G->get_PZ0_GRID(1);
 
-    double *nvtot = new double[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
-    CPP_pack_ptos (nvtot, vtot, dimx, dimy, dimz);
-    for(int idx = 0;idx <(dimx + 2)*(dimy + 2)*(dimz + 2);idx++) nvtot[idx] = -nvtot[idx];
+    double *tvtot = vtot;
+    if(pct.coalesce_factor > 1)
+    {
+        tvtot = new double[dimx*dimy*dimz*pct.coalesce_factor];
+        GatherGrid(kptr->G, kptr->pbasis, vtot, tvtot);
+    }
 
-    int istop = notconv / active_threads;
-    istop = istop * active_threads;
+    double *nvtot = new double[pct.coalesce_factor*4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    CPP_pack_ptos (nvtot, tvtot, dimx*pct.coalesce_factor, dimy, dimz);
+    for(int idx = 0;idx <(pct.coalesce_factor*dimx + 2)*(dimy + 2)*(dimz + 2);idx++) nvtot[idx] = -nvtot[idx];
 
-    for(int st1=0;st1 < istop;st1+=active_threads) {
+    int istop = notconv / (active_threads * pct.coalesce_factor);
+    istop = istop * (active_threads * pct.coalesce_factor);
+    kptr->T->set_coalesce_factor(pct.coalesce_factor);
+    int istart = my_pe_offset*active_threads;
+
+    for(int st1=0;st1 < istop;st1+=active_threads*pct.coalesce_factor) {
 
           SCF_THREAD_CONTROL thread_control;
 
@@ -94,11 +109,13 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
               thread_control.job = HYBRID_DAV_PRECONDITIONER;
               thread_control.vtot = nvtot;
               thread_control.p1 = (void *)kptr;
-              thread_control.p2 = (void *)&res[(st1 + ist) * kptr->pbasis_noncoll];
+              thread_control.p2 = (void *)res;
               thread_control.avg_potential = avg_potential;
               thread_control.fd_diag = fd_diag;
-              thread_control.eig = eigs[st1 + ist];
-              thread_control.basetag = st1 + ist;
+              thread_control.eig = eigs[st1 + ist + istart];
+              thread_control.basetag = st1 + ist + istart;
+              thread_control.extratag1 = active_threads;
+              thread_control.extratag2 = st1;
               QueueThreadTask(ist, thread_control);
           }
 
@@ -109,16 +126,18 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
 
+    kptr->T->set_coalesce_factor(1);
     // Process any remaining states in serial fashion
     for(int st1 = istop;st1 < notconv;st1++) {
-        DavPreconditionerOne (kptr, &res[st1 * kptr->pbasis_noncoll], fd_diag, eigs[st1], nvtot, avg_potential);
+//        DavPreconditionerOne (kptr, st1, res, fd_diag, eigs[st1], vtot, avg_potential);
     }
 
+    if(pct.coalesce_factor > 1) delete [] tvtot;
     delete [] nvtot;
 }
 
 template <typename OrbitalType>
-void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_diag, double eig, 
+void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, double fd_diag, double eig, 
                         double *vtot, double avg_potential)
 {
     // We want a clean exit if user terminates early
@@ -134,11 +153,12 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     double Zfac = 2.0 * ct.max_zvalence;
     double tstep = 0.666666666666;
 
-    int dimx = G->get_PX0_GRID(1);
+    int coalesce_factor = T->get_coalesce_factor();
+    int dimx = G->get_PX0_GRID(1) * coalesce_factor;
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
-    int pbasis = kptr->pbasis;
-    int pbasis_noncoll = kptr->pbasis;
+    int pbasis = dimx * dimy * dimz;
+    int pbasis_noncoll = pbasis;
 
     double hxgrid = G->get_hxgrid(1);
     double hygrid = G->get_hygrid(1);
@@ -148,20 +168,10 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
     OrbitalType *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     OrbitalType *work2_t = &work_t[6*(dimx + 2)*(dimy + 2)*(dimz + 2)];
 
-
+//printf("DDDDDD  %d\n",st);fflush(NULL);
     // Apply preconditioner
     for(int is=0;is < ct.noncoll_factor;is++)
     {
-        OrbitalType *nres = &res[is*pbasis];
-        double t1 = 0.0;
-        for(int idx = 0;idx <pbasis;idx++) t1 += std::real(nres[idx]);
-
-        GlobalSums (&t1, 1, pct.grid_comm);
-        t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
-
-        // neutralize cell
-        for(int idx = 0;idx <pbasis;idx++) nres[idx] -= OrbitalType(t1);
-
         // Typedefs to map different data types to correct MG template.
         typedef typename std::conditional_t< std::is_same<OrbitalType, double>::value, float,
                          std::conditional_t< std::is_same<OrbitalType, std::complex<double>>::value, std::complex<float>,
@@ -170,7 +180,25 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
                          std::conditional_t< std::is_same<OrbitalType, std::complex<double>>::value, std::complex<double>,
                          std::conditional_t< std::is_same<OrbitalType, std::complex<float>>::value, std::complex<float>, float> > > convert_type_t;
 
-        CPP_pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)nres, dimx, dimy, dimz);
+        GatherPsi(G, pbasis, st, res, work2_t, coalesce_factor);
+        double t1 = 0.0;
+        for(int idx = 0;idx <pbasis;idx++) t1 += std::real(work2_t[idx]);
+
+        if(coalesce_factor==1)
+        {
+            GlobalSums (&t1, 1, pct.grid_comm);
+        }
+        else
+        {
+            GlobalSums (&t1, 1, pct.coalesced_grid_comm);
+        }
+
+        t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
+
+        // neutralize cell
+        for(int idx = 0;idx <pbasis;idx++) work2_t[idx] -= OrbitalType(t1);
+
+        CPP_pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)work2_t, dimx, dimy, dimz);
         MG.mgrid_solv<mgtype_t>((mgtype_t *)work2_t, (mgtype_t *)work1_t, (mgtype_t *)work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                     0, levels, pre, post, 1,
@@ -178,10 +206,11 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, OrbitalType *res, double f
                     tstep, 1.0, 0.0, vtot,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                     G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-        CPP_pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)nres, dimx, dimy, dimz);
+                    coalesce_factor*G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+        CPP_pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)work1_t, dimx, dimy, dimz);
 
-        for(int idx = 0;idx <pbasis;idx++) nres[idx] += eig * t1;;
+        for(int idx = 0;idx <pbasis;idx++) work1_t[idx] += eig * t1;;
+        ScatterPsi(G, pbasis, st, work1_t, res, coalesce_factor);
     }
     free(work_t);
 }

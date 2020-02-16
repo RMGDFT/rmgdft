@@ -230,11 +230,11 @@ ss.vxc_psi, (std::complex<double> *)ss.nv, (std::complex<double> *)ss.ns, ss.vcy
             case HYBRID_DAV_PRECONDITIONER:
                 if(ct.is_gamma) {
                     kptr_d = (Kpoint<double> *)ss.p1;
-                    DavPreconditionerOne<double> (kptr_d, (double *)ss.p2, ss.fd_diag, ss.eig, ss.vtot, ss.avg_potential);
+                    DavPreconditionerOne<double> (kptr_d, ss.basetag, (double *)ss.p2, ss.fd_diag, ss.eig, ss.vtot, ss.avg_potential);
                 }
                 else {
                     kptr_c = (Kpoint<std::complex<double>> *)ss.p1;
-                    DavPreconditionerOne<std::complex<double>> (kptr_c, (std::complex<double> *)ss.p2, ss.fd_diag, ss.eig, ss.vtot, ss.avg_potential);
+                    DavPreconditionerOne<std::complex<double>> (kptr_c, ss.basetag, (std::complex<double> *)ss.p2, ss.fd_diag, ss.eig, ss.vtot, ss.avg_potential);
                 } 
                 break;
             case HYBRID_THREAD_EXIT:
