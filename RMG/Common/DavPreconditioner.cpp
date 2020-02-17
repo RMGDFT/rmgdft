@@ -128,8 +128,13 @@ void DavPreconditioner (Kpoint<OrbitalType> *kptr, OrbitalType *res, double fd_d
 
     kptr->T->set_coalesce_factor(1);
     // Process any remaining states in serial fashion
-    for(int st1 = istop;st1 < notconv;st1++) {
-//        DavPreconditionerOne (kptr, st1, res, fd_diag, eigs[st1], vtot, avg_potential);
+    if(istop < notconv)
+    {
+        CPP_pack_ptos (nvtot, vtot, dimx, dimy, dimz);
+        for(int idx = 0;idx <(dimx + 2)*(dimy + 2)*(dimz + 2);idx++) nvtot[idx] = -nvtot[idx];
+        for(int st1 = istop;st1 < notconv;st1++) {
+            DavPreconditionerOne (kptr, st1, res, fd_diag, eigs[st1], nvtot, avg_potential);
+        }
     }
 
     if(pct.coalesce_factor > 1) delete [] tvtot;
@@ -168,7 +173,6 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     OrbitalType *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     OrbitalType *work2_t = &work_t[6*(dimx + 2)*(dimy + 2)*(dimz + 2)];
 
-//printf("DDDDDD  %d\n",st);fflush(NULL);
     // Apply preconditioner
     for(int is=0;is < ct.noncoll_factor;is++)
     {
