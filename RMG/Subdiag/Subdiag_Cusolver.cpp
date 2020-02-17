@@ -78,7 +78,21 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
         return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
-
+    RmgTimer *DiagTimer;
+    static int call_count, folded_call_count;
+    if(use_folded)
+    {
+        DiagTimer = new RmgTimer("4-Diagonalization: cusolver folded");
+        folded_call_count++;
+        rmg_printf("\nDiagonalization using folded cusolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
+    }
+    else
+    {
+        DiagTimer = new RmgTimer("4-Diagonalization: cusolver");
+        call_count++;
+        rmg_printf("\nDiagonalization using cusolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
+    }
+    
     // Magma is not parallel across MPI procs so only have the local master proc on a node perform
     // the diagonalization. Then broadcast the eigenvalues and vectors to the remaining local nodes.
     // If folded spectrum is selected we only want the local master to participate on each node as
@@ -147,6 +161,7 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 
     }
 
+    delete DiagTimer;
     if(use_folded) return trans_t;
     return trans_n;
 
