@@ -65,6 +65,22 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
     use_folded = false;
 
+    RmgTimer *DiagTimer;
+    static int call_count, folded_call_count;
+    if(use_folded)
+    {
+        DiagTimer = new RmgTimer("4-Diagonalization: scalapack folded");
+        folded_call_count++;
+        rmg_printf("\nDiagonalization using folded scalapack for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count);
+    }
+    else
+    {
+        DiagTimer = new RmgTimer("4-Diagonalization: scalapack");
+        call_count++;
+        rmg_printf("\nDiagonalization using scalapack for step=%d  count=%d\n\n",ct.scf_steps, call_count);
+    }
+
+
     int ione=1;
     int num_states = kptr->nstates;
     int factor = 1;
@@ -267,6 +283,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
     }
 
+    delete DiagTimer;
 
 //    if(use_folded) return trans_t;   // Currently using pdsyngst in lower level routine. If
 //    switch to FOLDED_GSE must uncomment
