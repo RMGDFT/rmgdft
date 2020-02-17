@@ -169,7 +169,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #if GPU_ENABLED
     cudaDeviceSynchronize();
     GpuFill(Vdiag, n, 1.0);
-    GpuNegate(G, n_win + 1, Vdiag, 1, n_win);
+    GpuNegate(G, n_win, Vdiag, 1, n_win);
     int i1=0, ione = 1;
     for(int i = 0;i < n_win;i++) if((i + n_start) == eig_start) i1 = i;
     cublasStatus_t custat;

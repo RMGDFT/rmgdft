@@ -852,13 +852,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used. ",
             "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5. ", MIXING_OPTIONS);
 
-    If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.4,
+    If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
             CHECK_AND_FIX, OPTIONAL,
             "Submatrix width to use as a fraction of the full spectrum. "
             "The folded spectrum width ranges from 0.10 to 1.0. For insulators and "
             "semiconductors a value of 0.3 is appropriate. For metals values between "
             "0.15 to 0.2 tend to be better. The default value is 0.3 ",
-            "folded_spectrum_width must lie in the range (0.10,1.0). Resetting to the default value of 0.4. ", DIAG_OPTIONS);
+            "folded_spectrum_width must lie in the range (0.10,1.0). Resetting to the default value of 0.3. ", DIAG_OPTIONS);
 
     If.RegisterInputKey("folded_spectrum_iterations", &lc.folded_spectrum_iterations, 0, 20, 2,
             CHECK_AND_FIX, OPTIONAL,
