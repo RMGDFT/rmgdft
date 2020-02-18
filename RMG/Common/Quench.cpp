@@ -155,7 +155,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         if(ct.xc_is_hybrid)
         {
             F->start_exx_rmg();
-            // FIXME -- this is not right for non-gamma case
             // f1 is fock energy calculated using vexx from previous orbitals and the current orbitals
             f1 = Exx_scf->Exxenergy(Kptr[0]->vexx);
             Exx_scf->Vexx(Kptr[0]->vexx, (fabs(ct.exx_delta) > ct.vexx_fft_threshold));
