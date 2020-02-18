@@ -103,31 +103,41 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
         Kptr[kpt]->nstates = ct.num_states;
 
-        for (ct.scf_steps = 0, CONVERGED = false;
-                ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
-        {
-            RmgTimer *RT = new RmgTimer("MgridSub in band");
-        
-            //Kptr[kpt]->LcaoGetPsi(ct.num_states, ct.num_states);
-            Kptr[kpt]->MgridSubspace(vtot_psi, vxc_psi);
-            delete RT;
+        if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) ) {
+
+            for (ct.scf_steps = 0, CONVERGED = false;
+                    ct.scf_steps < ct.max_scf_steps && !CONVERGED; ct.scf_steps++)
+            {
+                RmgTimer *RT = new RmgTimer("MgridSub in band");
+
+                //Kptr[kpt]->LcaoGetPsi(ct.num_states, ct.num_states);
+                Kptr[kpt]->MgridSubspace(vtot_psi, vxc_psi);
+
+                delete RT;
 
 
-            max_res = Kptr[kpt]->Kstates[0].res;
-            for(int istate = 0; istate < ct.num_states; istate++)
-                if( max_res < Kptr[kpt]->Kstates[istate].res) 
-                    max_res = Kptr[kpt]->Kstates[istate].res;
-             //        for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
-             //         rmg_printf("\n kpt = %d scf =%d state=%d res = %e", kpt, ct.scf_steps, istate, Kptr[kpt]->Kstates[istate].res);
-            if(pct.gridpe == 0) printf("\n kpt= %d  scf = %d  max_res = %e", kpt+pct.kstart, ct.scf_steps, max_res);
+                max_res = Kptr[kpt]->Kstates[0].res;
+                for(int istate = 0; istate < ct.num_states; istate++)
+                    if( max_res < Kptr[kpt]->Kstates[istate].res) 
+                        max_res = Kptr[kpt]->Kstates[istate].res;
+                //        for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
+                //         rmg_printf("\n kpt = %d scf =%d state=%d res = %e", kpt, ct.scf_steps, istate, Kptr[kpt]->Kstates[istate].res);
+                if(pct.gridpe == 0) printf("\n kpt= %d  scf = %d  max_res = %e", kpt+pct.kstart, ct.scf_steps, max_res);
 
-            if (max_res <1.0e-3)
-             {
-                rmg_printf("\n BAND STRUCTURE: Converged with max_res %10.5e", max_res);
-               CONVERGED = true;
-             }
+                if (max_res <1.0e-3)
+                {
+                    rmg_printf("\n BAND STRUCTURE: Converged with max_res %10.5e", max_res);
+                    CONVERGED = true;
+                }
 
-        } // end loop scf
+            } // end loop scf
+        }
+        else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
+            int notconv;
+            ct.scf_steps = 1;
+            ct.scf_accuracy = 1.0e-10;
+            Kptr[kpt]->Davidson(vtot_psi, vxc_psi, notconv);
+        }
 
         //for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
         //rmg_printf("\n BAND STRUCTURE: state %d res %10.5e ", istate, Kptr[kpt]->Kstates[istate].res);
