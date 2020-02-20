@@ -37,7 +37,7 @@ void LocalFftInverse (std::complex<double> * in, std::complex<double> * out, Pw 
   if(in != out)
   {
       std::complex<double> *buf = new std::complex<double>[pwaves.pbasis];
-      for(int i = 0;i < pwaves.pbasis;i++) buf[i] = in[i];
+      for(size_t i = 0;i < pwaves.pbasis;i++) buf[i] = in[i];
 //      fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, 1, pwaves.fft_backward_plan);
       delete [] buf;
   }

@@ -750,7 +750,7 @@ template <class T> void Stress<T>::Ewald_term(std::vector<ION> &atoms,
     double kr;
     std::complex<double> S;
 
-    for(int ig=0;ig < pwaves.pbasis;ig++)
+    for(size_t ig=0;ig < pwaves.pbasis;ig++)
     {
         if(pwaves.gmags[ig] > 1.0e-6)
         {

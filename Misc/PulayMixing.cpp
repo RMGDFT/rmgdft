@@ -63,7 +63,7 @@ void PulayMixing::Mixing(double *xm, double *fm)
     int ipvt[this->max_order+1];
     int ione = 1;
     int info;
-    int pbasis = fine_pwaves->pbasis;
+    size_t pbasis = fine_pwaves->pbasis;
 
     this->step = this->step % this->refresh_steps;
     int N = int(this->Nsize);
@@ -78,10 +78,10 @@ void PulayMixing::Mixing(double *xm, double *fm)
         double tpiba2 = tpiba * tpiba;
         for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
         {
-            for(int ig=0; ig < pbasis; ig++) c_fm[ig] = std::complex<double>(fm[is*pbasis + ig], 0.0);
+            for(size_t ig=0; ig < pbasis; ig++) c_fm[ig] = std::complex<double>(fm[is*pbasis + ig], 0.0);
             fine_pwaves->FftForward(c_fm, c_fm);
 
-            for(int ig=0;ig < pbasis;ig++) {
+            for(size_t ig=0;ig < pbasis;ig++) {
                 // fm is the charge density difference, sums of them always equal to zero
                 // so there is no G= 0 term.
                 double g2 = fine_pwaves->gmags[ig] * tpiba2;

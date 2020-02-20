@@ -45,7 +45,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   this->global_dimx = G.get_NX_GRID(ratio);
   this->global_dimy = G.get_NY_GRID(ratio);
   this->global_dimz = G.get_NZ_GRID(ratio);
-  this->global_basis = this->global_dimx * this->global_dimy * this->global_dimz;
+  this->global_basis = (size_t)this->global_dimx * (size_t)this->global_dimy * (size_t)this->global_dimz;
   this->distributed_plan.resize(ct.MG_THREADS_PER_NODE);
   this->distributed_plan_f.resize(ct.MG_THREADS_PER_NODE);
   for(int thread=0;thread < ct.MG_THREADS_PER_NODE;thread++) this->distributed_plan[thread] = NULL;
@@ -57,7 +57,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   // Mask array which is set to true for g-vectors with frequencies below the cutoff
   // and false otherwise.
   this->gmask = new bool[this->pbasis]();
-  for(int i = 0;i < this->pbasis;i++) this->gmask[i] = false;
+  for(size_t i = 0;i < this->pbasis;i++) this->gmask[i] = false;
 
   // G-vector storage. Vectors with frequencies above the cutoff are stored as zeros
   this->g = new gvector[this->pbasis];
@@ -69,7 +69,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   double gvec[3];
 
   // zero out g-vector array
-  for(int ix=0;ix < this->pbasis;ix++) {
+  for(size_t ix=0;ix < this->pbasis;ix++) {
       this->g->a[0] = 0.0;
       this->g->a[1] = 0.0;
       this->g->a[2] = 0.0;
@@ -88,7 +88,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   gvec[2] *= L.celldm[0];
 
   this->gmax = 0.0;
-  int idx = -1;
+  int64_t idx = -1;
   for(int ix = 0;ix < this->dimx;ix++) {
       for(int iy = 0;iy < this->dimy;iy++) {
           for(int iz = 0;iz < this->dimz;iz++) {
@@ -134,7 +134,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   if(L.get_ibrav_type() == CUBIC_BC) gmax /= sqrt(6.0);
 
   this->gcut = this->gmax;
-  for(int idx = 0;idx < this->dimx*this->dimy*this->dimz;idx++)
+  for(size_t idx = 0;idx < this->pbasis;idx++)
   {
       if(this->gmags[idx] > this->gcut) {
           if(this->gmask[idx]) this->ng--;
@@ -296,15 +296,15 @@ void Pw::index_to_gvector(int *index, double *gvector)
   index[2] = ivector[2];
 }
 
-int Pw::count_filtered_gvectors(double filter_factor)
+size_t Pw::count_filtered_gvectors(double filter_factor)
 {
-  int pbasis = this->dimx * this->dimy * this->dimz;
-  int gcount = 0;
-  for(int idx=0;idx < pbasis;idx++)
+  size_t pbasis = (size_t)this->dimx * (size_t)this->dimy * (size_t)this->dimz;
+  size_t gcount = 0;
+  for(size_t idx=0;idx < pbasis;idx++)
   {
       if(this->gmags[idx] < filter_factor*this->gcut) gcount++;
   }
-  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_INT, MPI_SUM, comm);
+  MPI_Allreduce(MPI_IN_PLACE, &gcount, 1, MPI_UNSIGNED_LONG, MPI_SUM, comm);
   return gcount;
 
 }
@@ -328,7 +328,7 @@ void Pw::FftForward (double * in, std::complex<double> * out)
       for(int i = 0;i < pbasis;i++) out[i] = tptr[i];
 #else
       std::complex<double> *buf = new std::complex<double>[pbasis];
-      for(int i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
+      for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
       fftw_execute_dft (fftw_forward_plan,  reinterpret_cast<fftw_complex*>(buf), reinterpret_cast<fftw_complex*>(out));
       delete [] buf;
 #endif
@@ -336,7 +336,7 @@ void Pw::FftForward (double * in, std::complex<double> * out)
   else
   {
       std::complex<double> *buf = new std::complex<double>[pbasis];
-      for(int i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
+      for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
       fft_3d((fftw_complex *)buf, (fftw_complex *)out, -1, distributed_plan[tid]);
       delete [] buf;
   }
@@ -350,7 +350,7 @@ void Pw::FftForward (float * in, std::complex<float> * out)
   if(tid == 0) tid = omp_get_thread_num();
   
   std::complex<float> *buf = new std::complex<float>[pbasis];
-  for(int i = 0;i < pbasis;i++) buf[i] = std::complex<float>(in[i], 0.0);
+  for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<float>(in[i], 0.0);
   
   if(Grid->get_NPES() == 1)
   {   
@@ -392,7 +392,7 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
       if(in != out)
       {
           std::complex<double> *buf = new std::complex<double>[pbasis];
-          for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+          for(size_t i = 0;i < pbasis;i++) buf[i] = in[i];
           fft_3d((fftw_complex *)buf, (fftw_complex *)out, -1, distributed_plan[tid]);
           delete [] buf;
       }
@@ -433,7 +433,7 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out)
       if(in != out)
       {   
           std::complex<float> *buf = new std::complex<float>[pbasis];
-          for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+          for(size_t i = 0;i < pbasis;i++) buf[i] = in[i];
           fft_3d((fftwf_complex *)buf, (fftwf_complex *)out, -1, distributed_plan_f[tid]);
           delete [] buf;
       }
@@ -474,7 +474,7 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
       if(in != out)
       {
           std::complex<double> *buf = new std::complex<double>[pbasis];
-          for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+          for(size_t i = 0;i < pbasis;i++) buf[i] = in[i];
           fft_3d((fftw_complex *)buf, (fftw_complex *)out, 1, distributed_plan[tid]);
           delete [] buf;
       }
@@ -510,7 +510,7 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out)
       else
       {
           std::complex<float> *buf = new std::complex<float>[pbasis];
-          for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+          for(size_t i = 0;i < pbasis;i++) buf[i] = in[i];
           fftwf_execute_dft (fftwf_backward_plan,  (fftwf_complex *)buf, reinterpret_cast<fftwf_complex*>(out));
           delete [] buf;
       }
@@ -521,7 +521,7 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out)
       if(in != out)
       {   
           std::complex<float> *buf = new std::complex<float>[pbasis];
-          for(int i = 0;i < pbasis;i++) buf[i] = in[i];
+          for(size_t i = 0;i < pbasis;i++) buf[i] = in[i];
           fft_3d((fftwf_complex *)buf, (fftwf_complex *)out, 1, distributed_plan_f[tid]);
           delete [] buf;
       }

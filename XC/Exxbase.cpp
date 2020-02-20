@@ -61,7 +61,6 @@ template <class T> Exxbase<T>::Exxbase (
         T *psi_in, int mode_in) : G(G_in), G_h(G_h_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), init_occ(occ_in), psi(psi_in), mode(mode_in)
 {
     RmgTimer RT0("5-Functional: Exx init");
-
     for(int st=0;st < nstates;st++) occ.push_back(init_occ[st]);
     if(ct.qpoint_mesh[0] <= 0 || ct.qpoint_mesh[1] <= 0 || ct.qpoint_mesh[2] <=0)
     {
@@ -94,10 +93,11 @@ template <class T> Exxbase<T>::Exxbase (
         MPI_Comm_split(G.comm, rank+1, rank, &lcomm);
         LG->set_rank(0, lcomm);
         pwave = new Pw(*LG, L, 1, false);
-        vexx_global = new T[pwave->pbasis * nstates]();
+        size_t alloc = (size_t)pwave->pbasis * (size_t)nstates;
+        vexx_global = new T[alloc]();
     }
 
-    gfac = (double *)GpuMallocManaged(pwave->pbasis*sizeof(double));
+    gfac = (double *)GpuMallocManaged((size_t)pwave->pbasis*sizeof(double));
     double kq[3] = {0.0, 0.0, 0.0};
     erfc_scrlen = Functional::get_screening_parameter_rmg();
     gau_scrlen = Functional::get_gau_parameter_rmg();
@@ -113,9 +113,9 @@ template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i
         std::complex<double> *psi_j, std::complex<double> *p,double *coul_fac);
 template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, double *coul_fac)
 {
-    for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = psi_i[idx] * std::conj(psi_j[idx]);
+    for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = psi_i[idx] * std::conj(psi_j[idx]);
     pwave->FftForward(p, p);
-    for(int ig=0;ig < pwave->pbasis;ig++) p[ig] *= coul_fac[ig];
+    for(size_t ig=0;ig < pwave->pbasis;ig++) p[ig] *= coul_fac[ig];
     pwave->FftInverse(p, p);
 }
 
@@ -127,11 +127,11 @@ template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i
 template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, 
         std::complex<float> *workbuf, double *coul_fac)
 {
-    for(int idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * std::conj(psi_j[idx]));
+    for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * std::conj(psi_j[idx]));
     pwave->FftForward(workbuf, workbuf);
-    for(int ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= coul_fac[ig];
+    for(size_t ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= coul_fac[ig];
     pwave->FftInverse(workbuf, workbuf);
-    for(int idx=0;idx < pwave->pbasis;idx++) p[idx] = (std::complex<double>)workbuf[idx];
+    for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = (std::complex<double>)workbuf[idx];
 }
 
 
@@ -160,7 +160,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         a0 = pow(PI / gau_scrlen, 1.5);
     }
 
-    for(int ig=0;ig < pwave->pbasis;ig++)
+    for(size_t ig=0;ig < pwave->pbasis;ig++)
     {
         double qq, v0, v1, v2;
         v0 = kq[0] + pwave->g[ig].a[0] * tpiba; 
@@ -220,7 +220,8 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
 
     // Clear vexx
-    for(int idx=0;idx < nstates*pbasis * ct.num_kpts_pe;idx++) vexx[idx] = 0.0;
+    size_t stop = (size_t)nstates * (size_t)pbasis * (size_t)ct.num_kpts_pe;
+    for(size_t idx=0;idx < stop;idx++) vexx[idx] = 0.0;
 
     int nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
@@ -273,7 +274,8 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
     else
     {
         // Write serial wavefunction files. May need to do some numa optimization here at some point
-        for(int idx=0;idx < nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
+        size_t pstop = (size_t)nstates * (size_t)pwave->pbasis;
+        for(size_t idx=0;idx < pstop;idx++) vexx_global[idx] = 0.0;
         RmgTimer *RT1 = new RmgTimer("5-Functional: Exx writewfs");
         WriteWfsToSingleFile();
         delete RT1;
@@ -287,7 +289,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
         delete RT1;
 
-        size_t length = (size_t)nstates * pwave->pbasis * sizeof(double);
+        size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(double);
         psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
         MPI_Barrier(G.comm);
@@ -305,7 +307,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
         for(int i=0;i < nstates_occ;i++)
         {
-            double *psi_i = (double *)&psi_s[i*pwave->pbasis];
+            double *psi_i = (double *)&psi_s[(size_t)i*(size_t)pwave->pbasis];
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
             for(int j=i;j < nstates;j++)
@@ -316,7 +318,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 int fft_index = i*nstates + j;
                 if(my_rank == (fft_index % npes))
                 {
-                    double *psi_j = (double *)&psi_s[j*pwave->pbasis];
+                    double *psi_j = (double *)&psi_s[(size_t)j*(size_t)pwave->pbasis];
                     if(use_float_fft)
                         fftpair(psi_i, psi_j, p, w, gfac);
                     else
@@ -325,13 +327,14 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 #pragma omp critical(part3)
                     {
                         if(j < nstates_occ)
-                            for(int idx = 0;idx < pwave->pbasis;idx++) 
-                                vexx_global[i*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_j[idx];
+                            for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                                vexx_global[(size_t)i*(size_t)pwave->pbasis + idx] += scale * std::real(p[idx]) * psi_j[idx];
                     }
 #pragma omp critical(part4)
                     {
                         if(i!=j)
-                            for(int idx = 0;idx < pwave->pbasis;idx++) vexx_global[j*pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
+                            for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                                vexx_global[(size_t)j*(size_t)pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
                     }
                 }
             }
@@ -372,17 +375,18 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
 
         RmgTimer *RT2 = new RmgTimer("5-Functional: Exx remap");
-        for(int i=0;i < nstates;i++)
+        for(size_t i=0;i < (size_t)nstates;i++)
         {
-            for(int ix=0;ix < dimx;ix++)
+            for(size_t ix=0;ix < (size_t)dimx;ix++)
             {
-                for(int iy=0;iy < dimy;iy++)
+                for(size_t iy=0;iy < (size_t)dimy;iy++)
                 {
-                    double *tvexx = &vexx[i*pbasis];
-                    double *tvexx_global = &vexx_global[i*pwave->pbasis];
-                    for(int iz=0;iz < dimz;iz++)
+                    double *tvexx = &vexx[i*(size_t)pbasis];
+                    double *tvexx_global = &vexx_global[i*(size_t)pwave->pbasis];
+                    for(size_t iz=0;iz < (size_t)dimz;iz++)
                     {
-                        tvexx[ix*dimy*dimz + iy*dimz + iz] = tvexx_global[(ix+xoffset)*gdimy*gdimz + (iy+yoffset)*gdimz + iz + zoffset];
+                        tvexx[ix*(size_t)dimy*(size_t)dimz + iy*(size_t)dimz + iz] = 
+                        tvexx_global[(ix+(size_t)xoffset)*(size_t)gdimy*(size_t)gdimz + (iy+(size_t)yoffset)*(size_t)gdimz + iz + (size_t)zoffset];
                     }
                 }
             }
@@ -979,7 +983,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     int my_rank = G.get_rank();
     int npes = G.get_NPES();
 
-    size_t length = (size_t)nstates * pwave->pbasis * sizeof(std::complex<double>);
+    size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(std::complex<double>);
     std::complex<double> *psi_q = (std::complex<double> *)GpuMallocManaged(length);
     std::complex<double> *psi_q_map;
     double kq[3];
@@ -998,7 +1002,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
         MPI_Barrier(G.comm);
 
-        for(int idx=0;idx < nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
+        for(size_t idx=0;idx < (size_t)nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
         for(int iq = 0; iq < num_q; iq++)
         {
 
@@ -1082,7 +1086,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
 #pragma omp critical(part3)
                         {
-                            for(int idx = 0;idx < pwave->pbasis;idx++) 
+                            for(size_t idx = 0;idx < pwave->pbasis;idx++) 
                                 vexx_global[i*pwave->pbasis +idx] += scale * p[idx] * psi_j[idx];
                         }
                     }
@@ -1172,7 +1176,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
                     Rmg_L.b1[2] * iqy * dqy + 
                     Rmg_L.b2[2] * iqz * dqz;
 
-                for(int ig=0;ig < coarse_pwaves->pbasis;ig++)
+                for(size_t ig=0;ig < coarse_pwaves->pbasis;ig++)
                 {
                     double qq, v0, v1, v2;
                     v0 = xq[0]*twoPI + coarse_pwaves->g[ig].a[0] * tpiba;

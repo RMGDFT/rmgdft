@@ -989,7 +989,7 @@ void Vdw::stress_vdW_DF_kernel (double *total_rho, double *q0, std::complex<doub
     double G_multiplier = 1.0;
     if(is_gamma) G_multiplier = 2.0;
 
-    for(int ig=0;ig < pwaves->pbasis;ig++)
+    for(size_t ig=0;ig < pwaves->pbasis;ig++)
     {
         double gval = sqrt(pwaves->gmags[ig] * tpiba2);
         this->interpolate_Dkernel_Dk(gval, dkernel_of_dk);  // Gets the derivatives.

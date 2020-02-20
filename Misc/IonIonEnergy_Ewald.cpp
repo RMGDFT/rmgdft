@@ -121,7 +121,7 @@ double IonIonEnergy_Ewald ()
         double gsquare, k[3];
         std::complex<double> S;
 
-        for(int ig=0;ig < ewald_pwaves->pbasis;ig++)
+        for(size_t ig=0;ig < ewald_pwaves->pbasis;ig++)
         {
             if(ewald_pwaves->gmags[ig] > 1.0e-6)
             {

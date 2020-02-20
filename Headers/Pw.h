@@ -90,7 +90,7 @@ private:
 public:
     Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag);
     void index_to_gvector(int *index, double *gvector);
-    int count_filtered_gvectors(double filter_factor);
+    size_t count_filtered_gvectors(double filter_factor);
     void FftForward (double * in, std::complex<double> * out);
     void FftForward (std::complex<double> * in, std::complex<double> * out);
     void FftInverse (std::complex<double> * in, std::complex<double> * out);
@@ -109,8 +109,8 @@ public:
     Lattice *L;
 
     // Real space basis on this node and globally
-    int pbasis;
-    int global_basis;
+    size_t pbasis;
+    size_t global_basis;
 
     // Real space grid dimensions on this node
     int dimx;
@@ -126,7 +126,7 @@ public:
     double gcut;
     double gmax;
 
-    int ng;
+    size_t ng;
     gvector *g;
     double *gmags;
     bool *gmask;

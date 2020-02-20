@@ -35,7 +35,7 @@ void LocalFftForward (double * in, std::complex<double> * out, Pw &pwaves)
 {
 
   std::complex<double> *buf = new std::complex<double>[pwaves.pbasis];
-  for(int i = 0;i < pwaves.pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
+  for(size_t i = 0;i < pwaves.pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
 
 //  fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, pwaves.fft_forward_plan);
 
@@ -49,7 +49,7 @@ void LocalFftForward (std::complex<double> * in, std::complex<double> * out, Pw 
     if(in != out)
     {
         std::complex<double> *buf = new std::complex<double>[pwaves.pbasis];
-        for(int i = 0;i < pwaves.pbasis;i++) buf[i] = in[i];
+        for(size_t i = 0;i < pwaves.pbasis;i++) buf[i] = in[i];
 //        fft_3d((FFT_DATA *)buf, (FFT_DATA *)out, -1, pwaves.fft_forward_plan);
         delete [] buf;
     }

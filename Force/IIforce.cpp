@@ -153,7 +153,7 @@ void IIforce (double *force)
                     
 
         // in fact we don't need to include all pwaves since exp(-sigma*sigma * gsquare/2.0) will be zero for large G
-        for(int ig=0;ig < fine_pwaves->pbasis;ig++) 
+        for(size_t ig=0;ig < fine_pwaves->pbasis;ig++) 
             if(fine_pwaves->gmags[ig] > 1.0e-6)
             {
                 gsquare = fine_pwaves->gmags[ig] * tpiba2;

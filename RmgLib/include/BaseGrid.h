@@ -121,8 +121,8 @@ public:
     int get_PY_OFFSET(int density);
     int get_PZ_OFFSET(int density);
 
-    int get_P0_BASIS(int density);
-    int get_GLOBAL_BASIS(int density);
+    size_t get_P0_BASIS(int density);
+    size_t get_GLOBAL_BASIS(int density);
 
     void pe2xyz(int pe, int *x, int *y, int *z);
     int xyz2pe(int x, int y, int z);

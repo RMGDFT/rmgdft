@@ -241,13 +241,13 @@
     {
 	return density * BaseGrid::PZ_OFFSET;
     }
-    int BaseGrid::get_P0_BASIS(int density)
+    size_t BaseGrid::get_P0_BASIS(int density)
     {
-	return density * density * density * BaseGrid::P0_BASIS;
+	return (size_t)(density * density * density) * BaseGrid::P0_BASIS;
     }
-    int BaseGrid::get_GLOBAL_BASIS(int density)
+    size_t BaseGrid::get_GLOBAL_BASIS(int density)
     {
-	return density * density * density * BaseGrid::NX_GRID * BaseGrid::NY_GRID * BaseGrid::NZ_GRID;
+	return (size_t)(density * density * density) * BaseGrid::NX_GRID * BaseGrid::NY_GRID * BaseGrid::NZ_GRID;
     }
     void BaseGrid::pe2xyz(int pe, int *x, int *y, int *z)
     {

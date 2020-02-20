@@ -79,7 +79,7 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
 
         rc = sp->rc;
         rc2 = rc * rc;
-        for(int ig=0;ig < fine_pwaves->pbasis;ig++) 
+        for(size_t ig=0;ig < fine_pwaves->pbasis;ig++) 
         {
             if(!fine_pwaves->gmask[ig]) continue;
             {
@@ -165,14 +165,14 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
         {
             std::complex<double> *ptr_g = &temp_g[(size_t)ion * (size_t)FP0_BASIS];
             fine_pwaves->FftInverse(ptr_g, ptr_g);
-            for(int ig = 0; ig < fine_pwaves->pbasis; ig++) 
+            for(size_t ig = 0; ig < fine_pwaves->pbasis; ig++) 
                 ionobject[(size_t)ion * (size_t)FP0_BASIS + ig] = std::real(ptr_g[ig])/omega;
         }
     }
     else
     {
         fine_pwaves->FftInverse(temp_g, temp_g);
-        for(int ig = 0; ig < fine_pwaves->pbasis; ig++) sumobject[ig] = std::real(temp_g[ig])/omega;
+        for(size_t ig = 0; ig < fine_pwaves->pbasis; ig++) sumobject[ig] = std::real(temp_g[ig])/omega;
     }
 
 
