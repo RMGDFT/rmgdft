@@ -320,12 +320,12 @@ void Pw::FftForward (double * in, std::complex<double> * out)
   {
 #if GPU_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
-      for(int i = 0;i < pbasis;i++) tptr[i] = std::complex<double>(in[i], 0.0);
+      for(size_t i = 0;i < pbasis;i++) tptr[i] = std::complex<double>(in[i], 0.0);
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice, streams[tid]);
       cufftExecZ2Z(gpu_plans[tid], (cufftDoubleComplex*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid], CUFFT_FORWARD);
       cudaMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>), cudaMemcpyDeviceToHost, streams[tid]);
       cudaStreamSynchronize(streams[tid]);
-      for(int i = 0;i < pbasis;i++) out[i] = tptr[i];
+      for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
 #else
       std::complex<double> *buf = new std::complex<double>[pbasis];
       for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
@@ -374,12 +374,12 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
   {
 #if GPU_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
-      for(int i = 0;i < pbasis;i++) tptr[i] = in[i];
+      for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice, streams[tid]);
       cufftExecZ2Z(gpu_plans[tid], (cufftDoubleComplex*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid], CUFFT_FORWARD);
       cudaMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>), cudaMemcpyDeviceToHost, streams[tid]);
       cudaStreamSynchronize(streams[tid]);
-      for(int i = 0;i < pbasis;i++) out[i] = tptr[i];
+      for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
 #else
       if(in == out)
           fftw_execute_dft (fftw_forward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
@@ -415,12 +415,12 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out)
   {   
 #if GPU_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
-      for(int i = 0;i < pbasis;i++) tptr[i] = in[i];
+      for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>), cudaMemcpyHostToDevice, streams[tid]);
       cufftExecC2C(gpu_plans_f[tid], (cufftComplex*)dev_bufs[tid], (cufftComplex*)dev_bufs[tid], CUFFT_FORWARD);
       cudaMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<float>), cudaMemcpyDeviceToHost, streams[tid]);
       cudaStreamSynchronize(streams[tid]);
-      for(int i = 0;i < pbasis;i++) out[i] = tptr[i];
+      for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
 #else
       if(in == out)
           fftwf_execute_dft (fftwf_forward_plan_inplace,  reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out));
@@ -456,12 +456,12 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
   {
 #if GPU_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
-      for(int i = 0;i < pbasis;i++) tptr[i] = in[i];
+      for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice, streams[tid]);
       cufftExecZ2Z(gpu_plans[tid], (cufftDoubleComplex*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid], CUFFT_INVERSE);
       cudaMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>), cudaMemcpyDeviceToHost, streams[tid]);
       cudaStreamSynchronize(streams[tid]);
-      for(int i = 0;i < pbasis;i++) out[i] = tptr[i];
+      for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
 #else
       if(in == out)
           fftw_execute_dft (fftw_backward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
@@ -496,12 +496,12 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out)
   {
 #if GPU_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
-      for(int i = 0;i < pbasis;i++) tptr[i] = in[i];
+      for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>), cudaMemcpyHostToDevice, streams[tid]);
       cufftExecC2C(gpu_plans_f[tid], (cufftComplex*)dev_bufs[tid], (cufftComplex*)dev_bufs[tid], CUFFT_INVERSE);
       cudaMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<float>), cudaMemcpyDeviceToHost, streams[tid]);
       cudaStreamSynchronize(streams[tid]);
-      for(int i = 0;i < pbasis;i++) out[i] = tptr[i];
+      for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
 #else 
       if(in == out)
       {
