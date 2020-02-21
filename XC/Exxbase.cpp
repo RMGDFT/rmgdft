@@ -355,11 +355,11 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         }
         MPI_Waitall(reqcount, reqs, mrstatus);
         MPI_Barrier(G.comm);
-        int count = nstates - trows;
+        int count = nstates_occ - trows;
 
         // This timer only picks up the last MPI_Allreduce since the ones above are asynchronous
         RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
-        if(count) MPI_Allreduce(MPI_IN_PLACE, arptr, count*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
+        if(count > 0) MPI_Allreduce(MPI_IN_PLACE, arptr, count*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
         delete RT3;
 
         delete [] mrstatus;
