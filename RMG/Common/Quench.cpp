@@ -108,7 +108,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         if(ct.xc_is_hybrid)
         {
             if(ct.exx_steps)
-                ct.exx_convergence_factor = std::min(1.0e-8, std::max(1.0e-15, fabs(ct.exx_delta)) / 1000000.0) / ct.thr_energy;
+                ct.exx_convergence_factor = std::min(1.0e-8, std::max(1.0e-14, fabs(ct.exx_delta)) / 1000000.0) / ct.thr_energy;
             else
                 ct.exx_convergence_factor = 1.0e-7 / ct.thr_energy;
             if(fabs(ct.exx_delta) < 1.0e-6) ct.exx_convergence_factor /= 10.0;
