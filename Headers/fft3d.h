@@ -44,7 +44,7 @@ struct fft_plan_3d {
   int pre_target;                   // where to put remap results
   int mid1_target,mid2_target;
   int scaled;                       // whether to scale FFT results
-  int normnum;                      // # of values to rescale
+  size_t normnum;                      // # of values to rescale
   double norm;                      // normalization factor for rescaling
 
                                     // system specific 1d FFT info

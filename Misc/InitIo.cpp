@@ -503,14 +503,15 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     Rmg_Q = NULL;
     if((ct.MG_THREADS_PER_NODE > 1) && ct.mpi_queue_mode)
     {
+        int max_threads = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
 #if USE_NUMA && USE_HWLOC
-        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, pct.manager_cpumask, &pct.topology, ct.spin_manager_thread, ct.spin_worker_threads);
+        Rmg_Q = new MpiQueue(64, max_threads, pct.manager_cpumask, &pct.topology, ct.spin_manager_thread, ct.spin_worker_threads);
 #elif USE_NUMA
-        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, pct.manager_cpumask, NULL, ct.spin_manager_thread, ct.spin_worker_threads);
+        Rmg_Q = new MpiQueue(64, max_threads, pct.manager_cpumask, NULL, ct.spin_manager_thread, ct.spin_worker_threads);
 #elif USE_HWLOC
-        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, NULL, &pct.topology, ct.spin_manager_thread, ct.spin_worker_threads);
+        Rmg_Q = new MpiQueue(64, max_threads, NULL, &pct.topology, ct.spin_manager_thread, ct.spin_worker_threads);
 #else
-        Rmg_Q = new MpiQueue(64, ct.MG_THREADS_PER_NODE, NULL, NULL, ct.spin_manager_thread, ct.spin_worker_threads);
+        Rmg_Q = new MpiQueue(64, max_threads, NULL, NULL, ct.spin_manager_thread, ct.spin_worker_threads);
 #endif
     }
     else

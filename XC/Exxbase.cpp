@@ -298,7 +298,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         // Loop over blocks and process fft pairs I am responsible for
         int my_rank = G.get_rank();
         int npes = G.get_NPES();
-        int rows = 0, trows=0, reqcount=0, max_rows=40;
+        int rows = 0, trows=0, reqcount=0, max_rows=10;
         MPI_Request *reqs = new MPI_Request[nstates/max_rows+1];
         MPI_Status *mrstatus = new MPI_Status[nstates/max_rows+1];
 
@@ -359,7 +359,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
         // This timer only picks up the last MPI_Allreduce since the ones above are asynchronous
         RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
-        MPI_Allreduce(MPI_IN_PLACE, arptr, count*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
+        if(count) MPI_Allreduce(MPI_IN_PLACE, arptr, count*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
         delete RT3;
 
         delete [] mrstatus;

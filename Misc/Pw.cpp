@@ -46,10 +46,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   this->global_dimy = G.get_NY_GRID(ratio);
   this->global_dimz = G.get_NZ_GRID(ratio);
   this->global_basis = (size_t)this->global_dimx * (size_t)this->global_dimy * (size_t)this->global_dimz;
-  this->distributed_plan.resize(ct.MG_THREADS_PER_NODE);
-  this->distributed_plan_f.resize(ct.MG_THREADS_PER_NODE);
-  for(int thread=0;thread < ct.MG_THREADS_PER_NODE;thread++) this->distributed_plan[thread] = NULL;
-  for(int thread=0;thread < ct.MG_THREADS_PER_NODE;thread++) this->distributed_plan_f[thread] = NULL;
+  int max_threads = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
+  this->distributed_plan.resize(max_threads);
+  this->distributed_plan_f.resize(max_threads);
+  for(int thread=0;thread < max_threads;thread++) this->distributed_plan[thread] = NULL;
+  for(int thread=0;thread < max_threads;thread++) this->distributed_plan_f[thread] = NULL;
 
   // Magnitudes of the g-vectors
   this->gmags = new double[this->pbasis]();
@@ -152,8 +153,8 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   {
       // Local cpu based fft plan(s). We use the array execute functions so the in and out arrays
       // here are dummies to enable the use of FFTW_MEASURE. The caller has to ensure alignment
-      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_dimx*this->global_dimy*this->global_dimz);
-      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_dimx*this->global_dimy*this->global_dimz);
+      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis);
+      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis);
 
       fftw_forward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
                      reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
@@ -192,6 +193,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
 #if GPU_ENABLED
       num_streams = ct.OMP_THREADS_PER_NODE;
+      num_streams = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
       // Gpu streams and plans
       streams.resize(num_streams);
       gpu_plans.resize(num_streams);
@@ -209,11 +211,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
          cufftSetStream(gpu_plans[i], streams[i]);
          cufftSetStream(gpu_plans_f[i], streams[i]);
          RmgCudaError(__FILE__, __LINE__, 
-             cudaMallocHost((void **)&host_bufs[i],  this->global_dimx*this->global_dimy*this->global_dimz * sizeof(std::complex<double>)),
+             cudaMallocHost((void **)&host_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
              "Error: cudaMallocHost failed.\n");
 
          RmgCudaError(__FILE__, __LINE__, 
-             cudaMalloc((void **)&dev_bufs[i],  this->global_dimx*this->global_dimy*this->global_dimz * sizeof(std::complex<double>)),
+             cudaMalloc((void **)&dev_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
              "Error: cudaMalloc failed.\n");
       }
  
@@ -538,7 +540,8 @@ Pw::~Pw(void)
   delete [] gmask;
   delete [] gmags;
 
-  for(int thread=0;thread < ct.MG_THREADS_PER_NODE;thread++)
+  int max_threads = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
+  for(int thread=0;thread < max_threads;thread++)
   {
       if(this->distributed_plan[thread]) fft_3d_destroy_plan(this->distributed_plan[thread]);
       if(this->distributed_plan_f[thread]) fft_3d_destroy_plan(this->distributed_plan_f[thread]);

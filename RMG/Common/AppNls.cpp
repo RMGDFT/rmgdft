@@ -83,7 +83,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         if(need_ns) for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
         if(ct.xc_is_hybrid && Functional::is_exx_active()) 
         {
-            for(size_t i = 0; i < stop; i++) nv[i] = ct.exx_fraction * kpoint->vexx[first_state*P0_BASIS + i];
+            for(size_t i = 0; i < stop; i++) nv[i] = ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
         }
         else
         {
@@ -264,7 +264,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
-        for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[first_state*P0_BASIS + i];
+        for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
     }
 
     GpuFreeManaged(M_qqq);

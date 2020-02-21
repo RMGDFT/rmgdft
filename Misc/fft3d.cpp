@@ -148,10 +148,9 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_3d(FFT_DATA *in, FFT_
   // scaling if required
   if (flag == 1 && plan->scaled) {
     FFT_SCALAR norm = plan->norm;
-    int num = plan->normnum;
     FFT_SCALAR *out_ptr = (FFT_SCALAR *)out;
 
-    for (int i = 0; i < num; i++) {
+    for (size_t i = 0; i < plan->normnum; i++) {
       *(out_ptr++) *= norm;
       *(out_ptr++) *= norm;
     }
@@ -452,8 +451,8 @@ template <typename FFT_DATA, typename FFT_SCALAR> struct fft_plan_3d<FFT_DATA, F
   else {
     plan->scaled = 1;
     plan->norm = 1.0/(nfast*nmid*nslow);
-    plan->normnum = (out_ihi-out_ilo+1) * (out_jhi-out_jlo+1) *
-      (out_khi-out_klo+1);
+    plan->normnum = (size_t)(out_ihi-out_ilo+1) * (size_t)(out_jhi-out_jlo+1) *
+      (size_t)(out_khi-out_klo+1);
   }
 
   return plan;
@@ -611,9 +610,9 @@ template <typename FFT_DATA, typename FFT_SCALAR> void fft_1d_only(FFT_DATA *dat
 
   if (flag == 1 && plan->scaled) {
     norm = plan->norm;
-    num = MIN(plan->normnum,nsize);
+    size_t num = std::min(plan->normnum,(size_t)nsize);
     data_ptr = (FFT_SCALAR *)data;
-    for (i = 0; i < num; i++) {
+    for (size_t i = 0; i < num; i++) {
       *(data_ptr++) *= norm;
       *(data_ptr++) *= norm;
     }
