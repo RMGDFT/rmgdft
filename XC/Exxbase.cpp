@@ -273,6 +273,51 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
     }
     else
     {
+
+        // Map my portion of vexx into 
+        int my_rank = G.get_rank();
+        int npes = G.get_NPES();
+        int dimx = G.get_PX0_GRID(1);
+        int dimy = G.get_PY0_GRID(1);
+        int dimz = G.get_PZ0_GRID(1);
+        int *dimsx = new int[npes]();
+        int *dimsy = new int[npes]();
+        int *dimsz = new int[npes]();
+
+        // Need to know these on other nodes
+        dimsx[my_rank] = dimx;
+        dimsy[my_rank] = dimy;
+        dimsz[my_rank] = dimz;
+        MPI_Allreduce(MPI_IN_PLACE, dimsx, npes, MPI_INT, MPI_SUM, G.comm);
+        MPI_Allreduce(MPI_IN_PLACE, dimsy, npes, MPI_INT, MPI_SUM, G.comm);
+        MPI_Allreduce(MPI_IN_PLACE, dimsz, npes, MPI_INT, MPI_SUM, G.comm);
+
+        int gdimy = G.get_NY_GRID(1);
+        int gdimz = G.get_NZ_GRID(1);
+        int xoffset, yoffset, zoffset;
+        int *xoffsets = new int[npes]();
+        int *yoffsets = new int[npes]();
+        int *zoffsets = new int[npes]();
+        G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
+        xoffsets[my_rank] = xoffset;
+        yoffsets[my_rank] = yoffset;
+        zoffsets[my_rank] = zoffset;
+        MPI_Allreduce(MPI_IN_PLACE, xoffsets, npes, MPI_INT, MPI_SUM, G.comm);
+        MPI_Allreduce(MPI_IN_PLACE, yoffsets, npes, MPI_INT, MPI_SUM, G.comm);
+        MPI_Allreduce(MPI_IN_PLACE, zoffsets, npes, MPI_INT, MPI_SUM, G.comm);
+
+        int *recvcounts = new int[npes]();
+        recvcounts[my_rank] = pbasis;
+        MPI_Allreduce(MPI_IN_PLACE, recvcounts, npes, MPI_INT, MPI_SUM, G.comm);
+        size_t *recvoffsets = new size_t[npes]();
+        int *irecvoffsets = new int[npes]();
+        for(int idx=1;idx < npes;idx++) recvoffsets[idx] = recvoffsets[idx-1] + (size_t)recvcounts[idx-1];
+        for(int idx=1;idx < npes;idx++) irecvoffsets[idx] = irecvoffsets[idx-1] + recvcounts[idx-1];
+        double *arbuf, *atbuf;
+        MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
+        MPI_Alloc_mem(pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
+
+
         // Write serial wavefunction files. May need to do some numa optimization here at some point
         size_t pstop = (size_t)nstates * (size_t)pwave->pbasis;
         for(size_t idx=0;idx < pstop;idx++) vexx_global[idx] = 0.0;
@@ -296,8 +341,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
 
         // Loop over blocks and process fft pairs I am responsible for
-        int my_rank = G.get_rank();
-        int npes = G.get_NPES();
         int rows = 0, trows=0, reqcount=0, max_rows=10;
         MPI_Request *reqs = new MPI_Request[nstates/max_rows+1];
         MPI_Status *mrstatus = new MPI_Status[nstates/max_rows+1];
@@ -337,24 +380,41 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                                 vexx_global[(size_t)j*(size_t)pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
                     }
                 }
+                if(!omp_tid) MPI_Testall(reqcount, reqs, &flag, mrstatus);
             }
             delete RT1;
 
-            rows++;
-            // This enables some concurrency with calculations and communication
-            if(rows == max_rows)
+            MPI_Waitall(reqcount, reqs, mrstatus);
+            // Remap so we can use MPI_Reduce_scatter
+#pragma omp parallel for
+            for(size_t rank=0;rank < (size_t)npes;rank++)
             {
-                MPI_Barrier(G.comm);
-                MPI_Iallreduce(MPI_IN_PLACE, arptr, rows*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm, &reqs[reqcount]);
-                reqcount++;
-                arptr += rows*pwave->pbasis;
-                trows += rows;
-                rows = 0;
+                size_t dimx_r = (size_t)dimsx[rank]; 
+                size_t dimy_r = (size_t)dimsy[rank]; 
+                size_t dimz_r = (size_t)dimsz[rank]; 
+                size_t offset_r = recvoffsets[rank];
+                size_t xoffset_r = (size_t)xoffsets[rank];
+                size_t yoffset_r = (size_t)yoffsets[rank];
+                size_t zoffset_r = (size_t)zoffsets[rank];
+                double *tvexx_global = &vexx_global[i*(size_t)pwave->pbasis];
+                for(size_t ix=0;ix < dimx_r;ix++)
+                {
+                    for(size_t iy=0;iy < dimy_r;iy++)
+                    {
+                        for(size_t iz=0;iz < dimz_r;iz++)
+                        {
+                            arbuf[offset_r + ix*dimy_r*dimz_r + iy*dimz_r + iz] = 
+                            tvexx_global[(ix+xoffset_r)*(size_t)gdimy*(size_t)gdimz + (iy+(size_t)yoffset_r)*(size_t)gdimz + iz + (size_t)zoffset_r];
+                        }
+                    }
+                }
             }
-            MPI_Testall(reqcount, reqs, &flag, mrstatus);
+            MPI_Ireduce_scatter(arbuf, &vexx[(size_t)i * (size_t)pbasis], recvcounts, MPI_DOUBLE, MPI_SUM, G.comm, reqs);
+            reqcount = 1;
+            arptr += pwave->pbasis;
+            trows ++;
         }
         MPI_Waitall(reqcount, reqs, mrstatus);
-        MPI_Barrier(G.comm);
 
         // Count is the remaining number of all reductions. We have to block it for large problems
         int count = nstates - trows;
@@ -371,17 +431,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         delete [] mrstatus;
         delete [] reqs;
 
-        // Map my portion of vexx into 
-        int xoffset, yoffset, zoffset;
-        int dimx = G.get_PX0_GRID(1);
-        int dimy = G.get_PY0_GRID(1);
-        int dimz = G.get_PZ0_GRID(1);
-        int gdimy = G.get_NY_GRID(1);
-        int gdimz = G.get_NZ_GRID(1);
-        G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
 
         RmgTimer *RT2 = new RmgTimer("5-Functional: Exx remap");
-        for(size_t i=0;i < (size_t)nstates;i++)
+        for(size_t i=nstates_occ;i < (size_t)nstates;i++)
         {
             for(size_t ix=0;ix < (size_t)dimx;ix++)
             {
@@ -405,6 +457,14 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         munmap(psi_s, length);
         close(serial_fd);
 
+        MPI_Free_mem(atbuf);
+        MPI_Free_mem(arbuf);
+        delete [] irecvoffsets;
+        delete [] recvoffsets;
+        delete [] recvcounts;
+        delete [] dimsz;
+        delete [] dimsy;
+        delete [] dimsx;
     }
 
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
