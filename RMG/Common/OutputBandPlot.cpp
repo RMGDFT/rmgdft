@@ -77,6 +77,7 @@ void OutputBandPlot(Kpoint<KpointType> ** Kptr)
     }
 
     GlobalSums (eig_all, tot_num_eigs, pct.kpsub_comm);
+    GlobalSums (eig_all, tot_num_eigs, pct.spin_comm);
 
 
     double *x = new double[ct.num_kpts];
