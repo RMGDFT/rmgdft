@@ -86,12 +86,22 @@ private:
     int pbasis;
     int pbasis_h;
 
+    // Data for other nodes needed to remap
+    std::vector<int> dimsx;
+    std::vector<int> dimsy;
+    std::vector<int> dimsz;
+    std::vector<int> xoffsets;
+    std::vector<int> yoffsets;
+    std::vector<int> zoffsets;
+    std::vector<int> recvcounts;
+    std::vector<int> irecvoffsets;
+    std::vector<size_t> recvoffsets;
+
 
     std::vector<double> occ;
 
     // Mmapped serial wavefunction array
     T *psi_s;
-//    T *vexx_global;
 
     // File descriptor for serial wavefile
     int serial_fd;

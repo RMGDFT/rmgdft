@@ -103,6 +103,42 @@ template <class T> Exxbase<T>::Exxbase (
     setup_exxdiv();
     setup_gfac(kq);
 
+    int npes = G.get_NPES();
+    int my_rank = G.get_rank();
+    dimsx.resize(npes, 0);
+    dimsy.resize(npes, 0);
+    dimsz.resize(npes, 0);
+
+    // Need to know these on other nodes
+    dimsx[my_rank] = G.get_PX0_GRID(1);
+    dimsy[my_rank] = G.get_PY0_GRID(1);
+    dimsz[my_rank] = G.get_PZ0_GRID(1);
+    MPI_Allreduce(MPI_IN_PLACE, dimsx.data(), npes, MPI_INT, MPI_SUM, G.comm);
+    MPI_Allreduce(MPI_IN_PLACE, dimsy.data(), npes, MPI_INT, MPI_SUM, G.comm);
+    MPI_Allreduce(MPI_IN_PLACE, dimsz.data(), npes, MPI_INT, MPI_SUM, G.comm);
+
+    int xoffset, yoffset, zoffset;
+    xoffsets.resize(npes, 0);
+    yoffsets.resize(npes, 0);
+    zoffsets.resize(npes, 0);
+    G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
+    xoffsets[my_rank] = xoffset;
+    yoffsets[my_rank] = yoffset;
+    zoffsets[my_rank] = zoffset;
+    MPI_Allreduce(MPI_IN_PLACE, xoffsets.data(), npes, MPI_INT, MPI_SUM, G.comm);
+    MPI_Allreduce(MPI_IN_PLACE, yoffsets.data(), npes, MPI_INT, MPI_SUM, G.comm);
+    MPI_Allreduce(MPI_IN_PLACE, zoffsets.data(), npes, MPI_INT, MPI_SUM, G.comm);
+
+    recvcounts.resize(npes, 0);
+    recvcounts[my_rank] = pbasis;
+    MPI_Allreduce(MPI_IN_PLACE, recvcounts.data(), npes, MPI_INT, MPI_SUM, G.comm);
+
+    recvoffsets.resize(npes, 0);
+    irecvoffsets.resize(npes, 0);
+
+    for(int idx=1;idx < npes;idx++) recvoffsets[idx] = recvoffsets[idx-1] + (size_t)recvcounts[idx-1];
+    for(int idx=1;idx < npes;idx++) irecvoffsets[idx] = irecvoffsets[idx-1] + recvcounts[idx-1];
+
 }
 
 template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, 
@@ -275,42 +311,10 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         // Map my portion of vexx into 
         int my_rank = G.get_rank();
         int npes = G.get_NPES();
-        int dimx = G.get_PX0_GRID(1);
-        int dimy = G.get_PY0_GRID(1);
-        int dimz = G.get_PZ0_GRID(1);
-        int *dimsx = new int[npes]();
-        int *dimsy = new int[npes]();
-        int *dimsz = new int[npes]();
-
-        // Need to know these on other nodes
-        dimsx[my_rank] = dimx;
-        dimsy[my_rank] = dimy;
-        dimsz[my_rank] = dimz;
-        MPI_Allreduce(MPI_IN_PLACE, dimsx, npes, MPI_INT, MPI_SUM, G.comm);
-        MPI_Allreduce(MPI_IN_PLACE, dimsy, npes, MPI_INT, MPI_SUM, G.comm);
-        MPI_Allreduce(MPI_IN_PLACE, dimsz, npes, MPI_INT, MPI_SUM, G.comm);
 
         int gdimy = G.get_NY_GRID(1);
         int gdimz = G.get_NZ_GRID(1);
-        int xoffset, yoffset, zoffset;
-        int *xoffsets = new int[npes]();
-        int *yoffsets = new int[npes]();
-        int *zoffsets = new int[npes]();
-        G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
-        xoffsets[my_rank] = xoffset;
-        yoffsets[my_rank] = yoffset;
-        zoffsets[my_rank] = zoffset;
-        MPI_Allreduce(MPI_IN_PLACE, xoffsets, npes, MPI_INT, MPI_SUM, G.comm);
-        MPI_Allreduce(MPI_IN_PLACE, yoffsets, npes, MPI_INT, MPI_SUM, G.comm);
-        MPI_Allreduce(MPI_IN_PLACE, zoffsets, npes, MPI_INT, MPI_SUM, G.comm);
 
-        int *recvcounts = new int[npes]();
-        recvcounts[my_rank] = pbasis;
-        MPI_Allreduce(MPI_IN_PLACE, recvcounts, npes, MPI_INT, MPI_SUM, G.comm);
-        size_t *recvoffsets = new size_t[npes]();
-        int *irecvoffsets = new int[npes]();
-        for(int idx=1;idx < npes;idx++) recvoffsets[idx] = recvoffsets[idx-1] + (size_t)recvcounts[idx-1];
-        for(int idx=1;idx < npes;idx++) irecvoffsets[idx] = irecvoffsets[idx-1] + recvcounts[idx-1];
         static double *arbuf, *atbuf;
         if(!arbuf) MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
         if(!atbuf) MPI_Alloc_mem(pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
@@ -402,7 +406,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 }
             }
             std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
-            MPI_Ireduce_scatter(arbuf, atbuf, recvcounts, MPI_DOUBLE, MPI_SUM, G.comm, reqs);
+            MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, reqs);
             reqcount = 1;
         }
         MPI_Waitall(reqcount, reqs, mrstatus);
@@ -418,12 +422,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         close(serial_fd);
 
         delete [] vexx_global;
-        delete [] irecvoffsets;
-        delete [] recvoffsets;
-        delete [] recvcounts;
-        delete [] dimsz;
-        delete [] dimsy;
-        delete [] dimsx;
     }
 
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
