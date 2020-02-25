@@ -91,7 +91,7 @@ private:
 
     // Mmapped serial wavefunction array
     T *psi_s;
-    T *vexx_global;
+//    T *vexx_global;
 
     // File descriptor for serial wavefile
     int serial_fd;

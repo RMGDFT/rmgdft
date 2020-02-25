@@ -93,8 +93,6 @@ template <class T> Exxbase<T>::Exxbase (
         MPI_Comm_split(G.comm, rank+1, rank, &lcomm);
         LG->set_rank(0, lcomm);
         pwave = new Pw(*LG, L, 1, false);
-        size_t alloc = (size_t)pwave->pbasis * (size_t)nstates;
-        vexx_global = new T[alloc]();
     }
 
     gfac = (double *)GpuMallocManaged((size_t)pwave->pbasis*sizeof(double));
@@ -313,14 +311,13 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         int *irecvoffsets = new int[npes]();
         for(int idx=1;idx < npes;idx++) recvoffsets[idx] = recvoffsets[idx-1] + (size_t)recvcounts[idx-1];
         for(int idx=1;idx < npes;idx++) irecvoffsets[idx] = irecvoffsets[idx-1] + recvcounts[idx-1];
-        double *arbuf, *atbuf;
-        MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
-        MPI_Alloc_mem(pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
+        static double *arbuf, *atbuf;
+        if(!arbuf) MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
+        if(!atbuf) MPI_Alloc_mem(pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
 
+        double *vexx_global = new double[pwave->pbasis]();
 
         // Write serial wavefunction files. May need to do some numa optimization here at some point
-        size_t pstop = (size_t)nstates * (size_t)pwave->pbasis;
-        for(size_t idx=0;idx < pstop;idx++) vexx_global[idx] = 0.0;
         RmgTimer *RT1 = new RmgTimer("5-Functional: Exx writewfs");
         WriteWfsToSingleFile();
         delete RT1;
@@ -341,25 +338,23 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
 
         // Loop over blocks and process fft pairs I am responsible for
-        int rows = 0, trows=0, reqcount=0, max_rows=10;
+        int reqcount=0, max_rows=10;
         MPI_Request *reqs = new MPI_Request[nstates/max_rows+1];
         MPI_Status *mrstatus = new MPI_Status[nstates/max_rows+1];
 
         int flag=0;
-        double *arptr = vexx_global;
 
-        for(int i=0;i < nstates_occ;i++)
+        for(int i=0;i < nstates;i++)
         {
             double *psi_i = (double *)&psi_s[(size_t)i*(size_t)pwave->pbasis];
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
-            for(int j=i;j < nstates;j++)
+            for(int j=0;j<nstates_occ;j++)
             {
                 int omp_tid = omp_get_thread_num();
                 std::complex<double> *p = pvec[omp_tid];
                 std::complex<float> *w = wvec[omp_tid];
-                int fft_index = i*nstates + j;
-                if(my_rank == (fft_index % npes))
+                if(my_rank == (j % npes))
                 {
                     double *psi_j = (double *)&psi_s[(size_t)j*(size_t)pwave->pbasis];
                     if(use_float_fft)
@@ -369,22 +364,20 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                     // We can speed this up by adding more critical sections if it proves to be a bottleneck
 #pragma omp critical(part3)
                     {
-                        if(j < nstates_occ)
                             for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                                vexx_global[(size_t)i*(size_t)pwave->pbasis + idx] += scale * std::real(p[idx]) * psi_j[idx];
-                    }
-#pragma omp critical(part4)
-                    {
-                        if(i!=j)
-                            for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                                vexx_global[(size_t)j*(size_t)pwave->pbasis +idx] += scale * std::real(p[idx]) * psi_i[idx];
+                                vexx_global[idx] += scale * std::real(p[idx]) * psi_j[idx];
                     }
                 }
                 if(!omp_tid) MPI_Testall(reqcount, reqs, &flag, mrstatus);
             }
             delete RT1;
 
+            // We wait for communication from previous row to finish and then copy it into place
             MPI_Waitall(reqcount, reqs, mrstatus);
+            if(i)
+            {
+                memcpy(&vexx[(size_t)(i-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
+            }
             // Remap so we can use MPI_Reduce_scatter
 #pragma omp parallel for
             for(size_t rank=0;rank < (size_t)npes;rank++)
@@ -396,7 +389,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 size_t xoffset_r = (size_t)xoffsets[rank];
                 size_t yoffset_r = (size_t)yoffsets[rank];
                 size_t zoffset_r = (size_t)zoffsets[rank];
-                double *tvexx_global = &vexx_global[i*(size_t)pwave->pbasis];
                 for(size_t ix=0;ix < dimx_r;ix++)
                 {
                     for(size_t iy=0;iy < dimy_r;iy++)
@@ -404,52 +396,20 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                         for(size_t iz=0;iz < dimz_r;iz++)
                         {
                             arbuf[offset_r + ix*dimy_r*dimz_r + iy*dimz_r + iz] = 
-                            tvexx_global[(ix+xoffset_r)*(size_t)gdimy*(size_t)gdimz + (iy+(size_t)yoffset_r)*(size_t)gdimz + iz + (size_t)zoffset_r];
+                            vexx_global[(ix+xoffset_r)*(size_t)gdimy*(size_t)gdimz + (iy+(size_t)yoffset_r)*(size_t)gdimz + iz + (size_t)zoffset_r];
                         }
                     }
                 }
             }
-            MPI_Ireduce_scatter(arbuf, &vexx[(size_t)i * (size_t)pbasis], recvcounts, MPI_DOUBLE, MPI_SUM, G.comm, reqs);
+            std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
+            MPI_Ireduce_scatter(arbuf, atbuf, recvcounts, MPI_DOUBLE, MPI_SUM, G.comm, reqs);
             reqcount = 1;
-            arptr += pwave->pbasis;
-            trows ++;
         }
         MPI_Waitall(reqcount, reqs, mrstatus);
-
-        // Count is the remaining number of all reductions. We have to block it for large problems
-        int count = nstates - trows;
-
-        // This timer only picks up the last MPI_Allreduce since the ones above are asynchronous
-        RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
-        for(int ib = 0;ib < count;ib++)
-        {
-            MPI_Allreduce(MPI_IN_PLACE, arptr, pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
-            arptr += pwave->pbasis;
-        }
-        delete RT3;
+        memcpy(&vexx[(size_t)(nstates-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
 
         delete [] mrstatus;
         delete [] reqs;
-
-
-        RmgTimer *RT2 = new RmgTimer("5-Functional: Exx remap");
-        for(size_t i=nstates_occ;i < (size_t)nstates;i++)
-        {
-            for(size_t ix=0;ix < (size_t)dimx;ix++)
-            {
-                for(size_t iy=0;iy < (size_t)dimy;iy++)
-                {
-                    double *tvexx = &vexx[i*(size_t)pbasis];
-                    double *tvexx_global = &vexx_global[i*(size_t)pwave->pbasis];
-                    for(size_t iz=0;iz < (size_t)dimz;iz++)
-                    {
-                        tvexx[ix*(size_t)dimy*(size_t)dimz + iy*(size_t)dimz + iz] = 
-                        tvexx_global[(ix+(size_t)xoffset)*(size_t)gdimy*(size_t)gdimz + (iy+(size_t)yoffset)*(size_t)gdimz + iz + (size_t)zoffset];
-                    }
-                }
-            }
-        }
-        delete RT2;
 
         MPI_Barrier(G.comm);
 
@@ -457,8 +417,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         munmap(psi_s, length);
         close(serial_fd);
 
-        MPI_Free_mem(atbuf);
-        MPI_Free_mem(arbuf);
+        delete [] vexx_global;
         delete [] irecvoffsets;
         delete [] recvoffsets;
         delete [] recvcounts;
@@ -745,7 +704,6 @@ template <class T> Exxbase<T>::~Exxbase(void)
     delete LG;
     MPI_Comm_free(&lcomm); 
     delete pwave;
-    delete [] vexx_global;
 }
 
 template void Exxbase<double>::ReadWfsFromSingleFile();
@@ -1053,6 +1011,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     std::complex<double> *psi_q = (std::complex<double> *)GpuMallocManaged(length);
     std::complex<double> *psi_q_map;
     double kq[3];
+
+    std::complex<double> *vexx_global = new std::complex<double>[(size_t)nstates*(size_t)pwave->pbasis];
+
     for(int ik = 0; ik < ct.num_kpts_pe; ik++)
     {
         int ik_glob = ik + pct.kstart;
@@ -1204,6 +1165,8 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
         close(serial_fd);
 
     }
+
+    delete [] vexx_global;
 
     GpuFreeManaged(psi_q);
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
