@@ -139,6 +139,7 @@ template <class T> Exxbase<T>::Exxbase (
     for(int idx=1;idx < npes;idx++) recvoffsets[idx] = recvoffsets[idx-1] + (size_t)recvcounts[idx-1];
     for(int idx=1;idx < npes;idx++) irecvoffsets[idx] = irecvoffsets[idx-1] + recvcounts[idx-1];
 
+    vexx_RMS.resize(ct.max_exx_steps, 0.0);
 }
 
 template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, 
@@ -252,10 +253,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
     if(!ct.is_gamma) 
         throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
-
-    // Clear vexx
-    size_t stop = (size_t)nstates * (size_t)pbasis * (size_t)ct.num_kpts_pe;
-    for(size_t idx=0;idx < stop;idx++) vexx[idx] = 0.0;
 
     int nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
@@ -377,6 +374,13 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             MPI_Waitall(reqcount, reqs, mrstatus);
             if(i)
             {
+                if(i < nstates_occ)
+                {
+                    double t1 = 0.0;
+                    double *old_vexx = &vexx[(size_t)(i-1) * (size_t)pbasis];
+                    for(int idx=0;idx < pbasis;idx++) t1 += (atbuf[idx] - old_vexx[idx])*(atbuf[idx] - old_vexx[idx]);
+                    vexx_RMS[ct.exx_steps] += t1;
+                }
                 memcpy(&vexx[(size_t)(i-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
             }
             // Remap so we can use MPI_Reduce_scatter
@@ -391,6 +395,11 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         // Wait for last transfer to finish and then copy data to correct location
         MPI_Waitall(reqcount, reqs, mrstatus);
         memcpy(&vexx[(size_t)(nstates-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
+
+        double t1 = vexx_RMS[ct.exx_steps];
+        double scale = (double)nstates_occ*(double)G.get_GLOBAL_BASIS(1);
+        MPI_Allreduce(MPI_IN_PLACE, &t1, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
+        vexx_RMS[ct.exx_steps] = sqrt(t1 / scale);
 
         delete [] mrstatus;
         delete [] reqs;

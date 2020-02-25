@@ -172,6 +172,7 @@ public:
 
     double *gfac;
 
+    std::vector<double> vexx_RMS;
 };
 
 #endif
