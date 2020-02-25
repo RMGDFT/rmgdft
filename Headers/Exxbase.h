@@ -162,6 +162,7 @@ public:
     void WriteWfsToSingleFile(void);
     void ReadWfsFromSingleFile(void);
     void kpoints_setup();
+    void Remap(T *inbuf, T *rbuf);
 
     // Plane wave object for local grids
     Pw *pwave;

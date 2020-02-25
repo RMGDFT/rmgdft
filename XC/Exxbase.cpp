@@ -312,9 +312,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         int my_rank = G.get_rank();
         int npes = G.get_NPES();
 
-        int gdimy = G.get_NY_GRID(1);
-        int gdimz = G.get_NZ_GRID(1);
-
         static double *arbuf, *atbuf;
         if(!arbuf) MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
         if(!atbuf) MPI_Alloc_mem(pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
@@ -383,32 +380,15 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 memcpy(&vexx[(size_t)(i-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
             }
             // Remap so we can use MPI_Reduce_scatter
-#pragma omp parallel for
-            for(size_t rank=0;rank < (size_t)npes;rank++)
-            {
-                size_t dimx_r = (size_t)dimsx[rank]; 
-                size_t dimy_r = (size_t)dimsy[rank]; 
-                size_t dimz_r = (size_t)dimsz[rank]; 
-                size_t offset_r = recvoffsets[rank];
-                size_t xoffset_r = (size_t)xoffsets[rank];
-                size_t yoffset_r = (size_t)yoffsets[rank];
-                size_t zoffset_r = (size_t)zoffsets[rank];
-                for(size_t ix=0;ix < dimx_r;ix++)
-                {
-                    for(size_t iy=0;iy < dimy_r;iy++)
-                    {
-                        for(size_t iz=0;iz < dimz_r;iz++)
-                        {
-                            arbuf[offset_r + ix*dimy_r*dimz_r + iy*dimz_r + iz] = 
-                            vexx_global[(ix+xoffset_r)*(size_t)gdimy*(size_t)gdimz + (iy+(size_t)yoffset_r)*(size_t)gdimz + iz + (size_t)zoffset_r];
-                        }
-                    }
-                }
-            }
+            Remap(vexx_global, arbuf);
+
+            // Zero out vexx_global so it can be used for accumulation in the next iteration of the loop.
             std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
             MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, reqs);
             reqcount = 1;
         }
+
+        // Wait for last transfer to finish and then copy data to correct location
         MPI_Waitall(reqcount, reqs, mrstatus);
         memcpy(&vexx[(size_t)(nstates-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
 
@@ -1286,5 +1266,39 @@ template <class T> void Exxbase<T>::setup_exxdiv()
     {
         printf("\n exxdiv = %f %f %f", exxdiv, aa, alpha);
         printf("\n erfc_scrlen = %f", erfc_scrlen);
+    }
+}
+
+
+template void Exxbase<double>::Remap(double *, double *);
+template void Exxbase<std::complex<double>>::Remap(std::complex<double> *, std::complex<double> *);
+template <class T> void Exxbase<T>::Remap(T *inbuf, T *rbuf)
+{
+    // Remaps so we can use MPI_Reduce_scatter rather than MPI_Allreduce
+    int npes = G.get_NPES();
+    int gdimy = G.get_NY_GRID(1);
+    int gdimz = G.get_NZ_GRID(1);
+
+#pragma omp parallel for
+    for(size_t rank=0;rank < (size_t)npes;rank++)
+    {
+        size_t dimx_r = (size_t)dimsx[rank]; 
+        size_t dimy_r = (size_t)dimsy[rank]; 
+        size_t dimz_r = (size_t)dimsz[rank]; 
+        size_t offset_r = recvoffsets[rank];
+        size_t xoffset_r = (size_t)xoffsets[rank];
+        size_t yoffset_r = (size_t)yoffsets[rank];
+        size_t zoffset_r = (size_t)zoffsets[rank];
+        for(size_t ix=0;ix < dimx_r;ix++)
+        {
+            for(size_t iy=0;iy < dimy_r;iy++)
+            {
+                for(size_t iz=0;iz < dimz_r;iz++)
+                {
+                    rbuf[offset_r + ix*dimy_r*dimz_r + iy*dimz_r + iz] = 
+                    inbuf[(ix+xoffset_r)*(size_t)gdimy*(size_t)gdimz + (iy+(size_t)yoffset_r)*(size_t)gdimz + iz + (size_t)zoffset_r];
+                }
+            }
+        }
     }
 }
