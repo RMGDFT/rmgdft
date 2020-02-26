@@ -309,9 +309,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         int my_rank = G.get_rank();
         int npes = G.get_NPES();
 
-        static double *arbuf, *atbuf;
-        if(!arbuf) MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
-        if(!atbuf) MPI_Alloc_mem(pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
+        double *arbuf, *atbuf;
+        MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
+        MPI_Alloc_mem(pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
 
         double *vexx_global = new double[pwave->pbasis]();
 
@@ -336,10 +336,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
 
         // Loop over blocks and process fft pairs I am responsible for
-        int reqcount=0, max_rows=10;
-        MPI_Request *reqs = new MPI_Request[nstates/max_rows+1];
-        MPI_Status *mrstatus = new MPI_Status[nstates/max_rows+1];
-
+        MPI_Request req=MPI_REQUEST_NULL;
+        MPI_Status mrstatus;
+        double tvexx_RMS = 0.0;
         int flag=0;
 
         for(int i=0;i < nstates;i++)
@@ -366,12 +365,12 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                                 vexx_global[idx] += scale * std::real(p[idx]) * psi_j[idx];
                     }
                 }
-                if(!omp_tid) MPI_Testall(reqcount, reqs, &flag, mrstatus);
+                if(!omp_tid) MPI_Test(&req, &flag, &mrstatus);
             }
             delete RT1;
 
             // We wait for communication from previous row to finish and then copy it into place
-            MPI_Waitall(reqcount, reqs, mrstatus);
+            MPI_Wait(&req, &mrstatus);
             if(i)
             {
                 if(i < nstates_occ)
@@ -379,7 +378,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                     double t1 = 0.0;
                     double *old_vexx = &vexx[(size_t)(i-1) * (size_t)pbasis];
                     for(int idx=0;idx < pbasis;idx++) t1 += (atbuf[idx] - old_vexx[idx])*(atbuf[idx] - old_vexx[idx]);
-                    vexx_RMS[ct.exx_steps] += t1;
+                    tvexx_RMS += t1;
                 }
                 memcpy(&vexx[(size_t)(i-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
             }
@@ -388,21 +387,17 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
             // Zero out vexx_global so it can be used for accumulation in the next iteration of the loop.
             std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
-            MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, reqs);
-            reqcount = 1;
+            MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, &req);
         }
 
         // Wait for last transfer to finish and then copy data to correct location
-        MPI_Waitall(reqcount, reqs, mrstatus);
+        MPI_Wait(&req, &mrstatus);
         memcpy(&vexx[(size_t)(nstates-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
 
-        double t1 = vexx_RMS[ct.exx_steps];
         double scale = (double)nstates_occ*(double)G.get_GLOBAL_BASIS(1);
-        MPI_Allreduce(MPI_IN_PLACE, &t1, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
-        vexx_RMS[ct.exx_steps] = sqrt(t1 / scale);
-
-        delete [] mrstatus;
-        delete [] reqs;
+        MPI_Allreduce(MPI_IN_PLACE, &tvexx_RMS, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
+        vexx_RMS[ct.exx_steps] += sqrt(tvexx_RMS / scale);
+        ct.vexx_rms = vexx_RMS[ct.exx_steps];
 
         MPI_Barrier(G.comm);
 
@@ -411,6 +406,8 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         close(serial_fd);
 
         delete [] vexx_global;
+        MPI_Free_mem(atbuf);
+        MPI_Free_mem(arbuf);
     }
 
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
@@ -999,7 +996,11 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     std::complex<double> *psi_q_map;
     double kq[3];
 
-    std::complex<double> *vexx_global = new std::complex<double>[(size_t)nstates*(size_t)pwave->pbasis];
+    std::complex<double> *arbuf, *atbuf;
+    MPI_Alloc_mem(2*pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
+    MPI_Alloc_mem(2*pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
+
+    std::complex<double> *vexx_global = new std::complex<double>[pwave->pbasis]();
 
     for(int ik = 0; ik < ct.num_kpts_pe; ik++)
     {
@@ -1014,9 +1015,19 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
         psi_s = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
+        // Save a copy of vexx in the upper part of the orbital storage
+        std::complex<double> *prev_vexx = &psi[(size_t)ik * (size_t)ct.max_states * (size_t)pbasis + (size_t)nstates * (size_t)pbasis];
+        size_t pstop = (size_t)nstates * (size_t)pbasis;
+        std::complex<double> *cur_vexx = &vexx[(size_t)ik * (size_t)ct.run_states * (size_t)pbasis];
+        for(size_t idx=0;idx < pstop;idx++)
+        {
+            prev_vexx[idx] = vexx[(size_t)ik * (size_t)ct.run_states * (size_t)pbasis + idx];
+            cur_vexx[idx] = 0.0;
+        }
+
+
         MPI_Barrier(G.comm);
 
-        for(size_t idx=0;idx < (size_t)nstates*pwave->pbasis;idx++) vexx_global[idx] = 0.0;
         for(int iq = 0; iq < num_q; iq++)
         {
 
@@ -1078,6 +1089,11 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             }
 
 
+            MPI_Request req=MPI_REQUEST_NULL;
+            MPI_Status mrstatus;
+            int flag=0;
+
+            std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
             for(int i=0;i < nstates;i++)
             {
                 std::complex<double> *psi_i = &psi_s[i*pwave->pbasis];
@@ -1088,8 +1104,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                     int omp_tid = omp_get_thread_num();
                     std::complex<double> *p = pvec[omp_tid];
                     std::complex<float> *w = wvec[omp_tid];
-                    int fft_index = i*nstates + j;
-                    if(my_rank == (fft_index % npes))
+                    if(my_rank == (j % npes))
                     {
                         std::complex<double> *psi_j = &psi_q[j*pwave->pbasis];
                         if(use_float_fft)
@@ -1101,49 +1116,42 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 #pragma omp critical(part3)
                         {
                             for(size_t idx = 0;idx < pwave->pbasis;idx++) 
-                                vexx_global[i*pwave->pbasis +idx] += scale * p[idx] * psi_j[idx];
+                                vexx_global[idx] += scale * p[idx] * psi_j[idx] / (double)num_q;
                         }
                     }
+                    if(!omp_tid) MPI_Test(&req, &flag, &mrstatus);
                 }
                 delete RT1;
+
+                // We wait for communication from previous row to finish and then copy it into place
+                MPI_Wait(&req, &mrstatus);
+                if(i)
+                {
+                    for(size_t idx=0;idx < (size_t)pbasis;idx++) 
+                    {
+                        vexx[(size_t)ik * (size_t)ct.run_states * (size_t)pbasis + (size_t)(i-1) * (size_t)pbasis + idx] += atbuf[idx];
+                    } 
+                }
+                // Remap so we can use MPI_Reduce_scatter
+                Remap(vexx_global, arbuf);
+
+                // Zero out vexx_global so it can be used for accumulation in the next iteration of the loop.
+                std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
+                MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm, &req);
+
             }
+
+            // Wait for last transfer to finish and then copy data to correct location
+            MPI_Wait(&req, &mrstatus);
+            for(size_t idx=0;idx < (size_t)pbasis;idx++) 
+            {
+                vexx[(size_t)ik * (size_t)ct.run_states * (size_t)pbasis + (size_t)(nstates-1) * (size_t)pbasis + idx] += atbuf[idx];
+            } 
+
 
             munmap(psi_q_map, length);
             close(serial_fd_q);
         }
-
-        MPI_Barrier(G.comm);
-        RmgTimer *RT3 = new RmgTimer("5-Functional: Exx allreduce");
-        MPI_Allreduce(MPI_IN_PLACE, vexx_global, 2*nstates*pwave->pbasis, MPI_DOUBLE, MPI_SUM, G.comm);
-        delete RT3;
-
-        // Map my portion of vexx into 
-        int xoffset, yoffset, zoffset;
-        int dimx = G.get_PX0_GRID(1);
-        int dimy = G.get_PY0_GRID(1);
-        int dimz = G.get_PZ0_GRID(1);
-        int gdimy = G.get_NY_GRID(1);
-        int gdimz = G.get_NZ_GRID(1);
-        G.find_node_offsets(G.get_rank(), G.get_NX_GRID(1), G.get_NY_GRID(1), G.get_NZ_GRID(1), &xoffset, &yoffset, &zoffset);
-
-        RmgTimer *RT2 = new RmgTimer("5-Functional: Exx remap");
-        for(int i=0;i < nstates;i++)
-        {
-            std::complex<double> *tvexx = &vexx[ik * ct.run_states * pbasis + i*pbasis];
-            std::complex<double> *tvexx_global = &vexx_global[i*pwave->pbasis];
-            for(int ix=0;ix < dimx;ix++)
-            {
-                for(int iy=0;iy < dimy;iy++)
-                {
-                    for(int iz=0;iz < dimz;iz++)
-                    {
-                        tvexx[ix*dimy*dimz + iy*dimz + iz] = 
-                            tvexx_global[(ix+xoffset)*gdimy*gdimz + (iy+yoffset)*gdimz + iz + zoffset]/(double)num_q;
-                    }
-                }
-            }
-        }
-        delete RT2;
 
         MPI_Barrier(G.comm);
 
@@ -1151,9 +1159,26 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
         munmap(psi_s, length);
         close(serial_fd);
 
-    }
+        double tvexx_RMS = 0.0;
+        size_t length = (size_t)nstates_occ * (size_t)pbasis;
+        cur_vexx = &vexx[(size_t)ik * (size_t)ct.run_states * (size_t)pbasis];
+        for(size_t idx=0;idx < length;idx++) tvexx_RMS += std::real((prev_vexx[idx] - cur_vexx[idx])*std::conj(prev_vexx[idx] - cur_vexx[idx]));
+        MPI_Allreduce(MPI_IN_PLACE, &tvexx_RMS, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
+        double vscale = (double)nstates_occ*(double)G.get_GLOBAL_BASIS(1);
+
+        vexx_RMS[ct.exx_steps] += sqrt(tvexx_RMS / vscale) * ct.kp[ik_glob].kweight;
+
+    } // end loop over k-points
+
+    double t1 = vexx_RMS[ct.exx_steps];
+    MPI_Allreduce(MPI_IN_PLACE, &t1, 1, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    vexx_RMS[ct.exx_steps] = t1;
+    ct.vexx_rms = t1;
 
     delete [] vexx_global;
+
+    MPI_Free_mem(atbuf);
+    MPI_Free_mem(arbuf);
 
     GpuFreeManaged(psi_q);
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)

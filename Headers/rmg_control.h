@@ -163,6 +163,9 @@ public:
     /* Exx convergence multiplier. Threshold checked in the inner (Scf) is multiplied by this */
     double exx_convergence_factor;
 
+    /* EXX potential RMS[dV] */
+    double vexx_rms;
+
     /** Boundary condition flag. Read from the input file. 0=periodic, 1=cluster, 2=surface */
     int boundaryflag;
 
@@ -205,7 +208,8 @@ public:
     double thr_rms;
 
     /* estimated total energy  convergence criterion */
-    double thr_energy;
+    double thr_energy;  // input value
+    double adaptive_thr_energy;  // value checked against in Scf.cpp
 
     double thr_stress; 
     /* preconditioner single/double precision switch threshold */

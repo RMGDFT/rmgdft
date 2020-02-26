@@ -61,7 +61,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 {
 
     bool CONVERGED = false;
-    ct.exx_convergence_factor = 1.0;  // FIXME or rather check if doing relaxations or MD
+    ct.adaptive_thr_energy = ct.thr_energy;
     static std::vector<double> RMSdV;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
 
@@ -97,6 +97,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     ct.FOCK = 0.0;
     ct.exx_delta = DBL_MAX;
+    ct.vexx_rms = DBL_MAX;
     double f0=0.0,f1,f2=0.0,exxen=0.0;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     { 
@@ -107,11 +108,11 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         // Adjust exx convergence threshold
         if(ct.xc_is_hybrid)
         {
+            Exx_scf->vexx_RMS[ct.exx_steps] = 0.0;
             if(ct.exx_steps)
-                ct.exx_convergence_factor = std::min(1.0e-8, std::max(1.0e-14, fabs(ct.exx_delta)) / 1000000.0) / ct.thr_energy;
+                ct.adaptive_thr_energy = std::min(1.0e-8, ct.vexx_rms / 100000.0);
             else
-                ct.exx_convergence_factor = 1.0e-7 / ct.thr_energy;
-            if(fabs(ct.exx_delta) < 1.0e-6) ct.exx_convergence_factor /= 10.0;
+                ct.adaptive_thr_energy = 1.0e-8;
         }
 
         for (ct.scf_steps = 0, CONVERGED = false;
@@ -173,23 +174,23 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 ExxProgressTag(exx_step_time, exx_elapsed_time);
             }
 
-            if(ct.exx_delta < 0.0)
-            {
-                printf("WARNING: negative ct.exx_delta = %e. This may indicate a problem.\n", ct.exx_delta);
-                fprintf(stdout, "WARNING: negative ct.exx_delta = %f. This may indicate a problem.\n", ct.exx_delta);
-            }
+//            if(ct.exx_delta < 0.0)
+//            {
+//                printf("WARNING: negative ct.exx_delta = %e. This may indicate a problem.\n", ct.exx_delta);
+//                fprintf(stdout, "WARNING: negative ct.exx_delta = %f. This may indicate a problem.\n", ct.exx_delta);
+//            }
 
-            if(fabs(ct.exx_delta) < ct.exx_convergence_criterion)
+            if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion)
             { 
-                printf(" Finished EXX outer loop in %3d exx steps exx_delta = %8.2e, total energy = %.*f Ha\n",
-                        ct.exx_steps, ct.exx_delta, 6, ct.TOTAL);
+                printf(" Finished EXX outer loop in %3d exx steps vexx_rms = %8.2e, total energy = %.*f Ha\n",
+                        ct.exx_steps, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
                 ct.FOCK = f2;
                 break;
             }
             else
             {
-                printf(" Finished EXX inner loop in %3d scf steps exx_delta = %8.2e, total energy = %.*f Ha\n",
-                        ct.scf_steps, ct.exx_delta, 6, ct.TOTAL);
+                printf(" Finished EXX inner loop in %3d scf steps vexx_rms = %8.2e, total energy = %.*f Ha\n",
+                        ct.scf_steps, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
             }
         }
 
