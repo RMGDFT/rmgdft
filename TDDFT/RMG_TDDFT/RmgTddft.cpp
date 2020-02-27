@@ -433,9 +433,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         {   
             RT2a = new RmgTimer("2-TDDFT: Write");
             WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, 
-                    Hmatrix_m1, Hmatrix_0, tot_steps);
+                    Hmatrix_m1, Hmatrix_0, tot_steps+1);
             delete RT2a;
-            // fflush(NULL);
+            if(pct.gridpe == 0)fflush(dfi);
         }
 
         // save current  H0, H1 for the  next step extrapolatiion
