@@ -156,7 +156,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
 
         FoldedSpectrumScalapack<double> ((Kpoint<double> *)kptr, num_states, (double *)Bij, (double *)distBij, num_states, (double *)Sij, num_states, eigs, (double *)Aij, MainSp, SUBDIAG_LAPACK, ct.scalapack_block_factor);
 
-        for(int idx=0;idx< num_states * num_states;idx++)eigvectors[idx] = Bij[idx];
+        size_t pstop = (size_t)num_states * (size_t)num_states;
+        memcpy(eigvectors, Bij, pstop);
         // Broadcast results if required
         if(root_npes != scalapack_npes) { 
             RT1 = new RmgTimer("4-Diagonalization: MPI_Bcast");
@@ -264,7 +265,8 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             delete(RT1);
             
             // Clear eigvectors
-            for (int idx = 0; idx < num_states*num_states; idx++) {
+            size_t pstop = (size_t)num_states * (size_t)num_states;
+            for (size_t idx = 0; idx < pstop; idx++) {
                 eigvectors[idx] = ZERO_t;
             }
             // Gather distributed results from distAij into eigvectors
