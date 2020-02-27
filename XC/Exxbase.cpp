@@ -270,6 +270,11 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
     if(mode == EXX_DIST_FFT)
     {
+        size_t pstop = (size_t)nstates * (size_t)pbasis;
+        double *prev_vexx = &psi[pstop];
+        for(size_t idx=0;idx < pstop;idx++) prev_vexx[idx] = vexx[idx];
+        for(size_t idx=0;idx < pstop;idx++) vexx[idx] = 0.0;
+
         // Loop over fft pairs and compute Kij(r) 
         for(int i=0;i < nstates_occ;i++)
         {
@@ -301,6 +306,15 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
             }
         }
+
+        double tvexx_RMS = 0.0;
+        pstop = (size_t)nstates_occ * (size_t)pbasis;
+        for(size_t idx=0;idx < pstop;idx++) tvexx_RMS += (prev_vexx[idx] - vexx[idx])*(prev_vexx[idx] - vexx[idx]);
+        MPI_Allreduce(MPI_IN_PLACE, &tvexx_RMS, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
+        double vscale = (double)nstates_occ*(double)G.get_GLOBAL_BASIS(1);
+        vexx_RMS[ct.exx_steps] = sqrt(tvexx_RMS / vscale);
+        ct.vexx_rms = vexx_RMS[ct.exx_steps];
+
     }
     else
     {

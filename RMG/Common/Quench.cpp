@@ -74,7 +74,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     double start_time = my_crtc ();
     double exx_start_time = start_time;
     double step_time;
-    double exx_step_time;
+    double exx_step_time=0.0, exx_elapsed_time=0.0;
 
     RmgTimer *RT = new RmgTimer("Init Voronoi");
     Voronoi *Voronoi_charge = new Voronoi();
@@ -110,9 +110,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         {
             Exx_scf->vexx_RMS[ct.exx_steps] = 0.0;
             if(ct.exx_steps)
-                ct.adaptive_thr_energy = std::min(1.0e-8, ct.vexx_rms / 100000.0);
+                ct.adaptive_thr_energy = std::min(1.0e-9, ct.vexx_rms / 100000.0);
             else
-                ct.adaptive_thr_energy = 1.0e-8;
+                ct.adaptive_thr_energy = 1.0e-9;
         }
 
         for (ct.scf_steps = 0, CONVERGED = false;
@@ -166,31 +166,20 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
             ct.FOCK = exxen + f2 - f1;
             exxen = f2;
 
-            if(ct.exx_steps)
-            {
-                exx_step_time = my_crtc () - exx_step_time;
-                // Write out progress info
-                double exx_elapsed_time = my_crtc() - exx_start_time;
-                ExxProgressTag(exx_step_time, exx_elapsed_time);
-            }
-
-//            if(ct.exx_delta < 0.0)
-//            {
-//                printf("WARNING: negative ct.exx_delta = %e. This may indicate a problem.\n", ct.exx_delta);
-//                fprintf(stdout, "WARNING: negative ct.exx_delta = %f. This may indicate a problem.\n", ct.exx_delta);
-//            }
+            exx_step_time = my_crtc () - exx_step_time;
+            exx_elapsed_time = my_crtc() - exx_start_time;
 
             if(Exx_scf->vexx_RMS[ct.exx_steps] < ct.exx_convergence_criterion)
             { 
-                printf(" Finished EXX outer loop in %3d exx steps vexx_rms = %8.2e, total energy = %.*f Ha\n",
-                        ct.exx_steps, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
+                printf(" Finished EXX outer loop in %3d exx steps, elapsed time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
+                        ct.exx_steps, exx_elapsed_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
                 ct.FOCK = f2;
                 break;
             }
             else
             {
-                printf(" Finished EXX inner loop in %3d scf steps vexx_rms = %8.2e, total energy = %.*f Ha\n",
-                        ct.scf_steps, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
+                printf(" Finished EXX inner loop in %3d scf steps, exx step time = %6.2f, vexx_rms = %8.2e, total energy = %.*f Ha\n",
+                        ct.scf_steps, exx_step_time, Exx_scf->vexx_RMS[ct.exx_steps], 6, ct.TOTAL);
             }
         }
 
