@@ -52,6 +52,7 @@
 #endif
 
 
+
 template void Kpoint<double>::Subdiag(double *, double *, int);
 template void Kpoint<std::complex<double>>::Subdiag(double *, double *, int);
 
@@ -213,9 +214,9 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (double *)Bij, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqHij);
     else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm);
+        BlockAllreduce((double *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)Bij, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm);
+    BlockAllreduce((double *)Bij, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
     // Compute S matrix
@@ -236,9 +237,9 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     if(ct.use_async_allreduce)
         MPI_Iallreduce(MPI_IN_PLACE, (double *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm, &MPI_reqSij);
     else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm);
+        BlockAllreduce((double *)global_matrix1, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)global_matrix1, (nstates+2) * nstates * factor / 2, MPI_DOUBLE, MPI_SUM, grid_comm);
+    BlockAllreduce((double *)global_matrix1, (size_t)(nstates+2)*(size_t)nstates * (size_t)factor / 2, grid_comm);
 #endif
 
 

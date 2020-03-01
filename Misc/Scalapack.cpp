@@ -30,6 +30,7 @@
 
 
 #include "RmgException.h"
+#include "GlobalSums.h"
 #include "Scalapack.h"
 #include "blacs.h"
 
@@ -386,6 +387,12 @@ void Scalapack::Pgesv (int *N, int *NRHS, std::complex<double> *A, int *IA, int 
 void Scalapack::Allreduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op) {
      if(!this->participates) return;
      MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, this->comm);
+}
+
+// Block inplace double reduction within the group only
+void Scalapack::ScalapackBlockAllreduce(double *buf, size_t count)
+{
+    BlockAllreduce(buf, count, this->comm);
 }
 
 // Broadcast to everyone in the root

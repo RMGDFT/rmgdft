@@ -272,9 +272,7 @@ char * Subdiag_Scalapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType 
             // Gather distributed results from distAij into eigvectors
             //MainSp->GatherMatrix(eigvectors, distAij);
             MainSp->CopyDistArrayToSquareMatrix(eigvectors, distAij, num_states, desca);
-            MainSp->Allreduce(MPI_IN_PLACE, eigvectors, factor *num_states*num_states, MPI_DOUBLE, MPI_SUM);
-
-
+            MainSp->ScalapackBlockAllreduce((double *)eigvectors, (size_t)factor * (size_t)num_states * (size_t)num_states);
         }
 
         // Finally send eigenvalues and vectors to everyone 
