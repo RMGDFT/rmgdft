@@ -150,9 +150,13 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce it
     MPI_Request MPI_reqAij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)hr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+    if(ct.use_async_allreduce)
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)hr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+    else
+        BlockAllreduce((double *)hr, (size_t)nbase*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)hr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    BlockAllreduce((double *)hr, (size_t)nbase*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
+
 #endif
 
     // Compute S matrix
@@ -160,20 +164,23 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for Aij request to finish
-    MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
+    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
     // Asynchronously reduce Sij request
     MPI_Request MPI_reqSij;
-    MPI_Iallreduce(MPI_IN_PLACE, (double *)sr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+    if(ct.use_async_allreduce)
+        MPI_Iallreduce(MPI_IN_PLACE, (double *)sr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+    else
+        BlockAllreduce((double *)sr, (size_t)nbase*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
 #else
-    MPI_Allreduce(MPI_IN_PLACE, (double *)sr, nbase * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    BlockAllreduce((double *)sr, (size_t)nbase*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
     // Wait for S request to finish and when done store copy in Sij
-    MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
+    if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
     delete RT1;
 
@@ -263,29 +270,35 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 #if HAVE_ASYNC_ALLREDUCE
         // Asynchronously reduce it
         MPI_Request MPI_reqAij;
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)&hr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+        if(ct.use_async_allreduce)
+            MPI_Iallreduce(MPI_IN_PLACE, (double *)&hr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqAij);
+        else
+            BlockAllreduce((double *)&hr[nbase*ct.max_states], (size_t)notconv*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
 #else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)&hr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        BlockAllreduce((double *)&hr[nbase*ct.max_states], (size_t)notconv*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
 #endif
 
         RmgGemm(trans_a, trans_n, nbase+notconv, notconv, pbasis_noncoll, alphavel, psi, pbasis_noncoll, &s_psi[nbase*pbasis_noncoll], pbasis_noncoll, beta, &sr[nbase*ct.max_states], ct.max_states);
 
 #if HAVE_ASYNC_ALLREDUCE
         // Wait for Aij request to finish
-        MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
+        if(ct.use_async_allreduce) MPI_Wait(&MPI_reqAij, MPI_STATUS_IGNORE);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
         // Asynchronously reduce Sij request
         MPI_Request MPI_reqSij;
-        MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+        if(ct.use_async_allreduce)
+           MPI_Iallreduce(MPI_IN_PLACE, (double *)&sr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm, &MPI_reqSij);
+        else
+            BlockAllreduce((double *)&sr[nbase*ct.max_states], (size_t)notconv*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
 #else
-        MPI_Allreduce(MPI_IN_PLACE, (double *)&sr[nbase*ct.max_states], notconv * ct.max_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        BlockAllreduce((double *)&sr[nbase*ct.max_states], (size_t)notconv*(size_t)ct.max_states * (size_t)factor, pct.grid_comm);
 #endif
 
 #if HAVE_ASYNC_ALLREDUCE
         // Wait for S request to finish
-        MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
+        if(ct.use_async_allreduce) MPI_Wait(&MPI_reqSij, MPI_STATUS_IGNORE);
 #endif
         delete RT1;
 
