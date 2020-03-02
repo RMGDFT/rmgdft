@@ -63,22 +63,22 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
 
 
         fprintf(fhand, "#This is a Cube file to be viewed \n");
-        fprintf(fhand, "# Atomic coordinates in Angstroms \n");
+        fprintf(fhand, "# Atomic coordinates lattice in bohr \n");
         int nval = sizeof(T)/sizeof(double);
         fprintf(fhand, " %d  0.0  0.0  0.0 %d \n", (int)Atoms.size(), nval);
 
-        fprintf(fhand, "%d %12.6f %12.6f %12.6f\n",sizes[0], 
-                Rmg_L.get_a0(0) * a0_A/sizes[0], 
-                Rmg_L.get_a0(1) * a0_A/sizes[0], 
-                Rmg_L.get_a0(2) * a0_A/sizes[0]);
-        fprintf(fhand, "%d %12.6f %12.6f %12.6f\n",sizes[1], 
-                Rmg_L.get_a1(0) * a0_A/sizes[1], 
-                Rmg_L.get_a1(1) * a0_A/sizes[1], 
-                Rmg_L.get_a1(2) * a0_A/sizes[1]);
-        fprintf(fhand, "%d %12.6f %12.6f %12.6f\n",sizes[2], 
-                Rmg_L.get_a2(0) * a0_A/sizes[2], 
-                Rmg_L.get_a2(1) * a0_A/sizes[2], 
-                Rmg_L.get_a2(2) * a0_A/sizes[2]);
+        fprintf(fhand, "%d %12.6f %12.6f %12.6f\n", sizes[0], 
+                Rmg_L.get_a0(0) /sizes[0], 
+                Rmg_L.get_a0(1) /sizes[0], 
+                Rmg_L.get_a0(2) /sizes[0]);
+        fprintf(fhand, "%d %12.6f %12.6f %12.6f\n", sizes[1], 
+                Rmg_L.get_a1(0) /sizes[1], 
+                Rmg_L.get_a1(1) /sizes[1], 
+                Rmg_L.get_a1(2) /sizes[1]);
+        fprintf(fhand, "%d %12.6f %12.6f %12.6f\n", sizes[2], 
+                Rmg_L.get_a2(0) /sizes[2], 
+                Rmg_L.get_a2(1) /sizes[2], 
+                Rmg_L.get_a2(2) /sizes[2]);
 
         for(ion = 0; ion < ct.num_ions; ion++)
         {
@@ -86,8 +86,8 @@ template <typename T> void OutputCubeFile(T *array_dist, int grid, std::string f
             sp = &Species[iptr->species];
             int a_num = GetAtomicNumber(sp->atomic_symbol);
             fprintf(fhand, " %d  %f %12.6e   %12.6e   %12.6e\n", a_num,
-                    iptr->partial_charge, iptr->crds[0] * a0_A, 
-                    iptr->crds[1] * a0_A,   iptr->crds[2] * a0_A);   
+                    iptr->partial_charge, iptr->crds[0] , 
+                    iptr->crds[1] ,   iptr->crds[2] );   
         }
 
         for (int i=0; i<sizes[0]; i++) {
