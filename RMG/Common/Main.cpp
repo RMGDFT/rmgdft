@@ -56,6 +56,7 @@
 void initialize (int argc, char **argv);
 
 template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr);
+template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, double *vh, double *rho);
 
 void check_tests (void);
 
@@ -345,7 +346,12 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             break;
 
         case TDDFT:
-            if(!ct.restart_tddft) Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+            if(!ct.restart_tddft) 
+            {   
+                Relax (0, vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
+                outcubes(Kptr, vh, rho);
+            }
+            ct.cube_rho = false;
             RmgTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
             break;
         
@@ -371,7 +377,11 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
     if(Verify ("output_rho_xsf", true, Kptr[0]->ControlMap))
         Output_rho_xsf(rho, pct.grid_comm);
+    outcubes(Kptr, vh, rho);
+}                               /* end run */
 
+template <typename OrbitalType> void outcubes (Kpoint<OrbitalType> **Kptr, double *vh, double *rho)
+{
     std::string spinindex = "";
     if(ct.nspin==2 || ct.nspin == 4)
     {
@@ -409,9 +419,9 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
         }
     }
+}
 
 
-}                               /* end run */
 
 void report ()
 {
