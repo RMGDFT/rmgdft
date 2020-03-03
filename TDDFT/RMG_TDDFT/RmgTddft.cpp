@@ -240,7 +240,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     if(ct.restart_tddft)
     {
 
-        ReadData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,Smatrix, Hmatrix_m1, Hmatrix_0, &pre_steps);
+        ReadData_rmgtddft(ct.infile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,Smatrix, Hmatrix_m1, Hmatrix_0, &pre_steps);
         dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
         ReadData (ct.infile, vh, rho, vxc, Kptr);
 
@@ -423,11 +423,14 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         //  extract dipole from rho(Pn1)
         get_dipole(rho, dipole_ele);
+        // save current  H0, H1 for the  next step extrapolatiion
+        dcopy  (&n2, Hmatrix_0, &ione, Hmatrix_m1 , &ione);         
+        //dcopy(&n2, Hmatrix  , &ione, Hmatrix_1  , &ione);         // this update is already done right after scf loop 
+
+        dcopy  (&n2, Hmatrix_1, &ione, Hmatrix_0  , &ione);        
+
         if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
                 tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
-
-
-
 
         if((tddft_steps +1) % ct.checkpoint == 0)
         {   
@@ -438,10 +441,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             if(pct.gridpe == 0)fflush(dfi);
         }
 
-        // save current  H0, H1 for the  next step extrapolatiion
-        dcopy  (&n2, Hmatrix_0, &ione, Hmatrix_m1 , &ione);         
-        //dcopy(&n2, Hmatrix  , &ione, Hmatrix_1  , &ione);         // this update is already done right after scf loop 
-        dcopy  (&n2, Hmatrix_1, &ione, Hmatrix_0  , &ione);        
 
     }
 
