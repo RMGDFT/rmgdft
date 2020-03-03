@@ -618,7 +618,7 @@ void WriteHeader (void)
 static void init_write_pos (void)
 {
 
-    printf ("\n\nInitial Ionic Positions And Displacements\n");
+    printf ("\n\nInitial Ionic Positions And Displacements (Bohr)\n");
     printf ("Species      X           Y           Z           dX          dY          dZ");
 
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
@@ -638,6 +638,26 @@ static void init_write_pos (void)
 
     printf ("\n");
 
+
+    printf ("\n\nInitial Ionic Positions And Displacements (Angstrom)\n");
+    printf ("Species      X           Y           Z           dX          dY          dZ");
+
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+    {
+
+        ION &Atom = Atoms[ion];
+        SPECIES &Type = Species[Atom.species];
+
+        printf ("\n  %-2s   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
+		Type.atomic_symbol,
+                Atom.crds[0] *a0_A, Atom.crds[1] *a0_A, Atom.crds[2] *a0_A,
+                (Atom.crds[0] - Atom.icrds[0]) *a0_A,
+                (Atom.crds[1] - Atom.icrds[1]) *a0_A, 
+                (Atom.crds[2] - Atom.icrds[2]) *a0_A);
+
+    }                           /* end for */
+
+    printf ("\n");
+
 }                               /* end write_pos */
 
-/******/
