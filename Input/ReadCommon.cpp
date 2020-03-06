@@ -1286,9 +1286,16 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     ik = InputMap["c_length"];
     ik->Readdoubleval = &orig_celldm[2];
 
-
+    if (Verify ("lattice_units", "Angstrom", InputMap) && Verify ("crds_units", "Bohr", InputMap))
+    {
+        std::cout <<"WARNING:: lattice_unit Angstrom and  crds_unit Bohr"<<std::endl; 
+    }
+    if (Verify ("lattice_units", "Bohr", InputMap) && Verify ("crds_units", "Angstrom", InputMap))
+    {
+        std::cout <<"WARNING:: lattice_unit Bohr and  crds_unit Angstrom"<<std::endl; 
+    }
     // Transform to atomic units, which are used internally if input is in angstrom 
-    if (Verify ("crds_units", "Angstrom", InputMap))
+    if (Verify ("lattice_units", "Angstrom", InputMap))
     {
         celldm[0] *= A_a0;
         celldm[1] *= A_a0;
