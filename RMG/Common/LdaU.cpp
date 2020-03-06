@@ -42,7 +42,10 @@
 #include "Kpoint.h"
 #include "RmgSumAll.h"
 #include "RmgGemm.h"
+#include "GpuAlloc.h"
+#include "FiniteDiff.h"
 #include "LdaU.h"
+#include "transition.h"
 
 
 
@@ -109,7 +112,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
                 std::complex<double> occ(0.0, 0.0); 
                 for(int st=0;st < K.nstates;st++)
                 {
-                    occ = occ + K.Kstates[st].occupation[0] * nsint[st][ion][i] * nsint[st][ion][j];
+                    occ = occ + K.Kstates[st].occupation[0] * nsint[st][ion][i] * std::conj(nsint[st][ion][j]);
                 }
                 ns_occ[0][ion][i][j] = occ * K.kp.kweight;
             }
@@ -131,7 +134,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
     // Need to sum over k-points and symmetrize here then may need to reimpose hermiticity
 
     // Get occupation matrix from opposite spin case
-    if(ct.spin_flag)
+    if(ct.nspin == 2)
     {
         MPI_Status status;
         int len = 2 * Atoms.size() * pstride * pstride;
@@ -141,6 +144,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
             recvbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
 
     }
+    delete [] sint_compack;
 }
 
 
@@ -280,4 +284,201 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
 // Destructor
 template <class KpointType> LdaU<KpointType>::~LdaU(void)
 {
+}
+
+// calculate LDA+u force for this kpoint
+template void LdaU<double>::calc_force(double *sint, double *force_ldau);
+template void LdaU<std::complex<double>>::calc_force(std::complex<double> *sint, double *force_ldau);
+template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, double *force_ldau)
+{
+    KpointType *psi, *psi_x, *psi_y, *psi_z;
+
+    std::complex<double> I_t(0.0, 1.0);
+
+    int num_tot_proj = K.OrbitalProjector->get_num_tot_proj();
+    int num_nonloc_ions = K.OrbitalProjector->get_num_nonloc_ions();
+    int num_owned_ions = K.OrbitalProjector->get_num_owned_ions();
+
+    int *nonloc_ions_list = K.OrbitalProjector->get_nonloc_ions_list();
+    int *owned_ions_list = K.OrbitalProjector->get_owned_ions_list();
+
+    int pstride = K.OrbitalProjector->get_pstride();
+
+    size_t size =  (size_t)num_tot_proj * ct.state_block_size * sizeof(KpointType);
+    KpointType *sint_der = (KpointType *)GpuMallocManaged(3*size * sizeof(KpointType));
+    KpointType *sint_derx = sint_der + 0 * size;
+    KpointType *sint_dery = sint_der + 1 * size;
+    KpointType *sint_derz = sint_der + 2 * size;
+
+//  determine the number of occupied states for all kpoints.
+
+    int num_occupied = 0;
+    for(int st = 0; st < ct.num_states; st++)
+    {
+        if(abs(K.Kstates[st].occupation[0]) < 1.0e-10) 
+        {
+            num_occupied = std::max(num_occupied, st);
+            break;
+        }
+    }
+
+
+    int num_state_block = (num_occupied +ct.state_block_size -1) / ct.state_block_size;
+    int *state_start = new int[num_state_block];
+    int *state_end = new int[num_state_block];
+    std::complex<double> *par_occ_x = new std::complex<double>[Atoms.size() * pstride * pstride]();
+    std::complex<double> *par_occ_y = new std::complex<double>[Atoms.size() * pstride * pstride]();
+    std::complex<double> *par_occ_z = new std::complex<double>[Atoms.size() * pstride * pstride]();
+
+    for(int ib = 0; ib < num_state_block; ib++)
+    {
+        state_start[ib] = ib * ct.state_block_size;
+        state_end[ib] = (ib+1) * ct.state_block_size;
+        if(state_end[ib] > num_occupied) state_end[ib] = num_occupied;
+    }
+
+    int pbasis = K.pbasis;
+    int pbasis_noncoll = pbasis * ct.noncoll_factor;
+
+
+    if(ct.alloc_states < ct.num_states + 3 * ct.state_block_size)     
+    {
+        printf("\n allco_states %d should be larger than ct.num_states %d + 3* ct.state_block_size, %d", ct.alloc_states, ct.num_states,
+                ct.state_block_size);
+        exit(0);
+    }
+
+
+    for(int ib = 0; ib < num_state_block; ib++)
+    {
+        for(int st = state_start[ib]; st < state_end[ib]; st++)
+        {
+            psi = K.Kstates[st].psi;
+            psi_x = K.Kstates[ct.num_states].psi + (st-state_start[ib]) * pbasis_noncoll;
+            psi_y = psi_x + ct.state_block_size*pbasis_noncoll;
+            psi_z = psi_x +2* ct.state_block_size*pbasis_noncoll;
+            ApplyGradient(psi, psi_x, psi_y, psi_z, ct.force_grad_order, "Coarse");
+            if(ct.noncoll)
+                ApplyGradient(psi+pbasis, psi_x+pbasis, psi_y+pbasis, psi_z+pbasis, ct.force_grad_order, "Coarse");
+
+            if(!ct.is_gamma)
+            {
+                std::complex<double> *psi_C, *psi_xC, *psi_yC, *psi_zC;
+                psi_C = (std::complex<double> *) psi;
+                psi_xC = (std::complex<double> *) psi_x;
+                psi_yC = (std::complex<double> *) psi_y;
+                psi_zC = (std::complex<double> *) psi_z;
+                for(int i = 0; i < pbasis_noncoll; i++) 
+                {
+                    psi_xC[i] += I_t *  K.kp.kvec[0] * psi_C[i];
+                    psi_yC[i] += I_t *  K.kp.kvec[1] * psi_C[i];
+                    psi_zC[i] += I_t *  K.kp.kvec[2] * psi_C[i];
+                }
+            }
+
+
+        }
+
+
+        int num_state_thisblock = state_end[ib] - state_start[ib];
+
+
+        RmgTimer *RT1 = new RmgTimer("2-Force: LDAU: non-local-betaxpsi");
+        int st_start = ct.num_states * ct.noncoll_factor;
+        int st_thisblock = num_state_thisblock * ct.noncoll_factor;
+        int st_block = ct.state_block_size * ct.noncoll_factor;
+
+        K.OrbitalProjector->project(&K, sint_derx, st_start,              st_thisblock, K.orbital_weight);
+        K.OrbitalProjector->project(&K, sint_dery, st_start +   st_block, st_thisblock, K.orbital_weight);
+        K.OrbitalProjector->project(&K, sint_derz, st_start + 2*st_block, st_thisblock, K.orbital_weight);
+
+        for(int i = 0; i < num_nonloc_ions * st_thisblock * pstride; i++)
+        {
+            sint_derx[i] *= -1.0;
+            sint_dery[i] *= -1.0;
+            sint_derz[i] *= -1.0;
+        }
+        delete RT1;
+
+        RT1 = new RmgTimer("2-Force: LDAU: non-local-partial");
+        int nion = -1;
+        for (int ion = 0; ion < num_owned_ions; ion++)
+        {
+            /*Global index of owned ion*/
+            int gion = owned_ions_list[ion];
+
+            /* Figure out index of owned ion in nonloc_ions_list array, store it in nion*/
+            do {
+
+                nion++;
+                if (nion >= num_nonloc_ions)
+                {
+                    printf("\n Could not find matching entry in nonloc_ions_list for owned ion %d", gion);
+                    rmg_error_handler(__FILE__, __LINE__, "Could not find matching entry in nonloc_ions_list for owned ion ");
+                }
+
+            } while (nonloc_ions_list[nion] != gion);
+
+            for(int st = state_start[ib]; st < state_end[ib]; st++)
+            {
+                double occ_st = K.Kstates[st].occupation[0];
+                int sindex = st * num_nonloc_ions * pstride + nion * pstride;
+                int der_index = (st - state_start[ib]) * num_nonloc_ions * pstride + nion * pstride;
+                for (int m1 = 0; m1 < pstride; m1++)
+                    for (int m2 = 0; m2 < pstride; m2++)
+                    {
+                        par_occ_x[ion * pstride * pstride + m1 * pstride + m2] += 
+                            occ_st*(sint_derx[der_index + m1] * std::conj(sint[sindex + m2]) + 
+                                    sint[sindex + m1] * MyConj(sint_derx[der_index + m2])); 
+                        par_occ_y[ion * pstride * pstride + m1 * pstride + m2] += 
+                            occ_st*(sint_dery[der_index + m1] * std::conj(sint[sindex + m2]) + 
+                                    sint[sindex + m1] * MyConj(sint_dery[der_index + m2])); 
+                        par_occ_z[ion * pstride * pstride + m1 * pstride + m2] += 
+                            occ_st*(sint_derz[der_index + m1] * std::conj(sint[sindex + m2]) + 
+                                    sint[sindex + m1] * MyConj(sint_derz[der_index + m2])); 
+                    }
+
+            }
+        }
+        delete RT1;
+
+    }
+
+    std::complex<double> sum_x, sum_y, sum_z;
+    for (int ion = 0; ion < num_owned_ions; ion++)
+    {
+        int gion = owned_ions_list[ion];
+        sum_x = 0.0;
+        sum_y = 0.0;
+        sum_z = 0.0;
+        for(int m1 = 0; m1 < pstride; m1++)
+        {
+            sum_x += par_occ_x[ion *pstride *pstride + m1 * pstride + m1];
+            sum_y += par_occ_y[ion *pstride *pstride + m1 * pstride + m1];
+            sum_z += par_occ_z[ion *pstride *pstride + m1 * pstride + m1];
+            for(int m2 = 0; m2 <pstride; m2++)
+            {
+                sum_x -= 2.0 * ns_occ[0][gion][m2][m1] * par_occ_x[ion *pstride *pstride + m1 * pstride + m2];
+                sum_y -= 2.0 * ns_occ[0][gion][m2][m1] * par_occ_y[ion *pstride *pstride + m1 * pstride + m2];
+                sum_z -= 2.0 * ns_occ[0][gion][m2][m1] * par_occ_z[ion *pstride *pstride + m1 * pstride + m2];
+            }
+
+        }
+
+        force_ldau[gion * 3 + 0] = std::real(sum_x);
+        force_ldau[gion * 3 + 1] = std::real(sum_y);
+        force_ldau[gion * 3 + 2] = std::real(sum_z);
+
+        printf("\n ldau imag %d %f %f %f", gion, std::imag(sum_x),std::imag(sum_y),std::imag(sum_z));
+
+    }
+
+
+    delete [] state_end;
+    delete [] state_start;
+    delete [] par_occ_x;
+    delete [] par_occ_y;
+    delete [] par_occ_z;
+    GpuFreeManaged(sint_der);
+
 }

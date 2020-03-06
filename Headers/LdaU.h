@@ -40,6 +40,7 @@ public:
     LdaU(Kpoint<KpointType> &kp);
     ~LdaU(void);
     void calc_ns_occ(KpointType *sint, int first_state, int nstates);
+    void calc_force(KpointType *sint, double *force_ldau);
     void app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint, int first_state, int nstates);
     void write_ldaU(void);
 
