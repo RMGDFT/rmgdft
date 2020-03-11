@@ -102,7 +102,6 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
     }
 
 
-
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
         for(int i=0;i < this->ldaU_m;i++)
@@ -310,6 +309,7 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
     KpointType *sint_dery = sint_der + 1 * size;
     KpointType *sint_derz = sint_der + 2 * size;
 
+    for(int idx = 0; idx < (int)Atoms.size() * 3; idx++) force_ldau[idx] = 0.0;
 //  determine the number of occupied states for all kpoints.
 
     int num_occupied = 0;
@@ -347,7 +347,6 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
                 ct.state_block_size);
         exit(0);
     }
-
 
     for(int ib = 0; ib < num_state_block; ib++)
     {
@@ -424,12 +423,15 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
                 double occ_st = K.Kstates[st].occupation[0];
                 int sindex = st * num_nonloc_ions * pstride + nion * pstride;
                 int der_index = (st - state_start[ib]) * num_nonloc_ions * pstride + nion * pstride;
+
                 for (int m1 = 0; m1 < pstride; m1++)
+                {
                     for (int m2 = 0; m2 < pstride; m2++)
                     {
                         par_occ_x[ion * pstride * pstride + m1 * pstride + m2] += 
                             occ_st*(sint_derx[der_index + m1] * std::conj(sint[sindex + m2]) + 
                                     sint[sindex + m1] * MyConj(sint_derx[der_index + m2])); 
+
                         par_occ_y[ion * pstride * pstride + m1 * pstride + m2] += 
                             occ_st*(sint_dery[der_index + m1] * std::conj(sint[sindex + m2]) + 
                                     sint[sindex + m1] * MyConj(sint_dery[der_index + m2])); 
@@ -437,6 +439,7 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
                             occ_st*(sint_derz[der_index + m1] * std::conj(sint[sindex + m2]) + 
                                     sint[sindex + m1] * MyConj(sint_derz[der_index + m2])); 
                     }
+                }
 
             }
         }
@@ -465,11 +468,34 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
 
         }
 
-        force_ldau[gion * 3 + 0] = std::real(sum_x);
-        force_ldau[gion * 3 + 1] = std::real(sum_y);
-        force_ldau[gion * 3 + 2] = std::real(sum_z);
+        SPECIES &AtomType = Species[Atoms[gion].species];
+        double Ueff = AtomType.Hubbard_U / 2.0; 
 
-        printf("\n ldau imag %d %f %f %f", gion, std::imag(sum_x),std::imag(sum_y),std::imag(sum_z));
+        force_ldau[gion * 3 + 0] = -0.5 *Ueff * std::real(sum_x);
+        force_ldau[gion * 3 + 1] = -0.5 *Ueff * std::real(sum_y);
+        force_ldau[gion * 3 + 2] = -0.5 *Ueff * std::real(sum_z);
+
+        if(ct.verbose && pct.gridpe == 0)
+        {
+            printf("  ion %d LDA+U occupation matrix\n", ion);
+            for(int i=0;i < ldaU_m;i++)
+            {
+                for(int j=0;j < ldaU_m;j++)
+                {
+                    printf("%7.4f   ", std::abs(ns_occ[0][ion][i][j]));
+                }
+                printf("\n");
+            }
+            printf("  ion %d LDA+U occupation_x matrix\n", ion);
+            for(int i=0;i < ldaU_m;i++)
+            {
+                for(int j=0;j < ldaU_m;j++)
+                {
+                    printf("%7.4f   ", std::abs(par_occ_x[ion *pstride *pstride + i * pstride + j]));
+                }
+                printf("\n");
+            }
+        }
 
     }
 
