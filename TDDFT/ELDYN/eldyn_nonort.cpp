@@ -23,7 +23,7 @@ void clean_LT(double *A, int *p_N, int *p_lt) ;
 
 void ontrans(double*U, double*Ui, double*Ain, double *Aout, int*p_N, int*p_ifon) ;
 
-//void eldyn_orth(int *p_N, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
+//void eldyn_ort(int *p_N, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
     
 ////////////////////////////////////////////////
 
@@ -57,17 +57,17 @@ void eldyn_nonort(int *p_Nbasis, double *S,  double *Omega,double *Pn0,double *P
    if (Ieldyn == 0 )       {
        tCommutp = true  ;
        tDiagp   = true  ;
-      printf("Ieldyn = 0 \n");
+      //printf("Ieldyn = 0 \n");
 
    } else if (Ieldyn == 1) {
        tCommutp = true  ;
        tDiagp   = false ;
-      printf("Ieldyn = 1 \n");
+      //printf("Ieldyn = 1 \n");
 
    } else if (Ieldyn == 2) {
        tCommutp = false ;
        tDiagp   = true  ;
-      printf("Ieldyn = 2 \n");
+      //printf("Ieldyn = 2 \n");
 
    } else  {
       printf("Incorrect ieldyn =%d. Should  be 0, 1 or 2. Exiting.\n", Ieldyn);
