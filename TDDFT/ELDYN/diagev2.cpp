@@ -12,13 +12,6 @@
 void print_matrix(double *, int ) ;
 void print_matrix2(double *, int ) ;
 
-extern "C" {
-extern int dgeev_(char*,char*,int*,double*,int*,double*, double*, double*, int*, double*, int*, double*, int*, int*);
-}
-extern "C" {
-extern int dsyev_(char*,char*,int*,double*,int*,double*, double*,int*,int*) ;   
-}
-
 
 ////////////////////////////////////////////////////////////
 void set_vector( double scalar, double  *A, int N) 

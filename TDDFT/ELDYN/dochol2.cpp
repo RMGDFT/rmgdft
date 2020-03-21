@@ -11,12 +11,6 @@
 void print_matrix(double *, int ) ; 
 void print_matrix2(double *, int ) ; 
 
-extern "C" { extern int dsyev_(char*,char*,int*,double*,int*,double*, double*,int*,int*) ; } 
-extern "C" {
-  extern  int  dpotrf_(char *, int*, double*, int *, int *) ; 
-  extern  int  dpotri_(char *, int*, double*, int *, int *) ; 
-  extern  int  dtrtri_(char *, char *,   int *N, double *, int *, int*) ; 
-}
 ///////////////////////////////////////////////////////////////
 void clean_LT(double *A, int *p_N, int *p_lt)
 {

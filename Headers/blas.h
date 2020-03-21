@@ -104,6 +104,7 @@
 #define		dtpttr		RMG_FC_GLOBAL(dtpttr, DTPTTR)
 #define		ztrttp		RMG_FC_GLOBAL(ztrttp, ZTRTTP)
 #define		ztpttr		RMG_FC_GLOBAL(ztpttr, ZTPTTR)
+#define		dtrtri		RMG_FC_GLOBAL(dtrtri, DTRTRI)
 
 #if __cplusplus
 extern "C" {
@@ -119,6 +120,7 @@ void dtrttp(const char *, int *, double *, int *, double *, int *);
 void dtpttr( const char *, int *, double *, double *, int *, int *);
 void ztrttp(const char *, int *, std::complex<double> *, int *, std::complex<double> *, int *);
 void ztpttr( const char *, int *, std::complex<double> *, std::complex<double> *, int *, int *);
+void dtrtri(const char *UPLO, const char *DIAG, int *N, double *A, int *LDA, int *INFO );
 
 int ilaenv (int *ispec, char *name, char *opts, int *n1, int *n2, int *n3,
             int *n4);
