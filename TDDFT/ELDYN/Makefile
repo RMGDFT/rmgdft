@@ -10,7 +10,6 @@ all:
 	gfortran -g1 -c timing.f90 dochol.f90 
 	gfortran -g1 -c initmd.f90  eldyn.f90 
 
-	${CXX}    -g1 -c main.cpp                  ${INCLUDE}
 	${CXX}    -g1 -c diagev2.cpp               ${INCLUDE}
 	${CXX}    -g1 -c commutp2.cpp              ${INCLUDE}
 	${CXX}    -g1 -c eldyn_ort.cpp             ${INCLUDE}
