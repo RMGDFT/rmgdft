@@ -53,6 +53,9 @@
 
 
 void  init_point_charge_pot(double *vtot_psi, int density);
+void eldyn_ort(int *p_N, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
+void eldyn_nonort(int *p_N, double *S, double *F,double *Po0,double *Pn1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
+  
 
 void print_matrix_d(double *matrix,  int  *nblock, int *ldim ){
     /*    
@@ -353,6 +356,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
         err =1.0e0   ;  thrs_dHmat  = 1e-7  ;
 
+        double  thrs_bch =1.0e-10; 
+        int     maxiter_bch  =100;
+        double  errmax_bch ;
+        int     niter_bch ;
+
         RmgTimer *RT2a ;    // timer type  declaration
 
         //-----   SCF loop  starts here: 
@@ -361,7 +369,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             //RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
             RT2a = new RmgTimer("2-TDDFT: ELDYN");
             magnus (Hmatrix_0,    Hmatrix_1 , time_step, Hmatrix_dt , numst) ; 
-            eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
+            /* --- fortran version:  --*/
+            // eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
+            /* --- C++  version:  --*/
+            eldyn_ort(&numst , Hmatrix_dt,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,    &iprint) ;
+
             delete(RT2a);
 
             // if(pct.gridpe == 0) { printf("**** Pn1 : \n");   print_matrix_z(Pn1,  &nblock, &numst)  ; }
