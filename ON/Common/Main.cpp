@@ -351,7 +351,6 @@ int main(int argc, char **argv)
             delete RTO;
         }
 
-
         if(ct.write_qmcpack_restart)
         {
 
@@ -373,6 +372,28 @@ int main(int argc, char **argv)
             if(rank == 0)
             {
                 WriteQmcpackRestart(fname);
+            }
+#else
+            rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+#endif
+
+        }
+
+        /* Save state information to file */
+
+        if(ct.write_qmcpack_restart_localized)
+        {
+
+#if QMCPACK_SUPPORT
+            int rank;
+            MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            std::string fname(ct.outfile);
+            int num_orb = LocalOrbital->num_tot;
+            double *Cij_glob = new double[num_orb * num_orb];
+            mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
+            if(rank == 0)
+            {
+                WriteQmcpackRestartLocalized(fname);
             }
 #else
             rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");

@@ -4,6 +4,8 @@
 void WriteXyz(char *);
 void Preconditioner(double *, int);
 template <typename KpointType>
+void WriteCij (std::string& name, KpointType *Cij_dis);
+template <typename KpointType>
 void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, KpointType *Cij_dis, BaseGrid &BG,
         double *eig, double *occ);
 template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double * vnuc,

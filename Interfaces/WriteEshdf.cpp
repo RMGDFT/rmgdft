@@ -389,3 +389,109 @@ void WriteQmcpackRestart(std::string& name)
    outFile.writeAtoms();
    outFile.writeElectrons();
 }
+void WriteQmcpackRestartLocalized(std::string& name)
+{
+   string ofname = name + ".h5";
+   eshdfFile outFile(ofname);
+   outFile.writeBoilerPlate("rmg_on");
+   outFile.writeSupercell();
+   outFile.writeAtoms();
+   outFile.writeLocalizedOrbitals();
+}
+
+void eshdfFile::writeLocalizedOrbitals() {
+  int nspin;
+
+  //wfnNode.getAttribute("nspin", nspin);
+  nspin = ct.nspin;
+
+  //wfnNode.getAttribute("nel", nel);
+  // RMG porting note - In RMG this is total not per spin state
+
+  // RMG porting note, C or Fortran order?
+
+  hid_t electrons_group = makeHDFGroup("LocalizedOrbitals", file);
+  writeNumsToHDF("number_of_spins", nspin, electrons_group);
+
+
+  double nup = 0;
+  double ndn = 0;
+
+  hid_t up_spin_group = makeHDFGroup("spin_0", electrons_group);
+  handleSpinGroup_ON(0, up_spin_group, nup);
+
+  if (nspin == 2) {
+      hid_t dn_spin_group = makeHDFGroup("spin_1", electrons_group);
+      handleSpinGroup_ON(nspin-1, dn_spin_group, ndn);
+  } else {
+      ndn = nup;
+  }
+
+  vector<int> nels;
+  nels.push_back(static_cast<int>(std::floor(nup+0.1)));
+  nels.push_back(static_cast<int>(std::floor(ndn+0.1)));
+  writeNumsToHDF("number_of_electrons", nels, electrons_group);
+}
+
+void eshdfFile::handleSpinGroup_ON(int spin_idx, hid_t groupLoc, double& nocc) {
+
+#include "init_var.h"
+    vector<double> eigvals;
+    nocc = 0.0;
+
+    {
+        vector<double> Cij;
+        Cij.resize(ct.num_states * ct.num_states);
+        std::string wfname(ct.outfile);
+        wfname = wfname + "_spin" + std::to_string(spin_idx) + "_Cij";
+
+        int fhand = open(wfname.c_str(), O_RDWR);
+        if (fhand < 0)
+        {
+            printf("\n  unable to open file %s", wfname.c_str() );
+            exit(0);
+        }
+
+        read(fhand, Cij.data(),ct.num_states * ct.num_states * sizeof(double));
+        close(fhand);
+        writeNumsToHDF("Cij", Cij, groupLoc);
+    }
+
+    vector<double> psi;
+    psi.resize(states[0].size);
+    for (int chIdx = 0; chIdx < ct.num_states; chIdx++)
+    {
+        //cout << "Working on state " << stateCounter << endl;
+        stringstream statess;
+        statess << "orbital_" << chIdx;
+        hid_t state_group = makeHDFGroup(statess.str(), groupLoc);
+
+
+        std::string wfname(ct.outfile);
+        wfname = wfname + "_spin" + std::to_string(spin_idx) +
+            ".orbital_" + std::to_string(chIdx);
+
+        int fhand = open(wfname.c_str(), O_RDWR);
+        if (fhand < 0)
+        {
+            printf("\n  unable to open file %s", wfname.c_str() );
+            exit(0);
+        }
+
+        read(fhand, psi.data(), states[chIdx].size * sizeof(double));
+        writeNumsToHDF("phi", psi, state_group);
+        vector<int> grid_start;
+        grid_start.push_back(states[chIdx].ixmin);
+        grid_start.push_back(states[chIdx].iymin);
+        grid_start.push_back(states[chIdx].izmin);
+        writeNumsToHDF("grid_start", grid_start, state_group);
+        vector<int> grid_dim;
+        grid_dim.push_back(states[chIdx].orbit_nx);
+        grid_dim.push_back(states[chIdx].orbit_ny);
+        grid_dim.push_back(states[chIdx].orbit_nz);
+        writeNumsToHDF("grid_dim", grid_dim, state_group);
+        close(fhand);
+    }
+    writeNumsToHDF("number_of_states", ct.num_states, groupLoc);
+    //  writeNumsToHDF("eigenvalues", eigvals, groupLoc);
+}

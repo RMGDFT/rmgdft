@@ -18,6 +18,7 @@
 #include "InputKey.h"
 
 void WriteQmcpackRestart(std::string& name);
+void WriteQmcpackRestartLocalized(std::string& name);
 
 class fftContainer;
 
@@ -34,6 +35,7 @@ private:
 
   void readInEigFcn(std::string& wfname, double& eig_value, double& wf_occ, fftContainer& cont);
   void handleSpinGroup(int kidx, int spin_idx, hid_t groupLoc, double& nocc, fftContainer& cont);
+  void handleSpinGroup_ON(int spin_idx, hid_t groupLoc, double& nocc);
 
   eshdfFile(const eshdfFile& f); // no copy constructor
   eshdfFile& operator=(const eshdfFile& f); // operator= not allowed
@@ -45,6 +47,7 @@ public:
   void writeSupercell(void);
   void writeAtoms(void);
   void writeElectrons(void);
+  void writeLocalizedOrbitals();
 };
 
 #endif

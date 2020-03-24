@@ -958,6 +958,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("write_qmcpack_restart", &lc.write_qmcpack_restart, false,
             "If true then a QMCPACK restart file is written as well as a serial restart file.", CONTROL_OPTIONS);
+    If.RegisterInputKey("write_qmcpack_restart_localized", &lc.write_qmcpack_restart_localized, false,
+            "If true then a QMCPACK restart file for localized orbitals", CONTROL_OPTIONS);
 
     If.RegisterInputKey("compressed_infile", &lc.compressed_infile, true,
             "Flag indicating whether or not parallel restart wavefunction file uses compressed format.", CONTROL_OPTIONS);
