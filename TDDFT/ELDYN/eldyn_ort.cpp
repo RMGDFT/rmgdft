@@ -42,17 +42,17 @@ void eldyn_ort(int *p_Nbasis, double *Omega,double *Po0,double *Po1,int *p_Ieldy
    if (Ieldyn == 0 )       {
        tCommutp = true  ;
        tDiagp   = true  ;
-      printf("Ieldyn = 0 \n");
+      // printf("Ieldyn = 0 \n");
 
    } else if (Ieldyn == 1) {
        tCommutp = true  ;
        tDiagp   = false ;
-      printf("Ieldyn = 1 \n");
+     // printf("Ieldyn = 1 \n");
 
    } else if (Ieldyn == 2) {
        tCommutp = false ;
        tDiagp   = true  ;
-      printf("Ieldyn = 2 \n");
+     // printf("Ieldyn = 2 \n");
 
    } else  {
       printf("Incorrect ieldyn =%d. Should  be 0, 1 or 2. Exiting.\n", Ieldyn);

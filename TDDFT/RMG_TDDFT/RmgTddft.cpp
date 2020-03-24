@@ -145,7 +145,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     std::string filename;
     int n2,n22, numst, P0_BASIS,i, ione =1;
     int tot_steps = 0, pre_steps, tddft_steps;
-    int Ieldyn = 1, iprint = 0;
+    int Ieldyn = 1;    // BCH  
+    //int Ieldyn = 2;    // Diagev
+    int iprint = 0;
 
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
@@ -177,6 +179,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     if(pct.gridpe == 0) {
         printf("\n Number of states used for TDDFT: Nbasis =  %d \n",numst);
+        printf(" Propagator used :  Ieldyn = %d  \\1=BCH, 2=Diagonalizer\\ \n",Ieldyn) ;
     }
 
     //    double *vh_x = new double[FP0_BASIS];
