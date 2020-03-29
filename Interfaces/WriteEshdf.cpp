@@ -18,6 +18,9 @@
 #include "transition.h"
 #include "Kpoint.h"
 #include "InputKey.h"
+#include "FiniteDiff.h"
+#include "prototypes_on.h"
+
 
 using namespace std;
 using namespace hdfHelper;
@@ -125,8 +128,7 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
 
 //    if((H.nx != (size_t)sizes_c[0]) || (H.ny != (size_t)sizes_c[1]) || (H.nz != (size_t)sizes_c[2])) {
 //        rmg_printf("Grid size mismatch. %d  %d  %d  %lu  %lu  %lu", sizes_c[0], sizes_c[1], sizes_c[2], H.nx, H.ny, H.nz);
-//        rmg_error_handler (__FILE__,__LINE__,"Grid size mismatch.");
-//    }
+//        rmg_error_handler (__FILE__,__LINE__,"Grid size mismatch.");//    }
 
     eig_value = H.eig;
     wf_occ = H.occ;
@@ -298,7 +300,7 @@ void eshdfFile::writeElectrons(void) {
   int nspin;
 
   //wfnNode.getAttribute("nspin", nspin);
-  nspin = (int)(ct.spin_flag + 1);
+  nspin = ct.nspin;
 
   //wfnNode.getAttribute("nel", nel);
   // RMG porting note - In RMG this is total not per spin state
@@ -389,9 +391,11 @@ void WriteQmcpackRestart(std::string& name)
    outFile.writeAtoms();
    outFile.writeElectrons();
 }
+
+
 void WriteQmcpackRestartLocalized(std::string& name)
 {
-   string ofname = name + ".h5";
+   string ofname = "RMG_localized.h5";
    eshdfFile outFile(ofname);
    outFile.writeBoilerPlate("rmg_on");
    outFile.writeSupercell();
@@ -400,6 +404,7 @@ void WriteQmcpackRestartLocalized(std::string& name)
 }
 
 void eshdfFile::writeLocalizedOrbitals() {
+//#include "init_var.h"
   int nspin;
 
   //wfnNode.getAttribute("nspin", nspin);
@@ -411,7 +416,38 @@ void eshdfFile::writeLocalizedOrbitals() {
   // RMG porting note, C or Fortran order?
 
   hid_t electrons_group = makeHDFGroup("LocalizedOrbitals", file);
+  writeNumsToHDF("NbCenters", ct.num_ions, electrons_group);
   writeNumsToHDF("number_of_spins", nspin, electrons_group);
+  writeNumsToHDF("number_of_orbitals", ct.num_states, electrons_group);
+  std::vector<int> num_orb_centers;
+  num_orb_centers.resize(ct.num_ions);
+  for(int ion = 0; ion < (int)Atoms.size(); ion++)
+  {
+     num_orb_centers[ion] = Atoms[ion].num_orbitals;
+  }
+  writeNumsToHDF("NumOrbCenters", num_orb_centers, electrons_group);
+  for(int ispin = 0; ispin < nspin; ispin++)
+  {
+      vector<double> Cij;
+      Cij.resize(ct.num_states * ct.num_states);
+      std::string wfname(ct.outfile);
+      wfname = wfname + "_spin" + std::to_string(ispin) + "_Cij";
+
+      int fhand = open(wfname.c_str(), O_RDWR);
+      if (fhand < 0)
+      {
+          printf("\n  unable to open file %s", wfname.c_str() );
+          exit(0);
+      }
+
+      read(fhand, Cij.data(),ct.num_states * ct.num_states * sizeof(double));
+      close(fhand);
+      std::string Cij_name = "eigenset_" + std::to_string(ispin);
+      hsize_t Cij_dims[]={static_cast<hsize_t>(ct.num_states),static_cast<hsize_t>(ct.num_states)};
+      hid_t kpt_group = makeHDFGroup("KPTS_0", file);
+      writeNumsToHDF(Cij_name, Cij, kpt_group, 2, Cij_dims);
+  }
+
 
 
   double nup = 0;
@@ -435,63 +471,121 @@ void eshdfFile::writeLocalizedOrbitals() {
 
 void eshdfFile::handleSpinGroup_ON(int spin_idx, hid_t groupLoc, double& nocc) {
 
-#include "init_var.h"
+//#include "init_var.h"
+
     vector<double> eigvals;
     nocc = 0.0;
 
+    std::vector<int> num_orb_centers;
+    num_orb_centers.resize(ct.num_ions);
+    for(int ion = 0; ion < (int)Atoms.size(); ion++)
     {
-        vector<double> Cij;
-        Cij.resize(ct.num_states * ct.num_states);
-        std::string wfname(ct.outfile);
-        wfname = wfname + "_spin" + std::to_string(spin_idx) + "_Cij";
-
-        int fhand = open(wfname.c_str(), O_RDWR);
-        if (fhand < 0)
-        {
-            printf("\n  unable to open file %s", wfname.c_str() );
-            exit(0);
-        }
-
-        read(fhand, Cij.data(),ct.num_states * ct.num_states * sizeof(double));
-        close(fhand);
-        writeNumsToHDF("Cij", Cij, groupLoc);
+        num_orb_centers[ion] = Atoms[ion].num_orbitals;
     }
 
-    vector<double> psi;
-    psi.resize(states[0].size);
-    for (int chIdx = 0; chIdx < ct.num_states; chIdx++)
+
+    vector<double> phi, phi_x, phi_y, phi_z, phi_L;
+    phi.resize(ct.states[0].size);
+    phi_x.resize(ct.states[0].size);
+    phi_y.resize(ct.states[0].size);
+    phi_z.resize(ct.states[0].size);
+    phi_L.resize(ct.states[0].size);
+
+    FiniteDiff FD(&Rmg_L);
+    double hxgrid = Rmg_G->get_hxgrid(1);
+    double hygrid = Rmg_G->get_hygrid(1);
+    double hzgrid = Rmg_G->get_hzgrid(1);
+
+    int order = 8;
+    int item = (ct.max_orbit_nx+order) *(ct.max_orbit_ny+order) *(ct.max_orbit_nz+order);
+    double *orbital_border = new double[item];
+
+    std::vector<double> hgrid(3);
+    std::vector<int> grid_start(3), grid_dim(3);
+    hgrid[0] = Rmg_G->get_hxgrid(1) * Rmg_L.get_xside() ;
+    hgrid[1] = Rmg_G->get_hygrid(1) * Rmg_L.get_yside() ;
+    hgrid[2] = Rmg_G->get_hzgrid(1) * Rmg_L.get_zside() ;
+    int chIdx = 0;
+
+    for(int ic = 0; ic < (int) num_orb_centers.size(); ic++)
     {
-        //cout << "Working on state " << stateCounter << endl;
-        stringstream statess;
-        statess << "orbital_" << chIdx;
-        hid_t state_group = makeHDFGroup(statess.str(), groupLoc);
+        std::string center_group = "orbital_group_" + std::to_string(ic);
+        hid_t orbital_group = makeHDFGroup(center_group.c_str(), groupLoc);
 
+        writeNumsToHDF("hgrid", hgrid, orbital_group);
 
-        std::string wfname(ct.outfile);
-        wfname = wfname + "_spin" + std::to_string(spin_idx) +
-            ".orbital_" + std::to_string(chIdx);
+        grid_start[0] = ct.states[chIdx].ixmin;
+        grid_start[1] = ct.states[chIdx].iymin;
+        grid_start[2] = ct.states[chIdx].izmin;
+        grid_dim[0] = ct.states[chIdx].orbit_nx;
+        grid_dim[1] = ct.states[chIdx].orbit_ny;
+        grid_dim[2] = ct.states[chIdx].orbit_nz;
+        writeNumsToHDF("grid_start", grid_start, orbital_group);
+        writeNumsToHDF("grid_dim", grid_dim, orbital_group);
+        writeNumsToHDF("NumOrbThiscenter", num_orb_centers[ic], orbital_group);
 
-        int fhand = open(wfname.c_str(), O_RDWR);
-        if (fhand < 0)
+        for (int st = 0; st <num_orb_centers[ic]; st++)
         {
-            printf("\n  unable to open file %s", wfname.c_str() );
-            exit(0);
-        }
+            //cout << "Working on state " << stateCounter << endl;
 
-        read(fhand, psi.data(), states[chIdx].size * sizeof(double));
-        writeNumsToHDF("phi", psi, state_group);
-        vector<int> grid_start;
-        grid_start.push_back(states[chIdx].ixmin);
-        grid_start.push_back(states[chIdx].iymin);
-        grid_start.push_back(states[chIdx].izmin);
-        writeNumsToHDF("grid_start", grid_start, state_group);
-        vector<int> grid_dim;
-        grid_dim.push_back(states[chIdx].orbit_nx);
-        grid_dim.push_back(states[chIdx].orbit_ny);
-        grid_dim.push_back(states[chIdx].orbit_nz);
-        writeNumsToHDF("grid_dim", grid_dim, state_group);
-        close(fhand);
+            std::string wfname(ct.outfile);
+            wfname = wfname + "_spin" + std::to_string(spin_idx) +
+                ".orbit_" + std::to_string(chIdx+st);
+
+            int fhand = open(wfname.c_str(), O_RDWR);
+            if (fhand < 0)
+            {
+                printf("\n  unable to open file %s", wfname.c_str() );
+                fflush(NULL);
+                exit(0);
+            }
+
+            read(fhand, phi.data(), ct.states[chIdx].size * sizeof(double));
+            close(fhand);
+
+            int dimx = ct.states[chIdx].orbit_nx;
+            int dimy = ct.states[chIdx].orbit_ny;
+            int dimz = ct.states[chIdx].orbit_nz;
+
+            int ix, iy, iz;
+            int incx, incy, incxs, incys;
+            incys = dimz;
+            incxs = dimy * dimz;
+            incx = (dimy + order) * (dimz + order);
+            incy = dimz + order;
+
+            for (ix = 0; ix < dimx + order; ix++)
+                for (iy = 0; iy < dimy + order; iy++)
+                    for (iz = 0; iz < dimz + order; iz++)
+                        orbital_border[ix * incx + iy * incy + iz] = 0.0;
+
+            /* Load up original values from pg  */
+
+            for (ix = 0; ix < dimx; ix++)
+                for (iy = 0; iy < dimy; iy++)
+                    for (iz = 0; iz < dimz; iz++)
+                        orbital_border[(ix + order/2) * incx + (iy + order/2) * incy + iz + order/2] = phi[ix * incxs + iy * incys + iz];
+
+
+
+            FD.app8_del2 (orbital_border, phi_L.data(), dimx, dimy, dimz, hxgrid, hygrid, hzgrid);
+            FD.app_gradient_eighth (orbital_border, phi_x.data(), phi_y.data(), phi_z.data(),
+                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid);
+
+            std::string orb = "orbital_" + std::to_string(st);
+            std::string orb_x = "orbital_x_" + std::to_string(st);
+            std::string orb_y = "orbital_y_" + std::to_string(st);
+            std::string orb_z = "orbital_z_" + std::to_string(st);
+            std::string orb_L = "orbital_L_" + std::to_string(st);
+            writeNumsToHDF(orb , phi, orbital_group);
+            writeNumsToHDF(orb_x , phi_x, orbital_group);
+            writeNumsToHDF(orb_y , phi_y, orbital_group);
+            writeNumsToHDF(orb_z , phi_z, orbital_group);
+            writeNumsToHDF(orb_L , phi_L, orbital_group);
+        }
+        chIdx += num_orb_centers[ic];
     }
-    writeNumsToHDF("number_of_states", ct.num_states, groupLoc);
+    delete [] orbital_border;
     //  writeNumsToHDF("eigenvalues", eigvals, groupLoc);
 }
+

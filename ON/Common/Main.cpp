@@ -388,9 +388,27 @@ int main(int argc, char **argv)
             int rank;
             MPI_Comm_rank(MPI_COMM_WORLD, &rank);
             std::string fname(ct.outfile);
-            int num_orb = LocalOrbital->num_tot;
-            double *Cij_glob = new double[num_orb * num_orb];
-            mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
+          //  double *Cij_glob = new double[num_orb * num_orb];
+          //  mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
+
+            WriteCij(fname, zz_dis);
+
+           // if(pct.gridpe == 0)
+            //{
+             //   std::string cijname = fname + "_spin" + std::to_string(pct.spinpe) + "_Cij";
+              //  int fhand = open(cijname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
+               // if (fhand < 0) {
+                //    rmg_printf("Can't open restart file %s", cijname.c_str());
+                 //   rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+              //  }
+               // 
+               // size_t wsize = ct.num_states * ct.num_states * sizeof(double);
+               // write (fhand, Cij_glob, wsize);
+               // close(fhand);
+               // fflush(NULL);
+          //  }
+
+            MPI_Barrier(MPI_COMM_WORLD);
             if(rank == 0)
             {
                 WriteQmcpackRestartLocalized(fname);
