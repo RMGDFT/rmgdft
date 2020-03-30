@@ -415,7 +415,8 @@ void eshdfFile::writeLocalizedOrbitals() {
 
   // RMG porting note, C or Fortran order?
 
-  hid_t electrons_group = makeHDFGroup("LocalizedOrbitals", file);
+  hid_t electrons_group = makeHDFGroup("basisset", file);
+  writeNumsToHDF("NbElements", -1, electrons_group);
   writeNumsToHDF("NbCenters", ct.num_ions, electrons_group);
   writeNumsToHDF("number_of_spins", nspin, electrons_group);
   writeNumsToHDF("number_of_orbitals", ct.num_states, electrons_group);
