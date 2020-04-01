@@ -427,6 +427,7 @@ void eshdfFile::writeLocalizedOrbitals() {
      num_orb_centers[ion] = Atoms[ion].num_orbitals;
   }
   writeNumsToHDF("NumOrbCenters", num_orb_centers, electrons_group);
+  hid_t kpt_group = makeHDFGroup("KPTS_0", file);
   for(int ispin = 0; ispin < nspin; ispin++)
   {
       vector<double> Cij;
@@ -445,7 +446,6 @@ void eshdfFile::writeLocalizedOrbitals() {
       close(fhand);
       std::string Cij_name = "eigenset_" + std::to_string(ispin);
       hsize_t Cij_dims[]={static_cast<hsize_t>(ct.num_states),static_cast<hsize_t>(ct.num_states)};
-      hid_t kpt_group = makeHDFGroup("KPTS_0", file);
       writeNumsToHDF(Cij_name, Cij, kpt_group, 2, Cij_dims);
   }
 
