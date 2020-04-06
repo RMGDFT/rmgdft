@@ -53,7 +53,7 @@
 
 
 ///////////////////////////////////////
-void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim){
+void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int Nsq){
     /*  
         This is a first order Magnus  expansion, wchih is equivalent to   mid-point propagator
         F*dt =   Integrate_0^t   H(t) dt   
@@ -64,9 +64,7 @@ void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim
      */  
 
     double  dt     =    p_time_step  ;   // time step
-    int     Nbasis =    ldim         ;     // leaading dimension of matrix
 
-    int     Nsq =    Nbasis*Nbasis    ; 
     //double  dminus_one  = -1.0e0      ; 
     double  one         =  1.0e0      ; 
     double  half_dt     =  0.5e0*dt   ;
@@ -80,7 +78,7 @@ void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim
 
 }
 ///////////////////////////////////////
-void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim) {  
+void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int Nsq, MPI_Comm comm) {  
     /* 
        Test convergemce: calculate  infty error for convergence:   || H1 - H0||_infty
        Here error is  L_infty norm of a difference matrix dH =H1-H0:
@@ -91,24 +89,22 @@ ldim      :  [in]   leading dimension of  H0, H1  (= Nbasis)
      */
 
 
-    int    Nbasis     =   ldim         ;  
-    int    Nsq        =   Nbasis*Nbasis ;  
-
-    double err        =  fabs( H1[0] - H0[0]) ; 
+    double err        =  std::abs( H1[0] - H0[0]) ; 
     int    ij_err     =  0                    ;  // position/ location  in matrix
 
     for (int i =1 ;  i < Nsq ; i++ )  {
-        double  tst = fabs(H1[i]-H0[i])  ;
+        double  tst = std::abs(H1[i]-H0[i])  ;
         if (  tst  > err)   { err = tst ; ij_err = i ; } 
     } 
 
+    MPI_Allreduce(MPI_IN_PLACE, &err, 1, MPI_DOUBLE, MPI_MAX, comm);
     //  pass back the max  error and its location:
     * p_err    =  err   ;
     * p_ij_err = ij_err ; 
 
 } 
 ///////////////////////////////////////
-void extrapolate_Hmatrix   (double  *Hm1, double *H0, double *H1,  int ldim) {  
+void extrapolate_Hmatrix   (double  *Hm1, double *H0, double *H1,  int Nsq) {  
     /* 
        Linear extrapolation of  H(1) from H(0) and  H(-1):
        H(1) =   H(0) + dH   =  H(0) + ( H(0)-H(-1) )  =  2*H(0) - H(-1) 
@@ -117,9 +113,6 @@ void extrapolate_Hmatrix   (double  *Hm1, double *H0, double *H1,  int ldim) {
        Hm1,H0  : [in]
 H1      : [out]
      */
-
-    int    Nbasis     =   ldim         ;  
-    int    Nsq        =   Nbasis*Nbasis ;  
 
     int    ione       = 1 ;
     double  neg_one   = -1.0e0   ;

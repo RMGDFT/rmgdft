@@ -54,5 +54,5 @@ void WriteData_rmgtddft (char *filename, double * vh, double * vxc,
 void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_matrix, int numst);
 
 void  magnus( double *H0, double *H1, double p_time_step , double *Hdt, int ldim);
-void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim);
+void tst_conv_matrix  (double * p_err , int * p_ij_err ,   double *H0, double *H1,  int ldim, MPI_Comm comm);
 void extrapolate_Hmatrix   (double  *Hm1, double *H0, double *H1,  int ldim);

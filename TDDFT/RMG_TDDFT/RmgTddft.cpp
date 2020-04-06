@@ -50,10 +50,12 @@
 #include "blas.h"
 #include "prototypes_tddft.h"
 #include "RmgException.h"
+#include "blas_driver.h"
 
 
 void  init_point_charge_pot(double *vtot_psi, int density);
-void eldyn_ort(int *p_N, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
+void eldyn_ort(int *desca, int Mdim, int Ndim, double *F,double *Po0,double *Po1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int
+*niter , int *p_iprint, MPI_Comm comm) ;
 void eldyn_nonort(int *p_N, double *S, double *F,double *Po0,double *Pn1,int *p_Ieldyn,  double *thrs,int*maxiter,  double *errmax,int *niter , int *p_iprint) ;
   
 
@@ -147,19 +149,48 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     int tot_steps = 0, pre_steps, tddft_steps;
     int Ieldyn = 1;    // BCH  
     //int Ieldyn = 2;    // Diagev
-    int iprint = 0;
+    int iprint = 1;
 
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
     FP0_BASIS = Rmg_G->get_P0_BASIS(Rmg_G->default_FG_RATIO);
 
+    int scalapack_groups = 1;
+    switch(ct.subdiag_driver) {
+
+        case SUBDIAG_LAPACK:
+            scalapack_groups = pct.grid_npes;
+            break;
+        case SUBDIAG_SCALAPACK:
+            scalapack_groups = 1;
+            if(ct.scalapack_block_factor >= ct.num_states)
+                scalapack_groups = pct.grid_npes;
+            break;
+        case SUBDIAG_CUSOLVER:
+            scalapack_groups = pct.grid_npes;
+            break;
+        default:
+            rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type in TDDFT");
+
+    } // end switch
+
+    int last = 1;
     numst = ct.num_states; 
-    n2 = numst * numst;
+    Scalapack *Sp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, numst,
+            ct.scalapack_block_factor, last, pct.grid_comm);
+    int Mdim = Sp->GetDistMdim();
+    int Ndim = Sp->GetDistNdim();
+    n2 = Sp->GetDistMdim() * Sp->GetDistNdim();
+
+    if(!Sp->Participates()) n2 = 1;
+    int *desca = Sp->GetDistDesca();
+
     n22 = 2* n2;
 
+    double *matrix_glob = new double[numst * numst];
+    double *Smatrix     = new double[numst * numst];
     double *Hmatrix     = new double[n2];
     double *Hmatrix_old = new double[n2];
-    double *Smatrix     = new double[n2];
     double *Akick       = new double[n2];
     double *Pn0         = new double[2*n2];
     double *Pn1         = new double[2*n2];
@@ -268,7 +299,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             throw RmgFatalException() << " TDDFT mode not defined: "<< ct.tddft_mode<< __FILE__ << " at line " << __LINE__ << "\n";
         }
 
-        HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Akick);
+        HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob);
+        Sp->CopySquareMatrixToDistArray(matrix_glob, Akick, numst, desca);
 
         /* save old vhxc + vnuc */
         for (int idx = 0; idx < FP0_BASIS; idx++) {
@@ -281,9 +313,10 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         /*Generate the Dnm_I */
         get_ddd (vtot, vxc, true);
 
-        HSmatrix (Kptr[0], vtot_psi, vxc_psi, (OrbitalType *)Hmatrix, (OrbitalType *)Smatrix);
+        HSmatrix (Kptr[0], vtot_psi, vxc_psi, (OrbitalType *)matrix_glob, (OrbitalType *)Smatrix);
+        Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix, numst, desca);
 
-        dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);
+        dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);
 
         if(pct.gridpe == 0 && ct.verbose)
         { 
@@ -311,7 +344,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
         for(i = 0; i < 2* n2; i++) Pn0[i] = 0.0;
 
-        for(i = 0; i < ct.nel/2; i++) Pn0[i * numst + i] = 2.0;
+        for(i = 0; i < numst * numst; i++) matrix_glob[i] = 0.0;
+        for(i = 0; i < ct.nel/2; i++)  matrix_glob[i * numst + i] = 2.0;
+        Sp->CopySquareMatrixToDistArray(matrix_glob, Pn0, numst, desca);
 
 
         get_dipole(rho, dipole_ele);
@@ -326,8 +361,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //       for(int j = 0; j < 5; j++) printf(" %10.4e", Akick[i*numst + j]);
         //   }
 
-        dcopy(&n2, Hmatrix, &ione, Hmatrix_m1, &ione);
-        dcopy(&n2, Hmatrix, &ione, Hmatrix_0 , &ione);
+        dcopy_driver(n2, Hmatrix, ione, Hmatrix_m1, ione);
+        dcopy_driver(n2, Hmatrix, ione, Hmatrix_0 , ione);
     }
 
     //  initialize   data for rt-td-dft
@@ -353,7 +388,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         eldyn_(&numst, Smatrix, Hmatrix, Pn0, Pn1, &Ieldyn, &iprint);
          */
         //  guess H1 from  H(0) and H(-1):
-        extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , numst) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
+        extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , n2) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
 
         //  SCF loop 
         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
@@ -371,11 +406,11 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             //RmgTimer *RT2a = new RmgTimer("2-TDDFT: ELDYN");
             RT2a = new RmgTimer("2-TDDFT: ELDYN");
-            magnus (Hmatrix_0,    Hmatrix_1 , time_step, Hmatrix_dt , numst) ; 
+            magnus (Hmatrix_0,    Hmatrix_1 , time_step, Hmatrix_dt , n2) ; 
             /* --- fortran version:  --*/
             // eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
             /* --- C++  version:  --*/
-            eldyn_ort(&numst , Hmatrix_dt,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,    &iprint) ;
+            eldyn_ort(desca, Mdim, Ndim,  Hmatrix_dt,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, Sp->GetComm()) ;
 
             delete(RT2a);
 
@@ -389,7 +424,15 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             /////// <----- update Hamiltonian from  Pn1
             RT2a = new RmgTimer("2-TDDFT: Rho");
-            GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, Pn1, numst);
+            if(Sp->Participates()) 
+            {
+                Sp->CopyDistArrayToSquareMatrix(matrix_glob, Pn1, numst, desca);
+                Sp->ScalapackBlockAllreduce(matrix_glob, (size_t)numst * (size_t)numst);
+            }
+
+            Sp->BcastRoot(matrix_glob, numst * numst, MPI_DOUBLE);
+
+            GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, matrix_glob, numst);
             delete(RT2a);
 
             dcopy(&FP0_BASIS, vh_corr, &ione, vh_corr_old, &ione);
@@ -414,17 +457,18 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
             RT2a = new RmgTimer("2-TDDFT: Hupdate");
-            HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)Hmatrix);                                     
+            HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob);                                     
+            Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix, numst, desca);
             delete(RT2a);
 
             for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];   // final update of  Hmatrix
-            dcopy(&n2, Hmatrix, &ione, Hmatrix_old, &ione);         // saves Hmatrix to Hmatrix_old   
+            dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
 
             //////////  < ---  end of Hamiltonian update
 
             // check error and update Hmatrix_1:
-            tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  numst) ;  //  check error  how close  H and H_old are
-            dcopy(&n2, Hmatrix  , &ione, Hmatrix_1, &ione);
+            tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
+            dcopy_driver(n2, Hmatrix  , ione, Hmatrix_1, ione);
 
             if(pct.gridpe == 0) { printf("step: %5d  iteration: %d  thrs= %12.5e err=  %12.5e at element: %5d \n", 
                     tddft_steps, iter_scf,    thrs_dHmat,  err,         ij_err); } 
@@ -434,15 +478,15 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
         /*  done with propagation,  save Pn1 ->  Pn0 */
-        dcopy(&n22, Pn1, &ione, Pn0, &ione);
+        dcopy_driver(n22, Pn1, ione, Pn0, ione);
 
         //  extract dipole from rho(Pn1)
         get_dipole(rho, dipole_ele);
         // save current  H0, H1 for the  next step extrapolatiion
-        dcopy  (&n2, Hmatrix_0, &ione, Hmatrix_m1 , &ione);         
+        dcopy_driver  (n2, Hmatrix_0, ione, Hmatrix_m1 , ione);         
         //dcopy(&n2, Hmatrix  , &ione, Hmatrix_1  , &ione);         // this update is already done right after scf loop 
 
-        dcopy  (&n2, Hmatrix_1, &ione, Hmatrix_0  , &ione);        
+        dcopy_driver  (n2, Hmatrix_1, ione, Hmatrix_0  , ione);        
 
         if(pct.gridpe == 0)fprintf(dfi, "\n  %f  %18.10f  %18.10f  %18.10f ",
                 tot_steps*time_step, dipole_ele[0], dipole_ele[1], dipole_ele[2]);
@@ -464,7 +508,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
     WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, 
-                    Hmatrix_m1, Hmatrix_0, tot_steps+1);
+            Hmatrix_m1, Hmatrix_0, tot_steps+1);
     delete RT2a;
     delete RT0;
 }

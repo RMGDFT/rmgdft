@@ -9,14 +9,15 @@
 
 
 
-void commutp(double *P0, double *P1, double *Om,
-                int *p_Nbasis, double *p_thrs, int *p_maxiter, int *p_niter, double *p_errmax, int *p_iprint) ;
+void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
+                double *p_thrs, int *p_maxiter, int *p_niter, double *p_errmax, int *p_iprint, MPI_Comm comm) ;
   
 void diagev(double *, double *, double *, int *, int *);
     
 ////////////////////////////////////////////////
 
-void eldyn_ort(int *p_Nbasis, double *Omega,double *Po0,double *Po1,int *p_Ieldyn, double *p_thrs, int *p_maxiter,  double *p_errmax, int *p_niter, int*p_iprint) 
+void eldyn_ort(int *desca, int Mdim, int Ndim, double *Omega,double *Po0,double *Po1,int *p_Ieldyn, double *p_thrs, int *p_maxiter,  double
+*p_errmax, int *p_niter, int*p_iprint, MPI_Comm comm) 
 {
 /*
   Omega  [in]  : 
@@ -24,7 +25,6 @@ void eldyn_ort(int *p_Nbasis, double *Omega,double *Po0,double *Po1,int *p_Ieldy
   Po1    [out] : assumed in orthogonal basis set
   Ieldyn [in]  : 1= use BCH expansion, 2=  use diagonalization , 0= use both  BCH and diag 
 */
- int     Nbasis   = *(p_Nbasis)       ;   //  Nbasis    
  int     Ieldyn   = *(p_Ieldyn)  ;
  int     maxiter  = *(p_maxiter) ;
  double  thrs     = *(p_thrs)    ;
@@ -36,7 +36,6 @@ void eldyn_ort(int *p_Nbasis, double *Omega,double *Po0,double *Po1,int *p_Ieldy
  int    niter  ;
  double errmax ;
 
- int N = Nbasis ;
 
  /*-- select propagator --*/ 
    if (Ieldyn == 0 )       {
@@ -63,11 +62,11 @@ void eldyn_ort(int *p_Nbasis, double *Omega,double *Po0,double *Po1,int *p_Ieldy
  /*----- now run it  -----*/
   if (tCommutp) { 
      //commutp (Po0,Po1,Fo,N,thrs,maxiter,niter,errmax,iprint)
-      commutp (Po0,Po1,Omega,&Nbasis,&thrs,&maxiter,&niter,&errmax,&iprint) ;
+      commutp (Po0,Po1,Omega,desca,Mdim,Ndim,&thrs,&maxiter,&niter,&errmax,&iprint, comm) ;
   } 
   if (tDiagp)   {
      // diagev2(Po0, Po1,Fo,&Nbasis,&iprint); 
-    diagev(Po0, Po1,Omega ,&Nbasis,&iprint);
+    diagev(Po0, Po1,Omega , desca ,&iprint);
 
   } 
 
