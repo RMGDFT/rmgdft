@@ -85,6 +85,59 @@ void print_matrix_d(double *matrix,  int  *nblock, int *ldim ){
     }
 }
 
+void write_rho_x(double * rho, char *ab)
+{
+
+    int ix, iy, iz, poff;
+    double t1;
+    double *zvec;
+
+    zvec = new double[get_FNX_GRID()]();
+    /* Get this processors offset */
+    poff = get_FPX_OFFSET();
+
+
+
+    /* Zero out result vector */
+    for (ix = 0; ix < get_FNX_GRID(); ix++)
+        zvec[ix] = ZERO;
+
+
+    /* Loop over this processor */
+    for (ix = 0; ix < get_FPX0_GRID(); ix++)
+    {
+        t1 = 0.0;
+        for (iy = 0; iy < get_FPY0_GRID(); iy++)
+            for (iz = 0; iz < get_FPZ0_GRID(); iz++)
+
+                t1 += rho[ix * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz];
+
+
+        zvec[ix + poff] = t1;
+
+    }                           /* end for */
+
+
+    /* Now sum over all processors */
+    ix = get_FNX_GRID();
+    global_sums(zvec, &ix, pct.grid_comm);
+
+    if (pct.gridpe == 0)
+    {
+        printf("\n\n Planar average of the electrostatic density\n");
+        for (ix = 0; ix < get_FNX_GRID(); ix++)
+        {
+            t1 = ix * get_hxxgrid();
+            printf(" %d %f %s\n", ix, zvec[ix] / get_FNY_GRID() / get_FNZ_GRID(), ab);
+        }
+        printf(" & %s\n", ab);
+        fflush(NULL);
+    }
+
+    delete [] zvec;
+}                               /* end get_avgd */
+
+/******/
 ///////////////////////////////////////
 
 void print_matrix_z(double *matrix,  int  *nblock, int *ldim ){
@@ -150,7 +203,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     int tot_steps = 0, pre_steps, tddft_steps;
     int Ieldyn = 1;    // BCH  
     //int Ieldyn = 2;    // Diagev
-    int iprint = 1;
+    int iprint = 0;
 
 
     P0_BASIS =  Rmg_G->get_P0_BASIS(1);
@@ -321,6 +374,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         HSmatrix (Kptr[0], vtot_psi, vxc_psi, (OrbitalType *)matrix_glob, (OrbitalType *)Smatrix);
         Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix, numst, desca);
 
+        my_sync_device();
         dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);
 
         if(pct.gridpe == 0 && ct.verbose)
@@ -330,7 +384,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             {
 
                 printf("\n");
-                for(int j = 0; j < 10; j++) printf(" %8.1e",  Hmatrix[i*numst + j]);
+                for(int j = 0; j < 10; j++) printf(" %10.3e",  Hmatrix[i*numst + j]);
             }
 
             printf("\nSMa\n");
@@ -338,14 +392,15 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             {
 
                 printf("\n");
-                for(int j = 0; j < 10; j++) printf(" %8.1e",  Smatrix[i*numst + j]);
+                for(int j = 0; j < 10; j++) printf(" %10.3e",  Smatrix[i*numst + j]);
             }
         }
 
 
         pre_steps = 0;
 
-        for(i = 0; i < n2; i++) Hmatrix[i] += Akick[i]/time_step;
+        double alpha = 1.0/time_step;
+        daxpy_driver ( n2 ,  alpha, Akick, ione , Hmatrix ,  ione) ;
 
         for(i = 0; i < 2* n2; i++) Pn0[i] = 0.0;
 
@@ -369,9 +424,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 #if GPU_ENABLED
         // Until the finite difference operators are being applied on the GPU it's faster
         //     // to make sure that the result arrays are present on the cpu side.
-        int device = -1;
-        cudaMemPrefetchAsync ( Hmatrix, n2*sizeof(double), device, NULL);
-        cudaDeviceSynchronize();
+    //    int device = -1;
+    //    cudaMemPrefetchAsync ( Hmatrix, n2*sizeof(double), device, NULL);
+    //    cudaDeviceSynchronize();
 #endif
 
         for(i = 0; i < n2; i++) Hmatrix_m1[i] = 0.0;
@@ -459,6 +514,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             }
 
 
+            my_sync_device();
+
             GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, matrix_glob, numst);
             delete(RT2a);
 
@@ -491,10 +548,12 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             }
             else
             {
+                my_sync_device();
                 dcopy_driver(n2, matrix_glob, ione, Hmatrix, ione);
             }
             delete(RT2a);
 
+                my_sync_device();
             double one = 1.0;
             daxpy_driver ( n2 ,  one, Hmatrix_old, ione , Hmatrix ,  ione) ;
             dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
@@ -502,6 +561,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             //////////  < ---  end of Hamiltonian update
 
             // check error and update Hmatrix_1:
+            my_sync_device();
             tst_conv_matrix (&err, &ij_err ,  Hmatrix,  Hmatrix_1 ,  n2, Sp->GetComm()) ;  //  check error  how close  H and H_old are
             dcopy_driver(n2, Hmatrix  , ione, Hmatrix_1, ione);
 

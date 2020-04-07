@@ -27,6 +27,7 @@
 #include "prototypes_tddft.h"
 #include "RmgParallelFft.h"
 #include "RmgGemm.h"
+#include "blas_driver.h"
 
 
 
@@ -53,6 +54,7 @@ void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_mat
         RmgGemm ("N", "N", pbasis, numst, numst, one, 
                 psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
 
+        my_sync_device();
         for(st1 = 0; st1 < numst; st1++)
             for(idx = 0; idx < pbasis; idx++)
                 rho_temp[idx] += psi[st1 * pbasis + idx] * xpsi[st1 * pbasis + idx];

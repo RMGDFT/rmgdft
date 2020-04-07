@@ -89,7 +89,7 @@ ldim      :  [in]   leading dimension of  H0, H1  (= Nbasis)
      */
 
 
-    cudaDeviceSynchronize();
+    my_sync_device();
 
     double err        =  std::abs( H1[0] - H0[0]) ; 
     int    ij_err     =  0                    ;  // position/ location  in matrix
