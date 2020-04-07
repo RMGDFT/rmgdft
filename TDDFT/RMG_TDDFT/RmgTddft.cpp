@@ -51,6 +51,7 @@
 #include "prototypes_tddft.h"
 #include "RmgException.h"
 #include "blas_driver.h"
+#include "GpuAlloc.h"
 
 
 void  init_point_charge_pot(double *vtot_psi, int density);
@@ -174,6 +175,9 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     } // end switch
 
+#if GPU_ENABLED
+    scalapack_groups = pct.grid_npes;
+#endif
     int last = 1;
     numst = ct.num_states; 
     Scalapack *Sp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, numst,
@@ -187,23 +191,23 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     n22 = 2* n2;
 
-    double *matrix_glob = new double[numst * numst];
-    double *Smatrix     = new double[numst * numst];
-    double *Hmatrix     = new double[n2];
-    double *Hmatrix_old = new double[n2];
-    double *Akick       = new double[n2];
-    double *Pn0         = new double[2*n2];
-    double *Pn1         = new double[2*n2];
+    double *matrix_glob = (double *)GpuMallocManaged((size_t)numst * (size_t)numst*sizeof(double));
+    double *Smatrix     = (double *)GpuMallocManaged((size_t)numst * (size_t)numst*sizeof(double));
+    double *Hmatrix     = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
+    double *Hmatrix_old = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
+    double *Akick       = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
+    double *Pn0         = (double *)GpuMallocManaged((size_t)n2*sizeof(double)*2);
+    double *Pn1         = (double *)GpuMallocManaged((size_t)n2*sizeof(double)*2);
     double *vh_old      = new double[FP0_BASIS];
     double *vxc_old     = new double[FP0_BASIS];
     double *vh_corr_old = new double[FP0_BASIS];
     double *vh_corr     = new double[FP0_BASIS];
     // Jacek: 
     //double *dHmatrix    = new double[n2];   // storage for  H1 -H1_old 
-    double *Hmatrix_m1  = new double[n2];
-    double *Hmatrix_0   = new double[n2];
-    double *Hmatrix_1   = new double[n2];
-    double *Hmatrix_dt  = new double[n2];   
+    double *Hmatrix_m1  = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
+    double *Hmatrix_0   = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
+    double *Hmatrix_1   = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
+    double *Hmatrix_dt  = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
     double    err        ;
     int       ij_err     ;
     double   thrs_dHmat =1.0e-5 ;
@@ -216,7 +220,8 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     //    double *vh_x = new double[FP0_BASIS];
     //    double *vh_y = new double[FP0_BASIS];
     //    double *vh_z = new double[FP0_BASIS];
-    double *xpsi = new double[P0_BASIS * numst];
+    double *xpsi =(double *)GpuMallocManaged((size_t)numst * (size_t)P0_BASIS*sizeof(double));
+
     double dipole_ele[3];
 
 
@@ -361,8 +366,19 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //       for(int j = 0; j < 5; j++) printf(" %10.4e", Akick[i*numst + j]);
         //   }
 
+#if GPU_ENABLED
+        // Until the finite difference operators are being applied on the GPU it's faster
+        //     // to make sure that the result arrays are present on the cpu side.
+        int device = -1;
+        cudaMemPrefetchAsync ( Hmatrix, n2*sizeof(double), device, NULL);
+        cudaDeviceSynchronize();
+#endif
+
+        for(i = 0; i < n2; i++) Hmatrix_m1[i] = 0.0;
+        for(i = 0; i < n2; i++) Hmatrix_0[i] = 0.0;
         dcopy_driver(n2, Hmatrix, ione, Hmatrix_m1, ione);
         dcopy_driver(n2, Hmatrix, ione, Hmatrix_0 , ione);
+        my_sync_device();
     }
 
     //  initialize   data for rt-td-dft
@@ -390,6 +406,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //  guess H1 from  H(0) and H(-1):
         extrapolate_Hmatrix  (Hmatrix_m1,  Hmatrix_0, Hmatrix_1  , n2) ; //   (*Hm1, double *H0, double *H1,  int *ldim)
 
+        my_sync_device();
         //  SCF loop 
         int  Max_iter_scf = 10 ; int  iter_scf =0 ;
         err =1.0e0   ;  thrs_dHmat  = 1e-7  ;
@@ -410,6 +427,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             /* --- fortran version:  --*/
             // eldyn_(&numst, Smatrix, Hmatrix_dt, Pn0, Pn1, &Ieldyn, &iprint);
             /* --- C++  version:  --*/
+            my_sync_device();
             eldyn_ort(desca, Mdim, Ndim,  Hmatrix_dt,Pn0,Pn1,&Ieldyn, &thrs_bch,&maxiter_bch,  &errmax_bch,&niter_bch ,  &iprint, Sp->GetComm()) ;
 
             delete(RT2a);
@@ -424,13 +442,22 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
             /////// <----- update Hamiltonian from  Pn1
             RT2a = new RmgTimer("2-TDDFT: Rho");
-            if(Sp->Participates()) 
+            if( scalapack_groups != pct.grid_npes)
             {
-                Sp->CopyDistArrayToSquareMatrix(matrix_glob, Pn1, numst, desca);
-                Sp->ScalapackBlockAllreduce(matrix_glob, (size_t)numst * (size_t)numst);
+                if(Sp->Participates()) 
+                {
+                    Sp->CopyDistArrayToSquareMatrix(matrix_glob, Pn1, numst, desca);
+                    if( scalapack_groups != pct.grid_npes)
+                        Sp->ScalapackBlockAllreduce(matrix_glob, (size_t)numst * (size_t)numst);
+                }
+
+                Sp->BcastRoot(matrix_glob, numst * numst, MPI_DOUBLE);
+            }
+            else
+            {
+                dcopy_driver(n2, Pn1, ione, matrix_glob, ione);
             }
 
-            Sp->BcastRoot(matrix_glob, numst * numst, MPI_DOUBLE);
 
             GetNewRho_rmgtddft((double *)Kptr[0]->orbital_storage, xpsi, rho, matrix_glob, numst);
             delete(RT2a);
@@ -458,10 +485,18 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
             GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
             RT2a = new RmgTimer("2-TDDFT: Hupdate");
             HmatrixUpdate(Kptr[0], vtot_psi, (OrbitalType *)matrix_glob);                                     
-            Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix, numst, desca);
+            if( scalapack_groups != pct.grid_npes)
+            {
+                Sp->CopySquareMatrixToDistArray(matrix_glob, Hmatrix, numst, desca);
+            }
+            else
+            {
+                dcopy_driver(n2, matrix_glob, ione, Hmatrix, ione);
+            }
             delete(RT2a);
 
-            for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];   // final update of  Hmatrix
+            double one = 1.0;
+            daxpy_driver ( n2 ,  one, Hmatrix_old, ione , Hmatrix ,  ione) ;
             dcopy_driver(n2, Hmatrix, ione, Hmatrix_old, ione);         // saves Hmatrix to Hmatrix_old   
 
             //////////  < ---  end of Hamiltonian update
@@ -494,6 +529,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         if((tddft_steps +1) % ct.checkpoint == 0)
         {   
             RT2a = new RmgTimer("2-TDDFT: Write");
+            my_sync_device();
             WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, 
                     Hmatrix_m1, Hmatrix_0, tot_steps+1);
             delete RT2a;
@@ -507,6 +543,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
 
     RmgTimer *RT2a = new RmgTimer("2-TDDFT: Write");
+    my_sync_device();
     WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, Smatrix, 
             Hmatrix_m1, Hmatrix_0, tot_steps+1);
     delete RT2a;

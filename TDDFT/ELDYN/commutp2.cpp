@@ -8,6 +8,7 @@
 #include "blacs.h"
 #include "blas_driver.h"
 #include "Scalapack.h"
+#include "GpuAlloc.h"
 #include <iostream>
 //#include "lapacke.h"
 
@@ -20,6 +21,8 @@ void transpose( double *A,  double *B, int *desca)
   //printf(" transpose  %d \n", Nbasis) ;
     int Nbasis = desca[3];
     int ictxt = desca[1], nprow, npcol, myrow, mycol;
+
+    my_sync_device();
 
     Cblacs_gridinfo (ictxt, &nprow, &npcol, &myrow, &mycol);
     if(nprow*npcol <1) 
@@ -62,7 +65,7 @@ void  commstr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
     int Mglob = desca[3];
     int ione = 1;
 
-    double *W   = new double[ Nbsq ] ;
+    double *W   = (double *)GpuMallocManaged(Nbsq * sizeof(double));
     char trN='N' ;  // transpose ='not
     // call dgemm('N','N',Nb,Nb,Nb,alpha,A,Nb,B,Nb,beta,C,Nb)
     dgemm_driver (&trN, &trN, Mglob, Mglob, Mglob, alpha, A, ione, ione, desca,
@@ -75,7 +78,7 @@ void  commstr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
 
     daxpy_driver(Nbsq,  minus_one , W, ione, C, ione) ;
 
-    delete [] W;
+    GpuFreeManaged(W);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -89,7 +92,7 @@ void  commatr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
     double  beta   = 0.0e0       ;
     int     Nbsq   = Mdim * Ndim ;
 
-    double *W   = new double[ Nbsq ] ;
+    double *W   = (double *)GpuMallocManaged(Nbsq * sizeof(double));
     char trN='N' ;  // transpose ='not
     // call dgemm('N','N',Nb,Nb,Nb,alpha,A,Nb,B,Nb,beta,C,Nb)
     int ione = 1, Mglob = desca[3];
@@ -99,7 +102,7 @@ void  commatr(double *A, double *B, double *C,double *p_alpha,int *desca, int Md
 
     double one = 1.0e0 ;
     daxpy_driver(Nbsq,  one , W, ione, C, ione) ;
-    delete [] W;
+    GpuFreeManaged(W);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -114,6 +117,8 @@ void  tstconv(double *C,int *p_M, double *p_thrs,int *p_ierr, double *p_err, boo
     int    ierr   =   0       ;  //  [out] :   location of err in matrix/vector
     bool   tconv  =  false    ;  //  [out] :   if converged ?  true or false?
 
+
+    my_sync_device();
     //err = abs(C[0]); 
     for (int i=0; i <M ;i++) {
         double err_tmp = abs(C[i]) ; 
@@ -154,8 +159,8 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
     int          Nsq = Mdim * Ndim;
     int         Nsq2 = 2*Nsq              ;
 
-    double      *C   = new double[ Nsq2 ] ;
-    double      *dP  = new double[ Nsq2 ] ;
+    double      *C   = (double *)GpuMallocManaged(Nsq2 * sizeof(double));
+    double      *dP  = (double *)GpuMallocManaged(Nsq2 * sizeof(double));
 
     int       iter   = 1                  ;
     bool      tConv  = false              ;
@@ -188,7 +193,7 @@ void commutp(double *P0, double *P1, double *Om, int *desca, int Mdim, int Ndim,
 
     /*--- return  error max---- */
     *(p_errmax) = errmax ;
-    delete [] C;
-    delete [] dP;
+    GpuFreeManaged(C);
+    GpuFreeManaged(dP);
 } 
 

@@ -18,7 +18,12 @@
 #include "typedefs.h"
 #include "rmg_control.h"
 
-
+void my_sync_device()
+{
+#if GPU_ENABLED
+    cudaDeviceSynchronize();
+#endif
+}
 
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {

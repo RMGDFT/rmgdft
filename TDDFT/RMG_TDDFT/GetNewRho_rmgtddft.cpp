@@ -26,6 +26,7 @@
 #include "../Headers/common_prototypes1.h"
 #include "prototypes_tddft.h"
 #include "RmgParallelFft.h"
+#include "RmgGemm.h"
 
 
 
@@ -49,8 +50,8 @@ void GetNewRho_rmgtddft (double *psi, double *xpsi, double *rho, double *rho_mat
     {
         
 
-        dgemm ("N", "N", &pbasis, &numst, &numst, &one, 
-                psi, &pbasis, rho_matrix, &numst, &zero, xpsi, &pbasis);
+        RmgGemm ("N", "N", pbasis, numst, numst, one, 
+                psi, pbasis, rho_matrix, numst, zero, xpsi, pbasis);
 
         for(st1 = 0; st1 < numst; st1++)
             for(idx = 0; idx < pbasis; idx++)
