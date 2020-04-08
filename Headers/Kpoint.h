@@ -107,6 +107,9 @@ public:
     // Block of contiguous storage for the orbitals
     KpointType *orbital_storage;
 
+    // Block of contiguous storage for the orbitals from the previous step which is needed in some cases
+    KpointType *prev_orbitals;
+
     // The orbital structure for this k-point
     State<KpointType> *Kstates;
 

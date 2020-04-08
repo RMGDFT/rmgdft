@@ -76,14 +76,16 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     KpointType *psintR;
     size_t stop = (size_t)num_states * (size_t)P0_BASIS * (size_t) ct.noncoll_factor;
 
+    for(size_t i = 0; i < stop; i++) nv[(size_t)first_state*(size_t)P0_BASIS + i] = ZERO_t;
     if(num_tot_proj == 0)
     {
         bool need_ns = true;
         if(ct.norm_conserving_pp && ct.is_gamma) need_ns = false;
         if(need_ns) for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
-        if(ct.xc_is_hybrid && Functional::is_exx_active()) 
+        if(ct.xc_is_hybrid && Functional::is_exx_active())
         {
             for(size_t i = 0; i < stop; i++) nv[i] = ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
+            //AppExx(kpoint, psi, num_states, kpoint->vexx, &nv[(size_t)first_state*(size_t)P0_BASIS]);
         }
         else
         {
@@ -265,6 +267,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
         for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
+        //AppExx(kpoint, psi, num_states, kpoint->vexx, &nv[(size_t)first_state*(size_t)P0_BASIS]);
+
     }
 
     GpuFreeManaged(M_qqq);
@@ -279,5 +283,39 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local, first_state, num_states);
     }
 
+}
+
+template <typename T> void AppExx(Kpoint<double> *, double *, int, double *, double);
+template <typename T> void AppExx(Kpoint<std::complex<double>> *, std::complex<double> *, int, std::complex<double> *, std::complex<double> *);
+
+template <typename T> void AppExx(Kpoint<T> *kptr, T *psi, int N, T *vexx, T *nv)
+{
+    char *trans_t = "t";
+    char *trans_n = "n";
+    char *trans_c = "c";
+    char *trans_a = trans_t;
+    int pbasis = kptr->pbasis;
+    int factor=1;
+    if(typeid(T) == typeid(std::complex<double>)) factor = 2;
+    if(typeid(T) == typeid(std::complex<double>)) trans_a = trans_c;
+    double vel = kptr->L->get_omega() / ((double)(kptr->G->get_NX_GRID(1) * kptr->G->get_NY_GRID(1) * kptr->G->get_NZ_GRID(1)));
+    T alpha(1.0);
+    T alphavel(vel);
+    T beta(0.0);
+    T exx_fraction(ct.exx_fraction);
+
+    // Compute the overlap matrix
+    T *overlaps = new T[kptr->nstates * N];
+
+    RmgGemm(trans_a, trans_n, N, kptr->nstates, pbasis, alphavel, kptr->prev_orbitals, pbasis,
+            psi, pbasis, beta, overlaps, N);
+
+    BlockAllreduce((double *)overlaps, (size_t)(kptr->nstates)*(size_t)N * (size_t)factor, kptr->grid_comm);
+
+    // Update nv
+    RmgGemm(trans_n, trans_n, pbasis, N, kptr->nstates, exx_fraction, vexx, pbasis,
+            overlaps, kptr->nstates, alpha, nv, pbasis);
+
+    delete [] overlaps;
 }
 

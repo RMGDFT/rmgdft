@@ -38,6 +38,7 @@
 #include "transition.h"
 #include "blas.h"
 #include "GlobalSums.h"
+#include "Functional.h"
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -62,7 +63,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
     if(Verify ("freeze_occupied", true, ControlMap)) return;
 
     /*Linear Mixing*/
-    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || ((ct.scf_steps < 4) && (ct.md_steps == 0) && (ct.runflag != RESTART )))
+    if (Verify("charge_mixing_type","Linear", ControlMap) || ct.charge_pulay_order == 1 || ((ct.scf_steps < 4) && (ct.md_steps == 0) && (ct.runflag != RESTART )) || (ct.xc_is_hybrid && Functional::is_exx_active()))
     {
         if(reset) return;
         RmgTimer RT1("Mix rho: Linear");

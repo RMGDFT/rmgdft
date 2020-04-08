@@ -21,6 +21,7 @@ typedef struct
     // extra tags for transferring additional info
     int extratag1;
     int extratag2;
+    int extratag3;
 
     // vcycle during multigrid iterations
     int vcycle;

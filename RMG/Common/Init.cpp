@@ -83,7 +83,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.nvme_work_fd = -1;
 
     SPECIES *sp;
-    OrbitalType *rptr = NULL, *nv, *ns = NULL;
+    OrbitalType *rptr = NULL, *nv, *ns = NULL, *prev = NULL;
     double *vtot;
     double time2=0.0, fac;
     bool need_ns = true;
@@ -220,6 +220,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     rptr = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
     nv = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
     if(need_ns) ns = (OrbitalType *)GpuMallocManaged((size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
+//    if(ct.xc_is_hybrid) prev = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
 #else
     // Wavefunctions are actually stored here
     std::string newpath;
@@ -238,6 +239,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     else
     {
         rptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
+//        if(ct.xc_is_hybrid) prev = new OrbitalType[(size_t)kpt_storage * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
     }
 
     if(ct.nvme_work)
@@ -282,6 +284,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         if(ct.xc_is_hybrid)
         {
             Kptr[kpt]->vexx = &vexx_ptr[vexx_offset];
+//            Kptr[kpt]->prev_orbitals = &prev[vexx_offset];
         }
 
         // for band structure calculation only one k point storage is initilized.
