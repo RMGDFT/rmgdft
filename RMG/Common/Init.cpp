@@ -350,6 +350,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
 
+    if(!ct.num_ldaU_ions && (ct.ldaU_mode != LDA_PLUS_U_NONE))
+    {
+        printf("\n You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.");
+        rmg_error_handler (__FILE__, __LINE__, "You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.\n");
+    }
+
     /* Initialize symmetry stuff */
     if(ct.is_use_symmetry)
     {
