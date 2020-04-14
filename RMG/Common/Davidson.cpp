@@ -72,7 +72,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     occupied_tol = std::min(occupied_tol, 1.0e-4);
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 1.0e-13);
-    double unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-5 );
+    double unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-4 );
 
     //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
@@ -327,7 +327,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         int info = GeneralDiag(hr, sr, eigsw, vr, nbase, nstates, ct.max_states, ct.subdiag_driver);
         delete RT1;
         if(info) {
-            throw RmgFatalException() << "Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+            throw RmgFatalException() << info<<" " <<nstates <<" " << nbase << " Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
 
         // Check convergence

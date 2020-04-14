@@ -160,6 +160,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             for(int i = 0;i < N*ld;i++) Bsave[i] = B[i];
 
 
+
             if(ct.is_gamma)
             {
                 if(M == N) {
@@ -188,6 +189,19 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
 
             }
 
+            if(info) 
+            {
+                for(int i=0;i < N*ld;i++) B[i] = Bsave[i];
+            int info1;
+            double *rwork = new double[3*N];
+            zheev("V", "L", &N, (double *)B, &ld,eigs, work2,&lwork, rwork, &info1);
+            delete [] rwork;
+
+            for(int i = 0; i < N; i++) printf("\n eig %d %d %d %e %e", info, pct.spinpe, i, eigs[i], Bsave[i * ld + i]);
+            if(eigs[0] < 0.0) 
+            for(int i = 0; i < N; i++) printf("\n vec %d  %e %e %e %e", i, B[i * ld], B[i]);
+            fflush(NULL);
+            }
 
             for(int i=0;i < N*ld;i++) A[i] = Asave[i];
             for(int i=0;i < N*ld;i++) B[i] = Bsave[i];
