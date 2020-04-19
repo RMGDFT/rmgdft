@@ -20,15 +20,19 @@ will just work and on standard linux distributions this is often the case. On
 non-standard clusters with complicated software stacks additional manual
 configuration is often required. In particular one may have to specify a
 particular set of modules to use and set some environment variables. For
-example on the xsede machine comet as of July, 16, 2019 the following works.
+example on the xsede machine comet as of April 19,2020 the following works.
 
 ```Bash
 export CC=/opt/gnu/gcc/bin/gcc
-export CXX=/opt/gnu/gcc/bin/c++
-export FC=/opt/gnu/gcc/bin/gfortran
+export CXX=/opt/gnu/gcc/bin/g++
+export FC=/opt/openmpi/gnu/ib/bin/mpif90
+module load gnu
+module load openmpi_ib
 module load boost
 module load fftw
-module load cmake 
+module load cmake
+module load mkl
+module load hdf5
 ```
 
 One can then execute
