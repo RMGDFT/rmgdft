@@ -103,7 +103,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {
             RmgTimer RTL("3-MgridSubspace: ldaUop x psi");
-            LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
+            LdaplusUxpsi(this, 0, this->nstates * ct.noncoll_factor, this->orbitalsint_local);
             this->ldaU->calc_ns_occ(this->orbitalsint_local, 0, this->nstates);
         }
 
@@ -248,7 +248,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {   
             RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
-            LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
+            LdaplusUxpsi(this, 0, this->nstates * ct.noncoll_factor, this->orbitalsint_local);
             this->ldaU->calc_ns_occ(this->orbitalsint_local, 0, this->nstates);
         }
     }
@@ -266,7 +266,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)
     {   
         RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
-        LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
+        LdaplusUxpsi(this, 0, this->nstates * ct.noncoll_factor, this->orbitalsint_local);
         this->ldaU->calc_ns_occ(this->orbitalsint_local, 0, this->nstates);
     }
 

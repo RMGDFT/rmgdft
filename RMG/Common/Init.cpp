@@ -596,11 +596,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete RT3;
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {   
-            if(ct.noncoll)
-            {
-            }
             RmgTimer("3-MgridSubspace: ldaUop x psi"); 
-            LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+            LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->orbitalsint_local);
             Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
         }
     }
@@ -660,7 +657,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             if(ct.ldaU_mode != LDA_PLUS_U_NONE)
             {   
                 RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
-                LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+                LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->orbitalsint_local);
                 Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
             }
 
