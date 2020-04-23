@@ -99,18 +99,25 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
                     /*Do the backwards transform */
                     coarse_pwaves->FftInverse(gbptr, beptr);
 
+                    int lm = sp->awave_ldaU_lm[ip];
+                    double awave_j = sp->awave_ldaU_j[ip];
+                    double factor_j = 1.0;
+                    if(sp->ldaU_l != 0 && std::abs(awave_j) > 1.0e-4)
+                    {
+                        factor_j = (2.0 * awave_j + 1.0) /(2.0 * sp->ldaU_l +1 )/2.0;
+                    }
+
                     if(ct.is_gamma)
                     {
-                        double *weight_R = (double *)weight;
-                        for (int idx = 0; idx < pbasis; idx++) weight_R[idx] = std::real(beptr[idx]);
+                        double *weight_R = (double *)&weight[lm * pbasis];
+                        for (int idx = 0; idx < pbasis; idx++) weight_R[idx] += std::real(beptr[idx]) * factor_j;
                     }
                     else
                     {
-                        std::complex<double> *weight_C = (std::complex<double> *)weight;
-                        for (int idx = 0; idx < pbasis; idx++) weight_C[idx] = beptr[idx];
+                        std::complex<double> *weight_C = (std::complex<double> *)&weight[lm*pbasis];
+                        for (int idx = 0; idx < pbasis; idx++) weight_C[idx] += beptr[idx] * factor_j;
                     }
 
-                    weight += pbasis;
 
                 }
 

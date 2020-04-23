@@ -383,6 +383,8 @@ void InitPseudo ()
 
 
         sp->awave_is_ldaU = new bool[sp->num_atomic_waves_m]();
+        sp->awave_ldaU_lm = new int[sp->num_atomic_waves_m]();
+        sp->awave_ldaU_j = new double[sp->num_atomic_waves_m]();
 
         int lm_index = 0;
         sp->num_ldaU_orbitals = 0;
@@ -447,8 +449,12 @@ void InitPseudo ()
                 {
                     sp->ldaU_l = l;
                     sp->num_ldaU_orbitals = m;
-
-                    for(int im=lm_index;im < lm_index+m;im++) sp->awave_is_ldaU[im] = true;
+                    for(int im=lm_index;im < lm_index+m;im++) 
+                    {
+                        sp->awave_is_ldaU[im] = true;
+                        sp->awave_ldaU_lm[im] = im - lm_index;
+                        sp->awave_ldaU_j[im] = sp->atomic_wave_j[ip];
+                    }
                 } 
             }
             lm_index += 2*l + 1;
