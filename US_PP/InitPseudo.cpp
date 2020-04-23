@@ -62,6 +62,7 @@ void InitPseudo ()
     ct.max_nlpoints = 0;
 
 
+    ct.max_ldaU_orbitals = 0;
     /* Loop over species */
     for (isp = 0; isp < ct.num_species; isp++)
     {
@@ -381,11 +382,10 @@ void InitPseudo ()
         }
 
 
-        int ldaU_orbitals = 0;
-        int ldaU_l = 0;
         sp->awave_is_ldaU = new bool[sp->num_atomic_waves_m]();
 
         int lm_index = 0;
+        sp->num_ldaU_orbitals = 0;
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
         {
 
@@ -443,28 +443,19 @@ void InitPseudo ()
             int m = 2*l + 1;
             if(ct.ldaU_mode != LDA_PLUS_U_NONE)
             {
-                if(l > 1)  // d or f state
+                if(!strcasecmp(sp->ldaU_label.c_str(), sp->atomic_wave_label[ip].c_str() )) 
                 {
-                    // Ignore filled shell
-                    double full_occ = 2.0 * (double)m;
-                    double tol = fabs(full_occ - sp->atomic_wave_oc[ip]);
+                    sp->ldaU_l = l;
+                    sp->num_ldaU_orbitals = m;
 
-                    // Only use one set of localized orbitals per species
-                    if((tol > 1.0e-5) && (ldaU_l == 0))
-                    {
-                        ldaU_orbitals += m;                        
-                        for(int im=lm_index;im < lm_index+m;im++) sp->awave_is_ldaU[im] = true;
-                        ldaU_l = l;
-                    }
+                    for(int im=lm_index;im < lm_index+m;im++) sp->awave_is_ldaU[im] = true;
                 } 
             }
             lm_index += 2*l + 1;
         }
 
-        ct.max_ldaU_orbitals = std::max(ct.max_ldaU_orbitals, ldaU_orbitals);
-        ct.max_ldaU_l = std::max(ct.max_ldaU_l, ldaU_l);
-        sp->num_ldaU_orbitals = ldaU_orbitals;
-        sp->ldaU_l = ldaU_l;
+        ct.max_ldaU_orbitals = std::max(ct.max_ldaU_orbitals, sp->num_ldaU_orbitals);
+        ct.max_ldaU_l = std::max(ct.max_ldaU_l, sp->ldaU_l);
         if (pct.gridpe == 0 && write_flag) fclose (psp);
 
         delete [] bessel_rg;
@@ -472,5 +463,7 @@ void InitPseudo ()
 
     }                           /* end for */
     delete A;
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE && ct.max_ldaU_orbitals == 0)
+         throw RmgFatalException() << "LDA+U: no U assigned" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
 } // end InitPseudo

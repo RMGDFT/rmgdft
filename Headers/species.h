@@ -50,6 +50,7 @@ public:
 
     /** ldaU l value */
     int ldaU_l;
+    std::string ldaU_label;
 
     // Hubbard U and J
     double Hubbard_U;
@@ -108,7 +109,7 @@ public:
 
     double *atomic_wave_oc;
     
-    //char *atomic_wave_label[3];
+    std::string *atomic_wave_label;
 
     double *atomic_rho;
     

@@ -33,7 +33,7 @@
 
 **********************************************************************/
 
-typedef struct {double val; int index;} HUBBARD_INFO;
+typedef struct {double val; int index; std::string label;} HUBBARD_INFO;
 void parse_Hubbard_info(std::string what, std::vector<HUBBARD_INFO> &hinfo, std::unordered_map<std::string, InputKey *>& InputMap, CONTROL& lc);
 
 namespace Ri = RmgInput;
@@ -123,6 +123,8 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     {
         HUBBARD_INFO h = *it;
         Species[h.index].Hubbard_U = h.val;
+        Species[h.index].ldaU_label = h.label;
+        
     }
 
     hinfo.empty();
@@ -179,7 +181,7 @@ void parse_Hubbard_info(std::string what, std::vector<HUBBARD_INFO> &hinfo, std:
             boost::trim_if(pline, boost::algorithm::is_any_of("\" \t"));
             std::vector<std::string> fields;
             boost::algorithm::split( fields, pline, boost::is_any_of(field_delims), boost::token_compress_on );
-            if(fields.size() == 2)
+            if(fields.size() == 2 || fields.size() == 3)
             {
                 // Search the species structure for a matching symbol
                 boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
@@ -191,6 +193,8 @@ void parse_Hubbard_info(std::string what, std::vector<HUBBARD_INFO> &hinfo, std:
                         HUBBARD_INFO h;
                         h.val = std::stod(fields[1]) / Ha_eV;
                         h.index = isp;
+                        h.label = "3d"; //default d orbital
+                        if(fields.size() == 3) h.label = fields[2];
                         hinfo.push_back(h);
                     }
                 }

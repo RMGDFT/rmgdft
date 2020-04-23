@@ -285,6 +285,7 @@ void LoadUpfPseudo(SPECIES *sp)
         sp->atomic_wave_j = new double [MAX_INITWF];
         sp->atomic_wave_oc = new double [MAX_INITWF]();
         sp->aradius = new double [MAX_INITWF];
+        sp->atomic_wave_label = new std::string [MAX_INITWF];
 
         for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++) {
             // Ugh. UPF format has embedded .s so use / as a separator
@@ -295,7 +296,7 @@ void LoadUpfPseudo(SPECIES *sp)
 
             sp->atomic_wave_l[iwf] = upf_tree.get<int>(path(chi + "/<xmlattr>/l", '/'));
 
-            //sp->atomic_wave_label[j][0] =
+            sp->atomic_wave_label[iwf] = upf_tree.get<std::string>(path(chi + "/<xmlattr>/label", '/'));
             sp->atomic_wave_oc[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/occupation", '/'));
 
             if(ct.lcao_use_empty_orbitals && (sp->atomic_wave_oc[iwf] == 0.0)) sp->atomic_wave_oc[iwf] = 1.0e-6;
