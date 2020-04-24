@@ -185,7 +185,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     KpointType *nwork = new KpointType[alloc];
 
     // and for the diagonal part of ns_occ
-    size_t alloc1 = (size_t)pstride * (size_t)Atoms.size();
+    size_t alloc1 = (size_t)pstride * (size_t)Atoms.size() * ct.noncoll_factor * ct.noncoll_factor;
     KpointType *lambda = new KpointType[alloc1 * alloc1](); 
     std::complex<double> *lambda_C = (std::complex<double> *)lambda;
     boost::multi_array_ref<KpointType, 6> nlambda{lambda, boost::extents[ct.noncoll_factor][Atoms.size()][pstride][ct.noncoll_factor][Atoms.size()][pstride]};
