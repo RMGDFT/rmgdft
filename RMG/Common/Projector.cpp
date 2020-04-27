@@ -45,6 +45,7 @@
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "Projector.h"
+#include "RmgException.h"
 
 
 
@@ -53,8 +54,9 @@ template Projector<std::complex<double>>::Projector(int, int, int);
 template Projector<double>::~Projector(void);
 template Projector<std::complex<double>>::~Projector(void);
 
-template void Projector<double>::project(Kpoint<double> *, double *, int, int, double *);
-template void Projector<std::complex<double>>::project(Kpoint<std::complex<double>> *, std::complex<double> *, int, int, std::complex<double> *);
+template void Projector<double>::project(Kpoint<double> *, double *, int, int, double *, int);
+template void Projector<std::complex<double>>::project(Kpoint<std::complex<double>> *, std::complex<double> *, int, int, std::complex<double> *,
+int);
 
 template int Projector<double>::get_num_nonloc_ions(void);
 template int Projector<double>::get_num_owned_ions(void);
@@ -475,7 +477,8 @@ template <class KpointType> int Projector<KpointType>::get_nldim(int species)
 }
 
 // Applies projectors to orbitals associated with kpoint kptr
-template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int nstates, KpointType *weight)
+template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int nstates, KpointType
+*weight, int pbasis_soc)
 {
 
     // Do delocalized case first
@@ -491,8 +494,8 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         transa = transc;
         if(typeid(KpointType) == typeid(double)) transa = transt;
         int length = factor * Atoms.size() * nstates * this->pstride;
-        RmgGemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
-            weight, kptr->pbasis, &kptr->orbital_storage[offset*kptr->pbasis], kptr->pbasis,
+        RmgGemm (transa, transn, this->num_tot_proj, nstates, pbasis_soc, alpha,
+            weight, pbasis_soc, &kptr->orbital_storage[offset*pbasis_soc], pbasis_soc,
             rzero, p, this->num_tot_proj);
 
         if(pct.grid_npes != 1)
@@ -501,6 +504,10 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         return;
     }
 
+    if(pbasis_soc != kptr->pbasis)
+    {
+        throw RmgFatalException() <<  "noncollinear case not program for localized atomic orbitals " << __FILE__ << " at line " << __LINE__ << "\n";
+    }
     // And now localized
     KpointType *own_buff = NULL, *nown_buff = NULL;
     KpointType *send_buff, *recv_buff;

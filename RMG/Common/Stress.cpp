@@ -548,7 +548,8 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                     // nlweight points to beta * x, beta * y, and beta * z for id2 = 0, 1, 2
                     T *nlweight = &kptr->nl_weight[ (id2 + 1) *kptr->nl_weight_size];
 
-                    kptr->BetaProjector->project(kptr, sint_der, first_state *ct.noncoll_factor, num_state_thisblock *ct.noncoll_factor, nlweight);
+                    kptr->BetaProjector->project(kptr, sint_der, first_state *ct.noncoll_factor, 
+                            num_state_thisblock *ct.noncoll_factor, nlweight, kptr->pbasis);
                     delete RT1;
 
                     RT1 = new RmgTimer("2-Stress: Non-loc: <beta-psi>f(st) < psi-beta> ");
@@ -626,7 +627,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
                                             stress_tensor_nl[id1 * 3 + id2] += 
                                                 std::real(dnmI_so[idx1] * proj_mat[ng * num_proj_noncoll + mg])
-                                               -std::real(qnmI_so[idx1] * proj_mat_q[ng * num_proj_noncoll + mg]);
+                                                -std::real(qnmI_so[idx1] * proj_mat_q[ng * num_proj_noncoll + mg]);
                                         }
                         }
                         else

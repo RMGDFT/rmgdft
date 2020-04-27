@@ -1222,7 +1222,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
     }
 
-    this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
+    this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis * ct.noncoll_factor + 128;
 
 #if GPU_ENABLED
     cudaError_t custat;

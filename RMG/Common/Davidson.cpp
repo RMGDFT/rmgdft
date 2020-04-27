@@ -124,13 +124,13 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     // Apply Hamiltonian to current set of eigenvectors. At the current time
     // this->ns is also computed in ApplyHamiltonianBlock by AppNls and stored in this->ns
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
-    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, this->nl_weight);
+    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, this->nl_weight, this->pbasis);
     delete RT1;
 
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)
     {   
         RmgTimer RTL("6-Davidson: ldaUop x psi"); 
-        LdaplusUxpsi(this, 0, this->nstates * ct.noncoll_factor, this->orbitalsint_local);
+        LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
         this->ldaU->calc_ns_occ(this->orbitalsint_local, 0, this->nstates);
     }
 
@@ -248,15 +248,15 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         // Apply Hamiltonian to the new vectors
         RT1 = new RmgTimer("6-Davidson: Betaxpsi");
         newsint = this->newsint_local + nbase * this->BetaProjector->get_num_nonloc_ions() * ct.max_nl * ct.noncoll_factor;
-        this->BetaProjector->project(this, newsint, nbase*ct.noncoll_factor, notconv*ct.noncoll_factor, nl_weight);
+        this->BetaProjector->project(this, newsint, nbase*ct.noncoll_factor, notconv*ct.noncoll_factor, nl_weight, this->pbasis);
         delete RT1;
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {   
             RmgTimer RTL("6-Davidson: ldaUop x psi"); 
             newsint = this->orbitalsint_local + nbase * this->OrbitalProjector->get_num_nonloc_ions() * 
-                this->OrbitalProjector->get_pstride() * ct.noncoll_factor;
-            LdaplusUxpsi(this, nbase * ct.noncoll_factor, notconv * ct.noncoll_factor, newsint);
+                this->OrbitalProjector->get_pstride();
+            LdaplusUxpsi(this, nbase, notconv, newsint);
         }
         RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
         ApplyHamiltonianBlock<KpointType> (this, nbase, notconv, h_psi, vtot, vxc_psi);
@@ -476,13 +476,13 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     delete [] eigs;
 
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
-    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, this->nl_weight);
+    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, this->nl_weight, this->pbasis);
     delete RT1;
 
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)
     {
         RmgTimer RTL("6-Davidson: ldaUop x psi");
-        LdaplusUxpsi(this, 0, this->nstates * ct.noncoll_factor, this->orbitalsint_local);
+        LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
         this->ldaU->calc_ns_occ(this->orbitalsint_local, 0, this->nstates);
     }
 

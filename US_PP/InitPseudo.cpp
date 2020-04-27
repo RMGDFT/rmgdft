@@ -383,8 +383,6 @@ void InitPseudo ()
 
 
         sp->awave_is_ldaU = new bool[sp->num_atomic_waves_m]();
-        sp->awave_ldaU_lm = new int[sp->num_atomic_waves_m]();
-        sp->awave_ldaU_j = new double[sp->num_atomic_waves_m]();
 
         int lm_index = 0;
         sp->num_ldaU_orbitals = 0;
@@ -448,18 +446,17 @@ void InitPseudo ()
                 if(!strcasecmp(sp->ldaU_label.c_str(), sp->atomic_wave_label[ip].c_str() )) 
                 {
                     sp->ldaU_l = l;
-                    sp->num_ldaU_orbitals = m;
                     for(int im=lm_index;im < lm_index+m;im++) 
                     {
                         sp->awave_is_ldaU[im] = true;
-                        sp->awave_ldaU_lm[im] = im - lm_index;
-                        sp->awave_ldaU_j[im] = sp->atomic_wave_j[ip];
                     }
+                    sp->num_ldaU_orbitals = m;
                 } 
             }
             lm_index += 2*l + 1;
         }
 
+        sp->num_ldaU_orbitals *= ct.noncoll_factor;
         ct.max_ldaU_orbitals = std::max(ct.max_ldaU_orbitals, sp->num_ldaU_orbitals);
         ct.max_ldaU_l = std::max(ct.max_ldaU_l, sp->ldaU_l);
         if (pct.gridpe == 0 && write_flag) fclose (psp);

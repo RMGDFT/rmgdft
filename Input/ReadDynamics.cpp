@@ -124,6 +124,8 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
         HUBBARD_INFO h = *it;
         Species[h.index].Hubbard_U = h.val;
         Species[h.index].ldaU_label = h.label;
+        Species[h.index].is_ldaU = true;
+    
         
     }
 

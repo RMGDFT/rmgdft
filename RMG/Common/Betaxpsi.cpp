@@ -47,5 +47,5 @@ template void Betaxpsi<std::complex<double> >(Kpoint<std::complex<double>> *, in
 template <typename KpointType>
 void Betaxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local)
 {
-    kptr->BetaProjector->project(kptr, sint_local, first_state, nstates, kptr->nl_weight);
+    kptr->BetaProjector->project(kptr, sint_local, first_state, nstates, kptr->nl_weight, kptr->pbasis);
 }

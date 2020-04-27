@@ -64,10 +64,13 @@ template void LdaU<std::complex<double>>::write_ldaU(void);
 
 template <class KpointType> LdaU<KpointType>::LdaU(Kpoint<KpointType> &kp) : K(kp)
 {
-    this->ldaU_m = 2*ct.max_ldaU_l+1;
+    this->ldaU_m = (2*ct.max_ldaU_l+1) * ct.noncoll_factor;
 
     this->Hubbard_J.resize(boost::extents[ct.num_species][3]);
-    this->ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][2*ct.max_ldaU_l+1][2*ct.max_ldaU_l+1]);
+    if(ct.nspin == 4)
+        this->ns_occ.resize(boost::extents[1][Atoms.size()][this->ldaU_m][this->ldaU_m]);
+    else
+        this->ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][this->ldaU_m][this->ldaU_m]);
 }
 
 // Computes the LDA+U occupation matrix. If sint_compack_in is not NULL then it uses that array instead of
@@ -79,7 +82,7 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
     int *nonloc_ions_list = K.OrbitalProjector->get_nonloc_ions_list();
     int pstride = K.OrbitalProjector->get_pstride();
 
-    size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states * ct.noncoll_factor;
+    size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states;
     KpointType *sint_compack = new KpointType[alloc]();
 
     if(first_state != 0) 
@@ -87,14 +90,12 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
         printf("\n first_state in calc_ns_occ must be 0 but it is  %d", first_state);
         rmg_error_handler(__FILE__, __LINE__, "wrong first_state");
     }
-    boost::multi_array_ref<KpointType, 4> nsint{sint_compack, boost::extents[K.nstates][ct.noncoll_factor][Atoms.size()][pstride]};
+    boost::multi_array_ref<KpointType, 3> nsint{sint_compack, boost::extents[K.nstates][Atoms.size()][pstride]};
 
     // Repack the sint array
-    for(int ispin = 0; ispin < ct.noncoll_factor; ispin++)
     for(int istate = 0; istate < num_states; istate++)
     {
-        size_t sindex = (istate + first_state) * num_nonloc_ions * pstride * ct.noncoll_factor;
-        sindex += ispin * num_nonloc_ions * pstride;
+        size_t sindex = (istate + first_state) * num_nonloc_ions * pstride;
         for (int ion = 0; ion < num_nonloc_ions; ion++)
         {
             int proj_index = ion * pstride;
@@ -103,14 +104,13 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
             for (int i = 0; i < pstride; i++)
             {
                 //sint_compack[istate * num_tot_proj + proj_index + i] = psint[i];
-                nsint[istate][ispin][gion][i] = psint[i];
+                nsint[istate][gion][i] = psint[i];
+
             }
         }
     }
 
 
-    for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
-    for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
         for(int i=0;i < this->ldaU_m;i++)
@@ -120,9 +120,9 @@ template <class KpointType> void LdaU<KpointType>::calc_ns_occ(KpointType *sint,
                 std::complex<double> occ(0.0, 0.0); 
                 for(int st=0;st < K.nstates;st++)
                 {
-                    occ = occ + K.Kstates[st].occupation[0] * nsint[st][is1][ion][i] * std::conj(nsint[st][is2][ion][j]);
+                    occ = occ + K.Kstates[st].occupation[0] * nsint[st][ion][i] * std::conj(nsint[st][ion][j]);
                 }
-                ns_occ[is1 * ct.noncoll_factor + is2][ion][i][j] = occ * K.kp.kweight;
+                ns_occ[0][ion][i][j] = occ * K.kp.kweight;
             }
         }
     }
@@ -153,17 +153,14 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
     {
         if(Species[Atoms[ion].species].num_ldaU_orbitals)
         {
-            for(int ispin=0;ispin < ct.nspin;ispin++)
+            fprintf(ct.logfile, "  ion %lu  LDA+U occupation matrix_real\n", ion);
+            for(int i=0;i < ldaU_m;i++)
             {
-                fprintf(ct.logfile, "  ion %lu spin %d LDA+U occupation matrix\n", ion, ispin);
-                for(int i=0;i < ldaU_m;i++)
+                for(int j=0;j < ldaU_m;j++)
                 {
-                    for(int j=0;j < ldaU_m;j++)
-                    {
-                        fprintf(ct.logfile, "(%7.2e %7.2e)  ", ns_occ[ispin][ion][i][j]);
-                    }
-                    fprintf(ct.logfile, "\n");
+                    fprintf(ct.logfile, "%7.4f ", std::real(ns_occ[0][ion][i][j]));
                 }
+                fprintf(ct.logfile, "\n");
             }
         }
     }
@@ -180,39 +177,37 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     int pstride = K.OrbitalProjector->get_pstride();
 
     // allocate memory for sint_compack;
-    size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states * ct.noncoll_factor;
+    size_t alloc = (size_t)num_tot_proj * (size_t)ct.max_states;
     KpointType *sint_compack = new KpointType[alloc]();
     KpointType *nwork = new KpointType[alloc];
 
     // and for the diagonal part of ns_occ
-    size_t alloc1 = (size_t)pstride * (size_t)Atoms.size() * ct.noncoll_factor * ct.noncoll_factor;
+    size_t alloc1 = (size_t)pstride * (size_t)Atoms.size() ;
     KpointType *lambda = new KpointType[alloc1 * alloc1](); 
     std::complex<double> *lambda_C = (std::complex<double> *)lambda;
-    boost::multi_array_ref<KpointType, 6> nlambda{lambda, boost::extents[ct.noncoll_factor][Atoms.size()][pstride][ct.noncoll_factor][Atoms.size()][pstride]};
-    boost::multi_array_ref<std::complex<double>, 6> nlambda_C{lambda_C,
-        boost::extents[ct.noncoll_factor][Atoms.size()][pstride][ct.noncoll_factor][Atoms.size()][pstride]};
+    boost::multi_array_ref<KpointType, 4> nlambda{lambda, boost::extents[Atoms.size()][pstride][Atoms.size()][pstride]};
+    boost::multi_array_ref<std::complex<double>, 4> nlambda_C{lambda_C,
+        boost::extents[Atoms.size()][pstride][Atoms.size()][pstride]};
 
     // Repack the sint array
-    boost::multi_array_ref<KpointType, 4> nsint{sint_compack, boost::extents[K.nstates][ct.noncoll_factor][Atoms.size()][pstride]};
+    boost::multi_array_ref<KpointType, 3> nsint{sint_compack, boost::extents[K.nstates][Atoms.size()][pstride]};
     int *nonloc_ions_list = K.OrbitalProjector->get_nonloc_ions_list();
 
-    for(int ispin = 0; ispin < ct.noncoll_factor; ispin++)
-        for(int istate = 0; istate < num_states; istate++)
+    for(int istate = 0; istate < num_states; istate++)
+    {
+        size_t sindex = (istate + first_state) * num_nonloc_ions * pstride;
+        for (int ion = 0; ion < num_nonloc_ions; ion++)
         {
-            size_t sindex = (istate + first_state) * num_nonloc_ions * pstride * ct.noncoll_factor;
-            sindex += ispin * num_nonloc_ions * pstride;
-            for (int ion = 0; ion < num_nonloc_ions; ion++)
+            int proj_index = ion * pstride;
+            KpointType *psint = &sint[proj_index + sindex];
+            int gion = nonloc_ions_list[ion];
+            for (int i = 0; i < pstride; i++)
             {
-                int proj_index = ion * pstride;
-                KpointType *psint = &sint[proj_index + sindex];
-                int gion = nonloc_ions_list[ion];
-                for (int i = 0; i < pstride; i++)
-                {
-                    //sint_compack[istate * num_tot_proj + proj_index + i] = psint[i];
-                    nsint[istate][ispin][gion][i] = psint[i];
-                }
+                //sint_compack[istate * num_tot_proj + proj_index + i] = psint[i];
+                nsint[istate][gion][i] = psint[i];
             }
         }
+    }
 
 
     // Put the diagonal part of ns_occ into a separate array
@@ -225,23 +220,16 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
         double Ueff = AtomType.Hubbard_U / 2.0;       // FIXME: Have to deal with more complicated cases later
 
         //Tr(ns_occ * ns_occ)
-        for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
-        for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
-        {
-            for(int i=0;i < pstride;i++)
-                for(int j=0;j < pstride;j++)
-                {
-                    this->Ehub -= Ueff * std::real( ns_occ[is1][ion][i][j] * ns_occ[is2][ion][j][i]);
-                }
-            if(is1 == is2)
+        for(int i=0;i < pstride;i++)
+            for(int j=0;j < pstride;j++)
             {
-                int ispin = is1 * ct.noncoll_factor + is2;
-                for(int i=0;i < pstride;i++)
-                {
-                    this->Ehub += Ueff * std::real(ns_occ[ispin][ion][i][i]);
-                    this->Ecorrect += Ueff * std::real(ns_occ[ispin][ion][i][i] * ns_occ[ispin][ion][i][i]);
-                }
+                this->Ehub -= Ueff * std::real( ns_occ[0][ion][i][j] * ns_occ[0][ion][j][i]);
             }
+
+        for(int i=0;i < pstride;i++)
+        {
+            this->Ehub += Ueff * std::real(ns_occ[0][ion][i][i]);
+            this->Ecorrect += Ueff * std::real(ns_occ[0][ion][i][i] * ns_occ[0][ion][i][i]);
         }
     }
 
@@ -250,49 +238,43 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
 
     if((ct.scf_steps > 0) || (ct.runflag == RESTART))
     {
-        for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
-            for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
+        for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+        {
+            SPECIES &AtomType = Species[Atoms[ion].species];
+            double Ueff = AtomType.Hubbard_U / 2.0;       // FIXME: Have to deal with more complicated cases later
+
+            for(int i=0;i < pstride;i++)
             {
-                int ispin = is1 * ct.noncoll_factor + is2;
-                for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+                for(int j=0;j < pstride;j++)
                 {
-                    SPECIES &AtomType = Species[Atoms[ion].species];
-                    double Ueff = AtomType.Hubbard_U / 2.0;       // FIXME: Have to deal with more complicated cases later
-
-                    for(int i=0;i < pstride;i++)
+                    if(ct.is_gamma)
                     {
-                        for(int j=0;j < pstride;j++)
-                        {
-                            if(ct.is_gamma)
-                            {
-                                if(i==j && is1 == is2)
-                                    nlambda[is1][ion][i][is2][ion][j] = std::real(Ueff * (1.0 - 2.0*ns_occ[ispin][ion][i][j]));
-                                else
-                                    nlambda[is1][ion][i][is2][ion][j] = -std::real(Ueff * 2.0*ns_occ[ispin][ion][i][j]);
+                        if(i==j)
+                            nlambda[ion][i][ion][j] = std::real(Ueff * (1.0 - 2.0*ns_occ[0][ion][i][j]));
+                        else
+                            nlambda[ion][i][ion][j] = -std::real(Ueff * 2.0*ns_occ[0][ion][i][j]);
 
-                            }
-                            else
-                            {
-                                if(i==j)
-                                    nlambda_C[is1][ion][i][is2][ion][j] = Ueff * (1.0 - 2.0*ns_occ[ispin][ion][i][j]);
-                                else
-                                    nlambda_C[is1][ion][i][is2][ion][j] = -Ueff * 2.0*ns_occ[ispin][ion][i][j];
-                            }
-                        }
+                    }
+                    else
+                    {
+                        if(i==j)
+                            nlambda_C[ion][i][ion][j] = Ueff * (1.0 - 2.0*ns_occ[0][ion][i][j]);
+                        else
+                            nlambda_C[ion][i][ion][j] = -Ueff * 2.0*ns_occ[0][ion][i][j];
                     }
                 }
             }
+        }
 
         char *transa = "n";
-        int num_tot_proj_nc = num_tot_proj * ct.noncoll_factor;
-        RmgGemm (transa, transa, num_tot_proj_nc, num_states, num_tot_proj_nc,
-                ONE_t, lambda, num_tot_proj_nc, sint_compack, num_tot_proj_nc,
-                zero_t, nwork, num_tot_proj_nc);
+        RmgGemm (transa, transa, num_tot_proj, num_states, num_tot_proj,
+                ONE_t, lambda, num_tot_proj, sint_compack, num_tot_proj,
+                zero_t, nwork, num_tot_proj);
 
-        int num_states_nc = num_states * ct.noncoll_factor;
-        RmgGemm (transa, transa, K.pbasis, num_states_nc, num_tot_proj,
-                ONE_t, K.orbital_weight, K.pbasis, nwork, num_tot_proj,
-                ONE_t, v_hub_x_psi, K.pbasis);
+        int pbasis_soc = K.pbasis * ct.noncoll_factor;
+        RmgGemm (transa, transa, pbasis_soc, num_states, num_tot_proj,
+                ONE_t, K.orbital_weight, pbasis_soc, nwork, num_tot_proj,
+                ONE_t, v_hub_x_psi, pbasis_soc);
     }
 
     delete [] lambda;
@@ -408,9 +390,10 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
         int st_thisblock = num_state_thisblock * ct.noncoll_factor;
         int st_block = ct.state_block_size * ct.noncoll_factor;
 
-        K.OrbitalProjector->project(&K, sint_derx, st_start,              st_thisblock, K.orbital_weight);
-        K.OrbitalProjector->project(&K, sint_dery, st_start +   st_block, st_thisblock, K.orbital_weight);
-        K.OrbitalProjector->project(&K, sint_derz, st_start + 2*st_block, st_thisblock, K.orbital_weight);
+        int pbasis_soc = K.pbasis * ct.noncoll_factor;
+        K.OrbitalProjector->project(&K, sint_derx, st_start,              st_thisblock, K.orbital_weight, pbasis_soc);
+        K.OrbitalProjector->project(&K, sint_dery, st_start +   st_block, st_thisblock, K.orbital_weight, pbasis_soc);
+        K.OrbitalProjector->project(&K, sint_derz, st_start + 2*st_block, st_thisblock, K.orbital_weight, pbasis_soc);
 
         //        for(int i = 0; i < num_nonloc_ions * st_thisblock * pstride; i++)
         //        {

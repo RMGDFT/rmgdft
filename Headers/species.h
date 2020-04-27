@@ -41,7 +41,7 @@ public:
     int is_semi_local;
 
     /** is included in ldaU projections */
-    int is_ldaU;
+    bool is_ldaU;
 
     int is_spinorb;
 
@@ -241,8 +241,6 @@ public:
 
     // Flag indicating whether a particular orbital is included in LDA+U projectors
     bool *awave_is_ldaU;
-    int *awave_ldaU_lm;
-    double *awave_ldaU_j;
 
     /* Pseudopotential filtering parameters */
     double qcut;                  /* Real space local cutoff for qfunctions */
