@@ -76,7 +76,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     KpointType *psintR;
     size_t stop = (size_t)num_states * (size_t)P0_BASIS * (size_t) ct.noncoll_factor;
 
-    for(size_t i = 0; i < stop; i++) nv[(size_t)first_state*(size_t)P0_BASIS + i] = ZERO_t;
+    for(size_t i = 0; i < stop; i++) nv[i] = ZERO_t;
     if(num_tot_proj == 0)
     {
         bool need_ns = true;
