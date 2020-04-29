@@ -192,15 +192,17 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
             if(info) 
             {
                 for(int i=0;i < N*ld;i++) B[i] = Bsave[i];
-            int info1;
-            double *rwork = new double[3*N];
-            zheev("V", "L", &N, (double *)B, &ld,eigs, work2,&lwork, rwork, &info1);
-            delete [] rwork;
+                int info1;
+                double *rwork = new double[3*N];
+                zheev("V", "L", &N, (double *)B, &ld,(double *)A, work2,&lwork, rwork, &info1);
+                delete [] rwork;
 
-            for(int i = 0; i < N; i++) printf("\n eig %d %d %d %e %e", info, pct.spinpe, i, eigs[i], Bsave[i * ld + i]);
-            if(eigs[0] < 0.0) 
-            for(int i = 0; i < N; i++) printf("\n vec %d  %e %e %e %e", i, B[i * ld], B[i]);
-            fflush(NULL);
+                if(pct.gridpe == 0)
+                {
+                    printf("\n WARNING: GeneralDiag.cpp, failed, the eig of overlap matrix as follow");
+                    for(int i = 0; i < 5; i++) printf("\n eig %d %d %d %e %e", info, pct.spinpe, i, A[i]);
+                }
+                fflush(NULL);
             }
 
             for(int i=0;i < N*ld;i++) A[i] = Asave[i];
@@ -249,13 +251,13 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
     double *global_matrix1 = new double[ct.max_states * ct.max_states];
 #endif
 
-   // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
+    // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
     if(!MainSp) {
         // Need some code here to decide how to set the number of scalapack groups but for now use just 1
         int scalapack_groups = 1;
         int last = !ct.use_folded_spectrum;
         MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, ct.max_states,
-                     ct.scalapack_block_factor, last, pct.grid_comm);
+                ct.scalapack_block_factor, last, pct.grid_comm);
 
     }
 
@@ -371,10 +373,10 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
 #if MAGMA_LIBS
 template int GeneralDiagMagma<double>(double *A, double *B, double *eigs, double *V, int N, int M, int ld);
 template int GeneralDiagMagma<std::complex<double>>(std::complex<double> *A, std::complex<double> *B, double *eigs, std::complex<double> *V,
-int N, int M, int ld);
+        int N, int M, int ld);
 
 
-template <typename KpointType>
+    template <typename KpointType>
 int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld)
 {
 
@@ -434,26 +436,26 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
 #endif
 
 #if GPU_ENABLED
-  #if (CUDA_VERSION_MAJOR > 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR > 0))
+#if (CUDA_VERSION_MAJOR > 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR > 0))
 template int GeneralDiagCusolver<double>(double *A, double *B, double *eigs, double *V, int N, int M, int ld);
 template int GeneralDiagCusolver<std::complex<double>>(std::complex<double> *A, std::complex<double> *B, double *eigs, std::complex<double> *V,
-int N, int M, int ld);
+        int N, int M, int ld);
 
-template <typename KpointType>
+    template <typename KpointType>
 int GeneralDiagCusolver(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld)
 {
 
     // Redirect to CPU routines until we get this coded
     int info;
     if(!ct.is_gamma) {
-	info = GeneralDiagLapack(A, B, eigs, V, N, M, ld);
+        info = GeneralDiagLapack(A, B, eigs, V, N, M, ld);
     }
 
     else {
-	info = GeneralDiagScaLapack((double *)A, (double *)B, eigs, (double *)V, N, M, ld);
+        info = GeneralDiagScaLapack((double *)A, (double *)B, eigs, (double *)V, N, M, ld);
     }
     return info;
 }
-  #endif
+#endif
 #endif
 

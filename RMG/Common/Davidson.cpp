@@ -327,6 +327,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         int info = GeneralDiag(hr, sr, eigsw, vr, nbase, nstates, ct.max_states, ct.subdiag_driver);
         delete RT1;
         if(info) {
+            return;
             throw RmgFatalException() << info<<" " <<nstates <<" " << nbase << " Diagonalization failed in Davidson, terminating." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
 
