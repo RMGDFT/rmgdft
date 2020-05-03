@@ -152,78 +152,23 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
             }
             if(ct.spinorbit || ct.noncoll)
             {
+                double factor_j = 1.0;
                 if(AtomType.is_spinorb)
+                    factor_j = (2.0 * ji + 1.0) /(2.0 * li +1 );
+
+                for(int m = 0; m < 2*li+1; m++)
                 {
+                    std::complex<double> *psi_up = (std::complex<double> *)&weight[m * pbasis * ct.noncoll_factor];
+                    std::complex<double> *psi_down = (std::complex<double> *)&weight[(2*li+1 + m) * pbasis * ct.noncoll_factor];
 
-                    if( std::abs(ji -li - 0.5) < 1.0e-5)
+                    for(int idx = 0; idx < pbasis; idx++)
                     {
-                        for(int m = -li -1; m <= li; m++)
-                        {
-                            double alpha_up = std::sqrt( (li + m + 1.0)/(2*li + 1.0));
-                            double alpha_dn = std::sqrt( (li - m )/(2*li + 1.0));
-                            int lmm_up = li * li + li-m;
-                            int lmm_dn = li * li + li - (m+1);
-                            std::complex<double> *psi_C = (std::complex<double> *)&weight[lm_idx * pbasis * ct.noncoll_factor];
-
-                            for(int mp = 0; mp < 2*li+1; mp++)
-                            {
-
-                                int lmp = li * li + mp;
-
-                                for(int idx = 0; idx < pbasis; idx++)
-                                {
-                                    if(m  >=-li) 
-                                        psi_C[idx] += alpha_up * Umm[lmm_up * tot_LM + lmp] *  npsi[(wave_idx+mp) * pbasis + idx];
-                                    if(m  < li) 
-                                        psi_C[idx + pbasis] += alpha_dn * Umm[lmm_dn * tot_LM + lmp] *  npsi[(wave_idx+mp) * pbasis + idx];
-                                }
-                            }
-                            lm_idx++;
-                        }
-                    }
-                    //  case: j = l - 1/2, mj =[-j,j], m = mj+1/2 = [-l+1, l]
-                    else if( std::abs(ji -li + 0.5) < 1.0e-5)
-                    {
-                        for(int m = -li+1; m <= li; m++)
-                        {
-                            double alpha_up = std::sqrt( (li - m + 1.0)/(2*li + 1.0));
-                            double alpha_dn = -std::sqrt( (li + m )/(2*li + 1.0));
-                            int lmm_up = li * li + li-(m-1);
-                            int lmm_dn = li * li + li-m;
-                            std::complex<double> *psi_C = (std::complex<double> *)&weight[lm_idx * pbasis * ct.noncoll_factor];
-                            for(int mp = 0; mp < 2*li+1; mp++)
-                            {
-
-                                int lmp = li * li + mp;
-
-                                for(int idx = 0; idx < pbasis; idx++)
-                                {
-                                    psi_C[idx] += alpha_up * Umm[lmm_up * tot_LM + lmp] *  npsi[(wave_idx+mp) * pbasis + idx];
-                                    psi_C[idx + pbasis] += alpha_dn * Umm[lmm_dn * tot_LM + lmp] *  npsi[(wave_idx+mp) * pbasis + idx];
-                                }
-                            }
-                            lm_idx++;
-
-                        }
-                    }
-
-                    wave_idx += 2 * li + 1;
-                }
-                else
-                {
-                    for (int m=0; m < 2*li+1; m++)
-                    {
-                        std::complex<double> *psi_C = (std::complex<double> *)&weight[lm_idx * pbasis * ct.noncoll_factor];
-                        for(int idx = 0; idx < pbasis; idx++)
-                        {
-                            psi_C[idx] += npsi[wave_idx * pbasis + idx];
-                            psi_C[idx+3*pbasis] += npsi[wave_idx * pbasis + idx];
-                        }
-
-                        lm_idx += 2;
-                        wave_idx ++;
+                        psi_up[idx] += factor_j * npsi[(wave_idx+m) * pbasis + idx];
+                        psi_down[idx + pbasis] += factor_j * npsi[(wave_idx+m) * pbasis + idx];
                     }
                 }
+
+                wave_idx += 2 * li + 1;
             }
 
             else 
@@ -235,6 +180,31 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
                     wave_idx ++;
 
                 }
+            }
+        }
+        
+// if spin orbit, normalize the averaged orbitals
+        double vel = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
+        vel = Rmg_L.get_omega() / vel;
+        if(AtomType.is_spinorb)
+        {
+            for(int st = 0; st < stride; st++)
+            {
+                double sum = 0.0;
+                for (int idx = 0; idx < pbasis * ct.noncoll_factor; idx++)
+                {
+                    sum += std::norm(weight[st * pbasis * ct.noncoll_factor + idx] );
+                }
+
+                GlobalSums(&sum, 1, this->grid_comm);
+                double tscale = vel * sum;
+                tscale = std::sqrt(1.0/tscale);
+
+                for (int idx = 0; idx < pbasis * ct.noncoll_factor; idx++)
+                {
+                    weight[st * pbasis * ct.noncoll_factor + idx] *= tscale;
+                }
+
             }
         }
     }
