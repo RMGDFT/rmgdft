@@ -290,7 +290,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
                             }
                             else
                             {
-                                if(i==j)
+                                if(i==j && is1 == is2)
                                     nlambda_C[is1][ion][i][is2][ion][j] = Ueff * (1.0 - 2.0*ns_occ[ispin][ion][i][j]);
                                 else
                                     nlambda_C[is1][ion][i][is2][ion][j] = -Ueff * 2.0*ns_occ[ispin][ion][i][j];
@@ -299,6 +299,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
                     }
                 }
             }
+
 
         char *transa = "n";
         int num_tot_proj_nc = num_tot_proj * ct.noncoll_factor;
