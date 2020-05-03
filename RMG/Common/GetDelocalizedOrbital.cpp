@@ -48,13 +48,6 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
     double *kvec = kp.kvec;
 
 
-    int PX0_GRID = get_PX0_GRID();
-    int PY0_GRID = get_PY0_GRID();
-    int PZ0_GRID = get_PZ0_GRID();
-    int PX_OFFSET = get_PX_OFFSET();
-    int PY_OFFSET = get_PY_OFFSET();
-    int PZ_OFFSET = get_PZ_OFFSET();
-
     for(size_t idx = 0; idx < orbital_weight_size; idx++)
             orbital_weight[idx] = 0.0;
 
@@ -121,7 +114,6 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
     }
 
     wave_idx = 0;
-    int tot_LM = (ct.max_l +1) *(ct.max_l +1);
 
     Projector<KpointType> *P = OrbitalProjector;
     size_t stride = P->get_pstride();
@@ -136,7 +128,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
             wave_idx += AtomType.num_orbitals;
             continue;
         }
-        size_t offset = (size_t)ion * stride * (size_t)pbasis * ct.noncoll_factor;
+        size_t offset = (size_t)ion * stride * (size_t)pbasis;
         weight = &orbital_weight[offset];
         std::complex<double> *Umm = AtomType.Umm;
         int lm_idx = 0;
@@ -158,13 +150,11 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
 
                 for(int m = 0; m < 2*li+1; m++)
                 {
-                    std::complex<double> *psi_up = (std::complex<double> *)&weight[m * pbasis * ct.noncoll_factor];
-                    std::complex<double> *psi_down = (std::complex<double> *)&weight[(2*li+1 + m) * pbasis * ct.noncoll_factor];
+                    std::complex<double> *psi = (std::complex<double> *)&weight[m * pbasis];
 
                     for(int idx = 0; idx < pbasis; idx++)
                     {
-                        psi_up[idx] += factor_j * npsi[(wave_idx+m) * pbasis + idx];
-                        psi_down[idx + pbasis] += factor_j * npsi[(wave_idx+m) * pbasis + idx];
+                        psi[idx] += factor_j * npsi[(wave_idx+m) * pbasis + idx];
                     }
                 }
 
@@ -191,18 +181,18 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
             for(int st = 0; st < stride; st++)
             {
                 double sum = 0.0;
-                for (int idx = 0; idx < pbasis * ct.noncoll_factor; idx++)
+                for (int idx = 0; idx < pbasis; idx++)
                 {
-                    sum += std::norm(weight[st * pbasis * ct.noncoll_factor + idx] );
+                    sum += std::norm(weight[st * pbasis + idx] );
                 }
 
                 GlobalSums(&sum, 1, this->grid_comm);
                 double tscale = vel * sum;
                 tscale = std::sqrt(1.0/tscale);
 
-                for (int idx = 0; idx < pbasis * ct.noncoll_factor; idx++)
+                for (int idx = 0; idx < pbasis ; idx++)
                 {
-                    weight[st * pbasis * ct.noncoll_factor + idx] *= tscale;
+                    weight[st * pbasis + idx] *= tscale;
                 }
 
             }

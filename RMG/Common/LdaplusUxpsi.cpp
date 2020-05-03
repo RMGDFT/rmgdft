@@ -48,7 +48,9 @@ template <typename KpointType>
 void LdaplusUxpsi (Kpoint<KpointType> *kptr, int first_state, int nstates, KpointType *sint_local)
 {
     if(ct.num_ldaU_ions <= 0) return;
-    int pbasis_soc = kptr->pbasis * ct.noncoll_factor;
-    kptr->OrbitalProjector->project(kptr, sint_local, first_state, nstates, kptr->orbital_weight, pbasis_soc);
+    int first_soc = first_state * ct.noncoll_factor;
+    int nstate_soc = nstates * ct.noncoll_factor;
+    
+    kptr->OrbitalProjector->project(kptr, sint_local, first_soc, nstate_soc, kptr->orbital_weight);
 
 }

@@ -56,7 +56,7 @@ template <typename KpointType> class Projector {
 public:
     Projector(int projector_type, int stride, int projector_kind);
     ~Projector(void);
-    void project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int n, KpointType *w, int pbasis_soc);
+    void project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int n, KpointType *w);
     int get_num_nonloc_ions(void);
     int get_num_owned_ions(void);
     int *get_owned_ions_list(void);

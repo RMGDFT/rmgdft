@@ -1222,7 +1222,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
     }
 
-    this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis * ct.noncoll_factor + 128;
+    this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
 
 #if GPU_ENABLED
     cudaError_t custat;
@@ -1269,7 +1269,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     if(ct.is_gamma) factor = 1; 
     factor *= ct.noncoll_factor;
     size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->OrbitalProjector->get_pstride());
-    sint_alloc *= (size_t)ct.max_states;
+    sint_alloc *= (size_t)ct.max_states * ct.noncoll_factor;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
 #if GPU_ENABLED
     this->orbitalsint_local = (KpointType *)GpuMallocManaged(sint_alloc * sizeof(KpointType));

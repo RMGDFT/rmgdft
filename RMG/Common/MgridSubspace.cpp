@@ -97,7 +97,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
         // Update betaxpsi        
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight, this->pbasis);
+        this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight);
         delete(RT1);
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -242,7 +242,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     if(!potential_acceleration || (potential_acceleration && (ct.rms <  5.0e-6)))
     {
         RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-        this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight, this->pbasis);
+        this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight);
         delete(RT1);
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -260,7 +260,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
 
     // wavefunctions have changed, projectors have to be recalculated */
     RT1 = new RmgTimer("3-MgridSubspace: Beta x psi");
-    this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight, this->pbasis);
+    this->BetaProjector->project(this, this->newsint_local, 0, nstates * ct.noncoll_factor, this->nl_weight);
     delete(RT1);
 
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)

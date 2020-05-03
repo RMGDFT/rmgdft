@@ -549,7 +549,7 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
                     T *nlweight = &kptr->nl_weight[ (id2 + 1) *kptr->nl_weight_size];
 
                     kptr->BetaProjector->project(kptr, sint_der, first_state *ct.noncoll_factor, 
-                            num_state_thisblock *ct.noncoll_factor, nlweight, kptr->pbasis);
+                            num_state_thisblock *ct.noncoll_factor, nlweight);
                     delete RT1;
 
                     RT1 = new RmgTimer("2-Stress: Non-loc: <beta-psi>f(st) < psi-beta> ");

@@ -456,7 +456,6 @@ void InitPseudo ()
             lm_index += 2*l + 1;
         }
 
-        sp->num_ldaU_orbitals *= ct.noncoll_factor;
         ct.max_ldaU_orbitals = std::max(ct.max_ldaU_orbitals, sp->num_ldaU_orbitals);
         ct.max_ldaU_l = std::max(ct.max_ldaU_l, sp->ldaU_l);
         if (pct.gridpe == 0 && write_flag) fclose (psp);
