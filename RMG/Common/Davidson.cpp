@@ -131,7 +131,6 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     {   
         RmgTimer RTL("6-Davidson: ldaUop x psi"); 
         LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
-        this->ldaU->calc_ns_occ(this->orbitalsint_local, 0, this->nstates);
     }
 
     RT1 = new RmgTimer("6-Davidson: apply hamiltonian");
@@ -479,13 +478,6 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
     this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, this->nl_weight);
     delete RT1;
-
-    if(ct.ldaU_mode != LDA_PLUS_U_NONE)
-    {
-        RmgTimer RTL("6-Davidson: ldaUop x psi");
-        LdaplusUxpsi(this, 0, this->nstates, this->orbitalsint_local);
-        this->ldaU->calc_ns_occ(this->orbitalsint_local, 0, this->nstates);
-    }
 
 }
 

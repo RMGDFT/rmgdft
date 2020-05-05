@@ -594,12 +594,34 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
         Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
         delete RT3;
-        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
-        {   
-            RmgTimer("3-MgridSubspace: ldaUop x psi"); 
+    }
+
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+    {   
+        RmgTimer("3-MgridSubspace: ldaUop x psi"); 
+        int pstride = Kptr[0]->ldaU->ldaU_m;
+        int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
+        std::complex<double> *ns_occ_g = new std::complex<double>[occ_size]();
+
+        for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        {
             LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
             Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
+
+            for(int idx = 0; idx < occ_size; idx++)
+                ns_occ_g[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
         }
+
+        MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+        for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            for(int idx = 0; idx < occ_size; idx++)
+                Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
+        }
+
+
+        delete ns_occ_g;
     }
 
 
@@ -654,13 +676,35 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
             Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
             delete RT3;
-            if(ct.ldaU_mode != LDA_PLUS_U_NONE)
-            {   
-                RmgTimer RTL("3-MgridSubspace: ldaUop x psi"); 
+
+        }
+
+        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+        {   
+            RmgTimer("3-MgridSubspace: ldaUop x psi"); 
+            int pstride = Kptr[0]->ldaU->ldaU_m;
+            int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
+            std::complex<double> *ns_occ_g = new std::complex<double>[occ_size]();
+
+            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            {
                 LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
                 Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
+
+                for(int idx = 0; idx < occ_size; idx++)
+                    ns_occ_g[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
             }
 
+            MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            {
+                for(int idx = 0; idx < occ_size; idx++)
+                    Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
+            }
+
+
+            delete ns_occ_g;
         }
 
 

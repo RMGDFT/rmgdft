@@ -203,13 +203,41 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     /*Generate the Dnm_I */
     get_ddd (vtot, vxc, true);
 
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+    {
+        RmgTimer("3-MgridSubspace: ldaUop x psi");
+        int pstride = Kptr[0]->ldaU->ldaU_m;
+        int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
+        std::complex<double> *ns_occ_g = new std::complex<double>[occ_size]();
+
+        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+            Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
+
+            for(int idx = 0; idx < occ_size; idx++)
+                ns_occ_g[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
+        }
+
+        MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            for(int idx = 0; idx < occ_size; idx++)
+                Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
+        }
+
+
+        delete ns_occ_g;
+    }
+
 
     // Loop over k-points
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
         if (Verify ("kohn_sham_solver","multigrid", Kptr[0]->ControlMap) || 
-            ((ct.scf_steps < 4) && (ct.md_steps == 0) && (ct.runflag != RESTART )) ||
-            (ct.xc_is_hybrid && Functional::is_exx_active())) {
+                ((ct.scf_steps < 4) && (ct.md_steps == 0) && (ct.runflag != RESTART )) ||
+                (ct.xc_is_hybrid && Functional::is_exx_active())) {
             RmgTimer *RT1 = new RmgTimer("2-Scf steps: MgridSubspace");
             Kptr[kpt]->MgridSubspace(vtot_psi, vxc_psi);
             delete RT1;
@@ -307,7 +335,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
-      	if (ct.scf_steps && fabs(ct.scf_accuracy) < ct.adaptive_thr_energy) CONVERGED = true;
+        if (ct.scf_steps && fabs(ct.scf_accuracy) < ct.adaptive_thr_energy) CONVERGED = true;
         if (ct.scf_steps && fabs(ct.scf_accuracy < 1.0e-15)) CONVERGED = true;
     }
 
@@ -386,10 +414,10 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     if(Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
 
-	if(ct.scf_steps && (max_unocc_res < ct.gw_threshold)) {
-	    rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
-	    rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
-	    //            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
+        if(ct.scf_steps && (max_unocc_res < ct.gw_threshold)) {
+            rmg_printf("\nGW: convergence criteria of %10.5e has been met.\n", ct.gw_threshold);
+            rmg_printf("GW:  Highest occupied orbital index              = %d\n", Kptr[0]->highest_occupied);
+            //            rmg_printf("GW:  Highest unoccupied orbital meeting criteria = %d\n", Kptr[0]->max_unocc_res_index);
 
             CONVERGED = true;
         }
