@@ -613,6 +613,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
 
         MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+        if(Rmg_Symm) Rmg_Symm->symm_nsocc(ns_occ_g, pstride);
 
         for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
@@ -696,6 +697,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             }
 
             MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+            if(Rmg_Symm) Rmg_Symm->symm_nsocc(ns_occ_g, pstride);
 
             for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
             {

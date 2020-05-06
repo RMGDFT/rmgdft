@@ -26,8 +26,10 @@
 
 #include <vector>
 #include <cstdint>
+#include "rmgtypedefs.h"
 #include "BaseGrid.h"
 #include "Lattice.h"
+#include <boost/multi_array.hpp>
 
 extern "C" int spg_get_multiplicity(const double *lattice,
         const double *position,
@@ -100,6 +102,8 @@ class Symmetry
         std::vector<int> ftau;
         std::vector<int> ftau_wave;
         std::vector<int> s;
+        boost::multi_array<double, 4> rot_ylm;
+        boost::multi_array<std::complex<double>, 3> rot_spin;
         Symmetry(BaseGrid &G_in, Lattice &L_in, int density);
         ~Symmetry(void);
 
@@ -111,6 +115,11 @@ class Symmetry
 
         void symforce(void);
         void symmetrize_tensor(double *mat_tensor);
+        void rotate_ylm();
+        void rotate_spin();
+        int type_symm(double sr[3][3]);
+        void symm_nsocc(std::complex<double> *ns_occ, int mmax);
+
 
 };
 #endif

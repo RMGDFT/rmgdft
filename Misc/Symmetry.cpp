@@ -28,6 +28,9 @@
 #include "GlobalSums.h"
 #include "Symmetry.h"
 #include "rmg_error.h"
+#include "blas.h"
+#include "transition.h"
+
 
 Symmetry *Rmg_Symm;
 
@@ -264,6 +267,8 @@ Symmetry::Symmetry (
         }
     }
 
+    rotate_ylm();
+    rotate_spin(); 
     delete [] sa;
     delete [] tau;
     delete [] ityp;
@@ -457,7 +462,356 @@ void Symmetry::symmetrize_tensor(double *mat_tensor)
     for(int i = 0; i < 9; i++) mat_tensor[i] = work[i] / nsym;
 }
 
+void Symmetry::rotate_ylm()
+{
+     //dimension: 1: num of symmetry operation
+     //           2: l-value
+     //           3,4: m-value
+    rot_ylm.resize(boost::extents[nsym][4][7][7]);
 
+
+    int lmax = 3; 
+    int mmax = 2*lmax + 1;
+    int info, ipvt[mmax];
+    double r_crds[3], r_xtal[3], r_rand[mmax][3];
+    double ylm_array[mmax * mmax];
+    double ylm_invert[mmax * mmax];
+    double rot_tem[mmax * mmax];
+
+    // for s orbital, no rotateion is needed.
+    for(int isy = 0; isy < nsym; isy++)
+        rot_ylm[isy][0][0][0] = 1.0;
+
+    std::srand(224);
+    for(int m = 0; m < mmax; m++)
+    {
+        r_rand[m][0] = (2.0 *std::rand())/RAND_MAX -1.0;
+        r_rand[m][1] = (2.0 *std::rand())/RAND_MAX -1.0;
+        r_rand[m][2] = (2.0 *std::rand())/RAND_MAX -1.0;
+    }
+
+    for(int l = 1; l < 4; l++)
+    {
+        
+        int lm = 2*l + 1;
+
+        for (int m1 = 0; m1 < 2*l+1; m1++)
+        {
+
+            L.to_cartesian(r_rand[m1], r_crds);
+            for (int m2 = 0; m2 < lm; m2++)
+            {
+                ylm_array[m1 * lm  + m2] = Ylm(l, m2, r_crds);
+            }
+        }
+
+        for(int i = 0; i < lm * lm; i++) ylm_invert[i] = 0.0;
+        for(int i = 0; i < lm; i++) ylm_invert[i * lm + i] = 1.0;
+
+        dgesv (&lm, &lm, ylm_array, &lm, ipvt, ylm_invert, &lm, &info);
+
+        for(int isym = 0; isym < nsym; isym++)
+        {
+            for (int m1 = 0; m1 < 2*l+1; m1++)
+            {
+                r_xtal[0] = sym_rotate[isym * 9 + 0 * 3 + 0 ] * r_rand[m1][0] +
+                    sym_rotate[isym * 9 + 0 * 3 + 1 ] * r_rand[m1][1] +
+                    sym_rotate[isym * 9 + 0 * 3 + 2 ] * r_rand[m1][2];
+                r_xtal[1] = sym_rotate[isym * 9 + 1 * 3 + 0 ] * r_rand[m1][0] +
+                    sym_rotate[isym * 9 + 1 * 3 + 1 ] * r_rand[m1][1] +
+                    sym_rotate[isym * 9 + 1 * 3 + 2 ] * r_rand[m1][2];
+                r_xtal[2] = sym_rotate[isym * 9 + 2 * 3 + 0 ] * r_rand[m1][0] +
+                    sym_rotate[isym * 9 + 2 * 3 + 1 ] * r_rand[m1][1] +
+                    sym_rotate[isym * 9 + 2 * 3 + 2 ] * r_rand[m1][2];
+
+                L.to_cartesian(r_xtal, r_crds);
+                for (int m2 = 0; m2 < lm; m2++)
+                {
+                    ylm_array[m1 * lm  + m2] = Ylm(l, m2, r_crds);
+                }
+
+            }
+            
+            double one = 1.0, zero = 0.0;
+            dgemm("N", "N", &lm, &lm, &lm, &one, ylm_array, &lm, ylm_invert, &lm, &zero, rot_tem, &lm);
+            //if(pct.imgpe == 0) printf("\n symm op %d %d %d", isym, pct.gridpe, l);
+            for (int m1 = 0; m1 < 2*l+1; m1++)
+            {
+                //if(pct.imgpe == 0) printf("\n ");
+                for (int m2 = 0; m2 < lm; m2++)
+                {
+                    rot_ylm[isym][l][m1][m2] = rot_tem[m1 * lm + m2];
+                    //if(pct.imgpe == 0) printf(" %7.4f ", rot_ylm[isym][l][m1][m2]);
+                }
+            }
+
+        }
+
+    }
+}
+
+void Symmetry::rotate_spin()
+{
+     //dimension: 1: num of symmetry operation
+     //           2: l-value
+     //           3,4: m-value
+    rot_spin.resize(boost::extents[nsym][2][2]);
+    if(!ct.noncoll)
+    {
+        for(int isym = 0; isym < nsym; isym++)
+        {
+            rot_spin[isym][0][0] = 1.0;
+            rot_spin[isym][1][0] = 0.0;
+            rot_spin[isym][0][1] = 0.0;
+            rot_spin[isym][1][1] = 1.0;
+        }
+        return;
+    }
+    double sr[3][3];
+    double work1[9], work2[9], b[9], a[9], one= 1.0, zero = 0.0;
+    int three = 3;
+    double angle(0.0), tem, sint, cost, axis[3];
+    double eps = 1.0e-5;
+    for (int i = 0; i < 3; i++)
+    {
+        b[0 * 3 + i] = L.b0[i];
+        b[1 * 3 + i] = L.b1[i];
+        b[2 * 3 + i] = L.b2[i];
+        a[0 * 3 + i] = L.a0[i];
+        a[1 * 3 + i] = L.a1[i];
+        a[2 * 3 + i] = L.a2[i];
+    }
+
+    for(int isym = 0; isym < nsym; isym++)
+    {
+        // get the symmetry operation in cartesian
+        for(int i = 0; i < 9; i++) work2[i] = sym_rotate[isym*9+i];
+        dgemm("N", "N", &three, &three, &three, &one, b, &three, work2, &three, &zero, work1, &three);
+        dgemm("N", "N", &three, &three, &three, &one, work1, &three, a, &three, &zero, work2, &three);
+        for(int i = 0; i < 3; i++) 
+        {
+            for(int j = 0; j < 3; j++) 
+            {
+                sr[i][j] = work2[i*3+j];
+            }
+        }
+
+        // improper rotation to proper rotation
+        if(type_symm(sr) == 5 || type_symm(sr) == 6) 
+        {
+            for(int i = 0; i < 3; i++) 
+            {
+                for(int j = 0; j < 3; j++) 
+                {
+                    sr[i][j] = -sr[i][j];
+                }
+            }
+        }
+
+        if(type_symm(sr) == 1 ||type_symm(sr) == 2)
+        {
+            rot_spin[isym][0][0] = 1.0;
+            rot_spin[isym][0][1] = 0.0;
+            rot_spin[isym][1][0] = 0.0;
+            rot_spin[isym][1][1] = 1.0;
+            continue;
+        }
+        if(type_symm(sr) == 4)
+        {
+            angle = PI;
+            for(int i = 0; i < 3; i++)
+                axis[i] = std::sqrt( std::abs( sr[i][i] + 1.0)/2.0);
+
+            for(int i = 0; i < 3; i++)
+            {
+                for(int j = i+1; j < 3; j++)
+                {
+                    if(std::abs(axis[i] * axis[j]) > eps )
+                    {
+                        axis[i] = 0.5 * sr[i][j]/axis[j];
+                    }
+                }
+            }
+
+        }
+        else if(type_symm(sr) == 3)
+        {
+            axis[0] = -sr[1][2] + sr[2][1];
+            axis[1] = -sr[2][0] + sr[0][2];
+            axis[2] = -sr[0][1] + sr[1][0];
+
+            tem =  std::sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
+            sint = 0.5 * tem;
+            if(tem < eps || sint > 1.0 +eps)
+            {
+                printf("\n rotation matrix error: norm = %f \n", tem);
+                fflush(NULL);
+                rmg_error_handler(__FILE__, __LINE__, " type of symmetry not defined Exiting.\n");
+            }
+            axis[0] /= tem;
+            axis[1] /= tem;
+            axis[2] /= tem;
+            if(1.0 - axis[0] * axis[0] > eps)
+            {
+                cost = (sr[0][0]- axis[0] * axis[0])/(1.0 -axis[0] * axis[0]);
+            }
+            else if (1.0 - axis[1] * axis[1] > eps)
+            {
+                cost = (sr[1][1]- axis[1] * axis[1])/(1.0 -axis[1] * axis[1]);
+            }
+            else 
+            {
+                cost = (sr[2][2]- axis[2] * axis[2])/(1.0 -axis[2] * axis[2]);
+            }
+
+            angle = std::atan2(sint,cost);
+
+        }
+        else
+        {
+            printf("\n rotation matrix error \n");
+            fflush(NULL);
+            rmg_error_handler(__FILE__, __LINE__, " type of symmetry not defined Exiting.\n");
+        }
+
+        angle = 0.5 * angle;
+        sint = std::sin(angle);
+        cost = std::cos(angle);
+        rot_spin[isym][0][0] = std::complex<double>(cost, -axis[2] * sint);
+        rot_spin[isym][0][1] = std::complex<double>(-axis[1] * sint, -axis[0] * sint);
+        rot_spin[isym][1][0] = -std::conj(rot_spin[isym][0][1]);
+        rot_spin[isym][1][1] = std::conj(rot_spin[isym][0][0]);
+
+        if(pct.imgpe == 0 && ct.verbose)
+        {
+            printf("\n\n rotate spin for symm op %d %d", isym, type_symm(sr) );
+            for(int i = 0; i < 3; i++) printf("\n sym %5.2f  %5.2f  %5.2f", sr[i][0], sr[i][1],sr[i][2]);
+            printf("\n angle: %7.4f  axis: %7.4f %7.4f  %7.4f", angle, axis[0], axis[1], axis[2]);
+            printf("\n (%7.4f  %7.4f)  (%7.4f  %7.4f)", rot_spin[isym][0][0], rot_spin[isym][0][1]); 
+            printf("\n (%7.4f  %7.4f)  (%7.4f  %7.4f)", rot_spin[isym][1][0], rot_spin[isym][1][1]); 
+        }
+
+    }
+}
+
+int Symmetry::type_symm(double sr[3][3])
+{
+    // follow the QE notation for symmetry type
+    // 1: identity, 2: inversion, 3, proper rotation,, 4 180 degree rotation,, 5: mirror, improper rotation
+
+    double eps = 1.0e-5;
+    double det, det1, sum;
+    sum = 0.0;
+    for(int i = 0; i < 3; i++) 
+    {
+        for(int j = 0; j < 3; j++) 
+        {
+            if(i == j) sum += std::abs(sr[i][j]-1.0);
+            else    sum += std::abs(sr[i][j]);
+        }
+    }
+    if( std::abs(sum) < eps ) return 1;
+    sum = 0.0;
+    for(int i = 0; i < 3; i++) 
+        for(int j = 0; j < 3; j++) 
+        {
+            if(i == j) sum += std::abs(sr[i][j]+1.0);
+            else    sum += std::abs(sr[i][j]);
+        }
+    if( std::abs(sum) < eps ) return 2;
+
+    det = sr[0][0] * ( sr[1][1] * sr[2][2] - sr[2][1] * sr[1][2] ) -  
+        sr[0][1] * ( sr[1][0] * sr[2][2] - sr[2][0] * sr[1][2] ) +  
+        sr[0][2] * ( sr[1][0] * sr[2][1] - sr[2][0] * sr[1][1] );
+
+    // determinant of sr  = 1.0: proper rotation =-1 improper rotation (mirror symmetry)
+    if(std::abs(det - 1.0) < eps)
+    {
+        // eigenvalue = -1: 180 degree rotation 
+        det1 = (sr[0][0]+1.0) * ( (sr[1][1]+1.0) * (sr[2][2]+1.0) - sr[2][1] * sr[1][2] ) -  
+            sr[0][1] * ( sr[1][0] * (sr[2][2]+1.0) - sr[2][0] * sr[1][2] ) +  
+            sr[0][2] * ( sr[1][0] * sr[2][1] - sr[2][0] * (sr[1][1]+1.0) );
+        if(std::abs(det1) < eps) return 4;
+        else return 3;
+    }
+    else if(std::abs(det + 1.0) < eps)
+    {
+        // eigenvalue = +1: mirror symmetry
+        det1 = (sr[0][0]-1.0) * ( (sr[1][1]-1.0) * (sr[2][2]-1.0) - sr[2][1] * sr[1][2] ) -  
+            sr[0][1] * ( sr[1][0] * (sr[2][2]+1.0) - sr[2][0] * sr[1][2] ) +  
+            sr[0][2] * ( sr[1][0] * sr[2][1] - sr[2][0] * (sr[1][1]+1.0) );
+        if(std::abs(det1) < eps) return 5;
+        else return 6;
+
+    }
+    else
+    {
+        printf("\n determinant of the rotation matrix %f\n", det);
+        fflush(NULL);
+        rmg_error_handler(__FILE__, __LINE__, " type of symmetry not defined Exiting.\n");
+    }
+    return 0; 
+
+}
+void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
+{
+    boost::multi_array_ref<std::complex<double>, 5> ns_occ{ns_occ_g,
+        boost::extents[ct.noncoll_factor][ct.noncoll_factor][Atoms.size()][mmax][mmax]};
+    boost::multi_array<std::complex<double>, 5> ns_occ_sum;
+    ns_occ_sum.resize(boost::extents[ct.noncoll_factor][ct.noncoll_factor][Atoms.size()][mmax][mmax]);
+    
+    for(size_t idx = 0; idx < ns_occ_sum.size(); idx++)ns_occ_sum.data()[idx] = 0.0;
+//  the loops below can be optimized if it is slow    
+    for (int ion = 0; ion < ct.num_ions; ion++)
+    {
+        
+        int num_orb = Species[Atoms[ion].species].num_ldaU_orbitals;
+        if(num_orb == 0) continue;
+        int l_val = Species[Atoms[ion].species].ldaU_l;
+        for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
+        {
+            for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
+            {
+                for(int i1 = 0; i1 < num_orb; i1++)
+                {
+                    for(int i2 = 0; i2 < num_orb; i2++)
+                    { 
+                        for(int isy = 0; isy < nsym; isy++)
+                        {
+                            int ion1 = sym_atom[isy * ct.num_ions + ion];
+
+                            for(int is3 = 0; is3 < ct.noncoll_factor; is3++)
+                            {     
+                                for(int is4 = 0; is4 < ct.noncoll_factor; is4++)
+                                { 
+                                    for(int i3 = 0; i3 < num_orb; i3++)
+                                    {
+                                        for(int i4 = 0; i4 < num_orb; i4++)
+                                        { 
+                                            ns_occ_sum[is1][is2][ion][i1][i2] += 
+                                                std::conj(rot_spin[isy][is1][is3]) * rot_ylm[isy][l_val][i1][i3] *
+                                                ns_occ[is3][is4][ion1][i3][i4] *
+                                                rot_spin[isy][is4][is2] * rot_ylm[isy][l_val][i4][i2];
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    for(size_t idx = 0; idx < ns_occ.size(); idx++)
+    {
+        ns_occ.data()[idx] = ns_occ_sum.data()[idx]/(double)nsym;
+    }
+}
 Symmetry::~Symmetry(void)
 {
 }
+
+
+

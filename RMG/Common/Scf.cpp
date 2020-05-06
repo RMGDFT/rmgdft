@@ -221,6 +221,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
         MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
+        if(Rmg_Symm) Rmg_Symm->symm_nsocc(ns_occ_g, pstride);
+
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
             for(int idx = 0; idx < occ_size; idx++)
