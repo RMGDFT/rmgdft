@@ -286,35 +286,44 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
                 break;
         }
 
-        switch(ncomp)
+        if(!ct.noncoll)
         {
-            case 6:
-            case 8:
-            case 10:
-                {
-                    it1++;
-                    std::string rho_updown_diff = *it1;
-                    sp += rho_updown_diff;
-                    init_spin_ratio = std::atof(rho_updown_diff.c_str());
-                }
-                break;
-            default :
-                if(lc.nspin > 1)
-                {
-                    throw RmgFatalException() << "nspin = " << lc.nspin <<
-                        "\nfor spin-polarization, one needs to have init_spin density setup near " << Atom << "\n";
-                }
-        }
+            switch(ncomp)
+            {
+                case 6:
+                case 8:
+                case 10:
+                    {
+                        it1++;
+                        std::string rho_updown_diff = *it1;
+                        sp += rho_updown_diff;
+                        init_spin_ratio = std::atof(rho_updown_diff.c_str());
+                    }
+                    break;
+                default :
+                    if(lc.nspin > 1)
+                    {
+                        throw RmgFatalException() << "nspin = " << lc.nspin <<
+                            "\nfor spin-polarization, one needs to have init_spin density setup near " << Atom << "\n";
+                    }
+            }
 
-        if(ct.noncoll)
+        }
+        else  // for noncoll or SOC
         {
             if(ncomp == 10)
             {
                 it1++;
+                std::string rho_updown_diff = *it1;
+                sp += rho_updown_diff;
+                init_spin_ratio = std::atof(rho_updown_diff.c_str());
+                it1++;
                 std::string rho_spin_theta = *it1;
+                sp += rho_spin_theta;
                 init_spin_angle1 = std::atof(rho_spin_theta.c_str());
                 it1++;
                 std::string rho_spin_phi = *it1;
+                sp += rho_spin_phi;
                 init_spin_angle2 = std::atof(rho_spin_phi.c_str());
             }
             else 
