@@ -490,6 +490,20 @@ void Symmetry::rotate_ylm()
         r_rand[m][2] = (2.0 *std::rand())/RAND_MAX -1.0;
     }
 
+    double sr[3][3];
+    double work1[9], work2[9], b[9], a[9], one= 1.0, zero = 0.0;
+    int three = 3;
+    for (int i = 0; i < 3; i++)
+    {
+        b[0 * 3 + i] = L.b0[i];
+        b[1 * 3 + i] = L.b1[i];
+        b[2 * 3 + i] = L.b2[i];
+        a[0 * 3 + i] = L.a0[i];
+        a[1 * 3 + i] = L.a1[i];
+        a[2 * 3 + i] = L.a2[i];
+    }
+
+        // get the symmetry operation in cartesian
     for(int l = 1; l < 4; l++)
     {
         
@@ -512,17 +526,21 @@ void Symmetry::rotate_ylm()
 
         for(int isym = 0; isym < nsym; isym++)
         {
+            for(int i = 0; i < 9; i++) work2[i] = sym_rotate[isym*9+i];
+            dgemm("N", "N", &three, &three, &three, &one, b, &three, work2, &three, &zero, work1, &three);
+            dgemm("N", "T", &three, &three, &three, &one, work1, &three, a, &three, &zero, work2, &three);
+            for(int i = 0; i < 3; i++) 
+            {
+                for(int j = 0; j < 3; j++) 
+                {
+                    sr[i][j] = work2[i*3+j];
+                }
+            }
             for (int m1 = 0; m1 < 2*l+1; m1++)
             {
-                r_xtal[0] = sym_rotate[isym * 9 + 0 * 3 + 0 ] * r_rand[m1][0] +
-                    sym_rotate[isym * 9 + 0 * 3 + 1 ] * r_rand[m1][1] +
-                    sym_rotate[isym * 9 + 0 * 3 + 2 ] * r_rand[m1][2];
-                r_xtal[1] = sym_rotate[isym * 9 + 1 * 3 + 0 ] * r_rand[m1][0] +
-                    sym_rotate[isym * 9 + 1 * 3 + 1 ] * r_rand[m1][1] +
-                    sym_rotate[isym * 9 + 1 * 3 + 2 ] * r_rand[m1][2];
-                r_xtal[2] = sym_rotate[isym * 9 + 2 * 3 + 0 ] * r_rand[m1][0] +
-                    sym_rotate[isym * 9 + 2 * 3 + 1 ] * r_rand[m1][1] +
-                    sym_rotate[isym * 9 + 2 * 3 + 2 ] * r_rand[m1][2];
+                r_xtal[0] = sr[0][0] * r_rand[m1][0] +sr[0][1] * r_rand[m1][1] +sr[0][2] * r_rand[m1][2];
+                r_xtal[1] = sr[1][0] * r_rand[m1][1] +sr[0][1] * r_rand[m1][1] +sr[1][2] * r_rand[m1][2];
+                r_xtal[2] = sr[2][0] * r_rand[m1][2] +sr[0][1] * r_rand[m1][1] +sr[2][2] * r_rand[m1][2];
 
                 L.to_cartesian(r_xtal, r_crds);
                 for (int m2 = 0; m2 < lm; m2++)
@@ -531,7 +549,7 @@ void Symmetry::rotate_ylm()
                 }
 
             }
-            
+
             double one = 1.0, zero = 0.0;
             dgemm("N", "N", &lm, &lm, &lm, &one, ylm_array, &lm, ylm_invert, &lm, &zero, rot_tem, &lm);
             //if(pct.imgpe == 0) printf("\n symm op %d %d %d", isym, pct.gridpe, l);
@@ -552,9 +570,9 @@ void Symmetry::rotate_ylm()
 
 void Symmetry::rotate_spin()
 {
-     //dimension: 1: num of symmetry operation
-     //           2: l-value
-     //           3,4: m-value
+    //dimension: 1: num of symmetry operation
+    //           2: l-value
+    //           3,4: m-value
     rot_spin.resize(boost::extents[nsym][2][2]);
     if(!ct.noncoll)
     {
@@ -759,12 +777,12 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
         boost::extents[ct.noncoll_factor][ct.noncoll_factor][Atoms.size()][mmax][mmax]};
     boost::multi_array<std::complex<double>, 5> ns_occ_sum;
     ns_occ_sum.resize(boost::extents[ct.noncoll_factor][ct.noncoll_factor][Atoms.size()][mmax][mmax]);
-    
+
     for(size_t idx = 0; idx < ns_occ_sum.size(); idx++)ns_occ_sum.data()[idx] = 0.0;
-//  the loops below can be optimized if it is slow    
+    //  the loops below can be optimized if it is slow    
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
-        
+
         int num_orb = Species[Atoms[ion].species].num_ldaU_orbitals;
         if(num_orb == 0) continue;
         int l_val = Species[Atoms[ion].species].ldaU_l;
@@ -803,7 +821,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
             }
         }
     }
-    
+
     for(size_t idx = 0; idx < ns_occ.size(); idx++)
     {
         ns_occ.data()[idx] = ns_occ_sum.data()[idx]/(double)nsym;
