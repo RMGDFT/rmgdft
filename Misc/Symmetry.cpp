@@ -587,7 +587,7 @@ void Symmetry::rotate_spin()
         // get the symmetry operation in cartesian
         for(int i = 0; i < 9; i++) work2[i] = sym_rotate[isym*9+i];
         dgemm("N", "N", &three, &three, &three, &one, b, &three, work2, &three, &zero, work1, &three);
-        dgemm("N", "N", &three, &three, &three, &one, work1, &three, a, &three, &zero, work2, &three);
+        dgemm("N", "T", &three, &three, &three, &one, work1, &three, a, &three, &zero, work2, &three);
         for(int i = 0; i < 3; i++) 
         {
             for(int j = 0; j < 3; j++) 
