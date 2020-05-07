@@ -488,6 +488,7 @@ void Symmetry::rotate_ylm()
         r_rand[m][0] = (2.0 *std::rand())/RAND_MAX -1.0;
         r_rand[m][1] = (2.0 *std::rand())/RAND_MAX -1.0;
         r_rand[m][2] = (2.0 *std::rand())/RAND_MAX -1.0;
+
     }
 
     double sr[3][3];
@@ -515,7 +516,7 @@ void Symmetry::rotate_ylm()
             L.to_cartesian(r_rand[m1], r_crds);
             for (int m2 = 0; m2 < lm; m2++)
             {
-                ylm_array[m1 * lm  + m2] = Ylm(l, m2, r_crds);
+                ylm_array[m1 * lm  + m2] = Ylm(l, m2, r_rand[m1]);
             }
         }
 
@@ -529,6 +530,7 @@ void Symmetry::rotate_ylm()
             for(int i = 0; i < 9; i++) work2[i] = sym_rotate[isym*9+i];
             dgemm("N", "N", &three, &three, &three, &one, b, &three, work2, &three, &zero, work1, &three);
             dgemm("N", "T", &three, &three, &three, &one, work1, &three, a, &three, &zero, work2, &three);
+            if(pct.imgpe == 0 && ct.verbose) printf("\n rotate ylm symm op %d l=%d", isym, l);
             for(int i = 0; i < 3; i++) 
             {
                 for(int j = 0; j < 3; j++) 
@@ -539,27 +541,25 @@ void Symmetry::rotate_ylm()
             for (int m1 = 0; m1 < 2*l+1; m1++)
             {
                 r_xtal[0] = sr[0][0] * r_rand[m1][0] +sr[0][1] * r_rand[m1][1] +sr[0][2] * r_rand[m1][2];
-                r_xtal[1] = sr[1][0] * r_rand[m1][1] +sr[0][1] * r_rand[m1][1] +sr[1][2] * r_rand[m1][2];
-                r_xtal[2] = sr[2][0] * r_rand[m1][2] +sr[0][1] * r_rand[m1][1] +sr[2][2] * r_rand[m1][2];
+                r_xtal[1] = sr[1][0] * r_rand[m1][0] +sr[1][1] * r_rand[m1][1] +sr[1][2] * r_rand[m1][2];
+                r_xtal[2] = sr[2][0] * r_rand[m1][0] +sr[2][1] * r_rand[m1][1] +sr[2][2] * r_rand[m1][2];
 
-                L.to_cartesian(r_xtal, r_crds);
                 for (int m2 = 0; m2 < lm; m2++)
                 {
-                    ylm_array[m1 * lm  + m2] = Ylm(l, m2, r_crds);
+                    ylm_array[m1 * lm  + m2] = Ylm(l, m2, r_xtal);
                 }
 
             }
 
             double one = 1.0, zero = 0.0;
-            dgemm("N", "N", &lm, &lm, &lm, &one, ylm_array, &lm, ylm_invert, &lm, &zero, rot_tem, &lm);
-            //if(pct.imgpe == 0) printf("\n symm op %d %d %d", isym, pct.gridpe, l);
+            dgemm("T", "T", &lm, &lm, &lm, &one, ylm_invert, &lm, ylm_array, &lm, &zero, rot_tem, &lm);
             for (int m1 = 0; m1 < 2*l+1; m1++)
             {
-                //if(pct.imgpe == 0) printf("\n ");
+                if(pct.imgpe == 0 && ct.verbose) printf("\n ");
                 for (int m2 = 0; m2 < lm; m2++)
                 {
                     rot_ylm[isym][l][m1][m2] = rot_tem[m1 * lm + m2];
-                    //if(pct.imgpe == 0) printf(" %7.4f ", rot_ylm[isym][l][m1][m2]);
+                    if(pct.imgpe == 0 && ct.verbose) printf(" %7.4f ", rot_ylm[isym][l][m1][m2]);
                 }
             }
 
