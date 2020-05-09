@@ -96,6 +96,8 @@ class Symmetry
 
         template <typename T, typename U>
             void symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
+        template <typename U>
+            void symmetrize_grid_vector_int(double *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx);
 
     public:
         int nsym;
@@ -113,6 +115,8 @@ class Symmetry
         template <typename T>
             void symmetrize_grid_object(T *object);
 
+        void symmetrize_grid_vector(double *mag_rho);
+        void symm_vec(int isy, double *vec);
         void symforce(void);
         void symmetrize_tensor(double *mat_tensor);
         void rotate_ylm();

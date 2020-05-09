@@ -298,8 +298,103 @@ template <typename T> void Symmetry::init_symm_ijk(std::vector<T> &sym_x_idx, st
         }
     }
 }
+void Symmetry::symmetrize_grid_vector(double *object)
+{
+    if(max_pdim < 256)
+    {
+        symmetrize_grid_vector_int(object, sym_index_x8, sym_index_y8, sym_index_z8);
+    }
+    else
+    {
+        symmetrize_grid_vector_int(object, sym_index_x16, sym_index_y16, sym_index_z16);
+    }
+}
 
-template <typename T>
+template <typename U>
+void Symmetry::symmetrize_grid_vector_int(double *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx)
+{
+    int incx = py_grid * pz_grid;
+    int incy = pz_grid;
+
+    int incx1 = 1;
+    int incy1 = nx_grid;
+    int incz1 = nx_grid * ny_grid;
+
+    // Allocate a global array object and put this processors object into the correct location
+    double *da = new double[nbasis*3]();
+
+    for(int is = 0; is < 3; is++)
+    {
+        for (int ix = 0; ix < px_grid; ix++) {
+            for (int iy = 0; iy < py_grid; iy++) {
+                for (int iz = 0; iz < pz_grid; iz++) {
+                    da[is * nbasis + (iz + zoff)*incz1 + (iy + yoff)*incy1 + (ix + xoff)*incx1] 
+                        = object[is * pbasis + ix * incx + iy*incy + iz];
+                }
+            }
+        }
+    }
+
+    /* Call global sums to give everyone the full array */
+    int length = nbasis * 3;
+    GlobalSums (da, length, pct.grid_comm);
+
+    for(int ix=0;ix < 3 * pbasis;ix++) object[ix] = 0.0;
+
+    double vec[3];
+    for(int isy = 0; isy < nsym; isy++)
+    {
+        for (int ix = 0; ix < px_grid; ix++) {
+            for (int iy = 0; iy < py_grid; iy++) {
+                for (int iz = 0; iz < pz_grid; iz++) {
+
+                    int ixx = sym_x_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
+                    int iyy = sym_y_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
+                    int izz = sym_z_idx[isy * pbasis + ix * incx + iy * incy + iz] ;
+
+                    int idx = izz *incz1 + iyy *incy1 + ixx *incx1;
+                    vec[0] = da[idx + 0 * nbasis];
+                    vec[1] = da[idx + 1 * nbasis];
+                    vec[2] = da[idx + 2 * nbasis];
+                    symm_vec(isy, vec);
+                    object[0*pbasis + ix * incx + iy*incy + iz] += vec[0];
+                    object[1*pbasis + ix * incx + iy*incy + iz] += vec[1];
+                    object[2*pbasis + ix * incx + iy*incy + iz] += vec[2];
+                }
+            }
+        }
+    }
+
+    double t1 = (double) nsym;
+    t1 = 1.0 / t1;
+    for(int ix = 0; ix < 3*pbasis; ix++) object[ix] = object[ix] * t1;
+
+    delete [] da;
+
+}
+
+void Symmetry::symm_vec(int isy, double *vec)
+{
+    double vec_tem[3], vec_rot[3];
+    for (int ir = 0; ir < 3; ir++)
+    {
+        vec_tem[ir] = vec[0] * L.b0[ir] +vec[1] * L.b1[ir] +vec[2] * L.b2[ir];
+    }                       /* end for ir */
+
+    vec_rot[0] = 0.0;
+    vec_rot[1] = 0.0;
+    vec_rot[2] = 0.0;
+    for(int i = 0; i < 3; i++)
+        for(int j = 0; j < 3; j++)
+            vec_rot[i] += s[isy *9 + i* 3 + j] * vec_tem[j];
+
+    for (int ir = 0; ir < 3; ir++)
+    {
+        vec[ir] = vec_rot[0] * L.a0[ir] + vec_rot[1] * L.a1[ir] + vec_rot[2] * L.a2[ir];
+    }                       /* end for ir */
+}
+
+    template <typename T>
 void Symmetry::symmetrize_grid_object(T *object)
 {
     if(max_pdim < 256)
@@ -312,7 +407,7 @@ void Symmetry::symmetrize_grid_object(T *object)
     }
 }
 
-template <typename T, typename U>
+    template <typename T, typename U>
 void Symmetry::symmetrize_grid_object_int(T *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx)
 {
     int incx = py_grid * pz_grid;
@@ -464,9 +559,9 @@ void Symmetry::symmetrize_tensor(double *mat_tensor)
 
 void Symmetry::rotate_ylm()
 {
-     //dimension: 1: num of symmetry operation
-     //           2: l-value
-     //           3,4: m-value
+    //dimension: 1: num of symmetry operation
+    //           2: l-value
+    //           3,4: m-value
     rot_ylm.resize(boost::extents[nsym][4][7][7]);
 
 
@@ -504,10 +599,10 @@ void Symmetry::rotate_ylm()
         a[2 * 3 + i] = L.a2[i];
     }
 
-        // get the symmetry operation in cartesian
+    // get the symmetry operation in cartesian
     for(int l = 1; l < 4; l++)
     {
-        
+
         int lm = 2*l + 1;
 
         for (int m1 = 0; m1 < 2*l+1; m1++)
@@ -574,7 +669,7 @@ void Symmetry::rotate_spin()
     //           2: l-value
     //           3,4: m-value
     rot_spin.resize(boost::extents[nsym][2][2]);
-    if(!ct.noncoll)
+    if(!ct.noncoll || 1)
     {
         for(int isym = 0; isym < nsym; isym++)
         {
@@ -778,7 +873,8 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
     boost::multi_array<std::complex<double>, 5> ns_occ_sum;
     ns_occ_sum.resize(boost::extents[ct.noncoll_factor][ct.noncoll_factor][Atoms.size()][mmax][mmax]);
 
-    for(size_t idx = 0; idx < ns_occ_sum.size(); idx++)ns_occ_sum.data()[idx] = 0.0;
+    int occ_size = ct.nspin * Atoms.size() * mmax * mmax;
+    for(size_t idx = 0; idx < occ_size; idx++)ns_occ_sum.data()[idx] = 0.0;
     //  the loops below can be optimized if it is slow    
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
@@ -809,7 +905,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
                                             ns_occ_sum[is1][is2][ion][i1][i2] += 
                                                 std::conj(rot_spin[isy][is1][is3]) * rot_ylm[isy][l_val][i1][i3] *
                                                 ns_occ[is3][is4][ion1][i3][i4] *
-                                                rot_spin[isy][is4][is2] * rot_ylm[isy][l_val][i4][i2];
+                                                rot_spin[isy][is2][is4] * rot_ylm[isy][l_val][i2][i4];
 
                                         }
                                     }
@@ -822,7 +918,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
         }
     }
 
-    for(size_t idx = 0; idx < ns_occ.size(); idx++)
+    for(size_t idx = 0; idx < occ_size; idx++)
     {
         ns_occ.data()[idx] = ns_occ_sum.data()[idx]/(double)nsym;
     }

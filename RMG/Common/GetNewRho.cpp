@@ -79,8 +79,9 @@ template <typename OrbitalType> void GetNewRho(Kpoint<OrbitalType> **Kpts, doubl
     }
 
 
-    for(int is = 0; is < factor; is++)
-        if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(&rho[is*FP0_BASIS]);
+    if(Rmg_Symm) Rmg_Symm->symmetrize_grid_object(rho);
+    if(ct.noncoll && Rmg_Symm)
+        Rmg_Symm->symmetrize_grid_vector(&rho[FP0_BASIS]);
 
 
     /* Check total charge. */

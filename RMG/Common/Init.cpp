@@ -596,7 +596,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete RT3;
     }
 
-    if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+    // this may be very wrong since the initial occ is not for atomic orbitals.
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE && 0)
     {   
         RmgTimer("3-MgridSubspace: ldaUop x psi"); 
         int pstride = Kptr[0]->ldaU->ldaU_m;
@@ -612,6 +613,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                 ns_occ_g[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
         }
 
+
         MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
         if(Rmg_Symm) Rmg_Symm->symm_nsocc(ns_occ_g, pstride);
 
@@ -619,7 +621,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {
             for(int idx = 0; idx < occ_size; idx++)
                 Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
+
         }
+        if(ct.verbose) Kptr[kpt]->ldaU->write_ldaU();
 
 
         delete ns_occ_g;
@@ -698,6 +702,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
             MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
+            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            {
+                for(int idx = 0; idx < occ_size; idx++)
+                    Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
+            }
+
+            if(ct.verbose) rmg_printf("\n ns_occ before symmetruze \n");
+            if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
             if(Rmg_Symm) Rmg_Symm->symm_nsocc(ns_occ_g, pstride);
 
             for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
@@ -706,6 +718,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
                     Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
             }
 
+            if(ct.verbose) rmg_printf("\n ns_occ after symmetruze \n");
+            if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
 
             delete ns_occ_g;
         }

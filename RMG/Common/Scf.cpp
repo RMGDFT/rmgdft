@@ -214,7 +214,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         {
             LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
             Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
-
             for(int idx = 0; idx < occ_size; idx++)
                 ns_occ_g[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
         }
@@ -228,6 +227,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
             for(int idx = 0; idx < occ_size; idx++)
                 Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
         }
+        if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
 
 
         delete ns_occ_g;
@@ -253,7 +253,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
         // Needed to ensure consistency with some types of kpoint parrelization
         MPI_Barrier(pct.grid_comm);
-        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && ct.verbose) Kptr[kpt]->ldaU->write_ldaU();
 
     } // end loop over kpoints
 
