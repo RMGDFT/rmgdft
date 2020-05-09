@@ -251,8 +251,42 @@ Symmetry::Symmetry (
     //remove the symmetry operaion which break the symmetry by noncollinear spin
     if(ct.noncoll)
     {
-    }
+        double vec1[3], vec2[3];
+        bool sym_break;
+        for(int isym = nsym-1; isym > 0; isym--)
+        {
+            sym_break=false;
+            for (int ion1 = 0; ion1 < ct.num_ions; ion1++)
+            {
+                int ion2 = sym_atom[isym * ct.num_ions + ion1];
+                vec1[0] = Atoms[ion1].init_spin_x;
+                vec1[1] = Atoms[ion1].init_spin_y;
+                vec1[2] = Atoms[ion1].init_spin_z;
+                vec2[0] = Atoms[ion2].init_spin_x;
+                vec2[1] = Atoms[ion2].init_spin_y;
+                vec2[2] = Atoms[ion2].init_spin_z;
+                symm_vec(isym, vec1);
+                double diff = std::abs(vec1[0] - vec2[0]) + std::abs(vec1[1] - vec2[1]) + std::abs(vec1[2] - vec2[2]);
+                
+                if(diff > symprec) 
+                {
+                    sym_break = true;
+                    break;
+                }
+                
+            }
 
+            if(sym_break)
+            {
+                ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
+                ftau_wave.erase(ftau_wave.begin() + isym *3, ftau_wave.begin() + isym * 3 + 3); 
+                sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
+                sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
+                sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+            }
+        }
+    }
+    nsym = (int)sym_rotate.size()/9;
     // sym index arrays dimensioned to size of smallest possible integer type
     if(max_pdim < 256)
     {
@@ -313,7 +347,7 @@ void Symmetry::symmetrize_grid_vector(double *object)
     }
 }
 
-template <typename U>
+    template <typename U>
 void Symmetry::symmetrize_grid_vector_int(double *object, const std::vector<U> &sym_x_idx, const std::vector<U> &sym_y_idx, const std::vector<U> &sym_z_idx)
 {
     int incx = py_grid * pz_grid;
@@ -672,7 +706,7 @@ void Symmetry::rotate_spin()
     //           2: l-value
     //           3,4: m-value
     rot_spin.resize(boost::extents[nsym][2][2]);
-    if(!ct.noncoll)
+    if(!ct.noncoll || 1)
     {
         for(int isym = 0; isym < nsym; isym++)
         {
@@ -713,18 +747,18 @@ void Symmetry::rotate_spin()
         }
 
         // improper rotation to proper rotation
-        if(type_symm(sr) == 5 || type_symm(sr) == 6) 
-        {
-            for(int i = 0; i < 3; i++) 
-            {
-                for(int j = 0; j < 3; j++) 
-                {
-                    sr[i][j] = -sr[i][j];
-                }
-            }
-        }
+     //   if(type_symm(sr) == 5 || type_symm(sr) == 6) 
+     //   {
+     //       for(int i = 0; i < 3; i++) 
+     //       {
+     //           for(int j = 0; j < 3; j++) 
+     //           {
+     //               sr[i][j] = -sr[i][j];
+     //           }
+     //       }
+     //   }
 
-        if(type_symm(sr) == 1 ||type_symm(sr) == 2)
+        if(type_symm(sr) == 1 ||type_symm(sr) == 2 ||type_symm(sr) == 5)
         {
             rot_spin[isym][0][0] = 1.0;
             rot_spin[isym][0][1] = 0.0;
@@ -732,7 +766,24 @@ void Symmetry::rotate_spin()
             rot_spin[isym][1][1] = 1.0;
             continue;
         }
-        if(type_symm(sr) == 4)
+        if(type_symm(sr) == 6)
+        {
+            angle = PI;
+            for(int i = 0; i < 3; i++)
+                axis[i] = std::sqrt( std::abs( sr[i][i] - 1.0)/2.0);
+
+            for(int i = 0; i < 3; i++)
+            {
+                for(int j = i+1; j < 3; j++)
+                {
+                    if(std::abs(axis[i] * axis[j]) > eps )
+                    {
+                        axis[i] = 0.5 * sr[i][j]/axis[j];
+                    }
+                }
+            }
+        }
+        else if(type_symm(sr) == 4)
         {
             angle = PI;
             for(int i = 0; i < 3; i++)
@@ -813,7 +864,7 @@ void Symmetry::rotate_spin()
 int Symmetry::type_symm(double sr[3][3])
 {
     // follow the QE notation for symmetry type
-    // 1: identity, 2: inversion, 3, proper rotation,, 4 180 degree rotation,, 5: mirror, improper rotation
+    // 1: identity, 2: inversion, 3, proper rotation,, 4 180 degree rotation,, 5: mirror, 6: improper rotation
 
     double eps = 1.0e-5;
     double det, det1, sum;
