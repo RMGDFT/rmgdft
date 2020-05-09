@@ -120,7 +120,6 @@ Symmetry::Symmetry (
     int nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec, angprec);
     int *sa = new int[9 * nsym_atom];
     std::vector<double> translation(3 * nsym_atom);
-    s.resize(9 * nsym_atom);
     ftau.resize(3 * nsym_atom);
     ftau_wave.resize(3 * nsym_atom);
 
@@ -146,7 +145,6 @@ Symmetry::Symmetry (
             for(int i = 0; i < 3; i++)
                 for(int j = 0; j < 3; j++)
                 {
-                    s[nsym * 9 + i *3 + j] = sa[kpt * 9 + i *3 + j];
                     sym_rotate[nsym * 9 + i *3 + j] = sa[kpt * 9 + i *3 + j];
                 }
 
@@ -165,7 +163,7 @@ Symmetry::Symmetry (
             {
                 for(int i = 0; i < 3; i++)
                 {
-                    printf("\n      %3d  %3d  %3d", s[nsym * 9 + i *3 + 0],s[nsym * 9 + i *3 + 1],s[nsym * 9 + i *3 + 2]);
+                    printf("\n      %3d  %3d  %3d", sym_rotate[nsym * 9 + i *3 + 0],sym_rotate[nsym * 9 + i *3 + 1],sym_rotate[nsym * 9 + i *3 + 2]);
                 }
                 printf("  with translation of (%d %d %d) grids ", ftau[nsym*3 + 0],ftau[nsym*3 + 1],ftau[nsym*3 + 2]);
             }
@@ -183,23 +181,6 @@ Symmetry::Symmetry (
         }
     }   
 
-    // sym index arrays dimensioned to size of smallest possible integer type
-    if(max_pdim < 256)
-    {
-        sym_index_x8.resize(nsym * pbasis);
-        sym_index_y8.resize(nsym * pbasis);
-        sym_index_z8.resize(nsym * pbasis);
-        init_symm_ijk(sym_index_x8, sym_index_y8, sym_index_z8);
-    }
-    else
-    {
-        sym_index_x16.resize(nsym * pbasis);
-        sym_index_y16.resize(nsym * pbasis);
-        sym_index_z16.resize(nsym * pbasis);
-        init_symm_ijk(sym_index_x16, sym_index_y16, sym_index_z16);
-    }
-
-    ct.nsym = nsym;
     if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
     if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation  after considering real space grid: %d",nsym);
     assert(nsym >0);
@@ -221,9 +202,9 @@ Symmetry::Symmetry (
             // xtal is the coordinates of atom operated by symmetry operatio isym.
             for(int i = 0; i < 3; i++)
             {
-                xtal[i] = s[isym *9 + i *3 + 0] * Atoms[ion].xtal[0]
-                    + s[isym *9 + i *3 + 1] * Atoms[ion].xtal[1]
-                    + s[isym *9 + i *3 + 2] * Atoms[ion].xtal[2] +ftau[isym *3 + i]/ndim[i];
+                xtal[i] = sym_rotate[isym *9 + i *3 + 0] * Atoms[ion].xtal[0]
+                    + sym_rotate[isym *9 + i *3 + 1] * Atoms[ion].xtal[1]
+                    + sym_rotate[isym *9 + i *3 + 2] * Atoms[ion].xtal[2] +ftau[isym *3 + i]/ndim[i];
 
                 if(xtal[i] + symprec  < 0.0) xtal[i]= xtal[i] + 1.0;
                 if(xtal[i] + symprec >= 1.0) xtal[i]= xtal[i] - 1.0;
@@ -267,6 +248,28 @@ Symmetry::Symmetry (
         }
     }
 
+    //remove the symmetry operaion which break the symmetry by noncollinear spin
+    if(ct.noncoll)
+    {
+    }
+
+    // sym index arrays dimensioned to size of smallest possible integer type
+    if(max_pdim < 256)
+    {
+        sym_index_x8.resize(nsym * pbasis);
+        sym_index_y8.resize(nsym * pbasis);
+        sym_index_z8.resize(nsym * pbasis);
+        init_symm_ijk(sym_index_x8, sym_index_y8, sym_index_z8);
+    }
+    else
+    {
+        sym_index_x16.resize(nsym * pbasis);
+        sym_index_y16.resize(nsym * pbasis);
+        sym_index_z16.resize(nsym * pbasis);
+        init_symm_ijk(sym_index_x16, sym_index_y16, sym_index_z16);
+    }
+
+    ct.nsym = nsym;
     rotate_ylm();
     rotate_spin(); 
     delete [] sa;
@@ -289,7 +292,7 @@ template <typename T> void Symmetry::init_symm_ijk(std::vector<T> &sym_x_idx, st
                     int iy1 = iy + yoff;
                     int iz1 = iz + zoff;
 
-                    symm_ijk(&s[isy *9], &ftau[isy*3], ix1, iy1, iz1, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+                    symm_ijk(&sym_rotate[isy *9], &ftau[isy*3], ix1, iy1, iz1, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
                     sym_x_idx[isy * pbasis + ix * incx + iy * incy + iz] = ixx;
                     sym_y_idx[isy * pbasis + ix * incx + iy * incy + iz] = iyy;
                     sym_z_idx[isy * pbasis + ix * incx + iy * incy + iz] = izz;
@@ -386,7 +389,7 @@ void Symmetry::symm_vec(int isy, double *vec)
     vec_rot[2] = 0.0;
     for(int i = 0; i < 3; i++)
         for(int j = 0; j < 3; j++)
-            vec_rot[i] += s[isy *9 + i* 3 + j] * vec_tem[j];
+            vec_rot[i] += sym_rotate[isy *9 + i* 3 + j] * vec_tem[j];
 
     for (int ir = 0; ir < 3; ir++)
     {
@@ -485,7 +488,7 @@ void Symmetry::symforce (void)
             int ion1 = sym_atom[isy * ct.num_ions + ion];
             for(int i = 0; i < 3; i++)
                 for(int j = 0; j < 3; j++)
-                    Atoms[ion1].force[ct.fpt[0]][i] += s[isy *9 + i* 3 + j] * force[ion*3 + j];
+                    Atoms[ion1].force[ct.fpt[0]][i] += sym_rotate[isy *9 + i* 3 + j] * force[ion*3 + j];
         }
 
     }
@@ -540,7 +543,7 @@ void Symmetry::symmetrize_tensor(double *mat_tensor)
                 for(int k = 0; k < 3; k++)
                     for(int l = 0; l < 3; l++)
                     {
-                        mat_tensor[i*3+j] += s[isy * 9 + i * 3 + k] * work[k * 3 + l] * s[isy*9 + j*3 +l];
+                        mat_tensor[i*3+j] += sym_rotate[isy * 9 + i * 3 + k] * work[k * 3 + l] * sym_rotate[isy*9 + j*3 +l];
                     }
     }
 
@@ -669,7 +672,7 @@ void Symmetry::rotate_spin()
     //           2: l-value
     //           3,4: m-value
     rot_spin.resize(boost::extents[nsym][2][2]);
-    if(!ct.noncoll || 1)
+    if(!ct.noncoll)
     {
         for(int isym = 0; isym < nsym; isym++)
         {

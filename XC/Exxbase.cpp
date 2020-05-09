@@ -1080,7 +1080,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                 for (int iy = 0; iy < ny_grid; iy++) {
                     for (int iz = 0; iz < nz_grid; iz++) {
 
-                        symm_ijk(&Rmg_Symm->s[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+                        symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
 
                         if(isym >= 0)
                         {

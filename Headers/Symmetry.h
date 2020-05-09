@@ -103,7 +103,6 @@ class Symmetry
         int nsym;
         std::vector<int> ftau;
         std::vector<int> ftau_wave;
-        std::vector<int> s;
         boost::multi_array<double, 4> rot_ylm;
         boost::multi_array<std::complex<double>, 3> rot_spin;
         Symmetry(BaseGrid &G_in, Lattice &L_in, int density);
