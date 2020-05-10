@@ -64,9 +64,6 @@ rho_Qnm_mat.cpp
 state_corner_xyz.cpp
 write_force.cpp
 write_pos.cpp
-write_rho_x.cpp
-write_rho_y.cpp
-write_rho_z.cpp
 ThetaPhi.cpp
 ThetaPhiBlock.cpp
 xyz2pe.cpp

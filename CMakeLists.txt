@@ -508,6 +508,9 @@ ENDIF(HDF5_FOUND)
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_GPU_ENABLED)
   find_package(CUDA REQUIRED)
+
+  message( WARNING "CUDA_VERSION_MAJOR = ${CUDA_VERSION_MAJOR}")
+  message( WARNING "CUDA_VERSION_MINOR = ${CUDA_VERSION_MINOR}")
   if(${CUDA_VERSION_MAJOR} LESS 6)
       message(FATAL_ERROR "\nCompiling RMG with GPU support requires CUDA version 6.0 or greater. Either set GPU_ENABLED=0 to build a CPU only version or upgrade your cuda installation.") 
   endif(${CUDA_VERSION_MAJOR} LESS 6)

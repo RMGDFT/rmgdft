@@ -74,7 +74,7 @@ Symmetry::Symmetry (
           Lattice &L_in,
           int density) : G(G_in), L(L_in)
 {
-    symprec = 1.0e-5, angprec = 1.0;
+    symprec = 1.0e-4, angprec = 1.0;
     px_grid = G.get_PX0_GRID(density);
     py_grid = G.get_PY0_GRID(density);
     pz_grid = G.get_PZ0_GRID(density);
@@ -706,7 +706,7 @@ void Symmetry::rotate_spin()
     //           2: l-value
     //           3,4: m-value
     rot_spin.resize(boost::extents[nsym][2][2]);
-    if(!ct.noncoll || 1)
+    if(!ct.noncoll)
     {
         for(int isym = 0; isym < nsym; isym++)
         {

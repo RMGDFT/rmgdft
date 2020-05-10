@@ -3,6 +3,9 @@ PROPERTIES
 COMPILE_DEFINITIONS RMG_REVISION="${git_version_clean}")
 
 add_library (Misc
+write_rho_x.cpp
+write_rho_y.cpp
+write_rho_z.cpp
 blas_driver.cpp
 Symmetry.cpp
 OutputCubeFile.cpp

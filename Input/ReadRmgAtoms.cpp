@@ -315,15 +315,15 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
             {
                 it1++;
                 std::string rho_updown_diff = *it1;
-                sp += rho_updown_diff;
+            //    sp += rho_updown_diff;
                 init_spin_ratio = std::atof(rho_updown_diff.c_str());
                 it1++;
                 std::string rho_spin_theta = *it1;
-                sp += rho_spin_theta;
+             //   sp += rho_spin_theta;
                 init_spin_angle1 = std::atof(rho_spin_theta.c_str());
                 it1++;
                 std::string rho_spin_phi = *it1;
-                sp += rho_spin_phi;
+              //  sp += rho_spin_phi;
                 init_spin_angle2 = std::atof(rho_spin_phi.c_str());
             }
             else 

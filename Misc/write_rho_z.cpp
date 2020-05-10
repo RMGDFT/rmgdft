@@ -30,11 +30,8 @@ void write_rho_z(double * rho, char *ab)
     for (iz = 0; iz < get_FPZ0_GRID(); iz++)
     {
         t1 = 0.0;
-        //for (iy = 0; iy < get_FPY0_GRID(); iy++)
-         //   for (ix = 0; ix < get_FPX0_GRID(); ix++)
-                ix = 48;
-                iy = 48;
-
+        for (iy = 0; iy < get_FPY0_GRID(); iy++)
+           for (ix = 0; ix < get_FPX0_GRID(); ix++)
                 t1 += rho[ix * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz];
 
 
