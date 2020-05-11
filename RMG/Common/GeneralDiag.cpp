@@ -90,13 +90,7 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
   #endif
 #endif
         case SUBDIAG_SCALAPACK:
-            if(!ct.is_gamma) {
-                info = GeneralDiagLapack(A, B, eigs, V, N, M, ld);
-            }
-
-            else {
-                info = GeneralDiagScaLapack((double *)A, (double *)B, eigs, (double *)V, N, M, ld);
-            }
+            info = GeneralDiagScaLapack(A, B, eigs, V, N, M, ld);
             break;
 #if MAGMA_LIBS && GPU_ENABLED
         case SUBDIAG_MAGMA:
@@ -237,20 +231,21 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
 }
 
 
-int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, int M, int ld)
+template int GeneralDiagScaLapack<double>(double *A, double *B, double *eigs, double *V, int N, int M, int ld);
+template int GeneralDiagScaLapack<std::complex<double>>(std::complex<double> *A, std::complex<double> *B, double *eigs, std::complex<double> *V,
+int N, int M, int ld);
+
+template <typename KpointType>
+int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N, int M, int ld)
 {
 
 #if !SCALAPACK_LIBS
     rmg_printf("This version of RMG was not built with Scalapack support. Redirecting to LAPACK.");
     return GeneralDiagLapack(A, B, eigs, V, N, M, ld);
 #else
+    KpointType *global_matrix1 = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
 
-#if GPU_ENABLED
-    double *global_matrix1 = (double *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(double));
-#else
-    double *global_matrix1 = new double[ct.max_states * ct.max_states];
-#endif
-
+    int info = 0;
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
     if(!MainSp) {
         // Need some code here to decide how to set the number of scalapack groups but for now use just 1
@@ -274,9 +269,9 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         MainSp->ComputeDesca(N, N, desca);
 
         // Allocate distributed matrices 
-        double *distA = new double[dist_length * sizeof(double)];
-        double *distB = new double[dist_length * sizeof(double)];
-        double *distV = new double[dist_length * sizeof(double)];
+        KpointType *distA = new KpointType[dist_length * sizeof(KpointType)];
+        KpointType *distB = new KpointType[dist_length * sizeof(KpointType)];
+        KpointType *distV = new KpointType[dist_length * sizeof(KpointType)];
 
 
         // Distribute matrices
@@ -299,48 +294,88 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         MainSp->CopySquareMatrixToDistArray(global_matrix1, distB, N, desca);
 
         int ibtype = 1;
-        double scale=1.0, rone = 1.0;
         int ione = 1;
-        int info = 0;
 
-        pdpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
+        if(typeid(KpointType) == typeid(double))
+        {
+            double scale=1.0, rone = 1.0;
+            pdpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
 
-        // Get pdsyngst_ workspace
-        int lwork = -1;
-        double lwork_tmp;
-        pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
-                (double *)distB, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
-        lwork = 2*(int)lwork_tmp;
-        double *work2 = new double[lwork];
+            // Get pdsyngst_ workspace
+            int lwork = -1;
+            double lwork_tmp;
+            pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
+                    (double *)distB, &ione, &ione, desca, &scale, &lwork_tmp, &lwork, &info);
+            lwork = 2*(int)lwork_tmp;
+            double *work2 = new double[lwork];
 
-        pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
-                (double *)distB, &ione, &ione, desca, &scale, work2, &lwork, &info);
+            pdsyngst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
+                    (double *)distB, &ione, &ione, desca, &scale, work2, &lwork, &info);
 
-        // Get workspace required
-        lwork = -1;
-        int liwork=-1;
-        int liwork_tmp;
-        pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
-                eigs, (double *)distV, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
-        lwork = 16*(int)lwork_tmp;
-        liwork = 16*N;
-        double *nwork = new double[lwork];
-        int *iwork = new int[liwork];
+            // Get workspace required
+            lwork = -1;
+            int liwork=-1;
+            int liwork_tmp;
+            pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
+                    eigs, (double *)distV, &ione, &ione, desca, &lwork_tmp, &lwork, &liwork_tmp, &liwork, &info);
+            lwork = 16*(int)lwork_tmp;
+            liwork = 16*N;
+            double *nwork = new double[lwork];
+            int *iwork = new int[liwork];
 
-        // and now solve it 
-        pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
-                eigs, (double *)distV, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
+            // and now solve it 
+            pdsyevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
+                    eigs, (double *)distV, &ione, &ione, desca, nwork, &lwork, iwork, &liwork, &info);
 
-        pdtrsm("Left", "L", "T", "N", &N, &N, &rone, (double *)distB, &ione, &ione, desca,
-                (double *)distV, &ione, &ione, desca);
-        delete [] iwork;
-        delete [] nwork;
-        delete [] work2;
+            pdtrsm("Left", "L", "T", "N", &N, &N, &rone, (double *)distB, &ione, &ione, desca,
+                    (double *)distV, &ione, &ione, desca);
+            delete [] iwork;
+            delete [] nwork;
+            delete [] work2;
 
+        }
+        else if(typeid(KpointType) == typeid(std::complex<double>))
+        {
+            double scale=1.0, rone[2] = {1.0, 0.0};
+            pzpotrf("L", &N, (double *)distB,  &ione, &ione, desca,  &info);
+            if(info) return info;
+
+            pzhegst(&ibtype, "L", &N, (double *)distA, &ione, &ione, desca,
+                    (double *)distB, &ione, &ione, desca, &scale, &info);
+
+            if(info) return info;
+            // Get workspace required
+            int lwork = -1, liwork=-1, lrwork=-1;
+            double lwork_tmp[2], lrwork_tmp;
+            int liwork_tmp;
+            pzheevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
+                    eigs, (double *)distV, &ione, &ione, desca, lwork_tmp, &lwork, &lrwork_tmp, &lrwork, &liwork_tmp, &liwork, &info);
+            lwork = (int)lwork_tmp[0]+1;
+            liwork = liwork_tmp + 1;
+            lrwork = 2*(int)lrwork_tmp;
+            double *rwork = new double[lrwork];
+            double *nwork = new double[lwork*2];
+            int *iwork = new int[liwork];
+
+            // and now solve it
+            pzheevd("V", "L", &N, (double *)distA, &ione, &ione, desca,
+                    eigs, (double *)distV, &ione, &ione, desca, nwork, &lwork, (double *)rwork, &lrwork, iwork, &liwork, &info);
+            if(info) return info;
+
+            pztrsm("Left", "L", "C", "N", &N, &N, rone, (double *)distB, &ione, &ione, desca,
+                    (double *)distV, &ione, &ione, desca);
+
+            delete [] iwork;
+            delete [] nwork;
+            delete [] rwork;
+
+
+        }
 
         // Gather distributed results from distA into global_matrix1
+        int fac = sizeof(KpointType)/sizeof(double);
         MainSp->CopyDistArrayToSquareMatrix(global_matrix1, distV, N, desca);
-        MainSp->Allreduce(MPI_IN_PLACE, global_matrix1, N*M, MPI_DOUBLE, MPI_SUM);
+        MainSp->Allreduce(MPI_IN_PLACE, global_matrix1, N*M*fac, MPI_DOUBLE, MPI_SUM);
 
         delete [] distV;
         delete [] distB;
@@ -348,7 +383,8 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
     }
 
     // Finally send eigenvalues and vectors to everyone 
-    MainSp->BcastRoot(global_matrix1, N * M, MPI_DOUBLE);
+    int fac = sizeof(KpointType)/sizeof(double);
+    MainSp->BcastRoot(global_matrix1, N * M * fac, MPI_DOUBLE);
     MainSp->BcastRoot(eigs, M, MPI_DOUBLE);
 
     // Repack V1 into V. Only need the first M eigenvectors
@@ -358,12 +394,8 @@ int GeneralDiagScaLapack(double *A, double *B, double *eigs, double *V, int N, i
         }
     }
 
-#if GPU_ENABLED
     GpuFreeManaged(global_matrix1);
-#else
-    delete [] global_matrix1;
-#endif
-    return 0;
+    return info;
 
 #endif
 
