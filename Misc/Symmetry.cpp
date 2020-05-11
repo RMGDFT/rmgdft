@@ -251,6 +251,12 @@ Symmetry::Symmetry (
     //remove the symmetry operaion which break the symmetry by noncollinear spin
     if(ct.noncoll)
     {
+        
+        ftau.erase(ftau.begin() + nsym *3, ftau.end()); 
+        ftau_wave.erase(ftau_wave.begin() + nsym *3, ftau_wave.end());
+        sym_trans.erase(sym_trans.begin() + nsym *3, sym_trans.end());
+        sym_rotate.erase(sym_rotate.begin() + nsym *9, sym_rotate.end());
+        sym_atom.erase(sym_atom.begin() + nsym * ct.num_ions, sym_atom.end());
         double vec1[3], vec2[3];
         bool sym_break;
         for(int isym = nsym-1; isym > 0; isym--)
@@ -267,13 +273,13 @@ Symmetry::Symmetry (
                 vec2[2] = Atoms[ion2].init_spin_z;
                 symm_vec(isym, vec1);
                 double diff = std::abs(vec1[0] - vec2[0]) + std::abs(vec1[1] - vec2[1]) + std::abs(vec1[2] - vec2[2]);
-                
+
                 if(diff > symprec) 
                 {
                     sym_break = true;
                     break;
                 }
-                
+
             }
 
             if(sym_break)
@@ -747,16 +753,16 @@ void Symmetry::rotate_spin()
         }
 
         // improper rotation to proper rotation
-     //   if(type_symm(sr) == 5 || type_symm(sr) == 6) 
-     //   {
-     //       for(int i = 0; i < 3; i++) 
-     //       {
-     //           for(int j = 0; j < 3; j++) 
-     //           {
-     //               sr[i][j] = -sr[i][j];
-     //           }
-     //       }
-     //   }
+        //   if(type_symm(sr) == 5 || type_symm(sr) == 6) 
+        //   {
+        //       for(int i = 0; i < 3; i++) 
+        //       {
+        //           for(int j = 0; j < 3; j++) 
+        //           {
+        //               sr[i][j] = -sr[i][j];
+        //           }
+        //       }
+        //   }
 
         if(type_symm(sr) == 1 ||type_symm(sr) == 2 ||type_symm(sr) == 5)
         {
