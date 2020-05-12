@@ -87,43 +87,43 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
             // This could be an error but it could just be the first step ...
         }
 
-	/*This opens restart file, creates a directory if needed */
-	fhandle = open_restart_file (name);
-	rmg_printf ("WriteRestart: Restart file %s opened...\n", name);
+        /*This opens restart file, creates a directory if needed */
+        fhandle = open_restart_file (name);
+        rmg_printf ("WriteRestart: Restart file %s opened...\n", name);
 
 
         // Absolute coordinates in bohr
         fprintf(fhandle, "atomic_coordinate_type = \"Absolute\"\n");
         fprintf(fhandle, "crds_units = \"Bohr\"\n");
 
-	/* write current ionic cartesian positions */
-	fprintf(fhandle,"atoms = \"");
+        /* write current ionic cartesian positions */
+        fprintf(fhandle,"atoms = \"");
 
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-	{
+        {
             ION &Atom = Atoms[ion];
-	    SPECIES &AtomType = Species[Atom.species];
+            SPECIES &AtomType = Species[Atom.species];
             fprintf(fhandle,"\n %s %#15.12g %#15.12g %#15.12g %d %d %d %f %f %f", AtomType.atomic_symbol, Atom.crds[0], Atom.crds[1], 
                     Atom.crds[2],  Atom.movable[0], Atom.movable[1], Atom.movable[2], Atom.init_spin_rho, 0.0, 0.0);
-	}
+        }
 
-	fprintf(fhandle,"\n\"\n");
+        fprintf(fhandle,"\n\"\n");
 
 
-	/* write current ionic velocities */
-	fprintf(fhandle,"\nionic_velocities = \"");
+        /* write current ionic velocities */
+        fprintf(fhandle,"\nionic_velocities = \"");
         for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-	{
-	    ION &Atom = Atoms[ion];
-	    fprintf(fhandle, "\n %#15.12g %#15.12g %#15.12g ", Atom.velocity[0], Atom.velocity[1], Atom.velocity[2]);
-	}
-	fprintf(fhandle,"\n\"\n");
+        {
+            ION &Atom = Atoms[ion];
+            fprintf(fhandle, "\n %#15.12g %#15.12g %#15.12g ", Atom.velocity[0], Atom.velocity[1], Atom.velocity[2]);
+        }
+        fprintf(fhandle,"\n\"\n");
 
-	/* write current ionic forces pointer array */
-	fprintf(fhandle,"\nionic_force_pointer = \"%d %d %d %d\"\n", ct.fpt[0], ct.fpt[1], ct.fpt[2], ct.fpt[3]);
+        /* write current ionic forces pointer array */
+        fprintf(fhandle,"\nionic_force_pointer = \"%d %d %d %d\"\n", ct.fpt[0], ct.fpt[1], ct.fpt[2], ct.fpt[3]);
 
-	/* write current ionic forces */
-	fprintf(fhandle,"\nionic_forces = \"");
+        /* write current ionic forces */
+        fprintf(fhandle,"\nionic_forces = \"");
         for(int ic = 0;ic < 4;ic++) {
             for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
             {
@@ -131,37 +131,55 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
                 fprintf(fhandle, "\n %#15.12g %#15.12g %#15.12g ", Atom.force[ic][0], Atom.force[ic][1], Atom.force[ic][2]);
             }
         }
-	fprintf(fhandle,"\n\"\n");
+        fprintf(fhandle,"\n\"\n");
 
 
-	fprintf(fhandle,"\nnose_positions = \"%.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g\"\n", 
-		ct.nose.xx[0], ct.nose.xx[1], ct.nose.xx[2], ct.nose.xx[3], ct.nose.xx[4], 
-		ct.nose.xx[5], ct.nose.xx[6], ct.nose.xx[7], ct.nose.xx[8], ct.nose.xx[9]);
+        fprintf(fhandle,"\nnose_positions = \"%.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g\"\n", 
+                ct.nose.xx[0], ct.nose.xx[1], ct.nose.xx[2], ct.nose.xx[3], ct.nose.xx[4], 
+                ct.nose.xx[5], ct.nose.xx[6], ct.nose.xx[7], ct.nose.xx[8], ct.nose.xx[9]);
 
-	fprintf(fhandle,"\nnose_velocities = \"%.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g\"\n", 
-		ct.nose.xv[0], ct.nose.xv[1], ct.nose.xv[2], ct.nose.xv[3], ct.nose.xv[4], 
-		ct.nose.xv[5], ct.nose.xv[6], ct.nose.xv[7], ct.nose.xv[8], ct.nose.xx[9]);
+        fprintf(fhandle,"\nnose_velocities = \"%.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g\"\n", 
+                ct.nose.xv[0], ct.nose.xv[1], ct.nose.xv[2], ct.nose.xv[3], ct.nose.xv[4], 
+                ct.nose.xv[5], ct.nose.xv[6], ct.nose.xv[7], ct.nose.xv[8], ct.nose.xx[9]);
 
-	fprintf(fhandle,"\nnose_masses = \"%.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g\"\n", 
-		ct.nose.xq[0], ct.nose.xq[1], ct.nose.xq[2], ct.nose.xq[3], ct.nose.xq[4], 
-		ct.nose.xq[5], ct.nose.xq[6], ct.nose.xq[7], ct.nose.xq[8], ct.nose.xq[9]);
+        fprintf(fhandle,"\nnose_masses = \"%.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g\"\n", 
+                ct.nose.xq[0], ct.nose.xq[1], ct.nose.xq[2], ct.nose.xq[3], ct.nose.xq[4], 
+                ct.nose.xq[5], ct.nose.xq[6], ct.nose.xq[7], ct.nose.xq[8], ct.nose.xq[9]);
 
-	fprintf(fhandle,"\nnose_forces = \"");
-	for (ia=0; ia<4; ia++)
-	    fprintf(fhandle,"\n%.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g", 
-		    ct.nose.xf[ia][0], ct.nose.xf[ia][1], ct.nose.xf[ia][2], ct.nose.xf[ia][3], ct.nose.xf[ia][4], 
-		    ct.nose.xf[ia][5], ct.nose.xf[ia][6], ct.nose.xf[ia][7], ct.nose.xf[ia][8], ct.nose.xf[ia][9]);
-	fprintf(fhandle,"\n\"\n");
+        fprintf(fhandle,"\nnose_forces = \"");
+        for (ia=0; ia<4; ia++)
+            fprintf(fhandle,"\n%.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g %.12g", 
+                    ct.nose.xf[ia][0], ct.nose.xf[ia][1], ct.nose.xf[ia][2], ct.nose.xf[ia][3], ct.nose.xf[ia][4], 
+                    ct.nose.xf[ia][5], ct.nose.xf[ia][6], ct.nose.xf[ia][7], ct.nose.xf[ia][8], ct.nose.xf[ia][9]);
+        fprintf(fhandle,"\n\"\n");
 
-	fprintf(fhandle,"\nionic_time_step = \"%.12g\"", ct.iondt);
-	fprintf(fhandle,"\ndynamic_time_counter = \"%d\"", ct.relax_steps_counter);
-	fprintf(fhandle,"\nkpoint_distribution = \"%d\"", pct.pe_kpoint);
-//	fprintf(fhandle,"\n");
+        fprintf(fhandle,"\nionic_time_step = \"%.12g\"", ct.iondt);
+        fprintf(fhandle,"\ndynamic_time_counter = \"%d\"", ct.relax_steps_counter);
+        fprintf(fhandle,"\nkpoint_distribution = \"%d\"", pct.pe_kpoint);
+        //	fprintf(fhandle,"\n");
 
 
-	/* done with writing */
-	fclose (fhandle);
+        /* done with writing */
+        fclose (fhandle);
         fflush(NULL);
+
+
+        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+        {
+            sprintf (newname, "%s_spin%d_nsocc", name, pct.spinpe);
+            amode = S_IREAD | S_IWRITE;
+            fhand = open(newname, O_CREAT | O_TRUNC | O_RDWR, amode);
+            if (fhand < 0) {
+                rmg_printf("Can't open restart file %s", newname);
+                rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+            }
+
+            int pstride = Kptr[0]->ldaU->ldaU_m;
+            size_t occ_size = ct.nspin * Atoms.size() * pstride * pstride * sizeof(std::complex<double>);
+            write(fhand, Kptr[0]->ldaU->ns_occ.data(), occ_size);
+            close(fhand);
+
+        }
 
     } /*end if (pct.imgpe == 0) */
 
@@ -212,14 +230,14 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
             WriteQmcpackRestart(qmcpack_file);
         }
 #else
-         rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
+        rmg_printf ("Unable to write QMCPACK file since RMG was not built with HDF and QMCPACK support.\n");
 #endif
     }
 
     write_time = my_crtc () - time0;
 
     rmg_printf ("WriteRestart: writing took %.1f seconds \n", write_time);
-    
+
 
     /* force change mode of output file */
     chmod (newname, amode);
@@ -232,7 +250,7 @@ void WriteRestart (char *name, double * vh, double * rho, double * rho_oppo, dou
         FILE *fhandle = fopen (new_file.c_str(), "w");
         if (!fhandle)
         {
-             rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
+            rmg_error_handler(__FILE__, __LINE__, "Unable to write atomic coordinate xyz file. Terminating.");
         }
 
         fprintf(fhandle,"%lu\n\n", Atoms.size());

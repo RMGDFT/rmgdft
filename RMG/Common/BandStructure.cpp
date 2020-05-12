@@ -134,8 +134,8 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         }
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
             int notconv;
-            ct.scf_steps = 1;
-            ct.scf_accuracy = 1.0e-10;
+            ct.scf_steps = 2;
+         //   ct.scf_accuracy = 1.0e-10;
             Kptr[kpt]->Davidson(vtot_psi, vxc_psi, notconv);
         }
 

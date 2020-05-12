@@ -185,6 +185,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
     GeneralDiag(hr, sr, eigs, vr, nstates, nstates, ct.max_states, ct.subdiag_driver);
     for(int st=0;st < nstates;st++)this->Kstates[st].feig[0] = eigs[st];
+    for(int st=0;st < nstates;st++)this->Kstates[st].eig[0] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st] = eigs[st];
     for(int st=0;st < nstates;st++)eigsw[st+nbase] = eigs[st];
 

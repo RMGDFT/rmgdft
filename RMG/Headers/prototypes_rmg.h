@@ -80,6 +80,8 @@ void OutputEigenvalues (Kpoint<KpointType> **Kptr, int ikbs, int iscf);
 template <typename KpointType>
 void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
+void Read_nsocc (char *name, Kpoint<KpointType> ** Kptr);
+template <typename KpointType>
 void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr);
 template <typename KpointType>
 void GetOppositeEigvals (Kpoint<KpointType> **Kptr);

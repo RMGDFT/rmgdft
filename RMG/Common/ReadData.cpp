@@ -251,7 +251,10 @@ void ReadData (char *name, double * vh, double * rho, double * vxc, Kpoint<Kpoin
     if(ct.num_states > ns) {
 
         if(ct.noncoll) 
+        {
+            printf("\n num_state %d != read %d\n", ct.num_states, ns);
             rmg_error_handler (__FILE__, __LINE__,"noncollinear case: ct.num_state differenecec.");
+        }
         for (ik = 0; ik < ct.num_kpts_pe; ik++){
 
             int PX0_GRID = Kptr[0]->G->get_PX0_GRID(1);
