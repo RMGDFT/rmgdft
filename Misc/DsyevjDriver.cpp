@@ -33,7 +33,7 @@
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 
-void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n)
+void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, int ld)
 {
 
     cusolverStatus_t cu_status;
@@ -63,10 +63,10 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n)
 
 #else
 
-void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n)
+void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, int ld)
 {
     // Redirect to Dsyevd since the Jacobi driver is not standard in CPU libraries
-    DsyevdDriver(A, eigs, work, worksize, n);
+    DsyevdDriver(A, eigs, work, worksize, n, ld);
 
 }
 

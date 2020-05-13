@@ -160,10 +160,10 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 #if GPU_ENABLED
     if(ct.cuda_version >= 9020)
-        DsyevjDriver(G, &eigs[n_start], work, lwork, n_win);
+        DsyevjDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
     else
 #endif
-        DsyevdDriver(G, &eigs[n_start], work, lwork, n_win);
+        DsyevdDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
 
     // Store the eigen vector from the submatrix
 #if GPU_ENABLED

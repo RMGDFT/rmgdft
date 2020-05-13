@@ -118,14 +118,14 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
             }
             else {
 
-                  DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work2, lwork, num_states);
+                  DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work2, lwork, num_states, num_states);
 
             }
 
         }
         else {
 
-            ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, work2, lwork, num_states);
+            ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, work2, lwork, num_states, num_states);
 
         }
 

@@ -33,7 +33,7 @@
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 
-void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n)
+void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
 
     cusolverStatus_t cu_status;
@@ -64,10 +64,10 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
 
 #else
 
-void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n)
+void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
     // Redirect to Dsygvd since the Jacobi driver is not standard in CPU libraries
-    DsygvdDriver(A, B, eigs, work, worksize, n);
+    DsygvdDriver(A, B, eigs, work, worksize, n, ld);
 
 }
 #endif

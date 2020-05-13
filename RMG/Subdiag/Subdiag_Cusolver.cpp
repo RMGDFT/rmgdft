@@ -129,9 +129,9 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
             lwork = std::max(lwork, 128000);
             double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
             if(ct.cuda_version >= 9020)
-                DsygvjDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
+                DsygvjDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states, num_states);
             else
-                DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states);
+                DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states, num_states);
             GpuFreeManaged(work);
 
         }
@@ -141,7 +141,7 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 
         int lwork = 3 * num_states * num_states + 8 * num_states;
         lwork = std::max(lwork, 128000);
-        ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, NULL, lwork, num_states);
+        ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, NULL, lwork, num_states, num_states);
 
     }
 

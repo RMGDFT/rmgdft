@@ -33,7 +33,7 @@
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 
-void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n)
+void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
 
     cusolverStatus_t cu_status;
@@ -59,7 +59,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 
 #else
 
-void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n)
+void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
 {
     char *cuplo = "l", *jobz="V";
     int lwork, info=0, *iwork, liwork, ione=1;

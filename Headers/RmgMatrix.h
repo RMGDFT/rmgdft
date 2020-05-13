@@ -34,11 +34,11 @@
 
 #include <complex>
 template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n);
-void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n);
-void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n);
-void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n);
-void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n);
-void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs, double *work, int worksize, int n);
+void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, int ld);
+void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, int ld);
+void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld);
+void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld);
+void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs, double *work, int worksize, int n, int ld);
 
 void PackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr);
 void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr);
