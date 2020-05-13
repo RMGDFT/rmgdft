@@ -107,6 +107,8 @@ Symmetry::Symmetry (
     lattice[1*3+2] = L.get_a2(1);
     lattice[2*3+2] = L.get_a2(2);
 
+    double sr[3][3];
+
     double *tau = new double[4*3 * ct.num_ions];
     int *ityp = new int[4 * ct.num_ions];
 
@@ -122,6 +124,8 @@ Symmetry::Symmetry (
     std::vector<double> translation(3 * nsym_atom);
     ftau.resize(3 * nsym_atom);
     ftau_wave.resize(3 * nsym_atom);
+    inv_type.resize(nsym_atom);
+    time_rev.resize(nsym_atom);
 
     sym_trans.resize(3 * nsym_atom);
     sym_rotate.resize(9 * nsym_atom);
@@ -146,8 +150,10 @@ Symmetry::Symmetry (
                 for(int j = 0; j < 3; j++)
                 {
                     sym_rotate[nsym * 9 + i *3 + j] = sa[kpt * 9 + i *3 + j];
+                    sr[i][j] = sa[kpt * 9 + i *3 + j];
                 }
 
+            
             ftau[nsym*3 + 0] = translation[kpt*3 + 0] * nx_grid + symprec;
             ftau[nsym*3 + 1] = translation[kpt*3 + 1] * ny_grid + symprec;
             ftau[nsym*3 + 2] = translation[kpt*3 + 2] * nz_grid + symprec;
@@ -158,6 +164,11 @@ Symmetry::Symmetry (
             sym_trans[nsym*3+0] = translation[kpt*3+0];
             sym_trans[nsym*3+1] = translation[kpt*3+1];
             sym_trans[nsym*3+2] = translation[kpt*3+2];
+            inv_type[nsym] = false;
+            if(type_symm(sr) == 2 || type_symm(sr) == 5 || type_symm(sr) == 6)
+                inv_type[nsym] = true;
+            
+            time_rev[nsym] = false;
 
             if(ct.verbose && pct.imgpe == 0)
             {
@@ -257,11 +268,17 @@ Symmetry::Symmetry (
         sym_trans.erase(sym_trans.begin() + nsym *3, sym_trans.end());
         sym_rotate.erase(sym_rotate.begin() + nsym *9, sym_rotate.end());
         sym_atom.erase(sym_atom.begin() + nsym * ct.num_ions, sym_atom.end());
+        inv_type.erase(inv_type.begin()+ nsym, inv_type.end());
+        time_rev.erase(time_rev.begin()+ nsym, time_rev.end());
+
         double vec1[3], vec2[3];
-        bool sym_break;
+        bool sym_break, mag_same, mag_oppo;
         for(int isym = nsym-1; isym > 0; isym--)
         {
             sym_break=false;
+            mag_same = true;
+            mag_oppo = true;
+            
             for (int ion1 = 0; ion1 < ct.num_ions; ion1++)
             {
                 int ion2 = sym_atom[isym * ct.num_ions + ion1];
@@ -272,16 +289,20 @@ Symmetry::Symmetry (
                 vec2[1] = Atoms[ion2].init_spin_y;
                 vec2[2] = Atoms[ion2].init_spin_z;
                 symm_vec(isym, vec1);
-                double diff = std::abs(vec1[0] - vec2[0]) + std::abs(vec1[1] - vec2[1]) + std::abs(vec1[2] - vec2[2]);
+                double diff1 = std::abs(vec1[0] - vec2[0]) + std::abs(vec1[1] - vec2[1]) + std::abs(vec1[2] - vec2[2]);
+                double diff2 = std::abs(vec1[0] + vec2[0]) + std::abs(vec1[1] + vec2[1]) + std::abs(vec1[2] + vec2[2]);
+                mag_same = mag_same && (diff1 < symprec);
+                mag_oppo = mag_oppo && (diff2 < symprec);
 
-                if(diff > symprec) 
+                if(!mag_same && !mag_oppo)
                 {
                     sym_break = true;
                     break;
                 }
-
+                
             }
 
+            if(mag_oppo && !mag_same) time_rev[isym] = true;
             if(sym_break)
             {
                 ftau.erase(ftau.begin() + isym *3, ftau.begin() + isym * 3 + 3); 
@@ -289,6 +310,8 @@ Symmetry::Symmetry (
                 sym_trans.erase(sym_trans.begin() + isym *3, sym_trans.begin() + isym * 3 + 3); 
                 sym_rotate.erase(sym_rotate.begin() + isym *9, sym_rotate.begin() + isym * 9 + 9); 
                 sym_atom.erase(sym_atom.begin() + isym * ct.num_ions, sym_atom.begin() + (isym+1) * ct.num_ions);
+                inv_type.erase(inv_type.begin() + isym, inv_type.begin() + isym + 1);
+                time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
             }
         }
     }
@@ -400,6 +423,12 @@ void Symmetry::symmetrize_grid_vector_int(double *object, const std::vector<U> &
                     vec[1] = da[idx + 1 * nbasis];
                     vec[2] = da[idx + 2 * nbasis];
                     symm_vec(isy, vec);
+                    if(time_rev[isy]) 
+                    {
+                        vec[0] = - vec[0];
+                        vec[1] = - vec[1];
+                        vec[2] = - vec[2];
+                    }
                     object[0*pbasis + ix * incx + iy*incy + iz] += vec[0];
                     object[1*pbasis + ix * incx + iy*incy + iz] += vec[1];
                     object[2*pbasis + ix * incx + iy*incy + iz] += vec[2];
@@ -434,7 +463,9 @@ void Symmetry::symm_vec(int isy, double *vec)
     for (int ir = 0; ir < 3; ir++)
     {
         vec[ir] = vec_rot[0] * L.a0[ir] + vec_rot[1] * L.a1[ir] + vec_rot[2] * L.a2[ir];
+        if(inv_type[isy]) vec[ir] = - vec[ir];
     }                       /* end for ir */
+
 }
 
     template <typename T>
@@ -751,43 +782,35 @@ void Symmetry::rotate_spin()
                 sr[i][j] = work2[i*3+j];
             }
         }
+        if(pct.imgpe == 0 && ct.verbose)
+        {
+            printf("\n\n rotate spin for symm op %d %d %d %d", isym, type_symm(sr), (int)inv_type[isym], (int)time_rev[isym] );
+            for(int i = 0; i < 3; i++) printf("\n sym %5.2f  %5.2f  %5.2f", sr[i][0], sr[i][1],sr[i][2]);
+            printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
+        }
 
         // improper rotation to proper rotation
-        //   if(type_symm(sr) == 5 || type_symm(sr) == 6) 
-        //   {
-        //       for(int i = 0; i < 3; i++) 
-        //       {
-        //           for(int j = 0; j < 3; j++) 
-        //           {
-        //               sr[i][j] = -sr[i][j];
-        //           }
-        //       }
-        //   }
+        if(type_symm(sr) == 5 || type_symm(sr) == 6) 
+        {
+            for(int i = 0; i < 3; i++) 
+            {
+                for(int j = 0; j < 3; j++) 
+                {
+                    sr[i][j] = -sr[i][j];
+                }
+            }
+        }
 
-        if(type_symm(sr) == 1 ||type_symm(sr) == 2 ||type_symm(sr) == 5)
+        if(type_symm(sr) == 1 ||type_symm(sr) == 2)
         {
             rot_spin[isym][0][0] = 1.0;
             rot_spin[isym][0][1] = 0.0;
             rot_spin[isym][1][0] = 0.0;
             rot_spin[isym][1][1] = 1.0;
-            continue;
-        }
-        if(type_symm(sr) == 6)
-        {
-            angle = PI;
-            for(int i = 0; i < 3; i++)
-                axis[i] = std::sqrt( std::abs( sr[i][i] - 1.0)/2.0);
-
-            for(int i = 0; i < 3; i++)
-            {
-                for(int j = i+1; j < 3; j++)
-                {
-                    if(std::abs(axis[i] * axis[j]) > eps )
-                    {
-                        axis[i] = 0.5 * sr[i][j]/axis[j];
-                    }
-                }
-            }
+            angle = 0.0;
+            axis[0] = 0.0;
+            axis[1] = 0.0;
+            axis[2] = 0.0;
         }
         else if(type_symm(sr) == 4)
         {
@@ -855,10 +878,18 @@ void Symmetry::rotate_spin()
         rot_spin[isym][1][0] = -std::conj(rot_spin[isym][0][1]);
         rot_spin[isym][1][1] = std::conj(rot_spin[isym][0][0]);
 
+
+        if(time_rev[isym])
+        {
+            rot_spin[isym][0][0] = -std::complex<double>(-axis[1] * sint, -axis[0] * sint);
+            rot_spin[isym][0][1] = std::complex<double>(cost, -axis[2] * sint);
+            rot_spin[isym][1][0] = std::conj(rot_spin[isym][0][1]);
+            rot_spin[isym][1][1] = std::conj(rot_spin[isym][0][0]);
+        }
+
+
         if(pct.imgpe == 0 && ct.verbose)
         {
-            printf("\n\n rotate spin for symm op %d %d", isym, type_symm(sr) );
-            for(int i = 0; i < 3; i++) printf("\n sym %5.2f  %5.2f  %5.2f", sr[i][0], sr[i][1],sr[i][2]);
             printf("\n angle: %7.4f  axis: %7.4f %7.4f  %7.4f", angle, axis[0], axis[1], axis[2]);
             printf("\n (%7.4f  %7.4f)  (%7.4f  %7.4f)", rot_spin[isym][0][0], rot_spin[isym][0][1]); 
             printf("\n (%7.4f  %7.4f)  (%7.4f  %7.4f)", rot_spin[isym][1][0], rot_spin[isym][1][1]); 
@@ -962,10 +993,20 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
                                     {
                                         for(int i4 = 0; i4 < num_orb; i4++)
                                         { 
-                                            ns_occ_sum[is1][is2][ion][i1][i2] += 
-                                                std::conj(rot_spin[isy][is1][is3]) * rot_ylm[isy][l_val][i1][i3] *
-                                                ns_occ[is3][is4][ion1][i3][i4] *
-                                                rot_spin[isy][is2][is4] * rot_ylm[isy][l_val][i2][i4];
+                                            if(time_rev[isy])
+                                            {
+                                                ns_occ_sum[is1][is2][ion][i1][i2] += 
+                                                    std::conj(rot_spin[isy][is1][is3]) * rot_ylm[isy][l_val][i1][i3] *
+                                                    ns_occ[is4][is3][ion1][i4][i3] *
+                                                    rot_spin[isy][is2][is4] * rot_ylm[isy][l_val][i2][i4];
+                                            }
+                                            else
+                                            {
+                                                ns_occ_sum[is1][is2][ion][i1][i2] += 
+                                                    std::conj(rot_spin[isy][is1][is3]) * rot_ylm[isy][l_val][i1][i3] *
+                                                    ns_occ[is3][is4][ion1][i3][i4] *
+                                                    rot_spin[isy][is2][is4] * rot_ylm[isy][l_val][i2][i4];
+                                            }
 
                                         }
                                     }

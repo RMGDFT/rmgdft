@@ -101,6 +101,8 @@ class Symmetry
 
     public:
         int nsym;
+        std::vector<bool> inv_type;
+        std::vector<bool> time_rev;
         std::vector<int> ftau;
         std::vector<int> ftau_wave;
         boost::multi_array<double, 4> rot_ylm;
