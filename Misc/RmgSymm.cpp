@@ -56,6 +56,17 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
                              DataType *A, int lda, DataType *B, int ldb, DataType beta, DataType *C, int ldc)
 {
 
+#if BLAS_PROFILE
+    if(typeid(DataType) == typeid(std::complex<double>))
+    {
+        if(pct.gridpe==0) printf("ZSYMM CALL m=%d n=%d\n",m,n);
+    }
+    else
+    {
+        if(pct.gridpe==0) printf("DSYMM CALL m=%d n=%d\n",m,n);
+    }
+#endif
+
 #if GPU_ENABLED
     cublasStatus_t custat;
     cublasSideMode_t cu_side = CUBLAS_SIDE_LEFT;

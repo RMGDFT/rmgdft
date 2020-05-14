@@ -40,6 +40,17 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
                              DataType *C, int ldc)
 {
 
+#if BLAS_PROFILE
+    if(typeid(DataType) == typeid(std::complex<double>))
+    {
+        if(pct.gridpe==0) printf("ZSYRK CALL n=%d k=%d\n",n,k);
+    }
+    else
+    {
+        if(pct.gridpe==0) printf("DSYRK CALL n=%d k=%d\n",n,k);
+    }
+#endif
+
 #if GPU_ENABLED
 
     cublasStatus_t custat;

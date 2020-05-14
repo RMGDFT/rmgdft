@@ -48,6 +48,17 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                              DataType *C, int ldc)
 {
 
+#if BLAS_PROFILE
+    if(typeid(DataType) == typeid(std::complex<double>))
+    {
+        if(pct.gridpe==0) printf("ZGEMM CALL m=%d n=%d k=%d\n",m,n,k);
+    }
+    else
+    {
+        if(pct.gridpe==0) printf("DGEMM CALL m=%d n=%d k=%d\n",m,n,k);
+    }
+#endif
+
 #if GPU_ENABLED
 
     cublasStatus_t custat;

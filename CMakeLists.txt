@@ -87,6 +87,14 @@ option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
 option(USE_INTERNAL_PSEUDOPOTENTIALS "Include internal pseudopotentials in binary." ON)
 option(QMCPACK_SUPPORT "Generates a QMCPACK restart file." ON)
 
+# For profiling blas calls
+option(BLAS_PROFILING "Enable blas profiling" OFF)
+if(BLAS_PROFILING)
+    add_definitions(-DBLAS_PROFILE=1)
+else(BLAS_PROFILING)
+    add_definitions(-DBLAS_PROFILE=0)
+endif(BLAS_PROFILING)
+
 
 # Now that the scalapack source has been included in the RMG distribution this should
 # always be available unless there is some issue with building it so we define it here.
