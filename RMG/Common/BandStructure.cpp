@@ -99,6 +99,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
 
     // Loop over k-points
+    double *res = new double[ct.num_states];
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
         Kptr[kpt]->nstates = ct.num_states;
@@ -115,11 +116,14 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
                 delete RT;
 
-
-                max_res = Kptr[kpt]->Kstates[0].res;
                 for(int istate = 0; istate < ct.num_states; istate++)
-                    if( max_res < Kptr[kpt]->Kstates[istate].res) 
-                        max_res = Kptr[kpt]->Kstates[istate].res;
+                    res[istate] = Kptr[kpt]->Kstates[istate].res;
+                GlobalSums(res, ct.num_states, pct.grid_comm);
+
+                
+                max_res = res[0];
+                for(int istate = 0; istate < ct.num_states; istate++)
+                    max_res = std::max(max_res, res[istate]);
                 //        for(int istate = 0; istate < Kptr[kpt]->nstates; istate++)
                 //         rmg_printf("\n kpt = %d scf =%d state=%d res = %e", kpt, ct.scf_steps, istate, Kptr[kpt]->Kstates[istate].res);
                 if(pct.gridpe == 0) printf("\n kpt= %d  scf = %d  max_res = %e", kpt+pct.kstart, ct.scf_steps, max_res);
@@ -153,6 +157,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     } // end loop over kpoints
 
 
+    delete [] res;
     delete [] vtot;
     delete [] vtot_psi;
     if(ct.noncoll) delete [] vxc_psi;
