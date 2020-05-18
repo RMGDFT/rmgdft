@@ -20,6 +20,8 @@
 #include "LCR.h"
 #include "pmo.h"
 #include "prototypes_on.h"
+#include "GpuAlloc.h"
+#include "prototypes_negf.h"
 
 void get_dos (STATE * states)
 {
@@ -233,6 +235,8 @@ void get_dos (STATE * states)
 
     /*===================================================================*/
 
+    size_t size = LocalOrbital->num_thispe * LocalOrbital->num_thispe * sizeof(double);
+    double *rho_matrix_local = (double *)GpuMallocManaged(size);
 
     /*for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)*/
     for (iene = 0; iene < E_POINTS; iene++)
@@ -252,12 +256,12 @@ void get_dos (STATE * states)
         MPI_Bcast (density_matrix, idx, MPI_DOUBLE, root_pe,
                 COMM_EN1);
 
-        tri_to_row (density_matrix, work_matrix, ct.num_blocks, ct.block_dim);
-printf("\n 200 dos calculation is broken now \n");
-exit(0);
-        //GetNewRho_on(states, rho, work_matrix);
-
-        //get_new_rho_soft (states, rho);
+        RmgTimer *RT4 = new RmgTimer("3-SCF: rho");
+        //    get_new_rho_soft (states, rho);
+        tri_to_local (density_matrix, rho_matrix_local, *LocalOrbital);
+        GetNewRho_proj(*LocalOrbital, *H_LocalOrbital, rho, rho_matrix_local);
+        //    get_new_rho_local (states_distribute, rho);
+        delete(RT4);
 
 
         for (ix = 0; ix < get_FPX0_GRID(); ix++)
@@ -382,6 +386,7 @@ exit(0);
 
     my_free(rho_energy); 
     my_free(Green_store);
+    GpuFreeManaged(rho_matrix_local);
 
 
 }
