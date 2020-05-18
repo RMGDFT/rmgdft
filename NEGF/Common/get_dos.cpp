@@ -15,13 +15,15 @@
 #include <assert.h>
 #include <complex>
 
-#include "main.h"
+//#include "main.h"
 #include "init_var.h"
 #include "LCR.h"
 #include "pmo.h"
 #include "prototypes_on.h"
 #include "GpuAlloc.h"
 #include "prototypes_negf.h"
+#include "transition.h"
+#include "my_mpi.h"
 
 void get_dos (STATE * states)
 {
@@ -55,9 +57,9 @@ void get_dos (STATE * states)
 
     if(cei.num_probe > 2 ) nkp[1] = 1;
     int nkp_tot = nkp[0] * nkp[1] * nkp[2];
-    printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
+    rmg_printf("\n nkp  %d %d %d", nkp[0], nkp[1], nkp[2]);
 
-    if (nkp_tot == 0 ) error_handler ("wrong number of kpoints in cond.in");
+    if (nkp_tot == 0 ) rmg_error_handler (__FILE__, __LINE__, "wrong number of kpoints in cond.in");
 
     kvecx = new double[nkp_tot];
     kvecy = new double[nkp_tot];
@@ -117,7 +119,7 @@ void get_dos (STATE * states)
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
+        idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
     sigma = (std::complex<double> *)GpuMallocManaged(idx * sizeof(std::complex<double>));
 
@@ -140,7 +142,7 @@ void get_dos (STATE * states)
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
-        idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
+        idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
 
     work = (std::complex<double> *)GpuMallocManaged(12*idx * sizeof(std::complex<double>));
