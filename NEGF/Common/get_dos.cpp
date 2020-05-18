@@ -38,7 +38,6 @@ void get_dos (STATE * states)
 
     int ntot, ndim;
     int  xoff, yoff, zoff;
-    double *Green_store, *rho_energy, *rho_energy2=NULL;
     int root_pe, idx, ix, iy, iz;
 
     int E_POINTS, nkp[3];
@@ -60,14 +59,12 @@ void get_dos (STATE * states)
 
     if (nkp_tot == 0 ) error_handler ("wrong number of kpoints in cond.in");
 
-    my_malloc( kvecx, nkp_tot, double );
-    my_malloc( kvecy, nkp_tot, double );
-    my_malloc( kvecz, nkp_tot, double );
-    my_malloc( kweight, nkp_tot, double );
+    kvecx = new double[nkp_tot];
+    kvecy = new double[nkp_tot];
+    kvecz = new double[nkp_tot];
+    kweight = new double[nkp_tot];
 
     kpoints(nkp, kvecx, kvecy, kvecz, &nkp_tot, kweight);
-
-
 
 
     /* store the imaginary part of Green function Gc on each processor
@@ -89,26 +86,25 @@ void get_dos (STATE * states)
         exit (0);
     }
 
-
     ntot = pmo.ntot;
-    my_malloc_init( lcr[0].Htri, pmo.ntot, double );
-    my_malloc_init( lcr[0].Stri, pmo.ntot, double );
+    lcr[0].Htri = (double *)GpuMallocManaged(pmo.ntot * sizeof(double));
+    lcr[0].Stri = (double *)GpuMallocManaged(pmo.ntot * sizeof(double));
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].H00, idx, double );
-        my_malloc_init( lcr[iprobe].S00, idx, double );
-        my_malloc_init( lcr[iprobe].H01, idx, double );
-        my_malloc_init( lcr[iprobe].S01, idx, double );
+        lcr[iprobe].H00 = (double *)GpuMallocManaged(idx * sizeof(double));
+        lcr[iprobe].S00 = (double *)GpuMallocManaged(idx * sizeof(double));
+        lcr[iprobe].H01 = (double *)GpuMallocManaged(idx * sizeof(double));
+        lcr[iprobe].S01 = (double *)GpuMallocManaged(idx * sizeof(double));
     }
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        my_malloc_init( lcr[iprobe].HCL, idx, double );
-        my_malloc_init( lcr[iprobe].SCL, idx, double );
+        lcr[iprobe].HCL = (double *)GpuMallocManaged(idx * sizeof(double));
+        lcr[iprobe].SCL = (double *)GpuMallocManaged(idx * sizeof(double));
     }
 
 
@@ -123,10 +119,9 @@ void get_dos (STATE * states)
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
         idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
-    my_malloc_init( sigma, idx, std::complex<double> );
+    sigma = (std::complex<double> *)GpuMallocManaged(idx * sizeof(std::complex<double>));
 
-
-    my_malloc_init( sigma_idx, cei.num_probe, int );
+    sigma_idx = new int[cei.num_probe];
 
     idx = 0;
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
@@ -136,7 +131,7 @@ void get_dos (STATE * states)
         idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
     }
 
-    my_malloc_init( sigma_all, idx, std::complex<double> );
+    sigma_all = (std::complex<double> *)GpuMallocManaged(idx * sizeof(std::complex<double>));
 
 
     /*============== Allocate memory for tot, tott, g ====================*/
@@ -148,15 +143,14 @@ void get_dos (STATE * states)
         idx = rmg_max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
 
-    my_malloc_init( work,  12 * idx, std::complex<double> );
-
-
-    my_malloc_init( green_C, pmo.ntot_low, std::complex<double> );
-
+    work = (std::complex<double> *)GpuMallocManaged(12*idx * sizeof(std::complex<double>));
+    green_C = (std::complex<double> *)GpuMallocManaged(pmo.ntot_low * sizeof(std::complex<double>));
     st1 = ( E_POINTS + pmo.npe_energy-1)/pmo.npe_energy;
-    my_malloc_init( Green_store, st1 * pmo.ntot, double );
-    double *density_matrix;
-    my_malloc_init( density_matrix, pmo.ntot, double );
+    double *Green_store = (double *)GpuMallocManaged(st1 * pmo.ntot * sizeof(double));
+    for(int idx = 0; idx < st1 * pmo.ntot; idx++) Green_store[idx] = 0.0;
+
+
+    double *density_matrix =(double *)GpuMallocManaged(pmo.ntot * sizeof(double));
 
     /*===================================================================*/
 
@@ -168,11 +162,10 @@ void get_dos (STATE * states)
     nz2 = cei.dos_window_end[2] * get_FG_RATIO();
 
 
-
-
-    my_malloc_init( rho_energy, E_POINTS * get_FNX_GRID(), double );
-    if (cei.num_probe > 2)
-        my_malloc_init( rho_energy2, E_POINTS * get_FNY_GRID(), double );
+    double *rho_energy =(double *)GpuMallocManaged(E_POINTS * get_FNX_GRID() * sizeof(double));
+    double *rho_energy2 =(double *)GpuMallocManaged(E_POINTS * get_FNY_GRID() * sizeof(double));
+    for(int idx = 0; idx< E_POINTS * get_FNX_GRID(); idx++) rho_energy[idx] = 0.0;
+    for(int idx = 0; idx< E_POINTS * get_FNY_GRID(); idx++) rho_energy2[idx] = 0.0;
 
 
 
@@ -182,7 +175,6 @@ void get_dos (STATE * states)
 
 
     /*===================================================================*/
-
 
 
     idx_e = 0;
@@ -360,7 +352,6 @@ void get_dos (STATE * states)
 
             fclose (file);
         }
-        my_free(rho_energy2);
     }
 
 
@@ -368,24 +359,25 @@ void get_dos (STATE * states)
     fflush (NULL);
 
     /*===============================*/
-    my_free(sigma_all);
-    my_free(sigma_idx);
-    my_free(green_C);
+    delete [] sigma_idx;
+    GpuFreeManaged(sigma_all);
+    GpuFreeManaged(green_C);
 
-    my_free(lcr[0].Htri);
-    my_free(lcr[0].Stri);
+    GpuFreeManaged(lcr[0].Htri);
+    GpuFreeManaged(lcr[0].Stri);
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
-        my_free(lcr[iprobe].H00);
-        my_free(lcr[iprobe].S00);
-        my_free(lcr[iprobe].H01);
-        my_free(lcr[iprobe].S01);
+        GpuFreeManaged(lcr[iprobe].H00);
+        GpuFreeManaged(lcr[iprobe].S00);
+        GpuFreeManaged(lcr[iprobe].H01);
+        GpuFreeManaged(lcr[iprobe].S01);
     }
 
     /*===============================*/
 
-    my_free(rho_energy); 
-    my_free(Green_store);
+    GpuFreeManaged(rho_energy); 
+    GpuFreeManaged(rho_energy2); 
+    GpuFreeManaged(Green_store);
     GpuFreeManaged(rho_matrix_local);
 
 
