@@ -47,27 +47,7 @@ void init_pe_on(void)
     int ictxt, info;
     int numst = ct.num_states;
     int rsrc = 0, csrc = 0;
-    int mxllda = MXLLDA, nb = ct.scalapack_block_factor;
 
-    sl_init_comm(&ictxt, pct.scalapack_nprow, pct.scalapack_npcol, pct.grid_comm);
-
-    Cblacs_gridinfo(ictxt, &pct.scalapack_nprow, &pct.scalapack_npcol, &pct.scalapack_myrow, &pct.scalapack_mycol);
-
-
-
-    /* DISTRIBUTE THE MATRIX ON THE PROCESS GRID */
-    /* Initialize the array descriptors for the matrices */
-    if(pct.scalapack_myrow !=-1)
-    {
-        descinit(pct.desca, &numst, &numst, &nb, &nb, &rsrc, &csrc, &ictxt, &mxllda, &info);
-        if (info != 0)
-        {
-            printf(" init_pe: descinit, info=%d\n", info);
-            fflush(NULL);
-            exit(0);
-
-        }
-    }
 
     int numst1;
     numst1 = (ct.num_states + pct.grid_npes -1)/pct.grid_npes;

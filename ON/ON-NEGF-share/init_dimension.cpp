@@ -32,53 +32,31 @@
 #include <string.h>
 #include "main.h"
 #include "prototypes_on.h"
+#include "Scalapack.h"
 
 void init_dimension(int *MXLLDA, int *MXLCOL)
 {
 
-    int NNBB, NNBBR, NNBBRB;
-    int NB;
-    int i, n_factors, *factors, npcol, nprow;
-
-    my_malloc(factors, pct.grid_npes, int);
-    n_factors = prime_factors(pct.grid_npes, factors);
-    
-
-    nprow = 1;
-    npcol = 1;
-    for(i = n_factors ; i > 0; i--)
-    {
-        if(npcol <= nprow)
-            npcol =npcol * factors[i-1];
-        else
-            nprow =nprow * factors[i-1];
-    }
-    
-    if(nprow > npcol)
-    {
-        pct.scalapack_npcol = nprow;
-        pct.scalapack_nprow = npcol;
-    }
-    else
-    {
-        pct.scalapack_npcol = npcol;
-        pct.scalapack_nprow = nprow;
-    }
-
-
-    my_free(factors);
+    Scalapack *MainSp;
+    int scalapack_groups = 1;
+    int numst = ct.num_states;
+    int last = 1;
+    MainSp = new Scalapack(scalapack_groups, pct.thisimg, ct.images_per_node, numst,
+            ct.scalapack_block_factor, last, pct.grid_comm);
 
     
-    NB = ct.scalapack_block_factor;
-    if (ct.num_states < NB)
-        NB = ct.num_states;
-    NNBB = (ct.num_states + NB - 1) / NB;
-    NNBBR = (NNBB + pct.scalapack_nprow - 1) / pct.scalapack_nprow;
-    NNBBRB = (NNBBR * NB);
-    *MXLLDA = NNBBRB ;
+    pct.scalapack_nprow = MainSp->GetRows();
+    pct.scalapack_npcol = MainSp->GetCols();
+    pct.scalapack_myrow = MainSp->GetRow();
+    pct.scalapack_mycol = MainSp->GetCol();
+    
+    int *desca = MainSp->GetDistDesca();
+    
+    for(int i = 0; i < DLEN; i++) pct.desca[i] = desca[i];
 
-    NNBBR = (NNBB + pct.scalapack_npcol - 1) / pct.scalapack_npcol;
-    *MXLCOL = NNBBR * NB;
+    *MXLLDA = MainSp->GetDistMdim();
+
+    *MXLCOL = MainSp->GetDistNdim();
 
 }
 
