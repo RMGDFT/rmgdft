@@ -27,7 +27,7 @@
 
 
 void HmatrixUpdate_on(LocalObject<double> &Phi, LocalObject<double> &H_Phi, 
-        double *vtot_c, double *Hij_glob)
+        double *vtot_c, double *Hij_local)
 {
 
     int pbasis = Rmg_G->get_P0_BASIS(1);
@@ -35,8 +35,6 @@ void HmatrixUpdate_on(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     RmgTimer *RT = new RmgTimer("4-Hupdate");
 
-
-    for (int st1 = 0; st1 < Phi.num_tot * Phi.num_tot; st1++) Hij_glob[st1] = 0.0;
 
     for(int st1 = 0; st1 < Phi.num_thispe; st1++)
     {
@@ -50,7 +48,7 @@ void HmatrixUpdate_on(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     }
 
     
-    LO_x_LO(Phi, H_Phi, Hij_glob, *Rmg_G);
+    LO_x_LO(Phi, H_Phi, Hij_local, *Rmg_G);
 
     delete(RT);
 

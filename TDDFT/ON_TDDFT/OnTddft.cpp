@@ -183,7 +183,8 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         init_efield(vtot);
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
 
-        HmatrixUpdate_on(Phi, H_Phi, vtot_psi, Akick);
+        HmatrixUpdate_on(Phi, H_Phi, vtot_psi, Hij_local);
+        mat_local_to_glob(Hij_local, Akick, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot, true);
 
         /* save old vhxc + vnuc */
         for (int idx = 0; idx < FP0_BASIS; idx++) {
@@ -359,7 +360,8 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
         RT1 = new RmgTimer("2-TDDFT: Hupdate");
         GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
-        HmatrixUpdate_on(Phi, H_Phi, vtot_psi, Hmatrix);
+        HmatrixUpdate_on(Phi, H_Phi, vtot_psi, Hij_local);
+        mat_local_to_glob(Hij_local, Hmatrix, Phi, Phi, 0, Phi.num_tot, 0, Phi.num_tot, true);
         delete RT1;
 
         for(i = 0; i < n2; i++) Hmatrix[i] += Hmatrix_old[i];
@@ -369,7 +371,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
         {
             RT1 = new RmgTimer("2-TDDFT: WriteData");
             WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix,
-                Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps);
+                    Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps);
             delete RT1;
             fflush(NULL);
         }
@@ -380,6 +382,6 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
 
     WriteData_rmgtddft(ct.outfile_tddft, vh, vxc, vh_corr, Pn0, Hmatrix, Smatrix, 
-                Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps+1);
+            Cmatrix, Hmatrix_m1, Hmatrix_0, tot_steps+1);
     delete RT0;
 }
