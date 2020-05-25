@@ -72,8 +72,8 @@ Scalapack::Scalapack(int ngroups, int thisimg, int images_per_node, int N, int N
         throw RmgFatalException() << "Problem with processor distribution in " << __FILE__ << " at line " << __LINE__ << ".\n";
 
     /*Number of processor in any given direction cannot be more than number of blocks*/
-    if(num_blocks < this->group_rows) this->group_rows = num_blocks;
-    if(num_blocks < this->group_cols) this->group_cols = num_blocks;
+//    if(num_blocks < this->group_rows) this->group_rows = num_blocks;
+//    if(num_blocks < this->group_cols) this->group_cols = num_blocks;
     // Reset this->group_pes and this->group_index 
     this->group_pes = this->group_rows * this->group_cols;
     this->group_index = this->root_rank / this->group_pes;

@@ -50,9 +50,12 @@ void init_dimension(int *MXLLDA, int *MXLCOL)
     pct.scalapack_myrow = MainSp->GetRow();
     pct.scalapack_mycol = MainSp->GetCol();
     
-    int *desca = MainSp->GetDistDesca();
-    
-    for(int i = 0; i < DLEN; i++) pct.desca[i] = desca[i];
+    if(MainSp->Participates())
+    {
+        int *desca = MainSp->GetDistDesca();
+
+        for(int i = 0; i < DLEN; i++) pct.desca[i] = desca[i];
+    }
 
     *MXLLDA = MainSp->GetDistMdim();
 
