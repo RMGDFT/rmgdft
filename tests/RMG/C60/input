@@ -1,6 +1,8 @@
 # Description of run.
-description="C60 example using Davidson diagonalization"
+description="C60 test example using Davidson diagonalization"
 
+# Used to compare test energy
+test_energy="-343.83860554"
 
 # Wavefunction grid
 wavefunction_grid="48 48 48"
