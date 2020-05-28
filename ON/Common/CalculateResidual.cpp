@@ -72,6 +72,14 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     if(ct.num_ldaU_ions > 0 )
         ldaU_on->app_vhubbard(H_Phi, *Rmg_G);
 
+    // calculate residual part H_Phi_j += Phi_j * Theta_ji
+    //  Theta = S^-1H, 
+    //
+    int num_orb = Phi.num_thispe;
+    int num_prj = NlProj.num_thispe;
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_proj, pbasis,
+            theta_local, num_orb, mtwo, H_Phi.storage_proj, pbasis);
+
     if(NlProj.num_thispe < 1) return;
     double *kbpsi_local = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
     double *kbpsi_work = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
@@ -79,19 +87,12 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     double *dnmI, *qnmI;
     double *dnm, *qnm;
-    int num_orb = Phi.num_thispe;
-    int num_prj = NlProj.num_thispe;
     dnm = (double *) GpuMallocManaged(num_prj * num_prj*sizeof(double));
     qnm = (double *) GpuMallocManaged(num_prj * num_prj*sizeof(double));
 
 
     mat_global_to_local (NlProj, Phi, kbpsi_glob, kbpsi_local);
 
-    // calculate residual part H_Phi_j += Phi_j * Theta_ji
-    //  Theta = S^-1H, 
-    //
-    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_proj, pbasis,
-            theta_local, num_orb, mtwo, H_Phi.storage_proj, pbasis);
 
     //  kbpsi_work_m,i = <beta_m|phi_j> Theta_ji 
     RmgGemm("N", "N", num_prj, num_orb, num_orb,  one, kbpsi_local, num_prj,
