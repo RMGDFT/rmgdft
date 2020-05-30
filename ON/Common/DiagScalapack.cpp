@@ -119,6 +119,8 @@ void DiagScalapack(STATE *states, int numst, double *Hij_dist, double *Sij_dist)
     delete(RT);
 
 
+    MPI_Bcast(eigs, numst, MPI_DOUBLE, 0, pct.grid_comm);
+
     RmgTimer *RT1 = new RmgTimer("3-DiagScalapack: calc_occ");
     for (st1 = 0; st1 < numst; st1++)
     {
