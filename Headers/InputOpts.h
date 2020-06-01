@@ -89,6 +89,10 @@ static std::unordered_map<std::string, int> calculation_mode = {
         {"Exx Only", 11}
         };
 
+static std::unordered_map<std::string, int> dos_method = {
+        {"tetrahedra", 0},
+        {"Gaussian", 1},
+        };
 static std::unordered_map<std::string, int> occupations_type = {
         {"Fixed", 0},
         {"Fermi Dirac", 1},

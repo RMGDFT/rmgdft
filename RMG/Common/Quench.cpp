@@ -239,6 +239,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     /* output final eigenvalues with occupations */
     OutputEigenvalues (Kptr, 0, ct.scf_steps);
+    OutputDos(Kptr);
     rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
 
 

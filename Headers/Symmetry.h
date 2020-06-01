@@ -101,6 +101,7 @@ class Symmetry
 
     public:
         int nsym;
+        bool time_reversal=false;
         std::vector<bool> inv_type;
         std::vector<bool> time_rev;
         std::vector<int> ftau;

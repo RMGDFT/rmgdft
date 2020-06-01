@@ -433,6 +433,8 @@ public:
     double nel_down;
 
     int occ_flag;
+    int dos_flag;
+    double gaus_broad;
 
     double occ_width;
 

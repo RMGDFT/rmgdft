@@ -263,6 +263,7 @@ Symmetry::Symmetry (
     if(ct.noncoll)
     {
         
+        time_reversal = true;
         ftau.erase(ftau.begin() + nsym *3, ftau.end()); 
         ftau_wave.erase(ftau_wave.begin() + nsym *3, ftau_wave.end());
         sym_trans.erase(sym_trans.begin() + nsym *3, sym_trans.end());

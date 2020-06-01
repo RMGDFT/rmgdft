@@ -419,6 +419,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "can be overridden by specifying a value here.",
             "exchange_correlation_type not supported. Terminating. ");
 
+    If.RegisterInputKey("dos_broading", &lc.gaus_broad, 0.0, 1.0, 0.1,
+            CHECK_AND_FIX, OPTIONAL,
+            "For DOS with Gaussian broading method",
+            "in unit of eV ", OCCUPATION_OPTIONS);
+    If.RegisterInputKey("dos_method", NULL, &lc.dos_flag, "tetrahedra",
+            CHECK_AND_TERMINATE, OPTIONAL, dos_method,
+            "tetrahedra or gauss smearing method for DOS calculation ",
+            "dos_method not supported. Terminating. ", OCCUPATION_OPTIONS);
     If.RegisterInputKey("occupations_type", NULL, &lc.occ_flag, "Fermi Dirac",
             CHECK_AND_TERMINATE, OPTIONAL, occupations_type,
             "RMG supports several different ways of specifying orbital occupations. "

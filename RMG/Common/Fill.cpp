@@ -95,6 +95,7 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
     }
 
     // Fill eigs
+    double Evbm = -1000.0;
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++)
     {
         for(int st = 0;st < ct.num_states;st++)
@@ -102,7 +103,8 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
             eigs[kpt*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[0];
             if(ct.nspin == 2)
                 eigs[nks + kpt*ct.num_states + st] = Kptr[kpt]->Kstates[st].eig[1];
-
+            if(Kptr[kpt]->Kstates[st].occupation[0] > 1.0e-5)
+                Evbm = std::max(Evbm, Kptr[kpt]->Kstates[st].eig[0]);
         }
     }
 
@@ -121,7 +123,11 @@ double Fill (Kpoint<KpointType> **Kptr, double width, double nel, double mix, in
         return(mu);
     }
 
-    if(occ_flag == OCC_NONE ) return 0.0;
+    if(occ_flag == OCC_NONE ) 
+    {
+        MPI_Allreduce (MPI_IN_PLACE, &Evbm, 1, MPI_DOUBLE, MPI_MAX, pct.img_comm);
+        return Evbm;
+    }
 
 
 

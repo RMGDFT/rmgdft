@@ -1,4 +1,5 @@
 add_library (RMG_Common
+OutputDos.cpp
 Reinit.cpp
 Stress.cpp
 Neb.cpp
