@@ -42,6 +42,8 @@
 #include "Kbpsi.h"
 #include "FiniteDiff.h"
 #include "RmgTimer.h"
+#include "RmgException.h"
+
 
 static void init_alloc_nonloc_mem (void);
 
@@ -67,7 +69,15 @@ void GetNlop_on(void)
 
 
     /*Do forward transform for each species and store results on the coarse grid */
-    InitLocalizedWeight ();
+    if(ct.localize_projectors)
+    {
+        InitLocalizedWeight ();
+    }
+    else
+    {
+        throw RmgFatalException() << "delocalized projector not supported" << __FILE__ << " at line " << __LINE__ << "\n";
+    }
+
     /*The same for derivative of beta */
     //init_derweight ();
 
@@ -79,7 +89,7 @@ void GetNlop_on(void)
 
     std::complex<double> *fftw_phase = new std::complex<double>[ct.max_nlpoints]; 
 
-    
+
     /*
      * PROJECTOR_SPACE = ct.max_nlpoints * ct.max_nl;
      */
@@ -87,7 +97,7 @@ void GetNlop_on(void)
     MPI_Barrier(pct.img_comm);
 
 
-           
+
 
     /*  get total number of projectors on this processor */
     /*  pct.n_ion_center: number of ions whose nl projector overlap
