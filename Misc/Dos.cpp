@@ -37,7 +37,7 @@ Dos::Dos (int kmesh[3], int kshift[3], Lattice &L_in, double gaus_broad_in) : L(
 
     tetraflag = false;
     if(ct.dos_flag == 0)  tetraflag = true;
-    if(kmesh[0] * kmesh[1] * kmesh[2] < 1) tetraflag = false;  
+    if(kmesh[0] * kmesh[1] * kmesh[2] <= 1) tetraflag = false;  
 
     if(tetraflag) 
     {
@@ -52,13 +52,11 @@ void Dos::tot_dos(int nk, int nband, std::vector<double> eigs, double Ef)
     double Emin = *std::min_element(eigs.begin(), eigs.end());
     Emin = std::floor(Emin - Ef);
     Emax = std::ceil(Emax - Ef);
-    std::cout << "gaus " << gaus_broad << std::endl;
     double delta_e = 0.01;
     int num_epoint = (int) ((Emax - Emin)/delta_e) + 1;
     std::vector<double> dos_t, e_list;
     dos_t.resize(num_epoint);
     e_list.resize(num_epoint);
-    std::cout << " num " << num_epoint<< std::endl;
     for(int ie = 0; ie < num_epoint; ie++)
     {
         e_list[ie] = Emin + ie * delta_e;
