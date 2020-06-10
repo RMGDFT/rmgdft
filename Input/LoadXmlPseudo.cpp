@@ -216,6 +216,7 @@ void LoadXmlPseudo(SPECIES *sp)
     sp->aradius = new double [MAX_INITWF];
     sp->awave_lig = new double *[MAX_INITWF];
     sp->atomic_wave_l = new int [MAX_INITWF];
+    sp->atomic_wave_j = new double [MAX_INITWF]();
     sp->atomic_wave_oc = new double [MAX_INITWF]();
     sp->atomic_rho = new double[sp->rg_points]();
 
