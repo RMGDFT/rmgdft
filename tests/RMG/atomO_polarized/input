@@ -1,6 +1,9 @@
 # Description of run.
 description="atom_O_pp"
 
+# Expected test energy
+test_energy="-15.87801563"
+
 #spin_polarization="true"
 
 # Wavefunction grid
@@ -51,8 +54,8 @@ potential_acceleration_constant_step="1.0"
 write_data_period="10"
 
 # Criterion used to judge SCF convergency 
-energy_convergence_criterion="1.0e-9"
-#rms_convergence_criterion = "1.0e-10"
+#energy_convergence_criterion="1.0e-9"
+rms_convergence_criterion = "1.0e-10"
 
 atomic_coordinate_type="Absolute"
 
