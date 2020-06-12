@@ -74,6 +74,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     symprec = 1.0e-4, angprec = 1.0;
 
 
+    time_reversal = true;
     int nx_grid_c = NX;
     int ny_grid_c = NY;
     int nz_grid_c = NZ;
@@ -249,7 +250,6 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     if(ct.noncoll)
     {
         
-        time_reversal = true;
         ftau.erase(ftau.begin() + nsym *3, ftau.end()); 
         ftau_wave.erase(ftau_wave.begin() + nsym *3, ftau_wave.end());
         sym_trans.erase(sym_trans.begin() + nsym *3, sym_trans.end());

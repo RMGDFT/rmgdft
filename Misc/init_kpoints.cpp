@@ -46,20 +46,17 @@ extern "C" int spg_get_ir_reciprocal_mesh(int *grid_address,
                                const double symprec,
                                const double angprec);
 
-int init_kpoints (int *mesh, int *is_shift)
+int init_kpoints (int *kmesh, int *kshift)
 {
 
     double *tau;
-    int *grid_address, *map, *weight;
     const int is_time_reversal = 1;
     int meshsize, num_kpts, count;
 
-    int ion, *ityp;
     double symprec = 1.0e-5, angprec = 1.0;
 
     int kpt;
-    if(mesh[0] == 1 && mesh[1] == 1 && mesh[2] == 1 
-            && is_shift[0] == 0 && is_shift[1] == 0 && is_shift[2] == 0)
+    if(ct.is_gamma)
     {
         num_kpts = 1;
         ct.kp.resize(num_kpts);
@@ -68,80 +65,101 @@ int init_kpoints (int *mesh, int *is_shift)
         ct.kp[0].kpt[ 1 ] = 0.0;
         ct.kp[0].kpt[ 2 ] = 0.0;
         ct.kp[0].kweight = 1.0;
-        ct.is_gamma = 1;
-        ct.is_use_symmetry = false;
-        // in the case of noncollinear, the wavefunctions are always complex
-        if(ct.noncoll) ct.is_gamma = 0;
         return ct.num_kpts;
     }
 
-    double lattice[3][3];
-    lattice[0][0] = get_a0(0);
-    lattice[1][0] = get_a0(1);
-    lattice[2][0] = get_a0(2);
-    lattice[0][1] = get_a1(0);
-    lattice[1][1] = get_a1(1);
-    lattice[2][1] = get_a1(2);
-    lattice[0][2] = get_a2(0);
-    lattice[1][2] = get_a2(1);
-    lattice[2][2] = get_a2(2);
 
+    ct.kp.clear();
+    
+    double weight_one = 1.0/(kmesh[0] * kmesh[1] * kmesh[2]);
 
-    meshsize = mesh[0] * mesh[1] * mesh[2];
-    grid_address = new int[meshsize*5];
-
-    map = grid_address + 3*meshsize;
-    weight = map + meshsize;
-
-    tau = new double[ct.num_ions*3];
-    ityp = new int[ct.num_ions];
-
-    /* Set up atomic positions and species for fortran routines */
-    for (ion = 0; ion < ct.num_ions; ion++)
+    double sym_qvec[3], dk[3], xk[3];
+    for(int i = 0; i < kmesh[0]; i++)
     {
-        to_crystal (&tau[ion*3], Atoms[ion].crds);
-        ityp[ion] = Atoms[ion].species;
-    }
-
-
-
-
-
-    num_kpts = spg_get_ir_reciprocal_mesh(grid_address, map,mesh, is_shift, 
-            is_time_reversal, lattice, tau, ityp, ct.num_ions, symprec, angprec);
-
-    //    printf("\n num_k %d", num_kpts);
-    //    for(kpt = 0; kpt < meshsize; kpt++)
-    //        printf("\n kvec %d  %d %d %d %d", kpt, grid_address[kpt*3 +0], grid_address[kpt*3 +1], grid_address[kpt*3 +2], map[kpt]);
-
-
-    ct.kp.resize(num_kpts);
-    ct.num_kpts = num_kpts;
-    for(kpt = 0; kpt < meshsize; kpt++)
-        weight[kpt] = 0;
-    for(kpt = 0; kpt < meshsize; kpt++)
-        weight[map[kpt]]++;
-
-    count = 0;
-    for(kpt = 0; kpt < meshsize; kpt++)
-    {
-        if(weight[kpt] != 0)
+        for(int j = 0; j < kmesh[1]; j++)
         {
-            ct.kp[count].kpt[ 0 ] = (grid_address[kpt*3 + 0] + is_shift[0]*0.5)/mesh[0];
-            ct.kp[count].kpt[ 1 ] = (grid_address[kpt*3 + 1] + is_shift[1]*0.5)/mesh[1];
-            ct.kp[count].kpt[ 2 ] = (grid_address[kpt*3 + 2] + is_shift[2]*0.5)/mesh[2];
-            if(ct.kp[count].kpt[ 0 ] >0.5) ct.kp[count].kpt[ 0 ] -= 1.0;
-            if(ct.kp[count].kpt[ 1 ] >0.5) ct.kp[count].kpt[ 1 ] -= 1.0;
-            if(ct.kp[count].kpt[ 2 ] >0.5) ct.kp[count].kpt[ 2 ] -= 1.0;
-            ct.kp[count].kweight = (double)weight[kpt]/meshsize;
-            count++;
+            for(int k = 0; k < kmesh[2]; k++)
+            {
+                xk[0] = (i+ 0.5 * kshift[0])/kmesh[0];
+                xk[1] = (j+ 0.5 * kshift[1])/kmesh[1];
+                xk[2] = (k+ 0.5 * kshift[2])/kmesh[2];
+
+                bool find_eq (false);
+                for(int ik = 0; ik < (int)ct.kp.size(); ik++)
+                {
+                    for(int isym = 0; isym < Rmg_Symm->nsym; isym++)
+                    {
+                        sym_qvec[0] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 0 ] * ct.kp[ik].kpt[0] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 0 ] * ct.kp[ik].kpt[1] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 0 ] * ct.kp[ik].kpt[2];
+                        sym_qvec[1] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 1 ] * ct.kp[ik].kpt[0] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[2];
+                        sym_qvec[2] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 2 ] * ct.kp[ik].kpt[0] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[1] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
+
+                        if(Rmg_Symm->time_rev[isym])
+                        {
+                            sym_qvec[0] *= -1.0;
+                            sym_qvec[1] *= -1.0;
+                            sym_qvec[2] *= -1.0;
+                        }
+
+                        dk[0] = sym_qvec[0] - xk[0];
+                        dk[1] = sym_qvec[1] - xk[1];
+                        dk[2] = sym_qvec[2] - xk[2];
+                        dk[0] = dk[0] - std::round(dk[0]);
+                        dk[1] = dk[1] - std::round(dk[1]);
+                        dk[2] = dk[2] - std::round(dk[2]);
+                        if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
+                        {
+                            find_eq = true;
+                            break;
+                        }
+
+                        if(Rmg_Symm->time_reversal)
+                        {
+                            dk[0] = sym_qvec[0] + xk[0];
+                            dk[1] = sym_qvec[1] + xk[1];
+                            dk[2] = sym_qvec[2] + xk[2];
+                            dk[0] = dk[0] - std::round(dk[0]);
+                            dk[1] = dk[1] - std::round(dk[1]);
+                            dk[2] = dk[2] - std::round(dk[2]);
+                            if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
+                            {
+                                find_eq = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if(find_eq) 
+                    {
+                        ct.kp[ik].kweight += weight_one;
+                        break;
+                    }
+                }
+
+                if(!find_eq)
+                {
+                    KSTRUCT onekp;
+                    onekp.kpt[0] = xk[0];
+                    onekp.kpt[1] = xk[1];
+                    onekp.kpt[2] = xk[2];
+                    onekp.kweight = weight_one;
+                    ct.kp.push_back(onekp);
+                }
+
+            }
+
         }
     }
 
-    assert(count == num_kpts);
+    ct.num_kpts = ct.kp.size();
+
     /*Not necessary and it ends up being the first thing printed to stdout*/
 
-    ct.is_gamma = true;
     for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
         double v1, v2, v3;
 
@@ -160,13 +178,6 @@ int init_kpoints (int *mesh, int *is_shift)
         ct.kp[kpt].kvec[2] = v3 * twoPI;
         ct.kp[kpt].kmag = (v1 * v1 + v2 * v2 + v3 * v3) * twoPI * twoPI;
 
-        if(ct.kp[kpt].kmag != 0.0) ct.is_gamma = false;
-    }
-
-    if(ct.noncoll) ct.is_gamma = 0;
-    if(ct.is_gamma) 
-    {
-        ct.is_use_symmetry = 0;
     }
 
     if (ct.verbose)
@@ -176,11 +187,7 @@ int init_kpoints (int *mesh, int *is_shift)
             printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
     }
 
-    delete [] grid_address;
-    delete [] tau;
-    delete [] ityp;
-
-    return num_kpts;
+    return ct.num_kpts;
 
 
 }                               /* end init_kpoints */
