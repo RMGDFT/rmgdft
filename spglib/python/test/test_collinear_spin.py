@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from spglib import get_symmetry
 
+
 class TestGetSymmetry(unittest.TestCase):
 
     def setUp(self):
@@ -19,21 +20,22 @@ class TestGetSymmetry(unittest.TestCase):
         self._cell[3][1] = 1
         sym = get_symmetry(self._cell)
         self.assertEqual(96, len(sym['rotations']))
-        self.assertTrue((sym['equivalent_atoms'] == [0, 0]).all())
+        np.testing.assert_equal(sym['equivalent_atoms'], [0, 0])
 
     def test_get_symmetry_anti_ferro(self):
         self._cell[3][0] = 1
         self._cell[3][1] = -1
         sym = get_symmetry(self._cell)
         self.assertEqual(96, len(sym['rotations']))
-        self.assertTrue((sym['equivalent_atoms'] == [0, 0]).all())
+        np.testing.assert_equal(sym['equivalent_atoms'], [0, 0])
 
     def test_get_symmetry_broken_magmoms(self):
         self._cell[3][0] = 1
         self._cell[3][1] = 2
         sym = get_symmetry(self._cell)
         self.assertEqual(48, len(sym['rotations']))
-        self.assertTrue((sym['equivalent_atoms'] == [0, 1]).all())
+        np.testing.assert_equal(sym['equivalent_atoms'], [0, 1])
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestGetSymmetry)

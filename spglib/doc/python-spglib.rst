@@ -185,13 +185,16 @@ too huge and users may expect spglib can understand its full
 feature. However spglib actually collects only the following values
 from the ASE Atoms-class instance::
 
-   lattice = np.array(cell.get_cell().T, dtype='double', order='C')
-   positions = np.array(cell.get_scaled_positions(), dtype='double', order='C')
-   numbers = np.array(cell.get_atomic_numbers(), dtype='intc')
+   lattice = cell.get_cell()
+   positions = cell.get_scaled_positions()
+   numbers = cell.get_atomic_numbers()
    magmoms = None
 
-Nevertheless the ASE Atoms-like input will be accepted for a while.
-An alternative Atoms class (`atoms.py
+for which the corresponding code is written out of API and it is found
+at `here
+<https://github.com/atztogo/spglib/blob/e0851894ccdad1abb87d519b228d056128b56806/python/spglib/spglib.py#L737-L741>`_. Nevertheless
+the ASE Atoms-like input will be accepted for a while.  An alternative
+Atoms class (`atoms.py
 <https://github.com/atztogo/spglib/blob/master/python/examples/atoms.py>`_)
 that contains minimum set of methods is prepared in the `examples
 <https://github.com/atztogo/spglib/tree/master/python/examples>`_
@@ -201,7 +204,8 @@ supported when ASE Atoms-class instance.
 Symmetry tolerance (``symprec``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Distance tolerance in Cartesian coordinates to find crystal symmetry.
+Distance tolerance in Cartesian coordinates to find crystal
+symmetry. For more details, see :ref:`variables_symprec`
 
 Methods
 --------
@@ -224,8 +228,10 @@ This returns version number of spglib by tuple with three numbers.
 
 **New in version 1.9.5**
 
-This method may be used to see why spglib failed though error handling
-in spglib is not very sophisticated.
+**Be careful. This method is not thread safe, i.e., only safely usable
+when calling one spglib method per process.**
+
+This method is used to see roughly why spglib failed.
 
 ::
 
@@ -294,11 +300,13 @@ considering this freedome. In ASE Atoms-class object, this is not supported.
 
     lattice, scaled_positions, numbers = refine_cell(cell, symprec=1e-5)
 
-Standardized crystal structure is obtained as a tuple of lattice (a 3x3
-numpy array), atomic scaled positions (a numpy array of
+Standardized crystal structure is obtained as a tuple of lattice (a
+3x3 numpy array), atomic scaled positions (a numpy array of
 [number_of_atoms,3]), and atomic numbers (a 1D numpy array) that are
-symmetrized following space group type. When the search
-failed, ``None`` is returned.
+symmetrized following space group type. When the search failed,
+``None`` is returned. About the default choice of the setting, see the
+documentation of ``hall_number`` argument of
+:ref:`py_method_get_symmetry_dataset`.
 
 The detailed control of standardization of unit cell is achieved using
 ``standardize_cell``.
@@ -334,8 +342,10 @@ cell, and ``no_idealize=True`` disables to idealize lengths and angles
 of basis vectors and positions of atoms according to crystal
 symmetry. Now ``refine_cell`` and ``find_primitive`` are shorthands of
 this method with combinations of these options. When the search
-failed, ``None`` is returned.  is returned. More detailed explanation
-is shown in the spglib (C-API) document.
+failed, ``None`` is returned.  is returned. About the default choice
+of the setting, see the documentation of ``hall_number`` argument of
+:ref:`py_method_get_symmetry_dataset`.  More detailed explanation is
+shown in the spglib (C-API) document.
 
 .. _py_method_get_symmetry_dataset:
 
@@ -356,7 +366,7 @@ The arguments are:
   this argument. See a bit more detail at
   :ref:`variables_angle_tolerance`.
 * ``hall_number`` (see the definition of this number at
-  :ref:`api_spg_get_dataset_spacegroup_type`): The argument to
+  :ref:`dataset_spg_get_dataset_spacegroup_type`): The argument to
   constrain the space-group-type search only for the Hall symbol
   corresponding to it. The mapping from Hall symbols to a
   space-group-type is the many-to-one mapping. Without specifying this
@@ -365,17 +375,16 @@ The arguments are:
   `list of space groups (Seto's web site)
   <http://pmsl.planet.sci.kobe-u.ac.jp/~seto/?page_id=37&lang=en>`_)
   among possible choices and settings is chosen as default. This
-  argument is useful when the other choice (or settting) is
-  expected to be hooked. This affects to the obtained values of ``international``,
+  argument is useful when the other choice (or settting) is expected to
+  be hooked. This affects to the obtained values of ``international``,
   ``hall``, ``hall_number``, ``choice``, ``transformation_matrix``,
   ``origin shift``, ``wyckoffs``, ``std_lattice``, ``std_positions``,
-  and ``std_types``, but not to ``rotations`` and ``translations`` since
-  the later set is defined with respect to the basis vectors of user's
-  input (the ``cell`` argument).
+  ``std_types`` and ``std_rotation_matrix``, but not to ``rotations``
+  and ``translations`` since the later set is defined with respect to
+  the basis vectors of user's input (the ``cell`` argument).
 
 ``dataset`` is a dictionary. Short explanations of the values of the
-keys are shown below. More the detail may be found at
-:ref:`api_struct_spglibdataset`.
+keys are shown below. More details are found at :ref:`spglib_dataset`.
 
 * ``number``: International space group number
 * ``international``: International short symbol
@@ -385,11 +394,16 @@ keys are shown below. More the detail may be found at
   :ref:`py_method_get_spacegroup_type`.
 * ``choice``: Centring, origin, basis vector setting
 * ``transformation_matrix``: See the detail at
-  :ref:`api_origin_shift_and_transformation`.
+  :ref:`dataset_origin_shift_and_transformation`.
 * ``origin shift``: See the detail at
-  :ref:`api_origin_shift_and_transformation`.
+  :ref:`dataset_origin_shift_and_transformation`.
 * ``wyckoffs``: Wyckoff letters
+* ``site_symmetry_symbols``: Site-symmetry symbols (**experimental**)
 * ``equivalent_atoms``: Mapping table to equivalent atoms
+* ``crystallographic_orbits`` : Mapping table to equivalent atoms (see
+  :ref:`this <dataset_spg_get_dataset_site_symmetry>` for the difference
+  between ``equivalent_atoms`` and ``crystallographic_orbits``)
+* ``primitive_lattice`` : Basis vectors of a primitive cell
 * ``mapping_to_primitive``: Mapping table to atoms in the primitive cell
 * ``rotations`` and ``translations``: Rotation matrices and
   translation vectors. See :ref:`py_method_get_symmetry` for more
@@ -402,6 +416,7 @@ keys are shown below. More the detail may be found at
   ``positions``, and ``numbers`` presented at
   :ref:`py_variables_crystal_structure`,
   respectively.
+* ``std_rotation_matrix``: See the detail at :ref:`dataset_idealized_cell`.
 * ``std_mapping_to_primitive``: Mapping table from atoms in the
   standardized crystal structure to the atoms in the primitive cell.
 
@@ -424,7 +439,7 @@ A set of crystallographic symmetry operations corresponding to
 ``hall_number`` is returned by a dictionary where rotation parts and
 translation parts are accessed by the keys ``rotations`` and
 ``translations``, respectively. The definition of ``hall_number`` is
-found at :ref:`api_spg_get_dataset_spacegroup_type`.
+found at :ref:`dataset_spg_get_dataset_spacegroup_type`.
 
 When something wrong happened, ``None`` is returned.
 
@@ -443,7 +458,7 @@ This function allows to directly access to the space-group-type
 database in spglib (spg_database.c). A dictionary is returned. To
 specify the space group type with a specific choice, ``hall_number``
 is used. The definition of ``hall_number`` is found at
-:ref:`api_spg_get_dataset_spacegroup_type`. The keys of the returned
+:ref:`dataset_spg_get_dataset_spacegroup_type`. The keys of the returned
 dictionary is as follows:
 
 ::
@@ -476,15 +491,19 @@ When something wrong happened, ``None`` is returned.
 
 ``hall_number`` is obtained from the set of symmetry operations.  The
 definition of ``hall_number`` is found at
-:ref:`api_spg_get_dataset_spacegroup_type` and the corresponding
+:ref:`dataset_spg_get_dataset_spacegroup_type` and the corresponding
 space-group-type information is obtained through
 :ref:`py_method_get_spacegroup_type`.
 
 This is expected to work well for the set of symmetry operations whose
 distortion is small. The aim of making this feature is to find
 space-group-type for the set of symmetry operations given by the other
-source than spglib. ``symprec`` is in the length of the fractional
-coordinates and should be small like ``1e-5``.
+source than spglib.
+
+Note that the definition of ``symprec`` is
+different from usual one, but is given in the fractional
+coordinates and so it should be small like ``1e-5``.
+
 
 ::
 
