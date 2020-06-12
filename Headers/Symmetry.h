@@ -58,7 +58,6 @@ class Symmetry
     private:
         int max_pdim;
 
-        BaseGrid &G;
         Lattice &L;
 
         // Grid sizes per MPI task
@@ -108,7 +107,7 @@ class Symmetry
         std::vector<int> ftau_wave;
         boost::multi_array<double, 4> rot_ylm;
         boost::multi_array<std::complex<double>, 3> rot_spin;
-        Symmetry(BaseGrid &G_in, Lattice &L_in, int density);
+        Symmetry(Lattice &L_in, int nx, int ny, int nz, int density);
         ~Symmetry(void);
 
         std::vector<int> sym_rotate;
@@ -117,6 +116,7 @@ class Symmetry
         template <typename T>
             void symmetrize_grid_object(T *object);
 
+        void setgrid(BaseGrid &G, int density);
         void symmetrize_grid_vector(double *mag_rho);
         void symm_vec(int isy, double *vec);
         void symforce(void);

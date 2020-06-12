@@ -358,14 +358,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         rmg_error_handler (__FILE__, __LINE__, "You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.\n");
     }
 
-    /* Initialize symmetry stuff */
-    if(ct.is_use_symmetry)
-    {
-        RmgTimer *RT1 = new RmgTimer("2-Init: symmetry");
-        Rmg_Symm = new Symmetry(*Rmg_G, Rmg_L, ct.FG_RATIO);
-        delete(RT1);
-    }
-
     //Dprintf ("Allocate memory for arrays related to nonlocal PP");
     init_alloc_nonloc_mem ();
 

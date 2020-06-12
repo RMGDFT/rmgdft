@@ -796,7 +796,7 @@ public:
     int simpson_depth;
     double simpson_tol;
 
-    int is_gamma;
+    bool is_gamma;
     bool is_use_symmetry;
 
     bool freeze_occupied;

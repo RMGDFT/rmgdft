@@ -69,32 +69,18 @@ void symm_ijk(int *srotate, int *strans, int &ix, int &iy, int &iz, int &ixx, in
 }
 
 
-Symmetry::Symmetry (
-          BaseGrid &G_in,
-          Lattice &L_in,
-          int density) : G(G_in), L(L_in)
+Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_in)
 {
     symprec = 1.0e-4, angprec = 1.0;
-    px_grid = G.get_PX0_GRID(density);
-    py_grid = G.get_PY0_GRID(density);
-    pz_grid = G.get_PZ0_GRID(density);
 
-    nx_grid = G.get_NX_GRID(density);
-    ny_grid = G.get_NY_GRID(density);
-    nz_grid = G.get_NZ_GRID(density);
 
-    max_pdim = std::max(nx_grid, ny_grid);
-    max_pdim = std::max(max_pdim, nz_grid);
-    int nx_grid_c = G.get_NX_GRID(1);
-    int ny_grid_c = G.get_NY_GRID(1);
-    int nz_grid_c = G.get_NZ_GRID(1);
+    int nx_grid_c = NX;
+    int ny_grid_c = NY;
+    int nz_grid_c = NZ;
 
-    xoff = G.get_PX_OFFSET(density);
-    yoff = G.get_PY_OFFSET(density);
-    zoff = G.get_PZ_OFFSET(density);
-
-    pbasis = px_grid * py_grid * pz_grid;
-    nbasis = nx_grid * ny_grid * nz_grid;
+    nx_grid = NX * density;
+    ny_grid = NY * density;
+    nz_grid = NZ * density;
 
     double lattice[9];
     lattice[0*3+0] = L.get_a0(0);
@@ -317,23 +303,6 @@ Symmetry::Symmetry (
         }
     }
     nsym = (int)sym_rotate.size()/9;
-    // sym index arrays dimensioned to size of smallest possible integer type
-    if(max_pdim < 256)
-    {
-        sym_index_x8.resize(nsym * pbasis);
-        sym_index_y8.resize(nsym * pbasis);
-        sym_index_z8.resize(nsym * pbasis);
-        init_symm_ijk(sym_index_x8, sym_index_y8, sym_index_z8);
-    }
-    else
-    {
-        sym_index_x16.resize(nsym * pbasis);
-        sym_index_y16.resize(nsym * pbasis);
-        sym_index_z16.resize(nsym * pbasis);
-        init_symm_ijk(sym_index_x16, sym_index_y16, sym_index_z16);
-    }
-
-    ct.nsym = nsym;
     rotate_ylm();
     rotate_spin(); 
     delete [] sa;
@@ -1024,6 +993,47 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
     {
         ns_occ.data()[idx] = ns_occ_sum.data()[idx]/(double)nsym;
     }
+}
+
+void Symmetry::setgrid(BaseGrid &G, int density)
+{
+    px_grid = G.get_PX0_GRID(density);
+    py_grid = G.get_PY0_GRID(density);
+    pz_grid = G.get_PZ0_GRID(density);
+
+    nx_grid = G.get_NX_GRID(density);
+    ny_grid = G.get_NY_GRID(density);
+    nz_grid = G.get_NZ_GRID(density);
+
+    max_pdim = std::max(nx_grid, ny_grid);
+    max_pdim = std::max(max_pdim, nz_grid);
+    int nx_grid_c = G.get_NX_GRID(1);
+    int ny_grid_c = G.get_NY_GRID(1);
+    int nz_grid_c = G.get_NZ_GRID(1);
+
+    xoff = G.get_PX_OFFSET(density);
+    yoff = G.get_PY_OFFSET(density);
+    zoff = G.get_PZ_OFFSET(density);
+
+    pbasis = px_grid * py_grid * pz_grid;
+    nbasis = nx_grid * ny_grid * nz_grid;
+    // sym index arrays dimensioned to size of smallest possible integer type
+    if(max_pdim < 256)
+    {
+        sym_index_x8.resize(nsym * pbasis);
+        sym_index_y8.resize(nsym * pbasis);
+        sym_index_z8.resize(nsym * pbasis);
+        init_symm_ijk(sym_index_x8, sym_index_y8, sym_index_z8);
+    }
+    else
+    {
+        sym_index_x16.resize(nsym * pbasis);
+        sym_index_y16.resize(nsym * pbasis);
+        sym_index_z16.resize(nsym * pbasis);
+        init_symm_ijk(sym_index_x16, sym_index_y16, sym_index_z16);
+    }
+
+    ct.nsym = nsym;
 }
 Symmetry::~Symmetry(void)
 {

@@ -99,7 +99,7 @@ void AutoSet(CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<std::string, Inpu
     else if (autoset_wavefunction_grid) {
 
         // Processor grid specified but wavefunction grid was not
-        SetupWavefunctionGrid(pct.grid_npes, NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing);
+        SetupWavefunctionGrid(NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing);
 
     }
 

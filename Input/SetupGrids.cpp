@@ -253,7 +253,7 @@ void SetupProcessorGrid(int npes, int NX_GRID, int NY_GRID, int NZ_GRID, PE_CONT
 
 
 // Sets up the wavefunction grid assuming the processor grid was specified
-void SetupWavefunctionGrid(int npes, int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *celldm, double h)
+void SetupWavefunctionGrid(int& NX_GRID, int& NY_GRID, int &NZ_GRID, double *celldm, double h)
 {
 
     // Get the estimated values of NX_GRID, NY_GRID and NZ_GRID 

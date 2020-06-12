@@ -98,6 +98,10 @@ void get_topology(void)
 #endif
 
 
+
+namespace Ri = RmgInput;
+
+
 void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>& ControlMap)
 {
 
@@ -196,6 +200,52 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // For USPP force a minimum of 2
     if(!ct.norm_conserving_pp) ct.FG_RATIO = std::max(2, ct.FG_RATIO);
 
+    static Ri::ReadVector<int> WavefunctionGrid;
+    double *celldm = Rmg_L.celldm;
+    static double grid_spacing;
+
+    InputKey *ik;
+
+    ik = ControlMap["wavefunction_grid"];
+    WavefunctionGrid = ik->Vint;
+
+    int NX_GRID = WavefunctionGrid.vals.at(0);
+    int NY_GRID = WavefunctionGrid.vals.at(1);
+    int NZ_GRID = WavefunctionGrid.vals.at(2);
+
+    if(NX_GRID * NY_GRID * NZ_GRID == 1)
+    {
+        ik = ControlMap["grid_spacing"];
+        grid_spacing = ik->Readdoubleval[0];
+        SetupWavefunctionGrid(NX_GRID, NY_GRID, NZ_GRID, celldm, grid_spacing);
+
+        WavefunctionGrid.vals[0] = NX_GRID;
+        WavefunctionGrid.vals[1] = NY_GRID;
+        WavefunctionGrid.vals[2] = NZ_GRID;
+        ik = ControlMap["wavefunction_grid"];
+        ik->Vint = WavefunctionGrid;
+        ik = ControlMap["grid_spacing"];
+        ik->Readdoubleval = &grid_spacing;
+
+    }
+
+    /* Initialize symmetry stuff */
+
+    ct.is_gamma = true;
+    ct.is_gamma = ct.is_gamma && (ct.kpoint_mesh[0] == 1);
+    ct.is_gamma = ct.is_gamma && (ct.kpoint_mesh[1] == 1);
+    ct.is_gamma = ct.is_gamma && (ct.kpoint_mesh[2] == 1);
+    ct.is_gamma = ct.is_gamma && (ct.kpoint_is_shift[0] == 0);
+    ct.is_gamma = ct.is_gamma && (ct.kpoint_is_shift[1] == 0);
+    ct.is_gamma = ct.is_gamma && (ct.kpoint_is_shift[2] == 0);
+    ct.is_gamma = ct.is_gamma && (!ct.noncoll);
+    ct.is_use_symmetry = ct.is_use_symmetry && (!ct.is_gamma);
+    if(ct.is_use_symmetry)
+    {
+        Rmg_Symm = new Symmetry(Rmg_L, NX_GRID, NY_GRID, NZ_GRID, ct.FG_RATIO);
+    }
+
+
     if(ct.forceflag == BAND_STRUCTURE)
     {
         int special_klines = ReadKpointsBandstructure(ct.cfile, ct, ControlMap);
@@ -223,8 +273,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     if(!special || ct.kohn_sham_ke_fft) SetLaplacian();
 
-    InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
+    if(ct.is_use_symmetry)
+    {
+        Rmg_Symm->setgrid(*Rmg_G, ct.FG_RATIO);
+    }
 
+
+    InitHybridModel(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE, pct.grid_npes, pct.gridpe, pct.grid_comm);
     /* Next address grid coalescence. Grids are only coalesced in the x-coordinate. For example if the
        global grid is (96,96,96) and there are 512 MPI process's then a non-coalesced arrangment would
        be to have an (8,8,8) processor grid with the wavefunctions defined on each MPI process in a
@@ -586,7 +641,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     // Set up exchange correlation type
     Functional F( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-    InputKey *ik = ControlMap["exchange_correlation_type"];
+    ik = ControlMap["exchange_correlation_type"];
     if(*ik->Readintval == AUTO_XC) {
         // Type set from pp files
         F.set_dft_from_name_rmg(reordered_xc_type[ct.xctype]);
