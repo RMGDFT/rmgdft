@@ -488,9 +488,9 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
         int ie = kl- kl_start;
         int k = wf_pairs[kl].first;
         int l = wf_pairs[kl].second;
-        double *psi_k = (double *)&psi_s[k*pbasis];
-        double *psi_l = (double *)&psi_s[l*pbasis];
-        for(int idx=0;idx < pbasis;idx++) kl_pair[ie*pbasis + idx] = psi_k[idx]*psi_l[idx];
+        double *psi_k = (double *)&psi_s[k*pwave->pbasis];
+        double *psi_l = (double *)&psi_s[l*pwave->pbasis];
+        for(int idx=0;idx < pwave->pbasis;idx++) kl_pair[ie*pwave->pbasis + idx] = psi_k[idx]*psi_l[idx];
     }
 
     delete RT0;
@@ -500,7 +500,7 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
     int kl_length = kl_end - kl_start;
     // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
     RT0 = new RmgTimer("5-Functional: Exx: gemm");
-    RmgGemm(trans_a, trans_n, ij_length, kl_length, pbasis, alpha, ij_pair, pbasis, kl_pair, pbasis, beta, Exxints, ij_length);
+    RmgGemm(trans_a, trans_n, ij_length, kl_length, pwave->pbasis, alpha, ij_pair, pwave->pbasis, kl_pair, pwave->pbasis, beta, Exxints, ij_length);
     delete RT0;
     int pairsize = ij_length * kl_length;
     RT0 = new RmgTimer("5-Functional: Exx: reduce");
@@ -553,13 +553,13 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     // The wave function array is always at least double the number of states so use
     // the upper part for storage of our kl pairs
 
-    kl_pair = new double[block_size * pbasis];
-    ij_pair = new double[block_size * pbasis];
+    kl_pair = new double[block_size * pwave->pbasis];
+    ij_pair = new double[block_size * pwave->pbasis];
 
     Exxints = new double[block_size * block_size];
     Summedints = new double[block_size * block_size];
 
-    wf_fft = new std::complex<double> [pbasis];
+    wf_fft = new std::complex<double> [pwave->pbasis];
 
 
     char *buf=NULL;
@@ -599,7 +599,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         if(serial_fd < 0)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
 
-        size_t length = nstates * pbasis *sizeof(double);
+        size_t length = nstates * pwave->pbasis *sizeof(double);
         psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
         MPI_Barrier(G.comm);
@@ -639,20 +639,20 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
             int ic = ij - ij_start;
             int i = wf_pairs[ij].first;
             int j = wf_pairs[ij].second;
-            double *psi_i = (double *)&psi_s[i*pbasis];
-            double *psi_j = (double *)&psi_s[j*pbasis];
+            double *psi_i = (double *)&psi_s[i*pwave->pbasis];
+            double *psi_j = (double *)&psi_s[j*pwave->pbasis];
             fftpair(psi_i, psi_j, wf_fft, gfac);
 
             // store (i,j) fft pair in ij_pair
             // forward and then backward fft should not have the scale, Wenchang
-            for(int idx=0;idx < pbasis;idx++) ij_pair[ic * pbasis + idx] = scale * std::real(wf_fft[idx]);
+            for(int idx=0;idx < pwave->pbasis;idx++) ij_pair[ic * pwave->pbasis + idx] = scale * std::real(wf_fft[idx]);
 
             double tem1 =0.0, tem2 = 0.0, tem3 = 0.0;
-            for(int idx=0;idx < pbasis;idx++) 
+            for(int idx=0;idx < pwave->pbasis;idx++) 
             {
-                tem1 += ij_pair[ic * pbasis + idx];
-                tem2 += psi_i[ic * pbasis + idx];
-                tem3 += psi_j[ic * pbasis + idx];
+                tem1 += ij_pair[ic * pwave->pbasis + idx];
+                tem2 += psi_i[ic * pwave->pbasis + idx];
+                tem3 += psi_j[ic * pwave->pbasis + idx];
             }
         }
         delete RT1;
@@ -693,7 +693,7 @@ template <class T> Exxbase<T>::~Exxbase(void)
     if(mode == EXX_DIST_FFT) return;
 
     close(serial_fd);
-    size_t length = nstates * pbasis * sizeof(T);
+    size_t length = nstates * pwave->pbasis * sizeof(T);
     munmap(psi_s, length);
     //std::string filename= wavefile + "_spin"+ std::to_string(pct.spinpe);
     //unlink(filename.c_str());
