@@ -38,6 +38,7 @@
 #include "rmgtypedefs.h"
 #include "pe_control.h"
 #include "GpuAlloc.h"
+#include "blas.h"
 
 // This class implements exact exchange for delocalized orbitals.
 // The wavefunctions are stored in a single file and are not domain
@@ -469,6 +470,75 @@ template <> double Exxbase<std::complex<double>>::Exxenergy(std::complex<double>
     return energy;
 }
 
+template <> void Exxbase<double>::VxxIntChol(double *mat, double *CholVec, int cmax, int nst_occ)
+{
+    
+    double tol = 1.0e-5;
+    std::vector<double> m_diag, m_appr, m_nu0;
+    int nst2 = nst_occ * nst_occ;
+    int nu, ione = 1;
+    m_diag.resize(nst2);
+    m_nu0.resize(nst2);
+    m_appr.assign(nst2, 0.0);
+    for(int i =0; i<nst2; i++) m_diag[i] = mat[i *nst2+i];
+    nu = 0;
+    double delta_max = 0.0;
+    for(int i =0; i<nst2; i++) 
+    {
+        if(delta_max < std::abs(m_diag[i])) 
+        {
+            delta_max = std::abs(m_diag[i]);
+            nu = i;
+        }
+    }
+
+    delta_max = 1.0/std::sqrt(delta_max);
+    dcopy(&nst2, &mat[nu * nst2], &ione, CholVec, &ione);
+    dscal(&nst2, &delta_max, CholVec, &ione);
+
+    int ic;
+    for(ic= 0; ic < cmax * nst_occ - 1; ic++)
+    {
+        for(int i = 0; i < nst2; i++)
+            m_appr[i] += CholVec[ic*nst2 + i] * MyConj(CholVec[ic*nst2+i]);
+
+        delta_max = 0.0;
+        for(int i =0; i<nst2; i++) 
+        {
+//            printf("\n  aaa %d %d %f ", ic, i, m_diag[i]-m_appr[i]);
+            if(delta_max < std::abs(m_diag[i] - m_appr[i])) 
+            {
+                delta_max = std::abs(m_diag[i] - m_appr[i]);
+                nu = i;
+            }
+        }
+
+        if(ct.verbose && pct.gridpe == 0) printf("\n delta_max %d %d %f\n", ic, nu, delta_max);
+        if(delta_max < tol) break;
+        delta_max = std::sqrt(delta_max);
+
+        for(int i =0; i<nst2; i++) m_nu0[i] = 0.0;
+        for(int ics = 0; ics < ic+1; ics++)
+        {
+            for(int i =0; i<nst2; i++)
+            {
+                m_nu0[i] += MyConj(CholVec[ics * nst2 + nu]) * CholVec[ics * nst2 + i];
+            }
+        } 
+
+        for(int i =0; i<nst2; i++)
+        {
+
+            CholVec[(ic+1) * nst2 + i] = (mat[nu * nst2  + i] - m_nu0[i])/delta_max;
+        }
+
+    }
+
+}
+template <> void Exxbase<std::complex<double>>::VxxIntChol(std::complex<double> *ExxI, std::complex<double> *CholVec, int cmax, int nstates_occ)
+{
+}
+
 template <> void Exxbase<std::complex<double>>::Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end)
 {
 }
@@ -490,7 +560,7 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
         int l = wf_pairs[kl].second;
         double *psi_k = (double *)&psi_s[k*pwave->pbasis];
         double *psi_l = (double *)&psi_s[l*pwave->pbasis];
-        for(int idx=0;idx < pwave->pbasis;idx++) kl_pair[ie*pwave->pbasis + idx] = psi_k[idx]*psi_l[idx];
+        for(size_t idx=0;idx < pwave->pbasis;idx++) kl_pair[ie*pwave->pbasis + idx] = psi_k[idx]*psi_l[idx];
     }
 
     delete RT0;
@@ -520,7 +590,27 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
             int k = wf_pairs[kl].first;
             int l = wf_pairs[kl].second;
 
-            if(LG->get_rank()==0 && kl >= ij)fprintf(fp, "%14.8e %d %d %d %d\n", Summedints[ie * ij_length + ic], i, j, k, l);
+            if(ct.ExxIntChol)
+            {
+                int idx = (i * nstates_occ+j) * nstates_occ * nstates_occ + k * nstates_occ + l;
+                ExxInt[idx]  = Summedints[ie * ij_length + ic];
+                idx = (j * nstates_occ+i) * nstates_occ * nstates_occ + k * nstates_occ + l;
+                ExxInt[idx]  = Summedints[ie * ij_length + ic];
+                idx = (i * nstates_occ+j) * nstates_occ * nstates_occ + l * nstates_occ + k;
+                ExxInt[idx]  = Summedints[ie * ij_length + ic];
+                idx = (j * nstates_occ+i) * nstates_occ * nstates_occ + l * nstates_occ + k;
+                ExxInt[idx]  = Summedints[ie * ij_length + ic];
+
+                idx = (k * nstates_occ+l) * nstates_occ * nstates_occ + i * nstates_occ + j;
+                ExxInt[idx]  = Summedints[ie * ij_length + ic];
+                idx = (k * nstates_occ+l) * nstates_occ * nstates_occ + j * nstates_occ + i;
+                ExxInt[idx]  = Summedints[ie * ij_length + ic];
+                idx = (l * nstates_occ+k) * nstates_occ * nstates_occ + i * nstates_occ + j;
+                ExxInt[idx]  = Summedints[ie * ij_length + ic];
+                idx = (l * nstates_occ+k) * nstates_occ * nstates_occ + j * nstates_occ + i;
+                ExxInt[idx]  = Summedints[ie * ij_length + ic];
+            }
+            else if(LG->get_rank()==0 && kl >= ij)fprintf(fp, "%14.8e %d %d %d %d\n", Summedints[ie * ij_length + ic], i, j, k, l);
         }
     }
 
@@ -533,9 +623,25 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 {
 
     double scale = 1.0 / (double)pwave->global_basis;
-    int nstates_occ = 0;
+    nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
 
+
+    if(ct.ExxIntChol)
+    {
+       // std::string filename = wavefile + "ExxInt" + "_spin"+std::to_string(pct.spinpe);
+      //  exxint_fd = open(filename.c_str(), O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+      //  if(exxint_fd < 0)
+      //      throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+
+      //  size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ *sizeof(double);
+      //  ExxInt = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, exxint_fd, 0);
+        size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ;
+        ExxInt = new double[length]();
+        length = nstates_occ * nstates_occ * nstates_occ * ct.exxchol_max;
+        ExxCholVec = new double[length];
+
+    }
     RmgTimer RT0("5-Functional: Exx integrals");
 
     for(int i=0;i < nstates_occ;i++)
@@ -594,7 +700,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     }
     else
     {
-        std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe);
+        std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt0";
         serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
         if(serial_fd < 0)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
@@ -645,15 +751,8 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
             // store (i,j) fft pair in ij_pair
             // forward and then backward fft should not have the scale, Wenchang
-            for(int idx=0;idx < pwave->pbasis;idx++) ij_pair[ic * pwave->pbasis + idx] = scale * std::real(wf_fft[idx]);
+            for(size_t idx=0;idx < pwave->pbasis;idx++) ij_pair[ic * pwave->pbasis + idx] = scale * std::real(wf_fft[idx]);
 
-            double tem1 =0.0, tem2 = 0.0, tem3 = 0.0;
-            for(int idx=0;idx < pwave->pbasis;idx++) 
-            {
-                tem1 += ij_pair[ic * pwave->pbasis + idx];
-                tem2 += psi_i[ic * pwave->pbasis + idx];
-                tem3 += psi_j[ic * pwave->pbasis + idx];
-            }
         }
         delete RT1;
 
@@ -680,6 +779,12 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     delete [] Summedints;
     delete [] wf_fft;
 
+    if(ct.ExxIntChol)
+    {
+        int length = nstates_occ * nstates_occ * nstates_occ * nstates_occ;
+        MPI_Allreduce(MPI_IN_PLACE, ExxInt, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        VxxIntChol(ExxInt, ExxCholVec, ct.exxchol_max, nstates_occ);
+    }
 }
 
 template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfile)
@@ -692,6 +797,13 @@ template <class T> Exxbase<T>::~Exxbase(void)
 
     if(mode == EXX_DIST_FFT) return;
 
+    if(ct.ExxIntChol)
+    {
+        //close(exxint_fd);
+        //size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ * sizeof(T);
+        //munmap(ExxInt, length);
+        delete [] ExxInt;
+    }
     close(serial_fd);
     size_t length = nstates * pwave->pbasis * sizeof(T);
     munmap(psi_s, length);
@@ -743,22 +855,27 @@ template <class T> void Exxbase<T>::ReadWfsFromSingleFile()
 
     MPI_Barrier(G.comm);
 
-    std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe);
-    int flag = MPI_File_open(G.comm, filename.c_str(), amode, fileinfo, &mpi_fhand);
-    if(flag) 
-        throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
-    MPI_Offset disp = 0;
-
-    T *wfptr;
-    MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
-    int dis_dim = G.get_P0_BASIS(1);
-    for(int st=0;st < nstates;st++)
+    for(int ik = 0; ik < ct.num_kpts_pe; ik++)
     {
-        wfptr = &psi[st * dis_dim];
-        MPI_File_read_all(mpi_fhand, wfptr, dis_dim, MPI_DOUBLE, &status);
+        int ik_glob = ik + pct.kstart;
+        std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ik_glob);
+        int flag = MPI_File_open(G.comm, filename.c_str(), amode, fileinfo, &mpi_fhand);
+        if(flag) 
+            throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+        MPI_Offset disp = 0;
+
+        T *wfptr;
+        MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
+        int dis_dim = G.get_P0_BASIS(1);
+        for(int st=0;st < nstates;st++)
+        {
+            wfptr = &psi[ik * ct.max_states * dis_dim + st * dis_dim];
+            MPI_File_read_all(mpi_fhand, wfptr, dis_dim, wftype, &status);
+        }
+        MPI_Barrier(G.comm);
+        MPI_File_close(&mpi_fhand);
     }
     MPI_Barrier(G.comm);
-    MPI_File_close(&mpi_fhand);
     MPI_Type_free(&grid_c);
     fflush(NULL);
     MPI_Barrier(G.comm);
@@ -874,14 +991,14 @@ template <class T> void Exxbase<T>::kpoints_setup()
         for(int isym = 0; isym < Rmg_Symm->nsym; isym++)
         {
             sym_qvec[0] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 0 ] * ct.kp[ik].kpt[0] +
-                          Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 0 ] * ct.kp[ik].kpt[1] +
-                          Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 0 ] * ct.kp[ik].kpt[2];
+                Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 0 ] * ct.kp[ik].kpt[1] +
+                Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 0 ] * ct.kp[ik].kpt[2];
             sym_qvec[1] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 1 ] * ct.kp[ik].kpt[0] +
-                          Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
-                          Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[2];
+                Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
+                Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[2];
             sym_qvec[2] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 2 ] * ct.kp[ik].kpt[0] +
-                          Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[1] +
-                          Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
+                Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[1] +
+                Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
 
             //  check if this new qvec in the qvec list
             bool is_assigned = false;
@@ -1215,7 +1332,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
     double grid_factor = 8.0/7.0;
     bool on_double_grid = false;
     double alpha = 10.0/(coarse_pwaves->gcut * ct.filter_factor * tpiba2);
-//    alpha = 0.833333333333;
+    //    alpha = 0.833333333333;
     exxdiv = 0.0;
     for(int iqx = 0; iqx < ct.qpoint_mesh[0];iqx++)
         for(int iqy = 0; iqy < ct.qpoint_mesh[1];iqy++)
@@ -1254,7 +1371,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
                         if( std::abs(qa2 - std::round(qa2)) > eps )
                             on_double_grid = false;
                     }
-                
+
                     if(!on_double_grid && qq > eps)
                     {
                         if(scr_type == ERFC_SCREENING)
@@ -1285,7 +1402,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
     }
     exxdiv *= fourPI /num_q;
 
-    
+
 
     int nqq = 100000;
     double dq = 5.0/std::sqrt(alpha) /nqq;
@@ -1344,7 +1461,7 @@ template <class T> void Exxbase<T>::Remap(T *inbuf, T *rbuf)
                 for(size_t iz=0;iz < dimz_r;iz++)
                 {
                     rbuf[offset_r + ix*dimy_r*dimz_r + iy*dimz_r + iz] = 
-                    inbuf[(ix+xoffset_r)*(size_t)gdimy*(size_t)gdimz + (iy+(size_t)yoffset_r)*(size_t)gdimz + iz + (size_t)zoffset_r];
+                        inbuf[(ix+xoffset_r)*(size_t)gdimy*(size_t)gdimz + (iy+(size_t)yoffset_r)*(size_t)gdimz + iz + (size_t)zoffset_r];
                 }
             }
         }

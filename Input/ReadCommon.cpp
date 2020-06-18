@@ -446,6 +446,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "FFT mode for exact exchange computations.",
             "exx mode not supported. Terminating. ", CONTROL_OPTIONS);
 
+    If.RegisterInputKey("ExxIntCholosky", &lc.ExxIntChol, true, 
+            "if set true, Exx integrals are Cholesky factorized to 3-index ");
+    If.RegisterInputKey("ExxCholMax", &lc.exxchol_max, 1, 64, 8, 
+            CHECK_AND_FIX, OPTIONAL, 
+            "maximum number of Exx integral cholesky vectors ", 
+            "exxchol_max * num_states ");
+
     If.RegisterInputKey("charge_pulay_Gspace", &lc.charge_pulay_Gspace, false, 
             "if set true, charge density mixing the residual in G space ");
     If.RegisterInputKey("cube_rho", &lc.cube_rho, true, 
