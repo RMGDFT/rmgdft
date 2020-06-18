@@ -69,18 +69,21 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     double *vh_in = new double[FP0_BASIS];
     double *vxc_in = new double[FP0_BASIS * ct.nspin];
 
+
     /* ---------- begin scf loop ---------- */
     
     double start_time = my_crtc ();
     double exx_start_time = start_time;
     double step_time;
     double exx_step_time=0.0, exx_elapsed_time=0.0;
+    double f0=0.0,f1,f2=0.0,exxen=0.0;
 
     RmgTimer *RT = new RmgTimer("Init Voronoi");
     Voronoi *Voronoi_charge = new Voronoi();
     delete RT;
     int outer_steps = 1;
     Exxbase<OrbitalType> *Exx_scf = NULL;
+    ct.FOCK = 0.0;
     if(ct.xc_is_hybrid)
     {
         outer_steps = ct.max_exx_steps;
@@ -93,12 +96,17 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 Kptr[0]->orbital_storage, ct.exx_mode);
 
         occs.clear();
+        if(ct.runflag == RESTART)
+        {
+            F->start_exx_rmg();
+            Exx_scf->Vexx(Kptr[0]->vexx, false);
+            ct.FOCK = Exx_scf->Exxenergy(Kptr[0]->vexx);
+            exxen = ct.FOCK;
+        }
     }
 
-    ct.FOCK = 0.0;
     ct.exx_delta = DBL_MAX;
     ct.vexx_rms = DBL_MAX;
-    double f0=0.0,f1,f2=0.0,exxen=0.0;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     { 
 
