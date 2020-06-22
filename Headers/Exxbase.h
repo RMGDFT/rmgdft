@@ -74,6 +74,7 @@ private:
     // Number of occupied orbitals
     int nstates;
     int nstates_occ;
+    int Nchol;
     // Occupations for the orbitals
     double *init_occ;
 
@@ -107,8 +108,8 @@ private:
     // File descriptor for serial wavefile
     int serial_fd;
     int exxint_fd;
-    T *ExxInt;
-    T *ExxCholVec;
+    std::vector<T> ExxInt;
+    std::vector<T> ExxCholVec;
 
     // Each MPI process keeps a portion of the orbitals resident in memory and
     // these two class members control that.
@@ -147,7 +148,7 @@ private:
 
     double eps_qdiv = 1.0e-8;
 
-    void VxxIntChol(T *Exxint, T *ExxCholVec, int cmax, int nstates_occ);
+    int VxxIntChol(std::vector<T> &Exxint, std::vector<T> &ExxCholVec, int cmax, int nstates_occ);
 
 public:
     Exxbase (

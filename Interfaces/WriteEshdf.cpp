@@ -392,87 +392,124 @@ void WriteQmcpackRestart(std::string& name)
    outFile.writeElectrons();
 }
 
+void WriteForAFQMC(int ns_occ, int Nchol, int Nup, int Ndown, 
+        std::vector<double> eigs, std::vector<double> &CholVec)
+{
+   string ofname = "afqmc_rmg.h5";
+   eshdfFile outFile(ofname);
+   outFile.writeCholVec(ns_occ, Nchol, Nup, Ndown, eigs, CholVec);
+
+   
+    
+}
+
+void eshdfFile::writeCholVec(int ns_occ, int Nchol, int Nup, int Ndown, 
+        std::vector<double> eigs, std::vector<double> CholVec)
+{
+   hid_t hamiltonian_group = makeHDFGroup("Hamiltonian", file);
+   hid_t chol_group = makeHDFGroup("DenseFactorized", hamiltonian_group);
+   writeNumsToHDF("L", CholVec, chol_group);
+   std::vector<int> dims;
+   dims.resize(8, 0);
+   dims[3] = ns_occ;
+   dims[4] = Nup;
+   dims[5] = Ndown;
+   dims[7] = Nchol;
+   writeNumsToHDF("dims", dims, hamiltonian_group);
+   
+   std::vector<double> hcore, Energies;
+   hcore.resize(ns_occ * ns_occ, 0.0);
+   for(int i = 0; i < ns_occ; i++) 
+       hcore[i*ns_occ + i] = eigs[i];
+   writeNumsToHDF("hcore", hcore, hamiltonian_group);
+   Energies.push_back(ct.II);
+   Energies.push_back(0.0);
+   //writeNumsToHDF("Energies", Energies, hamiltonian_group);
+
+    
+
+}
 
 void WriteQmcpackRestartLocalized(std::string& name)
 {
-   string ofname = "RMG_localized.h5";
-   eshdfFile outFile(ofname);
-   outFile.writeBoilerPlate("rmg_on");
-   outFile.writeSupercell();
-   outFile.writeAtoms();
-   outFile.writeLocalizedOrbitals();
+    string ofname = "RMG_localized.h5";
+    eshdfFile outFile(ofname);
+    outFile.writeBoilerPlate("rmg_on");
+    outFile.writeSupercell();
+    outFile.writeAtoms();
+    outFile.writeLocalizedOrbitals();
 }
 
 void eshdfFile::writeLocalizedOrbitals() {
-//#include "init_var.h"
-  int nspin;
+    //#include "init_var.h"
+    int nspin;
 
-  //wfnNode.getAttribute("nspin", nspin);
-  nspin = ct.nspin;
+    //wfnNode.getAttribute("nspin", nspin);
+    nspin = ct.nspin;
 
-  //wfnNode.getAttribute("nel", nel);
-  // RMG porting note - In RMG this is total not per spin state
+    //wfnNode.getAttribute("nel", nel);
+    // RMG porting note - In RMG this is total not per spin state
 
-  // RMG porting note, C or Fortran order?
+    // RMG porting note, C or Fortran order?
 
-  hid_t electrons_group = makeHDFGroup("basisset", file);
-  writeNumsToHDF("NbElements", -1, electrons_group);
-  writeNumsToHDF("NbCenters", ct.num_ions, electrons_group);
-  writeNumsToHDF("number_of_spins", nspin, electrons_group);
-  writeNumsToHDF("number_of_orbitals", ct.num_states, electrons_group);
-  std::vector<int> num_orb_centers;
-  num_orb_centers.resize(ct.num_ions);
-  for(int ion = 0; ion < (int)Atoms.size(); ion++)
-  {
-     num_orb_centers[ion] = Atoms[ion].num_orbitals;
-  }
-  writeNumsToHDF("NumOrbCenters", num_orb_centers, electrons_group);
-  hid_t kpt_group = makeHDFGroup("KPTS_0", file);
-  for(int ispin = 0; ispin < nspin; ispin++)
-  {
-      vector<double> Cij;
-      Cij.resize(ct.num_states * ct.num_states);
-      std::string wfname(ct.outfile);
-      wfname = wfname + "_spin" + std::to_string(ispin) + "_Cij";
+    hid_t electrons_group = makeHDFGroup("basisset", file);
+    writeNumsToHDF("NbElements", -1, electrons_group);
+    writeNumsToHDF("NbCenters", ct.num_ions, electrons_group);
+    writeNumsToHDF("number_of_spins", nspin, electrons_group);
+    writeNumsToHDF("number_of_orbitals", ct.num_states, electrons_group);
+    std::vector<int> num_orb_centers;
+    num_orb_centers.resize(ct.num_ions);
+    for(int ion = 0; ion < (int)Atoms.size(); ion++)
+    {
+        num_orb_centers[ion] = Atoms[ion].num_orbitals;
+    }
+    writeNumsToHDF("NumOrbCenters", num_orb_centers, electrons_group);
+    hid_t kpt_group = makeHDFGroup("KPTS_0", file);
+    for(int ispin = 0; ispin < nspin; ispin++)
+    {
+        vector<double> Cij;
+        Cij.resize(ct.num_states * ct.num_states);
+        std::string wfname(ct.outfile);
+        wfname = wfname + "_spin" + std::to_string(ispin) + "_Cij";
 
-      int fhand = open(wfname.c_str(), O_RDWR);
-      if (fhand < 0)
-      {
-          printf("\n  unable to open file %s", wfname.c_str() );
-          exit(0);
-      }
+        int fhand = open(wfname.c_str(), O_RDWR);
+        if (fhand < 0)
+        {
+            printf("\n  unable to open file %s", wfname.c_str() );
+            exit(0);
+        }
 
-      read(fhand, Cij.data(),ct.num_states * ct.num_states * sizeof(double));
-      close(fhand);
-      std::string Cij_name = "eigenset_" + std::to_string(ispin);
-      hsize_t Cij_dims[]={static_cast<hsize_t>(ct.num_states),static_cast<hsize_t>(ct.num_states)};
-      writeNumsToHDF(Cij_name, Cij, kpt_group, 2, Cij_dims);
-  }
+        read(fhand, Cij.data(),ct.num_states * ct.num_states * sizeof(double));
+        close(fhand);
+        std::string Cij_name = "eigenset_" + std::to_string(ispin);
+        hsize_t Cij_dims[]={static_cast<hsize_t>(ct.num_states),static_cast<hsize_t>(ct.num_states)};
+        writeNumsToHDF(Cij_name, Cij, kpt_group, 2, Cij_dims);
+    }
 
 
 
-  double nup = 0;
-  double ndn = 0;
+    double nup = 0;
+    double ndn = 0;
 
-  hid_t up_spin_group = makeHDFGroup("spin_0", electrons_group);
-  handleSpinGroup_ON(0, up_spin_group, nup);
+    hid_t up_spin_group = makeHDFGroup("spin_0", electrons_group);
+    handleSpinGroup_ON(0, up_spin_group, nup);
 
-  if (nspin == 2) {
-      hid_t dn_spin_group = makeHDFGroup("spin_1", electrons_group);
-      handleSpinGroup_ON(nspin-1, dn_spin_group, ndn);
-  } else {
-      ndn = nup;
-  }
+    if (nspin == 2) {
+        hid_t dn_spin_group = makeHDFGroup("spin_1", electrons_group);
+        handleSpinGroup_ON(nspin-1, dn_spin_group, ndn);
+    } else {
+        ndn = nup;
+    }
 
-  vector<int> nels;
-  nels.push_back(static_cast<int>(std::floor(nup+0.1)));
-  nels.push_back(static_cast<int>(std::floor(ndn+0.1)));
-  writeNumsToHDF("number_of_electrons", nels, electrons_group);
+    vector<int> nels;
+    nels.push_back(static_cast<int>(std::floor(nup+0.1)));
+    nels.push_back(static_cast<int>(std::floor(ndn+0.1)));
+    writeNumsToHDF("number_of_electrons", nels, electrons_group);
 }
 
 void eshdfFile::handleSpinGroup_ON(int spin_idx, hid_t groupLoc, double& nocc) {
 
-//#include "init_var.h"
+    //#include "init_var.h"
 
     vector<double> eigvals;
     nocc = 0.0;

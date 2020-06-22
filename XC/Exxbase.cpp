@@ -28,6 +28,8 @@
 #include <iterator>
 #include <omp.h>
 
+#include "WriteEshdf.h"
+
 
 #include "const.h"
 #include "Exxbase.h"
@@ -45,6 +47,8 @@
 // decomposed. The file name is given by wavefile_in which is
 // mmapped to an array. We only access the array in read-only mode.
 
+using namespace std;
+//using namespace hdfHelper;
 
 template Exxbase<double>::Exxbase(BaseGrid &, BaseGrid &, Lattice &, const std::string &, int, double *, double *, int);
 template Exxbase<std::complex<double>>::Exxbase(BaseGrid &, BaseGrid &, Lattice &, const std::string &, int, double *, std::complex<double> *, int );
@@ -470,7 +474,7 @@ template <> double Exxbase<std::complex<double>>::Exxenergy(std::complex<double>
     return energy;
 }
 
-template <> void Exxbase<double>::VxxIntChol(double *mat, double *CholVec, int cmax, int nst_occ)
+template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vector<double> &CholVec, int cmax, int nst_occ)
 {
     
     double tol = 1.0e-5;
@@ -493,8 +497,8 @@ template <> void Exxbase<double>::VxxIntChol(double *mat, double *CholVec, int c
     }
 
     delta_max = 1.0/std::sqrt(delta_max);
-    dcopy(&nst2, &mat[nu * nst2], &ione, CholVec, &ione);
-    dscal(&nst2, &delta_max, CholVec, &ione);
+    dcopy(&nst2, &mat.data()[nu * nst2], &ione, CholVec.data(), &ione);
+    dscal(&nst2, &delta_max, CholVec.data(), &ione);
 
     int ic;
     for(ic= 0; ic < cmax * nst_occ - 1; ic++)
@@ -534,9 +538,17 @@ template <> void Exxbase<double>::VxxIntChol(double *mat, double *CholVec, int c
 
     }
 
+
+
+    CholVec.erase(CholVec.begin()+ic*nst2, CholVec.end());
+    return ic;
+
 }
-template <> void Exxbase<std::complex<double>>::VxxIntChol(std::complex<double> *ExxI, std::complex<double> *CholVec, int cmax, int nstates_occ)
+template <> int Exxbase<std::complex<double>>::VxxIntChol(
+        std::vector<std::complex<double>> &ExxI, std::vector<std::complex<double>> &CholVec, 
+        int cmax, int nstates_occ)
 {
+    return 0;
 }
 
 template <> void Exxbase<std::complex<double>>::Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end)
@@ -637,9 +649,9 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
       //  size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ *sizeof(double);
       //  ExxInt = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, exxint_fd, 0);
         size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ;
-        ExxInt = new double[length]();
+        ExxInt.resize(length, 0.0);
         length = nstates_occ * nstates_occ * nstates_occ * ct.exxchol_max;
-        ExxCholVec = new double[length];
+        ExxCholVec.resize(length);
 
     }
     RmgTimer RT0("5-Functional: Exx integrals");
@@ -782,8 +794,13 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     if(ct.ExxIntChol)
     {
         int length = nstates_occ * nstates_occ * nstates_occ * nstates_occ;
-        MPI_Allreduce(MPI_IN_PLACE, ExxInt, length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        VxxIntChol(ExxInt, ExxCholVec, ct.exxchol_max, nstates_occ);
+        MPI_Allreduce(MPI_IN_PLACE, ExxInt.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        Nchol = VxxIntChol(ExxInt, ExxCholVec, ct.exxchol_max, nstates_occ);
+        std::vector<double> eigs;
+        
+        eigs.resize(nstates_occ, 0.0);
+        if(pct.worldrank == 0)
+            WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVec);
     }
 }
 
@@ -802,7 +819,8 @@ template <class T> Exxbase<T>::~Exxbase(void)
         //close(exxint_fd);
         //size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ * sizeof(T);
         //munmap(ExxInt, length);
-        delete [] ExxInt;
+        ExxInt.clear();
+        ExxCholVec.clear();
     }
     close(serial_fd);
     size_t length = nstates * pwave->pbasis * sizeof(T);
