@@ -225,6 +225,7 @@ typedef struct
     double kmag;
     
     char symbol[10];
+    std::vector<double> eigs;
 
     /* The orbital structure for this k-point */
     /* Need to get rid of this but still required in a few places */

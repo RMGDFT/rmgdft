@@ -799,6 +799,10 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         std::vector<double> eigs;
         
         eigs.resize(nstates_occ, 0.0);
+        for(int st = 0; st < nstates_occ; st++)
+        {
+            eigs[st] = ct.kp[0].eigs[st];
+        }
         if(pct.worldrank == 0)
             WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVec);
     }

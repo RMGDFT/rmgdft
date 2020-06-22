@@ -253,13 +253,25 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
         // Needed to ensure consistency with some types of kpoint parrelization
         MPI_Barrier(pct.grid_comm);
-
     } // end loop over kpoints
-
-
 
     if (ct.nspin == 2)
         GetOppositeEigvals (Kptr);
+
+    for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
+        int factor = 1;
+        if(ct.nspin == 2) factor = 2;
+        ct.kp[kpt+pct.kstart].eigs.resize(ct.num_states * factor);
+        for(int st = 0; st < ct.num_states; st++)
+            ct.kp[kpt+pct.kstart].eigs[st] = Kptr[kpt]->Kstates[st].eig[0];
+
+        if(ct.nspin == 2)
+        {
+            for(int st = 0; st < ct.num_states; st++)
+                ct.kp[kpt+pct.kstart].eigs[st + ct.num_states] = Kptr[kpt]->Kstates[st].eig[1];
+        }
+    }
+
 
 
     /* Take care of occupation filling */
