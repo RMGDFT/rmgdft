@@ -79,7 +79,7 @@ extern "C" bool dft_is_gradient(void);
 extern "C" bool dft_is_meta(void);
 extern "C" bool dft_is_hybrid(void);
 extern "C" double get_exx_fraction(void);
-extern "C" void set_exx_fraction(double frac);
+extern "C" void set_exx_fraction(double *frac);
 extern "C" bool igcc_is_lyp(void);
 extern "C" bool dft_has_finite_size_correction(void);
 extern "C" bool dft_is_nonlocc(void);
@@ -244,7 +244,7 @@ double Functional::get_exx_fraction_rmg(void)
 
 void Functional::set_exx_fraction_rmg(double frac)
 {
-    set_exx_fraction(frac);
+    set_exx_fraction(&frac);
 }
 
 double Functional::get_gau_parameter_rmg(void)

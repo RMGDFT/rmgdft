@@ -452,6 +452,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL, 
             "maximum number of Exx integral cholesky vectors ", 
             "exxchol_max * num_states ");
+    If.RegisterInputKey("exx_fraction", &lc.exx_fraction, -1.0, 1.0, -1.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "when hybrid functional is used, the fraction of Exx",
+            "when the value is negative, it is defined from Functionals ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("charge_pulay_Gspace", &lc.charge_pulay_Gspace, false, 
             "if set true, charge density mixing the residual in G space ");
