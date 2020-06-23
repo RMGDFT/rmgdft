@@ -399,8 +399,6 @@ void WriteForAFQMC(int ns_occ, int Nchol, int Nup, int Ndown,
    eshdfFile outFile(ofname);
    outFile.writeCholVec(ns_occ, Nchol, Nup, Ndown, eigs, CholVec);
 
-   
-    
 }
 
 void eshdfFile::writeCholVec(int ns_occ, int Nchol, int Nup, int Ndown, 
@@ -408,7 +406,8 @@ void eshdfFile::writeCholVec(int ns_occ, int Nchol, int Nup, int Ndown,
 {
    hid_t hamiltonian_group = makeHDFGroup("Hamiltonian", file);
    hid_t chol_group = makeHDFGroup("DenseFactorized", hamiltonian_group);
-   writeNumsToHDF("L", CholVec, chol_group);
+   hsize_t chv_dims[]={static_cast<hsize_t>(Nchol),static_cast<hsize_t>(ns_occ * ns_occ)};
+   writeNumsToHDF("L", CholVec, chol_group, 2, chv_dims);
    std::vector<int> dims;
    dims.resize(8, 0);
    dims[3] = ns_occ;
@@ -421,10 +420,11 @@ void eshdfFile::writeCholVec(int ns_occ, int Nchol, int Nup, int Ndown,
    hcore.resize(ns_occ * ns_occ, 0.0);
    for(int i = 0; i < ns_occ; i++) 
        hcore[i*ns_occ + i] = eigs[i];
-   writeNumsToHDF("hcore", hcore, hamiltonian_group);
+   hsize_t h_dims[]={static_cast<hsize_t>(ns_occ),static_cast<hsize_t>(ns_occ)};
+   writeNumsToHDF("hcore", hcore, hamiltonian_group, 2, h_dims);
    Energies.push_back(ct.II);
    Energies.push_back(0.0);
-   //writeNumsToHDF("Energies", Energies, hamiltonian_group);
+   writeNumsToHDF("Energies", Energies, hamiltonian_group);
 
     
 
