@@ -484,7 +484,10 @@ template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vecto
     m_diag.resize(nst2);
     m_nu0.resize(nst2);
     m_appr.assign(nst2, 0.0);
+
+    
     for(int i =0; i<nst2; i++) m_diag[i] = mat[i *nst2+i];
+    
     nu = 0;
     double delta_max = 0.0;
     for(int i =0; i<nst2; i++) 
@@ -509,7 +512,7 @@ template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vecto
         delta_max = 0.0;
         for(int i =0; i<nst2; i++) 
         {
-//            printf("\n  aaa %d %d %f ", ic, i, m_diag[i]-m_appr[i]);
+            //            printf("\n  aaa %d %d %f ", ic, i, m_diag[i]-m_appr[i]);
             if(delta_max < std::abs(m_diag[i] - m_appr[i])) 
             {
                 delta_max = std::abs(m_diag[i] - m_appr[i]);
@@ -540,8 +543,9 @@ template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vecto
 
 
 
-    CholVec.erase(CholVec.begin()+ic*nst2, CholVec.end());
-    return ic;
+    CholVec.erase(CholVec.begin()+(ic+1)*nst2, CholVec.end());
+
+    return ic+1;
 
 }
 template <> int Exxbase<std::complex<double>>::VxxIntChol(
@@ -582,6 +586,7 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
     int kl_length = kl_end - kl_start;
     // Now matrix multiply to produce a block of (1,jblocks, 1, nstates_occ) results
     RT0 = new RmgTimer("5-Functional: Exx: gemm");
+    alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
     RmgGemm(trans_a, trans_n, ij_length, kl_length, pwave->pbasis, alpha, ij_pair, pwave->pbasis, kl_pair, pwave->pbasis, beta, Exxints, ij_length);
     delete RT0;
     int pairsize = ij_length * kl_length;
@@ -641,13 +646,13 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
     if(ct.ExxIntChol)
     {
-       // std::string filename = wavefile + "ExxInt" + "_spin"+std::to_string(pct.spinpe);
-      //  exxint_fd = open(filename.c_str(), O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
-      //  if(exxint_fd < 0)
-      //      throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+        // std::string filename = wavefile + "ExxInt" + "_spin"+std::to_string(pct.spinpe);
+        //  exxint_fd = open(filename.c_str(), O_RDWR|O_CREAT|O_TRUNC, (mode_t)0600);
+        //  if(exxint_fd < 0)
+        //      throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
 
-      //  size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ *sizeof(double);
-      //  ExxInt = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, exxint_fd, 0);
+        //  size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ *sizeof(double);
+        //  ExxInt = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, exxint_fd, 0);
         size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ;
         ExxInt.resize(length, 0.0);
         length = nstates_occ * nstates_occ * nstates_occ * ct.exxchol_max;
@@ -797,7 +802,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         MPI_Allreduce(MPI_IN_PLACE, ExxInt.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         Nchol = VxxIntChol(ExxInt, ExxCholVec, ct.exxchol_max, nstates_occ);
         std::vector<double> eigs;
-        
+
         eigs.resize(nstates_occ, 0.0);
         for(int st = 0; st < nstates_occ; st++)
         {
