@@ -406,8 +406,16 @@ void eshdfFile::writeCholVec(int ns_occ, int Nchol, int Nup, int Ndown,
 {
     hid_t hamiltonian_group = makeHDFGroup("Hamiltonian", file);
     hid_t chol_group = makeHDFGroup("DenseFactorized", hamiltonian_group);
-    hsize_t chv_dims[]={static_cast<hsize_t>(Nchol),static_cast<hsize_t>(ns_occ * ns_occ)};
-    writeNumsToHDF("L", CholVec, chol_group, 2, chv_dims);
+    hsize_t chv_dims[]={static_cast<hsize_t>(ns_occ * ns_occ), static_cast<hsize_t>(Nchol)};
+    std::vector<double> CholVecT;
+    CholVecT.resize(CholVec.size());
+    // transpose the CholVec to fit the format in QMCPACK
+    for(int ic = 0; ic < Nchol; ic++)
+    {
+        for(int i = 0; i < ns_occ * ns_occ; i++)
+            CholVecT[i * Nchol + ic] = CholVec[ic * ns_occ * ns_occ + i];
+    }
+    writeNumsToHDF("L", CholVecT, chol_group, 2, chv_dims);
     std::vector<int> dims;
     dims.resize(8, 0);
     dims[3] = ns_occ;
