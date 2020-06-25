@@ -1,6 +1,6 @@
 # Mg 2-atom test cell with k-points
 # Expected energy
-test_energy="-125.31535061"
+test_energy="-125.31496342"
 
 a_length="      3.19405000"
 b_length="      3.19405000"
