@@ -244,7 +244,7 @@ static std::string reordered_xc_type[] = {
         {"vdw-df-cx"},
         {"sla+pw+pbe+vdw1"},
         {"vdw-df-c09"},
-        {"hsenoc", 28}};
+        {"hf"}};
 
 static std::unordered_map<std::string, int> relax_method = {
         {"Fast Relax", 0},
