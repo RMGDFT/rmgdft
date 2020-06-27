@@ -161,7 +161,7 @@ public:
     int exx_mode;
     int exxchol_max=8;
     bool ExxIntChol;
-    bool exxdiv_treatment;
+    int exxdiv_treatment;
     bool gamma_extrapolation;
 
     /* Exx convergence multiplier. Threshold checked in the inner (Scf) is multiplied by this */

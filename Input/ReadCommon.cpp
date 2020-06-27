@@ -449,8 +449,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("ExxIntCholosky", &lc.ExxIntChol, true, 
             "if set true, Exx integrals are Cholesky factorized to 3-index ");
 
-    If.RegisterInputKey("exxdiv_treatment", &lc.exxdiv_treatment, true, 
-            "if set true, exx divergence at G=0 is computed, if false value is set to zero ");
+    If.RegisterInputKey("exxdiv_treatment", NULL, &lc.exxdiv_treatment, "gygi-baldereschi",
+            CHECK_AND_TERMINATE, OPTIONAL, exxdiv_treatment,
+            "Exact exchange method for handling exx divergence at G=0. ",
+            "Method not supported. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("x_gamma_extrapolation", &lc.gamma_extrapolation, true, 
             "if set true, use exx extrapolation to gamma ");

@@ -1360,7 +1360,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
     double alpha = 10.0/(coarse_pwaves->gcut * ct.filter_factor * tpiba2);
     //    alpha = 0.833333333333;
     exxdiv = 0.0;
-    if(!ct.exxdiv_treatment) return;
+    if(ct.exxdiv_treatment == EXX_DIV_NONE) return;
 
     for(int iqx = 0; iqx < ct.qpoint_mesh[0];iqx++)
         for(int iqy = 0; iqy < ct.qpoint_mesh[1];iqy++)

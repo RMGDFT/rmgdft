@@ -252,4 +252,7 @@
 #define EXX_DIST_FFT 0
 #define EXX_LOCAL_FFT 1
 
+// EXX div treatment types
+#define EXX_DIV_GYGI_BALDERESCHI 0
+#define EXX_DIV_NONE 1
 #endif /* CONST_H_INCLUDED */

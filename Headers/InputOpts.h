@@ -272,4 +272,9 @@ static std::unordered_map<std::string, int> exx_mode = {
         {"Distributed fft", EXX_DIST_FFT},
         {"Local fft", EXX_LOCAL_FFT},
         };
+
+static std::unordered_map<std::string, int> exxdiv_treatment = {
+        {"gygi-baldereschi", EXX_DIV_GYGI_BALDERESCHI},
+        {"none", EXX_DIV_NONE},
+        };
 #endif
