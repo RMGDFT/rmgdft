@@ -159,8 +159,10 @@ public:
 
     /* Exx computation mode */
     int exx_mode;
-    bool ExxIntChol;
     int exxchol_max=8;
+    bool ExxIntChol;
+    bool exxdiv_treatment;
+    bool gamma_extrapolation;
 
     /* Exx convergence multiplier. Threshold checked in the inner (Scf) is multiplied by this */
     double exx_convergence_factor;

@@ -104,7 +104,6 @@ template <class T> Exxbase<T>::Exxbase (
     double kq[3] = {0.0, 0.0, 0.0};
     erfc_scrlen = Functional::get_screening_parameter_rmg();
     gau_scrlen = Functional::get_gau_parameter_rmg();
-    gamma_extrapolation = true;
     setup_exxdiv();
     setup_gfac(kq);
 
@@ -190,7 +189,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
     if(std::abs(gau_scrlen) > eps)
     {
          scr_type = GAU_SCREENING;
-         gamma_extrapolation = false;
+         ct.gamma_extrapolation = false;
     }
 
     double a0 = 1.0;
@@ -209,7 +208,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         qq = v0* v0 + v1 * v1 + v2 * v2;
         if(!pwave->gmask[ig]) continue;
         double fac = 1.0;
-        if (gamma_extrapolation)
+        if (ct.gamma_extrapolation)
         {
             bool on_double_grid = true;
             double qa0 = (v0 * Rmg_L.a0[0] + v1 * Rmg_L.a0[1] +v2 * Rmg_L.a0[2])/twoPI;
@@ -1361,6 +1360,8 @@ template <class T> void Exxbase<T>::setup_exxdiv()
     double alpha = 10.0/(coarse_pwaves->gcut * ct.filter_factor * tpiba2);
     //    alpha = 0.833333333333;
     exxdiv = 0.0;
+    if(!ct.exxdiv_treatment) return;
+
     for(int iqx = 0; iqx < ct.qpoint_mesh[0];iqx++)
         for(int iqy = 0; iqy < ct.qpoint_mesh[1];iqy++)
             for(int iqz = 0; iqz < ct.qpoint_mesh[2];iqz++)
@@ -1382,7 +1383,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
                     v1 = xq[1]*twoPI + coarse_pwaves->g[ig].a[1] * tpiba;
                     v2 = xq[2]*twoPI + coarse_pwaves->g[ig].a[2] * tpiba;
                     qq = v0*v0 + v1 * v1 + v2 * v2;
-                    if (gamma_extrapolation)
+                    if (ct.gamma_extrapolation)
                     {
                         on_double_grid = true;
                         double qa0 = (v0 * Rmg_L.a0[0] + v1 * Rmg_L.a0[1] +v2 * Rmg_L.a0[2])/twoPI;
@@ -1418,7 +1419,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
             }
     MPI_Allreduce(MPI_IN_PLACE, &exxdiv, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
 
-    if(!gamma_extrapolation)
+    if(!ct.gamma_extrapolation)
     {
         if(scr_type == ERFC_SCREENING)
             exxdiv += 1.0/4.0/erfc_scrlen/erfc_scrlen;

@@ -448,10 +448,18 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("ExxIntCholosky", &lc.ExxIntChol, true, 
             "if set true, Exx integrals are Cholesky factorized to 3-index ");
+
+    If.RegisterInputKey("exxdiv_treatment", &lc.exxdiv_treatment, true, 
+            "if set true, exx divergence at G=0 is computed, if false value is set to zero ");
+
+    If.RegisterInputKey("x_gamma_extrapolation", &lc.gamma_extrapolation, true, 
+            "if set true, use exx extrapolation to gamma ");
+
     If.RegisterInputKey("ExxCholMax", &lc.exxchol_max, 1, 64, 8, 
             CHECK_AND_FIX, OPTIONAL, 
             "maximum number of Exx integral cholesky vectors ", 
             "exxchol_max * num_states ");
+
     If.RegisterInputKey("exx_fraction", &lc.exx_fraction, -1.0, 1.0, -1.0,
             CHECK_AND_FIX, OPTIONAL,
             "when hybrid functional is used, the fraction of Exx",
