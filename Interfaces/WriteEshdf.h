@@ -20,7 +20,7 @@
 void WriteQmcpackRestart(std::string& name);
 void WriteQmcpackRestartLocalized(std::string& name);
 void WriteForAFQMC(int ns_occ, int Nchol, int Nup, int Ndown, 
-        std::vector<double> eigs, std::vector<double> &CholVec);
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore);
 
 class fftContainer;
 
@@ -50,7 +50,7 @@ public:
   void writeAtoms(void);
   void writeElectrons(void);
   void writeLocalizedOrbitals();
-  void writeCholVec(int, int, int, int, std::vector<double> eigs, std::vector<double> CholVec);
+  void writeCholVec(int, int, int, int, std::vector<double> eigs, std::vector<double> CholVec, std::vector<double> Hcore);
 };
 
 #endif

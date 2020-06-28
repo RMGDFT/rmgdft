@@ -1,4 +1,5 @@
 add_library (RMG_Common
+ComputeHcore.cpp
 OutputDos.cpp
 Reinit.cpp
 Stress.cpp

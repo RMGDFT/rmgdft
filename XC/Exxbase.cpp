@@ -144,6 +144,8 @@ template <class T> Exxbase<T>::Exxbase (
     for(int idx=1;idx < npes;idx++) irecvoffsets[idx] = irecvoffsets[idx-1] + recvcounts[idx-1];
 
     vexx_RMS.resize(ct.max_exx_steps, 0.0);
+    nstates_occ = 0;
+    for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
 }
 
 template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, 
@@ -639,8 +641,6 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 {
 
     double scale = 1.0 / (double)pwave->global_basis;
-    nstates_occ = 0;
-    for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
 
 
     if(ct.ExxIntChol)
@@ -652,6 +652,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
         //  size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ *sizeof(double);
         //  ExxInt = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, exxint_fd, 0);
+
         size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ;
         ExxInt.resize(length, 0.0);
         length = nstates_occ * nstates_occ * nstates_occ * ct.exxchol_max;
@@ -808,7 +809,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
             eigs[st] = ct.kp[0].eigs[st];
         }
         if(pct.worldrank == 0)
-            WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVec);
+            WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVec, Hcore);
     }
 }
 
@@ -1494,4 +1495,15 @@ template <class T> void Exxbase<T>::Remap(T *inbuf, T *rbuf)
             }
         }
     }
+}
+
+template void Exxbase<double>::SetHcore(double *Hij, int lda);
+template void Exxbase<std::complex<double>>::SetHcore(std::complex<double> *Hij, int lda);
+template <class T> void Exxbase<T>::SetHcore(T *Hij, int lda)
+{
+    Hcore.resize(nstates_occ * nstates_occ);
+    for(int i = 0; i < nstates_occ; i++)
+        for(int j = 0; j < nstates_occ; j++)
+            Hcore[i * nstates_occ + j] = Hij[i* lda + j];
+    
 }

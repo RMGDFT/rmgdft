@@ -46,6 +46,8 @@
 #include "../Headers/macros.h"
 #include "Stress.h"
 #include "Voronoi.h"
+#include "GpuAlloc.h"
+
 
 // Local function prototypes
 void PlotConvergence(std::vector<double> &RMSdV, bool CONVERGED);
@@ -234,6 +236,10 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     // Exact exchange integrals
     if(ct.exx_int_flag)
     {
+        if(!ct.is_gamma) 
+        {
+            throw RmgFatalException() <<  "Exx integrals not programed for non-gamma kpoint" << __FILE__ << " at line " << __LINE__ << "\n";
+        }
         std::vector<double> occs;
         occs.resize(Kptr[0]->nstates);
         for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
@@ -241,7 +247,28 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 Kptr[0]->orbital_storage, ct.exx_mode);
         if(ct.exx_mode == EXX_LOCAL_FFT)
             Exx.WriteWfsToSingleFile();
+        
+        double *v_psi, *vxc_psi;
+        int pbasis = Kptr[0]->pbasis;
+        v_psi = new double[pbasis];
+        vxc_psi = new double[pbasis]();
+        int nstates = Kptr[0]->nstates;
+        OrbitalType *Hcore = (OrbitalType *)GpuMallocManaged(nstates * nstates * sizeof(OrbitalType));
+
+        bool is_xc_hybrid = ct.xc_is_hybrid;
+
+        ct.xc_is_hybrid = false;
+
+        GetVtotPsi (v_psi, vnuc, Rmg_G->default_FG_RATIO);
+
+        ct.xc_is_hybrid = false;
+
+        Kptr[0]->ComputeHcore(v_psi, vxc_psi, Hcore);
+        Exx.SetHcore(Hcore, nstates);
         Exx.Vexx_integrals(ct.exx_int_file);
+        ct.xc_is_hybrid = is_xc_hybrid;
+        delete [] v_psi;
+        delete [] vxc_psi;
     }
 
 

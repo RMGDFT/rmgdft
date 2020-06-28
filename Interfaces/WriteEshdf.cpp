@@ -393,16 +393,16 @@ void WriteQmcpackRestart(std::string& name)
 }
 
 void WriteForAFQMC(int ns_occ, int Nchol, int Nup, int Ndown, 
-        std::vector<double> eigs, std::vector<double> &CholVec)
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore)
 {
     string ofname = "afqmc_rmg.h5";
     eshdfFile outFile(ofname);
-    outFile.writeCholVec(ns_occ, Nchol, Nup, Ndown, eigs, CholVec);
+    outFile.writeCholVec(ns_occ, Nchol, Nup, Ndown, eigs, CholVec, Hcore);
 
 }
 
 void eshdfFile::writeCholVec(int ns_occ, int Nchol, int Nup, int Ndown, 
-        std::vector<double> eigs, std::vector<double> CholVec)
+        std::vector<double> eigs, std::vector<double> CholVec, std::vector<double> Hcore)
 {
     hid_t hamiltonian_group = makeHDFGroup("Hamiltonian", file);
     hid_t chol_group = makeHDFGroup("DenseFactorized", hamiltonian_group);
@@ -424,30 +424,10 @@ void eshdfFile::writeCholVec(int ns_occ, int Nchol, int Nup, int Ndown,
     dims[7] = Nchol;
     writeNumsToHDF("dims", dims, hamiltonian_group);
 
-    std::vector<double> hcore, Energies;
-    hcore.resize(ns_occ * ns_occ, 0.0);
-
-    for(int i = 0; i < ns_occ; i++) 
-       hcore[i*ns_occ + i] = eigs[i];
-
-    for(int nc = 0; nc < Nchol; nc++)
-    {
-        for (int i = 0; i < ns_occ; i++)
-        {
-            for (int j = 0; j < ns_occ; j++) 
-            {
-                int ij = i * ns_occ + j;
-                int ji = j * ns_occ + i;
-                int ii = i * ns_occ + i;
-                int jj = j * ns_occ + j;
-                hcore[i * ns_occ + j] += 0.5 * CholVec[nc * ns_occ * ns_occ + ij] * MyConj(CholVec[nc * ns_occ * ns_occ + ji]);
-                hcore[i * ns_occ + j] -= 0.5 * CholVec[nc * ns_occ * ns_occ + ii] * MyConj(CholVec[nc * ns_occ * ns_occ + jj]);
-            }
-        }
-    }
+    std::vector<double> Energies;
 
     hsize_t h_dims[]={static_cast<hsize_t>(ns_occ),static_cast<hsize_t>(ns_occ)};
-    writeNumsToHDF("hcore", hcore, hamiltonian_group, 2, h_dims);
+    writeNumsToHDF("hcore", Hcore, hamiltonian_group, 2, h_dims);
     Energies.push_back(ct.II);
     Energies.push_back(0.0);
     writeNumsToHDF("Energies", Energies, hamiltonian_group);

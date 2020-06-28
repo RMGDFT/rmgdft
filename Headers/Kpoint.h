@@ -61,6 +61,7 @@ public:
     void reset_beta_arrays(void);
     void reset_orbital_arrays(void);
     void Subdiag (double *vtot_eig, double *vxc_psi, int subdiag_driver);
+    void ComputeHcore (double *vtot_eig, double *vxc_psi, KpointType *Hcore);
     void MgridSubspace (double *vtot_psi, double *vxc_psi);
     void Davidson(double *vtot, double *vxc_psi, int &notconv);
     void GetLocalizedWeight (void);
