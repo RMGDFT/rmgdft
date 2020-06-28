@@ -62,10 +62,6 @@
  * init purposes. A of of 16 should be sufficent for any atomic species */
 #define         MAX_INITWF      16
 
-/* Maximum number of ions -- just an upper limit on
- * dynamically allocated data structures. */
-#define         MAX_IONS        5120
-
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
 #define         MAX_L       	4
 
