@@ -224,6 +224,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                     double mod_y = (xtal[1] - Atoms[ionb].xtal[1]) *(xtal[1] - Atoms[ionb].xtal[1]);
                     double mod_z = (xtal[2] - Atoms[ionb].xtal[2]) *(xtal[2] - Atoms[ionb].xtal[2]);
 
+
                     cond_x = fabs(mod_x - (int) mod_x) < symprec*10 || fabs(mod_x - (int)mod_x) > 1.0-symprec*10;
                     cond_y = fabs(mod_y - (int) mod_y) < symprec*10 || fabs(mod_y - (int)mod_y) > 1.0-symprec*10;
                     cond_z = fabs(mod_z - (int) mod_z) < symprec*10 || fabs(mod_z - (int)mod_z) > 1.0-symprec*10;

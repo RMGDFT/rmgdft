@@ -160,10 +160,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
 
-    /* Get the crystal or cartesian coordinates of the ions */
-    init_pos ();
-
-
     ct.hmaxgrid = Rmg_L.get_xside() * Rmg_G->get_hxgrid(1);
     if (Rmg_L.get_yside() * Rmg_G->get_hygrid(1) > ct.hmaxgrid)
         ct.hmaxgrid = Rmg_L.get_yside() * Rmg_G->get_hygrid(1);

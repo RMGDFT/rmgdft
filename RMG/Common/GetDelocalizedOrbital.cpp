@@ -73,7 +73,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
     if(ct.spinorbit && state_count > nstates)
     {
         rmg_printf("state_count %d != nstates %d", state_count, nstates);
-        rmg_error_handler(__FILE__,__LINE__," state_count != nstates Terminating.");
+//        rmg_error_handler(__FILE__,__LINE__," state_count != nstates Terminating.");
 
     }
     double coeff = 1.0;

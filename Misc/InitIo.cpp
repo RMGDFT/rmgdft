@@ -155,6 +155,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     else {
         ReadDynamics(ct.cfile, ct, ControlMap);
     }
+
+    /* Get the crystal or cartesian coordinates of the ions */
+    init_pos ();
+
     ReadPseudo(ct.num_species, ct, ControlMap);
 
     if(ct.spinorbit)
