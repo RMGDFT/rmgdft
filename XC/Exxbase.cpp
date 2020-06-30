@@ -592,7 +592,8 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
     delete RT0;
     int pairsize = ij_length * kl_length;
     RT0 = new RmgTimer("5-Functional: Exx: reduce");
-    MPI_Reduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, 0, LG->comm);
+    //MPI_Reduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, 0, LG->comm);
+    MPI_Allreduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, LG->comm);
     MPI_Barrier(LG->comm);
     delete RT0;
 
@@ -798,8 +799,9 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
     if(ct.ExxIntChol)
     {
-        int length = nstates_occ * nstates_occ * nstates_occ * nstates_occ;
-        MPI_Allreduce(MPI_IN_PLACE, ExxInt.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        int length = ExxInt.size();
+        if(mode != EXX_DIST_FFT)
+            MPI_Allreduce(MPI_IN_PLACE, ExxInt.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         Nchol = VxxIntChol(ExxInt, ExxCholVec, ct.exxchol_max, nstates_occ);
         std::vector<double> eigs;
 
