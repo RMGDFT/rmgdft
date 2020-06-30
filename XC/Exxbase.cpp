@@ -479,44 +479,63 @@ template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vecto
 {
     
     double tol = 1.0e-5;
-    std::vector<double> m_diag, m_appr, m_nu0;
+    std::vector<double> m_diag, m_appr, m_nu0, delta;
     int nst2 = nst_occ * nst_occ;
+    int nst2_perpe = (nst2 + pct.grid_npes-1) /pct.grid_npes;
     int nu, ione = 1;
-    m_diag.resize(nst2);
-    m_nu0.resize(nst2);
-    m_appr.assign(nst2, 0.0);
+    m_diag.resize(nst2_perpe);
+    m_nu0.resize(nst2_perpe);
+    m_appr.assign(nst2_perpe, 0.0);
+    delta.assign(nst2_perpe * pct.grid_npes, 0.0);
 
+    for(int i =0; i<nst2; i++) 
+    {
+        int i_dist = i - nst2_perpe * pct.gridpe;
+        if(i_dist >= 0 && i_dist < nst2_perpe)
+        {
+            m_diag[i_dist] = mat[i*nst2_perpe+i_dist];
+            delta[i] = mat[i*nst2_perpe+i_dist];
+        }
+    }
     
-    for(int i =0; i<nst2; i++) m_diag[i] = mat[i *nst2+i];
-    
+    MPI_Allreduce(MPI_IN_PLACE, delta.data(), nst2, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
     nu = 0;
     double delta_max = 0.0;
     for(int i =0; i<nst2; i++) 
     {
-        if(delta_max < std::abs(m_diag[i])) 
+        if(delta_max < std::abs(delta[i])) 
         {
-            delta_max = std::abs(m_diag[i]);
+            delta_max = std::abs(delta[i]);
             nu = i;
         }
     }
 
     delta_max = 1.0/std::sqrt(delta_max);
-    dcopy(&nst2, &mat.data()[nu * nst2], &ione, CholVec.data(), &ione);
-    dscal(&nst2, &delta_max, CholVec.data(), &ione);
+
+    dcopy(&nst2_perpe, &mat.data()[nu * nst2_perpe], &ione, CholVec.data(), &ione);
+    dscal(&nst2_perpe, &delta_max, CholVec.data(), &ione);
 
     int ic;
+    double *CholVecNu = new double[cmax * nst_occ];
     for(ic= 0; ic < cmax * nst_occ - 1; ic++)
     {
-        for(int i = 0; i < nst2; i++)
-            m_appr[i] += CholVec[ic*nst2 + i] * MyConj(CholVec[ic*nst2+i]);
+        for(int i = 0; i < nst2_perpe * pct.grid_npes; i++) delta[i] = 0.0;
 
+        for(int i = 0; i < nst2_perpe; i++)
+        {
+            m_appr[i] += CholVec[ic*nst2_perpe + i] * MyConj(CholVec[ic*nst2_perpe+i]);
+            delta[i + pct.gridpe * nst2_perpe] = m_appr[i] - m_diag[i];
+        }
+
+        MPI_Allreduce(MPI_IN_PLACE, delta.data(), nst2, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         delta_max = 0.0;
         for(int i =0; i<nst2; i++) 
         {
             //            printf("\n  aaa %d %d %f ", ic, i, m_diag[i]-m_appr[i]);
-            if(delta_max < std::abs(m_diag[i] - m_appr[i])) 
+            if(delta_max < std::abs(delta[i]))
             {
-                delta_max = std::abs(m_diag[i] - m_appr[i]);
+                delta_max = std::abs(delta[i]);
                 nu = i;
             }
         }
@@ -525,26 +544,35 @@ template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vecto
         if(delta_max < tol) break;
         delta_max = std::sqrt(delta_max);
 
-        for(int i =0; i<nst2; i++) m_nu0[i] = 0.0;
+        int root = nu/nst2_perpe;
+        if(pct.gridpe == root)
+        {
+            for(int ics = 0; ics < ic+1; ics++)
+                CholVecNu[ics] = CholVec[ics * nst2_perpe + nu % nst2_perpe];
+        }
+        
+        MPI_Bcast(CholVecNu, ic+1, MPI_DOUBLE, root, pct.grid_comm);
+
+        for(int i =0; i<nst2_perpe; i++) m_nu0[i] = 0.0;
         for(int ics = 0; ics < ic+1; ics++)
         {
-            for(int i =0; i<nst2; i++)
+            for(int i =0; i<nst2_perpe; i++)
             {
-                m_nu0[i] += MyConj(CholVec[ics * nst2 + nu]) * CholVec[ics * nst2 + i];
+                m_nu0[i] += MyConj(CholVecNu[ics]) * CholVec[ics * nst2_perpe + i];
             }
         } 
 
-        for(int i =0; i<nst2; i++)
+        for(int i =0; i<nst2_perpe; i++)
         {
 
-            CholVec[(ic+1) * nst2 + i] = (mat[nu * nst2  + i] - m_nu0[i])/delta_max;
+            CholVec[(ic+1) * nst2_perpe + i] = (mat[nu * nst2_perpe  + i] - m_nu0[i])/delta_max;
         }
 
     }
 
 
 
-    CholVec.erase(CholVec.begin()+(ic+1)*nst2, CholVec.end());
+    CholVec.erase(CholVec.begin()+(ic+1)*nst2_perpe, CholVec.end());
 
     return ic+1;
 
@@ -592,12 +620,14 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
     delete RT0;
     int pairsize = ij_length * kl_length;
     RT0 = new RmgTimer("5-Functional: Exx: reduce");
-    //MPI_Reduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, 0, LG->comm);
+
     MPI_Allreduce(Exxints, Summedints, pairsize, MPI_DOUBLE, MPI_SUM, LG->comm);
     MPI_Barrier(LG->comm);
     delete RT0;
 
     RT0 = new RmgTimer("5-Functional: Exx: print");
+    size_t nst2 = nstates_occ * nstates_occ;
+    int nst2_perpe = (nst2 + pct.grid_npes-1) /pct.grid_npes;
     for(int ij = ij_start; ij < ij_end; ij++)
     {
         int ic = ij - ij_start;
@@ -609,8 +639,46 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
             int k = wf_pairs[kl].first;
             int l = wf_pairs[kl].second;
 
-            if(ct.ExxIntChol)
+            if(ct.ExxIntChol && mode == EXX_DIST_FFT)
             {
+
+                int ij = i * nstates_occ + j;
+                int ji = j * nstates_occ + i;
+                int ij_dist = i * nstates_occ + j - nst2_perpe * pct.gridpe;
+                int ji_dist = j * nstates_occ + i - nst2_perpe * pct.gridpe;
+
+                int kl = k * nstates_occ + l;
+                int lk = l * nstates_occ + k;
+                int kl_dist = k * nstates_occ + l - nst2_perpe * pct.gridpe;
+                int lk_dist = l * nstates_occ + k - nst2_perpe * pct.gridpe;
+
+                if(ij_dist >= 0 && ij_dist < nst2_perpe)
+                {
+                    ExxInt[lk * nst2_perpe + ij_dist] = Summedints[ie * ij_length + ic];
+                    ExxInt[kl * nst2_perpe + ij_dist] = Summedints[ie * ij_length + ic];
+                }
+
+                if(ji_dist >= 0 && ji_dist < nst2_perpe)
+                {
+                    ExxInt[lk * nst2_perpe + ji_dist] = Summedints[ie * ij_length + ic];
+                    ExxInt[kl * nst2_perpe + ji_dist] = Summedints[ie * ij_length + ic];
+                }
+
+                if(kl_dist >= 0 && kl_dist < nst2_perpe)
+                {
+                    ExxInt[ij * nst2_perpe + kl_dist] = Summedints[ie * ij_length + ic];
+                    ExxInt[ji * nst2_perpe + kl_dist] = Summedints[ie * ij_length + ic];
+                }
+
+                if(lk_dist >= 0 && lk_dist < nst2_perpe)
+                {
+                    ExxInt[ij * nst2_perpe + lk_dist] = Summedints[ie * ij_length + ic];
+                    ExxInt[ji * nst2_perpe + lk_dist] = Summedints[ie * ij_length + ic];
+                }
+            }
+            else if(ct.ExxIntChol && mode == EXX_LOCAL_FFT)
+            {
+
                 int idx = (i * nstates_occ+j) * nstates_occ * nstates_occ + k * nstates_occ + l;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
                 idx = (j * nstates_occ+i) * nstates_occ * nstates_occ + k * nstates_occ + l;
@@ -629,6 +697,7 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
                 idx = (l * nstates_occ+k) * nstates_occ * nstates_occ + j * nstates_occ + i;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
             }
+
             else if(LG->get_rank()==0 && kl >= ij)fprintf(fp, "%14.8e %d %d %d %d\n", Summedints[ie * ij_length + ic], i, j, k, l);
         }
     }
@@ -654,9 +723,13 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         //  size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ *sizeof(double);
         //  ExxInt = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, exxint_fd, 0);
 
-        size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ;
+        size_t nst2 = nstates_occ * nstates_occ;
+        size_t nst2_perpe = (nst2 + pct.grid_npes -1)/pct.grid_npes;
+        size_t length = nst2 * nst2_perpe;
+        if(mode == EXX_LOCAL_FFT)
+            length = nst2 * nst2;
         ExxInt.resize(length, 0.0);
-        length = nstates_occ * nstates_occ * nstates_occ * ct.exxchol_max;
+        length = nstates_occ * ct.exxchol_max * nst2_perpe;
         ExxCholVec.resize(length);
 
     }
@@ -800,8 +873,27 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     if(ct.ExxIntChol)
     {
         int length = ExxInt.size();
-        if(mode != EXX_DIST_FFT)
+        size_t nst2 = nstates_occ * nstates_occ;
+        size_t nst2_perpe = (nst2 + pct.grid_npes -1)/pct.grid_npes;
+        if(mode == EXX_LOCAL_FFT)
+        {
             MPI_Allreduce(MPI_IN_PLACE, ExxInt.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+
+            std::vector<double> ExxIntGlob;
+            ExxIntGlob = ExxInt;
+            ExxInt.resize(nst2 * nst2_perpe);
+
+            for(size_t i = 0; i < nst2; i++)
+            {
+                for(size_t j = 0; j < nst2_perpe; j++)
+                {
+                    size_t j_glob = pct.gridpe * nst2_perpe + j;
+                    if( j_glob < nst2)
+                        ExxInt[i * nst2_perpe + j] = ExxIntGlob[i* nst2 + j_glob];
+                }
+            }
+
+        }
         Nchol = VxxIntChol(ExxInt, ExxCholVec, ct.exxchol_max, nstates_occ);
         std::vector<double> eigs;
 
@@ -810,8 +902,23 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         {
             eigs[st] = ct.kp[0].eigs[st];
         }
+
+        std::vector<double> ExxCholVecGlob;
+        ExxCholVecGlob.resize(Nchol * nst2, 0.0);
+        for(size_t i = 0; i < Nchol; i++)
+        {
+            for(size_t j = 0; j < nst2_perpe; j++)
+            {
+                size_t j_glob = pct.gridpe * nst2_perpe + j;
+                ExxCholVecGlob[j_glob * Nchol + i] = ExxCholVec[i * nst2_perpe + j];
+
+            }
+        }
+
+        MPI_Allreduce(MPI_IN_PLACE, ExxCholVecGlob.data(), Nchol*nst2, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        
         if(pct.worldrank == 0)
-            WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVec, Hcore);
+            WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
     }
 }
 
@@ -1507,5 +1614,5 @@ template <class T> void Exxbase<T>::SetHcore(T *Hij, int lda)
     for(int i = 0; i < nstates_occ; i++)
         for(int j = 0; j < nstates_occ; j++)
             Hcore[i * nstates_occ + j] = Hij[i* lda + j];
-    
+
 }
