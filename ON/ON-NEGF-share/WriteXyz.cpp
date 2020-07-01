@@ -43,9 +43,6 @@
 
 void WriteXyz (char *name)
 {
-    char newname[MAX_PATH + 20];
-    int amode;
-    FILE *fhandle;
 
     if (pct.imgpe == 0)
     {

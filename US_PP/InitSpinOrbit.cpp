@@ -24,13 +24,13 @@ void InitSpinOrbit ()
         for(int idx = 0; idx < tot_LM * tot_LM; idx++) sp->Umm[idx] = Umm[idx];
         Init_fcoef(*sp, Umm, tot_LM);
 
-        if(0)
-        for(int ih = 0; ih < sp->nh; ih++)
-        for(int jh = 0; jh < sp->nh; jh++)
-        {
-            printf("\n fcoef: %4d %4d %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f", ih, jh,
-sp->fcoef_so[ih][jh][0],sp->fcoef_so[ih][jh][1],sp->fcoef_so[ih][jh][2],sp->fcoef_so[ih][jh][3]);
-        }
+//        if(0)
+//        for(int ih = 0; ih < sp->nh; ih++)
+//        for(int jh = 0; jh < sp->nh; jh++)
+//        {
+//            printf("\n fcoef: %4d %4d %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f", ih, jh,
+//sp->fcoef_so[ih][jh][0],sp->fcoef_so[ih][jh][1],sp->fcoef_so[ih][jh][2],sp->fcoef_so[ih][jh][3]);
+//        }
 
         Init_ddd0_so(*sp);
     }

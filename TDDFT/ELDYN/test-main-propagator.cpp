@@ -67,19 +67,19 @@ int  main()
  int  Nbasis = 4;
  int Nbsq , Nbsq2 ;
 
- double  fff =12.3456e1;
+ //double  fff =12.3456e1;
  Nbsq  =  Nbasis*Nbasis ;   
  Nbsq2 =  Nbsq*2 ;
    double *Hmatrix = new double[2*Nbsq ];
    double *Fn      = new double[2*Nbsq ];
-   double *Fn_dt   = new double[2*Nbsq ];
+//   double *Fn_dt   = new double[2*Nbsq ];
    double *Pn0     = new double[2*Nbsq ];
    double *Pn1     = new double[2*Nbsq ];
    double *S       = new double[  Nbsq ];
    double *S1      = new double[  Nbsq ];
 
    double zero = 0.0e0 ;
-   double  dt  = 1.0e0 ;
+//   double  dt  = 1.0e0 ;
 
 
    for  (int i=0; i< Nbsq2  ; i++) { 
@@ -148,7 +148,7 @@ S1[12] =   0.00000 ;  S1[13] = -0.00000 ;  S1[14] =  0.00000 ;  S1[15] =  1.0000
   printf("  Hmatrix = \n");
   print_matrix(Hmatrix,Nbasis) ;
 
-  dt =10.0e0 ;
+  //dt =10.0e0 ;
   dcopy_(&Nbsq, Hmatrix, &ione,  Fn,&ione) ;
   printf("  Fn*drt = \n");
   

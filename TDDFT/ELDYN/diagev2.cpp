@@ -16,7 +16,7 @@ void print_matrix2(double *, int ) ;
 ////////////////////////////////////////////////////////////
 void set_vector( double scalar, double  *A, int N) 
 {
-   int ij=0 ;
+   //int ij=0 ;
   for (int i=0; i<N ; i++) { A[i] =scalar ; }
 }
 
@@ -26,7 +26,7 @@ void set_vector( double scalar, double  *A, int N)
 void diagev( double *Po0, double *Po1, double *Fdt, int * p_Nbasis,  int * p_iprint )
 {
   int Nbasis = *(p_Nbasis) ;
-  int iprint = *(p_iprint) ;
+  //int iprint = *(p_iprint) ;
 
   int Nbsq  =   Nbasis*Nbasis  ;
   int Nbsq2 = 2*Nbasis*Nbasis  ;

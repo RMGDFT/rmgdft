@@ -83,7 +83,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.nvme_work_fd = -1;
 
     SPECIES *sp;
-    OrbitalType *rptr = NULL, *nv, *ns = NULL, *prev = NULL;
+    OrbitalType *rptr = NULL, *nv, *ns = NULL;
     double *vtot;
     double time2=0.0, fac;
     bool need_ns = true;

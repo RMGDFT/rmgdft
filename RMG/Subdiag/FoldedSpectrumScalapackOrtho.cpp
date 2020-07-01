@@ -161,7 +161,7 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 
             darr[st] *= tarr[st];
 
-            for (int st1 = st+1; st1 < n; st1++) {
+            for (st1 = st+1; st1 < n; st1++) {
                 darr[st1] -= C[st1 + n*st] * darr[st];
             }
 

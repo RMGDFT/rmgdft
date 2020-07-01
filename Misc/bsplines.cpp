@@ -33,7 +33,7 @@ static void banfac (double *w, int nroww, int nrow, int nbandl, int nbandu, int 
 static void banslv (double *w, int nroww, int nrow, int nbandl, int nbandu, double *b);
 static void huntn (double *xx, int n, int kord, double x, int *jlo);
 static void dbsnak (int nx, double *xvec, int kxord, double *xknot);
-static double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef, int leftx);
+//static double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef, int leftx);
 
 
 static void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
@@ -44,15 +44,15 @@ static void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n
 static int dbs2in (int nx, double *xvec, int ny,
                              double *yvec, double *xydata, int ldf, int kx,
                              int ky, double *xknot, double *yknot, double *bcoef);
-static double dbs2vl (double x, double y, int kx, int ky,
-               double *xknot, double *yknot, int nx, int ny, double *bcoef);
+//static double dbs2vl (double x, double y, int kx, int ky,
+//               double *xknot, double *yknot, int nx, int ny, double *bcoef);
 static void dbs3in (int nx, double *xvec, int ny,
              double *yvec, int nz, double *zvec, double *xyzdata,
              int ldf, int mdf, int zdf,
              int kx, int ky, int kz, double *xknot, double *yknot, double *zknot, double *bcoef);
-static double dbs3vl (double x, double y, double z__, int kx,
-               int ky, int kz, double *xknot, double *yknot,
-               double *zknot, int nx, int ny, int nz, double *bcoef);
+//static double dbs3vl (double x, double y, double z__, int kx,
+//               int ky, int kz, double *xknot, double *yknot,
+//               double *zknot, int nx, int ny, int nz, double *bcoef);
 static void get_biats (int nxvec, double *xvec, int nyvec, double *yvec,
                 int nzvec, double *zvec, int kx, int ky, int kz,
                 double *xknot, double *yknot, double *zknot,
@@ -69,7 +69,7 @@ static void dbs3gd2 (int nxvec, int nyvec, int nzvec,
 /* Table of constant values */
 
 static int c__1 = 1;
-static int c__0 = 0;
+//static int c__0 = 0;
 
 /* -*-fortran-*- */
 
@@ -733,7 +733,7 @@ double dbsval (double x, int kx, double *xknot, int nx, double *bcoef)
 }                               /* banslv_ */
 
 
-
+#if 0
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 static double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef, int leftx)
 {
@@ -860,6 +860,7 @@ static double dbsdca (int iderx, double x, int kx, double *xknot, double *bcoef,
     return ret_val;
 }                               /* dbsdca */
 
+#endif
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 /* Subroutine */ static int dbs2in (int nx, double *xvec, int ny,
                              double *yvec, double *xydata, int ldf, int kx,
@@ -1072,6 +1073,7 @@ static void spli2d (double *xyvec, int ld, double *xydata, double *xyknot, int n
 }                               /* spli2d */
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+#if  0
 static double dbs2vl (double x, double y, int kx, int ky,
                double *xknot, double *yknot, int nx, int ny, double *bcoef)
 {
@@ -1202,6 +1204,7 @@ static double dbs2vl (double x, double y, int kx, int ky,
     return ret_val;
 }                               /* dbs2vl */
 
+#endif
 
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
@@ -1490,6 +1493,7 @@ static void spli3d (double *xyzvec, int ldf, int mdf, int zdf,
 }                               /* spli3d */
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+#if  0
 static double dbs3vl (double x, double y, double z__, int kx,
                int ky, int kz, double *xknot, double *yknot,
                double *zknot, int nx, int ny, int nz, double *bcoef)
@@ -1614,7 +1618,7 @@ static double dbs3vl (double x, double y, double z__, int kx,
     ret_val = dbsval (z__, kz, &zknot[nintz - kz], kz, work);
     return ret_val;
 }                               /* dbs3vl */
-
+#endif
 
 
 

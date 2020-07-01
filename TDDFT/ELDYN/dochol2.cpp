@@ -50,7 +50,7 @@ subroutine fillLT(A,N,lt)
   int upper_to_lower = 1 ;  // copy upper to lower diagonal 
   int lower_to_upper = 2 ;  // copy lower to upper diagonal 
 
-  double zero  =0.0e0 ;
+  //double zero  =0.0e0 ;
 
   if (lt == upper_to_lower ) {
      for (int i=0;i< N;i++) {
@@ -60,7 +60,7 @@ subroutine fillLT(A,N,lt)
            A[ji] =A [ij];
         }
      } 
-  } else if (lt ==2) {
+  } else if (lt == lower_to_upper) {
      for (int i=0;i< N;i++) {
         for (int j=0;j<i; j++) {
            int ij = i*N+j;
@@ -132,7 +132,7 @@ subroutine fillLT(A,N,lt)
   int lt = 1 ; 
   int info  ; 
 
-  double *W =  new double[Nsq] ; 
+  //double *W =  new double[Nsq] ; 
   int ione =1 ;
   char  fU ='U';
   char  fN ='N';

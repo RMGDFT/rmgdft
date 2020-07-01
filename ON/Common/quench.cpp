@@ -74,7 +74,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
     ct.FOCK = 0.0;
     ct.exx_delta = DBL_MAX;
-    double f0=0.0,f1,f2=0.0, exxen = 0.0;
+    double f0=0.0,f2=0.0;
     for(ct.exx_steps = 0;ct.exx_steps < outer_steps;ct.exx_steps++)
     {
 

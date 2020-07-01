@@ -862,8 +862,10 @@ void Symmetry::rotate_spin()
         if(pct.imgpe == 0 && ct.verbose)
         {
             printf("\n angle: %7.4f  axis: %7.4f %7.4f  %7.4f", angle, axis[0], axis[1], axis[2]);
-            printf("\n (%7.4f  %7.4f)  (%7.4f  %7.4f)", rot_spin[isym][0][0], rot_spin[isym][0][1]); 
-            printf("\n (%7.4f  %7.4f)  (%7.4f  %7.4f)", rot_spin[isym][1][0], rot_spin[isym][1][1]); 
+            printf("\n (%7.4f  %7.4f)  ", std::real(rot_spin[isym][0][0]), std::imag(rot_spin[isym][0][0])); 
+            printf(  " (%7.4f  %7.4f)  ", std::real(rot_spin[isym][0][1]), std::imag(rot_spin[isym][0][1])); 
+            printf("\n (%7.4f  %7.4f)  ", std::real(rot_spin[isym][1][0]), std::imag(rot_spin[isym][1][0])); 
+            printf(  " (%7.4f  %7.4f)  ", std::real(rot_spin[isym][1][1]), std::imag(rot_spin[isym][1][1])); 
         }
 
     }
@@ -935,7 +937,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
     boost::multi_array<std::complex<double>, 5> ns_occ_sum;
     ns_occ_sum.resize(boost::extents[ct.noncoll_factor][ct.noncoll_factor][Atoms.size()][mmax][mmax]);
 
-    int occ_size = ct.nspin * Atoms.size() * mmax * mmax;
+    size_t occ_size = ct.nspin * Atoms.size() * mmax * mmax;
     for(size_t idx = 0; idx < occ_size; idx++)ns_occ_sum.data()[idx] = 0.0;
     //  the loops below can be optimized if it is slow    
     for (int ion = 0; ion < ct.num_ions; ion++)
@@ -1008,9 +1010,9 @@ void Symmetry::setgrid(BaseGrid &G, int density)
 
     max_pdim = std::max(nx_grid, ny_grid);
     max_pdim = std::max(max_pdim, nz_grid);
-    int nx_grid_c = G.get_NX_GRID(1);
-    int ny_grid_c = G.get_NY_GRID(1);
-    int nz_grid_c = G.get_NZ_GRID(1);
+    //int nx_grid_c = G.get_NX_GRID(1);
+    //int ny_grid_c = G.get_NY_GRID(1);
+    //int nz_grid_c = G.get_NZ_GRID(1);
 
     xoff = G.get_PX_OFFSET(density);
     yoff = G.get_PY_OFFSET(density);

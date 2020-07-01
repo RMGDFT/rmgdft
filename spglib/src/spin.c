@@ -155,7 +155,7 @@ static Symmetry * get_operations(int *spin_flips,
                                  const double symprec)
 {
   Symmetry *symmetry;
-  int i, j, k, sign, num_sym, is_found;
+  int i, j, k, sign, num_sym, is_found=0;
   double pos[3];
   MatINT * rotations;
   VecDBL * trans;

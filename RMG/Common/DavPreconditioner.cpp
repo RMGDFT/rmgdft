@@ -155,7 +155,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     int pre[MAX_MG_LEVELS] = { 2, 8, 8, 20, 20, 20, 20, 20 };
     int post[MAX_MG_LEVELS] = { 2, 2, 2, 2, 2, 2, 2, 2 };
     int levels = ct.eig_parm.levels;
-    double Zfac = 2.0 * ct.max_zvalence;
+    //double Zfac = 2.0 * ct.max_zvalence;
     double tstep = 0.666666666666;
 
     int coalesce_factor = T->get_coalesce_factor();
@@ -163,7 +163,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     int dimy = G->get_PY0_GRID(1);
     int dimz = G->get_PZ0_GRID(1);
     int pbasis = dimx * dimy * dimz;
-    int pbasis_noncoll = pbasis;
+    //int pbasis_noncoll = pbasis;
 
     double hxgrid = G->get_hxgrid(1);
     double hygrid = G->get_hygrid(1);

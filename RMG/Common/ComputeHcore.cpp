@@ -190,7 +190,6 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     // Compute A matrix
     RT1 = new RmgTimer("4-Hcore: matrix setup/reduce");
-    KpointType alpha(1.0);
     KpointType alphavel(vel);
     KpointType beta(0.0);
 
@@ -218,7 +217,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
         {
             printf("\n");
             for(int j = 0; j < std::min(8, nstates); j++)
-                printf(" %10.6f ", Hij[i*nstates + j] );
+                printf(" %10.6f ", std::real(Hij[i*nstates + j]) );
         }
     
     }

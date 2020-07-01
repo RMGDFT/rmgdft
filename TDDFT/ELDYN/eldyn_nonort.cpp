@@ -86,7 +86,7 @@ void eldyn_nonort(int *p_Nbasis, double *S,  double *Omega,double *Pn0,double *P
 // set o/n transformation flags:
    int  iPo2Pn = 1  ; 
    int  iPn2Po = 2  ; 
-   int  iFo2Fn = 3  ; 
+//   int  iFo2Fn = 3  ; 
    int  iFn2Fo = 4  ;
 
 /*----- get transformation matrices ----*/

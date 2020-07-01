@@ -48,7 +48,7 @@ template double ApplyHamiltonianBlock<std::complex<double> >(Kpoint<std::complex
 template <typename KpointType>
 double ApplyHamiltonianBlock (Kpoint<KpointType> *kptr, int first_state, int num_states, KpointType *h_psi, double *vtot, double *vxc_psi)
 {
-    int pbasis = kptr->pbasis;
+    //int pbasis = kptr->pbasis;
     int pbasis_noncoll = kptr->pbasis_noncoll;
     BaseThread *T = BaseThread::getBaseThread(0);
 

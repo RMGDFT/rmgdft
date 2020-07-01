@@ -42,7 +42,7 @@ void AssignWeight (Kpoint<KpointType> *kptr, SPECIES * sp, int ion, fftw_complex
 
     if((kptr->BetaProjector->idxptrlen[ion] == 0) && (ct.localize_projectors==true)) return;    // No points in the local region map to the processors space
     Lattice *L = kptr->L;
-    TradeImages *T = kptr->T;
+    //TradeImages *T = kptr->T;
     ION *iptr = &Atoms[ion];
     int ibrav = L->get_ibrav_type();
 

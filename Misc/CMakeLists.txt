@@ -11,7 +11,7 @@ blas_driver.cpp
 Symmetry.cpp
 OutputCubeFile.cpp
 MyConj.cpp
-bsplines.cpp
+#bsplines.cpp
 Voronoi.cpp
 WriteHeader.cpp
 ProgressTag.cpp

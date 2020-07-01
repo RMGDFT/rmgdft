@@ -130,8 +130,8 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
         }
         size_t offset = (size_t)ion * stride * (size_t)pbasis;
         weight = &orbital_weight[offset];
-        std::complex<double> *Umm = AtomType.Umm;
-        int lm_idx = 0;
+//        std::complex<double> *Umm = AtomType.Umm;
+//        int lm_idx = 0;
         for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
         {
             int li = AtomType.atomic_wave_l[ip];
@@ -178,7 +178,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
         vel = Rmg_L.get_omega() / vel;
         if(AtomType.is_spinorb)
         {
-            for(int st = 0; st < stride; st++)
+            for(size_t st = 0; st < stride; st++)
             {
                 double sum = 0.0;
                 for (int idx = 0; idx < pbasis; idx++)

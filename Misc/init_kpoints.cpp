@@ -49,11 +49,8 @@ extern "C" int spg_get_ir_reciprocal_mesh(int *grid_address,
 int init_kpoints (int *kmesh, int *kshift)
 {
 
-    double *tau;
-    const int is_time_reversal = 1;
-    int meshsize, num_kpts, count;
-
-    double symprec = 1.0e-5, angprec = 1.0;
+    //double *tau;
+    int num_kpts=1;
 
     int kpt;
     if(ct.is_gamma)
@@ -182,7 +179,7 @@ int init_kpoints (int *kmesh, int *kshift)
 
     if (ct.verbose)
     {
-        printf("\n num_k %d", count);
+        printf("\n num_k %d", num_kpts);
         for(kpt = 0; kpt < num_kpts; kpt++)
             printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
     }

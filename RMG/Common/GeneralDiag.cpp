@@ -194,7 +194,7 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
                 if(pct.gridpe == 0)
                 {
                     printf("\n WARNING: GeneralDiag.cpp, failed, the eig of overlap matrix as follow");
-                    for(int i = 0; i < 5; i++) printf("\n eig %d %d %d %e %e", info, pct.spinpe, i, A[i]);
+                    for(int i = 0; i < 5; i++) printf("\n eig %d %d %d %e ", info, pct.spinpe, i, std::real(A[i]));
                 }
                 fflush(NULL);
             }

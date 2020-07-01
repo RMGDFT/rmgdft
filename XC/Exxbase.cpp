@@ -905,7 +905,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
         std::vector<double> ExxCholVecGlob;
         ExxCholVecGlob.resize(Nchol * nst2, 0.0);
-        for(size_t i = 0; i < Nchol; i++)
+        for(int i = 0; i < Nchol; i++)
         {
             for(size_t j = 0; j < nst2_perpe; j++)
             {

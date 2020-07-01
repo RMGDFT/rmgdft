@@ -99,7 +99,7 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
     // total energy for left, self, and right images. 
     double L_total, S_total, R_total;
 
-    double tmp_mag, max_frc, *fp;
+    double tmp_mag, max_frc;
     bool CONV_FORCE;
 
     MPI_Status status;
@@ -164,7 +164,7 @@ template <class T> void Neb<T>::relax (double * vxc, double * vh, double * vnuc,
         /* capture force constraint parameters from right and left data*/
         for(int img = 0; img < pct.images +2; img++) path_length[img] = 0.0;
 
-        double path_length0 = 0;
+        //double path_length0 = 0;
         for (int count = 0; count < ct.num_ions; count++ )
         {
             double rdiff[3], rdiff_crys[3];
