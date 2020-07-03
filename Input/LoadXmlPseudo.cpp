@@ -42,8 +42,8 @@ void LoadXmlPseudo(SPECIES *sp)
     int pp_buffer_len;
     int max_nlprojectors = 0;
     std::stringstream ss; 
-    double  ddd0[MAX_NL][MAX_NL];  // Used to read in the PP_DIJ
-    double qqq[MAX_NL][MAX_NL]{{},{}};    // Used to read in the norms of the augmentation functions (PP_Q)
+    double_2d_array ddd0;  // Used to read in the PP_DIJ
+    double_2d_array qqq;   // Used to read in the norms of the augmentation functions (PP_Q)
     std::string Msg;
 
     // PP format places occupations in the xml attributes of the potentials but we need
@@ -251,6 +251,7 @@ void LoadXmlPseudo(SPECIES *sp)
 
     // Next generate the Kleinman-Bylander projectors.
     // Diagonals of ddd0 array are the KB normalization coefficients.
+    ddd0.resize(boost::extents[sp->nbeta][sp->nbeta]);
     for (int j = 0; j < sp->nbeta; j++)
     {
         for (int k = 0; k < sp->nbeta; k++) ddd0[j][k] = 0.0;
@@ -296,13 +297,22 @@ void LoadXmlPseudo(SPECIES *sp)
     sp->nqf=0;
     sp->nlc=0;
 
-
-    for (int j = 0; j < MAX_NL; j++)
+    int ihmax = 0;
+    for (int j = 0; j < sp->nbeta; j++)
     {
-        sp->nhtol[j] = 0;
-        sp->nhtom[j] = 0;
-        sp->indv[j] = 0;
-        sp->nh_l2m[j] = 0;
+        int l = sp->llbeta[j];
+        for (int k = 0; k < 2 * l + 1; k++)
+        {
+            ++ihmax;
+        }
+    }
+
+    for (int j = 0; j < ihmax; j++)
+    {
+        sp->nhtol.push_back(0);
+        sp->nhtom.push_back(0);
+        sp->indv.push_back(0);
+        sp->nh_l2m.push_back(0);
     }
 
     int ih = 0;
@@ -322,9 +332,8 @@ void LoadXmlPseudo(SPECIES *sp)
     if (ih > max_nlprojectors)
         max_nlprojectors = ih;
 
-    if (max_nlprojectors > MAX_NL)
-        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << " too many nonlocal projectors.\n"; 
-
+    sp->ddd0.resize(boost::extents[ih][ih]);
+    sp->qqq.resize(boost::extents[ih][ih]);
     for (int j = 0; j < ih; j++)
     {
         for (int k = 0; k < ih; k++)

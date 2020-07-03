@@ -54,6 +54,7 @@ static void Init_ddd0_so(SPECIES &sp)
     }
     else
     {
+        sp.ddd0_so.resize(boost::extents[sp.nh][sp.nh][4]);
         for(int ih = 0; ih < sp.nh; ih++)
             for(int jh = 0; jh < sp.nh; jh++)
             {
@@ -72,6 +73,7 @@ static void Init_ddd0_so(SPECIES &sp)
 }
 static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
 {
+    sp.fcoef_so.resize(boost::extents[sp.nh][sp.nh][4]);
     for(int ih = 0; ih < sp.nh; ih++)
         for(int jh = 0; jh < sp.nh; jh++)
         {

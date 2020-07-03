@@ -2,6 +2,7 @@
 #define RMG_SPECIES_H 1
 
 #include "Pw.h"
+#include <vector>
 
 class SPECIES
 {
@@ -152,16 +153,16 @@ public:
     int kkbeta;
 
     /*matrix ddd0(nbeta,nbeta) */
-    double ddd0[MAX_NL][MAX_NL];
+    double_2d_array ddd0;
     bool is_ddd_diagonal;   // Per species. We also have is_ddd_non_diagonal in the main control structure
 
     /*matrix qqq(nbeta,nbeta) */
-    double qqq[MAX_NL][MAX_NL];
+    double_2d_array qqq;
 
 //  the following for arrays are for spin-orbit coupling  
 //see ref. Dal Corso Mosca Conte PRB 71, 115106
-    std::complex<double> ddd0_so[MAX_NL][MAX_NL][4];
-    std::complex<double> fcoef_so[MAX_NL][MAX_NL][4];
+    doubleC_3d_array ddd0_so;
+    doubleC_3d_array fcoef_so;
     std::complex<double> *Umm;
 
     /*the number of L=|l1-l2|.....|l1+l2|, we limit nlc <=5 */
@@ -274,11 +275,11 @@ public:
     char *backward_wisdom;
 
     /*Some parameters for Q function*/
-    int indv[MAX_NL];
-    int nhtol[MAX_NL];
-    int nhtom[MAX_NL];
-    double nhtoj[MAX_NL];
-    int nh_l2m[MAX_NL];
+    std::vector<int> indv;
+    std::vector<int> nhtol;
+    std::vector<int> nhtom;
+    std::vector<double> nhtoj;
+    std::vector<int> nh_l2m;
     int nh;
 
     /*Atomic charge density on linear grid*/

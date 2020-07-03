@@ -78,8 +78,8 @@ void LoadUpfPseudo(SPECIES *sp)
     int max_nlprojectors = 0;
     int l_max;
     std::stringstream ss; 
-    double  ddd0[MAX_NL][MAX_NL];  // Used to read in the PP_DIJ
-    double qqq[MAX_NL][MAX_NL];    // Used to read in the norms of the augmentation functions (PP_Q)
+    double_2d_array ddd0;  // Used to read in the PP_DIJ
+    double_2d_array qqq;   // Used to read in the norms of the augmentation functions (PP_Q)
 
     std::string Msg;
     if((sp->pseudo_filename == std::string("./@Internal")) || (sp->pseudo_filename.length() == 0)) {
@@ -343,6 +343,7 @@ void LoadUpfPseudo(SPECIES *sp)
         }
 
         /*read in the Matrix ddd0(nbeta,nbeta) */
+        ddd0.resize(boost::extents[sp->nbeta][sp->nbeta]);
         std::string PP_DIJ = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_DIJ");
         double *tmatrix = UPF_str_to_double_array(PP_DIJ, sp->nbeta*sp->nbeta, 0);
         double offd_sum = 0.0;
@@ -387,6 +388,7 @@ void LoadUpfPseudo(SPECIES *sp)
        /*read in the Matrix qqq(nbeta,nbeta) */
        std::string PP_Q = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.PP_Q");
        double *tmatrix = UPF_str_to_double_array(PP_Q, sp->nbeta*sp->nbeta, 0);
+       qqq.resize(boost::extents[sp->nbeta][sp->nbeta]);
        for (int j = 0; j < sp->nbeta; j++)
        {
            for (int k = 0; k < sp->nbeta; k++)
@@ -493,14 +495,26 @@ void LoadUpfPseudo(SPECIES *sp)
         }
     }
 
-    for (int j = 0; j < MAX_NL; j++)
+    // Count up projectors in order to resize arrays correctly
+    int ihmax = 0;
+    for (int j = 0; j < sp->nbeta; j++)
     {
-        sp->nhtol[j] = 0;
-        sp->nhtom[j] = 0;
-        sp->indv[j] = 0;
-        sp->nh_l2m[j] = 0;
-        sp->nhtoj[j] = 0.0;
+        int l = sp->llbeta[j];
+        for (int k = 0; k < 2 * l + 1; k++)
+        {
+            ++ihmax;
+        }
     }
+
+    for (int j = 0; j < ihmax; j++)
+    {
+        sp->nhtol.push_back(0);
+        sp->nhtom.push_back(0);
+        sp->indv.push_back(0);
+        sp->nh_l2m.push_back(0);
+        sp->nhtoj.push_back(0.0);
+    }
+
 
     int ih = 0;
     for (int j = 0; j < sp->nbeta; j++)
@@ -520,8 +534,8 @@ void LoadUpfPseudo(SPECIES *sp)
     if (ih > max_nlprojectors)
         max_nlprojectors = ih;
 
-    if (max_nlprojectors > MAX_NL)
-        throw RmgFatalException() << "Error in " << __FILE__ << " at line " << __LINE__ << " too many nonlocal projectors.\n"; 
+    sp->ddd0.resize(boost::extents[ih][ih]);
+    sp->qqq.resize(boost::extents[ih][ih]);
 
     for (int j = 0; j < ih; j++)
     {

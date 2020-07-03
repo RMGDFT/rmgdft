@@ -244,8 +244,8 @@ void GetQI (void)
                                 {
 
                                     idx1 = num * Atoms[ion].Qindex.size() + icount;
-                                    Atoms[ion].augfunc[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m,
-                                            sp->indv, ylm, ap, lpx, lpl, sp);
+                                    Atoms[ion].augfunc[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m.data(),
+                                            sp->indv.data(), ylm, ap, lpx, lpl, sp);
                                     if(ct.stress)
                                     {
                                         Atoms[ion].augfunc_xyz[0][idx1] = Atoms[ion].augfunc[idx1] *cx[0];
