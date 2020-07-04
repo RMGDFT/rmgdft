@@ -55,8 +55,7 @@
 
 /* This is the maximum number of non-local projectors for any species
  * just an upper limit on dynamically allocated data structures. */
-#define         MAX_NL  	38
-#define         MAX_NB  	10
+#define         MAX_NB  	100
 
 /* Maximum number of atomic pseudo orbitals with unique n,l values for LCAO
  * init purposes. A of of 16 should be sufficent for any atomic species */

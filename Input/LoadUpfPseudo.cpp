@@ -326,6 +326,9 @@ void LoadUpfPseudo(SPECIES *sp)
     sp->is_ddd_diagonal = true;
     if(sp->nbeta > 0) {
 
+        ddd0.resize(boost::extents[sp->nbeta][sp->nbeta]);
+        qqq.resize(boost::extents[sp->nbeta][sp->nbeta]);
+
         for(int ip = 0;ip < sp->nbeta;ip++) {
             // Ugh. UPF format has embedded .s so use / as a separator
             typedef ptree::path_type path;
@@ -343,7 +346,6 @@ void LoadUpfPseudo(SPECIES *sp)
         }
 
         /*read in the Matrix ddd0(nbeta,nbeta) */
-        ddd0.resize(boost::extents[sp->nbeta][sp->nbeta]);
         std::string PP_DIJ = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_DIJ");
         double *tmatrix = UPF_str_to_double_array(PP_DIJ, sp->nbeta*sp->nbeta, 0);
         double offd_sum = 0.0;
@@ -388,7 +390,6 @@ void LoadUpfPseudo(SPECIES *sp)
        /*read in the Matrix qqq(nbeta,nbeta) */
        std::string PP_Q = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_AUGMENTATION.PP_Q");
        double *tmatrix = UPF_str_to_double_array(PP_Q, sp->nbeta*sp->nbeta, 0);
-       qqq.resize(boost::extents[sp->nbeta][sp->nbeta]);
        for (int j = 0; j < sp->nbeta; j++)
        {
            for (int k = 0; k < sp->nbeta; k++)
