@@ -137,6 +137,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
                 std::complex<double> *Umm = AtomType.Umm;
                 for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
                 {
+                    if( !(AtomType.atomic_wave_oc[ip] > 0.0) ) continue;
                     int li = AtomType.atomic_wave_l[ip];
                     double ji = AtomType.atomic_wave_j[ip];
 
@@ -200,6 +201,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
             {
                 for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
                 {
+                    if( !(AtomType.atomic_wave_oc[ip] > 0.0) ) continue;
                     int l = AtomType.atomic_wave_l[ip];
                     for (int m=0; m < 2*l+1; m++)
                     {
