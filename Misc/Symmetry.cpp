@@ -182,7 +182,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
     if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation  after considering real space grid: %d",nsym);
     assert(nsym >0);
-    if(nsym == 1) ct.is_use_symmetry = 0;
+    //if(nsym == 1) ct.is_use_symmetry = 0;
 
     sym_atom.resize(ct.num_ions* nsym);
 
@@ -247,17 +247,18 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         }
     }
 
+    ftau.erase(ftau.begin() + nsym *3, ftau.end()); 
+    ftau_wave.erase(ftau_wave.begin() + nsym *3, ftau_wave.end());
+    sym_trans.erase(sym_trans.begin() + nsym *3, sym_trans.end());
+    sym_rotate.erase(sym_rotate.begin() + nsym *9, sym_rotate.end());
+    sym_atom.erase(sym_atom.begin() + nsym * ct.num_ions, sym_atom.end());
+    inv_type.erase(inv_type.begin()+ nsym, inv_type.end());
+    time_rev.erase(time_rev.begin()+ nsym, time_rev.end());
+
     //remove the symmetry operaion which break the symmetry by noncollinear spin
     if(ct.noncoll)
     {
-        
-        ftau.erase(ftau.begin() + nsym *3, ftau.end()); 
-        ftau_wave.erase(ftau_wave.begin() + nsym *3, ftau_wave.end());
-        sym_trans.erase(sym_trans.begin() + nsym *3, sym_trans.end());
-        sym_rotate.erase(sym_rotate.begin() + nsym *9, sym_rotate.end());
-        sym_atom.erase(sym_atom.begin() + nsym * ct.num_ions, sym_atom.end());
-        inv_type.erase(inv_type.begin()+ nsym, inv_type.end());
-        time_rev.erase(time_rev.begin()+ nsym, time_rev.end());
+
 
         double vec1[3], vec2[3];
         bool sym_break, mag_same, mag_oppo;
@@ -266,7 +267,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             sym_break=false;
             mag_same = true;
             mag_oppo = true;
-            
+
             for (int ion1 = 0; ion1 < ct.num_ions; ion1++)
             {
                 int ion2 = sym_atom[isym * ct.num_ions + ion1];
@@ -287,7 +288,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                     sym_break = true;
                     break;
                 }
-                
+
             }
 
             if(mag_oppo && !mag_same) time_rev[isym] = true;
