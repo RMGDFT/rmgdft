@@ -8,6 +8,7 @@
     #include <cublas_v2.h>
 #endif
 
+#include "Klist.h"
 
 /** @name CONTROL
   @memo Main control structure
@@ -569,6 +570,7 @@ public:
     /** Total number of k-points being used in the calculation */
     int num_kpts;
     int num_kpts_pe;
+    Klist klist;
 
 
 

@@ -47,6 +47,7 @@
 #include "Stress.h"
 #include "Voronoi.h"
 #include "GpuAlloc.h"
+#include "Wannier.h"
 
 
 // Local function prototypes
@@ -375,6 +376,18 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     }
 
+    if(0)
+    {
+        int scdm = 0;
+        double scdm_mu = ct.efermi;
+        double scdm_sigma = 1.0;
+        int n_wannier = 4;
+ 
+        Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
+                n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage);
+        Wan.SetAmn();
+
+    }
 
     /* output the forces */
     if (pct.imgpe == 0)

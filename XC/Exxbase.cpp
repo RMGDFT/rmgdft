@@ -79,7 +79,6 @@ template <class T> Exxbase<T>::Exxbase (
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
     pbasis = G.get_P0_BASIS(1);
 
-    kpoints_setup();
     if(mode == EXX_DIST_FFT) 
     {
         if(!ct.is_gamma) 
@@ -208,7 +207,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         v1 = kq[1] + pwave->g[ig].a[1] * tpiba; 
         v2 = kq[2] + pwave->g[ig].a[2] * tpiba; 
         qq = v0* v0 + v1 * v1 + v2 * v2;
-        if(!pwave->gmask[ig]) continue;
+       // if(!pwave->gmask[ig]) continue;
         double fac = 1.0;
         if (ct.gamma_extrapolation)
         {
@@ -1080,153 +1079,6 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
 }
 
 
-template void Exxbase<double>::kpoints_setup();
-template void Exxbase<std::complex<double>>::kpoints_setup();
-template <class T> void Exxbase<T>::kpoints_setup()
-{
-    num_q = ct.qpoint_mesh[0] * ct.qpoint_mesh[1] * ct.qpoint_mesh[2];
-    qvec = new double[3* num_q];
-    kqvec = new double[3* num_q];
-    q_to_kindex = new int[num_q];
-    q_to_k_symindex = new int[num_q];
-    kq_index = new int[ct.num_kpts * num_q];
-
-
-    if(ct.is_gamma) 
-    {
-        qvec[0] = 0.0;
-        qvec[1] = 0.0;
-        qvec[2] = 0.0;
-        q_to_kindex[0] = 0;
-        q_to_k_symindex[0] = 0;
-
-        kqvec[0] = 0.0;
-        kqvec[1] = 0.0;
-        kqvec[2] = 0.0;
-        kq_index[0] = 0;
-
-        return;
-    }
-
-    if(!Rmg_Symm)
-        throw RmgFatalException() << " Symmetry not defined for non-gamma point in exx \n";
-
-    // get all kpoints in the first BZ
-    int num_q_temp = ct.num_kpts;
-    for(int ik = 0; ik < ct.num_kpts; ik++)
-    {
-        qvec[ik * 3 + 0] = ct.kp[ik].kpt[0];
-        qvec[ik * 3 + 1] = ct.kp[ik].kpt[1];
-        qvec[ik * 3 + 2] = ct.kp[ik].kpt[2];
-        q_to_kindex[ik] = ik;
-        q_to_k_symindex[ik] = 0;
-    }
-
-    double sym_qvec[3], dk[3];
-    for(int ik = 0; ik < ct.num_kpts; ik++)
-        for(int isym = 0; isym < Rmg_Symm->nsym; isym++)
-        {
-            sym_qvec[0] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 0 ] * ct.kp[ik].kpt[0] +
-                Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 0 ] * ct.kp[ik].kpt[1] +
-                Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 0 ] * ct.kp[ik].kpt[2];
-            sym_qvec[1] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 1 ] * ct.kp[ik].kpt[0] +
-                Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
-                Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[2];
-            sym_qvec[2] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 2 ] * ct.kp[ik].kpt[0] +
-                Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[1] +
-                Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
-
-            //  check if this new qvec in the qvec list
-            bool is_assigned = false;
-            for(int iq = 0; iq < num_q_temp; iq++)
-            {
-                dk[0] = sym_qvec[0] - qvec[iq * 3 + 0];
-                dk[1] = sym_qvec[1] - qvec[iq * 3 + 1];
-                dk[2] = sym_qvec[2] - qvec[iq * 3 + 2];
-                dk[0] = dk[0] - std::round(dk[0]);
-                dk[1] = dk[1] - std::round(dk[1]);
-                dk[2] = dk[2] - std::round(dk[2]);
-                if( (std::abs(dk[0]) < 1.0e-10) && (std::abs(dk[1]) < 1.0e-10) && (std::abs(dk[2]) < 1.0e-10) )
-                {
-                    is_assigned = true;
-                    break;
-                }
-            }
-
-            if(!is_assigned)
-            {
-                if(num_q_temp + 1 > num_q)
-                {
-                    throw RmgFatalException() << num_q_temp << " num_q larger than mesh in exx " << num_q <<"\n";
-                }
-                qvec[num_q_temp * 3 + 0] = sym_qvec[0] ;
-                qvec[num_q_temp * 3 + 1] = sym_qvec[1] ;
-                qvec[num_q_temp * 3 + 2] = sym_qvec[2] ;
-                q_to_kindex[num_q_temp] = ik;
-                q_to_k_symindex[num_q_temp] = isym;
-                num_q_temp++;
-            }
-
-            //  check if this new -qvec in the qvec list
-            is_assigned = false;
-            for(int iq = 0; iq < num_q_temp; iq++)
-            {
-                dk[0] = -sym_qvec[0] - qvec[iq * 3 + 0];
-                dk[1] = -sym_qvec[1] - qvec[iq * 3 + 1];
-                dk[2] = -sym_qvec[2] - qvec[iq * 3 + 2];
-                dk[0] = dk[0] - std::round(dk[0]);
-                dk[1] = dk[1] - std::round(dk[1]);
-                dk[2] = dk[2] - std::round(dk[2]);
-                if( (std::abs(dk[0]) < 1.0e-10) && (std::abs(dk[1]) < 1.0e-10) && (std::abs(dk[2]) < 1.0e-10) )
-                {
-                    is_assigned = true;
-                    break;
-                }
-            }
-
-            if(!is_assigned)
-            {
-                if(num_q_temp + 1 > num_q)
-                    throw RmgFatalException() << num_q_temp << " num_q larger than mesh in -exx " << num_q <<"\n";
-                qvec[num_q_temp * 3 + 0] = -sym_qvec[0];
-                qvec[num_q_temp * 3 + 1] = -sym_qvec[1];
-                qvec[num_q_temp * 3 + 2] = -sym_qvec[2];
-                q_to_kindex[num_q_temp] = ik;
-                q_to_k_symindex[num_q_temp] = -isym;
-                num_q_temp++;
-            }
-
-
-        }
-
-    if(ct.verbose && pct.imgpe == 0)
-    {
-        for(int iq = 0; iq < num_q_temp; iq++)
-            printf("\n qvec %f %f %f %d %d", qvec[iq*3], qvec[iq*3+1], qvec[iq*3+2], q_to_kindex[iq], q_to_k_symindex[iq]);
-    }
-
-    if(num_q_temp != num_q)
-        throw RmgFatalException() << num_q_temp << " num_q wrong in exx " << num_q <<"\n";
-
-    for(int iq = 0; iq < num_q; iq++)
-    {
-        double v1, v2, v3;
-
-        v1 = qvec[iq * 3 + 0] *Rmg_L.b0[0]
-            +qvec[iq * 3 + 1] *Rmg_L.b1[0] 
-            +qvec[iq * 3 + 2] *Rmg_L.b2[0];
-        v2 = qvec[iq * 3 + 0] *Rmg_L.b0[1]
-            +qvec[iq * 3 + 1] *Rmg_L.b1[1] 
-            +qvec[iq * 3 + 2] *Rmg_L.b2[1];
-        v3 = qvec[iq * 3 + 0] *Rmg_L.b0[2]
-            +qvec[iq * 3 + 1] *Rmg_L.b1[2] 
-            +qvec[iq * 3 + 2] *Rmg_L.b2[2];
-
-        qvec[iq * 3 + 0] = v1 * twoPI;
-        qvec[iq * 3 + 1] = v2 * twoPI;
-        qvec[iq * 3 + 2] = v3 * twoPI;
-    }
-}
 template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx, bool use_float_fft)
 {
     RmgTimer RT0("5-Functional: Exx potential");
@@ -1295,17 +1147,33 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 
         MPI_Barrier(G.comm);
 
-        for(int iq = 0; iq < num_q; iq++)
+        for(int iq = 0; iq < ct.klist.num_k_all; iq++)
         {
 
-            int ikindex = q_to_kindex[iq];
-            int isym = q_to_k_symindex[iq];
-            int isyma = std::abs(isym);
+            int ikindex = ct.klist.k_map_index[iq];
+            int isym = ct.klist.k_map_symm[iq];
+            int isyma = std::abs(isym) -1;
 
 
-            kq[0] = ct.kp[ik_glob].kvec[0] - qvec[iq * 3 +0];
-            kq[1] = ct.kp[ik_glob].kvec[1] - qvec[iq * 3 +1];
-            kq[2] = ct.kp[ik_glob].kvec[2] - qvec[iq * 3 +2];
+            kq[0] = ct.kp[ik_glob].kpt[0] - ct.klist.k_all_xtal[iq][0];
+            kq[1] = ct.kp[ik_glob].kpt[1] - ct.klist.k_all_xtal[iq][1];
+            kq[2] = ct.kp[ik_glob].kpt[2] - ct.klist.k_all_xtal[iq][2];
+            while(kq[0] > 0.5) kq[0] -= 1.0;
+            while(kq[1] > 0.5) kq[1] -= 1.0;
+            while(kq[2] > 0.5) kq[2] -= 1.0;
+            while(kq[0] <-0.5) kq[0] += 1.0;
+            while(kq[1] <-0.5) kq[1] += 1.0;
+            while(kq[2] <-0.5) kq[2] += 1.0;
+            double v0, v1, v2;
+
+            v0 = kq[0] *Rmg_L.b0[0] + kq[1] *Rmg_L.b1[0] + kq[2] *Rmg_L.b2[0];
+            v1 = kq[0] *Rmg_L.b0[1] + kq[1] *Rmg_L.b1[1] + kq[2] *Rmg_L.b2[1];
+            v2 = kq[0] *Rmg_L.b0[2] + kq[1] *Rmg_L.b1[2] + kq[2] *Rmg_L.b2[2];
+
+            kq[0] = v0 * twoPI;
+            kq[1] = v1 * twoPI;
+            kq[2] = v2 * twoPI;
+
 
             setup_gfac(kq);
 
@@ -1383,7 +1251,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 #pragma omp critical(part3)
                         {
                             for(size_t idx = 0;idx < pwave->pbasis;idx++) 
-                                vexx_global[idx] += scale * p[idx] * psi_j[idx] / (double)num_q;
+                                vexx_global[idx] += scale * p[idx] * psi_j[idx] / (double)ct.klist.num_k_all;
                         }
                     }
                     if(!omp_tid) MPI_Test(&req, &flag, &mrstatus);
@@ -1538,7 +1406,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
         else
             exxdiv += -alpha;
     }
-    exxdiv *= fourPI /num_q;
+    exxdiv *= fourPI /ct.klist.num_k_all;
 
 
 
@@ -1564,7 +1432,7 @@ template <class T> void Exxbase<T>::setup_exxdiv()
     aa += 1.0/std::sqrt(alpha * PI);
     exxdiv -= aa * L.get_omega();
 
-    exxdiv *= num_q;
+    exxdiv *= ct.klist.num_k_all;
     if(ct.verbose && pct.gridpe == 0) 
     {
         printf("\n exxdiv = %f %f %f", exxdiv, aa, alpha);

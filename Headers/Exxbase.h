@@ -48,13 +48,6 @@
 template <typename T> class Exxbase {
 
 private:
-    // BaseGrid class (distributed) and half grid
-    int num_q;
-    double *qvec;
-    double *kqvec;
-    int *q_to_kindex;
-    int *q_to_k_symindex;
-    int *kq_index;
 
     bool gamma_extrapolation;
 
@@ -151,6 +144,8 @@ private:
     int VxxIntChol(std::vector<T> &Exxint, std::vector<T> &ExxCholVec, int cmax, int nstates_occ);
 
 public:
+    // BaseGrid class (distributed) and half grid
+
     Exxbase (
             BaseGrid &G, 
             BaseGrid &G_h, 

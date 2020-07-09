@@ -105,6 +105,8 @@
 #define		ztrttp		RMG_FC_GLOBAL(ztrttp, ZTRTTP)
 #define		ztpttr		RMG_FC_GLOBAL(ztpttr, ZTPTTR)
 #define		dtrtri		RMG_FC_GLOBAL(dtrtri, DTRTRI)
+#define		zgeqp3		RMG_FC_GLOBAL(zgeqp3, ZGEQP3)
+#define		zgesvd		RMG_FC_GLOBAL(zgesvd, ZGESVD)
 
 #if __cplusplus
 extern "C" {
@@ -206,6 +208,11 @@ void dgels(char *trans, int *M, int *N, int *nrhs, double *A, int *lda, double *
 void dsytrf(char *, int *, double *, int *, int *, double *, int *, int *);
 void dsytri(char *, int *, double *, int *, int *, double *, int *);
 void dger(int *, int *, double *, double *, int *, double *, int *, double *, int *);
+
+void zgeqp3(int *, int *, std::complex<double> *, int *, int *, std::complex<double> *, std::complex<double> *, int *, double *, int *);
+void zgesvd(char *, char *, int *, int *, std::complex<double> *, int *, double *, std::complex<double> *, int*,
+        std::complex<double> *, int *, std::complex<double> *, int *, double *, int*);
+
 
 
 DoubleC zdotc(int*, DoubleC *, int*, DoubleC *, int*);
