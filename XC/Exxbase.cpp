@@ -207,7 +207,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         v1 = kq[1] + pwave->g[ig].a[1] * tpiba; 
         v2 = kq[2] + pwave->g[ig].a[2] * tpiba; 
         qq = v0* v0 + v1 * v1 + v2 * v2;
-       // if(!pwave->gmask[ig]) continue;
+        if(!pwave->gmask[ig]) continue;
         double fac = 1.0;
         if (ct.gamma_extrapolation)
         {
