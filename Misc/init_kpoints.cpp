@@ -92,11 +92,11 @@ int init_kpoints (int *kmesh, int *kshift)
     double weight_one = 1.0/(kmesh[0] * kmesh[1] * kmesh[2]);
 
     double sym_qvec[3], dk[3], xk[3];
-    for(int k = 0; k < kmesh[2]; k++)
+    for(int i = 0; i < kmesh[0]; i++)
     {
         for(int j = 0; j < kmesh[1]; j++)
         {
-            for(int i = 0; i < kmesh[0]; i++)
+            for(int k = 0; k < kmesh[2]; k++)
             {
                 xk[0] = (i+ 0.5 * kshift[0])/kmesh[0];
                 xk[1] = (j+ 0.5 * kshift[1])/kmesh[1];
@@ -118,14 +118,14 @@ int init_kpoints (int *kmesh, int *kshift)
                     for(isym = 0; isym < Rmg_Symm->nsym; isym++)
                     {
                         sym_qvec[0] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 0 ] * ct.kp[ik].kpt[0] +
-                                      Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 1 ] * ct.kp[ik].kpt[1] +
-                                      Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 2 ] * ct.kp[ik].kpt[2];
+                            Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 1 ] * ct.kp[ik].kpt[1] +
+                            Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 2 ] * ct.kp[ik].kpt[2];
                         sym_qvec[1] = Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 0 ] * ct.kp[ik].kpt[0] +
-                                      Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
-                                      Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[2];
+                            Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
+                            Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[2];
                         sym_qvec[2] = Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 0 ] * ct.kp[ik].kpt[0] +
-                                      Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[1] +
-                                      Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
+                            Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[1] +
+                            Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
 
                         if(Rmg_Symm->time_rev[isym])
                         {

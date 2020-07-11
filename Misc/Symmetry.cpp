@@ -123,6 +123,9 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     for(int kpt = 0; kpt < nsym_atom; kpt++)
     {
         double intpart;
+
+        double frac_sum = std::abs(translation[kpt*3+0]) + std::abs(translation[kpt*3+1]) + std::abs(translation[kpt*3+2]);
+        if(!ct.frac_symm  && frac_sum > symprec) continue;
         double frac1 = modf(translation[kpt*3 + 0] * nx_grid, &intpart);
         double frac2 = modf(translation[kpt*3 + 1] * ny_grid, &intpart);
         double frac3 = modf(translation[kpt*3 + 2] * nz_grid, &intpart);

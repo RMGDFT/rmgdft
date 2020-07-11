@@ -804,6 +804,7 @@ public:
 
     bool is_gamma;
     bool is_use_symmetry;
+    bool frac_symm;
 
     bool freeze_occupied;
 
