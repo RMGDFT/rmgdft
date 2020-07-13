@@ -137,14 +137,17 @@ int init_kpoints (int *kmesh, int *kshift)
                         dk[0] = sym_qvec[0] - xk[0];
                         dk[1] = sym_qvec[1] - xk[1];
                         dk[2] = sym_qvec[2] - xk[2];
-                        dk[0] = dk[0] - std::round(dk[0]);
-                        dk[1] = dk[1] - std::round(dk[1]);
-                        dk[2] = dk[2] - std::round(dk[2]);
+                    //    dk[0] = dk[0] - std::round(dk[0]);
+                    //    dk[1] = dk[1] - std::round(dk[1]);
+                    //    dk[2] = dk[2] - std::round(dk[2]);
                         if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
                         {
                             find_eq = true;
                             ct.klist.k_map_index[idx] = ik;
                             ct.klist.k_map_symm[idx] = isym + 1;
+                            ct.klist.k_all_xtal[idx][0] =  sym_qvec[0];
+                            ct.klist.k_all_xtal[idx][1] =  sym_qvec[1];
+                            ct.klist.k_all_xtal[idx][2] =  sym_qvec[2];
                             break;
                         }
 
@@ -153,14 +156,17 @@ int init_kpoints (int *kmesh, int *kshift)
                             dk[0] = sym_qvec[0] + xk[0];
                             dk[1] = sym_qvec[1] + xk[1];
                             dk[2] = sym_qvec[2] + xk[2];
-                            dk[0] = dk[0] - std::round(dk[0]);
-                            dk[1] = dk[1] - std::round(dk[1]);
-                            dk[2] = dk[2] - std::round(dk[2]);
+                     //       dk[0] = dk[0] - std::round(dk[0]);
+                     //       dk[1] = dk[1] - std::round(dk[1]);
+                     //       dk[2] = dk[2] - std::round(dk[2]);
                             if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
                             {
                                 find_eq = true;
                                 ct.klist.k_map_index[idx] = ik;
                                 ct.klist.k_map_symm[idx] = -(isym+1);
+                                ct.klist.k_all_xtal[idx][0] = -sym_qvec[0];
+                                ct.klist.k_all_xtal[idx][1] = -sym_qvec[1];
+                                ct.klist.k_all_xtal[idx][2] = -sym_qvec[2];
                                 break;
                             }
                         }

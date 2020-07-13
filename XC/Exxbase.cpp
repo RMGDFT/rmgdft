@@ -207,7 +207,8 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         v1 = kq[1] + pwave->g[ig].a[1] * tpiba; 
         v2 = kq[2] + pwave->g[ig].a[2] * tpiba; 
         qq = v0* v0 + v1 * v1 + v2 * v2;
-        if(!pwave->gmask[ig]) continue;
+
+      //  if(!pwave->gmask[ig]) continue;
         double fac = 1.0;
         if (ct.gamma_extrapolation)
         {
@@ -1158,12 +1159,12 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             kq[0] = ct.kp[ik_glob].kpt[0] - ct.klist.k_all_xtal[iq][0];
             kq[1] = ct.kp[ik_glob].kpt[1] - ct.klist.k_all_xtal[iq][1];
             kq[2] = ct.kp[ik_glob].kpt[2] - ct.klist.k_all_xtal[iq][2];
-            while(kq[0] > 0.5) kq[0] -= 1.0;
-            while(kq[1] > 0.5) kq[1] -= 1.0;
-            while(kq[2] > 0.5) kq[2] -= 1.0;
-            while(kq[0] <-0.5) kq[0] += 1.0;
-            while(kq[1] <-0.5) kq[1] += 1.0;
-            while(kq[2] <-0.5) kq[2] += 1.0;
+         //   while(kq[0] > 0.5) kq[0] -= 1.0;
+         //   while(kq[1] > 0.5) kq[1] -= 1.0;
+         //   while(kq[2] > 0.5) kq[2] -= 1.0;
+         //   while(kq[0] <-0.5) kq[0] += 1.0;
+         //   while(kq[1] <-0.5) kq[1] += 1.0;
+         //   while(kq[2] <-0.5) kq[2] += 1.0;
             double v0, v1, v2;
 
             v0 = kq[0] *Rmg_L.b0[0] + kq[1] *Rmg_L.b1[0] + kq[2] *Rmg_L.b2[0];
