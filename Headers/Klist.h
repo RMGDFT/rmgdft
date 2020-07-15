@@ -12,6 +12,7 @@ public:
     int kpoint_is_shift[3];
     int num_k_all;
     int num_k_ire;
+    int num_k_nn;
     
     boost::multi_array<double, 2> k_all_xtal;
     boost::multi_array<double, 2> k_ire_xtal;
@@ -24,6 +25,11 @@ public:
     std::vector<int> k_map_index;
     std::vector<int> k_map_symm;
 
-    boost::multi_array<int, 2> k_neighbor;
+    //k_neightbors[num_k_all][num_k_nn][4];
+    //[0]: kindex
+    //[1,2,3], folding the kpoint into the real neighbor
+
+    boost::multi_array<int, 3> k_neighbors;
+
 };
 #endif

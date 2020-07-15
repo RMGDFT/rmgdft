@@ -27,6 +27,13 @@
 #include <unistd.h>
 #include <iterator>
 #include <omp.h>
+#include <iostream>
+#include <string>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/classification.hpp>
+
 
 
 #include "const.h"
@@ -86,6 +93,9 @@ template <class T> Wannier<T>::Wannier (
     Exx->WriteWfsToSingleFile();
     MPI_Barrier(MPI_COMM_WORLD);
     WriteWinEig();
+    Read_nnkpts();
+    SetAmn();
+    SetMmn();
     delete RT1;
 }
 
@@ -137,7 +147,6 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             double tem = (eigs - scdm_mu)/scdm_sigma;
             if(scdm == ISOLATED_ENTANGLEMENT) 
             {
-                std::cout<< scdm << " sss " << std::endl;
                 focc = 1.0;
             }
             else if(scdm == GAU_ENTANGLEMENT) focc = std::exp(-tem * tem);
@@ -148,27 +157,25 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             for(int idx = 0; idx < ngrid_noncoll; idx++)
             {
                 psi_s[st * ngrid_noncoll + idx] *= focc;
-                printf("\n aaa %d %f %f  %f %f", idx, psi_s[st * ngrid_noncoll + idx], psi[st * ngrid_noncoll + idx]);
             }
         }
 
         transpose(psi_s, ngrid_noncoll, nstates);
 
-
-        std::complex<double> *tau = new std::complex<double>[2*nstates];
-        double *rwork = new double[2 * ngrid_noncoll];
+        std::complex<double> *tau = new std::complex<double>[2*nstates]();
+        double *rwork = new double[2 * ngrid_noncoll]();
         int Lwork = -1, info;
         std::complex<double> Lwork_tmp;
         zgeqp3(&nstates, &ngrid_noncoll, psi_s, &nstates, piv, tau, &Lwork_tmp, &Lwork, rwork,&info);
 
         Lwork = (int)(std::real(Lwork_tmp)) + 1;
 
-        std::complex<double> *cwork = new std::complex<double>[Lwork];
+        std::complex<double> *cwork = new std::complex<double>[Lwork]();
 
         zgeqp3(&nstates, &ngrid_noncoll, psi_s, &nstates, piv, tau, cwork, &Lwork, rwork,&info);
 
         if(info != 0) throw RmgFatalException() << "Error! in zgeqp3 at" << __FILE__ << __LINE__ << "  Wannier Terminating.\n";
-        for(int i = 0; i < n_wannier; i++) printf("\n piv %d   %d ", piv[i], info);
+        //for(int i = 0; i < n_wannier; i++) printf("\n piv %d   %d ", piv[i], info);
         delete [] cwork;
         delete [] rwork;
         delete [] tau;
@@ -177,7 +184,11 @@ template <> void Wannier<std::complex<double>>::SetAmn()
     }
     MPI_Bcast(piv, ngrid_noncoll, MPI_INT, 0, pct.grid_comm);
 
-    std::cout << " bbb " << std::endl;
+    //piv[0] = 437;
+    //piv[1] = 3685;
+    //piv[2] = 722;
+    //piv[3] = 823;
+
     int nx_grid = G.get_NX_GRID(1);
     int ny_grid = G.get_NY_GRID(1);
     int nz_grid = G.get_NZ_GRID(1);
@@ -190,11 +201,10 @@ template <> void Wannier<std::complex<double>>::SetAmn()
     {
         int ik = ct.klist.k_map_index[iq];
         int isym = ct.klist.k_map_symm[iq];
-        int isyma = std::abs(isym);
+        int isyma = std::abs(isym)-1;
 
         int sym_rot_inv[9], ftau_inv[3], det, sr[3][3];
 
-    std::cout << " iq= " << iq << std::endl;
         for(int i= 0; i < 3; i++)
         {
             for(int j= 0; j < 3; j++)
@@ -236,6 +246,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         read(serial_fd, psi_s, length * sizeof(std::complex<double>));
 
         int ix, iy, iz, ixx, iyy, izz;
+        std::complex<double> phase_center;
         for(int iw = 0; iw < n_wannier; iw++)
         {
             int grid_idx = piv[iw]-1;
@@ -250,13 +261,26 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             ix = grid_idx/ny_grid/nz_grid;
             iy = (grid_idx/nz_grid ) % ny_grid;
             iz = grid_idx % nz_grid;
+
+            ixx = ix;
+            if(ixx > nx_grid/2) ixx -= nx_grid;
+            iyy = iy;
+            if(iyy > ny_grid/2) iyy -= ny_grid;
+            izz = iz;
+            if(izz > nz_grid/2) izz -= nz_grid;
+            double kr_center =
+                ct.klist.k_all_xtal[iq][0] * ixx/(double)nx_grid +
+                ct.klist.k_all_xtal[iq][1] * iyy/(double)ny_grid +
+                ct.klist.k_all_xtal[iq][2] * izz/(double)nz_grid ;
+            phase_center = std::exp(std::complex<double>(0.0, -kr_center * twoPI));
+
+
             symm_ijk(sym_rot_inv, ftau_inv, ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
 
-            printf("\n ddd %d %d %d %d %d %d   %d", ix, iy, iz, ixx, iyy, izz, grid_idx);
             for(int st = 0; st < nstates; st++)
             {
                 double focc = 1.0;
-                double eigs = ct.kp[ik_gamma].eigs[st];
+                double eigs = ct.kp[ik].eigs[st];
                 double tem = (eigs - scdm_mu)/scdm_sigma;
                 if(scdm == ISOLATED_ENTANGLEMENT ) focc = 1.0;
                 else if(scdm == GAU_ENTANGLEMENT) focc = std::exp(-tem * tem);
@@ -265,34 +289,34 @@ template <> void Wannier<std::complex<double>>::SetAmn()
                     throw RmgFatalException() << "scdm = " << scdm << "  wrong value \n";
                 if(isym >= 0) 
                 {
-                    psi_wan[iw * nstates + st] = psi_s[st * ngrid_noncoll + ispin * ngrid 
-                        + ixx * ny_grid * nz_grid + iyy * nz_grid + izz] * focc;
+                    psi_wan[iw * nstates + st] = std::conj(psi_s[st * ngrid_noncoll + ispin * ngrid 
+                        + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]) * focc * phase_center;
 
                 }
                 else
                 {
-                    psi_wan[iw * nstates + st] = std::conj(psi_s[st * ngrid_noncoll + ispin_rev * ngrid 
-                            + ixx * ny_grid * nz_grid + iyy * nz_grid + izz])* focc;
+                    psi_wan[iw * nstates + st] = (psi_s[st * ngrid_noncoll + ispin_rev * ngrid 
+                            + ixx * ny_grid * nz_grid + iyy * nz_grid + izz])* focc * phase_center;
                 }
             }
 
         }
 
-        double *sigma = new double[n_wannier];
-        double *rwork = new double[5*n_wannier];
-        std::complex<double> *Umat = new std::complex<double>[nstates * n_wannier];
-        std::complex<double> *VTmat = new std::complex<double>[n_wannier * n_wannier];
+        double *sigma = new double[n_wannier]();
+        double *rwork = new double[5*n_wannier]();
+        std::complex<double> *Umat = new std::complex<double>[nstates * n_wannier]();
+        std::complex<double> *VTmat = new std::complex<double>[n_wannier * n_wannier]();
 
         int info;
         int Lwork = -1;
         std::complex<double> Lwork_tmp;
         zgesvd("S", "S", &nstates, &n_wannier, psi_wan, &nstates,
-           sigma, Umat, &nstates, VTmat,&n_wannier,&Lwork_tmp, &Lwork, rwork, &info);
+                sigma, Umat, &nstates, VTmat,&n_wannier,&Lwork_tmp, &Lwork, rwork, &info);
         Lwork = (int)(std::real(Lwork_tmp)) + 1;
-        std::complex<double> *work = new std::complex<double>[Lwork];
+        std::complex<double> *work = new std::complex<double>[Lwork]();
 
         zgesvd("S", "S", &nstates, &n_wannier, psi_wan, &nstates,
-           sigma, Umat, &nstates, VTmat,&n_wannier, work, &Lwork, rwork, &info);
+                sigma, Umat, &nstates, VTmat,&n_wannier, work, &Lwork, rwork, &info);
         if(info != 0) throw RmgFatalException() << "Error! in zgesvd at" << __FILE__ << __LINE__ << "  Wannier Terminating.\n";
 
         std::complex<double> one(1.0), zero(0.0);
@@ -304,13 +328,13 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         delete [] Umat;
         delete [] VTmat;
 
-       // munmap(psi_s, length);
+        // munmap(psi_s, length);
         close(serial_fd);
     }
 
-    
+
     int count = num_q * nstates * n_wannier;
-    MPI_Allreduce(MPI_IN_PLACE, Amn, count, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, Amn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
 
     if(pct.imgpe == 0)
     {
@@ -361,33 +385,6 @@ void transpose(std::complex<double> *m, int w, int h)
         } while (next > start);
     }
 }
-template <> void Wannier<double>::SetMmn()
-{
-        throw RmgFatalException() << "scdm need more than one gamma point  \n";
-}
-template <> void Wannier<std::complex<double>>::SetMmn()
-{
-
-    double tol = 1.0e-5;
-    int num_q = ct.klist.num_k_all;
-    std::vector<std::vector<int>> kneighbor;
-    kneighbor.resize(num_q);
-
-    // find neighboring shell of kpoints
-    // since the kpoint must be in a uniform grid, each kpoint has the same number of neighbors.
-    std::vector<double> kdist_shell;
-    double kd[3];
-    for(int iq = 1; iq < num_q; iq++)
-    {
-
-       //kd[0] =  
-
-    }
-    
-    
- 
-}
-
 template void Wannier<double> ::WriteWinEig();
 template void Wannier<std::complex<double>> ::WriteWinEig();
 template <class T> void Wannier<T>::WriteWinEig()
@@ -400,46 +397,273 @@ template <class T> void Wannier<T>::WriteWinEig()
         fprintf(fwin, "\nnum_wann        =  %d", n_wannier);
         fprintf(fwin, "\nnum_iter        = 20");
         fprintf(fwin, "\nauto_projections= true\n");
-        fprintf(fwin, "\nbegin atoms_cart");
-        fprintf(fwin, "\nbohr");
-        for(size_t ion = 0; ion < Atoms.size(); ion++)
-        {
+        fprintf(fwin, "\nbands_plot       = true\n");
+        
+         fprintf(fwin, "bands_plot_format= xmgrace\n");
+         fprintf(fwin, "bands_num_points: 100\n");
+         fprintf(fwin, "begin kpoint_path\n");
+         fprintf(fwin, "   G 0.0 0.0 0.0 L 0.0 0.0 1.0\n");
+         fprintf(fwin, "  L 0.0 0.0 1.0 N 0.0 1.0 1.0\n");
+         fprintf(fwin, "end kpoint_path\n");
 
-            ION &Atom = Atoms[ion];
-            SPECIES &Type = Species[Atom.species];
+         fprintf(fwin, "\nbegin atoms_cart");
+         fprintf(fwin, "\nbohr");
+         for(size_t ion = 0; ion < Atoms.size(); ion++)
+         {
 
-            fprintf (fwin, "\n%-2s   %12.6e  %12.6e  %12.6e",
-                    Type.atomic_symbol, Atom.crds[0], Atom.crds[1], Atom.crds[2]);
+             ION &Atom = Atoms[ion];
+             SPECIES &Type = Species[Atom.species];
 
-        }         
-        fprintf(fwin, "\nend atoms_cart\n");
-        fprintf(fwin, "\nbegin unit_cell_cart");
-        fprintf(fwin, "\nbohr");
-        fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", L.get_a0(0),L.get_a0(1),L.get_a0(2));
-        fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", L.get_a1(0),L.get_a1(1),L.get_a1(2));
-        fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", L.get_a2(0),L.get_a2(1),L.get_a2(2));
-        fprintf(fwin, "\nend_unit_cell_cart");
-        fprintf(fwin, "\n\nmp_grid : %d %d %d", ct.kpoint_mesh[0], ct.kpoint_mesh[1], ct.kpoint_mesh[2]);
+             fprintf (fwin, "\n%-2s   %12.6e  %12.6e  %12.6e",
+                     Type.atomic_symbol, Atom.crds[0], Atom.crds[1], Atom.crds[2]);
 
-        fprintf(fwin, "\n\nbegin kpoints");
-        for(int iq = 0; iq <ct.klist.num_k_all; iq++)
-        {
-            fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", ct.klist.k_all_cart[iq][0], ct.klist.k_all_cart[iq][1], ct.klist.k_all_cart[iq][2] );
-        }
-        fprintf(fwin, "\nend kpoints");
-            
-        fclose(fwin);
+         }         
+         fprintf(fwin, "\nend atoms_cart\n");
+         fprintf(fwin, "\nbegin unit_cell_cart");
+         fprintf(fwin, "\nbohr");
+         fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", L.get_a0(0),L.get_a0(1),L.get_a0(2));
+         fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", L.get_a1(0),L.get_a1(1),L.get_a1(2));
+         fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", L.get_a2(0),L.get_a2(1),L.get_a2(2));
+         fprintf(fwin, "\nend_unit_cell_cart");
+         fprintf(fwin, "\n\nmp_grid : %d %d %d", ct.kpoint_mesh[0], ct.kpoint_mesh[1], ct.kpoint_mesh[2]);
 
-        FILE *feig= fopen("Wannier90_rmg/wannier90.eig", "w+");
-        for(int iq = 0; iq <ct.klist.num_k_all; iq++)
-        {
-            int ik = ct.klist.k_map_index[iq];
-            for(int st = 0; st < nstates; st++)
-            {
-                fprintf(feig, "%5d %5d  %18.12f\n", st+1, iq+1, ct.kp[ik].eigs[st] *Ha_eV);
-            }
-        }
-        fclose(feig);
+         fprintf(fwin, "\n\nbegin kpoints");
+         for(int iq = 0; iq <ct.klist.num_k_all; iq++)
+         {
+             fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", ct.klist.k_all_xtal[iq][0], ct.klist.k_all_xtal[iq][1], ct.klist.k_all_xtal[iq][2] );
+         }
+         fprintf(fwin, "\nend kpoints");
+
+         fclose(fwin);
+
+         FILE *feig= fopen("Wannier90_rmg/wannier90.eig", "w+");
+         for(int iq = 0; iq <ct.klist.num_k_all; iq++)
+         {
+             int ik = ct.klist.k_map_index[iq];
+             for(int st = 0; st < nstates; st++)
+             {
+                 fprintf(feig, "%5d %5d  %18.12f\n", st+1, iq+1, ct.kp[ik].eigs[st] *Ha_eV);
+             }
+         }
+         fclose(feig);
 
     }
+}
+
+
+template void Wannier<double> ::Read_nnkpts();
+template void Wannier<std::complex<double>> ::Read_nnkpts();
+template <class T> void Wannier<T>::Read_nnkpts()
+{
+    std::ifstream fnnk("Wannier90_rmg/wannier90.nnkp");
+    if(!fnnk.is_open())
+        throw RmgFatalException() << "generte wannier90.nnkpts first by running wannier90.x -pp \n";
+
+    std::string oneline;
+    // find the first nnkpts 
+    while(getline(fnnk, oneline) )
+    {
+        if(oneline.find("nnkpts") != std::string::npos ) break;
+    }
+    getline(fnnk, oneline);
+
+    boost::trim(oneline);
+    ct.klist.num_k_nn = std::stoi(oneline);
+
+    ct.klist.k_neighbors.resize(boost::extents[ct.klist.num_k_all][ct.klist.num_k_nn][4]);
+
+    std::vector<std::string> kn_info;
+    if(pct.imgpe == 0 && ct.verbose) 
+        printf("\n kpoint neighbors from nnkpts \n");
+
+    std::string whitespace_delims = " \n\t";
+    for(int i = 0; i < ct.klist.num_k_all; i++)
+    {
+        for(int j = 0; j < ct.klist.num_k_nn; j++)
+        {
+            getline(fnnk, oneline);
+
+            boost::trim(oneline);
+            boost::algorithm::split( kn_info, oneline, boost::is_any_of(whitespace_delims), boost::token_compress_on );
+            if(std::stoi(kn_info[0]) != i+1 || kn_info.size() != 5) 
+            {
+                std::cout << " nnkpts problem i+1 = " << i+1 << "  ik = " << kn_info[0] << std::endl;
+                throw RmgFatalException() << "nnkpts in wannier90.nnkpts file has problem  \n";
+            }
+            ct.klist.k_neighbors[i][j][0] = std::stoi(kn_info[1]) -1;
+            ct.klist.k_neighbors[i][j][1] = std::stoi(kn_info[2]);
+            ct.klist.k_neighbors[i][j][2] = std::stoi(kn_info[3]);
+            ct.klist.k_neighbors[i][j][3] = std::stoi(kn_info[4]);
+            if(pct.imgpe == 0 && ct.verbose) 
+                printf("%5d  %5d  %5d  %5d  %5d \n", std::stoi(kn_info[0])-1,std::stoi(kn_info[1])-1,
+                        std::stoi(kn_info[2]),std::stoi(kn_info[3]),std::stoi(kn_info[4]));
+
+
+        }
+    }
+
+}
+template  void Wannier<double>::ReadRotatePsi(int ikindex, int isym, int isyma, std::string wavefile, double *psi_k);
+template  void Wannier<std::complex<double>>::ReadRotatePsi(int ikindex, int isym, int isyma, std::string wavefile, std::complex<double> *psi_k);
+template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isyma, std::string wavefile, T *psi_k)
+{
+
+    int nx_grid = G.get_NX_GRID(1);
+    int ny_grid = G.get_NY_GRID(1);
+    int nz_grid = G.get_NZ_GRID(1);
+    int nbasis = nx_grid * ny_grid * nz_grid;
+    int nbasis_noncoll = nx_grid * ny_grid * nz_grid * ct.noncoll_factor;
+    size_t length = nstates * nbasis_noncoll * sizeof(T);
+    T *psi_map;
+
+    std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ikindex);
+    int serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
+    if(serial_fd < 0)
+        throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+
+    psi_map = (T *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+
+
+    int ixx, iyy, izz;
+    for (int ix = 0; ix < nx_grid; ix++) {
+        for (int iy = 0; iy < ny_grid; iy++) {
+            for (int iz = 0; iz < nz_grid; iz++) {
+
+                symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+
+                if(ct.noncoll) 
+                    throw RmgFatalException() << "wave function rotation need to be done correctly  \n";
+
+                if(isym >= 0)
+                {
+                    for(int st = 0; st < nstates; st++)
+                    {
+                        psi_k[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]
+                            = (psi_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]);
+                    }
+                }
+                else
+                {
+                    for(int st = 0; st < nstates; st++)
+                    {
+                        psi_k[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]
+                            = MyConj(psi_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]);
+                    }
+                }
+            }
+        }
+    }
+
+    munmap(psi_map, length);
+    close(serial_fd);
+
+}
+
+
+template  void Wannier<double>::SetMmn();
+template  void Wannier<std::complex<double>>::SetMmn();
+template <class T> void Wannier<T>::SetMmn()
+{
+
+    int num_q = ct.klist.num_k_all;
+    int num_kn = ct.klist.num_k_nn;
+
+    int nx_grid = G.get_NX_GRID(1);
+    int ny_grid = G.get_NY_GRID(1);
+    int nz_grid = G.get_NZ_GRID(1);
+    int nbasis = nx_grid * ny_grid * nz_grid;
+    int nbasis_noncoll = nbasis * ct.noncoll_factor;
+    size_t length = nstates * nbasis_noncoll * sizeof(T);
+    T *psi_k = (T *)GpuMallocManaged(length);
+    T *psi_q = (T *)GpuMallocManaged(length);
+    T *Mmn = (T *)GpuMallocManaged(num_q * num_kn * nstates * nstates * sizeof(T));
+
+    double vel = L.get_omega() / ((double)nbasis);
+    T alpha(vel);
+    T beta = 0.0;
+
+    T kphase(1.0);
+    double kr;
+    //double *kphase_R = (double *)&kphase;
+    std::complex<double> *kphase_C = (std::complex<double> *)&kphase;
+    for(int ik = 0; ik < num_q; ik++)
+    {
+
+        int ik_irr = ct.klist.k_map_index[ik];
+        int isym = ct.klist.k_map_symm[ik];
+        int isyma = std::abs(isym) -1;
+
+        ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
+
+        for(int ikn = 0; ikn < num_kn; ikn++)
+        {
+            int ikn_index = ct.klist.k_neighbors[ik][ikn][0];
+            int ikn_irr = ct.klist.k_map_index[ikn_index];
+            int isym_kn = ct.klist.k_map_symm[ikn_index];
+            int isyma_kn = std::abs(isym) -1;
+            ReadRotatePsi(ikn_irr, isym_kn, isyma_kn, wavefile, psi_q);
+
+
+            //  phase factor when kneight need a periodic BZ folding
+            for (int iz = 0; iz < nz_grid; iz++) {
+                for (int iy = 0; iy < ny_grid; iy++) {
+                    for (int ix = 0; ix < nx_grid; ix++) {
+                        kr = ct.klist.k_neighbors[ik][ikn][1] * ix/(double)nx_grid
+                            +ct.klist.k_neighbors[ik][ikn][2] * iy/(double)ny_grid
+                            +ct.klist.k_neighbors[ik][ikn][3] * iz/(double)nz_grid;
+                        *kphase_C = std::exp( std::complex<double>(0.0, -kr * twoPI));
+                        for(int st = 0; st < nstates; st++)
+                        {
+                            psi_q[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
+                            if(ct.noncoll)
+                                psi_q[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
+                        }
+
+                    }
+                }
+            }
+
+            RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
+                    beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
+
+
+        }
+
+
+    }
+
+    GpuFreeManaged(psi_k);
+    GpuFreeManaged(psi_q);
+    GpuFreeManaged(Mmn);
+
+    if(pct.imgpe == 0)
+    {
+        time_t tt;
+
+        char *timeptr;
+        time (&tt);
+        timeptr = ctime (&tt);
+        FILE *fmmn = fopen("Wannier90_rmg/wannier90.mmn", "w+");
+        fprintf(fmmn, "Created with RMG on %s", timeptr);
+        fprintf(fmmn, "%8d  %8d  %8d    ", nstates, num_q, num_kn);
+        for(int iq = 0; iq <num_q; iq++)
+        {
+            for(int ikn = 0; ikn < num_kn; ikn++)
+            {
+                fprintf(fmmn,"\n %5d  %5d  %5d  %5d  %5d", iq+1, ct.klist.k_neighbors[iq][ikn][0]+1,
+                        ct.klist.k_neighbors[iq][ikn][1],ct.klist.k_neighbors[iq][ikn][2],ct.klist.k_neighbors[iq][ikn][3]);
+                std::complex<double> *Mmn_C = (std::complex<double> *)&Mmn[(iq*num_kn+ikn)*nstates*nstates];
+                for(int st1 = 0; st1 < nstates; st1++)
+                    for(int st2 = 0; st2 < nstates; st2++)
+                    {
+                        fprintf(fmmn, "\n  %18.12f %18.12f", std::real(Mmn_C[ st1* nstates + st2]),
+                                std::imag(Mmn_C[ st1* nstates + st2]));
+                    }
+            }
+        }
+        printf("\n Mmn done");
+        fclose(fmmn);
+    }
+
+
 }

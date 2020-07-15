@@ -804,118 +804,126 @@ public:
 
     bool is_gamma;
     bool is_use_symmetry;
+    bool time_reversal;
     bool frac_symm;
 
-    bool freeze_occupied;
-
-    // Maximum number of valence electrons for any atomic species
-    double max_zvalence;
-
-    // Non-local block size
-    int non_local_block_size;
-    int poisson_solver;
-    int dipole_corr[3];
-
-    // Flag to use fine grid for vdf-df
-    bool use_vdwdf_finegrid;
-
-    // vdW kernel table file
-    std::string vdW_kernel_file;
-
-    // Flag indicating whether or not to localize the non-local projectors
-    bool localize_projectors;
-    bool localize_localpp;
-    bool proj_nophase;
-
-    // Flag indicating whether or not to calculate dipole moment for the entrire cell. Default is off
-    bool dipole_moment;
-    int nsym;
-
-    // In case system has numa whether or not to use it
-    // (may not want to try setting it up internally since the user may want to
-    // to do it manually with numactl or aprun
-    bool use_numa;
-
-    // In case system has hwloc whether or not to use it
-    bool use_hwloc;
-
-    // Some CPU versions of zgemm are very slow because of compiler implementations
-    // of std::complex. In that case setting this flag lets you use an alternate implementation.
-    bool use_alt_zgemm;
-
-    // Default is false. RMG will still be able to use transparent huge pages but
-    // certain special optimizations will be disabled. If you set this to true then
-    // RMG assumes that sufficient huge pages are available to meet all memory
-    // requirements and bad results may occur if that is not true.
-    bool require_huge_pages;
-
-    // Controls how far below the Nyquist frequency potentials are cutoff. Default is 0.25
-    double filter_factor;
-
-    // Use square root technique for density interpolation
-    bool sqrt_interpolation;
-
-    // Use a faster but less accurate method for generating the charge density
-    bool fast_density;
-
-    // Filter density dependent potentials
-    bool filter_dpot;
-
-    // Alternate laplacian discretization
-    bool alt_laplacian;
-
-    // Flag is true if the ddd is non-diagonal for any atomic species
-    bool is_ddd_non_diagonal;
-
-    // Flag controlling whether or not to use asynchronous MPI allreduce operations in certain places.
-    // Async reduction is not available on all platforms so there is both a compilation flag and a
-    // runtime flag. In particular on a GPU platform that supports asynchronous all reduce operations
-    // on CPU's only you want to set this to false.
-    bool use_async_allreduce;
-
-    bool ON_read_from_RMG;
-    char infile_ON_from_RMG[2*MAX_PATH];
-    int freeze_rho_steps;
-    bool use_cpdgemr2d;
-    
-    int orbital_mixing_method;
-    /*Order of Pulay mixing for orbital*/
-    int orbital_pulay_order;
-
-    /*How often to refresh Pulay history for orbital mixing*/
-    int orbital_pulay_refresh;
-
-    /*Scale parameter for residuals in Pulay orbital mixing*/
-    double orbital_pulay_scale;
-
-    double orbital_pulay_mixfirst;
-
-    int fd_allocation_limit;
-
-    // LDA+U options
-    int ldaU_mode;
-    int num_ldaU_ions;
-    int max_ldaU_l;  // max ldaU l value for any ion
+   bool wannier90;
+   int wannier90_scdm;
+   double wannier90_scdm_mu;
+   double wannier90_scdm_sigma;
+   int num_wanniers;
 
 
-    bool stress;
-    bool cell_relax;
-    int cell_movable[9];
-    double ldaU_radius;
+   bool freeze_occupied;
 
-    // Memory usage options
-    size_t q_alloc[3];
-    size_t beta_alloc[3];
-    size_t psi_alloc[3];
-    size_t vexx_alloc[3];
-    int LocalizedOrbitalLayout=1;
+   // Maximum number of valence electrons for any atomic species
+   double max_zvalence;
 
-    std::string input_initial, input_final;
-    double totale_initial, totale_final;
+   // Non-local block size
+   int non_local_block_size;
+   int poisson_solver;
+   int dipole_corr[3];
 
-    // Testing options
-    double test_energy=NAN;
-    double test_energy_tolerance=1.0e-7;
+   // Flag to use fine grid for vdf-df
+   bool use_vdwdf_finegrid;
+
+   // vdW kernel table file
+   std::string vdW_kernel_file;
+
+   // Flag indicating whether or not to localize the non-local projectors
+   bool localize_projectors;
+   bool localize_localpp;
+   bool proj_nophase;
+
+   // Flag indicating whether or not to calculate dipole moment for the entrire cell. Default is off
+   bool dipole_moment;
+   int nsym;
+
+   // In case system has numa whether or not to use it
+   // (may not want to try setting it up internally since the user may want to
+   // to do it manually with numactl or aprun
+   bool use_numa;
+
+   // In case system has hwloc whether or not to use it
+   bool use_hwloc;
+
+   // Some CPU versions of zgemm are very slow because of compiler implementations
+   // of std::complex. In that case setting this flag lets you use an alternate implementation.
+   bool use_alt_zgemm;
+
+   // Default is false. RMG will still be able to use transparent huge pages but
+   // certain special optimizations will be disabled. If you set this to true then
+   // RMG assumes that sufficient huge pages are available to meet all memory
+   // requirements and bad results may occur if that is not true.
+   bool require_huge_pages;
+
+   // Controls how far below the Nyquist frequency potentials are cutoff. Default is 0.25
+   double filter_factor;
+
+   // Use square root technique for density interpolation
+   bool sqrt_interpolation;
+
+   // Use a faster but less accurate method for generating the charge density
+   bool fast_density;
+
+   // Filter density dependent potentials
+   bool filter_dpot;
+
+   // Alternate laplacian discretization
+   bool alt_laplacian;
+
+   // Flag is true if the ddd is non-diagonal for any atomic species
+   bool is_ddd_non_diagonal;
+
+   // Flag controlling whether or not to use asynchronous MPI allreduce operations in certain places.
+   // Async reduction is not available on all platforms so there is both a compilation flag and a
+   // runtime flag. In particular on a GPU platform that supports asynchronous all reduce operations
+   // on CPU's only you want to set this to false.
+   bool use_async_allreduce;
+
+   bool ON_read_from_RMG;
+   char infile_ON_from_RMG[2*MAX_PATH];
+   int freeze_rho_steps;
+   bool use_cpdgemr2d;
+
+   int orbital_mixing_method;
+   /*Order of Pulay mixing for orbital*/
+   int orbital_pulay_order;
+
+   /*How often to refresh Pulay history for orbital mixing*/
+   int orbital_pulay_refresh;
+
+   /*Scale parameter for residuals in Pulay orbital mixing*/
+   double orbital_pulay_scale;
+
+   double orbital_pulay_mixfirst;
+
+   int fd_allocation_limit;
+
+   // LDA+U options
+   int ldaU_mode;
+   int num_ldaU_ions;
+   int max_ldaU_l;  // max ldaU l value for any ion
+
+
+   bool stress;
+   bool cell_relax;
+   int cell_movable[9];
+   double ldaU_radius;
+
+   // Memory usage options
+   size_t q_alloc[3];
+   size_t beta_alloc[3];
+   size_t psi_alloc[3];
+   size_t vexx_alloc[3];
+   int LocalizedOrbitalLayout=1;
+
+   std::string input_initial, input_final;
+   double totale_initial, totale_final;
+
+   // Testing options
+   double test_energy=NAN;
+   double test_energy_tolerance=1.0e-7;
 
 };
 

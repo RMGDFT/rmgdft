@@ -106,8 +106,16 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
         ityp[ion] = Atoms[ion].species;
     }
 
-    int nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec, angprec);
-    int *sa = new int[9 * nsym_atom];
+    int nsym_atom=1;
+    if(ct.is_use_symmetry)
+    {
+        nsym_atom = spg_get_multiplicity(lattice, tau, ityp, ct.num_ions, symprec, angprec);
+    }
+    else
+    {
+        nsym_atom = 1;
+    }
+    int *sa = new int[9 * nsym_atom]();
     std::vector<double> translation(3 * nsym_atom);
     ftau.resize(3 * nsym_atom);
     ftau_wave.resize(3 * nsym_atom);
@@ -117,7 +125,21 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     sym_trans.resize(3 * nsym_atom);
     sym_rotate.resize(9 * nsym_atom);
 
-    nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
+    if(ct.is_use_symmetry)
+    {
+        nsym_atom = spg_get_symmetry(sa, translation.data(),  nsym_atom, lattice, tau, ityp, ct.num_ions, symprec, angprec);
+    }
+    else
+    {
+        sa[0] = 1;
+        sa[4] = 1;
+        sa[8] = 1;
+        translation[0] = 0.0;
+        translation[1] = 0.0;
+        translation[2] = 0.0;
+    }
+    
+    if(!ct.time_reversal) time_reversal = false;
 
     nsym = 0;
     for(int kpt = 0; kpt < nsym_atom; kpt++)
@@ -143,7 +165,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                     sr[i][j] = sa[kpt * 9 + i *3 + j];
                 }
 
-            
+
             ftau[nsym*3 + 0] = translation[kpt*3 + 0] * nx_grid + symprec;
             ftau[nsym*3 + 1] = translation[kpt*3 + 1] * ny_grid + symprec;
             ftau[nsym*3 + 2] = translation[kpt*3 + 2] * nz_grid + symprec;
@@ -157,7 +179,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
             inv_type[nsym] = false;
             if(type_symm(sr) == 2 || type_symm(sr) == 5 || type_symm(sr) == 6)
                 inv_type[nsym] = true;
-            
+
             time_rev[nsym] = false;
 
             if(ct.verbose && pct.imgpe == 0)
@@ -178,14 +200,13 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                 printf("\n      %3d  %3d  %3d", sa[kpt * 9 + i *3 + 0],sa[kpt * 9 + i *3 + 1],sa[kpt * 9 + i *3 + 2]);
             }   
             printf("  with translation of (%f %f %f) grids ", frac1, frac2, frac3);
-            
+
         }
     }   
 
     if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation before considering real space grid: %d",nsym_atom);
     if(ct.verbose && pct.imgpe == 0) printf("\n number of sym operation  after considering real space grid: %d",nsym);
     assert(nsym >0);
-    //if(nsym == 1) ct.is_use_symmetry = 0;
 
     sym_atom.resize(ct.num_ions* nsym);
 

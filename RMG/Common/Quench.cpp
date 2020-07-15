@@ -376,16 +376,15 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     }
 
-    if(0)
+    if(ct.wannier90)
     {
-        int scdm = 0;
-        double scdm_mu = ct.efermi;
-        double scdm_sigma = 1.0;
-        int n_wannier = 4;
+        int scdm = ct.wannier90_scdm;
+        double scdm_mu = ct.wannier90_scdm_mu;
+        double scdm_sigma = ct.wannier90_scdm_sigma;
+        int n_wannier = ct.num_wanniers;
  
         Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
                 n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage);
-        Wan.SetAmn();
 
     }
 

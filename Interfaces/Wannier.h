@@ -95,6 +95,8 @@ public:
     void SetAmn();
     void SetMmn();
     void WriteWinEig();
+    void Read_nnkpts();
+    void ReadRotatePsi(int ik, int isy, int isya, std::string wavefile, T *psi_k);
 
 };
 

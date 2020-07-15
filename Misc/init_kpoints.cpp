@@ -53,7 +53,6 @@ int init_kpoints (int *kmesh, int *kshift)
     ct.klist.k_all_cart.resize(boost::extents[ct.klist.num_k_all][3]);
     ct.klist.k_map_index.resize(ct.klist.num_k_all, 0);
     ct.klist.k_map_symm.resize(ct.klist.num_k_all, 0);
-//    ct.klist.k_neighbor.resize(ct.klist.num_k_all);
     
     if(ct.is_gamma)
     {
@@ -77,10 +76,6 @@ int init_kpoints (int *kmesh, int *kshift)
             ct.klist.k_all_cart[0][i] = 0.0;
         }
     
-        ct.klist.k_neighbor.resize(boost::extents[ct.klist.num_k_ire][1]);
-        ct.klist.k_neighbor[0][0] = -1;
-
-
         ct.klist.kweight.resize(ct.klist.num_k_ire, 1.0);
 
         return ct.num_kpts;
