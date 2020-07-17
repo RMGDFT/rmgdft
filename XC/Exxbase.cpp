@@ -1208,16 +1208,16 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
                         {
                             for(int st = 0; st < nstates_occ; st++)
                             {
-                                psi_q[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]
-                                    = (psi_q_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]);
+                                psi_q[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]
+                                    = (psi_q_map[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
                             }
                         }
                         else
                         {
                             for(int st = 0; st < nstates_occ; st++)
                             {
-                                psi_q[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]
-                                    = std::conj(psi_q_map[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]);
+                                psi_q[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]
+                                    = std::conj(psi_q_map[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
                             }
                         }
                     }

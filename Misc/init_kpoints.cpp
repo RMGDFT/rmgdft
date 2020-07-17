@@ -113,14 +113,14 @@ int init_kpoints (int *kmesh, int *kshift)
                     for(isym = 0; isym < Rmg_Symm->nsym; isym++)
                     {
                         sym_qvec[0] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 0 ] * ct.kp[ik].kpt[0] +
-                            Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 1 ] * ct.kp[ik].kpt[1] +
-                            Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 2 ] * ct.kp[ik].kpt[2];
-                        sym_qvec[1] = Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 0 ] * ct.kp[ik].kpt[0] +
-                            Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
-                            Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[2];
-                        sym_qvec[2] = Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 0 ] * ct.kp[ik].kpt[0] +
-                            Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[1] +
-                            Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
+                                      Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 0 ] * ct.kp[ik].kpt[1] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 0 ] * ct.kp[ik].kpt[2];
+                        sym_qvec[1] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 1 ] * ct.kp[ik].kpt[0] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 1 ] * ct.kp[ik].kpt[1] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 1 ] * ct.kp[ik].kpt[2];
+                        sym_qvec[2] = Rmg_Symm->sym_rotate[isym * 9 + 0 * 3 + 2 ] * ct.kp[ik].kpt[0] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 1 * 3 + 2 ] * ct.kp[ik].kpt[1] +
+                                      Rmg_Symm->sym_rotate[isym * 9 + 2 * 3 + 2 ] * ct.kp[ik].kpt[2];
 
                         if(Rmg_Symm->time_rev[isym])
                         {
@@ -132,9 +132,9 @@ int init_kpoints (int *kmesh, int *kshift)
                         dk[0] = sym_qvec[0] - xk[0];
                         dk[1] = sym_qvec[1] - xk[1];
                         dk[2] = sym_qvec[2] - xk[2];
-                    //    dk[0] = dk[0] - std::round(dk[0]);
-                    //    dk[1] = dk[1] - std::round(dk[1]);
-                    //    dk[2] = dk[2] - std::round(dk[2]);
+                        dk[0] = dk[0] - std::round(dk[0]);
+                        dk[1] = dk[1] - std::round(dk[1]);
+                        dk[2] = dk[2] - std::round(dk[2]);
                         if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
                         {
                             find_eq = true;
@@ -151,9 +151,9 @@ int init_kpoints (int *kmesh, int *kshift)
                             dk[0] = sym_qvec[0] + xk[0];
                             dk[1] = sym_qvec[1] + xk[1];
                             dk[2] = sym_qvec[2] + xk[2];
-                     //       dk[0] = dk[0] - std::round(dk[0]);
-                     //       dk[1] = dk[1] - std::round(dk[1]);
-                     //       dk[2] = dk[2] - std::round(dk[2]);
+                            dk[0] = dk[0] - std::round(dk[0]);
+                            dk[1] = dk[1] - std::round(dk[1]);
+                            dk[2] = dk[2] - std::round(dk[2]);
                             if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
                             {
                                 find_eq = true;
