@@ -166,12 +166,12 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                 }
 
 
-            ftau[nsym*3 + 0] = translation[kpt*3 + 0] * nx_grid + symprec;
-            ftau[nsym*3 + 1] = translation[kpt*3 + 1] * ny_grid + symprec;
-            ftau[nsym*3 + 2] = translation[kpt*3 + 2] * nz_grid + symprec;
-            ftau_wave[nsym*3 + 0] = translation[kpt*3 + 0] * nx_grid_c + symprec;
-            ftau_wave[nsym*3 + 1] = translation[kpt*3 + 1] * ny_grid_c + symprec;
-            ftau_wave[nsym*3 + 2] = translation[kpt*3 + 2] * nz_grid_c + symprec;
+            ftau[nsym*3 + 0] = std::round(translation[kpt*3 + 0] * nx_grid);
+            ftau[nsym*3 + 1] = std::round(translation[kpt*3 + 1] * ny_grid);
+            ftau[nsym*3 + 2] = std::round(translation[kpt*3 + 2] * nz_grid);
+            ftau_wave[nsym*3 + 0] = std::round(translation[kpt*3 + 0] * nx_grid_c);
+            ftau_wave[nsym*3 + 1] = std::round(translation[kpt*3 + 1] * ny_grid_c);
+            ftau_wave[nsym*3 + 2] = std::round(translation[kpt*3 + 2] * nz_grid_c);
 
             sym_trans[nsym*3+0] = translation[kpt*3+0];
             sym_trans[nsym*3+1] = translation[kpt*3+1];
