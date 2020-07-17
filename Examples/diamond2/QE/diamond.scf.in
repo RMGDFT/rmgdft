@@ -2,7 +2,7 @@
     calculation = 'scf'
     restart_mode='from_scratch',
     prefix='di',
-    pseudo_dir='.',
+    pseudo_dir='..',
     outdir='tempdir'
     verbosity='high'
  /
