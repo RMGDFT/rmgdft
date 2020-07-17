@@ -904,7 +904,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     //RMG2BGW options
     If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, true, 
             "For non-gamma point, always true, for gamma point, optional");
-    If.RegisterInputKey("frac_symmetry", &lc.frac_symm, false, 
+    If.RegisterInputKey("frac_symmetry", &lc.frac_symm, true, 
             "For supercell calculation, one can disable the fractional translation symmetry");
 
     If.RegisterInputKey("rmg2bgw", &lc.rmg2bgw, false, 
