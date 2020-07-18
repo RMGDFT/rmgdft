@@ -20,7 +20,7 @@
     ecutrho         = 312.0
     noncolin = .true.
     lspinorb = .true.
-    celldm(1) = 5.395085066162
+    celldm(1) = 5.393278378369
     celldm(2) = 2.056412053258
     celldm(3) = 1.736159775753
 /
