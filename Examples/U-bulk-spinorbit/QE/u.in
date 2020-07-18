@@ -1,0 +1,48 @@
+&control
+   calculation = 'scf'
+   restart_mode='from_scratch',
+   prefix='Uranium',
+   tstress = .false.
+   tprnfor = .false.
+   pseudo_dir = '../',
+   outdir='.'
+   verbosity = 'high'
+/
+
+&system
+    ibrav           = 8
+    nat             = 4
+    ntyp            = 1
+    nbnd            = 74
+    occupations     = 'smearing'
+    smearing='mp', degauss=0.002,
+    ecutwfc         = 78.0
+    ecutrho         = 312.0
+    noncolin = .true.
+    lspinorb = .true.
+    celldm(1) = 5.395085066162
+    celldm(2) = 2.056412053258
+    celldm(3) = 1.736159775753
+/
+
+&electrons
+    conv_thr        = 1.0d-10
+    mixing_beta = 0.5
+    mixing_mode = 'plain'
+    diagonalization='davidson'
+
+/
+
+
+ATOMIC_SPECIES
+   U   238.02891    U.rel-pbe-spfn-rrkjus_psl.1.0.0.UPF
+
+ATOMIC_POSITIONS {angstrom}
+U          0.00000        0.60157        1.23875
+U          0.00000        5.26743        3.71625
+U          1.42700        3.53607        1.23875
+U          1.42700        2.33293        3.71625
+
+K_POINTS automatic
+4 4 4 0 0 0
+
