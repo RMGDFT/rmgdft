@@ -384,7 +384,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         int n_wannier = ct.num_wanniers;
  
         Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
-                n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage);
+                n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
 
     }
 

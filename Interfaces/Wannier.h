@@ -34,6 +34,7 @@
 #include "Lattice.h"
 #include "Symmetry.h"
 #include "Exxbase.h"
+#include "Kpoint.h"
 
 
 // Screening types
@@ -87,13 +88,13 @@ public:
             int scdm,
             double scdm_mu,
             double scdm_sigma,
-            T *psi_in);
+            T *psi_in, Kpoint<T> **Kptr);
 
     ~Wannier(void);
 
     void SetEntanglement(int scdm_entan, double mu, double sigma);
     void SetAmn();
-    void SetMmn();
+    void SetMmn(Kpoint<T> **Kptr);
     void WriteWinEig();
     void Read_nnkpts();
     void ReadRotatePsi(int ik, int isy, int isya, std::string wavefile, T *psi_k);

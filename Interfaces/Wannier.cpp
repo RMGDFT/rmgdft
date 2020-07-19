@@ -50,8 +50,9 @@
 
 
 void transpose(std::complex<double> *m, int w, int h);
-template Wannier<double>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int, int, double, double, double *);
-template Wannier<std::complex<double>>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int,int, double, double, std::complex<double> *);
+template Wannier<double>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int, int, double, double, double *, Kpoint<double> **Kptr);
+template Wannier<std::complex<double>>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int,int, double, double, std::complex<double>
+*, Kpoint<std::complex<double>> **Kptr);
 
 template Wannier<double>::~Wannier(void);
 template Wannier<std::complex<double>>::~Wannier(void);
@@ -68,7 +69,7 @@ template <class T> Wannier<T>::Wannier (
         int scdm_in,
         double scdm_mu_in,
         double scdm_sigma_in,
-        T *psi_in) : 
+        T *psi_in, Kpoint<T> **Kptr) : 
     G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), n_wannier(nwannier_in), scdm(scdm_in), 
     scdm_mu(scdm_mu_in), scdm_sigma(scdm_sigma_in), psi(psi_in)
 {
@@ -82,6 +83,11 @@ template <class T> Wannier<T>::Wannier (
         throw RmgFatalException() << "kpoint must include gamma point, kpoint_is_shift=0, 0, 0  \n";
     }
 
+
+    if(!ct.norm_conserving_pp && ct.localize_projectors)
+    {
+        throw RmgFatalException() << "for ultra soft pseudopotential, set localize_projectors to be false for wannier90 interface  \n";
+    }
     ngrid = G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1);
     ngrid_noncoll = ngrid * ct.noncoll_factor;
 
@@ -95,7 +101,7 @@ template <class T> Wannier<T>::Wannier (
     WriteWinEig();
     Read_nnkpts();
     SetAmn();
-    SetMmn();
+    SetMmn(Kptr);
     delete RT1;
 }
 
@@ -510,9 +516,9 @@ template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isy
 }
 
 
-template  void Wannier<double>::SetMmn();
-template  void Wannier<std::complex<double>>::SetMmn();
-template <class T> void Wannier<T>::SetMmn()
+template  void Wannier<double>::SetMmn(Kpoint<double> **Kptr);
+template  void Wannier<std::complex<double>>::SetMmn(Kpoint<std::complex<double>> **Kptr);
+template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 {
 
     int num_q = ct.klist.num_k_all;
