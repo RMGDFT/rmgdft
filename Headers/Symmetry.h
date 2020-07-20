@@ -78,7 +78,6 @@ class Symmetry
         int pbasis;
         int nbasis;
 
-        std::vector<int> sym_atom;
 
         double symprec;
         double angprec;
@@ -105,6 +104,7 @@ class Symmetry
         std::vector<bool> time_rev;
         std::vector<int> ftau;
         std::vector<int> ftau_wave;
+        std::vector<int> sym_atom;
         boost::multi_array<double, 4> rot_ylm;
         boost::multi_array<std::complex<double>, 3> rot_spin;
         Symmetry(Lattice &L_in, int nx, int ny, int nz, int density);

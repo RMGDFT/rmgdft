@@ -582,6 +582,8 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
             RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
                     beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
 
+            if(!ct.norm_conserving_pp || ct.noncoll)
+                Mmn_us(ik_irr, isym, isyma, ikn_irr, isym_kn, isyma_kn, &Mmn[(ik*num_kn+ikn)*nstates*nstates], Kptr);
 
         }
 
@@ -622,5 +624,184 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     GpuFreeManaged(psi_k);
     GpuFreeManaged(psi_q);
     GpuFreeManaged(Mmn);
+
+}
+template  void Wannier<double>::Mmn_us(int, int, int, int, int, int, double *, Kpoint<double> **Kptr);
+template  void Wannier<std::complex<double>>::Mmn_us(int, int, int, int, int, int, std::complex<double> *, Kpoint<std::complex<double>> **Kptr);
+template <class T> void Wannier<T>::Mmn_us(int ik_irr, int isym, int isyma, int kn_irr, int isym_kn, int isyma_kn, T *Mmn_onekpair, Kpoint<T> **Kptr)
+{
+    
+    size_t num_nonloc_ions = Kptr[ik_irr]->BetaProjector->get_num_nonloc_ions();
+    if(Atoms.size() != num_nonloc_ions)
+    {
+        throw RmgFatalException() << "set localize_projectors = false to use Wannier90 interface: Terminating.\n";
+    }
+    
+    int *nonloc_ions_list = Kptr[ik_irr]->BetaProjector->get_nonloc_ions_list();
+    int num_tot_proj = Kptr[ik_irr]->BetaProjector->get_num_tot_proj();
+    int pstride = Kptr[ik_irr]->BetaProjector->get_pstride();
+
+    size_t alloc = (size_t)num_tot_proj * (size_t)nstates * ct.noncoll_factor * sizeof(T);
+    T *sint_ik_irr = (T *)GpuMallocManaged(alloc);
+    T *sint_kn_irr = (T *)GpuMallocManaged(alloc);
+    T *sint_ik = (T *)GpuMallocManaged(alloc);
+    T *sint_kn = (T *)GpuMallocManaged(alloc);
+    for(int i = 0; i < num_tot_proj * nstates * ct.noncoll_factor; i++) 
+    {
+        sint_ik[i] = 0.0;
+        sint_kn[i] = 0.0;
+    }
+
+//  from <beta|psi> of irreducible k, rotate to get symmetry-related <beta|psu> |Sk 
+    boost::multi_array_ref<T, 4> sint_ik_irr_4d{sint_ik_irr, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
+    boost::multi_array_ref<T, 4> sint_kn_irr_4d{sint_kn_irr, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
+    boost::multi_array_ref<T, 4> sint_ik_4d{sint_ik, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
+    boost::multi_array_ref<T, 4> sint_kn_4d{sint_kn, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
+
+    // Repack the sint array
+    for(int istate = 0; istate < nstates; istate++)
+    {
+        size_t sindex = istate * num_nonloc_ions * pstride * ct.noncoll_factor;
+        for(int ispin = 0; ispin < ct.noncoll_factor; ispin++)
+        { 
+            for (size_t ion = 0; ion < num_nonloc_ions; ion++)
+            {
+                int proj_index = ion * pstride;
+                T *psint_ik = &Kptr[ik_irr]->newsint_local[proj_index + sindex + ispin * num_nonloc_ions* pstride];
+                T *psint_kn = &Kptr[kn_irr]->newsint_local[proj_index + sindex + ispin * num_nonloc_ions* pstride];
+                int gion = nonloc_ions_list[ion];
+                for (int i = 0; i < pstride; i++)
+                {
+                    sint_ik_irr_4d[istate][ispin][gion][i] = psint_ik[i];
+                    sint_kn_irr_4d[istate][ispin][gion][i] = psint_kn[i];
+
+                }
+            }
+        }
+    }
+
+
+
+    for (int ion = 0; ion < ct.num_ions; ion++)
+    {
+        int ion_ik = Rmg_Symm->sym_atom[isyma * ct.num_ions + ion];
+        int ion_kn = Rmg_Symm->sym_atom[isyma_kn * ct.num_ions + ion];
+        SPECIES &AtomType = Species[Atoms[ion].species];
+
+        for(int ih = 0; ih < AtomType.nh; ih++)
+        {
+            int l_ih = AtomType.nhtol[ih]; 
+            int m_ih = AtomType.nhtom[ih];
+            for(int jh = 0; jh < AtomType.nh; jh++)
+            {
+                int l_jh = AtomType.nhtol[jh]; 
+                int m_jh = AtomType.nhtom[jh];
+
+                if(l_ih != l_jh) continue;
+
+                for(int is = 0; is < ct.noncoll_factor; is++)
+                {
+                    int is_ik = is;
+                    int is_kn = is;
+                    if(Rmg_Symm->time_rev[isyma]) is_ik = (is +1 )%2;
+                    if(Rmg_Symm->time_rev[isyma_kn]) is_kn = (is +1)%2;
+
+                    for(int st = 0; st < nstates; st++)
+                    {
+
+                        sint_ik_4d[st][is_ik][ion][ih] += Rmg_Symm->rot_ylm[isyma][l_ih][m_ih][m_jh] * sint_ik_irr_4d[st][is][ion_ik][jh];
+                        sint_kn_4d[st][is_kn][ion][ih] += Rmg_Symm->rot_ylm[isyma][l_ih][m_ih][m_jh] * sint_kn_irr_4d[st][is][ion_kn][jh];
+                    }
+                }
+            }
+        }
+    }
+
+    T ZERO_t(0.0);
+    T ONE_t(1.0);
+
+
+    double *qqq;
+
+    int M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
+    size_t alloc1 = M_cols * M_cols;
+    T *M_qqq = (T *)GpuMallocManaged(sizeof(T) * alloc1);
+    std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq;
+
+    for (size_t i = 0; i < alloc1; i++)
+    {
+        M_qqq[i] = ZERO_t;
+    }
+
+
+    // set up M_qqq and M_dnm, this can be done outside in the
+    // init.c or get_ddd get_qqq, we need to check the order
+    int proj_index = 0;
+    for (size_t ion = 0; ion < num_nonloc_ions; ion++)
+    {
+
+        /*Actual index of the ion under consideration*/
+        proj_index = ion * ct.max_nl;
+        int gion = nonloc_ions_list[ion];
+
+        SPECIES &AtomType = Species[Atoms[gion].species];
+        int nh = AtomType.nh;
+        qqq = Atoms[gion].qqq;
+
+        for (int i = 0; i < nh; i++)
+        {
+            int inh = i * nh;
+            for (int j = 0; j < nh; j++)
+            {
+
+                if(ct.noncoll)
+                {
+                    int it0 = proj_index + i;
+                    int jt0 = proj_index + j;
+                    int it1 = proj_index + i + num_tot_proj;
+                    int jt1 = proj_index + j + num_tot_proj;
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 0 * nh *nh];
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 1 * nh *nh];
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 2 * nh *nh];
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 3 * nh *nh];
+                }
+                else
+                {
+                    int idx = (proj_index + i) * num_tot_proj + proj_index + j;
+                    M_qqq[idx] = (T)qqq[inh+j];
+                }
+            }
+
+        }
+    }
+
+
+
+    int dim_dnm = num_tot_proj * ct.noncoll_factor;
+
+    //M_dnm: dim_dnm * dim_dnm matrxi
+    //sint_compack: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
+    //nwork: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
+    //  in the first RmgGemm, nwork is a matrix of (dim_dnm) * num_states 
+    //  in the second RmgGemm, nwork is a matrix of num_tot_proj * (tot_states) 
+
+    // leading dimension is num_tot_proj * 2 for noncollinear
+
+    char *transn = "n";
+    char *transc = "c";
+    RmgGemm (transn, transn, dim_dnm, nstates, dim_dnm, 
+            ONE_t, M_qqq,  dim_dnm, sint_kn, dim_dnm,
+            ZERO_t,  sint_kn_irr, dim_dnm);
+
+    RmgGemm (transc, transn, nstates, nstates, dim_dnm,
+            ONE_t, sint_ik,  dim_dnm, sint_kn_irr, dim_dnm,
+            ONE_t,  Mmn_onekpair, nstates);
+
+
+    GpuFreeManaged(M_qqq);
+    GpuFreeManaged(sint_ik);
+    GpuFreeManaged(sint_kn);
+    GpuFreeManaged(sint_ik_irr);
+    GpuFreeManaged(sint_kn_irr);
 
 }
