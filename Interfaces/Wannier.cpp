@@ -143,9 +143,22 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         read(serial_fd, psi_s, length * sizeof(std::complex<double>));
      //   psi_s = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
+       
         for(int st = 0; st < nstates; st++)
         {
             
+            double vel = L.get_omega() / ((double)ngrid);
+            double norm_coeff = 0.0;
+            for(int idx = 0; idx < ngrid_noncoll; idx++)
+            {
+                norm_coeff += std::norm(psi_s[st * ngrid_noncoll + idx]);
+            }
+            norm_coeff = std::sqrt(norm_coeff * vel);
+            for(int idx = 0; idx < ngrid_noncoll; idx++)
+            {
+                psi_s[st * ngrid_noncoll + idx] *= norm_coeff;
+            }
+
             double focc = 1.0;
             //double eigs = ct.kp[ik_gamma].eigs[st];
             //double tem = (eigs - scdm_mu)/scdm_sigma;
@@ -210,6 +223,20 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         int isyma = std::abs(isym)-1;
 
         ReadRotatePsi(ik, isym, isyma, wavefile, psi_s);
+        for(int st = 0; st < nstates; st++)
+        {
+            double vel = L.get_omega() / ((double)ngrid);
+            double norm_coeff = 0.0;
+            for(int idx = 0; idx < ngrid_noncoll; idx++)
+            {
+                norm_coeff += std::norm(psi_s[st * ngrid_noncoll + idx]);
+            }
+            norm_coeff = std::sqrt(norm_coeff * vel);
+            for(int idx = 0; idx < ngrid_noncoll; idx++)
+            {
+                psi_s[st * ngrid_noncoll + idx] *= norm_coeff;
+            }
+        }
 
         int ix, iy, iz, ixx, iyy, izz;
         std::complex<double> phase_center;
