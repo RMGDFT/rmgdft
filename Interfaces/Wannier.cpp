@@ -692,12 +692,13 @@ template <class T> void Wannier<T>::Mmn_us(int ik_irr, int isym, int isyma, int 
         {
             int l_ih = AtomType.nhtol[ih]; 
             int m_ih = AtomType.nhtom[ih];
+            int b_ih = AtomType.indv[ih];
             for(int jh = 0; jh < AtomType.nh; jh++)
             {
-                int l_jh = AtomType.nhtol[jh]; 
                 int m_jh = AtomType.nhtom[jh];
+                int b_jh = AtomType.indv[jh];
 
-                if(l_ih != l_jh) continue;
+                if(b_ih != b_jh) continue;
 
                 for(int is = 0; is < ct.noncoll_factor; is++)
                 {
@@ -710,7 +711,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik_irr, int isym, int isyma, int 
                     {
 
                         sint_ik_4d[st][is_ik][ion][ih] += Rmg_Symm->rot_ylm[isyma][l_ih][m_ih][m_jh] * sint_ik_irr_4d[st][is][ion_ik][jh];
-                        sint_kn_4d[st][is_kn][ion][ih] += Rmg_Symm->rot_ylm[isyma][l_ih][m_ih][m_jh] * sint_kn_irr_4d[st][is][ion_kn][jh];
+                        sint_kn_4d[st][is_kn][ion][ih] += Rmg_Symm->rot_ylm[isyma_kn][l_ih][m_ih][m_jh] * sint_kn_irr_4d[st][is][ion_kn][jh];
                     }
                 }
             }
