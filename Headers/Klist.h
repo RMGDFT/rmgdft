@@ -11,10 +11,12 @@ public:
     int kpoint_mesh[3];
     int kpoint_is_shift[3];
     int num_k_all;
+    int num_k_ext;
     int num_k_ire;
     int num_k_nn;
     
     boost::multi_array<double, 2> k_all_xtal;
+    boost::multi_array<double, 2> k_ext_xtal;
     boost::multi_array<double, 2> k_ire_xtal;
     boost::multi_array<double, 2> k_all_cart;
     boost::multi_array<double, 2> k_ire_cart;

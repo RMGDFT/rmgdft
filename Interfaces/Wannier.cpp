@@ -609,8 +609,15 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
             RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
                     beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
 
+            double dk[3];
+            dk[0] = ct.klist.k_all_xtal[ikn_index][0] - ct.klist.k_all_xtal[ik][0]  
+                + ct.klist.k_neighbors[ik][ikn][1] ;
+            dk[1] = ct.klist.k_all_xtal[ikn_index][1] - ct.klist.k_all_xtal[ik][1]  
+                + ct.klist.k_neighbors[ik][ikn][2] ;
+            dk[2] = ct.klist.k_all_xtal[ikn_index][2] - ct.klist.k_all_xtal[ik][2]  
+                + ct.klist.k_neighbors[ik][ikn][3] ;
             if(!ct.norm_conserving_pp || ct.noncoll)
-                Mmn_us(ik_irr, isym, isyma, ikn_irr, isym_kn, isyma_kn, &Mmn[(ik*num_kn+ikn)*nstates*nstates], Kptr);
+                Mmn_us(dk, ik_irr, isym, isyma, ikn_irr, isym_kn, isyma_kn, &Mmn[(ik*num_kn+ikn)*nstates*nstates], Kptr);
 
         }
 
@@ -653,17 +660,17 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     GpuFreeManaged(Mmn);
 
 }
-template  void Wannier<double>::Mmn_us(int, int, int, int, int, int, double *, Kpoint<double> **Kptr);
-template  void Wannier<std::complex<double>>::Mmn_us(int, int, int, int, int, int, std::complex<double> *, Kpoint<std::complex<double>> **Kptr);
-template <class T> void Wannier<T>::Mmn_us(int ik_irr, int isym, int isyma, int kn_irr, int isym_kn, int isyma_kn, T *Mmn_onekpair, Kpoint<T> **Kptr)
+template  void Wannier<double>::Mmn_us(double *, int, int, int, int, int, int, double *, Kpoint<double> **Kptr);
+template  void Wannier<std::complex<double>>::Mmn_us(double *, int, int, int, int, int, int, std::complex<double> *, Kpoint<std::complex<double>> **Kptr);
+template <class T> void Wannier<T>::Mmn_us(double *dk, int ik_irr, int isym, int isyma, int kn_irr, int isym_kn, int isyma_kn, T *Mmn_onekpair, Kpoint<T> **Kptr)
 {
-    
+
     size_t num_nonloc_ions = Kptr[ik_irr]->BetaProjector->get_num_nonloc_ions();
     if(Atoms.size() != num_nonloc_ions)
     {
         throw RmgFatalException() << "set localize_projectors = false to use Wannier90 interface: Terminating.\n";
     }
-    
+
     int *nonloc_ions_list = Kptr[ik_irr]->BetaProjector->get_nonloc_ions_list();
     int num_tot_proj = Kptr[ik_irr]->BetaProjector->get_num_tot_proj();
     int pstride = Kptr[ik_irr]->BetaProjector->get_pstride();
@@ -679,7 +686,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik_irr, int isym, int isyma, int 
         sint_kn[i] = 0.0;
     }
 
-//  from <beta|psi> of irreducible k, rotate to get symmetry-related <beta|psu> |Sk 
+    //  from <beta|psi> of irreducible k, rotate to get symmetry-related <beta|psu> |Sk 
     boost::multi_array_ref<T, 4> sint_ik_irr_4d{sint_ik_irr, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
     boost::multi_array_ref<T, 4> sint_kn_irr_4d{sint_kn_irr, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
     boost::multi_array_ref<T, 4> sint_ik_4d{sint_ik, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
@@ -765,6 +772,9 @@ template <class T> void Wannier<T>::Mmn_us(int ik_irr, int isym, int isyma, int 
     // set up M_qqq and M_dnm, this can be done outside in the
     // init.c or get_ddd get_qqq, we need to check the order
     int proj_index = 0;
+    T phase_dk;
+    std::complex<double> *phase_dk_C = (std::complex<double> *)&phase_dk;
+
     for (size_t ion = 0; ion < num_nonloc_ions; ion++)
     {
 
@@ -774,6 +784,12 @@ template <class T> void Wannier<T>::Mmn_us(int ik_irr, int isym, int isyma, int 
 
         SPECIES &AtomType = Species[Atoms[gion].species];
         int nh = AtomType.nh;
+
+        double kr = dk[0] * Atoms[gion].xtal[0] + dk[1] * Atoms[gion].xtal[1] + dk[2] * Atoms[gion].xtal[2];
+        *phase_dk_C = std::exp(std::complex<double>(0.0, kr * twoPI));
+
+
+
         qqq = Atoms[gion].qqq;
 
         for (int i = 0; i < nh; i++)
@@ -788,21 +804,22 @@ template <class T> void Wannier<T>::Mmn_us(int ik_irr, int isym, int isyma, int 
                     int jt0 = proj_index + j;
                     int it1 = proj_index + i + num_tot_proj;
                     int jt1 = proj_index + j + num_tot_proj;
-                    M_qqq_C[it0 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 0 * nh *nh];
-                    M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 1 * nh *nh];
-                    M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 2 * nh *nh];
-                    M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 3 * nh *nh];
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 0 * nh *nh] * phase_dk;
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 1 * nh *nh] * phase_dk;
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 2 * nh *nh] * phase_dk;
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 3 * nh *nh] * phase_dk;
                 }
                 else
                 {
                     int idx = (proj_index + i) * num_tot_proj + proj_index + j;
-                    M_qqq[idx] = (T)qqq[inh+j];
+                    M_qqq[idx] = (T)qqq[inh+j] * phase_dk;
                 }
             }
 
         }
     }
 
+    
 
 
     int dim_dnm = num_tot_proj * ct.noncoll_factor;
