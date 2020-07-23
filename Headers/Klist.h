@@ -16,10 +16,11 @@ public:
     int num_k_nn;
     
     boost::multi_array<double, 2> k_all_xtal;
-    boost::multi_array<double, 2> k_ext_xtal;
     boost::multi_array<double, 2> k_ire_xtal;
     boost::multi_array<double, 2> k_all_cart;
     boost::multi_array<double, 2> k_ire_cart;
+    boost::multi_array<double, 2> k_ext_xtal;
+    boost::multi_array<double, 2> k_ext_cart;
 
     std::vector<double> kweight;
 

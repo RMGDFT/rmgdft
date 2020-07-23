@@ -48,6 +48,8 @@
 #include "blas.h"
 #include "Wannier.h"
 
+void InitDelocalizedWeight_onek(int kpt, double kvec[3]);
+void DelocalizedWeight_one(int ion, int kpt, double kvec[3]);        
 
 void transpose(std::complex<double> *m, int w, int h);
 template Wannier<double>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int, int, double, double, double *, Kpoint<double> **Kptr);
@@ -98,8 +100,51 @@ template <class T> Wannier<T>::Wannier (
     RmgTimer *RT1 = new RmgTimer("5-Wannier: writesingle file");
     Exx->WriteWfsToSingleFile();
     MPI_Barrier(MPI_COMM_WORLD);
-    WriteWinEig();
+
     Read_nnkpts();
+//  setup forward beta for all of kpoints
+    double kvec[3];
+    for(int kpt = 0; kpt < ct.klist.num_k_all; kpt++)
+    {
+        
+        kvec[0] = ct.klist.k_all_cart[kpt][0];
+        kvec[1] = ct.klist.k_all_cart[kpt][1];
+        kvec[2] = ct.klist.k_all_cart[kpt][2];
+        InitDelocalizedWeight_onek(kpt, kvec);
+    }
+
+    for(int kpt = 0; kpt < ct.klist.num_k_ext; kpt++)
+    {
+        kvec[0] = ct.klist.k_ext_cart[kpt][0];
+        kvec[1] = ct.klist.k_ext_cart[kpt][1];
+        kvec[2] = ct.klist.k_ext_cart[kpt][2];
+        InitDelocalizedWeight_onek(kpt+ct.klist.num_k_all, kvec);
+    }
+
+    for(int kpt = 0; kpt < ct.klist.num_k_all; kpt++)
+    {
+        
+        kvec[0] = ct.klist.k_all_cart[kpt][0];
+        kvec[1] = ct.klist.k_all_cart[kpt][1];
+        kvec[2] = ct.klist.k_all_cart[kpt][2];
+
+        for(int ion = 0; ion < (int)Atoms.size(); ion++)
+        {
+            DelocalizedWeight_one(ion, kpt, kvec);        
+        }
+    }
+    for(int kpt = 0; kpt < ct.klist.num_k_ext; kpt++)
+    {
+        kvec[0] = ct.klist.k_ext_cart[kpt][0];
+        kvec[1] = ct.klist.k_ext_cart[kpt][1];
+        kvec[2] = ct.klist.k_ext_cart[kpt][2];
+        for(int ion = 0; ion < (int)Atoms.size(); ion++)
+        {
+            DelocalizedWeight_one(ion, kpt+ct.klist.num_k_all, kvec);        
+        }
+    }
+
+    WriteWinEig();
     SetAmn();
     SetMmn(Kptr);
     delete RT1;
@@ -234,7 +279,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             norm_coeff = std::sqrt(norm_coeff * vel);
             for(int idx = 0; idx < ngrid_noncoll; idx++)
             {
-                psi_s[st * ngrid_noncoll + idx] *= norm_coeff;
+                psi_s[st * ngrid_noncoll + idx] /= norm_coeff;
             }
         }
 
@@ -438,6 +483,7 @@ template void Wannier<double> ::Read_nnkpts();
 template void Wannier<std::complex<double>> ::Read_nnkpts();
 template <class T> void Wannier<T>::Read_nnkpts()
 {
+    double tol = 1.0e-5;
     std::ifstream fnnk("Wannier90_rmg/wannier90.nnkp");
     if(!fnnk.is_open())
         throw RmgFatalException() << "generte wannier90.nnkpts first by running wannier90.x -pp \n";
@@ -453,13 +499,15 @@ template <class T> void Wannier<T>::Read_nnkpts()
     boost::trim(oneline);
     ct.klist.num_k_nn = std::stoi(oneline);
 
-    ct.klist.k_neighbors.resize(boost::extents[ct.klist.num_k_all][ct.klist.num_k_nn][4]);
+    //k_neighbors [][][4] store the corresponding kindex from all kpoint (< ct.klist.num_k_all) or from  extra kpoints
+    ct.klist.k_neighbors.resize(boost::extents[ct.klist.num_k_all][ct.klist.num_k_nn][5]);
 
     std::vector<std::string> kn_info;
     if(pct.imgpe == 0 && ct.verbose) 
         printf("\n kpoint neighbors from nnkpts \n");
 
     std::string whitespace_delims = " \n\t";
+    int num_extra_k = 0;
     for(int i = 0; i < ct.klist.num_k_all; i++)
     {
         for(int j = 0; j < ct.klist.num_k_nn; j++)
@@ -477,6 +525,57 @@ template <class T> void Wannier<T>::Read_nnkpts()
             ct.klist.k_neighbors[i][j][1] = std::stoi(kn_info[2]);
             ct.klist.k_neighbors[i][j][2] = std::stoi(kn_info[3]);
             ct.klist.k_neighbors[i][j][3] = std::stoi(kn_info[4]);
+            
+            ct.klist.k_neighbors[i][j][4] = ct.klist.k_neighbors[i][j][0];
+            double xkn[3], dk[3];
+            int ikn = ct.klist.k_neighbors[i][j][0];
+            xkn[0] = ct.klist.k_all_xtal[ikn][0] + ct.klist.k_neighbors[i][j][1];
+            xkn[1] = ct.klist.k_all_xtal[ikn][1] + ct.klist.k_neighbors[i][j][2];
+            xkn[2] = ct.klist.k_all_xtal[ikn][2] + ct.klist.k_neighbors[i][j][3];
+            ct.klist.k_neighbors[i][j][4] = -1;
+
+            for(int ik = 0; ik < ct.klist.num_k_all; ik++)
+            {
+                dk[0] = xkn[0] - ct.klist.k_all_xtal[ik][0]; 
+                dk[1] = xkn[1] - ct.klist.k_all_xtal[ik][1]; 
+                dk[2] = xkn[2] - ct.klist.k_all_xtal[ik][2]; 
+
+                if( (std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) ) < tol) 
+                {
+                    ct.klist.k_neighbors[i][j][4] = ik;
+                    break;
+                }
+
+
+            }
+
+            for(int ik_ext = 0; ik_ext < num_extra_k; ik_ext++)
+            {
+                dk[0] = xkn[0] - ct.klist.k_ext_xtal[ik_ext][0]; 
+                dk[1] = xkn[1] - ct.klist.k_ext_xtal[ik_ext][1]; 
+                dk[2] = xkn[2] - ct.klist.k_ext_xtal[ik_ext][2]; 
+
+                if( (std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) ) < tol) 
+                {
+                    ct.klist.k_neighbors[i][j][4] = ct.klist.num_k_all + ik_ext;
+                    break;
+                }
+
+
+            }
+
+            if(ct.klist.k_neighbors[i][j][4] < 0)
+            {
+                ct.klist.k_ext_xtal[num_extra_k][0] = xkn[0];
+                ct.klist.k_ext_xtal[num_extra_k][1] = xkn[1];
+                ct.klist.k_ext_xtal[num_extra_k][2] = xkn[2];
+                ct.klist.k_neighbors[i][j][4] = ct.klist.num_k_all + num_extra_k;
+                num_extra_k++;
+            }
+
+            if(num_extra_k > ct.klist.num_k_ext)
+                throw RmgFatalException() << "too many neighbors kpoint  " <<num_extra_k<<"  " << ct.klist.num_k_ext << "\n";
+
             if(pct.imgpe == 0 && ct.verbose) 
                 printf("%5d  %5d  %5d  %5d  %5d \n", std::stoi(kn_info[0])-1,std::stoi(kn_info[1])-1,
                         std::stoi(kn_info[2]),std::stoi(kn_info[3]),std::stoi(kn_info[4]));
@@ -484,6 +583,25 @@ template <class T> void Wannier<T>::Read_nnkpts()
 
         }
     }
+
+    ct.klist.num_k_ext = num_extra_k;
+    for (int kpt = 0; kpt < ct.klist.num_k_ext; kpt++) {
+        double v1, v2, v3;
+
+        v1 = ct.klist.k_ext_xtal[kpt][0] *Rmg_L.b0[0]
+            + ct.klist.k_ext_xtal[kpt][1] *Rmg_L.b1[0] 
+            + ct.klist.k_ext_xtal[kpt][2] *Rmg_L.b2[0];
+        v2 = ct.klist.k_ext_xtal[kpt][0] *Rmg_L.b0[1]
+            + ct.klist.k_ext_xtal[kpt][1] *Rmg_L.b1[1] 
+            + ct.klist.k_ext_xtal[kpt][2] *Rmg_L.b2[1];
+        v3 = ct.klist.k_ext_xtal[kpt][0] *Rmg_L.b0[2]
+            + ct.klist.k_ext_xtal[kpt][1] *Rmg_L.b1[2] 
+            + ct.klist.k_ext_xtal[kpt][2] *Rmg_L.b2[2];
+        ct.klist.k_ext_cart[kpt][0] = v1 * twoPI;
+        ct.klist.k_ext_cart[kpt][1] = v2 * twoPI;
+        ct.klist.k_ext_cart[kpt][2] = v3 * twoPI;
+    }
+
 
 }
 template  void Wannier<double>::ReadRotatePsi(int ikindex, int isym, int isyma, std::string wavefile, double *psi_k);
@@ -588,20 +706,22 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
 
             //  phase factor when kneight need a periodic BZ folding
-            for (int iz = 0; iz < nz_grid; iz++) {
-                for (int iy = 0; iy < ny_grid; iy++) {
-                    for (int ix = 0; ix < nx_grid; ix++) {
-                        kr = ct.klist.k_neighbors[ik][ikn][1] * ix/(double)nx_grid
-                            +ct.klist.k_neighbors[ik][ikn][2] * iy/(double)ny_grid
-                            +ct.klist.k_neighbors[ik][ikn][3] * iz/(double)nz_grid;
-                        *kphase_C = std::exp( std::complex<double>(0.0, -kr * twoPI));
-                        for(int st = 0; st < nstates; st++)
-                        {
-                            psi_q[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
-                            if(ct.noncoll)
-                                psi_q[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
-                        }
+            {
+                for (int iz = 0; iz < nz_grid; iz++) {
+                    for (int iy = 0; iy < ny_grid; iy++) {
+                        for (int ix = 0; ix < nx_grid; ix++) {
+                            kr = ct.klist.k_neighbors[ik][ikn][1] * ix/(double)nx_grid
+                                +ct.klist.k_neighbors[ik][ikn][2] * iy/(double)ny_grid
+                                +ct.klist.k_neighbors[ik][ikn][3] * iz/(double)nz_grid;
+                            *kphase_C = std::exp( std::complex<double>(0.0, -kr * twoPI));
+                            for(int st = 0; st < nstates; st++)
+                            {
+                                psi_q[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
+                                if(ct.noncoll)
+                                    psi_q[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
+                            }
 
+                        }
                     }
                 }
             }
@@ -609,15 +729,8 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
             RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
                     beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
 
-            double dk[3];
-            dk[0] = ct.klist.k_all_xtal[ikn_index][0] - ct.klist.k_all_xtal[ik][0]  
-                + ct.klist.k_neighbors[ik][ikn][1] ;
-            dk[1] = ct.klist.k_all_xtal[ikn_index][1] - ct.klist.k_all_xtal[ik][1]  
-                + ct.klist.k_neighbors[ik][ikn][2] ;
-            dk[2] = ct.klist.k_all_xtal[ikn_index][2] - ct.klist.k_all_xtal[ik][2]  
-                + ct.klist.k_neighbors[ik][ikn][3] ;
             if(!ct.norm_conserving_pp || ct.noncoll)
-                Mmn_us(dk, ik_irr, isym, isyma, ikn_irr, isym_kn, isyma_kn, &Mmn[(ik*num_kn+ikn)*nstates*nstates], Kptr);
+                Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates]);
 
         }
 
@@ -660,101 +773,79 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     GpuFreeManaged(Mmn);
 
 }
-template  void Wannier<double>::Mmn_us(double *, int, int, int, int, int, int, double *, Kpoint<double> **Kptr);
-template  void Wannier<std::complex<double>>::Mmn_us(double *, int, int, int, int, int, int, std::complex<double> *, Kpoint<std::complex<double>> **Kptr);
-template <class T> void Wannier<T>::Mmn_us(double *dk, int ik_irr, int isym, int isyma, int kn_irr, int isym_kn, int isyma_kn, T *Mmn_onekpair, Kpoint<T> **Kptr)
+template  void Wannier<double>::Mmn_us(int, int, double *, double *, double *);
+template  void Wannier<std::complex<double>>::Mmn_us(int, int, std::complex<double> *, std::complex<double> *, std::complex<double> *);
+template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onekpair)
 {
 
-    size_t num_nonloc_ions = Kptr[ik_irr]->BetaProjector->get_num_nonloc_ions();
-    if(Atoms.size() != num_nonloc_ions)
-    {
-        throw RmgFatalException() << "set localize_projectors = false to use Wannier90 interface: Terminating.\n";
-    }
-
-    int *nonloc_ions_list = Kptr[ik_irr]->BetaProjector->get_nonloc_ions_list();
-    int num_tot_proj = Kptr[ik_irr]->BetaProjector->get_num_tot_proj();
-    int pstride = Kptr[ik_irr]->BetaProjector->get_pstride();
-
-    size_t alloc = (size_t)num_tot_proj * (size_t)nstates * ct.noncoll_factor * sizeof(T);
-    T *sint_ik_irr = (T *)GpuMallocManaged(alloc);
-    T *sint_kn_irr = (T *)GpuMallocManaged(alloc);
-    T *sint_ik = (T *)GpuMallocManaged(alloc);
-    T *sint_kn = (T *)GpuMallocManaged(alloc);
-    for(int i = 0; i < num_tot_proj * nstates * ct.noncoll_factor; i++) 
-    {
-        sint_ik[i] = 0.0;
-        sint_kn[i] = 0.0;
-    }
-
-    //  from <beta|psi> of irreducible k, rotate to get symmetry-related <beta|psu> |Sk 
-    boost::multi_array_ref<T, 4> sint_ik_irr_4d{sint_ik_irr, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
-    boost::multi_array_ref<T, 4> sint_kn_irr_4d{sint_kn_irr, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
-    boost::multi_array_ref<T, 4> sint_ik_4d{sint_ik, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
-    boost::multi_array_ref<T, 4> sint_kn_4d{sint_kn, boost::extents[nstates][ct.noncoll_factor][Atoms.size()][pstride]};
-
-    // Repack the sint array
-    for(int istate = 0; istate < nstates; istate++)
-    {
-        size_t sindex = istate * num_nonloc_ions * pstride * ct.noncoll_factor;
-        for(int ispin = 0; ispin < ct.noncoll_factor; ispin++)
-        { 
-            for (size_t ion = 0; ion < num_nonloc_ions; ion++)
-            {
-                int proj_index = ion * pstride;
-                T *psint_ik = &Kptr[ik_irr]->newsint_local[proj_index + sindex + ispin * num_nonloc_ions* pstride];
-                T *psint_kn = &Kptr[kn_irr]->newsint_local[proj_index + sindex + ispin * num_nonloc_ions* pstride];
-                int gion = nonloc_ions_list[ion];
-                for (int i = 0; i < pstride; i++)
-                {
-                    sint_ik_irr_4d[istate][ispin][gion][i] = psint_ik[i];
-                    sint_kn_irr_4d[istate][ispin][gion][i] = psint_kn[i];
-
-                }
-            }
-        }
-    }
-
-
-
-    for (int ion = 0; ion < ct.num_ions; ion++)
-    {
-        int ion_ik = Rmg_Symm->sym_atom[isyma * ct.num_ions + ion];
-        int ion_kn = Rmg_Symm->sym_atom[isyma_kn * ct.num_ions + ion];
-        SPECIES &AtomType = Species[Atoms[ion].species];
-
-        for(int ih = 0; ih < AtomType.nh; ih++)
-        {
-            int l_ih = AtomType.nhtol[ih]; 
-            int m_ih = AtomType.nhtom[ih];
-            int b_ih = AtomType.indv[ih];
-            for(int jh = 0; jh < AtomType.nh; jh++)
-            {
-                int m_jh = AtomType.nhtom[jh];
-                int b_jh = AtomType.indv[jh];
-
-                if(b_ih != b_jh) continue;
-
-                for(int is = 0; is < ct.noncoll_factor; is++)
-                {
-                    int is_ik = is;
-                    int is_kn = is;
-                    if(Rmg_Symm->time_rev[isyma]) is_ik = (is +1 )%2;
-                    if(Rmg_Symm->time_rev[isyma_kn]) is_kn = (is +1)%2;
-
-                    for(int st = 0; st < nstates; st++)
-                    {
-
-                        sint_ik_4d[st][is_ik][ion][ih] += Rmg_Symm->rot_ylm[isyma][l_ih][m_ih][m_jh] * sint_ik_irr_4d[st][is][ion_ik][jh];
-                        sint_kn_4d[st][is_kn][ion][ih] += Rmg_Symm->rot_ylm[isyma_kn][l_ih][m_ih][m_jh] * sint_kn_irr_4d[st][is][ion_kn][jh];
-                    }
-                }
-            }
-        }
-    }
-
+    int pstride = ct.max_nl;
+    int num_tot_proj = Atoms.size() * pstride;
     T ZERO_t(0.0);
     T ONE_t(1.0);
+    double vel = L.get_omega() / ((double)ngrid);
+    T alpha(vel);
+    int tot_st = nstates * ct.noncoll_factor;
 
+    size_t alloc = (size_t)num_tot_proj * (size_t)nstates * ct.noncoll_factor * sizeof(T);
+    T *sint_ik = (T *)GpuMallocManaged(alloc);
+    T *sint_kn = (T *)GpuMallocManaged(alloc);
+    T *sint_tem = (T *)GpuMallocManaged(alloc);
+
+    std::complex<double> *Nlweight_oneatom = new std::complex<double>[pstride * ngrid];
+    T *Nlweight = (T *)GpuMallocManaged(num_tot_proj * ngrid* sizeof(T));
+    std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
+    double *Nlweight_R = (double *)Nlweight;
+
+    for(int idx = 0; idx < num_tot_proj * ngrid; idx++) Nlweight[idx] = 0.0;
+    std::string filename;
+    size_t count;
+    int fhand;
+    for(size_t ion = 0; ion < Atoms.size(); ion++)
+    {
+        filename = "PROJECTORS/NLprojectors_ion" + std::to_string(ion) + "_kpt" + std::to_string(ik);
+
+        SPECIES &AtomType = Species[Atoms[ion].species];
+        fhand = open(filename.c_str(), O_RDWR, S_IWRITE);
+        count = sizeof(std::complex<double>) * AtomType.nh * ngrid;
+        read(fhand, Nlweight_oneatom, count);
+        close(fhand);
+        for(int idx = 0; idx < AtomType.nh * ngrid; idx++)
+        {
+            if(ct.is_gamma)
+                Nlweight_R[idx + ion * pstride * ngrid] = std::real(Nlweight_oneatom[idx]);
+            else
+                Nlweight_C[idx + ion * pstride * ngrid] = Nlweight_oneatom[idx];
+        }
+
+    }
+
+    RmgGemm ("C", "N", num_tot_proj, tot_st, ngrid, alpha,
+            Nlweight, ngrid, psi_k, ngrid, ZERO_t, sint_ik, num_tot_proj);
+
+
+    int ikn_map = ct.klist.k_neighbors[ik][ikn][4];
+    for(int idx = 0; idx < num_tot_proj * ngrid; idx++) Nlweight[idx] = 0.0;
+    for(size_t ion = 0; ion < Atoms.size(); ion++)
+    {
+        filename = "PROJECTORS/NLprojectors_ion" + std::to_string(ion) + "_kpt" + std::to_string(ikn_map);
+
+        SPECIES &AtomType = Species[Atoms[ion].species];
+        fhand = open(filename.c_str(), O_RDWR, S_IWRITE);
+        count = sizeof(std::complex<double>) * AtomType.nh * ngrid;
+        read(fhand, Nlweight_oneatom, count);
+        close(fhand);
+        for(int idx = 0; idx < AtomType.nh * ngrid; idx++)
+        {
+            if(ct.is_gamma)
+                Nlweight_R[idx + ion * pstride * ngrid] = std::real(Nlweight_oneatom[idx]);
+            else
+                Nlweight_C[idx + ion * pstride * ngrid] = Nlweight_oneatom[idx];
+        }
+
+    }
+
+    RmgGemm ("C", "N", num_tot_proj, tot_st, ngrid, alpha,
+            Nlweight, ngrid, psi_q, ngrid, ZERO_t, sint_kn, num_tot_proj);
 
     double *qqq;
 
@@ -775,22 +866,35 @@ template <class T> void Wannier<T>::Mmn_us(double *dk, int ik_irr, int isym, int
     T phase_dk;
     std::complex<double> *phase_dk_C = (std::complex<double> *)&phase_dk;
 
-    for (size_t ion = 0; ion < num_nonloc_ions; ion++)
+    double dk[3];
+    if(ikn_map < ct.klist.num_k_all)
+    {
+        dk[0] = ct.klist.k_all_xtal[ikn_map][0] - ct.klist.k_all_xtal[ik][0];
+        dk[1] = ct.klist.k_all_xtal[ikn_map][1] - ct.klist.k_all_xtal[ik][1];
+        dk[2] = ct.klist.k_all_xtal[ikn_map][2] - ct.klist.k_all_xtal[ik][2];
+    }
+    else
+    {
+        int ik_ext = ikn_map - ct.klist.num_k_all;
+        dk[0] = ct.klist.k_ext_xtal[ik_ext][0] - ct.klist.k_all_xtal[ik][0];
+        dk[1] = ct.klist.k_ext_xtal[ik_ext][1] - ct.klist.k_all_xtal[ik][1];
+        dk[2] = ct.klist.k_ext_xtal[ik_ext][2] - ct.klist.k_all_xtal[ik][2];
+
+    }
+
+    for (size_t ion = 0; ion < Atoms.size(); ion++)
     {
 
         /*Actual index of the ion under consideration*/
         proj_index = ion * ct.max_nl;
-        int gion = nonloc_ions_list[ion];
 
-        SPECIES &AtomType = Species[Atoms[gion].species];
+        SPECIES &AtomType = Species[Atoms[ion].species];
         int nh = AtomType.nh;
 
-        double kr = dk[0] * Atoms[gion].xtal[0] + dk[1] * Atoms[gion].xtal[1] + dk[2] * Atoms[gion].xtal[2];
+        double kr = dk[0] * Atoms[ion].xtal[0] + dk[1] * Atoms[ion].xtal[1] + dk[2] * Atoms[ion].xtal[2];
         *phase_dk_C = std::exp(std::complex<double>(0.0, kr * twoPI));
 
-
-
-        qqq = Atoms[gion].qqq;
+        qqq = Atoms[ion].qqq;
 
         for (int i = 0; i < nh; i++)
         {
@@ -804,10 +908,10 @@ template <class T> void Wannier<T>::Mmn_us(double *dk, int ik_irr, int isym, int
                     int jt0 = proj_index + j;
                     int it1 = proj_index + i + num_tot_proj;
                     int jt1 = proj_index + j + num_tot_proj;
-                    M_qqq_C[it0 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 0 * nh *nh] * phase_dk;
-                    M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 1 * nh *nh] * phase_dk;
-                    M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 2 * nh *nh] * phase_dk;
-                    M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 3 * nh *nh] * phase_dk;
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt0] = Atoms[ion].qqq_so[inh+j + 0 * nh *nh] * phase_dk;
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[ion].qqq_so[inh+j + 1 * nh *nh] * phase_dk;
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[ion].qqq_so[inh+j + 2 * nh *nh] * phase_dk;
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[ion].qqq_so[inh+j + 3 * nh *nh] * phase_dk;
                 }
                 else
                 {
@@ -819,7 +923,6 @@ template <class T> void Wannier<T>::Mmn_us(double *dk, int ik_irr, int isym, int
         }
     }
 
-    
 
 
     int dim_dnm = num_tot_proj * ct.noncoll_factor;
@@ -836,17 +939,19 @@ template <class T> void Wannier<T>::Mmn_us(double *dk, int ik_irr, int isym, int
     char *transc = "c";
     RmgGemm (transn, transn, dim_dnm, nstates, dim_dnm, 
             ONE_t, M_qqq,  dim_dnm, sint_kn, dim_dnm,
-            ZERO_t,  sint_kn_irr, dim_dnm);
+            ZERO_t,  sint_tem, dim_dnm);
 
     RmgGemm (transc, transn, nstates, nstates, dim_dnm,
-            ONE_t, sint_ik,  dim_dnm, sint_kn_irr, dim_dnm,
+            ONE_t, sint_ik,  dim_dnm, sint_tem, dim_dnm,
             ONE_t,  Mmn_onekpair, nstates);
 
 
     GpuFreeManaged(M_qqq);
     GpuFreeManaged(sint_ik);
     GpuFreeManaged(sint_kn);
-    GpuFreeManaged(sint_ik_irr);
-    GpuFreeManaged(sint_kn_irr);
+    GpuFreeManaged(sint_tem);
+    GpuFreeManaged(Nlweight);
+    delete [] Nlweight_oneatom;
 
 }
+

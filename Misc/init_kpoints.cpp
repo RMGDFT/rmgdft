@@ -56,6 +56,7 @@ int init_kpoints (int *kmesh, int *kshift)
 
     ct.klist.num_k_ext = (kmesh[0] + 2) * (kmesh[1]+2) * (kmesh[2]+2) - ct.klist.num_k_all;
     ct.klist.k_ext_xtal.resize(boost::extents[ct.klist.num_k_ext][3]);
+    ct.klist.k_ext_cart.resize(boost::extents[ct.klist.num_k_ext][3]);
     
     if(ct.is_gamma)
     {
@@ -247,46 +248,6 @@ int init_kpoints (int *kmesh, int *kshift)
         ct.klist.k_all_cart[kpt][2] = v3 * twoPI;
     }
 
-
-
-    int ik_ext = 0;
-    for(int i = -1; i < kmesh[0]+1; i++)
-    {
-        for(int j = -1; j < kmesh[1]+1; j++)
-        {
-            for(int k = -1; k < kmesh[2]+1; k++)
-            {
-                xk[0] = (i+ 0.5 * kshift[0])/kmesh[0];
-                xk[1] = (j+ 0.5 * kshift[1])/kmesh[1];
-                xk[2] = (k+ 0.5 * kshift[2])/kmesh[2];
-
-                bool extra_k = true;
-                for(int kpt = 0; kpt < ct.klist.num_k_all; kpt++)
-                {
-                    dk[0] = xk[0] - ct.klist.k_all_xtal[kpt][0];
-                    dk[1] = xk[1] - ct.klist.k_all_xtal[kpt][1];
-                    dk[2] = xk[2] - ct.klist.k_all_xtal[kpt][2];
-                    if( std::abs(dk[0]) + std::abs(dk[1]) + std::abs(dk[2]) < 1.0e-10 )
-                    {
-                        extra_k = false;
-                        break;
-                    }
-
-                }
-                if(extra_k)
-                {
-                    ct.klist.k_ext_xtal[ik_ext][0] = xk[0];
-                    ct.klist.k_ext_xtal[ik_ext][1] = xk[1];
-                    ct.klist.k_ext_xtal[ik_ext][2] = xk[2];
-                    ik_ext++;
-                }
-
-            }
-        }
-    }
-
-    if(ik_ext != ct.klist.num_k_ext) printf("\n WARNING: number of extra k point for neighboring k is not correct %d %d", ik_ext, ct.klist.num_k_ext);
-
     if (ct.verbose)
     {
         printf("\n num_k %d", ct.num_kpts);
@@ -294,10 +255,8 @@ int init_kpoints (int *kmesh, int *kshift)
             printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
         for(kpt = 0; kpt < ct.klist.num_k_all; kpt++)
             printf("\n kall %d %f %f %f %d %d %d", kpt,
-                    ct.klist.k_all_xtal[kpt][0],ct.klist.k_all_xtal[kpt][1],ct.klist.k_all_xtal[kpt][2],ct.klist.k_map_index[kpt],ct.klist.k_map_symm[kpt],
+                    ct.klist.k_all_cart[kpt][0],ct.klist.k_all_cart[kpt][1],ct.klist.k_all_cart[kpt][2],ct.klist.k_map_index[kpt],ct.klist.k_map_symm[kpt],
                     (int)Rmg_Symm->time_rev[std::abs(ct.klist.k_map_symm[kpt])-1 ]);
-        for(kpt = 0; kpt < ik_ext; kpt++)
-            printf("\n kext %d  %f %f %f \n", kpt, ct.klist.k_ext_xtal[kpt][0], ct.klist.k_ext_xtal[kpt][1], ct.klist.k_ext_xtal[kpt][2]);
     }
 
     return ct.num_kpts;

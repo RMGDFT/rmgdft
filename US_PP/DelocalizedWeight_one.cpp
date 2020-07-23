@@ -88,6 +88,14 @@ void DelocalizedWeight_one (int ion, int kindex, double kvec[3])
     int nlydim = Rmg_G->get_NY_GRID(1);
     int nlzdim = Rmg_G->get_NZ_GRID(1);
 
+    double vect[3], crds[3];
+    vect[0] = Atoms[ion].xtal[0] - 0.5;
+    vect[1] = Atoms[ion].xtal[1] - 0.5;
+    vect[2] = Atoms[ion].xtal[2] - 0.5;
+
+    /*The vector we are looking for should be */
+    to_cartesian (vect, crds);
+
     /*Calculate the phase factor for delocalized case */
     double tpiba = 2.0*PI / Rmg_L.celldm[0];
     for(int ix = 0; ix < nlxdim; ix++)
@@ -99,9 +107,9 @@ void DelocalizedWeight_one (int ion, int kindex, double kvec[3])
                 int idx = ix * nlydim * nlzdim + iy * nlzdim + iz;
 
 
-                double theta = Atoms[ion].crds[0] * (tpiba*pwave.g[idx].a[0] + kvec[0]) +
-                    Atoms[ion].crds[1] * (tpiba*pwave.g[idx].a[1] + kvec[1]) +
-                    Atoms[ion].crds[2] * (tpiba*pwave.g[idx].a[2] + kvec[2]);
+                double theta = crds[0] * (tpiba*pwave.g[idx].a[0] + kvec[0]) +
+                    crds[1] * (tpiba*pwave.g[idx].a[1] + kvec[1]) +
+                    crds[2] * (tpiba*pwave.g[idx].a[2] + kvec[2]);
 
                 fftw_phase[idx] = exp(std::complex<double>(0.0, theta));
             }
@@ -119,7 +127,6 @@ void DelocalizedWeight_one (int ion, int kindex, double kvec[3])
         pwave.FftInverse(gbptr, &Nlweight[ip*pbasis]);
 
     }
-
 
     amode = S_IREAD | S_IWRITE;
     filename = "PROJECTORS/NLprojectors_ion" + std::to_string(ion) + "_kpt" + std::to_string(kindex);
