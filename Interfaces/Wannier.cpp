@@ -205,9 +205,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             }
 
             double focc = 1.0;
-            //double eigs = ct.kp[ik_gamma].eigs[st];
-            //double tem = (eigs - scdm_mu)/scdm_sigma;
-            double eigs = 0.0;
+            double eigs = ct.kp[ik_gamma].eigs[st] * Ha_eV;
             double tem = (eigs - scdm_mu)/scdm_sigma;
             if(scdm == ISOLATED_ENTANGLEMENT) 
             {
@@ -315,7 +313,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             for(int st = 0; st < nstates; st++)
             {
                 double focc = 1.0;
-                double eigs = ct.kp[ik].eigs[st];
+                double eigs = ct.kp[ik].eigs[st] * Ha_eV;
                 double tem = (eigs - scdm_mu)/scdm_sigma;
                 if(scdm == ISOLATED_ENTANGLEMENT ) focc = 1.0;
                 else if(scdm == GAU_ENTANGLEMENT) focc = std::exp(-tem * tem);
