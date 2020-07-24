@@ -48,8 +48,8 @@
 #include "blas.h"
 #include "Wannier.h"
 
-void InitDelocalizedWeight_onek(int kpt, double kvec[3]);
-void DelocalizedWeight_one(int ion, int kpt, double kvec[3]);        
+void InitDelocalizedWeight_onek(int kpt, double kvec[3], Pw &pwave);
+void DelocalizedWeight_one(int ion, int kpt, double kvec[3], Pw &pwave);        
 
 void transpose(std::complex<double> *m, int w, int h);
 template Wannier<double>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int, int, double, double, double *, Kpoint<double> **Kptr);
@@ -75,7 +75,7 @@ template <class T> Wannier<T>::Wannier (
     G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), n_wannier(nwannier_in), scdm(scdm_in), 
     scdm_mu(scdm_mu_in), scdm_sigma(scdm_sigma_in), psi(psi_in)
 {
-    RmgTimer RT0("5-Wannier: total");
+    RmgTimer RT0("7-Wannier");
     if(ct.kpoint_mesh[0] <= 0 || ct.kpoint_mesh[1] <= 0 || ct.kpoint_mesh[2] <=0)
     {
         throw RmgFatalException() << "kpoint mesh must be set up  \n";
@@ -97,32 +97,45 @@ template <class T> Wannier<T>::Wannier (
     std::vector<double> occs;
     occs.resize(nstates, 1.0);
     Exx = new Exxbase<T>(G, G, L, wavefile, nstates, occs.data(), psi, EXX_LOCAL_FFT);
-    RmgTimer *RT1 = new RmgTimer("5-Wannier: writesingle file");
+    RmgTimer *RT1 = new RmgTimer("7-Wannier: writesingle file");
     Exx->WriteWfsToSingleFile();
     MPI_Barrier(MPI_COMM_WORLD);
+    delete RT1;
 
     WriteWinEig();
     Read_nnkpts();
 //  setup forward beta for all of kpoints
     double kvec[3];
-    for(int kpt = 0; kpt < ct.klist.num_k_all; kpt++)
+    RT1 = new RmgTimer("7-Wannier: init_weight");
+    BaseGrid LG(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
+    int rank = Rmg_G->get_rank();
+    MPI_Comm lcomm;
+    MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
+    LG.set_rank(0, lcomm);
+    Pw pwave (LG, Rmg_L, 1, false);
+
+    for(int kpt = pct.gridpe; kpt < ct.klist.num_k_all; kpt+=pct.grid_npes)
     {
         
         kvec[0] = ct.klist.k_all_cart[kpt][0];
         kvec[1] = ct.klist.k_all_cart[kpt][1];
         kvec[2] = ct.klist.k_all_cart[kpt][2];
-        InitDelocalizedWeight_onek(kpt, kvec);
+        InitDelocalizedWeight_onek(kpt, kvec, pwave);
     }
 
-    for(int kpt = 0; kpt < ct.klist.num_k_ext; kpt++)
+    for(int kpt = pct.gridpe; kpt < ct.klist.num_k_ext; kpt+=pct.grid_npes)
     {
         kvec[0] = ct.klist.k_ext_cart[kpt][0];
         kvec[1] = ct.klist.k_ext_cart[kpt][1];
         kvec[2] = ct.klist.k_ext_cart[kpt][2];
-        InitDelocalizedWeight_onek(kpt+ct.klist.num_k_all, kvec);
+        InitDelocalizedWeight_onek(kpt+ct.klist.num_k_all, kvec, pwave);
+
     }
 
-    for(int kpt = 0; kpt < ct.klist.num_k_all; kpt++)
+    MPI_Barrier(MPI_COMM_WORLD);
+    delete RT1;
+    RT1 = new RmgTimer("7-Wannier: weight");
+    for(int kpt = pct.gridpe; kpt < ct.klist.num_k_all; kpt+=pct.grid_npes)
     {
         
         kvec[0] = ct.klist.k_all_cart[kpt][0];
@@ -131,21 +144,24 @@ template <class T> Wannier<T>::Wannier (
 
         for(int ion = 0; ion < (int)Atoms.size(); ion++)
         {
-            DelocalizedWeight_one(ion, kpt, kvec);        
+            DelocalizedWeight_one(ion, kpt, kvec, pwave);        
         }
     }
-    for(int kpt = 0; kpt < ct.klist.num_k_ext; kpt++)
+    for(int kpt = pct.gridpe; kpt < ct.klist.num_k_ext; kpt+=pct.grid_npes)
     {
         kvec[0] = ct.klist.k_ext_cart[kpt][0];
         kvec[1] = ct.klist.k_ext_cart[kpt][1];
         kvec[2] = ct.klist.k_ext_cart[kpt][2];
         for(int ion = 0; ion < (int)Atoms.size(); ion++)
         {
-            DelocalizedWeight_one(ion, kpt+ct.klist.num_k_all, kvec);        
+            DelocalizedWeight_one(ion, kpt+ct.klist.num_k_all, kvec, pwave);        
         }
     }
-
+    delete RT1;
+    RT1 = new RmgTimer("7-Wannier: Amn");
     SetAmn();
+    delete RT1;
+    RT1 = new RmgTimer("7-Wannier: Mmn");
     SetMmn(Kptr);
     delete RT1;
 }
@@ -677,6 +693,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     T *psi_q = (T *)GpuMallocManaged(length);
     T *Mmn = (T *)GpuMallocManaged(num_q * num_kn * nstates * nstates * sizeof(T));
 
+    for(int idx = 0; idx < num_q * num_kn * nstates * nstates; idx++) Mmn[idx] = 0.0;
     double vel = L.get_omega() / ((double)nbasis);
     T alpha(vel);
     T beta = 0.0;
@@ -685,8 +702,10 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     double kr;
     //double *kphase_R = (double *)&kphase;
     std::complex<double> *kphase_C = (std::complex<double> *)&kphase;
-    for(int ik = 0; ik < num_q; ik++)
+    for(int ikpair = pct.gridpe; ikpair < num_q * num_kn; ikpair+=pct.grid_npes)
     {
+        int ik = ikpair/num_kn;
+        int ikn = ikpair%num_kn;
 
         int ik_irr = ct.klist.k_map_index[ik];
         int isym = ct.klist.k_map_symm[ik];
@@ -694,46 +713,43 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
         ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
 
-        for(int ikn = 0; ikn < num_kn; ikn++)
-        {
-            int ikn_index = ct.klist.k_neighbors[ik][ikn][0];
-            int ikn_irr = ct.klist.k_map_index[ikn_index];
-            int isym_kn = ct.klist.k_map_symm[ikn_index];
-            int isyma_kn = std::abs(isym_kn) -1;
-            ReadRotatePsi(ikn_irr, isym_kn, isyma_kn, wavefile, psi_q);
+        int ikn_index = ct.klist.k_neighbors[ik][ikn][0];
+        int ikn_irr = ct.klist.k_map_index[ikn_index];
+        int isym_kn = ct.klist.k_map_symm[ikn_index];
+        int isyma_kn = std::abs(isym_kn) -1;
+        ReadRotatePsi(ikn_irr, isym_kn, isyma_kn, wavefile, psi_q);
 
 
-            //  phase factor when kneight need a periodic BZ folding
-            {
-                for (int iz = 0; iz < nz_grid; iz++) {
-                    for (int iy = 0; iy < ny_grid; iy++) {
-                        for (int ix = 0; ix < nx_grid; ix++) {
-                            kr = ct.klist.k_neighbors[ik][ikn][1] * ix/(double)nx_grid
-                                +ct.klist.k_neighbors[ik][ikn][2] * iy/(double)ny_grid
-                                +ct.klist.k_neighbors[ik][ikn][3] * iz/(double)nz_grid;
-                            *kphase_C = std::exp( std::complex<double>(0.0, -kr * twoPI));
-                            for(int st = 0; st < nstates; st++)
-                            {
-                                psi_q[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
-                                if(ct.noncoll)
-                                    psi_q[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
-                            }
-
-                        }
+        //  phase factor when kneight need a periodic BZ folding
+        for (int iz = 0; iz < nz_grid; iz++) {
+            for (int iy = 0; iy < ny_grid; iy++) {
+                for (int ix = 0; ix < nx_grid; ix++) {
+                    kr = ct.klist.k_neighbors[ik][ikn][1] * ix/(double)nx_grid
+                        +ct.klist.k_neighbors[ik][ikn][2] * iy/(double)ny_grid
+                        +ct.klist.k_neighbors[ik][ikn][3] * iz/(double)nz_grid;
+                    *kphase_C = std::exp( std::complex<double>(0.0, -kr * twoPI));
+                    for(int st = 0; st < nstates; st++)
+                    {
+                        psi_q[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
+                        if(ct.noncoll)
+                            psi_q[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
                     }
+
                 }
             }
-
-            RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
-                    beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
-
-            if(!ct.norm_conserving_pp || ct.noncoll)
-                Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates]);
-
         }
 
+        RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
+                beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
+
+        if(!ct.norm_conserving_pp || ct.noncoll)
+            Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates]);
 
     }
+
+
+    int count = num_q * num_kn * nstates * nstates;
+    MPI_Allreduce(MPI_IN_PLACE, Mmn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
 
 
     if(pct.imgpe == 0)

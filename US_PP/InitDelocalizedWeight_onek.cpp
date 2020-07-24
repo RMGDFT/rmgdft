@@ -28,7 +28,7 @@
 
 /*This sets loop over species does forward fourier transofrm, finds and stores whatever is needed so that
  * only backwards Fourier transform is needed in the calculation*/
-void InitDelocalizedWeight_onek (int kindex, double kvec[3])
+void InitDelocalizedWeight_onek (int kindex, double kvec[3], Pw &pwave)
 {
     RmgTimer RT0("Weight");
 
@@ -50,13 +50,6 @@ void InitDelocalizedWeight_onek (int kindex, double kvec[3])
     mkdir ("PROJECTORS", S_IRWXU);
 
     InitClebschGordan(lmax, ap, lpx, lpl);
-
-    BaseGrid LG(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
-    int rank = Rmg_G->get_rank();
-    MPI_Comm lcomm;
-    MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
-    LG.set_rank(0, lcomm);
-    Pw pwave (LG, Rmg_L, 1, false);
 
     int pbasis = pwave.Grid->get_P0_BASIS(1);
     std::complex<double> *forward_beta;

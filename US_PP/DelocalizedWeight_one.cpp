@@ -46,18 +46,11 @@
 
 
 
-void DelocalizedWeight_one (int ion, int kindex, double kvec[3])
+void DelocalizedWeight_one (int ion, int kindex, double kvec[3], Pw &pwave)
 {
 
     std::complex<double> ZERO_t(0.0);
     std::complex<double> I_t(0.0, 1.0);
-
-    BaseGrid LG(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
-    int rank = Rmg_G->get_rank();
-    MPI_Comm lcomm;
-    MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
-    LG.set_rank(0, lcomm);
-    Pw pwave (LG, Rmg_L, 1, false);
 
     int pbasis = pwave.Grid->get_P0_BASIS(1);
     /*Pointer to the result of forward transform on the coarse grid */
