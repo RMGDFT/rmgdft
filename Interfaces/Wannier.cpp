@@ -101,6 +101,7 @@ template <class T> Wannier<T>::Wannier (
     Exx->WriteWfsToSingleFile();
     MPI_Barrier(MPI_COMM_WORLD);
 
+    WriteWinEig();
     Read_nnkpts();
 //  setup forward beta for all of kpoints
     double kvec[3];
@@ -144,7 +145,6 @@ template <class T> Wannier<T>::Wannier (
         }
     }
 
-    WriteWinEig();
     SetAmn();
     SetMmn(Kptr);
     delete RT1;
@@ -201,7 +201,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             norm_coeff = std::sqrt(norm_coeff * vel);
             for(int idx = 0; idx < ngrid_noncoll; idx++)
             {
-                psi_s[st * ngrid_noncoll + idx] *= norm_coeff;
+                psi_s[st * ngrid_noncoll + idx] /= norm_coeff;
             }
 
             double focc = 1.0;
