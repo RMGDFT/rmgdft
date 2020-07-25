@@ -232,6 +232,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             else
                 throw RmgFatalException() << "scdm = " << scdm << ISOLATED_ENTANGLEMENT<< "  wrong value \n";
             
+            printf("\n fcc  %d %e %e %e %e %e", st, eigs, tem, focc, scdm_mu, scdm_sigma);
             for(int idx = 0; idx < ngrid_noncoll; idx++)
             {
                 psi_s[st * ngrid_noncoll + idx] = focc * (psi_s[st * ngrid_noncoll + idx]);
@@ -640,26 +641,40 @@ template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isy
 
 
     int ixx, iyy, izz;
+    std::complex<double> *psi_k_C = (std::complex<double> *)psi_k;
     for (int ix = 0; ix < nx_grid; ix++) {
         for (int iy = 0; iy < ny_grid; iy++) {
             for (int iz = 0; iz < nz_grid; iz++) {
 
                 symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
 
-                if(ct.noncoll) 
-                    throw RmgFatalException() << "wave function rotation need to be done correctly  \n";
-
-                if(isym >= 0)
+                for(int st = 0; st < nstates; st++)
                 {
-                    for(int st = 0; st < nstates; st++)
+                    if(ct.noncoll) 
+                    {
+                        std::complex<double> up = psi_map[st * nbasis_noncoll + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
+                        std::complex<double> dn = psi_map[st * nbasis_noncoll + nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
+                        std::complex<double> up_rot, dn_rot;
+                        up_rot = Rmg_Symm->rot_spin[isyma][0][0] * up + Rmg_Symm->rot_spin[isyma][0][1] * dn;
+                        dn_rot = Rmg_Symm->rot_spin[isyma][1][0] * up + Rmg_Symm->rot_spin[isyma][1][1] * dn;
+                        if(Rmg_Symm->time_rev[isyma])
+                        {
+                            psi_k_C[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] = - std::conj(dn_rot);
+                            psi_k_C[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] = std::conj(up_rot);
+                        }
+                        else
+                        {
+                            psi_k_C[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] = up_rot;
+                            psi_k_C[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] = dn_rot;
+                        }
+
+                    }
+                    else if(isym >= 0)
                     {
                         psi_k[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]
                             = (psi_map[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
                     }
-                }
-                else
-                {
-                    for(int st = 0; st < nstates; st++)
+                    else
                     {
                         psi_k[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]
                             = MyConj(psi_map[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);

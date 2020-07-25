@@ -1223,11 +1223,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "number of wannier functions to be used in wannier90 ", 
             "wannier90 is an open source package ");
 
-    If.RegisterInputKey("wannier90_scda_mu", &lc.wannier90_scdm_mu, -DBL_MAX, DBL_MAX, 0.0,
+    If.RegisterInputKey("wannier90_scdm_mu", &lc.wannier90_scdm_mu, -DBL_MAX, DBL_MAX, 0.0,
             CHECK_AND_FIX, OPTIONAL,
             "when wannier90 is used to build wannier functions, the energy window parameter",
             "it usually is around Fermi energy ", CONTROL_OPTIONS);
-    If.RegisterInputKey("wannier90_scda_sigma", &lc.wannier90_scdm_sigma, 0.0, DBL_MAX, 1.0,
+    If.RegisterInputKey("wannier90_scdm_sigma", &lc.wannier90_scdm_sigma, 0.0, DBL_MAX, 1.0,
             CHECK_AND_FIX, OPTIONAL,
             "when wannier90 is used to build wannier functions, the energy window parameter",
             "it is used for Gaussian or erfc filtering the band ");
