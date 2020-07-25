@@ -138,6 +138,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     std::string rhog_file;
     std::string vxc_file;
     std::string Weightsfile;
+    std::string Qfunctionfile;
     std::string Workfile;
     std::string Orbitalfile;
     std::string ExxIntfile;
@@ -203,6 +204,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("nvme_orbitals_filepath", &Orbitalfile, "Orbitals/",
                      CHECK_AND_FIX, OPTIONAL,
                      "File/path for runtime disk storage of orbitals. ", 
+                     "", CONTROL_OPTIONS);
+
+    If.RegisterInputKey("qfunction_filepath", &Qfunctionfile, "Qfunctions/",
+                     CHECK_AND_FIX, OPTIONAL,
+                     "File/path for runtime disk storage of qfunctions. ",
                      "", CONTROL_OPTIONS);
 
     If.RegisterInputKey("exx_integrals_filepath", &ExxIntfile, "ExxIntegrals",
@@ -1268,6 +1274,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     lc.nvme_weights_path = Weightsfile;
     if(lc.nvme_weights_path.length()) lc.nvme_weights_path.append("/");
     MakeFullPath(lc.nvme_weights_path, pelc);
+
+    lc.qfunction_path = Qfunctionfile;
+    if(lc.qfunction_path.length()) lc.qfunction_path.append("/");
+    MakeFullPath(lc.qfunction_path, pelc);
 
     lc.nvme_work_path = Workfile;
     if(lc.nvme_work_path.length()) lc.nvme_work_path.append("/");

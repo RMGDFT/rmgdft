@@ -114,6 +114,7 @@ public:
     std::string nvme_weights_path;
     std::string nvme_work_path;
     std::string nvme_orbitals_path;
+    std::string qfunction_path;
 
     /** Input file name to read wavefunctions from when doing a restart */
     char infile[2*MAX_PATH];
