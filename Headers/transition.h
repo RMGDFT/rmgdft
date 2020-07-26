@@ -22,6 +22,7 @@
 #include "LaplacianCoeff.h"
 #include "PulayMixing.h"
 #include "Symmetry.h"
+#include "rmgfiles.h"
 
 
 extern PulayMixing *Pulay_rho;
@@ -91,9 +92,6 @@ void ReadPermInfo(char *, unsigned int *);
 void WritePermInfo(char *, unsigned int *);
 void InitPe4image();
 void InitPe4kpspin();
-int FileOpenAndCreate(std::string &pathname, int flags, mode_t mode);
-void *CreateMmapArray(int &fd, size_t length);
-void DeleteNvmeArrays(void);
 
 //void RmgDft3(std::vector<ION> &ion);
 void RmgDftd3(double *disp, double *grads, double *stress, int version);
