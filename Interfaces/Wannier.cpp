@@ -830,6 +830,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
                 beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
 
+        int idd = ikn * nstates * nstates;
         if(!ct.norm_conserving_pp || ct.noncoll)
             Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
 
@@ -953,6 +954,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     RmgGemm ("C", "N", num_tot_proj, tot_st, ngrid, alpha,
             Nlweight, ngrid, psi_q, ngrid, ZERO_t, sint_kn, num_tot_proj);
 
+
     double *qqq;
 
     int M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
@@ -1013,7 +1015,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
                 else if(!ct.noncoll)
                 {
                     int idx = (proj_index + i) * num_tot_proj + proj_index + j;
-                    M_qqq_C[idx] = qq_dk_one[inh+j];
+                    M_qqq_C[idx] = qq_dk_one[ion * ct.max_nl * ct.max_nl + inh+j];
     
                 }
                 else
@@ -1022,17 +1024,15 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
                     int jt0 = proj_index + j;
                     int it1 = proj_index + i + num_tot_proj;
                     int jt1 = proj_index + j + num_tot_proj;
-                    M_qqq_C[it0 * num_tot_proj * 2 + jt0] = qq_dk_so_one[inh+j + 0 * nh *nh];
-                    M_qqq_C[it0 * num_tot_proj * 2 + jt1] = qq_dk_so_one[inh+j + 1 * nh *nh];
-                    M_qqq_C[it1 * num_tot_proj * 2 + jt0] = qq_dk_so_one[inh+j + 2 * nh *nh];
-                    M_qqq_C[it1 * num_tot_proj * 2 + jt1] = qq_dk_so_one[inh+j + 3 * nh *nh];
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt0] = qq_dk_so_one[ion * ct.max_nl * ct.max_nl*4 + inh+j + 0 * nh *nh];
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt1] = qq_dk_so_one[ion * ct.max_nl * ct.max_nl*4 + inh+j + 1 * nh *nh];
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt0] = qq_dk_so_one[ion * ct.max_nl * ct.max_nl*4 + inh+j + 2 * nh *nh];
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt1] = qq_dk_so_one[ion * ct.max_nl * ct.max_nl*4 + inh+j + 3 * nh *nh];
                 }
             }
 
         }
     }
-
-
 
     int dim_dnm = num_tot_proj * ct.noncoll_factor;
 

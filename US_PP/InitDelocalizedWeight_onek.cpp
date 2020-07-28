@@ -149,6 +149,7 @@ void InitDelocalizedWeight_onek (int kindex, double kvec[3], Pw &pwave)
                     {
                         int idx = ix * dimy * dimz + iy * dimz + iz;
                         std::complex<double> phaseshift =std::pow(phase, ix + ixstart + iy + iystart + iz + izstart);
+                        phaseshift = 1.0;
                         betaptr[idx] *= phaseshift/vol;
                         betaptr_r[0][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
                         betaptr_r[1][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);

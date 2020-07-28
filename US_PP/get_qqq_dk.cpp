@@ -58,13 +58,16 @@ void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<d
             for(int iz = 0; iz < pz0_grid; iz++)
             {
                 int ixx = ix + px_offset;
-       //      if(ixx > nx_grid/2) ixx -= nx_grid;
+             if(ixx > nx_grid/2) ixx -= nx_grid;
                int iyy = iy + py_offset;
-        //       if(iyy > ny_grid/2) iyy -= ny_grid;
+               if(iyy > ny_grid/2) iyy -= ny_grid;
                 int izz = iz + pz_offset;
-         //       if(izz > nz_grid/2) izz -= nz_grid;
+                if(izz > nz_grid/2) izz -= nz_grid;
                 double kr = hxgrid * ixx * dk_xtal[0] + hygrid * iyy * dk_xtal[1] + hzgrid * izz * dk_xtal[2];
-                phase_dk[ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = std::exp(std::complex<double>(0.0,   kr * twoPI));
+
+                double kr1 = hxgrid * nx_grid/2 * dk_xtal[0]+hygrid * ny_grid/2 * dk_xtal[1]+hzgrid * nz_grid/2 * dk_xtal[2];
+                kr1 = 0.0;
+                phase_dk[ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = std::exp(std::complex<double>(0.0,   (kr-kr1) * twoPI));
 
             //if(ix == 0) printf("\n ccc %d %d  %f %f %f", iy, iz, kr, phase_dk[iy*pz0_grid+iz]);
             }
@@ -80,7 +83,7 @@ void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<d
         qqq = &qqq_dk[ion * ct.max_nl * ct.max_nl];
         ncount = Atoms[ion].Qindex.size();
         double ktao = dk_xtal[0] * Atoms[ion].xtal[0] +  dk_xtal[1] * Atoms[ion].xtal[1] + dk_xtal[2] * Atoms[ion].xtal[2];
-        ktao = 0.0;
+        //ktao = 0.0;
         std::complex<double> phase_ion = std::exp(std::complex<double>(0.0,  -ktao * twoPI));
 
         idx = 0;
@@ -95,11 +98,23 @@ void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<d
                     {
                         for (icount = 0; icount < ncount; icount++)
                         {
-                            sum += (double)Atoms[ion].augfunc[icount + idx * ncount] * phase_dk[Atoms[ion].Qindex[icount]] * phase_ion;
-                            int idx = Atoms[ion].Qindex[icount];
-                            int ix = idx/pz0_grid/py0_grid;
-                            int iy = (idx/pz0_grid)%py0_grid;
-                            int iz = idx%pz0_grid;
+                            int idx1 = Atoms[ion].Qindex[icount];
+                            int ix = idx1/pz0_grid/py0_grid;
+                            int iy = (idx1/pz0_grid)%py0_grid;
+                            int iz = idx1%pz0_grid;
+                            double xx = hxgrid *(ix+px_offset) - Atoms[ion].xtal[0];
+                            xx = xx - std::round(xx);
+                            double yy = hygrid *(iy+py_offset) - Atoms[ion].xtal[1];
+                            yy = yy - std::round(yy);
+                            double zz = hzgrid *(iz+pz_offset) - Atoms[ion].xtal[2];
+                            zz = zz - std::round(zz);
+                            
+                            double kr = xx * dk_xtal[0] + yy  *dk_xtal[1] + zz * dk_xtal[2];
+                            std::complex<double> phase1 = std::exp( std::complex<double>(0.0, kr * twoPI));
+                            
+                            
+                            sum += (double)Atoms[ion].augfunc[icount + idx * ncount] * phase1 * phase_ion;
+                            //sum += (double)Atoms[ion].augfunc[icount + idx * ncount] * phase_dk[Atoms[ion].Qindex[icount]] * phase_ion;
                          // if(i == 0 && j == 0 && ion == 0 && std::abs(Atoms[ion].augfunc[icount]) > 0.01)
                          //       printf("\n aaa %d %d %d %f  %f %f", ix, iy, iz, Atoms[ion].augfunc[icount], phase_dk[idx] * phase_ion);
                             

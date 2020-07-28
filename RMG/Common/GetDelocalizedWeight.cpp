@@ -78,6 +78,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
         int nlzdim = get_NZ_GRID();
 
         /*Calculate the phase factor for delocalized case */
+
         FindPhaseKpoint (kvec, nlxdim, nlydim, nlzdim, P->nlcrds[ion].data(), fftw_phase, false);
 
         /* Loop over radial projectors */

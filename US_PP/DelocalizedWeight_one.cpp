@@ -82,9 +82,9 @@ void DelocalizedWeight_one (int ion, int kindex, double kvec[3], Pw &pwave)
     int nlzdim = Rmg_G->get_NZ_GRID(1);
 
     double vect[3], crds[3];
-    vect[0] = Atoms[ion].xtal[0] - 0.5;
-    vect[1] = Atoms[ion].xtal[1] - 0.5;
-    vect[2] = Atoms[ion].xtal[2] - 0.5;
+    vect[0] = Atoms[ion].xtal[0] ;
+    vect[1] = Atoms[ion].xtal[1] ;
+    vect[2] = Atoms[ion].xtal[2] ;
 
     /*The vector we are looking for should be */
     to_cartesian (vect, crds);
