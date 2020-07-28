@@ -41,38 +41,11 @@ void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<d
     int px_offset = Rmg_G->get_PX_OFFSET(ct.FG_RATIO);
     int py_offset = Rmg_G->get_PY_OFFSET(ct.FG_RATIO);
     int pz_offset = Rmg_G->get_PZ_OFFSET(ct.FG_RATIO);
-    int px0_grid = Rmg_G->get_PX0_GRID(ct.FG_RATIO);
     int py0_grid = Rmg_G->get_PY0_GRID(ct.FG_RATIO);
     int pz0_grid = Rmg_G->get_PZ0_GRID(ct.FG_RATIO);
     double hxgrid = Rmg_G->get_hxgrid(ct.FG_RATIO);
     double hygrid = Rmg_G->get_hygrid(ct.FG_RATIO);
     double hzgrid = Rmg_G->get_hzgrid(ct.FG_RATIO);
-    int nx_grid = Rmg_G->get_NX_GRID(ct.FG_RATIO);
-    int ny_grid = Rmg_G->get_NY_GRID(ct.FG_RATIO);
-    int nz_grid = Rmg_G->get_NZ_GRID(ct.FG_RATIO);
-    std::complex<double> *phase_dk = new std::complex<double>[px0_grid * py0_grid * pz0_grid];
-    for(int ix = 0; ix < px0_grid; ix++)
-    {
-        for(int iy = 0; iy < py0_grid; iy++)
-        {
-            for(int iz = 0; iz < pz0_grid; iz++)
-            {
-                int ixx = ix + px_offset;
-             if(ixx > nx_grid/2) ixx -= nx_grid;
-               int iyy = iy + py_offset;
-               if(iyy > ny_grid/2) iyy -= ny_grid;
-                int izz = iz + pz_offset;
-                if(izz > nz_grid/2) izz -= nz_grid;
-                double kr = hxgrid * ixx * dk_xtal[0] + hygrid * iyy * dk_xtal[1] + hzgrid * izz * dk_xtal[2];
-
-                double kr1 = hxgrid * nx_grid/2 * dk_xtal[0]+hygrid * ny_grid/2 * dk_xtal[1]+hzgrid * nz_grid/2 * dk_xtal[2];
-                kr1 = 0.0;
-                phase_dk[ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = std::exp(std::complex<double>(0.0,   (kr-kr1) * twoPI));
-
-            //if(ix == 0) printf("\n ccc %d %d  %f %f %f", iy, iz, kr, phase_dk[iy*pz0_grid+iz]);
-            }
-        }
-    }
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {

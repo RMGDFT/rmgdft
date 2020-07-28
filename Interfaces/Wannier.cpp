@@ -232,7 +232,6 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             else
                 throw RmgFatalException() << "scdm = " << scdm << ISOLATED_ENTANGLEMENT<< "  wrong value \n";
             
-            printf("\n fcc  %d %e %e %e %e %e", st, eigs, tem, focc, scdm_mu, scdm_sigma);
             for(int idx = 0; idx < ngrid_noncoll; idx++)
             {
                 psi_s[st * ngrid_noncoll + idx] = focc * (psi_s[st * ngrid_noncoll + idx]);
@@ -778,12 +777,15 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     std::complex<double> *qqq_dk, *qqq_dk_so, *qq_dk_one, *qq_dk_so_one;
     qqq_dk = new std::complex<double>[ct.klist.num_k_nn * Atoms.size() * ct.max_nl * ct.max_nl];
     qqq_dk_so = new std::complex<double>[4*ct.klist.num_k_nn * Atoms.size() * ct.max_nl * ct.max_nl];
+
+    RmgTimer *RT1 = new RmgTimer("7-Wannier: Mmn: qqq_dk");
     for(int ikn = 0; ikn < ct.klist.num_k_nn; ikn++)
     {
         qq_dk_one = &qqq_dk[ikn * Atoms.size() * ct.max_nl * ct.max_nl];
         qq_dk_so_one = &qqq_dk_so[ikn * 4 * Atoms.size() * ct.max_nl * ct.max_nl];
         get_qqq_dk(dk[ikn], qq_dk_one, qq_dk_so_one);
     }
+    delete RT1;
     //double *kphase_R = (double *)&kphase;
     std::complex<double> *kphase_C = (std::complex<double> *)&kphase;
     for(int ikpair = pct.gridpe; ikpair < num_q * num_kn; ikpair+=pct.grid_npes)
@@ -799,6 +801,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         int isym = ct.klist.k_map_symm[ik];
         int isyma = std::abs(isym) -1;
 
+        RmgTimer *RT1 = new RmgTimer("7-Wannier: Mmn: read and rotate");
         ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
 
         int ikn_index = ct.klist.k_neighbors[ik][ikn][0];
@@ -807,7 +810,9 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         int isyma_kn = std::abs(isym_kn) -1;
         ReadRotatePsi(ikn_irr, isym_kn, isyma_kn, wavefile, psi_q);
 
+        delete RT1;
 
+        RT1 = new RmgTimer("7-Wannier: Mmn: phase");
         //  phase factor when kneight need a periodic BZ folding
         for (int iz = 0; iz < nz_grid; iz++) {
             for (int iy = 0; iy < ny_grid; iy++) {
@@ -826,13 +831,17 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
                 }
             }
         }
+        delete RT1;
 
+        RT1 = new RmgTimer("7-Wannier: Mmn: gemm");
         RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
                 beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
+        delete RT1;
 
-        int idd = ikn * nstates * nstates;
+        RT1 = new RmgTimer("7-Wannier: Mmn: us");
         if(!ct.norm_conserving_pp || ct.noncoll)
             Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
+        delete RT1;
 
     }
 
@@ -971,24 +980,6 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     // set up M_qqq and M_dnm, this can be done outside in the
     // init.c or get_ddd get_qqq, we need to check the order
     int proj_index = 0;
-    T phase_dk;
-    std::complex<double> *phase_dk_C = (std::complex<double> *)&phase_dk;
-
-    double dk[3];
-    if(ikn_map < ct.klist.num_k_all)
-    {
-        dk[0] = ct.klist.k_all_xtal[ikn_map][0] - ct.klist.k_all_xtal[ik][0];
-        dk[1] = ct.klist.k_all_xtal[ikn_map][1] - ct.klist.k_all_xtal[ik][1];
-        dk[2] = ct.klist.k_all_xtal[ikn_map][2] - ct.klist.k_all_xtal[ik][2];
-    }
-    else
-    {
-        int ik_ext = ikn_map - ct.klist.num_k_all;
-        dk[0] = ct.klist.k_ext_xtal[ik_ext][0] - ct.klist.k_all_xtal[ik][0];
-        dk[1] = ct.klist.k_ext_xtal[ik_ext][1] - ct.klist.k_all_xtal[ik][1];
-        dk[2] = ct.klist.k_ext_xtal[ik_ext][2] - ct.klist.k_all_xtal[ik][2];
-
-    }
 
     for (size_t ion = 0; ion < Atoms.size(); ion++)
     {
