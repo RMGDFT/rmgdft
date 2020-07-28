@@ -98,7 +98,7 @@ public:
     void WriteWinEig();
     void Read_nnkpts();
     void ReadRotatePsi(int ik, int isy, int isya, std::string wavefile, T *psi_k);
-    void Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onepair);
+    void Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onepair, std::complex<double> *qq, std::complex<double> *qq_so);
 
 };
 

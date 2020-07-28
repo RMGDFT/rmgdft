@@ -31,6 +31,7 @@ linint.cpp
 get_QnmL.cpp
 GetQI.cpp
 get_qqq.cpp
+get_qqq_dk.cpp
 radint1.cpp
 get_ddd.cpp
 radint.cpp

@@ -515,7 +515,8 @@ template <class T> void Wannier<T>::Read_nnkpts()
     ct.klist.num_k_nn = std::stoi(oneline);
 
     //k_neighbors [][][4] store the corresponding kindex from all kpoint (< ct.klist.num_k_all) or from  extra kpoints
-    ct.klist.k_neighbors.resize(boost::extents[ct.klist.num_k_all][ct.klist.num_k_nn][5]);
+    //k_neighbors [][][5]: the dk index
+    ct.klist.k_neighbors.resize(boost::extents[ct.klist.num_k_all][ct.klist.num_k_nn][6]);
 
     std::vector<std::string> kn_info;
     if(pct.imgpe == 0 && ct.verbose) 
@@ -695,6 +696,7 @@ template  void Wannier<std::complex<double>>::SetMmn(Kpoint<std::complex<double>
 template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 {
 
+    double tol = 1.0e-5;
     int num_q = ct.klist.num_k_all;
     int num_kn = ct.klist.num_k_nn;
 
@@ -715,12 +717,83 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
     T kphase(1.0);
     double kr;
+
+    double dk[ct.klist.num_k_nn][3], dk1[3];
+    for(int ikn = 0; ikn < ct.klist.num_k_nn; ikn++)
+    {
+        int ikn_map = ct.klist.k_neighbors[0][ikn][4];
+        if(ikn_map < ct.klist.num_k_all)
+        {
+            dk[ikn][0] = -ct.klist.k_all_xtal[0][0] + ct.klist.k_all_xtal[ikn_map][0]; 
+            dk[ikn][1] = -ct.klist.k_all_xtal[0][1] + ct.klist.k_all_xtal[ikn_map][1]; 
+            dk[ikn][2] = -ct.klist.k_all_xtal[0][2] + ct.klist.k_all_xtal[ikn_map][2]; 
+
+        }
+        else
+        {
+            dk[ikn][0] = -ct.klist.k_all_xtal[0][0] + ct.klist.k_ext_xtal[ikn_map - ct.klist.num_k_all][0];
+            dk[ikn][1] = -ct.klist.k_all_xtal[0][1] + ct.klist.k_ext_xtal[ikn_map - ct.klist.num_k_all][1];
+            dk[ikn][2] = -ct.klist.k_all_xtal[0][2] + ct.klist.k_ext_xtal[ikn_map - ct.klist.num_k_all][2];
+        }
+    }
+
+    for(int ik = 0; ik < ct.klist.num_k_all; ik++)
+    {
+        for(int ikn = 0; ikn < ct.klist.num_k_nn; ikn++)
+        {
+            int ikn_map = ct.klist.k_neighbors[ik][ikn][4];
+            if(ikn_map < ct.klist.num_k_all)
+            {
+                dk1[0] = -ct.klist.k_all_xtal[ik][0] + ct.klist.k_all_xtal[ikn_map][0]; 
+                dk1[1] = -ct.klist.k_all_xtal[ik][1] + ct.klist.k_all_xtal[ikn_map][1]; 
+                dk1[2] = -ct.klist.k_all_xtal[ik][2] + ct.klist.k_all_xtal[ikn_map][2]; 
+
+            }
+            else
+            {
+                dk1[0] = -ct.klist.k_all_xtal[ik][0] + ct.klist.k_ext_xtal[ikn_map - ct.klist.num_k_all][0];
+                dk1[1] = -ct.klist.k_all_xtal[ik][1] + ct.klist.k_ext_xtal[ikn_map - ct.klist.num_k_all][1];
+                dk1[2] = -ct.klist.k_all_xtal[ik][2] + ct.klist.k_ext_xtal[ikn_map - ct.klist.num_k_all][2];
+            }
+            
+            ct.klist.k_neighbors[ik][ikn][5] = -1;
+            for(int idk = 0; idk < ct.klist.num_k_nn; idk++)
+            {
+                if(std::abs(dk1[0] - dk[idk][0]) + std::abs(dk1[1] - dk[idk][1]) + std::abs(dk1[2] - dk[idk][2]) < tol )
+                {
+                    ct.klist.k_neighbors[ik][ikn][5] = idk;
+                    break;
+                }
+
+            }
+
+            if(ct.klist.k_neighbors[ik][ikn][5] < 0)
+            {
+                printf("\n dk are different %d %d %f %f %f  ", ik, ikn, dk1[0], dk1[1], dk1[2]);
+                throw RmgFatalException() << "Kpoint neighbors has different distance \n" ;
+            }
+        }
+    }
+
+    std::complex<double> *qqq_dk, *qqq_dk_so, *qq_dk_one, *qq_dk_so_one;
+    qqq_dk = new std::complex<double>[ct.klist.num_k_nn * Atoms.size() * ct.max_nl * ct.max_nl];
+    qqq_dk_so = new std::complex<double>[4*ct.klist.num_k_nn * Atoms.size() * ct.max_nl * ct.max_nl];
+    for(int ikn = 0; ikn < ct.klist.num_k_nn; ikn++)
+    {
+        qq_dk_one = &qqq_dk[ikn * Atoms.size() * ct.max_nl * ct.max_nl];
+        qq_dk_so_one = &qqq_dk_so[ikn * 4 * Atoms.size() * ct.max_nl * ct.max_nl];
+        get_qqq_dk(dk[ikn], qq_dk_one, qq_dk_so_one);
+    }
     //double *kphase_R = (double *)&kphase;
     std::complex<double> *kphase_C = (std::complex<double> *)&kphase;
     for(int ikpair = pct.gridpe; ikpair < num_q * num_kn; ikpair+=pct.grid_npes)
     {
         int ik = ikpair/num_kn;
         int ikn = ikpair%num_kn;
+
+        int idk = ct.klist.k_neighbors[ik][ikn][5];
+        qq_dk_one = &qqq_dk[idk * Atoms.size() * ct.max_nl * ct.max_nl];
+        qq_dk_so_one = &qqq_dk_so[idk * 4 * Atoms.size() * ct.max_nl * ct.max_nl];
 
         int ik_irr = ct.klist.k_map_index[ik];
         int isym = ct.klist.k_map_symm[ik];
@@ -758,7 +831,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
                 beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
 
         if(!ct.norm_conserving_pp || ct.noncoll)
-            Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates]);
+            Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
 
     }
 
@@ -802,10 +875,14 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     GpuFreeManaged(Mmn);
 
 }
-template  void Wannier<double>::Mmn_us(int, int, double *, double *, double *);
-template  void Wannier<std::complex<double>>::Mmn_us(int, int, std::complex<double> *, std::complex<double> *, std::complex<double> *);
-template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onekpair)
+template  void Wannier<double>::Mmn_us(int, int, double *, double *, double *, std::complex<double> *, std::complex<double> *);
+template  void Wannier<std::complex<double>>::Mmn_us(int, int, std::complex<double> *, std::complex<double> *, 
+        std::complex<double> *, std::complex<double> *, std::complex<double> *);
+template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onekpair, 
+        std::complex<double> *qq_dk_one, std::complex<double> *qq_dk_so_one)
 {
+
+
 
     int pstride = ct.max_nl;
     int num_tot_proj = Atoms.size() * pstride;
@@ -920,9 +997,6 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
         SPECIES &AtomType = Species[Atoms[ion].species];
         int nh = AtomType.nh;
 
-        double kr = dk[0] * Atoms[ion].xtal[0] + dk[1] * Atoms[ion].xtal[1] + dk[2] * Atoms[ion].xtal[2];
-        *phase_dk_C = std::exp(std::complex<double>(0.0, kr * twoPI));
-
         qqq = Atoms[ion].qqq;
 
         for (int i = 0; i < nh; i++)
@@ -931,21 +1005,27 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
             for (int j = 0; j < nh; j++)
             {
 
-                if(ct.noncoll)
+                if(ct.is_gamma)
+                {
+                    int idx = (proj_index + i) * num_tot_proj + proj_index + j;
+                    M_qqq[idx] = (T)qqq[inh+j];
+                }
+                else if(!ct.noncoll)
+                {
+                    int idx = (proj_index + i) * num_tot_proj + proj_index + j;
+                    M_qqq_C[idx] = qq_dk_one[inh+j];
+    
+                }
+                else
                 {
                     int it0 = proj_index + i;
                     int jt0 = proj_index + j;
                     int it1 = proj_index + i + num_tot_proj;
                     int jt1 = proj_index + j + num_tot_proj;
-                    M_qqq_C[it0 * num_tot_proj * 2 + jt0] = Atoms[ion].qqq_so[inh+j + 0 * nh *nh] * phase_dk;
-                    M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[ion].qqq_so[inh+j + 1 * nh *nh] * phase_dk;
-                    M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[ion].qqq_so[inh+j + 2 * nh *nh] * phase_dk;
-                    M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[ion].qqq_so[inh+j + 3 * nh *nh] * phase_dk;
-                }
-                else
-                {
-                    int idx = (proj_index + i) * num_tot_proj + proj_index + j;
-                    M_qqq[idx] = (T)qqq[inh+j] * phase_dk;
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt0] = qq_dk_so_one[inh+j + 0 * nh *nh];
+                    M_qqq_C[it0 * num_tot_proj * 2 + jt1] = qq_dk_so_one[inh+j + 1 * nh *nh];
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt0] = qq_dk_so_one[inh+j + 2 * nh *nh];
+                    M_qqq_C[it1 * num_tot_proj * 2 + jt1] = qq_dk_so_one[inh+j + 3 * nh *nh];
                 }
             }
 

@@ -221,6 +221,7 @@ void cholesky (double *a, int n);
 void get_ddd (double *veff);
 void get_QI (void);
 void get_qqq (void);
+void get_qqq_dk (double dk[3], std::complex<double> *qqq_dk, std::complex<double> *qqq_dk_so);
 void get_rho (STATE * states, double * rho, double * rhocore);
 void get_new_rho (STATE * states, double * rho);
 void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS);

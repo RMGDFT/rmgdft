@@ -142,6 +142,9 @@ template <typename RmgType> void GlobalSums (RmgType * vect, int length, MPI_Com
         if(typeid(RmgType) == typeid(double))
             MPI_Allreduce(MPI_IN_PLACE, vect, length, MPI_DOUBLE, MPI_SUM, comm);
 
+        if(typeid(RmgType) == typeid(std::complex<double>))
+            MPI_Allreduce(MPI_IN_PLACE, vect, length, MPI_DOUBLE_COMPLEX, MPI_SUM, comm);
+
     }
     else {
 
