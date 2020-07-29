@@ -12,6 +12,10 @@
     typedef boost::multi_array<int, 2> int_2d_array;
     typedef boost::multi_array<int, 3> int_3d_array;
     typedef boost::multi_array<int, 4> int_4d_array;
+    typedef boost::multi_array<float, 1> float_1d_array;
+    typedef boost::multi_array<float, 2> float_2d_array;
+    typedef boost::multi_array<float, 3> float_3d_array;
+    typedef boost::multi_array<float, 4> float_4d_array;
     typedef boost::multi_array<double, 1> double_1d_array;
     typedef boost::multi_array<double, 2> double_2d_array;
     typedef boost::multi_array<double, 3> double_3d_array;
