@@ -202,6 +202,8 @@ public:
 
     // Augmentation charges associated with this ion
     std::vector<double> augfunc;
+    float_2d_array grid_ylm;
+    float_2d_array grid_qr;
     std::vector<double> augfunc_xyz[3];
 
     // An index array which maps the q-functions onto the 3-d grid associated with each processor.
