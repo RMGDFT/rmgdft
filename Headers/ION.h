@@ -197,6 +197,8 @@ public:
     double init_spin_x;
     double init_spin_y;
     double init_spin_z;
+    double init_spin_angle1;
+    double init_spin_angle2;
 
     // Augmentation charges associated with this ion
     std::vector<double> augfunc;

@@ -341,6 +341,8 @@ void ReadRmgAtoms(char *cfile, std::set<std::string>& SpeciesTypes, std::list<st
         Atoms_read[nions].init_spin_x = 2.0*init_spin_ratio * std::sin(init_spin_angle1/180.0 * PI) * std::cos(init_spin_angle2/180.0*PI) ;
         Atoms_read[nions].init_spin_y = 2.0*init_spin_ratio * std::sin(init_spin_angle1/180.0 * PI) * std::sin(init_spin_angle2/180.0*PI) ;
         Atoms_read[nions].init_spin_z = 2.0*init_spin_ratio * std::cos(init_spin_angle1/180.0 * PI);
+        Atoms_read[nions].init_spin_angle1 = init_spin_angle1;
+        Atoms_read[nions].init_spin_angle2 = init_spin_angle2;
 
         if(init_spin_ratio > 0.5 || init_spin_ratio < -0.5) 
             throw RmgFatalException() << 
