@@ -201,10 +201,11 @@ public:
     double init_spin_angle2;
 
     // Augmentation charges associated with this ion
-    std::vector<double> augfunc;
+    std::vector<float> augfunc;
+
     float_2d_array grid_ylm;
     float_2d_array grid_qr;
-    std::vector<double> augfunc_xyz[3];
+    std::vector<float> augfunc_xyz[3];
 
     // An index array which maps the q-functions onto the 3-d grid associated with each processor.
     std::vector<int> Qindex;
