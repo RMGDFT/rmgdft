@@ -46,7 +46,7 @@
 
 
 
-void DelocalizedWeight_one (int ion, int kindex, double kvec[3], Pw &pwave)
+void DelocalizedWeight_one (int kindex, double kvec[3], Pw &pwave)
 {
 
     std::complex<double> ZERO_t(0.0);
@@ -55,11 +55,9 @@ void DelocalizedWeight_one (int ion, int kindex, double kvec[3], Pw &pwave)
     int pbasis = pwave.Grid->get_P0_BASIS(1);
     /*Pointer to the result of forward transform on the coarse grid */
 
-    int isp = Atoms[ion].species;
-    SPECIES &AtomType = Species[Atoms[ion].species];
 
-    std::complex<double> *forward_beta = new std::complex<double>[AtomType.nh * pbasis];
-    std::complex<double> *Nlweight = new std::complex<double>[AtomType.nh * pbasis];
+    std::complex<double> *forward_beta = new std::complex<double>[ct.max_nl * pbasis];
+    std::complex<double> *Nlweight = new std::complex<double>[ct.max_nl * pbasis];
 
     std::complex<double> *fftw_phase = new std::complex<double>[pbasis];
     std::complex<double> *gbptr = new std::complex<double>[pbasis];
@@ -67,66 +65,71 @@ void DelocalizedWeight_one (int ion, int kindex, double kvec[3], Pw &pwave)
     if ((gbptr == NULL))
         rmg_error_handler (__FILE__, __LINE__, "can't allocate memory\n");
 
-
-        /* Get species type */
-
-    int amode = S_IREAD;
-    std::string filename = "PROJECTORS/forward_beta_species" + std::to_string(isp) + "_kpt" + std::to_string(kindex);
-    int fhand = open(filename.c_str(), O_RDWR, amode);
-    size_t count = sizeof(std::complex<double>) * AtomType.nh * pbasis;
-    read(fhand, forward_beta, count);
-    close(fhand);
-
     int nlxdim = Rmg_G->get_NX_GRID(1);
     int nlydim = Rmg_G->get_NY_GRID(1);
     int nlzdim = Rmg_G->get_NZ_GRID(1);
 
-    double vect[3], crds[3];
-    vect[0] = Atoms[ion].xtal[0] ;
-    vect[1] = Atoms[ion].xtal[1] ;
-    vect[2] = Atoms[ion].xtal[2] ;
+        /* Get species type */
+    int amode = S_IREAD | S_IWRITE;
+    std::string filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(kindex);
+    int fhand_nl = open(filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
 
-    /*The vector we are looking for should be */
-    to_cartesian (vect, crds);
-
-    /*Calculate the phase factor for delocalized case */
-    double tpiba = 2.0*PI / Rmg_L.celldm[0];
-    for(int ix = 0; ix < nlxdim; ix++)
+    for(size_t ion = 0; ion < Atoms.size(); ion++)
     {
-        for(int iy = 0; iy < nlydim; iy++)
+        int isp = Atoms[ion].species;
+        SPECIES &AtomType = Species[Atoms[ion].species];
+        amode = S_IREAD;
+        filename = "PROJECTORS/forward_beta_species" + std::to_string(isp) + "_kpt" + std::to_string(kindex);
+        int fhand = open(filename.c_str(), O_RDWR, amode);
+        size_t count = sizeof(std::complex<double>) * AtomType.nh * pbasis;
+        read(fhand, forward_beta, count);
+        close(fhand);
+
+
+        double vect[3], crds[3];
+        vect[0] = Atoms[ion].xtal[0] ;
+        vect[1] = Atoms[ion].xtal[1] ;
+        vect[2] = Atoms[ion].xtal[2] ;
+
+        /*The vector we are looking for should be */
+        to_cartesian (vect, crds);
+
+        /*Calculate the phase factor for delocalized case */
+        double tpiba = 2.0*PI / Rmg_L.celldm[0];
+        for(int ix = 0; ix < nlxdim; ix++)
         {
-            for(int iz = 0; iz < nlzdim; iz++)
+            for(int iy = 0; iy < nlydim; iy++)
             {
-                int idx = ix * nlydim * nlzdim + iy * nlzdim + iz;
+                for(int iz = 0; iz < nlzdim; iz++)
+                {
+                    int idx = ix * nlydim * nlzdim + iy * nlzdim + iz;
 
 
-                double theta = crds[0] * (tpiba*pwave.g[idx].a[0] + kvec[0]) +
-                    crds[1] * (tpiba*pwave.g[idx].a[1] + kvec[1]) +
-                    crds[2] * (tpiba*pwave.g[idx].a[2] + kvec[2]);
+                    double theta = crds[0] * (tpiba*pwave.g[idx].a[0] + kvec[0]) +
+                        crds[1] * (tpiba*pwave.g[idx].a[1] + kvec[1]) +
+                        crds[2] * (tpiba*pwave.g[idx].a[2] + kvec[2]);
 
-                fftw_phase[idx] = exp(std::complex<double>(0.0, theta));
+                    fftw_phase[idx] = exp(std::complex<double>(0.0, theta));
+                }
             }
         }
+
+        /* Loop over radial projectors */
+        for (int ip = 0; ip < AtomType.num_projectors; ip++)
+        {
+
+            /*Apply the phase factor */
+            for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  forward_beta[ip * pbasis + idx] * std::conj(fftw_phase[idx]);
+
+            /*Do the backwards transform */
+            pwave.FftInverse(gbptr, &Nlweight[ip*pbasis]);
+
+        }
+
+        write(fhand_nl, Nlweight, count);
+
     }
-
-    /* Loop over radial projectors */
-    for (int ip = 0; ip < AtomType.num_projectors; ip++)
-    {
-
-        /*Apply the phase factor */
-        for (int idx = 0; idx < pbasis; idx++) gbptr[idx] =  forward_beta[ip * pbasis + idx] * std::conj(fftw_phase[idx]);
-
-        /*Do the backwards transform */
-        pwave.FftInverse(gbptr, &Nlweight[ip*pbasis]);
-
-    }
-
-    amode = S_IREAD | S_IWRITE;
-    filename = "PROJECTORS/NLprojectors_ion" + std::to_string(ion) + "_kpt" + std::to_string(kindex);
-    fhand = open(filename.c_str(), O_CREAT | O_TRUNC | O_RDWR, amode);
-    count = sizeof(std::complex<double>) * AtomType.nh * pbasis;
-    write(fhand, Nlweight, count);
-    close(fhand);
+    close(fhand_nl);
 
 
     delete [] fftw_phase;

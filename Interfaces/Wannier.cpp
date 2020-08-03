@@ -48,7 +48,7 @@
 #include "Wannier.h"
 
 void InitDelocalizedWeight_onek(int kpt, double kvec[3], Pw &pwave);
-void DelocalizedWeight_one(int ion, int kpt, double kvec[3], Pw &pwave);        
+void DelocalizedWeight_one(int kpt, double kvec[3], Pw &pwave);        
 
 void transpose(std::complex<double> *m, int w, int h);
 template Wannier<double>::Wannier(BaseGrid &, Lattice &, const std::string &, int, int, int, double, double, double *, Kpoint<double> **Kptr);
@@ -99,6 +99,10 @@ template <class T> Wannier<T>::Wannier (
     if(!ct.norm_conserving_pp && ct.localize_projectors)
     {
         throw RmgFatalException() << "for ultra soft pseudopotential, set localize_projectors to be false for wannier90 interface  \n";
+    }
+    if(ct.is_gamma)
+    {
+        throw RmgFatalException() << "Wannier90 interface not programmed for gamma point  \n";
     }
     ngrid = G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1);
     ngrid_noncoll = ngrid * ct.noncoll_factor;
@@ -152,20 +156,14 @@ template <class T> Wannier<T>::Wannier (
         kvec[1] = ct.klist.k_all_cart[kpt][1];
         kvec[2] = ct.klist.k_all_cart[kpt][2];
 
-        for(int ion = 0; ion < (int)Atoms.size(); ion++)
-        {
-            DelocalizedWeight_one(ion, kpt, kvec, pwave);        
-        }
+        DelocalizedWeight_one(kpt, kvec, pwave);        
     }
     for(int kpt = pct.gridpe; kpt < ct.klist.num_k_ext; kpt+=pct.grid_npes)
     {
         kvec[0] = ct.klist.k_ext_cart[kpt][0];
         kvec[1] = ct.klist.k_ext_cart[kpt][1];
         kvec[2] = ct.klist.k_ext_cart[kpt][2];
-        for(int ion = 0; ion < (int)Atoms.size(); ion++)
-        {
-            DelocalizedWeight_one(ion, kpt+ct.klist.num_k_all, kvec, pwave);        
-        }
+        DelocalizedWeight_one(kpt+ct.klist.num_k_all, kvec, pwave);        
     }
     delete RT1;
     RT1 = new RmgTimer("7-Wannier: Amn");
@@ -959,9 +957,9 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
 }
 
-template void Wannier<double>::ReadNlweight(std::string filename, int ion, int nh, std::complex<double> *Nlweight_oneatom);
-template void Wannier<std::complex<double>>::ReadNlweight(std::string filename, int ion, int nh, std::complex<double> *Nlweight_oneatom);
-template <class T> void Wannier<T>::ReadNlweight(std::string filename, int ion, int nh, std::complex<double> *Nlweight_oneatom)
+template void Wannier<double>::ReadNlweight(std::string filename, int nh, std::complex<double> *Nlweight_oneatom);
+template void Wannier<std::complex<double>>::ReadNlweight(std::string filename, int nh, std::complex<double> *Nlweight_oneatom);
+template <class T> void Wannier<T>::ReadNlweight(std::string filename, int nh, std::complex<double> *Nlweight_oneatom)
 {
 
     MPI_Datatype wftype = MPI_DOUBLE_COMPLEX;
@@ -1021,8 +1019,12 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
 
 
     RmgTimer *RT1;
-    int pstride = ct.max_nl;
-    int num_tot_proj = Atoms.size() * pstride;
+    int num_tot_proj = 0;
+    for(size_t ion = 0; ion < Atoms.size(); ion++)
+    {
+        SPECIES &AtomType = Species[Atoms[ion].species];
+        num_tot_proj += AtomType.nh;
+    }
     T ZERO_t(0.0);
     T ONE_t(1.0);
     double vel = L.get_omega() / ((double)ngrid);
@@ -1035,30 +1037,14 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     T *sint_kn = (T *)GpuMallocManaged(alloc);
     T *sint_tem = (T *)GpuMallocManaged(alloc);
 
-    std::complex<double> *Nlweight_oneatom = new std::complex<double>[pstride * nbasis];
     T *Nlweight = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
     std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
-    double *Nlweight_R = (double *)Nlweight;
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
-    for(int idx = 0; idx < num_tot_proj * nbasis; idx++) Nlweight[idx] = 0.0;
     std::string filename;
-    for(size_t ion = 0; ion < Atoms.size(); ion++)
-    {
-        filename = "PROJECTORS/NLprojectors_ion" + std::to_string(ion) + "_kpt" + std::to_string(ik);
-        SPECIES &AtomType = Species[Atoms[ion].species];
-        int nh = AtomType.nh;
-        ReadNlweight(filename, ion, nh, Nlweight_oneatom);
+    filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(ik);
+    ReadNlweight(filename, num_tot_proj, Nlweight_C);
 
-        for(int idx = 0; idx < nh * nbasis; idx++)
-        {
-            if(ct.is_gamma)
-                Nlweight_R[idx + ion * pstride * nbasis] = std::real(Nlweight_oneatom[idx]);
-            else
-                Nlweight_C[idx + ion * pstride * nbasis] = Nlweight_oneatom[idx];
-        }
-
-    }
     delete RT1;
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
@@ -1070,23 +1056,10 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
     int ikn_map = ct.klist.k_neighbors[ik][ikn][4];
-    for(int idx = 0; idx < num_tot_proj * nbasis; idx++) Nlweight[idx] = 0.0;
-    for(size_t ion = 0; ion < Atoms.size(); ion++)
-    {
-        filename = "PROJECTORS/NLprojectors_ion" + std::to_string(ion) + "_kpt" + std::to_string(ikn_map);
-        SPECIES &AtomType = Species[Atoms[ion].species];
-        int nh = AtomType.nh;
-        ReadNlweight(filename, ion, nh, Nlweight_oneatom);
 
-        for(int idx = 0; idx < nh * nbasis; idx++)
-        {
-            if(ct.is_gamma)
-                Nlweight_R[idx + ion * pstride * nbasis] = std::real(Nlweight_oneatom[idx]);
-            else
-                Nlweight_C[idx + ion * pstride * nbasis] = Nlweight_oneatom[idx];
-        }
+    filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(ikn_map);
+    ReadNlweight(filename, num_tot_proj, Nlweight_C);
 
-    }
     delete RT1;
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
@@ -1117,7 +1090,6 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     {
 
         /*Actual index of the ion under consideration*/
-        proj_index = ion * ct.max_nl;
 
         SPECIES &AtomType = Species[Atoms[ion].species];
         int nh = AtomType.nh;
@@ -1155,6 +1127,8 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
             }
 
         }
+
+        proj_index += nh;
     }
 
     delete RT1;
@@ -1187,7 +1161,6 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     GpuFreeManaged(sint_kn);
     GpuFreeManaged(sint_tem);
     GpuFreeManaged(Nlweight);
-    delete [] Nlweight_oneatom;
 
 }
 

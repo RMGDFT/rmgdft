@@ -105,7 +105,7 @@ public:
     void ReadRotatePsi(int ik, int isy, int isya, std::string wavefile, T *psi_k);
     void ReadRotatePsiwan(int iq, int ik, int isy, int isya, std::string wavefile, T *psi_wan, int *piv);
     void Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onepair, std::complex<double> *qq, std::complex<double> *qq_so);
-    void ReadNlweight(std::string filename, int ion, int nh, std::complex<double> *Nlweight_oneatom);
+    void ReadNlweight(std::string filename, int nh, std::complex<double> *Nlweight_oneatom);
 
 };
 
