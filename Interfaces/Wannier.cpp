@@ -35,7 +35,6 @@
 #include <boost/algorithm/string/classification.hpp>
 
 
-
 #include "const.h"
 #include "Exxbase.h"
 #include "RmgTimer.h"
@@ -892,17 +891,17 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
                 beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
         delete RT1;
+        int count =  nstates * nstates;
+        MPI_Allreduce(MPI_IN_PLACE, &Mmn[(ik*num_kn+ikn)*nstates*nstates], count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
+            
 
         RT1 = new RmgTimer("7-Wannier: Mmn: us");
-      //  if(!ct.norm_conserving_pp || ct.noncoll)
-      //      Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
+        if(!ct.norm_conserving_pp || ct.noncoll)
+            Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
         delete RT1;
 
     }
 
-
-    int count = num_q * num_kn * nstates * nstates;
-    MPI_Allreduce(MPI_IN_PLACE, Mmn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
 
 
     if(pct.imgpe == 0)
@@ -940,6 +939,59 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     GpuFreeManaged(Mmn);
 
 }
+
+template void Wannier<double>::ReadNlweight(std::string filename, int ion, int nh, std::complex<double> *Nlweight_oneatom);
+template void Wannier<std::complex<double>>::ReadNlweight(std::string filename, int ion, int nh, std::complex<double> *Nlweight_oneatom);
+template <class T> void Wannier<T>::ReadNlweight(std::string filename, int ion, int nh, std::complex<double> *Nlweight_oneatom)
+{
+
+    MPI_Datatype wftype = MPI_DOUBLE_COMPLEX;
+
+    int sizes_c[4];
+    int subsizes_c[4];
+    int starts_c[4];
+
+    sizes_c[0] = nh;
+    sizes_c[1] = G.get_NX_GRID(1);
+    sizes_c[2] = G.get_NY_GRID(1);
+    sizes_c[3] = G.get_NZ_GRID(1);
+
+    subsizes_c[0] = nh;
+    subsizes_c[1] = G.get_PX0_GRID(1);
+    subsizes_c[2] = G.get_PY0_GRID(1);
+    subsizes_c[3] = G.get_PZ0_GRID(1);
+
+    starts_c[0] = 0;
+    starts_c[1] = G.get_PX_OFFSET(1);
+    starts_c[2] = G.get_PY_OFFSET(1);
+    starts_c[3] = G.get_PZ_OFFSET(1);
+
+    int order = MPI_ORDER_C;
+    MPI_Info fileinfo;
+    MPI_Datatype grid_c;
+    MPI_Status status;
+
+    MPI_Type_create_subarray(4, sizes_c, subsizes_c, starts_c, order, wftype, &grid_c);
+    MPI_Type_commit(&grid_c);
+
+    MPI_Info_create(&fileinfo);
+
+    int amode = MPI_MODE_RDWR;
+    MPI_File mpi_fhand ;
+
+
+    MPI_File_open(G.comm, filename.c_str(), amode, fileinfo, &mpi_fhand);
+    MPI_Offset disp = 0;
+
+    MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
+    int dis_dim = G.get_P0_BASIS(1) * nh;
+
+    MPI_File_read_all(mpi_fhand, Nlweight_oneatom, dis_dim, wftype, &status);
+    MPI_Barrier(G.comm);
+    MPI_File_close(&mpi_fhand);
+    MPI_Type_free(&grid_c);
+
+}
 template  void Wannier<double>::Mmn_us(int, int, double *, double *, double *, std::complex<double> *, std::complex<double> *);
 template  void Wannier<std::complex<double>>::Mmn_us(int, int, std::complex<double> *, std::complex<double> *, 
         std::complex<double> *, std::complex<double> *, std::complex<double> *);
@@ -957,6 +1009,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     T alpha(vel);
     int tot_st = nstates * ct.noncoll_factor;
 
+    size_t count = (size_t)num_tot_proj * (size_t)nstates * ct.noncoll_factor;
     size_t alloc = (size_t)num_tot_proj * (size_t)nstates * ct.noncoll_factor * sizeof(T);
     T *sint_ik = (T *)GpuMallocManaged(alloc);
     T *sint_kn = (T *)GpuMallocManaged(alloc);
@@ -969,54 +1022,50 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
 
     for(int idx = 0; idx < num_tot_proj * nbasis; idx++) Nlweight[idx] = 0.0;
     std::string filename;
-    size_t count;
-    int fhand;
     for(size_t ion = 0; ion < Atoms.size(); ion++)
     {
         filename = "PROJECTORS/NLprojectors_ion" + std::to_string(ion) + "_kpt" + std::to_string(ik);
-
         SPECIES &AtomType = Species[Atoms[ion].species];
-        fhand = open(filename.c_str(), O_RDWR, S_IWRITE);
-        count = sizeof(std::complex<double>) * AtomType.nh * ngrid;
-        read(fhand, Nlweight_oneatom, count);
-        close(fhand);
-        for(int idx = 0; idx < AtomType.nh * ngrid; idx++)
+        int nh = AtomType.nh;
+        ReadNlweight(filename, ion, nh, Nlweight_oneatom);
+
+        for(int idx = 0; idx < nh * nbasis; idx++)
         {
             if(ct.is_gamma)
-                Nlweight_R[idx + ion * pstride * ngrid] = std::real(Nlweight_oneatom[idx]);
+                Nlweight_R[idx + ion * pstride * nbasis] = std::real(Nlweight_oneatom[idx]);
             else
-                Nlweight_C[idx + ion * pstride * ngrid] = Nlweight_oneatom[idx];
+                Nlweight_C[idx + ion * pstride * nbasis] = Nlweight_oneatom[idx];
         }
 
     }
 
-    RmgGemm ("C", "N", num_tot_proj, tot_st, ngrid, alpha,
-            Nlweight, ngrid, psi_k, ngrid, ZERO_t, sint_ik, num_tot_proj);
+    RmgGemm ("C", "N", num_tot_proj, tot_st, nbasis, alpha,
+            Nlweight, nbasis, psi_k, nbasis, ZERO_t, sint_ik, num_tot_proj);
+    MPI_Allreduce(MPI_IN_PLACE, sint_ik, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
 
 
     int ikn_map = ct.klist.k_neighbors[ik][ikn][4];
-    for(int idx = 0; idx < num_tot_proj * ngrid; idx++) Nlweight[idx] = 0.0;
+    for(int idx = 0; idx < num_tot_proj * nbasis; idx++) Nlweight[idx] = 0.0;
     for(size_t ion = 0; ion < Atoms.size(); ion++)
     {
         filename = "PROJECTORS/NLprojectors_ion" + std::to_string(ion) + "_kpt" + std::to_string(ikn_map);
-
         SPECIES &AtomType = Species[Atoms[ion].species];
-        fhand = open(filename.c_str(), O_RDWR, S_IWRITE);
-        count = sizeof(std::complex<double>) * AtomType.nh * ngrid;
-        read(fhand, Nlweight_oneatom, count);
-        close(fhand);
-        for(int idx = 0; idx < AtomType.nh * ngrid; idx++)
+        int nh = AtomType.nh;
+        ReadNlweight(filename, ion, nh, Nlweight_oneatom);
+
+        for(int idx = 0; idx < nh * nbasis; idx++)
         {
             if(ct.is_gamma)
-                Nlweight_R[idx + ion * pstride * ngrid] = std::real(Nlweight_oneatom[idx]);
+                Nlweight_R[idx + ion * pstride * nbasis] = std::real(Nlweight_oneatom[idx]);
             else
-                Nlweight_C[idx + ion * pstride * ngrid] = Nlweight_oneatom[idx];
+                Nlweight_C[idx + ion * pstride * nbasis] = Nlweight_oneatom[idx];
         }
 
     }
 
-    RmgGemm ("C", "N", num_tot_proj, tot_st, ngrid, alpha,
-            Nlweight, ngrid, psi_q, ngrid, ZERO_t, sint_kn, num_tot_proj);
+    RmgGemm ("C", "N", num_tot_proj, tot_st, nbasis, alpha,
+            Nlweight, nbasis, psi_q, nbasis, ZERO_t, sint_kn, num_tot_proj);
+    MPI_Allreduce(MPI_IN_PLACE, sint_kn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
 
 
     double *qqq;
