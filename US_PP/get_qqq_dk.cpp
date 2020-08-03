@@ -54,61 +54,54 @@ void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<d
 
         nh = sp->nh;
         qqq = &qqq_dk[ion * ct.max_nl * ct.max_nl];
+        for(int i = 0; i < nh * nh; i++) qqq[i] = 0.0;
         ncount = Atoms[ion].Qindex.size();
         double ktao = dk_xtal[0] * Atoms[ion].xtal[0] +  dk_xtal[1] * Atoms[ion].xtal[1] + dk_xtal[2] * Atoms[ion].xtal[2];
         //ktao = 0.0;
         std::complex<double> phase_ion = std::exp(std::complex<double>(0.0,  -ktao * twoPI));
 
-        idx = 0;
         if(!ct.norm_conserving_pp) {
 
-            for (i = 0; i < nh; i++)
+            if (ncount)
             {
-                for (j = i; j < nh; j++)
+                for (icount = 0; icount < ncount; icount++)
                 {
-                    sum = 0.0;
-                    if (ncount)
+                    int idx1 = Atoms[ion].Qindex[icount];
+                    int ix = idx1/pz0_grid/py0_grid;
+                    int iy = (idx1/pz0_grid)%py0_grid;
+                    int iz = idx1%pz0_grid;
+                    double xx = hxgrid *(ix+px_offset) - Atoms[ion].xtal[0];
+                    xx = xx - std::round(xx);
+                    double yy = hygrid *(iy+py_offset) - Atoms[ion].xtal[1];
+                    yy = yy - std::round(yy);
+                    double zz = hzgrid *(iz+pz_offset) - Atoms[ion].xtal[2];
+                    zz = zz - std::round(zz);
+
+                    double kr = xx * dk_xtal[0] + yy  *dk_xtal[1] + zz * dk_xtal[2];
+                    std::complex<double> phase1 = std::exp( std::complex<double>(0.0, kr * twoPI)) * phase_ion *get_vel_f();
+                    for (i = 0; i < nh; i++)
                     {
-                        for (icount = 0; icount < ncount; icount++)
+                        for (j = i; j < nh; j++)
                         {
-                            int idx1 = Atoms[ion].Qindex[icount];
-                            int ix = idx1/pz0_grid/py0_grid;
-                            int iy = (idx1/pz0_grid)%py0_grid;
-                            int iz = idx1%pz0_grid;
-                            double xx = hxgrid *(ix+px_offset) - Atoms[ion].xtal[0];
-                            xx = xx - std::round(xx);
-                            double yy = hygrid *(iy+py_offset) - Atoms[ion].xtal[1];
-                            yy = yy - std::round(yy);
-                            double zz = hzgrid *(iz+pz_offset) - Atoms[ion].xtal[2];
-                            zz = zz - std::round(zz);
-                            
-                            double kr = xx * dk_xtal[0] + yy  *dk_xtal[1] + zz * dk_xtal[2];
-                            std::complex<double> phase1 = std::exp( std::complex<double>(0.0, kr * twoPI));
-                            
-                            
-                            sum += (double)Atoms[ion].augfunc[icount + idx * ncount] * phase1 * phase_ion;
+                            idx =  i * nh - (i*(i+1))/2 +j;
+
+                            qqq[i * nh + j] += (double)Atoms[ion].augfunc[icount + idx * ncount] * phase1;
+                            qqq[j * nh + i] = qqq[i * nh + j];
                             //sum += (double)Atoms[ion].augfunc[icount + idx * ncount] * phase_dk[Atoms[ion].Qindex[icount]] * phase_ion;
-                         // if(i == 0 && j == 0 && ion == 0 && std::abs(Atoms[ion].augfunc[icount]) > 0.01)
-                         //       printf("\n aaa %d %d %d %f  %f %f", ix, iy, iz, Atoms[ion].augfunc[icount], phase_dk[idx] * phase_ion);
-                            
+                            // if(i == 0 && j == 0 && ion == 0 && std::abs(Atoms[ion].augfunc[icount]) > 0.01)
+                            //       printf("\n aaa %d %d %d %f  %f %f", ix, iy, iz, Atoms[ion].augfunc[icount], phase_dk[idx] * phase_ion);
+
                         }
                     }
-                    GlobalSums (&sum, 1, pct.grid_comm);
-                    sum = sum * get_vel_f();
-                    if (pct.gridpe == 0  && 0)
-                        printf ( "\n i=%d j=%d q_cal=%15.8f  %15.8f q_rel=%15.8f",
-                                i, j, std::real(sum), std::imag(sum), sp->qqq[i][j]);
 
-                    qqq[i * nh + j] = sum;
-                    if (i != j)
-                        qqq[j * nh + i] = qqq[i * nh + j];
-
-                    idx++;
                 }                   /*end for j */
             }                       /*end for i */
         } // end if for norm conserving
 
     }                           /*end for ion */
+
+    int count =  Atoms.size() * ct.max_nl * ct.max_nl; 
+    GlobalSums (qqq_dk, count, pct.grid_comm);
 
     if(!ct.noncoll) return;
 
