@@ -77,6 +77,11 @@ private:
     // File descriptor for serial wavefile
     int serial_fd;
 
+    int nx_grid, ny_grid, nz_grid;
+    int px0_grid, py0_grid, pz0_grid;
+    int px_offset, py_offset, pz_offset;
+    int nbasis, nbasis_noncoll;
+
 
 public:
     Wannier (
@@ -98,6 +103,7 @@ public:
     void WriteWinEig();
     void Read_nnkpts();
     void ReadRotatePsi(int ik, int isy, int isya, std::string wavefile, T *psi_k);
+    void ReadRotatePsiwan(int iq, int ik, int isy, int isya, std::string wavefile, T *psi_wan, int *piv);
     void Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onepair, std::complex<double> *qq, std::complex<double> *qq_so);
 
 };

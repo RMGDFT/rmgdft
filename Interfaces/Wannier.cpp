@@ -85,6 +85,17 @@ template <class T> Wannier<T>::Wannier (
         throw RmgFatalException() << "kpoint must include gamma point, kpoint_is_shift=0, 0, 0  \n";
     }
 
+    nx_grid = G.get_NX_GRID(1);
+    ny_grid = G.get_NY_GRID(1);
+    nz_grid = G.get_NZ_GRID(1);
+    px0_grid = G.get_PX0_GRID(1);
+    py0_grid = G.get_PY0_GRID(1);
+    pz0_grid = G.get_PZ0_GRID(1);
+    px_offset = G.get_PX_OFFSET(1);
+    py_offset = G.get_PY_OFFSET(1);
+    pz_offset = G.get_PZ_OFFSET(1);
+    nbasis = px0_grid * py0_grid * pz0_grid;
+    nbasis_noncoll = nbasis * ct.noncoll_factor;
 
     if(!ct.norm_conserving_pp && ct.localize_projectors)
     {
@@ -267,10 +278,6 @@ template <> void Wannier<std::complex<double>>::SetAmn()
     //piv[2] = 722;
     //piv[3] = 823;
 
-    int nx_grid = G.get_NX_GRID(1);
-    int ny_grid = G.get_NY_GRID(1);
-    int nz_grid = G.get_NZ_GRID(1);
-
     int num_q = ct.klist.num_k_all;
     std::complex<double> *psi_wan = new std::complex<double>[n_wannier * nstates];
     std::complex<double> *Amn = new std::complex<double>[num_q * n_wannier * nstates]();
@@ -281,67 +288,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         int isym = ct.klist.k_map_symm[iq];
         int isyma = std::abs(isym)-1;
 
-        ReadRotatePsi(ik, isym, isyma, wavefile, psi_s);
-        for(int st = 0; st < nstates; st++)
-        {
-            double vel = L.get_omega() / ((double)ngrid);
-            double norm_coeff = 0.0;
-            for(int idx = 0; idx < ngrid_noncoll; idx++)
-            {
-                norm_coeff += std::norm(psi_s[st * ngrid_noncoll + idx]);
-            }
-            norm_coeff = std::sqrt(norm_coeff * vel);
-            for(int idx = 0; idx < ngrid_noncoll; idx++)
-            {
-                psi_s[st * ngrid_noncoll + idx] /= norm_coeff;
-            }
-        }
-
-        int ix, iy, iz, ixx, iyy, izz;
-        std::complex<double> phase_center;
-        for(int iw = 0; iw < n_wannier; iw++)
-        {
-            int grid_idx = piv[iw]-1;
-            int ispin = 0;
-            if(grid_idx >= ngrid) 
-            {
-                ispin = 1;
-                grid_idx -= ngrid;
-            }
-
-            ix = grid_idx/ny_grid/nz_grid;
-            iy = (grid_idx/nz_grid ) % ny_grid;
-            iz = grid_idx % nz_grid;
-
-            ixx = ix;
-            if(ixx > nx_grid/2) ixx -= nx_grid;
-            iyy = iy;
-            if(iyy > ny_grid/2) iyy -= ny_grid;
-            izz = iz;
-            if(izz > nz_grid/2) izz -= nz_grid;
-            double kr_center =
-                ct.klist.k_all_xtal[iq][0] * ixx/(double)nx_grid +
-                ct.klist.k_all_xtal[iq][1] * iyy/(double)ny_grid +
-                ct.klist.k_all_xtal[iq][2] * izz/(double)nz_grid ;
-            phase_center = std::exp(std::complex<double>(0.0, -kr_center * twoPI));
-
-
-            for(int st = 0; st < nstates; st++)
-            {
-                double focc = 1.0;
-                double eigs = ct.kp[ik].eigs[st] * Ha_eV;
-                double tem = (eigs - scdm_mu)/scdm_sigma;
-                if(scdm == ISOLATED_ENTANGLEMENT ) focc = 1.0;
-                else if(scdm == GAU_ENTANGLEMENT) focc = std::exp(-tem * tem);
-                else if(scdm == ERFC_ENTANGLEMENT) focc = 0.5 * erfc(tem);
-                else
-                {
-                    throw RmgFatalException() << "scdm = " << scdm << "  wrong value \n";
-                }
-                psi_wan[iw * nstates + st] = std::conj(psi_s[st * ngrid_noncoll + ispin * ngrid 
-                        + ix * ny_grid * nz_grid + iy * nz_grid + iz]) * focc * phase_center;
-            }
-        }
+        ReadRotatePsiwan(iq, ik, isym, isyma, wavefile, psi_wan, piv);
 
 
         double *sigma = new double[n_wannier]();
@@ -619,17 +566,125 @@ template <class T> void Wannier<T>::Read_nnkpts()
 
 
 }
+template  void Wannier<double>::ReadRotatePsiwan(int iq, int ikindex, int isym, int isyma, std::string wavefile, double *psi_wan, int *piv);
+template  void Wannier<std::complex<double>>::ReadRotatePsiwan(int iq, int ikindex, int isym, int isyma, std::string wavefile, std::complex<double>
+*psi_wan, int *piv);
+template <class T> void Wannier<T>::ReadRotatePsiwan(int iq, int ikindex, int isym, int isyma, std::string wavefile, T *psi_wan, int *piv)
+{
+
+    size_t length = nstates * ngrid_noncoll * sizeof(T);
+    T *psi_map;
+
+    std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ikindex);
+    int serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
+    if(serial_fd < 0)
+        throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+
+    psi_map = (T *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+
+    double *norm_coeff = new double[nstates]();
+    for(int st = 0; st < nstates; st++)
+    {
+        double vel = L.get_omega() / ((double)ngrid);
+        for(int idx = 0; idx < ngrid_noncoll; idx++)
+        {
+            norm_coeff[st] += std::norm(psi_map[st * ngrid_noncoll + idx]);
+        }
+        norm_coeff[st] = std::sqrt(norm_coeff[st] * vel);
+    }
+
+    int ix, iy, iz, ixx, iyy, izz;
+    std::complex<double> phase_center;
+    std::complex<double> *psi_wan_C = (std::complex<double> *)psi_wan;
+    for(int iw = 0; iw < n_wannier; iw++)
+    {
+        int grid_idx = piv[iw]-1;
+        int ispin = 0;
+        if(grid_idx >= ngrid) 
+        {
+            ispin = 1;
+            grid_idx -= ngrid;
+        }
+
+        ix = grid_idx/ny_grid/nz_grid;
+        iy = (grid_idx/nz_grid ) % ny_grid;
+        iz = grid_idx % nz_grid;
+
+        ixx = ix;
+        if(ixx > nx_grid/2) ixx -= nx_grid;
+        iyy = iy;
+        if(iyy > ny_grid/2) iyy -= ny_grid;
+        izz = iz;
+        if(izz > nz_grid/2) izz -= nz_grid;
+        double kr_center =
+            ct.klist.k_all_xtal[iq][0] * ixx/(double)nx_grid +
+            ct.klist.k_all_xtal[iq][1] * iyy/(double)ny_grid +
+            ct.klist.k_all_xtal[iq][2] * izz/(double)nz_grid ;
+        phase_center = std::exp(std::complex<double>(0.0, -kr_center * twoPI));
+
+
+        symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], 
+                ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+        for(int st = 0; st < nstates; st++)
+        {
+            double focc = 1.0;
+            double eigs = ct.kp[ikindex].eigs[st] * Ha_eV;
+            double tem = (eigs - scdm_mu)/scdm_sigma;
+            if(scdm == ISOLATED_ENTANGLEMENT ) focc = 1.0;
+            else if(scdm == GAU_ENTANGLEMENT) focc = std::exp(-tem * tem);
+            else if(scdm == ERFC_ENTANGLEMENT) focc = 0.5 * erfc(tem);
+            else
+            {
+                throw RmgFatalException() << "scdm = " << scdm << "  wrong value \n";
+            }
+
+            if(ct.noncoll) 
+            {
+                std::complex<double> up = psi_map[st * ngrid_noncoll + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
+                std::complex<double> dn = psi_map[st * ngrid_noncoll + ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
+                std::complex<double> up_rot, dn_rot;
+                up_rot = Rmg_Symm->rot_spin[isyma][0][0] * up + Rmg_Symm->rot_spin[isyma][0][1] * dn;
+                dn_rot = Rmg_Symm->rot_spin[isyma][1][0] * up + Rmg_Symm->rot_spin[isyma][1][1] * dn;
+                if(isym <0)
+                {
+                    if(ispin == 0) psi_wan_C[iw * nstates + st] = - std::conj(dn_rot);
+                    if(ispin == 1) psi_wan_C[iw * nstates + st] = std::conj(up_rot);
+                }
+                else
+                {
+                    if(ispin == 0) psi_wan_C[iw * nstates + st] = up_rot;
+                    if(ispin == 1) psi_wan_C[iw * nstates + st] = dn_rot;
+                }
+
+            }
+            else if(isym > 0)
+            {
+                psi_wan[iw * nstates + st] = 
+                     psi_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
+            }
+            else
+            {
+                psi_wan[iw * nstates + st] = 
+                     MyConj(psi_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
+            }
+
+            psi_wan_C[iw * nstates + st] = MyConj(psi_wan[iw * nstates + st]) * focc * phase_center /norm_coeff[st];
+            
+        }
+
+    }
+
+    delete [] norm_coeff;
+    munmap(psi_map, length);
+    close(serial_fd);
+}
+
 template  void Wannier<double>::ReadRotatePsi(int ikindex, int isym, int isyma, std::string wavefile, double *psi_k);
 template  void Wannier<std::complex<double>>::ReadRotatePsi(int ikindex, int isym, int isyma, std::string wavefile, std::complex<double> *psi_k);
 template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isyma, std::string wavefile, T *psi_k)
 {
 
-    int nx_grid = G.get_NX_GRID(1);
-    int ny_grid = G.get_NY_GRID(1);
-    int nz_grid = G.get_NZ_GRID(1);
-    int nbasis = nx_grid * ny_grid * nz_grid;
-    int nbasis_noncoll = nx_grid * ny_grid * nz_grid * ct.noncoll_factor;
-    size_t length = nstates * nbasis_noncoll * sizeof(T);
+    size_t length = nstates * ngrid_noncoll * sizeof(T);
     T *psi_map;
 
     std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ikindex);
@@ -642,42 +697,47 @@ template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isy
 
     int ixx, iyy, izz;
     std::complex<double> *psi_k_C = (std::complex<double> *)psi_k;
-    for (int ix = 0; ix < nx_grid; ix++) {
-        for (int iy = 0; iy < ny_grid; iy++) {
-            for (int iz = 0; iz < nz_grid; iz++) {
+    for (int ix = 0; ix < px0_grid; ix++) {
+        for (int iy = 0; iy < py0_grid; iy++) {
+            for (int iz = 0; iz < pz0_grid; iz++) {
 
-                symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+                int ix_g = ix + px_offset;
+                int iy_g = iy + py_offset;
+                int iz_g = iz + pz_offset;
+
+                symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], 
+                        ix_g, iy_g, iz_g, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
 
                 for(int st = 0; st < nstates; st++)
                 {
                     if(ct.noncoll) 
                     {
-                        std::complex<double> up = psi_map[st * nbasis_noncoll + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
-                        std::complex<double> dn = psi_map[st * nbasis_noncoll + nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
+                        std::complex<double> up = psi_map[st * ngrid_noncoll + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
+                        std::complex<double> dn = psi_map[st * ngrid_noncoll + ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
                         std::complex<double> up_rot, dn_rot;
                         up_rot = Rmg_Symm->rot_spin[isyma][0][0] * up + Rmg_Symm->rot_spin[isyma][0][1] * dn;
                         dn_rot = Rmg_Symm->rot_spin[isyma][1][0] * up + Rmg_Symm->rot_spin[isyma][1][1] * dn;
                         if(isym <0)
                         {
-                            psi_k_C[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] = - std::conj(dn_rot);
-                            psi_k_C[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] = std::conj(up_rot);
+                            psi_k_C[st * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = - std::conj(dn_rot);
+                            psi_k_C[st * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = std::conj(up_rot);
                         }
                         else
                         {
-                            psi_k_C[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] = up_rot;
-                            psi_k_C[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] = dn_rot;
+                            psi_k_C[st * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = up_rot;
+                            psi_k_C[st * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = dn_rot;
                         }
 
                     }
                     else if(isym >= 0)
                     {
-                        psi_k[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]
-                            = (psi_map[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
+                        psi_k[st * nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz]
+                            = (psi_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
                     }
                     else
                     {
-                        psi_k[st * nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz]
-                            = MyConj(psi_map[st * nbasis + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
+                        psi_k[st * nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz]
+                            = MyConj(psi_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
                     }
                 }
             }
@@ -699,18 +759,13 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     int num_q = ct.klist.num_k_all;
     int num_kn = ct.klist.num_k_nn;
 
-    int nx_grid = G.get_NX_GRID(1);
-    int ny_grid = G.get_NY_GRID(1);
-    int nz_grid = G.get_NZ_GRID(1);
-    int nbasis = nx_grid * ny_grid * nz_grid;
-    int nbasis_noncoll = nbasis * ct.noncoll_factor;
     size_t length = nstates * nbasis_noncoll * sizeof(T);
     T *psi_k = (T *)GpuMallocManaged(length);
     T *psi_q = (T *)GpuMallocManaged(length);
     T *Mmn = (T *)GpuMallocManaged(num_q * num_kn * nstates * nstates * sizeof(T));
 
     for(int idx = 0; idx < num_q * num_kn * nstates * nstates; idx++) Mmn[idx] = 0.0;
-    double vel = L.get_omega() / ((double)nbasis);
+    double vel = L.get_omega() / ((double)ngrid);
     T alpha(vel);
     T beta = 0.0;
 
@@ -754,7 +809,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
                 dk1[1] = -ct.klist.k_all_xtal[ik][1] + ct.klist.k_ext_xtal[ikn_map - ct.klist.num_k_all][1];
                 dk1[2] = -ct.klist.k_all_xtal[ik][2] + ct.klist.k_ext_xtal[ikn_map - ct.klist.num_k_all][2];
             }
-            
+
             ct.klist.k_neighbors[ik][ikn][5] = -1;
             for(int idk = 0; idk < ct.klist.num_k_nn; idk++)
             {
@@ -788,7 +843,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     delete RT1;
     //double *kphase_R = (double *)&kphase;
     std::complex<double> *kphase_C = (std::complex<double> *)&kphase;
-    for(int ikpair = pct.gridpe; ikpair < num_q * num_kn; ikpair+=pct.grid_npes)
+    for(int ikpair = 0; ikpair < num_q * num_kn; ikpair++)
     {
         int ik = ikpair/num_kn;
         int ikn = ikpair%num_kn;
@@ -814,18 +869,18 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
         RT1 = new RmgTimer("7-Wannier: Mmn: phase");
         //  phase factor when kneight need a periodic BZ folding
-        for (int iz = 0; iz < nz_grid; iz++) {
-            for (int iy = 0; iy < ny_grid; iy++) {
-                for (int ix = 0; ix < nx_grid; ix++) {
-                    kr = ct.klist.k_neighbors[ik][ikn][1] * ix/(double)nx_grid
-                        +ct.klist.k_neighbors[ik][ikn][2] * iy/(double)ny_grid
-                        +ct.klist.k_neighbors[ik][ikn][3] * iz/(double)nz_grid;
+        for (int iz = 0; iz < pz0_grid; iz++) {
+            for (int iy = 0; iy < py0_grid; iy++) {
+                for (int ix = 0; ix < px0_grid; ix++) {
+                    kr = ct.klist.k_neighbors[ik][ikn][1] * (ix+px_offset)/(double)nx_grid
+                        +ct.klist.k_neighbors[ik][ikn][2] * (iy+py_offset)/(double)ny_grid
+                        +ct.klist.k_neighbors[ik][ikn][3] * (iz+pz_offset)/(double)nz_grid;
                     *kphase_C = std::exp( std::complex<double>(0.0, -kr * twoPI));
                     for(int st = 0; st < nstates; st++)
                     {
-                        psi_q[st * nbasis_noncoll + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
+                        psi_q[st * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] *= kphase;
                         if(ct.noncoll)
-                            psi_q[st * nbasis_noncoll + nbasis + ix * ny_grid * nz_grid + iy * nz_grid + iz] *= kphase;
+                            psi_q[st * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] *= kphase;
                     }
 
                 }
@@ -839,8 +894,8 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         delete RT1;
 
         RT1 = new RmgTimer("7-Wannier: Mmn: us");
-        if(!ct.norm_conserving_pp || ct.noncoll)
-            Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
+      //  if(!ct.norm_conserving_pp || ct.noncoll)
+      //      Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
         delete RT1;
 
     }
@@ -907,12 +962,12 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     T *sint_kn = (T *)GpuMallocManaged(alloc);
     T *sint_tem = (T *)GpuMallocManaged(alloc);
 
-    std::complex<double> *Nlweight_oneatom = new std::complex<double>[pstride * ngrid];
-    T *Nlweight = (T *)GpuMallocManaged(num_tot_proj * ngrid* sizeof(T));
+    std::complex<double> *Nlweight_oneatom = new std::complex<double>[pstride * nbasis];
+    T *Nlweight = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
     std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
     double *Nlweight_R = (double *)Nlweight;
 
-    for(int idx = 0; idx < num_tot_proj * ngrid; idx++) Nlweight[idx] = 0.0;
+    for(int idx = 0; idx < num_tot_proj * nbasis; idx++) Nlweight[idx] = 0.0;
     std::string filename;
     size_t count;
     int fhand;
@@ -1007,7 +1062,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
                 {
                     int idx = (proj_index + i) * num_tot_proj + proj_index + j;
                     M_qqq_C[idx] = qq_dk_one[ion * ct.max_nl * ct.max_nl + inh+j];
-    
+
                 }
                 else
                 {

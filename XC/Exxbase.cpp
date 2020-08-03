@@ -1025,28 +1025,31 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
     MPI_Datatype wftype = MPI_DOUBLE;
     if(typeid(T) == typeid(std::complex<double>)) wftype = MPI_DOUBLE_COMPLEX;
 
-    int sizes_c[3];
-    int subsizes_c[3];
-    int starts_c[3];
+    int sizes_c[4];
+    int subsizes_c[4];
+    int starts_c[4];
 
-    sizes_c[0] = G.get_NX_GRID(1);
-    sizes_c[1] = G.get_NY_GRID(1);
-    sizes_c[2] = G.get_NZ_GRID(1);
+    sizes_c[0] = nstates *ct.noncoll_factor;
+    sizes_c[1] = G.get_NX_GRID(1);
+    sizes_c[2] = G.get_NY_GRID(1);
+    sizes_c[3] = G.get_NZ_GRID(1);
 
-    subsizes_c[0] = G.get_PX0_GRID(1);
-    subsizes_c[1] = G.get_PY0_GRID(1);
-    subsizes_c[2] = G.get_PZ0_GRID(1);
+    subsizes_c[0] = nstates *ct.noncoll_factor;
+    subsizes_c[1] = G.get_PX0_GRID(1);
+    subsizes_c[2] = G.get_PY0_GRID(1);
+    subsizes_c[3] = G.get_PZ0_GRID(1);
 
-    starts_c[0] = G.get_PX_OFFSET(1);
-    starts_c[1] = G.get_PY_OFFSET(1);
-    starts_c[2] = G.get_PZ_OFFSET(1);
+    starts_c[0] = 0;
+    starts_c[1] = G.get_PX_OFFSET(1);
+    starts_c[2] = G.get_PY_OFFSET(1);
+    starts_c[3] = G.get_PZ_OFFSET(1);
 
     int order = MPI_ORDER_C;
     MPI_Info fileinfo;
     MPI_Datatype grid_c;
     MPI_Status status;
 
-    MPI_Type_create_subarray(3, sizes_c, subsizes_c, starts_c, order, wftype, &grid_c);
+    MPI_Type_create_subarray(4, sizes_c, subsizes_c, starts_c, order, wftype, &grid_c);
     MPI_Type_commit(&grid_c);
 
     MPI_Info_create(&fileinfo);
@@ -1066,16 +1069,11 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
         T *wfptr;
         MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
         int dis_dim = G.get_P0_BASIS(1);
-        for(int st=0;st < nstates;st++)
-        {
-            wfptr = &psi[(ik * ct.max_states * dis_dim + st * dis_dim) * ct.noncoll_factor];
-            MPI_File_write_all(mpi_fhand, wfptr, dis_dim, wftype, &status);
-            if(ct.noncoll)
-            {
-                wfptr += dis_dim;
-                MPI_File_write_all(mpi_fhand, wfptr, dis_dim, wftype, &status);
-            }
-        }
+
+        wfptr = &psi[(ik * ct.max_states * dis_dim) * ct.noncoll_factor];
+        
+        dis_dim = dis_dim * nstates * ct.noncoll_factor;
+        MPI_File_write_all(mpi_fhand, wfptr, dis_dim, wftype, &status);
         MPI_Barrier(G.comm);
         MPI_File_close(&mpi_fhand);
     }
