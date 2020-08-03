@@ -185,6 +185,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
     double tol = 1.0e-5;
     int ik_gamma = -1;
     
+    RmgTimer *RT0;
     for(int kpt = 0; kpt < ct.num_kpts; kpt++)
     {
         if( std::abs(ct.kp[kpt].kpt[0]) + std::abs(ct.kp[kpt].kpt[0]) + std::abs(ct.kp[kpt].kpt[0]) < tol)
@@ -204,17 +205,18 @@ template <> void Wannier<std::complex<double>>::SetAmn()
     psi_s = new std::complex<double>[length];
     if(pct.gridpe == 0)
     {
+        RT0 = new RmgTimer("7-Wannier: Amn: read");
         std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ik_gamma);
-        RmgTimer *RT1 = new RmgTimer("5-Wannier: mmap");
         serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
         if(serial_fd < 0)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Wannier Terminating.\n";
-        delete RT1;
 
         read(serial_fd, psi_s, length * sizeof(std::complex<double>));
+        delete RT0;
      //   psi_s = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
        
+        RT0 = new RmgTimer("7-Wannier: Amn: norm and scale psi");
         for(int st = 0; st < nstates; st++)
         {
             
@@ -248,8 +250,12 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             }
         }
 
+        delete RT0;
+        RT0 = new RmgTimer("7-Wannier: Amn: trans psi");
         transpose(psi_s, ngrid_noncoll, nstates);
+        delete RT0;
 
+        RT0 = new RmgTimer("7-Wannier: Amn: zgeqp3");
         std::complex<double> *tau = new std::complex<double>[2*nstates]();
         double *rwork = new double[2 * ngrid_noncoll]();
         int Lwork = -1, info;
@@ -261,6 +267,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         std::complex<double> *cwork = new std::complex<double>[Lwork]();
 
         zgeqp3(&nstates, &ngrid_noncoll, psi_s, &nstates, piv, tau, cwork, &Lwork, rwork,&info);
+        delete RT0;
 
         if(info != 0) throw RmgFatalException() << "Error! in zgeqp3 at" << __FILE__ << __LINE__ << "  Wannier Terminating.\n";
         //for(int i = 0; i < n_wannier; i++) printf("\n piv %d   %d ", piv[i], info);
@@ -287,9 +294,12 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         int isym = ct.klist.k_map_symm[iq];
         int isyma = std::abs(isym)-1;
 
+        RT0 = new RmgTimer("7-Wannier: Amn: read and rotate");
         ReadRotatePsiwan(iq, ik, isym, isyma, wavefile, psi_wan, piv);
+        delete RT0;
 
 
+        RT0 = new RmgTimer("7-Wannier: Amn: zgesvd");
         double *sigma = new double[n_wannier]();
         double *rwork = new double[5*n_wannier]();
         std::complex<double> *Umat = new std::complex<double>[nstates * n_wannier]();
@@ -309,6 +319,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
 
         std::complex<double> one(1.0), zero(0.0);
         zgemm("N", "N", &nstates, &n_wannier, &n_wannier, &one, Umat, &nstates, VTmat, &n_wannier, &zero, &Amn[iq*nstates*n_wannier], &nstates);
+        delete RT0;
 
         delete [] sigma;
         delete [] rwork;
@@ -324,6 +335,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
     int count = num_q * nstates * n_wannier;
     MPI_Allreduce(MPI_IN_PLACE, Amn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
 
+    RT0 = new RmgTimer("7-Wannier: Amn: write");
     if(pct.imgpe == 0)
     {
         printf("\n Amn done");
@@ -349,6 +361,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         }
     }
 
+    delete RT0;
 
 }
 
@@ -771,6 +784,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     T kphase(1.0);
     double kr;
 
+    RmgTimer *RT1 = new RmgTimer("7-Wannier: Mmn: set dk");
     double dk[ct.klist.num_k_nn][3], dk1[3];
     for(int ikn = 0; ikn < ct.klist.num_k_nn; ikn++)
     {
@@ -828,11 +842,12 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         }
     }
 
+    delete RT1;
     std::complex<double> *qqq_dk, *qqq_dk_so, *qq_dk_one, *qq_dk_so_one;
     qqq_dk = new std::complex<double>[ct.klist.num_k_nn * Atoms.size() * ct.max_nl * ct.max_nl];
     qqq_dk_so = new std::complex<double>[4*ct.klist.num_k_nn * Atoms.size() * ct.max_nl * ct.max_nl];
 
-    RmgTimer *RT1 = new RmgTimer("7-Wannier: Mmn: qqq_dk");
+    RT1 = new RmgTimer("7-Wannier: Mmn: qqq_dk");
     for(int ikn = 0; ikn < ct.klist.num_k_nn; ikn++)
     {
         qq_dk_one = &qqq_dk[ikn * Atoms.size() * ct.max_nl * ct.max_nl];
@@ -891,8 +906,10 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
                 beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
         delete RT1;
+        RT1 = new RmgTimer("7-Wannier: Mmn: Reduce");
         int count =  nstates * nstates;
         MPI_Allreduce(MPI_IN_PLACE, &Mmn[(ik*num_kn+ikn)*nstates*nstates], count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
+        delete RT1;
             
 
         RT1 = new RmgTimer("7-Wannier: Mmn: us");
@@ -904,6 +921,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
 
 
+    RT1 = new RmgTimer("7-Wannier: Mmn: write");
     if(pct.imgpe == 0)
     {
         time_t tt;
@@ -933,6 +951,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         fclose(fmmn);
     }
 
+    delete RT1;
 
     GpuFreeManaged(psi_k);
     GpuFreeManaged(psi_q);
@@ -1001,6 +1020,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
 
 
 
+    RmgTimer *RT1;
     int pstride = ct.max_nl;
     int num_tot_proj = Atoms.size() * pstride;
     T ZERO_t(0.0);
@@ -1020,6 +1040,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
     double *Nlweight_R = (double *)Nlweight;
 
+    RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
     for(int idx = 0; idx < num_tot_proj * nbasis; idx++) Nlweight[idx] = 0.0;
     std::string filename;
     for(size_t ion = 0; ion < Atoms.size(); ion++)
@@ -1038,12 +1059,16 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
         }
 
     }
+    delete RT1;
 
+    RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
     RmgGemm ("C", "N", num_tot_proj, tot_st, nbasis, alpha,
             Nlweight, nbasis, psi_k, nbasis, ZERO_t, sint_ik, num_tot_proj);
     MPI_Allreduce(MPI_IN_PLACE, sint_ik, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
 
+    delete RT1;
 
+    RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
     int ikn_map = ct.klist.k_neighbors[ik][ikn][4];
     for(int idx = 0; idx < num_tot_proj * nbasis; idx++) Nlweight[idx] = 0.0;
     for(size_t ion = 0; ion < Atoms.size(); ion++)
@@ -1062,12 +1087,15 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
         }
 
     }
+    delete RT1;
 
+    RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
     RmgGemm ("C", "N", num_tot_proj, tot_st, nbasis, alpha,
             Nlweight, nbasis, psi_q, nbasis, ZERO_t, sint_kn, num_tot_proj);
     MPI_Allreduce(MPI_IN_PLACE, sint_kn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
+    delete RT1;
 
-
+    RT1 = new RmgTimer("7-Wannier: Mmn: us: set qqq");
     double *qqq;
 
     int M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
@@ -1129,6 +1157,9 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
         }
     }
 
+    delete RT1;
+
+    RT1 = new RmgTimer("7-Wannier: Mmn: us: gemm");
     int dim_dnm = num_tot_proj * ct.noncoll_factor;
 
     //M_dnm: dim_dnm * dim_dnm matrxi
@@ -1149,6 +1180,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
             ONE_t, sint_ik,  dim_dnm, sint_tem, dim_dnm,
             ONE_t,  Mmn_onekpair, nstates);
 
+    delete RT1;
 
     GpuFreeManaged(M_qqq);
     GpuFreeManaged(sint_ik);
