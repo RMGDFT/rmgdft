@@ -58,6 +58,9 @@ private:
     const std::string &wavefile;
     // Number of occupied orbitals
     int nstates;
+    int nstates_tot;
+    int num_exclude_bands;
+    std::vector<bool> exclude_bands;
     int n_wannier;
     int scdm;
     double scdm_mu;

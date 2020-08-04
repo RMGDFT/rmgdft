@@ -71,7 +71,7 @@ template <class T> Wannier<T>::Wannier (
         double scdm_mu_in,
         double scdm_sigma_in,
         T *psi_in, Kpoint<T> **Kptr) : 
-    G(G_in), L(L_in), wavefile(wavefile_in), nstates(nstates_in), n_wannier(nwannier_in), scdm(scdm_in), 
+    G(G_in), L(L_in), wavefile(wavefile_in), nstates_tot(nstates_in), n_wannier(nwannier_in), scdm(scdm_in), 
     scdm_mu(scdm_mu_in), scdm_sigma(scdm_sigma_in), psi(psi_in)
 {
     RmgTimer RT0("7-Wannier");
@@ -95,6 +95,8 @@ template <class T> Wannier<T>::Wannier (
     pz_offset = G.get_PZ_OFFSET(1);
     nbasis = px0_grid * py0_grid * pz0_grid;
     nbasis_noncoll = nbasis * ct.noncoll_factor;
+    exclude_bands.resize(nstates_tot);
+    for(int ib = 0; ib < nstates_tot; ib++) exclude_bands[ib] = false;
 
     if(!ct.norm_conserving_pp && ct.localize_projectors)
     {
@@ -107,17 +109,18 @@ template <class T> Wannier<T>::Wannier (
     ngrid = G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1);
     ngrid_noncoll = ngrid * ct.noncoll_factor;
 
-    if(scdm == ISOLATED_ENTANGLEMENT) nstates = n_wannier;
     std::vector<double> occs;
-    occs.resize(nstates, 1.0);
-    Exx = new Exxbase<T>(G, G, L, wavefile, nstates, occs.data(), psi, EXX_LOCAL_FFT);
+    occs.resize(nstates_tot, 1.0);
+    Exx = new Exxbase<T>(G, G, L, wavefile, nstates_tot, occs.data(), psi, EXX_LOCAL_FFT);
     RmgTimer *RT1 = new RmgTimer("7-Wannier: writesingle file");
     Exx->WriteWfsToSingleFile();
     MPI_Barrier(MPI_COMM_WORLD);
     delete RT1;
 
-    WriteWinEig();
     Read_nnkpts();
+    nstates = nstates_tot - num_exclude_bands;
+
+    WriteWinEig();
 //  setup forward beta for all of kpoints
     double kvec[3];
     RT1 = new RmgTimer("7-Wannier: init_weight");
@@ -201,6 +204,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
     //size_t length = (size_t)nstates * (size_t)ngrid_noncoll * sizeof(std::complex<double>);
     size_t length = (size_t)nstates * (size_t)ngrid_noncoll;
     psi_s = new std::complex<double>[length];
+
     if(pct.gridpe == 0)
     {
         RT0 = new RmgTimer("7-Wannier: Amn: read");
@@ -208,27 +212,33 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
         if(serial_fd < 0)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Wannier Terminating.\n";
+        length = nstates_tot * ngrid_noncoll * sizeof(std::complex<double>);
+        std::complex<double> *psi_map;
 
-        read(serial_fd, psi_s, length * sizeof(std::complex<double>));
+        psi_map = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
         delete RT0;
      //   psi_s = (std::complex<double> *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
        
         RT0 = new RmgTimer("7-Wannier: Amn: norm and scale psi");
-        for(int st = 0; st < nstates; st++)
+        int st_w = -1;
+        for(int st = 0; st < nstates_tot; st++)
         {
             
+            if(exclude_bands[st]) continue;
+            st_w++;
+            for(int idx = 0; idx < ngrid_noncoll; idx++)
+            {
+                psi_s[ idx * nstates + st_w] = std::conj(psi_map[st * ngrid_noncoll + idx]);
+            }
+
             double vel = L.get_omega() / ((double)ngrid);
             double norm_coeff = 0.0;
             for(int idx = 0; idx < ngrid_noncoll; idx++)
             {
-                norm_coeff += std::norm(psi_s[st * ngrid_noncoll + idx]);
+                norm_coeff += std::norm(psi_s[idx * nstates + st_w]);
             }
             norm_coeff = std::sqrt(norm_coeff * vel);
-            for(int idx = 0; idx < ngrid_noncoll; idx++)
-            {
-                psi_s[st * ngrid_noncoll + idx] /= norm_coeff;
-            }
 
             double focc = 1.0;
             double eigs = ct.kp[ik_gamma].eigs[st] * Ha_eV;
@@ -244,13 +254,10 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             
             for(int idx = 0; idx < ngrid_noncoll; idx++)
             {
-                psi_s[st * ngrid_noncoll + idx] = focc * (psi_s[st * ngrid_noncoll + idx]);
+                psi_s[idx * nstates + st_w] *= focc /norm_coeff;
             }
         }
 
-        delete RT0;
-        RT0 = new RmgTimer("7-Wannier: Amn: trans psi");
-        transpose(psi_s, ngrid_noncoll, nstates);
         delete RT0;
 
         RT0 = new RmgTimer("7-Wannier: Amn: zgeqp3");
@@ -272,7 +279,7 @@ template <> void Wannier<std::complex<double>>::SetAmn()
         delete [] cwork;
         delete [] rwork;
         delete [] tau;
-    //    munmap(psi_s, length);
+        munmap(psi_map, length);
         close(serial_fd);
     }
     MPI_Bcast(piv, ngrid_noncoll, MPI_INT, 0, pct.grid_comm);
@@ -394,6 +401,7 @@ template <class T> void Wannier<T>::WriteWinEig()
         FILE *fwin = fopen("Wannier90_rmg/wannier90.win", "w+");
         fprintf(fwin, "write_hr        = true");
         fprintf(fwin, "\nnum_wann        =  %d", n_wannier);
+        fprintf(fwin, "\nnum_bands        =  %d", nstates);
         fprintf(fwin, "\nnum_iter        = 20");
         fprintf(fwin, "\nauto_projections= true\n");
         fprintf(fwin, "\nbands_plot       = true\n");
@@ -439,9 +447,12 @@ template <class T> void Wannier<T>::WriteWinEig()
         for(int iq = 0; iq <ct.klist.num_k_all; iq++)
         {
             int ik = ct.klist.k_map_index[iq];
-            for(int st = 0; st < nstates; st++)
+            int st_w = 0;
+            for(int st = 0; st < nstates_tot; st++)
             {
-                fprintf(feig, "%5d %5d  %18.12f\n", st+1, iq+1, ct.kp[ik].eigs[st] *Ha_eV);
+                if(exclude_bands[st]) continue;
+                fprintf(feig, "%5d %5d  %18.12f\n", st_w+1, iq+1, ct.kp[ik].eigs[st] *Ha_eV);
+                st_w++;
             }
         }
         fclose(feig);
@@ -574,6 +585,39 @@ template <class T> void Wannier<T>::Read_nnkpts()
         ct.klist.k_ext_cart[kpt][2] = v3 * twoPI;
     }
 
+    while(getline(fnnk, oneline) )
+    {
+        if(oneline.find("exclude_bands") != std::string::npos ) break;
+    }
+    getline(fnnk, oneline);
+    boost::trim(oneline);
+    num_exclude_bands = std::stoi(oneline);
+    int num_left = num_exclude_bands;
+    while(num_left > 0)
+    {
+        std::vector<std::string> band_info;
+        getline(fnnk, oneline);
+        boost::trim(oneline);
+        boost::algorithm::split( band_info, oneline, boost::is_any_of("-"), boost::token_compress_on );
+        if(band_info.size() == 1) 
+        {
+            num_left -= 1; 
+            int band_index = std::stoi(band_info[0]);
+            exclude_bands[band_index-1] = true;
+        }
+        else if(band_info.size() == 2) 
+        {
+            int band_index1 = std::stoi(band_info[0]);
+            int band_index2 = std::stoi(band_info[1]);
+            num_left -= band_index2 - band_index1 +1;
+            for(int ib = band_index1; ib <= band_index2; ib++) exclude_bands[ib-1] = true;
+        }
+        else
+        {
+            throw RmgFatalException() << "Error! in exclude_bands of wannier90.nnkp file. Terminating.\n";
+        }
+    }
+    
 
 }
 template  void Wannier<double>::ReadRotatePsiwan(int iq, int ikindex, int isym, int isyma, std::string wavefile, double *psi_wan, int *piv);
@@ -582,7 +626,7 @@ template  void Wannier<std::complex<double>>::ReadRotatePsiwan(int iq, int ikind
 template <class T> void Wannier<T>::ReadRotatePsiwan(int iq, int ikindex, int isym, int isyma, std::string wavefile, T *psi_wan, int *piv)
 {
 
-    size_t length = nstates * ngrid_noncoll * sizeof(T);
+    size_t length = nstates_tot * ngrid_noncoll * sizeof(T);
     T *psi_map;
 
     std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ikindex);
@@ -592,8 +636,8 @@ template <class T> void Wannier<T>::ReadRotatePsiwan(int iq, int ikindex, int is
 
     psi_map = (T *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
 
-    double *norm_coeff = new double[nstates]();
-    for(int st = 0; st < nstates; st++)
+    double *norm_coeff = new double[nstates_tot]();
+    for(int st = 0; st < nstates_tot; st++)
     {
         double vel = L.get_omega() / ((double)ngrid);
         for(int idx = 0; idx < ngrid_noncoll; idx++)
@@ -635,8 +679,11 @@ template <class T> void Wannier<T>::ReadRotatePsiwan(int iq, int ikindex, int is
 
         symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], 
                 ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
-        for(int st = 0; st < nstates; st++)
+        int st_w = -1;
+        for(int st = 0; st < nstates_tot; st++)
         {
+            if(exclude_bands[st]) continue;
+            st_w++;
             double focc = 1.0;
             double eigs = ct.kp[ikindex].eigs[st] * Ha_eV;
             double tem = (eigs - scdm_mu)/scdm_sigma;
@@ -657,28 +704,28 @@ template <class T> void Wannier<T>::ReadRotatePsiwan(int iq, int ikindex, int is
                 dn_rot = Rmg_Symm->rot_spin[isyma][1][0] * up + Rmg_Symm->rot_spin[isyma][1][1] * dn;
                 if(isym <0)
                 {
-                    if(ispin == 0) psi_wan_C[iw * nstates + st] = - std::conj(dn_rot);
-                    if(ispin == 1) psi_wan_C[iw * nstates + st] = std::conj(up_rot);
+                    if(ispin == 0) psi_wan_C[iw * nstates + st_w] = - std::conj(dn_rot);
+                    if(ispin == 1) psi_wan_C[iw * nstates + st_w] = std::conj(up_rot);
                 }
                 else
                 {
-                    if(ispin == 0) psi_wan_C[iw * nstates + st] = up_rot;
-                    if(ispin == 1) psi_wan_C[iw * nstates + st] = dn_rot;
+                    if(ispin == 0) psi_wan_C[iw * nstates + st_w] = up_rot;
+                    if(ispin == 1) psi_wan_C[iw * nstates + st_w] = dn_rot;
                 }
 
             }
             else if(isym > 0)
             {
-                psi_wan[iw * nstates + st] = 
+                psi_wan[iw * nstates + st_w] = 
                      psi_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
             }
             else
             {
-                psi_wan[iw * nstates + st] = 
+                psi_wan[iw * nstates + st_w] = 
                      MyConj(psi_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
             }
 
-            psi_wan_C[iw * nstates + st] = MyConj(psi_wan[iw * nstates + st]) * focc * phase_center /norm_coeff[st];
+            psi_wan_C[iw * nstates + st_w] = MyConj(psi_wan[iw * nstates + st_w]) * focc * phase_center /norm_coeff[st];
             
         }
 
@@ -694,7 +741,7 @@ template  void Wannier<std::complex<double>>::ReadRotatePsi(int ikindex, int isy
 template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isyma, std::string wavefile, T *psi_k)
 {
 
-    size_t length = nstates * ngrid_noncoll * sizeof(T);
+    size_t length = nstates_tot * ngrid_noncoll * sizeof(T);
     T *psi_map;
 
     std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ikindex);
@@ -718,8 +765,11 @@ template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isy
                 symm_ijk(&Rmg_Symm->sym_rotate[isyma *9], &Rmg_Symm->ftau_wave[isyma*3], 
                         ix_g, iy_g, iz_g, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
 
-                for(int st = 0; st < nstates; st++)
+                int st_w = -1;
+                for(int st = 0; st < nstates_tot; st++)
                 {
+                    if(exclude_bands[st]) continue;
+                    st_w++;
                     if(ct.noncoll) 
                     {
                         std::complex<double> up = psi_map[st * ngrid_noncoll + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
@@ -729,24 +779,24 @@ template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isy
                         dn_rot = Rmg_Symm->rot_spin[isyma][1][0] * up + Rmg_Symm->rot_spin[isyma][1][1] * dn;
                         if(isym <0)
                         {
-                            psi_k_C[st * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = - std::conj(dn_rot);
-                            psi_k_C[st * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = std::conj(up_rot);
+                            psi_k_C[st_w * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = - std::conj(dn_rot);
+                            psi_k_C[st_w * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = std::conj(up_rot);
                         }
                         else
                         {
-                            psi_k_C[st * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = up_rot;
-                            psi_k_C[st * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = dn_rot;
+                            psi_k_C[st_w * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = up_rot;
+                            psi_k_C[st_w * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = dn_rot;
                         }
 
                     }
                     else if(isym >= 0)
                     {
-                        psi_k[st * nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz]
+                        psi_k[st_w * nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz]
                             = (psi_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
                     }
                     else
                     {
-                        psi_k[st * nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz]
+                        psi_k[st_w * nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz]
                             = MyConj(psi_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
                     }
                 }
@@ -869,6 +919,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         int isyma = std::abs(isym) -1;
 
         RmgTimer *RT1 = new RmgTimer("7-Wannier: Mmn: read and rotate");
+       
         ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
 
         int ikn_index = ct.klist.k_neighbors[ik][ikn][0];
