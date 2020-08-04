@@ -904,10 +904,6 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
                 beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
         delete RT1;
-        RT1 = new RmgTimer("7-Wannier: Mmn: Reduce");
-        int count =  nstates * nstates;
-        MPI_Allreduce(MPI_IN_PLACE, &Mmn[(ik*num_kn+ikn)*nstates*nstates], count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
-        delete RT1;
             
 
         RT1 = new RmgTimer("7-Wannier: Mmn: us");
@@ -917,6 +913,10 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
     }
 
+    RT1 = new RmgTimer("7-Wannier: Mmn: Reduce");
+    int count = num_q * num_kn * nstates * nstates;
+    MPI_Allreduce(MPI_IN_PLACE, Mmn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
+    delete RT1;
 
 
     RT1 = new RmgTimer("7-Wannier: Mmn: write");
@@ -1150,8 +1150,9 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
             ONE_t, M_qqq,  dim_dnm, sint_kn, dim_dnm,
             ZERO_t,  sint_tem, dim_dnm);
 
+    alpha = 1.0/pct.grid_npes;
     RmgGemm (transc, transn, nstates, nstates, dim_dnm,
-            ONE_t, sint_ik,  dim_dnm, sint_tem, dim_dnm,
+            alpha, sint_ik,  dim_dnm, sint_tem, dim_dnm,
             ONE_t,  Mmn_onekpair, nstates);
 
     delete RT1;
