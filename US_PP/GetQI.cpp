@@ -54,8 +54,8 @@ static inline void map_qval_components(int ih, int jh, int *lpx, int *lpl, SPECI
 //void InitClebschGordan(int, int *[9][9], int*[9], int*[9][9]);
 void GetQI (void)
 {
-    int idx, idx1, i, j,ion, size;
-    int ix, iy, iz, species, num;
+    int idx, idx1, ion, size;
+    int ix, iy, iz, species;
     int *lpx, *lpl;
     double *ylm;
     int nh;
@@ -222,7 +222,7 @@ void GetQI (void)
                 Atoms[ion].stress_cx[1].resize(icount);
                 Atoms[ion].stress_cx[2].resize(icount);
             }
-            ct.q_alloc[0] += (size_t)(size * icount) * sizeof(decltype(Atoms[ion].augfunc)::value_type);
+//            ct.q_alloc[0] += (size_t)(size * icount) * sizeof(decltype(Atoms[ion].augfunc)::value_type);
 
             qnmlig = sp->qnmlig;
             idx = 0;
@@ -378,14 +378,10 @@ static inline double qval_inline (int lmax, int ih, int jh, int ic, double d0, d
 
 static inline void map_qval_components(int ih, int jh, int *lpx, int *lpl, SPECIES * sp, std::multimap<size_t, qongrid> &aug_desc)
 {
-    int nmb, lp, l;
+    int lp, l;
 
     int nb = sp->indv[ih];
     int mb = sp->indv[jh];
-    if (nb < mb)
-        nmb = mb * (mb + 1) / 2 + nb;
-    else
-        nmb = nb * (nb + 1) / 2 + mb;
 
     int num_lm = (ct.max_l +1 ) * (ct.max_l +1);
     int num_LM2 = (2*ct.max_l+1) *(2*ct.max_l +1);

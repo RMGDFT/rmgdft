@@ -4,16 +4,27 @@
 #include "species.h"
 #include "const.h"
 
+// This structure holds information about a separable q-function component which is
+// required to generate the augmentation charges when ultrasoft pseudopotentials are used.
 class qongrid
 {
 
 public:
+
+// ival and jval are indices ranging from (0, sp->nh-1). There may be multiple qongrid elements
+// for each unique (ival,jval) pair but they will have different lval.
     int ival;
     int jval;
     int lval;
+
+// nb and mb are indices ranging from (0, nbeta-1) 
     int nb;
     int mb;
+
+// Index into Clebsch-Gordon coefficient array.
     int cg_idx;
+
+// Index into ylm array
     int ylm_idx;
 };
 
@@ -217,7 +228,6 @@ public:
     std::multimap<size_t, qongrid> augfunc_desc;
     std::vector<std::vector<double>> grid_ylm;
     std::map<size_t, std::vector<float>> grid_qr;
-    std::vector<float> augfunc;
     std::vector<double> stress_cx[3];
 
     // An index array which maps the q-functions onto the 3-d grid associated with each processor.
