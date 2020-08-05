@@ -273,7 +273,6 @@ ct.state_block_size);
         delete RT1;
     }
 
-    factor *= sizeof(OrbitalType)/sizeof(double);
     GlobalSums(gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
     GlobalSums(par_gamma_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
     GlobalSums(par_omega_allions, 3*num_owned_ions*max_nl2 * factor, pct.kpsub_comm);
