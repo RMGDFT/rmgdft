@@ -218,7 +218,7 @@ public:
     std::vector<std::vector<double>> grid_ylm;
     std::map<size_t, std::vector<float>> grid_qr;
     std::vector<float> augfunc;
-    std::vector<double> augfunc_xyz[3];
+    std::vector<double> stress_cx[3];
 
     // An index array which maps the q-functions onto the 3-d grid associated with each processor.
     std::vector<int> Qindex;

@@ -105,9 +105,11 @@ void GetQI (void)
         /*Release memory first */
         Atoms[ion].Qindex.clear();
         Atoms[ion].augfunc_desc.clear();
-        Atoms[ion].augfunc_xyz[0].clear();
-        Atoms[ion].augfunc_xyz[1].clear();
-        Atoms[ion].augfunc_xyz[2].clear();
+
+        Atoms[ion].stress_cx[0].clear();
+        Atoms[ion].stress_cx[1].clear();
+        Atoms[ion].stress_cx[2].clear();
+
         Atoms[ion].grid_ylm.clear();
         Atoms[ion].grid_qr.clear();
 
@@ -216,9 +218,9 @@ void GetQI (void)
 
             if(ct.stress)
             {
-                Atoms[ion].augfunc_xyz[0].resize(size * icount);
-                Atoms[ion].augfunc_xyz[1].resize(size * icount);
-                Atoms[ion].augfunc_xyz[2].resize(size * icount);
+                Atoms[ion].stress_cx[0].resize(icount);
+                Atoms[ion].stress_cx[1].resize(icount);
+                Atoms[ion].stress_cx[2].resize(icount);
             }
             ct.q_alloc[0] += (size_t)(size * icount) * sizeof(decltype(Atoms[ion].augfunc)::value_type);
 
@@ -246,6 +248,14 @@ void GetQI (void)
 
                             r = metric (x);
                             to_cartesian (x, cx);
+
+                            if(ct.stress)
+                            {
+                                Atoms[ion].stress_cx[0][idx] = cx[0];
+                                Atoms[ion].stress_cx[1][idx] = cx[1];
+                                Atoms[ion].stress_cx[2][idx] = cx[2];
+                            }
+
                             for(int l = 0; l <= 2*ct.max_l; l++)
                             {
                                 for(int m = 0; m < 2*l + 1; m++)
@@ -268,7 +278,7 @@ void GetQI (void)
                             d1 = (d0 - 1.0) * 0.5;
                             dm = (d0 - 2.0) / 3.0;
 
-#if 1
+
                             // Generate the ylm on the 3D grid (FIXME should only go to max_l for this species)
                             for(int l = 0; l <= 2*ct.max_l; l++)
                             {
@@ -288,27 +298,6 @@ void GetQI (void)
                                 Atoms[ion].grid_qr[qnm_key(nb, mb, l)][icount] = qrad;
                             }
 
-#endif
-                            num = 0;
-                            for (i = 0; i < nh; i++)
-                            {
-
-                                for (j = i; j < nh; j++)
-                                {
-                                    idx1 = num * Atoms[ion].Qindex.size() + icount;
-//                                    Atoms[ion].augfunc[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m.data(),
-//                                            sp->indv.data(), ylm, ct.cg_coeff.data(), lpx, lpl, sp);
-
-                                    if(ct.stress)
-                                    {
-                                        Atoms[ion].augfunc_xyz[0][idx1] = Atoms[ion].augfunc[idx1] *cx[0];
-                                        Atoms[ion].augfunc_xyz[1][idx1] = Atoms[ion].augfunc[idx1] *cx[1];
-                                        Atoms[ion].augfunc_xyz[2][idx1] = Atoms[ion].augfunc[idx1] *cx[2];
-                                    }
-
-                                    num++;
-                                }
-                            }
                             icount++;
                         }
 

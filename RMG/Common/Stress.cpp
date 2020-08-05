@@ -943,29 +943,22 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
                         {
                             for (icount = 0; icount < ncount; icount++)
                             {
-                                sum[ion * num_q_max + idx] += Atoms[ion].augfunc_xyz[id2][icount + idx * ncount] * veff_gxyz[ivec[icount]];
-                            }
-
-                            if(ct.noncoll)
-                            {
-                                for (icount = 0; icount < ncount; icount++)
+                                double Qr = GetAugcharge(i, j, icount, ct.cg_coeff.data(), iptr);
+                                sum[ion * num_q_max + idx] += Qr * Atoms[ion].stress_cx[id2][icount] * veff_gxyz[ivec[icount]];
+                                if(ct.noncoll)
                                 {
                                     sum[ion * num_q_max + idx + sum_dim] += 
-                                        Atoms[ion].augfunc_xyz[id2][icount + idx * ncount] * vxc_gxyz[ivec[icount] + 0 * FP0_BASIS];
+                                            Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 0 * FP0_BASIS];
                                     sum[ion * num_q_max + idx + 2*sum_dim] += 
-                                        Atoms[ion].augfunc_xyz[id2][icount + idx * ncount] * vxc_gxyz[ivec[icount] + 1 * FP0_BASIS];
+                                            Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 1 * FP0_BASIS];
                                     sum[ion * num_q_max + idx + 3*sum_dim] += 
-                                        Atoms[ion].augfunc_xyz[id2][icount + idx * ncount] * vxc_gxyz[ivec[icount] + 2 * FP0_BASIS];
+                                            Qr * Atoms[ion].stress_cx[id2][icount] * vxc_gxyz[ivec[icount] + 2 * FP0_BASIS];
+                                    // switching the derivative from Q to veff introduce Q * Veff term 
+                                    // cancelling out the original Q * Veff term
+                                    if(id1 == id2 && 0 )  
+                                            sum[ion * num_q_max + idx] += Qr * veff[ivec[icount]];
                                 }
                             }
-                            // switching the derivative from Q to veff introduce Q * Veff term 
-                            // cancelling out the original Q * Veff term
-                            if(id1 == id2 && 0 )  
-                                for (icount = 0; icount < ncount; icount++)
-                                {
-                                    sum[ion * num_q_max + idx] += Atoms[ion].augfunc[icount + idx * ncount] * veff[ivec[icount]];
-                                }
-
                         }               /*end if (ncount) */
 
 
