@@ -4,6 +4,18 @@
 #include "Pw.h"
 #include <vector>
 
+#include <boost/functional/hash.hpp>
+#include <unordered_map>
+
+
+inline int lm_key(int l,int m) {return l*l + m;}
+inline size_t qnm_key(int i, int j, int l) {return (size_t)(((size_t)i << 16) + ((size_t)j << 8) + (size_t)l);}
+inline size_t qij_key(int i, int j) {return (size_t)(((size_t)i << 8) + ((size_t)j));}
+inline int qnm_ival(size_t key) {return (int)(key >> 16);}
+inline int qnm_jval(size_t key) {return (int)((key >> 8) & 255);}
+inline int qnm_lval(size_t key) {return (int)(key & 255);}
+
+
 class SPECIES
 {
 
@@ -179,6 +191,8 @@ public:
     double *qnm;
     double *qnm_l;
     double *qnmlig;
+
+    std::unordered_map<size_t, std::vector<double>> qnmlig_new;
 
     /* the coefficient for pseudosation of Qnm_L(r) */
     double *qfcoef;

@@ -24,7 +24,6 @@ void RhoAugmented(double * rho, double * global_mat_X)
     int idx;
     int *ivec, size, idx1, idx2;
     int nh, icount, ncount, i, j, ion;
-    float *qnmI, *qtpr;
     double *product, *ptr_product;
     ION *iptr;
     SPECIES *sp;
@@ -51,7 +50,6 @@ void RhoAugmented(double * rho, double * global_mat_X)
         ivec = Atoms[ion].Qindex.data();
         ncount = Atoms[ion].Qindex.size();
 
-        qnmI = Atoms[ion].augfunc.data();
 
         if (Atoms[ion].Qindex.size())
         {
@@ -63,14 +61,14 @@ void RhoAugmented(double * rho, double * global_mat_X)
                 {
                     idx1 = i * ct.max_nl + j;
                     idx2 = j * ct.max_nl + i;
-                    qtpr = qnmI + idx * ncount;
                     for (icount = 0; icount < ncount; icount++)
                     {
+                        double Qr = GetAugcharge(i, j, icount, ct.cg_coeff.data(), iptr);
                         if (i != j)
                             rho[ivec[icount]] +=
-                                qtpr[icount] * (ptr_product[idx1] + ptr_product[idx2]);
+                                Qr * (ptr_product[idx1] + ptr_product[idx2]);
                         else
-                            rho[ivec[icount]] += qtpr[icount] * ptr_product[idx1];
+                            rho[ivec[icount]] += Qr * ptr_product[idx1];
                     }           /*end for icount */
                     idx++;
                 }               /*end for j */

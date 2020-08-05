@@ -4,6 +4,19 @@
 #include "species.h"
 #include "const.h"
 
+class qongrid
+{
+
+public:
+    int ival;
+    int jval;
+    int lval;
+    int nb;
+    int mb;
+    int cg_idx;
+    int ylm_idx;
+};
+
 /* Ion structure */
 class ION
 {
@@ -201,11 +214,11 @@ public:
     double init_spin_angle2;
 
     // Augmentation charges associated with this ion
+    std::multimap<size_t, qongrid> augfunc_desc;
+    std::vector<std::vector<double>> grid_ylm;
+    std::map<size_t, std::vector<float>> grid_qr;
     std::vector<float> augfunc;
-
-    float_2d_array grid_ylm;
-    float_2d_array grid_qr;
-    std::vector<float> augfunc_xyz[3];
+    std::vector<double> augfunc_xyz[3];
 
     // An index array which maps the q-functions onto the 3-d grid associated with each processor.
     std::vector<int> Qindex;
@@ -219,6 +232,18 @@ public:
 
 };
 
-
+static inline double GetAugcharge(int ih, int jh, int icount, double *cg, ION *iptr)
+{
+    double sum = 0.0;
+    std::pair <std::multimap<size_t,qongrid>::iterator, std::multimap<size_t,qongrid>::iterator> qrange;
+    qrange = iptr->augfunc_desc.equal_range(qij_key(ih, jh));
+    for (std::multimap<size_t,qongrid>::iterator it=qrange.first; it!=qrange.second; ++it)
+    {
+        float *radial = iptr->grid_qr[qnm_key(it->second.nb, it->second.mb, it->second.lval)].data();
+        double *grid_ylm = iptr->grid_ylm[it->second.ylm_idx].data();
+        sum += cg[it->second.cg_idx] * (double)radial[icount] * (double)grid_ylm[icount];
+    }
+    return sum;
+}
 #endif
 

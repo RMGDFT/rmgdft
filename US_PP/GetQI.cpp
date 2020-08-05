@@ -49,13 +49,15 @@ static inline double qval_inline (int lmax, int ih, int jh, int ic, double d0, d
         double * ptpr, int *nh_l2m,
         int *indv, double * ylm, double *ap, int *lpx, int *lpl, SPECIES * sp);
 
+static inline void map_qval_components(int ih, int jh, int *lpx, int *lpl, SPECIES * sp, std::multimap<size_t, qongrid> &aug_desc);
+
 //void InitClebschGordan(int, int *[9][9], int*[9], int*[9][9]);
 void GetQI (void)
 {
     int idx, idx1, i, j,ion, size;
     int ix, iy, iz, species, num;
     int *lpx, *lpl;
-    double *ap, *ylm;
+    double *ylm;
     int nh;
     int ilow, jlow, klow, ihi, jhi, khi, map, icount;
     int *Aix, *Aiy, *Aiz;
@@ -80,11 +82,11 @@ void GetQI (void)
 
     lpx = new int[num_lm * num_lm];
     lpl = new int[num_lm * num_lm  * num_LM2];
-    ap = new double[num_LM2 * num_lm * num_lm];
     ylm = new double[num_LM2];
-    //ylm = new double[25];
 
-    InitClebschGordan(ct.max_l, ap, lpx, lpl);
+    ct.cg_coeff.resize(boost::extents[num_lm][num_lm][num_LM2]);
+    InitClebschGordan(ct.max_l, ct.cg_coeff.data(), lpx, lpl);
+
 
 
     alloc = ct.max_Qpoints;
@@ -102,10 +104,12 @@ void GetQI (void)
 
         /*Release memory first */
         Atoms[ion].Qindex.clear();
-        Atoms[ion].augfunc.clear();
+        Atoms[ion].augfunc_desc.clear();
         Atoms[ion].augfunc_xyz[0].clear();
         Atoms[ion].augfunc_xyz[1].clear();
         Atoms[ion].augfunc_xyz[2].clear();
+        Atoms[ion].grid_ylm.clear();
+        Atoms[ion].grid_qr.clear();
 
         for (idx = 0; idx < alloc; idx++)
         {
@@ -181,7 +185,35 @@ void GetQI (void)
 
 
             size = nh * (nh + 1) / 2;
-            Atoms[ion].augfunc.resize(size * icount);
+            Atoms[ion].grid_ylm.resize((2*ct.max_l+1)*(2*ct.max_l+1));
+
+
+            for(int l = 0; l <= 2*ct.max_l; l++)
+            {
+                for(int m = 0; m < 2*l + 1; m++)
+                {
+                    Atoms[ion].grid_ylm[lm_key(l, m)] = {};
+                    Atoms[ion].grid_ylm[lm_key(l, m)].resize(icount);
+                }
+            }
+
+            for (auto& qfunc: sp->qnmlig_new)
+            {
+                int nb = qnm_ival(qfunc.first);
+                int mb = qnm_jval(qfunc.first);
+                int l = qnm_lval(qfunc.first);
+                Atoms[ion].grid_qr[qnm_key(nb, mb, l)] = {};
+                Atoms[ion].grid_qr[qnm_key(nb, mb, l)].resize(icount);
+            }
+
+            for (int ih = 0; ih < nh; ih++)
+            {
+                for (int jh = ih; jh < nh; jh++)
+                {
+                    map_qval_components(ih, jh, lpx, lpl, sp, Atoms[ion].augfunc_desc);
+                }
+            }
+
             if(ct.stress)
             {
                 Atoms[ion].augfunc_xyz[0].resize(size * icount);
@@ -191,7 +223,6 @@ void GetQI (void)
             ct.q_alloc[0] += (size_t)(size * icount) * sizeof(decltype(Atoms[ion].augfunc)::value_type);
 
             qnmlig = sp->qnmlig;
-
             idx = 0;
             icount = 0;
             /* Generate index arrays */
@@ -216,10 +247,12 @@ void GetQI (void)
                             r = metric (x);
                             to_cartesian (x, cx);
                             for(int l = 0; l <= 2*ct.max_l; l++)
+                            {
                                 for(int m = 0; m < 2*l + 1; m++)
+                                {
                                     ylm[l*l+m] = Ylm(l, m, cx);
-
-                            //ylmr2 (cx, ylm);
+                                }
+                            }
 
                             if((r < LOGGRID_START)) {
                                 r = LOGGRID_START;
@@ -235,17 +268,37 @@ void GetQI (void)
                             d1 = (d0 - 1.0) * 0.5;
                             dm = (d0 - 2.0) / 3.0;
 
+#if 1
+                            // Generate the ylm on the 3D grid (FIXME should only go to max_l for this species)
+                            for(int l = 0; l <= 2*ct.max_l; l++)
+                            {
+                                for(int m = 0; m < 2*l + 1; m++)
+                                {
+                                    Atoms[ion].grid_ylm[lm_key(l,m)][icount] = Ylm(l, m, cx);
+                                }
+                            }
 
+                            // Generate the q-functions on the 3D grid
+                            for (auto& qfunc: sp->qnmlig_new)
+                            {
+                                int nb = qnm_ival(qfunc.first);
+                                int mb = qnm_jval(qfunc.first);
+                                int l = qnm_lval(qfunc.first);
+                                double qrad = AtomicInterpolateInline_1 (qfunc.second.data(), ic, d0, d1, dm);
+                                Atoms[ion].grid_qr[qnm_key(nb, mb, l)][icount] = qrad;
+                            }
+
+#endif
                             num = 0;
                             for (i = 0; i < nh; i++)
                             {
 
                                 for (j = i; j < nh; j++)
                                 {
-
                                     idx1 = num * Atoms[ion].Qindex.size() + icount;
-                                    Atoms[ion].augfunc[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m.data(),
-                                            sp->indv.data(), ylm, ap, lpx, lpl, sp);
+//                                    Atoms[ion].augfunc[idx1] = qval_inline (ct.max_l, i, j, ic, d0, d1, dm, qnmlig,sp->nh_l2m.data(),
+//                                            sp->indv.data(), ylm, ct.cg_coeff.data(), lpx, lpl, sp);
+
                                     if(ct.stress)
                                     {
                                         Atoms[ion].augfunc_xyz[0][idx1] = Atoms[ion].augfunc[idx1] *cx[0];
@@ -287,7 +340,6 @@ void GetQI (void)
     delete [](pvec);
     delete []lpx;
     delete []lpl;
-    delete []ap;
     delete []ylm;
 
 
@@ -317,7 +369,6 @@ static inline double qval_inline (int lmax, int ih, int jh, int ic, double d0, d
     jvl = nh_l2m[jh];
 
     sum = 0;
-
     for (lm = 0; lm < lpx[ivl*num_lm + jvl]; lm++)
     {
         lp = lpl[(ivl*num_lm + jvl) * num_LM2 + lm];
@@ -329,10 +380,54 @@ static inline double qval_inline (int lmax, int ih, int jh, int ic, double d0, d
             l = 2;
         else 
             l = (int)sqrt(lp + 0.1);
-
         ptpr1 = ptpr + (nmb * sp->nlc + l) * MAX_LOGGRID;
         qrad = AtomicInterpolateInline_1 (ptpr1, ic, d0, d1, dm);
         sum += qrad * ap[lp*num_lm * num_lm + ivl * num_lm + jvl] * ylm[lp];
     }
     return (sum);
+}
+
+static inline void map_qval_components(int ih, int jh, int *lpx, int *lpl, SPECIES * sp, std::multimap<size_t, qongrid> &aug_desc)
+{
+    int nmb, lp, l;
+
+    int nb = sp->indv[ih];
+    int mb = sp->indv[jh];
+    if (nb < mb)
+        nmb = mb * (mb + 1) / 2 + nb;
+    else
+        nmb = nb * (nb + 1) / 2 + mb;
+
+    int num_lm = (ct.max_l +1 ) * (ct.max_l +1);
+    int num_LM2 = (2*ct.max_l+1) *(2*ct.max_l +1);
+
+    int ivl = sp->nh_l2m[ih];
+    int jvl = sp->nh_l2m[jh];
+
+    for (int lm = 0; lm < lpx[ivl*num_lm + jvl]; lm++)
+    {
+        lp = lpl[(ivl*num_lm + jvl) * num_LM2 + lm];
+        if(lp == 0)
+            l = 0;
+        else if (lp < 4)
+            l = 1;
+        else if (lp < 9)
+            l = 2;
+        else 
+            l = (int)sqrt(lp + 0.1);
+
+        int cg_idx = lp*num_lm * num_lm + ivl * num_lm + jvl;
+        int ylm_idx = lp;
+
+//printf("Debug  %d  %d  %d\n",ih,jh,cg_idx);
+        qongrid q;
+        q.ival = ih;
+        q.jval = jh;
+        q.nb = nb;
+        q.mb = mb;
+        q.lval = l;
+        q.cg_idx = cg_idx;
+        q.ylm_idx = ylm_idx;
+        aug_desc.insert(std::pair<size_t, qongrid>(qij_key(ih, jh), q));
+    }
 }

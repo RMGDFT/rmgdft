@@ -599,6 +599,9 @@ public:
     /** The maximum l quantum number for any species */
     int max_l;
 
+    /** Clebsch-Gordon coefficients */
+    double_3d_array cg_coeff;
+
     /*Maximum value of nldim for any species */
     int max_nldim;
 

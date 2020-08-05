@@ -48,7 +48,6 @@ void RhoAugmented_proj(double * rho, double *rho_matrix_local)
     int idx;
     int *ivec,  idx1, idx2;
     int nh, icount, ncount, i, j, ion;
-    float *qnmI, *qtpr;
     ION *iptr;
     SPECIES *sp;
 
@@ -71,8 +70,6 @@ void RhoAugmented_proj(double * rho, double *rho_matrix_local)
         ivec = Atoms[ion].Qindex.data();
         ncount = Atoms[ion].Qindex.size();
 
-        qnmI = Atoms[ion].augfunc.data();
-
         if (Atoms[ion].Qindex.size())
         {
 
@@ -83,14 +80,14 @@ void RhoAugmented_proj(double * rho, double *rho_matrix_local)
                 {
                     idx1 = (proj_local_index + i) * num_prj + proj_local_index + j;
                     idx2 = (proj_local_index + j) * num_prj + proj_local_index + i;
-                    qtpr = qnmI + idx * ncount;
                     for (icount = 0; icount < ncount; icount++)
                     {
+                        double Qr = GetAugcharge(i, j, icount, ct.cg_coeff.data(), iptr);
                         if (i != j)
                             rho[ivec[icount]] +=
-                                qtpr[icount] * (Qnm_coeff[idx1] + Qnm_coeff[idx2]);
+                                Qr * (Qnm_coeff[idx1] + Qnm_coeff[idx2]);
                         else
-                            rho[ivec[icount]] += qtpr[icount] * Qnm_coeff[idx1];
+                            rho[ivec[icount]] += Qr * Qnm_coeff[idx1];
                     }           /*end for icount */
                     idx++;
                 }               /*end for j */

@@ -34,6 +34,7 @@ void get_ddd (double * veff, double *vxc, bool ddd0_flag)
 
 
     sum_idx = 0;
+    int sum_prev_idx = 0;
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
@@ -47,39 +48,40 @@ void get_ddd (double * veff, double *vxc, bool ddd0_flag)
         if (iptr->dnmI == NULL)
             iptr->dnmI = new double[nh * nh * ct.noncoll_factor * ct.noncoll_factor];
 
-        idx = 0;
-        for (int i = 0; i < nh; i++)
+        double *cgarray = ct.cg_coeff.data();
+        for (auto& aug: Atoms[ion].augfunc_desc)
         {
-            for (int j = i; j < nh; j++)
+            int i = aug.second.ival;
+            int j = aug.second.jval;
+            float *radial = Atoms[ion].grid_qr[qnm_key(aug.second.nb, aug.second.mb, aug.second.lval)].data();
+            double *grid_ylm = Atoms[ion].grid_ylm[aug.second.ylm_idx].data();
+
+            sum_idx = sum_prev_idx + (nh*(nh-1)/2) - (nh-i)*((nh-i)-1)/2 + j;
+            if (ncount)
             {
-                if (ncount)
+                for (icount = 0; icount < ncount; icount++)
                 {
-                    for (icount = 0; icount < ncount; icount++)
+                    double Qr = cgarray[aug.second.cg_idx] * (double)radial[icount] * (double)grid_ylm[icount];
+                    sum[sum_idx] += Qr * veff[ivec[icount]];
+                    if(ct.noncoll)
                     {
-                        sum[sum_idx] += Atoms[ion].augfunc[icount + idx * ncount] * veff[ivec[icount]];
-                        if(ct.noncoll)
-                        {
-                            sum[1*sum_dim + sum_idx] += Atoms[ion].augfunc[icount + idx * ncount] 
-                                * vxc[1*FP0_BASIS + ivec[icount]];
-                            sum[2*sum_dim + sum_idx] += Atoms[ion].augfunc[icount + idx * ncount] 
-                                * vxc[2*FP0_BASIS + ivec[icount]];
-                            sum[3*sum_dim + sum_idx] += Atoms[ion].augfunc[icount + idx * ncount] 
-                                * vxc[3*FP0_BASIS + ivec[icount]];
-                        }
+                        sum[1*sum_dim + sum_idx] += Qr
+                            * vxc[1*FP0_BASIS + ivec[icount]];
+                        sum[2*sum_dim + sum_idx] += Qr
+                            * vxc[2*FP0_BASIS + ivec[icount]];
+                        sum[3*sum_dim + sum_idx] += Qr
+                            * vxc[3*FP0_BASIS + ivec[icount]];
                     }
-                }               /*end if (ncount) */
-
-                idx++;
-                sum_idx++;
-            }                   /*end for (j = i; j < nh; j++) */
-        }                       /*end for (i = 0; i < nh; i++) */
-
+                }
+            }               /*end if (ncount) */
+        }
+        sum_prev_idx += nh*(nh + 1) / 2;
     }                           /*end for (ion = 0; ion < ct.num_ions; ion++) */
 
 
 
-    if (sum_idx != sum_dim)
-        error_handler ("Problem with sum index");
+//    if (sum_idx != sum_dim)
+//        error_handler ("Problem with sum index");
 
     int num_sums = sum_dim * ct.noncoll_factor * ct.noncoll_factor;
     global_sums (sum, &num_sums, pct.grid_comm);

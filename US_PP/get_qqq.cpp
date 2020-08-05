@@ -76,7 +76,7 @@ void get_qqq ()
                     {
                         for (icount = 0; icount < ncount; icount++)
                         {
-                            sum += Atoms[ion].augfunc[icount + idx * ncount];
+                            sum += GetAugcharge(i, j, icount, ct.cg_coeff.data(), iptr);
                         }
                     }
                     sum = real_sum_all (sum, pct.grid_comm);

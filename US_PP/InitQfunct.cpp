@@ -85,8 +85,6 @@ void InitQfunct ()
                     for (ll = abs (il - jl); ll <= il + jl; ll = ll + 2)
                     {
 
-                        qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_LOGGRID;
-
                         for (k = 0; k < MAX_RGRID; k++)
                             sp->qnm_l[k + (idx * sp->nlc + ll) * MAX_RGRID ] = 0.0;
 
@@ -136,8 +134,8 @@ void InitQfunct ()
 
         num = (sp->nbeta * (sp->nbeta + 1)) * sp->nlc / 2;
         sp->qnmlig = new double[num * MAX_LOGGRID]();
+sp->qnmlig_new.clear();
         idx = 0;
-
         for (i = 0; i < sp->nbeta; i++)
         {
             il = sp->llbeta[i];
@@ -147,10 +145,10 @@ void InitQfunct ()
                 idx = j * (j + 1) / 2 + i;
                 for (ll = abs (il - jl); ll <= il + jl; ll = ll + 2)
                 {
-
                     qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_LOGGRID;
                     qnm_tpr = sp->qnm_l + (idx * sp->nlc + ll) *  MAX_RGRID;
-
+sp->qnmlig_new[qnm_key(i, j, ll)] = {};
+sp->qnmlig_new[qnm_key(i, j, ll)].resize(MAX_LOGGRID);
                     if (pct.gridpe == 0 && ct.write_pp_flag)
                     {
                         for (k = 0; k < sp->kkbeta; k++)
@@ -160,6 +158,9 @@ void InitQfunct ()
 
                     A->FilterPotential(qnm_tpr, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
                             sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
+
+A->FilterPotential(qnm_tpr, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, sp->qnmlig_new[qnm_key(i, j, ll)].data(),
+         sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
 
                     /*Write final filtered Q function if requested*/
                     if (pct.gridpe == 0 && ct.write_pp_flag)

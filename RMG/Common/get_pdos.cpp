@@ -42,7 +42,7 @@ void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS)
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int *ivec;
     int nh, icount, ncount, i, j, ion, gion, ix, iy, iz, ii, jj, kk, xoff, yoff, zoff;
-    double *qnmI, *sintR, *qtpr;
+    double *sintR, *qtpr;
     double t1, *work, *work_temp, *rho_temp, *rho_energy, *product, de, E;
     double time1;
     FILE *file;
@@ -152,7 +152,6 @@ for (iene = 0; iene < E_POINTS; iene++)
 
                     ivec = Atoms[gion].Qindex.data();
                     ncount = Atoms[gion].Qindex.size()
-		    qnmI = Atoms[gion].augfunc.data();
 
 		    for (i=0; i < max_product; i++)
 			    product[i] = 0.0;
@@ -210,10 +209,9 @@ for (iene = 0; iene < E_POINTS; iene++)
 		    {
 			    for (j = i; j < nh; j++)
 			    {
-				    qtpr = qnmI + idx * ncount;
 				    for (icount = 0; icount < ncount; icount++)
 				    {
-					    rho_temp[ivec[icount]] += qtpr[icount] * product[idx];
+					    rho_temp[ivec[icount]] += GetAugcharge(i, j, icount, ct.cg_coeff.data(), iptr) * product[idx];
 				    }           /*end for icount */
 				    idx++;
 			    }               /*end for j */

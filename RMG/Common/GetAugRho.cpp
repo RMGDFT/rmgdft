@@ -128,14 +128,16 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
             if(sp.is_spinorb) transform_so(product, product_tem, sp);
 
-            int idx = 0;
-            for (int i = 0; i < nh; i++)
-            {
-                for (int j = i; j < nh; j++)
+                double *cgarray = ct.cg_coeff.data();
+                for (auto& aug: Atoms[gion].augfunc_desc)
                 {
+                    int i = aug.second.ival;
+                    int j = aug.second.jval;
+                    float *radial = Atoms[gion].grid_qr[qnm_key(aug.second.nb, aug.second.mb, aug.second.lval)].data();
+                    double *grid_ylm = Atoms[gion].grid_ylm[aug.second.ylm_idx].data();
                     for (int icount = 0; icount < ncount; icount++)
                     {
-                        double Qr = Atoms[gion].augfunc[icount + idx * ncount];
+                        double Qr = cgarray[aug.second.cg_idx] * (double)radial[icount] * (double)grid_ylm[icount];
                         augrho[ivec[icount]] += Qr * std::real(product[i * nh+j]);
                         if(i != j) augrho[ivec[icount]] += Qr * std::real(product[j * nh+i]);
                         if(ct.noncoll)
@@ -154,11 +156,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
                         }
                     }           /*end for icount */
-                    idx++;
-                }               /*end for j */
-            }                   /*end for i */
-
-
+                }
         }                       /*end if */
 
     }                           /*end for ion */

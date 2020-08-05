@@ -66,10 +66,12 @@ void get_ddd_update (double * veff)
             {
                 if (ncount)
                 {
-                    qnmI = Atoms[ion].augfunc.data() + idx * ncount;
+                    //qnmI = Atoms[ion].augfunc.data() + idx * ncount;
                     for (icount = 0; icount < ncount; icount++)
                     {
-                        sum[sum_idx] += qnmI[icount] * veff[ivec[icount]];
+                        //sum[sum_idx] += qnmI[icount] * veff[ivec[icount]];
+                        double Qr = GetAugcharge(i, j, icount, ct.cg_coeff.data(), iptr);
+                        sum[sum_idx] += Qr * veff[ivec[icount]];
                     }
                 }               /*end if (ncount) */
 
