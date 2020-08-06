@@ -2,6 +2,7 @@ set(tests "atomO_polarized")
 list(APPEND tests "C60")
 list(APPEND tests "Mg_2atom")
 list(APPEND tests "AlN32")
+list(APPEND tests "graphite_stress")
 
 SET(RMG_EXE "${CMAKE_BINARY_DIR}/rmg-cpu")
 foreach(test ${tests})
