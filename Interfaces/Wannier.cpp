@@ -404,6 +404,10 @@ template <class T> void Wannier<T>::WriteWinEig()
         fprintf(fwin, "\nnum_bands        =  %d", nstates);
         fprintf(fwin, "\nnum_iter        = 20");
         fprintf(fwin, "\nauto_projections= true\n");
+
+        fprintf(fwin, "\ndis_win_max       = 19.2d0");
+        fprintf(fwin, "\ndis_froz_max      =  9.8d0");
+
         fprintf(fwin, "\nbands_plot       = true\n");
 
         fprintf(fwin, "bands_plot_format= xmgrace\n");
@@ -428,16 +432,16 @@ template <class T> void Wannier<T>::WriteWinEig()
         fprintf(fwin, "\nend atoms_cart\n");
         fprintf(fwin, "\nbegin unit_cell_cart");
         fprintf(fwin, "\nbohr");
-        fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", L.get_a0(0),L.get_a0(1),L.get_a0(2));
-        fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", L.get_a1(0),L.get_a1(1),L.get_a1(2));
-        fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", L.get_a2(0),L.get_a2(1),L.get_a2(2));
+        fprintf(fwin, "\n%16.10f   %16.10f   %16.10f", L.get_a0(0),L.get_a0(1),L.get_a0(2));
+        fprintf(fwin, "\n%16.10f   %16.10f   %16.10f", L.get_a1(0),L.get_a1(1),L.get_a1(2));
+        fprintf(fwin, "\n%16.10f   %16.10f   %16.10f", L.get_a2(0),L.get_a2(1),L.get_a2(2));
         fprintf(fwin, "\nend_unit_cell_cart");
         fprintf(fwin, "\n\nmp_grid : %d %d %d", ct.kpoint_mesh[0], ct.kpoint_mesh[1], ct.kpoint_mesh[2]);
 
         fprintf(fwin, "\n\nbegin kpoints");
         for(int iq = 0; iq <ct.klist.num_k_all; iq++)
         {
-            fprintf(fwin, "\n%10.6f   %10.6f   %10.6f", ct.klist.k_all_xtal[iq][0], ct.klist.k_all_xtal[iq][1], ct.klist.k_all_xtal[iq][2] );
+            fprintf(fwin, "\n%16.10f   %16.10f   %16.10f", ct.klist.k_all_xtal[iq][0], ct.klist.k_all_xtal[iq][1], ct.klist.k_all_xtal[iq][2] );
         }
         fprintf(fwin, "\nend kpoints");
 
@@ -468,7 +472,10 @@ template <class T> void Wannier<T>::Read_nnkpts()
     double tol = 1.0e-5;
     std::ifstream fnnk("Wannier90_rmg/wannier90.nnkp");
     if(!fnnk.is_open())
+    {
+        WriteWinEig();
         throw RmgFatalException() << "generte wannier90.nnkpts first by running wannier90.x -pp \n";
+    }
 
     std::string oneline;
     // find the first nnkpts 
