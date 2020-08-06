@@ -215,6 +215,7 @@ public:
     /*the L-value for the beta function */
     int llbeta[MAX_NB];
     double jjbeta[MAX_NB];
+    int max_l;
 
     /* Projectors on radial grid. KB for norm-conserving and beta_n(r) for Vanderbilt Ultrasoft. */
     double *beta[MAX_NB];

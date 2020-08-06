@@ -81,6 +81,8 @@ void LoadUpfPseudo(SPECIES *sp)
     double_2d_array ddd0;  // Used to read in the PP_DIJ
     double_2d_array qqq;   // Used to read in the norms of the augmentation functions (PP_Q)
 
+    sp->max_l = 0;
+
     std::string Msg;
     if((sp->pseudo_filename == std::string("./@Internal")) || (sp->pseudo_filename.length() == 0)) {
 
@@ -344,6 +346,7 @@ void LoadUpfPseudo(SPECIES *sp)
 //               double cutoff_radius = upf_tree.get<int>(betapath + ".<xmlattr>.cutoff_radius");
             
         }
+        sp->max_l = l_max;
 
         /*read in the Matrix ddd0(nbeta,nbeta) */
         std::string PP_DIJ = upf_tree.get<std::string>("UPF.PP_NONLOCAL.PP_DIJ");

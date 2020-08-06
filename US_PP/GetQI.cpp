@@ -185,11 +185,10 @@ void GetQI (void)
             for (idx1 = 0; idx1 < icount; idx1++) Atoms[ion].Qindex.push_back( pvec[idx1] );
 
 
-            // Resize grid_ylm arrays (FIXME should only go to max_l for this species)
-            Atoms[ion].grid_ylm.resize((2*ct.max_l+1)*(2*ct.max_l+1));
+            Atoms[ion].grid_ylm.resize((2*sp->max_l+1)*(2*sp->max_l+1));
 
 
-            for(int l = 0; l <= 2*ct.max_l; l++)
+            for(int l = 0; l <= 2*sp->max_l; l++)
             {
                 for(int m = 0; m < 2*l + 1; m++)
                 {
@@ -276,8 +275,7 @@ void GetQI (void)
                             dm = (d0 - 2.0) / 3.0;
 
 
-                            // Generate the ylm on the 3D grid (FIXME should only go to max_l for this species)
-                            for(int l = 0; l <= 2*ct.max_l; l++)
+                            for(int l = 0; l <= 2*sp->max_l; l++)
                             {
                                 for(int m = 0; m < 2*l + 1; m++)
                                 {

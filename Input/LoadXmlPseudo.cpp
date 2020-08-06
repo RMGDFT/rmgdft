@@ -45,6 +45,7 @@ void LoadXmlPseudo(SPECIES *sp)
     double_2d_array ddd0;  // Used to read in the PP_DIJ
     double_2d_array qqq;   // Used to read in the norms of the augmentation functions (PP_Q)
     std::string Msg;
+    sp->max_l = 0;
 
     // PP format places occupations in the xml attributes of the potentials but we need
     // them in the wavefunctions so we use this map to associate them.
@@ -272,6 +273,7 @@ void LoadXmlPseudo(SPECIES *sp)
 
         for(int idx=0;idx < sp->rg_points;idx++) sp->beta[ip][idx] = sp->atomic_wave[ip][idx] * sp->dVl[vl][idx];
         sp->llbeta[ip] = sp->atomic_wave_l[ip];
+        if(sp->llbeta[ip] > sp->max_l) sp->max_l = sp->llbeta[ip];
 
         // Evaluate the normalization constant
         double *work = new double[sp->rg_points]();
