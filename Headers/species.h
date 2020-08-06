@@ -7,7 +7,7 @@
 #include <boost/functional/hash.hpp>
 #include <unordered_map>
 
-
+// Used for managing the USPP augmentation functions
 inline int lm_key(int l,int m) {return l*l + m;}
 inline size_t qnm_key(int i, int j, int l) {return (size_t)(((size_t)i << 16) + ((size_t)j << 8) + (size_t)l);}
 inline size_t qij_key(int i, int j) {return (size_t)(((size_t)i << 8) + ((size_t)j));}
@@ -190,9 +190,8 @@ public:
     bool q_with_l;
     double *qnm;
     double *qnm_l;
-    double *qnmlig;
 
-    std::unordered_map<size_t, std::vector<double>> qnmlig_new;
+    std::unordered_map<size_t, std::vector<double>> qnmlig;
 
     /* the coefficient for pseudosation of Qnm_L(r) */
     double *qfcoef;

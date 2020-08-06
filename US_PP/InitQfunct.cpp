@@ -43,7 +43,7 @@ void InitQfunct ()
 {
     if(ct.norm_conserving_pp) return;
     int idx, i, j, k, num, il, jl, ll;
-    double *qnmlig_tpr, *qnm_tpr;
+    double *qnm_tpr;
     SPECIES *sp;
     char newname1[MAX_PATH];
     FILE *fqq = NULL;
@@ -133,8 +133,7 @@ void InitQfunct ()
             ct.max_Qpoints = sp->qdim * sp->qdim * sp->qdim;
 
         num = (sp->nbeta * (sp->nbeta + 1)) * sp->nlc / 2;
-        sp->qnmlig = new double[num * MAX_LOGGRID]();
-sp->qnmlig_new.clear();
+        sp->qnmlig.clear();
         idx = 0;
         for (i = 0; i < sp->nbeta; i++)
         {
@@ -145,10 +144,10 @@ sp->qnmlig_new.clear();
                 idx = j * (j + 1) / 2 + i;
                 for (ll = abs (il - jl); ll <= il + jl; ll = ll + 2)
                 {
-                    qnmlig_tpr = sp->qnmlig + (idx * sp->nlc + ll) * MAX_LOGGRID;
                     qnm_tpr = sp->qnm_l + (idx * sp->nlc + ll) *  MAX_RGRID;
-sp->qnmlig_new[qnm_key(i, j, ll)] = {};
-sp->qnmlig_new[qnm_key(i, j, ll)].resize(MAX_LOGGRID);
+                    sp->qnmlig[qnm_key(i, j, ll)] = {};
+                    sp->qnmlig[qnm_key(i, j, ll)].resize(MAX_LOGGRID);
+
                     if (pct.gridpe == 0 && ct.write_pp_flag)
                     {
                         for (k = 0; k < sp->kkbeta; k++)
@@ -156,18 +155,15 @@ sp->qnmlig_new[qnm_key(i, j, ll)].resize(MAX_LOGGRID);
                         fprintf (fqq, "&\n");
                     }
 
-                    A->FilterPotential(qnm_tpr, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, qnmlig_tpr,
-                            sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
-
-A->FilterPotential(qnm_tpr, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, sp->qnmlig_new[qnm_key(i, j, ll)].data(),
-         sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
+                    A->FilterPotential(qnm_tpr, sp->r, sp->rg_points, sp->qradius, ct.rhocparm, sp->qnmlig[qnm_key(i, j, ll)].data(),
+                             sp->rab, ll, sp->gwidth, sp->qcut, 1.0, ct.hmingrid/(double)Rmg_G->default_FG_RATIO);
 
                     /*Write final filtered Q function if requested*/
                     if (pct.gridpe == 0 && ct.write_pp_flag)
                     {
                         for (k = 0; k < MAX_LOGGRID; k++)
                         {
-                            fprintf (fqq, "%e  %e\n", rgrid[k], qnmlig_tpr[k]);
+                            fprintf (fqq, "%e  %e\n", rgrid[k], sp->qnmlig[qnm_key(i, j, ll)][k]);
                         }
                         fprintf (fqq, "&\n");
                     }

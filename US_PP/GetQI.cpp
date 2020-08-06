@@ -54,7 +54,7 @@ static inline void map_qval_components(int ih, int jh, int *lpx, int *lpl, SPECI
 //void InitClebschGordan(int, int *[9][9], int*[9], int*[9][9]);
 void GetQI (void)
 {
-    int idx, idx1, ion, size;
+    int idx, idx1, ion;
     int ix, iy, iz, species;
     int *lpx, *lpl;
     double *ylm;
@@ -67,7 +67,6 @@ void GetQI (void)
     double xc, yc, zc;
     double hxxgrid, hyygrid, hzzgrid;
     ION *iptr;
-    double *qnmlig;
     SPECIES *sp;
 
     hxxgrid = get_hxxgrid();
@@ -186,7 +185,7 @@ void GetQI (void)
             for (idx1 = 0; idx1 < icount; idx1++) Atoms[ion].Qindex.push_back( pvec[idx1] );
 
 
-            size = nh * (nh + 1) / 2;
+            // Resize grid_ylm arrays (FIXME should only go to max_l for this species)
             Atoms[ion].grid_ylm.resize((2*ct.max_l+1)*(2*ct.max_l+1));
 
 
@@ -199,7 +198,7 @@ void GetQI (void)
                 }
             }
 
-            for (auto& qfunc: sp->qnmlig_new)
+            for (auto& qfunc: sp->qnmlig)
             {
                 int nb = qnm_ival(qfunc.first);
                 int mb = qnm_jval(qfunc.first);
@@ -222,9 +221,7 @@ void GetQI (void)
                 Atoms[ion].stress_cx[1].resize(icount);
                 Atoms[ion].stress_cx[2].resize(icount);
             }
-//            ct.q_alloc[0] += (size_t)(size * icount) * sizeof(decltype(Atoms[ion].augfunc)::value_type);
 
-            qnmlig = sp->qnmlig;
             idx = 0;
             icount = 0;
             /* Generate index arrays */
@@ -289,7 +286,7 @@ void GetQI (void)
                             }
 
                             // Generate the q-functions on the 3D grid
-                            for (auto& qfunc: sp->qnmlig_new)
+                            for (auto& qfunc: sp->qnmlig)
                             {
                                 int nb = qnm_ival(qfunc.first);
                                 int mb = qnm_jval(qfunc.first);
@@ -315,6 +312,8 @@ void GetQI (void)
 
         }                       /*end if map */
 
+        ct.q_alloc[0] += (size_t)Atoms[ion].grid_ylm.size() * icount * sizeof(double) +
+                         (size_t)Atoms[ion].grid_qr.size() * icount * sizeof(float);
     }                           /*end for ion */
 
     // Sum q-function memory usage over all nodes
