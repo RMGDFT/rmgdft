@@ -104,11 +104,15 @@ void GetQI (void)
         /*Release memory first */
         Atoms[ion].Qindex.clear();
         Atoms[ion].augfunc_desc.clear();
-
+printf("GOT HERE 0\n");
+        Atoms[ion].stress_cx[0] = {};
+        Atoms[ion].stress_cx[1] = {};
+        Atoms[ion].stress_cx[2] = {};
         Atoms[ion].stress_cx[0].clear();
         Atoms[ion].stress_cx[1].clear();
         Atoms[ion].stress_cx[2].clear();
 
+printf("GOT HERE 1\n");fflush(NULL);
         Atoms[ion].grid_ylm.clear();
         Atoms[ion].grid_qr.clear();
 
@@ -314,6 +318,7 @@ void GetQI (void)
                          (size_t)Atoms[ion].grid_qr.size() * icount * sizeof(float);
     }                           /*end for ion */
 
+printf("GOT HERE 2\n");fflush(NULL);
     // Sum q-function memory usage over all nodes
     MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
     MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
