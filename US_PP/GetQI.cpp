@@ -104,7 +104,6 @@ void GetQI (void)
         /*Release memory first */
         Atoms[ion].Qindex.clear();
         Atoms[ion].augfunc_desc.clear();
-printf("GOT HERE 0\n");
         Atoms[ion].stress_cx[0] = {};
         Atoms[ion].stress_cx[1] = {};
         Atoms[ion].stress_cx[2] = {};
@@ -112,7 +111,6 @@ printf("GOT HERE 0\n");
         Atoms[ion].stress_cx[1].clear();
         Atoms[ion].stress_cx[2].clear();
 
-printf("GOT HERE 1\n");fflush(NULL);
         Atoms[ion].grid_ylm.clear();
         Atoms[ion].grid_qr.clear();
 
@@ -316,13 +314,19 @@ printf("GOT HERE 1\n");fflush(NULL);
 
         ct.q_alloc[0] += (size_t)Atoms[ion].grid_ylm.size() * icount * sizeof(double) +
                          (size_t)Atoms[ion].grid_qr.size() * icount * sizeof(float);
+
     }                           /*end for ion */
 
-printf("GOT HERE 2\n");fflush(NULL);
     // Sum q-function memory usage over all nodes
-    MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
-    MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
+    size_t talloc;
+    MPI_Allreduce(&ct.q_alloc[0], &talloc, 1, MPI_LONG, MPI_MIN, pct.grid_comm);
+    MPI_Allreduce(&talloc, &ct.q_alloc[1], 1, MPI_LONG, MPI_MIN, pct.kpsub_comm);
+
+    MPI_Allreduce(&ct.q_alloc[0], &talloc, 1, MPI_LONG, MPI_MAX, pct.grid_comm);
+    MPI_Allreduce(&talloc, &ct.q_alloc[2], 1, MPI_LONG, MPI_MAX, pct.kpsub_comm);
+
     MPI_Allreduce(MPI_IN_PLACE, &ct.q_alloc[0], 1, MPI_LONG, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &ct.q_alloc[0], 1, MPI_LONG, MPI_SUM, pct.kpsub_comm);
 
 
     delete [](Aiz);
