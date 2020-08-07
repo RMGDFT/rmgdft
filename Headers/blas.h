@@ -106,6 +106,7 @@
 #define		ztpttr		RMG_FC_GLOBAL(ztpttr, ZTPTTR)
 #define		dtrtri		RMG_FC_GLOBAL(dtrtri, DTRTRI)
 #define		zgeqp3		RMG_FC_GLOBAL(zgeqp3, ZGEQP3)
+#define		zgeqpf		RMG_FC_GLOBAL(zgeqpf, ZGEQPF)
 #define		zgesvd		RMG_FC_GLOBAL(zgesvd, ZGESVD)
 
 #if __cplusplus
@@ -210,6 +211,7 @@ void dsytri(char *, int *, double *, int *, int *, double *, int *);
 void dger(int *, int *, double *, double *, int *, double *, int *, double *, int *);
 
 void zgeqp3(int *, int *, std::complex<double> *, int *, int *, std::complex<double> *, std::complex<double> *, int *, double *, int *);
+void zgeqpf(int *, int *, std::complex<double> *, int *, int *, std::complex<double> *, std::complex<double> *, int *, double *, int *);
 void zgesvd(char *, char *, int *, int *, std::complex<double> *, int *, double *, std::complex<double> *, int*,
         std::complex<double> *, int *, std::complex<double> *, int *, double *, int*);
 

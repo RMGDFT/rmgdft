@@ -181,6 +181,7 @@ protected:
 #define		pdsymm		RMG_FC_GLOBAL(pdsymm, PDSYMM)
 #define		pdgetrf		RMG_FC_GLOBAL(pdgetrf, PDGETRF)
 #define		pzgetrf		RMG_FC_GLOBAL(pzgetrf, PZGETRF)
+#define		pzgeqpf		RMG_FC_GLOBAL(pzgeqpf, PZGEQPF)
 #define		pzgetri		RMG_FC_GLOBAL(pzgetri, PZGETRI)
 #define		pdgetri		RMG_FC_GLOBAL(pdgetri, PDGETRI)
 #define		pdgetrs		RMG_FC_GLOBAL(pdgetrs, PDGETRS)
@@ -260,6 +261,7 @@ void pztranu (int *M, int *N, std::complex<double> *ALPHA, std::complex<double> 
 void pzgetri(int *, std::complex<double> *, int *, int *, int *, int *, std::complex<double> *, int *, int *, int *, int *);
 void pdgetri(int *, double *, int *, int *, int *, int *, double*, int *, int *, int *, int *);
 void pzgetrf(int *, int *, std::complex<double> *, int *, int *, int *, int *, int *);
+void pzgeqpf(int *, int *, std::complex<double> *, int *, int *, int *, int *, std::complex<double> *, std::complex<double> *, int *, double *, int *, int*);
 #ifdef __cplusplus
 }
 #endif
