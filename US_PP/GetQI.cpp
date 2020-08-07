@@ -317,17 +317,13 @@ void GetQI (void)
 
     }                           /*end for ion */
 
-    // Sum q-function memory usage over all nodes
-    size_t talloc;
-    MPI_Allreduce(&ct.q_alloc[0], &talloc, 1, MPI_LONG, MPI_MIN, pct.grid_comm);
-    MPI_Allreduce(&talloc, &ct.q_alloc[1], 1, MPI_LONG, MPI_MIN, pct.kpsub_comm);
-
-    MPI_Allreduce(&ct.q_alloc[0], &talloc, 1, MPI_LONG, MPI_MAX, pct.grid_comm);
-    MPI_Allreduce(&talloc, &ct.q_alloc[2], 1, MPI_LONG, MPI_MAX, pct.kpsub_comm);
+    // Sum q-function memory usage over all nodes. Min and max are the same for all images
+    // and only differ for grids so no need to sum them over kpoints.
+    MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
+    MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
 
     MPI_Allreduce(MPI_IN_PLACE, &ct.q_alloc[0], 1, MPI_LONG, MPI_SUM, pct.grid_comm);
-    MPI_Allreduce(MPI_IN_PLACE, &ct.q_alloc[0], 1, MPI_LONG, MPI_SUM, pct.kpsub_comm);
-
+    ct.q_alloc[0] *= (size_t)pct.pe_kpoint;
 
     delete [](Aiz);
     delete [](Aiy);

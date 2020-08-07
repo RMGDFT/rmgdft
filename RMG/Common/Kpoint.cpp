@@ -1077,7 +1077,8 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     ct.beta_alloc[0] = this->nl_weight_size * sizeof(KpointType);
     MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[1], 1, MPI_LONG, MPI_MIN, grid_comm);
     MPI_Allreduce(&ct.beta_alloc[0], &ct.beta_alloc[2], 1, MPI_LONG, MPI_MAX, grid_comm);
-    MPI_Allreduce(MPI_IN_PLACE, &ct.beta_alloc, 1, MPI_LONG, MPI_SUM, grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &ct.beta_alloc[0], 1, MPI_LONG, MPI_SUM, grid_comm);
+    ct.beta_alloc[0] *= (size_t)pct.pe_kpoint; 
 
     // when we calculate stress, we need beta and x*beta, y*beta, z*beta, so that allocate memory for 4 timrs of nl_weight_size
     int stress_factor = 1;
