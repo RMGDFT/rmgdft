@@ -104,9 +104,6 @@ void GetQI (void)
         /*Release memory first */
         Atoms[ion].Qindex.clear();
         Atoms[ion].augfunc_desc.clear();
-        Atoms[ion].stress_cx[0] = {};
-        Atoms[ion].stress_cx[1] = {};
-        Atoms[ion].stress_cx[2] = {};
         Atoms[ion].stress_cx[0].clear();
         Atoms[ion].stress_cx[1].clear();
         Atoms[ion].stress_cx[2].clear();
@@ -249,9 +246,9 @@ void GetQI (void)
 
                             if(ct.stress)
                             {
-                                Atoms[ion].stress_cx[0][idx] = cx[0];
-                                Atoms[ion].stress_cx[1][idx] = cx[1];
-                                Atoms[ion].stress_cx[2][idx] = cx[2];
+                                Atoms[ion].stress_cx[0][icount] = cx[0];
+                                Atoms[ion].stress_cx[1][icount] = cx[1];
+                                Atoms[ion].stress_cx[2][icount] = cx[2];
                             }
 
                             for(int l = 0; l <= 2*ct.max_l; l++)
