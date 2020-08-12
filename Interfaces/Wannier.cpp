@@ -1080,7 +1080,9 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
         RT1 = new RmgTimer("7-Wannier: Mmn: us");
         if(!ct.norm_conserving_pp || ct.noncoll)
+        {
             Mmn_us(ik, ikn, psi_k, nstates, psi_q, nstates, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
+        }
         delete RT1;
 
     }
@@ -1365,7 +1367,7 @@ void InitRadialfunc_Gspace(int lval, int radial_type, double zona, std::complex<
     double *rab = new double[rg_points];
     double *work1 = new double[rg_points];
 
-
+    zona = zona / 0.529177;
     for(int i = 0; i < rg_points; i++)
     {
         r[i] = std::exp(xmin + i * dx)/zona;
@@ -1375,7 +1377,7 @@ void InitRadialfunc_Gspace(int lval, int radial_type, double zona, std::complex<
     }
 
     double alpha = (double)lval + 0.5;
-    
+
     for(int ig = 0;ig < gnum;ig++)
     {
         double gval = ig * delta_g;
@@ -1615,7 +1617,7 @@ template <class T> void Wannier<T>::GuideFunc(int kpt, T *guidefunc)
     kvec[1] = ct.klist.k_all_cart[kpt][1];
     kvec[2] = ct.klist.k_all_cart[kpt][2];
 
-    
+
     for(int idx = 0; idx < n_wannier * nbasis_noncoll; idx++) guidefunc[idx] = 0.0;
     std::complex<double> I_t(0.0, 1.0);
     std::complex<double> *gf = new std::complex<double>[nbasis];
@@ -1705,7 +1707,7 @@ template <class T> void Wannier<T>::GuideFunc(int kpt, T *guidefunc)
     }
     delete [] gf;
     delete [] guidefunc_g;
-    
+
 }
 
 template void Wannier<double>::SetAmn_proj();
@@ -1747,8 +1749,32 @@ template <class T> void Wannier<T>::SetAmn_proj()
 
 
         RT1 = new RmgTimer("7-Wannier: Amn: us");
-        //  if(!ct.norm_conserving_pp || ct.noncoll)
-        //      Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
+        if(!ct.norm_conserving_pp || ct.noncoll)
+        {
+
+            std::complex<double> *qq_dk_one, *qq_dk_so_one;
+            qq_dk_one = new std::complex<double>[Atoms.size() * ct.max_nl * ct.max_nl];
+            qq_dk_so_one = new std::complex<double>[4*Atoms.size() * ct.max_nl * ct.max_nl];
+            for(size_t ion = 0; ion < Atoms.size(); ion++)
+            {
+                int nh = Species[Atoms[ion].species].nh;
+                for(int ih = 0; ih < nh*nh; ih++) 
+                {
+                    qq_dk_one[ion * ct.max_nl * ct.max_nl + ih] = Atoms[ion].qqq[ih];
+                }
+                if(ct.noncoll)
+                {
+                    for(int ih = 0; ih < 4*nh*nh; ih++) 
+                    {
+                        qq_dk_so_one[ion * ct.max_nl * ct.max_nl * 4 + ih] = Atoms[ion].qqq_so[ih];
+                    }
+                }
+            }
+            Mmn_us(ik, ik, psi_k, nstates, guidefunc, n_wannier, &Amn[ik*nstates*n_wannier], qq_dk_one, qq_dk_so_one);
+            delete [] qq_dk_one;
+            delete [] qq_dk_so_one;
+            
+        }
         delete RT1;
 
     }
