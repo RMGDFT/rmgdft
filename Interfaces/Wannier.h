@@ -42,6 +42,16 @@
 #define GAU_ENTANGLEMENT 1
 #define ERFC_ENTANGLEMENT 2
 
+class wan_proj{
+public:
+    double center_xtal[3];
+    double center_cart[3];
+    int l,m, radial_type=1;
+    double zaxis[3], xaxis[3];
+    double zona=1.0;
+    int spin;
+    double spin_dir[3];
+};
 
 template <typename T> class Wannier {
 
@@ -85,6 +95,7 @@ private:
     int px_offset, py_offset, pz_offset;
     int nbasis, nbasis_noncoll;
 
+    std::vector<wan_proj> Wan_proj;
 
 public:
     Wannier (
@@ -101,7 +112,8 @@ public:
     ~Wannier(void);
 
     void SetEntanglement(int scdm_entan, double mu, double sigma);
-    void SetAmn();
+    void SetAmn_scdm();
+    void SetAmn_proj();
     void SetMmn(Kpoint<T> **Kptr);
     void WriteWinEig();
     void Read_nnkpts();
@@ -109,6 +121,7 @@ public:
     void ReadRotatePsiwan(int iq, int ik, int isy, int isya, std::string wavefile, T *psi_wan, int *piv);
     void Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onepair, std::complex<double> *qq, std::complex<double> *qq_so);
     void ReadNlweight(std::string filename, int nh, std::complex<double> *Nlweight_oneatom);
+    void InitGuideFunc(int kpt, std::vector<wan_proj> Wan_proj, T *guidefunc);
 
 };
 

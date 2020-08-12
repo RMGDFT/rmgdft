@@ -1237,7 +1237,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL,
             "when wannier90 is used to build wannier functions, the energy window parameter",
             "it is used for Gaussian or erfc filtering the band ");
-    If.RegisterInputKey("wannier90_scdm", &lc.wannier90_scdm, 0, 2, 0,
+    If.RegisterInputKey("wannier90_scdm", &lc.wannier90_scdm, -INT_MAX, 2, 0,
             CHECK_AND_FIX, OPTIONAL,
             "use scdm method to set the trial wannier functions ",
             "0: isolated, 1: gaussian, 2: erfc ");

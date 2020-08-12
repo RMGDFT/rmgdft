@@ -33,6 +33,10 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <boost/math/special_functions/math_fwd.hpp>
+#include <boost/math/special_functions/bessel.hpp>
+
+
 
 
 #include "const.h"
@@ -48,6 +52,7 @@
 #include "Wannier.h"
 #include "Scalapack.h"
 
+double radial_func(int radial_type, double zona, double r);
 void InitDelocalizedWeight_onek(int kpt, double kvec[3], Pw &pwave);
 void DelocalizedWeight_one(int kpt, double kvec[3], Pw &pwave);        
 
@@ -171,18 +176,25 @@ template <class T> Wannier<T>::Wannier (
     }
     delete RT1;
     RT1 = new RmgTimer("7-Wannier: Amn");
-    SetAmn();
+    if(scdm < 0)
+    {
+        SetAmn_proj();
+    }
+    else
+    {
+        SetAmn_scdm();
+    }
     delete RT1;
     RT1 = new RmgTimer("7-Wannier: Mmn");
     SetMmn(Kptr);
     delete RT1;
 }
 
-template <> void Wannier<double>::SetAmn()
+template <> void Wannier<double>::SetAmn_scdm()
 {
         throw RmgFatalException() << "scdm need more than one gamma point  \n";
 }
-template <> void Wannier<std::complex<double>>::SetAmn()
+template <> void Wannier<std::complex<double>>::SetAmn_scdm()
 {
     double tol = 1.0e-5;
     int ik_gamma = -1;
@@ -219,12 +231,13 @@ template <> void Wannier<std::complex<double>>::SetAmn()
     int *piv = new int[ngrid_noncoll]();
     int *piv_dist = new int[n_dist]();
     //size_t length = (size_t)nstates * (size_t)ngrid_noncoll * sizeof(std::complex<double>);
-    size_t length = (size_t)m_dist * (size_t)n_dist;
-    psi_s = new std::complex<double>[length];
 
     if(ScaL.Participates())
     {
+        size_t length = (size_t)m_dist * (size_t)n_dist;
+        psi_s = new std::complex<double>[length]();
         RT0 = new RmgTimer("7-Wannier: Amn: read");
+        //for(int ik = 0; ik < ct.num_kpts_pe; ik++)
         std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ik_gamma);
         serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
         if(serial_fd < 0)
@@ -244,17 +257,8 @@ template <> void Wannier<std::complex<double>>::SetAmn()
 
             if(exclude_bands[st]) continue;
             st_w++;
-            
-            if(myrow != ((st_w/desca[4]) % nprow ) ) continue;
-            int st_local = ((st_w/desca[4]) /nprow) * desca[4] + st_w%desca[4];
-            for(int idx = 0; idx < n_dist; idx++)
-            {
-                int idx_g = (idx/desca[5]) * npcol * desca[5] + mycol * desca[5] + idx%desca[5];
-                psi_s[ idx * m_dist + st_local] = std::conj(psi_map[st * ngrid_noncoll + idx_g]);
-            }
 
-            double vel = L.get_omega() / ((double)ngrid);
-            double norm_coeff = 1.0;
+            if(myrow != ((st_w/desca[4]) % nprow ) ) continue;
 
             double focc = 1.0;
             double eigs = ct.kp[ik_gamma].eigs[st] * Ha_eV;
@@ -267,27 +271,29 @@ template <> void Wannier<std::complex<double>>::SetAmn()
             else if(scdm == ERFC_ENTANGLEMENT) focc = 0.5 * erfc(tem);
             else
                 throw RmgFatalException() << "scdm = " << scdm << ISOLATED_ENTANGLEMENT<< "  wrong value \n";
-
+            int st_local = ((st_w/desca[4]) /nprow) * desca[4] + st_w%desca[4];
             for(int idx = 0; idx < n_dist; idx++)
             {
-                psi_s[idx * m_dist + st_local] *= focc /norm_coeff;
+                int idx_g = (idx/desca[5]) * npcol * desca[5] + mycol * desca[5] + idx%desca[5];
+                psi_s[ idx * m_dist + st_local] = std::conj(psi_map[st * ngrid_noncoll + idx_g]) * focc;
             }
         }
+        munmap(psi_map, length);
+        close(serial_fd);
 
         delete RT0;
 
         RT0 = new RmgTimer("7-Wannier: Amn: zgeqp3");
         std::complex<double> *tau = new std::complex<double>[nstates]();
-        int Lwork = -1, info;
+        int Lwork = -1, Lrwork = -1, info;
         std::complex<double> Lwork_tmp;
-        int Lrwork = -1;
-        double Rwork_tmp;
+        double Lrwork_tmp;
 
         int ia = 1, ja = 1;
-        pzgeqpf(&nstates, &ngrid_noncoll, psi_s, &ia, &ja, desca, piv_dist, tau, &Lwork_tmp, &Lwork, &Rwork_tmp, &Lrwork, &info);
+        pzgeqpf(&nstates, &ngrid_noncoll, psi_s, &ia, &ja, desca, piv_dist, tau, &Lwork_tmp, &Lwork, &Lrwork_tmp, &Lrwork, &info);
 
         Lwork = (int)(std::real(Lwork_tmp)) + 1;
-        Lrwork  = (int)Rwork_tmp + 1;
+        Lrwork = (int)(Lrwork_tmp) + 1;
 
         std::complex<double> *cwork = new std::complex<double>[Lwork]();
         double *rwork = new double[Lrwork]();
@@ -297,11 +303,9 @@ template <> void Wannier<std::complex<double>>::SetAmn()
 
         if(info != 0) throw RmgFatalException() << "Error! in zgeqp3 at" << __FILE__ << __LINE__ << "  Wannier Terminating.\n";
         //for(int i = 0; i < n_wannier; i++) printf("\n piv %d   %d ", piv[i], info);
-        delete [] cwork;
+        delete [] psi_s;
         delete [] rwork;
         delete [] tau;
-        munmap(psi_map, length);
-        close(serial_fd);
     }
 
     if(myrow == 0)
@@ -318,10 +322,9 @@ template <> void Wannier<std::complex<double>>::SetAmn()
     if(pct.gridpe == 0 && 1)
         for(int iw = 0; iw < n_wannier; iw++)
         {
-            int ix = (piv[iw]-1)/ny_grid/nz_grid;
-            int iy = ((piv[iw]-1)/nz_grid) % ny_grid;
-            int iz = (piv[iw]-1)%nz_grid;
-            printf("\n aaa %d %d %d %d %d", iw, piv[iw], ix, iy, iz);
+            //int ix = (piv[iw]-1)/ny_grid/nz_grid;
+            //int iy = ((piv[iw]-1)/nz_grid) % ny_grid;
+            //int iz = (piv[iw]-1)%nz_grid;
             piv[iw] = piv_dist[iw];
         }
 
@@ -660,6 +663,80 @@ template <class T> void Wannier<T>::Read_nnkpts()
         {
             throw RmgFatalException() << "Error! in exclude_bands of wannier90.nnkp file. Terminating.\n";
         }
+    }
+
+
+    // read wannier guiding function info
+    if(scdm < 0)
+    {
+        fnnk.clear();
+        fnnk.seekg(0, std::ios::beg);
+        while(getline(fnnk, oneline) )
+        {
+            if(oneline.find("projections") != std::string::npos ) break;
+        }
+        if(oneline.find("auto") != std::string::npos ) 
+        {
+            throw RmgFatalException() << "set scdm >= 0 to use auto projection\n";
+        }
+        if(ct.noncoll && oneline.find("spinor") == std::string::npos ) 
+        {
+            throw RmgFatalException() << "set spinors = true in .win file and get .nnkp file\n";
+        }
+
+        std::cout << oneline << std::endl;
+        getline(fnnk, oneline);
+        boost::trim(oneline);
+        if( std::stoi(oneline) != n_wannier)
+        {
+            throw RmgFatalException() << "n_wannier " <<n_wannier <<" is not equal to num_proj "<<std::stoi(oneline) << "\n";
+        }
+        Wan_proj.resize(n_wannier);
+        for(int iw = 0; iw < n_wannier; iw++)
+        {
+            std::vector<std::string> wan_info;
+            getline(fnnk, oneline);
+            boost::trim(oneline);
+            boost::algorithm::split( wan_info, oneline, boost::is_any_of(whitespace_delims), boost::token_compress_on );
+            Wan_proj[iw].center_xtal[0] = std::stod(wan_info[0]);
+            Wan_proj[iw].center_xtal[1] = std::stod(wan_info[1]);
+            Wan_proj[iw].center_xtal[2] = std::stod(wan_info[2]);
+            Wan_proj[iw].l = std::stoi(wan_info[3]);
+            Wan_proj[iw].m = std::stoi(wan_info[4]) -1;
+            Wan_proj[iw].radial_type = std::stoi(wan_info[5]);
+
+            L.to_cartesian(Wan_proj[iw].center_xtal, Wan_proj[iw].center_cart);
+            getline(fnnk, oneline);
+            boost::trim(oneline);
+            boost::algorithm::split( wan_info, oneline, boost::is_any_of(whitespace_delims), boost::token_compress_on );
+            Wan_proj[iw].zaxis[0] = std::stod(wan_info[0]);
+            Wan_proj[iw].zaxis[1] = std::stod(wan_info[1]);
+            Wan_proj[iw].zaxis[2] = std::stod(wan_info[2]);
+            Wan_proj[iw].xaxis[0] = std::stod(wan_info[3]);
+            Wan_proj[iw].xaxis[1] = std::stod(wan_info[4]);
+            Wan_proj[iw].xaxis[2] = std::stod(wan_info[5]);
+            Wan_proj[iw].zona = std::stod(wan_info[6]);
+
+            if(pct.gridpe == 0 && ct.verbose)
+            {
+                printf("\n wan %d:", iw);
+                printf(" %f %f %f",Wan_proj[iw].center_xtal[0],Wan_proj[iw].center_xtal[1],Wan_proj[iw].center_xtal[2]);
+                printf(" %d %d %d",Wan_proj[iw].l, Wan_proj[iw].m, Wan_proj[iw].radial_type);
+            }
+
+
+            if(ct.noncoll)
+            {
+                getline(fnnk, oneline);
+                boost::trim(oneline);
+                boost::algorithm::split( wan_info, oneline, boost::is_any_of(whitespace_delims), boost::token_compress_on );
+                Wan_proj[iw].spin = std::stoi(wan_info[0]);
+                Wan_proj[iw].spin_dir[0] = std::stod(wan_info[1]);
+                Wan_proj[iw].spin_dir[1] = std::stod(wan_info[2]);
+                Wan_proj[iw].spin_dir[2] = std::stod(wan_info[3]);
+            }
+        }
+
     }
 
 
@@ -1259,4 +1336,432 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     GpuFreeManaged(Nlweight);
 
 }
+
+double radial_func(int radial_type, double zona, double r)
+{
+    double val = 0.0;
+    if(radial_type == 1)  val =  2.0 * std::pow(zona, 3.0/2.0) * std::exp(-zona * r);
+    if(radial_type == 2)  val =  2.0/std::sqrt(8.0) * std::pow(zona, 3.0/2.0) * 
+        (2.0 - zona * r) * std::exp(-0.5 * zona * r);
+    if(radial_type == 3)  val =  std::sqrt(4.0/27.0) * std::pow(zona, 3.0/2.0) * 
+        (1.0 - 2.0/3.0 * zona * r + 2.0 * (zona * r) * (zona*r)/27.0) * std::exp(-zona * r/3.0);
+
+    return val;
+}
+
+void InitRadialfunc_Gspace(double kvec[3], int lval, int radial_type, double zona, std::complex<double> *radialfunc_g)
+{
+    using boost::math::policies::policy;
+    using boost::math::policies::promote_double;
+    typedef policy<promote_double<false> > bessel_policy;
+    double xmin=-6.0, rmax = 10.0, dx = 0.025;
+    int rg_points = std::round( (std::log(rmax) - xmin)/dx + 1.0);
+    double *func_r = new double[rg_points];
+    double *r = new double[rg_points];
+    double *rab = new double[rg_points];
+    double *work1 = new double[rg_points];
+
+
+    for(int i = 0; i < rg_points; i++)
+    {
+        r[i] = std::exp(xmin + i * dx)/zona;
+        rab[i] = r[i] * dx;
+        func_r[i] = radial_func(radial_type, zona, r[i]) * r[i] * r[i];
+
+    }
+
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double tpiba2 = tpiba * tpiba;
+    double ax[3];
+    double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2);
+    int pbasis = coarse_pwaves->Grid->get_P0_BASIS(1);
+    double alpha = (double)lval + 0.5;
+    for(int ig = 0;ig < pbasis;ig++)
+    {
+        ax[0] = coarse_pwaves->g[ig].a[0] * tpiba;
+        ax[1] = coarse_pwaves->g[ig].a[1] * tpiba;
+        ax[2] = coarse_pwaves->g[ig].a[2] * tpiba;
+
+        ax[0] += kvec[0];
+        ax[1] += kvec[1];
+        ax[2] += kvec[2];
+
+        double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
+        radialfunc_g[ig] = 0.0;
+        if(gval >= gcut) continue;
+
+
+        for (int idx = 0; idx < rg_points; idx++)
+        {
+            double jarg = r[idx] * gval;
+            if(jarg < 1.0e-10) jarg = 1.0e-10;  // take care of sigularity
+            work1[idx] = func_r[idx] * sqrt(PI/(2.0*jarg)) * boost::math::cyl_bessel_j(alpha, jarg, bessel_policy());
+
+        }                   /* end for */
+        radialfunc_g[ig] =  radint1 (work1, r, rab, rg_points);
+    }
+    delete [] func_r;
+    delete [] r;
+    delete [] rab;
+    delete [] work1;
+
+}
+
+
+template  void Wannier<double>::InitGuideFunc(int kpt, std::vector<wan_proj> Wan_proj, double *guidefunc);
+template  void Wannier<std::complex<double>>::InitGuideFunc(int kpt, std::vector<wan_proj> Wan_proj, std::complex<double> *guidefunc);
+template <class T> void Wannier<T>::InitGuideFunc(int kpt, std::vector<wan_proj> Wan_proj, T *guidefunc)
+{
+    double tol = 1.0e-5;
+    std::vector<int> zona_index;
+    std::vector<std::pair<int, double>> zona_list;
+    std::pair<int, double> onezona_type;
+    zona_index.resize(Wan_proj.size());
+    int lmax = 0, tot_LM;
+    RmgTimer *RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: zona");
+    for(size_t iw = 1; iw< Wan_proj.size(); iw++)
+    {
+        lmax = std::max(lmax, Wan_proj[iw].l);
+        // l = -4, -5, spd hybridization
+        //  l = -1, -2, -3, sp1, sp2, sp3 hybridization
+        if(Wan_proj[iw].l <=-4) lmax = std::max(lmax, 2);
+        else if(Wan_proj[iw].l < 0) lmax = std::max(lmax, 1);
+
+        bool zona_found = false;
+        for(int izona = 0; izona < (int)zona_list.size(); izona++)
+        {
+            if( std::abs(Wan_proj[iw].zona - zona_list[izona].second) < tol && Wan_proj[iw].radial_type == zona_list[izona].first )
+            {
+                zona_index[iw] = izona;
+                zona_found = true;
+                break;
+            }
+
+        }
+        if(!zona_found)
+        {
+            onezona_type = std::make_pair(Wan_proj[iw].radial_type, Wan_proj[iw].zona);
+            zona_list.push_back(onezona_type);
+            zona_index[iw] = zona_list.size() -1;
+        }
+
+    }
+
+    delete RT1;
+    RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: csph");
+    // setup rotation of axis and hybridization of differetn Ylms. such sp3 ...
+    tot_LM = (lmax + 1) * (lmax+1);
+    double_2d_array csph, r_rand;
+    csph.resize(boost::extents[Wan_proj.size()][tot_LM]);
+    r_rand.resize(boost::extents[tot_LM * tot_LM][3]);
+    std::srand(224);
+    for(int i = 0; i < tot_LM; i++)
+    {
+        r_rand[i][0] = (2.0 *std::rand())/RAND_MAX -1.0;
+        r_rand[i][1] = (2.0 *std::rand())/RAND_MAX -1.0;
+        r_rand[i][2] = (2.0 *std::rand())/RAND_MAX -1.0;
+    }
+    double *ylm_array = new double[tot_LM * tot_LM];
+    double *ylm_invert = new double[tot_LM * tot_LM];
+    double *ylm_wan = new double[tot_LM];
+
+    for (int i = 0; i < tot_LM; i++)
+    {
+        double r[3];
+        r[0] = r_rand[i][0];
+        r[1] = r_rand[i][1];
+        r[2] = r_rand[i][2];
+        for(int L = 0; L <= lmax; L++)
+            for(int M = 0; M < 2*L+1; M++)
+            {
+                int lm = L * L + M;
+                ylm_array[i * tot_LM + lm] = Ylm(L, M, r);
+            }
+    }
+
+    for(int i = 0; i < tot_LM * tot_LM; i++) ylm_invert[i] = 0.0;
+    for(int i = 0; i < tot_LM; i++) ylm_invert[i * tot_LM + i] = 1.0;
+
+    int info, ipvt[tot_LM];
+    dgesv (&tot_LM, &tot_LM, ylm_array, &tot_LM, ipvt, ylm_invert, &tot_LM, &info);
+
+    double um[3][3], yaxis[3];
+    double bs2 = 1./sqrt(2.0);
+    double bs3=1.0/sqrt(3.0);
+    double bs6 = 1.0/sqrt(6.0);
+    double bs12 = 1.0/sqrt(12.0);
+
+    // mapping m value in wannier to rmg 
+    int map_m[4][7];
+    map_m[0][0] = 0;
+    map_m[1][0] = 2;
+    map_m[1][1] = 0;
+    map_m[1][2] = 1;
+    map_m[2][0] = 2;
+    map_m[2][1] = 1;
+    map_m[2][2] = 3;
+    map_m[2][3] = 4;
+    map_m[2][4] = 0;
+    map_m[3][0] = 0;
+    map_m[3][1] = 1;
+    map_m[3][2] = 2;
+    map_m[3][3] = 3;
+    map_m[3][4] = 4;
+    map_m[3][5] = 5;
+    map_m[3][6] = 6;
+
+    for(int iw = 0; iw < (int)Wan_proj.size(); iw++)
+    {
+        yaxis[0] = Wan_proj[iw].zaxis[1] * Wan_proj[iw].xaxis[2] - Wan_proj[iw].zaxis[2] * Wan_proj[iw].xaxis[1];
+        yaxis[1] = Wan_proj[iw].zaxis[2] * Wan_proj[iw].xaxis[0] - Wan_proj[iw].zaxis[0] * Wan_proj[iw].xaxis[2];
+        yaxis[2] = Wan_proj[iw].zaxis[0] * Wan_proj[iw].xaxis[1] - Wan_proj[iw].zaxis[1] * Wan_proj[iw].xaxis[0];
+        for(int i = 0; i < 3; i++)
+        {
+            um[0][i] = Wan_proj[iw].xaxis[i];
+            um[1][i] = yaxis[i];
+            um[2][i] = Wan_proj[iw].zaxis[i];
+        }
+
+        double r_rot[3];
+        for(int ir = 0; ir < tot_LM; ir++)
+        {
+            for(int i = 0; i < 3; i++)
+            {
+                r_rot[i] = 0.0;
+                for(int j = 0; j < 3; j++)
+                {
+                    r_rot[i] += um[i][j] * r_rand[ir][j]; 
+                }
+
+            }
+
+            if(Wan_proj[iw].l >= 0) 
+            {
+                int m_rmg = map_m[Wan_proj[iw].l][Wan_proj[iw].m];
+                ylm_wan[ir] = Ylm(Wan_proj[iw].l, m_rmg, r_rot);
+            }
+            if(Wan_proj[iw].l == -1)  // sp1 hybridization
+            {
+                if(Wan_proj[iw].m == 0) ylm_wan[ir] = bs2 * (Ylm(0, 0, r_rot) + Ylm(1, 0, r_rot));
+                if(Wan_proj[iw].m == 1) ylm_wan[ir] = bs2 * (Ylm(0, 0, r_rot) - Ylm(1, 0, r_rot));
+            }
+            if(Wan_proj[iw].l == -2) // sp2
+            {
+                if(Wan_proj[iw].m == 0) ylm_wan[ir] = bs3 * Ylm(0,0, r_rot) - bs6 * Ylm(1,0, r_rot) + bs2 * Ylm(1,1,r_rot);
+                if(Wan_proj[iw].m == 1) ylm_wan[ir] = bs3 * Ylm(0,0, r_rot) - bs6 * Ylm(1,0, r_rot) - bs2 * Ylm(1,1,r_rot);
+                if(Wan_proj[iw].m == 2) ylm_wan[ir] = bs3 * Ylm(0,0, r_rot) +2.0*bs6 * Ylm(1,0, r_rot);
+            }
+            if(Wan_proj[iw].l == -3) // sp3
+            {
+                if(Wan_proj[iw].m == 0) ylm_wan[ir] = 0.5 * (Ylm(0,0, r_rot)+Ylm(1,0, r_rot)+Ylm(1,1,r_rot)+Ylm(1,2,r_rot));
+                if(Wan_proj[iw].m == 1) ylm_wan[ir] = 0.5 * (Ylm(0,0, r_rot)+Ylm(1,0, r_rot)-Ylm(1,1,r_rot)-Ylm(1,2,r_rot));
+                if(Wan_proj[iw].m == 2) ylm_wan[ir] = 0.5 * (Ylm(0,0, r_rot)-Ylm(1,0, r_rot)+Ylm(1,1,r_rot)-Ylm(1,2,r_rot));
+                if(Wan_proj[iw].m == 3) ylm_wan[ir] = 0.5 * (Ylm(0,0, r_rot)-Ylm(1,0, r_rot)-Ylm(1,1,r_rot)+Ylm(1,2,r_rot));
+            }
+
+            if(Wan_proj[iw].l == -4) // sp3d
+            {
+                if(Wan_proj[iw].m == 0) ylm_wan[ir] = bs3 * Ylm(0,0, r_rot) - bs6 * Ylm(1,0, r_rot) + bs2 * Ylm(1,1,r_rot);
+                if(Wan_proj[iw].m == 1) ylm_wan[ir] = bs3 * Ylm(0,0, r_rot) - bs6 * Ylm(1,0, r_rot) - bs2 * Ylm(1,1,r_rot);
+                if(Wan_proj[iw].m == 2) ylm_wan[ir] = bs3 * Ylm(0,0, r_rot) +2.0*bs6 * Ylm(1,0, r_rot);
+                if(Wan_proj[iw].m == 3) ylm_wan[ir] = bs2 * (Ylm(1,2,r_rot) + Ylm(2,2, r_rot));
+                if(Wan_proj[iw].m == 4) ylm_wan[ir] = bs2 * (-Ylm(1,2,r_rot) + Ylm(2,2, r_rot));
+            }
+            if(Wan_proj[iw].l == -5) // sp3d
+            {
+                if(Wan_proj[iw].m == 0) ylm_wan[ir] = bs6 * Ylm(0,0, r_rot) - bs2 * Ylm(1,0, r_rot) - bs12 * Ylm(2,2,r_rot) + 0.5 * Ylm(2,4, r_rot);
+                if(Wan_proj[iw].m == 1) ylm_wan[ir] = bs6 * Ylm(0,0, r_rot) + bs2 * Ylm(1,0, r_rot) - bs12 * Ylm(2,2,r_rot) + 0.5 * Ylm(2,4, r_rot);
+                if(Wan_proj[iw].m == 2) ylm_wan[ir] = bs6 * Ylm(0,0, r_rot) - bs2 * Ylm(1,1, r_rot) - bs12 * Ylm(2,2,r_rot) - 0.5 * Ylm(2,4, r_rot);
+                if(Wan_proj[iw].m == 3) ylm_wan[ir] = bs6 * Ylm(0,0, r_rot) + bs2 * Ylm(1,1, r_rot) - bs12 * Ylm(2,2,r_rot) - 0.5 * Ylm(2,4, r_rot);
+                if(Wan_proj[iw].m == 4) ylm_wan[ir] = bs6 * Ylm(0,0, r_rot) - bs2 * Ylm(1,2, r_rot) + bs3 * Ylm(2,2,r_rot);
+                if(Wan_proj[iw].m == 5) ylm_wan[ir] = bs6 * Ylm(0,0, r_rot) + bs2 * Ylm(1,2, r_rot) + bs3 * Ylm(2,2,r_rot);
+            }
+        }
+
+        for(int lm = 0; lm < tot_LM; lm++)
+        {
+            csph[iw][lm] = 0.0;
+            for(int ir = 0; ir < tot_LM; ir++)
+            {
+                csph[iw][lm] += ylm_invert[lm * tot_LM + ir] * ylm_wan[ir];
+            }
+        }
+
+    }
+
+    delete RT1;
+    RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: radial_q");
+    doubleC_3d_array radialfunc_g;
+    radialfunc_g.resize(boost::extents[zona_list.size()][lmax+1][nbasis]); 
+
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double ax[3];
+
+    double kvec[3];
+    std::complex<double> *guidefunc_g = new std::complex<double>[nbasis];
+
+    kvec[0] = ct.klist.k_all_cart[kpt][0];
+    kvec[1] = ct.klist.k_all_cart[kpt][1];
+    kvec[2] = ct.klist.k_all_cart[kpt][2];
+
+    for(int izona = 0; izona < (int)zona_list.size(); izona++)
+    {
+        for(int l = 0; l <= lmax; l++)
+        {
+            InitRadialfunc_Gspace(kvec, l, zona_list[izona].first, zona_list[izona].second,  &radialfunc_g[izona][l][0]);
+
+        }
+    }
+
+    delete RT1;
+    std::complex<double> I_t(0.0, 1.0);
+    std::complex<double> *gf = new std::complex<double>[nbasis];
+    for(int iw = 0; iw < (int)Wan_proj.size(); iw++)
+    {
+        for(int ig = 0; ig < nbasis; ig++) guidefunc_g[ig] = 0.0;
+        int izona = zona_index[iw];
+
+        RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: guide_q");
+        std::complex<double> phase;
+        for(int l = 0; l <= lmax; l++)
+        {
+            for(int m = 0; m < 2*l + 1; m++)
+            {
+                int lm = l*l + m;
+                if(std::abs(csph[iw][lm]) < tol ) continue;
+
+                for(int ig = 0;ig < nbasis;ig++)
+                {
+                    ax[0] = coarse_pwaves->g[ig].a[0] * tpiba;
+                    ax[1] = coarse_pwaves->g[ig].a[1] * tpiba;
+                    ax[2] = coarse_pwaves->g[ig].a[2] * tpiba;
+
+                    ax[0] += kvec[0];
+                    ax[1] += kvec[1];
+                    ax[2] += kvec[2];
+                    double kr = ax[0] * Wan_proj[iw].center_cart[0] + ax[1] * Wan_proj[iw].center_cart[1] + ax[2] * Wan_proj[iw].center_cart[2]; 
+                    phase = std::exp( std::complex<double>(0.0, -kr));
+                    guidefunc_g[ig] += std::pow(-I_t, l) * radialfunc_g[izona][l][ig] * Ylm(l, m, ax) * csph[iw][lm] * phase;
+                }
+
+            }
+        }
+
+        delete RT1;
+
+        RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: fft");
+        coarse_pwaves->FftInverse(guidefunc_g, gf);
+        delete RT1;
+
+        std::complex<double> *gf_C = (std::complex<double> *)&guidefunc[iw*nbasis];
+        double *gf_R = (double *)&guidefunc[iw*nbasis];
+        if(ct.is_gamma)
+        {
+            for(int idx = 0; idx < nbasis; idx++) gf_R[idx] = std::real(gf[idx]);
+        }
+        else
+        {
+            for(int idx = 0; idx < nbasis; idx++) gf_C[idx] = gf[idx];
+        }
+
+        double norm_coeff = 0.0;
+
+        RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: norm");
+        for(int idx = 0; idx < nbasis; idx++) norm_coeff += std::norm(guidefunc[iw*nbasis + idx]);
+        double vel = L.get_omega() / ((double)ngrid);
+        MPI_Allreduce(MPI_IN_PLACE, &norm_coeff, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        norm_coeff = 1.0/std::sqrt(norm_coeff * vel);
+        for(int idx = 0; idx < nbasis; idx++) guidefunc[iw*nbasis + idx] *= norm_coeff;
+        delete RT1;
+
+    }
+    delete [] gf;
+    delete [] guidefunc_g;
+    delete [] ylm_array;
+    delete [] ylm_invert;
+    delete [] ylm_wan;
+    
+}
+
+template void Wannier<double>::SetAmn_proj();
+template void Wannier<std::complex<double>>::SetAmn_proj();
+template <class T> void Wannier<T>::SetAmn_proj()
+{
+
+    int num_q = ct.klist.num_k_all;
+
+    RmgTimer *RT1;
+    size_t length = nstates * nbasis_noncoll * sizeof(T);
+    T *psi_k = (T *)GpuMallocManaged(length);
+    T *Amn = (T *)GpuMallocManaged(num_q * n_wannier * nstates * sizeof(T));
+
+    for(int idx = 0; idx < num_q * n_wannier * nstates; idx++) Amn[idx] = 0.0;
+    double vel = L.get_omega() / ((double)ngrid);
+    T alpha(vel);
+    T beta = 0.0;
+
+    T *guidefunc = new T[n_wannier * nbasis];
+    for(int ik = 0; ik < num_q; ik++)
+    {
+        RT1 = new RmgTimer("7-Wannier: Amn: guiding func");
+        InitGuideFunc(ik, Wan_proj, guidefunc);
+        delete RT1;
+        int ik_irr = ct.klist.k_map_index[ik];
+        int isym = ct.klist.k_map_symm[ik];
+        int isyma = std::abs(isym) -1;
+
+        RT1 = new RmgTimer("7-Wannier: Amn: read and rotate");
+        ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
+        delete RT1;
+
+        RT1 = new RmgTimer("7-Wannier: Amn: gemm");
+        RmgGemm("C", "N", nstates, n_wannier, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, guidefunc, nbasis_noncoll,
+                beta, &Amn[ik*n_wannier*nstates], nstates);
+        delete RT1;
+
+
+        RT1 = new RmgTimer("7-Wannier: Amn: us");
+        //  if(!ct.norm_conserving_pp || ct.noncoll)
+        //      Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
+        delete RT1;
+
+    }
+
+    RT1 = new RmgTimer("7-Wannier: Amn: Reduce");
+    int count = num_q * n_wannier * nstates;
+    MPI_Allreduce(MPI_IN_PLACE, Amn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, pct.grid_comm);
+    delete RT1;
+
+    RT1 = new RmgTimer("7-Wannier: Amn: write");
+    if(pct.imgpe == 0)
+    {
+        printf("\n Amn done");
+        mkdir ("Wannier90_rmg", S_IRWXU);
+        time_t tt;
+
+        char *timeptr;
+        time (&tt);
+        timeptr = ctime (&tt);
+        FILE *famn = fopen("Wannier90_rmg/wannier90.amn", "w+");
+        fprintf(famn, "Created with scdm on %s", timeptr);
+        fprintf(famn, "%8d  %8d  %8d    %10.6f  %10.6f ", nstates, num_q, n_wannier, scdm_mu, scdm_sigma);
+        for(int iq = 0; iq <num_q; iq++)
+        {
+            for(int iw = 0; iw < n_wannier; iw++)
+            {
+                for(int st = 0; st < nstates; st++)
+                {
+                    fprintf(famn, "\n  %5d %5d %5d %18.12f %18.12f", st+1, iw+1, iq+1, std::real(Amn[iq * nstates * n_wannier + iw * nstates + st]),
+                            std::imag(Amn[iq * nstates * n_wannier + iw * nstates + st]));
+                }
+            }
+        }
+        fclose(famn);
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    delete RT1;
+
+}
+
 
