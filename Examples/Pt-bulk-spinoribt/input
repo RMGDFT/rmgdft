@@ -12,10 +12,8 @@ compressed_outfile = "false"
 # Wavefunction grid
 wavefunction_grid="32 32 32"
 potential_grid_refinement = "2"
-filter_factor = "0.125000000"
 
 
-#kohn_sham_fd_order = "8"
 
 #write_pseudopotential_plots = "true"
 
@@ -45,6 +43,7 @@ states_count_and_occupation = "10 1.0 10 0.0"
 
 kpoint_mesh = "4 4 4 "
 kpoint_is_shift = "1 1 1 "
+
 #kpoint_distribution = "1"
 
 bravais_lattice_type="Cubic Face Centered"
@@ -73,15 +72,13 @@ calculation_mode="Quench Electrons"
 #kohn_sham_solver="multigrid"
 kohn_sham_solver="davidson"
 subdiag_driver="lapack"
-#charge_mixing_type = "Broyden"
-charge_mixing_type = "Pulay"
+charge_mixing_type = "Broyden"
+#charge_mixing_type = "Pulay"
 #charge_mixing_type = "Linear"
-charge_broyden_scale = "0.10000000"
-charge_pulay_scale = "0.10000000"
-charge_density_mixing = "0.1"
+charge_density_mixing = "0.5"
 kohn_sham_mucycles = "3"
 max_scf_steps="100"
-potential_acceleration_constant_step="0.0"
+potential_acceleration_constant_step="1.0"
 write_data_period="10"
 
 # Criterion used to judge SCF convergency 
@@ -101,9 +98,7 @@ Pt   0.0   0.0   0.0   1 1  1  0.0  90.0 00.0
 pseudo_dir = "./"
 pseudopotential=
 "
-#Pt   Pt.rel-pbe-spn-rrkjus_psl.1.0.0.UPF
 Pt    Pt.rel-pbe-n-rrkjus.UPF
-#Pt    Pt.pbe-n-rrkjus_psl.1.0.0.UPF
 "
 
 
