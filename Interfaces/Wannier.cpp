@@ -1349,7 +1349,7 @@ double radial_func(int radial_type, double zona, double r)
     return val;
 }
 
-void InitRadialfunc_Gspace(double kvec[3], int lval, int radial_type, double zona, std::complex<double> *radialfunc_g)
+void InitRadialfunc_Gspace(int lval, int radial_type, double zona, std::complex<double> *radialfunc_g, int gnum, double delta_g)
 {
     using boost::math::policies::policy;
     using boost::math::policies::promote_double;
@@ -1370,26 +1370,11 @@ void InitRadialfunc_Gspace(double kvec[3], int lval, int radial_type, double zon
 
     }
 
-    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
-    double tpiba2 = tpiba * tpiba;
-    double ax[3];
-    double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2);
-    int pbasis = coarse_pwaves->Grid->get_P0_BASIS(1);
     double alpha = (double)lval + 0.5;
-    for(int ig = 0;ig < pbasis;ig++)
+    
+    for(int ig = 0;ig < gnum;ig++)
     {
-        ax[0] = coarse_pwaves->g[ig].a[0] * tpiba;
-        ax[1] = coarse_pwaves->g[ig].a[1] * tpiba;
-        ax[2] = coarse_pwaves->g[ig].a[2] * tpiba;
-
-        ax[0] += kvec[0];
-        ax[1] += kvec[1];
-        ax[2] += kvec[2];
-
-        double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
-        radialfunc_g[ig] = 0.0;
-        if(gval >= gcut) continue;
-
+        double gval = ig * delta_g;
 
         for (int idx = 0; idx < rg_points; idx++)
         {
@@ -1407,18 +1392,16 @@ void InitRadialfunc_Gspace(double kvec[3], int lval, int radial_type, double zon
 
 }
 
-
-template  void Wannier<double>::InitGuideFunc(int kpt, std::vector<wan_proj> Wan_proj, double *guidefunc);
-template  void Wannier<std::complex<double>>::InitGuideFunc(int kpt, std::vector<wan_proj> Wan_proj, std::complex<double> *guidefunc);
-template <class T> void Wannier<T>::InitGuideFunc(int kpt, std::vector<wan_proj> Wan_proj, T *guidefunc)
+template  void Wannier<double>::InitGuideFunc();
+template  void Wannier<std::complex<double>>::InitGuideFunc();
+template <class T> void Wannier<T>::InitGuideFunc()
 {
     double tol = 1.0e-5;
-    std::vector<int> zona_index;
-    std::vector<std::pair<int, double>> zona_list;
     std::pair<int, double> onezona_type;
     zona_index.resize(Wan_proj.size());
-    int lmax = 0, tot_LM;
-    RmgTimer *RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: zona");
+    int tot_LM;
+    lmax = 0;
+    RmgTimer *RT1 = new RmgTimer("7-Wannier: Amn: gf: zona");
     for(size_t iw = 1; iw< Wan_proj.size(); iw++)
     {
         lmax = std::max(lmax, Wan_proj[iw].l);
@@ -1448,10 +1431,10 @@ template <class T> void Wannier<T>::InitGuideFunc(int kpt, std::vector<wan_proj>
     }
 
     delete RT1;
-    RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: csph");
+    RT1 = new RmgTimer("7-Wannier: Amn: gf: csph");
     // setup rotation of axis and hybridization of differetn Ylms. such sp3 ...
     tot_LM = (lmax + 1) * (lmax+1);
-    double_2d_array csph, r_rand;
+    double_2d_array r_rand;
     csph.resize(boost::extents[Wan_proj.size()][tot_LM]);
     r_rand.resize(boost::extents[tot_LM * tot_LM][3]);
     std::srand(224);
@@ -1590,30 +1573,44 @@ template <class T> void Wannier<T>::InitGuideFunc(int kpt, std::vector<wan_proj>
     }
 
     delete RT1;
-    RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: radial_q");
-    doubleC_3d_array radialfunc_g;
-    radialfunc_g.resize(boost::extents[zona_list.size()][lmax+1][nbasis]); 
+    RT1 = new RmgTimer("7-Wannier: Amn: gf: radial_q");
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double tpiba2 = tpiba * tpiba;
+    double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2);
 
+    delta_g = gcut/(gnum-1);
+
+    radialfunc_g.resize(boost::extents[zona_list.size()][lmax+1][gnum]); 
+
+    for(int izona = 0; izona < (int)zona_list.size(); izona++)
+    {
+        for(int l = 0; l <= lmax; l++)
+        {
+            InitRadialfunc_Gspace(l, zona_list[izona].first, zona_list[izona].second,  &radialfunc_g[izona][l][0], gnum, delta_g);
+
+        }
+    }
+
+    delete RT1;
+}
+
+template  void Wannier<double>::GuideFunc(int kpt, double *guidefunc);
+template  void Wannier<std::complex<double>>::GuideFunc(int kpt, std::complex<double> *guidefunc);
+template <class T> void Wannier<T>::GuideFunc(int kpt, T *guidefunc)
+{
+
+    double tol = 1.0e-5;
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
     double ax[3];
 
     double kvec[3];
     std::complex<double> *guidefunc_g = new std::complex<double>[nbasis];
 
+    RmgTimer *RT1;
     kvec[0] = ct.klist.k_all_cart[kpt][0];
     kvec[1] = ct.klist.k_all_cart[kpt][1];
     kvec[2] = ct.klist.k_all_cart[kpt][2];
 
-    for(int izona = 0; izona < (int)zona_list.size(); izona++)
-    {
-        for(int l = 0; l <= lmax; l++)
-        {
-            InitRadialfunc_Gspace(kvec, l, zona_list[izona].first, zona_list[izona].second,  &radialfunc_g[izona][l][0]);
-
-        }
-    }
-
-    delete RT1;
     std::complex<double> I_t(0.0, 1.0);
     std::complex<double> *gf = new std::complex<double>[nbasis];
     for(int iw = 0; iw < (int)Wan_proj.size(); iw++)
@@ -1621,7 +1618,7 @@ template <class T> void Wannier<T>::InitGuideFunc(int kpt, std::vector<wan_proj>
         for(int ig = 0; ig < nbasis; ig++) guidefunc_g[ig] = 0.0;
         int izona = zona_index[iw];
 
-        RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: guide_q");
+        RT1 = new RmgTimer("7-Wannier: Amn: gf: guide_q");
         std::complex<double> phase;
         for(int l = 0; l <= lmax; l++)
         {
@@ -1640,8 +1637,13 @@ template <class T> void Wannier<T>::InitGuideFunc(int kpt, std::vector<wan_proj>
                     ax[1] += kvec[1];
                     ax[2] += kvec[2];
                     double kr = ax[0] * Wan_proj[iw].center_cart[0] + ax[1] * Wan_proj[iw].center_cart[1] + ax[2] * Wan_proj[iw].center_cart[2]; 
+                    double gval = std::sqrt(ax[0] * ax[0] + ax[1] * ax[1] + ax[2] * ax[2]);
+                    int g_index = (int)(gval/delta_g);
+                    if(g_index >= gnum-1) continue;
+                    double frac = gval/delta_g - g_index;
+                    std::complex<double> radial_part = radialfunc_g[izona][l][g_index] * frac + radialfunc_g[izona][l][g_index+1] * (1.0-frac) ;
                     phase = std::exp( std::complex<double>(0.0, -kr));
-                    guidefunc_g[ig] += std::pow(-I_t, l) * radialfunc_g[izona][l][ig] * Ylm(l, m, ax) * csph[iw][lm] * phase;
+                    guidefunc_g[ig] += std::pow(-I_t, l) * radial_part * Ylm(l, m, ax) * csph[iw][lm] * phase;
                 }
 
             }
@@ -1649,7 +1651,7 @@ template <class T> void Wannier<T>::InitGuideFunc(int kpt, std::vector<wan_proj>
 
         delete RT1;
 
-        RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: fft");
+        RT1 = new RmgTimer("7-Wannier: Amn: gf: fft");
         coarse_pwaves->FftInverse(guidefunc_g, gf);
         delete RT1;
 
@@ -1666,7 +1668,7 @@ template <class T> void Wannier<T>::InitGuideFunc(int kpt, std::vector<wan_proj>
 
         double norm_coeff = 0.0;
 
-        RT1 = new RmgTimer("7-Wannier: Amn: guiding funci: norm");
+        RT1 = new RmgTimer("7-Wannier: Amn: gf: norm");
         for(int idx = 0; idx < nbasis; idx++) norm_coeff += std::norm(guidefunc[iw*nbasis + idx]);
         double vel = L.get_omega() / ((double)ngrid);
         MPI_Allreduce(MPI_IN_PLACE, &norm_coeff, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
@@ -1677,9 +1679,6 @@ template <class T> void Wannier<T>::InitGuideFunc(int kpt, std::vector<wan_proj>
     }
     delete [] gf;
     delete [] guidefunc_g;
-    delete [] ylm_array;
-    delete [] ylm_invert;
-    delete [] ylm_wan;
     
 }
 
@@ -1700,11 +1699,12 @@ template <class T> void Wannier<T>::SetAmn_proj()
     T alpha(vel);
     T beta = 0.0;
 
+    InitGuideFunc();
     T *guidefunc = new T[n_wannier * nbasis];
     for(int ik = 0; ik < num_q; ik++)
     {
-        RT1 = new RmgTimer("7-Wannier: Amn: guiding func");
-        InitGuideFunc(ik, Wan_proj, guidefunc);
+        RT1 = new RmgTimer("7-Wannier: Amn: gf");
+        GuideFunc(ik, guidefunc);
         delete RT1;
         int ik_irr = ct.klist.k_map_index[ik];
         int isym = ct.klist.k_map_symm[ik];

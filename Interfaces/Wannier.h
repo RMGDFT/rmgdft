@@ -96,6 +96,13 @@ private:
     int nbasis, nbasis_noncoll;
 
     std::vector<wan_proj> Wan_proj;
+    std::vector<int> zona_index;
+    std::vector<std::pair<int, double>> zona_list;
+    double_2d_array csph, r_rand;
+    doubleC_3d_array radialfunc_g;
+    int lmax;
+    int gnum = 1001;
+    double delta_g;
 
 public:
     Wannier (
@@ -121,10 +128,8 @@ public:
     void ReadRotatePsiwan(int iq, int ik, int isy, int isya, std::string wavefile, T *psi_wan, int *piv);
     void Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onepair, std::complex<double> *qq, std::complex<double> *qq_so);
     void ReadNlweight(std::string filename, int nh, std::complex<double> *Nlweight_oneatom);
-    void InitGuideFunc(int kpt, std::vector<wan_proj> Wan_proj, T *guidefunc);
+    void InitGuideFunc();
+    void GuideFunc(int kpt, T *guidefunc);
 
 };
-
 #endif
-
-
