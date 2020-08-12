@@ -1611,6 +1611,8 @@ template <class T> void Wannier<T>::GuideFunc(int kpt, T *guidefunc)
     kvec[1] = ct.klist.k_all_cart[kpt][1];
     kvec[2] = ct.klist.k_all_cart[kpt][2];
 
+    
+    for(int idx = 0; idx < n_wannier * nbasis_noncoll; idx++) guidefunc[idx] = 0.0;
     std::complex<double> I_t(0.0, 1.0);
     std::complex<double> *gf = new std::complex<double>[nbasis];
     for(int iw = 0; iw < (int)Wan_proj.size(); iw++)
@@ -1655,9 +1657,29 @@ template <class T> void Wannier<T>::GuideFunc(int kpt, T *guidefunc)
         coarse_pwaves->FftInverse(guidefunc_g, gf);
         delete RT1;
 
-        std::complex<double> *gf_C = (std::complex<double> *)&guidefunc[iw*nbasis];
-        double *gf_R = (double *)&guidefunc[iw*nbasis];
-        if(ct.is_gamma)
+        std::complex<double> *gf_C = (std::complex<double> *)&guidefunc[iw*nbasis_noncoll];
+        double *gf_R = (double *)&guidefunc[iw*nbasis_noncoll];
+        if(ct.noncoll)
+        {
+            std::complex<double> frac_up = 1.0, frac_dn = 1.0;
+            if(Wan_proj[iw].spin == 1) 
+            {
+                frac_up = Wan_proj[iw].spin_dir[2];
+                frac_dn = std::complex<double>(Wan_proj[iw].spin_dir[0], Wan_proj[iw].spin_dir[1]);
+            }
+            else
+            {
+                frac_dn = Wan_proj[iw].spin_dir[2];
+                frac_up = std::complex<double>(Wan_proj[iw].spin_dir[0], Wan_proj[iw].spin_dir[1]);
+            }
+
+            for(int idx = 0; idx < nbasis; idx++) 
+            {
+                gf_C[idx] += frac_up * gf[idx];
+                gf_C[nbasis + idx] += frac_dn * gf[idx];
+            }
+        }
+        else if(ct.is_gamma)
         {
             for(int idx = 0; idx < nbasis; idx++) gf_R[idx] = std::real(gf[idx]);
         }
@@ -1669,11 +1691,11 @@ template <class T> void Wannier<T>::GuideFunc(int kpt, T *guidefunc)
         double norm_coeff = 0.0;
 
         RT1 = new RmgTimer("7-Wannier: Amn: gf: norm");
-        for(int idx = 0; idx < nbasis; idx++) norm_coeff += std::norm(guidefunc[iw*nbasis + idx]);
+        for(int idx = 0; idx < nbasis_noncoll; idx++) norm_coeff += std::norm(guidefunc[iw*nbasis_noncoll + idx]);
         double vel = L.get_omega() / ((double)ngrid);
         MPI_Allreduce(MPI_IN_PLACE, &norm_coeff, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
         norm_coeff = 1.0/std::sqrt(norm_coeff * vel);
-        for(int idx = 0; idx < nbasis; idx++) guidefunc[iw*nbasis + idx] *= norm_coeff;
+        for(int idx = 0; idx < nbasis_noncoll; idx++) guidefunc[iw*nbasis_noncoll + idx] *= norm_coeff;
         delete RT1;
 
     }
@@ -1700,7 +1722,7 @@ template <class T> void Wannier<T>::SetAmn_proj()
     T beta = 0.0;
 
     InitGuideFunc();
-    T *guidefunc = new T[n_wannier * nbasis];
+    T *guidefunc = new T[n_wannier * nbasis_noncoll];
     for(int ik = 0; ik < num_q; ik++)
     {
         RT1 = new RmgTimer("7-Wannier: Amn: gf");
