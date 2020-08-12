@@ -267,12 +267,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     AutoSet(ct, pct, ControlMap);
     Rmg_G->set_rank(pct.gridpe, pct.grid_comm);
     Rmg_halfgrid->set_rank(pct.gridpe, pct.grid_comm);
-    bool special = ((Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
-            (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
-            (Rmg_L.get_ibrav_type() == HEXAGONAL) ||
-            (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
 
-    if(!special || ct.kohn_sham_ke_fft) SetLaplacian();
 
     Rmg_Symm->setgrid(*Rmg_G, ct.FG_RATIO);
 
@@ -362,6 +357,14 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         pct.coalesce_factor = 1;
         pct.coalesced_grid_comm = pct.grid_comm;
     }
+
+
+    // Set up the Laplacian for unusual grid types
+    bool special = ((Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
+            (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
+            (Rmg_L.get_ibrav_type() == HEXAGONAL) ||
+            (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
+    if(!special || ct.kohn_sham_ke_fft) SetLaplacian();
 
     // Now that coalescing is sorted out we need to check valid MG levels on the PE level (as opposed to
     // on the global level which was done in Autoset.cpp

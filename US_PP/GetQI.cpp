@@ -104,15 +104,10 @@ void GetQI (void)
         /*Release memory first */
         Atoms[ion].Qindex.clear();
         Atoms[ion].augfunc_desc.clear();
-printf("GOT HERE 0\n");
-        Atoms[ion].stress_cx[0] = {};
-        Atoms[ion].stress_cx[1] = {};
-        Atoms[ion].stress_cx[2] = {};
         Atoms[ion].stress_cx[0].clear();
         Atoms[ion].stress_cx[1].clear();
         Atoms[ion].stress_cx[2].clear();
 
-printf("GOT HERE 1\n");fflush(NULL);
         Atoms[ion].grid_ylm.clear();
         Atoms[ion].grid_qr.clear();
 
@@ -251,9 +246,9 @@ printf("GOT HERE 1\n");fflush(NULL);
 
                             if(ct.stress)
                             {
-                                Atoms[ion].stress_cx[0][idx] = cx[0];
-                                Atoms[ion].stress_cx[1][idx] = cx[1];
-                                Atoms[ion].stress_cx[2][idx] = cx[2];
+                                Atoms[ion].stress_cx[0][icount] = cx[0];
+                                Atoms[ion].stress_cx[1][icount] = cx[1];
+                                Atoms[ion].stress_cx[2][icount] = cx[2];
                             }
 
                             for(int l = 0; l <= 2*ct.max_l; l++)
@@ -316,14 +311,16 @@ printf("GOT HERE 1\n");fflush(NULL);
 
         ct.q_alloc[0] += (size_t)Atoms[ion].grid_ylm.size() * icount * sizeof(double) +
                          (size_t)Atoms[ion].grid_qr.size() * icount * sizeof(float);
+
     }                           /*end for ion */
 
-printf("GOT HERE 2\n");fflush(NULL);
-    // Sum q-function memory usage over all nodes
+    // Sum q-function memory usage over all nodes. Min and max are the same for all images
+    // and only differ for grids so no need to sum them over kpoints.
     MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
     MPI_Allreduce(&ct.q_alloc[0], &ct.q_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
-    MPI_Allreduce(MPI_IN_PLACE, &ct.q_alloc[0], 1, MPI_LONG, MPI_SUM, pct.grid_comm);
 
+    MPI_Allreduce(MPI_IN_PLACE, &ct.q_alloc[0], 1, MPI_LONG, MPI_SUM, pct.grid_comm);
+    ct.q_alloc[0] *= (size_t)pct.pe_kpoint;
 
     delete [](Aiz);
     delete [](Aiy);

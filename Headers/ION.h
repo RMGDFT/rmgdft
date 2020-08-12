@@ -13,19 +13,19 @@ public:
 
 // ival and jval are indices ranging from (0, sp->nh-1). There may be multiple qongrid elements
 // for each unique (ival,jval) pair but they will have different lval.
-    int ival;
-    int jval;
-    int lval;
+    unsigned short int ival;
+    unsigned short int jval;
+    unsigned short int lval;
 
 // nb and mb are indices ranging from (0, nbeta-1) 
-    int nb;
-    int mb;
+    unsigned short int nb;
+    unsigned short int mb;
 
 // Index into Clebsch-Gordon coefficient array.
-    int cg_idx;
+    unsigned short int cg_idx;
 
 // Index into ylm array
-    int ylm_idx;
+    unsigned short int ylm_idx;
 };
 
 /* Ion structure */

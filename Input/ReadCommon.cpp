@@ -1521,4 +1521,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         for(size_t st = 0; st < ct.cube_states_list.size(); st++)
             printf("\n state list %d", ct.cube_states_list[st]);
     }
+
+    if((ct.kohn_sham_solver == DAVIDSON_SOLVER) && Verify("charge_mixing_type","Linear", InputMap))
+    {
+        rmg_error_handler (__FILE__, __LINE__, "\nError. You have selected Linear Mixing with the Davidson kohn-sham solver\nwhich is not valid. Please change to Broyden or Pulay mixing. Terminating.\n\n");
+    }
+
 }

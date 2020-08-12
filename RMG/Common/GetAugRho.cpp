@@ -57,6 +57,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
 
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     for(int idx = 0;idx < pbasis*factor;idx++) augrho[idx] = 0.0;
+    double *taugrho = new double[pbasis*factor]();
 
 
     if(ct.norm_conserving_pp) return;
@@ -138,25 +139,30 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                     for (int icount = 0; icount < ncount; icount++)
                     {
                         double Qr = cgarray[aug.second.cg_idx] * (double)radial[icount] * (double)grid_ylm[icount];
-                        augrho[ivec[icount]] += Qr * std::real(product[i * nh+j]);
-                        if(i != j) augrho[ivec[icount]] += Qr * std::real(product[j * nh+i]);
+                        taugrho[icount] += Qr * std::real(product[i * nh+j]);
+                        if(i != j) taugrho[icount] += Qr * std::real(product[j * nh+i]);
                         if(ct.noncoll)
                         {
-                            augrho[ivec[icount]] += Qr * std::real(product[i*nh+j + 3 * max_product]);
-                            augrho[ivec[icount] + 1 * pbasis ] += Qr * std::real( product[i*nh+j + 1 * max_product]+product[i*nh+j + 2 * max_product]);
-                            augrho[ivec[icount] + 2 * pbasis ] += Qr * std::imag( product[i*nh+j + 1 * max_product]-product[i*nh+j + 2 * max_product]);
-                            augrho[ivec[icount] + 3 * pbasis ] += Qr * std::real(product[i*nh+j] - product[i*nh+j + 3 * max_product]);
+                            taugrho[icount] += Qr * std::real(product[i*nh+j + 3 * max_product]);
+                            taugrho[icount + 1 * pbasis ] += Qr * std::real( product[i*nh+j + 1 * max_product]+product[i*nh+j + 2 * max_product]);
+                            taugrho[icount + 2 * pbasis ] += Qr * std::imag( product[i*nh+j + 1 * max_product]-product[i*nh+j + 2 * max_product]);
+                            taugrho[icount + 3 * pbasis ] += Qr * std::real(product[i*nh+j] - product[i*nh+j + 3 * max_product]);
                             if(i != j)
                             {
-                                augrho[ivec[icount]] += Qr *std::real( product[j*nh+i + 3 * max_product]);
-                                augrho[ivec[icount] + 1 * pbasis ] += Qr * std::real( product[j*nh+i + 1 * max_product]+product[j*nh+i + 2 * max_product]);
-                                augrho[ivec[icount] + 2 * pbasis ] += Qr * std::imag( product[j*nh+i + 1 * max_product]-product[j*nh+i + 2 * max_product]);
-                                augrho[ivec[icount] + 3 * pbasis ] += Qr * std::real(product[j*nh+i] - product[j*nh+i + 3 * max_product]);
+                                taugrho[icount] += Qr *std::real( product[j*nh+i + 3 * max_product]);
+                                taugrho[icount + 1 * pbasis ] += Qr * std::real( product[j*nh+i + 1 * max_product]+product[j*nh+i + 2 * max_product]);
+                                taugrho[icount + 2 * pbasis ] += Qr * std::imag( product[j*nh+i + 1 * max_product]-product[j*nh+i + 2 * max_product]);
+                                taugrho[icount + 3 * pbasis ] += Qr * std::real(product[j*nh+i] - product[j*nh+i + 3 * max_product]);
                             }
 
                         }
                     }           /*end for icount */
                 }
+
+                // Scatter back
+                for(int icount=0;icount < ncount;icount++) augrho[ivec[icount]] += taugrho[icount];
+                for(int icount=0;icount < factor*pbasis;icount++)taugrho[icount]=0.0;
+
         }                       /*end if */
 
     }                           /*end for ion */
@@ -166,6 +172,7 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
     delete [] sint;
     delete [] product;
     delete [] product_tem;
+    delete [] taugrho;
 
 }
 
