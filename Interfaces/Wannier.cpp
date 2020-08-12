@@ -1080,7 +1080,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
         RT1 = new RmgTimer("7-Wannier: Mmn: us");
         if(!ct.norm_conserving_pp || ct.noncoll)
-            Mmn_us(ik, ikn, psi_k, psi_q, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
+            Mmn_us(ik, ikn, psi_k, nstates, psi_q, nstates, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
         delete RT1;
 
     }
@@ -1181,10 +1181,10 @@ template <class T> void Wannier<T>::ReadNlweight(std::string filename, int nh, s
     MPI_Type_free(&grid_c);
 
 }
-template  void Wannier<double>::Mmn_us(int, int, double *, double *, double *, std::complex<double> *, std::complex<double> *);
-template  void Wannier<std::complex<double>>::Mmn_us(int, int, std::complex<double> *, std::complex<double> *, 
+template  void Wannier<double>::Mmn_us(int, int, double *, int, double *, int, double *, std::complex<double> *, std::complex<double> *);
+template  void Wannier<std::complex<double>>::Mmn_us(int, int, std::complex<double> *, int, std::complex<double> *, int,
         std::complex<double> *, std::complex<double> *, std::complex<double> *);
-template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, T *Mmn_onekpair, 
+template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st_k, T *psi_q, int num_st_q, T *Mmn_onekpair, 
         std::complex<double> *qq_dk_one, std::complex<double> *qq_dk_so_one)
 {
 
@@ -1201,13 +1201,15 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     T ONE_t(1.0);
     double vel = L.get_omega() / ((double)ngrid);
     T alpha(vel);
-    int tot_st = nstates * ct.noncoll_factor;
+    int tot_st_k = num_st_k * ct.noncoll_factor;
+    int tot_st_q = num_st_q * ct.noncoll_factor;
 
-    size_t count = (size_t)num_tot_proj * (size_t)nstates * ct.noncoll_factor;
-    size_t alloc = (size_t)num_tot_proj * (size_t)nstates * ct.noncoll_factor * sizeof(T);
+    size_t alloc = (size_t)num_tot_proj * (size_t)num_st_k * ct.noncoll_factor * sizeof(T);
     T *sint_ik = (T *)GpuMallocManaged(alloc);
-    T *sint_kn = (T *)GpuMallocManaged(alloc);
     T *sint_tem = (T *)GpuMallocManaged(alloc);
+
+    alloc = (size_t)num_tot_proj * (size_t)num_st_q * ct.noncoll_factor * sizeof(T);
+    T *sint_kn = (T *)GpuMallocManaged(alloc);
 
     T *Nlweight = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
     std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
@@ -1220,8 +1222,9 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     delete RT1;
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
-    RmgGemm ("C", "N", num_tot_proj, tot_st, nbasis, alpha,
+    RmgGemm ("C", "N", num_tot_proj, tot_st_k, nbasis, alpha,
             Nlweight, nbasis, psi_k, nbasis, ZERO_t, sint_ik, num_tot_proj);
+    size_t count = (size_t)num_tot_proj * (size_t)num_st_k * ct.noncoll_factor;
     MPI_Allreduce(MPI_IN_PLACE, sint_ik, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
 
     delete RT1;
@@ -1235,8 +1238,9 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
     delete RT1;
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
-    RmgGemm ("C", "N", num_tot_proj, tot_st, nbasis, alpha,
+    RmgGemm ("C", "N", num_tot_proj, tot_st_q, nbasis, alpha,
             Nlweight, nbasis, psi_q, nbasis, ZERO_t, sint_kn, num_tot_proj);
+    count = (size_t)num_tot_proj * (size_t)num_st_q * ct.noncoll_factor;
     MPI_Allreduce(MPI_IN_PLACE, sint_kn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
     delete RT1;
 
@@ -1318,14 +1322,14 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, T *psi_q, 
 
     char *transn = "n";
     char *transc = "c";
-    RmgGemm (transn, transn, dim_dnm, nstates, dim_dnm, 
+    RmgGemm (transn, transn, dim_dnm, num_st_q, dim_dnm, 
             ONE_t, M_qqq,  dim_dnm, sint_kn, dim_dnm,
             ZERO_t,  sint_tem, dim_dnm);
 
     alpha = 1.0/pct.grid_npes;
-    RmgGemm (transc, transn, nstates, nstates, dim_dnm,
+    RmgGemm (transc, transn, num_st_k, num_st_q, dim_dnm,
             alpha, sint_ik,  dim_dnm, sint_tem, dim_dnm,
-            ONE_t,  Mmn_onekpair, nstates);
+            ONE_t,  Mmn_onekpair, num_st_k);
 
     delete RT1;
 
