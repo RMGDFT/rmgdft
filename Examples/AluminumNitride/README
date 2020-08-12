@@ -1,12 +1,12 @@
 The input file in.aln32 is set up to perform the initial electronic quench for an
 Aluminum Nitride cell in the wurtzite structure.
 The exact command line to run the code will depend on the mpi setup on your machine. This
-run was performed using an openSUSE Tumbleweed 20180522 workstation with the following command line.
+run was performed using an openSUSE Leap workstation with the following command line.
 
-mpirun -np 16 ./rmg-cpu in.aln32
+mpirun -np 24 ./rmg-cpu input
 
 The output is stored in the file
 
-in.aln32.00.log which is included for reference.
+input.00.log which is included for reference.
 
 
