@@ -160,7 +160,10 @@ template <typename KpointType> void GetAugRho(Kpoint<KpointType> **Kpts, double 
                 }
 
                 // Scatter back
-                for(int icount=0;icount < ncount;icount++) augrho[ivec[icount]] += taugrho[icount];
+                for(int ispin = 0; ispin < factor; ispin++)
+                {
+                    for(int icount=0;icount < ncount;icount++) augrho[ivec[icount] + ispin * pbasis] += taugrho[icount + ispin * pbasis];
+                }
                 for(int icount=0;icount < factor*pbasis;icount++)taugrho[icount]=0.0;
 
         }                       /*end if */
