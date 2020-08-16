@@ -1,5 +1,6 @@
 set(tests "atomO_polarized")
 list(APPEND tests "Diamond2")
+list(APPEND tests "Diamond16")
 list(APPEND tests "C60")
 list(APPEND tests "Pt-bulk-spinorbit")
 list(APPEND tests "Mg_2atom")
