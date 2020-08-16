@@ -1232,7 +1232,11 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st
     delete RT1;
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
-    int ikn_map = ct.klist.k_neighbors[ik][ikn][4];
+    int ikn_map = ik;
+    
+    if(ikn >=0)
+        ikn_map = ct.klist.k_neighbors[ik][ikn][4];
+
 
     filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(ikn_map);
     ReadNlweight(filename, num_tot_proj, Nlweight_C);
@@ -1650,7 +1654,7 @@ template <class T> void Wannier<T>::GuideFunc(int kpt, T *guidefunc)
                     if(g_index >= gnum-1) continue;
                     double frac = gval/delta_g - g_index;
                     std::complex<double> radial_part = radialfunc_g[izona][l][g_index] * frac + radialfunc_g[izona][l][g_index+1] * (1.0-frac) ;
-                    phase = std::exp( std::complex<double>(0.0, -kr));
+                    phase = std::exp( std::complex<double>(0.0, kr));
                     guidefunc_g[ig] += std::pow(-I_t, l) * radial_part * Ylm(l, m, ax) * csph[iw][lm] * phase;
                 }
 
@@ -1747,7 +1751,6 @@ template <class T> void Wannier<T>::SetAmn_proj()
                 beta, &Amn[ik*n_wannier*nstates], nstates);
         delete RT1;
 
-
         RT1 = new RmgTimer("7-Wannier: Amn: us");
         if(!ct.norm_conserving_pp || ct.noncoll)
         {
@@ -1770,14 +1773,17 @@ template <class T> void Wannier<T>::SetAmn_proj()
                     }
                 }
             }
-            Mmn_us(ik, ik, psi_k, nstates, guidefunc, n_wannier, &Amn[ik*nstates*n_wannier], qq_dk_one, qq_dk_so_one);
+            int ikn = -1;
+            Mmn_us(ik, ikn, psi_k, nstates, guidefunc, n_wannier, &Amn[ik*nstates*n_wannier], qq_dk_one, qq_dk_so_one);
             delete [] qq_dk_one;
             delete [] qq_dk_so_one;
-            
+
+
         }
         delete RT1;
 
     }
+
 
     RT1 = new RmgTimer("7-Wannier: Amn: Reduce");
     int count = num_q * n_wannier * nstates;
