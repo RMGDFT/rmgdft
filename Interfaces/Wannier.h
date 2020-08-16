@@ -126,7 +126,8 @@ public:
     void Read_nnkpts();
     void ReadRotatePsi(int ik, int isy, int isya, std::string wavefile, T *psi_k);
     void ReadRotatePsiwan(int iq, int ik, int isy, int isya, std::string wavefile, T *psi_wan, int *piv);
-    void Mmn_us(int ik, int ikn, T *psi_k, int num_st_k, T *psi_q, int num_st_q, T *Mmn_onepair, std::complex<double> *qq, std::complex<double> *qq_so);
+    void Mmn_us(int ik, int ikn, T *psi_k, int num_st_k, T *psi_q, int num_st_q, T *Mmn_onepair, 
+            std::complex<double> *qq, std::complex<double> *qq_so, int num_tot_proj, T *Nlweight_k, T *Nlweight_q);
     void ReadNlweight(std::string filename, int nh, std::complex<double> *Nlweight_oneatom);
     void InitGuideFunc();
     void GuideFunc(int kpt, T *guidefunc);

@@ -1025,66 +1025,100 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     }
     delete RT1;
     //double *kphase_R = (double *)&kphase;
-    std::complex<double> *kphase_C = (std::complex<double> *)&kphase;
-    for(int ikpair = 0; ikpair < num_q * num_kn; ikpair++)
+
+    int num_tot_proj = 0;
+    for(size_t ion = 0; ion < Atoms.size(); ion++)
     {
-        int ik = ikpair/num_kn;
-        int ikn = ikpair%num_kn;
-
-        int idk = ct.klist.k_neighbors[ik][ikn][5];
-        qq_dk_one = &qqq_dk[idk * Atoms.size() * ct.max_nl * ct.max_nl];
-        qq_dk_so_one = &qqq_dk_so[idk * 4 * Atoms.size() * ct.max_nl * ct.max_nl];
-
+        SPECIES &AtomType = Species[Atoms[ion].species];
+        num_tot_proj += AtomType.nh;
+    }
+    T *Nlweight_k = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
+    T *Nlweight_q = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
+    std::complex<double> *kphase_C = (std::complex<double> *)&kphase;
+    for(int ik = 0; ik < num_q; ik++)
+    {
         int ik_irr = ct.klist.k_map_index[ik];
         int isym = ct.klist.k_map_symm[ik];
         int isyma = std::abs(isym) -1;
 
-        RmgTimer *RT1 = new RmgTimer("7-Wannier: Mmn: read and rotate");
-
+        RT1 = new RmgTimer("7-Wannier: Mmn: read and rotate");
         ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
-
-        int ikn_index = ct.klist.k_neighbors[ik][ikn][0];
-        int ikn_irr = ct.klist.k_map_index[ikn_index];
-        int isym_kn = ct.klist.k_map_symm[ikn_index];
-        int isyma_kn = std::abs(isym_kn) -1;
-        ReadRotatePsi(ikn_irr, isym_kn, isyma_kn, wavefile, psi_q);
-
         delete RT1;
 
-        RT1 = new RmgTimer("7-Wannier: Mmn: phase");
-        //  phase factor when kneight need a periodic BZ folding
-        for (int iz = 0; iz < pz0_grid; iz++) {
-            for (int iy = 0; iy < py0_grid; iy++) {
-                for (int ix = 0; ix < px0_grid; ix++) {
-                    kr = ct.klist.k_neighbors[ik][ikn][1] * (ix+px_offset)/(double)nx_grid
-                        +ct.klist.k_neighbors[ik][ikn][2] * (iy+py_offset)/(double)ny_grid
-                        +ct.klist.k_neighbors[ik][ikn][3] * (iz+pz_offset)/(double)nz_grid;
-                    *kphase_C = std::exp( std::complex<double>(0.0, -kr * twoPI));
-                    for(int st = 0; st < nstates; st++)
-                    {
-                        psi_q[st * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] *= kphase;
-                        if(ct.noncoll)
-                            psi_q[st * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] *= kphase;
-                    }
-
-                }
-            }
-        }
-        delete RT1;
-
-        RT1 = new RmgTimer("7-Wannier: Mmn: gemm");
-        RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
-                beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
-        delete RT1;
-
-
-        RT1 = new RmgTimer("7-Wannier: Mmn: us");
         if(!ct.norm_conserving_pp || ct.noncoll)
         {
-            Mmn_us(ik, ikn, psi_k, nstates, psi_q, nstates, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one);
-        }
-        delete RT1;
+            RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
+            std::string filename;
+            filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(ik);
+            std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight_k;
+            ReadNlweight(filename, num_tot_proj, Nlweight_C);
 
+            delete RT1;
+        }
+
+        for(int ikn = 0; ikn < num_kn; ikn++)
+        {
+
+            if(!ct.norm_conserving_pp || ct.noncoll)
+            {
+                RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
+                int ikn_map = ct.klist.k_neighbors[ik][ikn][4];
+                std::string filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(ikn_map);
+                std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight_q;
+                ReadNlweight(filename, num_tot_proj, Nlweight_C);
+                delete RT1;
+            }
+
+            int idk = ct.klist.k_neighbors[ik][ikn][5];
+            qq_dk_one = &qqq_dk[idk * Atoms.size() * ct.max_nl * ct.max_nl];
+            qq_dk_so_one = &qqq_dk_so[idk * 4 * Atoms.size() * ct.max_nl * ct.max_nl];
+
+            int ikn_index = ct.klist.k_neighbors[ik][ikn][0];
+            int ikn_irr = ct.klist.k_map_index[ikn_index];
+            int isym_kn = ct.klist.k_map_symm[ikn_index];
+            int isyma_kn = std::abs(isym_kn) -1;
+
+            RT1 = new RmgTimer("7-Wannier: Mmn: read and rotate");
+            ReadRotatePsi(ikn_irr, isym_kn, isyma_kn, wavefile, psi_q);
+
+            delete RT1;
+
+            RT1 = new RmgTimer("7-Wannier: Mmn: phase");
+            //  phase factor when kneight need a periodic BZ folding
+            for (int iz = 0; iz < pz0_grid; iz++) {
+                for (int iy = 0; iy < py0_grid; iy++) {
+                    for (int ix = 0; ix < px0_grid; ix++) {
+                        kr = ct.klist.k_neighbors[ik][ikn][1] * (ix+px_offset)/(double)nx_grid
+                            +ct.klist.k_neighbors[ik][ikn][2] * (iy+py_offset)/(double)ny_grid
+                            +ct.klist.k_neighbors[ik][ikn][3] * (iz+pz_offset)/(double)nz_grid;
+                        *kphase_C = std::exp( std::complex<double>(0.0, -kr * twoPI));
+                        for(int st = 0; st < nstates; st++)
+                        {
+                            psi_q[st * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] *= kphase;
+                            if(ct.noncoll)
+                                psi_q[st * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] *= kphase;
+                        }
+
+                    }
+                }
+            }
+            delete RT1;
+
+            RT1 = new RmgTimer("7-Wannier: Mmn: gemm");
+            RmgGemm("C", "N", nstates, nstates, nbasis_noncoll, alpha, psi_k, nbasis_noncoll, psi_q, nbasis_noncoll,
+                    beta, &Mmn[(ik*num_kn+ikn)*nstates*nstates], nstates);
+            delete RT1;
+
+
+            RT1 = new RmgTimer("7-Wannier: Mmn: us");
+            if(!ct.norm_conserving_pp || ct.noncoll)
+            {
+                Mmn_us(ik, ikn, psi_k, nstates, psi_q, nstates, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one,
+                        num_tot_proj, Nlweight_k, Nlweight_q);
+            }
+            delete RT1;
+
+        }
     }
 
     RT1 = new RmgTimer("7-Wannier: Mmn: Reduce");
@@ -1128,6 +1162,8 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     GpuFreeManaged(psi_k);
     GpuFreeManaged(psi_q);
     GpuFreeManaged(Mmn);
+    GpuFreeManaged(Nlweight_k);
+    GpuFreeManaged(Nlweight_q);
 
 }
 
@@ -1183,22 +1219,17 @@ template <class T> void Wannier<T>::ReadNlweight(std::string filename, int nh, s
     MPI_Type_free(&grid_c);
 
 }
-template  void Wannier<double>::Mmn_us(int, int, double *, int, double *, int, double *, std::complex<double> *, std::complex<double> *);
+template  void Wannier<double>::Mmn_us(int, int, double *, int, double *, int, double *, std::complex<double> *, 
+        std::complex<double> *, int, double*, double *);
 template  void Wannier<std::complex<double>>::Mmn_us(int, int, std::complex<double> *, int, std::complex<double> *, int,
-        std::complex<double> *, std::complex<double> *, std::complex<double> *);
+        std::complex<double> *, std::complex<double> *, std::complex<double> *, int, std::complex<double> *, std::complex<double> *);
 template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st_k, T *psi_q, int num_st_q, T *Mmn_onekpair, 
-        std::complex<double> *qq_dk_one, std::complex<double> *qq_dk_so_one)
+        std::complex<double> *qq_dk_one, std::complex<double> *qq_dk_so_one, int num_tot_proj, T *Nlweight_k, T *Nlweight_q)
 {
 
 
 
     RmgTimer *RT1;
-    int num_tot_proj = 0;
-    for(size_t ion = 0; ion < Atoms.size(); ion++)
-    {
-        SPECIES &AtomType = Species[Atoms[ion].species];
-        num_tot_proj += AtomType.nh;
-    }
     T ZERO_t(0.0);
     T ONE_t(1.0);
     double vel = L.get_omega() / ((double)ngrid);
@@ -1213,39 +1244,19 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st
     alloc = (size_t)num_tot_proj * (size_t)num_st_q * ct.noncoll_factor * sizeof(T);
     T *sint_kn = (T *)GpuMallocManaged(alloc);
 
-    T *Nlweight = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
-    std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight;
-
-    RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
-    std::string filename;
-    filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(ik);
-    ReadNlweight(filename, num_tot_proj, Nlweight_C);
-
-    delete RT1;
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
     RmgGemm ("C", "N", num_tot_proj, tot_st_k, nbasis, alpha,
-            Nlweight, nbasis, psi_k, nbasis, ZERO_t, sint_ik, num_tot_proj);
+            Nlweight_k, nbasis, psi_k, nbasis, ZERO_t, sint_ik, num_tot_proj);
     size_t count = (size_t)num_tot_proj * (size_t)num_st_k * ct.noncoll_factor;
     MPI_Allreduce(MPI_IN_PLACE, sint_ik, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
 
     delete RT1;
 
-    RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
-    int ikn_map = ik;
-    
-    if(ikn >=0)
-        ikn_map = ct.klist.k_neighbors[ik][ikn][4];
-
-
-    filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(ikn_map);
-    ReadNlweight(filename, num_tot_proj, Nlweight_C);
-
-    delete RT1;
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
     RmgGemm ("C", "N", num_tot_proj, tot_st_q, nbasis, alpha,
-            Nlweight, nbasis, psi_q, nbasis, ZERO_t, sint_kn, num_tot_proj);
+            Nlweight_q, nbasis, psi_q, nbasis, ZERO_t, sint_kn, num_tot_proj);
     count = (size_t)num_tot_proj * (size_t)num_st_q * ct.noncoll_factor;
     MPI_Allreduce(MPI_IN_PLACE, sint_kn, count, MPI_DOUBLE_COMPLEX, MPI_SUM, G.comm);
     delete RT1;
@@ -1343,7 +1354,6 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st
     GpuFreeManaged(sint_ik);
     GpuFreeManaged(sint_kn);
     GpuFreeManaged(sint_tem);
-    GpuFreeManaged(Nlweight);
 
 }
 
@@ -1733,6 +1743,13 @@ template <class T> void Wannier<T>::SetAmn_proj()
 
     InitGuideFunc();
     T *guidefunc = new T[n_wannier * nbasis_noncoll];
+    int num_tot_proj = 0;
+    for(size_t ion = 0; ion < Atoms.size(); ion++)
+    {
+        SPECIES &AtomType = Species[Atoms[ion].species];
+        num_tot_proj += AtomType.nh;
+    }
+    T *Nlweight_k = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
     for(int ik = 0; ik < num_q; ik++)
     {
         RT1 = new RmgTimer("7-Wannier: Amn: gf");
@@ -1754,6 +1771,13 @@ template <class T> void Wannier<T>::SetAmn_proj()
         RT1 = new RmgTimer("7-Wannier: Amn: us");
         if(!ct.norm_conserving_pp || ct.noncoll)
         {
+            RmgTimer *RT2 = new RmgTimer("7-Wannier: Amn: us: read NL");
+            std::string filename;
+            filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(ik);
+            std::complex<double> *Nlweight_C = (std::complex<double> *)Nlweight_k;
+            ReadNlweight(filename, num_tot_proj, Nlweight_C);
+
+            delete RT2;
 
             std::complex<double> *qq_dk_one, *qq_dk_so_one;
             qq_dk_one = new std::complex<double>[Atoms.size() * ct.max_nl * ct.max_nl];
@@ -1774,7 +1798,8 @@ template <class T> void Wannier<T>::SetAmn_proj()
                 }
             }
             int ikn = -1;
-            Mmn_us(ik, ikn, psi_k, nstates, guidefunc, n_wannier, &Amn[ik*nstates*n_wannier], qq_dk_one, qq_dk_so_one);
+            Mmn_us(ik, ikn, psi_k, nstates, guidefunc, n_wannier, &Amn[ik*nstates*n_wannier], qq_dk_one, qq_dk_so_one,
+                    num_tot_proj, Nlweight_k, Nlweight_k);
             delete [] qq_dk_one;
             delete [] qq_dk_so_one;
 
@@ -1784,6 +1809,7 @@ template <class T> void Wannier<T>::SetAmn_proj()
 
     }
 
+    GpuFreeManaged(Nlweight_k);
 
     RT1 = new RmgTimer("7-Wannier: Amn: Reduce");
     int count = num_q * n_wannier * nstates;
