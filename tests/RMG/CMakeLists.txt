@@ -4,6 +4,7 @@ list(APPEND tests "C60")
 list(APPEND tests "Pt-bulk-spinorbit")
 list(APPEND tests "Mg_2atom")
 list(APPEND tests "AlN32")
+list(APPEND tests "Si-8atoms_EXX_kpoints")
 list(APPEND tests "graphite_stress")
 
 SET(RMG_EXE "${CMAKE_BINARY_DIR}/rmg-cpu")
