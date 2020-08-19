@@ -962,7 +962,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
     boost::multi_array<std::complex<double>, 5> ns_occ_sum;
     ns_occ_sum.resize(boost::extents[ct.noncoll_factor][ct.noncoll_factor][Atoms.size()][mmax][mmax]);
 
-    size_t occ_size = ct.nspin * Atoms.size() * mmax * mmax;
+    size_t occ_size = ct.noncoll_factor * ct.noncoll_factor * Atoms.size() * mmax * mmax;
     for(size_t idx = 0; idx < occ_size; idx++)ns_occ_sum.data()[idx] = 0.0;
     //  the loops below can be optimized if it is slow    
     for (int ion = 0; ion < ct.num_ions; ion++)

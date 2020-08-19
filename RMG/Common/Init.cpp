@@ -683,7 +683,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         {   
             RmgTimer("3-MgridSubspace: ldaUop x psi"); 
             int pstride = Kptr[0]->ldaU->ldaU_m;
-            int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
+            int occ_size = ct.noncoll_factor * ct.noncoll_factor * Atoms.size() * pstride * pstride;
             std::complex<double> *ns_occ_g = new std::complex<double>[occ_size]();
 
             for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
