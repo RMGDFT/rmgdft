@@ -1,0 +1,1 @@
+This example consists of a large run performed on Summit at Oak Ridge National Laboratory. The test system is a 512 atom cell of NiO which is an anti-ferromagnetic material. The job submission script used for the run is included to help provide some guidance as to how to set up a run of this size but is of course very machine specific.

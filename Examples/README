@@ -1,0 +1,1 @@
+These examples mainly consist of problems that are too large to be run on workstations and will require careful setup on a supercomputer or cluster. Examples of smaller problems suitable for running on single node workstations are are included under the tests directory in the source distribution.
