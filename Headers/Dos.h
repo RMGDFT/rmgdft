@@ -44,8 +44,8 @@ private:
     void tetra_init(int kmesh[3], int kshift[3]);
     double Pij[4][20];
  
-    double tot_dos_tetra(int nk, int nband, std::vector<double> eigs, double energy);
-    double tot_dos_gauss(int nk, int nband, std::vector<double> eigs, double energy);
+    double tot_dos_tetra(int nk, int nband, std::vector<double> &eigs, double Ef, std::vector<double> &e_list, std::vector<double> &dos_t);
+    double tot_dos_gauss(int nk, int nband, std::vector<double> &eigs, double energy);
     void set_Pij();
 
 public:

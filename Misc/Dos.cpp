@@ -62,15 +62,19 @@ void Dos::tot_dos(int nk, int nband, std::vector<double> eigs, double Ef)
     for(int ie = 0; ie < num_epoint; ie++)
         e_list[ie] = Emin + ie * delta_e;
 
-    for(int ie = pct.gridpe; ie < num_epoint; ie+=pct.grid_npes)
+    if(tetraflag)
     {
-        double energy = Emin + ie * delta_e + Ef;
-        if(tetraflag)
-            dos_t[ie] = tot_dos_tetra(nk, nband, eigs, energy);
-        else
-            dos_t[ie] = tot_dos_gauss(nk, nband, eigs, energy);
+        tot_dos_tetra(nk, nband, eigs, Ef, e_list, dos_t);
     }
-    MPI_Allreduce(MPI_IN_PLACE, dos_t.data(), num_epoint, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    else
+    {
+        for(int ie = pct.gridpe; ie < num_epoint; ie+=pct.grid_npes)
+        {
+            double energy = Emin + ie * delta_e + Ef;
+            dos_t[ie] = tot_dos_gauss(nk, nband, eigs, energy);
+        }
+        MPI_Allreduce(MPI_IN_PLACE, dos_t.data(), num_epoint, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    }
 
     if(pct.gridpe == 0)
     {
@@ -84,7 +88,7 @@ void Dos::tot_dos(int nk, int nband, std::vector<double> eigs, double Ef)
     }
 
 }
-double Dos::tot_dos_gauss(int nk, int nband, std::vector<double> eigs, double energy)
+double Dos::tot_dos_gauss(int nk, int nband, std::vector<double> &eigs, double energy)
 {
     double dos_one = 0.0;
     if(gaus_broad < 1.0e-5) gaus_broad = 0.1;
@@ -102,7 +106,7 @@ double Dos::tot_dos_gauss(int nk, int nband, std::vector<double> eigs, double en
     }
     return dos_one;
 }
-double Dos::tot_dos_tetra(int nk, int nband, std::vector<double> eigs, double energy)
+double Dos::tot_dos_tetra(int nk, int nband, std::vector<double> &eigs, double Ef, std::vector<double> &e_list, std::vector<double> &dos_t)
 {
     double dos_one = 0.0;
     std::vector<double> e_tetra;
@@ -129,22 +133,26 @@ double Dos::tot_dos_tetra(int nk, int nband, std::vector<double> eigs, double en
             e2 = e_tetra[1];
             e3 = e_tetra[2];
             e4 = e_tetra[3];
-            if(energy >= e4 || energy <= e1 ) continue;
-            if(energy >= e3)
-            {
-                dos_one += 3.0 * (e4-energy) *  (e4-energy) /(e4-e1)/(e4-e2)/(e4-e3)/ num_tetra;
-            }
-            else if(energy >= e2)
-            {
-                double tem = 3.0 *(e2-e1) + 6.0 *(energy - e2) 
-                    -3.0 * (e3-e1+e4-e2)/(e3-e2)/(e4-e2) *(energy-e2) * (energy-e2);
-                dos_one += tem/(e3-e1)/(e4-e1)/num_tetra;
-            }
-            else 
-            {
-                dos_one += 3.0 * (energy-e1) *  (energy-e1) /(e4-e1)/(e3-e1)/(e2-e1)/ num_tetra;
-            }
 
+            for(size_t ie = 0;ie < dos_t.size();ie++)
+            {
+                double energy = e_list[ie] + Ef;
+                if(energy >= e4 || energy <= e1 ) continue;
+                if(energy >= e3)
+                {
+                    dos_t[ie] += 3.0 * (e4-energy) *  (e4-energy) /(e4-e1)/(e4-e2)/(e4-e3)/ num_tetra;
+                }
+                else if(energy >= e2)
+                {
+                    double tem = 3.0 *(e2-e1) + 6.0 *(energy - e2) 
+                        -3.0 * (e3-e1+e4-e2)/(e3-e2)/(e4-e2) *(energy-e2) * (energy-e2);
+                    dos_t[ie] += tem/(e3-e1)/(e4-e1)/num_tetra;
+                }
+                else 
+                {
+                    dos_t[ie] += 3.0 * (energy-e1) *  (energy-e1) /(e4-e1)/(e3-e1)/(e2-e1)/ num_tetra;
+                }
+            }
         }
     }
     if(ct.nspin == 1) dos_one *=2.0;
