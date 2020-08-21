@@ -57,15 +57,20 @@ void Dos::tot_dos(int nk, int nband, std::vector<double> eigs, double Ef)
     std::vector<double> dos_t, e_list;
     dos_t.resize(num_epoint);
     e_list.resize(num_epoint);
+    dos_t.assign(num_epoint, 0.0);
+
     for(int ie = 0; ie < num_epoint; ie++)
-    {
         e_list[ie] = Emin + ie * delta_e;
+
+    for(int ie = pct.gridpe; ie < num_epoint; ie+=pct.grid_npes)
+    {
         double energy = Emin + ie * delta_e + Ef;
         if(tetraflag)
             dos_t[ie] = tot_dos_tetra(nk, nband, eigs, energy);
         else
             dos_t[ie] = tot_dos_gauss(nk, nband, eigs, energy);
     }
+    MPI_Allreduce(MPI_IN_PLACE, dos_t.data(), num_epoint, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
     if(pct.gridpe == 0)
     {
