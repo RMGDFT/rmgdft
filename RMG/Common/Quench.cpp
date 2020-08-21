@@ -376,6 +376,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
     }
 
+    WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
     if(ct.wannier90)
     {
         int scdm = ct.wannier90_scdm;

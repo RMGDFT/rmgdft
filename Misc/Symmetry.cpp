@@ -144,6 +144,12 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
     nsym = 0;
     for(int kpt = 0; kpt < nsym_atom; kpt++)
     {
+        for(int i = 0; i < 3; i++)
+        {
+            while(std::abs(translation[kpt*3+i] - 1.0) < symprec ) translation[kpt*3+i] -=1.0;
+            while(std::abs(translation[kpt*3+i] + 1.0) < symprec ) translation[kpt*3+i] +=1.0;
+        }
+
         double intpart;
 
         double frac_sum = std::abs(translation[kpt*3+0]) + std::abs(translation[kpt*3+1]) + std::abs(translation[kpt*3+2]);
@@ -189,6 +195,7 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                     printf("\n      %3d  %3d  %3d", sym_rotate[nsym * 9 + i *3 + 0],sym_rotate[nsym * 9 + i *3 + 1],sym_rotate[nsym * 9 + i *3 + 2]);
                 }
                 printf("  with translation of (%d %d %d) grids ", ftau[nsym*3 + 0],ftau[nsym*3 + 1],ftau[nsym*3 + 2]);
+                printf("  with translation of (%f %f %f) grids ", translation[kpt*3+0],translation[kpt*3+1],translation[kpt*3+2]);
             }
             nsym++;
         }
@@ -327,6 +334,21 @@ Symmetry::Symmetry ( Lattice &L_in, int NX, int NY, int NZ, int density) : L(L_i
                 time_rev.erase(time_rev.begin() + isym, time_rev.begin() + isym + 1);
             }
         }
+
+        if(ct.verbose && pct.imgpe == 0)
+        {
+            printf("\n sym operation after considering noncollinear spin # %d",(int) sym_rotate.size()/9);
+            for(int isym = 0; isym <(int) sym_rotate.size()/9; isym++)
+            {
+                printf("\n symmetry operation # %d:", isym);
+                for(int i = 0; i < 3; i++)
+                {
+                    printf("\n      %3d  %3d  %3d", sym_rotate[isym * 9 + i *3 + 0],sym_rotate[isym * 9 + i *3 + 1],sym_rotate[isym * 9 + i *3 + 2]);
+                }
+                printf("  with translation of (%d %d %d) grids ", ftau[isym*3 + 0],ftau[isym*3 + 1],ftau[isym*3 + 2]);
+            }
+        }
+
     }
     nsym = (int)sym_rotate.size()/9;
     rotate_ylm();

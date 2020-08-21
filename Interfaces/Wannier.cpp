@@ -320,13 +320,19 @@ template <> void Wannier<std::complex<double>>::SetAmn_scdm()
     MPI_Allreduce(MPI_IN_PLACE, piv, n_wannier, MPI_INT, MPI_SUM, pct.grid_comm);
 
     if(pct.gridpe == 0 && 1)
+    {
+        printf("\n wannier center in crystal unit");
         for(int iw = 0; iw < n_wannier; iw++)
         {
-            //int ix = (piv[iw]-1)/ny_grid/nz_grid;
-            //int iy = ((piv[iw]-1)/nz_grid) % ny_grid;
-            //int iz = (piv[iw]-1)%nz_grid;
-            piv[iw] = piv_dist[iw];
+            int ix = (piv[iw]-1)/ny_grid/nz_grid;
+            int iy = ((piv[iw]-1)/nz_grid) % ny_grid;
+            int iz = (piv[iw]-1)%nz_grid;
+
+            int spin = 1;
+            if(piv[iw] >= nx_grid * ny_grid * nz_grid) spin = -1;
+            printf("\n %d  %d %f  %f  %f", iw, spin, ix/(double)nx_grid, iy/(double)ny_grid, iz/(double)nz_grid);
         }
+    }
 
 
     int num_q = ct.klist.num_k_all;
@@ -898,7 +904,7 @@ template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isy
                         std::complex<double> up_rot, dn_rot;
                         up_rot = Rmg_Symm->rot_spin[isyma][0][0] * up + Rmg_Symm->rot_spin[isyma][0][1] * dn;
                         dn_rot = Rmg_Symm->rot_spin[isyma][1][0] * up + Rmg_Symm->rot_spin[isyma][1][1] * dn;
-                        if(isym <0)
+                        if(Rmg_Symm->time_rev[isyma])
                         {
                             psi_k_C[st_w * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = - std::conj(dn_rot);
                             psi_k_C[st_w * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = std::conj(up_rot);
@@ -1111,7 +1117,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
 
             RT1 = new RmgTimer("7-Wannier: Mmn: us");
-            if(!ct.norm_conserving_pp || ct.noncoll)
+            if(!ct.norm_conserving_pp)
             {
                 Mmn_us(ik, ikn, psi_k, nstates, psi_q, nstates, &Mmn[(ik*num_kn+ikn)*nstates*nstates], qq_dk_one, qq_dk_so_one,
                         num_tot_proj, Nlweight_k, Nlweight_q);
@@ -1769,7 +1775,7 @@ template <class T> void Wannier<T>::SetAmn_proj()
         delete RT1;
 
         RT1 = new RmgTimer("7-Wannier: Amn: us");
-        if(!ct.norm_conserving_pp || ct.noncoll)
+        if(!ct.norm_conserving_pp)
         {
             RmgTimer *RT2 = new RmgTimer("7-Wannier: Amn: us: read NL");
             std::string filename;
