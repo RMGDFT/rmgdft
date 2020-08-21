@@ -106,7 +106,7 @@ double Dos::tot_dos_gauss(int nk, int nband, std::vector<double> &eigs, double e
     }
     return dos_one;
 }
-double Dos::tot_dos_tetra(int nk, int nband, std::vector<double> &eigs, double Ef, std::vector<double> &e_list, std::vector<double> &dos_t)
+void Dos::tot_dos_tetra(int nk, int nband, std::vector<double> &eigs, double Ef, std::vector<double> &e_list, std::vector<double> &dos_t)
 {
     double dos_one = 0.0;
     std::vector<double> e_tetra;
@@ -134,7 +134,7 @@ double Dos::tot_dos_tetra(int nk, int nband, std::vector<double> &eigs, double E
             e3 = e_tetra[2];
             e4 = e_tetra[3];
 
-            for(size_t ie = 0;ie < dos_t.size();ie++)
+            for(size_t ie = pct.gridpe;ie < dos_t.size();ie+=pct.grid_npes)
             {
                 double energy = e_list[ie] + Ef;
                 if(energy >= e4 || energy <= e1 ) continue;
@@ -155,8 +155,8 @@ double Dos::tot_dos_tetra(int nk, int nband, std::vector<double> &eigs, double E
             }
         }
     }
-    if(ct.nspin == 1) dos_one *=2.0;
-    return dos_one;
+    MPI_Allreduce(MPI_IN_PLACE, dos_t.data(), dos_t.size(), MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    if(ct.nspin == 1) for(size_t ie = 0;ie < dos_t.size();ie++) dos_t[ie] *=2.0;
 
 }
 void Dos::tetra_init(int kmesh[3], int kshift[3])
