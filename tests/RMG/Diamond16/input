@@ -9,6 +9,7 @@
 
 # Description of run. Default: "QMD run"
 description="Diamond 16 atom test cell"
+test_energy = "-91.81065082"
 
 # Wavefunction grid
 wavefunction_grid="32 32 32"

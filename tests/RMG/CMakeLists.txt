@@ -1,10 +1,13 @@
 set(tests "atomO_polarized")
 list(APPEND tests "Diamond2")
+list(APPEND tests "Diamond16")
 list(APPEND tests "C60")
 list(APPEND tests "Pt-bulk-spinorbit")
 list(APPEND tests "Mg_2atom")
+list(APPEND tests "Fe_2atom")
 list(APPEND tests "AlN32")
 list(APPEND tests "Si-8atoms_EXX_kpoints")
+list(APPEND tests "NiO8")
 list(APPEND tests "graphite_stress")
 
 SET(RMG_EXE "${CMAKE_BINARY_DIR}/rmg-cpu")
