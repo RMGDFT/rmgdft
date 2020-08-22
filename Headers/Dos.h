@@ -44,13 +44,13 @@ private:
     void tetra_init(int kmesh[3], int kshift[3]);
     double Pij[4][20];
  
-    void tot_dos_tetra(int nk, int nband, std::vector<double> &eigs, double Ef, std::vector<double> &e_list, std::vector<double> &dos_t);
-    double tot_dos_gauss(int nk, int nband, std::vector<double> &eigs, double energy);
+    void tot_dos_tetra(int nk, int nband, const std::vector<double> &eigs, double Ef, const std::vector<double> &e_list, std::vector<double> &dos_t);
+    double tot_dos_gauss(int nk, int nband, const std::vector<double> &eigs, double energy);
     void set_Pij();
 
 public:
     Dos (int kpoint_mesh[3], int kpoint_is_shift[3], Lattice &L, double gaus_broad);
-    void tot_dos(int nk, int nband, std::vector<double> &eigs, double Ef);
+    void tot_dos(int nk, int nband, const std::vector<double> &eigs, double Ef);
 
     ~Dos(void);
 

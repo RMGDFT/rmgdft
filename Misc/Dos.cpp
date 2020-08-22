@@ -46,7 +46,7 @@ Dos::Dos (int kmesh[3], int kshift[3], Lattice &L_in, double gaus_broad_in) : L(
     }
 
 }
-void Dos::tot_dos(int nk, int nband, std::vector<double> &eigs, double Ef)
+void Dos::tot_dos(int nk, int nband, const std::vector<double> &eigs, double Ef)
 {
     double Emax = *std::max_element(eigs.begin(), eigs.end());
     double Emin = *std::min_element(eigs.begin(), eigs.end());
@@ -88,7 +88,7 @@ void Dos::tot_dos(int nk, int nband, std::vector<double> &eigs, double Ef)
     }
 
 }
-double Dos::tot_dos_gauss(int nk, int nband, std::vector<double> &eigs, double energy)
+double Dos::tot_dos_gauss(int nk, int nband, const std::vector<double> &eigs, double energy)
 {
     double dos_one = 0.0;
     if(gaus_broad < 1.0e-5) gaus_broad = 0.1;
@@ -106,9 +106,8 @@ double Dos::tot_dos_gauss(int nk, int nband, std::vector<double> &eigs, double e
     }
     return dos_one;
 }
-void Dos::tot_dos_tetra(int nk, int nband, std::vector<double> &eigs, double Ef, std::vector<double> &e_list, std::vector<double> &dos_t)
+void Dos::tot_dos_tetra(int nk, int nband, const std::vector<double> &eigs, double Ef, const std::vector<double> &e_list, std::vector<double> &dos_t)
 {
-    double dos_one = 0.0;
     std::vector<double> e_tetra;
     if(eigs.size() < (size_t)nk * nband)
     {
