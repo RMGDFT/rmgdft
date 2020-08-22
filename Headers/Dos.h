@@ -50,7 +50,7 @@ private:
 
 public:
     Dos (int kpoint_mesh[3], int kpoint_is_shift[3], Lattice &L, double gaus_broad);
-    void tot_dos(int nk, int nband, std::vector<double> eigs, double Ef);
+    void tot_dos(int nk, int nband, std::vector<double> &eigs, double Ef);
 
     ~Dos(void);
 

@@ -46,7 +46,7 @@ Dos::Dos (int kmesh[3], int kshift[3], Lattice &L_in, double gaus_broad_in) : L(
     }
 
 }
-void Dos::tot_dos(int nk, int nband, std::vector<double> eigs, double Ef)
+void Dos::tot_dos(int nk, int nband, std::vector<double> &eigs, double Ef)
 {
     double Emax = *std::max_element(eigs.begin(), eigs.end());
     double Emin = *std::min_element(eigs.begin(), eigs.end());
