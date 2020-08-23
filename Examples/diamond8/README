@@ -1,3 +1,0 @@
-Small example calculation for an 8 atom diamond cell.
-input: input file for calculation with 4 kpoints.
-input.log.00:  standard output file
