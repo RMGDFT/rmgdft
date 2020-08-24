@@ -1,19 +1,4 @@
-RMG initialization ... 1 image(s) total, 1 per node. 16 MPI processes/image. Thread level 2.
-
-spin flag =0
-read_data: psi grid = 72 72 20
-read_data: pe grid = 4 2 2
-read_data: grid_size  = 6480
-read_data: fine = 2 2 2
-read_data: fgrid_size = 51840
-read_data: gamma = 0
-read_data: nk = 26
-read_data: ns = 128
-read_data: read 'vh'
-read_data: read 'rho'
-read_data: read 'vxc'
-read_data: read 'wfns'
-read_data: read 'occupations'
+RMG initialization ... 1 image(s) total, 1 per node. 24 MPI processes/image. Thread level 2.
 
 
                      * * * * * * * * * *
@@ -23,9 +8,9 @@ read_data: read 'occupations'
      -- A Real Space Multigrid Electronic structure code --
      --      More information at www.rmgdft.org          --
 
-Code Revision 4433, Last change on 2018-06-07
-Build Date: Jun  8 2018  10:45:31
-Start time: Fri Jun  8 14:31:28 2018
+Code Revision:     v4.0.0_beta_771_g551dda34
+Build Date:        Aug 23 2020  18:52:42
+Start time:        Mon Aug 24 08:36:09 2020
 
 Files
    Control input file:        input.band
@@ -40,22 +25,21 @@ Run Setup
     System charge:            Neutral
 
 Processor Topology
-   Total PEs:                 16
-   X direction:               4
+   Total PEs:                 8
+   X direction:               2
    Y direction:               2
    Z direction:               2
    MG Threads/PE:             1
    OMP Threads/PE:            1
 
 Grid Points
-    X:  Total: 72   Per PE: 18   Spacing:0.402 a0  
+    X:  Total: 72   Per PE: 36   Spacing:0.402 a0  
     Y:  Total: 72   Per PE: 36   Spacing:0.402 a0  
     Z:  Total: 20   Per PE: 10   Spacing:0.402 a0  
 
-    Equivalent energy cutoff:    30.548 Ry
+    Equivalent energy cutoffs (psi,rho):    45.822    183.288 Ry
 
     Charge density grid:         2 times finer
-    Non-local projectors grid:   4 times finer
 
 
 Lattice (Cell) Setup
@@ -70,7 +54,7 @@ Lattice (Cell) Setup
 K-points
     Brillouin Zone sampling with 26 K-points (orbitals are complex)
 
-         Kx      Ky        Kz     Weight
+         Kx      Ky        Kz     Weight in crystal unit
       0.0000     0.0000     0.0000   1.000
       0.0000     0.0000     0.0200   1.000
       0.0000     0.0000     0.0400   1.000
@@ -98,24 +82,51 @@ K-points
       0.0000     0.0000     0.4800   1.000
       0.0000     0.0000     0.5000   1.000
 
-Ions and States
+         Kx      Ky        Kz     Weight in 2PI/a 
+      0.0000     0.0000     0.0000   1.000
+      0.0000     0.0000     0.0720   1.000
+      0.0000     0.0000     0.1440   1.000
+      0.0000     0.0000     0.2160   1.000
+      0.0000     0.0000     0.2880   1.000
+      0.0000     0.0000     0.3600   1.000
+      0.0000     0.0000     0.4320   1.000
+      0.0000     0.0000     0.5040   1.000
+      0.0000     0.0000     0.5760   1.000
+      0.0000     0.0000     0.6480   1.000
+      0.0000     0.0000     0.7200   1.000
+      0.0000     0.0000     0.7920   1.000
+      0.0000     0.0000     0.8640   1.000
+      0.0000     0.0000     0.9360   1.000
+      0.0000     0.0000     1.0080   1.000
+      0.0000     0.0000     1.0800   1.000
+      0.0000     0.0000     1.1520   1.000
+      0.0000     0.0000     1.2240   1.000
+      0.0000     0.0000     1.2960   1.000
+      0.0000     0.0000     1.3680   1.000
+      0.0000     0.0000     1.4400   1.000
+      0.0000     0.0000     1.5120   1.000
+      0.0000     0.0000     1.5840   1.000
+      0.0000     0.0000     1.6560   1.000
+      0.0000     0.0000     1.7280   1.000
+      0.0000     0.0000     1.8000   1.000
+
+Atoms and States
     Number of ions:                          32
     Number of species:                       1
     Number of states:                        128
 
 Run Parameters
     SCF Convergence criterion (potential):   1.00e-07
-    SCF Convergence criterion (energy):      1.00e-13
-    Max SCF steps:                           5
+    SCF Convergence criterion (energy):      1.00e-10
+    Max SCF steps:                           10
     Max MD steps                             100
     Timestep for molecular dynamics:          50.00000000
     Restart data write frequency:            5 MD steps
 
 SCF Cycle Settings
-    Charge density mixing:                   Linear  (Mixing constant 0.20)
+    Charge density mixing:                   Broyden
     Hartree Solver:                          PFFT
     Interpolation type:                      FFT
-    Projector mixing:                        Linear, mixing constant 0.00
 
 Subspace Diagonalization Options
     Frequency:                               every 1 SCF step(s)
@@ -125,8 +136,8 @@ Subspace Diagonalization Options
 
 Filtering Cutoff  Parameters
     Wavefunction grid (cparm):               0.800
-    Charge density grid (rhocparm):          0.800
-    NL projectors grid (betacparm):          2.400
+    Charge density grid (rhocparm):          1.000
+    Filter factor:                           0.250
 
 Multigrid (MG) Parameters
     Psi MG levels:                           2
@@ -134,18 +145,30 @@ Multigrid (MG) Parameters
     Psi pre:                                 2
     Psi post:                                2
 
+Davidson Parameters
+    Davidson multiplier:                     4
+    Davidson max step:                       8
+    Davidson unocc tol factor:               1000.000
+
 
 Atomic Species Information
 (PP = Pseudopotential, US = Ultrasoft, NC = Norm Conserving)
-----------------------------------------------------------------------------------------
-|Index|Symbol| Mass|Valence| PP |  Comp  |Local| Local|Nlocal|  LCAO|        PP        |
-|     |      |     |       |Type|Gaussian|  l  |Radius|Radius|Radius|    Functional    |
-----------------------------------------------------------------------------------------
-|    1|     C| 12.0|   4.00|  US|    0.62|    0|  8.34|  7.00|  9.00|SLA  PW   PBE  PBE|
-----------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+|Index|Symbol| Mass|Valence| PP |  Comp  |Local| Local|Nlocal|        PP        |
+|     |      |     |       |Type|Gaussian|  l  |Radius|Radius|    Functional    |
+---------------------------------------------------------------------------------
+|    1|     C| 12.0|   4.00|  US|    0.62|    0| 10.00|  7.00|SLA  PW   PBE  PBE|
+---------------------------------------------------------------------------------
 
 
-Initial Ionic Positions And Displacements
+Memory usage (Mbytes):     Min        Max       Total
+    wave functions        106.17     106.17    2548.06
+    beta-functions         53.09      53.09    1274.07
+    q-functions             7.97      12.34     243.71
+
+
+
+Initial Ionic Positions And Displacements (Bohr)
 Species      X           Y           Z           dX          dY          dZ
   C       21.2913     15.3700      5.3701      0.0000      0.0000      0.0000
   C       20.8406     17.6360      6.7126      0.0000      0.0000      0.0000
@@ -181,76 +204,106 @@ Species      X           Y           Z           dX          dY          dZ
   C       20.8406     13.1040      1.3425      0.0000      0.0000      0.0000
 
 
+Initial Ionic Positions And Displacements (Angstrom)
+Species      X           Y           Z           dX          dY          dZ
+  C       11.2669      8.1334      2.8417      0.0000      0.0000      0.0000
+  C       11.0284      9.3326      3.5521      0.0000      0.0000      0.0000
+  C       11.2669      8.1334      1.4209      0.0000      0.0000      0.0000
+  C       10.3491     10.3491      2.8417      0.0000      0.0000      0.0000
+  C        9.3326     11.0284      3.5521      0.0000      0.0000      0.0000
+  C       11.0284      9.3326      0.7104      0.0000      0.0000      0.0000
+  C       10.3491     10.3491      1.4209      0.0000      0.0000      0.0000
+  C        8.1334     11.2669      2.8417      0.0000      0.0000      0.0000
+  C        6.9343     11.0284      3.5521      0.0000      0.0000      0.0000
+  C        9.3326     11.0284      0.7104      0.0000      0.0000      0.0000
+  C        8.1334     11.2669      1.4209      0.0000      0.0000      0.0000
+  C        5.9178     10.3491      2.8417      0.0000      0.0000      0.0000
+  C        5.2385      9.3326      3.5521      0.0000      0.0000      0.0000
+  C        6.9343     11.0284      0.7104      0.0000      0.0000      0.0000
+  C        5.9178     10.3491      1.4209      0.0000      0.0000      0.0000
+  C        5.0000      8.1334      2.8417      0.0000      0.0000      0.0000
+  C        5.2385      6.9343      3.5521      0.0000      0.0000      0.0000
+  C        5.2385      9.3326      0.7104      0.0000      0.0000      0.0000
+  C        5.0000      8.1334      1.4209      0.0000      0.0000      0.0000
+  C        5.9178      5.9178      2.8417      0.0000      0.0000      0.0000
+  C        6.9343      5.2385      3.5521      0.0000      0.0000      0.0000
+  C        5.2385      6.9343      0.7104      0.0000      0.0000      0.0000
+  C        5.9178      5.9178      1.4209      0.0000      0.0000      0.0000
+  C        8.1334      5.0000      2.8417      0.0000      0.0000      0.0000
+  C        9.3326      5.2385      3.5521      0.0000      0.0000      0.0000
+  C        6.9343      5.2385      0.7104      0.0000      0.0000      0.0000
+  C        8.1334      5.0000      1.4209      0.0000      0.0000      0.0000
+  C       10.3491      5.9178      2.8417      0.0000      0.0000      0.0000
+  C       11.0284      6.9343      3.5521      0.0000      0.0000      0.0000
+  C        9.3326      5.2385      0.7104      0.0000      0.0000      0.0000
+  C       10.3491      5.9178      1.4209      0.0000      0.0000      0.0000
+  C       11.0284      6.9343      0.7104      0.0000      0.0000      0.0000
+Davidson converged in 3 steps
+Davidson incomplete convergence steps = 8
+Davidson incomplete convergence steps = 8
+Davidson incomplete convergence steps = 8
+Davidson incomplete convergence steps = 8
+Davidson incomplete convergence steps = 8
+Davidson incomplete convergence steps = 8
+Davidson incomplete convergence steps = 8
+Davidson incomplete convergence steps = 8
+
+
 --------TIMING INFORMATION FOR Processor owned the most atoms----------------
                                         Total time               Per SCF/step
 
-1-TOTAL                                           594.38              118.88
+1-TOTAL                                            68.30               34.15
 -----------------------------------------------------------------------------
-  1-TOTAL: Init                                     7.07                1.41
-  1-TOTAL: run                                    587.31              117.46
+  1-TOTAL: Init                                     5.15                2.57
+  1-TOTAL: run                                     63.15               31.58
 
-2-Init                                              7.07                1.41
+2-Init                                              5.15                2.57
 -----------------------------------------------------------------------------
-  2-Init: KpointClass                               0.58                0.12
-  2-Init: ReinitIonicPotentials                     5.78                1.16
-  2-Init: qfunct                                    0.26                0.05
-  2-Init: radial potentials                         0.19                0.04
-  2-Init: symmetry                                  0.00                0.00
-  2-Init: weights                                   0.07                0.01
+  2-Init: KpointClass                               2.37                1.18
+  2-Init: ReinitIonicPotentials                     2.24                1.12
+  2-Init: qfunct                                    0.04                0.02
+  2-Init: radial potentials                         0.10                0.05
+  2-Init: weights                                   0.12                0.06
 
-3-MgridSubspace                                   587.26              117.45
+3-ReinitIonicPotentials                             2.24                1.12
 -----------------------------------------------------------------------------
-  3-MgridSubspace: AppNls                          87.58               17.52
-  3-MgridSubspace: Beta x psi                      94.99               19.00
-  3-MgridSubspace: Diagonalization                262.19               52.44
-  3-MgridSubspace: Mg_eig                         142.42               28.48
-
-3-ReinitIonicPotentials                             5.78                1.16
------------------------------------------------------------------------------
-  3-ReinitIonicPotentials: GetNlop                  0.10                0.02
-  3-ReinitIonicPotentials: GetWeight                4.51                0.90
-  3-ReinitIonicPotentials: get_QI                   0.00                0.00
-  3-ReinitIonicPotentials: get_qqq                  0.02                0.00
-  3-ReinitIonicPotentials: init_nuc                 0.19                0.04
-
-4-Diagonalization                                 262.19               52.44
------------------------------------------------------------------------------
-  4-Diagonalization: AppNls                        90.20               18.04
-  4-Diagonalization: Eigensolver                    6.60                1.32
-  4-Diagonalization: Invert Bij                     1.22                0.24
-  4-Diagonalization: Update orbitals               30.80                6.16
-  4-Diagonalization: apply operators              124.49               24.90
-  4-Diagonalization: dsygvx/zhegvx/folded           3.65                0.73
-  4-Diagonalization: matrix setup                   1.52                0.30
-  4-Diagonalization: matrix setup/reduce           97.94               19.59
+  3-ReinitIonicPotentials: GetNlop                  0.34                0.17
+  3-ReinitIonicPotentials: GetWeight                1.52                0.76
+  3-ReinitIonicPotentials: get_QI                   0.04                0.02
+  3-ReinitIonicPotentials: get_qqq                  0.24                0.12
+  3-ReinitIonicPotentials: init_nuc                 0.10                0.05
 
 5-Functional                                        0.00                0.00
 
-GlobalSums                                          0.03                0.01
-
-Init                                                6.48                1.30
-
-MgridSub in band                                  587.26              117.45
-
-Weight                                              0.07                0.01
+6-Davidson                                         57.68               28.84
 -----------------------------------------------------------------------------
-  Weight: phase and set                             0.07                0.01
-  Weight: proj cal                                  0.07                0.01
+  6-Davidson: Betaxpsi                              4.15                2.08
+  6-Davidson: apply hamiltonian                    12.02                6.01
+  6-Davidson: diagonalization                       9.87                4.93
+  6-Davidson: generate residuals                    8.56                4.28
+  6-Davidson: matrix setup/reduce                   8.10                4.05
+  6-Davidson: normalization                         1.23                0.61
+  6-Davidson: precondition                          7.44                3.72
+  6-Davidson: refresh h_psi and s_psi               2.25                1.12
+  6-Davidson: reset hr,sr,vr                        0.01                0.00
+  6-Davidson: rotate orbitals                       3.13                1.56
 
-radial beta                                         0.04                0.01
+GlobalSums                                          5.25                2.62
+
+Init                                                2.78                1.39
+
+Orbital                                             0.01                0.01
+-----------------------------------------------------------------------------
+  Orbital: phase and set                            0.01                0.01
+  Orbital: proj cal                                 0.01                0.01
+
+Weight                                              0.10                0.05
+
+radial beta                                         0.07                0.03
 
 
 ------------------------- TIMING INFORMATION FOR THREADS  -------------------
 
                                            Min            Max            Avg
-App_gradient                           12.39          12.39          12.39
+GlobalSums                0.04           0.04           0.04
 -----------------------------------------------------------------------------
-
-GlobalSums                             15.38          15.38          15.38
------------------------------------------------------------------------------
-
-Mg_eig                                141.20         141.20         141.20
------------------------------------------------------------------------------
-  Mg_eig: apply A operator             77.35          77.35          77.35
-  Mg_eig: apply B operator              2.97           2.97           2.97
-  Mg_eig: mgrid_solv                   15.20          15.20          15.20

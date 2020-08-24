@@ -97,7 +97,7 @@ charge_density_mixing="0.2"
 projector_mixing="0.4"
 
 charge_mixing_type=
-"Linear"
+"Broyden"
 #"Pulay"
 
 charge_pulay_order="5"
