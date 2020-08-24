@@ -1,6 +1,8 @@
 # Description of run.
 description="atom_Pt_pp"
 
+test_energy="-45.09801811"
+
 #spin_polarization="true"
 
 localize_localpp = "false"
