@@ -107,6 +107,7 @@ class Symmetry
         std::vector<int> sym_atom;
         boost::multi_array<double, 4> rot_ylm;
         boost::multi_array<std::complex<double>, 3> rot_spin;
+        boost::multi_array<std::complex<double>, 3> rot_spin_wave;
         Symmetry(Lattice &L_in, int nx, int ny, int nz, int density);
         ~Symmetry(void);
 

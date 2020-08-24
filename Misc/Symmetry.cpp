@@ -761,6 +761,7 @@ void Symmetry::rotate_spin()
     //           2: l-value
     //           3,4: m-value
     rot_spin.resize(boost::extents[nsym][2][2]);
+    rot_spin_wave.resize(boost::extents[nsym][2][2]);
     if(!ct.noncoll)
     {
         for(int isym = 0; isym < nsym; isym++)
@@ -769,6 +770,10 @@ void Symmetry::rotate_spin()
             rot_spin[isym][1][0] = 0.0;
             rot_spin[isym][0][1] = 0.0;
             rot_spin[isym][1][1] = 1.0;
+            rot_spin_wave[isym][0][0] = 1.0;
+            rot_spin_wave[isym][1][0] = 0.0;
+            rot_spin_wave[isym][0][1] = 0.0;
+            rot_spin_wave[isym][1][1] = 1.0;
         }
         return;
     }
@@ -825,6 +830,10 @@ void Symmetry::rotate_spin()
             rot_spin[isym][0][1] = 0.0;
             rot_spin[isym][1][0] = 0.0;
             rot_spin[isym][1][1] = 1.0;
+            rot_spin_wave[isym][0][0] = 1.0;
+            rot_spin_wave[isym][0][1] = 0.0;
+            rot_spin_wave[isym][1][0] = 0.0;
+            rot_spin_wave[isym][1][1] = 1.0;
             angle = 0.0;
             axis[0] = 0.0;
             axis[1] = 0.0;
@@ -895,6 +904,10 @@ void Symmetry::rotate_spin()
         rot_spin[isym][0][1] = std::complex<double>(-axis[1] * sint, -axis[0] * sint);
         rot_spin[isym][1][0] = -std::conj(rot_spin[isym][0][1]);
         rot_spin[isym][1][1] = std::conj(rot_spin[isym][0][0]);
+        rot_spin_wave[isym][0][0] = std::complex<double>(cost, -axis[2] * sint);
+        rot_spin_wave[isym][0][1] = std::complex<double>(-axis[1] * sint, -axis[0] * sint);
+        rot_spin_wave[isym][1][0] = -std::conj(rot_spin[isym][0][1]);
+        rot_spin_wave[isym][1][1] = std::conj(rot_spin[isym][0][0]);
 
 
         if(time_rev[isym])
@@ -1013,7 +1026,7 @@ void Symmetry::symm_nsocc(std::complex<double> *ns_occ_g, int mmax)
                                     {
                                         for(int i4 = 0; i4 < num_orb; i4++)
                                         { 
-                                            if(time_rev[isy])
+                                            if(time_rev[isy] )
                                             {
                                                 ns_occ_sum[is1][is2][ion][i1][i2] += 
                                                     std::conj(rot_spin[isy][is1][is3]) * rot_ylm[isy][l_val][i1][i3] *
