@@ -169,9 +169,13 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
     double hygrid = G->get_hygrid(1);
     double hzgrid = G->get_hzgrid(1);
 
-    OrbitalType *work_t = (OrbitalType *)malloc(8*(dimx + 2)*(dimy + 2)*(dimz + 2) * sizeof(OrbitalType));
+    OrbitalType *work_t = (OrbitalType *)malloc(10*(dimx + 2)*(dimy + 2)*(dimz + 2) * sizeof(OrbitalType));
     OrbitalType *work1_t = &work_t[4*(dimx + 2)*(dimy + 2)*(dimz + 2)];
     OrbitalType *work2_t = &work_t[6*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+    OrbitalType *work3_t = &work_t[8*(dimx + 2)*(dimy + 2)*(dimz + 2)];
+
+    // Gather orbital
+    GatherPsi(G, ct.noncoll_factor*pbasis, st, res, work3_t, coalesce_factor);
 
     // Apply preconditioner
     for(int is=0;is < ct.noncoll_factor;is++)
@@ -184,9 +188,8 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
                          std::conditional_t< std::is_same<OrbitalType, std::complex<double>>::value, std::complex<double>,
                          std::conditional_t< std::is_same<OrbitalType, std::complex<float>>::value, std::complex<float>, float> > > convert_type_t;
 
-        GatherPsi(G, pbasis, st, res, work2_t, coalesce_factor);
         double t1 = 0.0;
-        for(int idx = 0;idx <pbasis;idx++) t1 += std::real(work2_t[idx]);
+        for(int idx = 0;idx <pbasis;idx++) t1 += std::real(work3_t[idx+is*pbasis]);
 
         if(coalesce_factor==1)
         {
@@ -200,7 +203,7 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
         t1 /= (double)(G->get_NX_GRID(1) * G->get_NY_GRID(1) * G->get_NZ_GRID(1));
 
         // neutralize cell
-        for(int idx = 0;idx <pbasis;idx++) work2_t[idx] -= OrbitalType(t1);
+        for(int idx = 0;idx <pbasis;idx++) work2_t[idx] = work3_t[idx+is*pbasis] - OrbitalType(t1);
 
         CPP_pack_ptos_convert ((mgtype_t *)work1_t, (convert_type_t *)work2_t, dimx, dimy, dimz);
         MG.mgrid_solv<mgtype_t>((mgtype_t *)work2_t, (mgtype_t *)work1_t, (mgtype_t *)work_t,
@@ -213,8 +216,10 @@ void DavPreconditionerOne (Kpoint<OrbitalType> *kptr, int st, OrbitalType *res, 
                     coalesce_factor*G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
         CPP_pack_stop_convert((mgtype_t *)work2_t, (convert_type_t *)work1_t, dimx, dimy, dimz);
 
-        for(int idx = 0;idx <pbasis;idx++) work1_t[idx] += eig * t1;;
-        ScatterPsi(G, pbasis, st, work1_t, res, coalesce_factor);
+        for(int idx = 0;idx <pbasis;idx++) work3_t[idx+is*pbasis] = work1_t[idx] + eig * t1;;
     }
+
+    // Scatter Orbital
+    ScatterPsi(G, ct.noncoll_factor*pbasis, st, work3_t, res, coalesce_factor);
     free(work_t);
 }
