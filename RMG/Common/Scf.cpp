@@ -172,6 +172,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_MAX, pct.img_comm);
     t[0] *= get_vel_f();
 
     /* get the averaged value over each spin and each fine grid */
@@ -343,6 +344,7 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
     MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_MAX, pct.img_comm);
     ct.scf_accuracy = sum;
 
     // Compute variational energy correction term if any
