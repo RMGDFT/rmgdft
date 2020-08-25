@@ -170,7 +170,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         t[2] += vh[idx];
     }                           /* idx */
 
-    GlobalSums (t, 3, pct.img_comm);
+    MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, t, 3, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     t[0] *= get_vel_f();
 
     /* get the averaged value over each spin and each fine grid */
@@ -339,13 +340,14 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     double sum = 0.0;
     for(int i = 0;i < FP0_BASIS;i++) sum += (vh_out[i] - vh[i]) * (new_rho[i] - rho[i]);
     sum = 0.5 * vel * sum;
-    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.img_comm);
+
+    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &sum, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     ct.scf_accuracy = sum;
 
     // Compute variational energy correction term if any
     sum = EnergyCorrection(Kptr, rho, new_rho, vh, vh_out);
     ct.scf_correction = sum;
-
     // Check if this convergence threshold has been reached
     if(!Verify ("freeze_occupied", true, Kptr[0]->ControlMap)) {
         if (ct.scf_steps && fabs(ct.scf_accuracy) < ct.adaptive_thr_energy) CONVERGED = true;
