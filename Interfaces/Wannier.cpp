@@ -911,8 +911,8 @@ template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isy
                         }
                         else
                         {
-                            up_rot = std::conj(Rmg_Symm->rot_spin_wave[isyma][0][0]) * up + std::conj(Rmg_Symm->rot_spin_wave[isyma][0][1]) * dn;
-                            dn_rot = std::conj(Rmg_Symm->rot_spin_wave[isyma][1][0]) * up + std::conj(Rmg_Symm->rot_spin_wave[isyma][1][1]) * dn;
+                            up_rot = (Rmg_Symm->rot_spin_wave[isyma][0][0]) * up + (Rmg_Symm->rot_spin_wave[isyma][0][1]) * dn;
+                            dn_rot = (Rmg_Symm->rot_spin_wave[isyma][1][0]) * up + (Rmg_Symm->rot_spin_wave[isyma][1][1]) * dn;
                             psi_k_C[st_w * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = up_rot;
                             psi_k_C[st_w * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = dn_rot;
                         }
