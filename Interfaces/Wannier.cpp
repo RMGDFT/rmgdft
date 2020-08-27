@@ -827,8 +827,8 @@ template <class T> void Wannier<T>::ReadRotatePsiwan(int iq, int ikindex, int is
                 std::complex<double> up = psi_map[st * ngrid_noncoll + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
                 std::complex<double> dn = psi_map[st * ngrid_noncoll + ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
                 std::complex<double> up_rot, dn_rot;
-                up_rot = Rmg_Symm->rot_spin[isyma][0][0] * up + Rmg_Symm->rot_spin[isyma][0][1] * dn;
-                dn_rot = Rmg_Symm->rot_spin[isyma][1][0] * up + Rmg_Symm->rot_spin[isyma][1][1] * dn;
+                up_rot = Rmg_Symm->rot_spin_wave[isyma][0][0] * up + Rmg_Symm->rot_spin_wave[isyma][0][1] * dn;
+                dn_rot = Rmg_Symm->rot_spin_wave[isyma][1][0] * up + Rmg_Symm->rot_spin_wave[isyma][1][1] * dn;
                 if(isym <0)
                 {
                     if(ispin == 0) psi_wan_C[iw * nstates + st_w] = - std::conj(dn_rot);
