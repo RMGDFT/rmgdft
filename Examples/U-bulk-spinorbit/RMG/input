@@ -1,18 +1,17 @@
 # Description of run.
 description="Alpha Uranium 4-atom orthorhombic cell"
 
+#frac_symmetry = "false"
 #spin_polarization="true"
+lcao_use_empty_orbitals="true"
+kohn_sham_mg_levels = "1"
+davidson_max_steps="15"
 
 localize_localpp = "false"
 localize_projectors = "false"
-nvme_orbitals_filepath = "/mnt/scratch/briggs/Orbitals"
-nvme_orbitals = "true"
-#compressed_infile = "false"
-#compressed_outfile = "false"
 
 # Wavefunction grid
 wavefunction_grid="18 36 30"
-#wavefunction_grid="18 36 30"
 potential_grid_refinement = "2"
 
 #write_pseudopotential_plots = "true"
@@ -21,9 +20,9 @@ potential_grid_refinement = "2"
 #occupations_type = "Fixed"
 #occupations_type = "Fermi Dirac"
 occupations_type = "MethfesselPaxton"
-occupation_electron_temperature_eV = "0.2"
+occupation_electron_temperature_eV = "0.0272"
 
-states_count_and_occupation = "56 1.0 12 0.0"
+states_count_and_occupation = "56 1.0 18 0.0"
 
 
 # Units for bravais_lattice_type and atoms
@@ -34,7 +33,7 @@ crds_units=
 #bravais_lattice_type="Cubic Primitive"
 
 kpoint_mesh = "4 4 4"
-#kpoint_distribution = "1"
+kpoint_distribution = "4"
 
 
 bravais_lattice_type="Orthorhombic Primitive"
@@ -70,14 +69,14 @@ charge_mixing_type = "Broyden"
 #charge_mixing_type = "Linear"
 #charge_broyden_scale = "0.10000000"
 #charge_pulay_scale = "0.10000000"
-charge_density_mixing = "0.35"
+charge_density_mixing = "0.5"
 max_scf_steps="100"
 potential_acceleration_constant_step="1.0"
 write_data_period="10"
 
 # Criterion used to judge SCF convergency 
-energy_convergence_criterion="1.0e-9"
-#rms_convergence_criterion = "1.0e-10"
+energy_convergence_criterion="1.0e-10"
+#rms_convergence_criterion = "1.0e-8"
 
 atomic_coordinate_type="Absolute"
 
