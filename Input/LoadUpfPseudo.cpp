@@ -285,7 +285,10 @@ void LoadUpfPseudo(SPECIES *sp)
         sp->awave_lig = new double *[MAX_INITWF];
         sp->atomic_wave_l = new int [MAX_INITWF];
         sp->atomic_wave_j = new double [MAX_INITWF]();
-        sp->atomic_wave_oc = new double [MAX_INITWF]();
+        sp->atomic_wave_oc.resize(MAX_INITWF);
+        sp->atomic_wave_oc.assign(MAX_INITWF, 0.0);
+        sp->atomic_wave_energy.resize(MAX_INITWF);
+        sp->atomic_wave_energy.assign(MAX_INITWF, 0.0);
         sp->aradius = new double [MAX_INITWF];
         sp->atomic_wave_label = new std::string [MAX_INITWF];
 
@@ -300,7 +303,16 @@ void LoadUpfPseudo(SPECIES *sp)
 
             sp->atomic_wave_label[iwf] = upf_tree.get<std::string>(path(chi + "/<xmlattr>/label", '/'));
             sp->atomic_wave_oc[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/occupation", '/'));
+            try {
+                sp->atomic_wave_energy[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/pseudo_energy", '/'));
+            }
+            catch(const std::exception& e)
+            {
+                // Most likely missing pseudo_energy since it is an optional field
+                sp->atomic_wave_energy[iwf] = 0.0;
+            }
 
+            if((sp->atomic_wave_oc[iwf] == 0.0) && (sp->atomic_wave_energy[iwf] < 0.0)) sp->atomic_wave_oc[iwf] = 1.0e-6;
             if(ct.lcao_use_empty_orbitals && (sp->atomic_wave_oc[iwf] == 0.0)) sp->atomic_wave_oc[iwf] = 1.0e-6;
             if(sp->atomic_wave_l[iwf] == 0 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 1;
             if(sp->atomic_wave_l[iwf] == 1 && sp->atomic_wave_oc[iwf] > 0.0) sp->num_atomic_waves_m = sp->num_atomic_waves_m + 3;

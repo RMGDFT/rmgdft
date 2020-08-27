@@ -120,7 +120,8 @@ public:
     /* total number of atomic wave functions including m-dependence */
     int num_atomic_waves_m;
 
-    double *atomic_wave_oc;
+    std::vector<double> atomic_wave_oc;
+    std::vector<double> atomic_wave_energy;
     
     std::string *atomic_wave_label;
 

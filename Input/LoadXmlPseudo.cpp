@@ -218,7 +218,10 @@ void LoadXmlPseudo(SPECIES *sp)
     sp->awave_lig = new double *[MAX_INITWF];
     sp->atomic_wave_l = new int [MAX_INITWF];
     sp->atomic_wave_j = new double [MAX_INITWF]();
-    sp->atomic_wave_oc = new double [MAX_INITWF]();
+    sp->atomic_wave_oc.resize(MAX_INITWF);
+    sp->atomic_wave_oc.assign(MAX_INITWF, 0.0);
+    sp->atomic_wave_energy.resize(MAX_INITWF);
+    sp->atomic_wave_energy.assign(MAX_INITWF, 0.0);
     sp->atomic_rho = new double[sp->rg_points]();
 
     BOOST_FOREACH( ptree::value_type const& s, xml_tree.get_child("pseudo.pseudowave-functions") )
