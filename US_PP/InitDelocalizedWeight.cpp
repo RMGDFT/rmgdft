@@ -48,12 +48,11 @@ void InitDelocalizedWeight (void)
     int num_lm = (lmax + 1) * (lmax + 1);
     int num_LM2 = (2*lmax + 1) * (2*lmax + 1);
 
-    int *lpx = new int[num_lm * num_lm];
-    int *lpl = new int[num_lm * num_lm  * num_LM2];
-    double *ap = new double[num_LM2 * num_lm * num_lm];
-    //ylm = new double[25];
+    std::vector<int> lpx(num_lm * num_lm);
+    std::vector<int> lpl(num_lm * num_lm  * num_LM2);
+    std::vector<double> ap(num_LM2 * num_lm * num_lm);
 
-    InitClebschGordan(lmax, ap, lpx, lpl);
+    InitClebschGordan(lmax, ap.data(), lpx.data(), lpl.data());
 
     for (int isp = 0; isp < ct.num_species; isp++)
     {
