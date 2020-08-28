@@ -827,15 +827,17 @@ template <class T> void Wannier<T>::ReadRotatePsiwan(int iq, int ikindex, int is
                 std::complex<double> up = psi_map[st * ngrid_noncoll + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
                 std::complex<double> dn = psi_map[st * ngrid_noncoll + ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz];
                 std::complex<double> up_rot, dn_rot;
-                up_rot = Rmg_Symm->rot_spin_wave[isyma][0][0] * up + Rmg_Symm->rot_spin_wave[isyma][0][1] * dn;
-                dn_rot = Rmg_Symm->rot_spin_wave[isyma][1][0] * up + Rmg_Symm->rot_spin_wave[isyma][1][1] * dn;
                 if(isym <0)
                 {
+                    up_rot = std::conj(Rmg_Symm->rot_spin_wave[isyma][0][0]) * up + std::conj(Rmg_Symm->rot_spin_wave[isyma][0][1]) * dn;
+                    dn_rot = std::conj(Rmg_Symm->rot_spin_wave[isyma][1][0]) * up + std::conj(Rmg_Symm->rot_spin_wave[isyma][1][1]) * dn;
                     if(ispin == 0) psi_wan_C[iw * nstates + st_w] = - std::conj(dn_rot);
                     if(ispin == 1) psi_wan_C[iw * nstates + st_w] = std::conj(up_rot);
                 }
                 else
                 {
+                    up_rot = Rmg_Symm->rot_spin_wave[isyma][0][0] * up + Rmg_Symm->rot_spin_wave[isyma][0][1] * dn;
+                    dn_rot = Rmg_Symm->rot_spin_wave[isyma][1][0] * up + Rmg_Symm->rot_spin_wave[isyma][1][1] * dn;
                     if(ispin == 0) psi_wan_C[iw * nstates + st_w] = up_rot;
                     if(ispin == 1) psi_wan_C[iw * nstates + st_w] = dn_rot;
                 }
@@ -904,8 +906,8 @@ template <class T> void Wannier<T>::ReadRotatePsi(int ikindex, int isym, int isy
                         std::complex<double> up_rot, dn_rot;
                         if(isym < 0 || Rmg_Symm->time_rev[isyma])
                         {
-                            up_rot = (Rmg_Symm->rot_spin_wave[isyma][0][0]) * up + (Rmg_Symm->rot_spin_wave[isyma][0][1]) * dn;
-                            dn_rot = (Rmg_Symm->rot_spin_wave[isyma][1][0]) * up + (Rmg_Symm->rot_spin_wave[isyma][1][1]) * dn;
+                            up_rot = std::conj(Rmg_Symm->rot_spin_wave[isyma][0][0]) * up + std::conj(Rmg_Symm->rot_spin_wave[isyma][0][1]) * dn;
+                            dn_rot = std::conj(Rmg_Symm->rot_spin_wave[isyma][1][0]) * up + std::conj(Rmg_Symm->rot_spin_wave[isyma][1][1]) * dn;
                             psi_k_C[st_w * nbasis_noncoll + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = - std::conj(dn_rot);
                             psi_k_C[st_w * nbasis_noncoll + nbasis + ix * py0_grid * pz0_grid + iy * pz0_grid + iz] = std::conj(up_rot);
                         }
@@ -1053,7 +1055,7 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
         delete RT1;
 
-        if(!ct.norm_conserving_pp || ct.noncoll)
+        if(!ct.norm_conserving_pp)
         {
             RT1 = new RmgTimer("7-Wannier: Mmn: us: read NL");
             std::string filename;
