@@ -142,7 +142,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
                 WriteRestart (ct.outfile, vh, rho, rho_oppo, vxc, Kptr);
 
             /* output the eigenvalues with occupations */
-            if (ct.write_eigvals_period && (ct.scf_steps % ct.write_eigvals_period == 0) && (pct.imgpe == 0))
+            if (ct.write_eigvals_period && (ct.scf_steps % ct.write_eigvals_period == 0))
             {
                 OutputEigenvalues (Kptr, 0, ct.scf_steps);
                 rmg_printf ("\nTotal charge in supercell = %16.8f\n", ct.tcharge);
