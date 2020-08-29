@@ -3,7 +3,6 @@ description="Alpha Uranium 4-atom orthorhombic cell"
 
 #frac_symmetry = "false"
 #spin_polarization="true"
-lcao_use_empty_orbitals="true"
 kohn_sham_mg_levels = "1"
 davidson_max_steps="15"
 
