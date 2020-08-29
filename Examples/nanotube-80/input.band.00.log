@@ -8,9 +8,9 @@ RMG initialization ... 1 image(s) total, 1 per node. 24 MPI processes/image. Thr
      -- A Real Space Multigrid Electronic structure code --
      --      More information at www.rmgdft.org          --
 
-Code Revision:     v4.0.0_beta_771_g551dda34
-Build Date:        Aug 23 2020  18:52:42
-Start time:        Mon Aug 24 08:36:09 2020
+Code Revision:     v4.0.0_beta_780_gfd9a9a04
+Build Date:        Aug 27 2020  15:58:14
+Start time:        Sat Aug 29 08:04:22 2020
 
 Files
    Control input file:        input.band
@@ -252,45 +252,45 @@ Davidson incomplete convergence steps = 8
 --------TIMING INFORMATION FOR Processor owned the most atoms----------------
                                         Total time               Per SCF/step
 
-1-TOTAL                                            68.30               34.15
+1-TOTAL                                            54.99               27.49
 -----------------------------------------------------------------------------
-  1-TOTAL: Init                                     5.15                2.57
-  1-TOTAL: run                                     63.15               31.58
+  1-TOTAL: Init                                     3.24                1.62
+  1-TOTAL: run                                     51.75               25.87
 
-2-Init                                              5.15                2.57
+2-Init                                              3.24                1.62
 -----------------------------------------------------------------------------
-  2-Init: KpointClass                               2.37                1.18
-  2-Init: ReinitIonicPotentials                     2.24                1.12
-  2-Init: qfunct                                    0.04                0.02
+  2-Init: KpointClass                               0.53                0.26
+  2-Init: ReinitIonicPotentials                     2.18                1.09
+  2-Init: qfunct                                    0.03                0.02
   2-Init: radial potentials                         0.10                0.05
-  2-Init: weights                                   0.12                0.06
+  2-Init: weights                                   0.11                0.06
 
-3-ReinitIonicPotentials                             2.24                1.12
+3-ReinitIonicPotentials                             2.18                1.09
 -----------------------------------------------------------------------------
   3-ReinitIonicPotentials: GetNlop                  0.34                0.17
-  3-ReinitIonicPotentials: GetWeight                1.52                0.76
+  3-ReinitIonicPotentials: GetWeight                1.48                0.74
   3-ReinitIonicPotentials: get_QI                   0.04                0.02
   3-ReinitIonicPotentials: get_qqq                  0.24                0.12
-  3-ReinitIonicPotentials: init_nuc                 0.10                0.05
+  3-ReinitIonicPotentials: init_nuc                 0.09                0.04
 
 5-Functional                                        0.00                0.00
 
-6-Davidson                                         57.68               28.84
+6-Davidson                                         46.98               23.49
 -----------------------------------------------------------------------------
-  6-Davidson: Betaxpsi                              4.15                2.08
-  6-Davidson: apply hamiltonian                    12.02                6.01
-  6-Davidson: diagonalization                       9.87                4.93
-  6-Davidson: generate residuals                    8.56                4.28
-  6-Davidson: matrix setup/reduce                   8.10                4.05
-  6-Davidson: normalization                         1.23                0.61
-  6-Davidson: precondition                          7.44                3.72
-  6-Davidson: refresh h_psi and s_psi               2.25                1.12
-  6-Davidson: reset hr,sr,vr                        0.01                0.00
-  6-Davidson: rotate orbitals                       3.13                1.56
+  6-Davidson: Betaxpsi                              4.32                2.16
+  6-Davidson: apply hamiltonian                    11.79                5.89
+  6-Davidson: diagonalization                       3.04                1.52
+  6-Davidson: generate residuals                    6.41                3.21
+  6-Davidson: matrix setup/reduce                   8.14                4.07
+  6-Davidson: normalization                         1.28                0.64
+  6-Davidson: precondition                          6.39                3.19
+  6-Davidson: refresh h_psi and s_psi               2.43                1.21
+  6-Davidson: reset hr,sr,vr                        0.03                0.02
+  6-Davidson: rotate orbitals                       2.53                1.27
 
-GlobalSums                                          5.25                2.62
+GlobalSums                                          4.55                2.27
 
-Init                                                2.78                1.39
+Init                                                2.71                1.36
 
 Orbital                                             0.01                0.01
 -----------------------------------------------------------------------------
@@ -299,11 +299,11 @@ Orbital                                             0.01                0.01
 
 Weight                                              0.10                0.05
 
-radial beta                                         0.07                0.03
+radial beta                                         0.06                0.03
 
 
 ------------------------- TIMING INFORMATION FOR THREADS  -------------------
 
                                            Min            Max            Avg
-GlobalSums                0.04           0.04           0.04
+GlobalSums                0.12           0.12           0.12
 -----------------------------------------------------------------------------
