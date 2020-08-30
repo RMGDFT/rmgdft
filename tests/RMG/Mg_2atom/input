@@ -27,7 +27,7 @@ preconditioner_threshold = "0.00010000000"
 wavefunction_grid = "24 24 40"
 
 potential_grid_refinement = "2"
-#energy_convergence_criterion = "1e-12"
+energy_convergence_criterion = "1e-12"
 #rms_convergence_criterion = "1e-8"
 
 crds_units = "Angstrom"
