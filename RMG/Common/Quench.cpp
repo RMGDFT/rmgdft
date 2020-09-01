@@ -237,10 +237,6 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     // Exact exchange integrals
     if(ct.exx_int_flag)
     {
-        if(!ct.is_gamma) 
-        {
-            throw RmgFatalException() <<  "Exx integrals not programed for non-gamma kpoint" << __FILE__ << " at line " << __LINE__ << "\n";
-        }
         std::vector<double> occs;
         occs.resize(Kptr[0]->nstates);
         for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];

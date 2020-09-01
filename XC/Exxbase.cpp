@@ -73,7 +73,7 @@ template <class T> Exxbase<T>::Exxbase (
         ct.qpoint_mesh[1] = ct.kpoint_mesh[1];
         ct.qpoint_mesh[2] = ct.kpoint_mesh[2];
     }
-      
+
     tpiba = 2.0 * PI / L.celldm[0];
     tpiba2 = tpiba * tpiba;
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
@@ -189,8 +189,8 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
     // for Gaupbe
     if(std::abs(gau_scrlen) > eps)
     {
-         scr_type = GAU_SCREENING;
-         ct.gamma_extrapolation = false;
+        scr_type = GAU_SCREENING;
+        ct.gamma_extrapolation = false;
     }
 
     double a0 = 1.0;
@@ -208,7 +208,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         v2 = kq[2] + pwave->g[ig].a[2] * tpiba; 
         qq = v0* v0 + v1 * v1 + v2 * v2;
 
-      //  if(!pwave->gmask[ig]) continue;
+        //  if(!pwave->gmask[ig]) continue;
         double fac = 1.0;
         if (ct.gamma_extrapolation)
         {
@@ -239,7 +239,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         }
         else if(scr_type == ERFC_SCREENING)
         {
-            
+
             gfac[ig] = fourPI * (1.0 - exp(-qq / 4.0 / (erfc_scrlen*erfc_scrlen))) /qq * fac;
         }
         else
@@ -381,8 +381,8 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                     // We can speed this up by adding more critical sections if it proves to be a bottleneck
 #pragma omp critical(part3)
                     {
-                            for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                                vexx_global[idx] += scale * std::real(p[idx]) * psi_j[idx];
+                        for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                            vexx_global[idx] += scale * std::real(p[idx]) * psi_j[idx];
                     }
                 }
                 if(!omp_tid) MPI_Test(&req, &flag, &mrstatus);
@@ -477,7 +477,7 @@ template <> double Exxbase<std::complex<double>>::Exxenergy(std::complex<double>
 
 template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vector<double> &CholVec, int cmax, int nst_occ)
 {
-    
+
     double tol = 1.0e-5;
     std::vector<double> m_diag, m_appr, m_nu0, delta;
     int nst2 = nst_occ * nst_occ;
@@ -497,7 +497,7 @@ template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vecto
             delta[i] = mat[i*nst2_perpe+i_dist];
         }
     }
-    
+
     MPI_Allreduce(MPI_IN_PLACE, delta.data(), nst2, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
     nu = 0;
@@ -550,7 +550,7 @@ template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vecto
             for(int ics = 0; ics < ic+1; ics++)
                 CholVecNu[ics] = CholVec[ics * nst2_perpe + nu % nst2_perpe];
         }
-        
+
         MPI_Bcast(CholVecNu, ic+1, MPI_DOUBLE, root, pct.grid_comm);
 
         for(int i =0; i<nst2_perpe; i++) m_nu0[i] = 0.0;
@@ -916,7 +916,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         }
 
         MPI_Allreduce(MPI_IN_PLACE, ExxCholVecGlob.data(), Nchol*nst2, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
-        
+
         if(pct.worldrank == 0)
             WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
     }
@@ -924,7 +924,429 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
 template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfile)
 {
-    printf("Exx mode not programmed yet\n");
+    double tol = 1.0e-5;
+    if(!ct.ExxIntChol){
+        throw RmgFatalException() << 
+            "Exx integrals  only support Cholesky decomposition for kpoint \n";
+    }
+
+    if( mode == EXX_DIST_FFT)
+    {
+        throw RmgFatalException() << 
+            "Exx integrals for kpoint only support Local fft  \n";
+    }
+    double_2d_array Qpts;
+    int_2d_array QKtoK2;
+    std::vector<int> kminus;
+    int nkpts = ct.klist.num_k_all;
+    Qpts.resize(boost::extents[nkpts][3]);
+    QKtoK2.resize(boost::extents[nkpts][nkpts]);
+    kminus.resize(nkpts, -1);
+
+    //  define Qpts = k - k0
+    for(int iq = 0; iq < nkpts; iq++){
+        Qpts[iq][0] = ct.klist.k_all_xtal[iq][0] - ct.klist.k_all_xtal[0][0];
+        Qpts[iq][1] = ct.klist.k_all_xtal[iq][1] - ct.klist.k_all_xtal[0][1];
+        Qpts[iq][2] = ct.klist.k_all_xtal[iq][2] - ct.klist.k_all_xtal[0][2];
+    }
+
+    // find tghe -Q inde    ox
+
+    double qk[3];
+    for(int iq = 0; iq < nkpts; iq++){
+        for(int iqm = 0; iqm < nkpts; iqm++){
+            qk[0] = Qpts[iq][0] - Qpts[iqm][0];
+            qk[1] = Qpts[iq][1] - Qpts[iqm][1];
+            qk[2] = Qpts[iq][2] - Qpts[iqm][2];
+            qk[0] -= std::round(qk[0]);
+            qk[1] -= std::round(qk[1]);
+            qk[2] -= std::round(qk[2]);
+
+            if(abs(qk[0]) + abs(qk[1]) + abs(qk[2]) < tol) {
+                if(kminus[iqm] >= 0) {
+                    throw RmgFatalException() << "Multiple -Q found " << " . Terminating.\n";
+                }
+                kminus[iq] = iqm;
+            }
+        }
+        if(kminus[iq] < 0)  {
+            throw RmgFatalException() << "no -Q found " << " . Terminating.\n";
+        }
+    }
+
+    for(int iq = 0; iq < nkpts; iq++){
+        for(int k1 = 0; k1 < nkpts; k1++){
+            QKtoK2[iq][k1] = -1;
+            for(int k2 = 0; k2 < nkpts; k2++){
+
+                qk[0] = ct.klist.k_all_xtal[k1][0] - ct.klist.k_all_xtal[k2][0] - Qpts[iq][0];
+                qk[1] = ct.klist.k_all_xtal[k1][1] - ct.klist.k_all_xtal[k2][1] - Qpts[iq][1];
+                qk[2] = ct.klist.k_all_xtal[k1][2] - ct.klist.k_all_xtal[k2][2] - Qpts[iq][2];
+                qk[0] -= std::round(qk[0]);
+                qk[1] -= std::round(qk[1]);
+                qk[2] -= std::round(qk[2]);
+                if(abs(qk[0]) + abs(qk[1]) + abs(qk[2]) < tol) {
+                    if(QKtoK2[iq][k1] >= 0) {
+                        throw RmgFatalException() << "Q, k1, k2 not unique, use regular kmesh " << " . Terminating.\n";
+                    }
+                    QKtoK2[iq][k1] = k2;
+                }
+
+            }
+
+            if(QKtoK2[iq][k1] < 0) {
+                throw RmgFatalException() << "no Q, k1,k2 found " << " . Terminating.\n";
+            }
+
+        }
+    }
+
+    int Ncho_max = ct.exxchol_max * nstates_occ * nkpts;
+    int ij_tot = nstates_occ * nstates_occ;
+    size_t alloc1 = nkpts * Ncho_max * ij_tot * sizeof(std::complex<double>);
+    size_t alloc2 = nkpts * ij_tot * coarse_pwaves->pbasis * sizeof(std::complex<double>);
+    rmg_printf("\n Memory usage (Mbytes) in Vexx_integrals");
+    rmg_printf("\n          CholVec:   %8.2f ", (double)alloc1/1000.0/1000.0);
+    rmg_printf("\n          Xaoik:     %8.2f ", (double)alloc2/1000.0/1000.0);
+    rmg_printf("\n          Xaolj:     %8.2f ", (double)alloc2/1000.0/1000.0);
+
+    int pbasis = coarse_pwaves->pbasis;
+// Xaoij, Xaolj are distributed differently, it is not the 3D domain decomposiiont. just 1D even distribution.
+    std::complex<double> *Cholvec = new std::complex<double>[nkpts * Ncho_max * ij_tot];
+    std::complex<double> *Xaolj = new std::complex<double>[nkpts * ij_tot * pbasis];
+    std::complex<double> *Xaoik = new std::complex<double>[nkpts * ij_tot * pbasis];
+    std::complex<double> *phase_Gr = new std::complex<double>[27 * pbasis];
+
+    int nx_grid = G.get_NX_GRID(1);
+    int ny_grid = G.get_NY_GRID(1);
+    int nz_grid = G.get_NZ_GRID(1);
+
+    int my_rank = G.get_rank();
+    int npes = G.get_NPES();
+    for(int i = -1; i <=1; i++) {
+        for(int j = -1; j <=1; j++) {
+            for(int k = -1; k <=1; k++) {
+                int ijk = (i+1) * 3 * 3 + (j+1) * 3 + k+1;
+                for(int ix = 0; ix < nx_grid; ix++) {
+                    for(int iy = 0; iy < ny_grid; iy++) {
+                        for(int iz = 0; iz < nz_grid; iz++) {
+                            int idx = ix * ny_grid * nz_grid + iy * nz_grid + iz;
+                            idx -= my_rank * pbasis;
+                            if(idx < 0 || idx >= pbasis) continue;
+
+                            double kr = i*ix/(double)nx_grid + j * iy/(double)ny_grid + k * iz/(double)nz_grid;
+                            phase_Gr[ijk*pbasis + idx] = std::exp( std::complex<double>(0.0, kr * twoPI));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    double *residual = new double[nkpts * ij_tot];
+
+    for(int iq = 0; iq < nkpts; iq++){
+        if(iq > kminus[iq]) continue;
+
+        for(int k1 = 0; k1 < nkpts; k1++){
+            int k2 = QKtoK2[iq][k1];
+            waves_pair_and_fft(k1, k2, &Xaolj[k1 * ij_tot * pbasis], &Xaoik[k1 * ij_tot * pbasis]);
+            for(int ij = 0; ij < ij_tot; ij++){
+                residual[k1 * ij_tot + ij] = 0.0;
+                for(int idx = 0; idx< pbasis; idx++){
+                    residual[k1 * ij_tot + ij] += std::real(Xaoik[(k1*ij_tot + ij)*pbasis + idx] 
+                            * std::conj(Xaolj[(k1 * ij_tot + ij)*pbasis + idx]));
+                }
+            }
+
+
+        }
+
+        int count = nkpts * ij_tot;
+        MPI_Allreduce(MPI_IN_PLACE, residual, count, MPI_DOUBLE, MPI_SUM, G.comm);
+
+        int Ncho = Vexx_int_oneQ(iq, QKtoK2, Cholvec, phase_Gr, Xaoik, Xaolj, residual, ij_tot, Ncho_max, pbasis, G.comm);
+    }
+
+    delete [] Cholvec;
+    delete [] Xaolj;
+    delete [] Xaoik;
+    delete [] phase_Gr;
+    delete [] residual;
+
+
+
+}
+template int Exxbase<double>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, std::complex<double> *Cholvec, 
+        std::complex<double> *phase_Gr, std::complex<double> *Xaoik, std::complex<double> *Xaolj,
+        double *residual, int ij_tot, int Ncho_max, int pbasis, MPI_Comm comm);
+template int Exxbase<std::complex<double>>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, std::complex<double> *Cholvec, 
+        std::complex<double> *phase_Gr, std::complex<double> *Xaoik, std::complex<double> *Xaolj,
+        double *residual, int ij_tot, int Ncho_max, int pbasis, MPI_Comm comm);
+
+template <class T> int Exxbase<T>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, std::complex<double> *Cholvec, 
+        std::complex<double> *phase_Gr, std::complex<double> *Xaoik, std::complex<double> *Xaolj,
+        double *residual, int ij_tot, int Ncho_max, int pbasis, MPI_Comm comm)
+{
+    double tol= 1.0e-5;
+    int nkpts = ct.klist.num_k_all;
+    for(int i = 0; i < nkpts * ij_tot * Ncho_max; i++) Cholvec[i] = 0.0;
+    int k1max, k2max, ij_max;
+    double maxv = 0.0;
+    int_2d_array done;
+    done.resize(boost::extents[nkpts][ij_tot]);
+    std::fill(done.data(), done.data() + done.num_elements(), 0);
+
+    boost::multi_array_ref<std::complex<double>, 3> Cholvec_3d{Cholvec, boost::extents[Ncho_max][nkpts][ij_tot]};
+    std::complex<double> *Vbuff = new std::complex<double> [pbasis];
+    std::complex<double> *Xkl_0 = new std::complex<double> [pbasis];
+
+
+    double kq[3];
+    int iv;
+    for(iv = 0; iv < Ncho_max; iv++) {
+        maxv = 0.0;
+        k1max = -1;
+        ij_max = -1;
+        for(int k1 = 0; k1 < nkpts; k1++) {
+            for(int ij = 0; ij < ij_tot; ij++) {
+                if( std::abs(residual[k1 * ij_tot + ij]) > maxv) {
+                    k1max = k1;
+                    ij_max = ij;
+                    maxv = std::abs(residual[k1 * ij_tot + ij]);
+                }
+            }
+        }
+
+        if(ct.verbose)rmg_printf("\n residual for Chol: iq %d iv %d maxv %ei at k1max %d ij_max %d", iq, iv, maxv, k1max, ij_max);
+        if(maxv < tol) break;
+
+        if(done[k1max][ij_max]) {
+            throw RmgFatalException() << "error in Cholesky k1max= " << k1max << " ij_max " << ij_max << "\n";
+        }
+        done[k1max][ij_max] = 1;        
+        k2max = QKtoK2[iq][k1max];
+        for(int idx = 0; idx < pbasis; idx++) Xkl_0[idx] = Xaolj[k1max * ij_tot * pbasis + ij_max * pbasis + idx];
+        for(int ivb = 0; ivb < iv; ivb++) Vbuff[ivb] = Cholvec[ivb * nkpts * ij_tot + k1max * ij_tot + ij_max];
+
+        for(int k1 = 0; k1 < nkpts; k1++) {
+            int k2 = QKtoK2[iq][k1];
+            kq[0] = ct.klist.k_all_xtal[k2][0] - ct.klist.k_all_xtal[k1][0] 
+                + ct.klist.k_all_xtal[k1max][0] - ct.klist.k_all_xtal[k2max][0];
+            kq[1] = ct.klist.k_all_xtal[k2][1] - ct.klist.k_all_xtal[k1][1] 
+                + ct.klist.k_all_xtal[k1max][1] - ct.klist.k_all_xtal[k2max][1];
+            kq[2] = ct.klist.k_all_xtal[k2][2] - ct.klist.k_all_xtal[k1][2] 
+                + ct.klist.k_all_xtal[k1max][2] - ct.klist.k_all_xtal[k2max][2];
+            //  kq should be -1, 0, or 1, 
+            int g_x = (int)( kq[0] + 1.01);
+            int g_y = (int)( kq[1] + 1.01);
+            int g_z = (int)( kq[2] + 1.01);
+
+            if(g_x < 0 || g_x > 3 ||g_y < 0 || g_y > 3 ||g_z < 0 || g_z > 3 ) {
+                throw RmgFatalException() << "error in Q and k2-k1: g_x=" 
+                    <<  g_x << " gy=" << g_y <<" gz=" << g_z << "\n";
+            }
+
+            // phjase index of the G
+            int g_xyz = g_x * 9 + g_y * 3 + g_z;
+
+            for(int ij = 0;  ij < ij_tot; ij++) {
+                for(int idx = 0; idx < pbasis; idx++){
+                    Cholvec_3d[iv][k1][ij] += Xaoik[k1*ij_tot*pbasis + ij * pbasis + idx] * std::conj(Xkl_0[idx] * phase_Gr[g_xyz * pbasis +idx]);
+                }
+            }
+
+        }
+
+        int count = nkpts * ij_tot;
+        MPI_Allreduce(MPI_IN_PLACE, &Cholvec[iv*count], count, MPI_DOUBLE_COMPLEX, MPI_SUM, comm);
+
+        for(int k1 = 0; k1 < nkpts; k1++){
+            for(int ij = 0; ij < ij_tot; ij++){
+                for(int iv_pre = 0; iv_pre < iv; iv_pre++) {
+                    Cholvec_3d[iv][k1][ij] -= Cholvec_3d[iv_pre][k1][ij] * std::conj(Vbuff[iv_pre]);
+                }
+                Cholvec_3d[iv][k1][ij] /= std::sqrt(maxv);
+
+                residual[k1*ij_tot+ij] -= std::real(Cholvec_3d[iv][k1][ij] * std::conj(Cholvec_3d[iv][k1][ij]) );
+            }
+        }
+
+    }
+    rmg_printf("\n residual for Chol: iq %d num_chovec %d maxv %e", iq, iv, maxv);
+    delete [] Vbuff;
+    delete [] Xkl_0;
+    return iv;
+}
+
+template void Exxbase<double>::waves_pair_and_fft(int k1, int k2, std::complex<double> *Xaolj_one, 
+        std::complex<double> *Xaoik_one);
+template void Exxbase<std::complex<double>>::waves_pair_and_fft(int k1, int k2, std::complex<double> *Xaolj_one, 
+        std::complex<double> *Xaoik_one);
+template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::complex<double> *Xaolj_one, 
+        std::complex<double> *Xaoik_one)
+{
+    // read and rotate the wavefybctions
+    int nx_grid = G.get_NX_GRID(1);
+    int ny_grid = G.get_NY_GRID(1);
+    int nz_grid = G.get_NZ_GRID(1);
+
+    int ngrid = nx_grid * ny_grid * nz_grid;
+
+    int pbasis = G.get_P0_BASIS(1);
+
+    size_t length = (size_t)nstates_occ * ngrid * sizeof(T);
+    //printf("\n Memory(MB) for psi_k1, psi_k2: %f", double(length)/1000.0/1000.0 );
+
+    T *psi_k1 = (T *)GpuMallocManaged(length);
+    T *psi_k2 = (T *)GpuMallocManaged(length);
+    T *psi_k1_map;
+    T *psi_k2_map;
+
+    int k1_irr = ct.klist.k_map_index[k1];
+    int isym_k1 = ct.klist.k_map_symm[k1];
+    int isyma_k1 = std::abs(isym_k1) -1;
+    int k2_irr = ct.klist.k_map_index[k2];
+    int isym_k2 = ct.klist.k_map_symm[k2];
+    int isyma_k2 = std::abs(isym_k2) -1;
+    double kq[3];
+
+    kq[0] = ct.klist.k_all_xtal[k1][0] - ct.klist.k_all_xtal[k2][0];
+    kq[1] = ct.klist.k_all_xtal[k1][1] - ct.klist.k_all_xtal[k2][1];
+    kq[2] = ct.klist.k_all_xtal[k1][2] - ct.klist.k_all_xtal[k2][2];
+    double v0, v1, v2;
+
+    v0 = kq[0] *Rmg_L.b0[0] + kq[1] *Rmg_L.b1[0] + kq[2] *Rmg_L.b2[0];
+    v1 = kq[0] *Rmg_L.b0[1] + kq[1] *Rmg_L.b1[1] + kq[2] *Rmg_L.b2[1];
+    v2 = kq[0] *Rmg_L.b0[2] + kq[1] *Rmg_L.b1[2] + kq[2] *Rmg_L.b2[2];
+
+    kq[0] = v0 * twoPI;
+    kq[1] = v1 * twoPI;
+    kq[2] = v2 * twoPI;
+
+
+    setup_gfac(kq);
+
+    std::string filename_k1 = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(k1_irr);
+    RmgTimer *RT1 = new RmgTimer("5-Functional: mmap");
+    int serial_fd_k1 = open(filename_k1.c_str(), O_RDONLY, (mode_t)0600);
+    if(serial_fd_k1 < 0)
+        throw RmgFatalException() << "Error! Could not open " << filename_k1 << " . Terminating.\n";
+
+    psi_k1_map = (T *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd_k1, 0);
+
+    std::string filename_k2 = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(k2_irr);
+    int serial_fd_k2 = open(filename_k2.c_str(), O_RDONLY, (mode_t)0600);
+    if(serial_fd_k2 < 0)
+        throw RmgFatalException() << "Error! Could not open " << filename_k2 << " . Terminating.\n";
+
+    psi_k2_map = (T *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd_k2, 0);
+
+    MPI_Barrier(G.comm);
+    delete RT1;
+
+
+    // rotate wavefunctions for q point from symmetry-related k point.
+    // define exp(-i (k-q) r) 
+    int ixx, iyy, izz;
+    for (int ix = 0; ix < nx_grid; ix++) {
+        for (int iy = 0; iy < ny_grid; iy++) {
+            for (int iz = 0; iz < nz_grid; iz++) {
+
+                symm_ijk(&Rmg_Symm->sym_rotate[isyma_k1 *9], &Rmg_Symm->ftau_wave[isyma_k1*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+
+                if(isym_k1 >= 0)
+                {
+                    for(int st = 0; st < nstates_occ; st++)
+                    {
+                        psi_k1[st * ngrid + ix * ny_grid * nz_grid + iy * nz_grid + iz]
+                            = (psi_k1_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
+                    }
+                }
+                else
+                {
+                    for(int st = 0; st < nstates_occ; st++)
+                    {
+                        psi_k1[st * ngrid + ix * ny_grid * nz_grid + iy * nz_grid + iz]
+                            = MyConj(psi_k1_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
+                    }
+                }
+
+                symm_ijk(&Rmg_Symm->sym_rotate[isyma_k2 *9], &Rmg_Symm->ftau_wave[isyma_k2*3], ix, iy, iz, ixx, iyy, izz, nx_grid, ny_grid, nz_grid);
+
+                if(isym_k2 >= 0)
+                {
+                    for(int st = 0; st < nstates_occ; st++)
+                    {
+                        psi_k2[st * ngrid + ix * ny_grid * nz_grid + iy * nz_grid + iz]
+                            = (psi_k2_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
+                    }
+                }
+                else
+                {
+                    for(int st = 0; st < nstates_occ; st++)
+                    {
+                        psi_k2[st * ngrid + ix * ny_grid * nz_grid + iy * nz_grid + iz]
+                            = MyConj(psi_k2_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
+                    }
+                }
+
+
+            }
+        }
+
+    }
+
+    int my_rank = G.get_rank();
+    int npes = G.get_NPES();
+    if(npes * pbasis != ngrid) {
+        printf("\n npes = %d pbasis = %d ngrid = %d\n", npes, pbasis, ngrid);
+        fflush(NULL);
+        throw RmgFatalException() << "Error! npes * pbasis != ngrids \n ";
+    }
+    for(int st_k1 = 0; st_k1 < nstates_occ; st_k1++){
+        for(int st_k2 = 0; st_k2 < nstates_occ; st_k2++){
+            for(int idx = 0; idx < pbasis; idx++) {
+                int idx_g = my_rank * pbasis + idx;
+                Xaolj_one[(st_k1 * nstates_occ + st_k2 ) *pbasis + idx] 
+                    = psi_k1[st_k1 * ngrid + idx_g] * std::conj(psi_k2[st_k2 * ngrid + idx_g]);
+            }
+        }
+    }
+
+    int state_per_pe = (nstates_occ + npes -1)/npes;
+
+    length = ngrid * sizeof(std::complex<double>);
+    std::complex<double> *xij_fft = (std::complex<double> *)GpuMallocManaged(length);
+
+    double scale = 1.0 / (double)pwave->global_basis;
+    for(int st_k1 = 0; st_k1 < nstates_occ; st_k1++){
+        for(int ips = 0; ips < state_per_pe; ips++) {
+            {
+                int st_k2 = ips * npes + my_rank;
+                for(int idx = 0; idx < ngrid; idx++) xij_fft[idx] = 0.0;
+                if(st_k2 < nstates_occ) {
+                    fftpair(&psi_k1[st_k1 * ngrid], &psi_k2[st_k2 * ngrid], xij_fft, gfac);
+                }
+            }
+            MPI_Barrier(G.comm); 
+            for(int ip = 0; ip < npes; ip++) {
+                if( ips * npes + ip >= nstates_occ) break;
+                int st_k2 = ips * npes + ip;
+
+                std::complex<double> *rbuf = &Xaoik_one[(st_k1 * nstates_occ + st_k2 ) *pbasis];
+                MPI_Scatter(xij_fft, pbasis, MPI_DOUBLE_COMPLEX, rbuf, pbasis, MPI_DOUBLE_COMPLEX, ip, G.comm); 
+                for(int idx = 0; idx < pbasis; idx++) rbuf[idx] *= scale;
+            }
+        }
+    }
+
+    GpuFreeManaged(xij_fft);
+    GpuFreeManaged(psi_k1);
+    GpuFreeManaged(psi_k2);
+    munmap(psi_k1_map, length);
+    munmap(psi_k2_map, length);
+    close(serial_fd_k1);
+    close(serial_fd_k2);
 }
 
 template <class T> Exxbase<T>::~Exxbase(void)
@@ -1071,7 +1493,7 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
         int dis_dim = G.get_P0_BASIS(1);
 
         wfptr = &psi[(ik * ct.max_states * dis_dim) * ct.noncoll_factor];
-        
+
         dis_dim = dis_dim * nstates * ct.noncoll_factor;
         MPI_File_write_all(mpi_fhand, wfptr, dis_dim, wftype, &status);
         MPI_Barrier(G.comm);
@@ -1162,12 +1584,6 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
             kq[0] = ct.kp[ik_glob].kpt[0] - ct.klist.k_all_xtal[iq][0];
             kq[1] = ct.kp[ik_glob].kpt[1] - ct.klist.k_all_xtal[iq][1];
             kq[2] = ct.kp[ik_glob].kpt[2] - ct.klist.k_all_xtal[iq][2];
-            //   while(kq[0] > 0.5) kq[0] -= 1.0;
-            //   while(kq[1] > 0.5) kq[1] -= 1.0;
-            //   while(kq[2] > 0.5) kq[2] -= 1.0;
-            //   while(kq[0] <-0.5) kq[0] += 1.0;
-            //   while(kq[1] <-0.5) kq[1] += 1.0;
-            //   while(kq[2] <-0.5) kq[2] += 1.0;
             double v0, v1, v2;
 
             v0 = kq[0] *Rmg_L.b0[0] + kq[1] *Rmg_L.b1[0] + kq[2] *Rmg_L.b2[0];

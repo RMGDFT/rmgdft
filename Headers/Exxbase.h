@@ -142,6 +142,12 @@ private:
     double eps_qdiv = 1.0e-8;
 
     int VxxIntChol(std::vector<T> &Exxint, std::vector<T> &ExxCholVec, int cmax, int nstates_occ);
+    void waves_pair_and_fft(int k1, int k2, std::complex<double> *Xaolj_one, std::complex<double> *Xaoik_one);
+    int Vexx_int_oneQ(int iq, int_2d_array QKtoK2, std::complex<double> *Cholvec,
+        std::complex<double> *phase_Gr, std::complex<double> *Xaoik, std::complex<double> *Xaolj,
+        double *residual, int ij_tot, int Ncho_max, int pbasis, MPI_Comm comm);
+
+
 
 public:
     // BaseGrid class (distributed) and half grid
