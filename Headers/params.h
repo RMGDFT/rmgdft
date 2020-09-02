@@ -73,14 +73,8 @@
 /* Maximum image count */
 #define         MAX_IMGS        99
 
-/* Maximum cpu grids, now spin enabled -> 2.
- * This will need to be dynamic if we parallelize over k-points */
-#define         MAX_GRIDS        2
-
 /* Maximum number of points in pseudopotential radial grid */
 #define         MAX_RGRID	(2000)
-
-
 
 /* Size of the linear interpolation grid for the potentials */
 #define         MAX_LOCAL_LIG	(9000)
@@ -101,8 +95,6 @@
 
 /* The number of possible point symmetries */
 #define MAX_SYMMETRY	48
-
-#define         MAX_OPTS  16
 
 
 
