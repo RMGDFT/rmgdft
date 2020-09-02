@@ -648,7 +648,10 @@ endif()
 
 #install(TARGETS ${rmg} 
 #DESTINATION bin)
-#install(DIRECTORY Examples DESTINATION share/rmg)
+
+# This is mainly for packages since CPack will pick these up and install them
+install(DIRECTORY Examples DESTINATION share/rmg/)
+install(DIRECTORY tests DESTINATION share/rmg/)
 
 
 # Packaging section next
