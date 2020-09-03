@@ -256,9 +256,11 @@ void LoadXmlPseudo(SPECIES *sp)
     // Next generate the Kleinman-Bylander projectors.
     // Diagonals of ddd0 array are the KB normalization coefficients.
     ddd0.resize(boost::extents[sp->nbeta][sp->nbeta]);
+    qqq.resize(boost::extents[sp->nbeta][sp->nbeta]);
     for (int j = 0; j < sp->nbeta; j++)
     {
         for (int k = 0; k < sp->nbeta; k++) ddd0[j][k] = 0.0;
+        for (int k = 0; k < sp->nbeta; k++) qqq[j][k] = 0.0;
     }
 
     int nb = 0;
