@@ -36,6 +36,7 @@
 #include "Pw.h"
 #include "Functional.h"
 #include "Symmetry.h"
+#include "HdfHelpers.h"
 
 // Screening types
 #define NO_SCREENING 0
@@ -146,6 +147,7 @@ private:
     int Vexx_int_oneQ(int iq, int_2d_array QKtoK2, std::complex<double> *Cholvec,
         std::complex<double> *phase_Gr, std::complex<double> *Xaoik, std::complex<double> *Xaolj,
         double *residual, int ij_tot, int Ncho_max, int pbasis, MPI_Comm comm);
+    void write_basics(hid_t h_grp, int_2d_array QKtoK2, std::vector<int> kminus);
 
 
 

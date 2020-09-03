@@ -41,7 +41,9 @@
 #include "pe_control.h"
 #include "GpuAlloc.h"
 #include "blas.h"
+#include "HdfHelpers.h"
 
+using namespace hdfHelper;
 // This class implements exact exchange for delocalized orbitals.
 // The wavefunctions are stored in a single file and are not domain
 // decomposed. The file name is given by wavefile_in which is
@@ -922,9 +924,10 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     }
 }
 
-template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfile)
+template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_filename)
 {
     double tol = 1.0e-5;
+    int my_rank = G.get_rank();
     if(!ct.ExxIntChol){
         throw RmgFatalException() << 
             "Exx integrals  only support Cholesky decomposition for kpoint \n";
@@ -1001,6 +1004,18 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfil
         }
     }
 
+    hid_t h5file = 0;
+    hid_t hamil_group = 0;
+    hid_t kpf_group = 0;
+    if(my_rank == 0) {
+    
+        hdf_filename += ".h5";
+        remove(hdf_filename.c_str());
+        h5file = H5Fcreate(hdf_filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        hamil_group = makeHDFGroup("Hamiltonian", h5file);
+        kpf_group = makeHDFGroup("KPFactorized", hamil_group);
+        write_basics(hamil_group, QKtoK2, kminus);
+    }
     int Ncho_max = ct.exxchol_max * nstates_occ * nkpts;
     int ij_tot = nstates_occ * nstates_occ;
     size_t alloc1 = nkpts * Ncho_max * ij_tot * sizeof(std::complex<double>);
@@ -1011,7 +1026,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfil
     rmg_printf("\n          Xaolj:     %8.2f ", (double)alloc2/1000.0/1000.0);
 
     int pbasis = coarse_pwaves->pbasis;
-// Xaoij, Xaolj are distributed differently, it is not the 3D domain decomposiiont. just 1D even distribution.
+    // Xaoij, Xaolj are distributed differently, it is not the 3D domain decomposiiont. just 1D even distribution.
     std::complex<double> *Cholvec = new std::complex<double>[nkpts * Ncho_max * ij_tot];
     std::complex<double> *Xaolj = new std::complex<double>[nkpts * ij_tot * pbasis];
     std::complex<double> *Xaoik = new std::complex<double>[nkpts * ij_tot * pbasis];
@@ -1021,8 +1036,6 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfil
     int ny_grid = G.get_NY_GRID(1);
     int nz_grid = G.get_NZ_GRID(1);
 
-    int my_rank = G.get_rank();
-    int npes = G.get_NPES();
     for(int i = -1; i <=1; i++) {
         for(int j = -1; j <=1; j++) {
             for(int k = -1; k <=1; k++) {
@@ -1044,8 +1057,10 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfil
     }
     double *residual = new double[nkpts * ij_tot];
 
+    std::vector<int> Ncho;
+    Ncho.resize(nkpts, 0);
     for(int iq = 0; iq < nkpts; iq++){
-        if(iq > kminus[iq]) continue;
+        //if(iq > kminus[iq]) continue;
 
         for(int k1 = 0; k1 < nkpts; k1++){
             int k2 = QKtoK2[iq][k1];
@@ -1064,9 +1079,52 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &vfil
         int count = nkpts * ij_tot;
         MPI_Allreduce(MPI_IN_PLACE, residual, count, MPI_DOUBLE, MPI_SUM, G.comm);
 
-        int Ncho = Vexx_int_oneQ(iq, QKtoK2, Cholvec, phase_Gr, Xaoik, Xaolj, residual, ij_tot, Ncho_max, pbasis, G.comm);
+        Ncho[iq] = Vexx_int_oneQ(iq, QKtoK2, Cholvec, phase_Gr, Xaoik, Xaolj, residual, ij_tot, Ncho_max, pbasis, G.comm);
+        
+        if(my_rank == 0) {
+            hsize_t h_dims[4];
+            h_dims[0] = nkpts;
+            h_dims[1] = ij_tot;
+            h_dims[2] = Ncho[iq];
+            h_dims[3] = 2;
+            std::string kpfac = "L"+std::to_string(iq);
+            std::vector<double> temp_data;
+            boost::multi_array_ref<std::complex<double>, 3> Cholvec_3d{Cholvec, boost::extents[nkpts][ij_tot][Ncho_max]};
+            for(int ik = 0; ik < nkpts; ik++) {
+                for(int ij = 0; ij < ij_tot; ij++) {
+                    for(int iv = 0; iv < Ncho[iq]; iv++) {
+                        temp_data.push_back(std::real(Cholvec_3d[ik][ij][iv]));
+                        temp_data.push_back(std::imag(Cholvec_3d[ik][ij][iv]));
+                    }
+                }
+            }
+            writeNumsToHDF(kpfac, temp_data, kpf_group, 4, h_dims);
+
+        }
+
+
     }
 
+    if(my_rank == 0) {
+        writeNumsToHDF("NCholPerKP", Ncho, hamil_group);
+        std::vector<double> hcore;
+        hcore.resize(nstates_occ * nstates_occ * 2);
+        hsize_t h_dims[3];
+        h_dims[0] = nstates_occ;
+        h_dims[1] = nstates_occ;
+        h_dims[2] = 2;
+        for(int ik = 0; ik < ct.klist.num_k_all; ik++)
+        {   
+            for(int idx = 0; idx < nstates_occ * nstates_occ; idx++) {
+                hcore[2*idx + 0] = std::real(Hcore[ik * nstates_occ * nstates_occ + idx]);
+                hcore[2*idx + 1] = std::imag(Hcore[ik * nstates_occ * nstates_occ + idx]);
+            }
+            
+            std::string hkp = "H1_kp" + std::to_string(ik);
+            writeNumsToHDF(hkp, hcore, hamil_group, 3, h_dims);
+        }
+        H5Fclose(h5file);
+    }
     delete [] Cholvec;
     delete [] Xaolj;
     delete [] Xaoik;
@@ -1096,7 +1154,9 @@ template <class T> int Exxbase<T>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, st
     done.resize(boost::extents[nkpts][ij_tot]);
     std::fill(done.data(), done.data() + done.num_elements(), 0);
 
-    boost::multi_array_ref<std::complex<double>, 3> Cholvec_3d{Cholvec, boost::extents[Ncho_max][nkpts][ij_tot]};
+    std::complex<double> *NewCholvec = new std::complex<double>[nkpts * ij_tot];
+    boost::multi_array_ref<std::complex<double>, 2> NewCholvec_2d{NewCholvec, boost::extents[nkpts][ij_tot]};
+    boost::multi_array_ref<std::complex<double>, 3> Cholvec_3d{Cholvec, boost::extents[nkpts][ij_tot][Ncho_max]};
     std::complex<double> *Vbuff = new std::complex<double> [pbasis];
     std::complex<double> *Xkl_0 = new std::complex<double> [pbasis];
 
@@ -1127,6 +1187,7 @@ template <class T> int Exxbase<T>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, st
         k2max = QKtoK2[iq][k1max];
         for(int idx = 0; idx < pbasis; idx++) Xkl_0[idx] = Xaolj[k1max * ij_tot * pbasis + ij_max * pbasis + idx];
         for(int ivb = 0; ivb < iv; ivb++) Vbuff[ivb] = Cholvec[ivb * nkpts * ij_tot + k1max * ij_tot + ij_max];
+        for(int ivb = 0; ivb < iv; ivb++) Vbuff[ivb] = Cholvec_3d[k1max][ij_max][ivb];
 
         for(int k1 = 0; k1 < nkpts; k1++) {
             int k2 = QKtoK2[iq][k1];
@@ -1150,26 +1211,31 @@ template <class T> int Exxbase<T>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, st
             int g_xyz = g_x * 9 + g_y * 3 + g_z;
 
             for(int ij = 0;  ij < ij_tot; ij++) {
+                NewCholvec_2d[k1][ij] = 0.0;
                 for(int idx = 0; idx < pbasis; idx++){
-                    Cholvec_3d[iv][k1][ij] += Xaoik[k1*ij_tot*pbasis + ij * pbasis + idx] * std::conj(Xkl_0[idx] * phase_Gr[g_xyz * pbasis +idx]);
+                    NewCholvec_2d[k1][ij] += Xaoik[k1*ij_tot*pbasis + ij * pbasis + idx] * std::conj(Xkl_0[idx] * phase_Gr[g_xyz * pbasis +idx]);
                 }
             }
 
         }
 
         int count = nkpts * ij_tot;
-        MPI_Allreduce(MPI_IN_PLACE, &Cholvec[iv*count], count, MPI_DOUBLE_COMPLEX, MPI_SUM, comm);
+        MPI_Allreduce(MPI_IN_PLACE, NewCholvec, count, MPI_DOUBLE_COMPLEX, MPI_SUM, comm);
 
         for(int k1 = 0; k1 < nkpts; k1++){
             for(int ij = 0; ij < ij_tot; ij++){
+                Cholvec_3d[k1][ij][iv] = NewCholvec_2d[k1][ij];
                 for(int iv_pre = 0; iv_pre < iv; iv_pre++) {
-                    Cholvec_3d[iv][k1][ij] -= Cholvec_3d[iv_pre][k1][ij] * std::conj(Vbuff[iv_pre]);
+                    Cholvec_3d[k1][ij][iv] -= Cholvec_3d[k1][ij][iv_pre] * std::conj(Vbuff[iv_pre]);
                 }
-                Cholvec_3d[iv][k1][ij] /= std::sqrt(maxv);
+                Cholvec_3d[k1][ij][iv] /= std::sqrt(maxv);
 
-                residual[k1*ij_tot+ij] -= std::real(Cholvec_3d[iv][k1][ij] * std::conj(Cholvec_3d[iv][k1][ij]) );
+                residual[k1*ij_tot+ij] -= std::real(Cholvec_3d[k1][ij][iv] * std::conj(Cholvec_3d[k1][ij][iv]) );
             }
         }
+        
+        if(ct.verbose)rmg_printf("\n residual update for Chol: iq %d iv %d maxv %ei at k1max %d ij_max %d", iq, iv, residual[6*ij_tot +
+10], k1max, ij_max);
 
     }
     rmg_printf("\n residual for Chol: iq %d num_chovec %d maxv %e", iq, iv, maxv);
@@ -1898,9 +1964,79 @@ template void Exxbase<double>::SetHcore(double *Hij, int lda);
 template void Exxbase<std::complex<double>>::SetHcore(std::complex<double> *Hij, int lda);
 template <class T> void Exxbase<T>::SetHcore(T *Hij, int lda)
 {
-    Hcore.resize(nstates_occ * nstates_occ);
-    for(int i = 0; i < nstates_occ; i++)
-        for(int j = 0; j < nstates_occ; j++)
-            Hcore[i * nstates_occ + j] = Hij[i* lda + j];
+    Hcore.resize(ct.klist.num_k_all * nstates_occ * nstates_occ);
+    T *Hij_irr_k = new T[ct.num_kpts * nstates_occ * nstates_occ]();
+    
+    for(int ik = 0; ik < ct.num_kpts_pe; ik++) {
+        int ik_irr = ik + pct.kstart;
+        
+        for(int i = 0; i < nstates_occ; i++)
+            for(int j = 0; j < nstates_occ; j++)
+                Hij_irr_k[ik_irr * nstates_occ * nstates_occ + i * nstates_occ + j] = Hij[ik * lda * lda + i* lda + j];
+    }
 
+
+    int count = ct.num_kpts * nstates_occ * nstates_occ * sizeof(T)/sizeof(double);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)Hij_irr_k, count, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    
+    for(int ik = 0; ik < ct.klist.num_k_all; ik++)
+    {
+        int ik_irr = ct.klist.k_map_index[ik];
+        for(int idx = 0; idx < nstates_occ * nstates_occ; idx++)
+            Hcore[ik * nstates_occ * nstates_occ + idx] = Hij_irr_k[ik_irr * nstates_occ * nstates_occ + idx];
+    }
+
+    delete [] Hij_irr_k;
+
+}
+
+template void Exxbase<double>::write_basics(hid_t h_group, int_2d_array QKtoK2, std::vector<int> kminus);
+template void Exxbase<std::complex<double>>::write_basics(hid_t h_group, int_2d_array QKtoK2, std::vector<int> kminus);
+template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKtoK2, std::vector<int> kminus)
+{
+    std::vector<int> dims;
+    dims.resize(8, 0);
+    dims[2] = ct.klist.num_k_all;
+    dims[3] = nstates_occ * dims[2];
+    dims[4] = nstates_occ;
+    dims[5] = nstates_occ;
+    dims[7] = 1;
+    writeNumsToHDF("dims", dims, h_group);
+
+    std::vector<double> Energies;
+
+    Energies.push_back(ct.II);
+    Energies.push_back(0.0);
+    writeNumsToHDF("Energies", Energies, h_group);
+
+
+    std::vector<double> kpts;
+    for(int ik = 0; ik < ct.klist.num_k_all; ik++)
+    {
+        kpts.push_back(ct.klist.k_all_cart[ik][0]);
+        kpts.push_back(ct.klist.k_all_cart[ik][1]);
+        kpts.push_back(ct.klist.k_all_cart[ik][2]);
+    }
+    hsize_t h_dims[]={static_cast<hsize_t>(ct.klist.num_k_all),3};
+    writeNumsToHDF("KPoints", kpts, h_group, 2, h_dims);
+
+    std::vector<int> QK;
+    for(int iq = 0; iq < ct.klist.num_k_all; iq++) {
+        for(int ik = 0; ik < ct.klist.num_k_all; ik++) {
+            QK.push_back(QKtoK2[iq][ik]);
+        }
+    }
+    h_dims[0]= ct.klist.num_k_all;
+    h_dims[1]= ct.klist.num_k_all;
+    writeNumsToHDF("QKtok2", QK, h_group, 2, h_dims);
+
+    std::vector<int> nmoperkp;
+    nmoperkp.resize(ct.klist.num_k_all, nstates_occ);
+    writeNumsToHDF("NMOPerKP", nmoperkp, h_group);
+    writeNumsToHDF("MinusK", kminus, h_group);
+    writeNumsToHDF("ComplexIntegrals", 1, h_group);
+
+    h_dims[0]=nstates_occ;
+    h_dims[1]=nstates_occ;
+    //  writeNumsToHDF("hcore", Hcore, h_group, 2, h_dims);
 }

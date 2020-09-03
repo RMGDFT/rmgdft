@@ -250,7 +250,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         v_psi = new double[pbasis];
         vxc_psi = new double[pbasis]();
         int nstates = Kptr[0]->nstates;
-        OrbitalType *Hcore = (OrbitalType *)GpuMallocManaged(nstates * nstates * sizeof(OrbitalType));
+        OrbitalType *Hcore = (OrbitalType *)GpuMallocManaged(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
 
         bool is_xc_hybrid = ct.xc_is_hybrid;
 
@@ -260,7 +260,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
 
         ct.xc_is_hybrid = false;
 
-        Kptr[0]->ComputeHcore(v_psi, vxc_psi, Hcore);
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates]);
+        }
         Exx.SetHcore(Hcore, nstates);
         Exx.Vexx_integrals(ct.exx_int_file);
         ct.xc_is_hybrid = is_xc_hybrid;
