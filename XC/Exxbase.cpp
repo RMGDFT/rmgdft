@@ -1030,16 +1030,16 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
     std::complex<double> *Cholvec = new std::complex<double>[nkpts * Ncho_max * ij_tot];
     std::complex<double> *Xaolj = new std::complex<double>[nkpts * ij_tot * pbasis];
     std::complex<double> *Xaoik = new std::complex<double>[nkpts * ij_tot * pbasis];
-    std::complex<double> *phase_Gr = new std::complex<double>[27 * pbasis];
+    std::complex<double> *phase_Gr = new std::complex<double>[125 * pbasis];
 
     int nx_grid = G.get_NX_GRID(1);
     int ny_grid = G.get_NY_GRID(1);
     int nz_grid = G.get_NZ_GRID(1);
 
-    for(int i = -1; i <=1; i++) {
-        for(int j = -1; j <=1; j++) {
-            for(int k = -1; k <=1; k++) {
-                int ijk = (i+1) * 3 * 3 + (j+1) * 3 + k+1;
+    for(int i = -2; i <=2; i++) {
+        for(int j = -2; j <=2; j++) {
+            for(int k = -2; k <=2; k++) {
+                int ijk = (i+2) * 5 * 5 + (j+2) * 5 + k+2;
                 for(int ix = 0; ix < nx_grid; ix++) {
                     for(int iy = 0; iy < ny_grid; iy++) {
                         for(int iz = 0; iz < nz_grid; iz++) {
@@ -1073,14 +1073,13 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
                 }
             }
 
-
         }
 
         int count = nkpts * ij_tot;
         MPI_Allreduce(MPI_IN_PLACE, residual, count, MPI_DOUBLE, MPI_SUM, G.comm);
 
         Ncho[iq] = Vexx_int_oneQ(iq, QKtoK2, Cholvec, phase_Gr, Xaoik, Xaolj, residual, ij_tot, Ncho_max, pbasis, G.comm);
-        
+
         if(my_rank == 0) {
             hsize_t h_dims[4];
             h_dims[0] = nkpts;
@@ -1119,7 +1118,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
                 hcore[2*idx + 0] = std::real(Hcore[ik * nstates_occ * nstates_occ + idx]);
                 hcore[2*idx + 1] = std::imag(Hcore[ik * nstates_occ * nstates_occ + idx]);
             }
-            
+
             std::string hkp = "H1_kp" + std::to_string(ik);
             writeNumsToHDF(hkp, hcore, hamil_group, 3, h_dims);
         }
@@ -1177,7 +1176,7 @@ template <class T> int Exxbase<T>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, st
             }
         }
 
-        if(ct.verbose)rmg_printf("\n residual for Chol: iq %d iv %d maxv %ei at k1max %d ij_max %d", iq, iv, maxv, k1max, ij_max);
+        if(ct.verbose)rmg_printf("\n residual for Chol: iq %d iv %d maxv %e at k1max %d ij_max %d", iq, iv, maxv, k1max, ij_max);
         if(maxv < tol) break;
 
         if(done[k1max][ij_max]) {
@@ -1198,17 +1197,17 @@ template <class T> int Exxbase<T>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, st
             kq[2] = ct.klist.k_all_xtal[k2][2] - ct.klist.k_all_xtal[k1][2] 
                 + ct.klist.k_all_xtal[k1max][2] - ct.klist.k_all_xtal[k2max][2];
             //  kq should be -1, 0, or 1, 
-            int g_x = (int)( kq[0] + 1.01);
-            int g_y = (int)( kq[1] + 1.01);
-            int g_z = (int)( kq[2] + 1.01);
+            int g_x = (int)( kq[0] + 2.01);
+            int g_y = (int)( kq[1] + 2.01);
+            int g_z = (int)( kq[2] + 2.01);
 
-            if(g_x < 0 || g_x > 3 ||g_y < 0 || g_y > 3 ||g_z < 0 || g_z > 3 ) {
+            if(g_x < 0 || g_x > 4 ||g_y < 0 || g_y > 4 ||g_z < 0 || g_z > 4 ) {
                 throw RmgFatalException() << "error in Q and k2-k1: g_x=" 
                     <<  g_x << " gy=" << g_y <<" gz=" << g_z << "\n";
             }
 
             // phjase index of the G
-            int g_xyz = g_x * 9 + g_y * 3 + g_z;
+            int g_xyz = g_x * 25 + g_y * 5 + g_z;
 
             for(int ij = 0;  ij < ij_tot; ij++) {
                 NewCholvec_2d[k1][ij] = 0.0;
@@ -1233,9 +1232,6 @@ template <class T> int Exxbase<T>::Vexx_int_oneQ(int iq, int_2d_array QKtoK2, st
                 residual[k1*ij_tot+ij] -= std::real(Cholvec_3d[k1][ij][iv] * std::conj(Cholvec_3d[k1][ij][iv]) );
             }
         }
-        
-        if(ct.verbose)rmg_printf("\n residual update for Chol: iq %d iv %d maxv %ei at k1max %d ij_max %d", iq, iv, residual[6*ij_tot +
-10], k1max, ij_max);
 
     }
     rmg_printf("\n residual for Chol: iq %d num_chovec %d maxv %e", iq, iv, maxv);
@@ -1966,10 +1962,10 @@ template <class T> void Exxbase<T>::SetHcore(T *Hij, int lda)
 {
     Hcore.resize(ct.klist.num_k_all * nstates_occ * nstates_occ);
     T *Hij_irr_k = new T[ct.num_kpts * nstates_occ * nstates_occ]();
-    
+
     for(int ik = 0; ik < ct.num_kpts_pe; ik++) {
         int ik_irr = ik + pct.kstart;
-        
+
         for(int i = 0; i < nstates_occ; i++)
             for(int j = 0; j < nstates_occ; j++)
                 Hij_irr_k[ik_irr * nstates_occ * nstates_occ + i * nstates_occ + j] = Hij[ik * lda * lda + i* lda + j];
@@ -1978,7 +1974,7 @@ template <class T> void Exxbase<T>::SetHcore(T *Hij, int lda)
 
     int count = ct.num_kpts * nstates_occ * nstates_occ * sizeof(T)/sizeof(double);
     MPI_Allreduce(MPI_IN_PLACE, (double *)Hij_irr_k, count, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-    
+
     for(int ik = 0; ik < ct.klist.num_k_all; ik++)
     {
         int ik_irr = ct.klist.k_map_index[ik];
