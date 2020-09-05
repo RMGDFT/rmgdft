@@ -281,16 +281,18 @@ void LoadUpfPseudo(SPECIES *sp)
     sp->num_atomic_waves_m = 0;
     if(sp->num_atomic_waves  > 0) {
 
-        sp->atomic_wave = new double *[MAX_INITWF];
-        sp->awave_lig = new double *[MAX_INITWF];
-        sp->atomic_wave_l = new int [MAX_INITWF];
-        sp->atomic_wave_j = new double [MAX_INITWF]();
-        sp->atomic_wave_oc.resize(MAX_INITWF);
-        sp->atomic_wave_oc.assign(MAX_INITWF, 0.0);
-        sp->atomic_wave_energy.resize(MAX_INITWF);
-        sp->atomic_wave_energy.assign(MAX_INITWF, 0.0);
-        sp->aradius = new double [MAX_INITWF];
-        sp->atomic_wave_label = new std::string [MAX_INITWF];
+        sp->atomic_wave.resize(sp->num_atomic_waves);
+        sp->atomic_wave_l.resize(sp->num_atomic_waves);
+        sp->atomic_wave_l.assign(sp->num_atomic_waves, 0);
+        sp->atomic_wave_j.resize(sp->num_atomic_waves);
+        sp->atomic_wave_j.assign(sp->num_atomic_waves, 0.0);
+        sp->atomic_wave_oc.resize(sp->num_atomic_waves);
+        sp->atomic_wave_oc.assign(sp->num_atomic_waves, 0.0);
+        sp->atomic_wave_energy.resize(sp->num_atomic_waves);
+        sp->atomic_wave_energy.assign(sp->num_atomic_waves, 0.0);
+        sp->aradius.resize(sp->num_atomic_waves);
+        sp->aradius.assign(sp->num_atomic_waves, 12.0);
+        sp->atomic_wave_label = new std::string [sp->num_atomic_waves];
 
         for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++) {
             // Ugh. UPF format has embedded .s so use / as a separator
@@ -300,9 +302,9 @@ void LoadUpfPseudo(SPECIES *sp)
             sp->atomic_wave[iwf] = UPF_read_mesh_array(PP_CHI, r_total, ibegin);
 
             sp->atomic_wave_l[iwf] = upf_tree.get<int>(path(chi + "/<xmlattr>/l", '/'));
-
             sp->atomic_wave_label[iwf] = upf_tree.get<std::string>(path(chi + "/<xmlattr>/label", '/'));
             sp->atomic_wave_oc[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/occupation", '/'));
+
             try {
                 sp->atomic_wave_energy[iwf] = upf_tree.get<double>(path(chi + "/<xmlattr>/pseudo_energy", '/'));
             }
@@ -321,8 +323,6 @@ void LoadUpfPseudo(SPECIES *sp)
 
             // UPF stores atomic wavefunctions * r so divide through
             for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
-            sp->awave_lig[iwf] = new double[MAX_LOCAL_LIG]();
-            sp->aradius[iwf] = 12.0;
         }
         ct.max_orbitals = std::max(ct.max_orbitals, sp->num_atomic_waves_m);
         sp->num_orbitals = sp->num_atomic_waves_m;

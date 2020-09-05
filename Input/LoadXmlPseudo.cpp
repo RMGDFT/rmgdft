@@ -213,15 +213,6 @@ void LoadXmlPseudo(SPECIES *sp)
 
     int iwf = 0;
     sp->num_atomic_waves_m = 0;
-    sp->atomic_wave = new double *[MAX_INITWF];
-    sp->aradius = new double [MAX_INITWF];
-    sp->awave_lig = new double *[MAX_INITWF];
-    sp->atomic_wave_l = new int [MAX_INITWF];
-    sp->atomic_wave_j = new double [MAX_INITWF]();
-    sp->atomic_wave_oc.resize(MAX_INITWF);
-    sp->atomic_wave_oc.assign(MAX_INITWF, 0.0);
-    sp->atomic_wave_energy.resize(MAX_INITWF);
-    sp->atomic_wave_energy.assign(MAX_INITWF, 0.0);
     sp->atomic_rho = new double[sp->rg_points]();
 
     BOOST_FOREACH( ptree::value_type const& s, xml_tree.get_child("pseudo.pseudowave-functions") )
@@ -231,17 +222,18 @@ void LoadXmlPseudo(SPECIES *sp)
         {
             std::string l = s.second.get<std::string>("<xmlattr>.l", "s");
             lval = atomic_map[l];
-            sp->atomic_wave_l[iwf] = lval;
+            sp->atomic_wave_l.emplace_back(lval);
             sp->num_atomic_waves_m += 2*sp->atomic_wave_l[iwf] + 1;
             std::string vdata = s.second.get<std::string>("radfunc.data");
-            sp->atomic_wave[iwf] = UPF_str_to_double_array(vdata, r_total, 1);
-            sp->awave_lig[iwf] = new double[MAX_LOCAL_LIG]();
+            sp->atomic_wave.emplace_back(UPF_str_to_double_array(vdata, r_total, 1));
+            sp->atomic_wave_energy.emplace_back(0.0);
+            sp->atomic_wave_j.emplace_back(0.0);
 
             // Remove extra factors of r
             for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
 
-            sp->atomic_wave_oc[iwf] = occupation_map[lval];
-            sp->aradius[iwf] = 12.0;
+            sp->atomic_wave_oc.emplace_back(occupation_map[lval]);
+            sp->aradius.emplace_back(12.0);
 
             // Accumulate charge for atomic rho
             for(int idx=0;idx < sp->rg_points;idx++)

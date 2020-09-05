@@ -31,7 +31,7 @@
 
 void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<double> *qqq_dk_so)
 {
-    int idx, i, j, ion;
+    int i, j, ion;
     int nh, ncount, icount;
     std::complex<double> *qqq, sum;
     ION *iptr;
@@ -83,7 +83,7 @@ void get_qqq_dk (double dk_xtal[3], std::complex<double> *qqq_dk, std::complex<d
                     {
                         for (j = i; j < nh; j++)
                         {
-                            idx =  i * nh - (i*(i+1))/2 +j;
+                            //int idx =  i * nh - (i*(i+1))/2 +j;
 
                             //qqq[i * nh + j] += (double)Atoms[ion].augfunc[icount + idx * ncount] * phase1;
                             qqq[i * nh + j] += GetAugcharge(i, j, icount, ct.cg_coeff.data(), iptr) * phase1;

@@ -57,10 +57,6 @@
  * just an upper limit on dynamically allocated data structures. */
 #define         MAX_NB  	100
 
-/* Maximum number of atomic pseudo orbitals with unique n,l values for LCAO
- * init purposes. A of of 16 should be sufficent for any atomic species */
-#define         MAX_INITWF      16
-
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
 #define         MAX_L       	4
 
@@ -75,9 +71,6 @@
 
 /* Maximum number of points in pseudopotential radial grid */
 #define         MAX_RGRID	(2000)
-
-/* Size of the linear interpolation grid for the potentials */
-#define         MAX_LOCAL_LIG	(9000)
 
 /* Maximum number of points to use in the log interpolation grid */
 #define         MAX_LOGGRID      (2000)

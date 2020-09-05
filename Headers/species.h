@@ -114,8 +114,8 @@ public:
     int num_atomic_waves;
 
     /*l-numbers for states for which we have atomic orbitals*/
-    int *atomic_wave_l;
-    double *atomic_wave_j;
+    std::vector<int> atomic_wave_l;
+    std::vector<double> atomic_wave_j;
 
     /* total number of atomic wave functions including m-dependence */
     int num_atomic_waves_m;
@@ -128,14 +128,10 @@ public:
     double *atomic_rho;
     
     /* Pseudo atomic wavefunctions read from PP file in log grid*/
-    double **atomic_wave;
+    std::vector<double *> atomic_wave;
 
     /* Pseudo atomic wavefunctions on G-space log grid */
-    double *atomic_wave_g[MAX_INITWF];
-
-    /* Pseudo atomic valence density on linear grid*/
-    double **awave_lig;
-
+    std::vector<double *> atomic_wave_g;
 
     /*Sum of all atomic states (with different l or m numbers*/
     //int sum_atomic_waves;
@@ -264,7 +260,7 @@ public:
     double gwidth;                /* G-space width parameter */
 
     /*Filtering parameters for atomic wavefunctions and charge density*/
-    double *aradius; 
+    std::vector<double> aradius; 
     double agwidth;
     double arwidth;
 

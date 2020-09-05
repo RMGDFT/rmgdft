@@ -386,6 +386,7 @@ void InitPseudo ()
 
         int lm_index = 0;
         sp->num_ldaU_orbitals = 0;
+        sp->atomic_wave_g.resize(sp->num_atomic_waves);
         for (int ip = 0; ip < sp->num_atomic_waves; ip++)
         {
 

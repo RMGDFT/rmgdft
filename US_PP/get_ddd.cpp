@@ -8,7 +8,7 @@
 std::complex<double> DnmTransform(int ih, int jh, int is1, int is2, double *Ia, SPECIES &sp);
 void get_ddd (double * veff, double *vxc, bool ddd0_flag)
 {
-    int idx, ion;
+    int ion;
     int nh, ncount, icount;
     double *dnmI, *sum;
     int *ivec, sum_dim, sum_idx;
