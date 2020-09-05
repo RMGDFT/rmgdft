@@ -542,7 +542,7 @@ void LoadUpfPseudo(SPECIES *sp)
             sp->nhtom[ih] = k;
             sp->indv[ih] = j;
             sp->nh_l2m[ih] = l*l + k;
-            sp->nhtoj[ih] = sp->jjbeta[j];
+            if(sp->is_spinorb) sp->nhtoj[ih] = sp->jjbeta[j];
             ++ih;
         }
     }
