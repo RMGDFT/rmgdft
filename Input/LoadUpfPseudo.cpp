@@ -351,7 +351,7 @@ void LoadUpfPseudo(SPECIES *sp)
             sp->beta[ip] = UPF_read_mesh_array(PP_BETA, r_total, ibegin);
 
             for(int ix = 0;ix < sp->rg_points;ix++) sp->beta[ip][ix] /= sp->r[ix];
-            sp->llbeta[ip] =  upf_tree.get<int>(path(betapath + "/<xmlattr>/angular_momentum", '/'));
+            sp->llbeta.emplace_back(upf_tree.get<int>(path(betapath + "/<xmlattr>/angular_momentum", '/')));
             if(sp->llbeta[ip] > ct.max_l) ct.max_l = sp->llbeta[ip];  // For all species
             if(sp->llbeta[ip] > l_max) l_max = sp->llbeta[ip];        // For this species
             if(l_max > ct.max_l) ct.max_l = l_max;
@@ -501,7 +501,7 @@ void LoadUpfPseudo(SPECIES *sp)
         typedef ptree::path_type path;
         for(int i = 0;i < sp->nbeta;i++) {
             std::string pp_rel = "UPF/PP_SPIN_ORB/PP_RELBETA." + boost::lexical_cast<std::string>(i + 1);
-            sp->jjbeta[i] = upf_tree.get<double>(path(pp_rel + "/<xmlattr>/jjj", '/'));
+            sp->jjbeta.emplace_back(upf_tree.get<double>(path(pp_rel + "/<xmlattr>/jjj", '/')));
 
         }
 

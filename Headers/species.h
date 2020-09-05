@@ -210,8 +210,8 @@ public:
     double *rspsco;
 
     /*the L-value for the beta function */
-    int llbeta[MAX_NB];
-    double jjbeta[MAX_NB];
+    std::vector<int> llbeta;
+    std::vector<double> jjbeta;
     int max_l;
 
     /* Projectors on radial grid. KB for norm-conserving and beta_n(r) for Vanderbilt Ultrasoft. */
