@@ -1245,7 +1245,15 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     // Command line help request?
     if(std::find(ct.argv.begin(), ct.argv.end(), std::string("--help")) != ct.argv.end())
     {
-        if(pct.imgpe == 0) WriteInputOptions(InputMap);
+        if(pct.imgpe == 0) WriteInputOptions(InputMap, std::string("cmdline"));
+        MPI_Barrier(MPI_COMM_WORLD);
+        exit(0);
+    }
+
+    // Markdown format?
+    if(std::find(ct.argv.begin(), ct.argv.end(), std::string("--markdown")) != ct.argv.end())
+    {
+        if(pct.imgpe == 0) WriteInputOptions(InputMap, std::string("markdown"));
         MPI_Barrier(MPI_COMM_WORLD);
         exit(0);
     }

@@ -87,6 +87,7 @@ RmgInputFile::RmgInputFile(char *inputfile, std::unordered_map<std::string, Inpu
 {
     // If help requested no input file to process
     if(std::find(ct.argv.begin(), ct.argv.end(), std::string("--help")) != ct.argv.end()) return;
+    if(std::find(ct.argv.begin(), ct.argv.end(), std::string("--markdown")) != ct.argv.end()) return;
     PreprocessInputFile(inputfile, comm);
 }
 

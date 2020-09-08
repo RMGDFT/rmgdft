@@ -53,6 +53,7 @@ std::unordered_map<int, std::string > option_headers = {
         {DIAG_OPTIONS, "Diagonalization options:"},
         {PERF_OPTIONS, "Performance related options:"},
         {LDAU_OPTIONS, "LDA+U options:"},
+        {TESTING_OPTIONS, "Testing options:"},
         {MISC_OPTIONS, "Miscellaneous options:"}};
 
 
@@ -85,7 +86,7 @@ void wordwrap(std::string const &input, size_t width, size_t indent)
 }
 
 // Writes a key to stdout
-void WriteKeyStdout(InputKey *ik)
+void WriteKeyStdout(InputKey *ik, std::string type)
 {
     const std::string& whitespace("\t\n\v\f\r ");
     const std::string yesno[2] = {"no", "yes"};
@@ -95,9 +96,16 @@ void WriteKeyStdout(InputKey *ik)
     char *pre, *post;
     char *pre_terminal = "    ";
     char *post_terminal = "";
-
+    char *pre_markdown = "    <b>";
+    char *post_markdown = "</b>";
     pre = pre_terminal;
     post = post_terminal;
+
+    if(type == "markdown")
+    {
+        pre = pre_markdown;
+        post = post_markdown;
+    }
 
     if(ik->KeyType == typeid(int).hash_code()) KeyType = "integer";
     if(ik->KeyType == typeid(double).hash_code()) KeyType = "double";
@@ -176,7 +184,7 @@ void WriteKeyStdout(InputKey *ik)
 }
 
 // Writes out input options for command line help and documentation
-void WriteInputOptions(std::unordered_map<std::string, InputKey *>& InputMap)
+void WriteInputOptions(std::unordered_map<std::string, InputKey *>& InputMap, std::string type)
 {
 
     printf ("\n");
@@ -221,6 +229,7 @@ void WriteInputOptions(std::unordered_map<std::string, InputKey *>& InputMap)
     }
 
     int group = -1;
+    bool first = true;
     for(auto it = SortedMap.begin();it != SortedMap.end(); ++it)
     {
         InputKey *ik = it->second;
@@ -228,9 +237,20 @@ void WriteInputOptions(std::unordered_map<std::string, InputKey *>& InputMap)
         if(group != current_group)
         {
             group = current_group;
-            std::cout << option_headers[group] << "\n" << std::endl;
+            if(type == "markdown")
+            {
+                if(!first) std::cout << "</pre>" << std::endl;
+                std::cout << "## " <<  option_headers[group] << "\n\n<pre>" << std::endl;
+                first = false;
+            }
+            else
+            {
+                std::cout << option_headers[group] << "\n" << std::endl;
+            }
         }
-        WriteKeyStdout(ik);
+        WriteKeyStdout(ik, type);
     }
+    if(type == "markdown") std::cout << "</pre>" << std::endl;
+
 }
 
