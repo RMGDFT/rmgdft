@@ -173,7 +173,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("pseudopotential", NULL , "",
                      CHECK_AND_FIX, OPTIONAL,
                      "External pseudopotentials may be specfied with this input key. The format uses the atomic symbol followed by the pseudopotential file name.    pseudopotential = \"Ni Ni.UPF  O O.UPF\"", 
-                     "");
+                     "", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("Hubbard_U", NULL , "",
                      CHECK_AND_FIX, OPTIONAL,
@@ -243,18 +243,20 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
                         "restart TDDFT");
+
     If.RegisterInputKey("stress", &lc.stress, false, 
-                        "flag to control stress cacluation");
+                        "flag to control stress cacluation", CONTROL_OPTIONS);
+
     If.RegisterInputKey("cell_relax", &lc.cell_relax, false, 
-                        "flag to control unit cell relaxation");
+                        "flag to control unit cell relaxation", CONTROL_OPTIONS);
 
     If.RegisterInputKey("processor_grid", &ProcessorGrid, &DefProcessorGrid, 3, OPTIONAL, 
                      "Three-D (x,y,z) layout of the MPI processes. ", 
-                     "You must specify a triplet of (X,Y,Z) dimensions for the processor grid. ");
+                     "You must specify a triplet of (X,Y,Z) dimensions for the processor grid. ", CELL_OPTIONS);
 
     If.RegisterInputKey("wavefunction_grid", &WavefunctionGrid, &DefWavefunctionGrid, 3, OPTIONAL, 
                      "Three-D (x,y,z) dimensions of the grid the wavefunctions are defined on. ", 
-                     "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid. ");
+                     "You must specify a triplet of (X,Y,Z) dimensions for the wavefunction grid. ", CELL_OPTIONS);
 
     If.RegisterInputKey("dipole_correction", &DipoleCorrection, &DefDipoleCorrection, 3, OPTIONAL, 
                      "(1,1,1) for molecule, dipole correction in all directions.  ", 
@@ -262,7 +264,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("cell_movable", &Cell_movable, &DefCell_movable, 9, OPTIONAL, 
                      "9 numbers to control cell relaxation  ", 
-                     "0 0 0 0 0 0 0 0 0 by default, no cell relax ");
+                     "0 0 0 0 0 0 0 0 0 by default, no cell relax ", CELL_OPTIONS);
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh. ", 
@@ -276,7 +278,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("bravais_lattice_type", NULL, &ibrav, "Orthorhombic Primitive",
                      CHECK_AND_TERMINATE, OPTIONAL, bravais_lattice_type,
                      "Bravais Lattice Type. ", 
-                     "bravais_lattice_type not found. ");
+                     "bravais_lattice_type not found. ", CELL_OPTIONS);
 
     If.RegisterInputKey("vdw_corr", NULL, &lc.vdw_corr, "None",
                      CHECK_AND_TERMINATE, OPTIONAL, vdw_corr,
@@ -296,7 +298,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("atomic_orbital_type", NULL, &ct.atomic_orbital_type, "delocalized",
                      CHECK_AND_TERMINATE, OPTIONAL, atomic_orbital_type,
                      "Atomic Orbital Type. Choices are localized and delocalized. ", 
-                     "atomic_orbital_type not found. ");
+                     "atomic_orbital_type not found. ", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("subdiag_driver", NULL, &lc.subdiag_driver, "auto",
                      CHECK_AND_FIX, OPTIONAL, subdiag_driver,
@@ -321,12 +323,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
                      CHECK_AND_FIX, OPTIONAL, crds_units,
                      "Units for the atomic coordinates. ", 
-                     "Coordinates must be specified in either Bohr or Angstrom. ");
+                     "Coordinates must be specified in either Bohr or Angstrom. ", CELL_OPTIONS);
 
     If.RegisterInputKey("lattice_units", NULL, NULL, "Bohr",
                      CHECK_AND_FIX, OPTIONAL, lattice_units,
                      "Units for the lattice vectors ", 
-                     "lattice vectors' unit  must be specified in either Bohr or Angstrom, or Alat. ");
+                     "lattice vectors' unit  must be specified in either Bohr or Angstrom, or Alat. ", CELL_OPTIONS);
 
     If.RegisterInputKey("charge_mixing_type", NULL, &lc.charge_mixing_type, "Pulay",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
@@ -373,7 +375,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("atomic_coordinate_type", NULL, &lc.crd_flag, "Absolute",
                      CHECK_AND_TERMINATE, OPTIONAL, atomic_coordinate_type,
                      "Flag indicated whether or not atomic coordinates are absolute or cell relative. ", 
-                     "atomic_coordinate_type must be either \"Absolute\" or \"Cell Relative\". Terminating. ");
+                     "atomic_coordinate_type must be either \"Absolute\" or \"Cell Relative\". Terminating. ", CELL_OPTIONS);
 
     if(lc.forceflag != NEB_RELAX) 
         If.RegisterInputKey("calculation_mode", NULL, &lc.forceflag, "Quench Electrons",
@@ -423,16 +425,18 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "were generated with and the default value of AUTO_XC means that "
             "the type specified in the pseudopotial is what RMG will use. That "
             "can be overridden by specifying a value here.",
-            "exchange_correlation_type not supported. Terminating. ");
+            "exchange_correlation_type not supported. Terminating. ", XC_OPTIONS);
 
     If.RegisterInputKey("dos_broading", &lc.gaus_broad, 0.0, 1.0, 0.1,
             CHECK_AND_FIX, OPTIONAL,
             "For DOS with Gaussian broading method",
             "in unit of eV ", OCCUPATION_OPTIONS);
+
     If.RegisterInputKey("dos_method", NULL, &lc.dos_flag, "tetrahedra",
             CHECK_AND_TERMINATE, OPTIONAL, dos_method,
             "tetrahedra or gauss smearing method for DOS calculation ",
             "dos_method not supported. Terminating. ", OCCUPATION_OPTIONS);
+
     If.RegisterInputKey("occupations_type", NULL, &lc.occ_flag, "Fermi Dirac",
             CHECK_AND_TERMINATE, OPTIONAL, occupations_type,
             "RMG supports several different ways of specifying orbital occupations. "
@@ -461,7 +465,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Method not supported. Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("x_gamma_extrapolation", &lc.gamma_extrapolation, true, 
-            "if set true, use exx extrapolation to gamma ");
+            "if set true, use exx extrapolation to gamma ", XC_OPTIONS);
 
     If.RegisterInputKey("ExxCholMax", &lc.exxchol_max, 1, 64, 8, 
             CHECK_AND_FIX, OPTIONAL, 
@@ -471,14 +475,17 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("exx_fraction", &lc.exx_fraction, -1.0, 1.0, -1.0,
             CHECK_AND_FIX, OPTIONAL,
             "when hybrid functional is used, the fraction of Exx",
-            "when the value is negative, it is defined from Functionals ", CONTROL_OPTIONS);
+            "when the value is negative, it is defined from Functionals ", XC_OPTIONS);
 
     If.RegisterInputKey("charge_pulay_Gspace", &lc.charge_pulay_Gspace, false, 
-            "if set true, charge density mixing the residual in G space ");
+            "if set true, charge density mixing the residual in G space ", MIXING_OPTIONS);
+
     If.RegisterInputKey("cube_rho", &lc.cube_rho, true, 
             "if set true, charge density is printed out in cube format ");
+
     If.RegisterInputKey("cube_vh", &lc.cube_vh, false, 
             "if set true, hatree potential is printed out in cube format ");
+
     If.RegisterInputKey("cube_pot", &lc.cube_vh, false, 
             "if set true, total potential is printed out in cube format ");
 
@@ -492,9 +499,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "if set true, calculate the exact exchange integrals ");
 
     If.RegisterInputKey("noncollinear", &lc.noncoll, false, 
-            "if set true, calculate noncollinear ");
+            "if set true, calculate noncollinear ", CONTROL_OPTIONS);
+
     If.RegisterInputKey("spinorbit", &lc.spinorbit, false, 
-            "if set true, calculate with spinorbit coupling ");
+            "if set true, calculate with spinorbit coupling ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("a_length", &celldm[0], 0.0, DBL_MAX, 0.0, 
             CHECK_AND_TERMINATE, OPTIONAL, 
@@ -516,17 +524,17 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     Ri::ReadVector<double> lattice_vector;
     If.RegisterInputKey("lattice_vector", &lattice_vector, &def_lattice_vector, 9, OPTIONAL,
             "Lattice vectors, a0, a1, a2 ",
-            "Optional Lattice vector input as 3x3 matrix or 9 numbers");
+            "Optional Lattice vector input as 3x3 matrix or 9 numbers", CELL_OPTIONS);
 
     If.RegisterInputKey("grid_spacing", &grid_spacing, 0.0, DBL_MAX, 0.35, 
             CHECK_AND_TERMINATE, OPTIONAL, 
             "Approximate grid spacing (bohr). ", 
-            "grid_spacing must be a positive number. Terminating. ");
+            "grid_spacing must be a positive number. Terminating. ", CELL_OPTIONS);
 
     If.RegisterInputKey("filter_factor", &lc.filter_factor, 0.06, 1.0, 0.25, 
             CHECK_AND_TERMINATE, OPTIONAL, 
             "Filtering factor. ", 
-            "filter_factor must lie in the range (0.1, 1.0). Terminating. ");
+            "filter_factor must lie in the range (0.1, 1.0). Terminating. ", PSEUDO_OPTIONS);
 
     // Default of zero is OK because this means to try to set it automatically later on.
     // The max value of 128 covers any possible hardware scenario I can imagine currently but might
@@ -555,7 +563,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "(144,144,144). The default value is 2 but it may sometimes be "
             "beneficial to adjust this. (For USPP the minimum value is also 2 "
             "and it cannot be set lower. NCPP can be set to 1).",
-            "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset. ");
+            "potential_grid_refinement must be in the range (0 <= ratio <= 4) where 0 means autoset. ", CELL_OPTIONS);
 
     If.RegisterInputKey("davidson_multiplier", &lc.davidx, 0, 6, 0, 
             CHECK_AND_FIX, OPTIONAL, 
@@ -716,7 +724,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("projector_expansion_factor", &lc.projector_expansion_factor, 0.5, 3.0, 1.0,
             CHECK_AND_FIX, OPTIONAL,
             "When using localized projectors the radius can be adjusted with this parameter.",
-            "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0 ");
+            "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0 ", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
             CHECK_AND_FIX, OPTIONAL,
@@ -775,7 +783,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Atomic forces may be computed to varying degrees of accuracy depending "
             "on the requirements of a specific problem. A value of 0 implies highest "
             "accuracy which is obtained by using FFTs in place of finite differencing. ",
-            "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8. ");
+            "kohn_sham_fd_order must lie in the range (4,12). Resetting to the default value of 8. ", MD_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.0, 1.2, 1.0,
             CHECK_AND_FIX, OPTIONAL,
@@ -1021,13 +1029,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Flag indicating whether or not to use alternate zgemm implementation.");
 
     If.RegisterInputKey("filter_dpot", &lc.filter_dpot, false,
-            "Flag indicating whether or not to filter density depenedent potentials.");
+            "Flag indicating whether or not to filter density dependent potentials.", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, false,
             "Flag indicating whether or not to use square root technique for density interpolation.");
 
     If.RegisterInputKey("renormalize_forces", &lc.renormalize_forces, true,
-            "Flag indicating whether or not to renormalize forces.");
+            "Flag indicating whether or not to renormalize forces.", MD_OPTIONS);
 
     If.RegisterInputKey("coalesce_states", &lc.coalesce_states, false,
             "Flag indicating whether or not to coalesce states.", CONTROL_OPTIONS);
@@ -1039,14 +1047,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "significant computational savings with a small loss of accuracy. "
             "For smaller cells the computational cost is the same for localized "
             "or delocalized projectors so it is better to set localize_projectors "
-            "to false.");
+            "to false.", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("localize_localpp", &lc.localize_localpp, true,
             "The local potential associated with a particular ion also decays "
             "rapidly in real-space with increasing r. As with beta projectors "
             "truncating the real-space representation for large cells can lead "
             "to significant computational savings with a small loss of accuracy "
-            "but it should be set to false for small cells.");
+            "but it should be set to false for small cells.", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("write_pseudopotential_plots", &lc.write_pp_flag, false,
             "Flag to indicate whether or not to write pseudopotential plots. ", CONTROL_OPTIONS);

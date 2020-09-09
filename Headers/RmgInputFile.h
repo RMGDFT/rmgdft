@@ -24,15 +24,18 @@ namespace po = boost::program_options;
 #define OPTIONAL false
 
 #define CONTROL_OPTIONS 0
-#define KS_SOLVER_OPTIONS 1
-#define OCCUPATION_OPTIONS 2
-#define MIXING_OPTIONS 3
-#define MD_OPTIONS 4
-#define DIAG_OPTIONS 5
-#define PERF_OPTIONS 6
-#define LDAU_OPTIONS 7 
-#define MISC_OPTIONS 8 
-#define TESTING_OPTIONS 9
+#define CELL_OPTIONS 1
+#define PSEUDO_OPTIONS 2
+#define XC_OPTIONS 3
+#define OCCUPATION_OPTIONS 4
+#define MIXING_OPTIONS 5
+#define KS_SOLVER_OPTIONS 6
+#define MD_OPTIONS 7
+#define DIAG_OPTIONS 8
+#define PERF_OPTIONS 9
+#define LDAU_OPTIONS  10
+#define MISC_OPTIONS 11
+#define TESTING_OPTIONS 12
 
 class RmgInputFile {
     public:

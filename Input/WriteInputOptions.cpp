@@ -44,17 +44,20 @@
 #include "RmgInputFile.h"
 #include "InputOpts.h"
 
-std::unordered_map<int, std::string > option_headers = {
-        {CONTROL_OPTIONS, "Control options:"},
-        {KS_SOLVER_OPTIONS, "Kohn-Sham solver options:"},
-        {OCCUPATION_OPTIONS, "Orbital occupation options:"},
-        {MIXING_OPTIONS, "Charge density mixing options:"},
-        {MD_OPTIONS, "Relaxation/Molecular dynamics options:"},
-        {DIAG_OPTIONS, "Diagonalization options:"},
-        {PERF_OPTIONS, "Performance related options:"},
-        {LDAU_OPTIONS, "LDA+U options:"},
-        {TESTING_OPTIONS, "Testing options:"},
-        {MISC_OPTIONS, "Miscellaneous options:"}};
+std::map<int, std::string > option_headers = {
+        {CONTROL_OPTIONS, "Control options"},
+        {CELL_OPTIONS, "Cell parameter options"},
+        {PSEUDO_OPTIONS, "Pseudopotential related options"},
+        {KS_SOLVER_OPTIONS, "Kohn Sham solver options"},
+        {XC_OPTIONS, "Exchange correlation options"},
+        {OCCUPATION_OPTIONS, "Orbital occupation options"},
+        {MIXING_OPTIONS, "Charge density mixing options"},
+        {MD_OPTIONS, "Relaxation and Molecular dynamics options"},
+        {DIAG_OPTIONS, "Diagonalization options"},
+        {PERF_OPTIONS, "Performance related options"},
+        {LDAU_OPTIONS, "LDAU options"},
+        {TESTING_OPTIONS, "Testing options"},
+        {MISC_OPTIONS, "Miscellaneous options"}};
 
 
 
@@ -187,15 +190,36 @@ void WriteKeyStdout(InputKey *ik, std::string type)
 void WriteInputOptions(std::unordered_map<std::string, InputKey *>& InputMap, std::string type)
 {
 
-    printf ("\n");
-    printf ("               * * * * * * * * * *\n");
-    printf ("               *    R   M   G    *\n");
-    printf ("               * * * * * * * * * *\n");
-    printf ("\n");
+    if(type != "markdown")
+    {
+        printf ("\n");
+        printf ("               * * * * * * * * * *\n");
+        printf ("               *    R   M   G    *\n");
+        printf ("               * * * * * * * * * *\n");
+        printf ("\n");
+    }
+
     printf (" -- A Real Space Multigrid Electronic structure code --\n");
     printf (" --      More information at www.rmgdft.org          --\n");
     printf("\n\n");
-    printf(""
+
+    // Write table of contents with links for markdown
+    if(type == "markdown")
+    {
+        std::cout << "[\\[" << "Introduction " << "\\] ]" << "(#" << "introduction" << ")" << std::endl;
+        for(auto it = option_headers.begin();it != option_headers.end(); ++it)
+        {
+            std::string section = it->second;
+            std::string link = section;
+            std::transform(link.begin(), link.end(), link.begin(), [](unsigned char c){ return std::tolower(c); });
+            std::string plink = boost::replace_all_copy(link, " ", "-");
+            std::cout << "[\\[" << section << "\\] ]" << "(#" << plink << ")" << std::endl;
+        }
+        printf("\n\n");
+        printf("## Introduction\n\n");
+    }
+
+printf(""
 "    The RMG input file consists of a set of key-value pairs of the form.\n"
 "    \n"
 "        name = \"scalar\"\n\n"
@@ -218,6 +242,7 @@ void WriteInputOptions(std::unordered_map<std::string, InputKey *>& InputMap, st
 "    \n"
 "        description = \"64 atom diamond cell test run at gamma point\n"
 "        using a Vanderbilt ultrasoft pseudopotential\"\n");
+
 
     printf("\n\n");
     std::map<InputKey *, InputKey *, keycompare> SortedMap;
