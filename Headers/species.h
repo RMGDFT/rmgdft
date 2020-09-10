@@ -215,13 +215,13 @@ public:
     int max_l;
 
     /* Projectors on radial grid. KB for norm-conserving and beta_n(r) for Vanderbilt Ultrasoft. */
-    double *beta[MAX_NB];
+    std::vector<double *> beta;
 
     /* Difference potentials for semi-local dVl = V_l - V_local */
-    double *dVl[MAX_L];
+    std::vector<double *> dVl;
 
     /* l-value associated with each difference potential */
-    int dVl_l[MAX_L];
+    std::vector<int> dVl_l;
 
     /* Total number of radial projectors */
     int nbeta;

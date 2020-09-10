@@ -199,8 +199,8 @@ void LoadXmlPseudo(SPECIES *sp)
 
                     // Generate the difference potentials.
                     std::string vdata = s.second.get<std::string>("radfunc.data");
-                    sp->dVl[sp->nbeta] = UPF_str_to_double_array(vdata, r_total, 1);
-                    sp->dVl_l[sp->nbeta] = lval;
+                    sp->dVl.emplace_back(UPF_str_to_double_array(vdata, r_total, 1));
+                    sp->dVl_l.emplace_back(lval);
                     for(int idx=0;idx < sp->rg_points;idx++)
                     {
                         sp->dVl[sp->nbeta][idx] = sp->dVl[sp->nbeta][idx] / sp->r[idx] - sp->vloc0[idx];
@@ -266,7 +266,7 @@ void LoadXmlPseudo(SPECIES *sp)
         if(vl > MAX_L)
             throw RmgFatalException() << "Problem detected with pseudopotential file. MAX_L too large. Terminating.\n";
 
-        sp->beta[ip] = new double[sp->rg_points];
+        sp->beta.emplace_back(new double[sp->rg_points]);
 
         for(int idx=0;idx < sp->rg_points;idx++) sp->beta[ip][idx] = sp->atomic_wave[ip][idx] * sp->dVl[vl][idx];
         sp->llbeta.emplace_back(sp->atomic_wave_l[ip]);

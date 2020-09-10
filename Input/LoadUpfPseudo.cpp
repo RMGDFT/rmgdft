@@ -348,7 +348,7 @@ void LoadUpfPseudo(SPECIES *sp)
             typedef ptree::path_type path;
             std::string betapath = "UPF/PP_NONLOCAL/PP_BETA." + boost::lexical_cast<std::string>(ip + 1);
             std::string PP_BETA = upf_tree.get<std::string>(path(betapath, '/'));
-            sp->beta[ip] = UPF_read_mesh_array(PP_BETA, r_total, ibegin);
+            sp->beta.emplace_back(UPF_read_mesh_array(PP_BETA, r_total, ibegin));
 
             for(int ix = 0;ix < sp->rg_points;ix++) sp->beta[ip][ix] /= sp->r[ix];
             sp->llbeta.emplace_back(upf_tree.get<int>(path(betapath + "/<xmlattr>/angular_momentum", '/')));
