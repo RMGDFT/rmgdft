@@ -18,8 +18,9 @@
 #define LDAU_OPTIONS           10
 #define TDDFT_OPTIONS          11
 #define POISSON_OPTIONS        12
-#define TESTING_OPTIONS        13
-#define MISC_OPTIONS           14
+#define OUTPUT_OPTIONS         13
+#define TESTING_OPTIONS        14
+#define MISC_OPTIONS           15
 
 // These can be or'd with the above to attach a modifier
 #define EXPERT_OPTION 16777216

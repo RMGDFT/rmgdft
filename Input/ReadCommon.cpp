@@ -239,10 +239,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("tddft_mode", NULL, &lc.tddft_mode, "electric field",
                      CHECK_AND_TERMINATE, OPTIONAL,tddft_mode, 
                      "TDDFT mode ", 
-                     "either electric field kick or point charge kick");
+                     "either electric field kick or point charge kick", TDDFT_OPTIONS);
 
     If.RegisterInputKey("restart_tddft", &lc.restart_tddft, false, 
-                        "restart TDDFT");
+                        "restart TDDFT", TDDFT_OPTIONS);
 
     If.RegisterInputKey("stress", &lc.stress, false, 
                         "flag to control stress cacluation", CONTROL_OPTIONS);
@@ -347,7 +347,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("charge_analysis_period", &lc.charge_analysis_period, 0, 500, 0,
                      CHECK_AND_FIX, OPTIONAL,
                      "How often to  perform and write out charge analysis.",
-                     "charge_analysis_write_period must lie in the range (1,500). Resetting to the default value of 0. ");
+                     "charge_analysis_write_period must lie in the range (1,500). Resetting to the default value of 0. ", OUTPUT_OPTIONS);
     
     If.RegisterInputKey("dipole_moment", &lc.dipole_moment, false, 
                         "Turns on calculation of dipole moment for the entire cell.");
@@ -355,7 +355,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("vdwdf_grid_type", NULL, NULL, "Coarse",
                      CHECK_AND_TERMINATE, OPTIONAL, vdwdf_grid_type,
                      "Type of grid to use when computing vdw-df correlation. ", 
-                     "vdwdf_grid_type be either \"Coarse\" or \"Fine\". Terminating. ");
+                     "vdwdf_grid_type be either \"Coarse\" or \"Fine\". Terminating. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("relax_mass", NULL, &lc.relax_mass, "Atomic",
                      CHECK_AND_TERMINATE, OPTIONAL, relax_mass,
@@ -548,12 +548,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL, 
             "Allocation sizes in finite difference routines less than this value are stack "
             "rather than heap based. ", 
-            "fd_allocation_limit must lie in the range 1024 to 262144. ");
+            "fd_allocation_limit must lie in the range 1024 to 262144. ", PERF_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("rmg_threads_per_node", &lc.MG_THREADS_PER_NODE, 0, 64, 0, 
             CHECK_AND_FIX, OPTIONAL, 
             "Number of Multigrid/Davidson threads each MPI process will use. A value of 0 means set automatically.", 
-            "threads_per_node cannnot be a negative number and must be less than 64. ");
+            "threads_per_node cannnot be a negative number and must be less than 64. ", PERF_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("potential_grid_refinement", &lc.FG_RATIO, 0, 4, 0, 
             CHECK_AND_FIX, OPTIONAL, 
@@ -654,7 +654,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("system_charge", &lc.background_charge, -DBL_MAX, DBL_MAX, 0.0,
             CHECK_AND_FIX, OPTIONAL,
             "Number of excess holes in the system (useful for doped systems). Example: 2 means system is missing two electrons ",
-            "system_charge must be a real number. ");
+            "system_charge must be a real number. ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("occupation_electron_temperature_eV", &lc.occ_width, 0.0, 2.0, 0.04,
             CHECK_AND_FIX, OPTIONAL,
@@ -689,7 +689,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("tddft_steps", &lc.tddft_steps, 0, INT_MAX, 2000,
             CHECK_AND_FIX, OPTIONAL, 
             "Maximum number of tddft steps to perform. ", 
-            "tddft steps must be greater than 0. Resetting to the default value of 2000 ", CONTROL_OPTIONS);
+            "tddft steps must be greater than 0. Resetting to the default value of 2000 ", TDDFT_OPTIONS);
 
     If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 10, 5,
             CHECK_AND_FIX, OPTIONAL,
@@ -734,7 +734,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("write_eigvals_period", &lc.write_eigvals_period, 1, 100, 5,
             CHECK_AND_FIX, OPTIONAL,
             "How often to output eigenvalues in units of scf steps.",
-            "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5. ", CONTROL_OPTIONS);
+            "write_eigvals_period must lie in the range (1,100). Resetting to the default value of 5. ", OUTPUT_OPTIONS);
 
     If.RegisterInputKey("max_md_steps", &lc.max_md_steps, 0, INT_MAX, 100,
             CHECK_AND_TERMINATE, OPTIONAL,
@@ -838,7 +838,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("poisson_mg_levels", &lc.poi_parm.levels, -1, 6, -1,
             CHECK_AND_FIX, OPTIONAL,
             "Number of multigrid levels to use in the hartree multigrid solver. ",
-            "poisson_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1). ");
+            "poisson_mg_levels must lie in the range (-1,6) where -1=automatic. Resetting to the default value of automatic (-1). ",
+            POISSON_OPTIONS);
 
     If.RegisterInputKey("scalapack_block_factor", &lc.scalapack_block_factor, 4, 512,32,
             CHECK_AND_FIX, OPTIONAL,
@@ -909,17 +910,20 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "folded_spectrum_iterations must lie in the range (0,20). Resetting to the default value of 2. ", DIAG_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("laplacian_offdiag", &lc.laplacian_offdiag, false, 
-            "if set to true, we use LaplacianCoeff.cpp to generate coeff");
+            "if set to true, we use LaplacianCoeff.cpp to generate coeff", MISC_OPTIONS|EXPERT_OPTION);
+
     If.RegisterInputKey("laplacian_autocoeff", &lc.laplacian_autocoeff, false, 
-            "if set to true, we use LaplacianCoeff.cpp to generate coeff");
+            "if set to true, we use LaplacianCoeff.cpp to generate coeff", MISC_OPTIONS|EXPERT_OPTION);
+
     If.RegisterInputKey("use_cpdgemr2d", &lc.use_cpdgemr2d, true, 
             "if set to true, we use Cpdgemr2d to change matrix distribution");
 
     //RMG2BGW options
     If.RegisterInputKey("use_symmetry", &lc.is_use_symmetry, true, 
-            "For non-gamma point, always true, for gamma point, optional");
+            "For non-gamma point, always true, for gamma point, optional", CELL_OPTIONS);
+
     If.RegisterInputKey("frac_symmetry", &lc.frac_symm, true, 
-            "For supercell calculation, one can disable the fractional translation symmetry");
+            "For supercell calculation, one can disable the fractional translation symmetry", CELL_OPTIONS);
 
     If.RegisterInputKey("rmg2bgw", &lc.rmg2bgw, false, 
             "Write wavefunction in G-space to BerkeleyGW WFN file.", MISC_OPTIONS|EXPERIMENTAL_OPTION);
@@ -983,7 +987,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 #endif
 
     If.RegisterInputKey("write_orbital_overlaps", &lc.write_orbital_overlaps, false,
-            "If true the orbital overlap matrix from successive MD steps is written.");
+            "If true the orbital overlap matrix from successive MD steps is written.", OUTPUT_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_ke_fft", &lc.kohn_sham_ke_fft, false,
             "Special purpose flag which will force use of an FFT for the kinetic energy operator.", MISC_OPTIONS|EXPERT_OPTION);
@@ -1036,7 +1040,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Flag indicating whether or not to filter density dependent potentials.", PSEUDO_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, false,
-            "Flag indicating whether or not to use square root technique for density interpolation.");
+            "Flag indicating whether or not to use square root technique for density interpolation.", MISC_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("renormalize_forces", &lc.renormalize_forces, true,
             "Flag indicating whether or not to renormalize forces.", MD_OPTIONS);
@@ -1061,19 +1065,19 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "but it should be set to false for small cells.", PSEUDO_OPTIONS);
 
     If.RegisterInputKey("write_pseudopotential_plots", &lc.write_pp_flag, false,
-            "Flag to indicate whether or not to write pseudopotential plots. ", CONTROL_OPTIONS);
+            "Flag to indicate whether or not to write pseudopotential plots. ", OUTPUT_OPTIONS);
 
     If.RegisterInputKey("equal_initial_density", &lc.init_equal_density_flag, false,
             "Specifies whether to set initial up and down density to be equal.");
 
     If.RegisterInputKey("write_pdos", &lc.pdos_flag, false,
-            "Flag to write partial density of states.");
+            "Flag to write partial density of states.", OUTPUT_OPTIONS);
 
     If.RegisterInputKey("initial_diagonalization", &lc.initdiag, true, 
             "Perform initial subspace diagonalization.", DIAG_OPTIONS);
 
     If.RegisterInputKey("verbose", &lc.verbose, false,
-            "Flag for writing out extra information ");
+            "Flag for writing out extra information ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("folded_spectrum", &lc.use_folded_spectrum, false, 
             "When the number of eigenvectors is large using folded_spectrum is "
@@ -1119,7 +1123,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "The initial ionic velocities for a molecular dyanamics run are randomly initialized to the target temperature.", MD_OPTIONS);
 
     If.RegisterInputKey("output_rho_xsf", NULL, false,
-            "Generate xsf format for electronic density.");
+            "Generate xsf format for electronic density.", OUTPUT_OPTIONS);
 
     If.RegisterInputKey("rms_convergence_criterion", &lc.thr_rms, 0.0, 1.0e-3, 1.0e-7,
             CHECK_AND_FIX, OPTIONAL,
@@ -1181,11 +1185,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     Ri::ReadVector<double> tddft_qpos;
     If.RegisterInputKey("tddft_qpos", &tddft_qpos, &def_tddft_qpos, 3, OPTIONAL,
             "cartesian coordinate of the point charge for tddft",
-            "You must specify a triplet of (X,Y,Z) dimensions. ");
+            "You must specify a triplet of (X,Y,Z) dimensions. ", TDDFT_OPTIONS);
+
     If.RegisterInputKey("tddft_qgau", &lc.tddft_qgau, 0.0, DBL_MAX, 1.0,
             CHECK_AND_FIX, OPTIONAL,
             "Gaussian parameter for point charge to Gaussian charge",
-            "");
+            "", TDDFT_OPTIONS);
 
     Ri::ReadVector<double> def_electric_field({{0.0,0.0,1.0}});
     Ri::ReadVector<double> electric_field;
@@ -1229,8 +1234,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("kpoint_distribution", &pelc.pe_kpoint, -INT_MAX, INT_MAX, -1,
             CHECK_AND_FIX, OPTIONAL,
-            "",
-            "");
+"This option affects kpoint parallelization. If there are M MPI procs then N = M/kpoint_distribution procs "
+" are assigned to each kpoint. M must be evenly divisible by kpoint_distribution.", 
+            "", CELL_OPTIONS);
 
     If.RegisterInputKey("time_reversal", &lc.time_reversal, true,
             "if false, no k -> -k symmetry", CONTROL_OPTIONS);
