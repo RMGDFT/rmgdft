@@ -17,7 +17,7 @@
 // some means of tracking whether or not the memory needs to be freed in the des
 
 // ints
-InputKey::InputKey(std::string& NewKeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, int *ReadVal, int Minval, int Maxval, int Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg, size_t group) : KeyName(NewKeyName) {
 
     if(!ReadVal) {
         allocated = true;
@@ -37,7 +37,7 @@ InputKey::InputKey(std::string& NewKeyName, int *ReadVal, int Minval, int Maxval
 }
 
 // doubles
-InputKey::InputKey(std::string& NewKeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, double *ReadVal, double Minval, double Maxval, double Defval, bool Fix, bool Required, const char *helpmsg, const char *errmsg, size_t group) : KeyName(NewKeyName) {
 
     if(!ReadVal) {
         allocated = true;
@@ -57,7 +57,7 @@ InputKey::InputKey(std::string& NewKeyName, double *ReadVal, double Minval, doub
 }
 
 // booleans
-InputKey::InputKey(std::string& NewKeyName, bool *ReadVal, bool Defval, const char *helpmsg, int group) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, bool *ReadVal, bool Defval, const char *helpmsg, size_t group) : KeyName(NewKeyName) {
 
     if(!ReadVal) {
         allocated = true;
@@ -74,7 +74,7 @@ InputKey::InputKey(std::string& NewKeyName, bool *ReadVal, bool Defval, const ch
 }
 
 // Regular string
-InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, const char *Defstr, bool Fix, bool Required, const char *helpmsg, const char *errmsg, size_t group) : KeyName(NewKeyName) {
 
     if(ReadStr) {
         InputKey::Readstr = *ReadStr;
@@ -92,7 +92,7 @@ InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, const char *De
 }
 
 // Enumerated string
-InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, int *ReadVal, const char *Defstr, bool Fix, bool Required, const std::unordered_map<std::string, int> Allowed, const char *helpmsg, const char *errmsg, size_t group) : KeyName(NewKeyName) {
 
     if(ReadStr) {
         InputKey::Readstr = *ReadStr;
@@ -112,7 +112,7 @@ InputKey::InputKey(std::string& NewKeyName, std::string *ReadStr, int *ReadVal, 
 }
 
 // Integer vector
-InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<int> *V , RmgInput::ReadVector<int> *Defintvec, size_t count, bool Required, const char* helpmsg, const char *errmsg, size_t group) : KeyName(NewKeyName) {
 
     if(!V) {
         allocated = true;
@@ -130,7 +130,7 @@ InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<int> *V , RmgIn
 }
 
 // Double vector
-InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<double> *V,  RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg, int group) : KeyName(NewKeyName) {
+InputKey::InputKey(std::string& NewKeyName, RmgInput::ReadVector<double> *V,  RmgInput::ReadVector<double> *Defdblvec, size_t count, bool Required, const char* helpmsg, const char *errmsg, size_t group) : KeyName(NewKeyName) {
 
     if(!V) {
         allocated = true;

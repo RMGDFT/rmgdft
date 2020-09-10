@@ -268,11 +268,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("kpoint_mesh", &kpoint_mesh, &def_kpoint_mesh, 3, OPTIONAL, 
                      "Three-D layout of the kpoint mesh. ", 
-                     "You must specify a triplet of coordinate dimensions for the kpoint_mesh. ");
+                     "You must specify a triplet of coordinate dimensions for the kpoint_mesh. ", CELL_OPTIONS);
 
     If.RegisterInputKey("kpoint_is_shift", &kpoint_is_shift, &def_kpoint_is_shift, 3, OPTIONAL, 
                      "Three-D layout of the kpoint shift. ", 
-                     "You must specify a triplet of coordinate dimensions for kpoint_is_shift. ");
+                     "You must specify a triplet of coordinate dimensions for kpoint_is_shift. ", CELL_OPTIONS);
 
     int ibrav;
     If.RegisterInputKey("bravais_lattice_type", NULL, &ibrav, "Orthorhombic Primitive",
@@ -317,7 +317,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("poisson_solver", NULL, &lc.poisson_solver, "pfft",
                      CHECK_AND_FIX, OPTIONAL, poisson_solver,
                      "poisson solver. ", 
-                     "poisson_solver must be multigrid or pfft. Resetting to pfft. ");
+                     "poisson_solver must be multigrid or pfft. Resetting to pfft. ", POISSON_OPTIONS);
 
 
     If.RegisterInputKey("crds_units", NULL, NULL, "Bohr",
@@ -534,7 +534,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("filter_factor", &lc.filter_factor, 0.06, 1.0, 0.25, 
             CHECK_AND_TERMINATE, OPTIONAL, 
             "Filtering factor. ", 
-            "filter_factor must lie in the range (0.1, 1.0). Terminating. ", PSEUDO_OPTIONS);
+            "filter_factor must lie in the range (0.1, 1.0). Terminating. ", PSEUDO_OPTIONS|EXPERT_OPTION);
 
     // Default of zero is OK because this means to try to set it automatically later on.
     // The max value of 128 covers any possible hardware scenario I can imagine currently but might
@@ -640,7 +640,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("state_block_size", &lc.state_block_size, 1, INT_MAX, 64, 
             CHECK_AND_FIX, OPTIONAL, 
             "state_block used in nlforce. ", 
-            "it is better to be 2^n. ");
+            "it is better to be 2^n. ", PERF_OPTIONS|EXPERT_OPTION);
 
 
     If.RegisterInputKey("extra_random_lcao_states", &lc.extra_random_lcao_states, 0, INT_MAX, 0, 
@@ -689,7 +689,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("tddft_steps", &lc.tddft_steps, 0, INT_MAX, 2000,
             CHECK_AND_FIX, OPTIONAL, 
             "Maximum number of tddft steps to perform. ", 
-            "tddft steps must be greater than 0. Resetting to the default value of 2000 ");
+            "tddft steps must be greater than 0. Resetting to the default value of 2000 ", CONTROL_OPTIONS);
 
     If.RegisterInputKey("charge_pulay_order", &lc.charge_pulay_order, 1, 10, 5,
             CHECK_AND_FIX, OPTIONAL,
@@ -704,7 +704,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("unoccupied_tol_factor", &lc.unoccupied_tol_factor, 1.0, 100000.0, 1000.0,
             CHECK_AND_FIX, OPTIONAL,
             "When using the Davidson Kohn-Sham solver unoccupied states are converged to a less stringent tolerance than occupied orbitals with the ratio set by this parameter.",
-            "unoccupied_tol_factor must lie in the range (0.000001,100000.0). Resetting to the default value of 1000.0 ", KS_SOLVER_OPTIONS);
+            "unoccupied_tol_factor must lie in the range (0.000001,100000.0). Resetting to the default value of 1000.0 ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("charge_pulay_refresh", &lc.charge_pulay_refresh, 1, INT_MAX, 100,
             CHECK_AND_FIX, OPTIONAL,
@@ -724,7 +724,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("projector_expansion_factor", &lc.projector_expansion_factor, 0.5, 3.0, 1.0,
             CHECK_AND_FIX, OPTIONAL,
             "When using localized projectors the radius can be adjusted with this parameter.",
-            "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0 ", PSEUDO_OPTIONS);
+            "projector_expansion_factor must lie in the range (0.5,3.0). Resetting to the default value of 1.0 ", PSEUDO_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("write_data_period", &lc.checkpoint, 5, 50, 5,
             CHECK_AND_FIX, OPTIONAL,
@@ -744,24 +744,24 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("hartree_max_sweeps", &lc.hartree_max_sweeps, 5, 100, 10,
             CHECK_AND_FIX, OPTIONAL,
             "Maximum number of hartree iterations to perform per scf step. ",
-            "hartree_max_sweeps must lie in the range (5,100). Resetting to the default value of 10. ");
+            "hartree_max_sweeps must lie in the range (5,100). Resetting to the default value of 10. ", POISSON_OPTIONS);
 
     If.RegisterInputKey("hartree_min_sweeps", &lc.hartree_min_sweeps, 0, 5, 5,
             CHECK_AND_FIX, OPTIONAL,
             "Minimum number of hartree iterations to perform per scf step. ",
-            "hartree_min_sweeps must lie in the range (0.5). Resetting to the default value of 5. ");
+            "hartree_min_sweeps must lie in the range (0.5). Resetting to the default value of 5. ", POISSON_OPTIONS);
 
     If.RegisterInputKey("kohn_sham_pre_smoothing", &lc.eig_parm.gl_pre, 1, 5, 2,
             CHECK_AND_FIX, OPTIONAL,
             "Number of global grid pre-smoothing steps to perform before a "
             "multigrid preconditioner iteration. ",
-            "kohn_sham_pre_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
+            "kohn_sham_pre_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("kohn_sham_post_smoothing", &lc.eig_parm.gl_pst, 1, 5, 2,
             CHECK_AND_FIX, OPTIONAL,
             "Number of global grid post-smoothing steps to perform after a "
             "multigrid preconditioner iteration. ",
-            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS);
+            "kohn_sham_post_smoothing must lie in the range (1,5). Resetting to the default value of 2. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("kohn_sham_mucycles", &lc.eig_parm.mucycles, 1, 6, 2,
             CHECK_AND_FIX, OPTIONAL,
@@ -775,7 +775,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "kohn_sham_fd_order parameter. The default is 8 and is fine for most "
             "purposes but higher accuracy is obtainable with 10th order at the cost "
             "of some additional computational expense.",
-            "kohn_sham_fd_order must lie in the range (6,10). Resetting to the default value of 8. ", KS_SOLVER_OPTIONS);
+            "kohn_sham_fd_order must lie in the range (6,10). Resetting to the default value of 8. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
 
     If.RegisterInputKey("force_grad_order", &lc.force_grad_order, 0, 12, 8,
@@ -788,47 +788,47 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("kohn_sham_coarse_time_step", &lc.eig_parm.sb_step, 0.0, 1.2, 1.0,
             CHECK_AND_FIX, OPTIONAL,
             "Time step to use in the kohn-sham multigrid solver on the coarse levels. ",
-            "kohn_sham_coarse_time_step must lie in the range (0.5,1.2). Resetting to the default value of 1.0. ", KS_SOLVER_OPTIONS);
+            "kohn_sham_coarse_time_step must lie in the range (0.5,1.2). Resetting to the default value of 1.0. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("kohn_sham_time_step", &lc.eig_parm.gl_step, 0.0, 2.0, 0.66,
             CHECK_AND_FIX, OPTIONAL,
             "Smoothing timestep to use on the fine grid in the the kohn-sham multigrid preconditioner. ",
-            "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 0.66. ", KS_SOLVER_OPTIONS);
+            "kohn_sham_time_step must lie in the range (0.4,2.0). Resetting to the default value of 0.66. ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("kohn_sham_mg_timestep", &lc.eig_parm.mg_timestep, 0.0, 2.0, 0.6666666666666,
             CHECK_AND_FIX, OPTIONAL,
             "timestep for multigrid correction. ",
-            "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 0.66 ", KS_SOLVER_OPTIONS);
+            "kohn_sham_mg_step must lie in the range (0.0,2.0). Resetting to the default value of 0.66 ", KS_SOLVER_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("poisson_pre_smoothing", &lc.poi_parm.gl_pre, 1, 6, 2,
             CHECK_AND_FIX, OPTIONAL,
             "Number of global hartree grid pre-smoothing steps to perform before a multigrid iteration. ",
-            "poisson_pre_smoothing must lie in the range (1,6). Resetting to the default value of 2. ");
+            "poisson_pre_smoothing must lie in the range (1,6). Resetting to the default value of 2. ", POISSON_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("poisson_post_smoothing", &lc.poi_parm.gl_pst, 1, 6, 1,
             CHECK_AND_FIX, OPTIONAL,
             "Number of global hartree grid post-smoothing steps to perform after a multigrid iteration. ",
-            "");
+            "", POISSON_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("poisson_mucycles", &lc.poi_parm.mucycles, 1, 4, 3,
             CHECK_AND_FIX, OPTIONAL,
             "Number of mu (also known as W) cycles to use in the hartree multigrid solver. ",
-            "poisson_mucycles must lie in the range (1,4). Resetting to the default value of 3. ");
+            "poisson_mucycles must lie in the range (1,4). Resetting to the default value of 3. ", POISSON_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("poisson_finest_time_step", &lc.poi_parm.gl_step, 0.4, 1.0, 1.0,
             CHECK_AND_FIX, OPTIONAL,
             "Time step to use in the poisson multigrid solver on the finest level. ",
-            "poisson_finest_time_step must lie in the range (0.4,1.0). Resetting to the default value of 1.0. ");
+            "poisson_finest_time_step must lie in the range (0.4,1.0). Resetting to the default value of 1.0. ", POISSON_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("poisson_coarse_time_step", &lc.poi_parm.sb_step, 0.4, 1.0, 0.8,
             CHECK_AND_FIX, OPTIONAL,
             "Time step to use in the poisson multigrid solver on the coarse levels. ",
-            "poisson_coarse_time_step must lie in the range (0.4,1.0). Resetting to the default value of 0.8. ");
+            "poisson_coarse_time_step must lie in the range (0.4,1.0). Resetting to the default value of 0.8. ", POISSON_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("poisson_coarsest_steps", &lc.poi_parm.coarsest_steps, 10, 100, 25,
             CHECK_AND_FIX, OPTIONAL,
             "Number of smoothing steps to use on the coarsest level in the hartree multigrid solver. ",
-            "poisson_coarsest_steps must lie in the range (10,100). Resetting to the default value of 25. ");
+            "poisson_coarsest_steps must lie in the range (10,100). Resetting to the default value of 25. ", POISSON_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("kohn_sham_mg_levels", &lc.eig_parm.levels, -1, 6, -1,
             CHECK_AND_FIX, OPTIONAL,
@@ -848,7 +848,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("non_local_block_size", &lc.non_local_block_size, 64, 40000, 512,
             CHECK_AND_FIX, OPTIONAL,
             "Block size to use when applying the non-local and S operators. ",
-            "non_local_block_size must lie in the range (64,40000). Resetting to the default value of 512. ");
+            "non_local_block_size must lie in the range (64,40000). Resetting to the default value of 512. ", PERF_OPTIONS);
 
     If.RegisterInputKey("E_POINTS", &lc.E_POINTS, 201, 201, 201,
             CHECK_AND_FIX, OPTIONAL,
@@ -888,7 +888,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("coalesce_factor", &pelc.coalesce_factor, 1, 16, 4,
             CHECK_AND_FIX, OPTIONAL,
             "Grid coalescing factor.",
-            "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.", CONTROL_OPTIONS);
+            "coalesce_factor must lie in the range (1,8). Resetting to default value of 4.", CONTROL_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("charge_density_mixing", &lc.mix, 0.0, 1.0, 0.5,
             CHECK_AND_FIX, OPTIONAL,
@@ -901,12 +901,12 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "The folded spectrum width ranges from 0.10 to 1.0. For insulators and "
             "semiconductors a value of 0.3 is appropriate. For metals values between "
             "0.15 to 0.2 tend to be better. The default value is 0.3 ",
-            "folded_spectrum_width must lie in the range (0.10,1.0). Resetting to the default value of 0.3. ", DIAG_OPTIONS);
+            "folded_spectrum_width must lie in the range (0.10,1.0). Resetting to the default value of 0.3. ", DIAG_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("folded_spectrum_iterations", &lc.folded_spectrum_iterations, 0, 20, 2,
             CHECK_AND_FIX, OPTIONAL,
             "Number of folded spectrum iterations to perform. ",
-            "folded_spectrum_iterations must lie in the range (0,20). Resetting to the default value of 2. ", DIAG_OPTIONS);
+            "folded_spectrum_iterations must lie in the range (0,20). Resetting to the default value of 2. ", DIAG_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("laplacian_offdiag", &lc.laplacian_offdiag, false, 
             "if set to true, we use LaplacianCoeff.cpp to generate coeff");
@@ -922,7 +922,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "For supercell calculation, one can disable the fractional translation symmetry");
 
     If.RegisterInputKey("rmg2bgw", &lc.rmg2bgw, false, 
-            "Write wavefunction in G-space to BerkeleyGW WFN file.");
+            "Write wavefunction in G-space to BerkeleyGW WFN file.", MISC_OPTIONS|EXPERIMENTAL_OPTION);
+
     If.RegisterInputKey("ecutrho", &lc.ecutrho, 0.0, 10000.0, 0.0,
             CHECK_AND_FIX, OPTIONAL,
             "ecut for rho in unit of Ry. ",
@@ -946,19 +947,22 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("max_nlradius", &lc.max_nlradius, 2.0, 10000.0, 10000.0,
             CHECK_AND_FIX, OPTIONAL,
             "maximum radius for non-local projectors ",
-            " ");
+            " ", PSEUDO_OPTIONS|EXPERT_OPTION);
+
     If.RegisterInputKey("min_nlradius", &lc.min_nlradius, 1.0, 10000.0, 2.0,
             CHECK_AND_FIX, OPTIONAL,
             "minimum radius for non-local projectors ",
-            " ");
+            " ", PSEUDO_OPTIONS|EXPERT_OPTION);
+
     If.RegisterInputKey("max_qradius", &lc.max_qradius, 2.0, 10000.0, 10000.0,
             CHECK_AND_FIX, OPTIONAL,
             "maximum radius for qfunc in ultra-pseudopotential ",
-            " ");
+            " ", PSEUDO_OPTIONS|EXPERT_OPTION);
+
     If.RegisterInputKey("min_qradius", &lc.min_qradius, 1.0, 10000.0, 2.0,
             CHECK_AND_FIX, OPTIONAL,
             "minimum radius for qfunc in ultra-pseudopotential ",
-            " ");
+            " ", PSEUDO_OPTIONS|EXPERT_OPTION);
 
     // Testing options
     If.RegisterInputKey("test_energy", &lc.test_energy, -1.0e9, 1.0e9, (double)NAN,
@@ -975,14 +979,14 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 #if GPU_ENABLED
     // If GPU memory is constrained this one should be set to true.
     If.RegisterInputKey("pin_nonlocal_weights", &lc.pin_nonlocal_weights, false,
-            "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.");
+            "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.", PERF_OPTIONS,EXPERT_OPTION);
 #endif
 
     If.RegisterInputKey("write_orbital_overlaps", &lc.write_orbital_overlaps, false,
             "If true the orbital overlap matrix from successive MD steps is written.");
 
     If.RegisterInputKey("kohn_sham_ke_fft", &lc.kohn_sham_ke_fft, false,
-            "Special purpose flag which will force use of an FFT for the kinetic energy operator.");
+            "Special purpose flag which will force use of an FFT for the kinetic energy operator.", MISC_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("fast_density", &lc.fast_density, true,
             "Use a faster but less accurate method to generate the charge density from the electronic wavefunctions. "
@@ -991,7 +995,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("lcao_use_empty_orbitals", &lc.lcao_use_empty_orbitals, false,
             "Some pseudopotentials contain unbound atomic orbitals and this flag indicates "
-            "whether or not they should be used for LCAO starts.");
+            "whether or not they should be used for LCAO starts.", MISC_OPTIONS);
 
     If.RegisterInputKey("write_serial_restart", &lc.write_serial_restart, false,
             "RMG normally writes parallel restart files. These require that restarts have the "
@@ -1023,13 +1027,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Flag indicating whether or not orbitals should be mapped to disk.", CONTROL_OPTIONS);
 
     If.RegisterInputKey("alt_laplacian", &lc.alt_laplacian, true,
-            "Flag indicating whether or not to use alternate laplacian weights for some operators.");
+            "Flag indicating whether or not to use alternate laplacian weights for some operators.", MISC_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("use_alt_zgemm", &lc.use_alt_zgemm, false,
-            "Flag indicating whether or not to use alternate zgemm implementation.");
+            "Flag indicating whether or not to use alternate zgemm implementation.", PERF_OPTIONS);
 
     If.RegisterInputKey("filter_dpot", &lc.filter_dpot, false,
-            "Flag indicating whether or not to filter density dependent potentials.", PSEUDO_OPTIONS);
+            "Flag indicating whether or not to filter density dependent potentials.", PSEUDO_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("sqrt_interpolation", &lc.sqrt_interpolation, false,
             "Flag indicating whether or not to use square root technique for density interpolation.");
@@ -1038,7 +1042,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Flag indicating whether or not to renormalize forces.", MD_OPTIONS);
 
     If.RegisterInputKey("coalesce_states", &lc.coalesce_states, false,
-            "Flag indicating whether or not to coalesce states.", CONTROL_OPTIONS);
+            "Flag indicating whether or not to coalesce states.", CONTROL_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("localize_projectors", &lc.localize_projectors, true,
             "The Beta function projectors for a particular ion decay rapidly "
@@ -1075,7 +1079,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "When the number of eigenvectors is large using folded_spectrum is "
             "substantially faster than standard diagonalization. It also tends "
             "to converge better for metallic systems. It works with the "
-            "multigrid kohn_sham_solver but not the davidson solver. ", DIAG_OPTIONS);
+            "multigrid kohn_sham_solver but not the davidson solver. ", DIAG_OPTIONS|EXPERT_OPTION);
 
 
     If.RegisterInputKey("use_numa", &lc.use_numa, true, 
@@ -1091,20 +1095,20 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Use mpi queue mode.", PERF_OPTIONS);
 
     If.RegisterInputKey("spin_manager_thread", &lc.spin_manager_thread, true, 
-            "When mpi_queue_mode is enabled the manager thread spins instead of sleeping.", PERF_OPTIONS);
+            "When mpi_queue_mode is enabled the manager thread spins instead of sleeping.", PERF_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("spin_worker_threads", &lc.spin_worker_threads, true, 
-            "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.", PERF_OPTIONS);
+            "When mpi_queue_mode is enabled the worker threads spin instead of sleeping.", PERF_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("require_huge_pages", &lc.require_huge_pages, false, 
             "If set RMG assumes that sufficient huge pages are available. "
-            "Bad things may happen if this is not true.");
+            "Bad things may happen if this is not true.", PERF_OPTIONS|EXPERIMENTAL_OPTION);
 
     If.RegisterInputKey("relax_dynamic_timestep", NULL, false,
             "Flag indicating whether or not to use dynamic timesteps in relaxation mode. ", MD_OPTIONS);
 
     If.RegisterInputKey("freeze_occupied", NULL, false,
-            "Flag indicating whether or not to freeze the density and occupied orbitals after a restart. ");
+            "Flag indicating whether or not to freeze the density and occupied orbitals after a restart. ", MISC_OPTIONS|EXPERIMENTAL_OPTION);
 
     If.RegisterInputKey("relax_max_force", &lc.thr_frc, 0.0, DBL_MAX, 2.5E-3,
             CHECK_AND_FIX, OPTIONAL,
@@ -1138,35 +1142,35 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL,
             "Convergence criterion for the EXX delta from step to step where we assume EXX "
             "consistency has been achieved. ",
-            "exx_convergence_criterion must lie in the range (1.0e-12,1.0e-6). Resetting to default value of 1.0e-9. ", CONTROL_OPTIONS);
+            "exx_convergence_criterion must lie in the range (1.0e-12,1.0e-6). Resetting to default value of 1.0e-9. ", XC_OPTIONS);
 
     If.RegisterInputKey("vexx_fft_threshold", &lc.vexx_fft_threshold, 1.0e-14, 1.0e-1, 1.0e-14,
             CHECK_AND_FIX, OPTIONAL,
             "The value for the EXX delta where we switch from single to double precision ffts. "
             "Single precision ffts are generally accurate enough. ",
-            "vexx_fft_threshold must lie in the range (1.0e-14,1.0e-1). Resetting to default value of 1.0e-14. ", CONTROL_OPTIONS);
+            "vexx_fft_threshold must lie in the range (1.0e-14,1.0e-1). Resetting to default value of 1.0e-14. ", XC_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("preconditioner_threshold", &lc.preconditioner_thr, 1.0e-9, 1.0e-1, 1.0e-1,
             CHECK_AND_FIX, OPTIONAL,
             "The RMS value of the change in the total potential where we switch "
             "the preconditioner from single to double precision.",
-            "preconditioner_threshold must lie in the range (1.0e-9,1.0e-1). Resetting to default value of 1.0e-1. ", PERF_OPTIONS);
+            "preconditioner_threshold must lie in the range (1.0e-9,1.0e-1). Resetting to default value of 1.0e-1. ", PERF_OPTIONS|EXPERT_OPTION);
 
     If.RegisterInputKey("gw_residual_convergence_criterion", &lc.gw_threshold, 1.0e-14, 4.0e-4, 1.0e-6,
             CHECK_AND_FIX, OPTIONAL,
             "The max value of the residual for unoccupied orbitals when performing a GW calculation. ",
-            "gw_residual_convergence_criterion must lie in the range (4.0e-04,1.0e-14). Resetting to default value of 4.0e-04. ");
+            "gw_residual_convergence_criterion must lie in the range (4.0e-04,1.0e-14). Resetting to default value of 4.0e-04. ", MISC_OPTIONS|EXPERIMENTAL_OPTION);
 
     If.RegisterInputKey("gw_residual_fraction", &lc.gw_residual_fraction, 0.0, 1.0, 0.90,
             CHECK_AND_FIX, OPTIONAL,
             "The residual value specified by gw_residual_convergence_criterion is applied "
             "to this fraction of the total spectrum. ",
-            "gw_residual_fraction must lie in the range (0.0,1.0). Resetting to default value of 0.90. ");
+            "gw_residual_fraction must lie in the range (0.0,1.0). Resetting to default value of 0.90. ", MISC_OPTIONS|EXPERIMENTAL_OPTION);
 
     If.RegisterInputKey("hartree_rms_ratio", &lc.hartree_rms_ratio, 1000.0, DBL_MAX, 100000.0,
             CHECK_AND_FIX, OPTIONAL,
             "Ratio between target RMS for get_vh and RMS total potential. ",
-            "hartree_rms_ratio must be in the range (1000.0, 1000000.0). Resetting to default value of 100000.0. ");
+            "hartree_rms_ratio must be in the range (1000.0, 1000000.0). Resetting to default value of 100000.0. ", POISSON_OPTIONS);
 
     If.RegisterInputKey("electric_field_magnitude", &lc.e_field, 0.0, DBL_MAX, 0.0,
             CHECK_AND_TERMINATE, OPTIONAL,
@@ -1202,7 +1206,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("energy_cutoff_parameter", &lc.cparm, 0.6, 1.0, 0.8,
             CHECK_AND_FIX, OPTIONAL,
             "",
-            "energy_cutoff_parameter must be in the range (0.6,1.0). Resetting to default value of 0.8. ");
+            "energy_cutoff_parameter must be in the range (0.6,1.0). Resetting to default value of 0.8. ", PSEUDO_OPTIONS|EXPERT_OPTION);
 
     std::string Occup, Occdown;
     std::string Occ;

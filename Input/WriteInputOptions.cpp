@@ -56,6 +56,8 @@ std::map<int, std::string > option_headers = {
         {DIAG_OPTIONS, "Diagonalization options"},
         {PERF_OPTIONS, "Performance related options"},
         {LDAU_OPTIONS, "LDAU options"},
+        {TDDFT_OPTIONS, "TDDFT related options"},
+        {POISSON_OPTIONS, "Poisson solver options"},
         {TESTING_OPTIONS, "Testing options"},
         {MISC_OPTIONS, "Miscellaneous options"}};
 
@@ -121,6 +123,16 @@ void WriteKeyStdout(InputKey *ik, std::string type)
     printf("%sKey name:%s     %s\n", pre, post, KeyName.c_str());
     printf("%sRequired:%s     %s\n", pre, post, yesno[ik->Required].c_str());
     printf("%sKey type:%s     %s\n", pre, post, KeyType.c_str());
+    if(ik->grouping & EXPERT_OPTION)
+        printf("%sExpert:%s       %s\n", pre, post, "Yes");
+    else
+        printf("%sExpert:%s       %s\n", pre, post, "No");
+
+    if(ik->grouping & EXPERIMENTAL_OPTION)
+        printf("%sExperimental:%s %s\n", pre, post, "Yes");
+    else
+        printf("%sExperimental:%s %s\n", pre, post, "No");
+
     if(ik->KeyType == typeid(int).hash_code())
     {
         printf("%sMin value:%s    %d\n", pre, post, ik->Minintval);
@@ -253,12 +265,12 @@ printf(""
         SortedMap.insert(std::make_pair(ik, ik));
     }
 
-    int group = -1;
+    size_t group = 0xffffffffffff;
     bool first = true;
     for(auto it = SortedMap.begin();it != SortedMap.end(); ++it)
     {
         InputKey *ik = it->second;
-        int current_group = ik->grouping;
+        size_t current_group = ik->grouping & MASKOFF_MODIFIERS;
         if(group != current_group)
         {
             group = current_group;
