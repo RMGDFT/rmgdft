@@ -236,8 +236,8 @@ public:
     double rhocorelig[MAX_LOGGRID];
 
     // projectors in G-space radial log grid
-    double *beta_g[MAX_NB];
-    double *rbeta_g[MAX_NB][MAX_L+1];
+    std::vector<double *> beta_g;
+    boost::multi_array<double *, 2> rbeta_g;
 
     // local pseudopotential (rhoc part not included ) in G-space radial log grid.
     double *localpp_g;

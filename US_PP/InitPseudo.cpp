@@ -275,6 +275,7 @@ void InitPseudo ()
                 throw RmgFatalException() << "Unable to open beta function graph file " << " in " << __FILE__ << " at line " << __LINE__ << "\n";
         }
 
+        sp->rbeta_g.resize(boost::extents[sp->nbeta][MAX_L+1]);
         for (int ip = 0; ip < sp->nbeta; ip++)
         {
 
@@ -284,7 +285,7 @@ void InitPseudo ()
                 fprintf (psp, "\n&&\n");
             }
 
-            sp->beta_g[ip] = new double[RADIAL_GVECS];
+            sp->beta_g.emplace_back(new double[RADIAL_GVECS]);
 
             A->RLogGridToGLogGrid(&sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
                     sp->rg_points, sp->llbeta[ip], bessel_rg);
