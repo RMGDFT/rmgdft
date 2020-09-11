@@ -70,7 +70,8 @@ public:
     double *GetRgrid(void);
     double Interpolate(double *f, double r);
     double GetRange(double *f, double *r, double *rab, int rg_points, double tolerance);
-
+    int CountRoots(int lval, double rcut, double cparm, double hmin);
+    void GenBessel(double *b, double *r, double rcut, int rg_points, int lval, int zeros);
 
     static double r_filtered[MAX_LOGGRID];
     static double log_r_filtered[MAX_LOGGRID];

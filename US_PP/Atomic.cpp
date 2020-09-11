@@ -254,6 +254,25 @@ double Atomic::Gcutoff (double g1, double gcut, double width)
 
 }
 
+// get minimum grid spacing then find the largest root of the Bessel function such that
+// the normalized distance between any two roots is larger than the minimum grid spacing
+// and return that value.
+int Atomic::CountRoots(int lval, double rcut, double cparm, double hmin)
+{
+    int N = NUM_BESSEL_ROOTS;
+    for(int i = 0;i < NUM_BESSEL_ROOTS;i++) {
+        for(int j = 0;j < i;j++) {
+            double h = cparm*rcut * (J_roots[lval][i] - J_roots[lval][j]) / J_roots[lval][i];
+            if(h <= hmin) {
+                N = j;
+                goto Bessel1;
+                break;
+            }
+        }
+    }
+Bessel1:
+    return N;
+}
 
 // This routine computes a finite spherical Bessel function expansion of f, defined on
 // the pseudopotential log grid and then uses the coefficients of the expansion to 
@@ -273,23 +292,11 @@ double Atomic::BesselToLogGrid (
 {
 
 
-    // get minimum grid spacing then find the largest root of the Bessel function such that
-    // the normalized distance between any two roots is larger than the minimum grid spacing.
-    int N = NUM_BESSEL_ROOTS;
-    for(int i = 0;i < NUM_BESSEL_ROOTS;i++) {
-        for(int j = 0;j < i;j++) {
-            double h = cparm*rcut * (J_roots[lval][i] - J_roots[lval][j]) / J_roots[lval][i];
-            if(h <= hmin) {
-                N = j;
-                goto Bessel1;
-                break;
-            }
-        }
-    }
-Bessel1:
+    int N = Atomic::CountRoots(lval, rcut, cparm, hmin);
+
     //rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1])) + hmin/ratio;
     if(ct.localize_projectors)rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1]));
-    //if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f  hmin = %12.6f\n",N, rcut, hmin);
+    if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f  l = %d   hmin = %12.6f\n",N, rcut, lval, hmin);
 
     // Normalization coefficient
     double JNorm = 2.0 / (rcut*rcut*rcut);
@@ -343,6 +350,17 @@ Bessel1:
 
 } // end BesselToLogGrid
 
+void Atomic::GenBessel(double *b, double *r, double rcut, int rg_points, int lval, int zeros)
+{
+    // Normalization coefficient
+    double JN_i = sqrt(1.0/2.0)*rcut * boost::math::cyl_bessel_j((double)lval + 1.5, J_roots[lval][zeros]);
+    JN_i = 1.0 / JN_i;
+    for(int idx = 0;idx < rg_points;idx++)
+    {
+        double jarg = r[idx] * J_roots[lval][zeros] / rcut;
+        b[idx] = JN_i * sqrt(1.0/jarg)*boost::math::cyl_bessel_j((double)lval + 0.5, jarg);
+    }
+}
 
 void Atomic::FilterPotential (
     double *potential,       // IN:  potential to be filtered
@@ -622,7 +640,6 @@ void Atomic::InitBessel(
 
     int size = (lmax+1) * gnum * rg_points; 
     GlobalSums (bessel_rg, size, pct.grid_comm); 
-
 
 } 
 
