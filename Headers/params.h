@@ -53,10 +53,6 @@
  *************************************************************
  *************************************************************/
 
-/* This is the maximum number of non-local projectors for any species
- * just an upper limit on dynamically allocated data structures. */
-#define         MAX_NB  	100
-
 /* Maximum l-value (Angular momentum channel for pseudotentials) */
 #define         MAX_L       	4
 

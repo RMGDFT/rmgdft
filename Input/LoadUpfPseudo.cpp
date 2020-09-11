@@ -334,9 +334,6 @@ void LoadUpfPseudo(SPECIES *sp)
 
     // Number of projectors
     sp->nbeta = upf_tree.get<double>("UPF.PP_HEADER.<xmlattr>.number_of_proj");
-    if(sp->nbeta > MAX_NB)
-        throw RmgFatalException() << "Pseudopotential has " << sp->nbeta << " projectors but this version of RMG only supports s,p and d proejectors with a limit of " << MAX_NB << " projectors.\n";
-
     sp->is_ddd_diagonal = true;
     if(sp->nbeta > 0) {
 
