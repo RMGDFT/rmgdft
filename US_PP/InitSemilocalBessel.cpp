@@ -50,8 +50,8 @@ void InitSemilocalBessel (void)
 {
 
     Atomic A;
-    double nlradius = 8.5;
-    ct.max_l = 0;
+    double nlradius = 7.5;
+    //ct.max_l = 0;
     int max_nlprojectors = 0;
 
     for (auto sp = std::begin (Species); sp != std::end (Species); ++sp)
@@ -87,11 +87,8 @@ void InitSemilocalBessel (void)
         {
             int lval = sp->dVl_l[il];
             int N = A.CountRoots(lval, nlradius, ct.rhocparm, 4.0*ct.hmingrid);
-printf("NNNN  %d\n",N);
             double_2d_array phi;
             phi.resize(boost::extents[N][sp->rg_points]);
-            double_2d_array overlaps;
-            overlaps.resize(boost::extents[N][N]);
 
             // Generate the basis set
             double anorm = 1.0 / sqrt(4.0 * PI);
@@ -100,23 +97,6 @@ printf("NNNN  %d\n",N);
                 sp->llbeta.emplace_back(lval);
                 A.GenBessel(phi.origin() + ib*sp->rg_points, sp->r, nlradius, sp->rg_points, lval, ib);
                 for(int idx=0;idx < sp->rg_points;idx++) phi[ib][idx] *= anorm;
-            }
-
-            // Compute overlap matrix <phi_i| dVl | phi_j>
-            for(int ix=0;ix < N;ix++)
-            {
-                for(int jx=ix;jx < N;jx++)
-                {
-                    for(int idx=0;idx < sp->rg_points;idx++) work[idx] = phi[ix][idx]*sp->dVl[il][idx]*phi[jx][idx];
-// For checking orthonormality
-//                    for(int idx=0;idx < sp->rg_points;idx++)
-//                    {
-//                        work[idx] = phi[ix][idx]*phi[jx][idx];
-//                        if(sp->r[idx] > nlradius) work[idx] = 0.0;
-//                    }
-                    overlaps[ix][jx] = radint1 (work.data(), sp->r, sp->rab, sp->rg_points);
-                    if(ix != jx) overlaps[jx][ix] = overlaps[ix][jx];
-                }
             }
 
             std::vector<double> ci;
@@ -143,11 +123,10 @@ printf("NNNN  %d\n",N);
             {
                 sp->beta.emplace_back(new double[sp->rg_points]);
                 for(int idx=0;idx < sp->rg_points;idx++) sp->beta[sp->nbeta][idx] = ci[ix] * sp->dVl[il][idx] * phi[ix][idx];
-                sp->llbeta.emplace_back(lval);
-
                 sp->nbeta++;
             }
-            for(int i=0;i < sp->nbeta;i++) ddd0[i+beta_idx][i+beta_idx] = 1.0 / ci[i];
+
+            for(int i=0;i < N;i++) ddd0[i+beta_idx][i+beta_idx] = 1.0 / ci[i];
             beta_idx += N;
 
         }
@@ -209,7 +188,6 @@ printf("NNNN  %d\n",N);
                 }
             }
         }
-
 
         // Set the maximum number of non-local projecters needed
         ct.max_nl = std::max(ct.max_nl, max_nlprojectors);

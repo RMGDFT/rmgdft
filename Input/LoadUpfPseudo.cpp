@@ -263,6 +263,23 @@ void LoadUpfPseudo(SPECIES *sp)
     // Get the l-value for the local potential if present
     sp->local = upf_tree.get<int>("UPF.PP_HEADER.<xmlattr>.l_local", -3);
 
+    // If UPF file with semilocal data and use_bessel_projectors is set read it in
+    if(ct.use_bessel_projectors)
+    {
+        ct.semilocal_pp = true;
+        sp->dVl.clear();
+        for(int il = 0;il < sp->local;il++) 
+        {
+            // Ugh. UPF format has embedded .s so use / as a separator
+            typedef ptree::path_type path;
+            std::string slpath = "UPF/PP_SEMILOCAL/PP_VNL." + boost::lexical_cast<std::string>(il+1);
+            std::string PP_SL = upf_tree.get<std::string>(path(slpath, '/'));
+            sp->dVl.emplace_back(UPF_read_mesh_array(PP_SL, r_total, ibegin));
+            sp->dVl_l.emplace_back(il);
+            for(int ix = 0;ix < sp->rg_points;ix++) sp->dVl[il][ix] = sp->dVl[il][ix]/2.0 - sp->vloc0[ix];
+        }
+    }
+
     // Atomic charge density
     std::string PP_RHOATOM = upf_tree.get<std::string>("UPF.PP_RHOATOM");
     sp->atomic_rho = UPF_read_mesh_array(PP_RHOATOM, r_total, ibegin);
