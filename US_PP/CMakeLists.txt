@@ -13,6 +13,7 @@ InitOrbital.cpp
 InitDelocalizedOrbital.cpp
 InitWeightOne.cpp
 InitDelocalizedObject.cpp
+InitSemilocalBessel.cpp
 #PackFine2Rhogrid.cpp
 FindFftwPhaseLocalpp.cpp
 Radius2grid.cpp

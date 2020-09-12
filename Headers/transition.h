@@ -177,6 +177,7 @@ void PrintSums(double *, int, char*);
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m);
 void InitLocalizedWeight(void);
 void InitDelocalizedWeight (void);
+void InitSemilocalBessel (void);
 void InitOrbital (void);
 void InitDelocalizedOrbital (void);
 double CubicHarmonic(int L, int M, double *r);

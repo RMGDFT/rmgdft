@@ -986,6 +986,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.", PERF_OPTIONS,EXPERT_OPTION);
 #endif
 
+    If.RegisterInputKey("use_bessel_projectors", &lc.use_bessel_projectors, false,
+            "When a semi-local pseudopotential is being used projectors will be generated using Bloechl's procedure with Bessel functions as the basis set if this is true.", PSEUDO_OPTIONS|EXPERIMENTAL_OPTION);
+
     If.RegisterInputKey("write_orbital_overlaps", &lc.write_orbital_overlaps, false,
             "If true the orbital overlap matrix from successive MD steps is written.", OUTPUT_OPTIONS);
 

@@ -296,7 +296,7 @@ double Atomic::BesselToLogGrid (
 
     //rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1])) + hmin/ratio;
     if(ct.localize_projectors)rcut = hmin * J_roots[lval][N] / (cparm * (J_roots[lval][N] - J_roots[lval][N-1]));
-    if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f  l = %d   hmin = %12.6f\n",N, rcut, lval, hmin);
+    //if(pct.gridpe == 0) printf("Using %d Bessel roots in radial expansion with rcut = %12.6f  l = %d   hmin = %12.6f\n",N, rcut, lval, hmin);
 
     // Normalization coefficient
     double JNorm = 2.0 / (rcut*rcut*rcut);
@@ -353,12 +353,12 @@ double Atomic::BesselToLogGrid (
 void Atomic::GenBessel(double *b, double *r, double rcut, int rg_points, int lval, int zeros)
 {
     // Normalization coefficient
-    double JN_i = sqrt(1.0/2.0)*rcut * boost::math::cyl_bessel_j((double)lval + 1.5, J_roots[lval][zeros]);
-    JN_i = 1.0 / JN_i;
+    double JN_i = rcut * boost::math::cyl_bessel_j((double)lval + 1.5, J_roots[lval][zeros]);
+    JN_i = sqrt(2.0) / JN_i;
     for(int idx = 0;idx < rg_points;idx++)
     {
         double jarg = r[idx] * J_roots[lval][zeros] / rcut;
-        b[idx] = JN_i * sqrt(1.0/jarg)*boost::math::cyl_bessel_j((double)lval + 0.5, jarg);
+        b[idx] = JN_i * sqrt(1.0/r[idx])*boost::math::cyl_bessel_j((double)lval + 0.5, jarg);
     }
 }
 

@@ -112,7 +112,7 @@ void InitDelocalizedWeight_onek (int kindex, double kvec[3], Pw &pwave)
 
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
                 if(gval >= gcut) continue;
-                double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj_ip], gval);
+                double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj_ip].get(), gval);
                 betaptr[idx] = IL[proj_l] * Ylm(proj_l, proj_m, ax) * t1;
 
                 // l2m_i: l*l + m for the first angular momentum

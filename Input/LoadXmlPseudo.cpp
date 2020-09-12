@@ -162,6 +162,7 @@ void LoadXmlPseudo(SPECIES *sp)
 
     BOOST_FOREACH( ptree::value_type const& s, xml_tree.get_child("pseudo.semilocal") ) 
     {
+        ct.semilocal_pp = true;
         int lval = 0;
         sp->local = xml_tree.get<int>("pseudo.semilocal.<xmlattr>.l-local", -3);
         sp->is_semi_local = true;

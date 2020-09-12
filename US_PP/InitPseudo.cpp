@@ -46,6 +46,8 @@ typedef policy<promote_double<false> > bessel_policy;
 void InitPseudo ()
 {
 
+    if(ct.semilocal_pp && ct.use_bessel_projectors) InitSemilocalBessel();
+
     int isp;
     double Zv, rc;
     char newname[MAX_PATH];
@@ -278,7 +280,6 @@ void InitPseudo ()
         sp->rbeta_g.resize(boost::extents[sp->nbeta][MAX_L+1]);
         for (int ip = 0; ip < sp->nbeta; ip++)
         {
-
             if (pct.gridpe == 0 && write_flag)
             {
                 for (int idx = 0; idx < sp->kkbeta; idx++) fprintf (psp, "%e  %e\n", sp->r[idx], sp->beta[ip][idx]);
@@ -287,7 +288,7 @@ void InitPseudo ()
 
             sp->beta_g.emplace_back(new double[RADIAL_GVECS]);
 
-            A->RLogGridToGLogGrid(&sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip],
+            A->RLogGridToGLogGrid(&sp->beta[ip][0], sp->r, sp->rab, sp->beta_g[ip].get(),
                     sp->rg_points, sp->llbeta[ip], bessel_rg);
 
             for(int idx = 0; idx < sp->rg_points; idx++)
@@ -305,13 +306,12 @@ void InitPseudo ()
                         sp->rg_points, L, bessel_rg);
             }
 
-
-            // Raw beta function from pp is no longer used so free it's memory
-            delete [] sp->beta[ip];
-
         }                       /* end for ip */
 
         if (pct.gridpe == 0 && write_flag) fclose (psp);
+
+        // Raw beta functions from pp are no longer used so free  memory
+        sp->beta.clear();
 
 
         /* Now take care of the core charge if nlcc is being used */

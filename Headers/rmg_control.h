@@ -340,6 +340,7 @@ public:
 
     /** Semi local pseudo potential flag */
     int semilocal_pp;
+    bool use_bessel_projectors;
 
     /* Kohn-sham finite difference order */
     int kohn_sham_fd_order;

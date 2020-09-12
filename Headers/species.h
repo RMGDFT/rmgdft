@@ -215,7 +215,8 @@ public:
     int max_l;
 
     /* Projectors on radial grid. KB for norm-conserving and beta_n(r) for Vanderbilt Ultrasoft. */
-    std::vector<double *> beta;
+    //std::vector<double *> beta;
+    std::vector<std::shared_ptr<double []>> beta;
 
     /* Difference potentials for semi-local dVl = V_l - V_local */
     std::vector<double *> dVl;
@@ -236,7 +237,7 @@ public:
     double rhocorelig[MAX_LOGGRID];
 
     // projectors in G-space radial log grid
-    std::vector<double *> beta_g;
+    std::vector<std::shared_ptr<double []>> beta_g;
     boost::multi_array<double *, 2> rbeta_g;
 
     // local pseudopotential (rhoc part not included ) in G-space radial log grid.
