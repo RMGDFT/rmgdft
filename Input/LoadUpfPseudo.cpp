@@ -268,17 +268,60 @@ void LoadUpfPseudo(SPECIES *sp)
     {
         ct.semilocal_pp = true;
         sp->dVl.clear();
-        for(int il = 0;il < sp->local;il++) 
+        sp->dVl_l.clear();
+        std::vector<int> lindex;
+        std::vector<int> lvals;
+        int lrmax = 0;
+        // Read all possible potentials
+        for(int il = 0;il < 6;il++) 
         {
-            // Ugh. UPF format has embedded .s so use / as a separator
+            std::string slpath = "UPF/PP_SEMILOCAL/PP_VNL." + boost::lexical_cast<std::string>(il);
             typedef ptree::path_type path;
-            std::string slpath = "UPF/PP_SEMILOCAL/PP_VNL." + boost::lexical_cast<std::string>(il+1);
-            std::string PP_SL = upf_tree.get<std::string>(path(slpath, '/'));
-            sp->dVl.emplace_back(UPF_read_mesh_array(PP_SL, r_total, ibegin));
-            sp->dVl_l.emplace_back(il);
-            for(int ix = 0;ix < sp->rg_points;ix++) sp->dVl[il][ix] = sp->dVl[il][ix]/2.0 - sp->vloc0[ix];
+            try {
+                int lread = upf_tree.get<int>(path(slpath + "/<xmlattr>/L", '/'));
+                lindex.emplace_back(il);
+                lvals.emplace_back(lread);
+                lrmax = std::max(lread, lrmax);
+            }
+            catch(const std::exception& e) {}
+        }
+
+        if(!lvals.size())
+           throw RmgFatalException() << "This pseudopotential does not contain semi-local information. Terminating.\n";  
+        if(lvals.size() != lindex.size())
+           throw RmgFatalException() << "Inconsistency detected in pseudopotential file in PP_SEMILOCAL section. Terminating.\n";  
+
+        // Remove any angular momentum channel greater than l_max. (Some crazy pp's out there)
+        std::vector<int> lvals_r;
+        std::vector<int> lindex_r;
+        for(size_t il=0;il < lvals.size();il++)
+        {
+            if(lvals[il] <= l_max)
+            {
+                lvals_r.emplace_back(il);
+                lindex_r.emplace_back(lindex[il]);
+            }
+        }
+        
+        for(size_t il = 0;il < lvals_r.size();il++)
+        {
+            try
+            {           
+                std::string slpath = "UPF/PP_SEMILOCAL/PP_VNL." + boost::lexical_cast<std::string>(lindex_r[il]);
+                typedef ptree::path_type path;
+                sp->dVl_l.emplace_back(lvals_r[il]);
+                // Ugh. UPF format has embedded .s so use / as a separator
+                std::string PP_SL = upf_tree.get<std::string>(path(slpath, '/'));
+                sp->dVl.emplace_back(UPF_read_mesh_array(PP_SL, r_total, ibegin));
+                for(int ix = 0;ix < sp->rg_points;ix++) sp->dVl[il][ix] = sp->dVl[il][ix]/2.0 - sp->vloc0[ix];
+            }
+            catch(const std::exception& e)
+            { 
+               throw RmgFatalException() << "Problem reading pseudopotential file in PP_SEMILOCAL section. Terminating.\n";  
+            }           
         }
     }
+
 
     // Atomic charge density
     std::string PP_RHOATOM = upf_tree.get<std::string>("UPF.PP_RHOATOM");
