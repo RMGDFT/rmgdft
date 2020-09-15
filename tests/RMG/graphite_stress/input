@@ -5,6 +5,7 @@ localize_localpp="false"
 wavefunction_grid="24 24 64"
 
 test_energy="-22.98280508"
+test_energy_tolerance = "1.00000000e-06"
 
 
 
