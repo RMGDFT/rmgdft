@@ -1,24 +1,37 @@
-set(tests "atomO_polarized")
-list(APPEND tests "Diamond2")
-list(APPEND tests "Diamond16")
-list(APPEND tests "C60")
-list(APPEND tests "Pt-bulk-spinorbit")
-list(APPEND tests "Mg_2atom")
-list(APPEND tests "Fe_2atom")
-list(APPEND tests "AlN32")
-list(APPEND tests "Si-8atoms_EXX_kpoints")
-list(APPEND tests "NiO8")
-list(APPEND tests "graphite_stress")
+set(energy_tests "atomO_polarized")
+list(APPEND energy_tests "Diamond2")
+list(APPEND energy_tests "Diamond16")
+list(APPEND energy_tests "C60")
+list(APPEND energy_tests "Pt-bulk-spinorbit")
+list(APPEND energy_tests "Mg_2atom")
+list(APPEND energy_tests "Fe_2atom")
+list(APPEND energy_tests "AlN32")
+list(APPEND energy_tests "Si-8atoms_EXX_kpoints")
+list(APPEND energy_tests "NiO8")
+list(APPEND energy_tests "graphite_stress")
+
+set (bond_tests "CO")
 
 SET(RMG_EXE "${CMAKE_BINARY_DIR}/rmg-cpu")
-foreach(test ${tests})
+foreach(test ${energy_tests})
     SET(testname RMG_${test}) 
     SET(TEST_DIR ${test}) 
     SET(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_DIR}")
 
     COPY_DIRECTORY( "${SRC_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/${TEST_DIR}" )
 
-    RMG_RUN_CHECK(${testname} ${TEST_DIR} ${RMG_EXE} ${num_proc})
+    RMG_RUN_ENERGY_CHECK(${testname} ${TEST_DIR} ${RMG_EXE} ${num_proc})
+endforeach(test ${tests})
+
+
+foreach(test ${bond_tests})
+    SET(testname RMG_${test}) 
+    SET(TEST_DIR ${test}) 
+    SET(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${TEST_DIR}")
+
+    COPY_DIRECTORY( "${SRC_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/${TEST_DIR}" )
+
+    RMG_RUN_BOND_CHECK(${testname} ${TEST_DIR} ${RMG_EXE} ${num_proc})
 endforeach(test ${tests})
 
 

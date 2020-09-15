@@ -9,7 +9,7 @@ foreach(test ${tests})
 
     COPY_DIRECTORY( "${SRC_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/${TEST_DIR}" )
 
-    RMG_RUN_CHECK(${testname} ${TEST_DIR} ${RMG_EXE} ${num_proc})
+    RMG_RUN_ENERGY_CHECK(${testname} ${TEST_DIR} ${RMG_EXE} ${num_proc})
 endforeach(test ${tests})
 
 
