@@ -468,6 +468,8 @@ void report ()
 
 void check_tests(void)
 {
+
+    // Total energy test
     if(!std::isnan(ct.test_energy))
     {
         double eps = fabs(ct.TOTAL - ct.test_energy);
@@ -482,6 +484,26 @@ void check_tests(void)
             fprintf(stdout, "\nRMG ENERGY TEST PASSED eps = %14.8e\n", eps);
         }
     }
+
+    // Bond length test. Always performed between the first and second atoms
+    if(!std::isnan(ct.test_bond_length) && (Atoms.size() > 1))
+    {
+       double bond = sqrt((Atoms[0].crds[0] - Atoms[1].crds[0]) * (Atoms[0].crds[0] - Atoms[1].crds[0]) +
+                          (Atoms[0].crds[1] - Atoms[1].crds[1]) * (Atoms[0].crds[1] - Atoms[1].crds[1]) +
+                          (Atoms[0].crds[2] - Atoms[1].crds[2]) * (Atoms[0].crds[2] - Atoms[1].crds[2]));
+       double eps = fabs(ct.test_bond_length - bond);
+       if(eps > ct.test_bond_length_tolerance && pct.gridpe==0)
+       {
+           fprintf(ct.logfile, "\nRMG BOND LENGTH TEST FAILED eps = %14.8e, tolerance = %14.8e\n", eps, ct.test_bond_length_tolerance);
+           fprintf(stdout, "\nRMG BOND LENGTH TEST FAILED eps = %14.8e, tolerance = %14.8e\n", eps, ct.test_bond_length_tolerance);
+       }
+       else if(pct.gridpe==0)
+       {
+           fprintf(ct.logfile, "\nRMG BOND LENGTH TEST PASSED eps = %14.8e\n", eps);
+           fprintf(stdout, "\nRMG BOND LENGTH TEST PASSED eps = %14.8e\n", eps);
+       }
+    }
+
 }
 
 

@@ -979,6 +979,17 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Test final energy tolerance. ",
             "test_energy_tolerance must lie in the range (1.0e-8,1.0e-4). Resetting to the default value of 1.0e-7. ", TESTING_OPTIONS);
 
+    If.RegisterInputKey("test_bond_length", &lc.test_bond_length, 0.0 , 20.0, (double)NAN,
+            CHECK_AND_FIX, OPTIONAL,
+            "Expected dimer bond length for testing. ",
+            "bond length must lie in the range (0.0, 20.0). Ignoring. ", TESTING_OPTIONS);
+
+    If.RegisterInputKey("test_bond_length_tolerance", &lc.test_bond_length_tolerance, 1.0e-4, 1.0e-1, 1.0e-3,
+            CHECK_AND_FIX, OPTIONAL,
+            "Test bond length tolerance. ",
+            "test_bond_length_tolerance must lie in the range (1.0e-4,1.0e-1). Resetting to the default value of 1.0e-3. ", TESTING_OPTIONS);
+
+
     // Booleans next. Booleans are never required.
 #if GPU_ENABLED
     // If GPU memory is constrained this one should be set to true.

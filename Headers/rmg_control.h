@@ -929,6 +929,8 @@ public:
    // Testing options
    double test_energy=NAN;
    double test_energy_tolerance=1.0e-7;
+   double test_bond_length=NAN;
+   double test_bond_length_tolerance=1.0e-3;
 
 };
 
