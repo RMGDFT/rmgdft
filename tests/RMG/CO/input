@@ -1,0 +1,75 @@
+# Description of run.
+description="CO dimer length test"
+#use_bessel_projectors = "true"
+test_bond_length = "2.14102"
+
+#processor_grid = "4 2 2"
+wavefunction_grid="72 72 72"
+
+#localize_projectors = "false"
+#localize_localpp = "false"
+occupations_type = "Fixed"
+renormalize_forces = "false"
+
+#write_pseudopotential_plots = "true"
+#test_energy="-343.84891808"
+
+#verbose="true"
+
+force_grad_order = "0"
+unoccupied_states_per_kpoint="4"
+ionic_time_step = "20"
+max_md_steps = "100"
+
+pseudopotential =
+"
+C C_ONCV_PBE-1.0_SL.UPF
+O O_ONCV_PBE-1.0_SL.UPF
+"
+
+
+# Units for bravais_lattice_type and atoms
+#crds_units=
+#"Bohr"
+#"Angstrom"
+
+
+# Lattice constants 
+a_length="18.0"
+b_length="18.0"
+c_length="18.0"
+alpha="0.0"
+beta="0.0"
+gamma="0.0"
+
+start_mode="LCAO Start"
+#start_mode="Restart From File"
+#write_serial_restart = "true"
+#read_serial_restart = "true"
+#write_qmcpack_restart = "true"
+#calculation_mode="Quench Electrons"
+calculation_mode="Relax Structure"
+#calculation_mode="Constant Volume And Energy"
+relax_max_force = "0.0001"
+kohn_sham_solver="davidson"
+
+
+charge_mixing_type = "Broyden"
+charge_density_mixing = "0.7"
+kohn_sham_mucycles = "3"
+max_scf_steps="30"
+potential_acceleration_constant_step="1.5"
+
+# Criterion used to judge SCF convergency 
+energy_convergence_criterion = "1.0e-13"
+rms_convergence_criterion = "1.0e-10"
+
+atomic_coordinate_type="Absolute"
+
+
+# List  atomic symbol, coordinates, and movable flag (1 == movable) 
+# symbol and coordinates are required, moveable is optional, default is 1
+atoms = "
+C   7.93  9.0  9.0      1 
+O  10.07  9.0  9.0      1  
+"
