@@ -253,7 +253,13 @@ printf(""
 "    strings can span multiple lines so the following would be valid as well.\n"
 "    \n"
 "        description = \"64 atom diamond cell test run at gamma point\n"
-"        using a Vanderbilt ultrasoft pseudopotential\"\n");
+"        using a Vanderbilt ultrasoft pseudopotential\"\n"
+"    \n"
+"    string vectors span multiple lines and are used to enter items like a kpoint list one item per line.\n"
+"    \n"
+"        kpoints = \"0.00  0.00  0.00   0.50\n"
+"                   0.25  0.25  0.50   0.25\n"
+"                   0.50  0.50  0.50   0.25\"\n");
 
 
     printf("\n\n");

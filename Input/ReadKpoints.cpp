@@ -68,7 +68,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
 
     If.RegisterInputKey("kpoints", &KpointArray, "",
                      CHECK_AND_FIX, REQUIRED,
-                     "kpoints list and their weight \n",
+                     "Normally kpoints are specified using the kpoint_mesh and kpoint_is_shift options but one can also enter a list of kpoints and their weights with this option. If kpoint_mesh is not specified or this is a bandstructure calculation this is required otherwise it is optional. \n",
                      "");
     
     

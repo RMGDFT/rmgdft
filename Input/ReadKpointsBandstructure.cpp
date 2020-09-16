@@ -65,8 +65,7 @@ int ReadKpointsBandstructure(char *cfile, CONTROL& lc, std::unordered_map<std::s
 
     If.RegisterInputKey("kpoints_bandstructure", &KpointArray, "",
                      CHECK_AND_FIX, OPTIONAL,
-                     "kpoints list \n",
-                     "");
+                     "List of kpoints to use in a bandstructure calculation. For more detailed information look at the github wiki page on kpoint calculations.\n", "");
     
     
     If.LoadInputKeys();

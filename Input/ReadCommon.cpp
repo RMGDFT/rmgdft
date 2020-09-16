@@ -1275,17 +1275,24 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "0: isolated, 1: gaussian, 2: erfc ");
 
     // Command line help request?
-    if(std::find(ct.argv.begin(), ct.argv.end(), std::string("--help")) != ct.argv.end())
+    bool cmdline = (std::find(ct.argv.begin(), ct.argv.end(), std::string("--help")) != ct.argv.end());
+    bool markdown = (std::find(ct.argv.begin(), ct.argv.end(), std::string("--markdown")) != ct.argv.end());
+    if(cmdline || markdown)
     {
-        if(pct.imgpe == 0) WriteInputOptions(InputMap, std::string("cmdline"));
-        MPI_Barrier(MPI_COMM_WORLD);
-        exit(0);
-    }
 
-    // Markdown format?
-    if(std::find(ct.argv.begin(), ct.argv.end(), std::string("--markdown")) != ct.argv.end())
-    {
-        if(pct.imgpe == 0) WriteInputOptions(InputMap, std::string("markdown"));
+        // These keys are parsed in another file but we want to register them here just so they show up in the
+        // documentation. If you change the documentation in the other location make sure to change it here as well.
+        std::string KpointArray;
+        If.RegisterInputKey("kpoints", &KpointArray, "",
+                         CHECK_AND_FIX, REQUIRED,
+                         "Normally kpoints are specified using the kpoint_mesh and kpoint_is_shift options but one can also enter a list of kpoints and their weights with this option. If kpoint_mesh is not specified or this is a bandstructure calculation this is required otherwise it is optional. \n", "");
+
+        If.RegisterInputKey("kpoints_bandstructure", &KpointArray, "",
+                         CHECK_AND_FIX, OPTIONAL,
+                         "List of kpoints to use in a bandstructure calculation. For more detailed information look at the github wiki page on kpoint calculations.\n", "");
+
+        if(pct.imgpe == 0 && cmdline) WriteInputOptions(InputMap, std::string("cmdline"));
+        if(pct.imgpe == 0 && markdown) WriteInputOptions(InputMap, std::string("markdown"));
         MPI_Barrier(MPI_COMM_WORLD);
         exit(0);
     }
