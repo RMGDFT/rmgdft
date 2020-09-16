@@ -165,7 +165,7 @@ int init_kpoints (int *kmesh, int *kshift)
                                 break;
                             }
 
-                            if(Rmg_Symm->time_reversal && (!ct.noncoll) )
+                            if(Rmg_Symm->time_reversal  )
                             {
                                 dk[0] = sym_qvec[0] + xk[0];
                                 dk[1] = sym_qvec[1] + xk[1];
