@@ -464,7 +464,7 @@ template <typename T> void nlforce_par_gamma (T * par_gamma, int ion, int nh, do
             {
                 for (m = 0; m < nh; m++)
                 {
-                    idx1 = is + nh * nh + n * nh + m;
+                    idx1 = is * nh * nh + n * nh + m;
                     force[0] += std::real(dnmI_so[idx1] * gamma_x[idx1]);
                     force[1] += std::real(dnmI_so[idx1] * gamma_y[idx1]);
                     force[2] += std::real(dnmI_so[idx1] * gamma_z[idx1]);
@@ -512,7 +512,7 @@ template <typename OrbitalType> void nlforce_par_omega (OrbitalType *par_omega, 
             {
                 for (m = 0; m < nh; m++)
                 {
-                    idx1 = is + nh * nh + n * nh + m;
+                    idx1 = is * nh * nh + n * nh + m;
                     force[0] -= std::real(qqq_so[idx1] * omega_x[idx1]);
                     force[1] -= std::real(qqq_so[idx1] * omega_y[idx1]);
                     force[2] -= std::real(qqq_so[idx1] * omega_z[idx1]);
