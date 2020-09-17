@@ -1,7 +1,7 @@
 # Description of run.
 description="CO dimer length test"
 #use_bessel_projectors = "true"
-test_bond_length = "2.14102"
+test_bond_length = "2.1410"
 
 #processor_grid = "4 2 2"
 wavefunction_grid="72 72 72"
@@ -35,12 +35,11 @@ O O_ONCV_PBE-1.0_SL.UPF
 
 
 # Lattice constants 
-a_length="18.0"
-b_length="18.0"
-c_length="18.0"
-alpha="0.0"
-beta="0.0"
-gamma="0.0"
+lattice_vector ="
+18.0   0.0   0.0
+ 0.0  18.0   0.0
+ 0.0   0.0  18.0
+"
 
 start_mode="LCAO Start"
 #start_mode="Restart From File"
