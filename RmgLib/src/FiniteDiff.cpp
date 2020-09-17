@@ -1025,7 +1025,7 @@ double FiniteDiff::app2_del2 (RmgType * __restrict__ a, RmgType * __restrict__  
         case CUBIC_PRIMITIVE:
         case ORTHORHOMBIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
-
+        case None:
             if (FiniteDiff::check_anisotropy(gridhx, gridhy, gridhz, 0.0000001))
             {
 

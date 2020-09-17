@@ -76,7 +76,7 @@ double ApplyAOperator (DataType *a, DataType *b, double *kvec)
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, double *kvec)
 {
-    if(ct.kohn_sham_ke_fft)
+    if(ct.kohn_sham_ke_fft || Rmg_L.get_ibrav_type() == None)
     {
         FftLaplacianCoarse(a, b);    
         if(!ct.is_gamma)
@@ -113,7 +113,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
         // When ptr=NULL this does not do the finite differencing but just
         // returns the value of the diagonal element.
         double fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
-        return fd_diag;
+        return 2.0*fd_diag;
     }
     double cc = 0.0;
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);

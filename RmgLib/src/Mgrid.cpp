@@ -436,6 +436,7 @@ void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
         case CUBIC_FC:
         case ORTHORHOMBIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
+        case None:
 
             scale = 1.0 / 64.0;
             for (ix = 1; ix <= dx2; ix++)
@@ -708,7 +709,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
         case CUBIC_BC:
         case ORTHORHOMBIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
-
+        case None:
             /* transfer coarse grid points to fine grid along with the
              * high side image point
              */

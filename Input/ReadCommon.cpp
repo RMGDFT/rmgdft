@@ -275,7 +275,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
                      "You must specify a triplet of coordinate dimensions for kpoint_is_shift. ", CELL_OPTIONS);
 
     int ibrav;
-    If.RegisterInputKey("bravais_lattice_type", NULL, &ibrav, "Orthorhombic Primitive",
+    If.RegisterInputKey("bravais_lattice_type", NULL, &ibrav, "None",
                      CHECK_AND_TERMINATE, OPTIONAL, bravais_lattice_type,
                      "Bravais Lattice Type. ", 
                      "bravais_lattice_type not found. ", CELL_OPTIONS);
@@ -1414,6 +1414,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         celldm[1] *= A_a0;
         celldm[2] *= A_a0;
     }
+
+    // Check if a lattice vector was specified and if not 
+    if(lattice_vector.vals == def_lattice_vector.vals && ibrav == None)
+        throw RmgFatalException() << "Neither a lattice_vector or a lattice type was specified. Terminating.\n";
 
     if(ibrav == None)
     {

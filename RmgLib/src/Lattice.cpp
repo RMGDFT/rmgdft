@@ -308,13 +308,41 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         distance += a0[1] * a0[1] + a0[2] * a0[2];
         distance += a1[2] * a1[2];
         distance += a2[0] * a2[0] + a2[1] * a2[1];
-        if(distance < 1.0e-10 && std::abs(std::abs(a1[0]) - 0.5* a0[0]) < 1.0e-10 
-                && std::abs(std::abs(a1[1]) - 0.5 * sqrt(3.0) * a0[0]) < 1.0e-10   ) 
+        if(distance < 1.0e-10 && std::abs(std::abs(a1[0]) - std::abs(0.5* a0[0])) < 1.0e-10 
+                && std::abs(std::abs(a1[1]) - std::abs(0.5 * sqrt(3.0) * a0[0])) < 1.0e-10   ) 
             Lattice::ibrav = HEXAGONAL;
         alat = Lattice::celldm[0];
 
         for (ir = 0; ir < 6; ir++)
             celldm[ir] = Lattice::celldm[ir];
+
+        cross_product (Lattice::a0, Lattice::a1, cvec);
+        *OMEGAI = cvec[0] * Lattice::a2[0] + cvec[1] * Lattice::a2[1] + cvec[2] * Lattice::a2[2];
+
+        *OMEGAI = fabs (*OMEGAI);
+        Lattice::omega = *OMEGAI;
+
+        /* Calculate length of supercell */
+        distance = 0.0;
+        for (ir = 0; ir < 3; ir++)
+            distance += Lattice::a0[ir] * Lattice::a0[ir];
+
+        Lattice::xside = sqrt (distance);
+
+        distance = 0.0;
+        for (ir = 0; ir < 3; ir++)
+            distance += Lattice::a1[ir] * Lattice::a1[ir];
+
+        Lattice::yside = sqrt (distance);
+
+        distance = 0.0;
+        for (ir = 0; ir < 3; ir++)
+            distance += Lattice::a2[ir] * Lattice::a2[ir];
+
+        Lattice::zside = sqrt (distance);
+
+        Lattice::recips();
+
     }
     else
     {
