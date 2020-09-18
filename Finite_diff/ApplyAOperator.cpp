@@ -106,6 +106,10 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
                 std::complex<float> *pptr = (std::complex<float> *)b;
                 for(int idx = 0;idx < pbasis;idx++) pptr[idx] = pptr[idx] - 2.0*kdr[idx];
             }
+            delete [] kdr;
+            delete [] gz;
+            delete [] gy;
+            delete [] gx;
         }
 
         FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
