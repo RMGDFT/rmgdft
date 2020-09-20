@@ -1407,13 +1407,6 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     {
         std::cout <<"WARNING:: lattice_unit Bohr and  crds_unit Angstrom"<<std::endl; 
     }
-    // Transform to atomic units, which are used internally if input is in angstrom 
-    if (Verify ("lattice_units", "Angstrom", InputMap))
-    {
-        celldm[0] *= A_a0;
-        celldm[1] *= A_a0;
-        celldm[2] *= A_a0;
-    }
 
     // Check if a lattice vector was specified and if not 
     if(lattice_vector.vals == def_lattice_vector.vals && ibrav == None)
@@ -1441,35 +1434,54 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             d[2] += a2[i] * a2[i];
         }
 
+//        Rmg_L.lat2abc(a0, a1, a2);
+        // Detects ibrav and generates a,b,c,cosab,cosac,cosbc
+        int ibb = Rmg_L.lat2ibrav (a0, a1, a2);
+        //printf("Detected ibrav %d from lattice vectors.\n",ibb);fflush(NULL);
+        // Sets up celldm
+        Rmg_L.abc2celldm();
+
+        for(int i=0;i < 6;i++) {celldm[i] = Rmg_L.get_celldm(i);}
+        ibrav = Rmg_L.get_ibrav_type();
+        Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
         for (int i = 0; i < 3; i++)
         {
             if(celldm[i] > 1.0e-10 && abs(celldm[i] * celldm[i] - d[i]) > 1.0e-5)
             {
                 std::cout << "direction="<<i<<" length = "<< celldm[i] << "  "<< sqrt(d[i])<<std::endl;
-                throw RmgFatalException() << "lattice vectors are inconsistent with a,b,c" << "\n";
+//                throw RmgFatalException() << "lattice vectors are inconsistent with a,b,c" << "\n";
             }
         }
 
     }
-
-    // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
-    // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
-    if (!Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
-            !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
+    else
     {
-        celldm[1] /= celldm[0];
-        celldm[2] /= celldm[0];
+        // Transform to atomic units, which are used internally if input is in angstrom 
+        if (Verify ("lattice_units", "Angstrom", InputMap))
+        {
+            celldm[0] *= A_a0;
+            celldm[1] *= A_a0;
+            celldm[2] *= A_a0;
+        }
+
+        // Here we read celldm as a,b,c but for most lattice types code uses a, b/a, c/a 
+        // Every lattice type uses a, b/a, c/a except CUBIC_PRIMITIVE, CUBIC_FC and CUBIC_BC 
+        if (!Verify ("bravais_lattice_type", "Cubic Face Centered", InputMap) &&
+                !Verify ("bravais_lattice_type", "Cubic Body Centered", InputMap))
+        {
+            celldm[1] /= celldm[0];
+            celldm[2] /= celldm[0];
+        }
+
+        // Lattice vectors are orthogonal except for Hex which is setup inside latgen
+        celldm[3] = 0.0;
+        celldm[4] = 0.0;
+        celldm[5] = 0.0;
+
+        // Set up the lattice vectors
+        Rmg_L.set_ibrav_type(ibrav);
+        Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
     }
-
-    // Lattice vectors are orthogonal except for Hex which is setup inside latgen
-    celldm[3] = 0.0;
-    celldm[4] = 0.0;
-    celldm[5] = 0.0;
-
-    // Set up the lattice vectors
-    Rmg_L.set_ibrav_type(ibrav);
-    Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
-
 
     int NX_GRID = WavefunctionGrid.vals.at(0);
     int NY_GRID = WavefunctionGrid.vals.at(1);

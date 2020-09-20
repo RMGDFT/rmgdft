@@ -82,6 +82,7 @@ public:
 
     // cell dimensions
     double celldm[6];
+    double a, b, c, cosab, cosac, cosbc;
 
     // Total cell volume
     double omega;
@@ -109,7 +110,9 @@ public:
     double get_xside(void);
     double get_yside(void);
     double get_zside(void);
-
+    void lat2abc(double *a0, double *a1, double *a2);
+    void abc2celldm(void);
+    int lat2ibrav (double *a0, double *a1, double *a2);
 };
 
 #endif

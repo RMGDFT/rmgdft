@@ -227,6 +227,8 @@ void WriteHeader (void)
     double tpiba2 = 4.0 * PI * PI / (Rmg_L.celldm[0] * Rmg_L.celldm[0]);
     double t1 = ct.filter_factor*coarse_pwaves->gcut * tpiba2;
     double t2 = ct.filter_factor*fine_pwaves->gcut * tpiba2;
+    int ibrav = get_ibrav_type();
+    if(ibrav < 0) ibrav *= -1;
     printf ("    Equivalent energy cutoffs (psi,rho):  %8.3f   %8.3f Ry\n", t1, t2);
     printf ("\n");
     printf ("    Charge density grid:         %d times finer\n", get_FG_RATIO());
@@ -235,7 +237,7 @@ void WriteHeader (void)
     printf ("\n");
     printf ("\n");
     printf ("Lattice (Cell) Setup\n");
-    printf ("    Type:                       %s\n", lattice_type[get_ibrav_type()]);
+    printf ("    Type:                       %s\n", lattice_type[ibrav]);
     printf ("    Volume (a0^3):              %8.2f\n", get_vel() * ct.psi_nbasis);
     printf ("    Boundary conditions:        ");
     switch (ct.boundaryflag)

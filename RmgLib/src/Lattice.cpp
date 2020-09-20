@@ -469,9 +469,16 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
             rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             break;
 
+        case -MONOCLINIC_PRIMITIVE:
+            Lattice::a0[0] = celldm[0];
+            Lattice::a1[1] = celldm[0]*celldm[1];
+            Lattice::a2[0] = celldm[0]*celldm[2]*celldm[4];
+            Lattice::a2[2] = celldm[0]*celldm[2] * sqrt(1.0 - celldm[4]*celldm[4]);
+            break;
+ 
         case MONOCLINIC_PRIMITIVE:
 
-            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
+            //rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             sine = sqrt (1.0 - celldm[3] * celldm[3]);
             Lattice::a0[0] = alat;
             Lattice::a1[0] = alat * celldm[1] * celldm[3];
@@ -625,4 +632,317 @@ void Lattice::move_cell(double dt, int *cell_movable)
     double celldm[6]= {1.0,1.0,1.0,0.0,0.0,0.0},omega;
     Lattice::latgen (celldm, &omega, Lattice::a0, Lattice::a1, Lattice::a2, true);
 
+}
+
+bool zcheck(double x)
+{
+  return (std::abs(x) < 1.0e-4);
+}
+// Generates crystallographic parameters a,b,c from input lattice vectors
+void Lattice::lat2abc(double *a0, double *a1, double *a2)
+{
+    a = sqrt(a0[0]*a0[0] + a0[1]*a0[1] + a0[2]*a0[2]);
+    b = sqrt(a1[0]*a1[0] + a1[1]*a1[1] + a1[2]*a1[2]);
+    c = sqrt(a2[0]*a2[0] + a2[1]*a2[1] + a2[2]*a2[2]);
+
+    if(fabs(a-b) < 1.0e-4) b = a;
+    if(fabs(a-c) < 1.0e-4) c = a;
+    cosab = (a0[0]*a1[0] + a0[1]*a1[1] + a0[2]*a1[2])/a/b;
+    cosac = (a0[0]*a2[0] + a0[1]*a2[1] + a0[2]*a2[2])/a/c;
+    cosbc = (a2[0]*a1[0] + a2[1]*a1[1] + a2[2]*a1[2])/c/b;
+    if(fabs(cosab) < 1.0e-4) cosab = 0.0;
+    if(fabs(cosac) < 1.0e-4) cosac = 0.0;
+    if(fabs(cosbc) < 1.0e-4) cosbc = 0.0;
+    if(fabs(cosab - cosac) < 1.0e-4) cosac = cosab;
+    if(fabs(cosab - cosbc) < 1.0e-4) cosbc = cosab;
+printf("PPPP0  %14.8f  %14.8f  %14.8f  %14.8f  %14.8f  %14.8f\n",a,b,c,cosab,cosac,cosbc);
+
+
+    // Now figure out the lattice type
+    if ( (zcheck(b) && zcheck(c)) || (zcheck(b-a) && zcheck(c-a)) )
+    {
+        // Case: a=b=c
+        if ( zcheck(cosab) && zcheck(cosac) && zcheck(cosbc)) {
+            // Case: simple cubic
+            ibrav = 1;
+        }
+        else if ( !zcheck(cosab) && zcheck(cosac) && zcheck(cosbc)) {
+            //Case: trigonal R with threefold axis along <111>
+            ibrav =-5;
+        }
+        else if ( zcheck(cosab-0.5) && cosac == cosab && cosbc == cosab ) {
+            //Case: fcc
+            ibrav = 2;
+        }
+        else if ( std::abs ( cosab + 1.0/sqrt(3.0) ) < 1.0e-6 && cosac == cosab && cosbc == cosab ) {
+            //Case: bcc with symmetric basis
+            ibrav =-3;
+        }
+        else {
+           //Case: unknown (possibly wrong)
+           ibrav =-1;
+        }
+    }   
+    else if ( (zcheck(b) && c > 0.0) || (b == a && c != a) )
+    {
+        //Case: a=b!=c
+        if ( zcheck(cosab) && zcheck(cosac) && zcheck(cosbc)) {
+            //Case: simple tetragonal
+            ibrav = 6;
+         }
+         else if ( zcheck(cosab+0.5) && zcheck(cosac) && zcheck(cosbc) ) {
+             //Case: simple hexagonal
+             ibrav = 4;
+         }
+         else
+         {
+             //Case: unknown (body-centered tetragonal or wrong data)
+             ibrav =-1;
+         }
+    }   
+    else if ( b > 0.0 && c > 0.0 && b != a && c != a )
+    {
+        //Case: a!=b!=c
+        if ( zcheck(cosab) && zcheck(cosac) && zcheck(cosbc) ) {
+            //Case: simple orthorhombic
+            ibrav = 8;
+        }
+        else if ( !zcheck(cosab) && zcheck(cosac) && zcheck(cosbc) ) {
+            //Case: monoclinic P, unique axis c
+            ibrav = 12;
+        }
+        else if ( zcheck(cosab) && !zcheck(cosac) && zcheck(cosbc) ) {
+            //Case: monoclinic P, unique axis b
+            ibrav =-12;
+        }
+        else if ( !zcheck(cosab) && !zcheck(cosac) && !zcheck(cosbc) ) {
+            //Case: triclinic
+            ibrav = 14;
+        }
+        else { 
+            //Case: unknown (base-, face-, body-centered orthorombic,
+            //              (base-centered monoclinic)
+            ibrav = -1;
+        }
+    }
+printf("IBRAV = %d\n",ibrav);
+//    if(ibrav < 0)
+//        rmg_error_handler (__FILE__, __LINE__, "Negative ibrav not supported.\n");
+}
+
+void Lattice::abc2celldm(void)
+{
+#if 0
+  IF (a <= 0.0_dp) CALL errore('abc2celldm','incorrect lattice parameter (a)',1)
+  IF (b <  0.0_dp) CALL errore('abc2celldm','incorrect lattice parameter (b)',1)
+  IF (c <  0.0_dp) CALL errore('abc2celldm','incorrect lattice parameter (c)',1)
+  IF ( ABS (cosab) > 1.0_dp) CALL errore('abc2celldm', &
+                   'incorrect lattice parameter (cosab)',1)
+  IF ( ABS (cosac) > 1.0_dp) CALL errore('abc2celldm', &
+                   'incorrect lattice parameter (cosac)',1)
+  IF ( ABS (cosbc) > 1.0_dp) CALL errore('abc2celldm', &
+       'incorrect lattice parameter (cosbc)',1)
+#endif
+  celldm[0] = a;
+  celldm[1] = b / a;
+  celldm[2] = c / a;
+
+  if ( ibrav == 14 )
+  {
+     // ... triclinic lattice
+     celldm[3] = cosbc;
+     celldm[4] = cosac;
+     celldm[5] = cosab;
+  }
+  else if ( ibrav ==-12 )
+  {
+     // ... monoclinic P lattice, unique axis b
+     celldm[4] = cosac;
+  }
+  else
+  {
+     // ... trigonal and monoclinic lattices, unique axis c
+     celldm[3] = cosab;
+  }
+
+}
+
+
+static bool eqq(double x, double y)
+{
+    return (std::abs(x-y) < 1.0e-5);
+}
+static bool neqq(double x, double y)
+{
+    return (std::abs(x-y) >= 1.0e-5);
+}
+
+int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
+{
+    //
+    //     Returns ibrav from lattice vectors if recognized, 0 otherwise
+    //
+    a = sqrt(a0[0]*a0[0] + a0[1]*a0[1] + a0[2]*a0[2]);
+    b = sqrt(a1[0]*a1[0] + a1[1]*a1[1] + a1[2]*a1[2]);
+    c = sqrt(a2[0]*a2[0] + a2[1]*a2[1] + a2[2]*a2[2]);
+
+    if(fabs(a-b) < 1.0e-5) b = a;
+    if(fabs(a-c) < 1.0e-5) c = a;
+
+    cosab = (a0[0]*a1[0] + a0[1]*a1[1] + a0[2]*a1[2])/a/b;
+    cosac = (a0[0]*a2[0] + a0[1]*a2[1] + a0[2]*a2[2])/a/c;
+    cosbc = (a2[0]*a1[0] + a2[1]*a1[1] + a2[2]*a1[2])/c/b;
+
+    if(fabs(cosab) < 1.0e-5) cosab = 0.0;
+    if(fabs(cosac) < 1.0e-5) cosac = 0.0;
+    if(fabs(cosbc) < 1.0e-5) cosbc = 0.0;
+    if(fabs(cosab - cosac) < 1.0e-5) cosac = cosab;
+    if(fabs(cosab - cosbc) < 1.0e-5) cosbc = cosab;
+
+    //
+    // Assume triclinic if nothing suitable found
+    //
+    ibrav = 14;
+
+    if ( eqq(a,b) && eqq(a,c) )
+    {
+        // Case: a=b=c
+        if (eqq(cosab,cosac) && eqq(cosab,cosbc))
+        {
+            // Case: alpha = beta = gamma
+            if ( eqq(cosab,0.0) )
+            {
+               // Cubic P - ibrav=1
+               ibrav = 1;
+            }
+            else if ( eqq(cosab,0.5) )
+            {
+               // Cubic F - ibrav=2
+               ibrav = 2;
+            }
+            else if ( eqq(cosab,-1.0/3.0) )
+            {
+               // Cubic I - ibrav=-3
+               ibrav = -3;
+            }
+            else
+            {
+               if ( eqq(abs(a0[2]),abs(a1[2])) && eqq(abs(a1[2]),abs(a2[2])) )
+               {
+                  // Trigonal 001 axis
+                  ibrav =5;
+               }
+               else
+               {
+                  // Trigonal, 111 axis
+                  ibrav =-5;
+               }
+            }
+        }
+        else if ( eqq(cosab,cosac) && neqq(cosab,cosbc) )
+        {
+            if ( eqq(abs(a0[0]),abs(a0[1])) && eqq(abs(a1[0]),abs(a1[1])) )
+            {
+               // Tetragonal I
+               ibrav = 7;
+            }
+            else
+            {
+               // Cubic I - ibrav=3
+               ibrav = 3;
+            }
+        }
+        else if ( eqq(cosab,-cosac) && eqq(cosab,cosbc) && eqq(cosab,1.0/3.0) )
+        {
+            // Cubic I - ibrav=3
+            ibrav = 3;
+        }
+        else if ( eqq(abs(a0[0]),abs(a1[0])) && eqq(abs(a1[1]),abs(a1[1])) )
+        {
+            // Orthorhombic body-centered
+            ibrav = 11;
+        }
+    }
+    else if ( eqq(a,b) && neqq(a,c) )
+    {
+        // Case: a=b/=c
+        if ( eqq(cosab,0.0) && eqq(cosac,0.0) && eqq(cosbc,0.0) )
+        {
+            // Case: alpha = beta = gamma = 90
+            // Simple tetragonal
+            ibrav = 6;
+        }
+        else if ( eqq(cosab,-0.5) && eqq(cosac,0.0) && eqq(cosbc,0.0) )
+        {
+            // Case: alpha = 120, beta = gamma = 90 => simple hexagonal
+            // Simple hexagonal
+            ibrav = 4;
+        }
+        else if ( eqq(cosac,0.0) && eqq(cosbc,0.0) )
+        {
+            // Orthorhombic bco
+            if ( eqq(a0[0],a1[0]) && eqq(a0[1],-a1[1]))
+            {
+                ibrav = -9;
+            }
+            else if ( eqq(a0[0],-a1[0]) && eqq(a0[1],a1[1]))
+            {
+                ibrav = 9;
+            }
+        }
+        else if ( eqq(cosac,-cosbc) )
+        {
+            // bco (unique axis b)
+            ibrav =-13;
+        }
+    }
+    else if ( eqq(a,c) && neqq(a,b) )
+    {
+        // Case: a=c/=b
+        // Monoclinic bco (unique axis c)
+        ibrav = 13;
+    }
+    else if ( eqq(b,c) && neqq(a,b) )
+    {
+        // Case: a/=b=c
+        // Orthorhombic 1-face bco
+        ibrav = 91;
+    }
+    else if ( neqq(a,b) && neqq(a,c) && neqq(b,c) )
+    {
+        // Case: a/=b/=c
+        if ( eqq(cosab,0.0) && eqq(cosac,0.0) && eqq(cosbc,0.0) )
+        {
+            // Case: alpha = beta = gamma = 90
+            // Orthorhombic P
+            ibrav = 8;
+        }
+        else if ( neqq(cosab,0.0) && eqq(cosac,0.0) && eqq(cosbc,0.0) )
+        {
+           // Case: alpha /= 90,  beta = gamma = 90
+           // Monoclinic P, unique axis c
+           ibrav = 12;
+        }
+        else if ( eqq(cosab,0.0) && neqq(cosac,0.0) && eqq(cosbc,0.0) )
+        {
+           // Case: beta /= 90, alpha = gamma = 90
+           // Monoclinic P, unique axis b
+           ibrav =-12;
+        }
+        else if ( neqq(cosab,0.0) && neqq(cosac,0.0) && neqq(cosbc,0.0) )
+        {
+           // Case: alpha /= 90, beta /= 90, gamma /= 90
+           if ( eqq(abs(a0[0]),abs(a1[0])) && eqq(abs(a0[2]),abs(a2[2])) && eqq(abs(a1[1]),abs(a2[1])) )
+           {
+               // Orthorhombic F
+                  ibrav = 10;
+           }
+           else 
+           {
+              // Triclinic
+              ibrav = 14;
+           }
+        }
+    }
+    return ibrav;
 }
