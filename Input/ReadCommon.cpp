@@ -1423,35 +1423,25 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         if(Lunit < 1.0e-10)    
             throw RmgFatalException() << "lattice units = Alat, but Alat(a_length) = 0.0" << "\n";
 
-        double d[3]= {0.0, 0.0, 0.0};
         for (int i = 0; i < 3; i++)
         {
             a0[i] = Lunit * lattice_vector.vals.at(i);
             a1[i] = Lunit * lattice_vector.vals.at(i+3);
             a2[i] = Lunit * lattice_vector.vals.at(i+6);
-            d[0] += a0[i] * a0[i];
-            d[1] += a1[i] * a1[i];
-            d[2] += a2[i] * a2[i];
         }
 
 //        Rmg_L.lat2abc(a0, a1, a2);
         // Detects ibrav and generates a,b,c,cosab,cosac,cosbc
         int ibb = Rmg_L.lat2ibrav (a0, a1, a2);
-        //printf("Detected ibrav %d from lattice vectors.\n",ibb);fflush(NULL);
+        if(ibb == TRICLINIC_PRIMITIVE) ct.kohn_sham_ke_fft = true;
+        if(pct.imgpe==0) printf("Detected ibrav %d from lattice vectors.\n",ibb);
+
         // Sets up celldm
         Rmg_L.abc2celldm();
 
         for(int i=0;i < 6;i++) {celldm[i] = Rmg_L.get_celldm(i);}
         ibrav = Rmg_L.get_ibrav_type();
         Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
-        for (int i = 0; i < 3; i++)
-        {
-            if(celldm[i] > 1.0e-10 && abs(celldm[i] * celldm[i] - d[i]) > 1.0e-5)
-            {
-                std::cout << "direction="<<i<<" length = "<< celldm[i] << "  "<< sqrt(d[i])<<std::endl;
-//                throw RmgFatalException() << "lattice vectors are inconsistent with a,b,c" << "\n";
-            }
-        }
 
     }
     else

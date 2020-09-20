@@ -493,7 +493,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
 
         case TRICLINIC_PRIMITIVE:
 
-            rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
+            //rmg_error_handler (__FILE__, __LINE__, "bravais lattice not programmed.");
             singam = sqrt (1.0 - celldm[5] * celldm[5]);
             term = sqrt ((1.0 + 2.0 * celldm[3] * celldm[4] * celldm[5] -
                         celldm[3] * celldm[3]
@@ -812,32 +812,36 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
             // Case: alpha = beta = gamma
             if ( eqq(cosab,0.0) )
             {
-               // Cubic P - ibrav=1
-               ibrav = 1;
+                // Cubic P - ibrav=1
+                ibrav = 1;
             }
             else if ( eqq(cosab,0.5) )
             {
-               // Cubic F - ibrav=2
-               ibrav = 2;
+                // Cubic F - ibrav=2
+                ibrav = 2;
             }
             else if ( eqq(cosab,-1.0/3.0) )
             {
-               // Cubic I - ibrav=-3
-               ibrav = -3;
+                // Cubic I - ibrav=-3
+                ibrav = -3;
+                // Force to triclinic until special operators coded
+                ibrav = 14;
             }
             else
             {
-               if ( eqq(abs(a0[2]),abs(a1[2])) && eqq(abs(a1[2]),abs(a2[2])) )
-               {
-                  // Trigonal 001 axis
-                  ibrav =5;
-               }
-               else
-               {
-                  // Trigonal, 111 axis
-                  ibrav =-5;
-               }
+                if ( eqq(abs(a0[2]),abs(a1[2])) && eqq(abs(a1[2]),abs(a2[2])) )
+                {
+                    // Trigonal 001 axis
+                    ibrav =5;
+                }
+                else
+                {
+                    // Trigonal, 111 axis
+                    ibrav =-5;
+                }
             }
+            // Force to triclinic until special operators coded
+            ibrav = 14;
         }
         else if ( eqq(cosab,cosac) && neqq(cosab,cosbc) )
         {
@@ -845,6 +849,8 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
             {
                // Tetragonal I
                ibrav = 7;
+               // Force to triclinic until special operators coded
+               ibrav = 14;
             }
             else
             {
@@ -861,6 +867,8 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
         {
             // Orthorhombic body-centered
             ibrav = 11;
+            // Force to triclinic until special operators coded
+            ibrav = 14;
         }
     }
     else if ( eqq(a,b) && neqq(a,c) )
@@ -889,11 +897,15 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
             {
                 ibrav = 9;
             }
+            // Force to triclinic until special operators coded
+            ibrav = 14;
         }
         else if ( eqq(cosac,-cosbc) )
         {
             // bco (unique axis b)
             ibrav =-13;
+            // Force to triclinic until special operators coded
+            ibrav = 14;
         }
     }
     else if ( eqq(a,c) && neqq(a,b) )
@@ -901,12 +913,16 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
         // Case: a=c/=b
         // Monoclinic bco (unique axis c)
         ibrav = 13;
+        // Force to triclinic until special operators coded
+        ibrav = 14;
     }
     else if ( eqq(b,c) && neqq(a,b) )
     {
         // Case: a/=b=c
         // Orthorhombic 1-face bco
         ibrav = 91;
+        // Force to triclinic until special operators coded
+        ibrav = 14;
     }
     else if ( neqq(a,b) && neqq(a,c) && neqq(b,c) )
     {
@@ -916,27 +932,35 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
             // Case: alpha = beta = gamma = 90
             // Orthorhombic P
             ibrav = 8;
+            // Force to triclinic until special operators coded
+            ibrav = 14;
         }
         else if ( neqq(cosab,0.0) && eqq(cosac,0.0) && eqq(cosbc,0.0) )
         {
-           // Case: alpha /= 90,  beta = gamma = 90
-           // Monoclinic P, unique axis c
-           ibrav = 12;
+            // Case: alpha /= 90,  beta = gamma = 90
+            // Monoclinic P, unique axis c
+            ibrav = 12;
+            // Force to triclinic until special operators coded
+            ibrav = 14;
         }
         else if ( eqq(cosab,0.0) && neqq(cosac,0.0) && eqq(cosbc,0.0) )
         {
-           // Case: beta /= 90, alpha = gamma = 90
-           // Monoclinic P, unique axis b
-           ibrav =-12;
+            // Case: beta /= 90, alpha = gamma = 90
+            // Monoclinic P, unique axis b
+            ibrav =-12;
+            // Force to triclinic until special operators coded
+            ibrav = 14;
         }
         else if ( neqq(cosab,0.0) && neqq(cosac,0.0) && neqq(cosbc,0.0) )
         {
-           // Case: alpha /= 90, beta /= 90, gamma /= 90
-           if ( eqq(abs(a0[0]),abs(a1[0])) && eqq(abs(a0[2]),abs(a2[2])) && eqq(abs(a1[1]),abs(a2[1])) )
-           {
-               // Orthorhombic F
-                  ibrav = 10;
-           }
+            // Case: alpha /= 90, beta /= 90, gamma /= 90
+            if ( eqq(abs(a0[0]),abs(a1[0])) && eqq(abs(a0[2]),abs(a2[2])) && eqq(abs(a1[1]),abs(a2[1])) )
+            {
+                // Orthorhombic F
+                ibrav = 10;
+                // Force to triclinic until special operators coded
+                ibrav = 14;
+            }
            else 
            {
               // Triclinic
