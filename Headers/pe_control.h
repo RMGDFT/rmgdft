@@ -126,9 +126,6 @@ typedef struct
     /** Processor z-coordinate for domain decomposition */
     int pe_z;
 
-    /** Number of points in the circle of local projector for each pocessor*/
-    int *lptrlen;
-
     /** points to start of DnmI function storage for this ion*/
 //    double **dnmI;
 //    double **dnmI_x;

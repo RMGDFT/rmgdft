@@ -60,8 +60,6 @@ extern Scalapack *MainSp;
 extern Elpa *MainElpa;
 #endif
 
-static void init_alloc_nonloc_mem (void);
-
 
 template <typename OrbitalType> void Init (double * vh, double * rho, double * rho_oppo, double * rhocore, double * rhoc,
         double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr);
@@ -354,9 +352,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         printf("\n You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.");
         rmg_error_handler (__FILE__, __LINE__, "You have selected ldaU_mode in the input file but none of the atomic species are suitable. Terminating.\n");
     }
-
-    //Dprintf ("Allocate memory for arrays related to nonlocal PP");
-    init_alloc_nonloc_mem ();
 
     /*Set max_nldim */
     ct.max_nldim = 0;
@@ -778,21 +773,3 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
 
-
-static void init_alloc_nonloc_mem (void)
-{
-
-    pct.lptrlen = new int [Atoms.size()];
-
-
-    /*Initialize pointer arrays to NULL */
-    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-    {
-
-        pct.lptrlen[ion] = 0;
-
-    }                           /*end for(ion=0; ion<Atoms.size(); ion++) */
-
-}                               /*end init_alloc_nonloc_mem */
-
-/******/

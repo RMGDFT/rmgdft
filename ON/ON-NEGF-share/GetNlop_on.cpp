@@ -296,7 +296,6 @@ static void init_alloc_nonloc_mem (void)
     int ion;
 
 
-    pct.lptrlen = new int[ct.num_ions];
     pct.ionidx = new int[ct.num_ions];
     pct.prj_per_ion = new int[ct.num_ions];
 
@@ -304,7 +303,6 @@ static void init_alloc_nonloc_mem (void)
 
     for (ion = 0; ion < ct.num_ions; ion++)
     {
-        pct.lptrlen[ion] = 0;
         pct.ionidx[ion] = 0;
         pct.ionidx_loc[ion] = 0;
         pct.prj_per_ion[ion] = 0;
