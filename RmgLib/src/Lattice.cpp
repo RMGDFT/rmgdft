@@ -655,7 +655,6 @@ void Lattice::lat2abc(double *a0, double *a1, double *a2)
     if(fabs(cosbc) < 1.0e-4) cosbc = 0.0;
     if(fabs(cosab - cosac) < 1.0e-4) cosac = cosab;
     if(fabs(cosab - cosbc) < 1.0e-4) cosbc = cosab;
-printf("PPPP0  %14.8f  %14.8f  %14.8f  %14.8f  %14.8f  %14.8f\n",a,b,c,cosab,cosac,cosbc);
 
 
     // Now figure out the lattice type
