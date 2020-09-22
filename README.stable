@@ -1,8 +1,3 @@
-version for productive runs
+For RMG check on github for the latest released version.
 
-ON 3193,
-NEGF 3193
-RMG 3250
-TDDFT 3198
-
-NEGF 3222:  no longer use state_distrubute, use same way as in ON to calculated Hij, and rho
+https://github.com/RMGDFT/rmgdft/releases

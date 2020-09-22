@@ -802,7 +802,6 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
     // Assume triclinic if nothing suitable found
     //
     ibrav = 14;
-
     if ( eqq(a,b) && eqq(a,c) )
     {
         // Case: a=b=c
@@ -839,8 +838,6 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
                     ibrav =-5;
                 }
             }
-            // Force to triclinic until special operators coded
-            ibrav = 14;
         }
         else if ( eqq(cosab,cosac) && neqq(cosab,cosbc) )
         {
@@ -931,8 +928,6 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
             // Case: alpha = beta = gamma = 90
             // Orthorhombic P
             ibrav = 8;
-            // Force to triclinic until special operators coded
-            ibrav = 14;
         }
         else if ( neqq(cosab,0.0) && eqq(cosac,0.0) && eqq(cosbc,0.0) )
         {
