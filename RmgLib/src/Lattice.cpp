@@ -836,6 +836,8 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
                 {
                     // Trigonal, 111 axis
                     ibrav =-5;
+                    // Force to triclinic until special operators coded
+                    ibrav = 14;
                 }
             }
         }
