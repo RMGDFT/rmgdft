@@ -994,7 +994,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 #if GPU_ENABLED
     // If GPU memory is constrained this one should be set to true.
     If.RegisterInputKey("pin_nonlocal_weights", &lc.pin_nonlocal_weights, false,
-            "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.", PERF_OPTIONS,EXPERT_OPTION);
+            "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.", PERF_OPTIONS|EXPERT_OPTION);
 #endif
 
     If.RegisterInputKey("use_bessel_projectors", &lc.use_bessel_projectors, false,
