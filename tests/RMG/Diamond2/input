@@ -9,7 +9,7 @@ localize_projectors = "false"
 compressed_infile = "false"
 compressed_outfile = "false"
 
-test_energy = "-11.32982439"
+test_energy = "-11.39056114"
 
 # Wavefunction grid
 wavefunction_grid="16 16 16"
@@ -42,12 +42,9 @@ kpoint_distribution = "8"
 
 bravais_lattice_type="Cubic Face Centered"
 # Lattice constants 
-a_length="6.1"
-b_length="6.1"
-c_length="6.1"
-alpha="0.0"
-beta="0.0"
-gamma="0.0"
+a_length="6.72"
+b_length="6.72"
+c_length="6.72"
 
 start_mode="LCAO Start"
 start_mode="Restart From File"
