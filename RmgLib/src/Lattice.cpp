@@ -342,22 +342,22 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
         Lattice::zside = sqrt (distance);
 
         Lattice::recips();
-
+        return;
     }
     else
     {
         for (ir = 0; ir < 6; ir++)
             Lattice::celldm[ir] = celldm[ir];
+        // force the lattice symmetry, lattice vectors are determined from celldm[0],[1],[2]
+        for (ir = 0; ir < 3; ir++)
+        {
+            Lattice::a0[ir] = 0.0;
+            Lattice::a1[ir] = 0.0;
+            Lattice::a2[ir] = 0.0;
+        }
     }
     if(Lattice::ibrav == None) return;
 
-    // force the lattice symmetry, lattice vectors are determined from celldm[0],[1],[2]
-    for (ir = 0; ir < 3; ir++)
-    {
-        Lattice::a0[ir] = 0.0;
-        Lattice::a1[ir] = 0.0;
-        Lattice::a2[ir] = 0.0;
-    }
 
     alat = celldm[0];
     switch (Lattice::ibrav)
@@ -724,7 +724,7 @@ void Lattice::lat2abc(double *a0, double *a1, double *a2)
             ibrav = -1;
         }
     }
-printf("IBRAV = %d\n",ibrav);
+
 //    if(ibrav < 0)
 //        rmg_error_handler (__FILE__, __LINE__, "Negative ibrav not supported.\n");
 }

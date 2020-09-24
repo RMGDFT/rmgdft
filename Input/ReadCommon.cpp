@@ -1441,7 +1441,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
         for(int i=0;i < 6;i++) {celldm[i] = Rmg_L.get_celldm(i);}
         ibrav = Rmg_L.get_ibrav_type();
-        Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
+        Rmg_L.latgen(celldm, &omega, a0, a1, a2, true);
 
     }
     else
