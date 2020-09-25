@@ -113,6 +113,7 @@ public:
     void lat2abc(double *a0, double *a1, double *a2);
     void abc2celldm(void);
     int lat2ibrav (double *a0, double *a1, double *a2);
+    void rotate_vectors(double *a0, double *a1, double *a2);
 };
 
 #endif

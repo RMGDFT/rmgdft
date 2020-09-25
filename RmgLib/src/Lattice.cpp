@@ -102,11 +102,13 @@
  */
 
 #include <cmath>
+#include <boost/multi_array.hpp>
 #include "Lattice.h"
 #include "rmg_error.h"
+#include "blas.h"
 
-#define         SQRT2       1.414213562373
-#define         SQRT3       1.732050807569
+//#define         SQRT2       1.414213562373
+//#define         SQRT3       1.732050807569
 
 
 
@@ -965,4 +967,63 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
         }
     }
     return ibrav;
+}
+
+// If the input lattice is one for which RMG has a fast finite diffence representation
+// this function will set the lattice vectors so that they coincide with the expected
+// RMG orientation for that lattice.
+void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
+{
+    int ibb = lat2ibrav (a0, a1, a2);
+
+    bool dorotate = (ibb == CUBIC_FC) ||
+                    (ibb == CUBIC_BC) ||
+                    (ibb == ORTHORHOMBIC_PRIMITIVE) ||
+                    (ibb == CUBIC_PRIMITIVE) ||
+                    (ibb == TETRAGONAL_PRIMITIVE);
+    if(!dorotate) return;
+
+    // Get magnitude of vectors
+    double m[3] = {0.0, 0.0, 0.0};
+    m[0] = sqrt(a0[0]*a0[0] + a0[1]*a0[1] + a0[2]*a0[2]); 
+    m[1] = sqrt(a1[0]*a1[0] + a1[1]*a1[1] + a1[2]*a1[2]); 
+    m[2] = sqrt(a2[0]*a2[0] + a2[1]*a2[1] + a2[2]*a2[2]); 
+
+    for(int i=0;i < 3;i++)a0[i] = 0.0;
+    for(int i=0;i < 3;i++)a1[i] = 0.0;
+    for(int i=0;i < 3;i++)a2[i] = 0.0;
+
+    double term;
+    switch(ibb)
+    {
+        case CUBIC_PRIMITIVE:
+        case ORTHORHOMBIC_PRIMITIVE:
+        case TETRAGONAL_PRIMITIVE:
+            a0[0] = m[0];
+            a1[1] = m[1];
+            a2[2] = m[2];
+            break;
+        case CUBIC_FC:
+            term = SQRT2 * m[0] / 2.0;
+            a0[0] = term;
+            a0[1] = term;
+            a1[1] = term;
+            a1[2] = term;
+            a2[0] = term;
+            a2[2] = term;
+            break;
+        case CUBIC_BC:
+            term = SQRT3 * m[0] / 2.0;
+            for (int ir = 0; ir < 3; ir++)
+            {
+                a0[ir] = term;
+                a1[ir] = term;
+                a2[ir] = term;
+            }                       /* for ir */
+            a0[2] = -term;
+            a1[0] = -term;
+            a2[1] = -term;
+            break;
+    }
+
 }
