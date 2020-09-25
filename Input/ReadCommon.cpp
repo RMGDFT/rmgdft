@@ -1433,6 +1433,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 //        Rmg_L.lat2abc(a0, a1, a2);
         // Detects ibrav and generates a,b,c,cosab,cosac,cosbc
         int ibb = Rmg_L.lat2ibrav (a0, a1, a2);
+        Rmg_L.rotate_vectors(a0, a1, a2);
         if(ibb == TRICLINIC_PRIMITIVE) ct.kohn_sham_ke_fft = true;
         if(pct.imgpe==0) printf("Detected ibrav %d from lattice vectors.\n",ibb);
 
