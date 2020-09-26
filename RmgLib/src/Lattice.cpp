@@ -121,11 +121,10 @@ void Lattice::cross_product (double * a, double * b, double * c)
 
 void Lattice::to_cartesian (double *crystal, double *cartesian)
 {
-    int ir;
 
     /*  position is in crystal coordinates, get cartesian coordinates */
 
-    for (ir = 0; ir < 3; ir++)
+    for (int ir = 0; ir < 3; ir++)
     {
         cartesian[ir] = crystal[0] * Lattice::a0[ir] + crystal[1] * Lattice::a1[ir] + crystal[2] * Lattice::a2[ir];
     }                           /* end for ir */
@@ -134,41 +133,10 @@ void Lattice::to_cartesian (double *crystal, double *cartesian)
 
 void Lattice::to_crystal (double *crystal, double *cartesian)
 {
-    int ir;
 
-    if (Lattice::ibrav == HEXAGONAL)
-    {
-
-        crystal[0] = (cartesian[0] + cartesian[1] / SQRT3) / Lattice::celldm[0];
-        crystal[1] = cartesian[1] / (SQRT3 / 2.0) / Lattice::celldm[0];
-        crystal[2] = cartesian[2] * b2[2];
-
-    }
-    else if (Lattice::ibrav == CUBIC_PRIMITIVE)
-    {
-
-        crystal[0] = cartesian[0] / Lattice::celldm[0];
-        crystal[1] = cartesian[1] / (Lattice::celldm[0] * Lattice::celldm[1]);
-        crystal[2] = cartesian[2] / (Lattice::celldm[0] * Lattice::celldm[2]);
-
-    }
-    else if (Lattice::ibrav == ORTHORHOMBIC_PRIMITIVE)
-    {
-
-        crystal[0] = cartesian[0] / Lattice::celldm[0];
-        crystal[1] = cartesian[1] / (Lattice::celldm[0] * Lattice::celldm[1]);
-        crystal[2] = cartesian[2] / (Lattice::celldm[0] * Lattice::celldm[2]);
-
-    }
-    else
-    {
-
-        for (ir = 0; ir < 3; ir++)
-        {
-            crystal[ir] = cartesian[0] * b0[ir] + cartesian[1] * b1[ir] + cartesian[2] * b2[ir];
-        }                       /* end for ir */
-
-    }                           /* end if */
+    crystal[0] = cartesian[0] * b0[0] + cartesian[1] * b0[1] + cartesian[2] * b0[2];
+    crystal[1] = cartesian[0] * b1[0] + cartesian[1] * b1[1] + cartesian[2] * b1[2];
+    crystal[2] = cartesian[0] * b2[0] + cartesian[1] * b2[1] + cartesian[2] * b2[2];
 
     if (crystal[0] < -1.0e-10)
         crystal[0] += 1.0;
@@ -188,41 +156,10 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
 
 void Lattice::to_crystal_half (double *crystal, double *cartesian)
 {
-    int ir;
 
-    if (Lattice::ibrav == HEXAGONAL)
-    {
-
-        crystal[0] = (cartesian[0] + cartesian[1] / SQRT3) / Lattice::celldm[0];
-        crystal[1] = cartesian[1] / (SQRT3 / 2.0) / Lattice::celldm[0];
-        crystal[2] = cartesian[2] * b2[2];
-
-    }
-    else if (Lattice::ibrav == CUBIC_PRIMITIVE)
-    {
-
-        crystal[0] = cartesian[0] / Lattice::celldm[0];
-        crystal[1] = cartesian[1] / (Lattice::celldm[0] * Lattice::celldm[1]);
-        crystal[2] = cartesian[2] / (Lattice::celldm[0] * Lattice::celldm[2]);
-
-    }
-    else if (Lattice::ibrav == ORTHORHOMBIC_PRIMITIVE)
-    {
-
-        crystal[0] = cartesian[0] / Lattice::celldm[0];
-        crystal[1] = cartesian[1] / (Lattice::celldm[0] * Lattice::celldm[1]);
-        crystal[2] = cartesian[2] / (Lattice::celldm[0] * Lattice::celldm[2]);
-
-    }
-    else
-    {
-
-        for (ir = 0; ir < 3; ir++)
-        {
-            crystal[ir] = cartesian[0] * b0[ir] + cartesian[1] * b1[ir] + cartesian[2] * b2[ir];
-        }                       /* end for ir */
-
-    }                           /* end if */
+    crystal[0] = cartesian[0] * b0[0] + cartesian[1] * b0[1] + cartesian[2] * b0[2];
+    crystal[1] = cartesian[0] * b1[0] + cartesian[1] * b1[1] + cartesian[2] * b1[2];
+    crystal[2] = cartesian[0] * b2[0] + cartesian[1] * b2[1] + cartesian[2] * b2[2];
 
     if (crystal[0] < -0.5)
         crystal[0] += 1.0;
@@ -299,20 +236,7 @@ void Lattice::latgen (double * celldm, double * OMEGAI, double *a0, double *a1, 
             distance += Lattice::a2[ir] * Lattice::a2[ir];
         Lattice::celldm[2] = sqrt(distance)/Lattice::celldm[0];
 
-        distance = 0.0;
-        distance += a0[1] * a0[1] + a0[2] * a0[2];
-        distance += a1[0] * a1[0] + a1[2] * a1[2];
-        distance += a2[0] * a2[0] + a2[1] * a2[1];
-        if(distance < 1.0e-10) 
-            Lattice::ibrav = ORTHORHOMBIC_PRIMITIVE;
 
-        distance = 0.0;
-        distance += a0[1] * a0[1] + a0[2] * a0[2];
-        distance += a1[2] * a1[2];
-        distance += a2[0] * a2[0] + a2[1] * a2[1];
-        if(distance < 1.0e-10 && std::abs(std::abs(a1[0]) - std::abs(0.5* a0[0])) < 1.0e-10 
-                && std::abs(std::abs(a1[1]) - std::abs(0.5 * sqrt(3.0) * a0[0])) < 1.0e-10   ) 
-            Lattice::ibrav = HEXAGONAL;
         alat = Lattice::celldm[0];
 
         for (ir = 0; ir < 6; ir++)
@@ -692,7 +616,7 @@ void Lattice::lat2abc(double *a0, double *a1, double *a2)
             ibrav = 6;
          }
          else if ( zcheck(cosab+0.5) && zcheck(cosac) && zcheck(cosbc) ) {
-             //Case: simple hexagonal
+             //Case: simple hexagonal with 120 degree ab
              ibrav = 4;
          }
          else

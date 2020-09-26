@@ -50,6 +50,8 @@
 #define MONOCLINIC_BASE_CENTRED         13
 #define TRICLINIC_PRIMITIVE             14
 
+// HEXAGONAL is for 60 degree case HEXAGONAL2 is for 120
+#define HEXAGONAL2                      15
 class Lattice {
 
 private:
