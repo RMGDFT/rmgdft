@@ -51,6 +51,7 @@ int Radius2grid (const double radius, const double mingrid_spacing, const int ib
         if (ibrav == CUBIC_BC) scale = 1.1;
         if (ibrav == CUBIC_FC) scale = 1.3;
         if (ibrav == HEXAGONAL) scale = 1.6;
+        if (ibrav == HEXAGONAL2) scale = 1.6;
     }
         
     double t1 = 2.0 * scale * radius / mingrid_spacing, t2;

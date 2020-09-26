@@ -50,7 +50,8 @@ char *lattice_type[] = {
     "Orthorhombic_FC",
     "Monoclinic_primitive",
     "Monoclinic_base_centred",
-    "Triclinic_primitive"
+    "Triclinic_primitive",
+    "Hexagonal2_primitive"
 };
 
 

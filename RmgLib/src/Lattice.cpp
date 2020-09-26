@@ -619,6 +619,10 @@ void Lattice::lat2abc(double *a0, double *a1, double *a2)
              //Case: simple hexagonal with 120 degree ab
              ibrav = 4;
          }
+         else if ( zcheck(cosab-0.5) && zcheck(cosac) && zcheck(cosbc) ) {
+             //Case: simple hexagonal with 60 degree ab
+             ibrav = 15;
+         }
          else
          {
              //Case: unknown (body-centered tetragonal or wrong data)
@@ -809,6 +813,12 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
             // Case: alpha = 120, beta = gamma = 90 => simple hexagonal
             // Simple hexagonal
             ibrav = 4;
+        }
+        else if ( eqq(cosab,0.5) && eqq(cosac,0.0) && eqq(cosbc,0.0) )
+        {
+            // Case: alpha = 60, beta = gamma = 90 => simple hexagonal
+            // Simple hexagonal
+            ibrav = 15;
         }
         else if ( eqq(cosac,0.0) && eqq(cosbc,0.0) )
         {

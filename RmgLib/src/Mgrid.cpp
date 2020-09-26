@@ -502,6 +502,7 @@ void Mgrid::mg_restrict (RmgType * __restrict__ full, RmgType * __restrict__ hal
 
             break;
 
+        case HEXAGONAL2:
         case HEXAGONAL:
 
             scale = 1.0 / 32.0;
@@ -897,6 +898,7 @@ void Mgrid::mg_prolong (RmgType * __restrict__ full, RmgType * __restrict__ half
 
             break;
 
+        case HEXAGONAL2:
         case HEXAGONAL:
 
             /* transfer coarse grid points to fine grid along with the

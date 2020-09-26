@@ -73,8 +73,11 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
     int images = order / 2;
     size_t alloc = (sbasis + 64) * sizeof(RmgType);
     RmgType *rptr;
-    int special = ((ibrav == HEXAGONAL) || (ibrav == ORTHORHOMBIC_PRIMITIVE) || 
-                   (ibrav == CUBIC_PRIMITIVE) || (ibrav == TETRAGONAL_PRIMITIVE));
+    int special = ((ibrav == HEXAGONAL) ||
+                   (ibrav == HEXAGONAL2) ||
+                   (ibrav == ORTHORHOMBIC_PRIMITIVE) ||
+                   (ibrav == CUBIC_PRIMITIVE) ||
+                   (ibrav == TETRAGONAL_PRIMITIVE));
 
 
     
@@ -91,7 +94,7 @@ double CPP_app_del2_driver_int (Lattice *L, TradeImages *T, RmgType * a, RmgType
 
     
 
-    if(!special || (ibrav == HEXAGONAL))
+    if(!special || (ibrav == HEXAGONAL) || (ibrav == HEXAGONAL2))
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
     else
         T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);

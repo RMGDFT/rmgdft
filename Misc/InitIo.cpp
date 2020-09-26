@@ -363,6 +363,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     bool special = ((Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
             (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
             (Rmg_L.get_ibrav_type() == HEXAGONAL) ||
+            (Rmg_L.get_ibrav_type() == HEXAGONAL2) ||
             (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
     if(!special || ct.kohn_sham_ke_fft) SetLaplacian();
 

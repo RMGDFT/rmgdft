@@ -1230,6 +1230,7 @@ double FiniteDiff::app2_del2 (RmgType * __restrict__ a, RmgType * __restrict__  
             }                       /* end for */
             break;
 
+        case HEXAGONAL2:
         case HEXAGONAL:
 
             cc = -FOUR_t * ihx;
@@ -1479,6 +1480,7 @@ double FiniteDiff::app2_del2_offset (RmgType * a, RmgType * b, int dimx, int dim
             }                       /* end for */
             break;
 
+        case HEXAGONAL2:
         case HEXAGONAL:
 
             cc = -FOUR_t * ihx;
@@ -1627,7 +1629,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     gen_weights(9, 2, (double)ic, x, w1);
     gen_weights(7, 2, (double)(ic-1), x, w2);
     double hf = 1.0, c1, c2=0.0;
-    if(ibrav == HEXAGONAL) hf = 2.0/3.0;
+    if(ibrav == HEXAGONAL || ibrav == HEXAGONAL2) hf = 2.0/3.0;
 
     double d1 = 6.0/560.0;
     double d2 = -8.0/3150.0;
@@ -1673,6 +1675,7 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
     // NULL b means we just want the diagonal component.
     if(b == NULL) return (double)std::real(t0);
 
+    int id = 1;
     switch(ibrav)
     {
         case CUBIC_PRIMITIVE:
@@ -1720,6 +1723,8 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
             }                           /* end for */
             break;
 
+        case HEXAGONAL2:
+            id = -1;
         case HEXAGONAL:
 
             for (int ix = 4; ix < dimx + 4; ix++)
@@ -1761,10 +1766,10 @@ double FiniteDiff::app8_del2(RmgType * __restrict__ a, RmgType * __restrict__ b,
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
-                                t1x * (A[iz + ixs + iys] + A[iz - ixs - iys]) +
-                                t2x * (A[iz + 2*ixs + 2*iys] + A[iz - 2*ixs - 2*iys]) +
-                                t3x * (A[iz + 3*ixs + 3*iys] + A[iz - 3*ixs - 3*iys]) +
-                                t4x * (A[iz + 4*ixs + 4*iys] + A[iz - 4*ixs - 4*iys]);
+                                t1x * (A[iz + id*ixs + iys] + A[iz - id*ixs - iys]) +
+                                t2x * (A[iz + id*2*ixs + 2*iys] + A[iz - id*2*ixs - 2*iys]) +
+                                t3x * (A[iz + id*3*ixs + 3*iys] + A[iz - id*3*ixs - 3*iys]) +
+                                t4x * (A[iz + id*4*ixs + 4*iys] + A[iz - id*4*ixs - 4*iys]);
                     }                   /* end for */
 
                 }
@@ -1804,7 +1809,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
     gen_weights(11, 2, (double)ic, x, w1);
     gen_weights(9, 2, (double)(ic-1), x, w2);
     double hf = 1.0, c1, c2=0.0;
-    if(ibrav == HEXAGONAL) hf = 2.0/3.0;
+    if(ibrav == HEXAGONAL || ibrav == HEXAGONAL2) hf = 2.0/3.0;
 
     double d1 = -8.0/3150.0;
     double d2 = 6.01250601250605e-5;
@@ -1905,6 +1910,7 @@ double FiniteDiff::app10_del2(RmgType * a, RmgType * b, int dimx, int dimy, int 
             }                           /* end for */
             break;
 
+        case HEXAGONAL2:
         case HEXAGONAL:
 
             for (int ix = 5; ix < dimx + 5; ix++)
@@ -2139,6 +2145,7 @@ double FiniteDiff::app_cil_fourth (RmgType * rptr, RmgType * b, int dimx, int di
             }                       /* end if */
             break;
 
+        case HEXAGONAL2:
         case HEXAGONAL:
 
             cc = ((-THREE_t / FOUR_t) * ihz) - ((FIVE_t / THREE_t) * ihx);
@@ -2316,6 +2323,7 @@ void FiniteDiff::app_cir_fourth (RmgType * rptr, RmgType * b, int dimx, int dimy
             }                           /* end for */
             break;
 
+        case HEXAGONAL2:
         case HEXAGONAL:
 
             for(int ix = 1;ix < dimx + 1;ix++) {
@@ -2499,6 +2507,7 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
     RmgType t4z (-1.0 / (280.0 * gridhz * L->get_zside()));
     RmgType hex_t(0.5*1.154700538379);
 
+    int id = 1;
     switch (ibrav)
     {
 
@@ -2567,6 +2576,8 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
 
             break;
 
+        case HEXAGONAL2:
+            id = -1;
         case HEXAGONAL:
 
             for (int ix = 4; ix < dimx + 4; ix++)
@@ -2595,10 +2606,10 @@ void FiniteDiff::app_gradient_eighth (RmgType * __restrict__ rptr, RmgType * __r
                             hex_t * t2y * ( B[iz + 2*iys] - B[iz - 2*iys]) +
                             hex_t * t1y * ( B[iz + iys] - B[iz - iys]) +
 
-                            hex_t * t4y * ( -B[iz - 4*ixs - 4*iys] + B[iz + 4*ixs + 4*iys]) +
-                            hex_t * t3y * ( -B[iz - 3*ixs - 3*iys] + B[iz + 3*ixs + 3*iys]) +
-                            hex_t * t2y * ( -B[iz - 2*ixs - 2*iys] + B[iz + 2*ixs + 2*iys]) +
-                            hex_t * t1y * ( -B[iz - ixs - iys] + B[iz + ixs + iys]);
+                            hex_t * t4y * ( -B[iz - id*4*ixs - 4*iys] + B[iz + id*4*ixs + 4*iys]) +
+                            hex_t * t3y * ( -B[iz - id*3*ixs - 3*iys] + B[iz + id*3*ixs + 3*iys]) +
+                            hex_t * t2y * ( -B[iz - id*2*ixs - 2*iys] + B[iz + id*2*ixs + 2*iys]) +
+                            hex_t * t1y * ( -B[iz - id*ixs - iys] + B[iz + id*ixs + iys]);
 
                     
                     }
@@ -2839,6 +2850,7 @@ double FiniteDiff::app_cil_fourth_threaded (RmgType * rptr, RmgType * b, int dim
             }
             break;
 
+        case HEXAGONAL2:
         case HEXAGONAL:
 
             cc = ((-THREE_t / FOUR_t) * ihz) - ((FIVE_t / THREE_t) * ihx);
@@ -3011,7 +3023,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
     gen_weights(9, 2, (double)ic, x, w1);
     gen_weights(7, 2, (double)(ic-1), x, w2);
     double hf = 1.0, c1, c2=0.0;
-    if(ibrav == HEXAGONAL) hf = 2.0/3.0;
+    if(ibrav == HEXAGONAL || ibrav == HEXAGONAL2) hf = 2.0/3.0;
 
     double d1 = 6.0/560.0;
     double d2 = -8.0/3150.0;
@@ -3054,7 +3066,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     RmgType t0 (th2);
     RmgType hex_t = 1.0;
-    if(ibrav == HEXAGONAL) hex_t = (0.5*1.154700538379);
+    if(ibrav == HEXAGONAL || ibrav == HEXAGONAL2) hex_t = (0.5*1.154700538379);
 
     // When kvec[i] != 0 this includes the gradient component
     double s1 = 2.0;
@@ -3106,7 +3118,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
 
     // NULL b means we just want the diagonal component.
     if(b == NULL) return (double)std::real(t0);
-
+    int id = 1;
     switch(ibrav)
     {
         case CUBIC_PRIMITIVE:
@@ -3153,6 +3165,8 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
             }                           /* end for */
             break;
 
+        case HEXAGONAL2:
+            id = -1;
         case HEXAGONAL:
 
             for (int ix = 4; ix < dimx + 4; ix++)
@@ -3194,10 +3208,10 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
                     for (int iz = 4; iz < dimz + 4; iz++)
                     {
                         B[iz] +=
-                                gpt1xh * A[iz + ixs + iys] + gmt1xh * A[iz - ixs - iys] +
-                                gpt2xh * A[iz + 2*ixs + 2*iys] + gmt2xh * A[iz - 2*ixs - 2*iys] +
-                                gpt3xh * A[iz + 3*ixs + 3*iys] + gmt3xh * A[iz - 3*ixs - 3*iys] +
-                                gpt4xh * A[iz + 4*ixs + 4*iys] + gmt4xh * A[iz - 4*ixs - 4*iys];
+                                gpt1xh * A[iz + id*ixs + iys] + gmt1xh * A[iz - id*ixs - iys] +
+                                gpt2xh * A[iz + id*2*ixs + 2*iys] + gmt2xh * A[iz - id*2*ixs - 2*iys] +
+                                gpt3xh * A[iz + id*3*ixs + 3*iys] + gmt3xh * A[iz - id*3*ixs - 3*iys] +
+                                gpt4xh * A[iz + id*4*ixs + 4*iys] + gmt4xh * A[iz - id*4*ixs - 4*iys];
                     }                   /* end for */
                 }
             }
