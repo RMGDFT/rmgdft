@@ -181,6 +181,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
     ct.rms = t[1];
 
+    if(std::isnan(ct.rms))
+        rmg_error_handler(__FILE__, __LINE__, "NaN encountered in computational stream. Terminating.\n");
+
     if (ct.scf_steps)
     {
         //rmg_printf("scf check: <rho dv>   = %8.2e\n", t[0]);
