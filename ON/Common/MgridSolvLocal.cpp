@@ -62,6 +62,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
                 int *post_cyc, double step, 
                 int mu_cyc, int istate, int *iion, double Zfac)
 {
+    Mgrid MG(&Rmg_L, Rmg_T);
     int i;
     int ione = 1;
     int dx2, dy2, dz2, siz2;
@@ -136,7 +137,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
     {
 
         //ZeroBoundary(resid, dimx,dimy,dimz, ib);
-        mg_restrict(resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        MG.mg_restrict(resid, newf, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         ////ZeroBoundary(newf, dx2,dy2,dz2, 1);
 
         /* call mgrid solver on new level */
@@ -146,7 +147,7 @@ void MgridSolvLocal(double * v_mat, double * f_mat, double * work,
                    1, istate, iion, 2.0*Zfac);
 
         ////ZeroBoundary(newv, dx2,dy2,dz2, 1);
-        mg_prolong(resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
+        MG.mg_prolong(resid, newv, dimx, dimy, dimz, dx2, dy2, dz2, ixoff, iyoff, izoff);
         ZeroBoundary(resid, dimx,dimy,dimz, ib);
 
 
