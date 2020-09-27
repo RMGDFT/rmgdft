@@ -227,7 +227,6 @@ void get_new_rho (STATE * states, double * rho);
 void get_pdos (STATE * states, double Emin, double Emax, int E_POINTS);
 void mix_rho (double * new_rho, double * rho, double *rhocore, int length, int length_x, int length_y, int length_z);
 void Output_rho_xsf(double *array_3d, MPI_Comm comm);
-void init_qfunct (void);
 void mg_eig_state (STATE *sp, int tid, double *vtot_psi);
 void ortho (STATE *states, int kpt);
 void init_pestr(void);

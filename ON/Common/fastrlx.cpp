@@ -202,7 +202,7 @@ void fastrlx(STATE * states, STATE * states1, double * vxc, double * vh, double 
             init_nonlocal_comm();
 
             /* Initialize qfuction in Cartesin coordinates */
-            init_qfunct();
+            InitQfunct();
             //GetQI();
 
             /* Get the qqq */

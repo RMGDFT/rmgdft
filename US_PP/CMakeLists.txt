@@ -20,11 +20,8 @@ Radius2grid.cpp
 FindPhase.cpp
 FindPhaseKpoint.cpp
 Atomic.cpp
-#Atomic_Cbindings.cpp
 InitPseudo.cpp
-InitQfunct.cpp
 InitLocalObject.cpp
-US_Cbindings.cpp
 init_efield.cpp
 #weight_shift_center.c
 ylmr2.cpp

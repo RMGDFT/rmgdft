@@ -186,7 +186,8 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     FftInitPlans();
 
     /* Initialize the radial potential stuff */
-    InitPseudo();
+    for(auto &sp : Species) sp.InitPseudo (Rmg_L, Rmg_G, ct.write_pp_flag);
+
 
     delete RTa;
     RTa = new RmgTimer("1-TOTAL: init: init_nuc: vnuc");
@@ -288,11 +289,7 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
     fflush(NULL);
 
     /* Initialize qfuction in Cartesin coordinates */
-    RmgTimer *RT4 = new RmgTimer("1-TOTAL: init: init_qfunc");
-    InitQfunct();
-    delete(RT4);
     RmgTimer *RT5 = new RmgTimer("1-TOTAL: init: init_QI");
-
     fflush(NULL);
     GetQI();
     delete(RT5);

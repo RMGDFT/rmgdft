@@ -247,10 +247,7 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
 
     RmgTimer *RT4 = new RmgTimer("1-TOTAL: init:  psp");
     /* Initialize the radial potential stuff */
-    InitPseudo();
-
-    /* Initialize the radial qfunction stuff */
-    InitQfunct();
+    for(auto &sp : Species) sp.InitPseudo (Rmg_L, Rmg_G, ct.write_pp_flag);
 
     /* Initialize symmetry stuff */
     //init_sym ();

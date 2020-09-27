@@ -3,6 +3,7 @@
 
 #include "Pw.h"
 #include <vector>
+#include "Atomic.h"
 
 #include <boost/functional/hash.hpp>
 #include <unordered_map>
@@ -16,10 +17,13 @@ inline int qnm_jval(size_t key) {return (int)((key >> 8) & 255);}
 inline int qnm_lval(size_t key) {return (int)(key & 255);}
 
 
-class SPECIES
+// SPECIES inherits Atomic
+class SPECIES : Atomic
 {
 
 public:
+
+    void InitPseudo (Lattice &L, BaseGrid *G, bool write_flag);
 
     /* Text header with extra information. For UPF pseudopotentials it is the PP_INFO node */
     std::string INFO;

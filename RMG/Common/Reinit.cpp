@@ -117,12 +117,6 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     }
 
 
-    //Dprintf ("Initialize the radial potential stuff");
-    //    RmgTimer *RT1 = new RmgTimer("2-ReInit: radial potentials");
-    //    InitPseudo ();
-    //    delete(RT1);
-
-
 //  rescale the kpoint with correct lattice vectors.
     for (int kpt = 0; kpt < ct.num_kpts; kpt++) {
         double v1, v2, v3;

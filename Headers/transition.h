@@ -149,9 +149,7 @@ void SetupWavefunctionGrid(int& NX_GRID, int& NY_GRID, int& NZ_GRID, double *cel
 extern "C" int FilenameIncrement(char *pathname);
 
 int CountAtomicOrbitals(void);
-void InitPseudo (void);
 void InitSpinOrbit();
-void InitQfunct ();
 void FindPhase (SPECIES *sp, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double> *phase);
 void FindPhaseKpoint (double *kvec, int nlxdim, int nlydim, int nlzdim, double * nlcdrs, std::complex<double>* phase_fftw, bool localize);
 void FindNlcrds (double *xtal, double *nlcrds,
