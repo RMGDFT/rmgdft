@@ -21,9 +21,17 @@ inline int qnm_lval(size_t key) {return (int)(key & 255);}
 class SPECIES : Atomic
 {
 
+private:
+    void Init_ddd0_so(void);
+    void Init_fcoef(std::complex<double> *Umm, int tot_LM);
+    void InitUmm(int lmax, std::complex<double> *Umm);
+
 public:
 
+    void InitSpinOrbit (void);
     void InitPseudo (Lattice &L, BaseGrid *G, bool write_flag);
+    void InitSemilocalBessel (void);
+
 
     /* Text header with extra information. For UPF pseudopotentials it is the PP_INFO node */
     std::string INFO;

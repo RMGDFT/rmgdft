@@ -7,22 +7,12 @@
 #include "const.h"
 #include <boost/math/special_functions/spherical_harmonic.hpp>
 
-static void InitUmm(int lmax, std::complex<double> *Umm);
-static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM);
-static void Init_ddd0_so(SPECIES &sp);
-void InitSpinOrbit ()
+void SPECIES::InitSpinOrbit (void)
 {
     int tot_LM = (ct.max_l +1) *(ct.max_l +1);
-    std::complex<double> *Umm = new std::complex<double>[tot_LM * tot_LM]();
+    Umm = new std::complex<double>[tot_LM * tot_LM]();
     InitUmm(ct.max_l, Umm);
-
-
-    for(int isp = 0; isp < ct.num_species; isp++)
-    {
-        SPECIES *sp = &Species[isp];
-        sp->Umm = new std::complex<double>[tot_LM * tot_LM]();
-        for(int idx = 0; idx < tot_LM * tot_LM; idx++) sp->Umm[idx] = Umm[idx];
-        Init_fcoef(*sp, Umm, tot_LM);
+    Init_fcoef(Umm, tot_LM);
 
 //        if(0)
 //        for(int ih = 0; ih < sp->nh; ih++)
@@ -32,72 +22,70 @@ void InitSpinOrbit ()
 //sp->fcoef_so[ih][jh][0],sp->fcoef_so[ih][jh][1],sp->fcoef_so[ih][jh][2],sp->fcoef_so[ih][jh][3]);
 //        }
 
-        Init_ddd0_so(*sp);
-    }
-    delete [] Umm;
+    Init_ddd0_so();
 }
 
-static void Init_ddd0_so(SPECIES &sp)
+void SPECIES::Init_ddd0_so(void)
 {
 
     //implement eq. 8 in Corso and Conte, PRB 71 115106(2005)
-    if(!sp.is_spinorb)
+    if(!is_spinorb)
     {
-        for(int ih = 0; ih < sp.nh; ih++)
-            for(int jh = 0; jh < sp.nh; jh++)
+        for(int ih = 0; ih < nh; ih++)
+            for(int jh = 0; jh < nh; jh++)
             {
-                sp.ddd0_so[ih][jh][0] = sp.ddd0[ih][jh];
-                sp.ddd0_so[ih][jh][1] = 0.0;
-                sp.ddd0_so[ih][jh][2] = 0.0;
-                sp.ddd0_so[ih][jh][3] = sp.ddd0[ih][jh];
+                ddd0_so[ih][jh][0] = ddd0[ih][jh];
+                ddd0_so[ih][jh][1] = 0.0;
+                ddd0_so[ih][jh][2] = 0.0;
+                ddd0_so[ih][jh][3] = ddd0[ih][jh];
             }
     }
     else
     {
-        sp.ddd0_so.resize(boost::extents[sp.nh][sp.nh][4]);
-        for(int ih = 0; ih < sp.nh; ih++)
-            for(int jh = 0; jh < sp.nh; jh++)
+        ddd0_so.resize(boost::extents[nh][nh][4]);
+        for(int ih = 0; ih < nh; ih++)
+            for(int jh = 0; jh < nh; jh++)
             {
-                int ibeta = sp.indv[ih];
-                int jbeta = sp.indv[jh];
+                int ibeta = indv[ih];
+                int jbeta = indv[jh];
                 for(int is = 0; is < 4; is++)
                 {
-                    sp.ddd0_so[ih][jh][is] = sp.ddd0[ih][jh] *sp.fcoef_so[ih][jh][is];
+                    ddd0_so[ih][jh][is] = ddd0[ih][jh] * fcoef_so[ih][jh][is];
                     //  QE do this but I don't understand Wenchang
                     if(ibeta != jbeta)
-                        sp.fcoef_so[ih][jh][is] = 0.0;
+                        fcoef_so[ih][jh][is] = 0.0;
 
                 }
             }
     }
 }
-static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
+void SPECIES::Init_fcoef(std::complex<double> *Umm, int tot_LM)
 {
-    sp.fcoef_so.resize(boost::extents[sp.nh][sp.nh][4]);
-    for(int ih = 0; ih < sp.nh; ih++)
-        for(int jh = 0; jh < sp.nh; jh++)
+    fcoef_so.resize(boost::extents[nh][nh][4]);
+    for(int ih = 0; ih < nh; ih++)
+        for(int jh = 0; jh < nh; jh++)
         {
-            sp.fcoef_so[ih][jh][0] = 0.0;
-            sp.fcoef_so[ih][jh][1] = 0.0;
-            sp.fcoef_so[ih][jh][2] = 0.0;
-            sp.fcoef_so[ih][jh][3] = 0.0;
+            fcoef_so[ih][jh][0] = 0.0;
+            fcoef_so[ih][jh][1] = 0.0;
+            fcoef_so[ih][jh][2] = 0.0;
+            fcoef_so[ih][jh][3] = 0.0;
         }
 
-    if(!sp.is_spinorb)  return;
+    if(!is_spinorb)  return;
 
     double alpha_up, alpha_dn;
     std::complex<double> Umi_up, Umj_up, Umi_dn, Umj_dn;
-    for(int ih = 0; ih < sp.nh; ih++)
+    for(int ih = 0; ih < nh; ih++)
     {
-        int li = sp.nhtol[ih];
-        double ji = sp.nhtoj[ih];
-        int lmi = sp.nh_l2m[ih];
+        int li = nhtol[ih];
+        double ji = nhtoj[ih];
+        int lmi = nh_l2m[ih];
 
-        for(int jh = 0; jh < sp.nh; jh++)
+        for(int jh = 0; jh < nh; jh++)
         {
-            int lj = sp.nhtol[jh];
-            double jj = sp.nhtoj[jh];
-            int lmj = sp.nh_l2m[jh];
+            int lj = nhtol[jh];
+            double jj = nhtoj[jh];
+            int lmj = nh_l2m[jh];
 
 
             //  fcoef != 0.0 only when l and j are the same. 
@@ -135,10 +123,10 @@ static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
                         Umj_dn = std::conj(Umm[lmm * tot_LM + lmj]);
                     }
 
-                    sp.fcoef_so[ih][jh][0] += alpha_up *alpha_up * Umi_up * Umj_up; 
-                    sp.fcoef_so[ih][jh][1] += alpha_up *alpha_dn * Umi_up * Umj_dn; 
-                    sp.fcoef_so[ih][jh][2] += alpha_dn *alpha_up * Umi_dn * Umj_up; 
-                    sp.fcoef_so[ih][jh][3] += alpha_dn *alpha_dn * Umi_dn * Umj_dn; 
+                    fcoef_so[ih][jh][0] += alpha_up *alpha_up * Umi_up * Umj_up; 
+                    fcoef_so[ih][jh][1] += alpha_up *alpha_dn * Umi_up * Umj_dn; 
+                    fcoef_so[ih][jh][2] += alpha_dn *alpha_up * Umi_dn * Umj_up; 
+                    fcoef_so[ih][jh][3] += alpha_dn *alpha_dn * Umi_dn * Umj_dn; 
 
                 }
             }
@@ -156,10 +144,10 @@ static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
                     Umi_dn = Umm[lmm * tot_LM + lmi];
                     Umj_dn = std::conj(Umm[lmm * tot_LM + lmj]);
 
-                    sp.fcoef_so[ih][jh][0] += alpha_up *alpha_up * Umi_up * Umj_up; 
-                    sp.fcoef_so[ih][jh][1] += alpha_up *alpha_dn * Umi_up * Umj_dn; 
-                    sp.fcoef_so[ih][jh][2] += alpha_dn *alpha_up * Umi_dn * Umj_up; 
-                    sp.fcoef_so[ih][jh][3] += alpha_dn *alpha_dn * Umi_dn * Umj_dn; 
+                    fcoef_so[ih][jh][0] += alpha_up *alpha_up * Umi_up * Umj_up; 
+                    fcoef_so[ih][jh][1] += alpha_up *alpha_dn * Umi_up * Umj_dn; 
+                    fcoef_so[ih][jh][2] += alpha_dn *alpha_up * Umi_dn * Umj_up; 
+                    fcoef_so[ih][jh][3] += alpha_dn *alpha_dn * Umi_dn * Umj_dn; 
 
                 }
             }
@@ -168,7 +156,7 @@ static void Init_fcoef(SPECIES &sp, std::complex<double> *Umm, int tot_LM)
     }
 
 }
-static void InitUmm(int lmax, std::complex<double> *Umm)
+void SPECIES::InitUmm(int lmax, std::complex<double> *Umm)
 {
     // calculate transfor matrix from real  spherical harmonic to complex harmonics
 

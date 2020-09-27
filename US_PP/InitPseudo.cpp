@@ -46,6 +46,9 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
 
     RmgTimer *RT0 = new RmgTimer("2-Init: radial potentials");
 
+    if(ct.noncoll) InitSpinOrbit();
+    if(ct.semilocal_pp && ct.use_bessel_projectors) InitSemilocalBessel();
+
     char newname[MAX_PATH];
     FILE *psp = NULL;
     double *rgrid = GetRgrid();

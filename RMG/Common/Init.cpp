@@ -328,12 +328,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             vh[idx] = 0.0;
     }
 
-
     //Dprintf ("Initialize the radial potential stuff");
-    RmgTimer *RT1 = new RmgTimer("2-Init: radial potentials");
-    if(ct.semilocal_pp && ct.use_bessel_projectors) InitSemilocalBessel();
-    if(ct.noncoll) InitSpinOrbit();
-    delete(RT1);
     for(auto &sp : Species) sp.InitPseudo (Rmg_L, Rmg_G, ct.write_pp_flag);
 
     /* Set initial ionic coordinates to the current ones. */
@@ -377,7 +372,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     /*Do forward transform for each species and store results on the coarse grid */
-    RT1 = new RmgTimer("2-Init: weights");
+    RmgTimer *RT1 = new RmgTimer("2-Init: weights");
     if(ct.localize_projectors)
     {
         InitLocalizedWeight ();
