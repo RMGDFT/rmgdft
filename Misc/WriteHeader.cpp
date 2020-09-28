@@ -40,7 +40,7 @@ char *lattice_type[] = {
     "Cubic_primitive",
     "Cubic_FC",
     "Cubic_BC",
-    "Hexagonal",
+    "Hexagonal gamma = 120",
     "Trigonal_primitive",
     "Tetragonal_primitive",
     "Tetragonal_BC",
@@ -51,7 +51,7 @@ char *lattice_type[] = {
     "Monoclinic_primitive",
     "Monoclinic_base_centred",
     "Triclinic_primitive",
-    "Hexagonal2_primitive"
+    "Hexagonal gamma = 60"
 };
 
 
@@ -261,9 +261,14 @@ void WriteHeader (void)
 
     }                           /* end switch */
     printf ("\n");
-    printf ("    X Basis Vector:  %10.3f  %10.3f  %10.3f a0\n", get_a0(0), get_a0(1), get_a0(2));
-    printf ("    Y Basis Vector:  %10.3f  %10.3f  %10.3f a0\n", get_a1(0), get_a1(1), get_a1(2));
-    printf ("    Z Basis Vector:  %10.3f  %10.3f  %10.3f a0\n", get_a2(0), get_a2(1), get_a2(2));
+
+    // Print out original lattice vectors
+    double *a0 = Rmg_L.a0i;
+    double *a1 = Rmg_L.a1i;
+    double *a2 = Rmg_L.a2i;
+    printf ("    X Basis Vector:  %10.3f  %10.3f  %10.3f a0\n", a0[0], a0[1], a0[2]);
+    printf ("    Y Basis Vector:  %10.3f  %10.3f  %10.3f a0\n", a1[0], a1[1], a1[2]);
+    printf ("    Z Basis Vector:  %10.3f  %10.3f  %10.3f a0\n", a2[0], a2[1], a2[2]);
     
     
     printf ("\n");
@@ -286,7 +291,7 @@ void WriteHeader (void)
 
 	printf ("\n");
 	printf ("         Kx      Ky        Kz     Weight in 2PI/a \n");
-    double kunit = twoPI /Rmg_L.celldm[0];
+        double kunit = twoPI /Rmg_L.celldm[0];
 	for (kpt = 0; kpt < ct.num_kpts; kpt++)
 	{
 	    printf ("    %8.4f   %8.4f   %8.4f   %5.3f\n",

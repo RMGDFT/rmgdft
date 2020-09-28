@@ -923,7 +923,10 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
                     (ibb == CUBIC_BC) ||
                     (ibb == ORTHORHOMBIC_PRIMITIVE) ||
                     (ibb == CUBIC_PRIMITIVE) ||
-                    (ibb == TETRAGONAL_PRIMITIVE);
+                    (ibb == TETRAGONAL_PRIMITIVE) ||
+                    (ibb == HEXAGONAL) ||
+                    (ibb == HEXAGONAL2);
+
     if(!dorotate) return;
 
     // Get magnitude of vectors
@@ -936,7 +939,7 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
     for(int i=0;i < 3;i++)a1[i] = 0.0;
     for(int i=0;i < 3;i++)a2[i] = 0.0;
 
-    double term;
+    double term, cbya;
     switch(ibb)
     {
         case CUBIC_PRIMITIVE:
@@ -967,6 +970,21 @@ void Lattice::rotate_vectors(double *a0, double *a1, double *a2)
             a1[0] = -term;
             a2[1] = -term;
             break;
+        case HEXAGONAL:
+            cbya = m[2] / m[0];
+            a0[0] = m[0];
+            a1[0] = -m[0] / 2.0;
+            a1[1] =  m[0] * SQRT3 / 2.0;
+            a2[2] = m[0] * cbya;
+            break;
+        case HEXAGONAL2:
+            cbya = m[2] / m[0];
+            a0[0] = m[0];
+            a1[0] = m[0] / 2.0;
+            a1[1] =  m[0] * SQRT3 / 2.0;
+            a2[2] = m[0] * cbya;
+            break;
+
     }
 
 }
