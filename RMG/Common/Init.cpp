@@ -72,18 +72,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         double * vnuc, double * vxc,  Kpoint<OrbitalType> **Kptr)
 {
 
-   RmgTimer RT0("Init");
-    int kpt, ic, idx, state, st1, P0_BASIS, FP0_BASIS;
-    int species;
+    RmgTimer RT0("Init");
+    int P0_BASIS, FP0_BASIS;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
 
     ct.nvme_orbital_fd = -1;
     ct.nvme_work_fd = -1;
 
-    SPECIES *sp;
     OrbitalType *rptr = NULL, *nv, *ns = NULL;
     double *vtot;
-    double time2=0.0, fac;
+    double fac;
     bool need_ns = true;
     if(ct.norm_conserving_pp && ct.is_gamma) need_ns = false;
 
@@ -148,14 +146,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     ct.vh_pzgrid = FPZ0_GRID;
 
     ct.vh_pbasis = ct.vh_pxgrid * ct.vh_pygrid * ct.vh_pzgrid;
-    ct.vh_ext = new double[ct.vh_pbasis];
+    ct.vh_ext = new double[ct.vh_pbasis]();
 
-    for (idx = 0; idx < FP0_BASIS; idx++)
-    {
-        vh[idx] = 0.0;
-        ct.vh_ext[idx] = 0.0;
-    }
-
+    std::fill(vh, vh + FP0_BASIS, 0.0);
 
 
     ct.hmaxgrid = Rmg_L.get_xside() * Rmg_G->get_hxgrid(1);
@@ -272,7 +265,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
         MPI_Allreduce(MPI_IN_PLACE, &ct.vexx_alloc, 1, MPI_LONG, MPI_SUM, pct.grid_comm);
     }
-    for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+    for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
 
         size_t vexx_offset = (size_t)kpt * (size_t)ct.run_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor;
@@ -288,7 +281,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         Kptr[kpt]->nv = nv;
         Kptr[kpt]->ns = ns;
 
-        for (st1 = 0; st1 < ct.max_states; st1++)
+        for (int st1 = 0; st1 < ct.max_states; st1++)
         {
             Kptr[kpt]->Kstates[st1].kidx = kpt;
             Kptr[kpt]->Kstates[st1].psi = rptr_k;
@@ -324,8 +317,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     else 
     {
         /* Set the initial hartree potential to a constant */
-        for (idx = 0; idx < FP0_BASIS; idx++)
-            vh[idx] = 0.0;
+        std::fill(vh, vh + FP0_BASIS, 0.0);
     }
 
     //Dprintf ("Initialize the radial potential stuff");
@@ -334,7 +326,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     /* Set initial ionic coordinates to the current ones. */
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
-        for (ic = 0; ic < 3; ic++)
+        for (int ic = 0; ic < 3; ic++)
         {
             Atoms[ion].icrds[ic] = Atoms[ion].crds[ic];
             Atoms[ion].ixtal[ic] = Atoms[ion].xtal[ic];
@@ -352,24 +344,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /*Set max_nldim */
     ct.max_nldim = 0;
-    for (species = 0; species < ct.num_species; species++)
-    {
-        /* Get species type */
-        sp = &Species[species];
+    for(auto &sp : Species) ct.max_nldim = std::max(ct.max_nldim, sp.nldim);
 
-        if (sp->nldim > ct.max_nldim)
-            ct.max_nldim = sp->nldim;
-    }
-
-
-    if (ct.verbose == 1)
-    {
-        time2 = my_crtc ();
-
-        rmg_printf ("\n\n init: Starting FFTW initialization ...");
-
-        fflush (NULL);
-    }
 
     /*Do forward transform for each species and store results on the coarse grid */
     RmgTimer *RT1 = new RmgTimer("2-Init: weights");
@@ -390,14 +366,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         InitDelocalizedOrbital ();
     }
-
     delete(RT1);
-
-    if (ct.verbose == 1)
-    {
-        rmg_printf (" finished in %.1f s", my_crtc () - time2);
-        fflush (NULL);
-    }
 
 
     /* Update items that change when the ionic coordinates change */
@@ -409,7 +378,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (((ct.runflag == LCAO_START) || (ct.runflag == MODIFIED_LCAO_START)) && (ct.forceflag != BAND_STRUCTURE))
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: LcaoGetPsi");
-        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++){
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++){
             Kptr[kpt]->LcaoGetPsi();
         }
         delete(RT2);
@@ -418,7 +387,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (ct.runflag == RANDOM_START)
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: RandomStart");
-        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
             Kptr[kpt]->random_init();
         delete(RT2);
     }
@@ -476,9 +445,9 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     if (ct.runflag != RESTART) /* Initial run */
     {
         RmgTimer *RT2 = new RmgTimer("2-Init: normalization");
-        for (kpt = 0; kpt < ct.num_kpts_pe; kpt++)
+        for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
         {
-            for (state = 0; state < ct.num_states; state++)
+            for (int state = 0; state < ct.num_states; state++)
             {
                 Kptr[kpt]->Kstates[state].normalize(Kptr[kpt]->Kstates[state].psi, state);
             }
@@ -499,7 +468,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         if (ct.nspin == 2)
         {   
             fac = (2.0 - ct.init_equal_density_flag) / (3.0 - ct.init_equal_density_flag);
-            for (idx = 0; idx < FP0_BASIS; idx++)
+            for (int idx = 0; idx < FP0_BASIS; idx++)
             {
 
                 if (pct.spinpe == 0)
@@ -517,7 +486,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         }
         else
         {
-            for (idx = 0; idx < FP0_BASIS; idx++)
+            for (int idx = 0; idx < FP0_BASIS; idx++)
                 rho[idx] = rhoc[idx];
         }
     }
@@ -571,7 +540,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     }
 
     // Generate initial Betaxpsi
-    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+    for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
         Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
@@ -586,7 +555,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
         std::complex<double> *ns_occ_g = new std::complex<double>[occ_size]();
 
-        for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
             LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
             Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
@@ -599,13 +568,13 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
         if(Rmg_Symm) Rmg_Symm->symm_nsocc(ns_occ_g, pstride);
 
-        for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
             for(int idx = 0; idx < occ_size; idx++)
                 Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
 
         }
-        if(ct.verbose) Kptr[kpt]->ldaU->write_ldaU();
+//        if(ct.verbose) Kptr[kpt]->ldaU->write_ldaU();
 
 
         delete ns_occ_g;
@@ -621,7 +590,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         double *vxc_psi = NULL;
 
 
-        for (idx = 0; idx < FP0_BASIS; idx++)
+        for (int idx = 0; idx < FP0_BASIS; idx++)
             vtot[idx] = vxc[idx] + vh[idx] + vnuc[idx];
 
         /*Generate the Dnm_I */
@@ -638,7 +607,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
         /*Now we can do subspace diagonalization */
         double *new_rho=new double[FP0_BASIS *ct.noncoll_factor * ct.noncoll_factor];
-        for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
 
             RmgTimer *RT2 = new RmgTimer("2-Init: subdiag");
@@ -673,7 +642,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             int occ_size = ct.noncoll_factor * ct.noncoll_factor * Atoms.size() * pstride * pstride;
             std::complex<double> *ns_occ_g = new std::complex<double>[occ_size]();
 
-            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
             {
                 LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
                 Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
@@ -684,7 +653,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
             MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
-            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
             {
                 for(int idx = 0; idx < occ_size; idx++)
                     Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
@@ -694,7 +663,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
             if(Rmg_Symm) Rmg_Symm->symm_nsocc(ns_occ_g, pstride);
 
-            for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
             {
                 for(int idx = 0; idx < occ_size; idx++)
                     Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
@@ -736,7 +705,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
 
     ct.num_states = ct.run_states;
-    for (kpt =0; kpt < ct.num_kpts_pe; kpt++)
+    for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         Kptr[kpt]->nstates = ct.run_states;
         Kptr[kpt]->dvh_skip = 8;
