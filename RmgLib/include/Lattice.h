@@ -71,6 +71,11 @@ public:
     double a1[3];
     double a2[3];
 
+    // original input lattice vectors
+    double a0i[3];
+    double a1i[3];
+    double a2i[3];
+
     // reciprocal lattice vectors
     double b0[3];
     double b1[3];
@@ -116,6 +121,7 @@ public:
     void abc2celldm(void);
     int lat2ibrav (double *a0, double *a1, double *a2);
     void rotate_vectors(double *a0, double *a1, double *a2);
+    void save_vectors(double *a0, double *a1, double *a2);
 };
 
 #endif

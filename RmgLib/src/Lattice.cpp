@@ -903,6 +903,15 @@ int Lattice::lat2ibrav (double *a0, double *a1, double *a2)
     return ibrav;
 }
 
+// Saves input vectors in case we rotate them and need the originals
+void Lattice::save_vectors(double *a0, double *a1, double *a2)
+{
+    // Save initial vectors
+    for(int i=0;i < 3;i++)a0i[i] = a0[i];
+    for(int i=0;i < 3;i++)a1i[i] = a1[i];
+    for(int i=0;i < 3;i++)a2i[i] = a2[i];
+}
+
 // If the input lattice is one for which RMG has a fast finite diffence representation
 // this function will set the lattice vectors so that they coincide with the expected
 // RMG orientation for that lattice.

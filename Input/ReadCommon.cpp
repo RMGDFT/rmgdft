@@ -1430,6 +1430,9 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             a2[i] = Lunit * lattice_vector.vals.at(i+6);
         }
 
+        // Save copy of scaled input vectors
+        Rmg_L.save_vectors(a0, a1, a2);
+
 //        Rmg_L.lat2abc(a0, a1, a2);
         // Detects ibrav and generates a,b,c,cosab,cosac,cosbc
         int ibb = Rmg_L.lat2ibrav (a0, a1, a2);
@@ -1472,6 +1475,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         // Set up the lattice vectors
         Rmg_L.set_ibrav_type(ibrav);
         Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
+        Rmg_L.save_vectors(a0, a1, a2);
     }
 
     int NX_GRID = WavefunctionGrid.vals.at(0);
