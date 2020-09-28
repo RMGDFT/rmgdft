@@ -28,9 +28,6 @@ a_length="4.64117"
 b_length="4.64117"
 c_length="12.653685887999998"
 
-alpha="0.0"
-beta="0.0"
-gamma="0.0"
 
 verbose="true"
 kpoint_is_shift = "1 1 1 "

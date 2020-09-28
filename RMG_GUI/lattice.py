@@ -21,9 +21,8 @@ def lattice(lattice):
     snippet = """
 
 # Lattice constants in (x, y, z) directions
-# a, b, c, cos(alpha), cos(beta), cos(gamma)
+# a, b, c
 a_length="%s" b_length="%s" c_length="%s"
-alpha="0.0" beta="0.0" gamma="0.0"
 
 """ %(a,b,c)
 

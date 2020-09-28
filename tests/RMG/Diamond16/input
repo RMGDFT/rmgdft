@@ -60,9 +60,6 @@ crds_units= "Bohr"
 a_length="13.44"
 b_length="13.44"
 c_length="13.44"
-alpha="0.0"
-beta="0.0"
-gamma="0.0"
 force_grad_order = "0"
 
 start_mode=
