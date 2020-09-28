@@ -9,6 +9,7 @@ list(APPEND energy_tests "AlN32")
 list(APPEND energy_tests "Si-8atoms_EXX_kpoints")
 list(APPEND energy_tests "NiO8")
 list(APPEND energy_tests "graphite_stress")
+list(APPEND energy_tests "Ni_Semilocal")
 
 set (bond_tests "CO")
 

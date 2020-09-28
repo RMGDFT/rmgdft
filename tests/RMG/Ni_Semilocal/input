@@ -1,0 +1,60 @@
+# Description of run.
+description="Nickel atom test using semi-local potential"
+use_bessel_projectors = "true"
+test_energy = "-113.34030769"
+
+# Wavefunction grid
+wavefunction_grid="96 96 96"
+potential_grid_refinement = "2"
+
+# No need to save test orbitals
+output_wave_function_file = "/dev/null"
+
+localize_localpp="false"
+localize_projectors="false"
+pseudopotential = "Ni Ni_ONCV_PBE-1.0_SL.UPF"
+
+states_count_and_occupation = "3 2.0 5 1.6 1 2.0 7 0.0"
+
+occupations_type = "Fixed"
+
+# Units for bravais_lattice_type and atoms
+#crds_units=
+#"Bohr"
+#"Angstrom"
+
+bravais_lattice_type="Cubic Primitive"
+
+# Lattice constants 
+a_length="18.0"
+b_length="18.0"
+c_length="18.0"
+
+start_mode="LCAO Start"
+#start_mode="Restart From File"
+
+calculation_mode="Quench Electrons"
+#calculation_mode="Relax Structure"
+
+#kohn_sham_solver="multigrid"
+kohn_sham_solver="davidson"
+
+subdiag_driver="scalapack"
+charge_mixing_type = "Broyden"
+charge_density_mixing = "0.5"
+kohn_sham_mucycles = "3"
+max_scf_steps="100"
+potential_acceleration_constant_step="1.0"
+write_data_period="50"
+
+# Criterion used to judge SCF convergency 
+energy_convergence_criterion="1.0e-11"
+#rms_convergence_criterion = "1.0e-10"
+
+atomic_coordinate_type="Absolute"
+
+# List  atomic symbol, coordinates, and movable flag (1 == movable) 
+# symbol and coordinates are required, moveable is optional, default is 1
+atoms = "
+Ni    0.0  0.0  0.0  1 0.0
+"
