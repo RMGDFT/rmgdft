@@ -635,12 +635,16 @@ static void init_write_pos (void)
         ION &Atom = Atoms[ion];
         SPECIES &Type = Species[Atom.species];
 
+        double crds[3], icrds[3];
+        Rmg_L.to_cartesian_input (Atom.xtal, crds);
+        Rmg_L.to_cartesian_input (Atom.ixtal, icrds);
+
         printf ("\n  %-2s   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
 		Type.atomic_symbol,
-                Atom.crds[0], Atom.crds[1], Atom.crds[2],
-                Atom.crds[0] - Atom.icrds[0],
-                Atom.crds[1] - Atom.icrds[1], 
-                Atom.crds[2] - Atom.icrds[2]);
+                crds[0], crds[1], crds[2],
+                crds[0] - icrds[0],
+                crds[1] - icrds[1], 
+                crds[2] - icrds[2]);
 
     }                           /* end for */
 
@@ -656,12 +660,16 @@ static void init_write_pos (void)
         ION &Atom = Atoms[ion];
         SPECIES &Type = Species[Atom.species];
 
+        double crds[3], icrds[3];
+        Rmg_L.to_cartesian_input (Atom.xtal, crds);
+        Rmg_L.to_cartesian_input (Atom.ixtal, icrds);
+
         printf ("\n  %-2s   %10.4f  %10.4f  %10.4f  %10.4f  %10.4f  %10.4f",
 		Type.atomic_symbol,
-                Atom.crds[0] *a0_A, Atom.crds[1] *a0_A, Atom.crds[2] *a0_A,
-                (Atom.crds[0] - Atom.icrds[0]) *a0_A,
-                (Atom.crds[1] - Atom.icrds[1]) *a0_A, 
-                (Atom.crds[2] - Atom.icrds[2]) *a0_A);
+                crds[0] *a0_A, crds[1] *a0_A, crds[2] *a0_A,
+                (crds[0] - icrds[0]) *a0_A,
+                (crds[1] - icrds[1]) *a0_A, 
+                (crds[2] - icrds[2]) *a0_A);
 
     }                           /* end for */
 

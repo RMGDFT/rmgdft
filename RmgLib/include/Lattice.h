@@ -101,6 +101,7 @@ public:
     void to_crystal (double *crystal, double *cartesian);
     void to_crystal_half (double *crystal, double *cartesian);
     void to_cartesian (double *crystal, double *cartesian);
+    void to_cartesian_input (double *crystal, double *cartesian);
     void recips (void);
     int get_ibrav_type(void);
     void set_ibrav_type(int newtype);

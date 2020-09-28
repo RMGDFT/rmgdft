@@ -131,6 +131,18 @@ void Lattice::to_cartesian (double *crystal, double *cartesian)
 
 }                               /* end to_cartesian */
 
+void Lattice::to_cartesian_input (double *crystal, double *cartesian)
+{
+
+    /*  position is in crystal coordinates, get cartesian coordinates using the input (non-rotated lattice vectors) */
+
+    for (int ir = 0; ir < 3; ir++)
+    {
+        cartesian[ir] = crystal[0] * Lattice::a0i[ir] + crystal[1] * Lattice::a1i[ir] + crystal[2] * Lattice::a2i[ir];
+    }                           /* end for ir */
+
+}                               /* end to_cartesian */
+
 void Lattice::to_crystal (double *crystal, double *cartesian)
 {
 

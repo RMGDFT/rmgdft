@@ -1475,7 +1475,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
         // Set up the lattice vectors
         Rmg_L.set_ibrav_type(ibrav);
         Rmg_L.latgen(celldm, &omega, a0, a1, a2, false);
-        Rmg_L.save_vectors(a0, a1, a2);
+        Rmg_L.save_vectors(Rmg_L.a0, Rmg_L.a1, Rmg_L.a2);
     }
 
     int NX_GRID = WavefunctionGrid.vals.at(0);
