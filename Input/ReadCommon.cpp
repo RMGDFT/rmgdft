@@ -47,6 +47,7 @@
 #include "RmgException.h"
 #include "RmgInputFile.h"
 #include "InputOpts.h"
+#include "rmg_error.h"
 
 
 
@@ -1410,7 +1411,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     // Check if a lattice vector was specified and if not 
     if(lattice_vector.vals == def_lattice_vector.vals && ibrav == None)
-        throw RmgFatalException() << "Neither a lattice_vector or a lattice type was specified. Terminating.\n";
+        rmg_error_handler(__FILE__,__LINE__,"\nNeither a lattice_vector or a lattice type was specified. Terminating.\n");
+
+    if(ibrav == None && lc.stress)
+        rmg_error_handler(__FILE__,__LINE__, "\nStress not supported for arbitary lattice vectors. You need to specify bravais_lattice_type.: Terminating.\n");
 
     if(ibrav == None)
     {
