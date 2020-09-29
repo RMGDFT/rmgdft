@@ -43,7 +43,7 @@ void write_force (void)
     double avf = 0.0;
     double maxf = 0.0, max_all_f = 0.0;
     double f2;
-    double *fp;
+    //double *fp;
     double efactor = ct.energy_output_conversion[ct.energy_output_units];
     const char *eunits = ct.energy_output_string[ct.energy_output_units].c_str();
 
@@ -87,12 +87,19 @@ void write_force (void)
         ION &Atom = Atoms[ion];
         SPECIES &AtomType = Species[Atom.species];
 
-        fp = Atom.force[ct.fpt[0]];
+        // In case the internal and external coordinate systems are rotated
+        // convert printed forces and coords to external
+        double fp[3], xfp[3], crds[3];
+        Rmg_L.to_crystal_vector (xfp, Atom.force[ct.fpt[0]]);
+        Rmg_L.to_cartesian_input (xfp, fp);
+        Rmg_L.to_cartesian_input (Atom.xtal, crds);
+
+//        fp = Atom.force[ct.fpt[0]];
 
         printf ("@ION  %3lu  %4s     %10.7f  %10.7f  %10.7f   %6.3f   %10.7f  %10.7f  %10.7f  %1d %1d %1d\n",
                 ion + 1,
                 AtomType.atomic_symbol,
-                Atom.crds[0], Atom.crds[1], Atom.crds[2], 
+                crds[0], crds[1], crds[2], 
                  Atom.partial_charge,
 		 efactor*fp[0], efactor*fp[1], efactor*fp[2], Atom.movable[0], Atom.movable[1], Atom.movable[2]);
 

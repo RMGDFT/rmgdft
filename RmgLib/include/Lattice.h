@@ -99,6 +99,7 @@ public:
     void move_cell(double dt, int *cell_movable);
     void cross_product (double * a, double * b, double * c);
     void to_crystal (double *crystal, double *cartesian);
+    void to_crystal_vector (double *crystal, double *cartesian);
     void to_crystal_half (double *crystal, double *cartesian);
     void to_cartesian (double *crystal, double *cartesian);
     void to_cartesian_input (double *crystal, double *cartesian);

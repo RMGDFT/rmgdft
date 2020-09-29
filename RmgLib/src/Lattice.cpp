@@ -166,6 +166,15 @@ void Lattice::to_crystal (double *crystal, double *cartesian)
 
 }                               /* end to_crystal  */
 
+// Transforms vector
+void Lattice::to_crystal_vector (double *crystal, double *cartesian)
+{
+
+    crystal[0] = cartesian[0] * b0[0] + cartesian[1] * b0[1] + cartesian[2] * b0[2];
+    crystal[1] = cartesian[0] * b1[0] + cartesian[1] * b1[1] + cartesian[2] * b1[2];
+    crystal[2] = cartesian[0] * b2[0] + cartesian[1] * b2[1] + cartesian[2] * b2[2];
+}
+
 void Lattice::to_crystal_half (double *crystal, double *cartesian)
 {
 
