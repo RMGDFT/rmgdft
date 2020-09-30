@@ -164,9 +164,12 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
         if (sp->nldim > ct.max_nldim)
             ct.max_nldim = sp->nldim;
         fftw_free(sp->forward_beta);
-        fftw_free(sp->forward_beta_r[0]);
-        fftw_free(sp->forward_beta_r[1]);
-        fftw_free(sp->forward_beta_r[2]);
+        if(ct.stress)
+        {
+            if(sp->forward_beta_r[0]) fftw_free(sp->forward_beta_r[0]);
+            if(sp->forward_beta_r[1]) fftw_free(sp->forward_beta_r[1]);
+            if(sp->forward_beta_r[2]) fftw_free(sp->forward_beta_r[2]);
+        }
         fftw_free(sp->forward_orbital);
 
         if(ct.localize_projectors)

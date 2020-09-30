@@ -84,9 +84,18 @@ void InitDelocalizedWeight (void)
 
         /*This array will store forward fourier transform on the coarse grid for all betas of this species */
         sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
-        sp->forward_beta_r[0] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
-        sp->forward_beta_r[1] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
-        sp->forward_beta_r[2] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
+        if(ct.stress)
+        {
+            sp->forward_beta_r[0] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
+            sp->forward_beta_r[1] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
+            sp->forward_beta_r[2] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
+        }
+        else
+        {
+            sp->forward_beta_r[0] = NULL;
+            sp->forward_beta_r[1] = NULL;
+            sp->forward_beta_r[2] = NULL;
+        }
 
         if (sp->forward_beta == NULL)
             throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
@@ -118,17 +127,19 @@ void InitDelocalizedWeight (void)
             size_t index_ptr = kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis;
             std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[index_ptr];
             std::complex<double> *betaptr_r[3];
-        
-            betaptr_r[0] = (std::complex<double> *)&sp->forward_beta_r[0][index_ptr];
-            betaptr_r[1] = (std::complex<double> *)&sp->forward_beta_r[1][index_ptr];
-            betaptr_r[2] = (std::complex<double> *)&sp->forward_beta_r[2][index_ptr];
 
-            for(int idx = 0;idx < pbasis;idx++)
+            for(int idx = 0;idx < pbasis;idx++) betaptr[idx] = 0.0;
+            if(ct.stress)
             {
-                betaptr[idx] = 0.0;
-                betaptr_r[0][idx] = 0.0;
-                betaptr_r[1][idx] = 0.0;
-                betaptr_r[2][idx] = 0.0;
+                betaptr_r[0] = (std::complex<double> *)&sp->forward_beta_r[0][index_ptr];
+                betaptr_r[1] = (std::complex<double> *)&sp->forward_beta_r[1][index_ptr];
+                betaptr_r[2] = (std::complex<double> *)&sp->forward_beta_r[2][index_ptr];
+                for(int idx = 0;idx < pbasis;idx++)
+                {
+                    betaptr_r[0][idx] = 0.0;
+                    betaptr_r[1][idx] = 0.0;
+                    betaptr_r[2][idx] = 0.0;
+                }
             }
 
             for(int idx = 0;idx < pbasis;idx++)
@@ -148,6 +159,7 @@ void InitDelocalizedWeight (void)
                 betaptr[idx] = IL[proj.l] * Ylm(proj.l, proj.m, ax) * t1;
 
                 // l2m_i: l*l + m for the first angular momentum
+                if(!ct.stress) continue;
                 int l2mi = proj.l * proj.l + proj.m;
                 for(int l2mj = 1; l2mj < 4; l2mj++)     // index for cubic harmonics x, y, z
                 {
@@ -166,7 +178,6 @@ void InitDelocalizedWeight (void)
                             L = (int)sqrt(L2M + 0.1);
 
                         M = L2M - L * L;
-
                         double t2 = AtomicInterpolateInline_Ggrid(sp->rbeta_g[proj.ip][L], gval);
                         betaptr_r[l2mj-1][idx] += IL[L] * Ylm(L, M, ax) * t2 * ap[L2M * num_lm * num_lm + l2mi * num_lm + l2mj];
                     }
@@ -182,6 +193,7 @@ void InitDelocalizedWeight (void)
                         int idx = ix * dimy * dimz + iy * dimz + iz;
                         std::complex<double> phaseshift =std::pow(phase, ix + ixstart + iy + iystart + iz + izstart);
                         betaptr[idx] *= phaseshift/vol;
+                        if(!ct.stress) continue;
                         betaptr_r[0][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
                         betaptr_r[1][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
                         betaptr_r[2][idx] *= phaseshift/vol / std::sqrt(3.0/fourPI);
