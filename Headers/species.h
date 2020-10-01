@@ -22,15 +22,26 @@ class SPECIES : Atomic
 {
 
 private:
-    void Init_ddd0_so(void);
     void Init_fcoef(std::complex<double> *Umm, int tot_LM);
     void InitUmm(int lmax, std::complex<double> *Umm);
+    void InitDelocalizedWeight (void);
+    void InitLocalizedWeight (void);
 
 public:
-
+    void Init_ddd0_so(void);
     void InitSpinOrbit (void);
     void InitPseudo (Lattice &L, BaseGrid *G, bool write_flag);
     void InitSemilocalBessel (void);
+    void InitWeights(bool localize)
+    {
+        if(localize)
+            this->InitLocalizedWeight();
+        else
+            this->InitDelocalizedWeight();
+    }
+    
+    
+
 
 
     /* Text header with extra information. For UPF pseudopotentials it is the PP_INFO node */
@@ -288,11 +299,11 @@ public:
     /* Total number of 3D atomic orbitals for this atomic species */
     int num_orbitals;
 
-    fftw_complex *phase;
+    fftw_complex *phase = NULL;
 
     /*This will store results of forward fourier transform on the coarse grid */
     fftw_complex *forward_beta=NULL;
-    fftw_complex *forward_beta_r[3];
+    fftw_complex *forward_beta_r[3] = {NULL, NULL, NULL};
     fftw_complex *forward_orbital=NULL;
 
     /*Backwards wisdom for fftw */

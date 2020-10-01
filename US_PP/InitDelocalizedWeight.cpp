@@ -25,7 +25,7 @@
 
 /*This sets loop over species does forward fourier transofrm, finds and stores whatever is needed so that
  * only backwards Fourier transform is needed in the calculation*/
-void InitDelocalizedWeight (void)
+void SPECIES::InitDelocalizedWeight (void)
 {
     RmgTimer RT0("Weight");
 
@@ -34,7 +34,6 @@ void InitDelocalizedWeight (void)
     std::vector<PROJ_INFO> proj_iter;
 
     // get tot number of projectors and their information
-    int tot_proj = 0;
     
 
     std::complex<double> I_t(0.0, 1.0);
@@ -54,86 +53,76 @@ void InitDelocalizedWeight (void)
 
     InitClebschGordan(lmax, ap.data(), lpx.data(), lpl.data());
 
-    for (int isp = 0; isp < ct.num_species; isp++)
+    Pw *pwave = this->prj_pwave;
+    int pbasis = pwave->Grid->get_P0_BASIS(1);
+    max_pbasis = std::max(max_pbasis, pbasis);
+    int dimx = pwave->Grid->get_PX0_GRID(1);
+    int dimy = pwave->Grid->get_PY0_GRID(1);
+    int dimz = pwave->Grid->get_PZ0_GRID(1);
+    int ixstart = pwave->Grid->get_PX_OFFSET(1);
+    int iystart = pwave->Grid->get_PY_OFFSET(1);
+    int izstart = pwave->Grid->get_PZ_OFFSET(1);
+    double vol = pwave->L->get_omega();
+    double tpiba = 2.0 * PI / Rmg_L.celldm[0];
+    double tpiba2 = tpiba * tpiba;
+    double gcut = sqrt(ct.filter_factor*pwave->gcut*tpiba2);
+
+
+    /*Loop over all betas to calculate num of projectors for given species */
+    int prjcount = 0;
+    for (int ip = 0; ip < this->nbeta; ip++)
     {
-        /* Get species type */
-        SPECIES *sp = &Species[isp];
-        Pw *pwave = sp->prj_pwave;
-        int pbasis = pwave->Grid->get_P0_BASIS(1);
-        max_pbasis = std::max(max_pbasis, pbasis);
-
-        /*Loop over all betas to calculate num of projectors for given species */
-        int prjcount = 0;
-        for (int ip = 0; ip < sp->nbeta; ip++)
+        for(int m = 0; m < 2*this->llbeta[ip]+1; m++)
         {
-            for(int m = 0; m < 2*sp->llbeta[ip]+1; m++)
-            {
-                proj.species = isp;
-                proj.ip = ip;
-                proj.l = sp->llbeta[ip];
-                proj.m = m;
-                proj.proj_index = prjcount;
-                proj_iter.push_back(proj);
-                prjcount++;
-            }
+            proj.ip = ip;
+            proj.l = this->llbeta[ip];
+            proj.m = m;
+            proj.proj_index = prjcount;
+            proj_iter.push_back(proj);
+            prjcount++;
         }
-
-        sp->num_projectors = prjcount;
-        tot_proj += prjcount;
-
-
-        /*This array will store forward fourier transform on the coarse grid for all betas of this species */
-        sp->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
-        if(ct.stress)
-        {
-            sp->forward_beta_r[0] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
-            sp->forward_beta_r[1] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
-            sp->forward_beta_r[2] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_projectors * pbasis * ct.num_kpts_pe);
-        }
-        else
-        {
-            sp->forward_beta_r[0] = NULL;
-            sp->forward_beta_r[1] = NULL;
-            sp->forward_beta_r[2] = NULL;
-        }
-
-        if (sp->forward_beta == NULL)
-            throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
-
     }
 
+    this->num_projectors = prjcount;
 
-    for(int iproj = 0; iproj < tot_proj; iproj++)
+
+    /*This array will store forward fourier transform on the coarse grid for all betas of this species */
+    if(this->forward_beta) fftw_free(this->forward_beta);
+    this->forward_beta = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_projectors * pbasis * ct.num_kpts_pe);
+    if(ct.stress)
+    {
+        if(this->forward_beta_r[0]) fftw_free(this->forward_beta_r[0]); 
+        if(this->forward_beta_r[1]) fftw_free(this->forward_beta_r[1]); 
+        if(this->forward_beta_r[2]) fftw_free(this->forward_beta_r[2]); 
+        this->forward_beta_r[0] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_projectors * pbasis * ct.num_kpts_pe);
+        this->forward_beta_r[1] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_projectors * pbasis * ct.num_kpts_pe);
+        this->forward_beta_r[2] = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_projectors * pbasis * ct.num_kpts_pe);
+    }
+
+    if (this->forward_beta == NULL)
+        throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
+
+
+
+    for(int iproj = 0; iproj < this->num_projectors; iproj++)
     {
         proj = proj_iter[iproj];
-        SPECIES *sp = &Species[proj.species];
-        Pw *pwave = sp->prj_pwave;
-        int dimx = pwave->Grid->get_PX0_GRID(1);
-        int dimy = pwave->Grid->get_PY0_GRID(1);
-        int dimz = pwave->Grid->get_PZ0_GRID(1);
-        int ixstart = pwave->Grid->get_PX_OFFSET(1);
-        int iystart = pwave->Grid->get_PY_OFFSET(1);
-        int izstart = pwave->Grid->get_PZ_OFFSET(1);
-        double vol = pwave->L->get_omega();
-        int pbasis = pwave->Grid->get_P0_BASIS(1);
-        double tpiba = 2.0 * PI / Rmg_L.celldm[0];
-        double tpiba2 = tpiba * tpiba;
-        double gcut = sqrt(ct.filter_factor*pwave->gcut*tpiba2);
         double ax[3];
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
             int kpt1 = kpt + pct.kstart;
-            size_t index_ptr = kpt *sp->num_projectors * pbasis + proj.proj_index * pbasis;
-            std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_beta[index_ptr];
+            size_t index_ptr = kpt *this->num_projectors * pbasis + proj.proj_index * pbasis;
+            std::complex<double> *betaptr = (std::complex<double> *)&this->forward_beta[index_ptr];
             std::complex<double> *betaptr_r[3];
 
-            for(int idx = 0;idx < pbasis;idx++) betaptr[idx] = 0.0;
+//            for(int idx = 0;idx < pbasis;idx++) betaptr[idx] = 0.0;
+            std::fill(betaptr, betaptr + pbasis, 0.0);
             if(ct.stress)
             {
-                betaptr_r[0] = (std::complex<double> *)&sp->forward_beta_r[0][index_ptr];
-                betaptr_r[1] = (std::complex<double> *)&sp->forward_beta_r[1][index_ptr];
-                betaptr_r[2] = (std::complex<double> *)&sp->forward_beta_r[2][index_ptr];
+                betaptr_r[0] = (std::complex<double> *)&this->forward_beta_r[0][index_ptr];
+                betaptr_r[1] = (std::complex<double> *)&this->forward_beta_r[1][index_ptr];
+                betaptr_r[2] = (std::complex<double> *)&this->forward_beta_r[2][index_ptr];
                 for(int idx = 0;idx < pbasis;idx++)
                 {
                     betaptr_r[0][idx] = 0.0;
@@ -155,7 +144,7 @@ void InitDelocalizedWeight (void)
 
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
                 if(gval >= gcut) continue;
-                double t1 = AtomicInterpolateInline_Ggrid(sp->beta_g[proj.ip].get(), gval);
+                double t1 = AtomicInterpolateInline_Ggrid(this->beta_g[proj.ip].get(), gval);
                 betaptr[idx] = IL[proj.l] * Ylm(proj.l, proj.m, ax) * t1;
 
                 // l2m_i: l*l + m for the first angular momentum
@@ -178,7 +167,7 @@ void InitDelocalizedWeight (void)
                             L = (int)sqrt(L2M + 0.1);
 
                         M = L2M - L * L;
-                        double t2 = AtomicInterpolateInline_Ggrid(sp->rbeta_g[proj.ip][L], gval);
+                        double t2 = AtomicInterpolateInline_Ggrid(this->rbeta_g[proj.ip][L], gval);
                         betaptr_r[l2mj-1][idx] += IL[L] * Ylm(L, M, ax) * t2 * ap[L2M * num_lm * num_lm + l2mi * num_lm + l2mj];
                     }
                 }

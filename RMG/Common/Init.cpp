@@ -349,14 +349,8 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     /*Do forward transform for each species and store results on the coarse grid */
     RmgTimer *RT1 = new RmgTimer("2-Init: weights");
-    if(ct.localize_projectors)
-    {
-        InitLocalizedWeight ();
-    }
-    else
-    {
-        InitDelocalizedWeight ();
-    }
+    for(auto& sp : Species) sp.InitWeights (ct.localize_projectors);
+
 
     if(ct.atomic_orbital_type == LOCALIZED)
     {

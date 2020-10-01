@@ -160,16 +160,8 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
 
         /* Get species type */
         SPECIES *sp = &Species[species];
+        ct.max_nldim = std::max(ct.max_nldim, sp->nldim);
 
-        if (sp->nldim > ct.max_nldim)
-            ct.max_nldim = sp->nldim;
-        fftw_free(sp->forward_beta);
-        if(ct.stress)
-        {
-            if(sp->forward_beta_r[0]) fftw_free(sp->forward_beta_r[0]);
-            if(sp->forward_beta_r[1]) fftw_free(sp->forward_beta_r[1]);
-            if(sp->forward_beta_r[2]) fftw_free(sp->forward_beta_r[2]);
-        }
         fftw_free(sp->forward_orbital);
 
         if(ct.localize_projectors)
@@ -207,16 +199,12 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     }
 
 
+    ct.max_nldim = 0;
+    for(auto &sp : Species) ct.max_nldim = std::max(ct.max_nldim, sp.nldim);
+
     /*Do forward transform for each species and store results on the coarse grid */
     RmgTimer *RT1 = new RmgTimer("2-ReInit: weights");
-    if(ct.localize_projectors)
-    {
-        InitLocalizedWeight ();
-    }
-    else
-    {
-        InitDelocalizedWeight ();
-    }
+    for(auto& sp : Species) sp.InitWeights (ct.localize_projectors);
 
     if(ct.atomic_orbital_type == LOCALIZED)
     {
