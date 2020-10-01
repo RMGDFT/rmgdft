@@ -162,7 +162,6 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
         SPECIES *sp = &Species[species];
         ct.max_nldim = std::max(ct.max_nldim, sp->nldim);
 
-        fftw_free(sp->forward_orbital);
 
         if(ct.localize_projectors)
         {

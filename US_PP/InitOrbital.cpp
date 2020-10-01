@@ -87,6 +87,7 @@ void InitOrbital (void)
         sp->num_orbitals = orbital_count;
 
 
+        if(sp->forward_orbital) fftw_free(sp->forward_orbital);
         sp->forward_orbital = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_orbitals * size * ct.num_kpts_pe);
 
         if (sp->forward_orbital == NULL)

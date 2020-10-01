@@ -85,6 +85,7 @@ void InitDelocalizedOrbital (void)
         tot_orbitals += orbital_count;
 
         /*This array will store forward fourier transform on the coarse grid for all atomic orbitals of this species */
+        if(sp->forward_orbital) fftw_free(sp->forward_orbital);
         sp->forward_orbital = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_orbitals * pbasis * ct.num_kpts_pe);
 
         if (sp->forward_orbital == NULL)
