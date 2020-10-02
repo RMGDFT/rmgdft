@@ -280,6 +280,9 @@ public:
     /** Davidson maxits */
     int david_max_steps;
 
+    /** Davidson pre multigrid steps */
+    int davidson_premg;
+
     /** Number of states to allocate memory for */
     int alloc_states;
     int state_block_size;
