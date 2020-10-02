@@ -146,7 +146,7 @@ public:
     std::vector<double> atomic_wave_oc;
     std::vector<double> atomic_wave_energy;
     
-    std::string *atomic_wave_label;
+    std::vector<std::string> atomic_wave_label;
 
     double *atomic_rho;
     

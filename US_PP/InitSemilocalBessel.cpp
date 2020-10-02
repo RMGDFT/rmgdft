@@ -50,8 +50,6 @@ void SPECIES::InitSemilocalBessel (void)
 {
 
     double nlradius = 3.0;
-    int nproj=10;
-    double mingrid = nlradius / nproj;
     int max_nlprojectors = 0;
 
     std::vector<double> work(this->rg_points, 0.0), work2(this->rg_points, 0.0);
@@ -68,10 +66,9 @@ void SPECIES::InitSemilocalBessel (void)
     for(size_t il = 0; il < this->dVl_l.size(); il++)
     {
         int lval = this->dVl_l[il];
-        int N = CountRoots(lval, nlradius, ct.rhocparm, mingrid);
-        total_beta += 2*N;
+        int N = CountRoots(lval, nlradius, ct.rhocparm, ct.hmingrid);
+        total_beta += N;
     }
-
     // ddd0 will hold the normalization coefficients for the projectors
     double_2d_array ddd0; 
     ddd0.resize(boost::extents[total_beta][total_beta]);
@@ -80,7 +77,7 @@ void SPECIES::InitSemilocalBessel (void)
     for(size_t il = 0; il < this->dVl_l.size(); il++)
     {
         int lval = this->dVl_l[il];
-        int N = CountRoots(lval, nlradius, ct.rhocparm, mingrid);
+        int N = CountRoots(lval, nlradius, ct.rhocparm, ct.hmingrid);
         double_2d_array phi;
         phi.resize(boost::extents[N][this->rg_points]);
 

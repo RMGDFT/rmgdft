@@ -352,7 +352,7 @@ void LoadUpfPseudo(SPECIES *sp)
         sp->atomic_wave_energy.assign(sp->num_atomic_waves, 0.0);
         sp->aradius.resize(sp->num_atomic_waves);
         sp->aradius.assign(sp->num_atomic_waves, 12.0);
-        sp->atomic_wave_label = new std::string [sp->num_atomic_waves];
+        sp->atomic_wave_label.resize(sp->num_atomic_waves);
 
         for(int iwf = 0;iwf < sp->num_atomic_waves;iwf++) {
             // Ugh. UPF format has embedded .s so use / as a separator
