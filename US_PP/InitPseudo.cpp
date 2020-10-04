@@ -420,13 +420,14 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
             fprintf (psp, "\n&&\n");
         }
 
-
         // Now lda+u stuff
         int l = this->atomic_wave_l[ip];
         int m = 2*l + 1;
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
         {
-            if(!strcasecmp(this->ldaU_label.c_str(), this->atomic_wave_label[ip].c_str() )) 
+            // UPF potentials have full labels
+            if(!strcasecmp(this->ldaU_label.c_str(), this->atomic_wave_label[ip].c_str() ) ||
+                ((l == 2) && ct.use_bessel_projectors)) 
             {
                 this->ldaU_l = l;
                 for(int im=lm_index;im < lm_index+m;im++) 

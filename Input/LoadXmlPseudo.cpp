@@ -229,7 +229,7 @@ void LoadXmlPseudo(SPECIES *sp)
             sp->atomic_wave.emplace_back(UPF_str_to_double_array(vdata, r_total, 1));
             sp->atomic_wave_energy.emplace_back(0.0);
             sp->atomic_wave_j.emplace_back(0.0);
-            sp->atomic_wave_label.emplace_back(std::string(""));
+            sp->atomic_wave_label.emplace_back(l);
 
             // Remove extra factors of r
             for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
