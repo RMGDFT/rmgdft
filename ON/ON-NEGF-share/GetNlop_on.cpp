@@ -71,7 +71,7 @@ void GetNlop_on(void)
     /*Do forward transform for each species and store results on the coarse grid */
     if(ct.localize_projectors)
     {
-        InitLocalizedWeight ();
+        for(auto& sp : Species) sp.InitWeights (ct.localize_projectors);
     }
     else
     {
