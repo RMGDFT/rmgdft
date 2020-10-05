@@ -68,7 +68,7 @@ LdaU_on::~LdaU_on(void)
 
 LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
 {
-    InitDelocalizedOrbital ();
+    for(auto& sp : Species) sp.InitOrbitals (LOCALIZED);
 
     int tot_orbitals_ldaU = 0;
 

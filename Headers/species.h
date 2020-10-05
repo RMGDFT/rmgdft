@@ -4,6 +4,7 @@
 #include "Pw.h"
 #include <vector>
 #include "Atomic.h"
+#include "const.h"
 
 #include <boost/functional/hash.hpp>
 #include <unordered_map>
@@ -26,6 +27,8 @@ private:
     void InitUmm(int lmax, std::complex<double> *Umm);
     void InitDelocalizedWeight (void);
     void InitLocalizedWeight (void);
+    void InitDelocalizedOrbital(void);
+    void InitLocalizedOrbital(void);
 
 public:
     void Init_ddd0_so(void);
@@ -38,6 +41,13 @@ public:
             this->InitLocalizedWeight();
         else
             this->InitDelocalizedWeight();
+    }
+    void InitOrbitals(bool localize)
+    {
+        if(localize == LOCALIZED)
+            this->InitLocalizedOrbital();
+        else
+            this->InitDelocalizedOrbital();
     }
     
     

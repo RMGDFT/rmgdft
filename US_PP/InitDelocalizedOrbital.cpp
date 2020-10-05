@@ -25,7 +25,7 @@
 
 /*This sets loop over species does forward fourier transofrm, finds and stores whatever is needed so that
  * only backwards Fourier transform is needed in the calculation*/
-void InitDelocalizedOrbital (void)
+void SPECIES::InitDelocalizedOrbital (void)
 {
     RmgTimer RT0("Orbital");
     double tpiba = 2.0 * PI / Rmg_L.celldm[0];
@@ -57,41 +57,34 @@ void InitDelocalizedOrbital (void)
     std::complex<double> *weptr = new std::complex<double>[pbasis];
 
     RmgTimer *RT1= new RmgTimer("Orbital: phase and set");
-    for (int isp = 0; isp < ct.num_species; isp++)
+    /*Loop over all radial atomic wavefunctions to calculate num of 3D orbitals for given species */
+    int orbital_count = 0;
+    for (int ip = 0; ip < this->num_atomic_waves; ip++)
     {
-        /* Get species type */
-        SPECIES *sp = &Species[isp];
+        if(this->atomic_wave_oc[ip] > 0.0) {
 
-        /*Loop over all radial atomic wavefunctions to calculate num of 3D orbitals for given species */
-        int orbital_count = 0;
-        for (int ip = 0; ip < sp->num_atomic_waves; ip++)
-        {
-            if(sp->atomic_wave_oc[ip] > 0.0) {
-
-                for(int m = 0; m < 2*sp->atomic_wave_l[ip]+1; m++)
-                {
-                    proj.species = isp;
-                    proj.ip = ip;
-                    proj.l = sp->atomic_wave_l[ip];
-                    proj.m = m;
-                    proj.proj_index = orbital_count;
-                    proj_iter.push_back(proj);
-                    orbital_count++;
-                }
+            for(int m = 0; m < 2*this->atomic_wave_l[ip]+1; m++)
+            {
+                proj.ip = ip;
+                proj.l = this->atomic_wave_l[ip];
+                proj.m = m;
+                proj.proj_index = orbital_count;
+                proj_iter.push_back(proj);
+                orbital_count++;
             }
         }
-
-        sp->num_orbitals = orbital_count;
-        tot_orbitals += orbital_count;
-
-        /*This array will store forward fourier transform on the coarse grid for all atomic orbitals of this species */
-        if(sp->forward_orbital) fftw_free(sp->forward_orbital);
-        sp->forward_orbital = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * sp->num_orbitals * pbasis * ct.num_kpts_pe);
-
-        if (sp->forward_orbital == NULL)
-            throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
-
     }
+
+    this->num_orbitals = orbital_count;
+    tot_orbitals += orbital_count;
+
+    /*This array will store forward fourier transform on the coarse grid for all atomic orbitals of this species */
+    if(this->forward_orbital) fftw_free(this->forward_orbital);
+    this->forward_orbital = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * this->num_orbitals * pbasis * ct.num_kpts_pe);
+
+    if (this->forward_orbital == NULL)
+        throw RmgFatalException() << "cannot allocate mem "<< " at line " << __LINE__ << "\n";
+
 
 
     double gcut = sqrt(ct.filter_factor*coarse_pwaves->gcut*tpiba2);
@@ -100,12 +93,11 @@ void InitDelocalizedOrbital (void)
     {
         proj = proj_iter[iproj];
         std::complex<double> IL = std::pow(-I_t, proj.l);
-        SPECIES *sp = &Species[proj.species];
 
         for(int kpt = 0; kpt <ct.num_kpts_pe; kpt++)
         {
             int kpt1 = kpt + pct.kstart;
-            std::complex<double> *betaptr = (std::complex<double> *)&sp->forward_orbital[kpt *sp->num_orbitals * pbasis + proj.proj_index * pbasis];
+            std::complex<double> *betaptr = (std::complex<double> *)&this->forward_orbital[kpt *this->num_orbitals * pbasis + proj.proj_index * pbasis];
             for(int idx = 0;idx < pbasis;idx++)
             {
                 if(!coarse_pwaves->gmask[idx]) continue;
@@ -120,7 +112,7 @@ void InitDelocalizedOrbital (void)
 
                 double gval = sqrt(ax[0]*ax[0] + ax[1]*ax[1] + ax[2]*ax[2]);
                 if(gval >= gcut) continue;
-                double t1 = AtomicInterpolateInline_Ggrid(sp->atomic_wave_g[proj.ip], gval);
+                double t1 = AtomicInterpolateInline_Ggrid(this->atomic_wave_g[proj.ip], gval);
                 weptr[idx] = IL * Ylm(proj.l, proj.m, ax) * t1;
 
             }

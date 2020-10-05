@@ -204,16 +204,7 @@ template <typename OrbitalType> void Reinit (double * vh, double * rho, double *
     /*Do forward transform for each species and store results on the coarse grid */
     RmgTimer *RT1 = new RmgTimer("2-ReInit: weights");
     for(auto& sp : Species) sp.InitWeights (ct.localize_projectors);
-
-    if(ct.atomic_orbital_type == LOCALIZED)
-    {
-        InitOrbital ();
-    }
-    else
-    {
-        InitDelocalizedOrbital ();
-    }
-
+    for(auto& sp : Species) sp.InitOrbitals (ct.atomic_orbital_type);
     delete(RT1);
 
     bool potential_acceleration = (ct.potential_acceleration_constant_step > 1.0e-10);

@@ -9,8 +9,8 @@ InitLocalizedWeight.cpp
 InitDelocalizedWeight.cpp
 InitDelocalizedWeight_onek.cpp
 DelocalizedWeight_one.cpp
-InitOrbital.cpp
 InitDelocalizedOrbital.cpp
+InitLocalizedOrbital.cpp
 InitWeightOne.cpp
 InitDelocalizedObject.cpp
 InitSemilocalBessel.cpp

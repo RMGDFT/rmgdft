@@ -168,11 +168,6 @@ void FindFftwPhaseLocalpp (int nlxdim, int nlydim, int nlzdim,double * nlcdrs, s
 void GetPhase (ION *, std::complex<double> *);
 void PrintSums(double *, int, char*);
 void InitWeightOne (SPECIES * sp, fftw_complex * rtptr, std::complex<double> *phaseptr, int ip, int l, int m);
-void InitLocalizedWeight(void);
-void InitDelocalizedWeight (void);
-void InitSemilocalBessel (void);
-void InitOrbital (void);
-void InitDelocalizedOrbital (void);
 double CubicHarmonic(int L, int M, double *r);
 double Ylm(int L, int M, double *r);
 void InitClebschGordan (int lmax, double *ap, int *lpx, int *lpl);
