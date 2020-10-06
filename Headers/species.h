@@ -264,10 +264,10 @@ public:
     /* Log interpolation storage for the compensated local potential
      * and for it's radial derivative.
      */
-    double localig[MAX_LOGGRID];
+    std::vector<double> localig;
 
     /* Log interpolation storage for the core charge density */
-    double rhocorelig[MAX_LOGGRID];
+    std::vector<double> rhocorelig;
 
     // projectors in G-space radial log grid
     std::vector<std::shared_ptr<double []>> beta_g;
@@ -316,9 +316,6 @@ public:
     fftw_complex *forward_beta_r[3] = {NULL, NULL, NULL};
     fftw_complex *forward_orbital=NULL;
 
-    /*Backwards wisdom for fftw */
-    char *backward_wisdom;
-
     /*Some parameters for Q function*/
     std::vector<int> indv;
     std::vector<int> nhtol;
@@ -328,11 +325,8 @@ public:
     int nh;
 
     /*Atomic charge density on linear grid*/
-    double arho_lig[MAX_LOGGRID];
+    std::vector<double> arho_lig;
     
-
-    int localidx;
-
     /* Point to plane wave object used for localized projectors */
     Pw *prj_pwave;
 

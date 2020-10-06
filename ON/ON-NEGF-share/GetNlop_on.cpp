@@ -173,10 +173,8 @@ void GetNlop_on(void)
         /* Get species type */
         sp = &Species[iptr->species];
 
-        //        fftw_import_wisdom_from_string(sp->backward_wisdom);
         p2 = fftw_plan_dft_3d(sp->nldim, sp->nldim, sp->nldim, reinterpret_cast<fftw_complex*>(gbptr), 
                 reinterpret_cast<fftw_complex*>(beptr), FFTW_BACKWARD, FFTW_ESTIMATE);
-        //        fftw_forget_wisdom();
 
         /*Find nlcdrs, vector that gives shift of ion from center of its ionic box */
         /*xtal vector between ion and left bottom corner of the box */

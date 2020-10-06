@@ -206,7 +206,8 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
 
 
     // Transform to g-space and filter it with filtered function returned on standard log grid
-    FilterPotential(work, this->r, this->rg_points, this->lradius, ct.rhocparm, this->localig,
+    this->localig.resize(MAX_LOGGRID);
+    FilterPotential(work, this->r, this->rg_points, this->lradius, ct.rhocparm, this->localig.data(),
             this->rab, 0, this->gwidth, 0.66*this->lradius, this->rwidth, ct.hmingrid / (double)G->default_FG_RATIO);
 
     /*Write local projector into a file if requested*/
@@ -245,7 +246,8 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
         else 
             work[idx] = sqrt(this->atomic_rho[idx]);
     }
-    FilterPotential(work, this->r, this->rg_points, this->lradius, ct.rhocparm, this->arho_lig,
+    this->arho_lig.resize(MAX_LOGGRID);
+    FilterPotential(work, this->r, this->rg_points, this->lradius, ct.rhocparm, this->arho_lig.data(),
             this->rab, 0, this->gwidth, 0.66*this->lradius, this->rwidth, ct.hmingrid/(double)ct.FG_RATIO);
     for (int idx = 0; idx < MAX_LOGGRID; idx++) this->arho_lig[idx] *= this->arho_lig[idx];
 
@@ -332,7 +334,8 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
         nlccradius -= 0.5 * ct.hmingrid / (double)G->default_FG_RATIO;
         double nlcccut = 0.66 * nlccradius;
 
-        FilterPotential(work, this->r, this->rg_points, nlccradius, ct.rhocparm, &this->rhocorelig[0],
+        this->rhocorelig.resize(MAX_LOGGRID);
+        FilterPotential(work, this->r, this->rg_points, nlccradius, ct.rhocparm, this->rhocorelig.data(),
                 this->rab, 0, this->gwidth, nlcccut, this->rwidth, ct.hmingrid/(double)G->default_FG_RATIO);
 
         /*Oscilations at the tail end of filtered function may cause rhocore to be negative
