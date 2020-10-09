@@ -49,8 +49,22 @@ typedef policy<promote_double<false> > bessel_policy;
 void SPECIES::InitSemilocalBessel (void)
 {
 
-    double nlradius = 3.0;
     int max_nlprojectors = 0;
+
+    // Compute nlradius for each angular momentum channel
+    std::vector<double> nlradius;
+    for(size_t il = 0; il < this->dVl_l.size(); il++)
+    {
+        for(int ix = this->rg_points-1;ix > 0;ix--)
+        {
+            if(std::abs(this->dVl[il][ix]) > 1.0e-6)
+            {
+                nlradius.emplace_back(1.25*this->r[ix]);
+                //if(pct.imgpe==0) printf("FOR L = %d  R = %f\n", this->dVl_l[il], 1.25*this->r[ix]);
+                break;
+            }
+        }    
+    }
 
     std::vector<double> work(this->rg_points, 0.0), work2(this->rg_points, 0.0);
     this->llbeta.clear();
@@ -66,7 +80,7 @@ void SPECIES::InitSemilocalBessel (void)
     for(size_t il = 0; il < this->dVl_l.size(); il++)
     {
         int lval = this->dVl_l[il];
-        int N = CountRoots(lval, nlradius, ct.rhocparm, ct.hmingrid);
+        int N = CountRoots(lval, nlradius[il], ct.rhocparm, 1.5*ct.hmingrid);
         total_beta += N;
     }
     // ddd0 will hold the normalization coefficients for the projectors
@@ -77,7 +91,7 @@ void SPECIES::InitSemilocalBessel (void)
     for(size_t il = 0; il < this->dVl_l.size(); il++)
     {
         int lval = this->dVl_l[il];
-        int N = CountRoots(lval, nlradius, ct.rhocparm, ct.hmingrid);
+        int N = CountRoots(lval, nlradius[il], ct.rhocparm, 1.5*ct.hmingrid);
         double_2d_array phi;
         phi.resize(boost::extents[N][this->rg_points]);
 
@@ -86,9 +100,9 @@ void SPECIES::InitSemilocalBessel (void)
         for(int ib = 0;ib < N;ib++)
         {
             this->llbeta.emplace_back(lval);
-            GenBessel(phi.origin() + ib*this->rg_points, this->r, nlradius, this->rg_points, lval, ib);
+            GenBessel(phi.origin() + ib*this->rg_points, this->r, nlradius[il], this->rg_points, lval, ib);
             for(int idx=0;idx < this->rg_points;idx++) phi[ib][idx] *= anorm;
-            for(int idx=0;idx < this->rg_points;idx++) if(this->r[idx] > nlradius) phi[ib][idx] *= 0.0;
+            for(int idx=0;idx < this->rg_points;idx++) if(this->r[idx] > nlradius[il]) phi[ib][idx] *= 0.0;
         }
 
         std::vector<double> ci(N, 0.0);
