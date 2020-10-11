@@ -82,6 +82,7 @@ endif()
 # User settable options from cmake-gui, ccmake for text terminals
 # or command line
 option(RMG_GPU_ENABLED "Enable GPU support." OFF)
+option(RMG_HIP_ENABLED "Enable HIP support." OFF)
 option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
 option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
 option(USE_INTERNAL_PSEUDOPOTENTIALS "Include internal pseudopotentials in binary." ON)
@@ -94,6 +95,7 @@ if(BLAS_PROFILING)
 else(BLAS_PROFILING)
     add_definitions(-DBLAS_PROFILE=0)
 endif(BLAS_PROFILING)
+
 
 
 # Now that the scalapack source has been included in the RMG distribution this should
@@ -235,6 +237,26 @@ else(RMG_GPU_ENABLED)
     set(rmg-on "rmg-on-cpu")
 endif(RMG_GPU_ENABLED)
 
+if(RMG_HIP_ENABLED)
+    find_package(HIP QUIET)
+    if(HIP_FOUND)
+        message(STATUS "Found HIP: " ${HIP_VERSION})
+        add_definitions(-DRMG_HIP_ENABLED=1)
+        include_directories(${HIP_INCLUDE_DIR})
+    else()
+        message(FATAL_ERROR "Could not find HIP. Ensure that HIP is either installed in /opt/rocm/hip or the variable HIP_PATH is set to point to the right location.")
+    endif()
+
+    find_package(HIPBLAS QUIET)
+    if(HIPBLAS_FOUND)
+        message(STATUS "Found HIPBLAS: " ${HIPBLAS_VERSION})
+        list(APPEND RMGLIBS ${HIPBLAS_LIBRARY})
+        include_directories("${HIPBLAS_INCLUDE_DIR}")
+    else()
+        message(FATAL_ERROR "Could not find HIPBLAS. Ensure that HIU+PBLAS is either installed in /opt/rocm/hipblas or the variable HIPBLAS_PATH is set to point to the right location.")
+    endif()
+    add_definitions(-D__HIP_PLATFORM_NVCC__=1)
+endif()
 
 # System specific flags
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
