@@ -175,6 +175,7 @@ FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h MACRO_NAMESP
 #
 #set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
 #set(RMG_EXTRA_COMPILER_FLAGS "-funroll-loops")
+set(RMG_EXTRA_COMPILER_FLAGS "-Wno-deprecated-declarations")
 
 
 # Generic Release or Debug
@@ -251,6 +252,7 @@ if(RMG_HIP_ENABLED)
         message(STATUS "Found HIP: " ${HIP_VERSION})
         add_definitions(-DHIP_ENABLED=1)
         include_directories(${HIP_INCLUDE_DIR})
+        include_directories("${HIP_PATH}/include")
     else()
         message(FATAL_ERROR "Could not find HIP. Ensure that HIP is either installed in /opt/rocm/hip or the variable HIP_PATH is set to point to the right location.")
     endif()
@@ -265,6 +267,13 @@ if(RMG_HIP_ENABLED)
     endif()
     add_definitions(-D__HIP_PLATFORM_NVCC__=1)
 endif()
+
+# Debug prints out all vars
+#get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
 
 # System specific flags
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
