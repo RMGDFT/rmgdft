@@ -52,6 +52,7 @@ init_kpoints.cpp
 FileOpenAndCreate.cpp
 CreateMmapArray.cpp
 DeleteNvmeArrays.cpp
+RmgHipError.cpp
 RmgCudaError.cpp
 MyZgemm.cpp
 RmgGemm.cpp

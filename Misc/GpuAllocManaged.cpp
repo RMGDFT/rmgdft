@@ -31,7 +31,24 @@
 #include <sys/mman.h>
 #include "RmgException.h"
 
-#if CUDA_ENABLED
+#if HIP_ENABLED
+
+#include <hip/hip_runtime.h>
+void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
+{
+    void *ptr;
+    hipError_t hipstat;
+    hipstat = hipMallocManaged( &ptr, size+16);
+    RmgHipError(fname, line, hipstat, "Error: hipMallocManaged failed.\n");
+    return ptr;
+}
+
+void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
+{
+    hipFree(ptr);
+}
+
+#elif CUDA_ENABLED
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -63,10 +80,10 @@ void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
     }
     return ptr;
 }
-
 void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
 {
     free(ptr);
 }
 
 #endif
+
