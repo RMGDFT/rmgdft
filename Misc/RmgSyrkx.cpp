@@ -9,6 +9,8 @@
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
 #include "blas.h"
+#include "transition.h"
+
 
 #if CUDA_ENABLED
 #include <cuda.h>

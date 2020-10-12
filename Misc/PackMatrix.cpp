@@ -23,6 +23,8 @@
 #include <complex>
 #include "blas.h"
 #include "main.h"
+#include "transition.h"
+
 
 #if CUDA_ENABLED
     #include <cuda.h>

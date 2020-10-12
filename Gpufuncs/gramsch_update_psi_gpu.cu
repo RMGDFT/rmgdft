@@ -74,7 +74,7 @@ void gramsch_update_psi(double *V,
     for(int i = 0;i < N;i++) darr[i] = 1.0 / C[i*N + i];
     //cublasDcopy(cublasH, N, C, N + 1, darr, 1);
     //for(int i = 0;i < N;i++) darr[i] = 1.0 / darr[i];
-    DeviceSynchronize();
+    cudaDeviceSynchronize();
     /* apply inverse of cholesky factor to states */
     for (int st = 0; st < N; st++)
     {
@@ -92,7 +92,7 @@ void gramsch_update_psi(double *V,
 
     } /* end of for */
 
-    DeviceSynchronize();
+    cudaDeviceSynchronize();
     cudaFree(darr);
 }
 

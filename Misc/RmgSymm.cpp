@@ -8,6 +8,8 @@
 #include "RmgGemm.h"
 #include "GpuAlloc.h"
 #include "ErrorFuncs.h"
+#include "transition.h"
+
 
 
 #if CUDA_ENABLED

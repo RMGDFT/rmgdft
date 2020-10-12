@@ -37,11 +37,11 @@ __global__ void FillMatrix(RmgType *matrix, int n, RmgType val)
 // Fills a device pointer with a floating point value
 void GpuFill(double *dptr, int n, double fillval)
 {
-    DeviceSynchronize();
+    cudaDeviceSynchronize();
     int blockSize = 256;
     int numBlocks = (n + blockSize - 1) / n;
     FillMatrix<<<numBlocks, blockSize>>>(dptr, n, fillval);
-    DeviceSynchronize();
+    cudaDeviceSynchronize();
 }
 
 #endif

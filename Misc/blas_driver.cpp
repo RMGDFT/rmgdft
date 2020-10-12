@@ -17,6 +17,7 @@
 
 #include "typedefs.h"
 #include "rmg_control.h"
+#include "transition.h"
 
 void my_sync_device()
 {
