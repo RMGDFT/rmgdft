@@ -37,7 +37,7 @@
 #include <complex>
 #include <vector>
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
    #include <cuda.h>
    #include <cufft.h>
 #endif
@@ -131,7 +131,7 @@ public:
     double *gmags;
     bool *gmask;
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     int num_streams;
     std::vector<cudaStream_t> streams;
     std::vector<cufftHandle> gpu_plans;

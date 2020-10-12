@@ -214,7 +214,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
                 ZERO_t,  nv, P0_BASIS);
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
         cudaMemcpy(ns, psi, stop*sizeof(KpointType), cudaMemcpyDefault);
 #else
         memcpy(ns, psi, stop*sizeof(KpointType));
@@ -253,7 +253,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
                 ZERO_t,  nv, P0_BASIS);
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
         // For norm conserving and gamma ns=psi so other parts of code were updated to not require this
         if(!ct.is_gamma)
             cudaMemcpy(ns, psi, stop*sizeof(KpointType), cudaMemcpyDefault);

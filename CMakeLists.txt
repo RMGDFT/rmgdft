@@ -81,7 +81,7 @@ endif()
 
 # User settable options from cmake-gui, ccmake for text terminals
 # or command line
-option(RMG_GPU_ENABLED "Enable GPU support." OFF)
+option(RMG_CUDA_ENABLED "Enable GPU support." OFF)
 option(RMG_HIP_ENABLED "Enable HIP support." OFF)
 option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
 option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
@@ -224,18 +224,18 @@ if(USE_INTERNAL_PSEUDOPOTENTIALS)
 endif()
 
 
-if(RMG_GPU_ENABLED)
-    add_definitions(-DGPU_ENABLED=1)
+if(RMG_CUDA_ENABLED)
+    add_definitions(-DCUDA_ENABLED=1)
     set(rmg-negf "rmg-negf-gpu")
     set(rmg "rmg-gpu")
     set(rmg-on "rmg-on-gpu")
-else(RMG_GPU_ENABLED)
-    add_definitions(-DGPU_ENABLED=0)
+else(RMG_CUDA_ENABLED)
+    add_definitions(-DCUDA_ENABLED=0)
     add_definitions(-DMAGMA_LIBS=0)
     set(rmg-negf "rmg-negf-cpu")
     set(rmg "rmg-cpu")
     set(rmg-on "rmg-on-cpu")
-endif(RMG_GPU_ENABLED)
+endif(RMG_CUDA_ENABLED)
 
 if(RMG_HIP_ENABLED)
     if(NOT DEFINED HIP_PATH)
@@ -544,13 +544,13 @@ ENDIF(HDF5_FOUND)
 
 
 # Look for GPU libraries. Only CUDA supported for now
-if(RMG_GPU_ENABLED)
+if(RMG_CUDA_ENABLED)
   find_package(CUDA REQUIRED)
 
   message( WARNING "CUDA_VERSION_MAJOR = ${CUDA_VERSION_MAJOR}")
   message( WARNING "CUDA_VERSION_MINOR = ${CUDA_VERSION_MINOR}")
   if(${CUDA_VERSION_MAJOR} LESS 6)
-      message(FATAL_ERROR "\nCompiling RMG with GPU support requires CUDA version 6.0 or greater. Either set GPU_ENABLED=0 to build a CPU only version or upgrade your cuda installation.") 
+      message(FATAL_ERROR "\nCompiling RMG with GPU support requires CUDA version 6.0 or greater. Either set CUDA_ENABLED=0 to build a CPU only version or upgrade your cuda installation.") 
   endif(${CUDA_VERSION_MAJOR} LESS 6)
 
   if(NOT CRAY_XK)
@@ -569,7 +569,7 @@ if(RMG_GPU_ENABLED)
  
   add_definitions(-DCUDA_VERSION_MAJOR=${CUDA_VERSION_MAJOR})
   add_definitions(-DCUDA_VERSION_MINOR=${CUDA_VERSION_MINOR})
-endif(RMG_GPU_ENABLED)
+endif(RMG_CUDA_ENABLED)
 
 
 if(USE_ELEMENTAL_LIBS)
@@ -640,9 +640,9 @@ add_subdirectory (spglib EXCLUDE_FROM_ALL)
 add_subdirectory (XC EXCLUDE_FROM_ALL) 
 add_subdirectory (dftd3 EXCLUDE_FROM_ALL) 
 add_subdirectory (InternalPseudo EXCLUDE_FROM_ALL) 
-if(RMG_GPU_ENABLED)
+if(RMG_CUDA_ENABLED)
     add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
-endif(RMG_GPU_ENABLED)
+endif(RMG_CUDA_ENABLED)
 
 # Target specific code subdirectories. If no target
 # is given the base code rmg-cpu or rmg-gpu is built by default

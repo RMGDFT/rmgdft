@@ -3,7 +3,7 @@
 #include <vector>
 #include <complex>
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     #include <cusolverDn.h>
     #include <cublas_v2.h>
 #endif
@@ -653,7 +653,7 @@ public:
     double potential_acceleration_constant_step;
 
     // Some GPU information. Currently we use at most one device per MPI process
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
     // Cuda version
     int cuda_version;

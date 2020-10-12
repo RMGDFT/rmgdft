@@ -9,7 +9,7 @@
 
 #include "mpi.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
@@ -131,7 +131,7 @@ void WriteChargeAnalysis(void);
 
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 void init_gpu (void);
 void finalize_gpu (void);
 #endif

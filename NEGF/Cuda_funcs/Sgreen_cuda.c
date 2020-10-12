@@ -28,7 +28,7 @@ void Sgreen_cuda (complex double * g,
         complex double *ch0, complex double *ch01, complex double *ch10, int iprobe)
 {
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cuDoubleComplex cumone, cuone,  cuzero, *Hiii;
     cublasOperation_t transT = CUBLAS_OP_T, transN = CUBLAS_OP_N;
     cuDoubleComplex *tau, *taut, *tsum, *tsumt, *t11, *t12, *s1, *s2;

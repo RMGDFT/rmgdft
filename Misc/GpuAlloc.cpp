@@ -26,7 +26,7 @@
 #include "transition.h"
 #include "ErrorFuncs.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>

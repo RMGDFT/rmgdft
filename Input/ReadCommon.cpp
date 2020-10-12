@@ -997,7 +997,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
 
     // Booleans next. Booleans are never required.
-#if GPU_ENABLED
+#if CUDA_ENABLED
     // If GPU memory is constrained this one should be set to true.
     If.RegisterInputKey("pin_nonlocal_weights", &lc.pin_nonlocal_weights, false,
             "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.", PERF_OPTIONS|EXPERT_OPTION);

@@ -41,7 +41,7 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
@@ -73,7 +73,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
     cublasStatus_t custat;
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");

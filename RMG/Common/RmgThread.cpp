@@ -87,7 +87,7 @@ unsigned int count_numamask_set_bits(const struct bitmask *mask)
 }
 
 #endif
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime.h>
 #endif
@@ -160,7 +160,7 @@ void *run_threads(void *v) {
 
 #endif
     
-#if GPU_ENABLED
+#if CUDA_ENABLED
     bool dev_set = false;
     cudaError_t cuerr;
 #endif
@@ -178,7 +178,7 @@ void *run_threads(void *v) {
 
             // When woken go to end of loop then circle around to pick up task
             continue;
-#if GPU_ENABLED
+#if CUDA_ENABLED
             if(!dev_set) cudaSetDevice(ct.cu_dev); 
             dev_set = true;
 #endif

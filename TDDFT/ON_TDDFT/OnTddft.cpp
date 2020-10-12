@@ -95,7 +95,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
     numst = Phi.num_tot;
     int scalapack_groups = 1;
-#if GPU_ENABLED
+#if CUDA_ENABLED
     scalapack_groups = pct.grid_npes;
 #endif
     int last = 1;
@@ -243,7 +243,7 @@ template <typename OrbitalType> void OnTddft (double * vxc, double * vh, double 
 
 //        DiagScalapack(states, ct.num_states, Hmatrix, Smatrix);
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
         mat_dist_to_global(zz_dis, pct.desca, Cmatrix);
 #else
         dcopy(&n2, zz_dis, &ione, Cmatrix, &ione);

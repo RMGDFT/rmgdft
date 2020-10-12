@@ -555,7 +555,7 @@ void finish ()
     /*Exit MPI */
     MPI_Finalize ();
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     //cublasDestroy(ct.cublas_handle);
     //cudaDeviceReset();
 #endif

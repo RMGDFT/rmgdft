@@ -37,7 +37,7 @@
 
 #include "transition.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
@@ -76,7 +76,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     // Overlaps
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: Gram-overlaps");
     if(!B) {
-#if GPU_ENABLED
+#if CUDA_ENABLED
         cublasDsyrk(ct.cublas_handle, CUBLAS_FILL_MODE_LOWER, CUBLAS_OP_T, n, n, &alpha, V, n, &beta, C, n);
 #else
         dsyrk (cuplo, trans_t, &n, &n, &alpha, V, &n, &beta, C, &n);
@@ -104,7 +104,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     delete(RT1);
 
     // Cholesky factorization
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
     int device = -1;
@@ -134,7 +134,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 #endif
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     //cudaDeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
     cudaMemPrefetchAsync ( V, n*n*sizeof(double), device, NULL);

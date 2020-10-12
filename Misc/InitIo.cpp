@@ -50,7 +50,7 @@
 #include "InputOpts.h"
 #include "Functional.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     #if MAGMA_LIBS
         #include <magma.h>
     #endif
@@ -430,7 +430,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     rmg_printf (" %d MPI processes/image. ", status);
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     CUdevice dev;
     if(pct.local_rank == 0)
     {

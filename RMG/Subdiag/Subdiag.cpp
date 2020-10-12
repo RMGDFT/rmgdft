@@ -45,7 +45,7 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
@@ -105,7 +105,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     // Until the finite difference operators are being applied on the GPU it's faster
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
@@ -125,12 +125,12 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         int check = first_nls + active_threads;
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if GPU_ENABLED
+#if CUDA_ENABLED
             cudaDeviceSynchronize();
 #endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
-#if GPU_ENABLED
+#if CUDA_ENABLED
             cudaDeviceSynchronize();
 #endif
             first_nls = 0;
@@ -171,11 +171,11 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         int check = first_nls + 1;
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if GPU_ENABLED
+#if CUDA_ENABLED
             cudaDeviceSynchronize();
 #endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
-#if GPU_ENABLED
+#if CUDA_ENABLED
             cudaDeviceSynchronize();
 #endif
             first_nls = 0;
@@ -189,7 +189,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     /* Operators applied and we now have
 tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
 #endif
 
@@ -272,7 +272,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
             break;
         case SUBDIAG_MAGMA:
         case SUBDIAG_CUSOLVER:
-#if GPU_ENABLED
+#if CUDA_ENABLED
             trans_b = Subdiag_Cusolver (this, Hij, Bij, Sij, eigs, global_matrix1);
 #else
             trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, global_matrix1);
@@ -330,7 +330,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
         }
     }
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaMemcpy(&orbital_storage[istart], &tmp_arrayT[istart], tlen, cudaMemcpyDefault);
     //cudaMemPrefetchAsync (orbital_storage , nstates*sizeof(double), cudaCpuDeviceId, NULL);
     // Not sure why but the cudaMemcpy behaves strangely here sometimes.
@@ -351,7 +351,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     delete(RT1);
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     // After the first step this matrix does not need to be as large
     if(ct.scf_steps == 0) {GpuFreeManaged(global_matrix1);global_matrix1 = NULL;}
     GpuFreeManaged(eigs);

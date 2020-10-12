@@ -36,7 +36,7 @@ typedef struct
     int ny;
     int nz;
     int pbasis;
-#if RMG_GPU_ENABLED
+#if RMG_CUDA_ENABLED
     cufftHandle gplan;
     cufftType type;
     int batch;

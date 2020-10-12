@@ -228,7 +228,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     } // end switch
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     scalapack_groups = pct.grid_npes;
 #endif
     int last = 1;
@@ -421,7 +421,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //       for(int j = 0; j < 5; j++) printf(" %10.4e", Akick[i*numst + j]);
         //   }
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
         // Until the finite difference operators are being applied on the GPU it's faster
         //     // to make sure that the result arrays are present on the cpu side.
     //    int device = -1;

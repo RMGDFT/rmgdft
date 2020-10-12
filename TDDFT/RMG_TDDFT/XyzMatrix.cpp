@@ -44,7 +44,7 @@
 #include "transition.h"
 #include "prototypes_tddft.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>

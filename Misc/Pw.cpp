@@ -191,7 +191,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       fftw_free(out);
       fftw_free(in);
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
       num_streams = ct.OMP_THREADS_PER_NODE;
       num_streams = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
       // Gpu streams and plans
@@ -320,7 +320,7 @@ void Pw::FftForward (double * in, std::complex<double> * out)
 
   if(Grid->get_NPES() == 1)
   {
-#if GPU_ENABLED
+#if CUDA_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
       for(size_t i = 0;i < pbasis;i++) tptr[i] = std::complex<double>(in[i], 0.0);
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice, streams[tid]);
@@ -374,7 +374,7 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
 
   if(Grid->get_NPES() == 1)
   {
-#if GPU_ENABLED
+#if CUDA_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
       for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice, streams[tid]);
@@ -415,7 +415,7 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out)
   
   if(Grid->get_NPES() == 1)
   {   
-#if GPU_ENABLED
+#if CUDA_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
       for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>), cudaMemcpyHostToDevice, streams[tid]);
@@ -456,7 +456,7 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
 
   if(Grid->get_NPES() == 1)
   {
-#if GPU_ENABLED
+#if CUDA_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
       for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), cudaMemcpyHostToDevice, streams[tid]);
@@ -496,7 +496,7 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out)
   
   if(Grid->get_NPES() == 1)
   {
-#if GPU_ENABLED
+#if CUDA_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
       for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       cudaMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>), cudaMemcpyHostToDevice, streams[tid]);
@@ -557,7 +557,7 @@ Pw::~Pw(void)
       fftwf_destroy_plan(fftwf_forward_plan_inplace);
       fftwf_destroy_plan(fftwf_backward_plan);
       fftwf_destroy_plan(fftwf_forward_plan);
-#if GPU_ENABLED
+#if CUDA_ENABLED
       for (int i = 0; i < num_streams; i++)
       {
          cufftDestroy(gpu_plans[i]);

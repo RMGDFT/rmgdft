@@ -41,7 +41,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
-#if GPU_ENABLED
+#if CUDA_ENABLED
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
@@ -93,7 +93,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
                         n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, 1);
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
     double *Vdiag = (double *)GpuMallocManaged(n * sizeof(double));
@@ -151,14 +151,14 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #endif
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     //int device = -1;
     //cudaGetDevice(&device);
     //cudaMemPrefetchAsync ( A, n_win*n_win*sizeof(double), device, NULL);
     cudaDeviceSynchronize();
 #endif
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     if(ct.cuda_version >= 9020)
         DsyevjDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
     else
@@ -166,7 +166,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
         DsyevdDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
 
     // Store the eigen vector from the submatrix
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
     GpuFill(Vdiag, n, 1.0);
     GpuNegate(G, n_win, Vdiag, 1, n_win);
@@ -208,13 +208,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 
     // Apply folded spectrum to this PE's range of eigenvectors
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
 #endif
     RT2 = new RmgTimer("4-Diagonalization: fs: iteration");
     if(ct.folded_spectrum_iterations)
         FoldedSpectrumIterator(A, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, ct.folded_spectrum_iterations, driver);
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
 #endif
     delete(RT2);
@@ -234,13 +234,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     // Gram-Schmidt ortho for eigenvectors.
     RT2 = new RmgTimer("4-Diagonalization: fs: Gram-Schmidt");
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
 #endif
 
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, Asave, Bsave, driver, fs_comm);
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
     cudaMemcpy(A, V, (size_t)n*(size_t)n*sizeof(double), cudaMemcpyDefault);
     //memcpy(A, V, (size_t)n*(size_t)n*sizeof(double));
@@ -252,7 +252,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 
     delete(RT1);
-#if GPU_ENABLED
+#if CUDA_ENABLED
     GpuFreeManaged(G);
     GpuFreeManaged(V);
     GpuFreeManaged(tarr);

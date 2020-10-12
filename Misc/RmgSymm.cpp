@@ -10,7 +10,7 @@
 #include "ErrorFuncs.h"
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
@@ -33,7 +33,7 @@ void zsymm(const char *, const char *, int *, int *, std::complex<double> *, std
   utilization from the higher level routines.
 
   The first 13 arguments are the same as the standard dgemm args but with scalar quantities passed
-  by value instead of by reference. The last three arguments are used only when GPU_ENABLED is true.
+  by value instead of by reference. The last three arguments are used only when CUDA_ENABLED is true.
   In that case if
 
   [ABC]gpu == NULL   transfer [ABC] to gpu and perform matrix multiplication there. 
@@ -67,7 +67,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
     }
 #endif
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasStatus_t custat;
     cublasSideMode_t cu_side = CUBLAS_SIDE_LEFT;
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;

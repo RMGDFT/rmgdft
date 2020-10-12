@@ -55,7 +55,7 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
     int num_states = kptr->nstates;
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     // If GPU run redirect to GPU routines.
     return Subdiag_Cusolver(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif

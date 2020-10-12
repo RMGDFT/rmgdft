@@ -47,7 +47,7 @@
 #include "transition.h"
 #include "blas.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #if MAGMA_LIBS
     #include <magma.h>
 #endif
@@ -84,7 +84,7 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
 
 // dsygvdx routines are not available in cusolver library until version 10.1 or later
 // so redirect to scalapack
-#if GPU_ENABLED
+#if CUDA_ENABLED
   #if (CUDA_VERSION_MAJOR < 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR < 1))
         case SUBDIAG_CUSOLVER:
   #endif
@@ -92,11 +92,11 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
         case SUBDIAG_SCALAPACK:
             info = GeneralDiagScaLapack(A, B, eigs, V, N, M, ld);
             break;
-#if MAGMA_LIBS && GPU_ENABLED
+#if MAGMA_LIBS && CUDA_ENABLED
         case SUBDIAG_MAGMA:
                 info = GeneralDiagMagma(A, B, eigs, V, N, M, ld);
 #endif
-#if GPU_ENABLED
+#if CUDA_ENABLED
   #if (CUDA_VERSION_MAJOR > 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR > 0))
         case SUBDIAG_CUSOLVER:
             info = GeneralDiagCusolver(A, B, eigs, V, N, M, ld);
@@ -467,7 +467,7 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
 }
 #endif
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #if (CUDA_VERSION_MAJOR > 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR > 0))
 template int GeneralDiagCusolver<double>(double *A, double *B, double *eigs, double *V, int N, int M, int ld);
 template int GeneralDiagCusolver<std::complex<double>>(std::complex<double> *A, std::complex<double> *B, double *eigs, std::complex<double> *V,

@@ -33,7 +33,7 @@
 #include "LCR.h"
 #include "pmo.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
 void rmg_printout_devices( )
 {

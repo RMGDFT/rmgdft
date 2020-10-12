@@ -29,7 +29,7 @@
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H 1
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cublas_v2.h>
 #endif

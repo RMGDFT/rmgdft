@@ -35,7 +35,7 @@ template void InvertMatrix<std::complex<double>>(std::complex<double> *, std::co
 // Inverts square matrix A and returns result in B. For the GPU case A and B must be
 // located in either device or managed memory.
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
 template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
 {

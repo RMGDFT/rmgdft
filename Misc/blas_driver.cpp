@@ -5,7 +5,7 @@
 #include <complex>
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
@@ -20,7 +20,7 @@
 
 void my_sync_device()
 {
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
 #endif
 }
@@ -28,7 +28,7 @@ void my_sync_device()
 void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasZcopy (ct.cublas_handle, n, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
 #else
     zcopy (&n, A, &ia, B, &ib);
@@ -39,7 +39,7 @@ void zcopy_driver (int n, std::complex<double> *A, int ia, std::complex<double> 
 void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, int ia, std::complex<double> *B, int ib) 
 {
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasZaxpy (ct.cublas_handle, n, (cuDoubleComplex *)&alpha, (cuDoubleComplex *)A, ia, (cuDoubleComplex *)B, ib);
 #else
     zaxpy (&n, &alpha, A, &ia, B, &ib);
@@ -48,7 +48,7 @@ void zaxpy_driver (int n, std::complex<double> alpha, std::complex<double> *A, i
 
 void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 {
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasDzasum (ct.cublas_handle, n, (cuDoubleComplex *)A, ia, sum);
 #else
     *sum = dzasum(&n, (double *)A, &ia);
@@ -59,7 +59,7 @@ void dzasum_driver(int n, std::complex<double> *A, int ia, double *sum)
 void dcopy_driver (int n, double *A, int ia, double *B, int ib) 
 {
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasDcopy (ct.cublas_handle, n, A, ia, B, ib);
 #else
     dcopy (&n, A, &ia, B, &ib);
@@ -70,7 +70,7 @@ void dcopy_driver (int n, double *A, int ia, double *B, int ib)
 void daxpy_driver (int n, double alpha, double *A, int ia, double *B, int ib) 
 {
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasDaxpy (ct.cublas_handle, n, &alpha, A, ia, B, ib);
 #else
     daxpy (&n, &alpha, A, &ia, B, &ib);
@@ -79,7 +79,7 @@ void daxpy_driver (int n, double alpha, double *A, int ia, double *B, int ib)
 
 void dscal_driver(int n, double beta, double *A, int ione)
 {
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasDscal (ct.cublas_handle, n, &beta, A, ione);
 #else
     dscal(&n, &beta, A, &ione);
@@ -105,7 +105,7 @@ double *C, int ic, int jc, int *descc)
         exit (0);
     }
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
     if(nprow*npcol != 1)
     {
@@ -162,7 +162,7 @@ std::complex<double> *C, int ic, int jc, int *descc)
         exit (0);
     }
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
     if(nprow*npcol != 1)
     {

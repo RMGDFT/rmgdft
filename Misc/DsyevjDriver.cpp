@@ -29,7 +29,7 @@
 #include "RmgMatrix.h"
 #include "blas.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 

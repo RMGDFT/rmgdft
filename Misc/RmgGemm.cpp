@@ -10,7 +10,7 @@
 #include "ErrorFuncs.h"
 #include "RmgTimer.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
@@ -59,7 +59,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     }
 #endif
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
     cublasStatus_t custat;
     cublasOperation_t cu_transA = CUBLAS_OP_N, cu_transB = CUBLAS_OP_N;
@@ -127,7 +127,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
 #endif
 }
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 void ProcessCublasError(cublasStatus_t custat)
 {
     if(custat==CUBLAS_STATUS_SUCCESS)

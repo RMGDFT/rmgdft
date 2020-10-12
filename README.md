@@ -45,7 +45,7 @@ Additional configuration may be performed at the cmake step. For example to
 build with GPU support one should use.
 
 ```Bash
-cmake -DRMG_GPU_ENABLED=1
+cmake -DRMG_CUDA_ENABLED=1
 ```
 
 Available targets include.

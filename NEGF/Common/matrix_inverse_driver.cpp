@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
@@ -66,7 +66,7 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
         fflush (NULL);
         exit (0);
     }
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
     if(nprow*npcol != 1)
     {

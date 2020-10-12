@@ -2,7 +2,7 @@
 #ifndef GPU_FUNCS_H
 #define GPU_FUNCS_H 1
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cublas_v2.h>
 
 void GpuFill(double *dptr, int n, double fillval);

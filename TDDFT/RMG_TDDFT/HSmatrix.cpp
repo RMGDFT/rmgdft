@@ -22,7 +22,7 @@
 #include "transition.h"
 #include "prototypes_tddft.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
@@ -62,7 +62,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
 
     static KpointType *global_matrix1;
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
     KpointType *Aij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
     KpointType *Sij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
@@ -100,7 +100,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     // Until the finite difference operators are being applied on the GPU it's faster
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
@@ -120,12 +120,12 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          int check = first_nls + active_threads;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if GPU_ENABLED
+#if CUDA_ENABLED
              cudaDeviceSynchronize();
 #endif
              AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
-#if GPU_ENABLED
+#if CUDA_ENABLED
              cudaDeviceSynchronize();
 #endif
              first_nls = 0;
@@ -165,11 +165,11 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          int check = first_nls + 1;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if GPU_ENABLED
+#if CUDA_ENABLED
              cudaDeviceSynchronize();
 #endif
              AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
-#if GPU_ENABLED
+#if CUDA_ENABLED
              cudaDeviceSynchronize();
 #endif
              first_nls = 0;
@@ -185,7 +185,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
          tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cudaDeviceSynchronize();
 #endif
 
@@ -248,7 +248,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
         Smat[i] = Sij[i];
     }
     // free memory
-#if GPU_ENABLED
+#if CUDA_ENABLED
     GpuFreeManaged(Sij);
     GpuFreeManaged(Aij);
 #else

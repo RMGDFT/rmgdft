@@ -41,7 +41,7 @@
 #include "transition.h"
 #include "RmgMatrix.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
@@ -58,12 +58,12 @@ template char * Subdiag_Cusolver<std::complex<double> > (Kpoint<std::complex<dou
 char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij, KpointType *Sij, double *eigs, KpointType *eigvectors)
 {
 
-#if !GPU_ENABLED
+#if !CUDA_ENABLED
     rmg_printf("This version of RMG was not built with GPU support so Cusolver cannot be used. Redirecting to LAPACK.");
     return Subdiag_Lapack(kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
     static char *trans_t = "t";
     static char *trans_n = "n";

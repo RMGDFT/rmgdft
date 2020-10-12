@@ -10,7 +10,7 @@
 #include "ErrorFuncs.h"
 #include "blas.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
@@ -51,7 +51,7 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
     }
 #endif
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 
     cublasStatus_t custat;
     cublasOperation_t cu_trans = CUBLAS_OP_N;

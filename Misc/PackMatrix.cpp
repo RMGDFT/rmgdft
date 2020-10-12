@@ -24,7 +24,7 @@
 #include "blas.h"
 #include "main.h"
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
@@ -34,7 +34,7 @@
 // format to a packed format. Lower triangular format is assumed for the NxN matrix.
 void PackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
 {
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
@@ -51,7 +51,7 @@ void PackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
 
 void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr)
 {
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
@@ -67,7 +67,7 @@ void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::compl
 
 void UnPackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
 {
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
@@ -83,7 +83,7 @@ void UnPackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
 
 void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr)
 {
-#if GPU_ENABLED
+#if CUDA_ENABLED
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
     if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;

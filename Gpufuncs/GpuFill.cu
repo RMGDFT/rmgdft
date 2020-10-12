@@ -22,7 +22,7 @@
 
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <cuda.h>
 #include "Gpufuncs.h"
 

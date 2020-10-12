@@ -22,7 +22,7 @@
 
 
 
-#if GPU_ENABLED
+#if CUDA_ENABLED
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/transform.h>
