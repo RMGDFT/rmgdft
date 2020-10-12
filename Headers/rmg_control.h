@@ -8,6 +8,10 @@
     #include <cublas_v2.h>
 #endif
 
+#if HIP_ENABLED
+    #include <hipblas.h>
+#endif
+
 #include "Klist.h"
 
 /** @name CONTROL
@@ -652,11 +656,8 @@ public:
     /* Potential acceleration constant step factor */
     double potential_acceleration_constant_step;
 
-    // Some GPU information. Currently we use at most one device per MPI process
-#if CUDA_ENABLED
-
-    // Cuda version
-    int cuda_version;
+    // Some GPU information.
+#if CUDA_ENABLED || HIP_ENABLED
 
     // Total number of gpu devices present in the node
     int num_gpu_devices;
@@ -670,6 +671,20 @@ public:
     // GPU memory for the usable devices
     size_t gpu_mem[MAX_GPU_DEVICES];
 
+    // Default is to use managed memory for non-local weights but if GPU memory
+    // is constrained performance is much better using pinned memory.
+    bool pin_nonlocal_weights;
+
+    // Flag indicating whether all of the gpu devices we plan on using support managed memory
+    bool gpus_support_managed_memory;
+
+#endif
+
+#if CUDA_ENABLED
+
+    // Cuda version
+    int cuda_version;
+
     // Cuda devices
     CUdevice  cu_dev;
     CUdevice  cu_devices[MAX_GPU_DEVICES];
@@ -677,32 +692,29 @@ public:
     // Cuda device context
     CUcontext cu_context;
 
-    // Flag indicating whether all of the gpu devices we plan on using support managed memory
-    bool gpus_support_managed_memory;
-
     // CUBLAS library handles
     cublasHandle_t cublas_handle;
     cusolverDnHandle_t cusolver_handle;
     cudaStream_t cusolver_stream;
 
-//    cuDoubleComplex *gpu_Htri, *gpu_Gtri, *gpu_Grow;
-//    cuDoubleComplex *gpu_GdiagBlocks;
-//    cuDoubleComplex *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
-//    cuDoubleComplex *gpu_Gcol;
-
-//    int *gpu_ipiv;
-
-    // Default is to use managed memory for non-local weights but if GPU memory
-    // is constrained performance is much better using pinned memory.
-    bool pin_nonlocal_weights;
-
-#else
-//    std::complex<double> *gpu_Htri, *gpu_Gtri, *gpu_GdiagBlocks;
-//    std::complex<double> *gpu_Grow;
-//    std::complex<double> *gpu_Gcol;
-//    std::complex<double> *gpu_Imatrix, *gpu_Hii,  *gpu_temp, *gpu_Gii;
 #endif
 
+#if HIP_ENABLED
+
+    // Cuda version
+    int hip_version;
+
+    // Hip devices
+    hipDevice_t hip_dev;
+    hipDevice_t hip_devices[MAX_GPU_DEVICES];
+
+    // Hip device context
+    hipCtx_t hip_context;
+
+    // hipblas library handles
+    hipblasHandle_t hipblas_handle;
+
+#endif
     
     /* RMG2BGW options */
     bool rmg2bgw;
