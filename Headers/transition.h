@@ -182,6 +182,8 @@ template <typename DataType> void AppGradPfft (DataType *a, DataType *gx, DataTy
 void SetLaplacian();
 void WriteHeader (void);
 template <typename T> void AppExx(Kpoint<T> *kptr, T *psi, int N, T *vexx, T* nv);
+void DeviceSynchronize(void);
+
 
 #endif
 #endif

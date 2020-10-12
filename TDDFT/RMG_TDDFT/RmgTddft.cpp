@@ -426,7 +426,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //     // to make sure that the result arrays are present on the cpu side.
     //    int device = -1;
     //    cudaMemPrefetchAsync ( Hmatrix, n2*sizeof(double), device, NULL);
-    //    cudaDeviceSynchronize();
+    //    DeviceSynchronize();
 #endif
 
         for(i = 0; i < n2; i++) Hmatrix_m1[i] = 0.0;

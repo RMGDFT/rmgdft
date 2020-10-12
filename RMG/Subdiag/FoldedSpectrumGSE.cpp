@@ -82,9 +82,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     double *unitvector = (double *)GpuMallocManaged(n*sizeof(double));
     double *tvector = (double *)GpuMallocManaged(n*sizeof(double)); 
     cublasDcopy(ct.cublas_handle, n, B, n+1, tvector, 1);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
     for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / tvector[ix]; 
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 
 
     // Set up D^(-1) and transfer it to the GPU
@@ -142,7 +142,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     //cudaMemPrefetchAsync ( &A[istart*n], istep*n*sizeof(double), device, NULL);
     //cudaMemPrefetchAsync ( &Z[istart*n], istep*n*sizeof(double), device, NULL);
     //cudaMemPrefetchAsync ( &T1[istart*n], istep*n*sizeof(double), device, NULL);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
     for(int step = 0;step < iterations;step++) {
 
             RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
@@ -160,7 +160,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
 
     }
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 cudaMemPrefetchAsync ( Z, n*n*sizeof(double), cudaCpuDeviceId, NULL);
     GpuFreeManaged(T1);
     GpuFreeManaged(D);

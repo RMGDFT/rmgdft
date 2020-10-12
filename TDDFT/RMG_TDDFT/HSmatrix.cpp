@@ -105,7 +105,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
     cudaMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 #endif
 
     int active_threads = ct.MG_THREADS_PER_NODE;
@@ -121,12 +121,12 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 #if CUDA_ENABLED
-             cudaDeviceSynchronize();
+             DeviceSynchronize();
 #endif
              AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
 #if CUDA_ENABLED
-             cudaDeviceSynchronize();
+             DeviceSynchronize();
 #endif
              first_nls = 0;
              delete RT3;
@@ -166,11 +166,11 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 #if CUDA_ENABLED
-             cudaDeviceSynchronize();
+             DeviceSynchronize();
 #endif
              AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
 #if CUDA_ENABLED
-             cudaDeviceSynchronize();
+             DeviceSynchronize();
 #endif
              first_nls = 0;
              delete RT3;
@@ -186,7 +186,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
 #if CUDA_ENABLED
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 #endif
 
     // Compute A matrix

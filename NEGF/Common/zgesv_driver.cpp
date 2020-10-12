@@ -81,7 +81,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
 
 
         ipiv = (int *) malloc(d_ipiv * sizeof(int));
-        cudaDeviceSynchronize();
+        DeviceSynchronize();
         magma_zgesv_gpu (nn, nhrs, (magmaDoubleComplex *)A, nn, ipiv, (magmaDoubleComplex *)B, nn, &info);
 
         if (info != 0)
@@ -94,7 +94,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
     #else
 
 
-        cudaDeviceSynchronize();
+        DeviceSynchronize();
         cusolverStatus_t cu_status;
         int Lwork;
         int *devIpiv, *devInfo;
@@ -116,7 +116,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
         }
 
 
-        cudaDeviceSynchronize();
+        DeviceSynchronize();
         if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__,"cusolverDnZgetrf failed.");
         
         cublasOperation_t trans =CUBLAS_OP_N;
@@ -132,7 +132,7 @@ void zgesv_driver (std::complex<double> *A, int *desca,  std::complex<double> *B
             exit (0);
         }
         //if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZgetrs failed.");
-        cudaDeviceSynchronize();
+        DeviceSynchronize();
         cudaFree(devIpiv);
         cudaFree(devInfo);
         cudaFree(Workspace);

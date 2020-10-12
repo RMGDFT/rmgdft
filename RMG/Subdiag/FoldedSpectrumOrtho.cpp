@@ -105,14 +105,14 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
     // Cholesky factorization
 #if CUDA_ENABLED
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
     int device = -1;
     cudaGetDevice(&device);
     cudaError_t cuerr = cudaMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
     //if(cuerr != cudaSuccess) rmg_error_handler (__FILE__, __LINE__, "Prefetch failed.");
     //cuerr = cudaMemPrefetchAsync ( G, n*n*sizeof(double), device, NULL);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 
     cusolverStatus_t cu_status;
     int Lwork;
@@ -123,7 +123,7 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf_bufferSize failed.");
     if(Lwork > n*n) rmg_error_handler (__FILE__, __LINE__, " something wrong with cusolverDnDpotrf workspace allocation.");
     cu_status = cusolverDnDpotrf(ct.cusolver_handle, cu_uplo, n, C, n, G, Lwork, dev_info );
-    //cudaDeviceSynchronize();
+    //DeviceSynchronize();
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf failed.");
     cudaFree(dev_info);
     delete(RT1);
@@ -135,13 +135,13 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
 
 
 #if CUDA_ENABLED
-    //cudaDeviceSynchronize();
+    //DeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");
     cudaMemPrefetchAsync ( V, n*n*sizeof(double), device, NULL);
     gramsch_update_psi(V, C, n, eig_start, eig_stop, ct.cublas_handle);
     cublasDgeam(ct.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, n, eig_step, &alpha, &V[eig_start], n, &beta, C, n, &G[eig_start*n], n);
     cudaMemcpy(&V[eig_start*n], &G[eig_start*n], (size_t)eig_step*(size_t)n*sizeof(KpointType), cudaMemcpyDefault);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
     delete(RT1);
 #else
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-update");

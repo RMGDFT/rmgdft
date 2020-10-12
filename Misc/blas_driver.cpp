@@ -21,7 +21,7 @@
 void my_sync_device()
 {
 #if CUDA_ENABLED
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 #endif
 }
 

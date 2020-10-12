@@ -105,7 +105,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
     cudaMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 #endif
 
     int active_threads = ct.MG_THREADS_PER_NODE;
@@ -121,12 +121,12 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 #if CUDA_ENABLED
-            cudaDeviceSynchronize();
+            DeviceSynchronize();
 #endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
 #if CUDA_ENABLED
-            cudaDeviceSynchronize();
+            DeviceSynchronize();
 #endif
             first_nls = 0;
             delete RT3;
@@ -167,11 +167,11 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
 #if CUDA_ENABLED
-            cudaDeviceSynchronize();
+            DeviceSynchronize();
 #endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
 #if CUDA_ENABLED
-            cudaDeviceSynchronize();
+            DeviceSynchronize();
 #endif
             first_nls = 0;
             delete RT3;
@@ -185,7 +185,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
 tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
 #if CUDA_ENABLED
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 #endif
 
     // Compute A matrix

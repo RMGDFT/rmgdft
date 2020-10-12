@@ -65,7 +65,7 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
     if(!strcmp(trans, "c")) cu_trans = CUBLAS_OP_C;
     if(!strcmp(trans, "C")) cu_trans = CUBLAS_OP_C;
 
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         custat = cublasZsyrkx(ct.cublas_handle, fill_mode, cu_trans, n, k,
                             (cuDoubleComplex *)&alpha,
@@ -84,7 +84,7 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
         ProcessCublasError(custat);
         RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDsyrkx");
     }
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
     return;
 
 #else

@@ -41,7 +41,7 @@ void PackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
     if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     cublasDtrttp ( ct.cublas_handle, cu_uplo, N, Sq, lda, Tr);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 #else
     int info; 
     dtrttp(uplo, &N, Sq, &lda, Tr, &info);
@@ -58,7 +58,7 @@ void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::compl
     if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     cublasZtrttp ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Sq, lda, (cuDoubleComplex*)Tr);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 #else
     int info; 
     ztrttp(uplo, &N, Sq, &lda, Tr, &info);
@@ -74,7 +74,7 @@ void UnPackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
     if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     cublasDtpttr ( ct.cublas_handle, cu_uplo, N, Tr, Sq, lda);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 #else
     int info;
     dtpttr(uplo, &N, Tr, Sq, &lda, &info);
@@ -90,7 +90,7 @@ void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::com
     if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
     cublasZtpttr ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Tr, (cuDoubleComplex*)Sq, lda);
-    cudaDeviceSynchronize();
+    DeviceSynchronize();
 #else
     int info;
     ztpttr(uplo, &N, Tr, Sq, &lda, &info);
