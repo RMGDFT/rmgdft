@@ -17,6 +17,7 @@ void ProcessCublasError(cublasStatus_t custat);
 #include <hipblas.h>
 void RmgHipError(const char *file, int line, const hipError_t hipStatus, const char * errorMessage);
 void RmgHipError(const char *file, int line, const hipblasStatus_t status, const char * errorMessage);
+void ProcessHipblasError(hipblasStatus_t hipstat);
 #endif
 
 #endif
