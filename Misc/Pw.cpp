@@ -26,6 +26,7 @@
 #include "transition.h"
 #include "rmg_error.h"
 #include "ErrorFuncs.h"
+#include "GpuAlloc.h"
 
 Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 {

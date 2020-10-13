@@ -109,15 +109,13 @@ void FoldedSpectrumOrtho(int n, int eig_start, int eig_stop, int *fs_eigcounts, 
     RT1 = new RmgTimer("4-Diagonalization: fs: Gram-cholesky");
     int device = -1;
     cudaGetDevice(&device);
-    cudaError_t cuerr = cudaMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
-    //if(cuerr != cudaSuccess) rmg_error_handler (__FILE__, __LINE__, "Prefetch failed.");
-    //cuerr = cudaMemPrefetchAsync ( G, n*n*sizeof(double), device, NULL);
+    cudaMemPrefetchAsync ( C, n*n*sizeof(double), device, NULL);
     DeviceSynchronize();
 
     cusolverStatus_t cu_status;
     int Lwork;
     int *dev_info;
-    cuerr = gpuMalloc(&dev_info, sizeof(int));
+    gpuMalloc((void **)&dev_info, sizeof(int));
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
     cu_status = cusolverDnDpotrf_bufferSize(ct.cusolver_handle, cu_uplo, n, C, n, &Lwork);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDpotrf_bufferSize failed.");

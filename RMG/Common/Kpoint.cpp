@@ -1085,7 +1085,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     if(ct.stress) stress_factor = 4;
 
 #if CUDA_ENABLED
-    cudaError_t custat;
+    gpuError_t custat;
     // Managed memory is faster when gpu memory is not constrained but 
     // pinned memory works better when it is constrained.
     if(ct.pin_nonlocal_weights)
@@ -1226,7 +1226,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
 
 #if CUDA_ENABLED
-    cudaError_t custat;
+    gpuError_t custat;
     // Managed memory is faster when gpu memory is not constrained but 
     // pinned memory works better when it is constrained.
     if(ct.pin_nonlocal_weights)

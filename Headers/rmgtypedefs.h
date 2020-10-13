@@ -111,5 +111,11 @@ typedef struct
 
 typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
 
+#if HIP_ENABLED
+    #define gpuError_t hipError_t
+#elif CUDA_ENABLED
+    #define gpuError_t cudaError_t
+#endif
+
 #endif
 

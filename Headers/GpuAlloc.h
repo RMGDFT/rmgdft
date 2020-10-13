@@ -24,10 +24,22 @@ void DGpuFreeManaged( void *ptr, const char *fname, size_t line);
 
 // The functions above manage blocks allocated from a pool. These are direct calls to
 // the underlying functions.
-void gpuMalloc(void **ptr, size_t size);
-void gpuMallocManaged(void **ptr, size_t size);
-void gpuMallocHost(void **ptr, size_t size);
-void gpuFree(void *ptr);
-void gpuFreeHost(void *ptr);
+#if HIP_ENABLED
+#include <hip/hip_runtime.h>
+hipError_t gpuMalloc(void **ptr, size_t size);
+hipError_t gpuMallocManaged(void **ptr, size_t size);
+hipError_t gpuMallocHost(void **ptr, size_t size);
+hipError_t gpuFree(void *ptr);
+hipError_t gpuFreeHost(void *ptr);
+#elif CUDA_ENABLED
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+cudaError_t gpuMalloc(void **ptr, size_t size);
+cudaError_t gpuMallocManaged(void **ptr, size_t size);
+cudaError_t gpuMallocHost(void **ptr, size_t size);
+cudaError_t gpuFree(void *ptr);
+cudaError_t gpuFreeHost(void *ptr);
+#endif
 
 #endif
+

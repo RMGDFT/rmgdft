@@ -26,12 +26,15 @@
 #include "transition.h"
 #include "ErrorFuncs.h"
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
 
+#include <sys/mman.h>
+
+#if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
-#include <sys/mman.h>
+#endif
 
 
 // Cuda managed memory is supposed to ease the burden of copying data
@@ -60,7 +63,7 @@ void InitGpuMallocHost(size_t bufsize)
     if (ct.require_huge_pages) return;
 #endif
 
-    cudaError_t custat;
+    gpuError_t custat;
     bufsize += GPU_ALIGNMENT * MAX_HOSTGPU_BLOCKS;
     custat = gpuMallocHost((void **)&host_gpubuffer , bufsize );
     RmgGpuError(__FILE__, __LINE__, custat, "Error: cudaHostMalloc failed in InitGpuHostMalloc\n");

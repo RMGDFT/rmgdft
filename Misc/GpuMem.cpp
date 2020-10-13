@@ -30,7 +30,6 @@
 
 
 #if HIP_ENABLED
-#include <hip/hip_runtime.h>
 
 hipError_t gpuMalloc(void **ptr, size_t size)
 {
@@ -56,19 +55,17 @@ hipError_t gpuMallocHost(void **ptr, size_t size)
     return hiperr;
 }
 
-void gpuFree(void *ptr)
+hipError_t gpuFree(void *ptr)
 {
-    hipFree(ptr);
+    return hipFree(ptr);
 }
 
-void gpuFreeHost(void *ptr)
+hipError_t gpuFreeHost(void *ptr)
 {
-    hipFreeHost(ptr);
+    return hipFreeHost(ptr);
 }
 
 #elif CUDA_ENABLED
-#include <cuda.h>
-#include <cuda_runtime_api.h>
 
 cudaError_t gpuMalloc(void **ptr, size_t size)
 {
@@ -94,14 +91,14 @@ cudaError_t gpuMallocHost(void **ptr, size_t size)
     return cuerr;
 }
 
-void gpuFree(void *ptr)
+cudaError_t gpuFree(void *ptr)
 {
-    gpuFree(ptr);
+    return gpuFree(ptr);
 }
 
-void gpuFreeHost(void *ptr)
+cudaError_t gpuFreeHost(void *ptr)
 {
-    gpuFreeHost(ptr);
+    return gpuFreeHost(ptr);
 }
 #endif
 

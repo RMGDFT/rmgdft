@@ -26,12 +26,7 @@
 #include "transition.h"
 #include "ErrorFuncs.h"
 
-#if CUDA_ENABLED
-
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
-
+#if CUDA_ENABLED || HIP_ENABLED
 
 // Since cudamalloc is very slow we grab a large buffer of GPU ram
 // at initialization time and use GpuMalloc to return pointers into
@@ -56,7 +51,7 @@ static size_t max_size;
 void InitGpuMalloc(size_t bufsize)
 {
 
-    cudaError_t custat;
+    gpuError_t custat;
 
     // Add alignment factors
     bufsize += GPU_ALIGNMENT * MAX_GPU_BLOCKS;
