@@ -28,5 +28,6 @@ void gpuMalloc(void **ptr, size_t size);
 void gpuMallocManaged(void **ptr, size_t size);
 void gpuMallocHost(void **ptr, size_t size);
 void gpuFree(void *ptr);
+void gpuFreeHost(void *ptr);
 
 #endif

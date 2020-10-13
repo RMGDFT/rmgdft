@@ -61,6 +61,11 @@ void gpuFree(void *ptr)
     hipFree(ptr);
 }
 
+void gpuFreeHost(void *ptr)
+{
+    hipFreeHost(ptr);
+}
+
 #elif CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -94,5 +99,9 @@ void gpuFree(void *ptr)
     gpuFree(ptr);
 }
 
+void gpuFreeHost(void *ptr)
+{
+    gpuFreeHost(ptr);
+}
 #endif
 
