@@ -31,6 +31,7 @@ hipError_t gpuMallocManaged(void **ptr, size_t size);
 hipError_t gpuMallocHost(void **ptr, size_t size);
 hipError_t gpuFree(void *ptr);
 hipError_t gpuFreeHost(void *ptr);
+hipError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind);
 #elif CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -39,6 +40,7 @@ cudaError_t gpuMallocManaged(void **ptr, size_t size);
 cudaError_t gpuMallocHost(void **ptr, size_t size);
 cudaError_t gpuFree(void *ptr);
 cudaError_t gpuFreeHost(void *ptr);
+cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind);
 #endif
 
 #endif

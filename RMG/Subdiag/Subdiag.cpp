@@ -125,12 +125,12 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         int check = first_nls + active_threads;
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
             DeviceSynchronize();
 #endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
             DeviceSynchronize();
 #endif
             first_nls = 0;
@@ -171,11 +171,11 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         int check = first_nls + 1;
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
             DeviceSynchronize();
 #endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
             DeviceSynchronize();
 #endif
             first_nls = 0;
@@ -189,7 +189,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     /* Operators applied and we now have
 tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     DeviceSynchronize();
 #endif
 
@@ -330,8 +330,8 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
         }
     }
 
-#if CUDA_ENABLED
-    cudaMemcpy(&orbital_storage[istart], &tmp_arrayT[istart], tlen, cudaMemcpyDefault);
+#if CUDA_ENABLED || HIP_ENABLED
+    gpuMemcpy(&orbital_storage[istart], &tmp_arrayT[istart], tlen, gpuMemcpyDefault);
     //cudaMemPrefetchAsync (orbital_storage , nstates*sizeof(double), cudaCpuDeviceId, NULL);
     // Not sure why but the cudaMemcpy behaves strangely here sometimes.
     //for(int idx=0;idx<nstates*pbasis;idx++) orbital_storage[istart+idx] = tmp_arrayT[istart+idx];
@@ -351,7 +351,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     delete(RT1);
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     // After the first step this matrix does not need to be as large
     if(ct.scf_steps == 0) {GpuFreeManaged(global_matrix1);global_matrix1 = NULL;}
     GpuFreeManaged(eigs);
