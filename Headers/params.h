@@ -96,7 +96,7 @@
 /* Restart files are compressed using zfp compressor and this accuracy factor */
 #define RESTART_TOLERANCE  1.0e-09
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
 
     #define MAX_GPU_DEVICES 16
 
