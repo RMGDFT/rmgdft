@@ -60,7 +60,7 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
 
     cu_status = cusolverDnZhegvd(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, (cuDoubleComplex *)zwork, lwork, devInfo);
     int info;
-    cudaMemcpy(&info, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
+    gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZhegvd failed.");
 
     gpuFree(devInfo);

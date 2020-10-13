@@ -50,7 +50,7 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, in
 
     cu_status = cusolverDnDsyevd(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, work, lwork, devInfo);
     int info;
-    cudaMemcpy(&info, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
+    gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevd failed.");
 
     gpuFree(devInfo);

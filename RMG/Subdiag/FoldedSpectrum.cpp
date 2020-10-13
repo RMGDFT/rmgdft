@@ -98,12 +98,12 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
     double *Vdiag = (double *)GpuMallocManaged(n * sizeof(double));
     double *tarr = (double *)GpuMallocManaged(n * sizeof(double));
-    cudaMemcpy(Bsave, B, n*n*sizeof(double), cudaMemcpyDefault);
+    gpuMemcpy(Bsave, B, n*n*sizeof(double), gpuMemcpyDefault);
 
     //  Transform problem to standard eigenvalue problem
     RmgTimer *RT2 = new RmgTimer("4-Diagonalization: fs: transform");
     int its=7;
-    cudaMemcpy(Asave, A, n*n*sizeof(double), cudaMemcpyDefault);
+    gpuMemcpy(Asave, A, n*n*sizeof(double), gpuMemcpyDefault);
     DeviceSynchronize();
     FoldedSpectrumGSE<double> (Asave, Bsave, A, n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, its, driver, fs_comm);
     delete(RT2);
@@ -236,7 +236,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 #if CUDA_ENABLED
     DeviceSynchronize();
-    cudaMemcpy(A, V, (size_t)n*(size_t)n*sizeof(double), cudaMemcpyDefault);
+    gpuMemcpy(A, V, (size_t)n*(size_t)n*sizeof(double), gpuMemcpyDefault);
     //memcpy(A, V, (size_t)n*(size_t)n*sizeof(double));
     DeviceSynchronize();
 #else

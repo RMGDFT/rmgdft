@@ -53,7 +53,7 @@ void DsyevjDriver(double *A, double *eigs, double *work, int worksize, int n, in
 
     cu_status = cusolverDnDsyevj(ct.cusolver_handle, jobz, uplo, n, A, n, eigs, work, lwork, devInfo, dsyevj_params);
     int info;
-    cudaMemcpy(&info, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
+    gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevj failed.");
 
     gpuFree(devInfo);

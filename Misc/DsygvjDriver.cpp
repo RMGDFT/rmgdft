@@ -54,7 +54,7 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
 
     cu_status = cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params);
     int info;
-    cudaMemcpy(&info, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
+    gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsygvj failed.");
 
     gpuFree(devInfo);
