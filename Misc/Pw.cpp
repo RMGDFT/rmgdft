@@ -211,12 +211,12 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
          cufftSetStream(gpu_plans[i], streams[i]);
          cufftSetStream(gpu_plans_f[i], streams[i]);
          RmgGpuError(__FILE__, __LINE__, 
-             cudaMallocHost((void **)&host_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
-             "Error: cudaMallocHost failed.\n");
+             gpuMallocHost((void **)&host_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
+             "Error: gpuMallocHost failed.\n");
 
          RmgGpuError(__FILE__, __LINE__, 
-             cudaMalloc((void **)&dev_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
-             "Error: cudaMalloc failed.\n");
+             gpuMalloc((void **)&dev_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
+             "Error: gpuMalloc failed.\n");
       }
  
 #endif
@@ -562,8 +562,8 @@ Pw::~Pw(void)
       {
          cufftDestroy(gpu_plans[i]);
          cufftDestroy(gpu_plans_f[i]);
-         RmgGpuError(__FILE__, __LINE__, cudaFreeHost(host_bufs[i]), "Error: cudaFreeHost failed.\n");
-         RmgGpuError(__FILE__, __LINE__, cudaFree(dev_bufs[i]), "Error: cudaFreeHost failed.\n");
+         RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
+         RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
       }
 
       // Gpu streams and plans

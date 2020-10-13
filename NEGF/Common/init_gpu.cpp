@@ -75,11 +75,11 @@ void init_gpu (void)
 
 	alloc = pmo.ntot_low * sizeof(std::complex<double>);
     printf("\n alloc size for gpu_Htri %zu \n", alloc);
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Htri , alloc, cudaMemAttachGlobal )){
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_Htri , alloc, cudaMemAttachGlobal )){
 		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %zu\n", alloc);
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Gtri , alloc, cudaMemAttachGlobal )){
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_Gtri , alloc, cudaMemAttachGlobal )){
 		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %zu\n", alloc);
 		exit(-1);
 	}
@@ -92,7 +92,7 @@ void init_gpu (void)
         size += ct.block_dim[i]*ct.block_dim[i];
     }
 	alloc = size * sizeof(std::complex<double>);
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_GdiagBlocks , alloc, cudaMemAttachGlobal )){
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_GdiagBlocks , alloc, cudaMemAttachGlobal )){
 		fprintf (stderr, "!!!! cublasAlloc failed for: gpu_GdiagBlocks %zu\n", alloc);
         
 		exit(-1);
@@ -108,36 +108,36 @@ void init_gpu (void)
 	}
 
 	alloc = ntot_row * maxrow * sizeof(std::complex<double>);
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Grow , alloc, cudaMemAttachGlobal ) ){
-		fprintf (stderr, "Error: cudaMallocManaged failed for: gpu_Grow\n");
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_Grow , alloc, cudaMemAttachGlobal ) ){
+		fprintf (stderr, "Error: gpuMallocManaged failed for: gpu_Grow\n");
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Gcol , alloc, cudaMemAttachGlobal ) ){
-		fprintf (stderr, "Error: cudaMallocManaged failed for: gpu_Grow\n");
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_Gcol , alloc, cudaMemAttachGlobal ) ){
+		fprintf (stderr, "Error: gpuMallocManaged failed for: gpu_Grow\n");
 		exit(-1);
 	}
 
 	alloc = maxrow * maxrow * sizeof(std::complex<double>);
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Hii, alloc, cudaMemAttachGlobal )){
-		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_Hii\n");
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_Hii, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: gpuMallocManaged failed for: ct.gpu_Hii\n");
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Gii, alloc, cudaMemAttachGlobal )){
-		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_Gii\n");
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_Gii, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: gpuMallocManaged failed for: ct.gpu_Gii\n");
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_temp, alloc, cudaMemAttachGlobal )){
-		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_temp\n");
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_temp, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: gpuMallocManaged failed for: ct.gpu_temp\n");
 		exit(-1);
 	}
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_Imatrix, alloc, cudaMemAttachGlobal )){
-		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_Imatrix\n");
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_Imatrix, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: gpuMallocManaged failed for: ct.gpu_Imatrix\n");
 		exit(-1);
 	}
 
 	alloc = maxrow * sizeof(int);
-	if( cudaSuccess != cudaMallocManaged((void **)&ct.gpu_ipiv, alloc, cudaMemAttachGlobal )){
-		fprintf (stderr, "Error: cudaMallocManaged failed for: ct.gpu_ipiv\n");
+	if( cudaSuccess != gpuMallocManaged((void **)&ct.gpu_ipiv, alloc, cudaMemAttachGlobal )){
+		fprintf (stderr, "Error: gpuMallocManaged failed for: ct.gpu_ipiv\n");
 		exit(-1);
 	}
 
@@ -156,13 +156,13 @@ void finalize_gpu (void)
 {
 
 	cublasDestroy(ct.cublas_handle);
-//	cudaFree(ct.gpu_global_matrix);
-	cudaFree(ct.gpu_Grow);
-	cudaFree(ct.gpu_Gcol);
-//	cudaFree(ct.gpu_work1);
-//	cudaFree(ct.gpu_work2);
-//	cudaFree(ct.gpu_work3);
-//	cudaFree(ct.gpu_work4);
+//	gpuFree(ct.gpu_global_matrix);
+	gpuFree(ct.gpu_Grow);
+	gpuFree(ct.gpu_Gcol);
+//	gpuFree(ct.gpu_work1);
+//	gpuFree(ct.gpu_work2);
+//	gpuFree(ct.gpu_work3);
+//	gpuFree(ct.gpu_work4);
 
 	//    cuCtxDetach( ct.cu_context ); 
 	//   cublasShutdown();

@@ -46,15 +46,15 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
     cublasOperation_t trans = CUBLAS_OP_N;
     DataType *Workspace;
 
-    RmgGpuError(__FILE__, __LINE__, cudaMalloc((void **)&devIpiv, sizeof(int) *n), "Problem with cudaMalloc");
-    RmgGpuError(__FILE__, __LINE__, cudaMalloc((void **)&devInfo, sizeof(int) ), "Problem with cudaMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devIpiv, sizeof(int) *n), "Problem with gpuMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
 
     if(typeid(DataType) == typeid(double))
     {
         GpuFill((double *)B, n*n, 0.0);
         cu_status = cusolverDnDgetrf_bufferSize(ct.cusolver_handle, n, n, (double *)A, n, &Lwork);
         if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrf_bufferSize failed.");
-        RmgGpuError(__FILE__, __LINE__, cudaMalloc((void **) &Workspace, sizeof(double) * std::max(Lwork, n)), "Problem with cudaMalloc");
+        RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **) &Workspace, sizeof(double) * std::max(Lwork, n)), "Problem with gpuMalloc");
 
         // Create unitary matrix
         GpuFill((double *)Workspace, n, 1.0);
@@ -71,7 +71,7 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
         GpuFill((double *)B, 2*n*n, 0.0);
         cu_status = cusolverDnZgetrf_bufferSize(ct.cusolver_handle, n, n, (cuDoubleComplex *)A, n, &Lwork);
         if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverZnDgetrf_bufferSize failed.");
-        RmgGpuError(__FILE__, __LINE__, cudaMalloc((void **) &Workspace, 2*sizeof(double) * std::max(Lwork, n)), "Problem with cudaMalloc");
+        RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **) &Workspace, 2*sizeof(double) * std::max(Lwork, n)), "Problem with gpuMalloc");
 
         // Create unitary matrix
         GpuFill((double *)Workspace, n, 1.0);
@@ -84,9 +84,9 @@ template <typename DataType> void InvertMatrix(DataType *A, DataType *B, int n)
         if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDgetrs failed.");
     }
 
-    cudaFree(Workspace);
-    cudaFree(devInfo);
-    cudaFree(devIpiv);
+    gpuFree(Workspace);
+    gpuFree(devInfo);
+    gpuFree(devIpiv);
 
 }
 

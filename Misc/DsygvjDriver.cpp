@@ -50,14 +50,14 @@ void DsygvjDriver(double *A, double *B, double *eigs, double *work, int worksize
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsyevd_bufferSize failed.");
     if(lwork > worksize) rmg_error_handler (__FILE__, __LINE__, " DsygvjDriver: provided workspace too small.");
 
-    RmgGpuError(__FILE__, __LINE__, cudaMalloc((void **)&devInfo, sizeof(int) ), "Problem with cudaMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
 
     cu_status = cusolverDnDsygvj(ct.cusolver_handle, itype, jobz, uplo, n, A, n, B, n, eigs, work, worksize, devInfo, dsygvj_params);
     int info;
     cudaMemcpy(&info, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnDsygvj failed.");
 
-    cudaFree(devInfo);
+    gpuFree(devInfo);
     if (dsygvj_params) cusolverDnDestroySyevjInfo(dsygvj_params);
 
 }

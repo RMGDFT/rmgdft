@@ -21,4 +21,12 @@ void DGpuFreeManaged( void *ptr, const char *fname, size_t line);
 #define  GpuMallocManaged(x) DGpuMallocManaged (x,__FILE__,__LINE__)
 #define  GpuFreeManaged(x) DGpuFreeManaged (x,__FILE__,__LINE__)
 
+
+// The functions above manage blocks allocated from a pool. These are direct calls to
+// the underlying functions.
+void gpuMalloc(void **ptr, size_t size);
+void gpuMallocManaged(void **ptr, size_t size);
+void gpuMallocHost(void **ptr, size_t size);
+void gpuFree(void *ptr);
+
 #endif

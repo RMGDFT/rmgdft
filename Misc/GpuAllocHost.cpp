@@ -62,7 +62,7 @@ void InitGpuMallocHost(size_t bufsize)
 
     cudaError_t custat;
     bufsize += GPU_ALIGNMENT * MAX_HOSTGPU_BLOCKS;
-    custat = cudaMallocHost((void **)&host_gpubuffer , bufsize );
+    custat = gpuMallocHost((void **)&host_gpubuffer , bufsize );
     RmgGpuError(__FILE__, __LINE__, custat, "Error: cudaHostMalloc failed in InitGpuHostMalloc\n");
     host_max_size = bufsize;
     host_curptr = (unsigned char*)host_gpubuffer;

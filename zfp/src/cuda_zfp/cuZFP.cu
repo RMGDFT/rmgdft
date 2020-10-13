@@ -215,7 +215,7 @@ Word *setup_device_stream(zfp_stream *stream,const zfp_field *field)
   Word *d_stream = NULL;
   // TODO: we we have a real stream we can just ask it how big it is
   size_t max_size = zfp_stream_maximum_size(stream, field);
-  cudaMalloc(&d_stream, max_size);
+  gpuMalloc(&d_stream, max_size);
   cudaMemcpy(d_stream, stream->stream->begin, max_size, cudaMemcpyHostToDevice);
   return d_stream;
 }
@@ -280,7 +280,7 @@ void *setup_device_field(const zfp_field *field, const int3 &stride, long long i
   if(contig)
   {
     size_t field_bytes = type_size * field_size;
-    cudaMalloc(&d_data, field_bytes);
+    gpuMalloc(&d_data, field_bytes);
 
     cudaMemcpy(d_data, host_ptr, field_bytes, cudaMemcpyHostToDevice);
   }
@@ -303,7 +303,7 @@ void cleanup_device_ptr(void *orig_ptr, void *d_ptr, size_t bytes, long long int
     cudaMemcpy(h_offset_ptr, d_offset_ptr, bytes, cudaMemcpyDeviceToHost);
   }
 
-  cudaFree(d_offset_ptr);
+  gpuFree(d_offset_ptr);
 }
 
 } // namespace internal

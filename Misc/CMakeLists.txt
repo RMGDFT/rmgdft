@@ -96,6 +96,7 @@ get_rho_oppo.cpp
 pack.cpp
 PackMatrix.cpp
 RmgGpuError.cpp
+GpuMem.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories(${MAGMA_INCLUDES})

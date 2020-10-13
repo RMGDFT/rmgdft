@@ -1090,8 +1090,8 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     // pinned memory works better when it is constrained.
     if(ct.pin_nonlocal_weights)
     {
-        custat = cudaMallocHost((void **)&this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType));
-        RmgGpuError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+        custat = gpuMallocHost((void **)&this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType));
+        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMallocHost failed.\n");
     }
     else
     {
@@ -1146,11 +1146,11 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
 #if CUDA_ENABLED
         if(ct.pin_nonlocal_weights)
         {
-            cudaFreeHost(this->nl_weight);
+            gpuFreeHost(this->nl_weight);
         }
         else
         {
-            cudaFree(this->nl_weight);
+            gpuFree(this->nl_weight);
         }
 #else
         int stress_factor = 1;
@@ -1177,11 +1177,11 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
 #if CUDA_ENABLED
         if(ct.pin_nonlocal_weights)
         {
-            cudaFreeHost(this->orbital_weight);
+            gpuFreeHost(this->orbital_weight);
         }
         else
         {
-            cudaFree(this->orbital_weight);
+            gpuFree(this->orbital_weight);
         }
 #else
         if(ct.nvme_weights)
@@ -1231,8 +1231,8 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     // pinned memory works better when it is constrained.
     if(ct.pin_nonlocal_weights)
     {
-        custat = cudaMallocHost((void **)&this->orbital_weight, this->orbital_weight_size * sizeof(KpointType));
-        RmgGpuError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+        custat = gpuMallocHost((void **)&this->orbital_weight, this->orbital_weight_size * sizeof(KpointType));
+        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMallocHost failed.\n");
     }
     else
     {

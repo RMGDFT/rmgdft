@@ -56,14 +56,14 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
         zwork = (cuDoubleComplex *)work;
     }
 
-    RmgGpuError(__FILE__, __LINE__, cudaMalloc((void **)&devInfo, sizeof(int) ), "Problem with cudaMalloc");
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
 
     cu_status = cusolverDnZhegvd(ct.cusolver_handle, itype, jobz, uplo, n, (cuDoubleComplex *)A, n, (cuDoubleComplex *)B, n, eigs, (cuDoubleComplex *)zwork, lwork, devInfo);
     int info;
     cudaMemcpy(&info, devInfo, sizeof(int), cudaMemcpyDeviceToHost);
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZhegvd failed.");
 
-    cudaFree(devInfo);
+    gpuFree(devInfo);
     if(work == NULL) GpuFreeManaged(zwork);
 }
 
