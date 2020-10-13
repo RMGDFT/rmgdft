@@ -53,8 +53,6 @@ init_kpoints.cpp
 FileOpenAndCreate.cpp
 CreateMmapArray.cpp
 DeleteNvmeArrays.cpp
-RmgHipError.cpp
-RmgCudaError.cpp
 MyZgemm.cpp
 RmgGemm.cpp
 RmgSymm.cpp
@@ -97,8 +95,7 @@ get_dipole.cpp
 get_rho_oppo.cpp
 pack.cpp
 PackMatrix.cpp
-ProcessCublasError.cpp
-ProcessHipblasError.cpp
+RmgGpuError.cpp
 )
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 include_directories(${MAGMA_INCLUDES})
