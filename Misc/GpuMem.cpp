@@ -31,6 +31,11 @@
 
 #if HIP_ENABLED
 
+#ifdef __HIP_PLATFORM_NVCC__
+    #include <cuda.h>
+    #include <cuda_runtime_api.h>
+#endif
+
 hipError_t gpuMalloc(void **ptr, size_t size)
 {
     hipError_t hiperr = hipMalloc(ptr, size);
@@ -75,6 +80,16 @@ hipError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemc
     return hipMemcpyAsync (dst, src, sizeBytes, kind, stream);
 }
 
+hipError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, hipStream_t stream)
+{
+// Bit of a hack until HIP implements this
+#ifdef __HIP_PLATFORM_NVCC__
+    cudaMemPrefetchAsync (devPtr, count, dstDevice, stream);
+    return hipSuccess;
+#elif
+    return hipSuccess;
+#endif
+}
 #elif CUDA_ENABLED
 
 cudaError_t gpuMalloc(void **ptr, size_t size)
@@ -119,6 +134,11 @@ cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKi
 cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream)
 {
     return cudaMemcpyAsync (dst, src, sizeBytes, kind, stream);
+}
+
+cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, cudaStream_t stream)
+{
+    return cudaMemPrefetchAsync (devPtr, count, dstDevice, stream);
 }
 #endif
 

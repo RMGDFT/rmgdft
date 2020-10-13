@@ -421,13 +421,6 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
         //       for(int j = 0; j < 5; j++) printf(" %10.4e", Akick[i*numst + j]);
         //   }
 
-#if CUDA_ENABLED
-        // Until the finite difference operators are being applied on the GPU it's faster
-        //     // to make sure that the result arrays are present on the cpu side.
-    //    int device = -1;
-    //    cudaMemPrefetchAsync ( Hmatrix, n2*sizeof(double), device, NULL);
-    //    DeviceSynchronize();
-#endif
 
         for(i = 0; i < n2; i++) Hmatrix_m1[i] = 0.0;
         for(i = 0; i < n2; i++) Hmatrix_0[i] = 0.0;

@@ -139,9 +139,6 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // outer loop over steps
     int device = -1;
     cudaGetDevice(&device);
-    //cudaMemPrefetchAsync ( &A[istart*n], istep*n*sizeof(double), device, NULL);
-    //cudaMemPrefetchAsync ( &Z[istart*n], istep*n*sizeof(double), device, NULL);
-    //cudaMemPrefetchAsync ( &T1[istart*n], istep*n*sizeof(double), device, NULL);
     DeviceSynchronize();
     for(int step = 0;step < iterations;step++) {
 
@@ -161,7 +158,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
     }
     DeviceSynchronize();
-cudaMemPrefetchAsync ( Z, n*n*sizeof(double), cudaCpuDeviceId, NULL);
+    gpuMemPrefetchAsync ( Z, n*n*sizeof(double), cudaCpuDeviceId, NULL);
     GpuFreeManaged(T1);
     GpuFreeManaged(D);
 

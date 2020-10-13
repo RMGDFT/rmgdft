@@ -100,11 +100,11 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     // Until the finite difference operators are being applied on the GPU it's faster
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
-    cudaMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
+    gpuMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
     DeviceSynchronize();
 #endif
 
@@ -120,14 +120,10 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          int check = first_nls + active_threads;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if CUDA_ENABLED
              DeviceSynchronize();
-#endif
              AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
-#if CUDA_ENABLED
              DeviceSynchronize();
-#endif
              first_nls = 0;
              delete RT3;
          }
@@ -165,13 +161,9 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          int check = first_nls + 1;
          if(check > ct.non_local_block_size) {
              RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if CUDA_ENABLED
              DeviceSynchronize();
-#endif
              AppNls(kptr, newsint_local, kptr->Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
-#if CUDA_ENABLED
              DeviceSynchronize();
-#endif
              first_nls = 0;
              delete RT3;
          }
@@ -185,9 +177,7 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
          tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi>
          tmp_array2T:  B|psi> + B|beta>qnm<beta|psi> */
 
-#if CUDA_ENABLED
     DeviceSynchronize();
-#endif
 
     // Compute A matrix
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");

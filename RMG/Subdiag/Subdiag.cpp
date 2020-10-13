@@ -105,11 +105,11 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     // Until the finite difference operators are being applied on the GPU it's faster
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
-    cudaMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
+    gpuMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
     DeviceSynchronize();
 #endif
 
@@ -322,7 +322,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
 #if CUDA_ENABLED || HIP_ENABLED
     gpuMemcpy(&orbital_storage[istart], &tmp_arrayT[istart], tlen, gpuMemcpyDefault);
-    //cudaMemPrefetchAsync (orbital_storage , nstates*sizeof(double), cudaCpuDeviceId, NULL);
+    //gpuMemPrefetchAsync (orbital_storage , nstates*sizeof(double), cudaCpuDeviceId, NULL);
     // Not sure why but the cudaMemcpy behaves strangely here sometimes.
     //for(int idx=0;idx<nstates*pbasis;idx++) orbital_storage[istart+idx] = tmp_arrayT[istart+idx];
 #else

@@ -150,13 +150,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 #endif
 
-
-#if CUDA_ENABLED
-    //int device = -1;
-    //cudaGetDevice(&device);
-    //cudaMemPrefetchAsync ( A, n_win*n_win*sizeof(double), device, NULL);
     DeviceSynchronize();
-#endif
 
 #if CUDA_ENABLED
     if(ct.cuda_version >= 9020)
