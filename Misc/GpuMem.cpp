@@ -72,7 +72,7 @@ hipError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind
 
 hipError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, hipStream_t stream)
 {
-    return hipMemcpyAsync (dst, src, sizeBytes, kind, hipStream_t stream);
+    return hipMemcpyAsync (dst, src, sizeBytes, kind, stream);
 }
 
 #elif CUDA_ENABLED
@@ -118,7 +118,7 @@ cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKi
 
 cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream)
 {
-    return cudaMemcpyAsync (dst, src, sizeBytes, kind, hipStream_t stream);
+    return cudaMemcpyAsync (dst, src, sizeBytes, kind, stream);
 }
 #endif
 
