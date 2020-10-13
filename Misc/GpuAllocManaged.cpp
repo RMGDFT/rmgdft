@@ -39,7 +39,7 @@ void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
     void *ptr;
     hipError_t hipstat;
     hipstat = hipMallocManaged( &ptr, size+16);
-    RmgHipError(fname, line, hipstat, "Error: hipMallocManaged failed.\n");
+    RmgGpuError(fname, line, hipstat, "Error: hipMallocManaged failed.\n");
     return ptr;
 }
 
