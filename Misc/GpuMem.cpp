@@ -70,6 +70,11 @@ hipError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind
     return hipMemcpy(dst, src, sizeBytes, kind);
 }
 
+hipError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, hipStream_t stream)
+{
+    return hipMemcpyAsync (dst, src, sizeBytes, kind, hipStream_t stream);
+}
+
 #elif CUDA_ENABLED
 
 cudaError_t gpuMalloc(void **ptr, size_t size)
@@ -109,6 +114,11 @@ cudaError_t gpuFreeHost(void *ptr)
 cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind)
 {
     return cudaMemcpy(dst, src, sizeBytes, kind);
+}
+
+cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream)
+{
+    return cudaMemcpyAsync (dst, src, sizeBytes, kind, hipStream_t stream);
 }
 #endif
 

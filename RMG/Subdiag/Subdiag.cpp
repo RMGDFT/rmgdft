@@ -125,14 +125,10 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         int check = first_nls + active_threads;
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if CUDA_ENABLED || HIP_ENABLED
             DeviceSynchronize();
-#endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll],
                     st1, std::min(ct.non_local_block_size, nstates - st1));
-#if CUDA_ENABLED || HIP_ENABLED
             DeviceSynchronize();
-#endif
             first_nls = 0;
             delete RT3;
         }
@@ -171,13 +167,9 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
         int check = first_nls + 1;
         if(check > ct.non_local_block_size) {
             RmgTimer *RT3 = new RmgTimer("4-Diagonalization: apply operators: AppNls");
-#if CUDA_ENABLED || HIP_ENABLED
             DeviceSynchronize();
-#endif
             AppNls(this, newsint_local, Kstates[st1].psi, nv, &ns[st1 * pbasis_noncoll], st1, std::min(ct.non_local_block_size, nstates - st1));
-#if CUDA_ENABLED || HIP_ENABLED
             DeviceSynchronize();
-#endif
             first_nls = 0;
             delete RT3;
         }
@@ -189,9 +181,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     /* Operators applied and we now have
 tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
-#if CUDA_ENABLED || HIP_ENABLED
     DeviceSynchronize();
-#endif
 
     // Compute A matrix
     RT1 = new RmgTimer("4-Diagonalization: matrix setup/reduce");

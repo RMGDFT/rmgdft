@@ -32,6 +32,8 @@ hipError_t gpuMallocHost(void **ptr, size_t size);
 hipError_t gpuFree(void *ptr);
 hipError_t gpuFreeHost(void *ptr);
 hipError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind);
+hipError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, hipStream_t stream);
+hipError_t gpuStreamSynchronize (hipStream_t stream);
 #elif CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -41,6 +43,8 @@ cudaError_t gpuMallocHost(void **ptr, size_t size);
 cudaError_t gpuFree(void *ptr);
 cudaError_t gpuFreeHost(void *ptr);
 cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind);
+cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream);
+cudaError_t gpuStreamSynchronize (cudaStream_t stream);
 #endif
 
 #endif
