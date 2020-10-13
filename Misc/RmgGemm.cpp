@@ -93,7 +93,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                             (cuDoubleComplex*)B, ldb,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
         ProcessCublasError(custat);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
     }
     else {
         custat = cublasDgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
@@ -102,7 +102,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
                             (double*)B, ldb,
                             (double*)&beta, (double*)C, ldc );
         ProcessCublasError(custat);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
     }
     DeviceSynchronize();
     return;

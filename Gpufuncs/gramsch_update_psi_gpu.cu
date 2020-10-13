@@ -69,7 +69,7 @@ void gramsch_update_psi(double *V,
 
     // We get the inverse of the diagonal elements here rather than inside the loop to avoid page faults
     double *darr;
-    RmgCudaError(__FILE__, __LINE__, cudaMallocManaged ( &darr, N*sizeof(double), cudaMemAttachGlobal ), "Error: cudaMallocManaged failed.\n");
+    RmgGpuError(__FILE__, __LINE__, cudaMallocManaged ( &darr, N*sizeof(double), cudaMemAttachGlobal ), "Error: cudaMallocManaged failed.\n");
     for(int i = 0;i < N;i++) darr[i] = 1.0 / C[i*N + i];
     //cublasDcopy(cublasH, N, C, N + 1, darr, 1);
     //for(int i = 0;i < N;i++) darr[i] = 1.0 / darr[i];

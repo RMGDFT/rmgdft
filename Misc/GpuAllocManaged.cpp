@@ -60,7 +60,7 @@ void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
     void *ptr;
     cudaError_t custat;
     custat = cudaMallocManaged ( &ptr, size+16, cudaMemAttachGlobal );
-    RmgCudaError(fname, line, custat, "Error: cudaMallocManaged failed.\n");
+    RmgGpuError(fname, line, custat, "Error: cudaMallocManaged failed.\n");
     return ptr;
 }
 

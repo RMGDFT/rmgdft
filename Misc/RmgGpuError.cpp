@@ -8,7 +8,7 @@
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
 
-void RmgCudaError(const char *file, int line, const cudaError_t cudaStatus, const char * errorMessage) {
+void RmgGpuError(const char *file, int line, const cudaError_t cudaStatus, const char * errorMessage) {
 
     if (cudaStatus != cudaSuccess) {
         rmg_error_handler(file, line, errorMessage);
@@ -17,7 +17,7 @@ void RmgCudaError(const char *file, int line, const cudaError_t cudaStatus, cons
 }
 
 
-void RmgCudaError(const char *file, int line, const cublasStatus_t status, const char * errorMessage) {
+void RmgGpuError(const char *file, int line, const cublasStatus_t status, const char * errorMessage) {
 
     if (status != CUBLAS_STATUS_SUCCESS) {
         rmg_error_handler(file, line, errorMessage);
@@ -26,7 +26,7 @@ void RmgCudaError(const char *file, int line, const cublasStatus_t status, const
 }
 
 
-void ProcessCublasError(cublasStatus_t custat)
+void ProcessGpublasError(cublasStatus_t custat)
 {
     if(custat==CUBLAS_STATUS_SUCCESS)
         return;
@@ -75,7 +75,7 @@ void ProcessCublasError(cublasStatus_t custat)
 
 #include <hipblas.h>
 
-void RmgHipError(const char *file, int line, const hipError_t hipStatus, const char * errorMessage)
+void RmgGpuError(const char *file, int line, const hipError_t hipStatus, const char * errorMessage)
 {
     if (hipStatus != hipSuccess) {
         rmg_error_handler(file, line, errorMessage);
@@ -83,7 +83,7 @@ void RmgHipError(const char *file, int line, const hipError_t hipStatus, const c
 }
 
 
-void RmgHipError(const char *file, int line, const hipblasStatus_t status, const char * errorMessage)
+void RmgGpuError(const char *file, int line, const hipblasStatus_t status, const char * errorMessage)
 {
     if (status != HIPBLAS_STATUS_SUCCESS) {
         rmg_error_handler(file, line, errorMessage);
@@ -91,7 +91,7 @@ void RmgHipError(const char *file, int line, const hipblasStatus_t status, const
 }
 
 
-void ProcessHipblasError(hipblasStatus_t hipstat)
+void ProcessGpublasError(hipblasStatus_t hipstat)
 {
     if(hipstat==HIPBLAS_STATUS_SUCCESS)
         return;

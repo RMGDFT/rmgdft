@@ -1091,7 +1091,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     if(ct.pin_nonlocal_weights)
     {
         custat = cudaMallocHost((void **)&this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType));
-        RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+        RmgGpuError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
     }
     else
     {
@@ -1232,7 +1232,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     if(ct.pin_nonlocal_weights)
     {
         custat = cudaMallocHost((void **)&this->orbital_weight, this->orbital_weight_size * sizeof(KpointType));
-        RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
+        RmgGpuError(__FILE__, __LINE__, custat, "Error: cudaMallocHost failed.\n");
     }
     else
     {

@@ -61,7 +61,7 @@ void InitGpuMalloc(size_t bufsize)
     // Add alignment factors
     bufsize += GPU_ALIGNMENT * MAX_GPU_BLOCKS;
     custat = cudaMalloc((void **)&gpubuffer , bufsize  );
-    RmgCudaError(__FILE__, __LINE__, custat, "Error: cudaMalloc failed in InitGpuMalloc\n");
+    RmgGpuError(__FILE__, __LINE__, custat, "Error: cudaMalloc failed in InitGpuMalloc\n");
     max_size = bufsize;
     curptr = (unsigned char*)gpubuffer;
 

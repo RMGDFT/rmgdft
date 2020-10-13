@@ -75,7 +75,7 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
                             (cuDoubleComplex*)B, ldb,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
         ProcessCublasError(custat);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZsyrkx");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZsyrkx");
     }
     else {
         custat = cublasDsyrkx(ct.cublas_handle, fill_mode, cu_trans, n, k,
@@ -84,7 +84,7 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
                             (double*)B, ldb,
                             (double*)&beta, (double*)C, ldc );
         ProcessCublasError(custat);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDsyrkx");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDsyrkx");
     }
     DeviceSynchronize();
     return;

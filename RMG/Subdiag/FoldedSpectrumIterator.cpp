@@ -82,11 +82,11 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
 #if CUDA_ENABLED
         double neg_rone = -1.0;
         custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n, k, X, n, eigs, ione, T, n);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
         custat = cublasDaxpy(ct.cublas_handle, sizr, &neg_rone, T, ione, Y, ione);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
         custat = cublasDaxpy(ct.cublas_handle, sizr, &alpha, Y, ione, X, ione);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDaxpy.");
 #else
         int kcol, ix;
 #pragma omp parallel private(kcol, ix)

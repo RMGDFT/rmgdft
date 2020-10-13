@@ -202,7 +202,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       dev_bufs.resize(num_streams);
 
       for (int i = 0; i < num_streams; i++)
-          RmgCudaError(__FILE__, __LINE__, cudaStreamCreateWithFlags(&streams[i],cudaStreamNonBlocking), "Problem creating cuda stream.");
+          RmgGpuError(__FILE__, __LINE__, cudaStreamCreateWithFlags(&streams[i],cudaStreamNonBlocking), "Problem creating cuda stream.");
 
       for (int i = 0; i < num_streams; i++)
       {
@@ -210,11 +210,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
          cufftPlan3d(&gpu_plans_f[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_C2C);
          cufftSetStream(gpu_plans[i], streams[i]);
          cufftSetStream(gpu_plans_f[i], streams[i]);
-         RmgCudaError(__FILE__, __LINE__, 
+         RmgGpuError(__FILE__, __LINE__, 
              cudaMallocHost((void **)&host_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
              "Error: cudaMallocHost failed.\n");
 
-         RmgCudaError(__FILE__, __LINE__, 
+         RmgGpuError(__FILE__, __LINE__, 
              cudaMalloc((void **)&dev_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
              "Error: cudaMalloc failed.\n");
       }
@@ -562,13 +562,13 @@ Pw::~Pw(void)
       {
          cufftDestroy(gpu_plans[i]);
          cufftDestroy(gpu_plans_f[i]);
-         RmgCudaError(__FILE__, __LINE__, cudaFreeHost(host_bufs[i]), "Error: cudaFreeHost failed.\n");
-         RmgCudaError(__FILE__, __LINE__, cudaFree(dev_bufs[i]), "Error: cudaFreeHost failed.\n");
+         RmgGpuError(__FILE__, __LINE__, cudaFreeHost(host_bufs[i]), "Error: cudaFreeHost failed.\n");
+         RmgGpuError(__FILE__, __LINE__, cudaFree(dev_bufs[i]), "Error: cudaFreeHost failed.\n");
       }
 
       // Gpu streams and plans
       for (int i = 0; i < num_streams; i++)
-          RmgCudaError(__FILE__, __LINE__, cudaStreamDestroy(streams[i]), "Problem freeing cuda stream.");
+          RmgGpuError(__FILE__, __LINE__, cudaStreamDestroy(streams[i]), "Problem freeing cuda stream.");
 
 
 #endif

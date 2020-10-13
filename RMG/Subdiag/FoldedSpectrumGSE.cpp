@@ -150,7 +150,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
             //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
             custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, 
                                  &A[istart*n], n, &ONE_t, &B[istart*n], n, &Z[istart*n], n);
-            RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
+            RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
 //#pragma omp for schedule(static, 1) nowait
 //            for(int st1 = istart;st1 < istop;st1++){
 //                for(int st2 = 0;st2 < n;st2++){

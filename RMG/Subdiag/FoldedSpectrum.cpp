@@ -175,7 +175,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     cublasStatus_t custat;
     custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n);
     DeviceSynchronize();
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
+    RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
 #else
     // Make sure same sign convention is followed by all eigenvectors
     for(int ix = 0;ix < n_win;ix++) {

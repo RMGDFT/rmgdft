@@ -98,7 +98,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
                             (cuDoubleComplex*)B, ldb,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
         ProcessCublasError(custat);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
     }
     else {
         custat = cublasDsymm(ct.cublas_handle, cu_side, cu_uplo, m, n,
@@ -107,7 +107,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
                             (double*)B, ldb,
                             (double*)&beta, (double*)C, ldc );
         ProcessCublasError(custat);
-        RmgCudaError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
     }
 
 #else

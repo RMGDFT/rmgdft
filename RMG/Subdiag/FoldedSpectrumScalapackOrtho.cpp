@@ -120,10 +120,10 @@ void FoldedSpectrumScalapackOrtho(int n, int eig_start, int eig_stop, int *fs_ei
 #if CUDA_ENABLED && MAGMA_LIBS
     magma_dpotrf_gpu(MagmaLower, n, C, n, &info);
     custat = cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+    RmgGpuError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
 #elif CUDA_ENABLED
     custat = cublasGetVector(n * n, sizeof( KpointType ), C, 1, C, 1 );
-    RmgCudaError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
+    RmgGpuError(__FILE__, __LINE__, custat, "Problem transferring C matrix from GPU to system memory.");
     dpotrf(cuplo, &n, C, &n, &info);
 #else
     //dpotrf(cuplo, &n, C, &n, &info);

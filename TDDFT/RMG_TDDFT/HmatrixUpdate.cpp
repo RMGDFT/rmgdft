@@ -94,8 +94,8 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
         }
 
         #if CUDA_ENABLED
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, pbasis * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
-            RmgCudaError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+            RmgGpuError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, pbasis * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+            RmgGpuError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
         #endif
 
     }
