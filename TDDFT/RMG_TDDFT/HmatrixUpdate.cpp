@@ -44,6 +44,10 @@
 #include "transition.h"
 #include "prototypes_tddft.h"
 
+#if HIP_ENABLED
+#include <hip/hip_runtime.h>
+#endif
+
 #if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -93,9 +97,9 @@ void HmatrixUpdate (Kpoint<KpointType> *kptr, double *vtot_eig, KpointType *Aij)
             rmg_error_handler (__FILE__, __LINE__, "Memory allocation failure in HmatrixUpdate");
         }
 
-        #if CUDA_ENABLED
-            RmgGpuError(__FILE__, __LINE__, cudaHostRegister( tmp_arrayT, pbasis * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
-            RmgGpuError(__FILE__, __LINE__, cudaHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), cudaHostRegisterPortable), "Error registering memory.\n");
+        #if CUDA_ENABLED || HIP_ENABLED
+            RmgGpuError(__FILE__, __LINE__, gpuHostRegister( tmp_arrayT, pbasis * ct.max_states * sizeof(KpointType), gpuHostRegisterPortable), "Error registering memory.\n");
+            RmgGpuError(__FILE__, __LINE__, gpuHostRegister( global_matrix1, ct.max_states * ct.max_states * sizeof(KpointType), gpuHostRegisterPortable), "Error registering memory.\n");
         #endif
 
     }

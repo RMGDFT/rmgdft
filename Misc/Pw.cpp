@@ -203,7 +203,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       dev_bufs.resize(num_streams);
 
       for (int i = 0; i < num_streams; i++)
-          RmgGpuError(__FILE__, __LINE__, cudaStreamCreateWithFlags(&streams[i],cudaStreamNonBlocking), "Problem creating cuda stream.");
+          RmgGpuError(__FILE__, __LINE__, gpuStreamCreateWithFlags(&streams[i],gpuStreamNonBlocking), "Problem creating gpu stream.");
 
       for (int i = 0; i < num_streams; i++)
       {
@@ -569,7 +569,7 @@ Pw::~Pw(void)
 
       // Gpu streams and plans
       for (int i = 0; i < num_streams; i++)
-          RmgGpuError(__FILE__, __LINE__, cudaStreamDestroy(streams[i]), "Problem freeing cuda stream.");
+          RmgGpuError(__FILE__, __LINE__, gpuStreamDestroy(streams[i]), "Problem freeing gpu stream.");
 
 
 #endif

@@ -30,10 +30,13 @@
 
 #include <sys/mman.h>
 
+#if HIP_ENABLED
+#include <hip/hip_runtime.h>
+#endif
+
 #if CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 #endif
 
 
@@ -66,7 +69,7 @@ void InitGpuMallocHost(size_t bufsize)
     gpuError_t custat;
     bufsize += GPU_ALIGNMENT * MAX_HOSTGPU_BLOCKS;
     custat = gpuMallocHost((void **)&host_gpubuffer , bufsize );
-    RmgGpuError(__FILE__, __LINE__, custat, "Error: cudaHostMalloc failed in InitGpuHostMalloc\n");
+    RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuHostMalloc failed in InitGpuHostMalloc\n");
     host_max_size = bufsize;
     host_curptr = (unsigned char*)host_gpubuffer;
 
@@ -84,7 +87,7 @@ void *DGpuMallocHost(size_t size, const char *fname, size_t line)
             rmg_error_handler (fname, line, "Error: Cannot allocate memory in GpuMallocHost.\n");
 
         madvise(tptr, size, MADV_HUGEPAGE);
-        cudaHostRegister( tptr, size, cudaHostRegisterPortable);
+        gpuHostRegister( tptr, size, gpuHostRegisterPortable);
         return tptr;
     }
 #endif
@@ -115,7 +118,7 @@ void DGpuFreeHost(void *ptr, const char *fname, size_t line)
 #if LINUX
     if(ct.require_huge_pages)
     {
-        cudaHostUnregister( ptr );
+        gpuHostUnregister( ptr );
         free(ptr);
         return;
     }

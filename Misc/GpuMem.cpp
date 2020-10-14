@@ -118,6 +118,14 @@ hipError_t gpuSetDeviceFlags (unsigned flags)
 {
     return hipSetDeviceFlags (flags);
 }
+hipError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags)
+{
+    return hipHostRegister(hostPtr, sizeBytes, flags);
+}
+hipError_t gpuHostUnregister(void *hostPtr)	
+{
+    hipHostUnregister(hostPtr);
+}
 #elif CUDA_ENABLED
 
 cudaError_t gpuMalloc(void **ptr, size_t size)
@@ -195,6 +203,14 @@ cudaError_t gpuGetDevice (int *deviceId)
 cudaError_t gpuSetDeviceFlags (unsigned flags)
 {
     return cudaSetDeviceFlags (flags);
+}
+cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags)
+{   
+    return cudaHostRegister(hostPtr, sizeBytes, flags);
+}
+cudaError_t gpuHostUnregister(void *hostPtr)	
+{
+    cudaHostUnregister(hostPtr);
 }
 #endif
 
