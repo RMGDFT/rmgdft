@@ -35,6 +35,13 @@ hipError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, hipMemcpyKind
 hipError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, hipMemcpyKind kind, hipStream_t stream);
 hipError_t gpuStreamSynchronize (hipStream_t stream);
 hipError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, hipStream_t stream);
+hipError_t gpuStreamCreateWithFlags (hipStream_t *stream, unsigned int flags);
+hipError_t gpuStreamDestroy (hipStream_t stream);
+hipError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, hipMemcpyKind kind);
+hipError_t gpuDeviceReset (void);
+hipError_t gpuSetDevice (int deviceId);
+hipError_t gpuSetDeviceFlags (unsigned flags);
+
 #elif CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -47,6 +54,13 @@ cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKi
 cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind, cudaStream_t stream);
 cudaError_t gpuStreamSynchronize (cudaStream_t stream);
 cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, cudaStream_t stream);
+cudaError_t gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags);
+cudaError_t gpuStreamDestroy (cudaStream_t stream);
+cudaError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind);
+cudaError_t gpuDeviceReset (void);
+cudaError_t gpuSetDevice (int deviceId);
+cudaError_t gpuSetDeviceFlags (unsigned flags);
+
 #endif
 
 #endif

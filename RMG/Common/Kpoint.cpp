@@ -1084,7 +1084,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     int stress_factor = 1;
     if(ct.stress) stress_factor = 4;
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     gpuError_t custat;
     // Managed memory is faster when gpu memory is not constrained but 
     // pinned memory works better when it is constrained.
@@ -1097,7 +1097,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     {
         this->nl_weight = (KpointType *)GpuMallocManaged(stress_factor * this->nl_weight_size * sizeof(KpointType));
         int device = -1;
-        cudaGetDevice(&device);
+        gpuGetDevice(&device);
         cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
     }
     for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
@@ -1115,7 +1115,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
 #endif
 
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     if (this->newsint_local)
         GpuFreeManaged(this->newsint_local);
 #else
@@ -1128,7 +1128,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride() * ct.noncoll_factor);
     sint_alloc *= (size_t)ct.max_states;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     this->newsint_local = (KpointType *)GpuMallocManaged(sint_alloc * sizeof(KpointType));
 #else
     this->newsint_local = new KpointType[sint_alloc]();
@@ -1143,7 +1143,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
 {
 
     if (this->nl_weight != NULL) {
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
         if(ct.pin_nonlocal_weights)
         {
             gpuFreeHost(this->nl_weight);
@@ -1174,7 +1174,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
 {
 
     if (this->orbital_weight != NULL) {
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
         if(ct.pin_nonlocal_weights)
         {
             gpuFreeHost(this->orbital_weight);
@@ -1225,7 +1225,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
     this->orbital_weight_size = (size_t)this->OrbitalProjector->get_num_tot_proj() * (size_t)this->pbasis + 128;
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     gpuError_t custat;
     // Managed memory is faster when gpu memory is not constrained but 
     // pinned memory works better when it is constrained.
@@ -1238,7 +1238,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     {
         this->orbital_weight = (KpointType *)GpuMallocManaged(this->orbital_weight_size * sizeof(KpointType));
         int device = -1;
-        cudaGetDevice(&device);
+        gpuGetDevice(&device);
         cudaMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
     }
     for(size_t idx = 0;idx < this->orbital_weight_size;idx++) this->orbital_weight[idx] = 0.0;
@@ -1258,7 +1258,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 #endif
 
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     if (this->orbitalsint_local)
         GpuFreeManaged(this->orbitalsint_local);
 #else
@@ -1272,7 +1272,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->OrbitalProjector->get_pstride());
     sint_alloc *= (size_t)ct.max_states * ct.noncoll_factor;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     this->orbitalsint_local = (KpointType *)GpuMallocManaged(sint_alloc * sizeof(KpointType));
 #else
     this->orbitalsint_local = new KpointType[sint_alloc]();

@@ -119,6 +119,10 @@ typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     #define gpuMemcpyDeviceToHost hipMemcpyDeviceToHost
     #define gpuMemcpyDeviceToDevice hipMemcpyDeviceToDevice
     #define gpuMemcpyDefault hipMemcpyDefault
+    #define gpuStreamDefault hipStreamDefault
+    #define gpuStreamNonBlocking hipStreamNonBlocking
+    #define gpuDeviceScheduleSpin hipDeviceScheduleSpin
+    #define gpuDeviceScheduleAuto hipDeviceScheduleAuto
 #elif CUDA_ENABLED
     #define gpuError_t cudaError_t
     #define gpuMemcpyKind cudaMemcpyKind
@@ -127,6 +131,10 @@ typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
     #define gpuMemcpyDeviceToHost cudaMemcpyDeviceToHost
     #define gpuMemcpyDeviceToDevice cudaMemcpyDeviceToDevice
     #define gpuMemcpyDefault cudaMemcpyDefault
+    #define gpuStreamDefault cudaStreamDefault
+    #define gpuStreamNonBlocking cudaStreamNonBlocking
+    #define gpuDeviceScheduleSpin cudaDeviceScheduleSpin
+    #define gpuDeviceScheduleAuto cudaDeviceScheduleAuto
 #endif
 
 #endif

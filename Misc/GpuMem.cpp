@@ -90,6 +90,30 @@ hipError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevic
     return hipSuccess;
 #endif
 }
+hipError_t gpuStreamCreateWithFlags (hipStream_t *stream, unsigned int flags)
+{
+    return hipStreamCreateWithFlags (stream, flags);
+}
+hipError_t gpuStreamDestroy (hipStream_t stream)
+{
+    return hipStreamDestroy (stream);
+}
+hipError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, hipMemcpyKind kind)
+{
+    return hipMemcpy2D (dst, dpitch, src, spitch, width, height, kind);
+}
+hipError_t gpuDeviceReset (void)
+{
+    return hipDeviceReset();
+}
+hipError_t gpuSetDevice (int deviceId)
+{
+    return hipSetDevice (deviceId);
+}
+hipError_t gpuSetDeviceFlags (unsigned flags)
+{
+    return hipSetDeviceFlags (flags);
+}
 #elif CUDA_ENABLED
 
 cudaError_t gpuMalloc(void **ptr, size_t size)
@@ -139,6 +163,30 @@ cudaError_t gpuMemcpyAsync (void *dst, const void *src, size_t sizeBytes, cudaMe
 cudaError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevice, cudaStream_t stream)
 {
     return cudaMemPrefetchAsync (devPtr, count, dstDevice, stream);
+}
+cudaError_t gpuStreamCreateWithFlags (cudaStream_t *stream, unsigned int flags)
+{
+    return cudaStreamCreateWithFlags (stream, flags);
+}
+cudaError_t gpuStreamDestroy (cudaStream_t stream)
+{
+    return cudaStreamDestroy (stream);
+}
+cudaError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind)
+{
+    return cudaMemcpy2D (dst, dpitch, src, spitch, width, height, kind);
+}
+cudaError_t gpuDeviceReset (void)
+{
+    return hipDeviceReset();
+}
+cudaError_t gpuSetDevice (int deviceId)
+{
+    return cudaSetDevice (deviceId);
+}
+cudaError_t gpuSetDeviceFlags (unsigned flags)
+{
+    return cudaSetDeviceFlags (flags);
 }
 #endif
 
