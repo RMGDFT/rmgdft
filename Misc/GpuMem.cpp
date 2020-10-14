@@ -110,6 +110,10 @@ hipError_t gpuSetDevice (int deviceId)
 {
     return hipSetDevice (deviceId);
 }
+hipError_t gpuGetDevice (int *deviceId)
+{
+    return hipGetDevice (deviceId);
+}
 hipError_t gpuSetDeviceFlags (unsigned flags)
 {
     return hipSetDeviceFlags (flags);
@@ -183,6 +187,10 @@ cudaError_t gpuDeviceReset (void)
 cudaError_t gpuSetDevice (int deviceId)
 {
     return cudaSetDevice (deviceId);
+}
+cudaError_t gpuGetDevice (int *deviceId)
+{
+    return cudaGetDevice (deviceId);
 }
 cudaError_t gpuSetDeviceFlags (unsigned flags)
 {

@@ -40,6 +40,7 @@ hipError_t gpuStreamDestroy (hipStream_t stream);
 hipError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, hipMemcpyKind kind);
 hipError_t gpuDeviceReset (void);
 hipError_t gpuSetDevice (int deviceId);
+hipError_t gpuGetDevice (int *deviceId);
 hipError_t gpuSetDeviceFlags (unsigned flags);
 
 #elif CUDA_ENABLED
@@ -59,6 +60,7 @@ cudaError_t gpuStreamDestroy (cudaStream_t stream);
 cudaError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind);
 cudaError_t gpuDeviceReset (void);
 cudaError_t gpuSetDevice (int deviceId);
+cudaError_t gpuGetDevice (int *deviceId);
 cudaError_t gpuSetDeviceFlags (unsigned flags);
 
 #endif
