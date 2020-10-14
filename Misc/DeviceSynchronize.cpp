@@ -14,7 +14,7 @@ hipError_t gpuStreamSynchronize (hipStream_t stream)
 #include <cuda.h>
 void DeviceSynchronize(void)
 {
-    DeviceSynchronize();
+    cudaDeviceSynchronize();
 }
 cudaError_t gpuStreamSynchronize (cudaStream_t stream)
 {

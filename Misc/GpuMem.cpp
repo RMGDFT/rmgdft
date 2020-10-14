@@ -158,12 +158,12 @@ cudaError_t gpuMallocHost(void **ptr, size_t size)
 
 cudaError_t gpuFree(void *ptr)
 {
-    return gpuFree(ptr);
+    return cudaFree(ptr);
 }
 
 cudaError_t gpuFreeHost(void *ptr)
 {
-    return gpuFreeHost(ptr);
+    return cudaFreeHost(ptr);
 }
 
 cudaError_t gpuMemcpy(void *dst, const void *src, size_t sizeBytes, cudaMemcpyKind kind)
@@ -194,7 +194,7 @@ cudaError_t gpuMemcpy2D (void *dst, size_t dpitch, const void *src, size_t spitc
 }
 cudaError_t gpuDeviceReset (void)
 {
-    return hipDeviceReset();
+    return cudaDeviceReset();
 }
 cudaError_t gpuSetDevice (int deviceId)
 {
