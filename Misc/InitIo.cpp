@@ -430,27 +430,29 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     rmg_printf (" %d MPI processes/image. ", status);
 
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     CUdevice dev;
     if(pct.local_rank == 0)
     {
-        cudaDeviceReset();
+        gpuDeviceReset();
         cuInit(0);
-        cudaSetDeviceFlags(cudaDeviceScheduleAuto);
+        gpuSetDeviceFlags(gpuDeviceScheduleAuto);
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if(pct.local_rank != 0)
     {
         cuInit(0);
     }
-    cuDeviceGetCount( &ct.num_gpu_devices);
+    gpuGetDeviceCount( &ct.num_gpu_devices);
     size_t deviceMem;
     int clock;
     char name[1024];
 
+#if CUDA_ENABLED
     // Get cuda version
     cudaError_t cuerr =  cudaDriverGetVersion ( &ct.cuda_version );
     rmg_printf ("\nCUDA version %d detected.\n", ct.cuda_version);
+#endif
 
     // Get device list and memory capacities. While this is not ideal under all circumstances
     // we will find the device with the largest memory and use all devices that have just as
@@ -490,7 +492,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     // one GPU/node.
     if((ct.num_usable_gpu_devices == pct.numa_nodes_per_host) && (pct.numa_nodes_per_host == pct.procs_per_host))
     {
-        cudaSetDevice(ct.gpu_device_ids[pct.local_rank]);
+        gpuSetDevice(ct.gpu_device_ids[pct.local_rank]);
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
         }
@@ -503,7 +505,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         {
             if(rank == pct.local_rank)
             {
-                cudaSetDevice(ct.gpu_device_ids[next_gpu]);
+                gpuSetDevice(ct.gpu_device_ids[next_gpu]);
                 if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
                     rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
                 }
@@ -518,7 +520,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
             rmg_error_handler (__FILE__, __LINE__, "CUDA: Cannot get the device\n");
         }
-        cudaSetDevice(ct.cu_dev);
+        gpuSetDevice(ct.cu_dev);
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
         }
@@ -529,7 +531,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     {
         rmg_error_handler (__FILE__, __LINE__, "cusolver initialization failed.\n");
     }
-    cudaStreamCreateWithFlags(&ct.cusolver_stream, cudaStreamNonBlocking);
+    gpuStreamCreateWithFlags(&ct.cusolver_stream, gpuStreamNonBlocking);
     cusolver_status = cusolverDnSetStream(ct.cusolver_handle, ct.cusolver_stream);
     if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
     {

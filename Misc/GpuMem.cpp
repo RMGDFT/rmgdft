@@ -126,6 +126,10 @@ hipError_t gpuHostUnregister(void *hostPtr)
 {
     hipHostUnregister(hostPtr);
 }
+hipError_t gpuGetDeviceCount(int *count)
+{
+    hipGetDeviceCount(count);
+}
 #elif CUDA_ENABLED
 
 cudaError_t gpuMalloc(void **ptr, size_t size)
@@ -211,6 +215,10 @@ cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags)
 cudaError_t gpuHostUnregister(void *hostPtr)	
 {
     cudaHostUnregister(hostPtr);
+}
+cudaError_t gpuGetDeviceCount(int *count)
+{
+    cudaGetDeviceCount(count);
 }
 #endif
 

@@ -44,7 +44,7 @@ hipError_t gpuGetDevice (int *deviceId);
 hipError_t gpuSetDeviceFlags (unsigned flags);
 hipError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags);
 hipError_t gpuHostUnregister(void *hostPtr);
-
+hipError_t gpuGetDeviceCount(int *count);
 #elif CUDA_ENABLED
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -66,6 +66,7 @@ cudaError_t gpuGetDevice (int *deviceId);
 cudaError_t gpuSetDeviceFlags (unsigned flags);
 cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags);
 cudaError_t gpuHostUnregister(void *hostPtr);
+cudaError_t gpuGetDeviceCount(int *count); 
 #endif
 
 #endif
