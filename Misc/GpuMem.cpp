@@ -124,11 +124,11 @@ hipError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags)
 }
 hipError_t gpuHostUnregister(void *hostPtr)	
 {
-    hipHostUnregister(hostPtr);
+    return hipHostUnregister(hostPtr);
 }
 hipError_t gpuGetDeviceCount(int *count)
 {
-    hipGetDeviceCount(count);
+    return hipGetDeviceCount(count);
 }
 #elif CUDA_ENABLED
 
@@ -214,11 +214,11 @@ cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags)
 }
 cudaError_t gpuHostUnregister(void *hostPtr)	
 {
-    cudaHostUnregister(hostPtr);
+    return cudaHostUnregister(hostPtr);
 }
 cudaError_t gpuGetDeviceCount(int *count)
 {
-    cudaGetDeviceCount(count);
+    return cudaGetDeviceCount(count);
 }
 #endif
 
