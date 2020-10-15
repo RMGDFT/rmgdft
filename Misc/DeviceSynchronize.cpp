@@ -12,6 +12,7 @@ hipError_t gpuStreamSynchronize (hipStream_t stream)
 }
 #elif CUDA_ENABLED
 #include <cuda.h>
+#include <cuda_runtime.h>
 void DeviceSynchronize(void)
 {
     cudaDeviceSynchronize();
