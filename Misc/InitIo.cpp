@@ -49,6 +49,7 @@
 #include "InputKey.h"
 #include "InputOpts.h"
 #include "Functional.h"
+#include "GpuAlloc.h"
 
 #if CUDA_ENABLED
     #if MAGMA_LIBS
