@@ -201,6 +201,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       gpu_plans_f.resize(num_streams);
       host_bufs.resize(num_streams);
       dev_bufs.resize(num_streams);
+      leave_on_device.resize(num_streams);
 
       for (int i = 0; i < num_streams; i++)
           RmgGpuError(__FILE__, __LINE__, gpuStreamCreateWithFlags(&streams[i],gpuStreamNonBlocking), "Problem creating gpu stream.");
@@ -326,9 +327,12 @@ void Pw::FftForward (double * in, std::complex<double> * out)
       for(size_t i = 0;i < pbasis;i++) tptr[i] = std::complex<double>(in[i], 0.0);
       gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
       cufftExecZ2Z(gpu_plans[tid], (cufftDoubleComplex*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid], CUFFT_FORWARD);
-      gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
-      gpuStreamSynchronize(streams[tid]);
-      for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      if(!leave_on_device[tid])
+      {
+          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
+          for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
 #else
       std::complex<double> *buf = new std::complex<double>[pbasis];
       for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
@@ -380,9 +384,12 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
       for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
       cufftExecZ2Z(gpu_plans[tid], (cufftDoubleComplex*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid], CUFFT_FORWARD);
-      gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
-      gpuStreamSynchronize(streams[tid]);
-      for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      if(!leave_on_device[tid])
+      {
+          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
+          for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
 #else
       if(in == out)
           fftw_execute_dft (fftw_forward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
@@ -421,9 +428,12 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out)
       for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
       gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
       cufftExecC2C(gpu_plans_f[tid], (cufftComplex*)dev_bufs[tid], (cufftComplex*)dev_bufs[tid], CUFFT_FORWARD);
-      gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
-      gpuStreamSynchronize(streams[tid]);
-      for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      if(!leave_on_device[tid])
+      {
+          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
+          for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
 #else
       if(in == out)
           fftwf_execute_dft (fftwf_forward_plan_inplace,  reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out));

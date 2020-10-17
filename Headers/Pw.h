@@ -138,6 +138,7 @@ public:
     std::vector<cufftHandle> gpu_plans_f;
     std::vector<std::complex<double> *> host_bufs;
     std::vector<std::complex<double> *> dev_bufs;
+    std::vector<bool> leave_on_device;
 #endif    
 
 };
