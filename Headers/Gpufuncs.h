@@ -22,6 +22,8 @@ double app8_del2_gpu(const double * __restrict__ a,
                    double h2y,
                    double h2z,
                    cudaStream_t cstream);
+void GpuEleMul(double *dx, std::complex<double> *dy, int n, cudaStream_t stream);
+void GpuEleMul(double *dx, std::complex<float> *dy, int n, cudaStream_t stream);
 
 #endif
 

@@ -42,6 +42,7 @@
 #include "GpuAlloc.h"
 #include "blas.h"
 #include "HdfHelpers.h"
+#include "Gpufuncs.h"
 
 using namespace hdfHelper;
 // This class implements exact exchange for delocalized orbitals.
@@ -102,6 +103,9 @@ template <class T> Exxbase<T>::Exxbase (
     }
 
     gfac = (double *)GpuMallocManaged((size_t)pwave->pbasis*sizeof(double));
+#if CUDA_ENABLED
+    gpuMalloc((void **)&gfac_dev, pwave->pbasis*sizeof(double));
+#endif
     double kq[3] = {0.0, 0.0, 0.0};
     erfc_scrlen = Functional::get_screening_parameter_rmg();
     gau_scrlen = Functional::get_gau_parameter_rmg();
@@ -149,16 +153,30 @@ template <class T> Exxbase<T>::Exxbase (
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
 }
 
+
 template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, 
         std::complex<double> *p, double *coul_fac);
 template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, 
         std::complex<double> *psi_j, std::complex<double> *p,double *coul_fac);
 template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, double *coul_fac)
 {
+
+    BaseThread *Th = BaseThread::getBaseThread(0);
+    int tid = Th->get_thread_tid();
+    if(tid < 0) tid = 0;
+    if(tid == 0) tid = omp_get_thread_num();
+
     for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = psi_i[idx] * std::conj(psi_j[idx]);
+#if CUDA_ENABLED
+    pwave->FftForward(p, p, true, false, true);
+    GpuEleMul(gfac_dev, (std::complex<double> *)pwave->dev_bufs[tid], pwave->pbasis, pwave->streams[tid]);
+    pwave->FftInverse(p, p, false, true, true);
+#else
     pwave->FftForward(p, p);
     for(size_t ig=0;ig < pwave->pbasis;ig++) p[ig] *= coul_fac[ig];
     pwave->FftInverse(p, p);
+#endif
+
 }
 
 template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, 
@@ -169,10 +187,22 @@ template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i
 template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<double> *p, 
         std::complex<float> *workbuf, double *coul_fac)
 {
+    BaseThread *Th = BaseThread::getBaseThread(0);
+    int tid = Th->get_thread_tid();
+    if(tid < 0) tid = 0;
+    if(tid == 0) tid = omp_get_thread_num();
+
+
     for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(psi_i[idx] * std::conj(psi_j[idx]));
+#if CUDA_ENABLED
+    pwave->FftForward(workbuf, workbuf, true, false, true);
+    GpuEleMul(gfac_dev, (std::complex<float> *)pwave->dev_bufs[tid], pwave->pbasis, pwave->streams[tid]);
+    pwave->FftInverse(workbuf, workbuf, false, true, true);
+#else
     pwave->FftForward(workbuf, workbuf);
     for(size_t ig=0;ig < pwave->pbasis;ig++) workbuf[ig] *= coul_fac[ig];
     pwave->FftInverse(workbuf, workbuf);
+#endif
     for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = (std::complex<double>)workbuf[idx];
 }
 
@@ -250,6 +280,10 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         }
 
     }
+#if CUDA_ENABLED
+    cudaMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  cudaMemcpyHostToDevice);
+    DeviceSynchronize();
+#endif
 }
 
 // These compute the action of the exact exchange operator on all wavefunctions
@@ -258,7 +292,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 {
     RmgTimer RT0("5-Functional: Exx potential");
     double scale = - 1.0 / (double)pwave->global_basis;
-
+//use_float_fft=false;
     if(!ct.is_gamma) 
         throw RmgFatalException() << "EXX_DIST_FFT mode is only for Gamma point  \n";
 
@@ -1431,6 +1465,9 @@ template <class T> Exxbase<T>::~Exxbase(void)
     //unlink(filename.c_str());
 
     GpuFreeManaged(gfac);
+#if CUDA_ENABLED
+    gpuFree(gfac_dev);
+#endif
     delete LG;
     MPI_Comm_free(&lcomm); 
     delete pwave;

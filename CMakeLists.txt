@@ -265,7 +265,7 @@ if(RMG_HIP_ENABLED)
     else()
         message(FATAL_ERROR "Could not find HIPBLAS. Ensure that HIU+PBLAS is either installed in /opt/rocm/hipblas or the variable HIPBLAS_PATH is set to point to the right location.")
     endif()
-    add_definitions(-D__HIP_PLATFORM_NVCC__=1)
+#    add_definitions(-D__HIP_PLATFORM_NVCC__=1)
 endif()
 
 # Debug prints out all vars

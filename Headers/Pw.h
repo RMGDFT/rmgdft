@@ -99,6 +99,13 @@ public:
     void FftForward (std::complex<float> * in, std::complex<float> * out);
     void FftInverse (std::complex<float> * in, std::complex<float> * out);
 
+    void FftForward (double * in, std::complex<double> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
+    void FftForward (std::complex<double> * in, std::complex<double> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
+    void FftInverse (std::complex<double> * in, std::complex<double> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
+
+    void FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
+    void FftForward (std::complex<float> * in, std::complex<float> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
+    void FftInverse (std::complex<float> * in, std::complex<float> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
 
     ~Pw(void);
 
@@ -138,7 +145,6 @@ public:
     std::vector<cufftHandle> gpu_plans_f;
     std::vector<std::complex<double> *> host_bufs;
     std::vector<std::complex<double> *> dev_bufs;
-    std::vector<bool> leave_on_device;
 #endif    
 
 };

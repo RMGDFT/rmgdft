@@ -183,6 +183,7 @@ public:
     Pw *pwave_h;
 
     double *gfac;
+    double *gfac_dev;
 
     std::vector<double> vexx_RMS;
 };
