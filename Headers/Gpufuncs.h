@@ -4,6 +4,7 @@
 
 #if CUDA_ENABLED
 #include <cublas_v2.h>
+#include <complex>
 
 void GpuFill(double *dptr, int n, double fillval);
 void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
