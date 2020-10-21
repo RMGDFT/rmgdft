@@ -420,14 +420,18 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         // We don't want to keep the entire outer orbitals in memory but since we only
         // use them once mmap with MADV_SEQUENTIAL should be fine
         size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(double);
-        psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
-        madvise(psi_s, length, MADV_SEQUENTIAL);
-        MPI_Barrier(G.comm);
+        readahead(serial_fd, 0, length);
+lseek(serial_fd, 0, SEEK_SET);
+//        psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+//        madvise(psi_s, length, MADV_SEQUENTIAL);
+        //MPI_Barrier(G.comm);
+double *psi_i=new double[pwave->pbasis];
 
         for(int i=0;i < nstates;i++)
         {
-            
-            double *psi_i = (double *)&psi_s[(size_t)i*(size_t)pwave->pbasis];
+   
+ //           double *psi_i = (double *)&psi_s[(size_t)i*(size_t)pwave->pbasis];
+            read(serial_fd, psi_i, pwave->pbasis * sizeof(double));
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
             for(int j = start;j < stop;j++)
@@ -447,7 +451,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                     for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
                         vexx_global[idx] += scale * std::real(p[idx]) * psi_j[idx];
                 }
-                if(!omp_tid && j == start && i > 0) MPI_Test(&req, &flag, &mrstatus);
+                if(!omp_tid && (j % 2) && i > 0) MPI_Test(&req, &flag, &mrstatus);
             }
             delete RT1;
 
@@ -472,6 +476,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, &req);
         }
 
+delete [] psi_i;
         delete [] jpsi;
 
         // Wait for last transfer to finish and then copy data to correct location
@@ -486,7 +491,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         MPI_Barrier(G.comm);
 
         // munmap wavefunction array
-        munmap(psi_s, length);
+        //munmap(psi_s, length);
         close(serial_fd);
 
         delete [] vexx_global;
