@@ -157,6 +157,18 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis);
       std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis);
 
+      fftw_r2c_forward_plan = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (double *)in, reinterpret_cast<fftw_complex*>(out), FFTW_MEASURE);
+
+      fftw_r2c_backward_plan = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), (double *)out, FFTW_MEASURE);
+
+      fftw_r2c_forward_plan_inplace = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (double *)in, reinterpret_cast<fftw_complex*>(in), FFTW_MEASURE);
+
+      fftw_r2c_backward_plan_inplace = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), (double *)in, FFTW_MEASURE);
+
       fftw_forward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
                      reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
                 FFTW_FORWARD, FFTW_MEASURE);
@@ -172,6 +184,20 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       fftw_backward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
                      reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
                 FFTW_BACKWARD, FFTW_MEASURE);
+
+
+      fftwf_r2c_forward_plan = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (float *)in, reinterpret_cast<fftwf_complex*>(out), FFTW_MEASURE);
+
+      fftwf_r2c_backward_plan = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), (float *)out, FFTW_MEASURE);
+
+      fftwf_r2c_forward_plan_inplace = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (float *)in, reinterpret_cast<fftwf_complex*>(in), FFTW_MEASURE);
+
+      fftwf_r2c_backward_plan_inplace = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), (float *)in, FFTW_MEASURE);
+
 
       fftwf_forward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
                      reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
@@ -342,9 +368,12 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
 #else
-      std::complex<double> *buf = new std::complex<double>[pbasis];
-      for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
-      fftw_execute_dft (fftw_forward_plan,  reinterpret_cast<fftw_complex*>(buf), reinterpret_cast<fftw_complex*>(out));
+//      std::complex<double> *buf = new std::complex<double>[pbasis];
+//      for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
+double *buf = new double[pbasis];
+for(size_t i = 0;i < pbasis;i++) buf[i] = in[i];
+for(size_t i = 0;i < pbasis;i++) out[i] = 0.0;
+      fftw_execute_dft_r2c (fftw_r2c_forward_plan,  buf, reinterpret_cast<fftw_complex*>(out));
       delete [] buf;
 #endif
   }
@@ -505,6 +534,34 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out, bool c
   }
 }
 
+void Pw::FftInverse (std::complex<double> * in, double * out)
+{
+    FftInverse(in, out, true, true, true);
+}
+
+void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu)
+{
+
+  BaseThread *T = BaseThread::getBaseThread(0);
+  int tid = T->get_thread_tid();
+  if(tid < 0) tid = 0;
+  if(tid == 0) tid = omp_get_thread_num();
+
+  if(Grid->get_NPES() == 1)
+  {
+#if CUDA_ENABLED
+#else
+      if((double *)in == out)
+          fftw_execute_dft_c2r (fftw_r2c_backward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), out);
+      else
+          fftw_execute_dft_c2r (fftw_r2c_backward_plan,  reinterpret_cast<fftw_complex*>(in), out);
+#endif
+  }
+  else
+  {
+  }
+}
+
 void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out)
 {
     FftInverse(in, out, true, true, true);
@@ -631,10 +688,21 @@ Pw::~Pw(void)
 
   if(Grid->get_NPES() == 1)
   {
+      fftw_destroy_plan(fftw_r2c_backward_plan_inplace);
+      fftw_destroy_plan(fftw_r2c_forward_plan_inplace);
+      fftw_destroy_plan(fftw_r2c_backward_plan);
+      fftw_destroy_plan(fftw_r2c_forward_plan);
+
       fftw_destroy_plan(fftw_backward_plan_inplace);
       fftw_destroy_plan(fftw_forward_plan_inplace);
       fftw_destroy_plan(fftw_backward_plan);
       fftw_destroy_plan(fftw_forward_plan);
+
+      fftwf_destroy_plan(fftwf_r2c_backward_plan_inplace);
+      fftwf_destroy_plan(fftwf_r2c_forward_plan_inplace);
+      fftwf_destroy_plan(fftwf_r2c_backward_plan);
+      fftwf_destroy_plan(fftwf_r2c_forward_plan);
+
       fftwf_destroy_plan(fftwf_backward_plan_inplace);
       fftwf_destroy_plan(fftwf_forward_plan_inplace);
       fftwf_destroy_plan(fftwf_backward_plan);

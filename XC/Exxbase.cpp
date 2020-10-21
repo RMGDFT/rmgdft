@@ -385,11 +385,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
         delete RT1;
 
-        size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(double);
-        psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
-
-        MPI_Barrier(G.comm);
-
 
         // Loop over blocks and process fft pairs I am responsible for
         MPI_Request req=MPI_REQUEST_NULL;
@@ -397,31 +392,62 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         double tvexx_RMS = 0.0;
         int flag=0;
 
+
+        // Compute start and stop of inner orbitals
+        int start = 0;
+        int block = nstates_occ / npes;
+        int rem = nstates_occ % npes;
+        int stop = 0;
+        for(int rank = 0;rank < npes;rank++)
+        {
+            stop = start + block;
+            if(rem)
+            {
+                stop++;
+                rem--;
+            }
+            if(rank == my_rank) break;
+            start = stop;
+        }
+
+
+        // Read block of inner orbitals into array for reuse
+        size_t jlength = (size_t)(stop - start) * (size_t)pwave->pbasis;
+        double *jpsi = new double[jlength];
+        lseek(serial_fd, (off_t)start * (off_t)pwave->pbasis * sizeof(double), SEEK_SET);
+        read(serial_fd, jpsi, jlength*sizeof(double));
+
+        // We don't want to keep the entire outer orbitals in memory but since we only
+        // use them once mmap with MADV_SEQUENTIAL should be fine
+        size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(double);
+        psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
+        madvise(psi_s, length, MADV_SEQUENTIAL);
+        MPI_Barrier(G.comm);
+
         for(int i=0;i < nstates;i++)
         {
+            
             double *psi_i = (double *)&psi_s[(size_t)i*(size_t)pwave->pbasis];
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
-            for(int j=0;j<nstates_occ;j++)
+            for(int j = start;j < stop;j++)
             {
                 int omp_tid = omp_get_thread_num();
                 std::complex<double> *p = pvec[omp_tid];
                 std::complex<float> *w = wvec[omp_tid];
-                if(my_rank == (j % npes))
-                {
-                    double *psi_j = (double *)&psi_s[(size_t)j*(size_t)pwave->pbasis];
-                    if(use_float_fft)
-                        fftpair(psi_i, psi_j, p, w, gfac);
-                    else
-                        fftpair(psi_i, psi_j, p, gfac);
-                    // We can speed this up by adding more critical sections if it proves to be a bottleneck
+                double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
+
+                if(use_float_fft)
+                    fftpair(psi_i, psi_j, p, w, gfac);
+                else
+                    fftpair(psi_i, psi_j, p, gfac);
+                // We can speed this up by adding more critical sections if it proves to be a bottleneck
 #pragma omp critical(part3)
-                    {
-                        for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                            vexx_global[idx] += scale * std::real(p[idx]) * psi_j[idx];
-                    }
+                {
+                    for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                        vexx_global[idx] += scale * std::real(p[idx]) * psi_j[idx];
                 }
-                if(!omp_tid) MPI_Test(&req, &flag, &mrstatus);
+                if(!omp_tid && j == start && i > 0) MPI_Test(&req, &flag, &mrstatus);
             }
             delete RT1;
 
@@ -445,6 +471,8 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
             MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, &req);
         }
+
+        delete [] jpsi;
 
         // Wait for last transfer to finish and then copy data to correct location
         MPI_Wait(&req, &mrstatus);

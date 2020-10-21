@@ -80,8 +80,12 @@ private:
     std::vector<struct fft_plan_3d<fftwf_complex, float> *> distributed_plan_f;
 
     // Local fft plans
+    fftw_plan fftw_r2c_forward_plan, fftw_r2c_backward_plan;
+    fftw_plan fftw_r2c_forward_plan_inplace, fftw_r2c_backward_plan_inplace;
     fftw_plan fftw_forward_plan, fftw_backward_plan;
     fftw_plan fftw_forward_plan_inplace, fftw_backward_plan_inplace;
+    fftwf_plan fftwf_r2c_forward_plan, fftwf_r2c_backward_plan;
+    fftwf_plan fftwf_r2c_forward_plan_inplace, fftwf_r2c_backward_plan_inplace;
     fftwf_plan fftwf_forward_plan, fftwf_backward_plan;
     fftwf_plan fftwf_forward_plan_inplace, fftwf_backward_plan_inplace;
  
@@ -94,18 +98,22 @@ public:
     void FftForward (double * in, std::complex<double> * out);
     void FftForward (std::complex<double> * in, std::complex<double> * out);
     void FftInverse (std::complex<double> * in, std::complex<double> * out);
+    void FftInverse (std::complex<double> * in, double * out);
 
     void FftForward (float * in, std::complex<float> * out);
     void FftForward (std::complex<float> * in, std::complex<float> * out);
     void FftInverse (std::complex<float> * in, std::complex<float> * out);
+    void FftInverse (float * in, std::complex<float> * out);
 
     void FftForward (double * in, std::complex<double> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
     void FftForward (std::complex<double> * in, std::complex<double> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
     void FftInverse (std::complex<double> * in, std::complex<double> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
+    void FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
 
     void FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
     void FftForward (std::complex<float> * in, std::complex<float> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
     void FftInverse (std::complex<float> * in, std::complex<float> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
+    void FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
 
     ~Pw(void);
 
