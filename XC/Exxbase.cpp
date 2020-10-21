@@ -361,7 +361,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
     else
     {
 
-        // Map my portion of vexx into 
         int my_rank = G.get_rank();
         int npes = G.get_NPES();
 
@@ -376,15 +375,10 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         WriteWfsToSingleFile();
         delete RT1;
 
-        // Mmap wavefunction array
         std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt0";
-
-        RT1 = new RmgTimer("5-Functional: mmap");
         serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
         if(serial_fd < 0)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
-        delete RT1;
-
 
         // Loop over blocks and process fft pairs I am responsible for
         MPI_Request req=MPI_REQUEST_NULL;
@@ -417,20 +411,15 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         lseek(serial_fd, (off_t)start * (off_t)pwave->pbasis * sizeof(double), SEEK_SET);
         read(serial_fd, jpsi, jlength*sizeof(double));
 
-        // We don't want to keep the entire outer orbitals in memory but since we only
-        // use them once mmap with MADV_SEQUENTIAL should be fine
+        // Set up outer orbitals with readahead
         size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(double);
         readahead(serial_fd, 0, length);
-lseek(serial_fd, 0, SEEK_SET);
-//        psi_s = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, serial_fd, 0);
-//        madvise(psi_s, length, MADV_SEQUENTIAL);
-        //MPI_Barrier(G.comm);
-double *psi_i=new double[pwave->pbasis];
+        lseek(serial_fd, 0, SEEK_SET);
+        double *psi_i=new double[pwave->pbasis];
 
         for(int i=0;i < nstates;i++)
         {
    
- //           double *psi_i = (double *)&psi_s[(size_t)i*(size_t)pwave->pbasis];
             read(serial_fd, psi_i, pwave->pbasis * sizeof(double));
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
@@ -476,7 +465,7 @@ double *psi_i=new double[pwave->pbasis];
             MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, &req);
         }
 
-delete [] psi_i;
+        delete [] psi_i;
         delete [] jpsi;
 
         // Wait for last transfer to finish and then copy data to correct location
@@ -489,9 +478,6 @@ delete [] psi_i;
         ct.vexx_rms = vexx_RMS[ct.exx_steps];
 
         MPI_Barrier(G.comm);
-
-        // munmap wavefunction array
-        //munmap(psi_s, length);
         close(serial_fd);
 
         delete [] vexx_global;
