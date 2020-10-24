@@ -452,7 +452,7 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "and the wavefunction grid. Mostly for diagnostic purposes.", 
             "interpolation_type not supported. Terminating. ", CONTROL_OPTIONS);
 
-    If.RegisterInputKey("exx_mode", NULL, &lc.exx_mode, "Distributed fft",
+    If.RegisterInputKey("exx_mode", NULL, &lc.exx_mode, "Local fft",
             CHECK_AND_TERMINATE, OPTIONAL, exx_mode,
             "FFT mode for exact exchange computations.",
             "exx mode not supported. Terminating. ", CONTROL_OPTIONS);

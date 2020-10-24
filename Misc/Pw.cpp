@@ -46,6 +46,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   this->global_dimx = G.get_NX_GRID(ratio);
   this->global_dimy = G.get_NY_GRID(ratio);
   this->global_dimz = G.get_NZ_GRID(ratio);
+  this->pbasis_packed = this->global_dimx * this->global_dimy * (this->global_dimz/2 + 1);
   this->global_basis = (size_t)this->global_dimx * (size_t)this->global_dimy * (size_t)this->global_dimz;
   int max_threads = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
   this->distributed_plan.resize(max_threads);
@@ -187,16 +188,16 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
 
       fftwf_r2c_forward_plan = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (float *)in, reinterpret_cast<fftwf_complex*>(out), FFTW_MEASURE);
+                     (float *)in, reinterpret_cast<fftwf_complex*>(out), FFTW_PATIENT);
 
       fftwf_r2c_backward_plan = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), (float *)out, FFTW_MEASURE);
+                     reinterpret_cast<fftwf_complex*>(in), (float *)out, FFTW_PATIENT);
 
       fftwf_r2c_forward_plan_inplace = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (float *)in, reinterpret_cast<fftwf_complex*>(in), FFTW_MEASURE);
+                     (float *)in, reinterpret_cast<fftwf_complex*>(in), FFTW_PATIENT);
 
       fftwf_r2c_backward_plan_inplace = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), (float *)in, FFTW_MEASURE);
+                     reinterpret_cast<fftwf_complex*>(in), (float *)in, FFTW_PATIENT);
 
 
       fftwf_forward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
@@ -225,6 +226,8 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       streams.resize(num_streams);
       gpu_plans.resize(num_streams);
       gpu_plans_f.resize(num_streams);
+      gpu_plans_r2c.resize(num_streams);
+      gpu_plans_r2c_f.resize(num_streams);
       host_bufs.resize(num_streams);
       dev_bufs.resize(num_streams);
 
@@ -235,8 +238,12 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       {
          cufftPlan3d(&gpu_plans[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_Z2Z);
          cufftPlan3d(&gpu_plans_f[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_C2C);
+         cufftPlan3d(&gpu_plans_r2c[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_D2Z);
+         cufftPlan3d(&gpu_plans_r2c_f[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_R2C);
          cufftSetStream(gpu_plans[i], streams[i]);
          cufftSetStream(gpu_plans_f[i], streams[i]);
+         cufftSetStream(gpu_plans_r2c[i], streams[i]);
+         cufftSetStream(gpu_plans_r2c_f[i], streams[i]);
          RmgGpuError(__FILE__, __LINE__, 
              gpuMallocHost((void **)&host_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
              "Error: gpuMallocHost failed.\n");
@@ -245,7 +252,14 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
              gpuMalloc((void **)&dev_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
              "Error: gpuMalloc failed.\n");
       }
- 
+#else
+      int nthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
+      host_bufs.resize(nthreads);
+      for (int i = 0; i < nthreads; i++)
+      {
+          host_bufs[i] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis);
+      }
+      
 #endif
 
   }
@@ -353,28 +367,30 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
   if(Grid->get_NPES() == 1)
   {
 #if CUDA_ENABLED
-      std::complex<double> *tptr = host_bufs[tid];
+      double *tptr = (double *)host_bufs[tid];
       if(copy_to_dev)
       {
-	  for(size_t i = 0;i < pbasis;i++) tptr[i] = std::complex<double>(in[i], 0.0);
-	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
+	  for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(double), gpuMemcpyHostToDevice, streams[tid]);
       }
-      cufftExecZ2Z(gpu_plans[tid], (cufftDoubleComplex*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid], CUFFT_FORWARD);
+      cufftExecD2Z(gpu_plans[tid], (cufftDouble*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid], CUFFT_FORWARD);
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
 	  gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
 	  gpuStreamSynchronize(streams[tid]);
-	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+          std::complex<double> *tptr1 = (std::complex<double> *)host_bufs[tid];
+	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
 #else
-//      std::complex<double> *buf = new std::complex<double>[pbasis];
-//      for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<double>(in[i], 0.0);
-double *buf = new double[pbasis];
-for(size_t i = 0;i < pbasis;i++) buf[i] = in[i];
-for(size_t i = 0;i < pbasis;i++) out[i] = 0.0;
-      fftw_execute_dft_r2c (fftw_r2c_forward_plan,  buf, reinterpret_cast<fftw_complex*>(out));
-      delete [] buf;
+    if((void *)in == (void *)out)
+    {
+        fftw_execute_dft_r2c (fftw_r2c_forward_plan_inplace,  in, reinterpret_cast<fftw_complex*>(out));
+    }
+    else
+    {
+        fftw_execute_dft_r2c (fftw_r2c_forward_plan,  in, reinterpret_cast<fftw_complex*>(out));
+    }
 #endif
   }
   else
@@ -398,35 +414,43 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
   if(tid < 0) tid = 0;
   if(tid == 0) tid = omp_get_thread_num();
   
-  std::complex<float> *buf = new std::complex<float>[pbasis];
-  for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<float>(in[i], 0.0);
   
   if(Grid->get_NPES() == 1)
   {   
 #if CUDA_ENABLED
-      std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
+      float *tptr = (float *)host_bufs[tid];
       if(copy_to_dev)
       {
-	  for(size_t i = 0;i < pbasis;i++) tptr[i] = std::complex<float>(in[i], 0.0);
-	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
+	  for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(float), gpuMemcpyHostToDevice, streams[tid]);
       }
-      cufftExecC2C(gpu_plans[tid], (cufftComplex*)dev_bufs[tid], (cufftComplex*)dev_bufs[tid], CUFFT_FORWARD);
+      cufftExecR2C(gpu_plans_r2c[tid], (cufftReal*)dev_bufs[tid], (cufftComplex*)dev_bufs[tid], CUFFT_FORWARD);
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
 	  gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
 	  gpuStreamSynchronize(streams[tid]);
-	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+          std::complex<float> *tptr1 = (std::complex<float> *)host_bufs[tid];
+	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
 #else
-      fftwf_execute_dft (fftwf_forward_plan,  reinterpret_cast<fftwf_complex*>(buf), reinterpret_cast<fftwf_complex*>(out));
+      if((void *)in == (void *)out)
+      {
+          fftwf_execute_dft_r2c (fftwf_r2c_forward_plan_inplace,  in, reinterpret_cast<fftwf_complex*>(out));
+      }
+      else
+      {
+          fftwf_execute_dft_r2c (fftwf_r2c_forward_plan,  in, reinterpret_cast<fftwf_complex*>(out));
+      }
 #endif
   }
   else
   {   
+      std::complex<float> *buf = new std::complex<float>[pbasis];
+      for(size_t i = 0;i < pbasis;i++) buf[i] = std::complex<float>(in[i], 0.0);
       fft_3d((fftwf_complex *)buf, (fftwf_complex *)out, -1, distributed_plan_f[tid]);
+      delete [] buf;
   }
-  delete [] buf;
 }
 
 void Pw::FftForward (std::complex<double> * in, std::complex<double> * out)
@@ -550,11 +574,69 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
   if(Grid->get_NPES() == 1)
   {
 #if CUDA_ENABLED
+      std::complex<double> *tptr = (std::complex<double> *)host_bufs[tid];
+      if(copy_to_dev)
+      {
+          for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+          gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
+      }
+      cufftExecZ2D(gpu_plans_r2c[tid], (cufftDoubleComplex*)dev_bufs[tid], (double*)dev_bufs[tid], CUFFT_INVERSE);
+      gpuStreamSynchronize(streams[tid]);
+      if(copy_from_dev)
+      {
+          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(double), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
+          double *tptr1 = (double *)host_bufs[tid];
+          for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
+      }
 #else
       if((double *)in == out)
           fftw_execute_dft_c2r (fftw_r2c_backward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), out);
       else
           fftw_execute_dft_c2r (fftw_r2c_backward_plan,  reinterpret_cast<fftw_complex*>(in), out);
+#endif
+  }
+  else
+  {
+  }
+}
+
+void Pw::FftInverse (std::complex<float> * in, float * out)
+{
+    FftInverse(in, out, true, true, true);
+}
+
+void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu)
+{
+
+  BaseThread *T = BaseThread::getBaseThread(0);
+  int tid = T->get_thread_tid();
+  if(tid < 0) tid = 0;
+  if(tid == 0) tid = omp_get_thread_num();
+
+  if(Grid->get_NPES() == 1)
+  {
+#if CUDA_ENABLED
+      std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
+      if(copy_to_dev)
+      {
+          for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+          gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
+      }
+      cufftExecZ2D(gpu_plans_r2c[tid], (cufftComplex*)dev_bufs[tid], (float*)dev_bufs[tid], CUFFT_INVERSE);
+      gpuStreamSynchronize(streams[tid]);
+      if(copy_from_dev)
+      {
+          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(float), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuStreamSynchronize(streams[tid]);
+          double *tptr1 = (float *)host_bufs[tid];
+          for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
+      }
+#else
+      if((float *)in == out)
+          fftwf_execute_dft_c2r (fftwf_r2c_backward_plan_inplace,  reinterpret_cast<fftwf_complex*>(in), out);
+      else
+          fftwf_execute_dft_c2r (fftwf_r2c_backward_plan,  reinterpret_cast<fftwf_complex*>(in), out);
 #endif
   }
   else
@@ -722,6 +804,12 @@ Pw::~Pw(void)
 
 
 #endif
+
+      int nthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
+      for (int i = 0; i < nthreads; i++)
+      {
+          fftw_free(host_bufs[i]);
+      }
   }
 }
 

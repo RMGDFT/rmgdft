@@ -103,7 +103,7 @@ public:
     void FftForward (float * in, std::complex<float> * out);
     void FftForward (std::complex<float> * in, std::complex<float> * out);
     void FftInverse (std::complex<float> * in, std::complex<float> * out);
-    void FftInverse (float * in, std::complex<float> * out);
+    void FftInverse (std::complex<float> * in, float * out);
 
     void FftForward (double * in, std::complex<double> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
     void FftForward (std::complex<double> * in, std::complex<double> * out, bool copy_to_dev, bool copy_from_dev, bool use_gpu);
@@ -125,6 +125,7 @@ public:
 
     // Real space basis on this node and globally
     size_t pbasis;
+    size_t pbasis_packed;
     size_t global_basis;
 
     // Real space grid dimensions on this node
@@ -146,12 +147,15 @@ public:
     double *gmags;
     bool *gmask;
 
+    std::vector<std::complex<double> *> host_bufs;
+
 #if CUDA_ENABLED
     int num_streams;
     std::vector<cudaStream_t> streams;
     std::vector<cufftHandle> gpu_plans;
     std::vector<cufftHandle> gpu_plans_f;
-    std::vector<std::complex<double> *> host_bufs;
+    std::vector<cufftHandle> gpu_plans_r2c;
+    std::vector<cufftHandle> gpu_plans_r2c_f;
     std::vector<std::complex<double> *> dev_bufs;
 #endif    
 
