@@ -28,6 +28,7 @@
 #include "Kpoint.h"
 #include "transition.h"
 #include "Dos.h"
+#include "Pdos.h"
 
 template void OutputDos<double> (Kpoint<double> **);
 template void OutputDos<std::complex<double> >(Kpoint<std::complex<double> > **);
@@ -59,6 +60,14 @@ void OutputDos (Kpoint<KpointType> **Kptr)
     Dos *Dos_calc = new Dos(ct.kpoint_mesh, ct.kpoint_is_shift, Rmg_L, ct.gaus_broad);
     double Ef_ev = ct.efermi * Ha_eV;
     Dos_calc->tot_dos(nk_tot, ct.num_states, eigs, Ef_ev);
+
+    if(ct.pdos_flag)
+    {
+        Pdos<KpointType> pdos(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates,
+                Kptr[0]->orbital_storage, Kptr);
+        pdos.Pdos_calc(Kptr, eigs);
+
+    }
 
 }
 
