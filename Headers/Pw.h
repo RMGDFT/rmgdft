@@ -125,8 +125,10 @@ public:
 
     // Real space basis on this node and globally
     size_t pbasis;
-    size_t pbasis_packed;
     size_t global_basis;
+
+    // Packed global basis for EXX local ffts
+    size_t global_basis_packed;
 
     // Real space grid dimensions on this node
     int dimx;
@@ -155,7 +157,9 @@ public:
     std::vector<cufftHandle> gpu_plans;
     std::vector<cufftHandle> gpu_plans_f;
     std::vector<cufftHandle> gpu_plans_r2c;
-    std::vector<cufftHandle> gpu_plans_r2c_f;
+    std::vector<cufftHandle> gpu_plans_c2r;
+    std::vector<cufftHandle> gpu_plans_d2z;
+    std::vector<cufftHandle> gpu_plans_z2d;
     std::vector<std::complex<double> *> dev_bufs;
 #endif    
 

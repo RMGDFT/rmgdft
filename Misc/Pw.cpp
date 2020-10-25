@@ -46,8 +46,8 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   this->global_dimx = G.get_NX_GRID(ratio);
   this->global_dimy = G.get_NY_GRID(ratio);
   this->global_dimz = G.get_NZ_GRID(ratio);
-  this->pbasis_packed = this->global_dimx * this->global_dimy * (this->global_dimz/2 + 1);
   this->global_basis = (size_t)this->global_dimx * (size_t)this->global_dimy * (size_t)this->global_dimz;
+  this->global_basis_packed = (size_t)this->global_dimx * (size_t)this->global_dimy * (size_t)(this->global_dimz/2 + 1);
   int max_threads = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
   this->distributed_plan.resize(max_threads);
   this->distributed_plan_f.resize(max_threads);
@@ -227,7 +227,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       gpu_plans.resize(num_streams);
       gpu_plans_f.resize(num_streams);
       gpu_plans_r2c.resize(num_streams);
-      gpu_plans_r2c_f.resize(num_streams);
+      gpu_plans_c2r.resize(num_streams);
+      gpu_plans_d2z.resize(num_streams);
+      gpu_plans_z2d.resize(num_streams);
       host_bufs.resize(num_streams);
       dev_bufs.resize(num_streams);
 
@@ -236,14 +238,32 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
       for (int i = 0; i < num_streams; i++)
       {
-         cufftPlan3d(&gpu_plans[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_Z2Z);
-         cufftPlan3d(&gpu_plans_f[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_C2C);
-         cufftPlan3d(&gpu_plans_r2c[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_D2Z);
-         cufftPlan3d(&gpu_plans_r2c_f[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_R2C);
+         cufftResult res;
+         res = cufftPlan3d(&gpu_plans[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_Z2Z);
+         if(res != CUFFT_SUCCESS) printf("ERROR making Z2Z plan\n");
+
+         res = cufftPlan3d(&gpu_plans_f[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_C2C);
+         if(res != CUFFT_SUCCESS) printf("ERROR making C2C plan\n");
+
+         res = cufftPlan3d(&gpu_plans_d2z[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_D2Z);
+         if(res != CUFFT_SUCCESS) printf("ERROR making D2Z plan\n");
+
+         res = cufftPlan3d(&gpu_plans_z2d[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_Z2D);
+         if(res != CUFFT_SUCCESS) printf("ERROR making Z2D plan\n");
+
+         res = cufftPlan3d(&gpu_plans_r2c[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_R2C);
+         if(res != CUFFT_SUCCESS) printf("ERROR making R2C plan\n");
+
+         res = cufftPlan3d(&gpu_plans_c2r[i], this->global_dimx, this->global_dimy, this->global_dimz, CUFFT_C2R);
+         if(res != CUFFT_SUCCESS) printf("ERROR making C2R plan\n");
+
          cufftSetStream(gpu_plans[i], streams[i]);
          cufftSetStream(gpu_plans_f[i], streams[i]);
+         cufftSetStream(gpu_plans_d2z[i], streams[i]);
+         cufftSetStream(gpu_plans_z2d[i], streams[i]);
          cufftSetStream(gpu_plans_r2c[i], streams[i]);
-         cufftSetStream(gpu_plans_r2c_f[i], streams[i]);
+         cufftSetStream(gpu_plans_c2r[i], streams[i]);
+
          RmgGpuError(__FILE__, __LINE__, 
              gpuMallocHost((void **)&host_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
              "Error: gpuMallocHost failed.\n");
@@ -373,7 +393,7 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
 	  for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
 	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(double), gpuMemcpyHostToDevice, streams[tid]);
       }
-      cufftExecD2Z(gpu_plans[tid], (cufftDouble*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid], CUFFT_FORWARD);
+      cufftExecD2Z(gpu_plans_d2z[tid], (cufftDoubleReal*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid]);
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
@@ -422,9 +442,10 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
       if(copy_to_dev)
       {
 	  for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+          gpuStreamSynchronize(streams[tid]);
 	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(float), gpuMemcpyHostToDevice, streams[tid]);
       }
-      cufftExecR2C(gpu_plans_r2c[tid], (cufftReal*)dev_bufs[tid], (cufftComplex*)dev_bufs[tid], CUFFT_FORWARD);
+      cufftExecR2C(gpu_plans_r2c[tid], (cufftReal*)dev_bufs[tid], (cufftComplex*)dev_bufs[tid]);
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
@@ -580,7 +601,7 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
       }
-      cufftExecZ2D(gpu_plans_r2c[tid], (cufftDoubleComplex*)dev_bufs[tid], (double*)dev_bufs[tid], CUFFT_INVERSE);
+      cufftExecZ2D(gpu_plans_z2d[tid], (cufftDoubleComplex*)dev_bufs[tid], (cufftDoubleReal*)dev_bufs[tid]);
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
@@ -617,19 +638,19 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
   if(Grid->get_NPES() == 1)
   {
 #if CUDA_ENABLED
-      std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
       if(copy_to_dev)
       {
+          std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
       }
-      cufftExecZ2D(gpu_plans_r2c[tid], (cufftComplex*)dev_bufs[tid], (float*)dev_bufs[tid], CUFFT_INVERSE);
+      cufftExecC2R(gpu_plans_c2r[tid], (cufftComplex*)dev_bufs[tid], (cufftReal*)dev_bufs[tid]);
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
           gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(float), gpuMemcpyDeviceToHost, streams[tid]);
           gpuStreamSynchronize(streams[tid]);
-          double *tptr1 = (float *)host_bufs[tid];
+          float *tptr1 = (float *)host_bufs[tid];
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
 #else
@@ -794,6 +815,10 @@ Pw::~Pw(void)
       {
          cufftDestroy(gpu_plans[i]);
          cufftDestroy(gpu_plans_f[i]);
+         cufftDestroy(gpu_plans_r2c[i]);
+         cufftDestroy(gpu_plans_c2r[i]);
+         cufftDestroy(gpu_plans_d2z[i]);
+         cufftDestroy(gpu_plans_z2d[i]);
          RmgGpuError(__FILE__, __LINE__, gpuFreeHost(host_bufs[i]), "Error: gpuFreeHost failed.\n");
          RmgGpuError(__FILE__, __LINE__, gpuFree(dev_bufs[i]), "Error: gpuFreeHost failed.\n");
       }

@@ -103,10 +103,11 @@ template <class T> Exxbase<T>::Exxbase (
     }
 
     gfac = (double *)GpuMallocManaged((size_t)pwave->pbasis*sizeof(double));
-    gfac_packed = (double *)GpuMallocManaged((size_t)pwave->pbasis_packed*sizeof(double));
+    gfac_packed = (double *)GpuMallocManaged((size_t)pwave->global_basis_packed*sizeof(double));
+    std::fill(gfac_packed, gfac_packed + pwave->global_basis_packed, 0.0);
 #if CUDA_ENABLED
     gpuMalloc((void **)&gfac_dev, pwave->pbasis*sizeof(double));
-    gpuMalloc((void **)&gfac_dev_packed, pwave->pbasis_packed*sizeof(double));
+    gpuMalloc((void **)&gfac_dev_packed, pwave->global_basis_packed*sizeof(double));
 #endif
     double kq[3] = {0.0, 0.0, 0.0};
     erfc_scrlen = Functional::get_screening_parameter_rmg();
@@ -169,12 +170,14 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
     if(tid == 0) tid = omp_get_thread_num();
 
 #if CUDA_ENABLED
-    if(ct.is_gamma)
+//    if(ct.is_gamma)
+    if(0)
     {
         double *pp = (double *)p;
-        for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = psi_i[idx] * psi_j[idx];
+        for(size_t idx=0;idx < pwave->pbasis;idx++) pp[idx] = std::real(psi_i[idx] * psi_j[idx]);
         pwave->FftForward(pp, p, true, false, true);
-        GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->pbasis_packed, pwave->streams[tid]);
+        GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
+        pp = (double *)pwave->host_bufs[tid];
         pwave->FftInverse(p, pp, false, true, true);
         for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = std::complex<double>(pp[idx], 0.0);
     }
@@ -182,7 +185,7 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
     {
         for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = psi_i[idx] * std::conj(psi_j[idx]);
         pwave->FftForward(p, p, true, false, true);
-        GpuEleMul(gfac_dev, (std::complex<double> *)pwave->dev_bufs[tid], pwave->pbasis, pwave->streams[tid]);
+        GpuEleMul(gfac_dev, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse(p, p, false, true, true);
     }
 #else
@@ -191,9 +194,9 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
         double *tbf = (double *)pwave->host_bufs[tid];
         for(size_t idx=0;idx < pwave->pbasis;idx++) tbf[idx] = std::real(psi_i[idx] * psi_j[idx]);
         pwave->FftForward(tbf, p);
-        for(size_t idx=0;idx < pwave->pbasis_packed;idx++) p[idx] *= gfac_packed[idx];
+        for(size_t idx=0;idx < pwave->global_basis_packed;idx++) p[idx] *= gfac_packed[idx];
         pwave->FftInverse(p, tbf);
-        for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = std::complex<double>(tbf[idx], 0.0);
+        for(size_t idx=0;idx < pwave->global_basis_packed;idx++) p[idx] = std::complex<double>(tbf[idx], 0.0);
     }
     else
     {
@@ -221,13 +224,15 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
 
 
 #if CUDA_ENABLED
-    if(ct.is_gamma)
+//    if(ct.is_gamma)
+if(0)
     {
-        float *tbf = (float *)pwave->host_bufs[tid];
-        for(size_t idx=0;idx < pwave->pbasis;idx++) tbf[idx] = std::real(psi_i[idx] * psi_j[idx]);
-        pwave->FftForward(tbf, workbuf, true, false, true);
-        GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->pbasis_packed, pwave->streams[tid]);
-        pwave->FftInverse(workbuf, workbuf, false, true, true);
+        float *pp = (float *)p;
+        for(size_t idx=0;idx < pwave->pbasis;idx++) pp[idx] = std::real(psi_i[idx] * psi_j[idx]);
+        pwave->FftForward(pp, workbuf, true, false, true);
+        GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
+        pwave->FftInverse(workbuf, pp, false, true, true);
+        for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(pp[idx], 0.0);
     }
     else
     {
@@ -243,7 +248,7 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
         float *tbf = (float *)pwave->host_bufs[tid];
         for(size_t idx=0;idx < pwave->pbasis;idx++) tbf[idx] = std::real(psi_i[idx] * psi_j[idx]);
         pwave->FftForward(tbf, workbuf );
-        for(size_t idx=0;idx < pwave->pbasis_packed;idx++) workbuf[idx] *= gfac_packed[idx];
+        for(size_t idx=0;idx < pwave->global_basis_packed;idx++) workbuf[idx] *= gfac_packed[idx];
         pwave->FftInverse(workbuf, tbf);
         for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = (std::complex<float>)tbf[idx];
     }
@@ -345,7 +350,7 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
 
 #if CUDA_ENABLED
     cudaMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  cudaMemcpyHostToDevice);
-    cudaMemcpy(gfac_dev_packed, gfac_packed, pwave->pbasis*sizeof(double),  cudaMemcpyHostToDevice);
+    cudaMemcpy(gfac_dev_packed, gfac_packed, pwave->global_basis_packed*sizeof(double),  cudaMemcpyHostToDevice);
     DeviceSynchronize();
 #endif
 }
@@ -357,8 +362,8 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
     RmgTimer RT0("5-Functional: Exx potential");
     double scale = - 1.0 / (double)pwave->global_basis;
 
-    if(mode == EXX_DIST_FFT) 
-        throw RmgFatalException() << "EXX_DIST_FFT mode is not implemented in this code path  \n";
+//    if(mode == EXX_DIST_FFT) 
+//        throw RmgFatalException() << "EXX_DIST_FFT mode is not implemented in this code path  \n";
 
     int nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
@@ -426,7 +431,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
         // Set up outer orbitals with readahead
         size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(double);
-//        readahead(serial_fd, 0, length);
+        //readahead(serial_fd, 0, length);
         lseek(serial_fd, 0, SEEK_SET);
         double *psi_i=new double[pwave->pbasis];
 
@@ -455,13 +460,12 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 else
                 {
                     fftpair(psi_i, psi_j, p, gfac);
-#pragma omp critical(part3)
+#pragma omp critical(part4)
                     {
                         for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
                             vexx_global[idx] += scale * std::real(p[idx]) * psi_j[idx];
                     }
                 }
-
                 if(!omp_tid && i > 0) MPI_Test(&req, &flag, &mrstatus);
             }
             delete RT1;
