@@ -149,6 +149,10 @@ private:
         double *residual, int ij_tot, int Ncho_max, int pbasis, MPI_Comm comm);
     void write_basics(hid_t h_grp, int_2d_array QKtoK2, std::vector<int> kminus);
 
+    void PadR2C(double *psi_i, double *psi_j, float *padded);
+    void PadR2C(double *psi_i, double *psi_j, double *padded);
+    void UnpadR2C(double *in, double *out);
+    void UnpadR2C(float *in, double *out);
 
 
 public:
@@ -164,6 +168,7 @@ public:
             T *psi_in, int mode_in);
 
     ~Exxbase(void);
+
 
     std::vector<T> Hcore;
     void Vexx(T *vexx, bool use_float_fft);

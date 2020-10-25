@@ -126,6 +126,7 @@ public:
     // Real space basis on this node and globally
     size_t pbasis;
     size_t global_basis;
+    size_t global_basis_alloc;
 
     // Packed global basis for EXX local ffts
     size_t global_basis_packed;

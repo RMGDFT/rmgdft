@@ -50,6 +50,72 @@ using namespace hdfHelper;
 // decomposed. The file name is given by wavefile_in which is
 // mmapped to an array. We only access the array in read-only mode.
 
+
+template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, float *padded);
+template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, float *padded);
+template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, float *padded)
+{
+    int ystride = 2 * (pwave->global_dimz/2 + 1);
+    int xstride = pwave->global_dimy*ystride;
+    int ig=0;
+    for(int ix=0;ix < pwave->global_dimx;ix++)
+      for(int iy=0;iy < pwave->global_dimy;iy++)
+        for(int iz=0;iz < pwave->global_dimz/2+1;iz++)
+        {
+            padded[ix*xstride + iy*ystride + iz] = (float)(psi_i[ig] * psi_j[ig]);
+            ig++;
+        }
+}
+
+
+template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, double *padded);
+template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, double *padded);
+template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, double *padded)
+{
+    int ystride = 2 * (pwave->global_dimz/2 + 1);
+    int xstride = pwave->global_dimy*ystride;
+    int ig=0;
+    for(int ix=0;ix < pwave->global_dimx;ix++)
+      for(int iy=0;iy < pwave->global_dimy;iy++)
+        for(int iz=0;iz < pwave->global_dimz/2+1;iz++)
+        {
+            padded[ix*xstride + iy*ystride + iz] = psi_i[ig] * psi_j[ig];
+            ig++;
+        }
+}
+
+template void Exxbase<double>::UnpadR2C(double *in, double *out);
+template void Exxbase<double>::UnpadR2C(float *in, double *out);
+template <class T> void Exxbase<T>::UnpadR2C(float *in, double *out)
+{
+    int ystride = 2 * (pwave->global_dimz/2 + 1);
+    int xstride = pwave->global_dimy*ystride;
+    int ig=0;
+    for(int ix=0;ix < pwave->global_dimx;ix++)
+      for(int iy=0;iy < pwave->global_dimy;iy++)
+        for(int iz=0;iz < pwave->global_dimz/2+1;iz++)
+        {
+            out[ig++] = (double)in[ix*xstride + iy*ystride + iz];
+        }
+}
+
+
+template void Exxbase<std::complex<double>>::UnpadR2C(double *in, double *out);
+template void Exxbase<std::complex<double>>::UnpadR2C(float *in, double *out);
+template <class T> void Exxbase<T>::UnpadR2C(double *in, double *out)
+{
+    int ystride = 2 * (pwave->global_dimz/2 + 1);
+    int xstride = pwave->global_dimy*ystride;
+    int ig=0;
+    for(int ix=0;ix < pwave->global_dimx;ix++)
+      for(int iy=0;iy < pwave->global_dimy;iy++)
+        for(int iz=0;iz < pwave->global_dimz/2+1;iz++)
+        {
+            out[ig++] = in[ix*xstride + iy*ystride + iz];
+        }
+}
+
+
 using namespace std;
 //using namespace hdfHelper;
 
@@ -170,8 +236,7 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
     if(tid == 0) tid = omp_get_thread_num();
 
 #if CUDA_ENABLED
-//    if(ct.is_gamma)
-    if(0)
+    if(ct.is_gamma)
     {
         double *pp = (double *)p;
         for(size_t idx=0;idx < pwave->pbasis;idx++) pp[idx] = std::real(psi_i[idx] * psi_j[idx]);
@@ -185,7 +250,7 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
     {
         for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = psi_i[idx] * std::conj(psi_j[idx]);
         pwave->FftForward(p, p, true, false, true);
-        GpuEleMul(gfac_dev, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
+        GpuEleMul(gfac_dev, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis, pwave->streams[tid]);
         pwave->FftInverse(p, p, false, true, true);
     }
 #else
@@ -196,7 +261,7 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
         pwave->FftForward(tbf, p);
         for(size_t idx=0;idx < pwave->global_basis_packed;idx++) p[idx] *= gfac_packed[idx];
         pwave->FftInverse(p, tbf);
-        for(size_t idx=0;idx < pwave->global_basis_packed;idx++) p[idx] = std::complex<double>(tbf[idx], 0.0);
+        for(size_t idx=0;idx < pwave->global_basis;idx++) p[idx] = std::complex<double>(tbf[idx], 0.0);
     }
     else
     {
@@ -224,14 +289,15 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
 
 
 #if CUDA_ENABLED
-//    if(ct.is_gamma)
-if(0)
+    if(ct.is_gamma)
     {
         float *pp = (float *)p;
-        for(size_t idx=0;idx < pwave->pbasis;idx++) pp[idx] = std::real(psi_i[idx] * psi_j[idx]);
+        PadR2C(psi_i, psi_j, pp);
+//        for(size_t idx=0;idx < pwave->pbasis;idx++) pp[idx] = std::real(psi_i[idx] * psi_j[idx]);
         pwave->FftForward(pp, workbuf, true, false, true);
         GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse(workbuf, pp, false, true, true);
+        UnpadR2C(in, pp);
         for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(pp[idx], 0.0);
     }
     else
@@ -240,7 +306,6 @@ if(0)
         pwave->FftForward(workbuf, workbuf, true, false, true);
         GpuEleMul(gfac_dev, (std::complex<float> *)pwave->dev_bufs[tid], pwave->pbasis, pwave->streams[tid]);
         pwave->FftInverse(workbuf, workbuf, false, true, true);
-        //for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = (std::complex<double>)workbuf[idx];
     }
 #else
     if(ct.is_gamma)

@@ -47,6 +47,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   this->global_dimy = G.get_NY_GRID(ratio);
   this->global_dimz = G.get_NZ_GRID(ratio);
   this->global_basis = (size_t)this->global_dimx * (size_t)this->global_dimy * (size_t)this->global_dimz;
+  this->global_basis_alloc = (size_t)this->global_dimx * (size_t)this->global_dimy * (size_t)(2*(this->global_dimz/2 + 1));
   this->global_basis_packed = (size_t)this->global_dimx * (size_t)this->global_dimy * (size_t)(this->global_dimz/2 + 1);
   int max_threads = std::max(ct.MG_THREADS_PER_NODE, ct.OMP_THREADS_PER_NODE);
   this->distributed_plan.resize(max_threads);
@@ -155,8 +156,8 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   {
       // Local cpu based fft plan(s). We use the array execute functions so the in and out arrays
       // here are dummies to enable the use of FFTW_MEASURE. The caller has to ensure alignment
-      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis);
-      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis);
+      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
+      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
 
       fftw_r2c_forward_plan = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
                      (double *)in, reinterpret_cast<fftw_complex*>(out), FFTW_MEASURE);
@@ -265,11 +266,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
          cufftSetStream(gpu_plans_c2r[i], streams[i]);
 
          RmgGpuError(__FILE__, __LINE__, 
-             gpuMallocHost((void **)&host_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
+             gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
              "Error: gpuMallocHost failed.\n");
 
          RmgGpuError(__FILE__, __LINE__, 
-             gpuMalloc((void **)&dev_bufs[i],  this->global_basis * sizeof(std::complex<double>)),
+             gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
              "Error: gpuMalloc failed.\n");
       }
 #else
@@ -277,7 +278,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       host_bufs.resize(nthreads);
       for (int i = 0; i < nthreads; i++)
       {
-          host_bufs[i] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis);
+          host_bufs[i] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
       }
       
 #endif
