@@ -248,6 +248,9 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     RmgTimer *RT4 = new RmgTimer("1-TOTAL: init:  psp");
     /* Initialize the radial potential stuff */
     for(auto &sp : Species) sp.InitPseudo (Rmg_L, Rmg_G, ct.write_pp_flag);
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE && ct.max_ldaU_orbitals == 0)
+         throw RmgFatalException() << "LDA+U: no U assigned" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
 
     /* Initialize symmetry stuff */
     //init_sym ();

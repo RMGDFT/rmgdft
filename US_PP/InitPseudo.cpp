@@ -579,7 +579,4 @@ void SPECIES::InitPseudo (Lattice &L, BaseGrid *G, bool write_flag)
     delete [] bessel_rg;
     delete [] work;
 
-    if(ct.ldaU_mode != LDA_PLUS_U_NONE && ct.max_ldaU_orbitals == 0)
-         throw RmgFatalException() << "LDA+U: no U assigned" << " in " << __FILE__ << " at line " << __LINE__ << "\n";
-
 } // end InitPseudo
