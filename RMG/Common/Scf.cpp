@@ -282,13 +282,9 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     /* Take care of occupation filling */
     ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
 
-
-    if (ct.occ_flag == 1 )
-    {
-        rmg_printf ("\n");
-        //progress_tag ();
-        rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
-    }
+    rmg_printf ("\n");
+    //progress_tag ();
+    rmg_printf ("FERMI ENERGY = %15.8f eV\n", ct.efermi * Ha_eV);
 
     // Calculate total energy 
     // Eigenvalues are based on in potentials and density
