@@ -153,6 +153,7 @@ private:
     void PadR2C(double *psi_i, double *psi_j, double *padded);
     void UnpadR2C(double *in, double *out);
     void UnpadR2C(float *in, double *out);
+    void UnpadR2C(float *in, float *out);
 
 
 public:

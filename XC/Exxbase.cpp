@@ -55,12 +55,12 @@ template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, float *padde
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, float *padded);
 template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, float *padded)
 {
-    int ystride = 2 * (pwave->global_dimz/2 + 1);
+    int ystride = pwave->global_dimz + 2;
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
       for(int iy=0;iy < pwave->global_dimy;iy++)
-        for(int iz=0;iz < pwave->global_dimz/2+1;iz++)
+        for(int iz=0;iz < pwave->global_dimz;iz++)
         {
             padded[ix*xstride + iy*ystride + iz] = (float)(psi_i[ig] * psi_j[ig]);
             ig++;
@@ -72,12 +72,12 @@ template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, double *padd
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, double *padded);
 template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, double *padded)
 {
-    int ystride = 2 * (pwave->global_dimz/2 + 1);
+    int ystride = pwave->global_dimz + 2;
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
       for(int iy=0;iy < pwave->global_dimy;iy++)
-        for(int iz=0;iz < pwave->global_dimz/2+1;iz++)
+        for(int iz=0;iz < pwave->global_dimz;iz++)
         {
             padded[ix*xstride + iy*ystride + iz] = psi_i[ig] * psi_j[ig];
             ig++;
@@ -86,14 +86,15 @@ template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, double 
 
 template void Exxbase<double>::UnpadR2C(double *in, double *out);
 template void Exxbase<double>::UnpadR2C(float *in, double *out);
+template void Exxbase<double>::UnpadR2C(float *in, float *out);
 template <class T> void Exxbase<T>::UnpadR2C(float *in, double *out)
 {
-    int ystride = 2 * (pwave->global_dimz/2 + 1);
+    int ystride = pwave->global_dimz + 2;
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
       for(int iy=0;iy < pwave->global_dimy;iy++)
-        for(int iz=0;iz < pwave->global_dimz/2+1;iz++)
+        for(int iz=0;iz < pwave->global_dimz;iz++)
         {
             out[ig++] = (double)in[ix*xstride + iy*ystride + iz];
         }
@@ -104,16 +105,30 @@ template void Exxbase<std::complex<double>>::UnpadR2C(double *in, double *out);
 template void Exxbase<std::complex<double>>::UnpadR2C(float *in, double *out);
 template <class T> void Exxbase<T>::UnpadR2C(double *in, double *out)
 {
-    int ystride = 2 * (pwave->global_dimz/2 + 1);
+    int ystride = pwave->global_dimz + 2;
     int xstride = pwave->global_dimy*ystride;
     int ig=0;
     for(int ix=0;ix < pwave->global_dimx;ix++)
       for(int iy=0;iy < pwave->global_dimy;iy++)
-        for(int iz=0;iz < pwave->global_dimz/2+1;iz++)
+        for(int iz=0;iz < pwave->global_dimz;iz++)
         {
             out[ig++] = in[ix*xstride + iy*ystride + iz];
         }
 }
+
+template <class T> void Exxbase<T>::UnpadR2C(float *in, float *out)
+{
+    int ystride = pwave->global_dimz + 2;
+    int xstride = pwave->global_dimy*ystride;
+    int ig=0;
+    for(int ix=0;ix < pwave->global_dimx;ix++)
+      for(int iy=0;iy < pwave->global_dimy;iy++)
+        for(int iz=0;iz < pwave->global_dimz;iz++)
+        {
+            out[ig++] = (double)in[ix*xstride + iy*ystride + iz];
+        }
+}
+
 
 
 using namespace std;
@@ -238,12 +253,14 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
 #if CUDA_ENABLED
     if(ct.is_gamma)
     {
-        double *pp = (double *)p;
-        for(size_t idx=0;idx < pwave->pbasis;idx++) pp[idx] = std::real(psi_i[idx] * psi_j[idx]);
+        double *pp = (double *)pwave->host_bufs[tid];
+        PadR2C((double *)psi_i, (double *)psi_j, pp);
+//        for(size_t idx=0;idx < pwave->pbasis;idx++) pp[idx] = std::real(psi_i[idx] * psi_j[idx]);
         pwave->FftForward(pp, p, true, false, true);
         GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
-        pp = (double *)pwave->host_bufs[tid];
+        double *ppp = (double *)p;
         pwave->FftInverse(p, pp, false, true, true);
+        UnpadR2C(pp, pp);
         for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = std::complex<double>(pp[idx], 0.0);
     }
     else
@@ -291,14 +308,16 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
 #if CUDA_ENABLED
     if(ct.is_gamma)
     {
-        float *pp = (float *)p;
-        PadR2C(psi_i, psi_j, pp);
-//        for(size_t idx=0;idx < pwave->pbasis;idx++) pp[idx] = std::real(psi_i[idx] * psi_j[idx]);
+        float *pp = (float *)pwave->host_bufs[tid];
+        PadR2C((double *)psi_i, (double *)psi_j, pp);
         pwave->FftForward(pp, workbuf, true, false, true);
         GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse(workbuf, pp, false, true, true);
-        UnpadR2C(in, pp);
-        for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = std::complex<float>(pp[idx], 0.0);
+        double *ppp = (double *)p;
+//        UnpadR2C(pp, ppp);
+//        for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = (std::complex<float>)ppp[idx];
+        UnpadR2C(pp, pp);
+        for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = (std::complex<float>)pp[idx];
     }
     else
     {
@@ -334,6 +353,7 @@ template void Exxbase<std::complex<double>>::setup_gfac(double *kq);
 template <class T> void Exxbase<T>::setup_gfac(double *kq)
 {
     std::fill(gfac, gfac+pwave->pbasis, 0.0);
+    std::fill(gfac_packed, gfac_packed+pwave->global_basis_packed, 0.0);
 
 
     double eps = 1.0e-5;
@@ -496,14 +516,16 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
         // Set up outer orbitals with readahead
         size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(double);
-        //readahead(serial_fd, 0, length);
+        length = (size_t)8 * (size_t)pwave->pbasis * sizeof(double);
+        readahead(serial_fd, 0, length);
         lseek(serial_fd, 0, SEEK_SET);
-        double *psi_i=new double[pwave->pbasis];
+        double *psi_ibuf=new double[8*pwave->pbasis];
 
         for(int i=0;i < nstates;i++)
         {
    
-            read(serial_fd, psi_i, pwave->pbasis * sizeof(double));
+            if(!(i%8)) read(serial_fd, psi_ibuf, 8*pwave->pbasis * sizeof(double));
+            double *psi_i = psi_ibuf + (i%8) * pwave->pbasis;
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
             for(int j = start;j < stop;j++)
@@ -556,7 +578,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, &req);
         }
 
-        delete [] psi_i;
+        delete [] psi_ibuf;
         delete [] jpsi;
 
         // Wait for last transfer to finish and then copy data to correct location

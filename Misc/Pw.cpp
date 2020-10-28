@@ -391,14 +391,14 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
       double *tptr = (double *)host_bufs[tid];
       if(copy_to_dev)
       {
-	  for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(double), gpuMemcpyHostToDevice, streams[tid]);
+          if(tptr != in)  for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(double), gpuMemcpyHostToDevice, streams[tid]);
       }
       cufftExecD2Z(gpu_plans_d2z[tid], (cufftDoubleReal*)dev_bufs[tid], (cufftDoubleComplex*)dev_bufs[tid]);
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
-	  gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
+	  gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
 	  gpuStreamSynchronize(streams[tid]);
           std::complex<double> *tptr1 = (std::complex<double> *)host_bufs[tid];
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
@@ -442,18 +442,18 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
       float *tptr = (float *)host_bufs[tid];
       if(copy_to_dev)
       {
-	  for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+	  if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
           gpuStreamSynchronize(streams[tid]);
-	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(float), gpuMemcpyHostToDevice, streams[tid]);
+	  gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(float), gpuMemcpyHostToDevice, streams[tid]);
       }
       cufftExecR2C(gpu_plans_r2c[tid], (cufftReal*)dev_bufs[tid], (cufftComplex*)dev_bufs[tid]);
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
-	  gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
+	  gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
 	  gpuStreamSynchronize(streams[tid]);
           std::complex<float> *tptr1 = (std::complex<float> *)host_bufs[tid];
-	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
+	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
 #else
       if((void *)in == (void *)out)
@@ -606,10 +606,10 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
-          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(double), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(double), gpuMemcpyDeviceToHost, streams[tid]);
           gpuStreamSynchronize(streams[tid]);
           double *tptr1 = (double *)host_bufs[tid];
-          for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
+          if(out != tptr1) for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
 #else
       if((double *)in == out)
@@ -643,16 +643,16 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
       {
           std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], pbasis*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
+          gpuMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
       }
       cufftExecC2R(gpu_plans_c2r[tid], (cufftComplex*)dev_bufs[tid], (cufftReal*)dev_bufs[tid]);
       gpuStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {
-          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid], pbasis*sizeof(float), gpuMemcpyDeviceToHost, streams[tid]);
+          gpuMemcpyAsync(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(float), gpuMemcpyDeviceToHost, streams[tid]);
           gpuStreamSynchronize(streams[tid]);
           float *tptr1 = (float *)host_bufs[tid];
-          for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
+          if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
 #else
       if((float *)in == out)
