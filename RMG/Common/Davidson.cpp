@@ -69,10 +69,13 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     double acheck = ct.scf_accuracy;
     if(ct.scf_steps == 0) acheck = 0.01;
     occupied_tol = 0.1*acheck / std::max(1.0, (double)ct.nel);
+    if(ct.spinorbit || ct.noncoll) occupied_tol /= 8.0;
+
     occupied_tol = std::min(occupied_tol, 1.0e-4);
     // Need this since the eigensolver may become unstable for very small residuals
     occupied_tol = std::max(occupied_tol, 1.0e-13);
     double unoccupied_tol = std::max(ct.unoccupied_tol_factor*occupied_tol, 1.0e-4 );
+    if(ct.spinorbit || ct.noncoll) unoccupied_tol /= 8.0;
 
     //if(pct.gridpe == 0 && DAVIDSON_DEBUG)printf("OCCUPIED TOLERANCE = %20.12e\n",occupied_tol);
 
