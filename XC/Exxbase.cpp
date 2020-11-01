@@ -51,6 +51,7 @@ using namespace hdfHelper;
 // mmapped to an array. We only access the array in read-only mode.
 
 
+
 template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, float *padded);
 template void Exxbase<std::complex<double>>::PadR2C(double *psi_i, double *psi_j, float *padded);
 template <class T> void Exxbase<T>::PadR2C(double *psi_i, double *psi_j, float *padded)
@@ -100,6 +101,35 @@ template <class T> void Exxbase<T>::UnpadR2C(float *in, double *out)
         }
 }
 
+template void Exxbase<double>::UnpadR2C_Accumulate(double *in, double *psi_j, double *vg, double scale);
+template void Exxbase<double>::UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale);
+template <class T> void Exxbase<T>::UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale)
+{
+    int ystride = pwave->global_dimz + 2;
+    int xstride = pwave->global_dimy*ystride;
+    int ig=0;
+    for(int ix=0;ix < pwave->global_dimx;ix++)
+      for(int iy=0;iy < pwave->global_dimy;iy++)
+        for(int iz=0;iz < pwave->global_dimz;iz++)
+        {
+            vg[ig] += scale * psi_j[ig] * (double)in[ix*xstride + iy*ystride + iz];
+            ig++;
+        }
+}
+
+template <class T> void Exxbase<T>::UnpadR2C_Accumulate(double *in, double *psi_j, double *vg, double scale)
+{
+    int ystride = pwave->global_dimz + 2;
+    int xstride = pwave->global_dimy*ystride;
+    int ig=0;
+    for(int ix=0;ix < pwave->global_dimx;ix++)
+      for(int iy=0;iy < pwave->global_dimy;iy++)
+        for(int iz=0;iz < pwave->global_dimz;iz++)
+        {
+            vg[ig] += scale * psi_j[ig] * in[ix*xstride + iy*ystride + iz];
+            ig++;
+        }
+}
 
 template void Exxbase<std::complex<double>>::UnpadR2C(double *in, double *out);
 template void Exxbase<std::complex<double>>::UnpadR2C(float *in, double *out);
@@ -255,10 +285,8 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
     {
         double *pp = (double *)pwave->host_bufs[tid];
         PadR2C((double *)psi_i, (double *)psi_j, pp);
-//        for(size_t idx=0;idx < pwave->pbasis;idx++) pp[idx] = std::real(psi_i[idx] * psi_j[idx]);
         pwave->FftForward(pp, p, true, false, true);
         GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
-        double *ppp = (double *)p;
         pwave->FftInverse(p, pp, false, true, true);
         UnpadR2C(pp, pp);
         for(size_t idx=0;idx < pwave->pbasis;idx++) p[idx] = std::complex<double>(pp[idx], 0.0);
@@ -291,6 +319,54 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
 
 }
 
+template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, double *p, double *coul_fac, double *vg)
+{
+    BaseThread *Th = BaseThread::getBaseThread(0);
+    int tid = Th->get_thread_tid();
+    if(tid < 0) tid = 0;
+    if(tid == 0) tid = omp_get_thread_num();
+#if CUDA_ENABLED
+        double *pp = (double *)pwave->host_bufs[tid];
+        PadR2C(psi_i, psi_j, pp);
+        pwave->FftForward(pp, (std::complex<double> *)p, true, false, true);
+        GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
+        pwave->FftInverse((std::complex<double> *)p, pp, false, true, true);
+        UnpadR2C(pp, p);
+#else
+        double *pp = (double *)pwave->host_bufs[tid];
+        std::complex<double> *ppp = (std::complex<double> *)p;
+        PadR2C(psi_i, psi_j, pp);
+        pwave->FftForward(pp, ppp);
+        for(size_t idx=0;idx < pwave->global_basis_packed;idx++) ppp[idx] *= gfac_packed[idx];
+        pwave->FftInverse(ppp, pp, false, true, true);
+        UnpadR2C(pp, p);
+#endif
+}
+template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, double *p, float *workbuf, double *coul_fac, double *vg)
+{
+    BaseThread *Th = BaseThread::getBaseThread(0);
+    int tid = Th->get_thread_tid();
+    if(tid < 0) tid = 0;
+    if(tid == 0) tid = omp_get_thread_num();
+
+#if CUDA_ENABLED
+        float *pp = (float *)pwave->host_bufs[tid];
+        PadR2C((double *)psi_i, (double *)psi_j, pp);
+        pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
+        GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
+        pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
+        UnpadR2C(pp, workbuf);
+#else
+        float *pp = (float *)pwave->host_bufs[tid];
+        std::complex<float> *ppp = (std::complex<float> *)pp;
+        PadR2C((double *)psi_i, (double *)psi_j, pp);
+        pwave->FftForward(pp, ppp);
+        for(size_t idx=0;idx < pwave->global_basis_packed;idx++) ppp[idx] *= gfac_packed[idx];
+        pwave->FftInverse(ppp, workbuf, false, true, true);
+        UnpadR2C(workbuf, workbuf);
+#endif
+}
+
 template void Exxbase<double>::fftpair(double *psi_i, double *psi_j, std::complex<double> *p, 
         std::complex<float> *workbuf, double *coul_fac);
 template void Exxbase<std::complex<double>>::fftpair(std::complex<double> *psi_i, 
@@ -313,9 +389,6 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
         pwave->FftForward(pp, workbuf, true, false, true);
         GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse(workbuf, pp, false, true, true);
-        double *ppp = (double *)p;
-//        UnpadR2C(pp, ppp);
-//        for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = (std::complex<float>)ppp[idx];
         UnpadR2C(pp, pp);
         for(size_t idx=0;idx < pwave->pbasis;idx++) workbuf[idx] = (std::complex<float>)pp[idx];
     }
@@ -345,6 +418,8 @@ template <class T> void Exxbase<T>::fftpair(T *psi_i, T *psi_j, std::complex<dou
     }
 #endif
 }
+
+
 
 
 // This implements different ways of handling the divergence at G=0
@@ -447,9 +522,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
     RmgTimer RT0("5-Functional: Exx potential");
     double scale = - 1.0 / (double)pwave->global_basis;
 
-//    if(mode == EXX_DIST_FFT) 
-//        throw RmgFatalException() << "EXX_DIST_FFT mode is not implemented in this code path  \n";
-
     int nstates_occ = 0;
     for(int st=0;st < nstates;st++) if(occ[st] > 1.0e-6) nstates_occ++;
     MPI_Allreduce(MPI_IN_PLACE, &nstates_occ, 1, MPI_INT, MPI_MAX, G.comm);
@@ -458,18 +530,22 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
     std::vector<std::complex<float> *> wvec;
     pvec.resize(ct.OMP_THREADS_PER_NODE);
     wvec.resize(ct.OMP_THREADS_PER_NODE);
+
+#pragma omp parallel for schedule(static, 1)
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
-        pvec[tid] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
-        wvec[tid] = (std::complex<float> *)fftw_malloc(sizeof(std::complex<float>) * pwave->pbasis);
+#pragma omp critical(part5)
+        {
+            pvec[tid] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
+            wvec[tid] = (std::complex<float> *)fftw_malloc(sizeof(std::complex<float>) * pwave->pbasis);
+        }
     }
 
         int my_rank = G.get_rank();
         int npes = G.get_NPES();
 
-        double *arbuf, *atbuf;
-        MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &arbuf);
-        MPI_Alloc_mem(pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
+        double *atbuf;
+        MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
 
         double *vexx_global = new double[pwave->pbasis]();
 
@@ -483,7 +559,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         if(serial_fd < 0)
             throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
 
-        // Loop over blocks and process fft pairs I am responsible for
         MPI_Request req=MPI_REQUEST_NULL;
         MPI_Status mrstatus;
         double tvexx_RMS = 0.0;
@@ -515,8 +590,7 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         read(serial_fd, jpsi, jlength*sizeof(double));
 
         // Set up outer orbitals with readahead
-        size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(double);
-        length = (size_t)8 * (size_t)pwave->pbasis * sizeof(double);
+        size_t length = (size_t)8 * (size_t)pwave->pbasis * sizeof(double);
         readahead(serial_fd, 0, length);
         lseek(serial_fd, 0, SEEK_SET);
         double *psi_ibuf=new double[8*pwave->pbasis];
@@ -525,35 +599,42 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         {
    
             if(!(i%8)) read(serial_fd, psi_ibuf, 8*pwave->pbasis * sizeof(double));
+            readahead(serial_fd, (off_t)(i+8)*pwave->pbasis*sizeof(double), length);
             double *psi_i = psi_ibuf + (i%8) * pwave->pbasis;
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
-            for(int j = start;j < stop;j++)
+            for(int j = start;j < stop+1;j++)
             {
-                int omp_tid = omp_get_thread_num();
-                std::complex<double> *p = pvec[omp_tid];
-                std::complex<float> *w = wvec[omp_tid];
-                double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
-
-                if(use_float_fft)
+                if(j == stop)
                 {
-                    fftpair(psi_i, psi_j, p, w, gfac);
-#pragma omp critical(part3)
-                    {
-                        for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                            vexx_global[idx] += scale * std::real(w[idx]) * psi_j[idx];
-                    }
+                    if(i > 0) MPI_Test(&req, &flag, &mrstatus);
                 }
                 else
                 {
-                    fftpair(psi_i, psi_j, p, gfac);
-#pragma omp critical(part4)
+                    int omp_tid = omp_get_thread_num();
+                    double *p = (double *)pvec[omp_tid];
+                    float *w = (float *)wvec[omp_tid];
+                    double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
+
+                    if(use_float_fft)
                     {
-                        for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                            vexx_global[idx] += scale * std::real(p[idx]) * psi_j[idx];
+                        fftpair_gamma(psi_i, psi_j, p, w, gfac, vexx_global);
+#pragma omp critical(part3)
+                        {
+                            for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                                vexx_global[idx] += scale * w[idx] * psi_j[idx];
+                        }
+                    }
+                    else
+                    {
+                        fftpair_gamma(psi_i, psi_j, p, gfac, vexx_global);
+#pragma omp critical(part4)
+                        {
+                            for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                                vexx_global[idx] += scale * p[idx] * psi_j[idx];
+                        }
                     }
                 }
-                if(!omp_tid && i > 0) MPI_Test(&req, &flag, &mrstatus);
             }
             delete RT1;
 
@@ -570,12 +651,13 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
                 }
                 memcpy(&vexx[(size_t)(i-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
             }
+
             // Remap so we can use MPI_Reduce_scatter
-            Remap(vexx_global, arbuf);
+            Remap(vexx_global, atbuf);
 
             // Zero out vexx_global so it can be used for accumulation in the next iteration of the loop.
             std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
-            MPI_Ireduce_scatter(arbuf, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, &req);
+            MPI_Ireduce_scatter(MPI_IN_PLACE, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, &req);
         }
 
         delete [] psi_ibuf;
@@ -595,7 +677,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
         delete [] vexx_global;
         MPI_Free_mem(atbuf);
-        MPI_Free_mem(arbuf);
 
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
@@ -2214,3 +2295,4 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
     h_dims[1]=nstates_occ;
     //  writeNumsToHDF("hcore", Hcore, h_group, 2, h_dims);
 }
+

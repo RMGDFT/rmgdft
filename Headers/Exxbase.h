@@ -127,6 +127,8 @@ private:
     double exxdiv = 0.0;
 
 
+    void fftpair_gamma(double *psi_i, double *psi_j, double *p, double *coul_fac, double *vg);
+    void fftpair_gamma(double *psi_i, double *psi_j, double *p, float *workbuf, double *coul_fac, double *vg);
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, double *);
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, std::complex<float> *workbuf, double *);
     void setup_gfac(double *kq);
@@ -154,6 +156,8 @@ private:
     void UnpadR2C(double *in, double *out);
     void UnpadR2C(float *in, double *out);
     void UnpadR2C(float *in, float *out);
+    void UnpadR2C_Accumulate(double *in, double *psi_j, double *vg, double scale);
+    void UnpadR2C_Accumulate(float *in, double *psi_j, double *vg, double scale);
 
 
 public:
