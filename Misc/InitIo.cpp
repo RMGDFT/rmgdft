@@ -52,14 +52,9 @@
 #include "GpuAlloc.h"
 
 #if CUDA_ENABLED
-    #if MAGMA_LIBS
-        #include <magma.h>
-    #endif
-
     #include <cuda.h>
     #include <cuda_runtime_api.h>
     #include <cublas_v2.h>
-
 #endif
 
 #if LINUX
@@ -455,12 +450,19 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     rmg_printf ("\nCUDA version %d detected.\n", ct.cuda_version);
 #endif
 
+#if HIP_ENABLED
+    // Get cuda version
+    hipError_t hiperr =  hipDriverGetVersion ( &ct.hip_version );
+    rmg_printf ("\nHIP version %d detected.\n", ct.hip_version);
+#endif
+
     // Get device list and memory capacities. While this is not ideal under all circumstances
     // we will find the device with the largest memory and use all devices that have just as
     // much memory
     std::vector<size_t> device_mem;
     rmg_printf("\n");
     for(int idevice = 0; idevice < ct.num_gpu_devices; idevice++ ) {
+#if CUDA_ENABLED
         cuDeviceGet( &dev, idevice );
         cuDeviceGetName( name, sizeof(name), dev );
         cuDeviceTotalMem( &deviceMem, dev );
@@ -468,6 +470,18 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         cuDeviceGetAttribute( &clock, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
         rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
+#endif
+
+#if HIP_ENABLED
+        hipDeviceGet( &dev, idevice );
+        hipDeviceGetName( name, sizeof(name), dev );
+        hipDeviceTotalMem( &deviceMem, dev );
+        ct.gpu_mem[idevice] = deviceMem;
+        hipDeviceGetAttribute( &clock, hipDeviceAttributeClockRate, dev );
+        rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
+        device_mem.push_back(deviceMem/1024.0/1024.0);
+#endif
+
     }
 
     size_t max_mem = *std::max_element(device_mem.begin(), device_mem.end());
@@ -507,9 +521,16 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
             if(rank == pct.local_rank)
             {
                 gpuSetDevice(ct.gpu_device_ids[next_gpu]);
+#if CUDA_ENABLED
                 if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
                     rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
                 }
+#endif
+#if HIP_ENABLED
+                if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
+                    rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
+                }
+#endif
             }
             next_gpu++;
             next_gpu = next_gpu % ct.num_usable_gpu_devices;
@@ -539,10 +560,6 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         rmg_error_handler (__FILE__, __LINE__, "cusolver stream initialization failed.\n");
     }
 
-
-#if MAGMA_LIBS
-    magma_init();
-#endif
 
 #endif
 
