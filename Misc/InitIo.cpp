@@ -528,7 +528,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #endif
 #if HIP_ENABLED
                 if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
-                    rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
+                    rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
                 }
 #endif
             }
@@ -539,13 +539,17 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     }
     else
     {
+#if CUDA_ENABLED
         if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
             rmg_error_handler (__FILE__, __LINE__, "CUDA: Cannot get the device\n");
         }
+#endif
         gpuSetDevice(ct.cu_dev);
-        if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
-            rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
+#if HIP_ENABLED
+        if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
+            rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
+#endif
     }
 
     cusolverStatus_t cusolver_status = cusolverDnCreate(&ct.cusolver_handle);
