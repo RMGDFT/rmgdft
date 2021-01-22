@@ -86,7 +86,7 @@ hipError_t gpuMemPrefetchAsync ( const void* devPtr, size_t count, int  dstDevic
 #ifdef __HIP_PLATFORM_NVCC__
     cudaMemPrefetchAsync (devPtr, count, dstDevice, stream);
     return hipSuccess;
-#elif
+#else
     return hipSuccess;
 #endif
 }

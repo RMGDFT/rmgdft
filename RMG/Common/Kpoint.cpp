@@ -1098,7 +1098,11 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
         this->nl_weight = (KpointType *)GpuMallocManaged(stress_factor * this->nl_weight_size * sizeof(KpointType));
         int device = -1;
         gpuGetDevice(&device);
+#if CUDA_ENABLED
         cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
+#elif HIP_ENABLED
+        hipMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
+#endif
     }
     for(size_t idx = 0;idx < stress_factor * this->nl_weight_size;idx++) this->nl_weight[idx] = 0.0;
 #else
@@ -1239,7 +1243,12 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
         this->orbital_weight = (KpointType *)GpuMallocManaged(this->orbital_weight_size * sizeof(KpointType));
         int device = -1;
         gpuGetDevice(&device);
+#if CUDA_ENABLED
         cudaMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
+#elif HIP_ENABLED
+        hipMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
+#endif
+
     }
     for(size_t idx = 0;idx < this->orbital_weight_size;idx++) this->orbital_weight[idx] = 0.0;
 
