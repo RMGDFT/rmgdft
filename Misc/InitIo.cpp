@@ -427,7 +427,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
 
 #if CUDA_ENABLED || HIP_ENABLED
-    CUdevice dev;
+    size_t deviceMem;
+    int clock;
+    char name[1024];
+
+#if CUDA_ENABLED
+    CUdevice cudev;
     if(pct.local_rank == 0)
     {
         gpuDeviceReset();
@@ -440,18 +445,28 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         cuInit(0);
     }
     gpuGetDeviceCount( &ct.num_gpu_devices);
-    size_t deviceMem;
-    int clock;
-    char name[1024];
 
-#if CUDA_ENABLED
     // Get cuda version
     cudaError_t cuerr =  cudaDriverGetVersion ( &ct.cuda_version );
     rmg_printf ("\nCUDA version %d detected.\n", ct.cuda_version);
 #endif
 
 #if HIP_ENABLED
-    // Get cuda version
+    hipDevice_t hipdev;
+    if(pct.local_rank == 0)
+    {
+        gpuDeviceReset();
+        hipInit(0);
+        gpuSetDeviceFlags(gpuDeviceScheduleAuto);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    if(pct.local_rank != 0)
+    {
+        hipInit(0);
+    }
+    gpuGetDeviceCount( &ct.num_gpu_devices);
+
+    // Get hip version
     hipError_t hiperr =  hipDriverGetVersion ( &ct.hip_version );
     rmg_printf ("\nHIP version %d detected.\n", ct.hip_version);
 #endif
@@ -463,21 +478,21 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     rmg_printf("\n");
     for(int idevice = 0; idevice < ct.num_gpu_devices; idevice++ ) {
 #if CUDA_ENABLED
-        cuDeviceGet( &dev, idevice );
-        cuDeviceGetName( name, sizeof(name), dev );
-        cuDeviceTotalMem( &deviceMem, dev );
+        cuDeviceGet( &cudev, idevice );
+        cuDeviceGetName( name, sizeof(name), cudev );
+        cuDeviceTotalMem( &deviceMem, cudev );
         ct.gpu_mem[idevice] = deviceMem;
-        cuDeviceGetAttribute( &clock, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, dev );
+        cuDeviceGetAttribute( &clock, CU_DEVICE_ATTRIBUTE_CLOCK_RATE, cudev );
         rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
 #endif
 
 #if HIP_ENABLED
-        hipDeviceGet( &dev, idevice );
-        hipDeviceGetName( name, sizeof(name), dev );
-        hipDeviceTotalMem( &deviceMem, dev );
+        hipDeviceGet( &hipdev, idevice );
+        hipDeviceGetName( name, sizeof(name), hipdev );
+        hipDeviceTotalMem( &deviceMem, hipdev );
         ct.gpu_mem[idevice] = deviceMem;
-        hipDeviceGetAttribute( &clock, hipDeviceAttributeClockRate, dev );
+        hipDeviceGetAttribute( &clock, hipDeviceAttributeClockRate, hipdev );
         rmg_printf( "device %d: %s, %.1f MHz clock, %.1f MB memory\n", idevice, name, clock/1000.f, deviceMem/1024.f/1024.f );
         device_mem.push_back(deviceMem/1024.0/1024.0);
 #endif
@@ -492,8 +507,14 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     for(auto it = device_mem.begin();it != device_mem.end();++it) {
         if(*it >= 0.9*max_mem) {
             ct.gpu_device_ids[ct.num_usable_gpu_devices] = idevice;
+#if CUDA_ENABLED
             cuDeviceGet( &ct.cu_devices[ct.num_usable_gpu_devices], idevice);
             cuDeviceGetAttribute( &does_managed, CU_DEVICE_ATTRIBUTE_MANAGED_MEMORY, ct.cu_devices[ct.num_usable_gpu_devices]);
+#endif
+#if HIP_ENABLED
+            hipDeviceGet( &ct.hip_devices[ct.num_usable_gpu_devices], idevice);
+            hipDeviceGetAttribute( &does_managed, hipDeviceAttributeManagedMemory, ct.hip_devices[ct.num_usable_gpu_devices]);
+#endif
             if(!does_managed) ct.gpus_support_managed_memory = false;
             ct.num_usable_gpu_devices++;
         }
@@ -508,9 +529,17 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     if((ct.num_usable_gpu_devices == pct.numa_nodes_per_host) && (pct.numa_nodes_per_host == pct.procs_per_host))
     {
         gpuSetDevice(ct.gpu_device_ids[pct.local_rank]);
+#if CUDA_ENABLED
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
         }
+#endif
+#if HIP_ENABLED
+        if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
+            rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
+        }
+#endif
+
     }
     else if(pct.procs_per_host >= ct.num_usable_gpu_devices)
     {
@@ -543,15 +572,17 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if( CUDA_SUCCESS != cuDeviceGet( &ct.cu_dev, 0 ) ) {
             rmg_error_handler (__FILE__, __LINE__, "CUDA: Cannot get the device\n");
         }
-#endif
         gpuSetDevice(ct.cu_dev);
+#endif
 #if HIP_ENABLED
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
+        gpuSetDevice(ct.hip_dev);
 #endif
     }
 
+#if CUDA_ENABLED
     cusolverStatus_t cusolver_status = cusolverDnCreate(&ct.cusolver_handle);
     if(cusolver_status != CUSOLVER_STATUS_SUCCESS)
     {
@@ -563,7 +594,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     {
         rmg_error_handler (__FILE__, __LINE__, "cusolver stream initialization failed.\n");
     }
-
+#endif
 
 #endif
 
