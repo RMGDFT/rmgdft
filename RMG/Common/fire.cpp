@@ -133,7 +133,7 @@ void fire (double *step, double step_max, double f_inc, double f_dec, int n_min,
 
     if (p > 0.0) 
     {
-        *n_count ++;
+        *n_count = *n_count + 1;
 
         printf ("\n");
         progress_tag ();
