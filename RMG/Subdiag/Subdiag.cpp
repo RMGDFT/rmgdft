@@ -320,7 +320,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
         }
     }
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED
     gpuMemcpy(&orbital_storage[istart], &tmp_arrayT[istart], tlen, gpuMemcpyDefault);
     //gpuMemPrefetchAsync (orbital_storage , nstates*sizeof(double), cudaCpuDeviceId, NULL);
     // Not sure why but the cudaMemcpy behaves strangely here sometimes.

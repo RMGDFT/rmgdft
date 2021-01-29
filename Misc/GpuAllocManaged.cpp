@@ -38,14 +38,16 @@ void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
 {
     void *ptr;
     hipError_t hipstat;
-    hipstat = hipMallocManaged( &ptr, size+16);
+    //hipstat = hipMallocManaged( &ptr, size+16);
+    hipstat = hipMallocHost( &ptr, size+16);
     RmgGpuError(fname, line, hipstat, "Error: hipMallocManaged failed.\n");
     return ptr;
 }
 
 void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
 {
-    hipFree(ptr);
+//    hipFree(ptr);
+    hipFreeHost(ptr);
 }
 
 #elif CUDA_ENABLED

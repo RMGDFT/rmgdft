@@ -46,7 +46,9 @@ hipError_t gpuMalloc(void **ptr, size_t size)
 
 hipError_t gpuMallocManaged(void **ptr, size_t size)
 {
-    hipError_t hiperr = hipMallocManaged(ptr, size);
+    //hipError_t hiperr = hipMallocManaged(ptr, size);
+    hipError_t hiperr = hipMallocHost(ptr, size);
+
     if(hiperr != hipSuccess)
     rmg_error_handler(__FILE__, __LINE__, "Error allocating managed memory. Terminating.");
     return hiperr;

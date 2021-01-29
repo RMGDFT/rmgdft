@@ -202,9 +202,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // mpi_queue_mode has a bug for this case which can cause hangs so put the check in place
     if(ct.mpi_queue_mode) ct.non_local_block_size = ct.max_states;
     if(ct.non_local_block_size > ct.max_states) ct.non_local_block_size = ct.max_states;
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     // Wavefunctions are actually stored here
-    rptr = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
+    size_t galloc = ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType);
+
+#if HIP_ENABLED
+   //InitGpuMalloc(galloc); 
+#endif
+    rptr = (OrbitalType *)GpuMallocManaged(galloc);
     nv = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
     if(need_ns) ns = (OrbitalType *)GpuMallocManaged((size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
 //    if(ct.xc_is_hybrid) prev = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
