@@ -89,6 +89,77 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
     DeviceSynchronize();
     return;
 
+#elif HIP_ENABLED
+RmgGemm (trans, "N", n, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+return;
+#if 0
+    hipblasStatus_t hipstat;
+    hipblasOperation_t hip_trans = HIPBLAS_OP_N;
+    hipblasFillMode_t fill_mode = HIPBLAS_FILL_MODE_LOWER;
+
+    if(!strcmp(uplo, "u")) fill_mode = HIPBLAS_FILL_MODE_UPPER;
+    if(!strcmp(uplo, "U")) fill_mode = HIPBLAS_FILL_MODE_UPPER;
+
+    if(!strcmp(trans, "t")) hip_trans = HIPBLAS_OP_T;
+    if(!strcmp(trans, "T")) hip_trans = HIPBLAS_OP_T;
+    if(!strcmp(trans, "c")) hip_trans = HIPBLAS_OP_C;
+    if(!strcmp(trans, "C")) hip_trans = HIPBLAS_OP_C;
+
+    int ka = n;
+    if(!strcmp("n", trans)) ka = k;
+    if(!strcmp("N", trans)) ka = k;
+
+    int kb = n;
+    if(!strcmp("n", trans)) kb = k;
+    if(!strcmp("N", trans)) kb = k;
+
+    size_t a_size = (size_t)lda * (size_t)ka;
+    size_t b_size = (size_t)ldb * (size_t)kb;
+    size_t c_size = (size_t)ldc * (size_t)n;
+
+    if(typeid(DataType) == typeid(std::complex<double>)) {
+        std::complex<double> *dA, *dB, *dC;
+        gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
+        gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
+        gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
+        hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
+        hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
+        if(std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
+        hipstat = hipblasZsyrkx(ct.hipblas_handle, fill_mode, hip_trans, n, k,
+                            (hipblasDoubleComplex *)&alpha,
+                            (hipblasDoubleComplex*)dA, lda,
+                            (hipblasDoubleComplex*)dB, ldb,
+                            (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc );
+        hipMemcpyDtoH(dC, C, c_size * sizeof(std::complex<double>));
+        gpuFree(dC);
+        gpuFree(dB);
+        gpuFree(dA);
+        ProcessGpublasError(hipstat);
+        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing cublasZsyrkx");
+    }
+    else {
+        double *dA, *dB, *dC;
+        gpuMalloc((void **)&dA, a_size * sizeof(double));
+        gpuMalloc((void **)&dB, b_size * sizeof(double));
+        gpuMalloc((void **)&dC, c_size * sizeof(double));
+        hipMemcpyHtoD(dA, A, a_size * sizeof(double));
+        hipMemcpyHtoD(dB, B, b_size * sizeof(double));
+        if(beta != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(double));
+        hipstat = hipblasDsyrkx(ct.hipblas_handle, fill_mode, hip_trans, n, k,
+                            (double*)&alpha,
+                            (double*)dA, lda,
+                            (double*)dB, ldb,
+                            (double*)&beta, (double*)dC, ldc );
+        ProcessGpublasError(hipstat);
+        hipMemcpyDtoH(C, dC, c_size * sizeof(double));
+        gpuFree(dC);
+        gpuFree(dB);
+        gpuFree(dA);
+        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasDsyrkx");
+
+    }
+#endif
+
 #else
 
     // No standard CPU version of syrkx so just use gemm call

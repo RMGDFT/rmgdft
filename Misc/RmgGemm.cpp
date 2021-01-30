@@ -137,17 +137,18 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
         hipMemcpyHtoD(dA, A, a_size * sizeof(std::complex<double>));
         hipMemcpyHtoD(dB, B, b_size * sizeof(std::complex<double>));
+        if(std::abs(beta) != 0.0) hipMemcpyHtoD(dC, C, c_size * sizeof(std::complex<double>));
         hipstat = hipblasZgemm(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (hipblasDoubleComplex *)&alpha,
                             (hipblasDoubleComplex*)dA, lda,
                             (hipblasDoubleComplex*)dB, ldb,
                             (hipblasDoubleComplex*)&beta, (hipblasDoubleComplex*)dC, ldc );
-        hipMemcpyDtoH(dC, C, c_size * sizeof(std::complex<double>));
+        hipMemcpyDtoH(C, dC, c_size * sizeof(std::complex<double>));
         gpuFree(dC);
         gpuFree(dB);
         gpuFree(dA);
         ProcessGpublasError(hipstat);
-        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing cublasZgemm");
+        RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing hipblasZgemm");
     }
     else {
         double *dA, *dB, *dC;
