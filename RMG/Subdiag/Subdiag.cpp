@@ -85,6 +85,15 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));     
     double *eigs = (double *)GpuMallocManaged(2*nstates * sizeof(double));
 
+    KpointType *psi_d = orbital_storage;
+#if HIP_ENABLED
+    // For HIP which does not yet have managed memory copy wavefunctions into array on GPU
+    // and use it repeatedly to compute the matrix elements. This is much faster but puts
+    // more pressure on GPU memory. A blas implementation that overlapped communication and
+    // computation would make this unnecessary.
+    gpuMalloc((void **)&psi_d, nstates * pbasis_noncoll * sizeof(KpointType));
+    hipMemcpyHtoD(psi_d, orbital_storage, nstates * pbasis_noncoll * sizeof(KpointType));
+#endif
 
     char *trans_t = "t";
     char *trans_n = "n";
@@ -105,7 +114,7 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
 
-#if CUDA_ENABLED || HIP_ENABLED
+#if CUDA_ENABLED
     // Until the finite difference operators are being applied on the GPU it's faster
     // to make sure that the result arrays are present on the cpu side.
     int device = -1;
@@ -190,9 +199,9 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     KpointType beta(0.0);
 
     if(ct.is_gamma)
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
+        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
     else
-        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
+        RmgGemm(trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, tmp_arrayT, pbasis_noncoll, beta, Hij, nstates);
 
     // Hij is symmetric or Hermetian so pack into triangular array for reduction call. Use Bij for scratch space
     PackSqToTr("L", nstates, Hij, nstates, Bij);
@@ -212,11 +221,11 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     // Compute S matrix
     if(ct.norm_conserving_pp && ct.is_gamma)
     {
-        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll,  orbital_storage, pbasis_noncoll, beta, Sij, nstates);
+        RmgSyrkx("L", "T", nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll,  psi_d, pbasis_noncoll, beta, Sij, nstates);
     }
     else
     {
-        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, orbital_storage, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
+        RmgGemm (trans_a, trans_n, nstates, nstates, pbasis_noncoll, alphavel, psi_d, pbasis_noncoll, ns, pbasis_noncoll, beta, Sij, nstates);
     }
 
     // Sij is symmetric or Hermetian so pack into triangular array for reduction call. Use global_matrix1 for scratch space
@@ -292,7 +301,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     RT1 = new RmgTimer("4-Diagonalization: Update orbitals");
 
     RmgGemm(trans_n, trans_b, pbasis_noncoll, nstates, nstates, alpha, 
-            orbital_storage, pbasis_noncoll, global_matrix1, nstates, beta, tmp_arrayT, pbasis_noncoll);
+            psi_d, pbasis_noncoll, global_matrix1, nstates, beta, tmp_arrayT, pbasis_noncoll);
 
     // And finally copy them back
     size_t istart = 0;
@@ -349,5 +358,8 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     delete [] eigs;
 #endif
 
+#if HIP_ENABLED
+    gpuFree(psi_d);
+#endif
 }
 
