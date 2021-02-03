@@ -85,6 +85,8 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));     
     double *eigs = (double *)GpuMallocManaged(2*nstates * sizeof(double));
 
+//  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
+//  for HIP its a GPU buffer.
     KpointType *psi_d = orbital_storage;
 #if HIP_ENABLED
     // For HIP which does not yet have managed memory copy wavefunctions into array on GPU

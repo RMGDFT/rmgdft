@@ -713,6 +713,7 @@ public:
 
     // hipblas library handles
     hipblasHandle_t hipblas_handle;
+    hipStream_t rocsolver_stream;
 
 #endif
     

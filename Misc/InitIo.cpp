@@ -57,6 +57,12 @@
     #include <cublas_v2.h>
 #endif
 
+#if HIP_ENABLED
+    #include "hip/hip_runtime_api.h"
+    #include "hip/hip_vector_types.h"
+    #include "rocfft.h"
+#endif
+
 #if LINUX
 void get_topology(void)
 {
@@ -594,6 +600,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
     {
         rmg_error_handler (__FILE__, __LINE__, "cusolver stream initialization failed.\n");
     }
+#endif
+
+#if HIP_ENABLED
+    rocfft_setup();
 #endif
 
 #endif
