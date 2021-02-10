@@ -333,6 +333,9 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         pwave->FftInverse((std::complex<double> *)p, pp, false, true, true);
         UnpadR2C(pp, p);
 #else
+
+// R2C transforms not working reliably for all CPU cases
+#if 0
         double *pp = (double *)pwave->host_bufs[tid];
         std::complex<double> *ppp = (std::complex<double> *)p;
         PadR2C(psi_i, psi_j, pp);
@@ -340,7 +343,17 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         for(size_t idx=0;idx < pwave->global_basis_packed;idx++) ppp[idx] *= gfac_packed[idx];
         pwave->FftInverse(ppp, pp, false, true, true);
         UnpadR2C(pp, p);
+#else
+        std::complex<double> *pp = (std::complex<double> *)pwave->host_bufs[tid];
+        std::complex<double> *ppp = (std::complex<double> *)p;
+        for(size_t idx=0;idx<pwave->global_basis;idx++)pp[idx] = std::complex<double>(psi_i[idx]*psi_j[idx],0.0);
+        pwave->FftForward(pp, ppp);
+        for(size_t idx=0;idx < pwave->global_basis;idx++) ppp[idx] *= gfac[idx];
+        pwave->FftInverse(ppp, pp, false, true, true);
+        for(size_t idx=0;idx < pwave->global_basis;idx++) p[idx] = std::real(pp[idx]);
 #endif
+#endif
+
 }
 template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, double *p, float *workbuf, double *coul_fac, double *vg)
 {
@@ -357,6 +370,7 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
         UnpadR2C(pp, workbuf);
 #else
+#if 0
         float *pp = (float *)pwave->host_bufs[tid];
         std::complex<float> *ppp = (std::complex<float> *)pp;
         PadR2C((double *)psi_i, (double *)psi_j, pp);
@@ -364,6 +378,15 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         for(size_t idx=0;idx < pwave->global_basis_packed;idx++) ppp[idx] *= gfac_packed[idx];
         pwave->FftInverse(ppp, workbuf, false, true, true);
         UnpadR2C(workbuf, workbuf);
+#else
+        std::complex<float> *pp = (std::complex<float> *)pwave->host_bufs[tid];
+        std::complex<float> *ppp = (std::complex<float> *)pp;
+        for(size_t idx=0;idx<pwave->global_basis;idx++)pp[idx] = std::complex<float>(psi_i[idx]*psi_j[idx],0.0);
+        pwave->FftForward(pp, ppp);
+        for(size_t idx=0;idx < pwave->global_basis;idx++) ppp[idx] *= gfac[idx];
+        pwave->FftInverse(ppp, pp, false, true, true);
+        for(size_t idx=0;idx < pwave->global_basis;idx++) workbuf[idx] = std::real(pp[idx]);
+#endif
 #endif
 }
 
