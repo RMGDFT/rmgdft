@@ -84,6 +84,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     if(!strcmp("n", transb)) kb = n;
     if(!strcmp("N", transb)) kb = n;
 
+    DeviceSynchronize();
     if(typeid(DataType) == typeid(std::complex<double>)) {
         custat = cublasZgemm(ct.cublas_handle, cu_transA, cu_transB, m, n, k,
                             (cuDoubleComplex *)&alpha,
@@ -102,6 +103,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         ProcessGpublasError(custat);
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
     }
+    DeviceSynchronize();
     return;
 
 #elif HIP_ENABLED
