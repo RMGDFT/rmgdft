@@ -603,6 +603,11 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out, bool
           hipDeviceSynchronize();
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
+#else
+      if(in == out)
+          fftw_execute_dft (fftw_forward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
+      else
+          fftw_execute_dft (fftw_forward_plan,  reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out));
 #endif
   }
   else
