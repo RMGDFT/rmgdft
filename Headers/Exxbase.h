@@ -127,7 +127,7 @@ private:
     double exxdiv = 0.0;
 
 
-    void fftpair_gamma(double *psi_i, double *psi_j, double *p, double *coul_fac, double *vg);
+    void fftpair_gamma(double *psi_i, double *psi_j, double *p, double *workbuf, double *coul_fac, double *vg);
     void fftpair_gamma(double *psi_i, double *psi_j, double *p, float *workbuf, double *coul_fac, double *vg);
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, double *);
     void fftpair(T *psi_i, T*psi_j, std::complex<double> *p, std::complex<float> *workbuf, double *);

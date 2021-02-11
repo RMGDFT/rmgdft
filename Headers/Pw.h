@@ -42,6 +42,11 @@
    #include <cufft.h>
 #endif
 
+#if HIP_ENABLED
+    #include <hip/hip_runtime.h>
+    #include <rocfft.h>
+#endif
+
 #include "BaseGrid.h"
 #include "Lattice.h"
 #include "fftw3.h"
@@ -164,6 +169,21 @@ public:
     std::vector<std::complex<double> *> dev_bufs;
 #endif    
 
+#if HIP_ENABLED
+    int num_streams;
+    std::vector<hipStream_t> streams;
+    std::vector<rocfft_plan> gpu_plans;
+    std::vector<rocfft_plan> gpu_plans_inv;
+    std::vector<rocfft_plan> gpu_plans_f;
+    std::vector<rocfft_plan> gpu_plans_f_inv;
+    std::vector<rocfft_plan> gpu_plans_r2c;
+    std::vector<rocfft_plan> gpu_plans_c2r;
+    std::vector<rocfft_plan> gpu_plans_d2z;
+    std::vector<rocfft_plan> gpu_plans_z2d;
+    std::vector<std::complex<double> *> dev_bufs;
+    std::vector<std::complex<double> *> work_bufs;  // Needed for rocfft
+    std::vector<rocfft_execution_info> roc_x_info;
+#endif    
 };
 
 
