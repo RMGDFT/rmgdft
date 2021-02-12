@@ -541,6 +541,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         }
 #endif
 #if HIP_ENABLED
+        hipDeviceReset();
+        hipSetDeviceFlags(hipDeviceScheduleAuto);
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
@@ -562,6 +564,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 }
 #endif
 #if HIP_ENABLED
+                hipDeviceReset();
+                hipSetDeviceFlags(hipDeviceScheduleAuto);
                 if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
                     rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
                 }
@@ -581,10 +585,12 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         gpuSetDevice(ct.cu_dev);
 #endif
 #if HIP_ENABLED
+        gpuSetDevice(ct.hip_dev);
+        hipDeviceReset();
+        hipSetDeviceFlags(hipDeviceScheduleAuto);
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
-        gpuSetDevice(ct.hip_dev);
 #endif
     }
 

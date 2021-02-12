@@ -233,6 +233,7 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       gpu_plans_z2d.resize(num_streams);
       host_bufs.resize(num_streams);
       dev_bufs.resize(num_streams);
+
 #endif
 
 #if CUDA_ENABLED
@@ -276,85 +277,97 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
              "Error: gpuMalloc failed.\n");
       }
 #elif HIP_ENABLED
-    work_bufs.resize(num_streams);
-    roc_x_info.resize(num_streams);
-    gpu_plans_inv.resize(num_streams);
-    gpu_plans_f_inv.resize(num_streams);
+      if(num_streams > 1)
+      {
+          for (int i = 0; i < num_streams; i++)
+              RmgGpuError(__FILE__, __LINE__, gpuStreamCreateWithFlags(&streams[i], gpuStreamNonBlocking), "Problem creating gpu stream.");
+      }
+      else
+      {
+          // Only 1 thread so use default stream
+          streams[0] = 0;
+      }
 
-// FIXME - still does not support streams
-    size_t lengths[3], work_size=0, tmp_size;
-    rocfft_status status;
-    lengths[0] = this->global_dimx;
-    lengths[1] = this->global_dimy;
-    lengths[2] = this->global_dimz;
+      work_bufs.resize(num_streams);
+      roc_x_info.resize(num_streams);
+      gpu_plans_inv.resize(num_streams);
+      gpu_plans_f_inv.resize(num_streams);
 
-    for (int i = 0; i < num_streams; i++)
-    {
-        status = rocfft_plan_create(&gpu_plans[i], rocfft_placement_inplace, 
-                 rocfft_transform_type_complex_forward, rocfft_precision_double, 3, lengths, 1, NULL);
-        if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
-        status = rocfft_plan_get_work_buffer_size(gpu_plans[i], &tmp_size);
-        if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
-        work_size = std::max(work_size, tmp_size);
+      size_t lengths[3], work_size=0, tmp_size;
+      rocfft_status status;
+      lengths[0] = this->global_dimx;
+      lengths[1] = this->global_dimy;
+      lengths[2] = this->global_dimz;
 
-        status = rocfft_plan_create(&gpu_plans_inv[i], rocfft_placement_inplace, 
-                 rocfft_transform_type_complex_inverse, rocfft_precision_double, 3, lengths, 1, NULL);
-        if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
-        status = rocfft_plan_get_work_buffer_size(gpu_plans_inv[i], &tmp_size);
-        if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
-        work_size = std::max(work_size, tmp_size);
+      for (int i = 0; i < num_streams; i++)
+      {
+          status = rocfft_plan_create(&gpu_plans[i], rocfft_placement_inplace, 
+                   rocfft_transform_type_complex_forward, rocfft_precision_double, 3, lengths, 1, NULL);
+          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          status = rocfft_plan_get_work_buffer_size(gpu_plans[i], &tmp_size);
+          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          work_size = std::max(work_size, tmp_size);
 
-        status = rocfft_plan_create(&gpu_plans_f[i], rocfft_placement_inplace, 
-                 rocfft_transform_type_complex_forward, rocfft_precision_single, 3, lengths, 1, NULL);
-        if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
-        status = rocfft_plan_get_work_buffer_size(gpu_plans_f[i], &tmp_size);
-        if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
-        work_size = std::max(work_size, tmp_size);
+          status = rocfft_plan_create(&gpu_plans_inv[i], rocfft_placement_inplace, 
+                   rocfft_transform_type_complex_inverse, rocfft_precision_double, 3, lengths, 1, NULL);
+          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          status = rocfft_plan_get_work_buffer_size(gpu_plans_inv[i], &tmp_size);
+          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          work_size = std::max(work_size, tmp_size);
 
-        status = rocfft_plan_create(&gpu_plans_f_inv[i], rocfft_placement_inplace, 
-                 rocfft_transform_type_complex_inverse, rocfft_precision_single, 3, lengths, 1, NULL);
-        if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
-        status = rocfft_plan_get_work_buffer_size(gpu_plans_f_inv[i], &tmp_size);
-        if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
-        work_size = std::max(work_size, tmp_size);
+          status = rocfft_plan_create(&gpu_plans_f[i], rocfft_placement_inplace, 
+                   rocfft_transform_type_complex_forward, rocfft_precision_single, 3, lengths, 1, NULL);
+          if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
+          status = rocfft_plan_get_work_buffer_size(gpu_plans_f[i], &tmp_size);
+          if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
+          work_size = std::max(work_size, tmp_size);
 
-        status = rocfft_plan_create(&gpu_plans_d2z[i], rocfft_placement_notinplace, 
-                 rocfft_transform_type_real_forward, rocfft_precision_double, 3, lengths, 1, NULL);
-        if(status != rocfft_status_success) printf("ERROR making D2Z plan\n");
+          status = rocfft_plan_create(&gpu_plans_f_inv[i], rocfft_placement_inplace, 
+                   rocfft_transform_type_complex_inverse, rocfft_precision_single, 3, lengths, 1, NULL);
+          if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
+          status = rocfft_plan_get_work_buffer_size(gpu_plans_f_inv[i], &tmp_size);
+          if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
+          work_size = std::max(work_size, tmp_size);
 
-        status = rocfft_plan_create(&gpu_plans_z2d[i], rocfft_placement_notinplace, 
-                 rocfft_transform_type_real_inverse, rocfft_precision_double, 3, lengths, 1, NULL);
-        if(status != rocfft_status_success) printf("ERROR making Z2D plan\n");
+          status = rocfft_plan_create(&gpu_plans_d2z[i], rocfft_placement_notinplace, 
+                   rocfft_transform_type_real_forward, rocfft_precision_double, 3, lengths, 1, NULL);
+          if(status != rocfft_status_success) printf("ERROR making D2Z plan\n");
 
-        status = rocfft_plan_create(&gpu_plans_r2c[i], rocfft_placement_notinplace, 
-                 rocfft_transform_type_real_forward, rocfft_precision_single, 3, lengths, 1, NULL);
-        if(status != rocfft_status_success) printf("ERROR making r2c plan\n");
+          status = rocfft_plan_create(&gpu_plans_z2d[i], rocfft_placement_notinplace, 
+                   rocfft_transform_type_real_inverse, rocfft_precision_double, 3, lengths, 1, NULL);
+          if(status != rocfft_status_success) printf("ERROR making Z2D plan\n");
 
-        status = rocfft_plan_create(&gpu_plans_c2r[i], rocfft_placement_notinplace, 
-                 rocfft_transform_type_real_inverse, rocfft_precision_single, 3, lengths, 1, NULL);
-        if(status != rocfft_status_success) printf("ERROR making C2R plan\n");
+          status = rocfft_plan_create(&gpu_plans_r2c[i], rocfft_placement_notinplace, 
+                   rocfft_transform_type_real_forward, rocfft_precision_single, 3, lengths, 1, NULL);
+          if(status != rocfft_status_success) printf("ERROR making R2C plan\n");
+
+          status = rocfft_plan_create(&gpu_plans_c2r[i], rocfft_placement_notinplace, 
+                   rocfft_transform_type_real_inverse, rocfft_precision_single, 3, lengths, 1, NULL);
+          if(status != rocfft_status_success) printf("ERROR making C2R plan\n");
 
 
-        status = rocfft_execution_info_create(&roc_x_info[i]);
-        if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
-        if(work_size)
-        {
-            RmgGpuError(__FILE__, __LINE__, 
-                       gpuMalloc((void **)&work_bufs[i], work_size),
-                       "Error: gpuMalloc failed.\n");
-            status = rocfft_execution_info_set_work_buffer(roc_x_info[i], work_bufs[i], work_size);
-        }
-        RmgGpuError(__FILE__, __LINE__, 
-    //             gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
-                 gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
-                 "Error: gpuMallocHost failed.\n");
+          status = rocfft_execution_info_create(&roc_x_info[i]);
+          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          if(work_size)
+          {
+              RmgGpuError(__FILE__, __LINE__, 
+                         gpuMalloc((void **)&work_bufs[i], work_size),
+                         "Error: gpuMalloc failed.\n");
+              status = rocfft_execution_info_set_work_buffer(roc_x_info[i], work_bufs[i], work_size);
+          }
 
-        RmgGpuError(__FILE__, __LINE__, 
-    //             gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
-                 gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
-                 "Error: gpuMalloc failed.\n");
+          status = rocfft_execution_info_set_stream(roc_x_info[i], streams[i]);
+          if(status != rocfft_status_success) printf("ERROR setting rocfft streams.\n");
 
-    }
+          RmgGpuError(__FILE__, __LINE__, 
+                   gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
+                   "Error: gpuMallocHost failed.\n");
+
+          RmgGpuError(__FILE__, __LINE__, 
+                   gpuMalloc((void **)&dev_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
+                   "Error: gpuMalloc failed.\n");
+
+      }
 
 #else
       int nthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
@@ -538,6 +551,24 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
           std::complex<float> *tptr1 = (std::complex<float> *)host_bufs[tid];
 	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
+#elif HIP_ENABLED
+      float *tptr = (float *)host_bufs[tid];
+      if(copy_to_dev)
+      {
+	  if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
+          hipStreamSynchronize(streams[tid]);
+	  hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(float), gpuMemcpyHostToDevice, streams[tid]);
+      }
+      hipStreamSynchronize(streams[tid]);
+      rocfft_execute(gpu_plans_r2c[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
+      hipStreamSynchronize(streams[tid]);
+      if(copy_from_dev)
+      {
+	  hipMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
+          hipStreamSynchronize(streams[tid]);
+          std::complex<float> *tptr1 = (std::complex<float> *)host_bufs[tid];
+	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
+      }
 #else
       if((void *)in == (void *)out)
       {
@@ -592,15 +623,15 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out, bool
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          hipMemcpy(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice);
+          hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice, streams[tid]);
       }
-      hipDeviceSynchronize();
+      hipStreamSynchronize(streams[tid]);
       rocfft_execute(gpu_plans[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipDeviceSynchronize();
+      hipStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {   
-          hipMemcpy(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost);
-          hipDeviceSynchronize();
+          hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost, streams[tid]);
+          hipStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
 #else
@@ -661,15 +692,15 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out, bool c
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          hipMemcpy(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice);
+          hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice, streams[tid]);
       }
-      hipDeviceSynchronize();
+      hipStreamSynchronize(streams[tid]);
       rocfft_execute(gpu_plans_f[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipDeviceSynchronize();
+      hipStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {   
-          hipMemcpy(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost);
-          hipDeviceSynchronize();
+          hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost, streams[tid]);
+          hipStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
 #else
@@ -769,6 +800,22 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
           float *tptr1 = (float *)host_bufs[tid];
           if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
+#elif HIP_ENABLED
+      if(copy_to_dev)
+      {
+          std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
+          for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
+          hipMemcpy(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyHostToDevice);
+      }
+      rocfft_execute(gpu_plans_c2r[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
+      hipDeviceSynchronize();
+      if(copy_from_dev)
+      {
+          hipMemcpy(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(float), gpuMemcpyDeviceToHost);
+          hipDeviceSynchronize();
+          float *tptr1 = (float *)host_bufs[tid];
+          if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
+      }
 #else
       if((float *)in == out)
           fftwf_execute_dft_c2r (fftwf_r2c_backward_plan_inplace,  reinterpret_cast<fftwf_complex*>(in), out);
@@ -815,15 +862,15 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out, bool
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          hipMemcpy(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice);
+          hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice, streams[tid]);
       }
-      hipDeviceSynchronize();
+      hipStreamSynchronize(streams[tid]);
       rocfft_execute(gpu_plans_inv[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipDeviceSynchronize();
+      hipStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {   
-          hipMemcpy(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost);
-          hipDeviceSynchronize();
+          hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost, streams[tid]);
+          hipStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
 #else
@@ -883,15 +930,15 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out, bool c
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          hipMemcpy(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice);
+          hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice, streams[tid]);
       }
-      hipDeviceSynchronize();
+      hipStreamSynchronize(streams[tid]);
       rocfft_execute(gpu_plans_f_inv[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipDeviceSynchronize();
+      hipStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {   
-          hipMemcpy(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost);
-          hipDeviceSynchronize();
+          hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost, streams[tid]);
+          hipStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
       }
 #else 

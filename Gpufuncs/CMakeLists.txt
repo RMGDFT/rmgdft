@@ -1,3 +1,4 @@
+if(RMG_CUDA_ENABLED)
 # This is necessary in order to work around a cmake bug
 # in version prior to 3.10 where quotes around string
 # literals are escaped in a way that causes nvcc to fail.
@@ -75,4 +76,12 @@ set(LIB_TYPE STATIC)
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuEleMul.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu)
 
+endif(RMG_CUDA_ENABLED)
+
+if(RMG_HIP_ENABLED)
+set(MY_HIPCC_OPTIONS -fPIE)
+set_source_files_properties(GpuEleMul.hip.cpp PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
+hip_add_library(Gpufuncs GpuEleMul.hip.cpp HIPCC_OPTIONS ${MY_HIPCC_OPTIONS})
+include_directories("${RMG_SOURCE_DIR}/Headers/")
+endif(RMG_HIP_ENABLED)
 

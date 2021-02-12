@@ -670,6 +670,10 @@ if(RMG_CUDA_ENABLED)
     add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
 endif(RMG_CUDA_ENABLED)
 
+if(RMG_HIP_ENABLED)
+    add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
+endif(RMG_HIP_ENABLED)
+
 # Target specific code subdirectories. If no target
 # is given the base code rmg-cpu or rmg-gpu is built by default
 add_subdirectory (RMG) 

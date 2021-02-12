@@ -65,38 +65,4 @@ void GpuEleMul(double *dx, std::complex<float> *dy, int n, cudaStream_t stream)
 }
   
 
-#if 0
-// Fills a device pointer with a floating point value
-void GpuFill(double *dptr, int n, double fillval)
-{
-    cudaDeviceSynchronize();
-    int blockSize = 256;
-    int numBlocks = (n + blockSize - 1) / n;
-    FillMatrix<<<numBlocks, blockSize>>>(dptr, n, fillval);
-    cudaDeviceSynchronize();
-}
-
-struct ElementWiseOp : public thrust::binary_function<double, thrust::complex<double> , thrust::complex<double> >
-{
-    __device__
-    thrust::complex<double> operator()(double & v1, thrust::complex<double> & v2)
-    {
-        thrust::complex<double> res;
-        res = v1 * v2;
-        return res;
-    }
-};
-
-void GpuEleMul(double *dx, std::complex<double> *dy, int n, cudaStream_t stream)
-{
-    //thrust::device_ptr<double> dx_dev = thrust::device_pointer_cast(dx);
-    thrust::device_ptr<double> dx_dev(dx);
-    //thrust::device_ptr<thrust::complex<double>> dy_dev = thrust::device_pointer_cast((thrust::complex<double> *)dy);
-    thrust::device_ptr<thrust::complex<double>> dy_dev((thrust::complex<double> *)dy);
-
-//    thrust::complex<double> * dz = (thrust::complex<double> *)dy;
-    thrust::transform(thrust::cuda::par.on(stream), dx_dev, dx_dev + n, dy_dev, dy_dev, ElementWiseOp());
-}
-
-#endif
 #endif

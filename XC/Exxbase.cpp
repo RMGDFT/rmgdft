@@ -216,7 +216,7 @@ template <class T> Exxbase<T>::Exxbase (
     gfac = (double *)GpuMallocManaged((size_t)pwave->pbasis*sizeof(double));
     gfac_packed = (double *)GpuMallocManaged((size_t)pwave->global_basis_packed*sizeof(double));
     std::fill(gfac_packed, gfac_packed + pwave->global_basis_packed, 0.0);
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     gpuMalloc((void **)&gfac_dev, pwave->pbasis*sizeof(double));
     gpuMalloc((void **)&gfac_dev_packed, pwave->global_basis_packed*sizeof(double));
 #endif
@@ -332,6 +332,13 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse((std::complex<double> *)p, pp, false, true, true);
         UnpadR2C(pp, p);
+#elif HIP_ENABLED
+        std::complex<double> *pp = (std::complex<double> *)pwave->host_bufs[tid];
+        for(size_t idx=0;idx < pwave->global_basis;idx++) pp[idx] = std::complex<double>(psi_i[idx]*psi_j[idx], 0.0);
+        pwave->FftForward(pp, (std::complex<double> *)workbuf, true, false, true);
+        GpuEleMul(gfac_dev, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis, pwave->streams[tid]);
+        pwave->FftInverse((std::complex<double> *)workbuf, pp, false, true, true);
+        for(size_t idx=0;idx < pwave->global_basis;idx++) p[idx] = std::real(pp[idx]);
 #else
         double *pp = (double *)pwave->host_bufs[tid];
         std::complex<double> *ppp = (std::complex<double> *)pp;
@@ -357,6 +364,19 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
         UnpadR2C(pp, workbuf);
+#elif HIP_ENABLED
+//        float *pp = (float *)pwave->host_bufs[tid];
+//        PadR2C((double *)psi_i, (double *)psi_j, pp);
+//        pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
+//        GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, 0);
+//        pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
+//        UnpadR2C(pp, workbuf);
+        std::complex<float> *pp = (std::complex<float> *)pwave->host_bufs[tid];
+        for(size_t idx=0;idx < pwave->global_basis;idx++) pp[idx] = std::complex<float>(psi_i[idx]*psi_j[idx], 0.0);
+        pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
+        GpuEleMul(gfac_dev, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis, pwave->streams[tid]);
+        pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
+        for(size_t idx=0;idx < pwave->global_basis;idx++) workbuf[idx] = std::real(pp[idx]);
 #else
         float *pp = (float *)pwave->host_bufs[tid];
         std::complex<float> *ppp = (std::complex<float> *)pp;
@@ -511,6 +531,11 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
 #if CUDA_ENABLED
     cudaMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  cudaMemcpyHostToDevice);
     cudaMemcpy(gfac_dev_packed, gfac_packed, pwave->global_basis_packed*sizeof(double),  cudaMemcpyHostToDevice);
+    DeviceSynchronize();
+#endif
+#if HIP_ENABLED
+    hipMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  hipMemcpyHostToDevice);
+    hipMemcpy(gfac_dev_packed, gfac_packed, pwave->global_basis_packed*sizeof(double),  hipMemcpyHostToDevice);
     DeviceSynchronize();
 #endif
 }
