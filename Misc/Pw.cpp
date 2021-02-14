@@ -295,9 +295,9 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
 
       size_t lengths[3], work_size=0, tmp_size;
       rocfft_status status;
-      lengths[0] = this->global_dimx;
+      lengths[0] = this->global_dimz;
       lengths[1] = this->global_dimy;
-      lengths[2] = this->global_dimz;
+      lengths[2] = this->global_dimx;
 
       for (int i = 0; i < num_streams; i++)
       {
@@ -337,11 +337,11 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
                    rocfft_transform_type_real_inverse, rocfft_precision_double, 3, lengths, 1, NULL);
           if(status != rocfft_status_success) printf("ERROR making Z2D plan\n");
 
-          status = rocfft_plan_create(&gpu_plans_r2c[i], rocfft_placement_notinplace, 
+          status = rocfft_plan_create(&gpu_plans_r2c[i], rocfft_placement_inplace, 
                    rocfft_transform_type_real_forward, rocfft_precision_single, 3, lengths, 1, NULL);
           if(status != rocfft_status_success) printf("ERROR making R2C plan\n");
 
-          status = rocfft_plan_create(&gpu_plans_c2r[i], rocfft_placement_notinplace, 
+          status = rocfft_plan_create(&gpu_plans_c2r[i], rocfft_placement_inplace, 
                    rocfft_transform_type_real_inverse, rocfft_precision_single, 3, lengths, 1, NULL);
           if(status != rocfft_status_success) printf("ERROR making C2R plan\n");
 
@@ -553,21 +553,23 @@ void Pw::FftForward (float * in, std::complex<float> * out, bool copy_to_dev, bo
       }
 #elif HIP_ENABLED
       float *tptr = (float *)host_bufs[tid];
+      hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
 	  if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
-          hipStreamSynchronize(streams[tid]);
 	  hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(float), gpuMemcpyHostToDevice, streams[tid]);
       }
-      hipStreamSynchronize(streams[tid]);
-      rocfft_execute(gpu_plans_r2c[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipStreamSynchronize(streams[tid]);
+      rocfft_execute(gpu_plans_r2c[tid], (void**) &dev_bufs[tid], (void**) &dev_bufs[tid], roc_x_info[tid]);
       if(copy_from_dev)
       {
 	  hipMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyDeviceToHost, streams[tid]);
           hipStreamSynchronize(streams[tid]);
           std::complex<float> *tptr1 = (std::complex<float> *)host_bufs[tid];
 	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
+      }
+      else
+      {
+          hipStreamSynchronize(streams[tid]);
       }
 #else
       if((void *)in == (void *)out)
@@ -620,19 +622,22 @@ void Pw::FftForward (std::complex<double> * in, std::complex<double> * out, bool
       }
 #elif HIP_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
+      hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice, streams[tid]);
       }
-      hipStreamSynchronize(streams[tid]);
       rocfft_execute(gpu_plans[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {   
           hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost, streams[tid]);
           hipStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
+      else
+      {
+          hipStreamSynchronize(streams[tid]);
       }
 #else
       if(in == out)
@@ -689,19 +694,22 @@ void Pw::FftForward (std::complex<float> * in, std::complex<float> * out, bool c
       }
 #elif HIP_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
+      hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice, streams[tid]);
       }
-      hipStreamSynchronize(streams[tid]);
       rocfft_execute(gpu_plans_f[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {   
           hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost, streams[tid]);
           hipStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
+      else
+      {
+          hipStreamSynchronize(streams[tid]);
       }
 #else
       if(in == out)
@@ -801,20 +809,24 @@ void Pw::FftInverse (std::complex<float> * in, float * out, bool copy_to_dev, bo
           if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
       }
 #elif HIP_ENABLED
+      hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
-          for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
-          hipMemcpy(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyHostToDevice);
+          for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
+          hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<float>), gpuMemcpyHostToDevice, streams[tid]);
       }
-      rocfft_execute(gpu_plans_c2r[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipDeviceSynchronize();
+      rocfft_execute(gpu_plans_c2r[tid], (void**) &dev_bufs[tid], (void**) &dev_bufs[tid], roc_x_info[tid]);
       if(copy_from_dev)
       {
-          hipMemcpy(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(float), gpuMemcpyDeviceToHost);
-          hipDeviceSynchronize();
+          hipMemcpyAsync(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(float), gpuMemcpyDeviceToHost, streams[tid]);
+          hipStreamSynchronize(streams[tid]);
           float *tptr1 = (float *)host_bufs[tid];
           if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
+      }
+      else
+      {
+          hipStreamSynchronize(streams[tid]);
       }
 #else
       if((float *)in == out)
@@ -859,19 +871,22 @@ void Pw::FftInverse (std::complex<double> * in, std::complex<double> * out, bool
       }
 #elif HIP_ENABLED
       std::complex<double> *tptr = host_bufs[tid];
+      hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<double>), hipMemcpyHostToDevice, streams[tid]);
       }
-      hipStreamSynchronize(streams[tid]);
       rocfft_execute(gpu_plans_inv[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {   
           hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<double>), hipMemcpyDeviceToHost, streams[tid]);
           hipStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
+      else
+      {
+          hipStreamSynchronize(streams[tid]);
       }
 #else
       if(in == out)
@@ -927,19 +942,22 @@ void Pw::FftInverse (std::complex<float> * in, std::complex<float> * out, bool c
       }
 #elif HIP_ENABLED
       std::complex<float> *tptr = (std::complex<float> *)host_bufs[tid];
+      hipStreamSynchronize(streams[tid]);
       if(copy_to_dev)
       {
           for(size_t i = 0;i < pbasis;i++) tptr[i] = in[i];
           hipMemcpyAsync(dev_bufs[tid], tptr, pbasis*sizeof(std::complex<float>), hipMemcpyHostToDevice, streams[tid]);
       }
-      hipStreamSynchronize(streams[tid]);
       rocfft_execute(gpu_plans_f_inv[tid], (void**) &dev_bufs[tid], NULL, roc_x_info[tid]);
-      hipStreamSynchronize(streams[tid]);
       if(copy_from_dev)
       {   
           hipMemcpyAsync(tptr, dev_bufs[tid], pbasis*sizeof(std::complex<float>), hipMemcpyDeviceToHost, streams[tid]);
           hipStreamSynchronize(streams[tid]);
           for(size_t i = 0;i < pbasis;i++) out[i] = tptr[i];
+      }
+      else
+      {
+          hipStreamSynchronize(streams[tid]);
       }
 #else 
       if(in == out)

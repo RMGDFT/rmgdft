@@ -368,9 +368,10 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
 //        float *pp = (float *)pwave->host_bufs[tid];
 //        PadR2C((double *)psi_i, (double *)psi_j, pp);
 //        pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
-//        GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, 0);
+//        GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
 //        pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
 //        UnpadR2C(pp, workbuf);
+
         std::complex<float> *pp = (std::complex<float> *)pwave->host_bufs[tid];
         for(size_t idx=0;idx < pwave->global_basis;idx++) pp[idx] = std::complex<float>(psi_i[idx]*psi_j[idx], 0.0);
         pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);

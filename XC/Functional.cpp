@@ -344,7 +344,7 @@ void Functional::v_xc(double *rho_in, double *rho_core, double &etxc, double &vt
     if(nspin==1) {
 
         double etxcl=0.0, vtxcl=0.0, rhonegl=0.0;
-#pragma omp parallel for reduction(+:etxcl,vtxcl), reduction(-:rhonegl)
+#pragma omp parallel for reduction(+:etxcl), reduction(+:vtxcl), reduction(-:rhonegl)
         // spin unpolarized  
         for(int ix=0;ix < this->pbasis;ix++) {
 
@@ -583,7 +583,8 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
     ApplyGradient (vxc2, h, &h[this->pbasis], &h[2*this->pbasis], fd_order, "Fine");
     delete RT5;
 
-#pragma omp parallel for
+    double vtxcgc_1 = 0.0;
+#pragma omp parallel for reduction(+:vtxcgc_1)
     for(int ix=0;ix < this->pbasis;ix++) {
         double arho = fabs(rhoout[ix]);
         if(arho > epsr) {
@@ -592,11 +593,11 @@ void Functional::gradcorr(double *rho, double *rho_core, double &etxc, double &v
                     h[ix+2*this->pbasis] * gz[ix] ) ;
             v[ix] -= gdot;
             v[ix] -= vxc2[ix] * d2rho[ix];
-            vtxcgc -= rhoout[ix]*(gdot + vxc2[ix] * d2rho[ix]);
+            vtxcgc_1 -= rhoout[ix]*(gdot + vxc2[ix] * d2rho[ix]);
         }
     }
 
-    vtxc = vtxc + vtxcgc;
+    vtxc = vtxc + vtxcgc + vtxcgc_1;
     etxc = etxc + etxcgc;
 
     delete [] h;
