@@ -31,6 +31,8 @@ void GpuEleMul(double *dx, std::complex<float> *dy, int n, cudaStream_t stream);
 #if HIP_ENABLED
 #include "hip/hip_runtime.h"
 #include <hip/hip_complex.h>
+void GpuFill(double *dptr, int n, double fillval);
+void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
 void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream);
 void GpuEleMul(double *dx, std::complex<float> *dy, int n, hipStream_t stream);
 #endif
