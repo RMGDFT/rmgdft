@@ -142,5 +142,9 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
     fftw_free (beptr);
     delete [] phase_fftw;
 
+#if HIP_ENABLED
+    hipMemcpy(nl_weight_gpu, nl_weight, nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
+#endif
+
 
 }                               /* end GetWeight */

@@ -131,6 +131,9 @@ public:
 
     // Pointers to weight and Bweight
     KpointType *nl_weight;
+#if HIP_ENABLED
+    KpointType *nl_weight_gpu;
+#endif
     size_t nl_weight_size;
 
     //Pointer to vexx

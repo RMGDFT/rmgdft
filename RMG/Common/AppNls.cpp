@@ -57,6 +57,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     if(num_states > ct.non_local_block_size)
         throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
  
+    KpointType *weight = kpoint->nl_weight;
+#if HIP_ENABLED
+    weight = kpoint->nl_weight_gpu;
+#endif
+
 //   sintR:  <beta | psi_up, psi_down>, dimensiont is numProj * 2 * num_states in noncollinear case.
 //   nv : |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
 //   ns : |psi_up, psu_down > + |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
@@ -211,7 +216,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
         // This was bweight
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
-                ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
+                ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ZERO_t,  nv, P0_BASIS);
 
 #if CUDA_ENABLED
@@ -225,7 +230,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 ZERO_t,  nwork, dim_dnm);
 
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
-                ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
+                ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
 
     }
@@ -250,7 +255,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
         // This was bweight
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
-                ONE_t, kpoint->nl_weight,  P0_BASIS, nwork, num_tot_proj,
+                ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ZERO_t,  nv, P0_BASIS);
 
 #if CUDA_ENABLED

@@ -66,6 +66,11 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     KpointType beta(0.0);
     KpointType *newsint;
 
+    KpointType *weight = this->nl_weight;
+#if HIP_ENABLED
+    weight = this->nl_weight_gpu;
+#endif
+
     double acheck = ct.scf_accuracy;
     if(ct.scf_steps == 0) acheck = 0.01;
     occupied_tol = 0.1*acheck / std::max(1.0, (double)ct.nel);
@@ -127,7 +132,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     // Apply Hamiltonian to current set of eigenvectors. At the current time
     // this->ns is also computed in ApplyHamiltonianBlock by AppNls and stored in this->ns
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
-    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, this->nl_weight);
+    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, weight);
     delete RT1;
 
     if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -251,7 +256,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
         // Apply Hamiltonian to the new vectors
         RT1 = new RmgTimer("6-Davidson: Betaxpsi");
         newsint = this->newsint_local + nbase * this->BetaProjector->get_num_nonloc_ions() * ct.max_nl * ct.noncoll_factor;
-        this->BetaProjector->project(this, newsint, nbase*ct.noncoll_factor, notconv*ct.noncoll_factor, nl_weight);
+        this->BetaProjector->project(this, newsint, nbase*ct.noncoll_factor, notconv*ct.noncoll_factor, weight);
         delete RT1;
 
         if(ct.ldaU_mode != LDA_PLUS_U_NONE)
@@ -481,7 +486,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     delete [] eigs;
 
     RT1 = new RmgTimer("6-Davidson: Betaxpsi");
-    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, this->nl_weight);
+    this->BetaProjector->project(this, this->newsint_local, 0, nstates*ct.noncoll_factor, weight);
     delete RT1;
 
 }
