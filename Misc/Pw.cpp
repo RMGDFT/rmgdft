@@ -765,6 +765,26 @@ void Pw::FftInverse (std::complex<double> * in, double * out, bool copy_to_dev, 
           double *tptr1 = (double *)host_bufs[tid];
           if(out != tptr1) for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
+#elif HIP_ENABLED
+      hipStreamSynchronize(streams[tid]);
+      if(copy_to_dev)
+      {
+          std::complex<double> *tptr = (std::complex<double> *)host_bufs[tid];
+          for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
+          hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(std::complex<double>), gpuMemcpyHostToDevice, streams[tid]);
+      }
+      rocfft_execute(gpu_plans_z2d[tid], (void**) &dev_bufs[tid], (void**) &dev_bufs[tid], roc_x_info[tid]);
+      if(copy_from_dev)
+      {
+          hipMemcpyAsync(host_bufs[tid], dev_bufs[tid],  global_basis_alloc*sizeof(double), gpuMemcpyDeviceToHost, streams[tid]);
+          hipStreamSynchronize(streams[tid]);
+          double *tptr1 = (double *)host_bufs[tid];
+          if(out != tptr1) for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
+      }
+      else
+      {
+          hipStreamSynchronize(streams[tid]);
+      }
 #else
       if((double *)in == out)
           fftw_execute_dft_c2r (fftw_r2c_backward_plan_inplace,  reinterpret_cast<fftw_complex*>(in), out);
