@@ -499,6 +499,26 @@ void Pw::FftForward (double * in, std::complex<double> * out, bool copy_to_dev, 
           std::complex<double> *tptr1 = (std::complex<double> *)host_bufs[tid];
 	  for(size_t i = 0;i < pbasis;i++) out[i] = tptr1[i];
       }
+#elif HIP_ENABLED
+      double *tptr = (double *)host_bufs[tid];
+      hipStreamSynchronize(streams[tid]);
+      if(copy_to_dev)
+      {
+	  if(tptr != in) for(size_t i = 0;i < global_basis_alloc;i++) tptr[i] = in[i];
+	  hipMemcpyAsync(dev_bufs[tid], host_bufs[tid], global_basis_alloc*sizeof(double), gpuMemcpyHostToDevice, streams[tid]);
+      }
+      rocfft_execute(gpu_plans_d2z[tid], (void**) &dev_bufs[tid], (void**) &dev_bufs[tid], roc_x_info[tid]);
+      if(copy_from_dev)
+      {
+	  hipMemcpyAsync(host_bufs[tid], dev_bufs[tid], global_basis_alloc*sizeof(std::complex<double>), gpuMemcpyDeviceToHost, streams[tid]);
+          hipStreamSynchronize(streams[tid]);
+          std::complex<double> *tptr1 = (std::complex<double> *)host_bufs[tid];
+	  for(size_t i = 0;i < global_basis_alloc;i++) out[i] = tptr1[i];
+      }
+      else
+      {
+          hipStreamSynchronize(streams[tid]);
+      }
 #else
     if((void *)in == (void *)out)
     {
