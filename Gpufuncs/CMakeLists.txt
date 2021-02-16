@@ -80,8 +80,8 @@ endif(RMG_CUDA_ENABLED)
 
 if(RMG_HIP_ENABLED)
 set(MY_HIPCC_OPTIONS -fPIE)
-set_source_files_properties(GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
-hip_add_library(Gpufuncs GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp HIPCC_OPTIONS ${MY_HIPCC_OPTIONS})
+set_source_files_properties(GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp gramsch_update_psi_gpu.hip.cpp PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
+hip_add_library(Gpufuncs GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp gramsch_update_psi_gpu.hip.cpp HIPCC_OPTIONS ${MY_HIPCC_OPTIONS})
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 endif(RMG_HIP_ENABLED)
 

@@ -536,7 +536,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
     {
         RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
-        Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
+        //Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
+#if HIP_ENABLED
+        Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
+                   Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
+#else
+        Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
+                   Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+#endif
         delete RT3;
     }
 
@@ -623,7 +630,14 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             delete RT2;
 
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
-            Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
+            //Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
+#if HIP_ENABLED
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
+                       Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
+#else
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
+                       Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+#endif
             delete RT3;
 
         }
