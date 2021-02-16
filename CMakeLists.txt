@@ -97,6 +97,9 @@ else(BLAS_PROFILING)
 endif(BLAS_PROFILING)
 
 
+if(RMG_CUDA_ENABLED AND RMG_HIP_ENABLED)
+    MESSAGE(FATAL_ERROR "\nRMG_CUDA_ENABLED and RMG_HIP_ENABLED are mutually exclusive. Pick one or the other for a GPU build. If neither is set a CPU only build will be performed.")
+endif()
 
 # Now that the scalapack source has been included in the RMG distribution this should
 # always be available unless there is some issue with building it so we define it here.
