@@ -195,9 +195,17 @@ ct.state_block_size);
             int st_start = ct.num_states * ct.noncoll_factor;
             int st_thisblock = num_state_thisblock * ct.noncoll_factor;
             int st_block = ct.state_block_size * ct.noncoll_factor;
-            Betaxpsi(Kptr[kpt], st_start,              st_thisblock, sint_derx);
-            Betaxpsi(Kptr[kpt], st_start +   st_block, st_thisblock, sint_dery);
-            Betaxpsi(Kptr[kpt], st_start + 2*st_block, st_thisblock, sint_derz);
+            //Betaxpsi(Kptr[kpt], st_start,              st_thisblock, sint_derx);
+            //Betaxpsi(Kptr[kpt], st_start +   st_block, st_thisblock, sint_dery);
+            //Betaxpsi(Kptr[kpt], st_start + 2*st_block, st_thisblock, sint_derz);
+
+            OrbitalType *weight = Kptr[kpt]->nl_weight;
+#if HIP_ENABLED
+            weight = Kptr[kpt]->nl_weight_gpu;
+#endif
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], sint_derx, st_start, st_thisblock, weight);
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], sint_dery, st_start + st_block, st_thisblock, weight);
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], sint_derz, st_start + 2*st_block, st_thisblock, weight);
 
             for(int i = 0; i < num_nonloc_ions * st_thisblock * ct.max_nl; i++)
             {
