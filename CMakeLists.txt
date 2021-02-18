@@ -285,6 +285,13 @@ if(RMG_HIP_ENABLED)
         include_directories("${rocfft_INCLUDE_DIR}")
     endif()
 
+    find_package(rocsolver REQUIRED)
+    if(rocsolver_FOUND)
+        message(STATUS "Found rocsolver: " ${rocsolver_VERSION})
+        list(APPEND RMGLIBS ${rocsolver_LIBRARY})
+        include_directories("${rocsolver_INCLUDE_DIR}")
+    endif()
+
     add_definitions(-D__HIP_PLATFORM_HCC__=1)
 endif()
 

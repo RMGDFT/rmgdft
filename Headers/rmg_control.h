@@ -10,6 +10,7 @@
 
 #if HIP_ENABLED
     #include <hipblas.h>
+    #include <rocsolver.h>
 #endif
 
 #include "Klist.h"
@@ -714,6 +715,7 @@ public:
     // hipblas library handles
     hipblasHandle_t hipblas_handle;
     hipStream_t rocsolver_stream;
+    rocsolver_handle roc_handle;
 
 #endif
     

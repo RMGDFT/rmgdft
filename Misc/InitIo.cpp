@@ -58,9 +58,10 @@
 #endif
 
 #if HIP_ENABLED
-    #include "hip/hip_runtime_api.h"
-    #include "hip/hip_vector_types.h"
-    #include "rocfft.h"
+    #include <hip/hip_runtime_api.h>
+    #include <hip/hip_vector_types.h>
+    #include <rocfft.h>
+    #include <rocsolver.h>
 #endif
 
 #if LINUX
@@ -610,6 +611,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
 #if HIP_ENABLED
     rocfft_setup();
+    rocsolver_create_handle(&ct.roc_handle);
 #endif
 
 #endif
