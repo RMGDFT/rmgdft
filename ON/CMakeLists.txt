@@ -8,6 +8,10 @@ list(APPEND RMGLIBS Eldyn)
 if(QMCPACK_SUPPORT)
     list(APPEND RMGLIBS Interfaces)
 endif()
+if(RMG_HIP_ENABLED)
+    list(APPEND RMGLIBS Gpufuncs)
+endif()
+
 
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
 add_executable(${rmg-on} EXCLUDE_FROM_ALL Common/Main.cpp ${PROJECT_SOURCE_DIR}/Headers/main.h)
