@@ -417,6 +417,8 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
         /* open and save logfile handle, printf is stdout before here */
         ct.logfile = fopen(ct.logname, "w");
+        if (!ct.logfile)
+            throw RmgFatalException() <<  "Unable to open logfile in " << __FILE__ << " at line " << __LINE__ << ". Possible disk full or permissions error?\n";
     }
     else {
 #if (defined(_WIN32) || defined(_WIN64))
