@@ -100,7 +100,7 @@ public:
 
     // Hubbard U and J
     double Hubbard_U;
-    double Hubbard_J;
+    double Hubbard_J[3];
 
     /** Number of valence electrons */
     double zvalence;

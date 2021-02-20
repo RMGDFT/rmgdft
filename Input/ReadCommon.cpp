@@ -179,8 +179,8 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     If.RegisterInputKey("Hubbard_U", NULL , "",
                      CHECK_AND_FIX, OPTIONAL,
 "Hubbard U parameter for each atomic species using the format &"
-"Hubbard_U=\"Ni  6.5\"",
-                     "", LDAU_OPTIONS);
+"Hubbard_U=\"Ni  6.5  3d  0.0  0.0  0.0\"",
+                     "LDA+U prameters: elements, U value, orbital label, J[0-3]", LDAU_OPTIONS);
 
     If.RegisterInputKey("input_wave_function_file", &Infile, "Waves/wave.out",
                      CHECK_AND_FIX, OPTIONAL,

@@ -33,7 +33,7 @@
 
 **********************************************************************/
 
-typedef struct {double val; int index; std::string label;} HUBBARD_INFO;
+typedef struct {double U; int index; std::string label; double J[3]; } HUBBARD_INFO;
 void parse_Hubbard_info(std::string what, std::vector<HUBBARD_INFO> &hinfo, std::unordered_map<std::string, InputKey *>& InputMap, CONTROL& lc);
 
 namespace Ri = RmgInput;
@@ -114,7 +114,9 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     for(int isp = 0;isp < lc.num_species;isp++)
     {
         Species[isp].Hubbard_U = 0.0;
-        Species[isp].Hubbard_J = 0.0;
+        Species[isp].Hubbard_J[0] = 0.0;
+        Species[isp].Hubbard_J[1] = 0.0;
+        Species[isp].Hubbard_J[2] = 0.0;
     }
 
     std::vector<HUBBARD_INFO> hinfo;
@@ -122,20 +124,15 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
     for(auto it=hinfo.begin();it != hinfo.end();++it) 
     {
         HUBBARD_INFO h = *it;
-        Species[h.index].Hubbard_U = h.val;
+        Species[h.index].Hubbard_U = h.U;
         Species[h.index].ldaU_label = h.label;
         Species[h.index].is_ldaU = true;
+        Species[h.index].Hubbard_J[0] = h.J[0];
+        Species[h.index].Hubbard_J[1] = h.J[1];
+        Species[h.index].Hubbard_J[2] = h.J[2];
     
-        
     }
 
-    hinfo.empty();
-    parse_Hubbard_info("Hubbard_J", hinfo, InputMap, lc);
-    for(auto it=hinfo.begin();it != hinfo.end();++it) 
-    {
-        HUBBARD_INFO h = *it;
-        Species[h.index].Hubbard_J = h.val;
-    }
 
     // Load pseudopotentials
     for(int isp = 0;isp < lc.num_species;isp++)
@@ -183,7 +180,7 @@ void parse_Hubbard_info(std::string what, std::vector<HUBBARD_INFO> &hinfo, std:
             boost::trim_if(pline, boost::algorithm::is_any_of("\" \t"));
             std::vector<std::string> fields;
             boost::algorithm::split( fields, pline, boost::is_any_of(field_delims), boost::token_compress_on );
-            if(fields.size() == 2 || fields.size() == 3)
+            if(fields.size() >= 2)
             {
                 // Search the species structure for a matching symbol
                 boost::trim_if(fields[0], boost::algorithm::is_any_of("\" \t"));
@@ -193,10 +190,17 @@ void parse_Hubbard_info(std::string what, std::vector<HUBBARD_INFO> &hinfo, std:
                     if(!std::strcmp(fields[0].c_str(), Species[isp].atomic_symbol))
                     {
                         HUBBARD_INFO h;
-                        h.val = std::stod(fields[1]) / Ha_eV;
+                        h.U = std::stod(fields[1]) / Ha_eV;
                         h.index = isp;
                         h.label = "3d"; //default d orbital
-                        if(fields.size() == 3) h.label = fields[2];
+                        h.J[0] = 0.0;
+                        h.J[1] = 0.0;
+                        h.J[2] = 0.0;
+
+                        if(fields.size() >= 3) h.label = fields[2];
+                        if(fields.size() >= 4) h.J[0] = std::stod(fields[3]) / Ha_eV;
+                        if(fields.size() >= 5) h.J[1] = std::stod(fields[4]) / Ha_eV;
+                        if(fields.size() >= 6) h.J[2] = std::stod(fields[5]) / Ha_eV;
                         hinfo.push_back(h);
                     }
                 }
