@@ -168,7 +168,7 @@ void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc
             disp = sizeof(OrbitalHeader);
             KpointType *wfptr = Kptr[ik]->Kstates[is].psi;
             MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
-            MPI_File_write_all(mpi_fhand, wfptr, pbasis, MPI_DOUBLE, &status);
+            MPI_File_write_all(mpi_fhand, wfptr, pbasis, wftype, &status);
             MPI_File_close(&mpi_fhand);
         }
     }
