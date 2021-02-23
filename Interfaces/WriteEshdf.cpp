@@ -140,7 +140,7 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
     if(rsize != cont.fullSize * sizeof(double) * factor)
         rmg_error_handler (__FILE__,__LINE__,"problem reading wf file");
     close(fhand);
-    for(int idx=0;idx < cont.fullSize;idx++) values.push_back(tbuf[idx]);
+    for(int idx=0;idx < cont.fullSize*factor;idx++) values.push_back(tbuf[idx]);
     delete [] tbuf;
 
     if (!ct.is_gamma) {
