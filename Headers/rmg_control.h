@@ -6,6 +6,7 @@
 #if CUDA_ENABLED
     #include <cusolverDn.h>
     #include <cublas_v2.h>
+    #include <cublasXt.h>
 #endif
 
 #if HIP_ENABLED
@@ -695,6 +696,7 @@ public:
 
     // CUBLAS library handles
     cublasHandle_t cublas_handle;
+    cublasXtHandle_t cublasxt_handle;
     cusolverDnHandle_t cusolver_handle;
     cudaStream_t cusolver_stream;
 

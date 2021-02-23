@@ -542,6 +542,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
         }
+        if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasxt_handle) ) {
+            rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
+        }
+        cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[pct.local_rank]);
+        cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
 #endif
 #if HIP_ENABLED
         hipDeviceReset();
@@ -565,6 +570,11 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 if( CUBLAS_STATUS_SUCCESS != cublasCreate(&ct.cublas_handle) ) {
                     rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
                 }
+                if( CUBLAS_STATUS_SUCCESS != cublasXtCreate(&ct.cublasxt_handle) ) {
+                    rmg_error_handler (__FILE__, __LINE__, "CUBLAS: Handle not created\n");
+                }
+                cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[next_gpu]);
+                cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
 #endif
 #if HIP_ENABLED
                 hipDeviceReset();
