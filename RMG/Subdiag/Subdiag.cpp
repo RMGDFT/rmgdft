@@ -79,22 +79,31 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
     static KpointType *global_matrix1;
 
     // We pad Bij since we use it as scratch space for the all reduce ops on Hij and Sij
-    KpointType *Hij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
-    KpointType *Bij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
-    KpointType *Sij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
-    if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));     
-    double *eigs = (double *)GpuMallocManaged(2*nstates * sizeof(double));
+#if HIP_ENABLED || CUDA_ENABLED
+    if(!global_matrix1) gpuMallocHost((void **)&global_matrix1, nstates * nstates * sizeof(KpointType));     
+    KpointType *Hij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
+    KpointType *Bij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
+    KpointType *Sij = (KpointType *)GpuMallocHost(nstates * nstates * sizeof(KpointType));
+    double *eigs;
+    gpuMallocHost((void **)&eigs, 2*nstates * sizeof(double));
+#else
+    if(!global_matrix1) global_matrix1 = new KpointType[nstates * nstates];
+    KpointType *Hij = new KpointType[nstates * nstates];
+    KpointType *Bij = new KpointType[nstates * nstates];
+    KpointType *Sij = new KpointType[nstates * nstates];
+    double *eigs = new double[2*nstates];
+#endif
 
 //  For CPU only case and CUDA with managed memory psi_d is the same as orbital_storage but
 //  for HIP its a GPU buffer.
     KpointType *psi_d = orbital_storage;
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     // For HIP which does not yet have managed memory copy wavefunctions into array on GPU
     // and use it repeatedly to compute the matrix elements. This is much faster but puts
     // more pressure on GPU memory. A blas implementation that overlapped communication and
     // computation would make this unnecessary.
     gpuMalloc((void **)&psi_d, nstates * pbasis_noncoll * sizeof(KpointType));
-    hipMemcpyHtoD(psi_d, orbital_storage, nstates * pbasis_noncoll * sizeof(KpointType));
+    gpuMemcpy(psi_d, orbital_storage, nstates * pbasis_noncoll * sizeof(KpointType), gpuMemcpyHostToDevice);
 #endif
 
     char *trans_t = "t";
@@ -115,14 +124,6 @@ template <class KpointType> void Kpoint<KpointType>::Subdiag (double *vtot_eig, 
 
     // Each thread applies the operator to one wavefunction
     KpointType *h_psi = (KpointType *)tmp_arrayT;
-
-#if CUDA_ENABLED
-    // Until the finite difference operators are being applied on the GPU it's faster
-    // to make sure that the result arrays are present on the cpu side.
-    int device = -1;
-    gpuMemPrefetchAsync ( h_psi, nstates*pbasis_noncoll*sizeof(KpointType), device, NULL);
-    DeviceSynchronize();
-#endif
 
     int active_threads = ct.MG_THREADS_PER_NODE;
     if(ct.mpi_queue_mode) active_threads--;
@@ -294,9 +295,17 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     }
 
     // free memory
-    GpuFreeManaged(Sij);
-    GpuFreeManaged(Bij);
-    GpuFreeManaged(Hij);
+#if HIP_ENABLED || CUDA_ENABLED
+    gpuFreeHost(eigs);
+    GpuFreeHost(Sij);
+    GpuFreeHost(Bij);
+    GpuFreeHost(Hij);
+#else
+    delete [] eigs;
+    delete [] Sij;
+    delete [] Bij;
+    delete [] Hij;
+#endif
 
 
     // Update the orbitals
@@ -331,14 +340,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
         }
     }
 
-#if CUDA_ENABLED
-    gpuMemcpy(&orbital_storage[istart], &tmp_arrayT[istart], tlen, gpuMemcpyDefault);
-    //gpuMemPrefetchAsync (orbital_storage , nstates*sizeof(double), cudaCpuDeviceId, NULL);
-    // Not sure why but the cudaMemcpy behaves strangely here sometimes.
-    //for(int idx=0;idx<nstates*pbasis;idx++) orbital_storage[istart+idx] = tmp_arrayT[istart+idx];
-#else
     memcpy(&orbital_storage[istart], &tmp_arrayT[istart], tlen);
-#endif
 
     // Rotate EXX
     if(ct.xc_is_hybrid && Functional::is_exx_active())
@@ -354,13 +356,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
 #if CUDA_ENABLED || HIP_ENABLED
     // After the first step this matrix does not need to be as large
-    if(ct.scf_steps == 0) {GpuFreeManaged(global_matrix1);global_matrix1 = NULL;}
-    GpuFreeManaged(eigs);
-#else
-    delete [] eigs;
-#endif
-
-#if HIP_ENABLED
+    if(ct.scf_steps == 0) {gpuFreeHost(global_matrix1);global_matrix1 = NULL;}
     gpuFree(psi_d);
 #endif
 }

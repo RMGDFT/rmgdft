@@ -206,14 +206,16 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     // Wavefunctions are actually stored here
     size_t galloc = ((size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType);
 
-#if HIP_ENABLED
-   //InitGpuMalloc(galloc); 
-#endif
-    rptr = (OrbitalType *)GpuMallocManaged(galloc);
-    nv = (OrbitalType *)GpuMallocManaged((size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
-    if(need_ns) ns = (OrbitalType *)GpuMallocManaged((size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
-//    if(ct.xc_is_hybrid) prev = (OrbitalType *)GpuMallocManaged(((size_t)kpt_storage * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
+   // Blocks of pinned host memory
+   InitGpuMallocHost((size_t)4*ct.max_states*ct.max_states*sizeof(OrbitalType)); 
+
+    gpuMallocHost((void **)&rptr, galloc);
+    gpuMallocHost((void **)&nv, (size_t)ct.non_local_block_size * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
+
+    if(need_ns) gpuMallocHost((void **)&ns, (size_t)ct.max_states * (size_t)P0_BASIS * ct.noncoll_factor * sizeof(OrbitalType));
+
 #else
+
     // Wavefunctions are actually stored here
     std::string newpath;
 
@@ -231,7 +233,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     else
     {
         rptr = new OrbitalType[(size_t)kpt_storage * (size_t)ct.alloc_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
-//        if(ct.xc_is_hybrid) prev = new OrbitalType[(size_t)kpt_storage * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024]();
     }
 
     if(ct.nvme_work)
@@ -264,7 +265,11 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     OrbitalType *vexx_ptr = NULL;
     if(ct.xc_is_hybrid)
     {
-        vexx_ptr = (OrbitalType *)GpuMallocManaged(((size_t)ct.num_kpts_pe * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
+#if HIP_ENABLED || CUDA_ENABLED
+    gpuMallocHost((void **)&vexx_ptr, ((size_t)ct.num_kpts_pe * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024) * sizeof(OrbitalType));
+#else
+    vexx_ptr = new OrbitalType[(size_t)ct.num_kpts_pe * (size_t)ct.run_states * (size_t)P0_BASIS * ct.noncoll_factor + (size_t)1024];
+#endif
         ct.vexx_alloc[0] = sizeof(OrbitalType) * (size_t)ct.run_states * (size_t)P0_BASIS * (size_t)ct.noncoll_factor * (size_t)ct.num_kpts_pe;
         MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[1], 1, MPI_LONG, MPI_MIN, pct.grid_comm);
         MPI_Allreduce(&ct.vexx_alloc[0], &ct.vexx_alloc[2], 1, MPI_LONG, MPI_MAX, pct.grid_comm);
@@ -277,7 +282,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         if(ct.xc_is_hybrid)
         {
             Kptr[kpt]->vexx = &vexx_ptr[vexx_offset];
-//            Kptr[kpt]->prev_orbitals = &prev[vexx_offset];
         }
 
         // for band structure calculation only one k point storage is initilized.
@@ -537,7 +541,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
     {
         RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
         //Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
         Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
                    Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
 #else
@@ -631,7 +635,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
             RmgTimer *RT3 = new RmgTimer("2-Init: betaxpsi");
             //Betaxpsi (Kptr[kpt], 0, Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->newsint_local);
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
             Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
                        Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight_gpu);
 #else
