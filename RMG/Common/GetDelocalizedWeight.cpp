@@ -155,7 +155,11 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
 #if HIP_ENABLED
     size_t stress_factor = 1;
     if(ct.stress) stress_factor = 4;
-    hipMemcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
+    hipMemcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType), hipMemcpyHostToDevice);
+#elif CUDA_ENABLED
+    size_t stress_factor = 1;
+    if(ct.stress) stress_factor = 4;
+    cudaMemcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType), cudaMemcpyHostToDevice);
 #endif
 
 }                               /* end GetWeight */

@@ -58,7 +58,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
  
     KpointType *weight = kpoint->nl_weight;
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     weight = kpoint->nl_weight_gpu;
 #endif
 
@@ -219,11 +219,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ZERO_t,  nv, P0_BASIS);
 
-#if CUDA_ENABLED
-        gpuMemcpy(ns, psi, stop*sizeof(KpointType), gpuMemcpyDefault);
-#else
         memcpy(ns, psi, stop*sizeof(KpointType));
-#endif
 
         RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm, 
                 ONE_t, M_qqq,  dim_dnm, sint_compack, dim_dnm,

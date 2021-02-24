@@ -90,7 +90,7 @@ template <class KpointType> Kpoint<KpointType>::Kpoint(KSTRUCT &kpin, int kindex
     this->grid_comm = newcomm;
     this->kidx = kindex;
     this->nl_weight = NULL;
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     this->nl_weight_gpu = NULL;
 #endif
     this->orbital_weight = NULL;
@@ -1103,9 +1103,11 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
         gpuGetDevice(&device);
 #if CUDA_ENABLED
         cudaMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
+        custat = cudaMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
+        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
 #elif HIP_ENABLED
         hipMemAdvise ( this->nl_weight, stress_factor * this->nl_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
-        custat = gpuMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
+        custat = hipMalloc((void **)&this->nl_weight_gpu, stress_factor * this->nl_weight_size * sizeof(KpointType));
         RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMalloc failed.\n");
 #endif
     }
@@ -1160,7 +1162,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
         else
         {
             gpuFree(this->nl_weight);
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
             gpuFree(this->nl_weight_gpu);
 #endif
         }

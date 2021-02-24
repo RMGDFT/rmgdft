@@ -200,7 +200,7 @@ ct.state_block_size);
             //Betaxpsi(Kptr[kpt], st_start + 2*st_block, st_thisblock, sint_derz);
 
             OrbitalType *weight = Kptr[kpt]->nl_weight;
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
             weight = Kptr[kpt]->nl_weight_gpu;
 #endif
             Kptr[kpt]->BetaProjector->project(Kptr[kpt], sint_derx, st_start, st_thisblock, weight);

@@ -63,7 +63,7 @@ template <class KpointType> void Kpoint<KpointType>::MgridSubspace (double *vtot
     int my_pe_offset = my_pe_x % pct.coalesce_factor;
 
     KpointType *weight = this->nl_weight;
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     weight = this->nl_weight_gpu;
 #endif
     double mean_occ_res = DBL_MAX;

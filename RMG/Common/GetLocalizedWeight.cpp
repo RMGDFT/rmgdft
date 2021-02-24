@@ -144,6 +144,8 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
 
 #if HIP_ENABLED
     hipMemcpy(nl_weight_gpu, nl_weight, nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
+#elif CUDA_ENABLED
+    cudaMemcpy(nl_weight_gpu, nl_weight, nl_weight_size*sizeof(KpointType), cudaMemcpyHostToDevice);
 #endif
 
 
