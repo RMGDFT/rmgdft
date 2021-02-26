@@ -91,23 +91,61 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
     if(!strcmp("r", side)) ka = n;
     if(!strcmp("R", side)) ka = n;
 
-   if(typeid(DataType) == typeid(std::complex<double>)) {
+    cudaPointerAttributes attr;
+    cudaError_t cudaerr;
+    cudaerr = cudaPointerGetAttributes(&attr, A);
+    bool a_dev = false;
+    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) a_dev = true;
+    cudaerr = cudaPointerGetAttributes(&attr, B);
+    bool b_dev = false;
+    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) b_dev = true;
+    cudaerr = cudaPointerGetAttributes(&attr, C);
+    bool c_dev = false;
+    if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) c_dev = true;
+
+    size_t a_size = (size_t)lda * (size_t)ka;
+    size_t b_size = (size_t)ldb * (size_t)n;
+    size_t c_size = (size_t)ldc * (size_t)n;
+
+    if(typeid(DataType) == typeid(std::complex<double>)) {
+        std::complex<double> *dA=(std::complex<double> *)A, *dB=(std::complex<double> *)B, *dC=(std::complex<double> *)C;
+        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(std::complex<double>));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(std::complex<double>));
+        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(std::complex<double>));
+        if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(std::complex<double>), cudaMemcpyDefault);
+        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(std::complex<double>), cudaMemcpyDefault);
+        if(!c_dev && std::abs(beta) != 0.0) cudaMemcpy(dC, C, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         custat = cublasZsymm(ct.cublas_handle, cu_side, cu_uplo, m, n,
                             (cuDoubleComplex *)&alpha,
-                            (cuDoubleComplex*)A, lda,
-                            (cuDoubleComplex*)B, ldb,
-                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+                            (cuDoubleComplex*)dA, lda,
+                            (cuDoubleComplex*)dB, ldb,
+                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc );
+        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
+        if(!c_dev) gpuFree(dC);
+        if(!b_dev) gpuFree(dB);
+        if(!a_dev) gpuFree(dA);
         ProcessGpublasError(custat);
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
     }
     else {
+        double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
+        if(!a_dev) gpuMalloc((void **)&dA, a_size * sizeof(double));
+        if(!b_dev) gpuMalloc((void **)&dB, b_size * sizeof(double));
+        if(!c_dev) gpuMalloc((void **)&dC, c_size * sizeof(double));
+        if(!a_dev) cudaMemcpy(dA, A, a_size * sizeof(double), cudaMemcpyDefault);
+        if(!b_dev) cudaMemcpy(dB, B, b_size * sizeof(double), cudaMemcpyDefault);
+        if(!c_dev && beta != 0.0) cudaMemcpy(dC, C, c_size * sizeof(double), cudaMemcpyDefault);
         custat = cublasDsymm(ct.cublas_handle, cu_side, cu_uplo, m, n,
                             (double*)&alpha,
-                            (double*)A, lda,
-                            (double*)B, ldb,
-                            (double*)&beta, (double*)C, ldc );
+                            (double*)dA, lda,
+                            (double*)dB, ldb,
+                            (double*)&beta, (double*)dC, ldc );
         ProcessGpublasError(custat);
         RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+        if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(double), cudaMemcpyDefault);
+        if(!c_dev) gpuFree(dC);
+        if(!b_dev) gpuFree(dB);
+        if(!a_dev) gpuFree(dA);
     }
 
 #else
