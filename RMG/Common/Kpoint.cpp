@@ -1161,10 +1161,8 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
         }
         else
         {
-            gpuFree(this->nl_weight);
-#if HIP_ENABLED || CUDA_ENABLED
+            gpuFreeHost(this->nl_weight);
             gpuFree(this->nl_weight_gpu);
-#endif
         }
 #else
         int stress_factor = 1;
