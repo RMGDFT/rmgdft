@@ -147,11 +147,11 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             memcpy(Exx_onscf->PreOrbital, LocalOrbital->storage_proj, size);
             F->start_exx_rmg();
 
-            double *rho_mat_global = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
-            double *Cij_global = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
-            double *rho_mat_local = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_thispe * sizeof(double) + 8);
-            double *Cij_local = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_thispe * sizeof(double) + 8);
-            double *Sij_inverse = (double *)GpuMallocManaged(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
+            double *rho_mat_global = (double *)RmgMallocHost(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
+            double *Cij_global = (double *)RmgMallocHost(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
+            double *rho_mat_local = (double *)RmgMallocHost(LocalOrbital->num_tot * LocalOrbital->num_thispe * sizeof(double) + 8);
+            double *Cij_local = (double *)RmgMallocHost(LocalOrbital->num_tot * LocalOrbital->num_thispe * sizeof(double) + 8);
+            double *Sij_inverse = (double *)RmgMallocHost(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
 
             mat_dist_to_global(mat_X, pct.desca, rho_mat_global);
             mat_dist_to_global(matB, pct.desca, Sij_inverse);
@@ -189,11 +189,11 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
             double exx_elapsed_time = my_crtc() - exx_start_time;
             ExxProgressTag(exx_step_time, exx_elapsed_time);
 
-            GpuFreeManaged(rho_mat_local);
-            GpuFreeManaged(Cij_local);
-            GpuFreeManaged(rho_mat_global);
-            GpuFreeManaged(Cij_global);
-            GpuFreeManaged(Sij_inverse);
+            RmgFreeHost(rho_mat_local);
+            RmgFreeHost(Cij_local);
+            RmgFreeHost(rho_mat_global);
+            RmgFreeHost(Cij_global);
+            RmgFreeHost(Sij_inverse);
 
             if(ct.exx_steps == 0)
                 UpdatePot(vxc, vh, vxc_old, vh_old, vnuc, rho, rho_oppo, rhoc, rhocore);

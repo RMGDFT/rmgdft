@@ -65,9 +65,9 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     cublasStatus_t custat;
     int ione = 1;
     int sizr = n * k;
-    double *Y = (double *)GpuMallocManaged(n * k *  sizeof(double));
+    double *Y = (double *)RmgMallocHost(n * k *  sizeof(double));
     GpuFill(Y, n * k, 0.0);
-    double *T = (double *)GpuMallocManaged(n * k * sizeof(double));
+    double *T = (double *)RmgMallocHost(n * k * sizeof(double));
 #else
     double *Y = new double[n * k]();
 #endif
@@ -104,8 +104,8 @@ void FoldedSpectrumIterator(double *A, int n, double *eigs, int k, double *X, do
     }    
 
 #if CUDA_ENABLED
-    GpuFreeManaged(T);
-    GpuFreeManaged(Y);
+    RmgFreeHost(T);
+    RmgFreeHost(Y);
 #else
     delete [] Y;
 #endif

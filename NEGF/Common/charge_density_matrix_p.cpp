@@ -55,7 +55,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
 
     /*  allocate memory for green_C, grenn_C is tri-diagonal */
     ntot = pmo.ntot;
-    green_C = (std::complex<double> *)GpuMallocManaged(pmo.ntot_low * sizeof(std::complex<double>));
+    green_C = (std::complex<double> *)RmgMallocHost(pmo.ntot_low * sizeof(std::complex<double>));
     //my_malloc_init( green_C, pmo.ntot_low, std::complex<double> );
     my_malloc_init( sigma_idx, cei.num_probe, int );
 
@@ -142,8 +142,8 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
             maxcol = rmg_max(maxcol, pmo.mxlocc_cond[idx_C]);
         }
 
-        sigma = (std::complex<double> *)GpuMallocManaged( maxrow * maxcol * sizeof(std::complex<double>) ); 
-        gamma = (std::complex<double> *)GpuMallocManaged( maxrow * maxcol* sizeof(std::complex<double>) ); 
+        sigma = (std::complex<double> *)RmgMallocHost( maxrow * maxcol * sizeof(std::complex<double>) ); 
+        gamma = (std::complex<double> *)RmgMallocHost( maxrow * maxcol* sizeof(std::complex<double>) ); 
 
 
         maxrow = 0;
@@ -158,9 +158,9 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
             totcol += pmo.mxlocc_cond[i];
         }
 
-        green_C_row = (std::complex<double> *)GpuMallocManaged(maxcol * totrow * sizeof(std::complex<double>));
-        green_C_col = (std::complex<double> *)GpuMallocManaged(maxrow * totcol * sizeof(std::complex<double>));
-        rho_mn = (std::complex<double> *)GpuMallocManaged(ntot * sizeof(std::complex<double>));
+        green_C_row = (std::complex<double> *)RmgMallocHost(maxcol * totrow * sizeof(std::complex<double>));
+        green_C_col = (std::complex<double> *)RmgMallocHost(maxrow * totcol * sizeof(std::complex<double>));
+        rho_mn = (std::complex<double> *)RmgMallocHost(ntot * sizeof(std::complex<double>));
 
         /*   Calculating the non-equilibrium term eq. 33 of PRB 65, 165401  */
         for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
@@ -238,12 +238,12 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
             if(cei.probe_noneq > 0) break;
         }      /* iprobe loop ends here */
 
-        GpuFreeManaged( green_C_row );
-        GpuFreeManaged( green_C_col );
-        GpuFreeManaged( rho_mn );
+        RmgFreeHost( green_C_row );
+        RmgFreeHost( green_C_col );
+        RmgFreeHost( rho_mn );
 
-        GpuFreeManaged( sigma );
-        GpuFreeManaged( gamma );
+        RmgFreeHost( sigma );
+        RmgFreeHost( gamma );
 
 
         delete RT2;
@@ -376,7 +376,7 @@ void charge_density_matrix_p (std::complex<double> * sigma_all)
 
 
 
-    GpuFreeManaged( green_C );
+    RmgFreeHost( green_C );
     my_free( sigma_idx );
 
     delete RT;

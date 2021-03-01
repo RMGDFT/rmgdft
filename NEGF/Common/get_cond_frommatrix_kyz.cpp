@@ -141,8 +141,8 @@ void get_cond_frommatrix_kyz ()
 	/*======================== Reading Matrices ===============================*/
 
 
-	H_tri = (std::complex<double> *)GpuMallocManaged( pmo.ntot_low *sizeof(std::complex<double>) );
-	G_tri = (std::complex<double> *)GpuMallocManaged( pmo.ntot_low *sizeof(std::complex<double>) );
+	H_tri = (std::complex<double> *)RmgMallocHost( pmo.ntot_low *sizeof(std::complex<double>) );
+	G_tri = (std::complex<double> *)RmgMallocHost( pmo.ntot_low *sizeof(std::complex<double>) );
 	my_malloc_init( lcr[0].Htri, pmo.ntot, double );
 	my_malloc_init( lcr[0].Stri, pmo.ntot, double );
 
@@ -154,7 +154,7 @@ void get_cond_frommatrix_kyz ()
         nC_max = rmg_max(nC_max, idx);
     }
     
-    Gamma1 = (std::complex<double> *)GpuMallocManaged( 5 *nC_max *sizeof( std::complex<double>) ); 
+    Gamma1 = (std::complex<double> *)RmgMallocHost( 5 *nC_max *sizeof( std::complex<double>) ); 
     Gamma2 = Gamma1 + nC_max;
     green_C =  Gamma1 + 2*nC_max;
     temp_matrix1 =  Gamma1 + 3*nC_max;
@@ -203,7 +203,7 @@ void get_cond_frommatrix_kyz ()
         idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
     }
 
-    sigma_all = (std::complex<double> *) GpuMallocManaged( idx * sizeof( std::complex<double> ) );
+    sigma_all = (std::complex<double> *) RmgMallocHost( idx * sizeof( std::complex<double> ) );
 
 
     /*============== Allocate memory for tot, tott, g ====================*/
@@ -216,7 +216,7 @@ void get_cond_frommatrix_kyz ()
     }
 
 
-    work = (std::complex<double> *) GpuMallocManaged( 12*idx * sizeof( std::complex<double> ));
+    work = (std::complex<double> *) RmgMallocHost( 12*idx * sizeof( std::complex<double> ));
 
     /*===================================================================*/
 
@@ -471,13 +471,13 @@ void get_cond_frommatrix_kyz ()
     my_free(ener1_temp);
     my_free(cond_temp);
 
-    GpuFreeManaged(work);
-    GpuFreeManaged(sigma_all);
+    RmgFreeHost(work);
+    RmgFreeHost(sigma_all);
     my_free(sigma_idx);
 
-    GpuFreeManaged(Gamma1);
-    GpuFreeManaged(H_tri);
-    GpuFreeManaged(G_tri);
+    RmgFreeHost(Gamma1);
+    RmgFreeHost(H_tri);
+    RmgFreeHost(G_tri);
     my_free(lcr[0].Htri);
     my_free(lcr[0].Stri);
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)

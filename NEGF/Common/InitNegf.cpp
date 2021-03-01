@@ -326,10 +326,10 @@ void InitNegf (double * vh, double * rho, double * rhocore, double * rhoc, doubl
     delete [] proj_per_ion;
 
     size_t size = LocalProj->num_thispe * LocalOrbital->num_thispe * sizeof(double);
-    Kbpsi_mat_local = (double *) GpuMallocManaged(size);
+    Kbpsi_mat_local = (double *) RmgMallocHost(size);
 
     size = LocalProj->num_tot * LocalOrbital->num_tot * sizeof(double);
-    Kbpsi_mat = (double *) GpuMallocManaged(size);
+    Kbpsi_mat = (double *) RmgMallocHost(size);
     for(int ib = 0; ib < ct.num_blocks; ib++)
         Kbpsi_mat_blocks.push_back(&Kbpsi_mat[ pmo.orb_index[ib] * LocalProj->num_tot]); 
 

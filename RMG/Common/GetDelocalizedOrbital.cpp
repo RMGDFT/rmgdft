@@ -68,7 +68,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
 
     int state_count = CountAtomicOrbitals();
 
-    KpointType *npsi = (KpointType *)GpuMallocManaged(state_count * pbasis * sizeof(KpointType));
+    KpointType *npsi = (KpointType *)RmgMallocHost(state_count * pbasis * sizeof(KpointType));
 
     if(ct.spinorbit && state_count > nstates)
     {
@@ -198,7 +198,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
             }
         }
     }
-    GpuFreeManaged(npsi);
+    RmgFreeHost(npsi);
 }
 
 

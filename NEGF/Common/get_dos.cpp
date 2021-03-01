@@ -89,24 +89,24 @@ void get_dos (STATE * states)
     }
 
     ntot = pmo.ntot;
-    lcr[0].Htri = (double *)GpuMallocManaged(pmo.ntot * sizeof(double));
-    lcr[0].Stri = (double *)GpuMallocManaged(pmo.ntot * sizeof(double));
+    lcr[0].Htri = (double *)RmgMallocHost(pmo.ntot * sizeof(double));
+    lcr[0].Stri = (double *)RmgMallocHost(pmo.ntot * sizeof(double));
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         idx = pmo.mxllda_lead[iprobe-1] * pmo.mxlocc_lead[iprobe-1];
-        lcr[iprobe].H00 = (double *)GpuMallocManaged(idx * sizeof(double));
-        lcr[iprobe].S00 = (double *)GpuMallocManaged(idx * sizeof(double));
-        lcr[iprobe].H01 = (double *)GpuMallocManaged(idx * sizeof(double));
-        lcr[iprobe].S01 = (double *)GpuMallocManaged(idx * sizeof(double));
+        lcr[iprobe].H00 = (double *)RmgMallocHost(idx * sizeof(double));
+        lcr[iprobe].S00 = (double *)RmgMallocHost(idx * sizeof(double));
+        lcr[iprobe].H01 = (double *)RmgMallocHost(idx * sizeof(double));
+        lcr[iprobe].S01 = (double *)RmgMallocHost(idx * sizeof(double));
     }
 
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
         i = cei.probe_in_block[iprobe - 1];
         idx = pmo.mxllda_cond[i] * pmo.mxlocc_lead[iprobe-1];
-        lcr[iprobe].HCL = (double *)GpuMallocManaged(idx * sizeof(double));
-        lcr[iprobe].SCL = (double *)GpuMallocManaged(idx * sizeof(double));
+        lcr[iprobe].HCL = (double *)RmgMallocHost(idx * sizeof(double));
+        lcr[iprobe].SCL = (double *)RmgMallocHost(idx * sizeof(double));
     }
 
 
@@ -121,7 +121,7 @@ void get_dos (STATE * states)
         idx_C = cei.probe_in_block[iprobe - 1];  /* block index */
         idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C]);
     }
-    sigma = (std::complex<double> *)GpuMallocManaged(idx * sizeof(std::complex<double>));
+    sigma = (std::complex<double> *)RmgMallocHost(idx * sizeof(std::complex<double>));
 
     sigma_idx = new int[cei.num_probe];
 
@@ -133,7 +133,7 @@ void get_dos (STATE * states)
         idx += pmo.mxllda_cond[idx_C] * pmo.mxlocc_cond[idx_C];
     }
 
-    sigma_all = (std::complex<double> *)GpuMallocManaged(idx * sizeof(std::complex<double>));
+    sigma_all = (std::complex<double> *)RmgMallocHost(idx * sizeof(std::complex<double>));
 
 
     /*============== Allocate memory for tot, tott, g ====================*/
@@ -145,14 +145,14 @@ void get_dos (STATE * states)
         idx = std::max(idx, pmo.mxllda_cond[idx_C] * pmo.mxlocc_lead[iprobe-1]);
     }
 
-    work = (std::complex<double> *)GpuMallocManaged(12*idx * sizeof(std::complex<double>));
-    green_C = (std::complex<double> *)GpuMallocManaged(pmo.ntot_low * sizeof(std::complex<double>));
+    work = (std::complex<double> *)RmgMallocHost(12*idx * sizeof(std::complex<double>));
+    green_C = (std::complex<double> *)RmgMallocHost(pmo.ntot_low * sizeof(std::complex<double>));
     st1 = ( E_POINTS + pmo.npe_energy-1)/pmo.npe_energy;
-    double *Green_store = (double *)GpuMallocManaged(st1 * pmo.ntot * sizeof(double));
+    double *Green_store = (double *)RmgMallocHost(st1 * pmo.ntot * sizeof(double));
     for(int idx = 0; idx < st1 * pmo.ntot; idx++) Green_store[idx] = 0.0;
 
 
-    double *density_matrix =(double *)GpuMallocManaged(pmo.ntot * sizeof(double));
+    double *density_matrix =(double *)RmgMallocHost(pmo.ntot * sizeof(double));
 
     /*===================================================================*/
 
@@ -164,8 +164,8 @@ void get_dos (STATE * states)
     nz2 = cei.dos_window_end[2] * get_FG_RATIO();
 
 
-    double *rho_energy =(double *)GpuMallocManaged(E_POINTS * get_FNX_GRID() * sizeof(double));
-    double *rho_energy2 =(double *)GpuMallocManaged(E_POINTS * get_FNY_GRID() * sizeof(double));
+    double *rho_energy =(double *)RmgMallocHost(E_POINTS * get_FNX_GRID() * sizeof(double));
+    double *rho_energy2 =(double *)RmgMallocHost(E_POINTS * get_FNY_GRID() * sizeof(double));
     for(int idx = 0; idx< E_POINTS * get_FNX_GRID(); idx++) rho_energy[idx] = 0.0;
     for(int idx = 0; idx< E_POINTS * get_FNY_GRID(); idx++) rho_energy2[idx] = 0.0;
 
@@ -230,7 +230,7 @@ void get_dos (STATE * states)
     /*===================================================================*/
 
     size_t size = LocalOrbital->num_thispe * LocalOrbital->num_thispe * sizeof(double);
-    double *rho_matrix_local = (double *)GpuMallocManaged(size);
+    double *rho_matrix_local = (double *)RmgMallocHost(size);
 
     /*for (iene = pmo.myblacs; iene < E_POINTS; iene += pmo.npe_energy)*/
     for (iene = 0; iene < E_POINTS; iene++)
@@ -362,25 +362,25 @@ void get_dos (STATE * states)
 
     /*===============================*/
     delete [] sigma_idx;
-    GpuFreeManaged(sigma_all);
-    GpuFreeManaged(green_C);
+    RmgFreeHost(sigma_all);
+    RmgFreeHost(green_C);
 
-    GpuFreeManaged(lcr[0].Htri);
-    GpuFreeManaged(lcr[0].Stri);
+    RmgFreeHost(lcr[0].Htri);
+    RmgFreeHost(lcr[0].Stri);
     for (iprobe = 1; iprobe <= cei.num_probe; iprobe++)
     {
-        GpuFreeManaged(lcr[iprobe].H00);
-        GpuFreeManaged(lcr[iprobe].S00);
-        GpuFreeManaged(lcr[iprobe].H01);
-        GpuFreeManaged(lcr[iprobe].S01);
+        RmgFreeHost(lcr[iprobe].H00);
+        RmgFreeHost(lcr[iprobe].S00);
+        RmgFreeHost(lcr[iprobe].H01);
+        RmgFreeHost(lcr[iprobe].S01);
     }
 
     /*===============================*/
 
-    GpuFreeManaged(rho_energy); 
-    GpuFreeManaged(rho_energy2); 
-    GpuFreeManaged(Green_store);
-    GpuFreeManaged(rho_matrix_local);
+    RmgFreeHost(rho_energy); 
+    RmgFreeHost(rho_energy2); 
+    RmgFreeHost(Green_store);
+    RmgFreeHost(rho_matrix_local);
 
 
 }

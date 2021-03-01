@@ -42,7 +42,7 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
     }
 
 
-    work = (std::complex<double> *)GpuMallocManaged(12*maxrow * maxcol *sizeof( std::complex<double>));
+    work = (std::complex<double> *)RmgMallocHost(12*maxrow * maxcol *sizeof( std::complex<double>));
 
     max_sigma_col = 0;
     max_sigma_row = 0;
@@ -135,6 +135,6 @@ void sigma_all_energy_point (std::complex<double> * sigma_all, double kvecy, dou
     }        /* iprobe loop ends here */
 
 
-    GpuFreeManaged(work);
+    RmgFreeHost(work);
 
 }

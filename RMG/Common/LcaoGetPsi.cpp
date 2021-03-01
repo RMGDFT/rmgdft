@@ -78,7 +78,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
 
     state_count = CountAtomicOrbitals();
 
-    KpointType *npsi = (KpointType *)GpuMallocManaged(state_count * pbasis * sizeof(KpointType));
+    KpointType *npsi = (KpointType *)RmgMallocHost(state_count * pbasis * sizeof(KpointType));
 
     if(ct.spinorbit && state_count > nstates)
     {
@@ -237,7 +237,7 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
         }
 
         // Now generate a random mix
-        KpointType *rmatrix = (KpointType *)GpuMallocManaged(state_count * nstates * sizeof(KpointType));
+        KpointType *rmatrix = (KpointType *)RmgMallocHost(state_count * nstates * sizeof(KpointType));
 
         for(int st = 0;st < state_count;st++) {
             for(int idx = 0;idx < nstates;idx++) {
@@ -259,10 +259,10 @@ template <class KpointType> void Kpoint<KpointType>::LcaoGetPsi (void)
                     npsi, pbasis, rmatrix, state_count, beta, states[state_count].psi+pbasis, lda);
 
 
-        GpuFreeManaged(rmatrix);
+        RmgFreeHost(rmatrix);
         delete [] aidum;
     }
-    GpuFreeManaged(npsi);
+    RmgFreeHost(npsi);
 
 
     /*Initialize any additional states to random start*/

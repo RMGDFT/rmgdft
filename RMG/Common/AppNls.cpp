@@ -105,10 +105,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     if(ct.is_ddd_non_diagonal) M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
     size_t alloc1 = (size_t)num_tot_proj * (size_t)M_cols * ct.noncoll_factor;
 
-    KpointType *sint_compack = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc);
-    KpointType *nwork = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc);
-    KpointType *M_dnm = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc1);
-    KpointType *M_qqq = (KpointType *)GpuMallocManaged(sizeof(KpointType) * alloc1);
+    KpointType *sint_compack = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
+    KpointType *nwork = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
+    KpointType *M_dnm = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
+    KpointType *M_qqq = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
     for(size_t i = 0;i < alloc;i++) sint_compack[i] = 0.0;
     std::complex<double> *M_dnm_C = (std::complex<double> *) M_dnm;
     std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq;
@@ -272,10 +272,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     }
 
-    GpuFreeManaged(M_qqq);
-    GpuFreeManaged(M_dnm);
-    GpuFreeManaged(nwork);
-    GpuFreeManaged(sint_compack);
+    RmgFreeHost(M_qqq);
+    RmgFreeHost(M_dnm);
+    RmgFreeHost(nwork);
+    RmgFreeHost(sint_compack);
 
 
     // Add in ldaU contributions to nv

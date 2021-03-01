@@ -67,12 +67,12 @@ template <class T> Exx_on<T>::Exx_on (
           int mode_in) : G(G_in), G_h(G_h_in), L(L_in), wavefile(wavefile_in), Phi(Phi_in), occ(occ_in), mode(mode_in)
 {
     RmgTimer RT0("5-Functional: Exx init");
-    DePhi = (T *)GpuMallocManaged(Phi.num_tot * Phi.pbasis * sizeof(T));
+    DePhi = (T *)RmgMallocHost(Phi.num_tot * Phi.pbasis * sizeof(T));
     Exxb = new Exxbase<T>(G, G_h, L, wavefile, Phi.num_tot, occ, DePhi, ct.exx_mode);
-    Omega_j = (T *)GpuMallocManaged(Phi.num_tot * Phi.pbasis * sizeof(T));
-    PreOrbital = (T *)GpuMallocManaged(Phi.num_thispe * Phi.pbasis * sizeof(T));
-    Xij_mat =  (T *)GpuMallocManaged(Phi.num_tot * Phi.num_tot * sizeof(T));
-    Xij_mat_Sinv =  (T *)GpuMallocManaged(Phi.num_tot * Phi.num_tot * sizeof(T));
+    Omega_j = (T *)RmgMallocHost(Phi.num_tot * Phi.pbasis * sizeof(T));
+    PreOrbital = (T *)RmgMallocHost(Phi.num_thispe * Phi.pbasis * sizeof(T));
+    Xij_mat =  (T *)RmgMallocHost(Phi.num_tot * Phi.num_tot * sizeof(T));
+    Xij_mat_Sinv =  (T *)RmgMallocHost(Phi.num_tot * Phi.num_tot * sizeof(T));
     for(int i = 0; i < Phi.num_tot * Phi.num_tot; i++) Xij_mat[i] = 0.0;
     for(int i = 0; i < Phi.num_tot * Phi.pbasis; i++) Omega_j[i] = 0.0;
 }
@@ -197,7 +197,7 @@ template <> void Exx_on<double>::Xij(double *Sij_inverse, LocalObject<double> &P
 
     double zero = 0.0, one = 1.0;
 
-    double *mat_tem = (double *)GpuMallocManaged(ntot*ntot*sizeof(double));
+    double *mat_tem = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
     RmgGemm("C", "N", na, ntot, pbasis, vol, Phi.storage_proj, pbasis,
                (double *)Omega_j, pbasis, zero, mat_tem, na);
     for(int idx = 0; idx < na * ntot; idx++) Xij_mat[idx] = 0.0;
@@ -222,7 +222,7 @@ template <> void Exx_on<double>::Xij(double *Sij_inverse, LocalObject<double> &P
     RmgGemm("N", "N", ntot, ntot, ntot, one, mat_tem, ntot,
             Sij_inverse, ntot, zero, Xij_mat_Sinv, ntot);
 
-    GpuFreeManaged(mat_tem);
+    RmgFreeHost(mat_tem);
 
 };
 
@@ -256,8 +256,8 @@ template <> void Exx_on<double>::HijExx(double *Hij_glob, LocalObject<double> &P
 
     double zero = 0.0, one = 1.0;
 
-    double *mat_glob = (double *)GpuMallocManaged(ntot*ntot*sizeof(double));
-    double *mat_tem = (double *)GpuMallocManaged(ntot*ntot*sizeof(double));
+    double *mat_glob = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
+    double *mat_tem = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
     RmgGemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
             Phi.storage_proj, pbasis, zero, mat_tem, na);
 
@@ -270,8 +270,8 @@ template <> void Exx_on<double>::HijExx(double *Hij_glob, LocalObject<double> &P
             mat_tem, ntot, one, Hij_glob, ntot);
 
 
-    GpuFreeManaged(mat_tem);
-    GpuFreeManaged(mat_glob);
+    RmgFreeHost(mat_tem);
+    RmgFreeHost(mat_glob);
 
 }
 
@@ -285,7 +285,7 @@ template <> void Exx_on<double>::OmegaSinv(double *Sij_inverse, LocalObject<doub
 
     double zero = 0.0, one = 1.0;
 
-    double *phi_tem = (double *)GpuMallocManaged(ntot*pbasis*sizeof(double));
+    double *phi_tem = (double *)RmgMallocHost(ntot*pbasis*sizeof(double));
 
     RmgGemm("N", "N", pbasis, ntot, ntot, one, Omega_j, pbasis,
             Sij_inverse, ntot, zero, phi_tem, pbasis);
@@ -293,7 +293,7 @@ template <> void Exx_on<double>::OmegaSinv(double *Sij_inverse, LocalObject<doub
     size_t size = ntot * pbasis * sizeof(double);
     memcpy(Omega_j, phi_tem, size);
 
-    GpuFreeManaged(phi_tem);
+    RmgFreeHost(phi_tem);
 
 }
 
@@ -314,8 +314,8 @@ template <> void Exx_on<double>::OmegaRes(double *res, LocalObject<double> &Phi)
 
     double zero = 0.0, one = 1.0;
 
-    double *mat_glob = (double *)GpuMallocManaged(ntot*ntot*sizeof(double));
-    double *mat_local = (double *)GpuMallocManaged(ntot*na*sizeof(double));
+    double *mat_glob = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
+    double *mat_local = (double *)RmgMallocHost(ntot*na*sizeof(double));
     RmgGemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
             Phi.storage_proj, pbasis, zero, mat_local, na);
 
@@ -330,8 +330,8 @@ template <> void Exx_on<double>::OmegaRes(double *res, LocalObject<double> &Phi)
     RmgGemm("N", "N", pbasis, na, ntot, ct.exx_fraction, Omega_j, pbasis,
             mat_local, ntot, one, res, pbasis);
 
-    GpuFreeManaged(mat_local);
-    GpuFreeManaged(mat_glob);
+    RmgFreeHost(mat_local);
+    RmgFreeHost(mat_glob);
 
 }
 

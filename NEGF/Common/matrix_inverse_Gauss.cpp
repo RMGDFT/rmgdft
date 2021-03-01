@@ -76,7 +76,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri, std::complex<double> * 
     size_t n_alloc;
     n_alloc = maxrow * maxcol * sizeof(std::complex<double>);
 
-    Gii = (std::complex<double> *)GpuMallocManaged(n_alloc);
+    Gii = (std::complex<double> *)RmgMallocHost(n_alloc);
 
 
     n_alloc = 0;
@@ -85,7 +85,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri, std::complex<double> * 
         n_alloc += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
     }
 
-    Gdiag = (std::complex<double> *) GpuMallocManaged(n_alloc * sizeof(std::complex<double>));
+    Gdiag = (std::complex<double> *) RmgMallocHost(n_alloc * sizeof(std::complex<double>));
 
 
     /*
@@ -284,7 +284,7 @@ void matrix_inverse_Gauss (std::complex<double> * H_tri, std::complex<double> * 
 
 
     my_free( ndiag_begin );
-    GpuFreeManaged( Gdiag );
-    GpuFreeManaged( Gii );
+    RmgFreeHost( Gdiag );
+    RmgFreeHost( Gii );
 }
 

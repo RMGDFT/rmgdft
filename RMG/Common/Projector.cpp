@@ -646,7 +646,7 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
     int pbasis = kptr->pbasis;
 
 #if CUDA_ENABLED || HIP_ENABLED
-    KpointType *nlarray = (KpointType *)GpuMallocManaged(sizeof(KpointType) * this->num_tot_proj * num_states);
+    KpointType *nlarray = (KpointType *)RmgMallocHost(sizeof(KpointType) * this->num_tot_proj * num_states);
 #else
     KpointType *nlarray = new KpointType[this->num_tot_proj * num_states]();
 #endif
@@ -669,7 +669,7 @@ void Projector<KpointType>::betaxpsi_calculate (Kpoint<KpointType> *kptr, Kpoint
     }
 
 #if CUDA_ENABLED || HIP_ENABLED
-    GpuFreeManaged(nlarray);
+    RmgFreeHost(nlarray);
 #else
     delete [] nlarray;
 #endif

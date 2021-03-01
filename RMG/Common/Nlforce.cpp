@@ -111,7 +111,7 @@ template <typename OrbitalType> void Nlforce (double * veff, double *vxc, Kpoint
     
     size =  num_nonloc_ions * ct.state_block_size * ct.max_nl * ct.noncoll_factor; 
     size += 1;
-    OrbitalType *sint_der = (OrbitalType *)GpuMallocManaged(3*size * sizeof(OrbitalType));
+    OrbitalType *sint_der = (OrbitalType *)RmgMallocHost(3*size * sizeof(OrbitalType));
     OrbitalType *sint_derx = sint_der + 0 * size;
     OrbitalType *sint_dery = sint_der + 1 * size;
     OrbitalType *sint_derz = sint_der + 2 * size;
@@ -350,7 +350,7 @@ ct.state_block_size);
     delete[] gamma_allions;
     delete[] par_gamma_allions;
     delete[] par_omega_allions;
-    GpuFreeManaged(sint_der);
+    RmgFreeHost(sint_der);
 
     delete[] tmp_force_omega;
     delete[] tmp_force_gamma;

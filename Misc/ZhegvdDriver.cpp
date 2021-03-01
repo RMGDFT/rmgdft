@@ -48,7 +48,7 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
 
     if(work == NULL)
     {
-        zwork = (cuDoubleComplex *)GpuMallocManaged(lwork * sizeof(std::complex<double>));
+        zwork = (cuDoubleComplex *)RmgMallocHost(lwork * sizeof(std::complex<double>));
     }
     else
     {
@@ -64,7 +64,7 @@ void ZhegvdDriver(std::complex<double> *A, std::complex<double> *B, double *eigs
     if(cu_status != CUSOLVER_STATUS_SUCCESS) rmg_error_handler (__FILE__, __LINE__, " cusolverDnZhegvd failed.");
 
     gpuFree(devInfo);
-    if(work == NULL) GpuFreeManaged(zwork);
+    if(work == NULL) RmgFreeHost(zwork);
 }
 
 #else

@@ -1098,7 +1098,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     }
     else
     {
-        this->nl_weight = (KpointType *)GpuMallocManaged(stress_factor * this->nl_weight_size * sizeof(KpointType));
+        this->nl_weight = (KpointType *)RmgMallocHost(stress_factor * this->nl_weight_size * sizeof(KpointType));
         int device = -1;
         gpuGetDevice(&device);
 #if CUDA_ENABLED
@@ -1128,7 +1128,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
 
 #if CUDA_ENABLED || HIP_ENABLED
     if (this->newsint_local)
-        GpuFreeManaged(this->newsint_local);
+        RmgFreeHost(this->newsint_local);
 #else
     if (this->newsint_local)
         delete [] this->newsint_local;
@@ -1140,7 +1140,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     sint_alloc *= (size_t)ct.max_states;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
 #if CUDA_ENABLED || HIP_ENABLED
-    this->newsint_local = (KpointType *)GpuMallocManaged(sint_alloc * sizeof(KpointType));
+    this->newsint_local = (KpointType *)RmgMallocHost(sint_alloc * sizeof(KpointType));
 #else
     this->newsint_local = new KpointType[sint_alloc]();
 #endif
@@ -1248,7 +1248,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     }
     else
     {
-        this->orbital_weight = (KpointType *)GpuMallocManaged(this->orbital_weight_size * sizeof(KpointType));
+        this->orbital_weight = (KpointType *)RmgMallocHost(this->orbital_weight_size * sizeof(KpointType));
         int device = -1;
         gpuGetDevice(&device);
 #if CUDA_ENABLED
@@ -1277,7 +1277,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
 #if CUDA_ENABLED || HIP_ENABLED
     if (this->orbitalsint_local)
-        GpuFreeManaged(this->orbitalsint_local);
+        RmgFreeHost(this->orbitalsint_local);
 #else
     if (this->orbitalsint_local)
         delete [] this->orbitalsint_local;
@@ -1290,7 +1290,7 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     sint_alloc *= (size_t)ct.max_states * ct.noncoll_factor;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
 #if CUDA_ENABLED || HIP_ENABLED
-    this->orbitalsint_local = (KpointType *)GpuMallocManaged(sint_alloc * sizeof(KpointType));
+    this->orbitalsint_local = (KpointType *)RmgMallocHost(sint_alloc * sizeof(KpointType));
 #else
     this->orbitalsint_local = new KpointType[sint_alloc]();
 #endif

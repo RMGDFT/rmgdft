@@ -99,9 +99,9 @@ LdaU_on::LdaU_on(LocalObject<double> &LO, BaseGrid &BG)
             dimx, dimy, dimz, 1, BG, density, pct.grid_comm);
     this->AtomicOrbital->GetAtomicOrbitals(ct.num_ions, BG);
     size_t size = tot_orbitals_ldaU * LO.num_tot * sizeof(double);
-    this->Upsi_mat = (double *)GpuMallocManaged(size);
+    this->Upsi_mat = (double *)RmgMallocHost(size);
     size = this->AtomicOrbital->num_thispe * LO.num_thispe * sizeof(double);
-    this->Upsi_mat_local = (double *)GpuMallocManaged(size);
+    this->Upsi_mat_local = (double *)RmgMallocHost(size);
 
     // now only works for atomic orbital expanded in whole space.
     assert(this->AtomicOrbital->num_thispe == tot_orbitals_ldaU);

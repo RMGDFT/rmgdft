@@ -344,7 +344,7 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
     int pstride = K.OrbitalProjector->get_pstride();
 
     size_t size =  (size_t)num_tot_proj * ct.state_block_size * sizeof(KpointType);
-    KpointType *sint_der = (KpointType *)GpuMallocManaged(3*size * sizeof(KpointType));
+    KpointType *sint_der = (KpointType *)RmgMallocHost(3*size * sizeof(KpointType));
     KpointType *sint_derx = sint_der + 0 * size;
     KpointType *sint_dery = sint_der + 1 * size;
     KpointType *sint_derz = sint_der + 2 * size;
@@ -545,6 +545,6 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
     delete [] par_occ_x;
     delete [] par_occ_y;
     delete [] par_occ_z;
-    GpuFreeManaged(sint_der);
+    RmgFreeHost(sint_der);
 
 }

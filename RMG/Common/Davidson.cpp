@@ -113,10 +113,10 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     bool *converged = new bool[ct.max_states]();
 
 #if CUDA_ENABLED || HIP_ENABLED
-    KpointType *h_psi = (KpointType *)GpuMallocManaged(pbasis_noncoll * ct.max_states * sizeof(KpointType));
-    KpointType *hr = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
-    KpointType *sr = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
-    KpointType *vr = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
+    KpointType *h_psi = (KpointType *)RmgMallocHost(pbasis_noncoll * ct.max_states * sizeof(KpointType));
+    KpointType *hr = (KpointType *)RmgMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
+    KpointType *sr = (KpointType *)RmgMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
+    KpointType *vr = (KpointType *)RmgMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
 #else
     KpointType *h_psi = new KpointType[pbasis_noncoll * ct.max_states];
     KpointType *hr = new KpointType[ct.max_states * ct.max_states]();
@@ -408,14 +408,14 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
             // Rotate orbitals
             RT1 = new RmgTimer("6-Davidson: rotate orbitals");
 #if CUDA_ENABLED || HIP_ENABLED
-            KpointType *npsi = (KpointType *)GpuMallocManaged(nstates*pbasis_noncoll*sizeof(KpointType));
+            KpointType *npsi = (KpointType *)RmgMallocHost(nstates*pbasis_noncoll*sizeof(KpointType));
 #else
             KpointType *npsi = new KpointType[nstates*pbasis_noncoll];
 #endif
             RmgGemm(trans_n, trans_n, pbasis_noncoll, nstates, nbase, alpha, psi, pbasis_noncoll, vr, ct.max_states, beta, npsi, pbasis_noncoll);
             for(int idx=0;idx < nstates*pbasis_noncoll;idx++)psi[idx] = npsi[idx];
 #if CUDA_ENABLED || HIP_ENABLED
-            GpuFreeManaged(npsi);
+            RmgFreeHost(npsi);
 #else
             delete [] npsi;
 #endif
@@ -470,10 +470,10 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
 
 
 #if CUDA_ENABLED || HIP_ENABLED
-    GpuFreeManaged(vr);
-    GpuFreeManaged(sr);
-    GpuFreeManaged(hr);
-    GpuFreeManaged(h_psi);
+    RmgFreeHost(vr);
+    RmgFreeHost(sr);
+    RmgFreeHost(hr);
+    RmgFreeHost(h_psi);
 #else
     delete [] vr;
     delete [] sr;

@@ -81,14 +81,14 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
             theta_local, num_orb, mtwo, H_Phi.storage_proj, pbasis);
 
     if(NlProj.num_thispe < 1) return;
-    double *kbpsi_local = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
-    double *kbpsi_work = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
-    double *kbpsi_work1 = (double *) GpuMallocManaged(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
+    double *kbpsi_local = (double *) RmgMallocHost(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
+    double *kbpsi_work = (double *) RmgMallocHost(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
+    double *kbpsi_work1 = (double *) RmgMallocHost(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
 
     double *dnmI, *qnmI;
     double *dnm, *qnm;
-    dnm = (double *) GpuMallocManaged(num_prj * num_prj*sizeof(double));
-    qnm = (double *) GpuMallocManaged(num_prj * num_prj*sizeof(double));
+    dnm = (double *) RmgMallocHost(num_prj * num_prj*sizeof(double));
+    qnm = (double *) RmgMallocHost(num_prj * num_prj*sizeof(double));
 
 
     mat_global_to_local (NlProj, Phi, kbpsi_glob, kbpsi_local);
@@ -152,11 +152,11 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
             kbpsi_work1, num_prj, one, H_Phi.storage_proj, pbasis);
 
 
-    GpuFreeManaged(dnm);;
-    GpuFreeManaged(qnm);;
-    GpuFreeManaged(kbpsi_work1);;
-    GpuFreeManaged(kbpsi_work);;
-    GpuFreeManaged(kbpsi_local);;
+    RmgFreeHost(dnm);;
+    RmgFreeHost(qnm);;
+    RmgFreeHost(kbpsi_work1);;
+    RmgFreeHost(kbpsi_work);;
+    RmgFreeHost(kbpsi_local);;
 
     delete(RT);
 

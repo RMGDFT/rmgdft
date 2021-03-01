@@ -213,8 +213,8 @@ template <class T> Exxbase<T>::Exxbase (
         pwave = new Pw(*LG, L, 1, false);
     }
 
-    gfac = (double *)GpuMallocManaged((size_t)pwave->pbasis*sizeof(double));
-    gfac_packed = (double *)GpuMallocManaged((size_t)pwave->global_basis_packed*sizeof(double));
+    gfac = (double *)RmgMallocHost((size_t)pwave->pbasis*sizeof(double));
+    gfac_packed = (double *)RmgMallocHost((size_t)pwave->global_basis_packed*sizeof(double));
     std::fill(gfac_packed, gfac_packed + pwave->global_basis_packed, 0.0);
 #if CUDA_ENABLED || HIP_ENABLED
     gpuMalloc((void **)&gfac_dev, pwave->pbasis*sizeof(double));
@@ -1539,8 +1539,8 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
     size_t length = (size_t)nstates_occ * ngrid * sizeof(T);
     //printf("\n Memory(MB) for psi_k1, psi_k2: %f", double(length)/1000.0/1000.0 );
 
-    T *psi_k1 = (T *)GpuMallocManaged(length);
-    T *psi_k2 = (T *)GpuMallocManaged(length);
+    T *psi_k1 = (T *)RmgMallocHost(length);
+    T *psi_k2 = (T *)RmgMallocHost(length);
     T *psi_k1_map;
     T *psi_k2_map;
 
@@ -1658,7 +1658,7 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
     int state_per_pe = (nstates_occ + npes -1)/npes;
 
     length = ngrid * sizeof(std::complex<double>);
-    std::complex<double> *xij_fft = (std::complex<double> *)GpuMallocManaged(length);
+    std::complex<double> *xij_fft = (std::complex<double> *)RmgMallocHost(length);
 
     double scale = 1.0 / (double)pwave->global_basis;
     for(int st_k1 = 0; st_k1 < nstates_occ; st_k1++){
@@ -1682,9 +1682,9 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
         }
     }
 
-    GpuFreeManaged(xij_fft);
-    GpuFreeManaged(psi_k1);
-    GpuFreeManaged(psi_k2);
+    RmgFreeHost(xij_fft);
+    RmgFreeHost(psi_k1);
+    RmgFreeHost(psi_k2);
     munmap(psi_k1_map, length);
     munmap(psi_k2_map, length);
     close(serial_fd_k1);
@@ -1710,7 +1710,7 @@ template <class T> Exxbase<T>::~Exxbase(void)
     //std::string filename= wavefile + "_spin"+ std::to_string(pct.spinpe);
     //unlink(filename.c_str());
 
-    GpuFreeManaged(gfac);
+    RmgFreeHost(gfac);
 #if CUDA_ENABLED
     gpuFree(gfac_dev);
     gpuFree(gfac_dev_packed);
@@ -1883,7 +1883,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     int npes = G.get_NPES();
 
     size_t length = (size_t)nstates * (size_t)pwave->pbasis * sizeof(std::complex<double>);
-    std::complex<double> *psi_q = (std::complex<double> *)GpuMallocManaged(length);
+    std::complex<double> *psi_q = (std::complex<double> *)RmgMallocHost(length);
     std::complex<double> *psi_q_map;
     double kq[3];
 
@@ -2090,7 +2090,7 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
     MPI_Free_mem(atbuf);
     MPI_Free_mem(arbuf);
 
-    GpuFreeManaged(psi_q);
+    RmgFreeHost(psi_q);
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
         fftw_free(wvec[tid]);

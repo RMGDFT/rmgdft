@@ -243,7 +243,7 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
     rmg_printf("This version of RMG was not built with Scalapack support. Redirecting to LAPACK.");
     return GeneralDiagLapack(A, B, eigs, V, N, M, ld);
 #else
-    KpointType *global_matrix1 = (KpointType *)GpuMallocManaged(ct.max_states * ct.max_states * sizeof(KpointType));
+    KpointType *global_matrix1 = (KpointType *)RmgMallocHost(ct.max_states * ct.max_states * sizeof(KpointType));
 
     int info = 0;
     // Create 1 scalapack instance per grid_comm. We use a static Scalapack here since initialization on large systems is expensive
@@ -394,7 +394,7 @@ int GeneralDiagScaLapack(KpointType *A, KpointType *B, double *eigs, KpointType 
         }
     }
 
-    GpuFreeManaged(global_matrix1);
+    RmgFreeHost(global_matrix1);
     return info;
 
 #endif
@@ -431,7 +431,7 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
         int itype = 1, ione = 1;
         int lwork = 3 * N * N + 6 * N;
         //int lwork = 6 * N * N + 6 * N + 2;
-        double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
+        double *work = (double *)RmgMallocHost(lwork * sizeof(KpointType));
 
         if(M == N) {
             magma_dsygvd(itype, MagmaVec, MagmaLower, N, (double *)A, ld, (double *)B, ld, eigs, work, lwork, iwork, liwork, &info);
@@ -444,7 +444,7 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
         }
 
 
-        GpuFreeManaged(work);
+        RmgFreeHost(work);
 
         for(int i=0;i < N*ld;i++) A[i] = Asave[i];
         for(int i=0;i < N*ld;i++) B[i] = Bsave[i];

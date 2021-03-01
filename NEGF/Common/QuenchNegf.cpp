@@ -124,7 +124,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
 
 
 
-    sigma_all = (std::complex<double> *)GpuMallocManaged(idx1*sizeof(std::complex<double>));
+    sigma_all = (std::complex<double> *)RmgMallocHost(idx1*sizeof(std::complex<double>));
 
     if (ct.runflag != 111)
     {
@@ -179,12 +179,12 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     int max_block_size = *std::max_element(ct.block_dim, ct.block_dim + ct.num_blocks);
     double *H_tem, *S_tem, *H_local, *S_local, *rho_matrix_local;
     size_t size = max_block_size * max_block_size * sizeof(double);
-    H_tem = (double *)GpuMallocManaged(size);
-    S_tem = (double *)GpuMallocManaged(size);
+    H_tem = (double *)RmgMallocHost(size);
+    S_tem = (double *)RmgMallocHost(size);
     size = LocalOrbital->num_thispe * LocalOrbital->num_thispe * sizeof(double);
-    H_local = (double *)GpuMallocManaged(size);
-    S_local = (double *)GpuMallocManaged(size);
-    rho_matrix_local = (double *)GpuMallocManaged(size);
+    H_local = (double *)RmgMallocHost(size);
+    S_local = (double *)RmgMallocHost(size);
+    rho_matrix_local = (double *)RmgMallocHost(size);
     
 
 
@@ -244,10 +244,10 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
 
     }
 
-    GpuFreeManaged(H_tem);
-    GpuFreeManaged(S_tem);
-    GpuFreeManaged(H_local);
-    GpuFreeManaged(S_local);
+    RmgFreeHost(H_tem);
+    RmgFreeHost(S_tem);
+    RmgFreeHost(H_local);
+    RmgFreeHost(S_local);
 
 
     /* ========= interaction between L3-L4 is zero ========== */
@@ -338,7 +338,7 @@ void QuenchNegf (STATE * states, STATE * states1, double * vxc, double * vh, dou
     }                           /* end for */
 
 
-    GpuFreeManaged(rho_matrix_local);
+    RmgFreeHost(rho_matrix_local);
 
     if (pct.imgpe == 0)
         printf ("\n Quench is done \n");

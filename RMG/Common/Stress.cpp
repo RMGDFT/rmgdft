@@ -165,7 +165,7 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
 
     int pbasis = PX0_GRID * PY0_GRID * PZ0_GRID;
     int pbasis_noncol = pbasis * ct.noncoll_factor;
-    T *grad_psi = (T *)GpuMallocManaged(3*pbasis_noncol*sizeof(T));
+    T *grad_psi = (T *)RmgMallocHost(3*pbasis_noncol*sizeof(T));
     T *psi_x = grad_psi;
     T *psi_y = psi_x + pbasis_noncol;
     T *psi_z = psi_x + 2*pbasis_noncol;
@@ -219,7 +219,7 @@ template <class T> void Stress<T>::Kinetic_term(Kpoint<T> **Kpin, BaseGrid &BG, 
     for(int i = 0; i < 9; i++) stress_tensor[i] += stress_tensor_R[i];
 
     if(ct.verbose) print_stress("Kinetic term", stress_tensor_R);
-    GpuFreeManaged(grad_psi);
+    RmgFreeHost(grad_psi);
 }
 
 template void Stress<double>::Hartree_term(double *rho, Pw &pwaves);
@@ -453,14 +453,14 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
     size_t size = num_nonloc_ions * ct.state_block_size * ct.max_nl * ct.noncoll_factor; 
     size += 1;
     //  sint_der:  leading dimension is num_nonloc_ions * ct.max_nl, 
-    T *sint_der = (T *)GpuMallocManaged(size * sizeof(T));
+    T *sint_der = (T *)RmgMallocHost(size * sizeof(T));
 
     int num_proj = num_nonloc_ions * ct.max_nl;
     int num_proj_noncoll = num_proj * ct.noncoll_factor;
-    T *proj_mat = (T *)GpuMallocManaged(num_proj_noncoll * num_proj_noncoll * sizeof(T));
+    T *proj_mat = (T *)RmgMallocHost(num_proj_noncoll * num_proj_noncoll * sizeof(T));
 
     //  proj_mat_q: for US pseudopotenital only = sum_i  <beta_n *r[] |partial_ psi_i> eig[i] <psi_i|beta_n>
-    T *proj_mat_q = (T *)GpuMallocManaged(num_proj_noncoll * num_proj_noncoll * sizeof(T));
+    T *proj_mat_q = (T *)RmgMallocHost(num_proj_noncoll * num_proj_noncoll * sizeof(T));
 
     //  determine the number of occupied states for all kpoints.
 
@@ -659,9 +659,9 @@ template <class T> void Stress<T>::NonLocal_term(Kpoint<T> **Kptr,
 
     delete [] state_end;
     delete [] state_start;
-    GpuFreeManaged(proj_mat);
-    GpuFreeManaged(proj_mat_q);
-    GpuFreeManaged(sint_der);
+    RmgFreeHost(proj_mat);
+    RmgFreeHost(proj_mat_q);
+    RmgFreeHost(sint_der);
 
     for(int i = 0; i < 9; i++) stress_tensor_nl[i] = stress_tensor_nl[i]/Rmg_L.omega;
 
@@ -826,7 +826,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
 
     int num_proj = num_nonloc_ions * ct.max_nl;
     int num_proj_noncoll = num_proj * ct.noncoll_factor;
-    T *proj_mat = (T *)GpuMallocManaged(num_proj_noncoll * num_proj_noncoll * sizeof(T));
+    T *proj_mat = (T *)RmgMallocHost(num_proj_noncoll * num_proj_noncoll * sizeof(T));
 
     //  determine the number of occupied states for all kpoints.
 
@@ -847,7 +847,7 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
     size_t size = num_nonloc_ions * ct.max_nl * num_occupied * ct.noncoll_factor; 
     size += 1;
     //  sint_der:  leading dimension is num_nonloc_ions * ct.max_nl, 
-    T *sint_der = (T *)GpuMallocManaged(size * sizeof(T));
+    T *sint_der = (T *)RmgMallocHost(size * sizeof(T));
 
 
     // proj_mat = Sum_stm kpt (kpweigth *  <beta_n|psi_i> occ[i] <psi_i|beta_m>) eq 27 in PRB 61, 8433
@@ -1061,8 +1061,8 @@ template <class T> void Stress<T>::NonLocalQfunc_term(Kpoint<T> **Kptr,
     if(ct.verbose) print_stress("NonlocalQfunc term", stress_tensor_nlq);
     delete [] sum;
     delete [] veff_grad;
-    GpuFreeManaged(sint_der);
-    GpuFreeManaged(proj_mat);
+    RmgFreeHost(sint_der);
+    RmgFreeHost(proj_mat);
 
 
 }

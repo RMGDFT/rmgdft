@@ -951,9 +951,9 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
     int num_kn = ct.klist.num_k_nn;
 
     size_t length = nstates * nbasis_noncoll * sizeof(T);
-    T *psi_k = (T *)GpuMallocManaged(length);
-    T *psi_q = (T *)GpuMallocManaged(length);
-    T *Mmn = (T *)GpuMallocManaged(num_q * num_kn * nstates * nstates * sizeof(T));
+    T *psi_k = (T *)RmgMallocHost(length);
+    T *psi_q = (T *)RmgMallocHost(length);
+    T *Mmn = (T *)RmgMallocHost(num_q * num_kn * nstates * nstates * sizeof(T));
 
     for(int idx = 0; idx < num_q * num_kn * nstates * nstates; idx++) Mmn[idx] = 0.0;
     double vel = L.get_omega() / ((double)ngrid);
@@ -1042,8 +1042,8 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         SPECIES &AtomType = Species[Atoms[ion].species];
         num_tot_proj += AtomType.nh;
     }
-    T *Nlweight_k = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
-    T *Nlweight_q = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
+    T *Nlweight_k = (T *)RmgMallocHost(num_tot_proj * nbasis* sizeof(T));
+    T *Nlweight_q = (T *)RmgMallocHost(num_tot_proj * nbasis* sizeof(T));
     std::complex<double> *kphase_C = (std::complex<double> *)&kphase;
     for(int ik = 0; ik < num_q; ik++)
     {
@@ -1169,11 +1169,11 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
 
     delete RT1;
 
-    GpuFreeManaged(psi_k);
-    GpuFreeManaged(psi_q);
-    GpuFreeManaged(Mmn);
-    GpuFreeManaged(Nlweight_k);
-    GpuFreeManaged(Nlweight_q);
+    RmgFreeHost(psi_k);
+    RmgFreeHost(psi_q);
+    RmgFreeHost(Mmn);
+    RmgFreeHost(Nlweight_k);
+    RmgFreeHost(Nlweight_q);
 
 }
 
@@ -1248,11 +1248,11 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st
     int tot_st_q = num_st_q * ct.noncoll_factor;
 
     size_t alloc = (size_t)num_tot_proj * (size_t)num_st_k * ct.noncoll_factor * sizeof(T);
-    T *sint_ik = (T *)GpuMallocManaged(alloc);
-    T *sint_tem = (T *)GpuMallocManaged(alloc);
+    T *sint_ik = (T *)RmgMallocHost(alloc);
+    T *sint_tem = (T *)RmgMallocHost(alloc);
 
     alloc = (size_t)num_tot_proj * (size_t)num_st_q * ct.noncoll_factor * sizeof(T);
-    T *sint_kn = (T *)GpuMallocManaged(alloc);
+    T *sint_kn = (T *)RmgMallocHost(alloc);
 
 
     RT1 = new RmgTimer("7-Wannier: Mmn: us: betapsi");
@@ -1276,7 +1276,7 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st
 
     int M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
     size_t alloc1 = M_cols * M_cols;
-    T *M_qqq = (T *)GpuMallocManaged(sizeof(T) * alloc1);
+    T *M_qqq = (T *)RmgMallocHost(sizeof(T) * alloc1);
     std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq;
 
     for (size_t i = 0; i < alloc1; i++)
@@ -1360,10 +1360,10 @@ template <class T> void Wannier<T>::Mmn_us(int ik, int ikn, T *psi_k, int num_st
 
     delete RT1;
 
-    GpuFreeManaged(M_qqq);
-    GpuFreeManaged(sint_ik);
-    GpuFreeManaged(sint_kn);
-    GpuFreeManaged(sint_tem);
+    RmgFreeHost(M_qqq);
+    RmgFreeHost(sint_ik);
+    RmgFreeHost(sint_kn);
+    RmgFreeHost(sint_tem);
 
 }
 
@@ -1743,8 +1743,8 @@ template <class T> void Wannier<T>::SetAmn_proj()
 
     RmgTimer *RT1;
     size_t length = nstates * nbasis_noncoll * sizeof(T);
-    T *psi_k = (T *)GpuMallocManaged(length);
-    T *Amn = (T *)GpuMallocManaged(num_q * n_wannier * nstates * sizeof(T));
+    T *psi_k = (T *)RmgMallocHost(length);
+    T *Amn = (T *)RmgMallocHost(num_q * n_wannier * nstates * sizeof(T));
 
     for(int idx = 0; idx < num_q * n_wannier * nstates; idx++) Amn[idx] = 0.0;
     double vel = L.get_omega() / ((double)ngrid);
@@ -1759,7 +1759,7 @@ template <class T> void Wannier<T>::SetAmn_proj()
         SPECIES &AtomType = Species[Atoms[ion].species];
         num_tot_proj += AtomType.nh;
     }
-    T *Nlweight_k = (T *)GpuMallocManaged(num_tot_proj * nbasis* sizeof(T));
+    T *Nlweight_k = (T *)RmgMallocHost(num_tot_proj * nbasis* sizeof(T));
     for(int ik = 0; ik < num_q; ik++)
     {
         RT1 = new RmgTimer("7-Wannier: Amn: gf");
@@ -1819,7 +1819,7 @@ template <class T> void Wannier<T>::SetAmn_proj()
 
     }
 
-    GpuFreeManaged(Nlweight_k);
+    RmgFreeHost(Nlweight_k);
 
     RT1 = new RmgTimer("7-Wannier: Amn: Reduce");
     int count = num_q * n_wannier * nstates;

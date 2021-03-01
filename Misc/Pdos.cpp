@@ -181,7 +181,7 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
     int num_q = ct.klist.num_k_all;
 
     size_t length = nstates * pbasis_noncoll * sizeof(T);
-    T *psi_k = (T *)GpuMallocManaged(length);
+    T *psi_k = (T *)RmgMallocHost(length);
 
 //  total rho projected in x,y,z direction
 // magnatic rho projected in x, y, z direction
@@ -396,6 +396,6 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
     }
 
 std::cout << " bbb " << std::endl;
-   // GpuFreeManaged(psi_k);
+   // RmgFreeHost(psi_k);
 }
 

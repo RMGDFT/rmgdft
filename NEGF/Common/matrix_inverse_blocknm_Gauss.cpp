@@ -86,7 +86,7 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri, std::complex<do
         n_alloc += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
     }
 
-    Gdiag = (std::complex<double> *) GpuMallocManaged(n_alloc * sizeof(std::complex<double>));
+    Gdiag = (std::complex<double> *) RmgMallocHost(n_alloc * sizeof(std::complex<double>));
 
     Gii = Green_C;
 
@@ -259,6 +259,6 @@ void matrix_inverse_blocknm_Gauss (std::complex<double> * H_tri, std::complex<do
     ncopy = pmo.mxllda_cond[n] * pmo.mxlocc_cond[m]; 
 
     my_free( ndiag_begin );
-    GpuFreeManaged( Gdiag );
+    RmgFreeHost( Gdiag );
 }
 

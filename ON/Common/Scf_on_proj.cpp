@@ -96,10 +96,10 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     double *Hij_local, *Sij_local, *rho_matrix_local, *theta_local;
 
     int num_orb = LocalOrbital->num_thispe;
-    rho_matrix_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
-    theta_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
-    Hij_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
-    Sij_local = (double *)GpuMallocManaged(num_orb * num_orb*sizeof(double));
+    rho_matrix_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+    theta_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+    Hij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
+    Sij_local = (double *)RmgMallocHost(num_orb * num_orb*sizeof(double));
 
     int num_tot = LocalOrbital->num_tot;
     double *Hij_glob = new double[num_tot * num_tot];
@@ -283,10 +283,10 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
     delete [] trho;
     delete [] rho_pre;
-    GpuFreeManaged(rho_matrix_local);
-    GpuFreeManaged(theta_local);
-    GpuFreeManaged(Hij_local);
-    GpuFreeManaged(Sij_local);
+    RmgFreeHost(rho_matrix_local);
+    RmgFreeHost(theta_local);
+    RmgFreeHost(Hij_local);
+    RmgFreeHost(Sij_local);
 
 }                               /* end scf */
 

@@ -78,7 +78,7 @@ template <class KpointType> void Kpoint<KpointType>::ComputeHcore (double *vtot_
     tmp_arrayT += nstates * pbasis_noncoll ;
 
     // We pad Bij since we use it as scratch space for the all reduce ops on Hij and Sij
-    KpointType *Bij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
+    KpointType *Bij = (KpointType *)RmgMallocHost(nstates * nstates * sizeof(KpointType));
 
 
     char *trans_t = "t";
@@ -219,7 +219,7 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
     }
 
 
-    GpuFreeManaged(Bij);
+    RmgFreeHost(Bij);
 
 }
 

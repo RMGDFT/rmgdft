@@ -42,7 +42,7 @@ void Sgreen_c_p (double * Htri, double * Stri, std::complex<double> * sigma, int
 //  then the lower offdiag blocks.
 
     /* allocate matrix and initialization  */
-    H_tri = (std::complex<double> *) GpuMallocManaged(ntot * sizeof( std::complex<double>) );
+    H_tri = (std::complex<double> *) RmgMallocHost(ntot * sizeof( std::complex<double>) );
  
     matrix_kpoint_center(H_tri, Stri, Htri, ene, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2]);
 
@@ -75,7 +75,7 @@ void Sgreen_c_p (double * Htri, double * Stri, std::complex<double> * sigma, int
     matrix_inverse_Gauss (H_tri, Green_C);
 
 
-    GpuFreeManaged( H_tri );
+    RmgFreeHost( H_tri );
 
 }
 

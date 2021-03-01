@@ -44,7 +44,7 @@ void Sgreen_semi_infinite_p (std::complex<double> *green, std::complex<double>
 
     /* allocate matrix and initialization  */
 
-    chtem = (std::complex<double> *)GpuMallocManaged(n1 * sizeof(std::complex<double>));
+    chtem = (std::complex<double> *)RmgMallocHost(n1 * sizeof(std::complex<double>));
 
     /*  green = (e S00- H00)^-1  */
 
@@ -90,5 +90,5 @@ void Sgreen_semi_infinite_p (std::complex<double> *green, std::complex<double>
     /*    printf("\n %d %f %f converge\n", step, eneR, eneI); */
 
 
-    GpuFreeManaged( chtem );
+    RmgFreeHost( chtem );
 }

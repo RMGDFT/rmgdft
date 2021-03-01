@@ -64,9 +64,9 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
 
 #if CUDA_ENABLED
 
-    KpointType *Aij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
-    KpointType *Sij = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));
-    if(!global_matrix1) global_matrix1 = (KpointType *)GpuMallocManaged(nstates * nstates * sizeof(KpointType));     
+    KpointType *Aij = (KpointType *)RmgMallocHost(nstates * nstates * sizeof(KpointType));
+    KpointType *Sij = (KpointType *)RmgMallocHost(nstates * nstates * sizeof(KpointType));
+    if(!global_matrix1) global_matrix1 = (KpointType *)RmgMallocHost(nstates * nstates * sizeof(KpointType));     
     GpuFill((double *)Aij, factor*nstates * nstates, 0.0);
     GpuFill((double *)Sij, factor*nstates * nstates, 0.0);
 
@@ -239,8 +239,8 @@ void HSmatrix (Kpoint<KpointType> *kptr, double *vtot_eig,double *vxc_psi,  Kpoi
     }
     // free memory
 #if CUDA_ENABLED
-    GpuFreeManaged(Sij);
-    GpuFreeManaged(Aij);
+    RmgFreeHost(Sij);
+    RmgFreeHost(Aij);
 #else
     delete [] Sij;
     delete [] Aij;

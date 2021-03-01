@@ -82,7 +82,7 @@ void XyzMatrix (Kpoint<KpointType> *kptr, KpointType *Aij, int n, int m, int l)
     }   
 
 
-    tmp_arrayT = (KpointType *)GpuMallocManaged(pbasis*num_states * sizeof(KpointType));
+    tmp_arrayT = (KpointType *)RmgMallocHost(pbasis*num_states * sizeof(KpointType));
     
     int ix, iy, iz;
     Rmg_G->pe2xyz (pct.gridpe, &ix, &iy, &iz);
@@ -127,6 +127,6 @@ void XyzMatrix (Kpoint<KpointType> *kptr, KpointType *Aij, int n, int m, int l)
 
     MPI_Allreduce(MPI_IN_PLACE, (double *)Aij, num_states * num_states * factor, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
-    GpuFreeManaged(tmp_arrayT);
+    RmgFreeHost(tmp_arrayT);
 }
 

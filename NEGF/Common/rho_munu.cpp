@@ -49,7 +49,7 @@ void rho_munu (std::complex<double> * rho_mn, std::complex<double> * Grow,
     }
 
     n1 = maxrow * maxcol;
-    temp = (std::complex<double> *) GpuMallocManaged(n1 * sizeof(std::complex<double>));
+    temp = (std::complex<double> *) RmgMallocHost(n1 * sizeof(std::complex<double>));
 
 
     n1 = nL * nL;
@@ -150,7 +150,7 @@ void rho_munu (std::complex<double> * rho_mn, std::complex<double> * Grow,
     int up_and_low = 0;
     green_kpoint_phase(rho_mn, ct.kp[pct.kstart].kpt[1], ct.kp[pct.kstart].kpt[2], up_and_low);
 
-    GpuFreeManaged(temp);
+    RmgFreeHost(temp);
 
 
 }

@@ -48,8 +48,8 @@ void green_lead (std::complex<double> *ch0, std::complex<double> *ch01,
     n1 = nrow * ncol;
 
     /* allocate matrix and initialization  */
-    temp = (std::complex<double> *) GpuMallocManaged( n1 * 11 * sizeof(std::complex<double>));
-    Imatrix = (std::complex<double> *) GpuMallocManaged( n1  * sizeof(std::complex<double>));
+    temp = (std::complex<double> *) RmgMallocHost( n1 * 11 * sizeof(std::complex<double>));
+    Imatrix = (std::complex<double> *) RmgMallocHost( n1  * sizeof(std::complex<double>));
 
     tot  = &temp[0*n1];
     tott = &temp[1*n1];
@@ -168,8 +168,8 @@ void green_lead (std::complex<double> *ch0, std::complex<double> *ch01,
     matrix_inverse_driver(green, desca);
 
 
-    GpuFreeManaged(temp);
-    GpuFreeManaged(Imatrix);
+    RmgFreeHost(temp);
+    RmgFreeHost(Imatrix);
 
 }
 

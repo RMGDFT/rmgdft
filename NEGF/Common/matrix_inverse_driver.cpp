@@ -104,11 +104,11 @@ void matrix_inverse_driver (std::complex<double> *Hii, int *desca )
     free(ipiv);
 #else
     
-    std::complex<double> *gpu_temp = (std::complex<double> *)GpuMallocManaged(nn*nn*sizeof(std::complex<double>));
+    std::complex<double> *gpu_temp = (std::complex<double> *)RmgMallocHost(nn*nn*sizeof(std::complex<double>));
     pmo_unitary_matrix(gpu_temp, desca);
     zgesv_driver (Hii, desca, gpu_temp, desca);
     zcopy_driver (nn*nn, gpu_temp, ione, Hii, ione);
-    GpuFreeManaged(gpu_temp);
+    RmgFreeHost(gpu_temp);
 
 #endif
 

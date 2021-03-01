@@ -244,23 +244,23 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
 
     n22 = 2* n2;
 
-    double *matrix_glob = (double *)GpuMallocManaged((size_t)numst * (size_t)numst*sizeof(double));
-    double *Smatrix     = (double *)GpuMallocManaged((size_t)numst * (size_t)numst*sizeof(double));
-    double *Hmatrix     = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
-    double *Hmatrix_old = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
-    double *Akick       = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
-    double *Pn0         = (double *)GpuMallocManaged((size_t)n2*sizeof(double)*2);
-    double *Pn1         = (double *)GpuMallocManaged((size_t)n2*sizeof(double)*2);
+    double *matrix_glob = (double *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(double));
+    double *Smatrix     = (double *)RmgMallocHost((size_t)numst * (size_t)numst*sizeof(double));
+    double *Hmatrix     = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Hmatrix_old = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Akick       = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Pn0         = (double *)RmgMallocHost((size_t)n2*sizeof(double)*2);
+    double *Pn1         = (double *)RmgMallocHost((size_t)n2*sizeof(double)*2);
     double *vh_old      = new double[FP0_BASIS];
     double *vxc_old     = new double[FP0_BASIS];
     double *vh_corr_old = new double[FP0_BASIS];
     double *vh_corr     = new double[FP0_BASIS];
     // Jacek: 
     //double *dHmatrix    = new double[n2];   // storage for  H1 -H1_old 
-    double *Hmatrix_m1  = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
-    double *Hmatrix_0   = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
-    double *Hmatrix_1   = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
-    double *Hmatrix_dt  = (double *)GpuMallocManaged((size_t)n2*sizeof(double));
+    double *Hmatrix_m1  = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Hmatrix_0   = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Hmatrix_1   = (double *)RmgMallocHost((size_t)n2*sizeof(double));
+    double *Hmatrix_dt  = (double *)RmgMallocHost((size_t)n2*sizeof(double));
     double    err        ;
     int       ij_err     ;
     double   thrs_dHmat =1.0e-5 ;
@@ -273,7 +273,7 @@ template <typename OrbitalType> void RmgTddft (double * vxc, double * vh, double
     //    double *vh_x = new double[FP0_BASIS];
     //    double *vh_y = new double[FP0_BASIS];
     //    double *vh_z = new double[FP0_BASIS];
-    double *xpsi =(double *)GpuMallocManaged((size_t)numst * (size_t)P0_BASIS*sizeof(double));
+    double *xpsi =(double *)RmgMallocHost((size_t)numst * (size_t)P0_BASIS*sizeof(double));
 
     double dipole_ele[3];
 

@@ -79,7 +79,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri, int iprobe, std::compl
     my_malloc_init( n_begin2, ct.num_blocks, int);
     size_t n_alloc;
     n_alloc = maxrow * maxcol * sizeof(std::complex<double>);
-    Gii = (std::complex<double> *)GpuMallocManaged (n_alloc);
+    Gii = (std::complex<double> *)RmgMallocHost (n_alloc);
 
 
     n_alloc = 0;
@@ -88,7 +88,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri, int iprobe, std::compl
         n_alloc += pmo.mxllda_cond[i] * pmo.mxlocc_cond[i];
     }
 
-    Gdiag = (std::complex<double> *)GpuMallocManaged(n_alloc * sizeof(std::complex<double>));
+    Gdiag = (std::complex<double> *)RmgMallocHost(n_alloc * sizeof(std::complex<double>));
 
 
     /*
@@ -431,7 +431,7 @@ void matrix_inverse_rowcol (std::complex<double> * H_tri, int iprobe, std::compl
     my_free( ndiag_begin );
     my_free( n_begin1 );
     my_free( n_begin2 );
-    GpuFreeManaged( Gdiag );
-    GpuFreeManaged( Gii);
+    RmgFreeHost( Gdiag );
+    RmgFreeHost( Gii);
 }
 

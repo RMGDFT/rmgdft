@@ -31,8 +31,8 @@ void RhoAugmented_proj(double * rho, double *rho_matrix_local)
 
     if(num_orb < 1 || num_prj < 1) return;
 
-    double *rho_kbpsi = (double *)GpuMallocManaged(num_orb * num_prj * sizeof(double));
-    double *Qnm_coeff = (double *)GpuMallocManaged(num_prj * num_prj * sizeof(double));
+    double *rho_kbpsi = (double *)RmgMallocHost(num_orb * num_prj * sizeof(double));
+    double *Qnm_coeff = (double *)RmgMallocHost(num_prj * num_prj * sizeof(double));
 
     RmgTimer *RT5 = new RmgTimer("3-get_new_rho: Qnm_coeff)");
     double one(1.0), zero(0.0);
@@ -100,7 +100,7 @@ void RhoAugmented_proj(double * rho, double *rho_matrix_local)
     delete(RT6);
     /* release our memory */
 
-    GpuFreeManaged(rho_kbpsi);
-    GpuFreeManaged(Qnm_coeff);
+    RmgFreeHost(rho_kbpsi);
+    RmgFreeHost(Qnm_coeff);
 }
 

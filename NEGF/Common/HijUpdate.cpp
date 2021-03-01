@@ -44,11 +44,11 @@ void HijUpdate (double *vtot_c)
     int max_block_size = *std::max_element(ct.block_dim, ct.block_dim + ct.num_blocks);
     double *H_tem, *H_local, *H_dist;
     size_t size = max_block_size * max_block_size * sizeof(double);
-    H_tem = (double *)GpuMallocManaged(size);
-    H_dist = (double *)GpuMallocManaged(size);
+    H_tem = (double *)RmgMallocHost(size);
+    H_dist = (double *)RmgMallocHost(size);
 
     size = LocalOrbital->num_thispe * LocalOrbital->num_thispe * sizeof(double);
-    H_local = (double *)GpuMallocManaged(size);
+    H_local = (double *)RmgMallocHost(size);
 
     for(int st1 = 0; st1 < LocalOrbital->num_thispe; st1++)
     {
@@ -102,9 +102,9 @@ void HijUpdate (double *vtot_c)
 
     }
 
-    GpuFreeManaged(H_tem);
-    GpuFreeManaged(H_local);
-    GpuFreeManaged(H_dist);
+    RmgFreeHost(H_tem);
+    RmgFreeHost(H_local);
+    RmgFreeHost(H_dist);
 
     delete(RT);
 

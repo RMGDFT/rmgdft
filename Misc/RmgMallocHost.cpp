@@ -34,19 +34,17 @@
 #if HIP_ENABLED
 
 #include <hip/hip_runtime.h>
-void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
+void *DRmgMallocHost(size_t size, const char *fname, size_t line)
 {
     void *ptr;
     hipError_t hipstat;
-    //hipstat = hipMallocManaged( &ptr, size+16);
     hipstat = hipMallocHost( &ptr, size+16);
     RmgGpuError(fname, line, hipstat, "Error: hipMallocManaged failed.\n");
     return ptr;
 }
 
-void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
+void DRmgFreeHost(void *ptr, const char *fname, size_t line)
 {
-//    hipFree(ptr);
     hipFreeHost(ptr);
 }
 
@@ -57,7 +55,7 @@ void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
 #include <cublas_v2.h>
 
 
-void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
+void *DRmgMallocHost(size_t size, const char *fname, size_t line)
 {
     void *ptr;
     cudaError_t custat;
@@ -66,14 +64,14 @@ void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
     return ptr;
 }
 
-void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
+void DRmgFreeHost(void *ptr, const char *fname, size_t line)
 {
     cudaFree(ptr);
 }
 
 #else
 
-void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
+void *DRmgMallocHost(size_t size, const char *fname, size_t line)
 {
     void *ptr;
     if(NULL == (ptr = malloc(size + 16))) {
@@ -82,7 +80,7 @@ void *DGpuMallocManaged(size_t size, const char *fname, size_t line)
     }
     return ptr;
 }
-void DGpuFreeManaged(void *ptr, const char *fname, size_t line)
+void DRmgFreeHost(void *ptr, const char *fname, size_t line)
 {
     free(ptr);
 }
