@@ -103,7 +103,13 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 
     // Copy A into eigvectors
 //    memcpy(eigvectors, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
-    cudaMemcpy(eigvectors, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), cudaMemcpyDefault);
+    KpointType *eigvectors_gpu, *Sij_gpu;
+    double *eigs_gpu;
+    cudaMallocManaged((void **)&eigvectors_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
+    cudaMallocManaged((void **)&Sij_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
+    cudaMallocManaged((void **)&eigs_gpu, (size_t)num_states * sizeof(KpointType));
+    cudaMemcpy(eigvectors_gpu, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), cudaMemcpyDefault);
+    cudaMemcpy(Sij_gpu, Sij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), cudaMemcpyDefault);
 
 
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
@@ -118,21 +124,27 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 
             int lwork = num_states * num_states / 3 + num_states;
             lwork = std::max(lwork, 128000);
-            double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));        
-            FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors, num_states, (double *)Sij, num_states, (double *)Aij, (double *)Bij, eigs, work, lwork, iwork, liwork, SUBDIAG_CUSOLVER);
-            GpuFreeManaged(work);
+            double *work, *Aij_gpu, *Bij_gpu;
+            cudaMalloc((void **)&work, lwork * sizeof(KpointType));
+            cudaMallocManaged((void **)&Aij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
+            cudaMallocManaged((void **)&Bij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
+            FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors_gpu, num_states, (double *)Sij_gpu, num_states, (double *)Aij_gpu, (double *)Bij_gpu, eigs_gpu, work, lwork, iwork, liwork, SUBDIAG_CUSOLVER);
+            cudaFree(Bij_gpu);
+            cudaFree(Aij_gpu);
+            cudaFree(work);
 
         }
         else {
 
             int lwork = 3 * num_states * num_states + 8 * num_states;
             lwork = std::max(lwork, 128000);
-            double *work = (double *)GpuMallocManaged(lwork * sizeof(KpointType));
+            double *work;
+            cudaMalloc((void **)&work, lwork * sizeof(KpointType));
             if(ct.cuda_version >= 9020)
-                DsygvjDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states, num_states);
+                DsygvjDriver((double *)eigvectors_gpu, (double *)Sij_gpu, eigs_gpu, work, lwork, num_states, num_states);
             else
-                DsygvdDriver((double *)eigvectors, (double *)Sij, eigs, work, lwork, num_states, num_states);
-            GpuFreeManaged(work);
+                DsygvdDriver((double *)eigvectors_gpu, (double *)Sij_gpu, eigs_gpu, work, lwork, num_states, num_states);
+            cudaFree(work);
 
         }
 
@@ -141,13 +153,19 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 
         int lwork = 3 * num_states * num_states + 8 * num_states;
         lwork = std::max(lwork, 128000);
-        ZhegvdDriver((std::complex<double> *)eigvectors, (std::complex<double> *)Sij, eigs, NULL, lwork, num_states, num_states);
+        ZhegvdDriver((std::complex<double> *)eigvectors_gpu, (std::complex<double> *)Sij_gpu, eigs_gpu, NULL, lwork, num_states, num_states);
 
     }
 
     delete [] iwork;
     delete [] ifail;
     delete RT1;
+
+    cudaMemcpy(eigvectors, eigvectors_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType), cudaMemcpyDefault);
+    cudaMemcpy(eigs, eigs_gpu, (size_t)num_states * sizeof(double), cudaMemcpyDefault);
+    cudaFree(eigs_gpu);
+    cudaFree(Sij_gpu);
+    cudaFree(eigvectors_gpu);
 
     // end if is_local_master
 

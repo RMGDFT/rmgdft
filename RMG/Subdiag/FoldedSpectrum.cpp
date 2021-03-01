@@ -96,8 +96,10 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 #if CUDA_ENABLED
     DeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
-    double *Vdiag = (double *)GpuMallocManaged(n * sizeof(double));
-    double *tarr = (double *)GpuMallocManaged(n * sizeof(double));
+    double *Vdiag, *tarr;
+    cudaMallocManaged((void **)&Vdiag, n * sizeof(double));
+    cudaMallocManaged((void **)&tarr, n * sizeof(double));
+
     gpuMemcpy(Bsave, B, n*n*sizeof(double), gpuMemcpyDefault);
 
     //  Transform problem to standard eigenvalue problem
@@ -109,8 +111,9 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     delete(RT2);
 
     // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
-    KpointType *V = (KpointType *)GpuMallocManaged(n * n * sizeof(KpointType));
-    KpointType *G = (KpointType *)GpuMallocManaged(n_win * n_win * sizeof(KpointType));
+    KpointType *V, *G;
+    cudaMallocManaged((void **)&V, n * n * sizeof(KpointType));
+    cudaMallocManaged((void **)&G, n_win * n_win * sizeof(KpointType));
     GpuFill((double *)V, n*n, 0.0);
     double *n_eigs = new double[n]();
 
@@ -247,10 +250,10 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     delete(RT1);
 #if CUDA_ENABLED
-    GpuFreeManaged(G);
-    GpuFreeManaged(V);
-    GpuFreeManaged(tarr);
-    GpuFreeManaged(Vdiag);
+    cudaFree(G);
+    cudaFree(V);
+    cudaFree(tarr);
+    cudaFree(Vdiag);
 #else
     delete [] G;
     delete [] V;

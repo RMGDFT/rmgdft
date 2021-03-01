@@ -77,10 +77,12 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
     cublasStatus_t custat;
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");
-    DataType *D = (DataType *)GpuMallocManaged(n * sizeof(DataType));
-    DataType *T1 = (DataType *)GpuMallocManaged(n * n * sizeof(DataType));
-    double *unitvector = (double *)GpuMallocManaged(n*sizeof(double));
-    double *tvector = (double *)GpuMallocManaged(n*sizeof(double)); 
+    DataType *T1, *D;
+    cudaMallocManaged((void **)&D, n * sizeof(DataType));
+    cudaMallocManaged((void **)&T1, n * n * sizeof(DataType));
+    double *unitvector, *tvector;
+    cudaMallocManaged((void **)&unitvector, n*sizeof(double));
+    cudaMallocManaged((void **)&tvector, n*sizeof(double));
     cublasDcopy(ct.cublas_handle, n, B, n+1, tvector, 1);
     DeviceSynchronize();
     for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / tvector[ix]; 
@@ -118,7 +120,8 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 //    }
 //    for(int ix = 0;ix < n;ix++) T1[ix*n + ix] += 1.0;
 
-    GpuFreeManaged(unitvector);
+    cudaFree(tvector);
+    cudaFree(unitvector);
     delete(RT1);
 
     RT1 = new RmgTimer("4-Diagonalization: fs: GSE-Second term");
@@ -159,8 +162,8 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     }
     DeviceSynchronize();
     gpuMemPrefetchAsync ( Z, n*n*sizeof(double), cudaCpuDeviceId, NULL);
-    GpuFreeManaged(T1);
-    GpuFreeManaged(D);
+    cudaFree(T1);
+    cudaFree(D);
 
     delete(RT1);
 #else
