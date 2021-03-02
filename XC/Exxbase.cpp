@@ -572,11 +572,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 
         double *atbuf;
         MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
-#if CUDA_ENABLED || HIP_ENABLED
-        gpuHostRegister(atbuf, pwave->pbasis*sizeof(double), gpuHostRegisterPortable);
-#endif
-
-
         double *vexx_global = new double[pwave->pbasis]();
 
         // Write serial wavefunction files. May need to do some numa optimization here at some point
@@ -707,9 +702,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         close(serial_fd);
 
         delete [] vexx_global;
-#if CUDA_ENABLED || HIP_ENABLED
-        gpuHostUnregister(atbuf);
-#endif
         MPI_Free_mem(atbuf);
 
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
