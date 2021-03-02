@@ -39,7 +39,7 @@ void *DRmgMallocHost(size_t size, const char *fname, size_t line)
     void *ptr;
     hipError_t hipstat;
     hipstat = hipMallocHost( &ptr, size+16);
-    RmgGpuError(fname, line, hipstat, "Error: hipMallocManaged failed.\n");
+    RmgGpuError(fname, line, hipstat, "Error: hipMallocHost failed.\n");
     return ptr;
 }
 
@@ -59,14 +59,14 @@ void *DRmgMallocHost(size_t size, const char *fname, size_t line)
 {
     void *ptr;
     cudaError_t custat;
-    custat = cudaMallocManaged ( &ptr, size+16, cudaMemAttachGlobal );
-    RmgGpuError(fname, line, custat, "Error: gpuMallocManaged failed.\n");
+    custat = cudaMallocHost ( &ptr, size+16, cudaMemAttachGlobal );
+    RmgGpuError(fname, line, custat, "Error: gpuMallocHost failed.\n");
     return ptr;
 }
 
 void DRmgFreeHost(void *ptr, const char *fname, size_t line)
 {
-    cudaFree(ptr);
+    cudaFreeHost(ptr);
 }
 
 #else
