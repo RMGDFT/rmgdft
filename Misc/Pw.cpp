@@ -154,71 +154,6 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
   // Now set up plans
   if(G.get_NPES() == 1)
   {
-      // Local cpu based fft plan(s). We use the array execute functions so the in and out arrays
-      // here are dummies to enable the use of FFTW_MEASURE. The caller has to ensure alignment
-      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
-      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
-
-      fftw_r2c_forward_plan = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (double *)in, reinterpret_cast<fftw_complex*>(out), FFTW_MEASURE);
-
-      fftw_r2c_backward_plan = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), (double *)out, FFTW_MEASURE);
-
-      fftw_r2c_forward_plan_inplace = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (double *)in, reinterpret_cast<fftw_complex*>(in), FFTW_MEASURE);
-
-      fftw_r2c_backward_plan_inplace = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), (double *)in, FFTW_MEASURE);
-
-      fftw_forward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
-                FFTW_FORWARD, FFTW_MEASURE);
-
-      fftw_backward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
-                FFTW_BACKWARD, FFTW_MEASURE);
-
-      fftw_forward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
-                FFTW_FORWARD, FFTW_MEASURE);
-
-      fftw_backward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
-                FFTW_BACKWARD, FFTW_MEASURE);
-
-
-      fftwf_r2c_forward_plan = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (float *)in, reinterpret_cast<fftwf_complex*>(out), FFTW_PATIENT);
-
-      fftwf_r2c_backward_plan = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), (float *)out, FFTW_PATIENT);
-
-      fftwf_r2c_forward_plan_inplace = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     (float *)in, reinterpret_cast<fftwf_complex*>(in), FFTW_PATIENT);
-
-      fftwf_r2c_backward_plan_inplace = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), (float *)in, FFTW_PATIENT);
-
-
-      fftwf_forward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
-                FFTW_FORWARD, FFTW_MEASURE);
-
-      fftwf_backward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
-                FFTW_BACKWARD, FFTW_MEASURE);
-
-      fftwf_forward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
-                FFTW_FORWARD, FFTW_MEASURE);
-
-      fftwf_backward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
-                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
-                FFTW_BACKWARD, FFTW_MEASURE);
-
-      fftw_free(out);
-      fftw_free(in);
 
 #if CUDA_ENABLED || HIP_ENABLED
       num_streams = ct.OMP_THREADS_PER_NODE;
@@ -370,6 +305,71 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       }
 
 #else
+      // Local cpu based fft plan(s). We use the array execute functions so the in and out arrays
+      // here are dummies to enable the use of FFTW_MEASURE. The caller has to ensure alignment
+      std::complex<double> *in = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
+      std::complex<double> *out = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * this->global_basis_alloc);
+
+      fftw_r2c_forward_plan = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (double *)in, reinterpret_cast<fftw_complex*>(out), FFTW_MEASURE);
+
+      fftw_r2c_backward_plan = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), (double *)out, FFTW_MEASURE);
+
+      fftw_r2c_forward_plan_inplace = fftw_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (double *)in, reinterpret_cast<fftw_complex*>(in), FFTW_MEASURE);
+
+      fftw_r2c_backward_plan_inplace = fftw_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), (double *)in, FFTW_MEASURE);
+
+      fftw_forward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftw_backward_plan = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(out), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+      fftw_forward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftw_backward_plan_inplace = fftw_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftw_complex*>(in), reinterpret_cast<fftw_complex*>(in), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+
+      fftwf_r2c_forward_plan = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (float *)in, reinterpret_cast<fftwf_complex*>(out), FFTW_PATIENT);
+
+      fftwf_r2c_backward_plan = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), (float *)out, FFTW_PATIENT);
+
+      fftwf_r2c_forward_plan_inplace = fftwf_plan_dft_r2c_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     (float *)in, reinterpret_cast<fftwf_complex*>(in), FFTW_PATIENT);
+
+      fftwf_r2c_backward_plan_inplace = fftwf_plan_dft_c2r_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), (float *)in, FFTW_PATIENT);
+
+
+      fftwf_forward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftwf_backward_plan = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(out), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+      fftwf_forward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
+                FFTW_FORWARD, FFTW_MEASURE);
+
+      fftwf_backward_plan_inplace = fftwf_plan_dft_3d (this->global_dimx, this->global_dimy, this->global_dimz, 
+                     reinterpret_cast<fftwf_complex*>(in), reinterpret_cast<fftwf_complex*>(in), 
+                FFTW_BACKWARD, FFTW_MEASURE);
+
+      fftw_free(out);
+      fftw_free(in);
       int nthreads = std::max(ct.OMP_THREADS_PER_NODE, ct.MG_THREADS_PER_NODE);
       host_bufs.resize(nthreads);
       for (int i = 0; i < nthreads; i++)

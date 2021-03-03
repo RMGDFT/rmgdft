@@ -628,41 +628,39 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
             double *psi_i = psi_ibuf + (i%rah) * pwave->pbasis;
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
-            for(int j = start;j < stop+1;j++)
+            for(int j = start;j < stop;j++)
             {
                 int omp_tid = omp_get_thread_num();
-                if(i > 0 && omp_tid==0) MPI_Test(&req, &flag, &mrstatus);
-                if(j == stop)
+//                if(i > 0 && omp_tid==0) MPI_Test(&req, &flag, &mrstatus);
+#pragma omp critical(part6)
+if(i > 0) MPI_Test(&req, &flag, &mrstatus);
+
+
+                double *p = (double *)pvec[omp_tid];
+                double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
+
+                if(use_float_fft)
                 {
-                    if(i > 0) MPI_Test(&req, &flag, &mrstatus);
+                    float *w = (float *)wvec[omp_tid];
+                    fftpair_gamma(psi_i, psi_j, p, w, gfac, vexx_global);
+#pragma omp critical(part3)
+                    {
+                        for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                            vexx_global[idx] += scale * w[idx] * psi_j[idx];
+                    }
                 }
                 else
                 {
-                    double *p = (double *)pvec[omp_tid];
-                    double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
-
-                    if(use_float_fft)
-                    {
-                        float *w = (float *)wvec[omp_tid];
-                        fftpair_gamma(psi_i, psi_j, p, w, gfac, vexx_global);
-#pragma omp critical(part3)
-                        {
-                            for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                                vexx_global[idx] += scale * w[idx] * psi_j[idx];
-                        }
-                    }
-                    else
-                    {
-                        double *w = (double *)wvec[omp_tid];
-                        fftpair_gamma(psi_i, psi_j, p, w, gfac, vexx_global);
+                    double *w = (double *)wvec[omp_tid];
+                    fftpair_gamma(psi_i, psi_j, p, w, gfac, vexx_global);
 #pragma omp critical(part4)
-                        {
-                            for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                                vexx_global[idx] += scale * p[idx] * psi_j[idx];
-                        }
+                    {
+                        for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                            vexx_global[idx] += scale * p[idx] * psi_j[idx];
                     }
                 }
             }
+
             delete RT1;
 
             // We wait for communication from previous row to finish and then copy it into place
