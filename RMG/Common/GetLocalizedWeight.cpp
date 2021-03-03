@@ -31,7 +31,7 @@
 #include "common_prototypes.h"
 #include "common_prototypes1.h"
 #include "transition.h"
-
+#include "GpuAlloc.h"
 
 // Used for localizing projectors in real space
 template void Kpoint<double>::GetLocalizedWeight(void);
@@ -142,10 +142,8 @@ template <class KpointType> void Kpoint<KpointType>::GetLocalizedWeight (void)
     fftw_free (beptr);
     delete [] phase_fftw;
 
-#if HIP_ENABLED
-    hipMemcpy(nl_weight_gpu, nl_weight, nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
-#elif CUDA_ENABLED
-    cudaMemcpy(nl_weight_gpu, nl_weight, nl_weight_size*sizeof(KpointType), cudaMemcpyHostToDevice);
+#if HIP_ENABLED || CUDA_ENABLED
+    gpuMemcpy(nl_weight_gpu, nl_weight, nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
 #endif
 
 

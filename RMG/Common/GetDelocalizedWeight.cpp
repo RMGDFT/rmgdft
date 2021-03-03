@@ -31,6 +31,7 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 #include "RmgParallelFft.h"
+#include "GpuAlloc.h"
 
 
 
@@ -152,14 +153,10 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedWeight (void)
     fftw_free (gbptr);
     fftw_free (beptr);
 
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     size_t stress_factor = 1;
     if(ct.stress) stress_factor = 4;
-    hipMemcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType), hipMemcpyHostToDevice);
-#elif CUDA_ENABLED
-    size_t stress_factor = 1;
-    if(ct.stress) stress_factor = 4;
-    cudaMemcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType), cudaMemcpyHostToDevice);
+    gpuMemcpy(nl_weight_gpu, nl_weight, stress_factor*nl_weight_size*sizeof(KpointType), gpuMemcpyHostToDevice);
 #endif
 
 }                               /* end GetWeight */
