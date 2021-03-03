@@ -1001,6 +1001,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
     // If GPU memory is constrained this one should be set to true.
     If.RegisterInputKey("pin_nonlocal_weights", &lc.pin_nonlocal_weights, false,
             "Flag indicating whether or not nonlocal weights should use pinned instead of managed memory.", PERF_OPTIONS|EXPERT_OPTION);
+
+    If.RegisterInputKey("use_cublasxt", &lc.use_cublasxt, false,
+            "This flag enables the use of the cublasxt library in place of the standard cublas library with cuda enabled builds. Intended for use when GPU memory is constrained.", CONTROL_OPTIONS);
+
 #endif
 
     If.RegisterInputKey("use_bessel_projectors", &lc.use_bessel_projectors, false,

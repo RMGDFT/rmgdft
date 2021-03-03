@@ -699,6 +699,7 @@ public:
     cublasXtHandle_t cublasxt_handle;
     cusolverDnHandle_t cusolver_handle;
     cudaStream_t cusolver_stream;
+    bool use_cublasxt;
 
 #endif
 
