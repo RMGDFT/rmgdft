@@ -365,13 +365,6 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
         pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
         UnpadR2C(pp, workbuf);
 #elif HIP_ENABLED
-//        float *pp = (float *)pwave->host_bufs[tid];
-//        PadR2C((double *)psi_i, (double *)psi_j, pp);
-//        pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
-//        GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
-//        pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
-//        UnpadR2C(pp, workbuf);
-
         std::complex<float> *pp = (std::complex<float> *)pwave->host_bufs[tid];
         for(size_t idx=0;idx < pwave->global_basis;idx++) pp[idx] = std::complex<float>(psi_i[idx]*psi_j[idx], 0.0);
         pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
@@ -529,14 +522,9 @@ template <class T> void Exxbase<T>::setup_gfac(double *kq)
         }
 
 
-#if CUDA_ENABLED
-    cudaMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  cudaMemcpyHostToDevice);
-    cudaMemcpy(gfac_dev_packed, gfac_packed, pwave->global_basis_packed*sizeof(double),  cudaMemcpyHostToDevice);
-    DeviceSynchronize();
-#endif
-#if HIP_ENABLED
-    hipMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  hipMemcpyHostToDevice);
-    hipMemcpy(gfac_dev_packed, gfac_packed, pwave->global_basis_packed*sizeof(double),  hipMemcpyHostToDevice);
+#if CUDA_ENABLED || HIP_ENABLED
+    gpuMemcpy(gfac_dev, gfac, pwave->pbasis*sizeof(double),  gpuMemcpyHostToDevice);
+    gpuMemcpy(gfac_dev_packed, gfac_packed, pwave->global_basis_packed*sizeof(double), gpuMemcpyHostToDevice);
     DeviceSynchronize();
 #endif
 }
@@ -612,31 +600,44 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         size_t jlength = (size_t)(stop - start) * (size_t)pwave->pbasis;
         double *jpsi = new double[jlength];
         lseek(serial_fd, (off_t)start * (off_t)pwave->pbasis * sizeof(double), SEEK_SET);
-        read(serial_fd, jpsi, jlength*sizeof(double));
+        size_t bytes_read = read(serial_fd, jpsi, jlength*sizeof(double));
+        if(bytes_read < 0)
+        {
+            throw RmgFatalException() << "error in Vexx outer read = " << "\n";
+        }
 
         // Set up outer orbitals with readahead
-        size_t length = (size_t)8 * (size_t)pwave->pbasis * sizeof(double);
+        size_t rah = 8;
+        size_t length = rah * (size_t)pwave->pbasis * sizeof(double);
         readahead(serial_fd, 0, length);
         lseek(serial_fd, 0, SEEK_SET);
-        double *psi_ibuf=new double[8*pwave->pbasis];
+        double *psi_ibuf=new double[rah*pwave->pbasis];
 
         for(int i=0;i < nstates;i++)
         {
    
-            if(!(i%8)) read(serial_fd, psi_ibuf, 8*pwave->pbasis * sizeof(double));
-            readahead(serial_fd, (off_t)(i+8)*pwave->pbasis*sizeof(double), length);
-            double *psi_i = psi_ibuf + (i%8) * pwave->pbasis;
+            if(!(i%rah))
+            {
+                size_t bytes_read = read(serial_fd, psi_ibuf, rah*pwave->pbasis * sizeof(double));
+                if(bytes_read < 0)
+                {
+                    throw RmgFatalException() << "error in Vexx inner read." << "\n";
+                }
+            }
+            readahead(serial_fd, (off_t)(i+rah)*pwave->pbasis*sizeof(double), length);
+            double *psi_i = psi_ibuf + (i%rah) * pwave->pbasis;
             RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
             for(int j = start;j < stop+1;j++)
             {
+                int omp_tid = omp_get_thread_num();
+                if(i > 0 && omp_tid==0) MPI_Test(&req, &flag, &mrstatus);
                 if(j == stop)
                 {
                     if(i > 0) MPI_Test(&req, &flag, &mrstatus);
                 }
                 else
                 {
-                    int omp_tid = omp_get_thread_num();
                     double *p = (double *)pvec[omp_tid];
                     double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
 
@@ -1703,7 +1704,7 @@ template <class T> Exxbase<T>::~Exxbase(void)
     //unlink(filename.c_str());
 
     RmgFreeHost(gfac);
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     gpuFree(gfac_dev);
     gpuFree(gfac_dev_packed);
 #endif
