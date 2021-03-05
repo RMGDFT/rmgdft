@@ -74,7 +74,7 @@ char * Subdiag_Cusolver (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *
 
 #if SCALAPACK_LIBS
     // For folded spectrum start with scalapack if available since cusolver is slow on really large problems
-    if(ct.use_folded_spectrum && (ct.scf_steps <= 6)  && (ct.runflag != RESTART))
+    if(ct.use_folded_spectrum && (ct.scf_steps <= 6)  && (ct.runflag != RESTART) && (num_states > 10000))
         return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
 

@@ -73,9 +73,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
     cublasStatus_t custat;
     cublasSideMode_t cu_side = CUBLAS_SIDE_LEFT;
     cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    DataType ZERO_t(0.0);
 
-    DeviceSynchronize();
 
     if(!strcmp(side, "l")) cu_side = CUBLAS_SIDE_LEFT;
     if(!strcmp(side, "L")) cu_side = CUBLAS_SIDE_LEFT;
@@ -91,6 +89,30 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
     if(!strcmp("r", side)) ka = n;
     if(!strcmp("R", side)) ka = n;
 
+    if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<double>)))
+    {
+        custat = cublasXtZsymm(ct.cublasxt_handle, cu_side, cu_uplo, m, n,
+                            (cuDoubleComplex *)&alpha,
+                            (cuDoubleComplex*)A, lda,
+                            (cuDoubleComplex*)B, ldb,
+                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
+        return;
+    }
+    if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
+    {
+        custat = cublasXtDsymm(ct.cublasxt_handle, cu_side, cu_uplo, m, n,
+                            (double*)&alpha,
+                            (double*)A, lda,
+                            (double*)B, ldb,
+                            (double*)&beta, (double*)C, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDgemm");
+        return;
+    }
+
+    DeviceSynchronize();
     cudaPointerAttributes attr;
     cudaError_t cudaerr;
     cudaerr = cudaPointerGetAttributes(&attr, A);
@@ -120,12 +142,12 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
                             (cuDoubleComplex*)dA, lda,
                             (cuDoubleComplex*)dB, ldb,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZgemm");
     }
     else {
         double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
@@ -147,6 +169,7 @@ template <typename DataType> void RmgSymm(char *side, char *uplo, int m, int n, 
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
     }
+    DeviceSynchronize();
 
 #else
 

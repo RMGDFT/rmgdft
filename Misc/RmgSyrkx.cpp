@@ -67,6 +67,29 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
     if(!strcmp(trans, "c")) cu_trans = CUBLAS_OP_C;
     if(!strcmp(trans, "C")) cu_trans = CUBLAS_OP_C;
 
+    if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<double>)))
+    {
+        custat = cublasXtZsyrkx(ct.cublasxt_handle, fill_mode, cu_trans, n, k,
+                            (cuDoubleComplex *)&alpha,
+                            (cuDoubleComplex*)A, lda,
+                            (cuDoubleComplex*)B, ldb,
+                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZsyrkx");
+        return;
+    }
+    if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
+    {
+        custat = cublasXtDsyrkx(ct.cublasxt_handle, fill_mode, cu_trans, (size_t)n, (size_t)k,
+                            (double*)&alpha,
+                            (double*)A, (size_t)lda,
+                            (double*)B, (size_t)ldb,
+                            (double*)&beta, (double*)C, (size_t)ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDsyrkx");
+        return;
+    }
+
     size_t a_size = (size_t)lda * (size_t)n;
     size_t b_size = (size_t)ldb * (size_t)n;
     size_t c_size = (size_t)ldc * (size_t)n;
@@ -97,12 +120,12 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
                             (cuDoubleComplex*)dA, lda,
                             (cuDoubleComplex*)dB, ldb,
                             (cuDoubleComplex*)&beta, (cuDoubleComplex*)dC, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZsyrkx");
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(std::complex<double>), cudaMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasZsyrkx");
     }
     else {
         double *dA=(double *)A, *dB=(double *)B, *dC=(double *)C;
@@ -118,12 +141,11 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
                             (double*)dB, ldb,
                             (double*)&beta, (double*)dC, ldc );
         ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDsyrkx");
         if(!c_dev) cudaMemcpy(C, dC, c_size * sizeof(double), cudaMemcpyDefault);
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
         if(!a_dev) gpuFree(dA);
-        ProcessGpublasError(custat);
-        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDsyrkx");
     }
     DeviceSynchronize();
     return;

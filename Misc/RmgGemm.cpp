@@ -84,6 +84,29 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     if(!strcmp("n", transb)) kb = n;
     if(!strcmp("N", transb)) kb = n;
 
+    if(ct.use_cublasxt && (typeid(DataType) == typeid(std::complex<double>)))
+    {
+        custat = cublasXtZgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
+                            (cuDoubleComplex *)&alpha,
+                            (cuDoubleComplex*)A, lda,
+                            (cuDoubleComplex*)B, ldb,
+                            (cuDoubleComplex*)&beta, (cuDoubleComplex*)C, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtZgemm");
+        return;
+    }
+    if(ct.use_cublasxt && (typeid(DataType) == typeid(double)))
+    {
+        custat = cublasXtDgemm(ct.cublasxt_handle, cu_transA, cu_transB, m, n, k,
+                            (double*)&alpha,
+                            (double*)A, lda,
+                            (double*)B, ldb,
+                            (double*)&beta, (double*)C, ldc );
+        ProcessGpublasError(custat);
+        RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasXtDgemm");
+        return;
+    }
+
     cudaPointerAttributes attr;
     cudaError_t cudaerr;
     cudaerr = cudaPointerGetAttributes(&attr, A);

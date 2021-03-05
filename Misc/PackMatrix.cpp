@@ -37,64 +37,74 @@
 void PackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
 {
 #if CUDA_ENABLED
-    cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    cublasDtrttp ( ct.cublas_handle, cu_uplo, N, Sq, lda, Tr);
-    DeviceSynchronize();
-#else
+    if(!ct.use_cublasxt)
+    {
+        cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+        if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+        cublasDtrttp ( ct.cublas_handle, cu_uplo, N, Sq, lda, Tr);
+        DeviceSynchronize();
+        return;
+    }
+#endif
     int info; 
     dtrttp(uplo, &N, Sq, &lda, Tr, &info);
-#endif
-
 }
 
 void PackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr)
 {
 #if CUDA_ENABLED
-    cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    cublasZtrttp ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Sq, lda, (cuDoubleComplex*)Tr);
-    DeviceSynchronize();
-#else
+    if(!ct.use_cublasxt)
+    {
+        cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+        if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+        cublasZtrttp ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Sq, lda, (cuDoubleComplex*)Tr);
+        DeviceSynchronize();
+        return;
+    }
+#endif
     int info; 
     ztrttp(uplo, &N, Sq, &lda, Tr, &info);
-#endif
 }
 
 void UnPackSqToTr(char *uplo, int N, double *Sq, int lda, double *Tr)
 {
 #if CUDA_ENABLED
-    cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    cublasDtpttr ( ct.cublas_handle, cu_uplo, N, Tr, Sq, lda);
-    DeviceSynchronize();
-#else
+    if(!ct.use_cublasxt)
+    {
+        cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+        if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+        cublasDtpttr ( ct.cublas_handle, cu_uplo, N, Tr, Sq, lda);
+        DeviceSynchronize();
+        return;
+    }
+#endif
     int info;
     dtpttr(uplo, &N, Tr, Sq, &lda, &info);
-#endif
 }
 
 void UnPackSqToTr(char *uplo, int N, std::complex<double> *Sq, int lda, std::complex<double> *Tr)
 {
 #if CUDA_ENABLED
-    cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
-    if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
-    cublasZtpttr ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Tr, (cuDoubleComplex*)Sq, lda);
-    DeviceSynchronize();
-#else
+    if(!ct.use_cublasxt)
+    {
+        cublasFillMode_t cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "l")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "L")) cu_uplo = CUBLAS_FILL_MODE_LOWER;
+        if(!strcmp(uplo, "u")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+        if(!strcmp(uplo, "U")) cu_uplo = CUBLAS_FILL_MODE_UPPER;
+        cublasZtpttr ( ct.cublas_handle, cu_uplo, N, (cuDoubleComplex*)Tr, (cuDoubleComplex*)Sq, lda);
+        DeviceSynchronize();
+    }
+#endif
     int info;
     ztpttr(uplo, &N, Tr, Sq, &lda, &info);
-#endif
 }

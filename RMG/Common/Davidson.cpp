@@ -67,7 +67,7 @@ template <class KpointType> void Kpoint<KpointType>::Davidson(double *vtot, doub
     KpointType *newsint;
 
     KpointType *weight = this->nl_weight;
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
     weight = this->nl_weight_gpu;
 #endif
 
