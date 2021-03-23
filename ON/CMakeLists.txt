@@ -11,6 +11,10 @@ endif()
 if(RMG_HIP_ENABLED)
     list(APPEND RMGLIBS Gpufuncs)
 endif()
+if(RMG_CUDA_ENABLED)
+    list(APPEND RMGLIBS Gpufuncs)
+endif()
+
 
 
 include_directories("${PROJECT_SOURCE_DIR}/ON/Headers/")
