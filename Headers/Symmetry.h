@@ -76,7 +76,7 @@ class Symmetry
 
         // basis sizes
         int pbasis;
-        int nbasis;
+        size_t nbasis;
 
 
         double symprec;

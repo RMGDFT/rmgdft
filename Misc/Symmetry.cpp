@@ -420,8 +420,8 @@ void Symmetry::symmetrize_grid_vector_int(double *object, const std::vector<U> &
     }
 
     /* Call global sums to give everyone the full array */
-    int length = nbasis * 3;
-    GlobalSums (da, length, pct.grid_comm);
+    size_t length = (size_t)nbasis * 3;
+    BlockAllreduce(da, length, pct.grid_comm);
 
     for(int ix=0;ix < 3 * pbasis;ix++) object[ix] = 0.0;
 
