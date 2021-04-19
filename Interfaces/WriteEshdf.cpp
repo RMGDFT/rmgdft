@@ -270,7 +270,6 @@ void eshdfFile::writeAtoms(void) {
         writeNumsToHDF("valence_charge", sp->zvalence, species_group);
         writeStringToHDF("name", name, species_group);
         writeStringToHDF("pseudopotential", pseudopotential, species_group);
-        speciesNum++;
     }
     writeNumsToHDF("number_of_species", ct.num_species, atoms_group);
 
