@@ -81,12 +81,12 @@ endif()
 
 # User settable options from cmake-gui, ccmake for text terminals
 # or command line
-option(RMG_CUDA_ENABLED "Enable GPU support." OFF)
-option(RMG_HIP_ENABLED "Enable HIP support." OFF)
-option(USE_OPENBABEL_LIBS "Openbabel support for importing atomic data." OFF)
-option(USE_PLPLOT_LIBS "Use plplot for runtime graphs." OFF)
-option(USE_INTERNAL_PSEUDOPOTENTIALS "Include internal pseudopotentials in binary." ON)
-option(QMCPACK_SUPPORT "Generates a QMCPACK restart file." ON)
+set(RMG_CUDA_ENABLED OFF CACHE BOOL "Enable CUDA support.")
+set(RMG_HIP_ENABLED OFF CACHE BOOL "Enable HIP support.")
+set(QMCPACK_SUPPORT ON CACHE BOOL "Generates a QMCPACK restart file.")
+set(USE_INTERNAL_PSEUDOPOTENTIALS ON CACHE BOOL "Include internal pseudopotentials in binary.")
+set(USE_OPENBABEL_LIBS OFF CACHE BOOL "Openbabel support for importing atomic data.")
+set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
 
 # For profiling blas calls
 option(BLAS_PROFILING "Enable blas profiling" OFF)
