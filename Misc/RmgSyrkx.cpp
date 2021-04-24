@@ -98,6 +98,15 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
     cudaError_t cudaerr;
     cudaerr = cudaPointerGetAttributes(&attr, A);
     bool a_dev = false;
+#if (CUDA_VERSION_MAJOR > 10)
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) a_dev = true;
+    cudaerr = cudaPointerGetAttributes(&attr, B);
+    bool b_dev = false;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) b_dev = true;
+    cudaerr = cudaPointerGetAttributes(&attr, C);
+    bool c_dev = false;
+    if(cudaerr == cudaSuccess && attr.type == cudaMemoryTypeDevice) c_dev = true;
+#else
     if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) a_dev = true;
     cudaerr = cudaPointerGetAttributes(&attr, B);
     bool b_dev = false;
@@ -105,6 +114,7 @@ template <typename DataType> void RmgSyrkx(char *uplo, char *trans, int n, int k
     cudaerr = cudaPointerGetAttributes(&attr, C);
     bool c_dev = false;
     if(cudaerr == cudaSuccess && attr.memoryType == cudaMemoryTypeDevice) c_dev = true;
+#endif
 
     DeviceSynchronize();
     if(typeid(DataType) == typeid(std::complex<double>)) {
