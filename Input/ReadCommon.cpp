@@ -1480,6 +1480,13 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             celldm[2] /= celldm[0];
         }
 
+        if (Verify ("bravais_lattice_type", "Cubic Primitive", InputMap) )
+        {
+            if( std::abs(celldm[1] - 1.0 ) > 1.0e-5 || std::abs(celldm[2] - 1.0) > 1.0e-5)
+
+                throw RmgFatalException() << "a, b, c is not consistent with Cubic Primitive\n";
+        }
+    
         // Lattice vectors are orthogonal except for Hex which is setup inside latgen
         celldm[3] = 0.0;
         celldm[4] = 0.0;
