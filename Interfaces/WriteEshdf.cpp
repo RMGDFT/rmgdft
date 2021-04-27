@@ -313,6 +313,8 @@ void eshdfFile::writeElectrons(void) {
 
 
     hid_t electrons_group = makeHDFGroup("electrons", file);
+
+    handleRho(electrons_group);
     writeNumsToHDF("number_of_kpoints", ct.num_kpts, electrons_group);
     writeNumsToHDF("number_of_spins", nspin, electrons_group);
 
@@ -622,5 +624,94 @@ void eshdfFile::handleSpinGroup_ON(int spin_idx, hid_t groupLoc, double& nocc) {
     }
     delete [] orbital_border;
     //  writeNumsToHDF("eigenvalues", eigvals, groupLoc);
+}
+
+// This handles charge density
+void eshdfFile::handleRho(hid_t groupLoc) {
+
+    hid_t density_group = makeHDFGroup("density", groupLoc);
+
+    // RMG porting note, C or Fortran order?
+    int grid_ratio = Rmg_G->default_FG_RATIO;
+    int nx = Rmg_G->get_NX_GRID(grid_ratio);
+    int ny = Rmg_G->get_NY_GRID(grid_ratio);
+    int nz = Rmg_G->get_NZ_GRID(grid_ratio);
+
+
+    // write them to an integer array and then put it in the element
+    vector<int> gvectors;
+    for (int ix = 0; ix < nx; ix++) {
+        for (int iy = 0; iy < ny; iy++) {
+            for (int iz = 0; iz < nz; iz++) {
+                gvectors.push_back(wrapped(ix,nx));
+                gvectors.push_back(wrapped(iy,ny));
+                gvectors.push_back(wrapped(iz,nz));
+            }
+        }
+    }
+
+    hsize_t dims[]={static_cast<hsize_t>(nx*ny*nz),3};
+    writeNumsToHDF("gvectors", gvectors, density_group, 2, dims);
+    writeNumsToHDF("number_of_gvectors", nx*ny*nz, density_group);
+    vector<int> mesh;
+    mesh.push_back(nx);
+    mesh.push_back(ny);
+    mesh.push_back(nz);
+    writeNumsToHDF("mesh", mesh, density_group);
+
+    fftContainer rho_fftCont(nx,ny,nz);
+
+    std::string rhofname(ct.infile);
+    rhofname = rhofname + ".rho";
+
+    int fhand = open(rhofname.c_str(), O_RDWR, S_IREAD | S_IWRITE);
+    if (fhand < 0) {
+        rmg_printf("Can't open restart file %s", rhofname.c_str());
+        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+    }
+
+    int factor = ct.nspin;
+    double *rho_buf = new double[rho_fftCont.fullSize * factor];
+    size_t rsize = read (fhand, rho_buf, rho_fftCont.fullSize * sizeof(double) * factor);
+    if(rsize != rho_fftCont.fullSize * sizeof(double) * factor)
+        rmg_error_handler (__FILE__,__LINE__,"problem reading rho file");
+    close(fhand);
+
+    // write rho to proper place
+    hsize_t rhog_dims[]={static_cast<hsize_t>(rho_fftCont.fullSize),2};
+
+    for(int ispin = 0; ispin < ct.nspin; ispin++) {
+
+        std::string spin_str = "spin_" + std::to_string(ispin);
+
+        hid_t spin_density_group = makeHDFGroup(spin_str.c_str(), density_group);
+        double *values = &rho_buf[ispin * rho_fftCont.fullSize];
+        int index = 0;
+        for (int ix = 0; ix < rho_fftCont.getNx(); ix++) {
+            for (int iy = 0; iy < rho_fftCont.getNy(); iy++) {
+                for (int iz = 0; iz < rho_fftCont.getNz(); iz++) {
+                    const int qbx = rho_fftCont.getQboxIndex(ix,iy,iz);
+                    rho_fftCont.rspace[index][0] = values[qbx];
+                    rho_fftCont.rspace[index][1] = 0.0;
+                    index++;
+                }
+            }
+        }
+
+        //cout << " before fft in rho, real space L2 norm = " << rho_fftCont.getL2NormRS() << endl;
+        rho_fftCont.executeFFT();
+        const double fixnorm = Rmg_L.get_omega() / static_cast<double>(rho_fftCont.fullSize);
+        rho_fftCont.fixKsNorm(fixnorm);
+        //cout << " fixnorm = " << fixnorm << endl;
+        //cout << " after fft in rho, k space L2 norm = " << rho_fftCont.getL2NormKS() << endl;
+
+
+        vector<double> temp;
+        for (int i = 0; i < rho_fftCont.fullSize; i++) {
+            temp.push_back(rho_fftCont.kspace[i][0]);
+            temp.push_back(rho_fftCont.kspace[i][1]);
+        }
+        writeNumsToHDF("density_g", temp, spin_density_group, 2, rhog_dims);
+    }
 }
 

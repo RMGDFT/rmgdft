@@ -39,6 +39,7 @@ private:
   void handleSpinGroup(int kidx, int spin_idx, hid_t groupLoc, double& nocc, fftContainer& cont);
   void handleSpinGroup_ON(int spin_idx, hid_t groupLoc, double& nocc);
 
+  void handleRho(hid_t electron_group);
   eshdfFile(const eshdfFile& f); // no copy constructor
   eshdfFile& operator=(const eshdfFile& f); // operator= not allowed
 public:

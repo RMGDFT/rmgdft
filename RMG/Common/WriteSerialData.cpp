@@ -110,32 +110,34 @@ void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc
     MPI_File mpi_fhand ;
 
     MPI_Barrier(pct.grid_comm);
-    std::string newname = name + ".vh";
-    MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
-    disp=0;
-    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, grid_f, "native", MPI_INFO_NULL);
-    MPI_File_write_all(mpi_fhand, vh, fpbasis, MPI_DOUBLE, &status);
-    MPI_File_close(&mpi_fhand);
+    if(pct.spinpe == 0) {
+        std::string newname = name + ".vh";
+        MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
+        disp=0;
+        MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, grid_f, "native", MPI_INFO_NULL);
+        MPI_File_write_all(mpi_fhand, vh, fpbasis, MPI_DOUBLE, &status);
+        MPI_File_close(&mpi_fhand);
 
-    MPI_Barrier(pct.grid_comm);
-    newname = name + ".vxc";
-    MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
-    disp=0;
-    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, grid_f, "native", MPI_INFO_NULL);
-    for(int ispin = 0; ispin < ct.nspin; ispin++) {
-        MPI_File_write_all(mpi_fhand, vxc+ispin*fpbasis, fpbasis, MPI_DOUBLE, &status);
-    }
-    MPI_File_close(&mpi_fhand);
+        MPI_Barrier(pct.grid_comm);
+        newname = name + ".vxc";
+        MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
+        disp=0;
+        MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, grid_f, "native", MPI_INFO_NULL);
+        for(int ispin = 0; ispin < ct.nspin; ispin++) {
+            MPI_File_write_all(mpi_fhand, vxc+ispin*fpbasis, fpbasis, MPI_DOUBLE, &status);
+        }
+        MPI_File_close(&mpi_fhand);
 
-    MPI_Barrier(pct.grid_comm);
-    newname = name + ".rho";
-    MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
-    disp=0;
-    MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, grid_f, "native", MPI_INFO_NULL);
-    for(int ispin = 0; ispin < ct.nspin; ispin++) {
-        MPI_File_write_all(mpi_fhand, rho+ispin*fpbasis, fpbasis, MPI_DOUBLE, &status);
+        MPI_Barrier(pct.grid_comm);
+        newname = name + ".rho";
+        MPI_File_open(pct.grid_comm, newname.c_str(), amode, fileinfo, &mpi_fhand);
+        disp=0;
+        MPI_File_set_view(mpi_fhand, disp, MPI_DOUBLE, grid_f, "native", MPI_INFO_NULL);
+        for(int ispin = 0; ispin < ct.nspin; ispin++) {
+            MPI_File_write_all(mpi_fhand, rho+ispin*fpbasis, fpbasis, MPI_DOUBLE, &status);
+        }
+        MPI_File_close(&mpi_fhand);
     }
-    MPI_File_close(&mpi_fhand);
 
     OrbitalHeader H;
     H.nx = sizes_c[0];
@@ -150,8 +152,8 @@ void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc
             H.occ = Kptr[ik]->Kstates[is].occupation[0];
 
             std::string wfname = name + "_spin" + std::to_string(pct.spinpe) +
-                                        "_kpt" + std::to_string(pct.kstart+ik) +
-                                        "_wf" + std::to_string(is);
+                "_kpt" + std::to_string(pct.kstart+ik) +
+                "_wf" + std::to_string(is);
 
             if(pct.gridpe == 0)
             {
