@@ -59,7 +59,7 @@ char *lattice_type[] = {
 void WriteHeader (void)
 {
 
-    int kpt, idx, i;
+    int kpt, i;
     time_t tt;
     double crho_fract;
     int max_funct_length, funct_legend_length, funct_spacing, funct_padding_left, funct_padding_right;
@@ -478,14 +478,10 @@ void WriteHeader (void)
      * Having excessive amount of space look strange, so we only use as much as is needed*/
     funct_legend_length = strlen("Functional");
     max_funct_length = 0;
-    for (idx = 0; idx < ct.num_species; idx++)
+    for (auto& sp : Species)
     {
-
-        SPECIES *sp;
-        sp = &Species[idx];
-
-	if ((int)sp->functional.length() > max_funct_length)
-	    max_funct_length = sp->functional.length();
+	if ((int)sp.functional.length() > max_funct_length)
+	    max_funct_length = sp.functional.length();
     }
 
 
@@ -535,23 +531,21 @@ void WriteHeader (void)
     printf("\n");
 
 
-    for (idx = 0; idx < ct.num_species; idx++)
+    for (auto& sp : Species)
     {
-        SPECIES *sp;
-        sp = &Species[idx];
-	printf("|%5d",idx + 1);
-	printf("|%6.6s", sp->atomic_symbol);
-	printf("|%5.1lf", sp->atomic_mass);
-	printf("|%7.2lf", sp->zvalence);
-	if (sp->is_norm_conserving)
+	printf("|%5d",sp.index + 1);
+	printf("|%6.6s", sp.atomic_symbol);
+	printf("|%5.1lf", sp.atomic_mass);
+	printf("|%7.2lf", sp.zvalence);
+	if (sp.is_norm_conserving)
 	    printf("|  NC");     
 	else
 	    printf("|  US");     
-	printf("|%8.2lf", sp->rc);
-	printf("|%5d", sp->local);
-	printf("|%6.2lf", sp->lradius); 
-	printf("|%6.2lf", sp->nlradius); 
-	printf("|%*s", funct_spacing,sp->functional.c_str());
+	printf("|%8.2lf", sp.rc);
+	printf("|%5d", sp.local);
+	printf("|%6.2lf", sp.lradius); 
+	printf("|%6.2lf", sp.nlradius); 
+	printf("|%*s", funct_spacing,sp.functional.c_str());
 	printf ("|\n");
     }
     

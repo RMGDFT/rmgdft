@@ -77,6 +77,7 @@ void ReadDynamics(char *cfile, CONTROL& lc, std::unordered_map<std::string, Inpu
         Species[isp].atomic_symbol = new char[4]();
         std::strncpy(Species[isp].atomic_symbol, AtomicSymbol.c_str(), 3);
         Species[isp].pseudo_filename = std::string("./@Internal");
+        Species[isp].index = isp;
         isp++;
     }
 

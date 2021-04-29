@@ -52,7 +52,8 @@ public:
     
     
 
-
+    /* Index for back referencing if needed from iterators */
+    unsigned index;
 
     /* Text header with extra information. For UPF pseudopotentials it is the PP_INFO node */
     std::string INFO;
