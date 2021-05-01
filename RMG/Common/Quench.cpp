@@ -67,7 +67,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     ct.adaptive_thr_energy = ct.thr_energy;
     static std::vector<double> RMSdV;
     Functional *F = new Functional ( *Rmg_G, Rmg_L, *Rmg_T, ct.is_gamma);
-
+    std::string tempwave("tempwave");
     int FP0_BASIS =  Rmg_G->get_P0_BASIS(Rmg_G->get_default_FG_RATIO());
     double *vh_in = new double[FP0_BASIS];
     double *vxc_in = new double[FP0_BASIS * ct.nspin];
@@ -95,7 +95,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         occs.resize(Kptr[0]->nstates);
         for(int i=0;i < Kptr[0]->nstates;i++) occs[i] = Kptr[0]->Kstates[i].occupation[0];
 
-        Exx_scf = new Exxbase<OrbitalType>(*Kptr[0]->G, *Rmg_halfgrid, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, occs.data(),
+        Exx_scf = new Exxbase<OrbitalType>(*Kptr[0]->G, *Rmg_halfgrid, *Kptr[0]->L, tempwave, Kptr[0]->nstates, occs.data(),
                 Kptr[0]->orbital_storage, ct.exx_mode);
 
         occs.clear();
