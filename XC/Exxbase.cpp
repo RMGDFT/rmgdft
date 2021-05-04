@@ -1349,14 +1349,36 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
         int count = nkpts * ij_tot;
         MPI_Allreduce(MPI_IN_PLACE, residual, count, MPI_DOUBLE, MPI_SUM, G.comm);
 
+        if(my_rank == 0 && ct.verbose) 
+            for(int ij = 0; ij < ij_tot; ij++) printf("\n iq: %d  ij: %d <ij|ij> = %f ", iq, ij, residual[ij]);
+
         Ncho[iq] = Vexx_int_oneQ(iq, QKtoK2, Cholvec, phase_Gr, Xaoik, Xaolj, residual, ij_tot, Ncho_max, pbasis, G.comm);
+        if(my_rank == 0 && ct.verbose == 1) 
+        {
+            boost::multi_array_ref<std::complex<double>, 3> Cholvec_3d{Cholvec, boost::extents[nkpts][ij_tot][Ncho_max]};
+            boost::multi_array_ref<std::complex<double>, 2> Cholvec_2d{Cholvec, boost::extents[nkpts][ij_tot*Ncho[iq]]};
+
+            for(int ij = 0; ij < ij_tot; ij++)
+            for(int iv = 0; iv < Ncho[iq]; iv++) printf("\n aa %d %d %e %e", ij, iv, Cholvec_3d[0][ij][iv]);
+            for(int iv = 0; iv < ij_tot*Ncho[iq]; iv++) printf("\n bb %d %e %e",  iv, Cholvec_2d[0][iv]);
+            std::complex<double> tem = 0.0;
+            double cou = 0.0;
+            for(int ij = 0; ij < ij_tot; ij++){
+                
+                tem = 0.0;
+                for(int iv = 0; iv < Ncho[iq]; iv++) tem += Cholvec_3d[0][ij][iv] * std::conj(Cholvec_3d[0][ij][iv]); 
+                printf("\n iq: %d  ij: %d Chol<ij|ij>= %f %f", iq, ij, std::real(tem), std::imag(tem));
+                cou += std::real(tem);
+
+            }
+            printf("\n coulmb %f", cou);
+        }
 
         if(my_rank == 0) {
             hsize_t h_dims[4];
             h_dims[0] = nkpts;
-            h_dims[1] = ij_tot;
-            h_dims[2] = Ncho[iq];
-            h_dims[3] = 2;
+            h_dims[1] = ij_tot * Ncho[iq];
+            h_dims[2] = 2;
             std::string kpfac = "L"+std::to_string(iq);
             std::vector<double> temp_data;
             boost::multi_array_ref<std::complex<double>, 3> Cholvec_3d{Cholvec, boost::extents[nkpts][ij_tot][Ncho_max]};
@@ -1368,7 +1390,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
                     }
                 }
             }
-            writeNumsToHDF(kpfac, temp_data, kpf_group, 4, h_dims);
+            writeNumsToHDF(kpfac, temp_data, kpf_group, 3, h_dims);
 
         }
 
@@ -1523,6 +1545,7 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
     int ny_grid = G.get_NY_GRID(1);
     int nz_grid = G.get_NZ_GRID(1);
 
+    alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
     int ngrid = nx_grid * ny_grid * nz_grid;
 
     int pbasis = G.get_P0_BASIS(1);
@@ -1651,7 +1674,9 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
     length = ngrid * sizeof(std::complex<double>);
     std::complex<double> *xij_fft = (std::complex<double> *)RmgMallocHost(length);
 
+    alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
     double scale = 1.0 / (double)pwave->global_basis;
+    scale = scale * alpha;
     for(int st_k1 = 0; st_k1 < nstates_occ; st_k1++){
         for(int ips = 0; ips < state_per_pe; ips++) {
             {
@@ -2308,13 +2333,13 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
     }
     h_dims[0]= ct.klist.num_k_all;
     h_dims[1]= ct.klist.num_k_all;
-    writeNumsToHDF("QKtok2", QK, h_group, 2, h_dims);
+    writeNumsToHDF("QKTok2", QK, h_group, 2, h_dims);
 
     std::vector<int> nmoperkp;
     nmoperkp.resize(ct.klist.num_k_all, nstates_occ);
     writeNumsToHDF("NMOPerKP", nmoperkp, h_group);
     writeNumsToHDF("MinusK", kminus, h_group);
-    writeNumsToHDF("ComplexIntegrals", 1, h_group);
+    //   writeNumsToHDF("ComplexIntegrals", 1, h_group);
 
     h_dims[0]=nstates_occ;
     h_dims[1]=nstates_occ;
