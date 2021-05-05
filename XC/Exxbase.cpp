@@ -2357,48 +2357,52 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
     int nnz = nstates_occ;
     int Nd = 1;
     int walker_type = 1;
-    std::vector<double> psi0_alpha;
-    for(int i = 0; i < M; i++)  {
-        for(int j = 0; j < Nalpha; j++) {
-            if(i == j) {
-                psi0_alpha.push_back(1.0);
-                psi0_alpha.push_back(0.0);
-            }
-            else {
-                psi0_alpha.push_back(0.0);
-                psi0_alpha.push_back(0.0);
-            }
+    
+    //for spin 0
+    {
+        std::vector<double> psi0_alpha;
+        for(int i = 0; i < M; i++)  {
+            for(int j = 0; j < Nalpha; j++) {
+                if(i == j) {
+                    psi0_alpha.push_back(1.0);
+                    psi0_alpha.push_back(0.0);
+                }
+                else {
+                    psi0_alpha.push_back(0.0);
+                    psi0_alpha.push_back(0.0);
+                }
 
+            }
         }
+
+        hsize_t dims[]={static_cast<hsize_t>(M), static_cast<hsize_t>(Nalpha), 2};
+        writeNumsToHDF("Psi0_alpha", psi0_alpha, msd_group, 3, dims);
+
+        hid_t T0_group = makeHDFGroup("PsiT_0", msd_group);
+        hsize_t dims_t0[]={static_cast<hsize_t>(nnz),2};
+        std::vector<double> t0_data;
+        for(int i = 0; i < nnz; i++) {
+            t0_data.push_back(1.0);
+            t0_data.push_back(0.0);
+        }
+        writeNumsToHDF("data_", t0_data, T0_group, 2, dims_t0);
+
+        std::vector<int> dims_t;
+        dims_t.push_back(M);
+        dims_t.push_back(Nalpha);
+        dims_t.push_back(nnz);
+        writeNumsToHDF("dims", dims_t, T0_group);
+
+        std::vector<int> jdata, ptr_begin, ptr_end;
+        for(int i = 0; i < nnz; i++) {
+            jdata.push_back(i);
+            ptr_begin.push_back(i);
+            ptr_end.push_back(i+1);
+        }
+        writeNumsToHDF("jdata_", jdata, T0_group);
+        writeNumsToHDF("pointers_begin_", ptr_begin, T0_group);
+        writeNumsToHDF("pointers_end_", ptr_end, T0_group);
     }
-
-    hsize_t dims[]={static_cast<hsize_t>(M), static_cast<hsize_t>(Nalpha), 2};
-    writeNumsToHDF("Psi0_alpha", psi0_alpha, msd_group, 3, dims);
-
-    hid_t T0_group = makeHDFGroup("PsiT_0", msd_group);
-    hsize_t dims_t0[]={static_cast<hsize_t>(nnz),2};
-    std::vector<double> t0_data;
-    for(int i = 0; i < nnz; i++) {
-        t0_data.push_back(1.0);
-        t0_data.push_back(0.0);
-    }
-    writeNumsToHDF("data_", t0_data, T0_group, 2, dims_t0);
-
-    std::vector<int> dims_t;
-    dims_t.push_back(M);
-    dims_t.push_back(Nalpha);
-    dims_t.push_back(nnz);
-    writeNumsToHDF("dims", dims_t, T0_group);
-
-    std::vector<int> jdata, ptr_begin, ptr_end;
-    for(int i = 0; i < nnz; i++) {
-        jdata.push_back(i);
-        ptr_begin.push_back(i);
-        ptr_end.push_back(i+1);
-    }
-    writeNumsToHDF("jdata_", jdata, T0_group);
-    writeNumsToHDF("pointers_begin_", ptr_begin, T0_group);
-    writeNumsToHDF("pointers_end_", ptr_end, T0_group);
 
     std::vector<double> coef;
     for(int i = 0; i < Nd; i++) {
@@ -2415,5 +2419,51 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
 
     writeNumsToHDF("dims", dims_v5, msd_group);
 
+    //for spin 1
+    if(ct.nspin == 2)
+    {
+        std::vector<double> psi0_beta;
+        for(int i = 0; i < M; i++)  {
+            for(int j = 0; j < Nbeta; j++) {
+                if(i == j) {
+                    psi0_beta.push_back(1.0);
+                    psi0_beta.push_back(0.0);
+                }
+                else {
+                    psi0_beta.push_back(0.0);
+                    psi0_beta.push_back(0.0);
+                }
+
+            }
+        }
+
+        hsize_t dims[]={static_cast<hsize_t>(M), static_cast<hsize_t>(Nbeta), 2};
+        writeNumsToHDF("Psi0_beta", psi0_beta, msd_group, 3, dims);
+
+        hid_t T1_group = makeHDFGroup("PsiT_1", msd_group);
+        hsize_t dims_t1[]={static_cast<hsize_t>(nnz),2};
+        std::vector<double> t1_data;
+        for(int i = 0; i < nnz; i++) {
+            t1_data.push_back(1.0);
+            t1_data.push_back(0.0);
+        }
+        writeNumsToHDF("data_", t1_data, T1_group, 2, dims_t1);
+
+        std::vector<int> dims_t;
+        dims_t.push_back(M);
+        dims_t.push_back(Nbeta);
+        dims_t.push_back(nnz);
+        writeNumsToHDF("dims", dims_t, T1_group);
+
+        std::vector<int> jdata, ptr_begin, ptr_end;
+        for(int i = 0; i < nnz; i++) {
+            jdata.push_back(i);
+            ptr_begin.push_back(i);
+            ptr_end.push_back(i+1);
+        }
+        writeNumsToHDF("jdata_", jdata, T1_group);
+        writeNumsToHDF("pointers_begin_", ptr_begin, T1_group);
+        writeNumsToHDF("pointers_end_", ptr_end, T1_group);
+    }
 }
 
