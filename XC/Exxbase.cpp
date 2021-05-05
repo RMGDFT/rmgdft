@@ -1277,6 +1277,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
 
     hid_t h5file = 0;
     hid_t hamil_group = 0;
+    hid_t wf_group = 0;
     hid_t kpf_group = 0;
     if(my_rank == 0) {
     
@@ -1284,8 +1285,10 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
         remove(hdf_filename.c_str());
         h5file = H5Fcreate(hdf_filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
         hamil_group = makeHDFGroup("Hamiltonian", h5file);
+        wf_group = makeHDFGroup("Wavefunction", h5file);
         kpf_group = makeHDFGroup("KPFactorized", hamil_group);
         write_basics(hamil_group, QKtoK2, kminus);
+        write_waves_afqmc(wf_group);
     }
     int Ncho_max = ct.exxchol_max * nstates_occ * nkpts;
     int ij_tot = nstates_occ * nstates_occ;
@@ -1358,9 +1361,6 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
             boost::multi_array_ref<std::complex<double>, 3> Cholvec_3d{Cholvec, boost::extents[nkpts][ij_tot][Ncho_max]};
             boost::multi_array_ref<std::complex<double>, 2> Cholvec_2d{Cholvec, boost::extents[nkpts][ij_tot*Ncho[iq]]};
 
-            for(int ij = 0; ij < ij_tot; ij++)
-            for(int iv = 0; iv < Ncho[iq]; iv++) printf("\n aa %d %d %e %e", ij, iv, Cholvec_3d[0][ij][iv]);
-            for(int iv = 0; iv < ij_tot*Ncho[iq]; iv++) printf("\n bb %d %e %e",  iv, Cholvec_2d[0][iv]);
             std::complex<double> tem = 0.0;
             double cou = 0.0;
             for(int ij = 0; ij < ij_tot; ij++){
@@ -2343,6 +2343,77 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
 
     h_dims[0]=nstates_occ;
     h_dims[1]=nstates_occ;
-    //  writeNumsToHDF("hcore", Hcore, h_group, 2, h_dims);
+}
+
+template void Exxbase<double>::write_waves_afqmc(hid_t wf_group);
+template void Exxbase<std::complex<double>>::write_waves_afqmc(hid_t wf_group);
+template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
+{
+    hid_t msd_group = makeHDFGroup("NOMSD", wf_group);
+
+    int M = nstates_occ;
+    int Nalpha = nstates_occ;
+    int Nbeta = nstates_occ;
+    int nnz = nstates_occ;
+    int Nd = 1;
+    int walker_type = 1;
+    std::vector<double> psi0_alpha;
+    for(int i = 0; i < M; i++)  {
+        for(int j = 0; j < Nalpha; j++) {
+            if(i == j) {
+                psi0_alpha.push_back(1.0);
+                psi0_alpha.push_back(0.0);
+            }
+            else {
+                psi0_alpha.push_back(0.0);
+                psi0_alpha.push_back(0.0);
+            }
+
+        }
+    }
+
+    hsize_t dims[]={static_cast<hsize_t>(M), static_cast<hsize_t>(Nalpha), 2};
+    writeNumsToHDF("Psi0_alpha", psi0_alpha, msd_group, 3, dims);
+
+    hid_t T0_group = makeHDFGroup("PsiT_0", msd_group);
+    hsize_t dims_t0[]={static_cast<hsize_t>(nnz),2};
+    std::vector<double> t0_data;
+    for(int i = 0; i < nnz; i++) {
+        t0_data.push_back(1.0);
+        t0_data.push_back(0.0);
+    }
+    writeNumsToHDF("data_", t0_data, T0_group, 2, dims_t0);
+
+    std::vector<int> dims_t;
+    dims_t.push_back(M);
+    dims_t.push_back(Nalpha);
+    dims_t.push_back(nnz);
+    writeNumsToHDF("dims", dims_t, T0_group);
+
+    std::vector<int> jdata, ptr_begin, ptr_end;
+    for(int i = 0; i < nnz; i++) {
+        jdata.push_back(i);
+        ptr_begin.push_back(i);
+        ptr_end.push_back(i+1);
+    }
+    writeNumsToHDF("jdata_", jdata, T0_group);
+    writeNumsToHDF("pointers_begin_", ptr_begin, T0_group);
+    writeNumsToHDF("pointers_end_", ptr_end, T0_group);
+
+    std::vector<double> coef;
+    for(int i = 0; i < Nd; i++) {
+        coef.push_back(1.0);
+        coef.push_back(0.0);
+    }
+
+    hsize_t dims_c[]={static_cast<hsize_t>(Nd), 2};
+
+    writeNumsToHDF("ci_coeffs", coef, msd_group, 2, dims_c);
+    std::vector<int> dims_v5;
+    int dims_5[]={M, Nalpha, Nbeta, walker_type, Nd};
+    for(int i = 0; i < 5; i++) dims_v5.push_back(dims_5[i]);
+
+    writeNumsToHDF("dims", dims_v5, msd_group);
+
 }
 
