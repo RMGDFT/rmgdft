@@ -397,7 +397,7 @@ void WriteQmcpackRestart(std::string& name)
 void WriteForAFQMC(int ns_occ, int Nchol, int Nup, int Ndown, 
         std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore)
 {
-    string ofname = "afqmc_rmg.h5";
+    string ofname = "afqmc_rmg_gamma.h5";
     eshdfFile outFile(ofname);
     outFile.writeCholVec(ns_occ, Nchol, Nup, Ndown, eigs, CholVec, Hcore);
 

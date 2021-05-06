@@ -46,6 +46,7 @@
 #define YUKAWA_SCREENING 4
 
 
+
 template <typename T> class Exxbase {
 
 private:
@@ -151,6 +152,8 @@ private:
         double *residual, int ij_tot, int Ncho_max, int pbasis, MPI_Comm comm);
     void write_basics(hid_t h_grp, int_2d_array QKtoK2, std::vector<int> kminus);
     void write_waves_afqmc(hid_t h_grp);
+    void WriteForAFQMC_gamma2complex(std::string &hdf_file, int ns_occ, int Nchol, int Nup, int Ndown,
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore);
 
     void PadR2C(double *psi_i, double *psi_j, float *padded);
     void PadR2C(double *psi_i, double *psi_j, double *padded);

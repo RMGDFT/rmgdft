@@ -1,5 +1,5 @@
 /*
- *
+ i
  * Copyright 2019 The RMG Project Developers. See the COPYRIGHT file 
  * at the top-level directory of this distribution or in the current
  * directory.
@@ -49,7 +49,6 @@ using namespace hdfHelper;
 // The wavefunctions are stored in a single file and are not domain
 // decomposed. The file name is given by wavefile_in which is
 // mmapped to an array. We only access the array in read-only mode.
-
 
 
 template void Exxbase<double>::PadR2C(double *psi_i, double *psi_j, float *padded);
@@ -1191,7 +1190,10 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         MPI_Allreduce(MPI_IN_PLACE, ExxCholVecGlob.data(), Nchol*nst2, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
         if(pct.worldrank == 0)
-            WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
+        {
+            //WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
+            WriteForAFQMC_gamma2complex(vfile, nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
+        }
     }
 }
 
@@ -2305,7 +2307,7 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
     dims[3] = nstates_occ * dims[2];
     dims[4] = nstates_occ;
     dims[5] = nstates_occ;
-    dims[7] = 1;
+    dims[7] = 0;
     writeNumsToHDF("dims", dims, h_group);
 
     std::vector<double> Energies;
@@ -2465,5 +2467,64 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
         writeNumsToHDF("pointers_begin_", ptr_begin, T1_group);
         writeNumsToHDF("pointers_end_", ptr_end, T1_group);
     }
+}
+
+template void Exxbase<double>::WriteForAFQMC_gamma2complex(std::string &hdf_filename, int ns_occ, int Nchol, int Nup, int Ndown,
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore);
+template void Exxbase<std::complex<double>>::WriteForAFQMC_gamma2complex(std::string &hdf_filename, int ns_occ, int Nchol, int Nup, int Ndown,
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore);
+template <class T> void Exxbase<T>::WriteForAFQMC_gamma2complex(std::string &hdf_filename, int ns_occ, int Nchol, int Nup, int Ndown,
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore)
+{
+    hid_t h5file = 0;
+    hid_t hamil_group = 0;
+    hid_t wf_group = 0;
+    hid_t kpf_group = 0;
+
+    hdf_filename += ".h5";
+    remove(hdf_filename.c_str());
+    h5file = H5Fcreate(hdf_filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    hamil_group = makeHDFGroup("Hamiltonian", h5file);
+    wf_group = makeHDFGroup("Wavefunction", h5file);
+    kpf_group = makeHDFGroup("KPFactorized", hamil_group);
+
+    int_2d_array QKtoK2;
+    std::vector<int> kminus;
+    QKtoK2.resize(boost::extents[1][1]);
+    kminus.resize(1, -1);
+    QKtoK2[0][0] = 0;
+    kminus[0] = 0;
+    write_basics(hamil_group, QKtoK2, kminus);
+    write_waves_afqmc(wf_group);
+
+    hsize_t h_dims[3];
+    h_dims[0] = 1;
+    h_dims[1] = ns_occ * ns_occ * Nchol;
+    h_dims[2] = 2;
+    std::string kpfac = "L0";
+    std::vector<double> temp_data;
+    for(hsize_t i = 0; i < h_dims[1]; i++)
+    {
+        temp_data.push_back(CholVec[i]);
+        temp_data.push_back(0.0);
+    }
+
+    writeNumsToHDF(kpfac, temp_data, kpf_group, 3, h_dims);
+
+    writeNumsToHDF("NCholPerKP", Nchol, hamil_group);
+    std::vector<double> hcore;
+    hcore.resize(ns_occ * ns_occ * 2);
+    h_dims[0] = ns_occ;
+    h_dims[1] = ns_occ;
+    h_dims[2] = 2;
+    for(int idx = 0; idx < ns_occ * ns_occ; idx++) {
+        hcore[2*idx + 0] = std::real(Hcore[idx]);
+        hcore[2*idx + 1] = std::imag(Hcore[idx]);
+    }
+
+    std::string hkp = "H1_kp0";
+    writeNumsToHDF(hkp, hcore, hamil_group, 3, h_dims);
+    H5Fclose(h5file);
+
 }
 
