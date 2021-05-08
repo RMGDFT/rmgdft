@@ -638,6 +638,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Maximum ionic time step to use for molecular dynamics or structural optimizations. ",
             "max_ionic_time_step must lie in the range (0.0,150.0). Resetting to the default value of 150.0. ", MD_OPTIONS);
 
+    If.RegisterInputKey("qmc_nband", &lc.qmc_nband, 0, INT_MAX, 0, 
+            CHECK_AND_FIX, OPTIONAL, 
+            "The number of band used in rmg-qmcpack interface. ", 
+            "By default without this input, it will be set to number of states. ", CONTROL_OPTIONS);
+
     If.RegisterInputKey("unoccupied_states_per_kpoint", &lc.num_unocc_states, 0, INT_MAX, 10, 
             CHECK_AND_FIX, OPTIONAL, 
             "The number of unoccupied orbitals. A value that is 15-20% of the number of occupied orbitals generally works well.", 

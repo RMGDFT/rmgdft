@@ -760,6 +760,7 @@ template <> int Exxbase<double>::VxxIntChol(std::vector<double> &mat, std::vecto
     m_appr.assign(nst2_perpe, 0.0);
     delta.assign(nst2_perpe * pct.grid_npes, 0.0);
 
+
     for(int i =0; i<nst2; i++) 
     {
         int i_dist = i - nst2_perpe * pct.gridpe;
@@ -898,7 +899,7 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
     delete RT0;
 
     RT0 = new RmgTimer("5-Functional: Exx: print");
-    size_t nst2 = nstates_occ * nstates_occ;
+    size_t nst2 = ct.qmc_nband * ct.qmc_nband;
     int nst2_perpe = (nst2 + pct.grid_npes-1) /pct.grid_npes;
     for(int ij = ij_start; ij < ij_end; ij++)
     {
@@ -914,15 +915,15 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
             if(ct.ExxIntChol && mode == EXX_DIST_FFT)
             {
 
-                int ij = i * nstates_occ + j;
-                int ji = j * nstates_occ + i;
-                int ij_dist = i * nstates_occ + j - nst2_perpe * pct.gridpe;
-                int ji_dist = j * nstates_occ + i - nst2_perpe * pct.gridpe;
+                int ij = i * ct.qmc_nband + j;
+                int ji = j * ct.qmc_nband + i;
+                int ij_dist = i * ct.qmc_nband + j - nst2_perpe * pct.gridpe;
+                int ji_dist = j * ct.qmc_nband + i - nst2_perpe * pct.gridpe;
 
-                int kl = k * nstates_occ + l;
-                int lk = l * nstates_occ + k;
-                int kl_dist = k * nstates_occ + l - nst2_perpe * pct.gridpe;
-                int lk_dist = l * nstates_occ + k - nst2_perpe * pct.gridpe;
+                int kl = k * ct.qmc_nband + l;
+                int lk = l * ct.qmc_nband + k;
+                int kl_dist = k * ct.qmc_nband + l - nst2_perpe * pct.gridpe;
+                int lk_dist = l * ct.qmc_nband + k - nst2_perpe * pct.gridpe;
 
                 if(ij_dist >= 0 && ij_dist < nst2_perpe)
                 {
@@ -951,22 +952,22 @@ template <> void Exxbase<double>::Vexx_integrals_block(FILE *fp,  int ij_start, 
             else if(ct.ExxIntChol && mode == EXX_LOCAL_FFT)
             {
 
-                int idx = (i * nstates_occ+j) * nstates_occ * nstates_occ + k * nstates_occ + l;
+                int idx = (i * ct.qmc_nband+j) * ct.qmc_nband * ct.qmc_nband + k * ct.qmc_nband + l;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
-                idx = (j * nstates_occ+i) * nstates_occ * nstates_occ + k * nstates_occ + l;
+                idx = (j * ct.qmc_nband+i) * ct.qmc_nband * ct.qmc_nband + k * ct.qmc_nband + l;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
-                idx = (i * nstates_occ+j) * nstates_occ * nstates_occ + l * nstates_occ + k;
+                idx = (i * ct.qmc_nband+j) * ct.qmc_nband * ct.qmc_nband + l * ct.qmc_nband + k;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
-                idx = (j * nstates_occ+i) * nstates_occ * nstates_occ + l * nstates_occ + k;
+                idx = (j * ct.qmc_nband+i) * ct.qmc_nband * ct.qmc_nband + l * ct.qmc_nband + k;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
 
-                idx = (k * nstates_occ+l) * nstates_occ * nstates_occ + i * nstates_occ + j;
+                idx = (k * ct.qmc_nband+l) * ct.qmc_nband * ct.qmc_nband + i * ct.qmc_nband + j;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
-                idx = (k * nstates_occ+l) * nstates_occ * nstates_occ + j * nstates_occ + i;
+                idx = (k * ct.qmc_nband+l) * ct.qmc_nband * ct.qmc_nband + j * ct.qmc_nband + i;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
-                idx = (l * nstates_occ+k) * nstates_occ * nstates_occ + i * nstates_occ + j;
+                idx = (l * ct.qmc_nband+k) * ct.qmc_nband * ct.qmc_nband + i * ct.qmc_nband + j;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
-                idx = (l * nstates_occ+k) * nstates_occ * nstates_occ + j * nstates_occ + i;
+                idx = (l * ct.qmc_nband+k) * ct.qmc_nband * ct.qmc_nband + j * ct.qmc_nband + i;
                 ExxInt[idx]  = Summedints[ie * ij_length + ic];
             }
 
@@ -995,21 +996,21 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         //  size_t length = nstates_occ * nstates_occ * nstates_occ * nstates_occ *sizeof(double);
         //  ExxInt = (double *)mmap(NULL, length, PROT_READ, MAP_PRIVATE, exxint_fd, 0);
 
-        size_t nst2 = nstates_occ * nstates_occ;
+        size_t nst2 = ct.qmc_nband * ct.qmc_nband;
         size_t nst2_perpe = (nst2 + pct.grid_npes -1)/pct.grid_npes;
         size_t length = nst2 * nst2_perpe;
         if(mode == EXX_LOCAL_FFT)
             length = nst2 * nst2;
         ExxInt.resize(length, 0.0);
-        length = nstates_occ * ct.exxchol_max * nst2_perpe;
+        length = ct.qmc_nband * ct.exxchol_max * nst2_perpe;
         ExxCholVec.resize(length);
 
     }
     RmgTimer RT0("5-Functional: Exx integrals");
 
-    for(int i=0;i < nstates_occ;i++)
+    for(int i=0;i < ct.qmc_nband;i++)
     {
-        for(int j=i;j < nstates_occ;j++)
+        for(int j=i;j < ct.qmc_nband;j++)
         {
             wf_pairs.push_back(std::make_pair(i, j));
         }
@@ -1033,7 +1034,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
 
     char *buf=NULL;
     FILE *fp=NULL;
-    if(LG->get_rank()==0)
+    if(LG->get_rank()==0 && (!ct.ExxIntChol) )
     {
         int rank = G.get_rank();
         size_t size = 1<<18;
@@ -1045,7 +1046,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         if(rank == 0)
         {
             fprintf(fp, "&FCI\n");
-            fprintf(fp, "NORB=%d,\n", nstates_occ);
+            fprintf(fp, "NORB=%d,\n", ct.qmc_nband);
             fprintf(fp, "NELEC=%d,\n", (int)(ct.nel+1.0e-6));
             int ms2 = pct.spinpe;
             if(ct.spin_flag && pct.spinpe == 0) ms2 = -1;
@@ -1129,7 +1130,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         }
     }
 
-    if(LG->get_rank()==0)
+    if(LG->get_rank()==0 && (!ct.ExxIntChol) )
     {
         fclose(fp);
         delete []buf;
@@ -1145,7 +1146,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
     if(ct.ExxIntChol)
     {
         int length = ExxInt.size();
-        size_t nst2 = nstates_occ * nstates_occ;
+        size_t nst2 = ct.qmc_nband * ct.qmc_nband;
         size_t nst2_perpe = (nst2 + pct.grid_npes -1)/pct.grid_npes;
         if(mode == EXX_LOCAL_FFT)
         {
@@ -1166,14 +1167,15 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
             }
 
         }
-        Nchol = VxxIntChol(ExxInt, ExxCholVec, ct.exxchol_max, nstates_occ);
+        Nchol = VxxIntChol(ExxInt, ExxCholVec, ct.exxchol_max, ct.qmc_nband);
         std::vector<double> eigs;
 
-        eigs.resize(nstates_occ, 0.0);
-        for(int st = 0; st < nstates_occ; st++)
+        eigs.resize(ct.qmc_nband, 0.0);
+        for(int st = 0; st < ct.qmc_nband; st++)
         {
             eigs[st] = ct.kp[0].eigs[st];
         }
+
 
         std::vector<double> ExxCholVecGlob;
         ExxCholVecGlob.resize(Nchol * nst2, 0.0);
@@ -1182,17 +1184,19 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
             for(size_t j = 0; j < nst2_perpe; j++)
             {
                 size_t j_glob = pct.gridpe * nst2_perpe + j;
-                ExxCholVecGlob[j_glob * Nchol + i] = ExxCholVec[i * nst2_perpe + j];
+                if(j_glob < nst2 )
+                    ExxCholVecGlob[j_glob * Nchol + i] = ExxCholVec[i * nst2_perpe + j];
 
             }
         }
 
-        MPI_Allreduce(MPI_IN_PLACE, ExxCholVecGlob.data(), Nchol*nst2, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
+        length = Nchol * nst2;
+        MPI_Allreduce(MPI_IN_PLACE, ExxCholVecGlob.data(), length, MPI_DOUBLE, MPI_SUM, pct.grid_comm);
 
         if(pct.worldrank == 0)
         {
-            //WriteForAFQMC(nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
-            WriteForAFQMC_gamma2complex(vfile, nstates_occ, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
+            //WriteForAFQMC(ct.qmc_nband, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
+            WriteForAFQMC_gamma2complex(vfile, ct.qmc_nband, Nchol, ct.qmc_nband, ct.qmc_nband, eigs, ExxCholVecGlob, Hcore);
         }
     }
 }
@@ -1292,8 +1296,8 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
         write_basics(hamil_group, QKtoK2, kminus);
         write_waves_afqmc(wf_group);
     }
-    int Ncho_max = ct.exxchol_max * nstates_occ * nkpts;
-    int ij_tot = nstates_occ * nstates_occ;
+    int Ncho_max = ct.exxchol_max * ct.qmc_nband * nkpts;
+    int ij_tot = ct.qmc_nband * ct.qmc_nband;
     size_t alloc1 = nkpts * Ncho_max * ij_tot * sizeof(std::complex<double>);
     size_t alloc2 = nkpts * ij_tot * coarse_pwaves->pbasis * sizeof(std::complex<double>);
     rmg_printf("\n Memory usage (Mbytes) in Vexx_integrals");
@@ -1402,16 +1406,16 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
     if(my_rank == 0) {
         writeNumsToHDF("NCholPerKP", Ncho, hamil_group);
         std::vector<double> hcore;
-        hcore.resize(nstates_occ * nstates_occ * 2);
+        hcore.resize(ct.qmc_nband * ct.qmc_nband * 2);
         hsize_t h_dims[3];
-        h_dims[0] = nstates_occ;
-        h_dims[1] = nstates_occ;
+        h_dims[0] = ct.qmc_nband;
+        h_dims[1] = ct.qmc_nband;
         h_dims[2] = 2;
         for(int ik = 0; ik < ct.klist.num_k_all; ik++)
         {   
-            for(int idx = 0; idx < nstates_occ * nstates_occ; idx++) {
-                hcore[2*idx + 0] = std::real(Hcore[ik * nstates_occ * nstates_occ + idx]);
-                hcore[2*idx + 1] = std::imag(Hcore[ik * nstates_occ * nstates_occ + idx]);
+            for(int idx = 0; idx < ct.qmc_nband * ct.qmc_nband; idx++) {
+                hcore[2*idx + 0] = std::real(Hcore[ik * ct.qmc_nband * ct.qmc_nband + idx]);
+                hcore[2*idx + 1] = std::imag(Hcore[ik * ct.qmc_nband * ct.qmc_nband + idx]);
             }
 
             std::string hkp = "H1_kp" + std::to_string(ik);
@@ -1552,7 +1556,7 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
 
     int pbasis = G.get_P0_BASIS(1);
 
-    size_t length = (size_t)nstates_occ * ngrid * sizeof(T);
+    size_t length = (size_t)ct.qmc_nband * ngrid * sizeof(T);
     //printf("\n Memory(MB) for psi_k1, psi_k2: %f", double(length)/1000.0/1000.0 );
 
     T *psi_k1 = (T *)RmgMallocHost(length);
@@ -1661,17 +1665,17 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
         fflush(NULL);
         throw RmgFatalException() << "Error! npes * pbasis != ngrids \n ";
     }
-    for(int st_k1 = 0; st_k1 < nstates_occ; st_k1++){
-        for(int st_k2 = 0; st_k2 < nstates_occ; st_k2++){
+    for(int st_k1 = 0; st_k1 < ct.qmc_nband; st_k1++){
+        for(int st_k2 = 0; st_k2 < ct.qmc_nband; st_k2++){
             for(int idx = 0; idx < pbasis; idx++) {
                 int idx_g = my_rank * pbasis + idx;
-                Xaolj_one[(st_k1 * nstates_occ + st_k2 ) *pbasis + idx] 
+                Xaolj_one[(st_k1 * ct.qmc_nband + st_k2 ) *pbasis + idx] 
                     = psi_k1[st_k1 * ngrid + idx_g] * std::conj(psi_k2[st_k2 * ngrid + idx_g]);
             }
         }
     }
 
-    int state_per_pe = (nstates_occ + npes -1)/npes;
+    int state_per_pe = (ct.qmc_nband + npes -1)/npes;
 
     length = ngrid * sizeof(std::complex<double>);
     std::complex<double> *xij_fft = (std::complex<double> *)RmgMallocHost(length);
@@ -1679,21 +1683,21 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
     alpha = L.get_omega() / ((double)(G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1)));
     double scale = 1.0 / (double)pwave->global_basis;
     scale = scale * alpha;
-    for(int st_k1 = 0; st_k1 < nstates_occ; st_k1++){
+    for(int st_k1 = 0; st_k1 < ct.qmc_nband; st_k1++){
         for(int ips = 0; ips < state_per_pe; ips++) {
             {
                 int st_k2 = ips * npes + my_rank;
                 for(int idx = 0; idx < ngrid; idx++) xij_fft[idx] = 0.0;
-                if(st_k2 < nstates_occ) {
+                if(st_k2 < ct.qmc_nband) {
                     fftpair(&psi_k1[st_k1 * ngrid], &psi_k2[st_k2 * ngrid], xij_fft, gfac);
                 }
             }
             MPI_Barrier(G.comm); 
             for(int ip = 0; ip < npes; ip++) {
-                if( ips * npes + ip >= nstates_occ) break;
+                if( ips * npes + ip >= ct.qmc_nband) break;
                 int st_k2 = ips * npes + ip;
 
-                std::complex<double> *rbuf = &Xaoik_one[(st_k1 * nstates_occ + st_k2 ) *pbasis];
+                std::complex<double> *rbuf = &Xaoik_one[(st_k1 * ct.qmc_nband + st_k2 ) *pbasis];
                 MPI_Scatter(xij_fft, pbasis, MPI_DOUBLE_COMPLEX, rbuf, pbasis, MPI_DOUBLE_COMPLEX, ip, G.comm); 
                 for(int idx = 0; idx < pbasis; idx++) rbuf[idx] *= scale;
             }
@@ -2271,26 +2275,27 @@ template void Exxbase<double>::SetHcore(double *Hij, int lda);
 template void Exxbase<std::complex<double>>::SetHcore(std::complex<double> *Hij, int lda);
 template <class T> void Exxbase<T>::SetHcore(T *Hij, int lda)
 {
-    Hcore.resize(ct.klist.num_k_all * nstates_occ * nstates_occ);
-    T *Hij_irr_k = new T[ct.num_kpts * nstates_occ * nstates_occ]();
+
+    Hcore.resize(ct.klist.num_k_all * ct.qmc_nband * ct.qmc_nband);
+    T *Hij_irr_k = new T[ct.num_kpts * ct.qmc_nband * ct.qmc_nband]();
 
     for(int ik = 0; ik < ct.num_kpts_pe; ik++) {
         int ik_irr = ik + pct.kstart;
 
-        for(int i = 0; i < nstates_occ; i++)
-            for(int j = 0; j < nstates_occ; j++)
-                Hij_irr_k[ik_irr * nstates_occ * nstates_occ + i * nstates_occ + j] = Hij[ik * lda * lda + i* lda + j];
+        for(int i = 0; i < ct.qmc_nband; i++)
+            for(int j = 0; j < ct.qmc_nband; j++)
+                Hij_irr_k[ik_irr * ct.qmc_nband * ct.qmc_nband + i * ct.qmc_nband + j] = Hij[ik * lda * lda + i* lda + j];
     }
 
 
-    int count = ct.num_kpts * nstates_occ * nstates_occ * sizeof(T)/sizeof(double);
+    int count = ct.num_kpts * ct.qmc_nband * ct.qmc_nband * sizeof(T)/sizeof(double);
     MPI_Allreduce(MPI_IN_PLACE, (double *)Hij_irr_k, count, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
     for(int ik = 0; ik < ct.klist.num_k_all; ik++)
     {
         int ik_irr = ct.klist.k_map_index[ik];
-        for(int idx = 0; idx < nstates_occ * nstates_occ; idx++)
-            Hcore[ik * nstates_occ * nstates_occ + idx] = Hij_irr_k[ik_irr * nstates_occ * nstates_occ + idx];
+        for(int idx = 0; idx < ct.qmc_nband * ct.qmc_nband; idx++)
+            Hcore[ik * ct.qmc_nband * ct.qmc_nband + idx] = Hij_irr_k[ik_irr * ct.qmc_nband * ct.qmc_nband + idx];
     }
 
     delete [] Hij_irr_k;
@@ -2304,9 +2309,9 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
     std::vector<int> dims;
     dims.resize(8, 0);
     dims[2] = ct.klist.num_k_all;
-    dims[3] = nstates_occ * dims[2];
-    dims[4] = nstates_occ;
-    dims[5] = nstates_occ;
+    dims[3] = ct.qmc_nband * dims[2];
+    dims[4] = ct.qmc_nband;
+    dims[5] = ct.qmc_nband;
     dims[7] = 0;
     writeNumsToHDF("dims", dims, h_group);
 
@@ -2338,13 +2343,10 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
     writeNumsToHDF("QKTok2", QK, h_group, 2, h_dims);
 
     std::vector<int> nmoperkp;
-    nmoperkp.resize(ct.klist.num_k_all, nstates_occ);
+    nmoperkp.resize(ct.klist.num_k_all, ct.qmc_nband);
     writeNumsToHDF("NMOPerKP", nmoperkp, h_group);
     writeNumsToHDF("MinusK", kminus, h_group);
-    //   writeNumsToHDF("ComplexIntegrals", 1, h_group);
 
-    h_dims[0]=nstates_occ;
-    h_dims[1]=nstates_occ;
 }
 
 template void Exxbase<double>::write_waves_afqmc(hid_t wf_group);
@@ -2353,10 +2355,10 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
 {
     hid_t msd_group = makeHDFGroup("NOMSD", wf_group);
 
-    int M = nstates_occ;
-    int Nalpha = nstates_occ;
-    int Nbeta = nstates_occ;
-    int nnz = nstates_occ;
+    int M = ct.qmc_nband;
+    int Nalpha = ct.qmc_nband;
+    int Nbeta = ct.qmc_nband;
+    int nnz = ct.qmc_nband;
     int Nd = 1;
     int walker_type = 1;
     

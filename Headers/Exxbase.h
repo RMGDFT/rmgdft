@@ -136,7 +136,7 @@ private:
     void setup_exxdiv();
 
     std::vector< std::pair <int,int> > wf_pairs;
-    int block_size = 64;
+    int block_size =1064;
     double *kl_pair;
     double *ij_pair;
     double *Exxints;

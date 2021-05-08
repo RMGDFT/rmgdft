@@ -273,6 +273,7 @@ public:
     /** If true also implies write_serial_restart */
     bool write_qmcpack_restart;
     bool write_qmcpack_restart_localized;
+    int qmc_nband;
 
     /** Number of run states */
     int run_states;

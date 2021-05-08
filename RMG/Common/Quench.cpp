@@ -263,6 +263,11 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
             Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates]);
         }
+        
+        if(ct.qmc_nband == 0) ct.qmc_nband = ct.num_states;
+        if(ct.qmc_nband > ct.num_states)
+            throw RmgFatalException() << "qmc_nband " << ct.qmc_nband << " is larger than ct.num_states " << ct.num_states << "\n";
+
         Exx.SetHcore(Hcore, nstates);
         Exx.Vexx_integrals(ct.exx_int_file);
         ct.xc_is_hybrid = is_xc_hybrid;
@@ -381,7 +386,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         double scdm_mu = ct.wannier90_scdm_mu;
         double scdm_sigma = ct.wannier90_scdm_sigma;
         int n_wannier = ct.num_wanniers;
- 
+
         Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
                 n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
 
