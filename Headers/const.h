@@ -177,6 +177,7 @@
 #define SUBDIAG_MAGMA 2
 #define SUBDIAG_CUSOLVER 3
 #define SUBDIAG_ELPA 4
+#define SUBDIAG_ROCSOLVER 5
 #define SUBDIAG_AUTO 10
 
 // Run type flags
