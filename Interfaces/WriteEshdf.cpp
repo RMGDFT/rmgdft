@@ -335,7 +335,7 @@ void eshdfFile::writeElectrons(void) {
 
         //    writeNumsToHDF("weight", 1.0/static_cast<double>(kpts.size()), kpt_group); 
         // RMG porting note - all kpoints have the same weight is this right?
-        writeNumsToHDF("weight", ct.kp[i].kweight, kpt_group); 
+        writeNumsToHDF("weight", ct.kp[i].kweight * 2, kpt_group); 
 
         if (i == 0) {
             // figure out the order of the g-vectors
@@ -701,7 +701,7 @@ void eshdfFile::handleRho(hid_t groupLoc) {
 
         //cout << " before fft in rho, real space L2 norm = " << rho_fftCont.getL2NormRS() << endl;
         rho_fftCont.executeFFT();
-        const double fixnorm = Rmg_L.get_omega() / static_cast<double>(rho_fftCont.fullSize);
+        const double fixnorm = 1.0 / static_cast<double>(rho_fftCont.fullSize);
         rho_fftCont.fixKsNorm(fixnorm);
         //cout << " fixnorm = " << fixnorm << endl;
         //cout << " after fft in rho, k space L2 norm = " << rho_fftCont.getL2NormKS() << endl;
