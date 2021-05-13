@@ -238,51 +238,65 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
       {
           status = rocfft_plan_create(&gpu_plans[i], rocfft_placement_inplace, 
                    rocfft_transform_type_complex_forward, rocfft_precision_double, 3, lengths, 1, NULL);
-          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          if(status != rocfft_status_success) printf("ERROR making Z2Z plans.\n");
           status = rocfft_plan_get_work_buffer_size(gpu_plans[i], &tmp_size);
-          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          if(status != rocfft_status_success) printf("ERROR making Z2Z plans.\n");
           work_size = std::max(work_size, tmp_size);
 
           status = rocfft_plan_create(&gpu_plans_inv[i], rocfft_placement_inplace, 
                    rocfft_transform_type_complex_inverse, rocfft_precision_double, 3, lengths, 1, NULL);
-          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          if(status != rocfft_status_success) printf("ERROR making Z2Z plans.\n");
           status = rocfft_plan_get_work_buffer_size(gpu_plans_inv[i], &tmp_size);
-          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          if(status != rocfft_status_success) printf("ERROR making Z2Z plans.\n");
           work_size = std::max(work_size, tmp_size);
 
           status = rocfft_plan_create(&gpu_plans_f[i], rocfft_placement_inplace, 
                    rocfft_transform_type_complex_forward, rocfft_precision_single, 3, lengths, 1, NULL);
-          if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
+          if(status != rocfft_status_success) printf("ERROR making C2C plans.\n");
           status = rocfft_plan_get_work_buffer_size(gpu_plans_f[i], &tmp_size);
-          if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
+          if(status != rocfft_status_success) printf("ERROR making C2C plans.\n");
           work_size = std::max(work_size, tmp_size);
 
           status = rocfft_plan_create(&gpu_plans_f_inv[i], rocfft_placement_inplace, 
                    rocfft_transform_type_complex_inverse, rocfft_precision_single, 3, lengths, 1, NULL);
-          if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
+          if(status != rocfft_status_success) printf("ERROR making C2C plans.\n");
           status = rocfft_plan_get_work_buffer_size(gpu_plans_f_inv[i], &tmp_size);
-          if(status != rocfft_status_success) printf("ERROR making C2C plan\n");
+          if(status != rocfft_status_success) printf("ERROR making C2C plans.\n");
           work_size = std::max(work_size, tmp_size);
 
           status = rocfft_plan_create(&gpu_plans_d2z[i], rocfft_placement_notinplace, 
                    rocfft_transform_type_real_forward, rocfft_precision_double, 3, lengths, 1, NULL);
-          if(status != rocfft_status_success) printf("ERROR making D2Z plan\n");
+          if(status != rocfft_status_success) printf("ERROR making D2Z plans.\n");
+          status = rocfft_plan_get_work_buffer_size(gpu_plans_d2z[i], &tmp_size);
+          if(status != rocfft_status_success) printf("ERROR making D2Z plans.\n");
+          work_size = std::max(work_size, tmp_size);
 
           status = rocfft_plan_create(&gpu_plans_z2d[i], rocfft_placement_notinplace, 
                    rocfft_transform_type_real_inverse, rocfft_precision_double, 3, lengths, 1, NULL);
-          if(status != rocfft_status_success) printf("ERROR making Z2D plan\n");
+          if(status != rocfft_status_success) printf("ERROR making Z2D plans.\n");
+          status = rocfft_plan_get_work_buffer_size(gpu_plans_z2d[i], &tmp_size);
+          if(status != rocfft_status_success) printf("ERROR making Z2D plans.\n");
+          work_size = std::max(work_size, tmp_size);
 
           status = rocfft_plan_create(&gpu_plans_r2c[i], rocfft_placement_inplace, 
                    rocfft_transform_type_real_forward, rocfft_precision_single, 3, lengths, 1, NULL);
-          if(status != rocfft_status_success) printf("ERROR making R2C plan\n");
+          if(status != rocfft_status_success) printf("ERROR making R2C plans.\n");
+          status = rocfft_plan_get_work_buffer_size(gpu_plans_r2c[i], &tmp_size);
+          if(status != rocfft_status_success) printf("ERROR making R2C plans.\n");
+          work_size = std::max(work_size, tmp_size);
 
           status = rocfft_plan_create(&gpu_plans_c2r[i], rocfft_placement_inplace, 
                    rocfft_transform_type_real_inverse, rocfft_precision_single, 3, lengths, 1, NULL);
-          if(status != rocfft_status_success) printf("ERROR making C2R plan\n");
+          if(status != rocfft_status_success) printf("ERROR making C2R plans.\n");
+          status = rocfft_plan_get_work_buffer_size(gpu_plans_c2r[i], &tmp_size);
+          if(status != rocfft_status_success) printf("ERROR making C2R plans.\n");
+          work_size = std::max(work_size, tmp_size);
 
 
           status = rocfft_execution_info_create(&roc_x_info[i]);
-          if(status != rocfft_status_success) printf("ERROR making Z2Z plan\n");
+          if(status != rocfft_status_success) printf("ERROR making rocfft plans.\n");
+          status = rocfft_execution_info_set_stream(roc_x_info[i], streams[i]);
+          if(status != rocfft_status_success) printf("ERROR setting rocfft streams.\n");
           if(work_size)
           {
               RmgGpuError(__FILE__, __LINE__, 
@@ -291,8 +305,6 @@ Pw::Pw (BaseGrid &G, Lattice &L, int ratio, bool gamma_flag)
               status = rocfft_execution_info_set_work_buffer(roc_x_info[i], work_bufs[i], work_size);
           }
 
-          status = rocfft_execution_info_set_stream(roc_x_info[i], streams[i]);
-          if(status != rocfft_status_success) printf("ERROR setting rocfft streams.\n");
 
           RmgGpuError(__FILE__, __LINE__, 
                    gpuMallocHost((void **)&host_bufs[i],  this->global_basis_alloc * sizeof(std::complex<double>)),
