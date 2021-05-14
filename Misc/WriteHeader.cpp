@@ -270,6 +270,12 @@ void WriteHeader (void)
     printf ("    Y Basis Vector:  %10.3f  %10.3f  %10.3f a0\n", a1[0], a1[1], a1[2]);
     printf ("    Z Basis Vector:  %10.3f  %10.3f  %10.3f a0\n", a2[0], a2[1], a2[2]);
     
+    double *b0 = Rmg_L.b0;
+    double *b1 = Rmg_L.b1;
+    double *b2 = Rmg_L.b2;
+    printf ("    X Reci Vector:  %10.3f  %10.3f  %10.3f a0\n", b0[0], b0[1], b0[2]);
+    printf ("    Y Reci Vector:  %10.3f  %10.3f  %10.3f a0\n", b1[0], b1[1], b1[2]);
+    printf ("    Z Reci Vector:  %10.3f  %10.3f  %10.3f a0\n", b2[0], b2[1], b2[2]);
     
     printf ("\n");
     printf ("K-points\n");
