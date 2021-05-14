@@ -549,6 +549,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
 #endif
 #if HIP_ENABLED
+        ct.hip_dev = ct.gpu_device_ids[pct.local_rank];
         hipDeviceReset();
         hipSetDeviceFlags(hipDeviceScheduleAuto);
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
@@ -577,6 +578,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
 #endif
 #if HIP_ENABLED
+                ct.hip_dev = ct.gpu_device_ids[next_gpu];
                 hipDeviceReset();
                 hipSetDeviceFlags(hipDeviceScheduleAuto);
                 if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
@@ -598,6 +600,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         gpuSetDevice(ct.cu_dev);
 #endif
 #if HIP_ENABLED
+        // Still need to figure out a way to handle this case
         gpuSetDevice(ct.hip_dev);
         hipDeviceReset();
         hipSetDeviceFlags(hipDeviceScheduleAuto);

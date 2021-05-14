@@ -547,6 +547,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 #pragma omp parallel for schedule(static, 1)
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
+#if HIP_ENABLED
+        gpuSetDevice(ct.hip_dev);
+#endif
 #pragma omp critical(part5)
         {
             pvec[tid] = (std::complex<double> *)fftw_malloc(sizeof(std::complex<double>) * pwave->pbasis);
@@ -629,11 +632,13 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 #pragma omp parallel for schedule(dynamic)
             for(int j = start;j < stop;j++)
             {
+#if HIP_ENABLED
+                gpuSetDevice(ct.hip_dev);
+#endif
                 int omp_tid = omp_get_thread_num();
 //                if(i > 0 && omp_tid==0) MPI_Test(&req, &flag, &mrstatus);
 #pragma omp critical(part6)
-if(i > 0) MPI_Test(&req, &flag, &mrstatus);
-
+                if(i > 0) MPI_Test(&req, &flag, &mrstatus);
 
                 double *p = (double *)pvec[omp_tid];
                 double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
@@ -2024,6 +2029,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 #pragma omp parallel for schedule(dynamic)
                 for(int j=0;j < nstates_occ;j++)
                 {
+#if HIP_ENABLED
+                    gpuSetDevice(ct.hip_dev);
+#endif
                     int omp_tid = omp_get_thread_num();
                     std::complex<double> *p = pvec[omp_tid];
                     std::complex<float> *w = wvec[omp_tid];

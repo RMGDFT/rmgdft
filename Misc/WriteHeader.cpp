@@ -411,6 +411,9 @@ void WriteHeader (void)
         case SUBDIAG_CUSOLVER:
             printf ("Cusolver\n");
             break;
+        case SUBDIAG_ROCSOLVER:
+            printf ("Rocsolver\n");
+            break;
         default:
             printf ("Unknown diagonalization method");
     }

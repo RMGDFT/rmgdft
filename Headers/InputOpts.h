@@ -108,6 +108,7 @@ static std::unordered_map<std::string, int> subdiag_driver = {
         {"magma", SUBDIAG_MAGMA},
         {"cusolver", SUBDIAG_CUSOLVER},
         {"elpa", SUBDIAG_ELPA},
+        {"rocsolver", SUBDIAG_ROCSOLVER},
         {"auto", SUBDIAG_AUTO}};
 
 static std::unordered_map<std::string, int> kohn_sham_solver = {
