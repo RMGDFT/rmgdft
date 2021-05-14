@@ -547,6 +547,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 #pragma omp parallel for schedule(static, 1)
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
+#if CUDA_ENABLED
+        gpuSetDevice(ct.cu_dev);
+#endif
 #if HIP_ENABLED
         gpuSetDevice(ct.hip_dev);
 #endif
@@ -632,6 +635,9 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
 #pragma omp parallel for schedule(dynamic)
             for(int j = start;j < stop;j++)
             {
+#if CUDA_ENABLED
+                gpuSetDevice(ct.cu_dev);
+#endif
 #if HIP_ENABLED
                 gpuSetDevice(ct.hip_dev);
 #endif
@@ -2029,6 +2035,9 @@ template <> void Exxbase<std::complex<double>>::Vexx(std::complex<double> *vexx,
 #pragma omp parallel for schedule(dynamic)
                 for(int j=0;j < nstates_occ;j++)
                 {
+#if CUDA_ENABLED
+                    gpuSetDevice(ct.cu_dev);
+#endif
 #if HIP_ENABLED
                     gpuSetDevice(ct.hip_dev);
 #endif
