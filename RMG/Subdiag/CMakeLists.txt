@@ -4,6 +4,7 @@ Subdiag_Elpa.cpp
 Subdiag_Lapack.cpp
 Subdiag_Cusolver.cpp
 Subdiag_Scalapack.cpp
+Subdiag_Rocsolver.cpp
 FoldedSpectrum.cpp
 FoldedSpectrumScalapack.cpp
 FoldedSpectrumIterator.cpp

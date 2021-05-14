@@ -280,6 +280,13 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
             trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, global_matrix1);
 #endif
             break;
+        case SUBDIAG_ROCSOLVER:
+#if HIP_ENABLED
+            trans_b = Subdiag_Rocsolver (this, Hij, Bij, Sij, eigs, global_matrix1);
+#else
+            trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, global_matrix1);
+#endif
+            break;
         default:
             rmg_error_handler(__FILE__, __LINE__, "Invalid subdiag_driver type");
 

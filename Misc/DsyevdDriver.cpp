@@ -56,6 +56,28 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, in
     gpuFree(devInfo);
 }
 
+//#elif HIP_ENABLED
+#elif 0
+#include <rocsolver.h>
+
+void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, int ld)
+{
+    rocblas_status status;
+    rocblas_int *devInfo;
+    const rocblas_evect jobz = rocblas_evect_original; // compute eigenvectors.
+    const rocblas_fill uplo = rocblas_fill_lower;
+
+    gpuSetDevice(ct.hip_dev);
+    RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
+
+    status = rocsolver_dsyev(ct.roc_handle, jobz, uplo, n, A, n, eigs, work, devInfo);
+    int info;
+    gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);
+    if(status != rocblas_status_success) rmg_error_handler (__FILE__, __LINE__, " rocsolver_dsyev failed.");
+
+    gpuFree(devInfo);
+}
+
 #else
 
 void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, int ld)
