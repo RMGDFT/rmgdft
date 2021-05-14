@@ -149,7 +149,8 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
             for (int iy = 0; iy < cont.getNy(); iy++) {
                 for (int iz = 0; iz < cont.getNz(); iz++) {
                     // RMG porting note -- C or Fortran storage order again?
-                    const int qbx = cont.getQboxIndex(ix,iy,iz);
+                    //const int qbx = cont.getQboxIndex(ix,iy,iz);
+                    const int qbx = cont.getIndex(ix,iy,iz);
                     cont.rspace[index][0] = values[2*qbx];
                     cont.rspace[index][1] = values[2*qbx+1];
                     index++;
@@ -161,7 +162,8 @@ void eshdfFile::readInEigFcn(std::string& wfname, double& eig_value, double& wf_
         for (int ix = 0; ix < cont.getNx(); ix++) {
             for (int iy = 0; iy < cont.getNy(); iy++) {
                 for (int iz = 0; iz < cont.getNz(); iz++) {
-                    const int qbx = cont.getQboxIndex(ix,iy,iz);
+                    //const int qbx = cont.getQboxIndex(ix,iy,iz);
+                    const int qbx = cont.getIndex(ix,iy,iz);
                     cont.rspace[index][0] = values[qbx];
                     cont.rspace[index][1] = 0.0;
                     index++;
@@ -335,7 +337,9 @@ void eshdfFile::writeElectrons(void) {
 
         //    writeNumsToHDF("weight", 1.0/static_cast<double>(kpts.size()), kpt_group); 
         // RMG porting note - all kpoints have the same weight is this right?
-        writeNumsToHDF("weight", ct.kp[i].kweight * 2, kpt_group); 
+        double weight = ct.kp[i].kweight;
+        if(ct.nspin == 1) weight *=2;
+        writeNumsToHDF("weight", weight, kpt_group); 
 
         if (i == 0) {
             // figure out the order of the g-vectors
@@ -691,7 +695,8 @@ void eshdfFile::handleRho(hid_t groupLoc) {
         for (int ix = 0; ix < rho_fftCont.getNx(); ix++) {
             for (int iy = 0; iy < rho_fftCont.getNy(); iy++) {
                 for (int iz = 0; iz < rho_fftCont.getNz(); iz++) {
-                    const int qbx = rho_fftCont.getQboxIndex(ix,iy,iz);
+                    //const int qbx = rho_fftCont.getQboxIndex(ix,iy,iz);
+                    const int qbx = rho_fftCont.getIndex(ix,iy,iz);
                     rho_fftCont.rspace[index][0] = values[qbx];
                     rho_fftCont.rspace[index][1] = 0.0;
                     index++;
