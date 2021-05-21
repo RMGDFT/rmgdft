@@ -1296,7 +1296,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
     hid_t hamil_group = 0;
     hid_t wf_group = 0;
     hid_t kpf_group = 0;
-    if(my_rank == 0) {
+    if(pct.worldrank == 0) {
     
         hdf_filename += ".h5";
         remove(hdf_filename.c_str());
@@ -1346,7 +1346,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
             }
         }
     }
-    double *residual = new double[nkpts * ij_tot];
+    double *residual = new double[nkpts * ij_tot]();
 
     std::vector<int> Ncho;
     Ncho.resize(nkpts, 0);
@@ -1391,7 +1391,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
             printf("\n coulmb %f", cou);
         }
 
-        if(my_rank == 0) {
+        if(pct.worldrank == 0) {
             hsize_t h_dims[4];
             h_dims[0] = nkpts;
             h_dims[1] = ij_tot * Ncho[iq];
@@ -1414,7 +1414,7 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
 
     }
 
-    if(my_rank == 0) {
+    if(pct.worldrank == 0) {
         writeNumsToHDF("NCholPerKP", Ncho, hamil_group);
         std::vector<double> hcore;
         hcore.resize(ct.qmc_nband * ct.qmc_nband * 2);
@@ -1629,7 +1629,7 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
 
                 if(isym_k1 >= 0)
                 {
-                    for(int st = 0; st < nstates_occ; st++)
+                    for(int st = 0; st < ct.qmc_nband; st++)
                     {
                         psi_k1[st * ngrid + ix * ny_grid * nz_grid + iy * nz_grid + iz]
                             = (psi_k1_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
@@ -1637,7 +1637,7 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
                 }
                 else
                 {
-                    for(int st = 0; st < nstates_occ; st++)
+                    for(int st = 0; st < ct.qmc_nband; st++)
                     {
                         psi_k1[st * ngrid + ix * ny_grid * nz_grid + iy * nz_grid + iz]
                             = MyConj(psi_k1_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
@@ -1648,7 +1648,7 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
 
                 if(isym_k2 >= 0)
                 {
-                    for(int st = 0; st < nstates_occ; st++)
+                    for(int st = 0; st < ct.qmc_nband; st++)
                     {
                         psi_k2[st * ngrid + ix * ny_grid * nz_grid + iy * nz_grid + iz]
                             = (psi_k2_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
@@ -1656,7 +1656,7 @@ template <class T> void Exxbase<T>::waves_pair_and_fft(int k1, int k2, std::comp
                 }
                 else
                 {
-                    for(int st = 0; st < nstates_occ; st++)
+                    for(int st = 0; st < ct.qmc_nband; st++)
                     {
                         psi_k2[st * ngrid + ix * ny_grid * nz_grid + iy * nz_grid + iz]
                             = MyConj(psi_k2_map[st * ngrid + ixx * ny_grid * nz_grid + iyy * nz_grid + izz]);
@@ -2330,6 +2330,7 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
     dims[4] = ct.qmc_nband;
     dims[5] = ct.qmc_nband;
     dims[7] = 0;
+
     writeNumsToHDF("dims", dims, h_group);
 
     std::vector<double> Energies;
@@ -2351,8 +2352,10 @@ template <class T> void Exxbase<T>::write_basics(hid_t h_group, int_2d_array QKt
 
     std::vector<int> QK;
     for(int iq = 0; iq < ct.klist.num_k_all; iq++) {
+        printf("\n QK %d: ", iq);
         for(int ik = 0; ik < ct.klist.num_k_all; ik++) {
             QK.push_back(QKtoK2[iq][ik]);
+            printf(" %d ", QKtoK2[iq][ik]);
         }
     }
     h_dims[0]= ct.klist.num_k_all;

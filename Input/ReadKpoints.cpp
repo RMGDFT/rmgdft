@@ -151,6 +151,52 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
      //   rmg_printf("\n kvec %d  %f %f %f %f", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
     //rmg_printf("\n");
 
+    if(ct.is_use_symmetry)
+        throw RmgFatalException() << "set use_symmetry=\"false\" to read kpoints " << __FILE__ << " at line " << __LINE__ << "\n";
+
+
+    ct.klist.num_k_all = ct.num_kpts;
+    ct.klist.k_all_xtal.resize(boost::extents[ct.klist.num_k_all][3]);
+    ct.klist.k_all_cart.resize(boost::extents[ct.klist.num_k_all][3]);
+    ct.klist.k_map_index.resize(ct.klist.num_k_all, 0);
+    ct.klist.k_map_symm.resize(ct.klist.num_k_all, 0);
+
+    ct.klist.num_k_ire = ct.kp.size();
+    ct.klist.k_ire_xtal.resize(boost::extents[ct.klist.num_k_ire][3]);
+    ct.klist.k_ire_cart.resize(boost::extents[ct.klist.num_k_ire][3]);
+    ct.klist.kweight.resize(ct.klist.num_k_ire, 1.0);
+
+
+    for(int kpt = 0; kpt < ct.num_kpts; kpt++) {
+        ct.klist.k_all_xtal[kpt][0] = ct.kp[kpt].kpt[0];
+        ct.klist.k_all_xtal[kpt][1] = ct.kp[kpt].kpt[1];
+        ct.klist.k_all_xtal[kpt][2] = ct.kp[kpt].kpt[2];
+        ct.klist.k_all_cart[kpt][0] = ct.kp[kpt].kvec[0];
+        ct.klist.k_all_cart[kpt][1] = ct.kp[kpt].kvec[1];
+        ct.klist.k_all_cart[kpt][2] = ct.kp[kpt].kvec[2];
+        ct.klist.k_ire_xtal[kpt][0] = ct.kp[kpt].kpt[0];
+        ct.klist.k_ire_xtal[kpt][1] = ct.kp[kpt].kpt[1];
+        ct.klist.k_ire_xtal[kpt][2] = ct.kp[kpt].kpt[2];
+        ct.klist.k_ire_cart[kpt][0] = ct.kp[kpt].kvec[0];
+        ct.klist.k_ire_cart[kpt][1] = ct.kp[kpt].kvec[1];
+        ct.klist.k_ire_cart[kpt][2] = ct.kp[kpt].kvec[2];
+        ct.klist.kweight[kpt] = ct.kp[kpt].kweight;
+
+        ct.klist.k_map_index[kpt] = kpt;
+        ct.klist.k_map_symm[kpt] = 1;
+
+    }
+
+    if (ct.verbose)
+    {
+        printf("\n num_k %d", ct.num_kpts);
+        for(int kpt = 0; kpt < ct.num_kpts; kpt++)
+            printf("\n kvec %d  %f %f %f %f\n", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+        for(int kpt = 0; kpt < ct.klist.num_k_all; kpt++)
+            printf("\n kall %d %f %f %f %d %d %d", kpt,
+                    ct.klist.k_all_cart[kpt][0],ct.klist.k_all_cart[kpt][1],ct.klist.k_all_cart[kpt][2],ct.klist.k_map_index[kpt],ct.klist.k_map_symm[kpt],
+                    (int)Rmg_Symm->time_rev[std::abs(ct.klist.k_map_symm[kpt])-1 ]);
+    }
 
 }
 
