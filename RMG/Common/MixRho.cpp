@@ -82,7 +82,7 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
         {
             Pulay_rho = new PulayMixing(pbasis_noncoll, ct.charge_pulay_order, ct.charge_pulay_refresh,
                     ct.mix, ct.charge_pulay_scale, pct.grid_comm);
-            if(ct.charge_pulay_Gspace)
+            if(ct.drho_precond)
                 Pulay_rho->SetGspace();
         }
 

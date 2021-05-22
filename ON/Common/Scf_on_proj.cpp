@@ -51,7 +51,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     {
         Pulay_rho = new PulayMixing(nfp0, ct.charge_pulay_order, ct.charge_pulay_refresh, 
                 ct.mix, ct.charge_pulay_scale, pct.grid_comm); 
-        if(ct.charge_pulay_Gspace)
+        if(ct.drho_precond)
             Pulay_rho->SetGspace();
         int tot_size = LocalOrbital->num_thispe * pbasis;
         Pulay_orbital = new PulayMixing(tot_size, ct.orbital_pulay_order, ct.orbital_pulay_refresh, 

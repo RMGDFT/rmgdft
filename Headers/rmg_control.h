@@ -384,6 +384,7 @@ public:
     double drho_q0;
 
     bool charge_pulay_Gspace;
+    bool drho_precond;
     /*Order of Pulay mixing for charge density*/
     int charge_pulay_order;
 

@@ -18,14 +18,14 @@ void Precond_drho(double *drho)
     double tpiba2 = tpiba * tpiba;
 
     size_t pbasis = fine_pwaves->pbasis;
-    std::complex<double> *c_fm;
-    c_fm = new std::complex<double>[pbasis];
+    std::vector<std::complex<double>> c_fm;
+    c_fm.resize(pbasis);
 
     
     for(int is = 0; is < ct.noncoll_factor * ct.noncoll_factor; is++)
     {
         for(size_t ig=0; ig < pbasis; ig++) c_fm[ig] = std::complex<double>(drho[is*pbasis + ig], 0.0);
-        fine_pwaves->FftForward(c_fm, c_fm);
+        fine_pwaves->FftForward(c_fm.data(), c_fm.data());
 
         for(size_t ig=0;ig < pbasis;ig++) {
             // drho is the charge density difference, sums of them always equal to zero
@@ -37,7 +37,7 @@ void Precond_drho(double *drho)
             // if(!fine_pwaves->gmask[ig]) c_fm[ig]  = 0.0;
             //c_fm[ig] = c_fm[ig] * g2/(g2+this->ktf * this->ktf);
         }
-        fine_pwaves->FftInverse(c_fm, c_fm);
+        fine_pwaves->FftInverse(c_fm.data(), c_fm.data());
         for(size_t i = 0;i < pbasis;i++) drho[is*pbasis + i] = std::real(c_fm[i])/(double)fine_pwaves->global_basis;
     }
 }
