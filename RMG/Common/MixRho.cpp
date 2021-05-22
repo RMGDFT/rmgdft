@@ -68,11 +68,14 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
         if(reset) return;
         RmgTimer RT1("Mix rho: Linear");
         /* Scale old charge density first*/
+        std::vector<double> drho;
+        drho.resize(pbasis_noncoll);
+        for(int ix = 0;ix < pbasis_noncoll;ix++) drho[ix] = new_rho[ix] - rho[ix];
+        if(ct.drho_precond) Precond_drho(drho.data());
         t1 = ct.mix;
-        for(int ix = 0;ix < pbasis_noncoll;ix++) rho[ix] *= (1.0 - t1);
+        int ione = 1;
+        daxpy(&pbasis_noncoll, &t1, drho.data(), &ione, rho, &ione);
 
-        /*Add the new density*/
-        for(int ix = 0;ix < pbasis_noncoll;ix++) rho[ix] += t1 * new_rho[ix];
         rmg_printf("Charge density mixing: Linear with a constant of %.2f \n", t1);
     }
     else if (Verify("charge_mixing_type","Pulay", ControlMap))
