@@ -907,6 +907,10 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used. ",
             "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5. ", MIXING_OPTIONS);
 
+    If.RegisterInputKey("drho_precond_q0", &lc.drho_q0, 0.0, 10.0, 0.5,
+            CHECK_AND_FIX, OPTIONAL,
+            "preconding the charge density residual by q^2/(q^2+q0^2) ",
+            "See Kresse and Furthmueller,  Computational Materials Science 6 (1996) 15-50  ", MIXING_OPTIONS);
     If.RegisterInputKey("folded_spectrum_width", &lc.folded_spectrum_width, 0.10, 1.0, 0.3,
             CHECK_AND_FIX, OPTIONAL,
             "Submatrix width to use as a fraction of the full spectrum. "

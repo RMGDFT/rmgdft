@@ -24,8 +24,9 @@ private:
     int nstates;
 
     bool Gspace = false;
-    // q0 for Kerker mixing  1 A^-1
-    double ktf = 0.529177;
+    // q0 for Kerker mixing  1.5 A^-1
+//    double ktf = 1.5/0.529177;  // in unit of au^-1
+    double ktf = 0.529177;  // in unit of au^-1
     std::complex<double> *c_fm;
 
 public:
