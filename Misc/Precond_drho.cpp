@@ -30,7 +30,10 @@ void Precond_drho(double *drho)
         for(size_t ig=0;ig < pbasis;ig++) {
             // drho is the charge density difference, sums of them always equal to zero
             // so there is no G= 0 term.
+            // it is not true for spin polarized case or rho_x(yz) in SOC 
+            // so we choose the smallest g2 for G=0 term
             double g2 = fine_pwaves->gmags[ig] * tpiba2;
+            if( g2 < 1.0e-5) g2 =  tpiba2;
 
             double alpha = g2/(g2+ q0 * q0);
             c_fm[ig] = c_fm[ig] * alpha;
