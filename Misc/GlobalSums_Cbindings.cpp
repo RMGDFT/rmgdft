@@ -20,6 +20,8 @@
  *
 */
 
+#include <stdlib.h>
+#include <stddef.h>
 #include "GlobalSums.h"
 #include "common_prototypes.h"
 
