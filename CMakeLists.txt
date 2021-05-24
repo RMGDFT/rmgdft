@@ -56,26 +56,26 @@ if(Git_FOUND)
         string(REPLACE "\n" ";" git_version1 ${git_version})
         string(REPLACE "-" "_" git_version_clean ${git_version1})
         add_definitions(-DRMG_REVISION="${git_version_clean}")
-    elseif()
+    else()
         add_definitions(-DRMG_REVISION="Unknown")
         set(git_version_clean "Unknown")
-    endif(git_version)
-elseif()
+    endif()
+else()
     add_definitions(-DRMG_REVISION="Unknown")
     set(git_version_clean "Unknown")
-endif(Git_FOUND)
+endif()
 
 
 # Require a 64 bit system
 if (NOT CMAKE_SIZEOF_VOID_P MATCHES 8 )
     message( SEND_ERROR "RMG requires a 64 bit architechture." )
-endif (NOT CMAKE_SIZEOF_VOID_P MATCHES 8)
+endif()
 
 
 # Check if this is a cray
 if(DEFINED ENV{CRAY_LIBSCI_VERSION})
     # Cray platforms
-    set (CRAY_XK 1)
+    set (CRAY_HOST 1)
 endif()
 
 
@@ -92,13 +92,12 @@ set(USE_PLPLOT_LIBS OFF CACHE BOOL "Use plplot for runtime graphs.")
 option(BLAS_PROFILING "Enable blas profiling" OFF)
 if(BLAS_PROFILING)
     add_definitions(-DBLAS_PROFILE=1)
-else(BLAS_PROFILING)
+else()
     add_definitions(-DBLAS_PROFILE=0)
-endif(BLAS_PROFILING)
-
+endif()
 
 if(RMG_CUDA_ENABLED AND RMG_HIP_ENABLED)
-    MESSAGE(FATAL_ERROR "\nRMG_CUDA_ENABLED and RMG_HIP_ENABLED are mutually exclusive. Pick one or the other for a GPU build. If neither is set a CPU only build will be performed.")
+    message(FATAL_ERROR "\nRMG_CUDA_ENABLED and RMG_HIP_ENABLED are mutually exclusive. Pick one or the other for a GPU build. If neither is set a CPU only build will be performed.")
 endif()
 
 # Now that the scalapack source has been included in the RMG distribution this should
@@ -169,15 +168,7 @@ configure_file (
 FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h MACRO_NAMESPACE RMG_FC_)
 
 
-# Here set any extra compiler flags required for a specific platform
-# This is for stampede
-#set(RMG_EXTRA_COMPILER_FLAGS "-gcc-name=/opt/apps/gcc/4.9.1/bin/gcc -xHost")
-
-
-# Ryzen Threadripper with gcc
-#
-#set(RMG_EXTRA_COMPILER_FLAGS "-march=znver1 -Ofast -funroll-loops")
-#set(RMG_EXTRA_COMPILER_FLAGS "-funroll-loops")
+# Modify this if you need some special compiler flags.
 set(RMG_EXTRA_COMPILER_FLAGS "-Wno-deprecated-declarations")
 
 
@@ -187,7 +178,6 @@ set(RMG_EXTRA_COMPILER_FLAGS "-Wno-deprecated-declarations")
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
-#set(CMAKE_BUILD_TYPE Debug)
 
 
 # Load custom cmake modules
@@ -196,10 +186,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
 # Search for an MPI implementation. On Crays cmake does not pick up some
 # vars but the compiler wrappers take care of it automatically.
-if(CRAY_XK)
+if(CRAY_HOST)
     find_package(MPI)
-    CMAKE_FORCE_CXX_COMPILER(CC ${CMAKE_CXX_COMPILER_ID})
-    CMAKE_FORCE_C_COMPILER(cc ${CMAKE_C_COMPILER_ID})
 else()
     find_package(MPI REQUIRED)
 endif()
@@ -233,20 +221,20 @@ if(RMG_CUDA_ENABLED)
     set(rmg-negf "rmg-negf-gpu")
     set(rmg "rmg-gpu")
     set(rmg-on "rmg-on-gpu")
-else(RMG_CUDA_ENABLED)
+else()
     if(RMG_HIP_ENABLED)
         add_definitions(-DHIP_ENABLED=1)
         set(rmg-negf "rmg-negf-gpu")
         set(rmg "rmg-gpu")
         set(rmg-on "rmg-on-gpu")
-    else(RMG_HIP_ENABLED)
+    else()
         add_definitions(-DCUDA_ENABLED=0)
         add_definitions(-DMAGMA_LIBS=0)
         set(rmg-negf "rmg-negf-cpu")
         set(rmg "rmg-cpu")
         set(rmg-on "rmg-on-cpu")
-    endif(RMG_HIP_ENABLED)
-endif(RMG_CUDA_ENABLED)
+    endif()
+endif()
 
 if(RMG_HIP_ENABLED)
     if(NOT DEFINED HIP_PATH)
@@ -266,7 +254,11 @@ if(RMG_HIP_ENABLED)
         include_directories("/opt/rocm/hsa/include")
         include_directories("/opt/rocm/")
         include_directories("/opt/rocm/include")
-        list(APPEND RMGLIBS ${HIP_LIBRARY})
+        if(DEFINED HIP_LIBRARY)
+            list(APPEND RMGLIBS ${HIP_LIBRARY})
+        else()
+            list(APPEND RMGLIBS "${HIP_PATH}/lib/libamdhip64.so")
+        endif()
     endif()
 
     find_package(HIPBLAS HINTS $ENV{OLCF_HIPBLAS_ROOT} $ENV{HIPBLAS_PATH} REQUIRED)
@@ -290,7 +282,9 @@ if(RMG_HIP_ENABLED)
         include_directories("${rocsolver_INCLUDE_DIR}")
     endif()
 
-    add_definitions(-D__HIP_PLATFORM_HCC__=1)
+    if(NOT DEFINED __HIP_PLATFORM_HCC__)
+        add_definitions(-D__HIP_PLATFORM_HCC__=1)
+    endif()
 endif()
 
 # Debug prints out all vars
@@ -309,7 +303,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     list(APPEND RMGLIBS z)
     list(APPEND RMGLIBS rt)
     list(APPEND RMGLIBS m)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+endif()
 
 
 # GNUCC specific compiler flags
@@ -339,14 +333,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RMG_EXTRA_COMPILER_FLAGS}")
 
 
-if (CRAY_XK)
-   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lhugetlbfs")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lhugetlbfs")
-   # External packages sometimes have trouble with this on Crays
-   set(ENV{MPICC} "${CMAKE_C_COMPILER}")
-endif()
-
-
 # This file contains system specific paths. If cmake is unable to find
 # a specific package or library look in this file and uncomment or add
 # specific search paths.
@@ -364,7 +350,7 @@ if (${UNIX})
     find_package(Threads REQUIRED)
     list(APPEND RMGLIBS ${RTLIB})
     list(APPEND RMGLIBS ${CMAKE_THREAD_LIBS_INIT})
-endif(${UNIX})
+endif()
 
 
 find_package(NUMA)
@@ -372,7 +358,7 @@ if(NUMA_FOUND AND NUMA_INCLUDES)
     include_directories(${NUMA_INCLUDES})
     add_definitions(-DUSE_NUMA=1)
     list(APPEND RMGLIBS ${NUMA_LIBRARIES})
-endif(NUMA_FOUND AND NUMA_INCLUDES)
+endif()
 
 
 find_package(HWLOC)
@@ -380,7 +366,7 @@ if(HWLOC_FOUND AND HWLOC_INCLUDES)
     include_directories(${HWLOC_INCLUDES})
     #add_definitions(-DUSE_HWLOC=1)
     list(APPEND RMGLIBS ${HWLOC_LIBRARIES})
-endif(HWLOC_FOUND AND HWLOC_INCLUDES)
+endif()
 
 
 #experimental
@@ -389,21 +375,21 @@ if(USE_ELPA_LIBS)
     #add_definitions(-DUSE_ELPA=1)
     #list(APPEND RMGLIBS /home/briggs/src/elpa-2016.11.001.pre/.libs/libelpa.so)
     #list(APPEND RMGLIBS /usr/lib64/libelpa.so)
-endif(USE_ELPA_LIBS)
+endif()
 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "^(FreeBSD|DragonFly)$")
-    if(CRAY_XK)
+    if(CRAY_HOST)
         add_definitions(-DHAVE_ASYNC_ALLREDUCE=1)
-    else(CRAY_XK)
+    else(CRAY_HOST)
         include("PlatformChecks/CheckAsyncAllreduce.inc")
         if(RMG_ASYNC_ALLREDUCE_INTERNAL)
             add_definitions(-DHAVE_ASYNC_ALLREDUCE=1)
-        else(RMG_ASYNC_ALLREDUCE_INTERNAL)
+        else()
             add_definitions(-DHAVE_ASYNC_ALLREDUCE=0)
-        endif(RMG_ASYNC_ALLREDUCE_INTERNAL)
-    endif(CRAY_XK)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "^(FreeBSD|DragonFly)$")
+        endif()
+    endif()
+endif()
 
 
 if(USE_PLPLOT_LIBS)
@@ -416,13 +402,13 @@ if(USE_PLPLOT_LIBS)
             add_definitions(-DPLPLOT_LIBS=1)
             list(APPEND RMGLIBS ${PLplot_cxx_LIBRARY})
             list(APPEND RMGLIBS ${PLplot_LIBRARY})
-        else(USE_PLPLOT_LIBS_INTERNAL)
+        else()
             add_definitions(-DPLPLOT_LIBS=0)
-        endif(USE_PLPLOT_LIBS_INTERNAL)
-    else(PLPLOT_FOUND)
+        endif()
+    else()
         add_definitions(-DPLPLOT_LIBS=0)
-    endif(PLPLOT_FOUND)
-endif(USE_PLPLOT_LIBS)
+    endif()
+endif()
 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -431,16 +417,16 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         set(BOOST_ROOT $ENV{BOOST_ROOT})
     endif()
     find_package(Boost REQUIRED COMPONENTS thread system iostreams program_options filesystem REQUIRED)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+endif()
 list(APPEND RMGLIBS ${Boost_LIBRARIES})
 
 
-if(CRAY_XK)
+if(CRAY_HOST)
     find_package(BZ2 REQUIRED)
     find_package(Z REQUIRED)
     list(APPEND RMGLIBS  ${BZ2_LIBRARIES})
     list(APPEND RMGLIBS  ${Z_LIBRARIES})
-endif(CRAY_XK)
+endif()
 
 
 # Look for openbabel
@@ -452,10 +438,10 @@ if(USE_OPENBABEL_LIBS)
         include_directories(${OPENBABEL_INCLUDES})
         add_definitions(-DOPENBABEL_LIBS=1)
         list(APPEND RMGLIBS ${OPENBABEL_LIBRARIES})
-    else(CHECK_OPENBABEL_INTERNAL)
+    else()
         add_definitions(-DOPENBABEL_LIBS=0)
-    endif (CHECK_OPENBABEL_INTERNAL)
-endif(USE_OPENBABEL_LIBS)
+    endif()
+endif()
 
 
 # For various math libraries start by looking for Intel MKL. No good cmake module currently for MKL.
@@ -466,12 +452,12 @@ endif(USE_OPENBABEL_LIBS)
 #        # Check the default location
 #        if (EXISTS "/opt/intel/mkl")
 #            set(MKLROOT "/opt/intel/mkl")
-#        endif (EXISTS "/opt/intel/mkl")
-#    endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+#        endif()
+#    endif()
 #endif()
 
 
-if(NOT CRAY_XK)
+if(NOT CRAY_HOST)
     if(DEFINED ENV{MKLROOT})
 	set(MKLROOT $ENV{MKLROOT})
         include_directories(${MKLROOT}/include)
@@ -488,13 +474,13 @@ if(NOT CRAY_XK)
                 list(APPEND RMGLIBS "${MKLROOT}/lib/intel64/libmkl_gnu_thread.a")
                 list(APPEND RMGLIBS "${MKLROOT}/lib/intel64/libmkl_core.a")
                 set(RMG_MATH_LIBS "done")
-            else(EXISTS "${MKL_LIB64}")
+            else()
                 message( SEND_ERROR "RMG requires 64 bit MKL." )
-            endif(EXISTS "${MKL_LIB64}")
-        endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    endif(DEFINED ENV{MKLROOT})
+            endif()
+        endif()
+    endif()
     list(APPEND RMGLIBS scalapack)
-endif(NOT CRAY_XK)
+endif()
 
 
 # MKL includes fftw blas, blacs, lapack and scalapack. If it is not present we have to look for these libraries
@@ -504,106 +490,96 @@ if(NOT ${FFTW_INCLUDES})
     include_directories(${FFTW_INCLUDES})
     list(APPEND RMGLIBS ${FFTW_LIBRARIES})
     list(APPEND RMGLIBS ${FFTWF_LIBRARIES})
-endif(NOT ${FFTW_INCLUDES})
+endif()
 
 
 if(NOT RMG_MATH_LIBS)
-
-    # FFTW
     find_package(FFTW REQUIRED)
     include_directories(${FFTW_INCLUDES})
     list(APPEND RMGLIBS ${FFTW_LIBRARIES})
     list(APPEND RMGLIBS ${FFTWF_LIBRARIES})
 
-    if(NOT CRAY_XK)
-
-        # BLAS
+    if(NOT CRAY_HOST)
         find_package(BLAS)
         if(BLAS_FOUND)
             list(APPEND RMGLIBS ${BLAS_LIBRARIES})
-        endif (BLAS_FOUND)
-
-    endif (NOT CRAY_XK)
-
-endif(NOT RMG_MATH_LIBS)
+        endif()
+    endif()
+endif()
 
 
 # Check for openblas library supporting changing threads
 include("PlatformChecks/CheckOpenBlasSetNumThreads.inc")
 if(RMG_OPENBLAS_SET_NUM_THREADS_INTERNAL)
     add_definitions(-DOPENBLAS_SET_NUM_THREADS=1)
-else(RMG_OPENBLAS_SET_NUM_THREADS_INTERNAL)
+else()
     add_definitions(-DOPENBLAS_SET_NUM_THREADS=0)
-endif(RMG_OPENBLAS_SET_NUM_THREADS_INTERNAL)
+endif()
 
 
 # HDF5 libraries for QMCPACK integration
-SET(ENABLE_PHDF5 1 CACHE BOOL "Enable phdf5 for output")
-SET(HAVE_LIBHDF5 0)
-SET(HDF5_PREFER_PARALLEL 0)
-IF(HAVE_MPI)
- SET(HDF5_PREFER_PARALLEL 1)
-ENDIF()
+set(ENABLE_PHDF5 1 CACHE BOOL "Enable phdf5 for output")
+set(HAVE_LIBHDF5 0)
+set(HDF5_PREFER_PARALLEL 0)
+if(HAVE_MPI)
+   set(HDF5_PREFER_PARALLEL 1)
+endif()
 find_package(HDF5 COMPONENTS C)
-IF(HDF5_FOUND)
-  SET(HAVE_LIBHDF5 1)
-  INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIR})
-  IF ( CMAKE_BUILD_TYPE AND HDF5_LIBRARIES_DEBUG )
-    IF ( CMAKE_BUILD_TYPE MATCHES DEBUG )
-      SET( HDF5_LIBRARIES ${HDF5_LIBRARIES_DEBUG} )
-    ELSE()
-      SET( HDF5_LIBRARIES ${HDF5_LIBRARIES_RELEASE} )
-    ENDIF()
-  ENDIF()
-  IF(HDF5_IS_PARALLEL)
-    IF(ENABLE_PHDF5)
-      MESSAGE(STATUS "Using HDF5 parallel collective I/O")
-    ELSE(ENABLE_PHDF5)
-      MESSAGE(STATUS "Using HDF5 non-scalable serial I/O")
-    ENDIF(ENABLE_PHDF5)
-  ELSE(HDF5_IS_PARALLEL)
-    IF(ENABLE_PHDF5)
-      MESSAGE(STATUS "Using HDF5 non-scalable serial I/O due to the lack of library support for parallel")
-      SET(ENABLE_PHDF5 0)
-    ELSE(ENABLE_PHDF5)
-      MESSAGE(STATUS "Using HDF5 non-scalable serial I/O")
-    ENDIF(ENABLE_PHDF5)
-  ENDIF(HDF5_IS_PARALLEL)
-
-  list(APPEND RMGLIBS ${HDF5_LIBRARIES})
-
-ELSE(HDF5_FOUND)
-    MESSAGE(FATAL_ERROR "Require hdf5 1.6.4 or higher. Set HDF5_ROOT")
-ENDIF(HDF5_FOUND)
+if(HDF5_FOUND)
+    set(HAVE_LIBHDF5 1)
+    INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIR})
+    if ( CMAKE_BUILD_TYPE AND HDF5_LIBRARIES_DEBUG )
+        if ( CMAKE_BUILD_TYPE MATCHES DEBUG )
+            set( HDF5_LIBRARIES ${HDF5_LIBRARIES_DEBUG} )
+        else()
+            set( HDF5_LIBRARIES ${HDF5_LIBRARIES_RELEASE} )
+        endif()
+    endif()
+    if(HDF5_IS_PARALLEL)
+        if(ENABLE_PHDF5)
+            message(STATUS "Using HDF5 parallel collective I/O")
+        else()
+            message(STATUS "Using HDF5 non-scalable serial I/O")
+        endif()
+    else()
+        if(ENABLE_PHDF5)
+            message(STATUS "Using HDF5 non-scalable serial I/O due to the lack of library support for parallel")
+            set(ENABLE_PHDF5 0)
+        else()
+            message(STATUS "Using HDF5 non-scalable serial I/O")
+        endif()
+    endif()
+    list(APPEND RMGLIBS ${HDF5_LIBRARIES})
+else()
+    message(FATAL_ERROR "Require hdf5 1.6.4 or higher. Set HDF5_ROOT")
+endif()
 
 
 # Look for GPU libraries. Only CUDA supported for now
 if(RMG_CUDA_ENABLED)
-  find_package(CUDA REQUIRED)
+    find_package(CUDA REQUIRED)
+    message( WARNING "CUDA_VERSION_MAJOR = ${CUDA_VERSION_MAJOR}")
+    message( WARNING "CUDA_VERSION_MINOR = ${CUDA_VERSION_MINOR}")
+    if(${CUDA_VERSION_MAJOR} LESS 6)
+        message(FATAL_ERROR "\nCompiling RMG with GPU support requires CUDA version 6.0 or greater. Either set CUDA_ENABLED=0 to build a CPU only version or upgrade your cuda installation.") 
+    endif()
 
-  message( WARNING "CUDA_VERSION_MAJOR = ${CUDA_VERSION_MAJOR}")
-  message( WARNING "CUDA_VERSION_MINOR = ${CUDA_VERSION_MINOR}")
-  if(${CUDA_VERSION_MAJOR} LESS 6)
-      message(FATAL_ERROR "\nCompiling RMG with GPU support requires CUDA version 6.0 or greater. Either set CUDA_ENABLED=0 to build a CPU only version or upgrade your cuda installation.") 
-  endif(${CUDA_VERSION_MAJOR} LESS 6)
+    if(NOT CRAY_HOST)
+        list(APPEND RMGLIBS ${CUDA_CUDA_LIBRARY})
+        list(APPEND RMGLIBS ${CUDA_CUDART_LIBRARY})
+        list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
+        list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
+    endif()
+    list(APPEND RMGLIBS ${CUDA_cublas_LIBRARY})
+    list(APPEND RMGLIBS ${CUDA_cusparse_LIBRARY})
+    list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
+    list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
+    include_directories(${CUDA_INCLUDE_DIRS})
 
-  if(NOT CRAY_XK)
-      list(APPEND RMGLIBS ${CUDA_CUDA_LIBRARY})
-      list(APPEND RMGLIBS ${CUDA_CUDART_LIBRARY})
-      list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
-      list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
-  endif(NOT CRAY_XK)
-  list(APPEND RMGLIBS ${CUDA_cublas_LIBRARY})
-  list(APPEND RMGLIBS ${CUDA_cusparse_LIBRARY})
-  list(APPEND RMGLIBS ${CUDA_cusolver_LIBRARY})
-  list(APPEND RMGLIBS ${CUDA_cufft_LIBRARY})
-  include_directories(${CUDA_INCLUDE_DIRS})
-
-# Cuda functions that we build are in Gpufuncs/CMakeLists.txt
- 
-  add_definitions(-DCUDA_VERSION_MAJOR=${CUDA_VERSION_MAJOR})
-  add_definitions(-DCUDA_VERSION_MINOR=${CUDA_VERSION_MINOR})
-endif(RMG_CUDA_ENABLED)
+    # Cuda functions that we build are in Gpufuncs/CMakeLists.txt
+    add_definitions(-DCUDA_VERSION_MAJOR=${CUDA_VERSION_MAJOR})
+    add_definitions(-DCUDA_VERSION_MINOR=${CUDA_VERSION_MINOR})
+endif()
 
 
 if(USE_ELEMENTAL_LIBS)
@@ -619,7 +595,7 @@ if(USE_ELEMENTAL_LIBS)
             WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
         execute_process(COMMAND make  -j 16
             WORKING_DIRECTORY  ${PROJECT_SOURCE_DIR}/lib/Elemental-0.85/build)
-    endif(NOT ELEMENTAL_FOUND)
+    endif()
 
     find_package(ELEMENTAL REQUIRED)
     include_directories(${ELEMENTAL_INCLUDES})
@@ -676,11 +652,11 @@ add_subdirectory (dftd3 EXCLUDE_FROM_ALL)
 add_subdirectory (InternalPseudo EXCLUDE_FROM_ALL) 
 if(RMG_CUDA_ENABLED)
     add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
-endif(RMG_CUDA_ENABLED)
+endif()
 
 if(RMG_HIP_ENABLED)
     add_subdirectory(Gpufuncs EXCLUDE_FROM_ALL)
-endif(RMG_HIP_ENABLED)
+endif()
 
 # Target specific code subdirectories. If no target
 # is given the base code rmg-cpu or rmg-gpu is built by default
@@ -708,7 +684,7 @@ add_subdirectory (NEGF/Pois_for_negf EXCLUDE_FROM_ALL)
 if(QMCPACK_SUPPORT)
     add_subdirectory (Interfaces EXCLUDE_FROM_ALL)
 endif()
-if(NOT CRAY_XK)
+if(NOT CRAY_HOST)
     add_subdirectory (scalapack EXCLUDE_FROM_ALL) 
 endif()
 
@@ -723,9 +699,9 @@ install(DIRECTORY tests DESTINATION share/rmg/)
 
 
 # Packaging section next
-SET(cpack_input_file "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
-SET(CPACK_INPUT_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
-SET(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
+set(cpack_input_file "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
+set(CPACK_INPUT_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
+set(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CMakeCPackOptions.cmake.in")
 set(CPACK_GENERATOR "RPM")
 
 set(CPACK_PACKAGE_VERSION_MAJOR "4")
@@ -743,6 +719,6 @@ include(CPack)
 include(${CMAKE_SOURCE_DIR}/CTestConfig.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/macro.cmake)
 
-ENABLE_TESTING()
-INCLUDE(CTest)
+enable_testing()
+include(CTest)
 SUBDIRS(tests)
