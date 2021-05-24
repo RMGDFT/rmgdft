@@ -1,7 +1,6 @@
 
-cmake_minimum_required(VERSION 2.4)
 
-project(spglib C)
+#project(spglib C)
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_C_FLAGS_RELEASE "-Wall -O2")
 set(CMAKE_C_FLAGS_DEBUG "-g -DSPGDEBUG -DSPGWARNING")
@@ -16,6 +15,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 
 # Version numbers
+set(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/spglib")
 file(READ ${PROJECT_SOURCE_DIR}/src/version.h version_file)
 string(REGEX MATCH "SPGLIB_MAJOR_VERSION ([0-9]+)" spglib_major_version ${version_file})
 set(spglib_major_version ${CMAKE_MATCH_1})
