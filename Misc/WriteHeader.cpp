@@ -470,6 +470,17 @@ void WriteHeader (void)
 #if CUDA_ENABLED
     printf ("    GPU support with cublas\n");
 #endif
+    std::string serial("serial"), unknown("unknown"), msg(RMG_BLAS_MSG);
+    size_t found = msg.find(serial);
+    if (found!=std::string::npos)
+    {
+        printf("    WARNING!!!  serial blas library detected. Performance in hybrid mode may be suboptimal.\n");
+    }
+    found = msg.find(unknown);
+    if (found!=std::string::npos)
+    {
+        printf("    WARNING!!!  unknown blas library detected. Performance may be suboptimal.\n");
+    }
 
 #if 0
     /* Forces are updated under normalized constraint field */
