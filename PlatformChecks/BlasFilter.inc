@@ -1,8 +1,8 @@
 # Check blacklisted versions first and abort build
-if(${BLA_VENDOR} STREQUAL "ATLAS")
+if(${BLA_VENDOR} MATCHES "ATLAS")
     message(FATAL_ERROR "The RMG threading model is incompatible with the ATLAS blas threading model. If you really wish to use it comment out the line in PlatformChecks/BlasFilter.inc.")
 endif()
-if(BLA_VENDOR STREQUAL "Goto")
+if(${BLA_VENDOR} MATCHES "Goto")
     message(FATAL_ERROR "Goto blas is obsolete and not recommended. If you really wish to use it comment out the line in PlatformChecks/BlasFilter.inc.")
 endif()
 
