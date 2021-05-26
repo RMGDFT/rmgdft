@@ -461,7 +461,15 @@ void WriteHeader (void)
 	printf ("    Davidson unocc tol factor:               %-6.3f\n", ct.unoccupied_tol_factor);
     }
 
-
+    printf ("\n");
+    printf ("Blas Libraries\n");
+    printf ("    CPU support with %s\n", RMG_BLAS_MSG);
+#if HIP_ENABLED
+    printf ("    GPU support with hipblas\n");
+#endif
+#if CUDA_ENABLED
+    printf ("    GPU support with cublas\n");
+#endif
 
 #if 0
     /* Forces are updated under normalized constraint field */

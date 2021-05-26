@@ -40,6 +40,10 @@
 #include "common_prototypes1.h"
 #include "transition.h"
 
+#if MKLBLAS_SET_NUM_THREADS
+    #include <mkl_service.h>
+#endif
+
 
 template char * Subdiag_Lapack<double> (Kpoint<double> *kptr, double *Aij, double *Bij, double *Sij, double *eigs, double *eigvectors);
 template char * Subdiag_Lapack<std::complex<double> > (Kpoint<std::complex<double>> *kptr, std::complex<double> *Aij, std::complex<double> *Bij, std::complex<double> *Sij, double *eigs, std::complex<double> *eigvectors);
@@ -98,7 +102,9 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 #if OPENBLAS_SET_NUM_THREADS
         openblas_set_num_threads(nthreads);
 #endif
-
+#if MKLBLAS_SET_NUM_THREADS
+        mkl_set_num_threads_local(ct.OMP_THREADS_PER_NODE);
+#endif
 
         // Copy Aij into eigvectors
         for(int ix=0;ix < num_states*num_states;ix++) eigvectors[ix] = Aij[ix];
@@ -144,7 +150,9 @@ char * Subdiag_Lapack (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bi
 #if OPENBLAS_SET_NUM_THREADS
         openblas_set_num_threads(ct.OMP_THREADS_PER_NODE);
 #endif
-
+#if MKLBLAS_SET_NUM_THREADS
+        mkl_set_num_threads_local(ct.OMP_THREADS_PER_NODE);
+#endif
 
     } // end if is_local_master
 

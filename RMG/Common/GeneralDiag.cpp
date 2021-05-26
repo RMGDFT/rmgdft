@@ -53,6 +53,10 @@
 #endif
 #endif
 
+#if MKLBLAS_SET_NUM_THREADS
+    #include <mkl_service.h>
+#endif
+
 
 // Kludge for now
 extern Scalapack *MainSp;
@@ -131,7 +135,9 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
 #if OPENBLAS_SET_NUM_THREADS
         openblas_set_num_threads(nthreads);
 #endif
-
+#if MKLBLAS_SET_NUM_THREADS
+        mkl_set_num_threads_local(ct.OMP_THREADS_PER_NODE);
+#endif
 
 
         {
@@ -213,6 +219,9 @@ int GeneralDiagLapack(KpointType *A, KpointType *B, double *eigs, KpointType *V,
         omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
 #if OPENBLAS_SET_NUM_THREADS
         openblas_set_num_threads(ct.OMP_THREADS_PER_NODE);
+#endif
+#if MKLBLAS_SET_NUM_THREADS
+        mkl_set_num_threads_local(ct.OMP_THREADS_PER_NODE);
 #endif
 
 

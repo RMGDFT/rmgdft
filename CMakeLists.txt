@@ -474,6 +474,7 @@ if(NOT CRAY_HOST)
                 list(APPEND RMGLIBS "${MKLROOT}/lib/intel64/libmkl_gnu_thread.a")
                 list(APPEND RMGLIBS "${MKLROOT}/lib/intel64/libmkl_core.a")
                 set(RMG_MATH_LIBS "done")
+                set(RMG_MKLLIBS 1)
             else()
                 message( SEND_ERROR "RMG requires 64 bit MKL." )
             endif()
@@ -507,15 +508,8 @@ if(NOT RMG_MATH_LIBS)
     endif()
 endif()
 
-
-# Check for openblas library supporting changing threads
-include("PlatformChecks/CheckOpenBlasSetNumThreads.inc")
-if(RMG_OPENBLAS_SET_NUM_THREADS_INTERNAL)
-    add_definitions(-DOPENBLAS_SET_NUM_THREADS=1)
-else()
-    add_definitions(-DOPENBLAS_SET_NUM_THREADS=0)
-endif()
-
+# Check blas libraries
+include("PlatformChecks/BlasFilter.inc")
 
 # HDF5 libraries for QMCPACK integration
 set(ENABLE_PHDF5 1 CACHE BOOL "Enable phdf5 for output")

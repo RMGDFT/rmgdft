@@ -40,6 +40,10 @@
     #include <hwloc.h>
 #endif
 
+#if MKLBLAS_SET_NUM_THREADS
+    #include <mkl_service.h>
+#endif
+
 void *run_threads(void *v);
 static BaseThread *B;
 
@@ -378,6 +382,9 @@ void InitHybridModel(int omp_nthreads, int mg_nthreads, int npes, int thispe, MP
     omp_set_num_threads(ct.OMP_THREADS_PER_NODE);
 #if OPENBLAS_SET_NUM_THREADS
     openblas_set_num_threads(ct.OMP_THREADS_PER_NODE);
+#endif
+#if MKLBLAS_SET_NUM_THREADS
+    mkl_set_num_threads_local(ct.OMP_THREADS_PER_NODE);
 #endif
     B = BaseThread::getBaseThread(ct.MG_THREADS_PER_NODE);
     B->RegisterThreadFunction(run_threads, pct.grid_comm);
