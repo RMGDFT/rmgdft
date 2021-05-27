@@ -51,6 +51,7 @@
 #define		zcopy		RMG_FC_GLOBAL(zcopy, ZCOPY)
 #define		ddot		RMG_FC_GLOBAL(ddot, DDOT)
 #define		dscal		RMG_FC_GLOBAL(dscal, DSCAL)
+#define		zscal		RMG_FC_GLOBAL(zscal, ZSCAL)
 #define		dsyrk		RMG_FC_GLOBAL(dsyrk, DSYRK)
 #define		dsyr2k		RMG_FC_GLOBAL(dsyr2k, DSYR2K)
 #define		zsyr2k		RMG_FC_GLOBAL(zsyr2k, ZSYR2K)
@@ -199,6 +200,7 @@ double dzasum(int *, double *A, int *);
 void dsygvd(int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, double *eigs, double *work, int *lwork, int *iwork, int *liwork, int *info);
 void zhegvd(int *itype, char *jobz, char *uplo, int *n, double *a, int *lda, double *b, int *ldb, double *eigs, double *work, int *lwork, double
 *rwork, int *lrwork, int *iwork, int *liwork, int *info);
+void zscal (int *n, DoubleC * alpha, DoubleC * x, int *incx);
 void zcopy(int *, DoubleC *, int *, DoubleC *, int *);
 void zaxpy(int *, DoubleC *, DoubleC *, int *, DoubleC *, int*);
 void zgeev(char *, char *, int *, DoubleC*, int *, DoubleC*, DoubleC*, int *, DoubleC*, int *, DoubleC*, int *, double *, int * );

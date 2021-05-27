@@ -85,7 +85,8 @@ template <class T> Pdos<T>::Pdos(
 
     if(!ct.norm_conserving_pp )
     {
-        throw RmgFatalException() << "Pdos not programmed for ultra soft pseudopotential\n";
+        std::cout << "Pdos not programmed for ultra soft pseudopotential" << std::endl;
+        return;
     }
     ngrid = G.get_NX_GRID(1) * G.get_NY_GRID(1) * G.get_NZ_GRID(1);
     ngrid_noncoll = ngrid * ct.noncoll_factor;
