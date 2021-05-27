@@ -474,12 +474,15 @@ void WriteHeader (void)
     size_t found = msg.find(serial);
     if (found!=std::string::npos)
     {
-        printf("    WARNING!!!  serial blas library detected. Performance in hybrid mode may be suboptimal.\n");
+        printf("    WARNING!!!  serial blas library detected. Performance in hybrid mode may be suboptimal\n    with a CPU only build.");
+        std::cout << "    WARNING!!!  serial blas library detected. Performance in hybrid mode may be suboptimal\n    with a CPU only build." << std::endl;
+
     }
     found = msg.find(unknown);
     if (found!=std::string::npos)
     {
-        printf("    WARNING!!!  unknown blas library detected. Performance may be suboptimal.\n");
+        printf("    WARNING!!!  unknown blas library detected. Performance may be suboptimal\n    with a CPU only build.");
+        std::cout << "WARNING!!!  unknown blas library detected. Performance may be suboptimal\n    with a CPU only build." << std::endl;
     }
 
 #if 0
