@@ -85,8 +85,8 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
         {
             Pulay_rho = new PulayMixing(pbasis_noncoll, ct.charge_pulay_order, ct.charge_pulay_refresh,
                     ct.mix, ct.charge_pulay_scale, pct.grid_comm);
-            if(ct.drho_precond)
-                Pulay_rho->SetGspace();
+            Pulay_rho->SetGspace(ct.drho_precond, ct.charge_pulay_Gspace, ct.drho_q0);
+
         }
 
         if(reset) {
@@ -99,7 +99,13 @@ void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, dou
         daxpy(&pbasis_noncoll, &mone, rho, &ione, new_rho, &ione);
 
         // rho_new store thr rho resudyke,
-        Pulay_rho->Mixing(rho, new_rho);
+        if(ct.charge_pulay_Gspace) {
+            Pulay_rho->Mixing_rhoG(rho, new_rho);
+        }
+        else {
+
+            Pulay_rho->Mixing(rho, new_rho);
+        }
 
         rmg_printf("Charge density mixing: Pulay\n");
 
