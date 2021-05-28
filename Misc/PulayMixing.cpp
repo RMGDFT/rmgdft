@@ -220,14 +220,14 @@ void PulayMixing::SetGspace(bool drho_pre_in, bool Gspace_in, double q0_in)
         double hx = Rmg_G->get_hxgrid(ct.FG_RATIO) * Rmg_L.celldm[0];
         double qmax = 2.0 * PI/hx;
 
-        double weight_scale = 100.0;
+        double weight_scale = 20.0;
         //  f_q = (q^2 + q1^2)/q^2
         //<A|B> = sum_q f_q * A_q * B_q
         // f_q(qmin) = weight_scale * f_q(qmax) 
 
         this->q1 = (weight_scale - 1.0) * qmin * qmin * qmax * qmax /(qmax * qmax - weight_scale * qmin *qmin);
 
-        std::cout << "q1 = " << this->q1 << std::endl;
+        //std::cout << "q1 = " << this->q1 << std::endl;
         if(this->q1 < 0.0) {
             throw RmgFatalException() << "Error! q1^2 negative." << " in " << __FILE__ << " at line " << __LINE__ << "\n";
 
@@ -282,6 +282,7 @@ void PulayMixing::Mixing_rhoG(double *xm, double *fm)
     {
         fine_pwaves->FftForward(&c_fm[is*pbasis], &c_fm[is*pbasis] );
     }
+
     zcopy(&N, c_fm, &ione, this->res_histG_ptr[current_pos], &ione);
 
     int num_prev_steps = std::min(this->step, this->pulay_order-1);
@@ -354,7 +355,7 @@ void PulayMixing::Mixing_rhoG(double *xm, double *fm)
     /*   b = A^(-1) * b     */
     dgesv(&A_size, &ione, A, &lda, ipvt, b, &A_size, &info);
 
-    if(pct.gridpe == 0 && 1)
+    if(pct.gridpe == 0 && ct.verbose)
     {
         printf("\n");
         for (int i = 0; i < size; i++)
