@@ -1187,14 +1187,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
 
     if (this->orbital_weight != NULL) {
 #if CUDA_ENABLED || HIP_ENABLED
-        if(ct.pin_nonlocal_weights)
-        {
-            gpuFreeHost(this->orbital_weight);
-        }
-        else
-        {
-            gpuFree(this->orbital_weight);
-        }
+        RmgFreeHost(this->orbital_weight);
 #else
         if(ct.nvme_weights)
         {
@@ -1239,25 +1232,15 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
 #if CUDA_ENABLED || HIP_ENABLED
     gpuError_t custat;
-    // Managed memory is faster when gpu memory is not constrained but 
-    // pinned memory works better when it is constrained.
-    if(ct.pin_nonlocal_weights)
-    {
-        custat = gpuMallocHost((void **)&this->orbital_weight, this->orbital_weight_size * sizeof(KpointType));
-        RmgGpuError(__FILE__, __LINE__, custat, "Error: gpuMallocHost failed.\n");
-    }
-    else
-    {
-        this->orbital_weight = (KpointType *)RmgMallocHost(this->orbital_weight_size * sizeof(KpointType));
-        int device = -1;
-        gpuGetDevice(&device);
+    this->orbital_weight = (KpointType *)RmgMallocHost(this->orbital_weight_size * sizeof(KpointType));
+    int device = -1;
+    gpuGetDevice(&device);
 #if CUDA_ENABLED
-        cudaMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
+    cudaMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), cudaMemAdviseSetReadMostly, device);
 #elif HIP_ENABLED
-        hipMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
+    hipMemAdvise ( this->orbital_weight, this->orbital_weight_size * sizeof(KpointType), hipMemAdviseSetReadMostly, device);
 #endif
 
-    }
     for(size_t idx = 0;idx < this->orbital_weight_size;idx++) this->orbital_weight[idx] = 0.0;
 
 #else
