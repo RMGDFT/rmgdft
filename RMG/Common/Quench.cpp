@@ -85,7 +85,9 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
     Voronoi *Voronoi_charge = new Voronoi();
     delete RT;
     int outer_steps = 1;
+
     Exxbase<OrbitalType> *Exx_scf = NULL;
+
     ct.FOCK = 0.0;
     if(ct.xc_is_hybrid)
     {
@@ -251,6 +253,7 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         vxc_psi = new double[pbasis]();
         int nstates = Kptr[0]->nstates;
         OrbitalType *Hcore = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
+        OrbitalType *Hcore_kin = (OrbitalType *)RmgMallocHost(ct.num_kpts_pe * nstates * nstates * sizeof(OrbitalType));
 
         bool is_xc_hybrid = ct.xc_is_hybrid;
 
@@ -261,14 +264,14 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         ct.xc_is_hybrid = false;
 
         for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
-            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates]);
+            Kptr[kpt]->ComputeHcore(v_psi, vxc_psi, &Hcore[kpt*nstates * nstates], &Hcore_kin[kpt*nstates * nstates]);
         }
         
         if(ct.qmc_nband == 0) ct.qmc_nband = ct.num_states;
         if(ct.qmc_nband > ct.num_states)
             throw RmgFatalException() << "qmc_nband " << ct.qmc_nband << " is larger than ct.num_states " << ct.num_states << "\n";
 
-        Exx.SetHcore(Hcore, nstates);
+        Exx.SetHcore(Hcore, Hcore_kin, nstates);
         Exx.Vexx_integrals(ct.exx_int_file);
         ct.xc_is_hybrid = is_xc_hybrid;
         delete [] v_psi;

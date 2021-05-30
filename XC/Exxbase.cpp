@@ -1207,7 +1207,7 @@ template <> void Exxbase<double>::Vexx_integrals(std::string &vfile)
         if(pct.worldrank == 0)
         {
             //WriteForAFQMC(ct.qmc_nband, Nchol, nstates_occ, nstates_occ, eigs, ExxCholVecGlob, Hcore);
-            WriteForAFQMC_gamma2complex(vfile, ct.qmc_nband, Nchol, ct.qmc_nband, ct.qmc_nband, eigs, ExxCholVecGlob, Hcore);
+            WriteForAFQMC_gamma2complex(vfile, ct.qmc_nband, Nchol, ct.qmc_nband, ct.qmc_nband, eigs, ExxCholVecGlob, Hcore, Hcore_kin);
         }
     }
 }
@@ -1430,6 +1430,17 @@ template <> void Exxbase<std::complex<double>>::Vexx_integrals(std::string &hdf_
             }
 
             std::string hkp = "H1_kp" + std::to_string(ik);
+            writeNumsToHDF(hkp, hcore, hamil_group, 3, h_dims);
+        }
+
+        for(int ik = 0; ik < ct.klist.num_k_all; ik++)
+        {   
+            for(int idx = 0; idx < ct.qmc_nband * ct.qmc_nband; idx++) {
+                hcore[2*idx + 0] = std::real(Hcore_kin[ik * ct.qmc_nband * ct.qmc_nband + idx]);
+                hcore[2*idx + 1] = std::imag(Hcore_kin[ik * ct.qmc_nband * ct.qmc_nband + idx]);
+            }
+
+            std::string hkp = "H1_kin_kp" + std::to_string(ik);
             writeNumsToHDF(hkp, hcore, hamil_group, 3, h_dims);
         }
         H5Fclose(h5file);
@@ -2288,34 +2299,43 @@ template <class T> void Exxbase<T>::Remap(T *inbuf, T *rbuf)
     }
 }
 
-template void Exxbase<double>::SetHcore(double *Hij, int lda);
-template void Exxbase<std::complex<double>>::SetHcore(std::complex<double> *Hij, int lda);
-template <class T> void Exxbase<T>::SetHcore(T *Hij, int lda)
+template void Exxbase<double>::SetHcore(double *Hij, double *Hij_kin, int lda);
+template void Exxbase<std::complex<double>>::SetHcore(std::complex<double> *Hij, std::complex<double> *Hij_kin, int lda);
+template <class T> void Exxbase<T>::SetHcore(T *Hij, T *Hij_kin, int lda)
 {
 
     Hcore.resize(ct.klist.num_k_all * ct.qmc_nband * ct.qmc_nband);
+    Hcore_kin.resize(ct.klist.num_k_all * ct.qmc_nband * ct.qmc_nband);
     T *Hij_irr_k = new T[ct.num_kpts * ct.qmc_nband * ct.qmc_nband]();
+    T *Hij_kin_irr_k = new T[ct.num_kpts * ct.qmc_nband * ct.qmc_nband]();
 
     for(int ik = 0; ik < ct.num_kpts_pe; ik++) {
         int ik_irr = ik + pct.kstart;
 
         for(int i = 0; i < ct.qmc_nband; i++)
             for(int j = 0; j < ct.qmc_nband; j++)
+            {
                 Hij_irr_k[ik_irr * ct.qmc_nband * ct.qmc_nband + i * ct.qmc_nband + j] = Hij[ik * lda * lda + i* lda + j];
+                Hij_kin_irr_k[ik_irr * ct.qmc_nband * ct.qmc_nband + i * ct.qmc_nband + j] = Hij_kin[ik * lda * lda + i* lda + j];
+        }
     }
 
 
     int count = ct.num_kpts * ct.qmc_nband * ct.qmc_nband * sizeof(T)/sizeof(double);
     MPI_Allreduce(MPI_IN_PLACE, (double *)Hij_irr_k, count, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+    MPI_Allreduce(MPI_IN_PLACE, (double *)Hij_kin_irr_k, count, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
     for(int ik = 0; ik < ct.klist.num_k_all; ik++)
     {
         int ik_irr = ct.klist.k_map_index[ik];
-        for(int idx = 0; idx < ct.qmc_nband * ct.qmc_nband; idx++)
+        for(int idx = 0; idx < ct.qmc_nband * ct.qmc_nband; idx++) {
             Hcore[ik * ct.qmc_nband * ct.qmc_nband + idx] = Hij_irr_k[ik_irr * ct.qmc_nband * ct.qmc_nband + idx];
+            Hcore_kin[ik * ct.qmc_nband * ct.qmc_nband + idx] = Hij_kin_irr_k[ik_irr * ct.qmc_nband * ct.qmc_nband + idx];
+        }
     }
 
     delete [] Hij_irr_k;
+    delete [] Hij_kin_irr_k;
 
 }
 
@@ -2492,11 +2512,11 @@ template <class T> void Exxbase<T>::write_waves_afqmc(hid_t wf_group)
 }
 
 template void Exxbase<double>::WriteForAFQMC_gamma2complex(std::string &hdf_filename, int ns_occ, int Nchol, int Nup, int Ndown,
-        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore);
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore, std::vector<double> &Hcore_kin);
 template void Exxbase<std::complex<double>>::WriteForAFQMC_gamma2complex(std::string &hdf_filename, int ns_occ, int Nchol, int Nup, int Ndown,
-        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore);
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore, std::vector<double> &Hcore_kin);
 template <class T> void Exxbase<T>::WriteForAFQMC_gamma2complex(std::string &hdf_filename, int ns_occ, int Nchol, int Nup, int Ndown,
-        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore)
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore, std::vector<double> &Hcore_kin)
 {
     hid_t h5file = 0;
     hid_t hamil_group = 0;
@@ -2545,6 +2565,13 @@ template <class T> void Exxbase<T>::WriteForAFQMC_gamma2complex(std::string &hdf
     }
 
     std::string hkp = "H1_kp0";
+    writeNumsToHDF(hkp, hcore, hamil_group, 3, h_dims);
+    for(int idx = 0; idx < ns_occ * ns_occ; idx++) {
+        hcore[2*idx + 0] = std::real(Hcore_kin[idx]);
+        hcore[2*idx + 1] = std::imag(Hcore_kin[idx]);
+    }
+
+    hkp = "H1_kin_kp0";
     writeNumsToHDF(hkp, hcore, hamil_group, 3, h_dims);
     H5Fclose(h5file);
 

@@ -153,7 +153,7 @@ private:
     void write_basics(hid_t h_grp, int_2d_array QKtoK2, std::vector<int> kminus);
     void write_waves_afqmc(hid_t h_grp);
     void WriteForAFQMC_gamma2complex(std::string &hdf_file, int ns_occ, int Nchol, int Nup, int Ndown,
-        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore);
+        std::vector<double> eigs, std::vector<double> &CholVec, std::vector<double> &Hcore, std::vector<double> &Hcore_kin);
 
     void PadR2C(double *psi_i, double *psi_j, float *padded);
     void PadR2C(double *psi_i, double *psi_j, double *padded);
@@ -179,10 +179,10 @@ public:
     ~Exxbase(void);
 
 
-    std::vector<T> Hcore;
+    std::vector<T> Hcore, Hcore_kin;
     void Vexx(T *vexx, bool use_float_fft);
     double Exxenergy(T *vexx);
-    void SetHcore(T *Hij, int lda);
+    void SetHcore(T *Hij, T *Hij_kin, int lda);
     void Vexx_integrals(std::string &ifile);
     void Vexx_integrals_block(FILE *fp, int ij_start, int ij_end, int kl_start, int kl_end);
     void WriteWfsToSingleFile(void);
