@@ -1841,12 +1841,12 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
     int subsizes_c[4];
     int starts_c[4];
 
-    sizes_c[0] = nstates *ct.noncoll_factor;
+    sizes_c[0] = nstates;
     sizes_c[1] = G.get_NX_GRID(1);
     sizes_c[2] = G.get_NY_GRID(1);
     sizes_c[3] = G.get_NZ_GRID(1);
 
-    subsizes_c[0] = nstates *ct.noncoll_factor;
+    subsizes_c[0] = nstates;
     subsizes_c[1] = G.get_PX0_GRID(1);
     subsizes_c[2] = G.get_PY0_GRID(1);
     subsizes_c[3] = G.get_PZ0_GRID(1);
@@ -1884,8 +1884,13 @@ template <class T> void Exxbase<T>::WriteWfsToSingleFile()
 
         wfptr = &psi[(ik * ct.max_states * dis_dim) * ct.noncoll_factor];
 
-        dis_dim = dis_dim * nstates * ct.noncoll_factor;
+        dis_dim = dis_dim * nstates;
         MPI_File_write_all(mpi_fhand, wfptr, dis_dim, wftype, &status);
+        if(ct.noncoll) {
+            wfptr += dis_dim;
+            MPI_File_write_all(mpi_fhand, wfptr, dis_dim, wftype, &status);
+        }
+
         MPI_Barrier(G.comm);
         MPI_File_close(&mpi_fhand);
     }
