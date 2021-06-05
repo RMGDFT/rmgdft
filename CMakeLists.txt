@@ -160,12 +160,11 @@ include (CMakeForceCompiler)
 include (FortranCInterface)
 
 
-# Send the Fortran C interface mangling template file to the build directory and set it up there
-configure_file (
-  "${PROJECT_SOURCE_DIR}/rmg_mangling.h.in"
-  "${PROJECT_BINARY_DIR}/Headers/rmg_mangling.h"
-)
-FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h MACRO_NAMESPACE RMG_FC_)
+# Fortran C interface mangling
+FortranCInterface_VERIFY(CXX QUIET)
+FortranCInterface_HEADER(${CMAKE_BINARY_DIR}/Headers/rmg_mangling.h
+                         MACRO_NAMESPACE RMG_FC_
+                         SYMBOL_NAMESPACE RMG_FC_)
 
 
 # Modify this if you need some special compiler flags.
