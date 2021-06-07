@@ -131,6 +131,8 @@ public:
     void ReadNlweight(std::string filename, int nh, std::complex<double> *Nlweight_oneatom);
     void InitGuideFunc();
     void GuideFunc(int kpt, T *guidefunc);
+    void ReadPsiFromSingleFile(int ikindex, std::string wavefile, T *psi_k);
+
 
 };
 #endif

@@ -129,52 +129,55 @@ template <class T> Wannier<T>::Wannier (
     WriteWinEig();
 //  setup forward beta for all of kpoints
     double kvec[3];
-    RT1 = new RmgTimer("7-Wannier: init_weight");
-    BaseGrid LG(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
-    int rank = Rmg_G->get_rank();
-    MPI_Comm lcomm;
-    MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
-    LG.set_rank(0, lcomm);
-    Pw pwave (LG, Rmg_L, 1, false);
-
-    for(int kpt = pct.gridpe; kpt < ct.klist.num_k_all; kpt+=pct.grid_npes)
+    if(!ct.norm_conserving_pp)
     {
-        
-        kvec[0] = ct.klist.k_all_cart[kpt][0];
-        kvec[1] = ct.klist.k_all_cart[kpt][1];
-        kvec[2] = ct.klist.k_all_cart[kpt][2];
-        InitDelocalizedWeight_onek(kpt, kvec, pwave);
-    }
+        RT1 = new RmgTimer("7-Wannier: init_weight");
+        BaseGrid LG(Rmg_G->get_NX_GRID(1), Rmg_G->get_NY_GRID(1), Rmg_G->get_NZ_GRID(1), 1, 1, 1, 0, 1);
+        int rank = Rmg_G->get_rank();
+        MPI_Comm lcomm;
+        MPI_Comm_split(Rmg_G->comm, rank+1, rank, &lcomm);
+        LG.set_rank(0, lcomm);
+        Pw pwave (LG, Rmg_L, 1, false);
 
-    for(int kpt = pct.gridpe; kpt < ct.klist.num_k_ext; kpt+=pct.grid_npes)
-    {
-        kvec[0] = ct.klist.k_ext_cart[kpt][0];
-        kvec[1] = ct.klist.k_ext_cart[kpt][1];
-        kvec[2] = ct.klist.k_ext_cart[kpt][2];
-        InitDelocalizedWeight_onek(kpt+ct.klist.num_k_all, kvec, pwave);
+        for(int kpt = pct.gridpe; kpt < ct.klist.num_k_all; kpt+=pct.grid_npes)
+        {
 
-    }
+            kvec[0] = ct.klist.k_all_cart[kpt][0];
+            kvec[1] = ct.klist.k_all_cart[kpt][1];
+            kvec[2] = ct.klist.k_all_cart[kpt][2];
+            InitDelocalizedWeight_onek(kpt, kvec, pwave);
+        }
 
-    MPI_Barrier(MPI_COMM_WORLD);
-    delete RT1;
-    RT1 = new RmgTimer("7-Wannier: weight");
-    for(int kpt = pct.gridpe; kpt < ct.klist.num_k_all; kpt+=pct.grid_npes)
-    {
-        
-        kvec[0] = ct.klist.k_all_cart[kpt][0];
-        kvec[1] = ct.klist.k_all_cart[kpt][1];
-        kvec[2] = ct.klist.k_all_cart[kpt][2];
+        for(int kpt = pct.gridpe; kpt < ct.klist.num_k_ext; kpt+=pct.grid_npes)
+        {
+            kvec[0] = ct.klist.k_ext_cart[kpt][0];
+            kvec[1] = ct.klist.k_ext_cart[kpt][1];
+            kvec[2] = ct.klist.k_ext_cart[kpt][2];
+            InitDelocalizedWeight_onek(kpt+ct.klist.num_k_all, kvec, pwave);
 
-        DelocalizedWeight_one(kpt, kvec, pwave);        
+        }
+
+        MPI_Barrier(MPI_COMM_WORLD);
+        delete RT1;
+        RT1 = new RmgTimer("7-Wannier: weight");
+        for(int kpt = pct.gridpe; kpt < ct.klist.num_k_all; kpt+=pct.grid_npes)
+        {
+
+            kvec[0] = ct.klist.k_all_cart[kpt][0];
+            kvec[1] = ct.klist.k_all_cart[kpt][1];
+            kvec[2] = ct.klist.k_all_cart[kpt][2];
+
+            DelocalizedWeight_one(kpt, kvec, pwave);        
+        }
+        for(int kpt = pct.gridpe; kpt < ct.klist.num_k_ext; kpt+=pct.grid_npes)
+        {
+            kvec[0] = ct.klist.k_ext_cart[kpt][0];
+            kvec[1] = ct.klist.k_ext_cart[kpt][1];
+            kvec[2] = ct.klist.k_ext_cart[kpt][2];
+            DelocalizedWeight_one(kpt+ct.klist.num_k_all, kvec, pwave);        
+        }
+        delete RT1;
     }
-    for(int kpt = pct.gridpe; kpt < ct.klist.num_k_ext; kpt+=pct.grid_npes)
-    {
-        kvec[0] = ct.klist.k_ext_cart[kpt][0];
-        kvec[1] = ct.klist.k_ext_cart[kpt][1];
-        kvec[2] = ct.klist.k_ext_cart[kpt][2];
-        DelocalizedWeight_one(kpt+ct.klist.num_k_all, kvec, pwave);        
-    }
-    delete RT1;
     RT1 = new RmgTimer("7-Wannier: Amn");
     if(scdm < 0)
     {
@@ -192,13 +195,13 @@ template <class T> Wannier<T>::Wannier (
 
 template <> void Wannier<double>::SetAmn_scdm()
 {
-        throw RmgFatalException() << "scdm need more than one gamma point  \n";
+    throw RmgFatalException() << "scdm need more than one gamma point  \n";
 }
 template <> void Wannier<std::complex<double>>::SetAmn_scdm()
 {
     double tol = 1.0e-5;
     int ik_gamma = -1;
-    
+
     RmgTimer *RT0;
     for(int kpt = 0; kpt < ct.num_kpts; kpt++)
     {
@@ -207,9 +210,9 @@ template <> void Wannier<std::complex<double>>::SetAmn_scdm()
             ik_gamma = kpt;
             break;
         }
- 
+
     }
-    
+
     if(ik_gamma < 0) 
         throw RmgFatalException() << "cannot find gamma kpoint \n";
 
@@ -1052,7 +1055,12 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
         int isyma = std::abs(isym) -1;
 
         RT1 = new RmgTimer("7-Wannier: Mmn: read and rotate");
-        ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
+        if(isyma == 0 ) {
+            ReadPsiFromSingleFile(ik_irr, wavefile, psi_k);
+        }
+        else {
+            ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
+        }
         delete RT1;
 
         if(!ct.norm_conserving_pp)
@@ -1089,7 +1097,12 @@ template <class T> void Wannier<T>::SetMmn(Kpoint<T> **Kptr)
             int isyma_kn = std::abs(isym_kn) -1;
 
             RT1 = new RmgTimer("7-Wannier: Mmn: read and rotate");
-            ReadRotatePsi(ikn_irr, isym_kn, isyma_kn, wavefile, psi_q);
+            if(isyma_kn == 0 ) {
+                ReadPsiFromSingleFile(ikn_irr, wavefile, psi_q);
+            }
+            else {
+                ReadRotatePsi(ikn_irr, isym_kn, isyma_kn, wavefile, psi_q);
+            }
 
             delete RT1;
 
@@ -1759,7 +1772,6 @@ template <class T> void Wannier<T>::SetAmn_proj()
         SPECIES &AtomType = Species[Atoms[ion].species];
         num_tot_proj += AtomType.nh;
     }
-    T *Nlweight_k = (T *)RmgMallocHost(num_tot_proj * nbasis* sizeof(T));
     for(int ik = 0; ik < num_q; ik++)
     {
         RT1 = new RmgTimer("7-Wannier: Amn: gf");
@@ -1770,7 +1782,12 @@ template <class T> void Wannier<T>::SetAmn_proj()
         int isyma = std::abs(isym) -1;
 
         RT1 = new RmgTimer("7-Wannier: Amn: read and rotate");
-        ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
+        if(isyma == 0 ) {
+            ReadPsiFromSingleFile(ik_irr, wavefile, psi_k);
+        }
+        else {
+            ReadRotatePsi(ik_irr, isym, isyma, wavefile, psi_k);
+        }
         delete RT1;
 
         RT1 = new RmgTimer("7-Wannier: Amn: gemm");
@@ -1781,6 +1798,7 @@ template <class T> void Wannier<T>::SetAmn_proj()
         RT1 = new RmgTimer("7-Wannier: Amn: us");
         if(!ct.norm_conserving_pp)
         {
+            T *Nlweight_k = (T *)RmgMallocHost(num_tot_proj * nbasis* sizeof(T));
             RmgTimer *RT2 = new RmgTimer("7-Wannier: Amn: us: read NL");
             std::string filename;
             filename = "PROJECTORS/NLprojectors_kpt" + std::to_string(ik);
@@ -1813,13 +1831,13 @@ template <class T> void Wannier<T>::SetAmn_proj()
             delete [] qq_dk_one;
             delete [] qq_dk_so_one;
 
+            RmgFreeHost(Nlweight_k);
 
         }
         delete RT1;
 
     }
 
-    RmgFreeHost(Nlweight_k);
 
     RT1 = new RmgTimer("7-Wannier: Amn: Reduce");
     int count = num_q * n_wannier * nstates;
@@ -1858,4 +1876,81 @@ template <class T> void Wannier<T>::SetAmn_proj()
 
 }
 
+
+template  void Wannier<double>::ReadPsiFromSingleFile(int ikindex, std::string wavefile, double *psi_k);
+template  void Wannier<std::complex<double>>::ReadPsiFromSingleFile(int ikindex, std::string wavefile, std::complex<double> *psi_k);
+template <class T> void Wannier<T>::ReadPsiFromSingleFile(int ikindex, std::string wavefile, T *psi_k)
+{
+    // Write the domain distributed wavefunction array and map it to psi_s
+    MPI_Datatype wftype = MPI_DOUBLE;
+    if(typeid(T) == typeid(std::complex<double>)) wftype = MPI_DOUBLE_COMPLEX;
+
+    int sizes_c[4];
+    int subsizes_c[4];
+    int starts_c[4];
+
+    sizes_c[0] = nstates_tot;
+    sizes_c[1] = G.get_NX_GRID(1);
+    sizes_c[2] = G.get_NY_GRID(1);
+    sizes_c[3] = G.get_NZ_GRID(1);
+
+    subsizes_c[0] = nstates_tot;
+    subsizes_c[1] = G.get_PX0_GRID(1);
+    subsizes_c[2] = G.get_PY0_GRID(1);
+    subsizes_c[3] = G.get_PZ0_GRID(1);
+
+    starts_c[0] = 0;
+    starts_c[1] = G.get_PX_OFFSET(1);
+    starts_c[2] = G.get_PY_OFFSET(1);
+    starts_c[3] = G.get_PZ_OFFSET(1);
+
+    int order = MPI_ORDER_C;
+    MPI_Info fileinfo;
+    MPI_Datatype grid_c;
+    MPI_Status status;
+
+    MPI_Type_create_subarray(4, sizes_c, subsizes_c, starts_c, order, wftype, &grid_c);
+    MPI_Type_commit(&grid_c);
+
+    MPI_Info_create(&fileinfo);
+
+    int amode = MPI_MODE_RDWR;
+    MPI_File mpi_fhand ;
+
+    MPI_Barrier(G.comm);
+
+    std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt" + std::to_string(ikindex);
+    MPI_File_open(G.comm, filename.c_str(), amode, fileinfo, &mpi_fhand);
+    MPI_Offset disp = 0;
+
+    int dis_dim = G.get_P0_BASIS(1);
+    T *wf = new T[nstates_tot * dis_dim * ct.noncoll_factor];;
+    MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
+
+    dis_dim = dis_dim * nstates_tot;
+    MPI_File_read_all(mpi_fhand, wf, dis_dim, wftype, &status);
+    if(ct.noncoll) {
+        MPI_File_read_all(mpi_fhand, &wf[dis_dim], dis_dim, wftype, &status);
+    }
+
+    MPI_Barrier(G.comm);
+    MPI_File_close(&mpi_fhand);
+
+    MPI_Type_free(&grid_c);
+    fflush(NULL);
+    MPI_Barrier(G.comm);
+
+    int st_w = -1;
+    for(int st = 0; st < nstates_tot; st++)
+    {
+        if(exclude_bands[st]) continue;
+        st_w++;
+
+        for(int idx = 0; idx < nbasis_noncoll; idx++) {
+            psi_k[st_w * nbasis_noncoll + idx] = wf[st * nbasis_noncoll + idx];
+        }
+    }
+
+    delete [] wf;
+}
 
