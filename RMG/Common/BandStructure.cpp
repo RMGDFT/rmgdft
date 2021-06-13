@@ -46,11 +46,11 @@
 #include "Subdiag.h"
 #include "Solvers.h"
 
-template void BandStructure(Kpoint<double> **, double *vh, double *vxc, double *vnuc);
-template void BandStructure(Kpoint<std::complex<double> > **, double *vh, double *vxc, double *vnuc);
+template void BandStructure(Kpoint<double> **, double *vh, double *vxc, double *vnuc, std::vector<bool> exclude_bands);
+template void BandStructure(Kpoint<std::complex<double> > **, double *vh, double *vxc, double *vnuc, std::vector<bool> exclude_bands);
 
 template <typename KpointType>
-void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc)
+void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc, std::vector<bool> exclude_bands)
 {
     
     double *vtot, *vtot_psi, *vxc_psi=NULL;
@@ -74,12 +74,6 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
     get_ddd (vtot, vxc, true);
     GetVtotPsi (vtot_psi, vtot, Rmg_G->default_FG_RATIO);
-    if(ct.noncoll)
-    {
-        vxc_psi = new double[4*P0_BASIS];
-        for(int is = 0; is < 4; is++)
-            GetVtotPsi (&vxc_psi[is*P0_BASIS], &vxc[is*FP0_BASIS], Rmg_G->default_FG_RATIO);
-    }
 
     if(ct.noncoll)
     {   
@@ -147,6 +141,9 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         //rmg_printf("\n BAND STRUCTURE: state %d res %10.5e ", istate, Kptr[kpt]->Kstates[istate].res);
 
         int kpt_global = kpt + pct.kstart;
+        if(ct.forceflag == BAND_WANNIER) {
+            Write_Wfs_forWannier(kpt_global, Kptr[kpt], exclude_bands, "WfsForWannier90/wfs");
+        }
         if(ct.rmg2bgw)
         {
             WriteBGW_Wfng(kpt_global, Kptr[kpt]);

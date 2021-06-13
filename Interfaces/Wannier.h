@@ -70,7 +70,6 @@ private:
     int nstates;
     int nstates_tot;
     int num_exclude_bands;
-    std::vector<bool> exclude_bands;
     int n_wannier;
     int scdm;
     double scdm_mu;
@@ -118,10 +117,12 @@ public:
 
     ~Wannier(void);
 
+    std::vector<bool> exclude_bands;
+    void AmnMmn(std::string wavefile);
     void SetEntanglement(int scdm_entan, double mu, double sigma);
     void SetAmn_scdm();
     void SetAmn_proj();
-    void SetMmn(Kpoint<T> **Kptr);
+    void SetMmn();
     void WriteWinEig();
     void Read_nnkpts();
     void ReadRotatePsi(int ik, int isy, int isya, std::string wavefile, T *psi_k);

@@ -390,8 +390,15 @@ template <typename OrbitalType> bool Quench (double * vxc, double * vh, double *
         double scdm_sigma = ct.wannier90_scdm_sigma;
         int n_wannier = ct.num_wanniers;
 
-        Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
+
+
+        Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "WfsForWannier90/wfs", Kptr[0]->nstates, 
                 n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
+        for(int kpt = 0; kpt < ct.num_kpts_pe; kpt++) {
+            int kpt_global = kpt + pct.kstart;
+            Write_Wfs_forWannier(kpt_global, Kptr[kpt], Wan.exclude_bands, "WfsForWannier90/wfs");
+        }
+        Wan.AmnMmn("WfsForWannier90/wfs");
 
     }
 

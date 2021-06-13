@@ -51,6 +51,7 @@
 #include "prototypes_tddft.h"
 #include "Exxbase.h"
 #include "Neb.h"
+#include "Wannier.h"
 
 
 void initialize (int argc, char **argv);
@@ -340,10 +341,13 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             break;
 
         case BAND_STRUCTURE:
-            BandStructure (Kptr, vh, vxc, vnuc);
-            if(ct.rmg2bgw) WriteBGW_Rhog(rho, rho_oppo);
-            OutputBandPlot(Kptr);
-            break;
+            {
+                std::vector<bool> exclude_bands;
+                BandStructure (Kptr, vh, vxc, vnuc, exclude_bands);
+                if(ct.rmg2bgw) WriteBGW_Rhog(rho, rho_oppo);
+                OutputBandPlot(Kptr);
+                break;
+            }
 
         case TDDFT:
             if(!ct.restart_tddft) 
@@ -354,7 +358,7 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
             ct.cube_rho = false;
             RmgTddft (vxc, vh, vnuc, rho, rho_oppo, rhocore, rhoc, Kptr);
             break;
-        
+
         case Exx_only:
             {
                 std::vector<double> occs;
@@ -365,6 +369,21 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                 if(ct.exx_mode == EXX_DIST_FFT)
                     Exx.ReadWfsFromSingleFile();
                 Exx.Vexx_integrals(ct.exx_int_file);
+                break;
+            }
+        case BAND_WANNIER:
+            {
+                int scdm = ct.wannier90_scdm;
+                double scdm_mu = ct.wannier90_scdm_mu;
+                double scdm_sigma = ct.wannier90_scdm_sigma;
+                int n_wannier = ct.num_wanniers;
+
+                Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
+                        n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
+                std::vector<bool> exclude_bands;
+                BandStructure (Kptr, vh, vxc, vnuc, Wan.exclude_bands);
+                Wan.AmnMmn("WfsForWannier90/wfs");
+
                 break;
             }
 

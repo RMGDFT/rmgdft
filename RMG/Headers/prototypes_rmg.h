@@ -139,7 +139,7 @@ template <typename OrbitalType> void AssignDerweight (Kpoint<OrbitalType> *kptr,
 *rtptr);
 
 template <typename KpointType>
-void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc);
+void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *vnuc, std::vector<bool> exclude_bands);
 
 template <typename T> void nlforce_par_Q (double *veff, double *vxc, T *gamma_allions, double *forces, int num_owned_ions, int *owned_ion_list);
 
