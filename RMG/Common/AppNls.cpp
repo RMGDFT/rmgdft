@@ -64,7 +64,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 //   sintR:  <beta | psi_up, psi_down>, dimensiont is numProj * 2 * num_states in noncollinear case.
 //   nv : |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
-//   ns : |psi_up, psu_down > + |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
+//   ns : |psi_up, psi_down > + |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
+//
+//   If nv is NULL then only ns is computed.
 
     int P0_BASIS = kpoint->pbasis;
     int num_nonloc_ions = kpoint->BetaProjector->get_num_nonloc_ions();
@@ -81,7 +83,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     KpointType *psintR;
     size_t stop = (size_t)num_states * (size_t)P0_BASIS * (size_t) ct.noncoll_factor;
 
-    for(size_t i = 0; i < stop; i++) nv[i] = ZERO_t;
+    if(nv) std::fill(nv, nv + stop, ZERO_t);
     if(num_tot_proj == 0)
     {
         bool need_ns = true;
@@ -89,12 +91,11 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         if(need_ns) for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
         if(ct.xc_is_hybrid && Functional::is_exx_active())
         {
-            for(size_t i = 0; i < stop; i++) nv[i] = ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
+            if(nv)
+            {
+                for(size_t i = 0; i < stop; i++) nv[i] = ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
+            }
             //AppExx(kpoint, psi, num_states, kpoint->vexx, &nv[(size_t)first_state*(size_t)P0_BASIS]);
-        }
-        else
-        {
-            for(size_t i = 0; i < stop; i++) nv[i] = ZERO_t;
         }
         return;
     }
@@ -210,14 +211,17 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         //  in the second RmgGemm, nwork is a matrix of num_tot_proj * (tot_states) 
 
         // leading dimension is num_tot_proj * 2 for noncollinear
-        RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm,
-                ONE_t, M_dnm,  dim_dnm, sint_compack, dim_dnm,
-                ZERO_t,  nwork, dim_dnm);
+        if(nv)
+        {
+            RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm,
+                    ONE_t, M_dnm,  dim_dnm, sint_compack, dim_dnm,
+                    ZERO_t,  nwork, dim_dnm);
 
-        // This was bweight
-        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
-                ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
-                ZERO_t,  nv, P0_BASIS);
+            // This was bweight
+            RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
+                    ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
+                    ZERO_t,  nv, P0_BASIS);
+        }
 
         memcpy(ns, psi, stop*sizeof(KpointType));
 
@@ -250,9 +254,12 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         }
 
         // This was bweight
-        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
-                ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
-                ZERO_t,  nv, P0_BASIS);
+        if(nv)
+        {
+            RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
+                    ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
+                    ZERO_t,  nv, P0_BASIS);
+        }
 
 #if CUDA_ENABLED
         // For norm conserving and gamma ns=psi so other parts of code were updated to not require this
@@ -265,7 +272,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     }
 
-    if(ct.xc_is_hybrid && Functional::is_exx_active())
+    if(ct.xc_is_hybrid && Functional::is_exx_active() && nv)
     {
         for(size_t i = 0; i < stop; i++) nv[i] += ct.exx_fraction * kpoint->vexx[(size_t)first_state*(size_t)P0_BASIS + i];
         //AppExx(kpoint, psi, num_states, kpoint->vexx, &nv[(size_t)first_state*(size_t)P0_BASIS]);
@@ -279,7 +286,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 
     // Add in ldaU contributions to nv
-    if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
+    if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE && nv)
     {
         kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local, first_state, num_states);
     }
