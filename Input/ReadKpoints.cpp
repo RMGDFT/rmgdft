@@ -97,7 +97,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
         boost::algorithm::split( KpointComponents, Kpoint, boost::is_any_of(whitespace_delims), boost::token_compress_on );
 
         size_t ncomp = KpointComponents.size();
-        if((ncomp != 4) ) throw RmgFatalException() << "Synax error in kpoint information near " << Kpoint << "\n";
+        if((ncomp != 4 && ncomp != 3) ) throw RmgFatalException() << "Synax error in kpoint information near " << Kpoint << "\n";
 
         // First field should be an atomic symbol
         it1 = KpointComponents.begin();
@@ -110,9 +110,15 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
         it1++;
         std::string zstr = *it1;
         lc.kp[nkpts].kpt[2] = std::atof(zstr.c_str());
-        it1++;
-        std::string wstr = *it1;
-        lc.kp[nkpts].kweight = std::atof(wstr.c_str());
+
+        if(ncomp == 4) {
+            it1++;
+            std::string wstr = *it1;
+            lc.kp[nkpts].kweight = std::atof(wstr.c_str());
+        }
+        else {
+            lc.kp[nkpts].kweight = 1.0;
+        }
 
         nkpts++;
 
@@ -145,10 +151,10 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
 
         if(lc.kp[kpt].kmag != 0.0) lc.is_gamma = false;
     }
-        
+
     //rmg_printf("\n num_k %d", ct.num_kpts);
     //for(int kpt = 0; kpt < ct.num_kpts; kpt++)
-     //   rmg_printf("\n kvec %d  %f %f %f %f", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
+    //   rmg_printf("\n kvec %d  %f %f %f %f", kpt, ct.kp[kpt].kpt[0], ct.kp[kpt].kpt[1], ct.kp[kpt].kpt[2], ct.kp[kpt].kweight);
     //rmg_printf("\n");
 
     if(ct.is_use_symmetry)

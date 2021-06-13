@@ -342,10 +342,25 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
 
         case BAND_STRUCTURE:
             {
-                std::vector<bool> exclude_bands;
-                BandStructure (Kptr, vh, vxc, vnuc, exclude_bands);
-                if(ct.rmg2bgw) WriteBGW_Rhog(rho, rho_oppo);
-                OutputBandPlot(Kptr);
+                ct.potential_acceleration_constant_step = 0.0;
+                if(ct.wannier90){
+                    int scdm = ct.wannier90_scdm;
+                    double scdm_mu = ct.wannier90_scdm_mu;
+                    double scdm_sigma = ct.wannier90_scdm_sigma;
+                    int n_wannier = ct.num_wanniers;
+                    Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
+                            n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
+                    std::vector<bool> exclude_bands;
+                    BandStructure (Kptr, vh, vxc, vnuc, Wan.exclude_bands);
+                    Wan.AmnMmn("WfsForWannier90/wfs");
+                }
+                else {
+                    std::vector<bool> exclude_bands;
+                    BandStructure (Kptr, vh, vxc, vnuc, exclude_bands);
+                    if(ct.rmg2bgw) WriteBGW_Rhog(rho, rho_oppo);
+                    OutputBandPlot(Kptr);
+                }
+
                 break;
             }
 
@@ -369,21 +384,6 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                 if(ct.exx_mode == EXX_DIST_FFT)
                     Exx.ReadWfsFromSingleFile();
                 Exx.Vexx_integrals(ct.exx_int_file);
-                break;
-            }
-        case BAND_WANNIER:
-            {
-                int scdm = ct.wannier90_scdm;
-                double scdm_mu = ct.wannier90_scdm_mu;
-                double scdm_sigma = ct.wannier90_scdm_sigma;
-                int n_wannier = ct.num_wanniers;
-
-                Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
-                        n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
-                std::vector<bool> exclude_bands;
-                BandStructure (Kptr, vh, vxc, vnuc, Wan.exclude_bands);
-                Wan.AmnMmn("WfsForWannier90/wfs");
-
                 break;
             }
 
