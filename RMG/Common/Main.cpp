@@ -350,7 +350,6 @@ template <typename OrbitalType> void run (Kpoint<OrbitalType> **Kptr)
                     int n_wannier = ct.num_wanniers;
                     Wannier<OrbitalType> Wan(*Kptr[0]->G, *Kptr[0]->L, "tempwave", Kptr[0]->nstates, 
                             n_wannier, scdm, scdm_mu, scdm_sigma, Kptr[0]->orbital_storage, Kptr);
-                    std::vector<bool> exclude_bands;
                     BandStructure (Kptr, vh, vxc, vnuc, Wan.exclude_bands);
                     Wan.AmnMmn("WfsForWannier90/wfs");
                 }

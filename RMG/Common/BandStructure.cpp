@@ -141,26 +141,38 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         //rmg_printf("\n BAND STRUCTURE: state %d res %10.5e ", istate, Kptr[kpt]->Kstates[istate].res);
 
         int kpt_global = kpt + pct.kstart;
-        if(ct.forceflag == BAND_WANNIER) {
-            Write_Wfs_forWannier(kpt_global, Kptr[kpt], exclude_bands, "WfsForWannier90/wfs");
-        }
-        if(ct.rmg2bgw)
-        {
-            WriteBGW_Wfng(kpt_global, Kptr[kpt]);
-            WriteBGW_VxcEig(kpt_global,vxc, Kptr[kpt]);
-        }
+        if(ct.wannier90) {
+            int factor = 1;
+            if(ct.nspin == 2) factor = 2;
+            ct.kp[kpt+pct.kstart].eigs.resize(ct.num_states * factor);
+            for(int st = 0; st < ct.num_states; st++)
+                ct.kp[kpt+pct.kstart].eigs[st] = Kptr[kpt]->Kstates[st].eig[0];
+
+            if(ct.nspin == 2)
+            {
+                for(int st = 0; st < ct.num_states; st++)
+                    ct.kp[kpt+pct.kstart].eigs[st + ct.num_states] = Kptr[kpt]->Kstates[st].eig[1];
+            }
+
+                Write_Wfs_forWannier(kpt_global, Kptr[kpt], exclude_bands, "WfsForWannier90/wfs");
+            }
+            if(ct.rmg2bgw)
+            {
+                WriteBGW_Wfng(kpt_global, Kptr[kpt]);
+                WriteBGW_VxcEig(kpt_global,vxc, Kptr[kpt]);
+            }
 
 
-    } // end loop over kpoints
+        } // end loop over kpoints
 
 
-    delete [] res;
-    delete [] vtot;
-    delete [] vtot_psi;
-    if(ct.noncoll) delete [] vxc_psi;
-}
+        delete [] res;
+        delete [] vtot;
+        delete [] vtot_psi;
+        if(ct.noncoll) delete [] vxc_psi;
+    }
 
-/******/
+    /******/
 
 
 
