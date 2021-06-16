@@ -91,10 +91,43 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     // Broken by Lcao changes
     //    LcaoGetPsi(&Kptr[0]->Kstates[ct.num_states]);
 
+    int projector_type = DELOCALIZED;
+    if(ct.localize_projectors) projector_type = LOCALIZED;
+
+    // Number of projectors required is computed when the Projector is created.
+    // Beta function weights are created in the calls to get_nlop.
+    Kptr[0]->get_nlop(projector_type);
+    for(int kpt=1; kpt < ct.num_kpts_pe; kpt++)
+    {
+        if(Kptr[kpt]->BetaProjector) delete Kptr[kpt]->BetaProjector;
+
+        Kptr[kpt]->BetaProjector = new Projector<KpointType>(projector_type, ct.max_nl, BETA_PROJECTOR);
+        Kptr[kpt]->nl_weight_size = (size_t)Kptr[kpt]->BetaProjector->get_num_tot_proj() * (size_t)Kptr[kpt]->pbasis + 128;
+        Kptr[kpt]->nl_weight = Kptr[0]->nl_weight;
+        Kptr[kpt]->newsint_local = Kptr[0]->newsint_local;
+
+    } // end loop over kpts
+
+
 
     // Loop over k-points
     double *res = new double[ct.num_states];
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
+
+        if(ct.localize_projectors)
+        {
+            Kptr[kpt]->GetLocalizedWeight ();
+        }
+        else
+        {
+            Kptr[kpt]->GetDelocalizedWeight ();
+        }
+
+        if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+        {
+            Kptr[kpt]->GetDelocalizedOrbital ();
+            Kptr[kpt]->get_ldaUop(ct.atomic_orbital_type);
+        }
 
         Kptr[kpt]->nstates = ct.num_states;
 
@@ -114,7 +147,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
                     res[istate] = Kptr[kpt]->Kstates[istate].res;
                 GlobalSums(res, ct.num_states, pct.grid_comm);
 
-                
+
                 max_res = res[0];
                 for(int istate = 0; istate < ct.num_states; istate++)
                     max_res = std::max(max_res, res[istate]);
@@ -133,7 +166,7 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
         else if(Verify ("kohn_sham_solver","davidson", Kptr[0]->ControlMap)) {
             int notconv;
             ct.scf_steps = 2;
-         //   ct.scf_accuracy = 1.0e-10;
+            //   ct.scf_accuracy = 1.0e-10;
             Kptr[kpt]->Davidson(vtot_psi, vxc_psi, notconv);
         }
 
@@ -154,27 +187,23 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
                     ct.kp[kpt+pct.kstart].eigs[st + ct.num_states] = Kptr[kpt]->Kstates[st].eig[1];
             }
 
-                Write_Wfs_forWannier(kpt_global, Kptr[kpt], exclude_bands, "WfsForWannier90/wfs");
-            }
-            if(ct.rmg2bgw)
-            {
-                WriteBGW_Wfng(kpt_global, Kptr[kpt]);
-                WriteBGW_VxcEig(kpt_global,vxc, Kptr[kpt]);
-            }
+            Write_Wfs_forWannier(kpt_global, Kptr[kpt], exclude_bands, "WfsForWannier90/wfs");
+        }
+        if(ct.rmg2bgw)
+        {
+            WriteBGW_Wfng(kpt_global, Kptr[kpt]);
+            WriteBGW_VxcEig(kpt_global,vxc, Kptr[kpt]);
+        }
 
 
-        } // end loop over kpoints
+    } // end loop over kpoints
 
 
-        delete [] res;
-        delete [] vtot;
-        delete [] vtot_psi;
-        if(ct.noncoll) delete [] vxc_psi;
-    }
+    delete [] res;
+    delete [] vtot;
+    delete [] vtot_psi;
+    if(ct.noncoll) delete [] vxc_psi;
+}
 
-    /******/
-
-
-
-
+/******/
 
