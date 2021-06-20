@@ -75,6 +75,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     int num_tot_proj = kpoint->BetaProjector->get_num_tot_proj();
     int pstride = kpoint->BetaProjector->get_pstride();
 
+    RmgTimer RT("app_nls");
     KpointType ZERO_t(0.0);
     KpointType ONE_t(1.0);
 
@@ -116,10 +117,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 #if CUDA_ENABLED
     // For norm conserving and gamma ns=psi so other parts of code were updated to not require this
-    if(!ct.is_gamma)
+    if(!(ct.is_gamma && ct.norm_conserving_pp)) 
         gpuMemcpy(ns, psi, stop*sizeof(KpointType), gpuMemcpyDefault);
 #else
-    if(!ct.is_gamma)
+    if(!(ct.is_gamma && ct.norm_conserving_pp))
         memcpy(ns, psi, stop*sizeof(KpointType));
 #endif
 
@@ -229,6 +230,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
             if(ct.is_ddd_non_diagonal)
             {
+    RmgTimer RT1("app_nls: nwork");
                 RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm,
                         ONE_t, M_dnm,  dim_dnm, sint_oneion, dim_dnm,
                         ZERO_t,  nwork, dim_dnm);
@@ -245,6 +247,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
             if(nv)
             {
+    RmgTimer RT2("app_nls: nv");
                 RmgGemm (transa, transa, P0_BASIS, tot_states, nh,
                         ONE_t, weight_oneion,  P0_BASIS, nwork, nh,
                         ONE_t,  nv, P0_BASIS);
