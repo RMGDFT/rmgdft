@@ -58,7 +58,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
  
     KpointType *weight = kpoint->nl_weight;
-    KpointType *weight_oneion;
 #if HIP_ENABLED || CUDA_ENABLED
     weight = kpoint->nl_weight_gpu;
 #endif
@@ -106,8 +105,13 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     size_t alloc = (size_t)ct.max_nl * (size_t)num_states * ct.noncoll_factor;
     size_t alloc1 = ct.max_nl * ct.max_nl * ct.noncoll_factor * ct.noncoll_factor;
+    size_t alloc2 = (size_t)num_tot_proj * (size_t)num_states * ct.noncoll_factor;
 
-    KpointType *nwork = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
+    KpointType *nv_work = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc2);
+    KpointType *ns_work = NULL;
+    if(!ct.norm_conserving_pp) {
+        ns_work = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc2);
+    }
     KpointType *sint_oneion = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
     KpointType *M_dnm = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
     KpointType *M_qqq = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
@@ -132,8 +136,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         SPECIES &AtomType = Species[Atoms[gion].species];
 
         int nh = AtomType.nh;
-
-        weight_oneion = &weight[ion*pstride * P0_BASIS];
 
         dnmI = Atoms[gion].dnmI;
         qqq = Atoms[gion].qqq;
@@ -193,7 +195,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 
         int dim_dnm = nh * ct.noncoll_factor;
-        int tot_states = num_states * ct.noncoll_factor;
+        int nwork_lda = num_tot_proj * ct.noncoll_factor;
+        int ptr_nwork = ion * pstride;
         if(!ct.norm_conserving_pp) {
 
             //M_dnm: dim_dnm * dim_dnm matrxi
@@ -207,22 +210,15 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             {
                 RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm,
                         ONE_t, M_dnm,  dim_dnm, sint_oneion, dim_dnm,
-                        ZERO_t,  nwork, dim_dnm);
+                        ZERO_t,  &nv_work[ptr_nwork], nwork_lda);
 
-                // This was bweight
-                RmgGemm (transa, transa, P0_BASIS, tot_states, nh,
-                        ONE_t, weight_oneion,  P0_BASIS, nwork, nh,
-                        ONE_t,  nv, P0_BASIS);
             }
 
 
             RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm, 
                     ONE_t, M_qqq,  dim_dnm, sint_oneion, dim_dnm,
-                    ZERO_t,  nwork, dim_dnm);
+                    ZERO_t,  &ns_work[ptr_nwork], nwork_lda);
 
-            RmgGemm (transa, transa, P0_BASIS, tot_states, nh,
-                    ONE_t, weight_oneion,  P0_BASIS, nwork, nh,
-                    ONE_t,  ns, P0_BASIS);
 
         }
         else 
@@ -230,32 +226,39 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
             if(ct.is_ddd_non_diagonal)
             {
-    RmgTimer RT1("app_nls: nwork");
+                RmgTimer RT1("AppNls: nwork");
                 RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm,
                         ONE_t, M_dnm,  dim_dnm, sint_oneion, dim_dnm,
-                        ZERO_t,  nwork, dim_dnm);
+                        ZERO_t,  &nv_work[ptr_nwork], nwork_lda);
             }
             else
             {
                 // Optimize for GPU's!
                 for(int jj = 0;jj < num_states;jj++) {
                     for(int ii = 0;ii < dim_dnm;ii++) {
-                        nwork[jj*dim_dnm + ii] = M_dnm[ii] * sint_oneion[jj*dim_dnm + ii];
+                        nv_work[jj*nwork_lda +ptr_nwork + ii] = M_dnm[ii] * sint_oneion[jj*dim_dnm + ii];
                     }
                 }
             }
 
-            if(nv)
-            {
-    RmgTimer RT2("app_nls: nv");
-                RmgGemm (transa, transa, P0_BASIS, tot_states, nh,
-                        ONE_t, weight_oneion,  P0_BASIS, nwork, nh,
-                        ONE_t,  nv, P0_BASIS);
-            }
         }
 
     }
 
+    int tot_states = num_states * ct.noncoll_factor;
+    if(nv)
+    {
+        RmgTimer RT2("AppNls: nv");
+        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
+                ONE_t, weight,  P0_BASIS, nv_work, num_tot_proj,
+                ONE_t,  nv, P0_BASIS);
+    }
+
+    if(!ct.norm_conserving_pp) {
+        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
+                ONE_t, weight,  P0_BASIS, ns_work, num_tot_proj,
+                ONE_t,  ns, P0_BASIS);
+    }
 
     if(ct.xc_is_hybrid && Functional::is_exx_active() && nv)
     {
@@ -267,7 +270,10 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     RmgFreeHost(M_qqq);
     RmgFreeHost(M_dnm);
     RmgFreeHost(sint_oneion);
-    RmgFreeHost(nwork);
+    RmgFreeHost(nv_work);
+    if(!ct.norm_conserving_pp) {
+        RmgFreeHost(ns_work);
+    }
 
 
     // Add in ldaU contributions to nv
