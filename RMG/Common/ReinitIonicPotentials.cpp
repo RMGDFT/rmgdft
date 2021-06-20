@@ -64,10 +64,16 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
     GetQI ();
     delete RT1;
 
+    RT1= new RmgTimer("3-ReinitIonicPotentials: get_qqq");
+    get_qqq ();
+    delete RT1;
+
     int projector_type = DELOCALIZED;
     if(ct.localize_projectors) projector_type = LOCALIZED;
     RT1= new RmgTimer("3-ReinitIonicPotentials: GetNlop");
 
+//  for band structure calculation,the NL projectors will be initialized in Band_tructure.cpp
+    if(ct.forceflag == BAND_STRUCTURE) return;
     // Number of projectors required is computed when the Projector is created.
     // Beta function weights are created in the calls to get_nlop.
     for(int kpt=0; kpt < ct.num_kpts_pe; kpt++)
@@ -104,9 +110,6 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
 
     delete RT1;
 
-    RT1= new RmgTimer("3-ReinitIonicPotentials: get_qqq");
-    get_qqq ();
-    delete RT1;
 
 
 }                               /* end ReinitIonicPotentials */

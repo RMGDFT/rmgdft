@@ -134,6 +134,7 @@ void CheckShutdown(void)
             {
                 Kptr_c[kpt1]->DeleteNvmeArrays();
             }
+            if(ct.forceflag==BAND_STRUCTURE) break;
         }
         MPI_Abort( MPI_COMM_WORLD, 0 );
         kill(getpid(), SIGKILL);
@@ -567,6 +568,7 @@ void finish ()
         {
             Kptr_c[kpt]->DeleteNvmeArrays();
         }
+        if(ct.forceflag == BAND_STRUCTURE) break;
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
