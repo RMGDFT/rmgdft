@@ -56,6 +56,8 @@ template Projector<std::complex<double>>::~Projector(void);
 
 template void Projector<double>::project(Kpoint<double> *, double *, int, int, double *);
 template void Projector<std::complex<double>>::project(Kpoint<std::complex<double>> *, std::complex<double> *, int, int, std::complex<double> *);
+template void Projector<double>::project(Kpoint<double> *, double *, double *, int, int, double *);
+template void Projector<std::complex<double>>::project(Kpoint<std::complex<double>> *, std::complex<double> *, std::complex<double> *, int, int, std::complex<double> *);
 
 template int Projector<double>::get_num_nonloc_ions(void);
 template int Projector<double>::get_num_owned_ions(void);
@@ -475,8 +477,14 @@ template <class KpointType> int Projector<KpointType>::get_nldim(int species)
     return this->nldims[species];
 }
 
-// Applies projectors to orbitals associated with kpoint kptr
 template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointType> *kptr, KpointType *p, int offset, int nstates, KpointType
+*weight)
+{
+    this->project(kptr, kptr->orbital_storage, p, offset, nstates, weight);
+}
+
+// Applies projectors to orbitals associated with kpoint kptr
+template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointType> *kptr, KpointType *orbitals, KpointType *p, int offset, int nstates, KpointType
 *weight)
 {
 
@@ -494,7 +502,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
         if(typeid(KpointType) == typeid(double)) transa = transt;
         int length = factor * Atoms.size() * nstates * this->pstride;
         RmgGemm (transa, transn, this->num_tot_proj, nstates, kptr->pbasis, alpha,
-            weight, kptr->pbasis, &kptr->orbital_storage[offset*kptr->pbasis], kptr->pbasis,
+            weight, kptr->pbasis, &orbitals[offset*kptr->pbasis], kptr->pbasis,
             rzero, p, this->num_tot_proj);
 
         if(pct.grid_npes != 1)
@@ -554,7 +562,7 @@ template <class KpointType> void Projector<KpointType>::project(Kpoint<KpointTyp
 
 
     /*Loop over ions and calculate local projection between beta functions and wave functions */
-    betaxpsi_calculate (kptr, sint, &kptr->orbital_storage[offset*kptr->pbasis], nstates, weight);
+    betaxpsi_calculate (kptr, sint, &orbitals[offset*kptr->pbasis], nstates, weight);
 
 
     /*Pack data for sending */
