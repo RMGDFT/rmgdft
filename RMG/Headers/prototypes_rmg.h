@@ -61,6 +61,8 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_correct, dou
           int boundaryflag, Kpoint<OrbitalType> **Kptr, std::vector<double>& RMSdV);
 template <typename KpointType> void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             KpointType *psi, KpointType *nv, KpointType *ns, int first_state, int num_states);
+template <typename KpointType> void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
+            KpointType *psi, KpointType *ns, int first_state, int num_states);
 template <typename OrbitalType> double EnergyCorrection (Kpoint<OrbitalType> **Kptr,
           double *rho, double *new_rho, double *vh, double *vh_in);
 template <typename OrbitalType> bool Scf (double * vxc, double *vxc_correct, double * vh, double *vh_in, double *vh_ext,
