@@ -104,6 +104,23 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
         {
             Kptr[kpt]->GetDelocalizedOrbital ();
+            int num_orbitals = Kptr[kpt]->OrbitalProjector->get_num_tot_proj();
+#if HIP_ENABLED || CUDA_ENABLED
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->orbital_weight, Kptr[kpt]->newsint_local, 0,
+                     num_orbitals, Kptr[kpt]->nl_weight_gpu);
+#else
+            Kptr[kpt]->BetaProjector->project(Kptr[kpt],Kptr[kpt]->orbital_weight, Kptr[kpt]->newsint_local, 0,
+                     num_orbitals, Kptr[kpt]->nl_weight);
+#endif
+            KpointType *tbuf = new KpointType[num_orbitals*Kptr[kpt]->pbasis]();
+            AppS<KpointType>(Kptr[kpt], Kptr[kpt]->newsint_local,
+                   Kptr[kpt]->orbital_weight, tbuf, 0, num_orbitals);
+
+            for(int idx=0;idx < num_orbitals*Kptr[kpt]->pbasis;idx++)
+            {
+                    Kptr[kpt]->orbital_weight[idx] = tbuf[idx];
+            }
+            delete [] tbuf;
         }
     }
 
