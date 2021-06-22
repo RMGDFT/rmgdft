@@ -105,6 +105,7 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
         {
             Kptr[kpt]->GetDelocalizedOrbital ();
             int num_orbitals = Kptr[kpt]->OrbitalProjector->get_num_tot_proj();
+            size_t alloc = num_orbitals * Kptr[kpt]->pbasis * ct.noncoll_factor;
 #if HIP_ENABLED || CUDA_ENABLED
             Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->orbital_weight, Kptr[kpt]->newsint_local, 0,
                      num_orbitals, Kptr[kpt]->nl_weight_gpu);
@@ -112,11 +113,11 @@ void ReinitIonicPotentials (Kpoint<KpointType> **Kptr, double * vnuc, double * r
             Kptr[kpt]->BetaProjector->project(Kptr[kpt],Kptr[kpt]->orbital_weight, Kptr[kpt]->newsint_local, 0,
                      num_orbitals, Kptr[kpt]->nl_weight);
 #endif
-            KpointType *tbuf = new KpointType[num_orbitals*Kptr[kpt]->pbasis]();
+            KpointType *tbuf = new KpointType[alloc]();
             AppS<KpointType>(Kptr[kpt], Kptr[kpt]->newsint_local,
                    Kptr[kpt]->orbital_weight, tbuf, 0, num_orbitals);
 
-            for(int idx=0;idx < num_orbitals*Kptr[kpt]->pbasis;idx++)
+            for(size_t idx=0;idx < alloc;idx++)
             {
                     Kptr[kpt]->orbital_weight[idx] = tbuf[idx];
             }
