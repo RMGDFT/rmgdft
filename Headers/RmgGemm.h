@@ -48,6 +48,9 @@ void MyZgemm(char *transa, char *transb, int m, int n, int k, std::complex<doubl
         std::complex<double> *A, int lda, std::complex<double> *B, int ldb,
         std::complex<double> *beta, std::complex<double> *C, int ldc);
 
+template <typename DataType> void RmgGemmStridedBatched(char *transa, char *transb, int m, int n, int k,
+                             DataType alpha, DataType *A, int lda, size_t strdedA, DataType *B, int ldb, size_t strideB, DataType beta,
+                             DataType *C, int ldc, size_t strideC, int batchCount);
 #endif
 #endif
 

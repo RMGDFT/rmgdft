@@ -57,6 +57,7 @@ CreateMmapArray.cpp
 DeleteNvmeArrays.cpp
 MyZgemm.cpp
 RmgGemm.cpp
+RmgGemmStridedBatched.cpp
 RmgSymm.cpp
 RmgSyrkx.cpp
 GpuAlloc.cpp

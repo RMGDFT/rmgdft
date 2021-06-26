@@ -45,26 +45,26 @@
 
 template void AppNls<double>(Kpoint<double> *, double *, double *, double *, double *, int, int);
 template void AppNls<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
-                std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int);
+        std::complex<double> *, std::complex<double> *, std::complex<double> *, int, int);
 
-template <typename KpointType>
+    template <typename KpointType>
 void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR, 
-            KpointType *psi, KpointType *nv, KpointType *ns,
-            int first_state, int num_states)
+        KpointType *psi, KpointType *nv, KpointType *ns,
+        int first_state, int num_states)
 {
 
     // Sanity check
     if(num_states > ct.non_local_block_size)
         throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
- 
+
     KpointType *weight = kpoint->nl_weight;
 #if HIP_ENABLED || CUDA_ENABLED
     weight = kpoint->nl_weight_gpu;
 #endif
 
-//   sintR:  <beta | psi_up, psi_down>, dimensiont is numProj * 2 * num_states in noncollinear case.
-//   nv : |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
-//   ns : |psi_up, psu_down > + |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
+    //   sintR:  <beta | psi_up, psi_down>, dimensiont is numProj * 2 * num_states in noncollinear case.
+    //   nv : |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
+    //   ns : |psi_up, psu_down > + |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
 
     int P0_BASIS = kpoint->pbasis;
     int num_nonloc_ions = kpoint->BetaProjector->get_num_nonloc_ions();
@@ -100,18 +100,18 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 
     size_t alloc = (size_t)num_tot_proj * (size_t)num_states * ct.noncoll_factor;
-    size_t M_cols = 1;
-    if(ct.is_ddd_non_diagonal) M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
-    size_t alloc1 = (size_t)num_tot_proj * (size_t)M_cols * ct.noncoll_factor;
+    size_t M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
+    size_t alloc1 = (size_t)ct.max_nl * (size_t)M_cols * ct.noncoll_factor;
 
+    KpointType *sint_compack = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
     KpointType *nwork = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
+    KpointType *nwork_ion = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
     KpointType *M_dnm = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
     KpointType *M_qqq = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
     std::complex<double> *M_dnm_C = (std::complex<double> *) M_dnm;
     std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq;
 
     size_t sindex = first_state * ct.noncoll_factor * num_nonloc_ions * ct.max_nl;
-    KpointType *sint_compack = &sintR[sindex];
 
     for (size_t i = 0; i < alloc1; i++)
     {
@@ -119,15 +119,35 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         M_qqq[i] = ZERO_t;
     }
 
+    for (size_t i = 0; i < alloc; i++)
+    {
+        sint_compack[i] = 0.0;
+    }
+
+    // sintR (ct.max_nl, num_nonloc_ions, noncoll, num_states)
+    // sint_compack(ct.max_nl, noncoll, num_states, num_nonloc_ions)
+    for (int ion = 0; ion < num_nonloc_ions; ion++)
+    {
+        size_t idx = ion * ct.max_nl * ct.noncoll_factor * num_states;
+        for(int st = 0; st < ct.noncoll_factor * num_states; st++)
+        {
+            for(int ih = 0; ih < ct.max_nl; ih++)
+            {
+                sint_compack[idx + st * ct.max_nl + ih] = sintR[sindex + st * num_tot_proj + ion * ct.max_nl + ih];
+            }
+        }
+    }
 
     // set up M_qqq and M_dnm, this can be done outside in the
+    //  M_dnm (ct.max_nl, noncoll, ct.max_nl, noncoll, num_nonloc_ions)
+    //  M_qqq (ct.max_nl, noncoll, ct.max_nl, noncoll, num_nonloc_ions)
     // init.c or get_ddd get_qqq, we need to check the order
     int proj_index = 0;
     for (int ion = 0; ion < num_nonloc_ions; ion++)
     {
 
         /*Actual index of the ion under consideration*/
-        proj_index = ion * ct.max_nl;
+        proj_index = ion * ct.max_nl * ct.max_nl * ct.noncoll_factor * ct.noncoll_factor;
         int gion = nonloc_ions_list[ion];
         SPECIES &AtomType = Species[Atoms[gion].species];
 
@@ -145,31 +165,31 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 if(ct.is_ddd_non_diagonal) {
                     if(ct.noncoll)
                     {
-                        int it0 = proj_index + i;
-                        int jt0 = proj_index + j;
-                        int it1 = proj_index + i + num_tot_proj;
-                        int jt1 = proj_index + j + num_tot_proj;
-                        M_dnm_C[it0 * num_tot_proj * 2 + jt0] = Atoms[gion].dnmI_so[inh+j + 0 * nh *nh];
-                        M_dnm_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].dnmI_so[inh+j + 1 * nh *nh];
-                        M_dnm_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].dnmI_so[inh+j + 2 * nh *nh];
-                        M_dnm_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].dnmI_so[inh+j + 3 * nh *nh];
-                        M_qqq_C[it0 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 0 * nh *nh];
-                        M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 1 * nh *nh];
-                        M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 2 * nh *nh];
-                        M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 3 * nh *nh];
+                        int it0 = i;
+                        int jt0 = j;
+                        int it1 = i + ct.max_nl;
+                        int jt1 = j + ct.max_nl;
+                        M_dnm_C[proj_index + it0 * ct.max_nl * 2 + jt0] = Atoms[gion].dnmI_so[inh+j + 0 * nh *nh];
+                        M_dnm_C[proj_index + it0 * ct.max_nl * 2 + jt1] = Atoms[gion].dnmI_so[inh+j + 1 * nh *nh];
+                        M_dnm_C[proj_index + it1 * ct.max_nl * 2 + jt0] = Atoms[gion].dnmI_so[inh+j + 2 * nh *nh];
+                        M_dnm_C[proj_index + it1 * ct.max_nl * 2 + jt1] = Atoms[gion].dnmI_so[inh+j + 3 * nh *nh];
+                        M_qqq_C[proj_index + it0 * ct.max_nl * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 0 * nh *nh];
+                        M_qqq_C[proj_index + it0 * ct.max_nl * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 1 * nh *nh];
+                        M_qqq_C[proj_index + it1 * ct.max_nl * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 2 * nh *nh];
+                        M_qqq_C[proj_index + it1 * ct.max_nl * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 3 * nh *nh];
                     }
                     else
                     {
-                        int idx = (proj_index + i) * num_tot_proj + proj_index + j;
+                        int idx = proj_index + i * ct.max_nl + j;
                         M_dnm[idx] = (KpointType)dnmI[inh+j];
                         M_qqq[idx] = (KpointType)qqq[inh+j];
                     }
                 }
                 else {
                     // Diagonal for norm conserving so just save those.
-                    if((proj_index + i) == (proj_index + j)) {
-                        M_dnm[proj_index + j ] = (KpointType)dnmI[inh+j ];
-                        M_qqq[proj_index + j ] = (KpointType)qqq[inh+j ];
+                    if(i == j ) {
+                        M_dnm[ion*ct.max_nl + j ] = (KpointType)dnmI[inh+j ];
+                        M_qqq[ion*ct.max_nl + j ] = (KpointType)qqq[inh+j ];
                     }
                 }
 
@@ -177,73 +197,101 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         }
     }
 
+    // calculating nvwork_ion (ct.max_nl *noncoll, num_states, ion) =  
+    //               M_dnm(ct.max_nl * noncoll, ct.max_nl * noncoll, ion) 
+    //               * sint_compack(ct.max_nl*noncoll, num_states, ion)
+    //
+    if(ct.is_ddd_non_diagonal)
+    {
+        int dim_a = ct.max_nl * ct.noncoll_factor;
+        size_t strideA = (size_t)dim_a * (size_t)dim_a;
+        size_t strideB = (size_t)dim_a * (size_t)num_states;
+        size_t strideC = (size_t)dim_a * (size_t)num_states;;
+
+        RmgGemmStridedBatched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
+                M_dnm, dim_a, strideA, sint_compack, dim_a, strideB, ZERO_t,
+                nwork_ion, dim_a, strideC, num_nonloc_ions); 
+
+        //      nvwork_ion: (ct.max_nl, noncoll, num_states, ion)
+        // rotate it to nwork (ct.max_nl, ion, noncoll, num_states)`
+
+        for(int st = 0; st < num_states * ct.noncoll_factor; st++)
+        {
+            for(int ion = 0; ion < num_nonloc_ions; ion++) 
+            {
+                for(int ih = 0; ih < ct.max_nl; ih++)
+                {
+                    nwork[st*num_nonloc_ions * ct.max_nl + ion * ct.max_nl + ih]=
+                        nwork_ion[ion * strideC + st * ct.max_nl + ih];
+
+                }
+            }
+
+        }
+    }
+    else
+    {
+        // Optimize for GPU's!
+        //for spin-orbit couplling, it always has non_diagonal part.
+
+        for(int jj = 0;jj < num_states;jj++) {
+            for (int ion = 0; ion < num_nonloc_ions; ion++) {
+                for(int ih = 0;ih < ct.max_nl;ih++) {
+                    nwork[jj*num_tot_proj + ion * ct.max_nl + ih] = 
+                        M_dnm[ion * ct.max_nl + ih] * 
+                        sint_compack[ion * num_states * ct.max_nl + ct.max_nl * jj + ih];
+                }
+            }
+        }
+    }
 
 
-    int dim_dnm = num_tot_proj * ct.noncoll_factor;
     int tot_states = num_states * ct.noncoll_factor;
+
+    //nwork: num_tot_proj * (ct.noncoll_factor * num_states)
+
+    RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
+            ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
+            ZERO_t,  nv, P0_BASIS);
+
+    if(! (ct.norm_conserving_pp && ct.is_gamma) ) 
+        memcpy(ns, psi, stop*sizeof(KpointType));
     if(!ct.norm_conserving_pp) {
 
-        //M_dnm: dim_dnm * dim_dnm matrxi
-        //sint_compack: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
-        //nwork: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
-        //  in the first RmgGemm, nwork is a matrix of (dim_dnm) * num_states 
-        //  in the second RmgGemm, nwork is a matrix of num_tot_proj * (tot_states) 
+        int dim_a = ct.max_nl * ct.noncoll_factor;
+        int strideA = dim_a * dim_a;
+        int strideB = dim_a * num_states;
+        int strideC = dim_a * num_states;;
 
-        // leading dimension is num_tot_proj * 2 for noncollinear
-        RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm,
-                ONE_t, M_dnm,  dim_dnm, sint_compack, dim_dnm,
-                ZERO_t,  nwork, dim_dnm);
+        RmgGemmStridedBatched(transa, transa, dim_a, num_states, dim_a, ONE_t, 
+                M_qqq, dim_a, strideA, sint_compack, dim_a, strideB, ZERO_t,
+                nwork_ion, dim_a, strideC, num_nonloc_ions); 
 
-        // This was bweight
-        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
-                ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
-                ZERO_t,  nv, P0_BASIS);
+        //      nvwork_ion: (ct.max_nl, noncoll, num_states, ion)
+        // rotate it to nwork (ct.max_nl, ion, noncoll, num_states)`
 
-        memcpy(ns, psi, stop*sizeof(KpointType));
+        for(int st = 0; st < num_states * ct.noncoll_factor; st++)
+        {
+            for(int ion = 0; ion < num_nonloc_ions; ion++) 
+            {
+                for(int ih = 0; ih < ct.max_nl; ih++)
+                {
+                    nwork[st*num_nonloc_ions * ct.max_nl + ion * ct.max_nl + ih]=
+                        nwork_ion[ion * strideC + st * ct.max_nl + ih];
 
-        RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm, 
-                ONE_t, M_qqq,  dim_dnm, sint_compack, dim_dnm,
-                ZERO_t,  nwork, dim_dnm);
+                }
+            }
+
+        }
+
 
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
                 ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
 
     }
-    else 
-    {
 
-        if(ct.is_ddd_non_diagonal)
-        {
-            RmgGemm (transa, transa, dim_dnm, num_states, dim_dnm,
-                    ONE_t, M_dnm,  dim_dnm, sint_compack, dim_dnm,
-                    ZERO_t,  nwork, dim_dnm);
-        }
-        else
-        {
-            // Optimize for GPU's!
-            for(int jj = 0;jj < num_states;jj++) {
-                for(int ii = 0;ii < dim_dnm;ii++) {
-                    nwork[jj*dim_dnm + ii] = M_dnm[ii] * sint_compack[jj*dim_dnm + ii];
-                }
-            }
-        }
 
-        // This was bweight
-        RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj,
-                ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
-                ZERO_t,  nv, P0_BASIS);
-
-#if CUDA_ENABLED
-        // For norm conserving and gamma ns=psi so other parts of code were updated to not require this
-        if(!ct.is_gamma)
-            gpuMemcpy(ns, psi, stop*sizeof(KpointType), gpuMemcpyDefault);
-#else
-        if(!ct.is_gamma)
-            memcpy(ns, psi, stop*sizeof(KpointType));
-#endif
-
-    }
 
     if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
@@ -255,6 +303,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     RmgFreeHost(M_qqq);
     RmgFreeHost(M_dnm);
     RmgFreeHost(nwork);
+    RmgFreeHost(nwork_ion);
+    RmgFreeHost(sint_compack);
 
 
     // Add in ldaU contributions to nv
@@ -268,24 +318,24 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 template void AppS<double>(Kpoint<double> *, double *, double *, double *, int, int);
 template void AppS<std::complex<double> >(Kpoint<std::complex<double>> *, std::complex<double> *, 
-                std::complex<double> *, std::complex<double> *, int, int);
-template <typename KpointType>
+        std::complex<double> *, std::complex<double> *, int, int);
+    template <typename KpointType>
 void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
-            KpointType *psi, KpointType *ns,
-            int first_state, int num_states)
+        KpointType *psi, KpointType *ns,
+        int first_state, int num_states)
 {
 
     // Sanity check
     if(num_states > ct.non_local_block_size)
         throw RmgFatalException() << "AppS called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
- 
+
     KpointType *weight = kpoint->nl_weight;
 #if HIP_ENABLED || CUDA_ENABLED
     weight = kpoint->nl_weight_gpu;
 #endif
 
-//   sintR:  <beta | psi_up, psi_down>, dimension is numProj * 2 * num_states in noncollinear case.
-//   ns : |psi_up, psu_down > + |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
+    //   sintR:  <beta | psi_up, psi_down>, dimension is numProj * 2 * num_states in noncollinear case.
+    //   ns : |psi_up, psu_down > + |beta_n> Dnm <beta_m|psi_up, psi_down>, dimension 2 * pbasis
 
     int P0_BASIS = kpoint->pbasis;
     int num_nonloc_ions = kpoint->BetaProjector->get_num_nonloc_ions();
