@@ -78,7 +78,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     double *dnmI;
     double *qqq;
-    KpointType *psintR;
     size_t stop = (size_t)num_states * (size_t)P0_BASIS * (size_t) ct.noncoll_factor;
 
     for(size_t i = 0; i < stop; i++) nv[i] = ZERO_t;
@@ -105,33 +104,14 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     if(ct.is_ddd_non_diagonal) M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
     size_t alloc1 = (size_t)num_tot_proj * (size_t)M_cols * ct.noncoll_factor;
 
-    KpointType *sint_compack = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
     KpointType *nwork = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
     KpointType *M_dnm = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
     KpointType *M_qqq = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc1);
-    for(size_t i = 0;i < alloc;i++) sint_compack[i] = 0.0;
     std::complex<double> *M_dnm_C = (std::complex<double> *) M_dnm;
     std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq;
 
-    for(int istate = 0; istate < num_states * ct.noncoll_factor; istate++)
-    {
-        int sindex = (istate + first_state * ct.noncoll_factor) * num_nonloc_ions * ct.max_nl;
-        for (int ion = 0; ion < num_nonloc_ions; ion++)
-        {
-            int proj_index = ion * ct.max_nl;
-            psintR = &sintR[proj_index + sindex];
-            //psintI = &sintI[ion * num_states * ct.max_nl + sindex];
-            /*Actual index of the ion under consideration*/
-            int gion = nonloc_ions_list[ion];
-            SPECIES &AtomType = Species[Atoms[gion].species];
-
-            int nh = AtomType.nh;
-            for (int i = 0; i < nh; i++)
-            {
-                sint_compack[istate * num_tot_proj + proj_index + i] = psintR[i];
-            }
-        }
-    }
+    size_t sindex = first_state * ct.noncoll_factor * num_nonloc_ions * ct.max_nl;
+    KpointType *sint_compack = &sintR[sindex];
 
     for (size_t i = 0; i < alloc1; i++)
     {
@@ -275,7 +255,6 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     RmgFreeHost(M_qqq);
     RmgFreeHost(M_dnm);
     RmgFreeHost(nwork);
-    RmgFreeHost(sint_compack);
 
 
     // Add in ldaU contributions to nv
