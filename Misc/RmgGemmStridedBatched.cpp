@@ -222,8 +222,8 @@ template <typename DataType> void RmgGemmStridedBatched(char *transa, char *tran
         hipstat = hipblasDgemmStridedBatched(ct.hipblas_handle, hip_transA, hip_transB, m, n, k,
                             (double*)&alpha,
                             (double*)dA, lda, strideA,
-                            (double*)dB, ldb, strideA,
-                            (double*)&beta, (double*)dC, ldc, strideA,batchCount);
+                            (double*)dB, ldb, strideB,
+                            (double*)&beta, (double*)dC, ldc, strideC,batchCount);
         if(!c_dev) hipMemcpyDtoH(C, dC, c_size * sizeof(double));
         if(!c_dev) gpuFree(dC);
         if(!b_dev) gpuFree(dB);
