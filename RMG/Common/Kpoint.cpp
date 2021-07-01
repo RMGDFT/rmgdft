@@ -1164,6 +1164,8 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
             gpuFreeHost(this->nl_weight);
             gpuFree(this->nl_weight_gpu);
         }
+        if (this->newsint_local)
+            RmgFreeHost(this->newsint_local);
 #else
         int stress_factor = 1;
         if(ct.stress) stress_factor = 4;
@@ -1175,6 +1177,8 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
         {
             delete [] this->nl_weight;
         }
+        if (this->newsint_local)
+            delete [] this->newsint_local;
 #endif
         this->nl_weight = NULL;
     }
