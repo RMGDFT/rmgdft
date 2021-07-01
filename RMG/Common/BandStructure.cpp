@@ -94,26 +94,21 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
     int projector_type = DELOCALIZED;
     if(ct.localize_projectors) projector_type = LOCALIZED;
 
-    // Number of projectors required is computed when the Projector is created.
-    // Beta function weights are created in the calls to get_nlop.
-    Kptr[0]->get_nlop(projector_type);
-    for(int kpt=1; kpt < ct.num_kpts_pe; kpt++)
-    {
-        if(Kptr[kpt]->BetaProjector) delete Kptr[kpt]->BetaProjector;
-
-        Kptr[kpt]->BetaProjector = new Projector<KpointType>(projector_type, ct.max_nl, BETA_PROJECTOR);
-        Kptr[kpt]->nl_weight_size = (size_t)Kptr[kpt]->BetaProjector->get_num_tot_proj() * (size_t)Kptr[kpt]->pbasis + 128;
-        Kptr[kpt]->nl_weight = Kptr[0]->nl_weight;
-        Kptr[kpt]->newsint_local = Kptr[0]->newsint_local;
-
-    } // end loop over kpts
-
 
 
     // Loop over k-points
     double *res = new double[ct.num_states];
     for(int kpt = 0;kpt < ct.num_kpts_pe;kpt++) {
 
+
+        if(kpt > 0) {
+            Kptr[kpt-1]->reset_beta_arrays();
+            if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+            {
+                Kptr[kpt-1]->reset_orbital_arrays();
+            }
+        }
+        Kptr[kpt]->get_nlop(projector_type);
         if(ct.localize_projectors)
         {
             Kptr[kpt]->GetLocalizedWeight ();
@@ -125,8 +120,8 @@ void BandStructure(Kpoint<KpointType> ** Kptr, double *vh, double *vxc, double *
 
         if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
         {
-            Kptr[kpt]->GetDelocalizedOrbital ();
             Kptr[kpt]->get_ldaUop(ct.atomic_orbital_type);
+            Kptr[kpt]->GetDelocalizedOrbital ();
         }
 
         Kptr[kpt]->nstates = ct.num_states;
