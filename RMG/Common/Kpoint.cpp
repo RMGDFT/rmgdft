@@ -1125,16 +1125,6 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     }
 #endif
 
-
-#if CUDA_ENABLED || HIP_ENABLED
-    if (this->newsint_local)
-        RmgFreeHost(this->newsint_local);
-#else
-    if (this->newsint_local)
-        delete [] this->newsint_local;
-#endif
-    this->newsint_local = NULL;
-
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
     size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->BetaProjector->get_pstride() * ct.noncoll_factor);
