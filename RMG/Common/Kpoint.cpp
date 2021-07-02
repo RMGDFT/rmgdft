@@ -1133,6 +1133,7 @@ template <class KpointType> void Kpoint<KpointType>::get_nlop(int projector_type
     if (this->newsint_local)
         delete [] this->newsint_local;
 #endif
+    this->newsint_local = NULL;
 
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
@@ -1181,6 +1182,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_beta_arrays(void)
             delete [] this->newsint_local;
 #endif
         this->nl_weight = NULL;
+        this->newsint_local = NULL;
     }
 
 }
