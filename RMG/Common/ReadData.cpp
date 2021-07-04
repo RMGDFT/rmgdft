@@ -423,7 +423,10 @@ static void read_double (int fhand, double * rp, int count)
     ssize_t wanted = sizeof (double) * (ssize_t)count;
     ssize_t size = read (fhand, rp, wanted);
     if(size != wanted)
+    {
+        std::cout << " wanted and readsize " << wanted <<" != " << size << std::endl;
         rmg_error_handler (__FILE__, __LINE__,"error reading");
+    }
 
 
 }
@@ -486,7 +489,7 @@ void ExtrapolateOrbitals (char *name, Kpoint<KpointType> ** Kptr)
 
     if(ct.noncoll)
         rmg_printf("\n WARNING: noncollinear wavefunction extrapolation not complete");
-    
+
     /* wait until everybody gets here */
     MPI_Barrier(pct.img_comm);	
 

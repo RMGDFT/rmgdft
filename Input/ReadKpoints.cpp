@@ -125,6 +125,7 @@ void ReadKpoints(char *cfile, CONTROL& lc, std::unordered_map<std::string, Input
     }
 
     lc.is_gamma = true;
+    if(lc.noncoll) lc.is_gamma = false;
     for (int kpt = 0; kpt < lc.num_kpts; kpt++) {
         double v1, v2, v3;
         v1 = 0.0;

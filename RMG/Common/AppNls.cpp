@@ -53,6 +53,7 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         int first_state, int num_states)
 {
 
+    RmgTimer RT("AppNls");
     // Sanity check
     if(num_states > ct.non_local_block_size)
         throw RmgFatalException() << "AppNls called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -99,6 +100,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     }
 
 
+
+    RmgTimer *RT1 = new RmgTimer("AppNls: data_rearrange");
+    RmgTimer *RT2 = new RmgTimer("AppNls: data_rearrange: alloc and zeros");
     size_t alloc = (size_t)num_tot_proj * (size_t)num_states * ct.noncoll_factor;
     size_t M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
     size_t alloc1 = (size_t)ct.max_nl * (size_t)M_cols * ct.noncoll_factor;
@@ -124,6 +128,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         sint_compack[i] = 0.0;
     }
 
+    delete RT2;
+    RT2 = new RmgTimer("AppNls: data_rearrange: sint");
     // sintR (ct.max_nl, num_nonloc_ions, noncoll, num_states)
     // sint_compack(ct.max_nl, noncoll, num_states, num_nonloc_ions)
     for (int ion = 0; ion < num_nonloc_ions; ion++)
@@ -138,6 +144,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         }
     }
 
+    delete RT2;
+    RT2 = new RmgTimer("AppNls: data_rearrange: dnm");
     // set up M_qqq and M_dnm, this can be done outside in the
     //  M_dnm (ct.max_nl, noncoll, ct.max_nl, noncoll, num_nonloc_ions)
     //  M_qqq (ct.max_nl, noncoll, ct.max_nl, noncoll, num_nonloc_ions)
@@ -197,10 +205,14 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         }
     }
 
+    delete RT2;
+    delete RT1;
     // calculating nvwork_ion (ct.max_nl *noncoll, num_states, ion) =  
     //               M_dnm(ct.max_nl * noncoll, ct.max_nl * noncoll, ion) 
     //               * sint_compack(ct.max_nl*noncoll, num_states, ion)
     //
+    
+    RT1 = new RmgTimer("AppNls: nv_work");
     if(ct.is_ddd_non_diagonal)
     {
         int dim_a = ct.max_nl * ct.noncoll_factor;
@@ -246,6 +258,8 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     }
 
 
+    delete RT1;
+    RT1 = new RmgTimer("AppNls: nv");
     int tot_states = num_states * ct.noncoll_factor;
 
     //nwork: num_tot_proj * (ct.noncoll_factor * num_states)
@@ -254,10 +268,12 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
             ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
             ZERO_t,  nv, P0_BASIS);
 
+    delete RT1;
     if(! (ct.norm_conserving_pp && ct.is_gamma) ) 
         memcpy(ns, psi, stop*sizeof(KpointType));
     if(!ct.norm_conserving_pp) {
 
+        RT1 = new RmgTimer("AppNls: ns_work");
         int dim_a = ct.max_nl * ct.noncoll_factor;
         int strideA = dim_a * dim_a;
         int strideB = dim_a * num_states;
@@ -285,9 +301,12 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
         }
 
 
+        delete RT1;
+        RT1 = new RmgTimer("AppNls: ns");
         RmgGemm (transa, transa, P0_BASIS, tot_states, num_tot_proj, 
                 ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
+        delete RT1;
 
     }
 
@@ -310,7 +329,9 @@ void AppNls(Kpoint<KpointType> *kpoint, KpointType *sintR,
     // Add in ldaU contributions to nv
     if(ct.ldaU_mode == LDA_PLUS_U_SIMPLE)
     {
+        RT1 = new RmgTimer("AppNls: ldaU");
         kpoint->ldaU->app_vhubbard(nv, kpoint->orbitalsint_local, first_state, num_states);
+        delete RT1;
     }
 
 }
