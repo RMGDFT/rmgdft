@@ -482,7 +482,13 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 
     // Get hip version
     hipError_t hiperr =  hipDriverGetVersion ( &ct.hip_version );
-    rmg_printf ("\nHIP version %d detected.\n", ct.hip_version);
+    if(hiperr == hipSuccess) {
+        rmg_printf ("\nHIP version %d detected.\n", ct.hip_version);
+    }
+    else
+    {
+        rmg_printf ("\nHIP version NOT detected.\n");
+    }
 #endif
 
     // Get device list and memory capacities. While this is not ideal under all circumstances

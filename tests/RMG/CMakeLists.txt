@@ -13,7 +13,7 @@ list(APPEND energy_tests "Ni_Semilocal")
 
 set (bond_tests "CO")
 
-SET(RMG_EXE "${CMAKE_BINARY_DIR}/rmg-cpu")
+SET(RMG_EXE "${CMAKE_BINARY_DIR}/${rmg}")
 foreach(test ${energy_tests})
     SET(testname RMG_${test}) 
     SET(TEST_DIR ${test}) 

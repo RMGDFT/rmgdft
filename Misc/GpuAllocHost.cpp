@@ -101,7 +101,7 @@ void *DGpuMallocHost(size_t size, const char *fname, size_t line)
     new_block = (new_block + 1) * GPU_ALIGNMENT;
     new_size = host_cur_size + new_block; 
     if(new_size > host_max_size) {
-        rmg_printf("GPU memory of %d bytes exceeds reserved size of %d.\n", new_size, host_max_size);
+        rmg_printf("GPU memory of %zu bytes exceeds reserved size of %zu.\n", new_size, host_max_size);
         rmg_error_handler (fname, line, "Error: Reservation too large. Consider increasing reserved GPU host memory.\n");
     }
 
