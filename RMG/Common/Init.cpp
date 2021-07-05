@@ -430,10 +430,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 
     if (ct.forceflag == BAND_STRUCTURE) 
     {
-        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
-        {
-            Read_nsocc (ct.infile, Kptr);
-        }
         ct.num_states = ct.run_states;
         return;
     }
