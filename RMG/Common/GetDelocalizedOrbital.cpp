@@ -174,29 +174,21 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
         }
         
 // if spin orbit, normalize the averaged orbitals
+// Not sure what is correct here.
         double vel = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
         vel = Rmg_L.get_omega() / vel;
+
         if(AtomType.is_spinorb)
         {
             for(size_t st = 0; st < stride; st++)
             {
-                double sum = 0.0;
-                for (int idx = 0; idx < pbasis; idx++)
-                {
-                    sum += std::norm(weight[st * pbasis + idx] );
-                }
-
-                GlobalSums(&sum, 1, this->grid_comm);
-                double tscale = vel * sum;
-                tscale = std::sqrt(1.0/tscale);
-
                 for (int idx = 0; idx < pbasis ; idx++)
                 {
-                    weight[st * pbasis + idx] *= tscale;
+                    weight[st * pbasis + idx] *= 0.5;
                 }
-
             }
         }
+
     }
     RmgFreeHost(npsi);
 }
