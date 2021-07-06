@@ -13,6 +13,7 @@ list(APPEND energy_tests "Ni_Semilocal")
 
 set (bond_tests "CO")
 
+SET (CTEST_ENVIRONMENT "OMP_NUM_THREADS=1" "RMG_NUM_THREADS=1")
 SET(RMG_EXE "${CMAKE_BINARY_DIR}/${rmg}")
 foreach(test ${energy_tests})
     SET(testname RMG_${test}) 
