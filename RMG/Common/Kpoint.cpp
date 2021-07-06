@@ -1184,6 +1184,7 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
     if (this->orbital_weight != NULL) {
 #if CUDA_ENABLED || HIP_ENABLED
         RmgFreeHost(this->orbital_weight);
+        RmgFreeHost(this->orbitalsint_local);
 #else
         if(ct.nvme_weights)
         {
@@ -1192,9 +1193,11 @@ template <class KpointType> void Kpoint<KpointType>::reset_orbital_arrays(void)
         else
         {
             delete [] this->orbital_weight;
+            delete [] this->orbitalsint_local;
         }
 #endif
         this->orbital_weight = NULL;
+        this->orbitalsint_local = NULL;
     }
 }
 
@@ -1252,14 +1255,6 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
     }
 #endif
 
-
-#if CUDA_ENABLED || HIP_ENABLED
-    if (this->orbitalsint_local)
-        RmgFreeHost(this->orbitalsint_local);
-#else
-    if (this->orbitalsint_local)
-        delete [] this->orbitalsint_local;
-#endif
 
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
