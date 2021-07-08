@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-*/
+ */
 
 
 #include "const.h"
@@ -44,12 +44,12 @@ template void Kpoint<std::complex<double>>::GetDelocalizedOrbital(void);
 template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void)
 {
 
-    
+
     double *kvec = kp.kvec;
 
 
     for(size_t idx = 0; idx < orbital_weight_size; idx++)
-            orbital_weight[idx] = 0.0;
+        orbital_weight[idx] = 0.0;
 
 
     /* Loop over ions */
@@ -73,7 +73,7 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
     if(ct.spinorbit && state_count > nstates)
     {
         rmg_printf("state_count %d != nstates %d", state_count, nstates);
-//        rmg_error_handler(__FILE__,__LINE__," state_count != nstates Terminating.");
+        //        rmg_error_handler(__FILE__,__LINE__," state_count != nstates Terminating.");
 
     }
     double coeff = 1.0;
@@ -130,8 +130,8 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
         }
         size_t offset = (size_t)ion * stride * (size_t)pbasis;
         weight = &orbital_weight[offset];
-//        std::complex<double> *Umm = AtomType.Umm;
-//        int lm_idx = 0;
+        //        std::complex<double> *Umm = AtomType.Umm;
+        //        int lm_idx = 0;
         for (int ip = 0; ip < AtomType.num_atomic_waves; ip++)
         {
             int li = AtomType.atomic_wave_l[ip];
@@ -172,25 +172,78 @@ template <class KpointType> void Kpoint<KpointType>::GetDelocalizedOrbital (void
                 }
             }
         }
-        
-// if spin orbit, normalize the averaged orbitals
-// Not sure what is correct here.
-        double vel = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
-        vel = Rmg_L.get_omega() / vel;
 
-        if(AtomType.is_spinorb)
+    }
+
+    RmgFreeHost(npsi);
+
+    //  normalize the LDA+U orbitals
+
+    double vel = (double) (Rmg_G->get_NX_GRID(1) * Rmg_G->get_NY_GRID(1) * Rmg_G->get_NZ_GRID(1));
+    vel = Rmg_L.get_omega() / vel;
+    int num_orbitals = this->OrbitalProjector->get_num_tot_proj();
+    if(ct.norm_conserving_pp)
+    {
+        for(int st = 0; st < num_orbitals; st++)
         {
-            for(size_t st = 0; st < stride; st++)
+            double sum = 0.0;
+            for (int idx = 0; idx < pbasis; idx++)
             {
-                for (int idx = 0; idx < pbasis ; idx++)
-                {
-                    weight[st * pbasis + idx] *= 0.5;
-                }
+                sum += std::norm(orbital_weight[st * pbasis + idx] );
             }
+
+            GlobalSums(&sum, 1, this->grid_comm);
+            double tscale = vel * sum;
+            // if the sum = 0, this orbital is not a LDA+U orbital and the values are zeros.
+            if(tscale < 1.0e-5) continue;
+            tscale = std::sqrt(1.0/tscale);
+
+            if(ct.verbose && pct.imgpe == 0) std::cout << "norm constant " << tscale << std::endl;
+            for (int idx = 0; idx < pbasis ; idx++)
+            {
+                orbital_weight[st * pbasis + idx] *= tscale;
+            }
+
         }
 
     }
-    RmgFreeHost(npsi);
+    else
+    {
+
+        size_t alloc = num_orbitals * pbasis;
+#if HIP_ENABLED || CUDA_ENABLED
+        this->BetaProjector->project(this, this->orbital_weight, this->newsint_local, 0,
+                num_orbitals, this->nl_weight_gpu);
+#else
+        this->BetaProjector->project(this,this->orbital_weight, this->newsint_local, 0,
+                num_orbitals, this->nl_weight);
+#endif
+        KpointType *tbuf = new KpointType[alloc]();
+        AppS<KpointType>(this, this->newsint_local, this->orbital_weight, tbuf, 0, num_orbitals);
+
+        for(int st = 0; st < num_orbitals; st++)
+        {
+            double sum = 0.0;
+            for (int idx = 0; idx < pbasis; idx++)
+            {
+                sum += std::real(orbital_weight[st * pbasis + idx] * MyConj(tbuf[st * pbasis + idx]));
+            }
+
+            GlobalSums(&sum, 1, this->grid_comm);
+            double tscale = vel * sum;
+            if(tscale < 1.0e-5) continue;
+            tscale = std::sqrt(1.0/tscale);
+
+            if(ct.verbose && pct.imgpe == 0) std::cout << "norm constan for us " << tscale << std::endl;
+            for (int idx = 0; idx < pbasis ; idx++)
+            {
+                orbital_weight[st * pbasis + idx] = tscale * tbuf[st * pbasis + idx];
+            }
+
+        }
+
+        delete [] tbuf;
+    }
 }
 
 

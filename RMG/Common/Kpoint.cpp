@@ -1258,9 +1258,8 @@ template <class KpointType> void Kpoint<KpointType>::get_ldaUop(int projector_ty
 
     int factor = 2;
     if(ct.is_gamma) factor = 1; 
-    factor *= ct.noncoll_factor;
     size_t sint_alloc = (size_t)(factor * num_nonloc_ions * this->OrbitalProjector->get_pstride());
-    sint_alloc *= (size_t)ct.max_states * ct.noncoll_factor;
+    sint_alloc *= (size_t)ct.max_states;
     sint_alloc += 16;    // In case of lots of vacuum make sure something is allocated otherwise allocation routine may fail
 #if CUDA_ENABLED || HIP_ENABLED
     this->orbitalsint_local = (KpointType *)RmgMallocHost(sint_alloc * sizeof(KpointType));

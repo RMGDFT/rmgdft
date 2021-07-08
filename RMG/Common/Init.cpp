@@ -547,39 +547,6 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         delete RT3;
     }
 
-    // this may be very wrong since the initial occ is not for atomic orbitals.
-    if(ct.ldaU_mode != LDA_PLUS_U_NONE && 0)
-    {   
-        RmgTimer("3-MgridSubspace: ldaUop x psi"); 
-        int pstride = Kptr[0]->ldaU->ldaU_m;
-        int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
-        std::complex<double> *ns_occ_g = new std::complex<double>[occ_size]();
-
-        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
-            Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
-
-            for(int idx = 0; idx < occ_size; idx++)
-                ns_occ_g[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
-        }
-
-
-        MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-        if(Rmg_Symm) Rmg_Symm->symm_nsocc(ns_occ_g, pstride);
-
-        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            for(int idx = 0; idx < occ_size; idx++)
-                Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
-
-        }
-//        if(ct.verbose) Kptr[kpt]->ldaU->write_ldaU();
-
-
-        delete ns_occ_g;
-    }
-
 
     // If not a restart and diagonalization is requested do a subspace diagonalization otherwise orthogonalize
     if(ct.runflag != RESTART ){

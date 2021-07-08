@@ -346,6 +346,10 @@ void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
         int first_state, int num_states)
 {
 
+
+    // This is only used to calculate the normalization constant of orbitals for LDA+U
+    // even for spin-orbit coupling, psi and ns are in dimesion of num_states * P0_BASIS;
+
     // Sanity check
     if(num_states > ct.non_local_block_size)
         throw RmgFatalException() << "AppS called with num_states > non_local_block_size in " << __FILE__ << " at line " << __LINE__ << "\n";
@@ -370,19 +374,20 @@ void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
     double *qqq;
     KpointType *psintR;
-    size_t stop = (size_t)num_states * (size_t)P0_BASIS * (size_t) ct.noncoll_factor;
+    size_t stop = (size_t)num_states * (size_t)P0_BASIS;
+
+    for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
 
     if(num_tot_proj == 0)
     {
-        for(size_t idx = 0;idx < stop;idx++) ns[idx] = psi[idx];
         return;
     }
 
 
-    size_t alloc = (size_t)num_tot_proj * (size_t)num_states * ct.noncoll_factor;
+    size_t alloc = (size_t)num_tot_proj * (size_t)num_states;
     size_t M_cols = 1;
-    if(ct.is_ddd_non_diagonal) M_cols = (size_t)num_tot_proj * ct.noncoll_factor;
-    size_t alloc1 = (size_t)num_tot_proj * (size_t)M_cols * ct.noncoll_factor;
+    if(ct.is_ddd_non_diagonal) M_cols = (size_t)num_tot_proj;
+    size_t alloc1 = (size_t)num_tot_proj * (size_t)M_cols;
 
     KpointType *sint_compack = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
     KpointType *nwork = (KpointType *)RmgMallocHost(sizeof(KpointType) * alloc);
@@ -390,9 +395,9 @@ void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
     for(size_t i = 0;i < alloc;i++) sint_compack[i] = 0.0;
     std::complex<double> *M_qqq_C = (std::complex<double> *) M_qqq;
 
-    for(int istate = 0; istate < num_states * ct.noncoll_factor; istate++)
+    for(int istate = 0; istate < num_states; istate++)
     {
-        int sindex = (istate + first_state * ct.noncoll_factor) * num_nonloc_ions * ct.max_nl;
+        int sindex = (istate + first_state) * num_nonloc_ions * ct.max_nl;
         for (int ion = 0; ion < num_nonloc_ions; ion++)
         {
             int proj_index = ion * ct.max_nl;
@@ -440,14 +445,11 @@ void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 if(ct.is_ddd_non_diagonal) {
                     if(ct.noncoll)
                     {
+                        // qqq_so is a 2x2 (nhxnh) matrix, only for spin(0,0) is needed for the normalization
                         int it0 = proj_index + i;
                         int jt0 = proj_index + j;
-                        int it1 = proj_index + i + num_tot_proj;
-                        int jt1 = proj_index + j + num_tot_proj;
-                        M_qqq_C[it0 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 0 * nh *nh];
-                        M_qqq_C[it0 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 1 * nh *nh];
-                        M_qqq_C[it1 * num_tot_proj * 2 + jt0] = Atoms[gion].qqq_so[inh+j + 2 * nh *nh];
-                        M_qqq_C[it1 * num_tot_proj * 2 + jt1] = Atoms[gion].qqq_so[inh+j + 3 * nh *nh];
+                        M_qqq_C[it0 * num_tot_proj  + jt0] = Atoms[gion].qqq_so[inh+j + 0 * nh *nh];
+
                     }
                     else
                     {
@@ -468,9 +470,8 @@ void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
 
 
 
-    int dim_dnm = num_tot_proj * ct.noncoll_factor;
-    int tot_states = num_states * ct.noncoll_factor;
-    if(!ct.norm_conserving_pp) {
+    int dim_dnm = num_tot_proj;
+    int tot_states = num_states;
 
         //sint_compack: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
         //nwork: dim_dnm * num_states == num_tot_proj * ct.noncoll_factor * num_states
@@ -488,18 +489,8 @@ void AppS(Kpoint<KpointType> *kpoint, KpointType *sintR,
                 ONE_t, weight,  P0_BASIS, nwork, num_tot_proj,
                 ONE_t,  ns, P0_BASIS);
 
-    }
-    else 
-    {
 
-#if CUDA_ENABLED
-        // For norm conserving and gamma ns=psi so other parts of code were updated to not require this
-        gpuMemcpy(ns, psi, stop*sizeof(KpointType), gpuMemcpyDefault);
-#else
-        memcpy(ns, psi, stop*sizeof(KpointType));
-#endif
 
-    }
 
     RmgFreeHost(M_qqq);
     RmgFreeHost(nwork);
