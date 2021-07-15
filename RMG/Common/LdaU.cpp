@@ -165,7 +165,7 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
             {
                 for(int i=0;i < ldaU_m;i++)
                 {
-                    for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
+                    for(int is2 = 0; is2 < ct.nspin/ct.noncoll_factor; is2++)
                     {
                         for(int j=0;j < ldaU_m;j++)
                         {

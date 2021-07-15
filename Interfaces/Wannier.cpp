@@ -190,6 +190,7 @@ template <class T> void Wannier<T>::AmnMmn(std::string wavefile)
     RT1 = new RmgTimer("7-Wannier: Mmn");
     SetMmn();
     delete RT1;
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 template <> void Wannier<double>::SetAmn_scdm()
@@ -1041,8 +1042,14 @@ template <class T> void Wannier<T>::SetMmn()
         SPECIES &AtomType = Species[Atoms[ion].species];
         num_tot_proj += AtomType.nh;
     }
-    T *Nlweight_k = (T *)RmgMallocHost(num_tot_proj * nbasis* sizeof(T));
-    T *Nlweight_q = (T *)RmgMallocHost(num_tot_proj * nbasis* sizeof(T));
+
+    T *Nlweight_k = NULL;
+    T *Nlweight_q = NULL;
+    if(!ct.norm_conserving_pp)
+    {
+        Nlweight_k = (T *)RmgMallocHost(num_tot_proj * nbasis* sizeof(T));
+        Nlweight_q = (T *)RmgMallocHost(num_tot_proj * nbasis* sizeof(T));
+    }
     std::complex<double> *kphase_C = (std::complex<double> *)&kphase;
     for(int ik = 0; ik < num_q; ik++)
     {
@@ -1181,8 +1188,8 @@ template <class T> void Wannier<T>::SetMmn()
     RmgFreeHost(psi_k);
     RmgFreeHost(psi_q);
     RmgFreeHost(Mmn);
-    RmgFreeHost(Nlweight_k);
-    RmgFreeHost(Nlweight_q);
+    if(Nlweight_k != NULL) RmgFreeHost(Nlweight_k);
+    if(Nlweight_q != NULL) RmgFreeHost(Nlweight_q);
 
 }
 
