@@ -68,6 +68,7 @@ template <class KpointType> LdaU<KpointType>::LdaU(Kpoint<KpointType> &kp) : K(k
 
     this->Hubbard_J.resize(boost::extents[ct.num_species][3]);
     this->ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][this->ldaU_m][this->ldaU_m]);
+    init_ns_occ();
 }
 
 // Computes the LDA+U occupation matrix. If sint_compack_in is not NULL then it uses that array instead of
@@ -265,7 +266,7 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     //MPI_Allreduce(MPI_IN_PLACE, &this->Ehub, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
     //MPI_Allreduce(MPI_IN_PLACE, &this->Ecorrect, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
-    if((ct.scf_steps > 0) || (ct.runflag == RESTART))
+   // if((ct.scf_steps > 0) || (ct.runflag == RESTART))
     {
         for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
             for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
@@ -548,3 +549,95 @@ template <class KpointType> void LdaU<KpointType>::calc_force(KpointType *sint, 
     RmgFreeHost(sint_der);
 
 }
+template void LdaU<double>::init_ns_occ();
+template void LdaU<std::complex<double>>::init_ns_occ();
+template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
+{
+
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+    {
+        for(int is = 0; is < ct.nspin; is++) {
+            for(int i = 0; i < ldaU_m; i++) {
+                for(int j = 0; j < ldaU_m; j++) {
+                    ns_occ[is][ion][i][j] = 0.0;
+                }
+            }
+        }
+
+        if(Species[Atoms[ion].species].num_ldaU_orbitals)
+        {
+            double totocc = hubbard_occ[Atoms[ion].symbol];
+            int num_orb = Species[Atoms[ion].species].num_ldaU_orbitals;
+            if(totocc > 2.0 * num_orb || totocc < 1.0e-5) 
+            {
+                fprintf(ct.logfile, " hubbard_occ = %f lda_m = %d for atom %lu\n", totocc, num_orb, ion);
+                fprintf(ct.logfile, " WARNING: this may be wrong\n");
+
+            }
+
+            //double occ_major = std::min(totocc, (double)num_orb) / num_orb;
+            //double occ_minor = std::max(0.0, totocc - num_orb) / num_orb;
+
+            double occ_major = totocc * (0.5 + std::abs(Atoms[ion].init_spin_rho) ) / num_orb;
+            double occ_minor = totocc * (0.5 - std::abs(Atoms[ion].init_spin_rho) ) / num_orb;
+                    
+            if(ct.nspin == 1) {
+                for(int i = 0; i < num_orb; i++) 
+                    ns_occ[0][ion][i][i] = totocc/num_orb/2.0;
+            }
+            else if(ct.nspin == 2) {
+                for(int i = 0; i < num_orb; i++) {
+                    if(Atoms[ion].init_spin_rho > 0.0) {
+                        ns_occ[pct.spinpe][ion][i][i] = occ_major;
+                        ns_occ[(pct.spinpe+1)%2][ion][i][i] = occ_minor;
+                    }
+                    else if(Atoms[ion].init_spin_rho < 0.0) {
+                        ns_occ[pct.spinpe][ion][i][i] = occ_minor;
+                        ns_occ[(pct.spinpe+1)%2][ion][i][i] = occ_major;
+                    }
+                    else {
+                        ns_occ[0][ion][i][i] = totocc/num_orb/2.0;
+                        ns_occ[1][ion][i][i] = totocc/num_orb/2.0;
+                    }
+                    
+                }
+                    
+            }
+            else if(ct.nspin == 4) {
+                double angle1 = Atoms[ion].init_spin_angle1/180 * PI;
+                double angle2 = Atoms[ion].init_spin_angle2/180 * PI;
+                if(Atoms[ion].init_spin_rho < 0.0) {
+                    angle1 = PI - angle1;
+                    angle2 = PI + angle2;
+                }
+                
+                double occ_t = occ_major + occ_minor;
+                double occ_d = occ_major - occ_minor;
+                std::complex<double> I_t(0.0, 1.0);
+                for(int i = 0; i < num_orb; i++) {
+                    ns_occ[0][ion][i][i] = (occ_t + occ_d * cos(angle1) )/2.0;
+                    ns_occ[1][ion][i][i] = occ_d * sin(angle1) * exp( I_t * angle2) /2.0;
+                    ns_occ[2][ion][i][i] = occ_d * sin(angle1) * exp(-I_t * angle2) /2.0;
+                    ns_occ[3][ion][i][i] = (occ_t - occ_d * cos(angle1) )/2.0;
+                }
+                
+            }
+            fprintf(ct.logfile, "  ion %lu  LDA+U init occupation matrix_real\n", ion);
+            for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
+            {
+                for(int i=0;i < ldaU_m;i++)
+                {
+                    for(int is2 = 0; is2 < ct.nspin/ct.noncoll_factor; is2++)
+                    {
+                        for(int j=0;j < ldaU_m;j++)
+                        {
+                            fprintf(ct.logfile, "%7.4f ", std::real(ns_occ[is1*ct.noncoll_factor + is2][ion][i][j]));
+                        }
+                    }
+                    fprintf(ct.logfile, "\n");
+                }
+            }
+        }
+    }
+}
+

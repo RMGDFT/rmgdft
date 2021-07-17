@@ -543,7 +543,12 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
 #else
         Kptr[kpt]->BetaProjector->project(Kptr[kpt], Kptr[kpt]->newsint_local, 0, 
                    Kptr[kpt]->nstates * ct.noncoll_factor, Kptr[kpt]->nl_weight);
+
 #endif
+        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+        {
+            LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+        }
         delete RT3;
     }
 
