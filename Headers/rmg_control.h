@@ -399,6 +399,13 @@ public:
 
     /* Scale factor for Broyden mixing of charge density*/
     double charge_broyden_scale;
+    
+    int ldau_mixing_type;
+    int ldau_pulay_refresh;
+    int ldau_pulay_order;
+    double ldau_mix;
+    double ldau_pulay_scale;
+    
 
     /* For Davidson diagonalization. Factor to multipy desired tolerance for unoccupied states by. */
     double unoccupied_tol_factor;
@@ -645,6 +652,7 @@ public:
 
     /* 2nd order convergence term  (Vh_out - Vh_in)*(rho_out - rho_in) */
     double scf_accuracy;
+    double ns_occ_rms;
 
     /* variational correction term for potential convergence */
     double scf_correction;

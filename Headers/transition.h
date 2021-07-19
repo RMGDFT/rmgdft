@@ -26,6 +26,7 @@
 
 
 extern PulayMixing *Pulay_rho;
+extern PulayMixing *Pulay_ldau;
 extern PulayMixing *Pulay_orbital;
 extern BaseGrid *Rmg_G;
 extern BaseGrid *Rmg_halfgrid;
@@ -77,6 +78,8 @@ void CPP_genvpsi (std::complex<double> * psi, std::complex<double> * sg_twovpsi,
 void CPP_genvpsi (double * psi, double * sg_twovpsi, double * vtot, double kmag, int dimx, int dimy, int dimz);
 
 void MixRho (double * new_rho, double * rho, double *rhocore, double *vh_in, double *vh_out, double *rhoc, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
+
+void MixLdaU (int ns_size, double * new_ns_occ, double * ns_occ, std::unordered_map<std::string, InputKey *>& ControlMap, bool reset);
 
 void DiagScalapack(STATE *, int, double *, double*);
 void DiagElemental(STATE *, int, double *, double*, double *, double *);

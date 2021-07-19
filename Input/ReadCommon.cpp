@@ -340,6 +340,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 "choice.",
                      "charge_mixing_type must be either \"Broyden\", \"Linear\" or \"Pulay\". Terminating. ", MIXING_OPTIONS);
     
+    If.RegisterInputKey("ldau_mixing_type", NULL, &lc.ldau_mixing_type, "Linear",
+                     CHECK_AND_TERMINATE, OPTIONAL, charge_mixing_type,
+"RMG supports Pulay and Linear mixing for DFT+U occupation mixing ",
+                     "ldau_mixing_type must be either \"Linear\" or \"Pulay\". Terminating. ", MIXING_OPTIONS);
+
     If.RegisterInputKey("charge_analysis", NULL, &lc.charge_analysis_type, "Voronoi",
                      CHECK_AND_TERMINATE, OPTIONAL, charge_analysis,
                      "Type of charge analysis to use. Only Voronoi deformation density is currently available. ", 
@@ -715,6 +720,17 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             "",
             "charge_pulay_scale must lie in the range (0.0,1.0). Resetting to the default value of 0.50 ", MIXING_OPTIONS);
 
+
+    If.RegisterInputKey("ldau_pulay_order", &lc.ldau_pulay_order, 1, 10, 5,
+            CHECK_AND_FIX, OPTIONAL,
+            "Number of previous steps to use when Pulay mixing is used to update the ldau occupation .",
+            "", MIXING_OPTIONS);
+
+    If.RegisterInputKey("ldau_pulay_scale", &lc.ldau_pulay_scale, 0.0, 1.0, 1.00,
+            CHECK_AND_FIX, OPTIONAL,
+            "",
+            "ldau_pulay_scale must lie in the range (0.0,1.0). Resetting to the default value of 1.00 ", MIXING_OPTIONS);
+
     If.RegisterInputKey("unoccupied_tol_factor", &lc.unoccupied_tol_factor, 1.0, 100000.0, 1000.0,
             CHECK_AND_FIX, OPTIONAL,
             "When using the Davidson Kohn-Sham solver unoccupied states are converged to a less stringent tolerance than occupied orbitals with the ratio set by this parameter.",
@@ -722,7 +738,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
 
     If.RegisterInputKey("charge_pulay_refresh", &lc.charge_pulay_refresh, 1, INT_MAX, 100,
             CHECK_AND_FIX, OPTIONAL,
-            "",
+            "charge Pulay mixing reset steps.",
+            "", MIXING_OPTIONS);
+    If.RegisterInputKey("ldau_pulay_refresh", &lc.ldau_pulay_refresh, 1, INT_MAX, 100,
+            CHECK_AND_FIX, OPTIONAL,
+            "ldau pulay mixing reset steps",
             "", MIXING_OPTIONS);
 
     If.RegisterInputKey("charge_broyden_order", &lc.charge_broyden_order, 1, 10, 5,
@@ -909,6 +929,11 @@ void ReadCommon(char *cfile, CONTROL& lc, PE_CONTROL& pelc, std::unordered_map<s
             CHECK_AND_FIX, OPTIONAL,
             "Proportion of the current charge density to replace with the new density after each scf step when linear mixing is used. ",
             "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 0.5. ", MIXING_OPTIONS);
+
+    If.RegisterInputKey("ldau_mixing", &lc.ldau_mix, 0.0, 1.0, 1.0,
+            CHECK_AND_FIX, OPTIONAL,
+            "Proportion of the current ldau occupation to replace with the new ones after each scf step when linear mixing is used. ",
+            "charge_density_mixing must lie in the range (0.0, 1.0) Resetting to the default value of 1.0. ", MIXING_OPTIONS);
 
     If.RegisterInputKey("drho_precond_q0", &lc.drho_q0, 0.0, 10.0, 0.5,
             CHECK_AND_FIX, OPTIONAL,

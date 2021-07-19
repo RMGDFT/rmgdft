@@ -213,29 +213,41 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
         RmgTimer("3-MgridSubspace: ldaUop x psi");
         int pstride = Kptr[0]->ldaU->ldaU_m;
         int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
-        std::complex<double> *ns_occ_g = new std::complex<double>[occ_size]();
+        std::complex<double> *new_ns_occ = new std::complex<double>[occ_size]();
+        std::complex<double> *ns_occ = new std::complex<double>[occ_size]();
+        for(int idx = 0; idx < occ_size; idx++)
+               ns_occ[idx] =  Kptr[0]->ldaU->ns_occ.data()[idx];
 
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
             LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
             Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
             for(int idx = 0; idx < occ_size; idx++)
-                ns_occ_g[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
+                new_ns_occ[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
         }
 
-        MPI_Allreduce(MPI_IN_PLACE, (double *)ns_occ_g, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+        MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ, occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
 
-        if(Rmg_Symm) Rmg_Symm->symm_nsocc(ns_occ_g, pstride);
+        if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ, pstride);
+
+        ct.ns_occ_rms = 0.0;
+        for(int idx = 0; idx < occ_size; idx++)
+        {
+            ct.ns_occ_rms += std::norm (ns_occ[idx] - new_ns_occ[idx]);
+        }
+            
+        MixLdaU(occ_size *2, (double *)new_ns_occ, (double *)ns_occ, Kptr[0]->ControlMap, false);
 
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
             for(int idx = 0; idx < occ_size; idx++)
-                Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ_g[idx];
+                Kptr[kpt]->ldaU->ns_occ.data()[idx] = ns_occ[idx];
         }
         if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
 
 
-        delete ns_occ_g;
+        delete ns_occ;
+        delete new_ns_occ;
     }
 
 
