@@ -18,6 +18,8 @@ void write_rho_z(double * rho, char *ab)
     my_malloc_init( zvec, get_FNZ_GRID(), double );
     /* Get this processors offset */
     poff = get_FPZ_OFFSET();
+    int pxoff = get_FPX_OFFSET();
+    int pyoff = get_FPY_OFFSET();
 
 
 
@@ -32,6 +34,7 @@ void write_rho_z(double * rho, char *ab)
         t1 = 0.0;
         for (iy = 0; iy < get_FPY0_GRID(); iy++)
            for (ix = 0; ix < get_FPX0_GRID(); ix++)
+                if(ix == 0 && iy ==0 && pxoff == 0 && pyoff == 0)
                 t1 += rho[ix * get_FPY0_GRID() * get_FPZ0_GRID() + iy * get_FPZ0_GRID() + iz];
 
 

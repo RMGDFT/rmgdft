@@ -702,6 +702,7 @@ void Functional::gradcorr_spin(double *rho_up, double *rho_down, double *rho_cor
                     (gy_up[k] + gy_down[k]) * (gy_up[k] + gy_down[k]) +
                     (gz_up[k] + gz_down[k]) * (gz_up[k] + gz_down[k]);
 
+                grh2 += epsg_guard;
                 gcc_spin( &arho, &zeta, &grh2, &sc, &v1cup, &v1cdw, &v2c );
                 v2cup = v2c;
                 v2cdw = v2c;
