@@ -198,14 +198,6 @@ void InitDelocalizedObject(double *sumobject, double * &ionobject, int object_ty
 
     }
 
-    // Core charges may have a small negative component because of filtering
-    if(object_type == ATOMIC_RHOCORE) 
-    {
-        for (int idx = 0; idx < FP0_BASIS; idx++) 
-        {
-            if(sumobject[idx] < 0.0) sumobject[idx] = 0.0;
-        }
-    }
 
     if(object_type == ATOMIC_RHOCOMP)
     {
