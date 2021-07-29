@@ -45,6 +45,7 @@ public:
     void write_ldaU(void);
     void init_ns_occ(void);
 
+    void calc_energy(doubleC_4d_array new_ns_occ, doubleC_4d_array old_ns_occ);
     int ldaU_m;
     double Ehub;
     double Ecorrect;

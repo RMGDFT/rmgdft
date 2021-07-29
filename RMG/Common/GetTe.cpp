@@ -118,18 +118,16 @@ void GetTe (double * rho, double * rho_oppo, double * rhocore, double * rhoc, do
 
             }
             eigsum += t1 * kptr->kp.kweight;
-            if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
-            {
-                ldaU_E += kptr->ldaU->Ecorrect * kptr->kp.kweight;
-                ldaU_H += kptr->ldaU->Ehub * kptr->kp.kweight;
-            }
         }
     }
 
-
     eigsum = RmgSumAll(eigsum, pct.kpsub_comm);
-    ldaU_E = RmgSumAll(ldaU_E, pct.kpsub_comm);
-    ldaU_H = RmgSumAll(ldaU_H, pct.kpsub_comm);
+
+    if((ct.ldaU_mode != LDA_PLUS_U_NONE) && (ct.num_ldaU_ions > 0))
+    {
+        ldaU_E = Kptr[0]->ldaU->Ecorrect;
+        ldaU_H = Kptr[0]->ldaU->Ehub;
+    }
 
     /* Evaluate electrostatic energy correction terms */
     ct.ES = 0.0;

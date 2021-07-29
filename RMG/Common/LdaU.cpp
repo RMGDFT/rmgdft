@@ -229,42 +229,6 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
     }
 
 
-    // Put the diagonal part of ns_occ into a separate array
-    this->Ehub = 0.0;
-    this->Ecorrect = 0.0;
-
-    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
-    {
-        SPECIES &AtomType = Species[Atoms[ion].species];
-        double Ueff = AtomType.Hubbard_U / 2.0;       // FIXME: Have to deal with more complicated cases later
-
-        //Tr(ns_occ * ns_occ)
-        for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
-        {
-            for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
-            {
-
-                int ispin = is1 * ct.noncoll_factor + is2;
-                for(int i=0;i < pstride;i++)
-                    for(int j=0;j < pstride;j++)
-                    {
-                        this->Ehub -= Ueff * std::real( ns_occ[ispin][ion][i][j] * ns_occ[ispin][ion][j][i]);
-                    }
-
-                if(is1 == is2)
-                {
-                    for(int i=0;i < pstride;i++)
-                    {
-                        this->Ehub += Ueff * std::real(ns_occ[ispin][ion][i][i]);
-                        this->Ecorrect += Ueff * std::real(ns_occ[ispin][ion][i][i] * ns_occ[ispin][ion][i][i]);
-                    }
-                }
-            }
-        }
-    }
-
-    //MPI_Allreduce(MPI_IN_PLACE, &this->Ehub, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
-    //MPI_Allreduce(MPI_IN_PLACE, &this->Ecorrect, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
 
    // if((ct.scf_steps > 0) || (ct.runflag == RESTART))
     {
@@ -575,11 +539,10 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
 
             }
 
-            //double occ_major = std::min(totocc, (double)num_orb) / num_orb;
-            //double occ_minor = std::max(0.0, totocc - num_orb) / num_orb;
 
-            double occ_major = totocc * (0.5 + std::abs(Atoms[ion].init_spin_rho) ) / num_orb;
-            double occ_minor = totocc * (0.5 - std::abs(Atoms[ion].init_spin_rho) ) / num_orb;
+            double occ_major = totocc * (0.5 + std::abs(Atoms[ion].init_spin_rho) );
+            occ_major = std::min(occ_major, (double)num_orb);
+            double occ_minor = totocc - occ_major;
                     
             if(ct.nspin == 1) {
                 for(int i = 0; i < num_orb; i++) 
@@ -588,12 +551,12 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
             else if(ct.nspin == 2) {
                 for(int i = 0; i < num_orb; i++) {
                     if(Atoms[ion].init_spin_rho > 0.0) {
-                        ns_occ[pct.spinpe][ion][i][i] = occ_major;
-                        ns_occ[(pct.spinpe+1)%2][ion][i][i] = occ_minor;
+                        ns_occ[pct.spinpe][ion][i][i] = occ_major/num_orb;
+                        ns_occ[(pct.spinpe+1)%2][ion][i][i] = occ_minor/num_orb;
                     }
                     else if(Atoms[ion].init_spin_rho < 0.0) {
-                        ns_occ[pct.spinpe][ion][i][i] = occ_minor;
-                        ns_occ[(pct.spinpe+1)%2][ion][i][i] = occ_major;
+                        ns_occ[pct.spinpe][ion][i][i] = occ_minor/num_orb;
+                        ns_occ[(pct.spinpe+1)%2][ion][i][i] = occ_major/num_orb;
                     }
                     else {
                         ns_occ[0][ion][i][i] = totocc/num_orb/2.0;
@@ -611,8 +574,8 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
                     angle2 = PI + angle2;
                 }
                 
-                double occ_t = occ_major + occ_minor;
-                double occ_d = occ_major - occ_minor;
+                double occ_t = (occ_major + occ_minor)/num_orb;
+                double occ_d = (occ_major - occ_minor)/num_orb;
                 std::complex<double> I_t(0.0, 1.0);
                 for(int i = 0; i < num_orb; i++) {
                     ns_occ[0][ion][i][i] = (occ_t + occ_d * cos(angle1) )/2.0;
@@ -641,3 +604,74 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
     }
 }
 
+template void LdaU<double>::calc_energy(doubleC_4d_array new_ns_occ, doubleC_4d_array old_ns_occ);
+template void LdaU<std::complex<double>>::calc_energy(doubleC_4d_array new_ns_occ, doubleC_4d_array old_ns_occ);
+template <class KpointType> void LdaU<KpointType>::calc_energy(doubleC_4d_array new_ns_occ, doubleC_4d_array old_ns_occ)
+{
+    // Put the diagonal part of ns_occ into a separate array
+
+    int pstride = K.OrbitalProjector->get_pstride();
+
+    this->Ehub = 0.0;
+    this->Ecorrect = 0.0;
+
+    for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+    {
+        SPECIES &AtomType = Species[Atoms[ion].species];
+        double Ueff = AtomType.Hubbard_U / 2.0;       // FIXME: Have to deal with more complicated cases later
+
+        if(Ueff < 1.e-20) continue;
+        if(!ct.noncoll) 
+        {
+            for(int ispin = 0; ispin < ct.nspin; ispin++)
+            {
+                for(int i=0;i < pstride;i++)
+                {
+                    this->Ehub += Ueff * std::real(new_ns_occ[ispin][ion][i][i]);
+                    this->Ecorrect += Ueff * std::real(old_ns_occ[ispin][ion][i][i]);
+                }
+
+                for(int i=0;i < pstride;i++)
+                {
+                    for(int j=0;j < pstride;j++)
+                    {
+                        this->Ehub     -=       Ueff * std::real( new_ns_occ[ispin][ion][i][j] * new_ns_occ[ispin][ion][j][i]);
+                        this->Ecorrect -= 2.0 * Ueff * std::real( old_ns_occ[ispin][ion][i][j] * old_ns_occ[ispin][ion][j][i]);
+                    }
+                }
+            }
+
+        }
+        else
+        {
+            //Tr(ns_occ * ns_occ)
+            for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
+            {
+                for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
+                {
+
+                    int ispin = is1 * ct.noncoll_factor + is2;
+                    for(int i=0;i < pstride;i++)
+                        for(int j=0;j < pstride;j++)
+                        {
+                            this->Ehub -= Ueff * std::real( new_ns_occ[ispin][ion][i][j] * new_ns_occ[ispin][ion][j][i]);
+                        }
+
+                    if(is1 == is2)
+                    {
+                        for(int i=0;i < pstride;i++)
+                        {
+                            this->Ehub += Ueff * std::real(new_ns_occ[ispin][ion][i][i]);
+                            this->Ecorrect += Ueff * std::real(old_ns_occ[ispin][ion][i][i] * old_ns_occ[ispin][ion][i][i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Ecorrect is the contribution from sum of band eigenvalues.
+    this->Ecorrect = this->Ehub - this->Ecorrect;
+//    printf("\n Ecorr %e %e\n", this->Ecorrect * 2,this->Ehub * 2);
+
+}

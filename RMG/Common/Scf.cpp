@@ -208,47 +208,6 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     /*Generate the Dnm_I */
     get_ddd (vtot, vxc, true);
 
-    if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0) )
-    {
-        RmgTimer("3-MgridSubspace: ldaUop x psi");
-        int pstride = Kptr[0]->ldaU->ldaU_m;
-        int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
-
-        doubleC_4d_array old_ns_occ, new_ns_occ;
-        old_ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
-        new_ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
-
-        old_ns_occ =  Kptr[0]->ldaU->ns_occ;
-
-        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
-            Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
-            for(int idx = 0; idx< occ_size; idx++)
-            {
-                new_ns_occ.data()[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
-            }
-        }
-
-        MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ.data(), occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
-
-        if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride);
-
-        ct.ns_occ_rms = 0.0;
-        for(int idx = 0; idx < occ_size; idx++)
-        {
-            ct.ns_occ_rms += std::norm (old_ns_occ.data()[idx] - new_ns_occ.data()[idx]);
-        }
-            
-        MixLdaU(occ_size *2, (double *)new_ns_occ.data(), (double *)old_ns_occ.data(), Kptr[0]->ControlMap, false);
-
-        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
-        {
-            Kptr[kpt]->ldaU->ns_occ = old_ns_occ;
-        }
-        if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
-
-    }
 
 
     // Loop over k-points
@@ -290,6 +249,48 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
     }
 
 
+    if(ct.ldaU_mode != LDA_PLUS_U_NONE && (ct.ns_occ_rms >1.0e-15 || ct.scf_steps ==0) )
+    {
+        RmgTimer("3-MgridSubspace: ldaUop x psi");
+        int pstride = Kptr[0]->ldaU->ldaU_m;
+        int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
+
+        doubleC_4d_array old_ns_occ, new_ns_occ;
+        old_ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
+        new_ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
+
+        old_ns_occ =  Kptr[0]->ldaU->ns_occ;
+
+        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+            Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
+            for(int idx = 0; idx< occ_size; idx++)
+            {
+                new_ns_occ.data()[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
+            }
+        }
+
+        MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ.data(), occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+        if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride);
+
+        Kptr[0]->ldaU->calc_energy(new_ns_occ, old_ns_occ);
+        ct.ns_occ_rms = 0.0;
+        for(int idx = 0; idx < occ_size; idx++)
+        {
+            ct.ns_occ_rms += std::norm (old_ns_occ.data()[idx] - new_ns_occ.data()[idx]);
+        }
+            
+        MixLdaU(occ_size *2, (double *)new_ns_occ.data(), (double *)old_ns_occ.data(), Kptr[0]->ControlMap, false);
+
+        for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
+        {
+            Kptr[kpt]->ldaU->ns_occ = old_ns_occ;
+        }
+        if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
+
+    }
 
     /* Take care of occupation filling */
     ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);

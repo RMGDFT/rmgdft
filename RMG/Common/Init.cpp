@@ -617,6 +617,38 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
         if (ct.nspin == 2)
             GetOppositeEigvals (Kptr);
 
+        if(ct.ldaU_mode != LDA_PLUS_U_NONE)
+        {
+            RmgTimer("3-MgridSubspace: ldaUop x psi");
+            int pstride = Kptr[0]->ldaU->ldaU_m;
+            int occ_size = ct.nspin * Atoms.size() * pstride * pstride;
+
+            doubleC_4d_array new_ns_occ;
+            new_ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][Kptr[0]->ldaU->ldaU_m][Kptr[0]->ldaU->ldaU_m]);
+
+            for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            {
+                LdaplusUxpsi(Kptr[kpt], 0, Kptr[kpt]->nstates, Kptr[kpt]->orbitalsint_local);
+                Kptr[kpt]->ldaU->calc_ns_occ(Kptr[kpt]->orbitalsint_local, 0, Kptr[kpt]->nstates);
+                for(int idx = 0; idx< occ_size; idx++)
+                {
+                    new_ns_occ.data()[idx] += Kptr[kpt]->ldaU->ns_occ.data()[idx];
+                }
+            }
+
+            MPI_Allreduce(MPI_IN_PLACE, (double *)new_ns_occ.data(), occ_size * 2, MPI_DOUBLE, MPI_SUM, pct.kpsub_comm);
+
+            if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride);
+
+
+            for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
+            {
+                Kptr[kpt]->ldaU->ns_occ = new_ns_occ;
+            }
+            if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
+
+        }
+
 
         /* Take care of occupation filling */
         ct.efermi = Fill (Kptr, ct.occ_width, ct.nel, ct.occ_mix, ct.num_states, ct.occ_flag, ct.mp_order);
