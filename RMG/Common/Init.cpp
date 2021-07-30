@@ -644,6 +644,7 @@ template <typename OrbitalType> void Init (double * vh, double * rho, double * r
             for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
             {
                 Kptr[kpt]->ldaU->ns_occ = new_ns_occ;
+                Kptr[kpt]->ldaU->calc_energy();
             }
             if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
 

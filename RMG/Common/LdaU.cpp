@@ -67,8 +67,18 @@ template <class KpointType> LdaU<KpointType>::LdaU(Kpoint<KpointType> &kp) : K(k
     this->ldaU_m = (2*ct.max_ldaU_l+1);
 
     this->Hubbard_J.resize(boost::extents[ct.num_species][3]);
+    this->Hubbard_U.resize(ct.num_species);
+    for(int sp = 0; sp < ct.num_species; sp++)
+    {
+        this->Hubbard_U[sp] = Species[sp].Hubbard_U;
+    }
+    int length = ct.nspin * Atoms.size() * this->ldaU_m * this->ldaU_m;
     this->ns_occ.resize(boost::extents[ct.nspin][Atoms.size()][this->ldaU_m][this->ldaU_m]);
+    this->vhub_ns.resize(boost::extents[ct.nspin][Atoms.size()][this->ldaU_m][this->ldaU_m]);
+    std::fill(this->vhub_ns.data(), this->vhub_ns.data()+length, 0.0);
     init_ns_occ();
+    Hubbard_matrix();
+    calc_energy();
 }
 
 // Computes the LDA+U occupation matrix. If sint_compack_in is not NULL then it uses that array instead of
@@ -230,54 +240,44 @@ template <class KpointType> void LdaU<KpointType>::app_vhubbard(KpointType *v_hu
 
 
 
-   // if((ct.scf_steps > 0) || (ct.runflag == RESTART))
+    for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
     {
-        for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
-            for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
+        for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
+        {
+            int ispin = is1 * ct.noncoll_factor + is2;
+            for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
             {
-                int ispin = is1 * ct.noncoll_factor + is2;
-                for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
+                for(int i=0;i < pstride;i++)
                 {
-                    SPECIES &AtomType = Species[Atoms[ion].species];
-                    double Ueff = AtomType.Hubbard_U / 2.0;       // FIXME: Have to deal with more complicated cases later
-
-                    for(int i=0;i < pstride;i++)
+                    for(int j=0;j < pstride;j++)
                     {
-                        for(int j=0;j < pstride;j++)
+                        if(ct.is_gamma) 
                         {
-                            if(ct.is_gamma)
-                            {
-                                if(i==j && is1 == is2)
-                                    nlambda[is1][ion][i][is2][ion][j] = std::real(Ueff * (1.0 - 2.0*ns_occ[ispin][ion][i][j]));
-                                else
-                                    nlambda[is1][ion][i][is2][ion][j] = -std::real(Ueff * 2.0*ns_occ[ispin][ion][i][j]);
-
-                            }
-                            else
-                            {
-                                if(i==j && is1 == is2)
-                                    nlambda_C[is1][ion][i][is2][ion][j] = Ueff * (1.0 - 2.0*ns_occ[ispin][ion][i][j]);
-                                else
-                                    nlambda_C[is1][ion][i][is2][ion][j] = -Ueff * 2.0*ns_occ[ispin][ion][i][j];
-                            }
+                            nlambda[is1][ion][i][is2][ion][j] = std::real(this->vhub_ns[ispin][ion][i][j]);
                         }
+                        else
+                        {
+                            nlambda_C[is1][ion][i][is2][ion][j] = this->vhub_ns[ispin][ion][i][j];
+                        }
+
                     }
                 }
             }
-
-
-        char *transa = "n";
-        int num_tot_proj_nc = num_tot_proj * ct.noncoll_factor;
-        RmgGemm (transa, transa, num_tot_proj_nc, num_states, num_tot_proj_nc,
-                ONE_t, lambda, num_tot_proj_nc, sint_compack, num_tot_proj_nc,
-                zero_t, nwork, num_tot_proj_nc);
-
-        int num_states_nc = num_states * ct.noncoll_factor;
-        RmgGemm (transa, transa, K.pbasis, num_states_nc, num_tot_proj,
-                ONE_t, K.orbital_weight, K.pbasis, nwork, num_tot_proj,
-                ONE_t, v_hub_x_psi, K.pbasis);
-
+        }
     }
+
+
+    char *transa = "n";
+    int num_tot_proj_nc = num_tot_proj * ct.noncoll_factor;
+    RmgGemm (transa, transa, num_tot_proj_nc, num_states, num_tot_proj_nc,
+            ONE_t, lambda, num_tot_proj_nc, sint_compack, num_tot_proj_nc,
+            zero_t, nwork, num_tot_proj_nc);
+
+    int num_states_nc = num_states * ct.noncoll_factor;
+    RmgGemm (transa, transa, K.pbasis, num_states_nc, num_tot_proj,
+            ONE_t, K.orbital_weight, K.pbasis, nwork, num_tot_proj,
+            ONE_t, v_hub_x_psi, K.pbasis);
+
 
     delete [] lambda;
     delete [] nwork;
@@ -543,7 +543,7 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
             double occ_major = totocc * (0.5 + std::abs(Atoms[ion].init_spin_rho) );
             occ_major = std::min(occ_major, (double)num_orb);
             double occ_minor = totocc - occ_major;
-                    
+
             if(ct.nspin == 1) {
                 for(int i = 0; i < num_orb; i++) 
                     ns_occ[0][ion][i][i] = totocc/num_orb/2.0;
@@ -562,9 +562,9 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
                         ns_occ[0][ion][i][i] = totocc/num_orb/2.0;
                         ns_occ[1][ion][i][i] = totocc/num_orb/2.0;
                     }
-                    
+
                 }
-                    
+
             }
             else if(ct.nspin == 4) {
                 double angle1 = Atoms[ion].init_spin_angle1/180 * PI;
@@ -573,7 +573,7 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
                     angle1 = PI - angle1;
                     angle2 = PI + angle2;
                 }
-                
+
                 double occ_t = (occ_major + occ_minor)/num_orb;
                 double occ_d = (occ_major - occ_minor)/num_orb;
                 std::complex<double> I_t(0.0, 1.0);
@@ -583,7 +583,7 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
                     ns_occ[2][ion][i][i] = occ_d * sin(angle1) * exp(-I_t * angle2) /2.0;
                     ns_occ[3][ion][i][i] = (occ_t - occ_d * cos(angle1) )/2.0;
                 }
-                
+
             }
             fprintf(ct.logfile, "  ion %lu  LDA+U init occupation matrix_real\n", ion);
             for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
@@ -604,16 +604,21 @@ template <class KpointType> void LdaU<KpointType>::init_ns_occ(void)
     }
 }
 
-template void LdaU<double>::calc_energy(doubleC_4d_array new_ns_occ, doubleC_4d_array old_ns_occ);
-template void LdaU<std::complex<double>>::calc_energy(doubleC_4d_array new_ns_occ, doubleC_4d_array old_ns_occ);
-template <class KpointType> void LdaU<KpointType>::calc_energy(doubleC_4d_array new_ns_occ, doubleC_4d_array old_ns_occ)
+template void LdaU<double>::calc_energy();
+template void LdaU<std::complex<double>>::calc_energy();
+template <class KpointType> void LdaU<KpointType>::calc_energy()
 {
     // Put the diagonal part of ns_occ into a separate array
 
-    int pstride = K.OrbitalProjector->get_pstride();
+    int pstride = this->ldaU_m;
 
     this->Ehub = 0.0;
     this->Ecorrect = 0.0;
+
+    for(size_t i = 0; i < ns_occ.num_elements(); i++)
+    {
+        this->Ecorrect += std::real(ns_occ.data()[i] * vhub_ns.data()[i]);
+    }
 
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
@@ -627,16 +632,16 @@ template <class KpointType> void LdaU<KpointType>::calc_energy(doubleC_4d_array 
             {
                 for(int i=0;i < pstride;i++)
                 {
-                    this->Ehub += Ueff * std::real(new_ns_occ[ispin][ion][i][i]);
-                    this->Ecorrect += Ueff * std::real(old_ns_occ[ispin][ion][i][i]);
+                    this->Ehub += Ueff * std::real(ns_occ[ispin][ion][i][i]);
+                    this->vhub_ns[ispin][ion][i][i] = Ueff;
                 }
 
                 for(int i=0;i < pstride;i++)
                 {
                     for(int j=0;j < pstride;j++)
                     {
-                        this->Ehub     -=       Ueff * std::real( new_ns_occ[ispin][ion][i][j] * new_ns_occ[ispin][ion][j][i]);
-                        this->Ecorrect -= 2.0 * Ueff * std::real( old_ns_occ[ispin][ion][i][j] * old_ns_occ[ispin][ion][j][i]);
+                        this->Ehub     -=       Ueff * std::real( ns_occ[ispin][ion][i][j] * ns_occ[ispin][ion][j][i]);
+                        this->vhub_ns[ispin][ion][i][j] -= 2.0 * Ueff * (ns_occ[ispin][ion][j][i]);
                     }
                 }
             }
@@ -654,15 +659,16 @@ template <class KpointType> void LdaU<KpointType>::calc_energy(doubleC_4d_array 
                     for(int i=0;i < pstride;i++)
                         for(int j=0;j < pstride;j++)
                         {
-                            this->Ehub -= Ueff * std::real( new_ns_occ[ispin][ion][i][j] * new_ns_occ[ispin][ion][j][i]);
+                            this->Ehub -= Ueff * std::real( ns_occ[ispin][ion][i][j] * ns_occ[ispin][ion][j][i]);
+                            this->vhub_ns[ispin][ion][i][j] -= 2*Ueff * ns_occ[ispin][ion][j][i];
                         }
 
                     if(is1 == is2)
                     {
                         for(int i=0;i < pstride;i++)
                         {
-                            this->Ehub += Ueff * std::real(new_ns_occ[ispin][ion][i][i]);
-                            this->Ecorrect += Ueff * std::real(old_ns_occ[ispin][ion][i][i] * old_ns_occ[ispin][ion][i][i]);
+                            this->Ehub += Ueff * std::real(ns_occ[ispin][ion][i][i]);
+                            this->vhub_ns[ispin][ion][i][i] = Ueff * ns_occ[ispin][ion][i][i];
                         }
                     }
                 }
@@ -671,7 +677,83 @@ template <class KpointType> void LdaU<KpointType>::calc_energy(doubleC_4d_array 
     }
 
     // Ecorrect is the contribution from sum of band eigenvalues.
+//    if(pct.gridpe == 0)
+//        printf("\n Ecorr %d %e %e\n", pct.spinpe, this->Ecorrect * 2,this->Ehub * 2);
     this->Ecorrect = this->Ehub - this->Ecorrect;
-//    printf("\n Ecorr %e %e\n", this->Ecorrect * 2,this->Ehub * 2);
+
+}
+template void LdaU<double>::Hubbard_matrix();
+template void LdaU<std::complex<double>>::Hubbard_matrix();
+template <class KpointType> void LdaU<KpointType>::Hubbard_matrix()
+{
+    // adopted from QE
+
+    // Build up the matrix of Coulomb integrals u_matrix(1,2,3,4)
+    // for real spherical harmonics. Implemented for s, p, d, f-shells.
+    // Integrals with radial WFs are parametrized by U and J parameters.
+    // See Liechtenstein PRB 52, R5467 (1995), for example.
+
+    //  s: U
+    //  p: U, J = J(1)
+    //  d: U, J = J(1),  B  = J(2)
+    //  f: U, J = J(1),  E2 = J(2), E3 = J(3)
+
+
+    double F[6];
+    //-- Set up the F_2k coefficients k = 0, 1, ... L
+
+    for(auto &sp:Species)
+    {
+
+        F[0] = sp.Hubbard_U;
+        if(sp.ldaU_l == 1)
+        {
+            F[2] = 0.5 * sp.Hubbard_J[0];
+        }
+        if(sp.ldaU_l == 2)
+        {
+            F[2] = 5.0 * sp.Hubbard_J[0] + 31.5 * sp.Hubbard_J[1];
+            F[4] = 9.0 * sp.Hubbard_J[0] + 31.5 * sp.Hubbard_J[1];
+        }
+        if(sp.ldaU_l == 3)
+        {
+            F[2] = 225.0/54.0*sp.Hubbard_J[0]  + 32175.0/42.0*sp.Hubbard_J[1]  + 2475.0/42.0*sp.Hubbard_J[2];
+            F[4] = 11.0 *sp.Hubbard_J[0]  -141570.0/77.0 *sp.Hubbard_J[1]  + 4356.0/77.0 *sp.Hubbard_J[2];
+            F[6] = 7361.640/594.0*sp.Hubbard_J[0] + 36808.20/66.0*sp.Hubbard_J[1]  - 111.54*sp.Hubbard_J[2];
+        }
+
+        if(sp.ldaU_l > 3)
+        {
+            rmg_error_handler(__FILE__, __LINE__, "wrong ldaU_l");
+        }
+
+        int moffset = sp.ldaU_l * sp.ldaU_l;
+        for(int m1 = 0; m1 < 2*sp.ldaU_l +1; m1++)
+        {
+            for(int m2 = 0; m2 < 2*sp.ldaU_l +1; m2++)
+            {
+                for(int m3 = 0; m3 < 2*sp.ldaU_l +1; m3++)
+                {
+                    for(int m4 = 0; m4 < 2*sp.ldaU_l +1; m4++)
+                    {
+
+                        for(int L = 0; L < 2 * sp.ldaU_l; L+=2)
+                        {
+                            double ak = 0.0;
+                            for(int M = 0; M < 2*L + 1; M++)
+                            {
+                                int LM = L*L + M;
+                                ak += ct.cg_coeff[LM][moffset + m1][moffset+m3] *  ct.cg_coeff[LM][moffset + m2][moffset+m4];
+                            }
+                            ak = ak * 4.0 * PI /(2.0 * L +1.0);
+
+                            sp.u_matrix[m1][m2][m3][m4] += ak * F[L];
+
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 }

@@ -275,18 +275,31 @@ template <typename OrbitalType> bool Scf (double * vxc, double *vxc_in, double *
 
         if(Rmg_Symm) Rmg_Symm->symm_nsocc(new_ns_occ.data(), pstride);
 
-        Kptr[0]->ldaU->calc_energy(new_ns_occ, old_ns_occ);
+    // for spin-polarized case, only the first spin on the pe are symmetrized so communicate to opposite spin
+        if(ct.nspin == 2)
+        {
+            MPI_Status status;
+            int len = 2 * Atoms.size() * pstride * pstride;
+            double *sendbuf = (double *)new_ns_occ.data();
+            double *recvbuf = sendbuf + len;
+            MPI_Sendrecv(sendbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe,
+                    recvbuf, len, MPI_DOUBLE, (pct.spinpe+1)%2, pct.gridpe, pct.spin_comm, &status);
+
+        }
+
+
         ct.ns_occ_rms = 0.0;
         for(int idx = 0; idx < occ_size; idx++)
         {
             ct.ns_occ_rms += std::norm (old_ns_occ.data()[idx] - new_ns_occ.data()[idx]);
         }
-            
+
         MixLdaU(occ_size *2, (double *)new_ns_occ.data(), (double *)old_ns_occ.data(), Kptr[0]->ControlMap, false);
 
         for (int kpt =0; kpt < ct.num_kpts_pe; kpt++)
         {
             Kptr[kpt]->ldaU->ns_occ = old_ns_occ;
+            Kptr[kpt]->ldaU->calc_energy();
         }
         if(ct.verbose) Kptr[0]->ldaU->write_ldaU();
 

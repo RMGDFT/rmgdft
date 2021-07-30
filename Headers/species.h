@@ -102,6 +102,9 @@ public:
     // Hubbard U and J
     double Hubbard_U;
     double Hubbard_J[3];
+    
+    // max L for lda+U is f orbitals so the ldaU_m = 7
+    double u_matrix[7][7][7][7]{};
 
     /** Number of valence electrons */
     double zvalence;

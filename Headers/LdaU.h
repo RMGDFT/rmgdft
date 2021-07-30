@@ -44,14 +44,16 @@ public:
     void app_vhubbard(KpointType *v_hub_x_psi, KpointType *sint, int first_state, int nstates);
     void write_ldaU(void);
     void init_ns_occ(void);
+    void Hubbard_matrix();
 
-    void calc_energy(doubleC_4d_array new_ns_occ, doubleC_4d_array old_ns_occ);
+    void calc_energy();
     int ldaU_m;
     double Ehub;
     double Ecorrect;
 
     Kpoint<KpointType> &K;
-    doubleC_4d_array ns_occ;    
+    boost::multi_array<std::complex<double>, 4> ns_occ;
+    boost::multi_array<std::complex<double>, 4> vhub_ns;
 
     std::vector<double> Hubbard_U;
     std::vector<double> Hubbard_J0;
