@@ -104,7 +104,7 @@ public:
     double Hubbard_J[3];
     
     // max L for lda+U is f orbitals so the ldaU_m = 7
-    double u_matrix[7][7][7][7]{};
+    boost::multi_array<double, 4> u_matrix;
 
     /** Number of valence electrons */
     double zvalence;

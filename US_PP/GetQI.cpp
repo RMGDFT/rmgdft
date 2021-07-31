@@ -83,7 +83,7 @@ void GetQI (void)
     lpl = new int[num_lm * num_lm  * num_LM2];
     ylm = new double[num_LM2];
 
-    ct.cg_coeff.resize(boost::extents[num_lm][num_lm][num_LM2]);
+    ct.cg_coeff.resize(boost::extents[num_LM2][num_lm][num_lm]);
     InitClebschGordan(ct.max_l, ct.cg_coeff.data(), lpx, lpl);
 
 

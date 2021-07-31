@@ -186,6 +186,21 @@ template <class KpointType> void LdaU<KpointType>::write_ldaU(void)
                     fprintf(ct.logfile, "\n");
                 }
             }
+            fprintf(ct.logfile, "  ion %lu  LDA+U vhub_ns matrix_real\n", ion);
+            for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
+            {
+                for(int i=0;i < ldaU_m;i++)
+                {
+                    for(int is2 = 0; is2 < ct.nspin/ct.noncoll_factor; is2++)
+                    {
+                        for(int j=0;j < ldaU_m;j++)
+                        {
+                            fprintf(ct.logfile, "%7.4f ", std::real(vhub_ns[is1*ct.noncoll_factor + is2][ion][i][j]));
+                        }
+                    }
+                    fprintf(ct.logfile, "\n");
+                }
+            }
         }
     }
 }
@@ -609,8 +624,9 @@ template void LdaU<std::complex<double>>::calc_energy();
 template <class KpointType> void LdaU<KpointType>::calc_energy()
 {
     // Put the diagonal part of ns_occ into a separate array
+    double eth_dc(0.0), eth_noflip(0.0), eth_flip(0.0);
 
-    int pstride = this->ldaU_m;
+    int spin_pair[4]{0,2,1,3};
 
     this->Ehub = 0.0;
     this->Ecorrect = 0.0;
@@ -620,25 +636,30 @@ template <class KpointType> void LdaU<KpointType>::calc_energy()
         this->Ecorrect += std::real(ns_occ.data()[i] * vhub_ns.data()[i]);
     }
 
+    int len = vhub_ns.num_elements();
+    std::fill(vhub_ns.data(), vhub_ns.data() + len, 0.0);
     for (size_t ion = 0, i_end = Atoms.size(); ion < i_end; ++ion)
     {
         SPECIES &AtomType = Species[Atoms[ion].species];
         double Ueff = AtomType.Hubbard_U / 2.0;       // FIXME: Have to deal with more complicated cases later
+        double Hubbard_U = AtomType.Hubbard_U;
+        double *Hubbard_J = AtomType.Hubbard_J;
+        int lm = 2 * AtomType.ldaU_l +1;
 
-        if(Ueff < 1.e-20) continue;
+        if(std::abs(Ueff) < 1.e-20) continue;
         if(!ct.noncoll) 
         {
             for(int ispin = 0; ispin < ct.nspin; ispin++)
             {
-                for(int i=0;i < pstride;i++)
+                for(int i=0;i < lm;i++)
                 {
                     this->Ehub += Ueff * std::real(ns_occ[ispin][ion][i][i]);
                     this->vhub_ns[ispin][ion][i][i] = Ueff;
                 }
 
-                for(int i=0;i < pstride;i++)
+                for(int i=0;i < lm;i++)
                 {
-                    for(int j=0;j < pstride;j++)
+                    for(int j=0;j < lm;j++)
                     {
                         this->Ehub     -=       Ueff * std::real( ns_occ[ispin][ion][i][j] * ns_occ[ispin][ion][j][i]);
                         this->vhub_ns[ispin][ion][i][j] -= 2.0 * Ueff * (ns_occ[ispin][ion][j][i]);
@@ -649,36 +670,95 @@ template <class KpointType> void LdaU<KpointType>::calc_energy()
         }
         else
         {
-            //Tr(ns_occ * ns_occ)
-            for(int is1 = 0; is1 < ct.noncoll_factor; is1++)
+            // follow the QE v_hubbard_nc
+            boost::multi_array<double, 4> &u_m(AtomType.u_matrix);
+            
+            std::complex<double> n_tot(0.0);
+            double mx(0.0), my(0.0), mz(0.0), mag2;
+            
+            for(int m = 0; m < lm; m++)
             {
-                for(int is2 = 0; is2 < ct.noncoll_factor; is2++)
-                {
+                n_tot += ns_occ[0][ion][m][m] + ns_occ[3][ion][m][m];
+                mx += std::real(ns_occ[1][ion][m][m] + ns_occ[2][ion][m][m]);
+                my += 2.0 * std::imag(ns_occ[1][ion][m][m]);
+                mz += std::real(ns_occ[0][ion][m][m] - ns_occ[3][ion][m][m]);
+            }
+            mag2 = mx*mx + my * my + mz * mz;
 
-                    int ispin = is1 * ct.noncoll_factor + is2;
-                    for(int i=0;i < pstride;i++)
-                        for(int j=0;j < pstride;j++)
-                        {
-                            this->Ehub -= Ueff * std::real( ns_occ[ispin][ion][i][j] * ns_occ[ispin][ion][j][i]);
-                            this->vhub_ns[ispin][ion][i][j] -= 2*Ueff * ns_occ[ispin][ion][j][i];
+            //  DC term
+            double n_tot_r = std::real(n_tot);
+            eth_dc += 0.5 * ( Hubbard_U * n_tot_r * ( n_tot_r -1.0) 
+                             -Hubbard_J[0] * n_tot_r * (0.5 * n_tot_r - 1.0) 
+                             - 0.5 * Hubbard_J[0] * mag2);
+
+
+            for(int is = 0; is < ct.nspin;is++)
+            {
+                int is1 = spin_pair[is];
+
+                for(int m1 = 0; m1 < lm; m1++) {
+                    for(int m2 = 0; m2 < lm; m2++) {
+                        for(int m3 = 0; m3 < lm; m3++) {
+                            for(int m4 = 0; m4 < lm; m4++) {
+                                if(is == is1)  // non spin-flip contribution
+                                {
+                                    eth_noflip += 0.5 *std::real( (u_m[m1][m2][m3][m4] - u_m[m1][m2][m4][m3])
+                                                         * ns_occ[is][ion][m1][m3] * ns_occ[is][ion][m2][m4] 
+                                                        + u_m[m1][m2][m3][m4] * ns_occ[is][ion][m1][m3] *
+                                                          ns_occ[ct.nspin-is-1][ion][m2][m4]);
+
+                                    vhub_ns[is][ion][m1][m2] += u_m[m1][m3][m2][m4] 
+                                                                *(ns_occ[0][ion][m3][m4] + ns_occ[3][ion][m3][m4]);
+                                }
+                                else  // spin-flip contribution
+                                {
+                                    eth_flip -= 0.5 * u_m[m1][m2][m4][m3] * std::real(ns_occ[is][ion][m1][m3] * ns_occ[is1][ion][m2][m4]);
+                                }
+
+                            }
                         }
+                    }
+                }
+        
 
-                    if(is1 == is2)
+                std::complex<double> n_aux(0.0);
+                for(int m = 0; m < lm; m++)
+                {
+                    n_aux += ns_occ[is1][ion][m][m];
+                }
+
+                for(int m = 0; m < lm; m++)
+                {
+                    vhub_ns[is][ion][m][m] += Hubbard_J[0] * n_aux;
+                    if(is1 == is) 
                     {
-                        for(int i=0;i < pstride;i++)
-                        {
-                            this->Ehub += Ueff * std::real(ns_occ[ispin][ion][i][i]);
-                            this->vhub_ns[ispin][ion][i][i] = Ueff * ns_occ[ispin][ion][i][i];
+                        vhub_ns[is][ion][m][m] += 0.5 *(Hubbard_U - Hubbard_J[0]) - Hubbard_U * n_tot;
+                    }
+                }
+
+                // spin-flip contruibution
+                for(int m1 = 0; m1 < lm; m1++) {
+                    for(int m2 = 0; m2 < lm; m2++) {
+                        for(int m3 = 0; m3 < lm; m3++) {
+                            for(int m4 = 0; m4 < lm; m4++) {
+
+                                vhub_ns[is][ion][m1][m2] -= u_m[m1][m3][m4][m2] * ns_occ[is1][ion][m3][m4];
+
+                            }
                         }
                     }
                 }
             }
+
+
         }
     }
 
+    this->Ehub += eth_noflip + eth_flip - eth_dc;
     // Ecorrect is the contribution from sum of band eigenvalues.
-//    if(pct.gridpe == 0)
-//        printf("\n Ecorr %d %e %e\n", pct.spinpe, this->Ecorrect * 2,this->Ehub * 2);
+    //    if(pct.gridpe == 0)
+    //        printf("\n HUB dc noflip flip tot %f  %f %f   %f %f", eth_dc, eth_noflip, eth_flip, Ehub, Ecorrect);
+    //        printf("\n Ecorr %d %e %e\n", pct.spinpe, this->Ecorrect * 2,this->Ehub * 2);
     this->Ecorrect = this->Ehub - this->Ecorrect;
 
 }
@@ -702,9 +782,13 @@ template <class KpointType> void LdaU<KpointType>::Hubbard_matrix()
     double F[6];
     //-- Set up the F_2k coefficients k = 0, 1, ... L
 
+    int max_lm = 7; // for maximum L=3, f channel, max_lm = 2 * L +1
     for(auto &sp:Species)
     {
 
+        sp.u_matrix.resize(boost::extents[max_lm][max_lm][max_lm][max_lm]);
+        int len = max_lm * max_lm * max_lm * max_lm;
+        std::fill(sp.u_matrix.data(), sp.u_matrix.data() + len, 0.0);
         F[0] = sp.Hubbard_U;
         if(sp.ldaU_l == 1)
         {
