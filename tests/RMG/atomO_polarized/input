@@ -2,7 +2,7 @@
 description="atom_O_pp"
 
 # Expected test energy
-test_energy="-15.87801563"
+test_energy="-15.87871931"
 test_energy_tolerance = "1.00000000e-06"
 
 #spin_polarization="true"
