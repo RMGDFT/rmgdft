@@ -371,21 +371,33 @@ void eshdfFile::writeElectrons(void) {
         hid_t up_spin_group = makeHDFGroup("spin_0", kpt_group);
         handleSpinGroup(i, 0, up_spin_group, nup, fftCont);
 
-        if (nspin == 2) {
-            hid_t dn_spin_group = makeHDFGroup("spin_1", kpt_group);
-            handleSpinGroup(i, nspin-1, dn_spin_group, ndn, fftCont);
-        } else {
+        if (nspin == 1) {
             nup *= 0.5;
             ndn = nup;
         }
+        else {
+            hid_t dn_spin_group = makeHDFGroup("spin_1", kpt_group);
+            handleSpinGroup(i, 1, dn_spin_group, ndn, fftCont);
+        } 
 
         avgNup += nup / static_cast<double>(ct.num_kpts);
         avgNdn += ndn / static_cast<double>(ct.num_kpts);
     }
     vector<int> nels;
-    nels.push_back(static_cast<int>(std::floor(avgNup+0.1)));
-    nels.push_back(static_cast<int>(std::floor(avgNdn+0.1)));
+    int nup_int = static_cast<int>(std::floor(avgNup+0.1));
+    int ndn_int = static_cast<int>(std::floor(avgNdn+0.1));
+    if(ct.noncoll) {
+        //check if avgNup == avgNdn
+        if(nup_int != ndn_int) {
+            rmg_error_handler(__FILE__, __LINE__, "SOC case nup ! = ndn");
+        }
+        
+        ndn_int = -1;
+    }
+    nels.push_back(nup_int);
+    nels.push_back(ndn_int);
     writeNumsToHDF("number_of_electrons", nels, electrons_group);
+    writeNumsToHDF("has_spinors", (int)ct.noncoll, electrons_group);
 }
 
 void WriteQmcpackRestart(std::string& name)

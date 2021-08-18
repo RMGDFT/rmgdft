@@ -176,8 +176,41 @@ void WriteSerialData (std::string& name, double * vh, double * rho, double * vxc
             MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
             MPI_File_write_all(mpi_fhand, wfptr, pbasis, wftype, &status);
             MPI_File_close(&mpi_fhand);
+
+            if(ct.noncoll)
+            {
+                H.eig = Kptr[ik]->Kstates[is].eig[0];
+                H.occ = Kptr[ik]->Kstates[is].occupation[0];
+
+                std::string wfname = name + "_spin" + std::to_string(1) +
+                    "_kpt" + std::to_string(pct.kstart+ik) +
+                    "_wf" + std::to_string(is);
+
+                if(pct.gridpe == 0)
+                {
+                    int fhand = open(wfname.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IREAD | S_IWRITE);
+                    if (fhand < 0) {
+                        rmg_printf("Can't open restart file %s", wfname.c_str());
+                        rmg_error_handler(__FILE__, __LINE__, "Terminating.");
+                    }
+                    size_t wsize = write (fhand, &H, sizeof(OrbitalHeader));
+                    if(wsize != sizeof(OrbitalHeader))
+                        rmg_error_handler (__FILE__,__LINE__,"error writing");
+                    close(fhand);
+                    fflush(NULL);
+                }
+
+                MPI_Barrier(pct.grid_comm);
+                MPI_File_open(pct.grid_comm, wfname.c_str(), amode, fileinfo, &mpi_fhand);
+                disp = sizeof(OrbitalHeader);
+                KpointType *wfptr = Kptr[ik]->Kstates[is].psi + pbasis;
+                MPI_File_set_view(mpi_fhand, disp, wftype, grid_c, "native", MPI_INFO_NULL);
+                MPI_File_write_all(mpi_fhand, wfptr, pbasis, wftype, &status);
+                MPI_File_close(&mpi_fhand);
+            }
         }
     }
+
 
     MPI_Type_free(&grid_f);
     MPI_Type_free(&grid_c);
