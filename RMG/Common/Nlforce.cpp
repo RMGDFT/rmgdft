@@ -119,7 +119,7 @@ template <typename OrbitalType> void Nlforce (double * veff, double *vxc, Kpoint
 
 //  determine the number of occupied states for all kpoints.
 
-    num_occupied = 0;
+    num_occupied = ct.num_states;
     for (int kpt = 0; kpt < ct.num_kpts_pe; kpt++)
     {
         for(int st = 0; st < ct.num_states; st++)

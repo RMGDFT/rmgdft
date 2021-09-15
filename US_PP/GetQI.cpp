@@ -73,8 +73,6 @@ void GetQI (void)
     hyygrid = get_hyygrid();
     hzzgrid = get_hzzgrid();
 
-    // If norm conserving pp just return
-    if(ct.norm_conserving_pp) return;
 
     int num_lm = (ct.max_l + 1) * (ct.max_l+1);
     int num_LM2 = (2*ct.max_l + 1) * (2*ct.max_l+1);
@@ -86,6 +84,8 @@ void GetQI (void)
     ct.cg_coeff.resize(boost::extents[num_LM2][num_lm][num_lm]);
     InitClebschGordan(ct.max_l, ct.cg_coeff.data(), lpx, lpl);
 
+    // If norm conserving pp just return
+    if(ct.norm_conserving_pp) return;
 
 
     alloc = ct.max_Qpoints;
