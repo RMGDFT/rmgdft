@@ -81,10 +81,10 @@ template <typename OrbitalType> void PartialGamma (int kidx,
         t1 = Kptr[kidx]->Kstates[istate].occupation[0] * Kptr[kidx]->kp.kweight;
         t2 = t1 * Kptr[kidx]->Kstates[istate].eig[0];
 
-        int sint_index1 = (istate +is1)* num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
-        int dersint_index1 = (istate_local+is1) * num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
-        int sint_index2 = (istate +is2)* num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
-        int dersint_index2 = (istate_local+is2) * num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
+        int sint_index1 = (istate*ct.noncoll_factor +is1)* num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
+        int dersint_index1 = (istate_local*ct.noncoll_factor+is1) * num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
+        int sint_index2 = (istate*ct.noncoll_factor +is2)* num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
+        int dersint_index2 = (istate_local*ct.noncoll_factor+is2) * num_nonloc_ions * ct.max_nl +nion * ct.max_nl;
 
         for (i = 0; i < nh; i++)
         {

@@ -218,10 +218,6 @@ void Vdd(double * rho)
 			min_ion = xtal_index[ionct];
 		    }
 
-            
-if(ix == 1 && iy == 0 && iz ==9) printf("\n bbb %f %d %d ", std::sqrt(dist), ionct, xtal_index[ionct]);
-
-
 
 		}
 

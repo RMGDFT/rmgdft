@@ -396,7 +396,6 @@ template <class T> void Pdos<T>::Pdos_calc(Kpoint<T> **Kptr, std::vector<double>
         }
     }
 
-std::cout << " bbb " << std::endl;
    // RmgFreeHost(psi_k);
 }
 
