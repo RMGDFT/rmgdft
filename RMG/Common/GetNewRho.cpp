@@ -247,7 +247,6 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
 
     if(Verify ("freeze_occupied", true, Kpts[0]->ControlMap)) return;
 
-    std::complex<double> psiud;
     int factor = ct.noncoll_factor * ct.noncoll_factor;
     double *work = new double[pbasis * factor];
 
@@ -259,6 +258,7 @@ template <typename OrbitalType> void GetNewRhoPost(Kpoint<OrbitalType> **Kpts, d
 #pragma omp parallel
         {
             double *tarr = new double[pbasis * factor]();
+            std::complex<double> psiud;
 #pragma omp barrier
 
             /* Loop over states and accumulate charge */
