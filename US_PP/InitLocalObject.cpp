@@ -56,20 +56,14 @@ void InitLocalObject(double *sumobject, int object_type)
 void InitLocalObject (double *sumobject, double * &lobject, int object_type, bool compute_lobject)
 {
 
-    int xstart, ystart, zstart, xend, yend, zend;
-    int ion;
     int ilow, jlow, klow, ihi, jhi, khi;
-    int dimx, dimy, dimz;
     int FP0_BASIS;
     int FPX0_GRID, FPY0_GRID, FPZ0_GRID;
     int FPX_OFFSET, FPY_OFFSET, FPZ_OFFSET;
     int FNX_GRID, FNY_GRID, FNZ_GRID;
 
-    double Zv, rc, rc2, rcnorm;
     double hxxgrid, hyygrid, hzzgrid;
     double xside, yside, zside;
-    SPECIES *sp;
-    ION *iptr;
 
     hxxgrid = get_hxxgrid();
     hyygrid = get_hyygrid();
@@ -100,29 +94,29 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     /* Loop over ions determine num of ions whose local pp has overlap with this pe */
 
     pct.num_loc_ions = 0;
-    for (ion = 0; ion < ct.num_ions; ion++)
+    for (int ion = 0; ion < ct.num_ions; ion++)
     {
         /* Generate ion pointer */
-        iptr = &Atoms[ion];
+        ION *iptr = &Atoms[ion];
 
         /* Get species type */
-        sp = &Species[iptr->species];
+        SPECIES *sp = &Species[iptr->species];
 
-        dimx =  sp->lradius/(hxxgrid*xside);
-        dimy =  sp->lradius/(hyygrid*yside);
-        dimz =  sp->lradius/(hzzgrid*zside);
+        int dimx =  sp->lradius/(hxxgrid*xside);
+        int dimy =  sp->lradius/(hyygrid*yside);
+        int dimz =  sp->lradius/(hzzgrid*zside);
 
         dimx = dimx * 2 + 1;
         dimy = dimy * 2 + 1;
         dimz = dimz * 2 + 1;
         
 
-        xstart = iptr->xtal[0] / hxxgrid - dimx/2;
-        xend = xstart + dimx;
-        ystart = iptr->xtal[1] / hyygrid - dimy/2;
-        yend = ystart + dimy;
-        zstart = iptr->xtal[2] / hzzgrid - dimz/2;
-        zend = zstart + dimz;
+        int xstart = iptr->xtal[0] / hxxgrid - dimx/2;
+        int xend = xstart + dimx;
+        int ystart = iptr->xtal[1] / hyygrid - dimy/2;
+        int yend = ystart + dimy;
+        int zstart = iptr->xtal[2] / hzzgrid - dimz/2;
+        int zend = zstart + dimz;
 
 
         bool map_x = false, map_y = false, map_z = false;
@@ -172,17 +166,19 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     }
 
     // Zero out sumobject
-    for(int idx = 0; idx < FP0_BASIS; idx++) sumobject[idx] = 0.0;
+
+    int factor = 1;
     if(object_type == ATOMIC_RHOCORE_STRESS)
     {
-        for(int idx = 0; idx < 3* FP0_BASIS; idx++) sumobject[idx] = 0.0;
+        factor = 3;
     }
 
     if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
     {
-        for(int idx = 0; idx < 4* FP0_BASIS; idx++) sumobject[idx] = 0.0;
+        factor = 4;
     }
 
+    for(int idx = 0; idx < factor* FP0_BASIS; idx++) sumobject[idx] = 0.0;
     if(object_type == ATOMIC_RHOCOMP) {
         int npes = get_PE_X() * get_PE_Y() * get_PE_Z();
         double t1 = ct.background_charge / (double)FP0_BASIS / get_vel_f() / (double)npes;
@@ -194,147 +190,156 @@ void InitLocalObject (double *sumobject, double * &lobject, int object_type, boo
     size_t alloc = (size_t)pct.num_loc_ions * (size_t)FP0_BASIS + 128;
     if(compute_lobject) lobject = new double[alloc]();
 
-    int ion1;
-    for (ion1 = 0; ion1 < pct.num_loc_ions; ion1++)
+#pragma omp parallel 
     {
-        ion = pct.loc_ions_list[ion1];
-        /* Generate ion pointer */
-        iptr = &Atoms[ion];
-
-        /* Get species type */
-        sp = &Species[iptr->species];
-        Zv = sp->zvalence;
-        rc = sp->rc;
-        rc2 = rc * rc;
-        rcnorm = rc * rc * rc * pow (PI, 1.5);
-        rcnorm = 1.0 / rcnorm;
-
-        dimx =  sp->lradius/(hxxgrid*xside);
-        dimy =  sp->lradius/(hyygrid*yside);
-        dimz =  sp->lradius/(hzzgrid*zside);
-
-        dimx = dimx * 2 + 1;
-        dimy = dimy * 2 + 1;
-        dimz = dimz * 2 + 1;
-
-
-        xstart = iptr->xtal[0] / hxxgrid - dimx/2;
-        xend = xstart + dimx;
-        ystart = iptr->xtal[1] / hyygrid - dimy/2;
-        yend = ystart + dimy;
-        zstart = iptr->xtal[2] / hzzgrid - dimz/2;
-        zend = zstart + dimz;
-
-#pragma omp parallel for
-        for (int ix = xstart; ix < xend; ix++)
+        double *sumobj_omp = new double[factor * FP0_BASIS](); 
+#pragma omp barrier
+#pragma omp for schedule(static, 1) nowait
+        for (int ion1 = 0; ion1 < pct.num_loc_ions; ion1++)
         {
-            // fold the grid into the unit cell
-            // maxium fold 20 times, local potential can extend to 20-1 unit cell
-            int ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
-            if(ixx >= ilow && ixx < ihi)
+            int ion = pct.loc_ions_list[ion1];
+            /* Generate ion pointer */
+            ION *iptr = &Atoms[ion];
+
+            /* Get species type */
+            SPECIES *sp = &Species[iptr->species];
+            double Zv = sp->zvalence;
+            double rc = sp->rc;
+            double rc2 = rc * rc;
+            double rcnorm = rc * rc * rc * pow (PI, 1.5);
+            rcnorm = 1.0 / rcnorm;
+
+            int dimx =  sp->lradius/(hxxgrid*xside);
+            int dimy =  sp->lradius/(hyygrid*yside);
+            int dimz =  sp->lradius/(hzzgrid*zside);
+
+            dimx = dimx * 2 + 1;
+            dimy = dimy * 2 + 1;
+            dimz = dimz * 2 + 1;
+
+
+            int xstart = iptr->xtal[0] / hxxgrid - dimx/2;
+            int xend = xstart + dimx;
+            int ystart = iptr->xtal[1] / hyygrid - dimy/2;
+            int yend = ystart + dimy;
+            int zstart = iptr->xtal[2] / hzzgrid - dimz/2;
+            int zend = zstart + dimz;
+
+            for (int ix = xstart; ix < xend; ix++)
             {
-
-                for (int iy = ystart; iy < yend; iy++)
+                // fold the grid into the unit cell
+                // maxium fold 20 times, local potential can extend to 20-1 unit cell
+                int ixx = (ix + 20 * FNX_GRID) % FNX_GRID;
+                if(ixx >= ilow && ixx < ihi)
                 {
-                    // fold the grid into the unit cell
-                    int iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
-                    if(iyy >= jlow && iyy < jhi)
+
+                    for (int iy = ystart; iy < yend; iy++)
                     {
-                        for (int iz = zstart; iz < zend; iz++)
+                        // fold the grid into the unit cell
+                        int iyy = (iy + 20 * FNY_GRID) % FNY_GRID;
+                        if(iyy >= jlow && iyy < jhi)
                         {
-                            // fold the grid into the unit cell
-                            int izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
-                            if(izz >= klow && izz < khi)
+                            for (int iz = zstart; iz < zend; iz++)
                             {
-
-                                int idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
-                                double x[3], cx[3];
-                                x[0] = ix * hxxgrid - iptr->xtal[0];
-                                x[1] = iy * hyygrid - iptr->xtal[1];
-                                x[2] = iz * hzzgrid - iptr->xtal[2];
-                                double r = Rmg_L.metric (x);
-                                Rmg_L.to_cartesian(x, cx);
-
-                                if(r > sp->lradius) continue;
-                                double t1;
-
-                                switch(object_type) 
+                                // fold the grid into the unit cell
+                                int izz = (iz + 20 * FNZ_GRID) % FNZ_GRID;
+                                if(izz >= klow && izz < khi)
                                 {
-                                    case ATOMIC_LOCAL_PP:
-                                        t1= AtomicInterpolateInline (&sp->localig[0], r);
-                                        break;
 
-                                    case ATOMIC_RHO:
-                                        t1= AtomicInterpolateInline (&sp->arho_lig[0], r);
-                                        // if(pct.gridpe == 0) printf("\n ffff %d %d %d %e %e", ix, iy, iz, r, t1);
-                                        break;
+                                    int idx = (ixx-ilow) * FPY0_GRID * FPZ0_GRID + (iyy-jlow) * FPZ0_GRID + izz-klow;
+                                    double x[3], cx[3];
+                                    x[0] = ix * hxxgrid - iptr->xtal[0];
+                                    x[1] = iy * hyygrid - iptr->xtal[1];
+                                    x[2] = iz * hzzgrid - iptr->xtal[2];
+                                    double r = Rmg_L.metric (x);
+                                    Rmg_L.to_cartesian(x, cx);
 
-                                    case ATOMIC_RHOCOMP:
-                                        t1= Zv * exp (-r * r / rc2) * rcnorm;
-                                        break;
+                                    if(r > sp->lradius) continue;
+                                    double t1;
 
-                                    case ATOMIC_RHOCORE: 
-                                        if(sp->nlccflag) 
-                                        {
-                                            t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
-                                        }
+                                    switch(object_type) 
+                                    {
+                                        case ATOMIC_LOCAL_PP:
+                                            t1= AtomicInterpolateInline (&sp->localig[0], r);
+                                            break;
+
+                                        case ATOMIC_RHO:
+                                            t1= AtomicInterpolateInline (&sp->arho_lig[0], r);
+                                            // if(pct.gridpe == 0) printf("\n ffff %d %d %d %e %e", ix, iy, iz, r, t1);
+                                            break;
+
+                                        case ATOMIC_RHOCOMP:
+                                            t1= Zv * exp (-r * r / rc2) * rcnorm;
+                                            break;
+
+                                        case ATOMIC_RHOCORE: 
+                                            if(sp->nlccflag) 
+                                            {
+                                                t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
+                                            }
+                                            else
+                                            {
+                                                t1 = 0.0;
+                                            }
+                                            break;
+                                        case ATOMIC_RHOCORE_STRESS: 
+                                            if(sp->nlccflag) 
+                                            {
+                                                t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
+                                            }
+                                            else
+                                            {
+                                                t1 = 0.0;
+                                            }
+                                            break;
+
+                                        default:
+                                            throw RmgFatalException() << "Undefined local object type" << 
+                                                " in " << __FILE__ << " at line " << __LINE__ << "\n";
+
+                                    }
+
+                                    if( (ct.nspin == 2) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                    { 
+                                        if (pct.spinpe == 0)
+                                            sumobj_omp[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
                                         else
-                                        {
-                                            t1 = 0.0;
-                                        }
-                                        break;
-                                    case ATOMIC_RHOCORE_STRESS: 
-                                        if(sp->nlccflag) 
-                                        {
-                                            t1 = AtomicInterpolateInline (&sp->rhocorelig[0], r);
-                                        }
-                                        else
-                                        {
-                                            t1 = 0.0;
-                                        }
-                                        break;
+                                            sumobj_omp[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
 
-                                    default:
-                                        throw RmgFatalException() << "Undefined local object type" << 
-                                            " in " << __FILE__ << " at line " << __LINE__ << "\n";
-
-                                }
-
-                                if( (ct.nspin == 2) && (object_type == ATOMIC_RHO) && !compute_lobject)
-                                { 
-                                    if (pct.spinpe == 0)
-                                        sumobject[idx] += t1 * (0.5 + iptr->init_spin_rho) ;
+                                    }
+                                    else if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
+                                    { 
+                                        sumobj_omp[idx] += t1;
+                                        sumobj_omp[idx+FP0_BASIS] += t1 * iptr->init_spin_x   ;
+                                        sumobj_omp[idx+2*FP0_BASIS] += t1 * iptr->init_spin_y ;
+                                        sumobj_omp[idx+3*FP0_BASIS] += t1 * iptr->init_spin_z ;
+                                    }
+                                    else if(object_type == ATOMIC_RHOCORE_STRESS)
+                                    {
+                                        sumobj_omp[0*FP0_BASIS + idx] += t1* cx[0];
+                                        sumobj_omp[1*FP0_BASIS + idx] += t1* cx[1];
+                                        sumobj_omp[2*FP0_BASIS + idx] += t1* cx[2];
+                                    }
                                     else
-                                        sumobject[idx] += t1 * (0.5 - iptr->init_spin_rho) ;
+                                    {
+                                        sumobj_omp[idx] += t1;
+                                    }
+                                    if(compute_lobject) lobject[(size_t)ion1 * (size_t)FP0_BASIS + idx] += t1;
 
-                                }
-                                else if( (ct.nspin == 4) && (object_type == ATOMIC_RHO) && !compute_lobject)
-                                { 
-                                        sumobject[idx] += t1;
-                                        sumobject[idx+FP0_BASIS] += t1 * iptr->init_spin_x   ;
-                                        sumobject[idx+2*FP0_BASIS] += t1 * iptr->init_spin_y ;
-                                        sumobject[idx+3*FP0_BASIS] += t1 * iptr->init_spin_z ;
-                                }
-                                else if(object_type == ATOMIC_RHOCORE_STRESS)
-                                {
-                                    sumobject[0*FP0_BASIS + idx] += t1* cx[0];
-                                    sumobject[1*FP0_BASIS + idx] += t1* cx[1];
-                                    sumobject[2*FP0_BASIS + idx] += t1* cx[2];
-                                }
-                                else
-                                {
-                                    sumobject[idx] += t1;
-                                }
-                                if(compute_lobject) lobject[(size_t)ion1 * (size_t)FP0_BASIS + idx] += t1;
+                                }                           /* end for */
 
-                            }                           /* end for */
-
+                            }
                         }
                     }
                 }
-            }
 
+            }
         }
+
+#pragma omp critical
+        for(int idx = 0; idx < factor* FP0_BASIS; idx++) sumobject[idx] += sumobj_omp[idx];
+        delete [] sumobj_omp;
+
     }
 
     // Renormalize atomic rho
