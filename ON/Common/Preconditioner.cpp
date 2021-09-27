@@ -58,7 +58,17 @@
 #include "prototypes_on.h"
 
 
+void PreconditionerOne (double *res, int st);
 void Preconditioner (double *res, int num_states)
+{
+    int pbasis = Rmg_G->get_P0_BASIS(1);
+    for(int st = 0; st < num_states; st++)
+    {
+        PreconditionerOne(&res[st*pbasis], st);
+    }
+}
+
+void PreconditionerOne (double *res, int st)
 {
 
     BaseGrid *G = Rmg_G;
@@ -93,60 +103,57 @@ void Preconditioner (double *res, int num_states)
 
     double one = 1.0;
     int ione = 1;
-    for(int st = 0 ; st < num_states; st++)
-    {
-        for(int idx = 0; idx < pbasis; idx++)
-            res_t[idx] = gamma * res[st * pbasis + idx];
+    for(int idx = 0; idx < pbasis; idx++)
+        res_t[idx] = gamma * res[idx];
 
 
     /* Smoothing cycles */
-        for (int cycles = 0; cycles <= nits; cycles++)
+    for (int cycles = 0; cycles <= nits; cycles++)
+    {
+
+        double diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, res_t, res_t2, dimx, dimy, dimz,
+                hxgrid, hygrid, hzgrid, APP_CI_FOURTH);
+        daxpy(&pbasis, &one, res, &ione, res_t2, &ione);
+        for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
+            res_t2[idx] = 0.0;
+
+        double t1; 
+        /* Now either smooth the wavefunction or do a multigrid cycle */
+        if (cycles == ct.eig_parm.gl_pre)
         {
+            //CPP_pack_ptos_convert ((float *)work1_t, (double *)res_t2, dimx, dimy, dimz);
+            CPP_pack_ptos (work1_t, res_t2, dimx, dimy, dimz);
+            //MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
+            MG.mgrid_solv<double>(work2_t, work1_t, work_t,
+                    dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
+                    0, levels, pre, post, 1,
+                    tstep, 1.0*Zfac, 0.0, NULL,     // which one is best?
+                    //tstep, 1.0, 0.0, vtot,
+                    G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
+                    G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
+                    G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
+            //CPP_pack_stop_convert((float *)work2_t, (double *)res_t2, dimx, dimy, dimz);
+            CPP_pack_stop(work2_t, res_t2, dimx, dimy, dimz);
 
-            double diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, res_t, res_t2, dimx, dimy, dimz,
-                    hxgrid, hygrid, hzgrid, APP_CI_FOURTH);
-            daxpy(&pbasis, &one, &res[st*pbasis], &ione, res_t2, &ione);
-            for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-                res_t2[idx] = 0.0;
-
-            double t1; 
-            /* Now either smooth the wavefunction or do a multigrid cycle */
-            if (cycles == ct.eig_parm.gl_pre)
-            {
-                //CPP_pack_ptos_convert ((float *)work1_t, (double *)res_t2, dimx, dimy, dimz);
-                CPP_pack_ptos (work1_t, res_t2, dimx, dimy, dimz);
-                //MG.mgrid_solv<float>((float *)work2_t, (float *)work1_t, (float *)work_t,
-                MG.mgrid_solv<double>(work2_t, work1_t, work_t,
-                        dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
-                        0, levels, pre, post, 1,
-                        tstep, 1.0*Zfac, 0.0, NULL,     // which one is best?
-                        //tstep, 1.0, 0.0, vtot,
-                        G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
-                        G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
-                        G->get_PX0_GRID(1), G->get_PY0_GRID(1), G->get_PZ0_GRID(1), ct.boundaryflag);
-                //CPP_pack_stop_convert((float *)work2_t, (double *)res_t2, dimx, dimy, dimz);
-                CPP_pack_stop(work2_t, res_t2, dimx, dimy, dimz);
-
-                t1 = -1.;
-
-            }
-            else
-            {
-                double t5 = diag - Zfac;
-                t5 = -1.0 / t5;
-                t1 = ct.eig_parm.gl_step * t5;
-
-            }                       /* end if cycles == ct.eig_parm.gl_pre */
-
-            daxpy(&pbasis, &t1, res_t2, &ione, res_t, &ione);
-
-            for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-                res_t[idx] = 0.0;
+            t1 = -1.;
 
         }
+        else
+        {
+            double t5 = diag - Zfac;
+            t5 = -1.0 / t5;
+            t1 = ct.eig_parm.gl_step * t5;
 
-        for(int idx = 0; idx < pbasis; idx++) res[st*pbasis + idx] = beta * res_t[idx];
+        }                       /* end if cycles == ct.eig_parm.gl_pre */
+
+        daxpy(&pbasis, &t1, res_t2, &ione, res_t, &ione);
+
+        for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
+            res_t[idx] = 0.0;
+
     }
+
+    for(int idx = 0; idx < pbasis; idx++) res[idx] = beta * res_t[idx];
 
     delete []work_t;
     delete []res_t;

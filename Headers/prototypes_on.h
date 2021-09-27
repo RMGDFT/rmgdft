@@ -3,6 +3,7 @@
 #include "LocalObject.h"
 void WriteXyz(char *);
 void Preconditioner(double *, int);
+void PreconditionerOne(double *, int);
 template <typename KpointType>
 void WriteCij (std::string& name, KpointType *Cij_dis);
 template <typename KpointType>
