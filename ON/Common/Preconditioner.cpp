@@ -58,17 +58,51 @@
 #include "prototypes_on.h"
 
 
-void PreconditionerOne (double *res, int st);
 void Preconditioner (double *res, int num_states)
 {
-    int pbasis = Rmg_G->get_P0_BASIS(1);
-    for(int st = 0; st < num_states; st++)
-    {
-        PreconditionerOne(&res[st*pbasis], st);
+
+    double gamma = get_gamma_precond(vtot_c, states[0].eig[0]);
+    BaseThread *T = BaseThread::getBaseThread(0);
+
+    int active_threads = ct.MG_THREADS_PER_NODE;
+    if(ct.mpi_queue_mode) active_threads--;
+    if(active_threads < 1) active_threads = 1;
+
+    int istop = num_states / active_threads;
+    istop = istop * active_threads;
+
+    Rmg_T->set_coalesce_factor(1);
+    for(int st1=0;st1 < istop;st1+=active_threads) {
+
+          SCF_THREAD_CONTROL thread_control;
+
+          for(int ist = 0;ist < active_threads;ist++) {
+              thread_control.job = HYBRID_ON_PRECOND;
+              thread_control.p1 = (void *)res;
+              thread_control.istate = st1 + ist;
+              thread_control.basetag = st1 + ist;
+              thread_control.gamma = gamma;
+              QueueThreadTask(ist, thread_control);
+          }
+
+          // Thread tasks are set up so wake them
+          if(!ct.mpi_queue_mode) T->run_thread_tasks(active_threads);
+
     }
+
+    if(ct.mpi_queue_mode) T->run_thread_tasks(active_threads, Rmg_Q);
+
+    // Process any remaining states in serial fashion
+    if(istop < num_states)
+    {
+        for(int st = istop;st < num_states;st++) {
+            PreconditionerOne(res, st, gamma);
+        }
+    }
+
 }
 
-void PreconditionerOne (double *res, int st)
+void PreconditionerOne (double *res, int st, double gamma)
 {
 
     BaseGrid *G = Rmg_G;
@@ -97,15 +131,13 @@ void PreconditionerOne (double *res, int st)
     double *res_t = new double[dimx * dimy * dimz];
     double *res_t2 = new double[dimx * dimy * dimz];
 
-    double gamma = get_gamma_precond(vtot_c, states[0].eig[0]);
     double beta = 0.5;
     int nits = ct.eig_parm.gl_pre + ct.eig_parm.gl_pst;
 
     double one = 1.0;
     int ione = 1;
     for(int idx = 0; idx < pbasis; idx++)
-        res_t[idx] = gamma * res[idx];
-
+        res_t[idx] = gamma * res[idx + st * pbasis];
 
     /* Smoothing cycles */
     for (int cycles = 0; cycles <= nits; cycles++)
@@ -113,7 +145,7 @@ void PreconditionerOne (double *res, int st)
 
         double diag = CPP_app_cil_driver (&Rmg_L, Rmg_T, res_t, res_t2, dimx, dimy, dimz,
                 hxgrid, hygrid, hzgrid, APP_CI_FOURTH);
-        daxpy(&pbasis, &one, res, &ione, res_t2, &ione);
+        daxpy(&pbasis, &one, &res[st * pbasis], &ione, res_t2, &ione);
         for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
             res_t2[idx] = 0.0;
 
@@ -127,7 +159,7 @@ void PreconditionerOne (double *res, int st)
             MG.mgrid_solv<double>(work2_t, work1_t, work_t,
                     dimx, dimy, dimz, hxgrid, hygrid, hzgrid,
                     0, levels, pre, post, 1,
-                    tstep, 1.0*Zfac, 0.0, NULL,     // which one is best?
+                    tstep, 1.0*Zfac, 0.1, NULL,     // which one is best?
                     //tstep, 1.0, 0.0, vtot,
                     G->get_NX_GRID(1), G->get_NY_GRID(1), G->get_NZ_GRID(1),
                     G->get_PX_OFFSET(1), G->get_PY_OFFSET(1), G->get_PZ_OFFSET(1),
@@ -153,7 +185,7 @@ void PreconditionerOne (double *res, int st)
 
     }
 
-    for(int idx = 0; idx < pbasis; idx++) res[idx] = beta * res_t[idx];
+    for(int idx = 0; idx < pbasis; idx++) res[idx + st * pbasis] = beta * res_t[idx];
 
     delete []work_t;
     delete []res_t;

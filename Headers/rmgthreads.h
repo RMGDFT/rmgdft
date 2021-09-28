@@ -45,6 +45,7 @@ typedef struct
     double eig;            // Used for Davidson preconditioner
     double avg_potential;  // Used for Davidson preconditioner
     double fd_diag;        // Used for Davidson preconditioner
+    double gamma;   //used for ON Preconditioner
     int istate;
 } SCF_THREAD_CONTROL;
 
