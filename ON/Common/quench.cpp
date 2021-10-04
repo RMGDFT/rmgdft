@@ -144,7 +144,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
         {
             
             size_t size = LocalOrbital->num_thispe * LocalOrbital->pbasis * sizeof(double);
-            memcpy(Exx_onscf->PreOrbital, LocalOrbital->storage_proj, size);
+            memcpy(Exx_onscf->PreOrbital, LocalOrbital->storage_cpu, size);
             F->start_exx_rmg();
 
             double *rho_mat_global = (double *)RmgMallocHost(LocalOrbital->num_tot * LocalOrbital->num_tot * sizeof(double) + 8);
@@ -255,7 +255,7 @@ vxc_old, double * rho, double * rho_oppo, double * rhoc, double * rhocore)
 
         double one(1.0), zero(0.0);
         if(LocalOrbital->num_thispe > 0)
-            dgemm("N", "N", &pbasis, &LocalOrbital->num_tot, &LocalOrbital->num_thispe, &one, LocalOrbital->storage_proj, &pbasis,
+            dgemm("N", "N", &pbasis, &LocalOrbital->num_tot, &LocalOrbital->num_thispe, &one, LocalOrbital->storage_cpu, &pbasis,
                     Cij_local, &LocalOrbital->num_thispe, &zero, psi, &pbasis);
 
 

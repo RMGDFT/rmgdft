@@ -255,7 +255,6 @@ int main(int argc, char **argv)
 
         InitON(vh, rho, rho_oppo, rhocore, rhoc, states, states1, vnuc, vxc, vh_old, vxc_old, ControlMap);
 
-
         MPI_Barrier(pct.img_comm);
 
         delete(RTi);
@@ -341,11 +340,11 @@ int main(int argc, char **argv)
                 mat_dist_to_global(zz_dis, pct.desca, Cij_glob);
 
                 double one = 1.0, zero = 0.0;
-                dgemm("N", "N", &pbasis, &num_orb, &num_orb , &one, LocalOrbital->storage_proj, &pbasis, 
-                        Cij_glob, &num_orb, &zero, H_LocalOrbital->storage_proj, &pbasis);
+                dgemm("N", "N", &pbasis, &num_orb, &num_orb , &one, LocalOrbital->storage_cpu, &pbasis, 
+                        Cij_glob, &num_orb, &zero, H_LocalOrbital->storage_cpu, &pbasis);
 
                 for(int idx = 0; idx < num_orb * pbasis; idx++) 
-                    LocalOrbital->storage_proj[idx] = H_LocalOrbital->storage_proj[idx];
+                    LocalOrbital->storage_cpu[idx] = H_LocalOrbital->storage_cpu[idx];
                 LocalOrbital->WriteOrbitalsToSingleFiles(ct.outfile, *Rmg_G);
             }
             delete RTO;

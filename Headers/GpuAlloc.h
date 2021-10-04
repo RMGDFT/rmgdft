@@ -67,7 +67,15 @@ cudaError_t gpuSetDeviceFlags (unsigned flags);
 cudaError_t gpuHostRegister(void *hostPtr, size_t sizeBytes, unsigned int flags);
 cudaError_t gpuHostUnregister(void *hostPtr);
 cudaError_t gpuGetDeviceCount(int *count); 
+#else
+void gpuMalloc(void **ptr, size_t size);
+void gpuFree(void *ptr);
 #endif
+
+
+void MemcpyHostDevice (size_t a_size, void *A_host, void *A_device);
+void MemcpyDeviceHost (size_t a_size, void *A_device, void *A_host);
+template <typename T> T *MemoryPtrHostDevice(T *ptr_host, T *ptr_device);
 
 #endif
 

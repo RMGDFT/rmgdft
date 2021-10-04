@@ -72,20 +72,27 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     for(int st = 0; st < LocalOrbital->num_thispe; st++)
     {
         for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-            LocalOrbital->storage_proj[st * pbasis + idx] = 0.0;
+            LocalOrbital->storage_cpu[st * pbasis + idx] = 0.0;
     }
 
+    MemcpyHostDevice(LocalOrbital->storage_size, LocalOrbital->storage_cpu, LocalOrbital->storage_gpu);
     delete RT0;
 
     RT0 = new RmgTimer("2-SCF: Kbpsi");
 
 
+    RmgTimer *RT1 = new RmgTimer("2-SCF: Kbpsi: LOxLO");
     LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
+    delete RT1;
     //  now Kbpsi_mat_local stores the results from different processors, need to be summer over all processors.
+    RT1 = new RmgTimer("2-SCF: Kbpsi: local_to_global");
     mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 0, LocalProj->num_tot, 
             0, LocalOrbital->num_tot, true);
+    delete RT1;
 
+    RT1 = new RmgTimer("2-SCF: Kbpsi: global_to_local");
     mat_global_to_local(*LocalProj, *LocalOrbital, Kbpsi_mat, Kbpsi_mat_local); 
+    delete RT1;
 
     // now Kbpsi_mat_local store the correct values.
     delete RT0;
@@ -104,8 +111,9 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     int num_tot = LocalOrbital->num_tot;
     double *Hij_glob = new double[num_tot * num_tot];
     double *Sij_glob = new double[num_tot * num_tot];
-    RmgTimer *RT1 = new RmgTimer("2-SCF: HS mat: ApplyH");
+    RT1 = new RmgTimer("2-SCF: HS mat: ApplyH");
     ApplyHphi(*LocalOrbital, *H_LocalOrbital, vtot_c);
+    MemcpyHostDevice(H_LocalOrbital->storage_size, H_LocalOrbital->storage_cpu, H_LocalOrbital->storage_gpu);
     delete RT1;
 
     RT1 = new RmgTimer("2-SCF: HS mat: LOxLO");
@@ -134,6 +142,7 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     {
         print_matrix(Hij_glob, 6, num_tot);
         print_matrix(Sij_glob, 6, num_tot);
+
     }
     if(ct.xc_is_hybrid && Functional::is_exx_active())
     {
@@ -148,7 +157,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
 
     RT0 = new RmgTimer("2-SCF: DiagScalapack");
 
-    //   get_cholesky_real(matB);
     DiagScalapack(states, ct.num_states, Hij, matB);
 
     mat_dist_to_local(mat_X, pct.desca, rho_matrix_local, *LocalOrbital);
@@ -270,12 +278,14 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
         for(int st = 0; st < LocalOrbital->num_thispe; st++)
         {
             for(int idx = 0; idx < pbasis; idx++) if (!LocalOrbital->mask[st * pbasis + idx])
-                H_LocalOrbital->storage_proj[st * pbasis + idx] = 0.0;
+                H_LocalOrbital->storage_cpu[st * pbasis + idx] = 0.0;
         }
         RT0 = new RmgTimer("2-SCF: orbital precond and mixing");
 
-        Pulay_orbital->Mixing(LocalOrbital->storage_proj, H_LocalOrbital->storage_proj);
+        Pulay_orbital->Mixing(LocalOrbital->storage_cpu, H_LocalOrbital->storage_cpu);
+        RmgTimer *RT1 = new RmgTimer("2-SCF: orbital precond and mixing: normalize");
         LocalOrbital->Normalize();
+        delete RT1;
         delete RT0;
 
     }

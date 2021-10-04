@@ -85,7 +85,7 @@ template <> void Exx_on<double>::Omega(double *rho_matrix, bool use_float_fft)
     int pbasis = Phi.pbasis;
     RmgTimer RT0("5-Functional: Exx potential");
 
-    RmgGemm("N", "N", pbasis, num_tot, num_thispe, one, Phi.storage_proj, pbasis,
+    RmgGemm("N", "N", pbasis, num_tot, num_thispe, one, Phi.storage_cpu, pbasis,
             rho_matrix, num_thispe, zero, DePhi, pbasis);
 
 
@@ -122,7 +122,7 @@ template <> void Exx_on<double>::Omega(double *rho_matrix, bool use_float_fft)
         }
         else
         {
-            phi_j = &Phi.storage_proj[j_local * pbasis];
+            phi_j = &Phi.storage_cpu[j_local * pbasis];
         }
         Ome_j = &Omega_j[j * pbasis];
 #pragma omp parallel for schedule(dynamic)
@@ -134,7 +134,7 @@ template <> void Exx_on<double>::Omega(double *rho_matrix, bool use_float_fft)
             if(k_local < 0)
                 phi_k = zeropsi;
             else
-                phi_k = &Phi.storage_proj[k_local * pbasis];
+                phi_k = &Phi.storage_cpu[k_local * pbasis];
 
             int omp_tid = omp_get_thread_num();
             std::complex<double> *p = pvec[omp_tid];
@@ -198,7 +198,7 @@ template <> void Exx_on<double>::Xij(double *Sij_inverse, LocalObject<double> &P
     double zero = 0.0, one = 1.0;
 
     double *mat_tem = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
-    RmgGemm("C", "N", na, ntot, pbasis, vol, Phi.storage_proj, pbasis,
+    RmgGemm("C", "N", na, ntot, pbasis, vol, Phi.storage_cpu, pbasis,
                (double *)Omega_j, pbasis, zero, mat_tem, na);
     for(int idx = 0; idx < na * ntot; idx++) Xij_mat[idx] = 0.0;
 
@@ -259,7 +259,7 @@ template <> void Exx_on<double>::HijExx(double *Hij_glob, LocalObject<double> &P
     double *mat_glob = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
     double *mat_tem = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
     RmgGemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
-            Phi.storage_proj, pbasis, zero, mat_tem, na);
+            Phi.storage_cpu, pbasis, zero, mat_tem, na);
 
     mat_local_to_glob(mat_tem, mat_glob, Phi, Phi, 0, ntot, 0, ntot, true);
 
@@ -317,7 +317,7 @@ template <> void Exx_on<double>::OmegaRes(double *res, LocalObject<double> &Phi)
     double *mat_glob = (double *)RmgMallocHost(ntot*ntot*sizeof(double));
     double *mat_local = (double *)RmgMallocHost(ntot*na*sizeof(double));
     RmgGemm("C", "N", na, na, pbasis, vol, PreOrbital, pbasis,
-            Phi.storage_proj, pbasis, zero, mat_local, na);
+            Phi.storage_cpu, pbasis, zero, mat_local, na);
 
     mat_local_to_glob(mat_local, mat_glob, Phi, Phi, 0, ntot, 0, ntot, true);
     for(int st1 = 0; st1 < ntot; st1++)
@@ -344,7 +344,7 @@ template <> void Exx_on<double>::Omega_rmg(double *Cij_local, double *Cij_global
     RmgTimer RT0("5-Functional: Exx potential");
 
     // DePhi: waveufnctions: Phi * C
-    RmgGemm("N", "N", pbasis, num_tot, num_thispe, one, Phi.storage_proj, pbasis,
+    RmgGemm("N", "N", pbasis, num_tot, num_thispe, one, Phi.storage_cpu, pbasis,
             Cij_local, num_thispe, zero, DePhi, pbasis);
 
 

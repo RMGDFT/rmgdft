@@ -676,11 +676,6 @@ void Scf_on_proj(STATE *states, double *vxc, double *vh,
         double *vnuc, double *rho, double *rho_oppo, double *rhoc, double *rhocore,
         double * vxc_old, double * vh_old, int *CONVERGENCE, bool freeze_orbital);
 
-
-
 #ifdef __cplusplus
 //}
 #endif
-
-
-

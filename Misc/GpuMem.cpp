@@ -222,5 +222,12 @@ cudaError_t gpuGetDeviceCount(int *count)
 {
     return cudaGetDeviceCount(count);
 }
+#else
+void gpuMalloc(void **ptr, size_t size)
+{
+   ptr = NULL;
+}
+void gpuFree(void *ptr)
+{}
 #endif
 

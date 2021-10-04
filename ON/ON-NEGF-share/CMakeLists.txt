@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+GpuCpuWraper.cpp
 WriteXyz.cpp
 ApplyHphi.cpp
 mat_local_to_glob.cpp

@@ -24,6 +24,7 @@
 #include "RmgParallelFft.h"
 #include "BaseGrid.h"
 #include "RmgGemm.h"
+#include "GpuAlloc.h"
 
 void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double *rho, double *rho_matrix_local)
 {
@@ -44,13 +45,14 @@ void GetNewRho_proj(LocalObject<double> &Phi, LocalObject<double> &HPhi, double 
 
         int num_orb = Phi.num_thispe;
         RmgGemm ("N", "N", pbasis, num_orb, num_orb, one, 
-                Phi.storage_proj, pbasis, rho_matrix_local, num_orb,
-                zero, HPhi.storage_proj, pbasis);
+                Phi.storage_cpu, pbasis, rho_matrix_local, num_orb,
+                zero, HPhi.storage_cpu, pbasis);
 
 
+//        MemcpyDeviceHost(HPhi.storage_size, HPhi.storage_gpu, HPhi.storage_cpu);
         for(int st1 = 0; st1 < num_orb; st1++)
             for(int idx = 0; idx < pbasis; idx++)
-                rho_temp[idx] += Phi.storage_proj[st1*pbasis + idx] * HPhi.storage_proj[st1 * pbasis + idx];
+                rho_temp[idx] += Phi.storage_cpu[st1*pbasis + idx] * HPhi.storage_cpu[st1 * pbasis + idx];
     }
 
 

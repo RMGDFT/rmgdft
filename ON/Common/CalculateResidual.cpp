@@ -55,8 +55,8 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     for(int st1 = 0; st1 < Phi.num_thispe; st1++)
     {
-        double *a_phi = &Phi.storage_proj[st1 * pbasis];
-        double *h_phi = &H_Phi.storage_proj[st1 * pbasis];
+        double *a_phi = &Phi.storage_cpu[st1 * pbasis];
+        double *h_phi = &H_Phi.storage_cpu[st1 * pbasis];
         ApplyAOperator (a_phi, h_phi);
 
         for (int idx = 0; idx < pbasis; idx++)
@@ -66,7 +66,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     }
     if(ct.xc_is_hybrid)
-        Exx_onscf->OmegaRes(H_Phi.storage_proj,  Phi);
+        Exx_onscf->OmegaRes(H_Phi.storage_cpu,  Phi);
 
 
     if(ct.num_ldaU_ions > 0 )
@@ -77,8 +77,10 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     //
     int num_orb = Phi.num_thispe;
     int num_prj = NlProj.num_thispe;
-    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_proj, pbasis,
-            theta_local, num_orb, mtwo, H_Phi.storage_proj, pbasis);
+    MemcpyHostDevice(H_Phi.storage_size, H_Phi.storage_cpu, H_Phi.storage_gpu);
+
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_cpu, pbasis,
+            theta_local, num_orb, mtwo, H_Phi.storage_cpu, pbasis);
 
     if(NlProj.num_thispe < 1) return;
     double *kbpsi_local = (double *) RmgMallocHost(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
@@ -148,8 +150,8 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     // |beta_n> * (qnm <beta|phi>theta + dnm <beta|phi>
 
-    RmgGemm ("N", "N", pbasis, num_orb, num_prj, one, NlProj.storage_proj, pbasis, 
-            kbpsi_work1, num_prj, one, H_Phi.storage_proj, pbasis);
+    RmgGemm ("N", "N", pbasis, num_orb, num_prj, one, NlProj.storage_ptr, pbasis, 
+            kbpsi_work1, num_prj, one, H_Phi.storage_cpu, pbasis);
 
 
     RmgFreeHost(dnm);;

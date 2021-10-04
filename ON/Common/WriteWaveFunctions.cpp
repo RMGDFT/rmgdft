@@ -117,7 +117,7 @@ void WriteWavefunctions (std::string& name, LocalObject<KpointType> &Phi, Kpoint
 
     
     double one(1.0), zero(0.0);
-    dgemm("N", "N", &pbasis, &Phi.num_tot, &Phi.num_thispe, &one, Phi.storage_proj, &pbasis,
+    dgemm("N", "N", &pbasis, &Phi.num_tot, &Phi.num_thispe, &one, Phi.storage_cpu, &pbasis,
                 Cij_local, &Phi.num_thispe, &zero, psi, &pbasis);
     
 //    for (int ik = 0; ik < ct.num_kpts_pe; ik++)

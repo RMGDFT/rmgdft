@@ -62,8 +62,8 @@ void LO_x_LO(LocalObject<double> &A, LocalObject<double> &B, double *mat_local, 
     
     double zero = 0.0;
 
-    RmgGemm("T", "N", na, nb, P0_BASIS, vol, A.storage_proj, P0_BASIS,
-                B.storage_proj, P0_BASIS, zero, mat_local, na);
+    RmgGemm("T", "N", na, nb, P0_BASIS, vol, A.storage_ptr, P0_BASIS,
+                B.storage_ptr, P0_BASIS, zero, mat_local, na);
 
 
 }

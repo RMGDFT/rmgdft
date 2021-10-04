@@ -38,8 +38,8 @@ void HmatrixUpdate_on(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     for(int st1 = 0; st1 < Phi.num_thispe; st1++)
     {
-        double *a_phi = &Phi.storage_proj[st1 * pbasis];
-        double *h_phi = &H_Phi.storage_proj[st1 * pbasis];
+        double *a_phi = &Phi.storage_cpu[st1 * pbasis];
+        double *h_phi = &H_Phi.storage_cpu[st1 * pbasis];
 
         for (int idx = 0; idx < pbasis; idx++)
         {

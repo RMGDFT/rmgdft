@@ -26,7 +26,10 @@ public:
     LocalObject(const LocalObject &);
     ~LocalObject(void);
 
-    KpointType *storage_proj;
+    size_t storage_size;
+    KpointType *storage_cpu;
+    KpointType *storage_ptr;
+    KpointType *storage_gpu;
     char *mask;
 
     int num_thispe;

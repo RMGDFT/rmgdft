@@ -190,8 +190,8 @@ void LdaU_on::app_vhubbard(LocalObject<double> &HLO, BaseGrid &BG)
     int norb = HLO.num_thispe;
     if(norb < 1 || nldaU < 1) return;
     double one = 1.0;
-    dgemm("N", "N", &pbasis, &norb, &nldaU, &one, this->AtomicOrbital->storage_proj, &pbasis, 
-            this->Upsi_mat_local, &nldaU, &one, HLO.storage_proj, &pbasis);
+    dgemm("N", "N", &pbasis, &norb, &nldaU, &one, this->AtomicOrbital->storage_cpu, &pbasis, 
+            this->Upsi_mat_local, &nldaU, &one, HLO.storage_cpu, &pbasis);
 
 }
 void LdaU_on::WriteLdaU(std::string file_prefix, LocalObject<double> &LO)

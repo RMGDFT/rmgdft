@@ -178,6 +178,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     return;
 
 #elif HIP_ENABLED
+    //hipDeviceSynchronize();
     hipPointerAttribute_t attr;
     hipError_t hiperr;
     hiperr = hipPointerGetAttributes(&attr, A);
@@ -255,6 +256,7 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
         RmgGpuError(__FILE__, __LINE__, hipstat, "Problem executing cublasDgemm");
     }
 
+    //hipDeviceSynchronize();
 #else
 
     

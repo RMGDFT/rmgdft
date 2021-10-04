@@ -36,6 +36,7 @@
 
 #include "const.h"
 
+#include "GpuAlloc.h"
 #include "rmgtypedefs.h"
 #include "typedefs.h"
 #include <complex>
@@ -188,7 +189,11 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(int num_objects
     }
 
     size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType) +8;
-    this->storage_proj = (KpointType *) RmgMallocHost(size);
+    this->storage_size = size;
+    this->storage_cpu = (KpointType *) RmgMallocHost(size);
+    gpuMalloc((void **)&this->storage_gpu, size);
+    this->storage_ptr = MemoryPtrHostDevice(this->storage_cpu, this->storage_gpu);
+
 }
 
 template <class KpointType> LocalObject<KpointType>::~LocalObject(void)
@@ -201,7 +206,8 @@ template <class KpointType> LocalObject<KpointType>::~LocalObject(void)
     delete [] this->dimx;
     delete [] this->dimy;
     delete [] this->dimz;
-    RmgFreeHost(this->storage_proj);
+    RmgFreeHost(this->storage_cpu);
+    gpuFree(this->storage_gpu);
 
 }
 
@@ -230,7 +236,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingle
 
     int fhand;
 
-    for(int idx = 0; idx < this->num_thispe * P0_BASIS; idx++) this->storage_proj[idx] = 0.0;
+    for(int idx = 0; idx < this->num_thispe * P0_BASIS; idx++) this->storage_cpu[idx] = 0.0;
     for(int st = 0; st < this->num_thispe; st++)
     {
 
@@ -276,7 +282,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadOrbitalsFromSingle
                     {
                         int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
                         int idx0 = ix * this->dimy[st_glob] * this->dimz[st_glob] + iy * this->dimz[st_glob] + iz;
-                        this->storage_proj[st * P0_BASIS + idx] = psi[idx0];
+                        this->storage_cpu[st * P0_BASIS + idx] = psi[idx0];
                     }
 
                 }
@@ -314,7 +320,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
     for (int i = 0; i < this->num_thispe; i++)
     {
         for (int j = 0; j < P0_BASIS; j++)
-            this->storage_proj[i * P0_BASIS + j] = 0.0;
+            this->storage_cpu[i * P0_BASIS + j] = 0.0;
     }
 
 
@@ -366,7 +372,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectors(int num
                         {
                             int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
                             int idx0 = ix * this->dimy[proj_count] * this->dimz[proj_count] + iy * this->dimz[proj_count] + iz;
-                            this->storage_proj[proj_local_index * P0_BASIS + idx] = (KpointType) beta_ip[idx0];
+                            this->storage_cpu[proj_local_index * P0_BASIS + idx] = (KpointType) beta_ip[idx0];
                         }
 
                     }
@@ -413,7 +419,7 @@ template <class KpointType> void LocalObject<KpointType>::GetAtomicOrbitals(int 
     kvec[2] = 0.0;
 
     /* Loop over ions */
-    weight = (KpointType *)this->storage_proj;
+    weight = (KpointType *)this->storage_cpu;
     for (int ion = 0; ion < ct.num_ions; ion++)
     {
 
@@ -517,7 +523,7 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitals(std::str
     }
 
     size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType);
-    write(fhand, this->storage_proj, size);
+    write(fhand, this->storage_cpu, size);
 
     close(fhand);
 }
@@ -697,9 +703,13 @@ template <class KpointType> void LocalObject<KpointType>::ReAssign(BaseGrid &BG)
     int PZ0_GRID = BG.get_PZ0_GRID(density);
     int P0_BASIS = PX0_GRID * PY0_GRID * PZ0_GRID;
 
-    RmgFreeHost(this->storage_proj);
+    RmgFreeHost(this->storage_cpu);
+    gpuFree(this->storage_gpu);
     size_t size = this->num_thispe * P0_BASIS *sizeof(KpointType) + 8;
-    this->storage_proj = (KpointType *) RmgMallocHost(size);
+    this->storage_size = size;
+    this->storage_cpu = (KpointType *) RmgMallocHost(size);
+    gpuMalloc((void **)&this->storage_gpu, size);
+    this->storage_ptr = MemoryPtrHostDevice(this->storage_cpu, this->storage_gpu);
 
     delete [] orbital_proj;
     delete [] onerow;
@@ -726,7 +736,7 @@ template <class KpointType> void LocalObject<KpointType>::Normalize()
     {
         int st_glob = this->index_proj_to_global[st];
         for(int idx = 0; idx < P0_BASIS; idx++)
-            norm_coef[st_glob] += std::norm(this->storage_proj[st*P0_BASIS + idx]);
+            norm_coef[st_glob] += std::norm(this->storage_cpu[st*P0_BASIS + idx]);
     }
 
     MPI_Allreduce(MPI_IN_PLACE, norm_coef, this->num_tot, MPI_DOUBLE, MPI_SUM, this->comm);
@@ -736,7 +746,7 @@ template <class KpointType> void LocalObject<KpointType>::Normalize()
         int st_glob = this->index_proj_to_global[st];
         double alpha = std::sqrt(norm_coef[st_glob] * vol);
         for(int idx = 0; idx < P0_BASIS; idx++)
-            this->storage_proj[st*P0_BASIS + idx] /= alpha;
+            this->storage_cpu[st*P0_BASIS + idx] /= alpha;
     }
 
     delete [] norm_coef;
@@ -765,7 +775,7 @@ template <class KpointType> void LocalObject<KpointType>::AssignOrbital(int st, 
     int khigh = klow + PZ0_GRID;
 
 
-    for(int idx = 0; idx < P0_BASIS; idx++) this->storage_proj[st * P0_BASIS + idx] = 0.0;
+    for(int idx = 0; idx < P0_BASIS; idx++) this->storage_cpu[st * P0_BASIS + idx] = 0.0;
 
     int st_glob = this->index_proj_to_global[st];
 
@@ -788,7 +798,7 @@ template <class KpointType> void LocalObject<KpointType>::AssignOrbital(int st, 
                 {
                     int idx = (ixx - ilow) * PY0_GRID *PZ0_GRID + (iyy-jlow)*PZ0_GRID + izz-klow;
                     int idx0 = ix * this->dimy[st_glob] * this->dimz[st_glob] + iy * this->dimz[st_glob] + iz;
-                    this->storage_proj[st * P0_BASIS + idx] = psi[idx0];
+                    this->storage_cpu[st * P0_BASIS + idx] = psi[idx0];
                 }
 
             }
@@ -820,7 +830,7 @@ template <class KpointType> void LocalObject<KpointType>::ReadProjectedOrbitals(
     }
 
     size_t size = this->num_thispe * P0_BASIS * sizeof(KpointType);
-    read(fhand, this->storage_proj, size);
+    read(fhand, this->storage_cpu, size);
 
     close(fhand);
 }
@@ -960,7 +970,7 @@ template <class KpointType> void LocalObject<KpointType>::WriteOrbitalsToSingleF
             if(pe == pct.gridpe )
             {
 
-                KpointType *sendbuf = &this->storage_proj[st * P0_BASIS];
+                KpointType *sendbuf = &this->storage_cpu[st * P0_BASIS];
                 int tag = recv_pe * pct.grid_npes + pe;
                 MPI_Send(sendbuf, factor * P0_BASIS, MPI_DOUBLE, recv_pe, tag, this->comm);
             }
@@ -1065,5 +1075,8 @@ template <class KpointType> LocalObject<KpointType>::LocalObject(const LocalObje
 
     }
     size_t size = Old_LO.num_thispe * Old_LO.pbasis *sizeof(KpointType) +8;
-    this->storage_proj = (KpointType *) RmgMallocHost(size);
+    this->storage_size = size;
+    this->storage_cpu = (KpointType *) RmgMallocHost(size);
+    gpuMalloc( (void **)&this->storage_gpu, size);
+    this->storage_ptr = MemoryPtrHostDevice(this->storage_cpu, this->storage_gpu);
 }
