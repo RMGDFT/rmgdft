@@ -79,8 +79,8 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     int num_prj = NlProj.num_thispe;
     MemcpyHostDevice(H_Phi.storage_size, H_Phi.storage_cpu, H_Phi.storage_gpu);
 
-    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_cpu, pbasis,
-            theta_local, num_orb, mtwo, H_Phi.storage_cpu, pbasis);
+    RmgGemm("N", "N", pbasis, num_orb, num_orb,  one, Phi.storage_ptr, pbasis,
+            theta_local, num_orb, mtwo, H_Phi.storage_ptr, pbasis);
 
     if(NlProj.num_thispe < 1) return;
     double *kbpsi_local = (double *) RmgMallocHost(NlProj.num_thispe * Phi.num_thispe*sizeof(double));
@@ -151,7 +151,8 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     // |beta_n> * (qnm <beta|phi>theta + dnm <beta|phi>
 
     RmgGemm ("N", "N", pbasis, num_orb, num_prj, one, NlProj.storage_ptr, pbasis, 
-            kbpsi_work1, num_prj, one, H_Phi.storage_cpu, pbasis);
+            kbpsi_work1, num_prj, one, H_Phi.storage_ptr, pbasis);
+    MemcpyDeviceHost(H_Phi.storage_size, H_Phi.storage_gpu, H_Phi.storage_cpu);
 
 
     RmgFreeHost(dnm);;
