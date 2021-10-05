@@ -59,6 +59,7 @@
 #include "prototypes_on.h"
 #include "Kbpsi.h"
 #include "rmgthreads.h"
+#include "RmgGemm.h"
 
 
 #include "../Headers/common_prototypes.h"
@@ -186,6 +187,9 @@ int main(int argc, char **argv)
     try 
     {
         InitIo(argc, argv, ControlMap);
+        double A[1], B[1],C[1];
+        RmgGemm("N", "N", 1, 1, 1, 0.5, A, 1, B, 1, 0.0, C, 1);
+
 
         //  initialize for ELEMENTAl lib
 #if ELEMENTAL_LIBS
