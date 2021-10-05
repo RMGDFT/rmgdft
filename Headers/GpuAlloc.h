@@ -22,6 +22,8 @@ void DRmgFreeHost( void *ptr, const char *fname, size_t line);
 #define  RmgFreeHost(x) DRmgFreeHost (x,__FILE__,__LINE__)
 
 
+void MallocHostOrDevice(void **ptr, size_t size);
+void FreeHostOrDevice(void *ptr);
 // The functions above manage blocks allocated from a pool. These are direct calls to
 // the underlying functions.
 #if HIP_ENABLED

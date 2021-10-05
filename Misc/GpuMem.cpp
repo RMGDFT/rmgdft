@@ -35,6 +35,14 @@
     #include <cuda.h>
     #include <cuda_runtime_api.h>
 #endif
+void MallocHostOrDevice(void **ptr, size_t size)
+{
+    gpuMalloc(ptr, size);
+}
+void FreeHostOrDevice(void *ptr)
+{
+    gpuFree(ptr);
+}
 
 hipError_t gpuMalloc(void **ptr, size_t size)
 {
@@ -134,6 +142,14 @@ hipError_t gpuGetDeviceCount(int *count)
 }
 #elif CUDA_ENABLED
 
+void MallocHostOrDevice(void **ptr, size_t size)
+{
+   gpuMalloc(ptr, size);
+}
+void FreeHostOrDevice(void *ptr);
+{
+    gpuFree(ptr);
+}
 cudaError_t gpuMalloc(void **ptr, size_t size)
 {
     cudaError_t cuerr = cudaMalloc(ptr, size);
@@ -223,6 +239,14 @@ cudaError_t gpuGetDeviceCount(int *count)
     return cudaGetDeviceCount(count);
 }
 #else
+void MallocHostOrDevice(void **ptr, size_t size)
+{
+    *ptr = malloc(size);
+}
+void FreeHostOrDevice(void *ptr)
+{
+    free(ptr);
+}
 void gpuMalloc(void **ptr, size_t size)
 {
    ptr = NULL;

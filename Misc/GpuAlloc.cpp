@@ -104,4 +104,16 @@ void DGpuFreeDevice(void *ptr, const char *fname, size_t line)
     cur_size -= block_sizes[allocated_blocks];
 }
 
+#else
+void *DGpuMallocDevice(size_t size, const char *fname, size_t line)
+{
+    void *ptr = malloc(size);
+    return ptr;
+
+}
+
+void DGpuFreeDevice(void *ptr, const char *fname, size_t line)
+{
+    free(ptr);
+}
 #endif
