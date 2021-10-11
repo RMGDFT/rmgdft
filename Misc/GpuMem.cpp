@@ -146,7 +146,7 @@ void MallocHostOrDevice(void **ptr, size_t size)
 {
    gpuMalloc(ptr, size);
 }
-void FreeHostOrDevice(void *ptr);
+void FreeHostOrDevice(void *ptr)
 {
     gpuFree(ptr);
 }
