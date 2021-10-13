@@ -216,13 +216,14 @@
 *
 *     Test the input arguments.
 *
-      CALL BLACS_GRIDINFO( DESCA( CTXT_ ), NPROW, NPCOL, MYROW, MYCOL )
+      ICTXT = DESCA( CTXT_ )
+      CALL BLACS_GRIDINFO( ICTXT, NPROW, NPCOL, MYROW, MYCOL )
 *
       IF( NPROW.EQ.-1 ) THEN
          INFO = -( 700+CTXT_ )
       ELSE 
-         CALL CHK1MAT( N, 2, N, 2, IA, JA, DESCA, 6, INFO )
-         CALL CHK1MAT( N, 2, N, 2, IZ, JZ, DESCZ, 11, INFO )
+         CALL CHK1MAT( N, 3, N, 3, IA, JA, DESCA, 7, INFO )
+         CALL CHK1MAT( N, 3, N, 3, IZ, JZ, DESCZ, 12, INFO )
          IF( INFO.EQ.0 ) THEN
             LOWER = LSAME( UPLO, 'L' )
             NB_A = DESCA( NB_ )

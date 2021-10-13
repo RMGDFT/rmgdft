@@ -222,7 +222,7 @@
          CALL CHK1MAT( N, 2, N, 2, 1, 1, DESCA, 4, INFO )
       END IF
       IF( INFO.NE.0 ) THEN
-         CALL PXERBLA( 'PSGEBAL', -INFO )
+         CALL PXERBLA( ICTXT, 'PSGEBAL', -INFO )
          RETURN
       END IF
 *
@@ -383,7 +383,7 @@
 *           Exit if NaN to avoid infinite loop
 *
             INFO = -3
-            CALL PXERBLA( 'PSGEBAL', -INFO )
+            CALL PXERBLA( ICTXT, 'PDGEBAL', -INFO )
             RETURN
          END IF
          F = F*SCLFAC
