@@ -132,50 +132,50 @@ ADD_DEFINITIONS( "-D${CDEFS}")
 
 # --------------------------------------------------
 # ScaLAPACK needs BLAS and LAPACK
+#
+#option(USE_OPTIMIZED_LAPACK_BLAS "Whether or not to search for optimized LAPACK and BLAS libraries on your machine (if not found, Reference LAPACK and BLAS will be downloaded and installed)" ON)
+#
+#message(STATUS "CHECKING BLAS AND LAPACK LIBRARIES")
+#
+#IF(LAPACK_LIBRARIES)
+#  include(CheckFortranFunctionExists)
+#  message(STATUS "--> LAPACK supplied by user is ${LAPACK_LIBRARIES}.")
+#  set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES})
+#  CHECK_FORTRAN_FUNCTION_EXISTS("dgesv" LAPACK_FOUND)
+#  unset( CMAKE_REQUIRED_LIBRARIES )
+#  message(STATUS "--> LAPACK routine dgesv is found: ${LAPACK_FOUND}.")
+#ENDIF()
+#
+#if(LAPACK_FOUND)
+#      message(STATUS "--> LAPACK supplied by user is WORKING, will use ${LAPACK_LIBRARIES}.")
+#else(LAPACK_FOUND)
+#   if(USE_OPTIMIZED_LAPACK_BLAS)
+#      message(STATUS "--> Searching for optimized LAPACK and BLAS libraries on your machine.")
+#      find_package(LAPACK)
+#   ENDIF(USE_OPTIMIZED_LAPACK_BLAS)
+#   if(NOT LAPACK_FOUND)
+#      message(STATUS "--> LAPACK and BLAS were not found. Reference LAPACK and BLAS will be downloaded and installed")
+#      include(ExternalProject)
+#      ExternalProject_Add(
+#		lapack
+#		URL http://www.netlib.org/lapack/lapack.tgz
+#		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${SCALAPACK_BINARY_DIR}
+#        PREFIX ${SCALAPACK_BINARY_DIR}/dependencies
+#      )
+#	  if (UNIX)
+#         SET(LAPACK_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/liblapack.a CACHE STRING "LAPACK library" FORCE)
+#         SET(BLAS_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/libblas.a CACHE STRING "BLAS library" FORCE)
+#	  else (UNIX) # On Windows
+#         SET(LAPACK_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/liblapack.lib CACHE STRING "LAPACK library" FORCE)
+#         SET(BLAS_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/libblas.lib CACHE STRING "BLAS library" FORCE)
+#      endif (UNIX)
+#   ENDIF()
+#ENDIF()
 
-option(USE_OPTIMIZED_LAPACK_BLAS "Whether or not to search for optimized LAPACK and BLAS libraries on your machine (if not found, Reference LAPACK and BLAS will be downloaded and installed)" ON)
+#message(STATUS "BLAS library: ${BLAS_LIBRARIES}")
+#message(STATUS "LAPACK library: ${LAPACK_LIBRARIES}")
 
-message(STATUS "CHECKING BLAS AND LAPACK LIBRARIES")
-
-IF(LAPACK_LIBRARIES)
-  include(CheckFortranFunctionExists)
-  message(STATUS "--> LAPACK supplied by user is ${LAPACK_LIBRARIES}.")
-  set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES})
-  CHECK_FORTRAN_FUNCTION_EXISTS("dgesv" LAPACK_FOUND)
-  unset( CMAKE_REQUIRED_LIBRARIES )
-  message(STATUS "--> LAPACK routine dgesv is found: ${LAPACK_FOUND}.")
-ENDIF()
-
-if(LAPACK_FOUND)
-      message(STATUS "--> LAPACK supplied by user is WORKING, will use ${LAPACK_LIBRARIES}.")
-else(LAPACK_FOUND)
-   if(USE_OPTIMIZED_LAPACK_BLAS)
-      message(STATUS "--> Searching for optimized LAPACK and BLAS libraries on your machine.")
-      find_package(LAPACK)
-   ENDIF(USE_OPTIMIZED_LAPACK_BLAS)
-   if(NOT LAPACK_FOUND)
-      message(STATUS "--> LAPACK and BLAS were not found. Reference LAPACK and BLAS will be downloaded and installed")
-      include(ExternalProject)
-      ExternalProject_Add(
-		lapack
-		URL http://www.netlib.org/lapack/lapack.tgz
-		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${SCALAPACK_BINARY_DIR}
-        PREFIX ${SCALAPACK_BINARY_DIR}/dependencies
-      )
-	  if (UNIX)
-         SET(LAPACK_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/liblapack.a CACHE STRING "LAPACK library" FORCE)
-         SET(BLAS_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/libblas.a CACHE STRING "BLAS library" FORCE)
-	  else (UNIX) # On Windows
-         SET(LAPACK_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/liblapack.lib CACHE STRING "LAPACK library" FORCE)
-         SET(BLAS_LIBRARIES ${SCALAPACK_BINARY_DIR}/lib/libblas.lib CACHE STRING "BLAS library" FORCE)
-      endif (UNIX)
-   ENDIF()
-ENDIF()
-
-message(STATUS "BLAS library: ${BLAS_LIBRARIES}")
-message(STATUS "LAPACK library: ${LAPACK_LIBRARIES}")
-
-MESSAGE(STATUS "=========")
+#MESSAGE(STATUS "=========")
 
 # --------------------------------------------------
 # By default static library
