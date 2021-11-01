@@ -41,7 +41,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
 
     FiniteDiff FD(&Rmg_L);
 
-    RmgTimer *RT = new RmgTimer("3-OrbitalOptimize: calculate");
+    RmgTimer *RT = new RmgTimer("4-OrbitalOptimize: calculate");
 
     if(Phi.num_thispe < 1) return;
     double one = 1.0, zero = 0.0, mtwo = -2.0;
@@ -53,6 +53,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     /* Loop over states */
     /* calculate the H |phi> on this processor and stored in states1[].psiR[] */
 
+    RmgTimer *RT1 = new RmgTimer("4-OrbitalOptimize: calculate: Hphi");
     for(int st1 = 0; st1 < Phi.num_thispe; st1++)
     {
         double *a_phi = &Phi.storage_cpu[st1 * pbasis];
@@ -65,6 +66,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
         }
 
     }
+    delete RT1;
     if(ct.xc_is_hybrid)
         Exx_onscf->OmegaRes(H_Phi.storage_cpu,  Phi);
 
@@ -75,6 +77,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     // calculate residual part H_Phi_j += Phi_j * Theta_ji
     //  Theta = S^-1H, 
     //
+    RT1 = new RmgTimer("4-OrbitalOptimize: calculate: Gemms");
     int num_orb = Phi.num_thispe;
     int num_prj = NlProj.num_thispe;
     MemcpyHostDevice(H_Phi.storage_size, H_Phi.storage_cpu, H_Phi.storage_gpu);
@@ -159,6 +162,7 @@ void CalculateResidual(LocalObject<double> &Phi, LocalObject<double> &H_Phi,
     RmgGemm ("N", "N", pbasis, num_orb, num_prj, one, NlProj.storage_ptr, pbasis, 
             kbpsi_work1, num_prj, one, H_Phi.storage_ptr, pbasis);
     MemcpyDeviceHost(H_Phi.storage_size, H_Phi.storage_gpu, H_Phi.storage_cpu);
+    delete RT1;
 
 
     RmgFreeHost(dnm);;
