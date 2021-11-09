@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+BlockTriMatrix.cpp
 GpuCpuWraper.cpp
 WriteXyz.cpp
 ApplyHphi.cpp
