@@ -20,24 +20,24 @@
 template <typename T> class BlockTriMatrix{
 
 private:
-    int num_blocks, ntot, mtot;
-    std::vector<int> n_block_dim, m_block_dim;
+    int num_blocks, mtot, ntot;
+    std::vector<int> m_block_dim, n_block_dim;
     std::vector<int> n_block_idx0, m_block_idx0;
     bool dn_block;
-    size_t size_diag, size_up_offdiag, size_dn_offdiag;
 
 public:
+    size_t size_diag, size_up_offdiag, size_dn_offdiag;
     std::vector<T *> diag_blocks; 
     std::vector<T *> up_offdiag_blocks; 
     std::vector<T *> dn_offdiag_blocks; 
-    BlockTriMatrix(int num_block_in, int n_tot_in, int m_tot_in, 
-            std::vector<int> n_block_dim_in, std::vector<int> m_block_dim_in, bool dn_block);
+    BlockTriMatrix(int num_block_in, int m_tot_in, int n_tot_in, 
+            std::vector<int> &m_block_dim_in, std::vector<int> &n_block_dim_in, bool dn_block);
     ~BlockTriMatrix(void);
-    T *storage_diag;
-    T *storage_up_offdiag;
-    T *storage_dn_offdiag;
+    T *storage;
 
     void Local2BlockTri(T *mat_local,   LocalObject<T> &A, LocalObject<T> &B);
+    void BlockTri2GlobDist(T *mat_dist, int *desca);
+
 
 };
 

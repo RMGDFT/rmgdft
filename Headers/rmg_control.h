@@ -810,6 +810,7 @@ public:
     bool metal;
     int num_blocks;
     int block_dim[MAX_BLOCKS];
+    std::vector<int> block_dim_phi, block_dim_nl;
 
     int num_cond_curve;
     int *cond_probe1;

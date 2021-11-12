@@ -1,6 +1,7 @@
 #define GAMMA_PT 1
 //#include "typedefs.h"
 #include "LocalObject.h"
+void InitBlockTriDims();
 void WriteXyz(char *);
 void Preconditioner(double *, int);
 void PreconditionerOne(double *, int, double);

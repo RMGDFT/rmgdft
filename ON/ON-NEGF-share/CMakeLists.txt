@@ -1,4 +1,5 @@
 add_library (ON_NEGF_share
+InitBlockTriDims.cpp
 BlockTriMatrix.cpp
 GpuCpuWraper.cpp
 WriteXyz.cpp

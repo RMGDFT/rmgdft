@@ -28,6 +28,7 @@
 #include "LdaU_on.h"
 #include "GpuAlloc.h"
 #include "Exx_on.h"
+#include "BlockTriMatrix.h"
 
 #define DELTA_V_MAX 1.0
 
@@ -84,10 +85,20 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     RmgTimer *RT1 = new RmgTimer("2-SCF: Kbpsi: LOxLO");
     LO_x_LO(*LocalProj, *LocalOrbital, Kbpsi_mat_local, *Rmg_G);
     delete RT1;
+
+
+    MPI_Barrier(MPI_COMM_WORLD);
     //  now Kbpsi_mat_local stores the results from different processors, need to be summer over all processors.
     RT1 = new RmgTimer("2-SCF: Kbpsi: local_to_global");
     mat_local_to_glob(Kbpsi_mat_local, Kbpsi_mat, *LocalProj, *LocalOrbital, 0, LocalProj->num_tot, 
             0, LocalOrbital->num_tot, true);
+    delete RT1;
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    RT1 = new RmgTimer("2-SCF: Kbpsi: local_to_tri");
+    BlockTriMatrix<double> Kbpsi_tri(ct.num_blocks, LocalProj->num_tot, LocalOrbital->num_tot, ct.block_dim_nl, ct.block_dim_phi, true);
+
+    Kbpsi_tri.Local2BlockTri(Kbpsi_mat_local,  *LocalProj, *LocalOrbital);
     delete RT1;
 
     RT1 = new RmgTimer("2-SCF: Kbpsi: global_to_local");
@@ -136,6 +147,9 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     int sum_dim = num_tot * num_tot;
     MPI_Allreduce(MPI_IN_PLACE, Hij_glob, sum_dim, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
     MPI_Allreduce(MPI_IN_PLACE, Sij_glob, sum_dim, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
+
+    delete RTb;
+
     delete RT1;
 
     if (pct.gridpe == 0)

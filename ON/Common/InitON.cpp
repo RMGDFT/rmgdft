@@ -272,6 +272,9 @@ void InitON(double * vh, double * rho, double *rho_oppo,  double * rhocore, doub
         delete [] proj_per_ion;
         Kbpsi_mat = (double *)RmgMallocHost(LocalProj->num_tot * LocalOrbital->num_tot * sizeof(double)); 
         Kbpsi_mat_local = (double *) RmgMallocHost(LocalProj->num_thispe * LocalOrbital->num_thispe * sizeof(double)); 
+
+
+        InitBlockTriDims();
     }
 
     delete RTa;
