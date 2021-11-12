@@ -148,7 +148,6 @@ void Scf_on_proj(STATE * states, double *vxc, double *vh,
     MPI_Allreduce(MPI_IN_PLACE, Hij_glob, sum_dim, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
     MPI_Allreduce(MPI_IN_PLACE, Sij_glob, sum_dim, MPI_DOUBLE, MPI_SUM, LocalOrbital->comm);
 
-    delete RTb;
 
     delete RT1;
 
