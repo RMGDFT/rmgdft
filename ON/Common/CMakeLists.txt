@@ -2,7 +2,6 @@ add_library (ON_Common
  Exx_on.cpp
  GetNewRho_on.cpp
  Scf_on_proj.cpp
- Preconditioner.cpp
  WriteWaveFunctions.cpp
  WriteCij.cpp
  read_orbitals_on.cpp
@@ -33,7 +32,6 @@ add_library (ON_Common
  Fill_on.cpp
  genvpsi.cpp
  get_cholesky_real.cpp
- get_gamma_precond.cpp
  get_mat_Omega.cpp
  get_orbit_center.cpp
  get_state_to_proc.cpp
@@ -64,7 +62,6 @@ add_library (ON_Common
  quench.cpp
  rand0.cpp
  read_data.cpp
- real_max_all.cpp
  rmg_timings.cpp
  Scf_on.cpp
  sd.cpp

@@ -52,8 +52,8 @@ void HijUpdate (double *vtot_c)
 
     for(int st1 = 0; st1 < LocalOrbital->num_thispe; st1++)
     {
-        double *a_phi = &LocalOrbital->storage_proj[st1 * pbasis];
-        double *h_phi = &H_LocalOrbital->storage_proj[st1 * pbasis];
+        double *a_phi = &LocalOrbital->storage_cpu[st1 * pbasis];
+        double *h_phi = &H_LocalOrbital->storage_cpu[st1 * pbasis];
 
         for (int idx = 0; idx < pbasis; idx++)
         {

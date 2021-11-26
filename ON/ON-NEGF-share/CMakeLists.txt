@@ -1,5 +1,8 @@
 add_library (ON_NEGF_share
 InitBlockTriDims.cpp
+Preconditioner.cpp
+get_gamma_precond.cpp
+real_max_all.cpp
 BlockTriMatrix.cpp
 GpuCpuWraper.cpp
 WriteXyz.cpp
