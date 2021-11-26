@@ -24,6 +24,7 @@ void InitBlockTriDims()
     double nbl =Rmg_L.celldm[0] /(max_orbital_radius + max_nl_radius)/2.0;
 
     ct.num_blocks = (int)nbl;
+    if(ct.num_blocks == 0 ) ct.num_blocks = 1;
     //printf("\n max radius %f %f %f %d\n", max_orbital_radius, max_nl_radius, nbl, ct.num_blocks );
     for(int st = 1; st < ct.num_states; st++) {
         if( (states[st].crds[0] - states[st-1].crds[0]) <-1.0e-5)

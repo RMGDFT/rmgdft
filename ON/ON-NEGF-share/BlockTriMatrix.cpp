@@ -108,7 +108,7 @@ template <class T> void BlockTriMatrix<T>::Local2BlockTri(T *mat_local,   LocalO
 
     RmgTimer *RT= new RmgTimer("BlockTr");
     for(int ib = 0; ib < num_blocks; ib++) {
-        int jb = ib + 1;
+        int jb = (ib + 1)%num_blocks;
         for(int st1 = 0; st1 < m_block_dim[ib]; st1++) {
             int st1_glob = m_block_idx0[ib] + st1;
             int st1_local = A.index_global_to_proj[st1_glob];
@@ -133,7 +133,7 @@ template <class T> void BlockTriMatrix<T>::Local2BlockTri(T *mat_local,   LocalO
 
         if(dn_block)
         {
-            for(int st1 = 0; st1 < n_block_dim[jb]; st1++) {
+            for(int st1 = 0; st1 < m_block_dim[jb]; st1++) {
                 int st1_glob = m_block_idx0[jb] + st1;
                 int st1_local = A.index_global_to_proj[st1_glob];
                 if (st1_local < 0 ) continue;
@@ -153,7 +153,7 @@ template <class T> void BlockTriMatrix<T>::Local2BlockTri(T *mat_local,   LocalO
     RT= new RmgTimer("BlockTrReduc");
 
     int tot_size = size_diag + size_up_offdiag + size_dn_offdiag;
-    printf("\n tot_sie %d", tot_size);
+    //printf("\n tot_sie %d", tot_size);
     //MPI_Allreduce(MPI_IN_PLACE, (double *)storage, tot_size, MPI_DOUBLE, MPI_SUM, A.comm);
     //   GlobalSums(storage_up_offdiag, size_up_offdiag, A.comm);
     MPI_Barrier(MPI_COMM_WORLD);
