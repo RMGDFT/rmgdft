@@ -1,0 +1,2 @@
+rmgnegf="/home/luw/rmgdft/build/rmg-negf-cpu"
+mpirun -n 8 ${rmgnegf} input.200

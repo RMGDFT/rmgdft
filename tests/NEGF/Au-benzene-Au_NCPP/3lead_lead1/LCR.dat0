@@ -1,0 +1,38 @@
+#  orbitals are read from 
+../lead1/Wave/wave
+
+#  charge density and potentials are read from 
+../lead1/Wave/wave
+
+#   lcr[].NX_GRID, NY_GRID, NZ_GRID
+48  72  72
+
+#   starting grid point in the orignal grid 
+0  0  0 
+
+#   ending grid point in the orignal grid 
+48  72  72
+
+#   starting grid point in the NEGF globla grid 
+48  0  0 
+
+# lcr[].num_ions  number of ions in a conductor or a lead 
+18 
+
+#lcr[].state_begin, state_middle, state_end state_middle is dummy
+0  0  162 
+
+#lcr[].ion_begin  
+  0 
+
+#lcr[].bias (eV) 
+        -4.49937761        -4.49937761     0.0
+
+# a_length of this supercell (same as ON2 cal),
+# the starting x-coordinate (in the global system)
+15.412612  15.412612 
+
+# b_length of this supercell (same as ON2 cal),
+# the starting y-coordinate (in the global system)
+23.118919  0 
+
