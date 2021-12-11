@@ -707,7 +707,6 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         MPI_Allreduce(MPI_IN_PLACE, &tvexx_RMS, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
         vexx_RMS[ct.exx_steps] += sqrt(tvexx_RMS / scale);
         ct.vexx_rms = vexx_RMS[ct.exx_steps];
-printf("RRRR  %d   %16.10e\n",pct.spinpe, ct.vexx_rms);
 
         MPI_Barrier(G.comm);
         close(serial_fd);
