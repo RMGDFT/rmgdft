@@ -234,7 +234,8 @@ void LoadXmlPseudo(SPECIES *sp)
             // Remove extra factors of r
             for(int ix = 0;ix < sp->rg_points;ix++) sp->atomic_wave[iwf][ix] /= sp->r[ix];
 
-            sp->atomic_wave_oc.emplace_back(occupation_map[lval]);
+            // Makes sure that even an unoccupied orbital is included in LCAO starts
+            sp->atomic_wave_oc.emplace_back(occupation_map[lval]+1.0e-6);
             sp->aradius.emplace_back(12.0);
 
             // Accumulate charge for atomic rho

@@ -98,7 +98,7 @@ ldaU_mode = "Simple"
 #atomic_orbital_type = "localized"
 Hubbard_U=
 "
-Ni 6.5
+Ni 6.5 3D
 "
 
 
