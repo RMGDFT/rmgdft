@@ -93,6 +93,9 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
         case SUBDIAG_CUSOLVER:
   #endif
 #endif
+#if HIP_ENABLED
+        case SUBDIAG_ROCSOLVER:
+#endif
         case SUBDIAG_SCALAPACK:
             info = GeneralDiagScaLapack(A, B, eigs, V, N, M, ld);
             break;
@@ -107,6 +110,7 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
             break;
   #endif
 #endif
+
         default:
             throw RmgFatalException() << "Invalid diagonalization driver type in " << __FILE__ << " at line " << __LINE__ << "\n";
 
@@ -499,4 +503,5 @@ int GeneralDiagCusolver(KpointType *A, KpointType *B, double *eigs, KpointType *
 }
 #endif
 #endif
+
 

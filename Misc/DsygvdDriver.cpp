@@ -57,8 +57,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
     gpuFree(devInfo);
 }
 
-//#elif HIP_ENABLED
-#elif 0
+#elif HIP_ENABLED
 #include <rocsolver.h>
 
 void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
@@ -71,7 +70,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 
     gpuSetDevice(ct.hip_dev);
     RmgGpuError(__FILE__, __LINE__, gpuMalloc((void **)&devInfo, sizeof(int) ), "Problem with gpuMalloc");
-    status = rocsolver_dsygv(ct.roc_handle, itype, jobz, uplo, n, A, ld,
+    status = rocsolver_dsygvd(ct.roc_handle, itype, jobz, uplo, n, A, ld,
                              B, ld, eigs, work, devInfo);
     int info;
     gpuMemcpy(&info, devInfo, sizeof(int), gpuMemcpyDeviceToHost);

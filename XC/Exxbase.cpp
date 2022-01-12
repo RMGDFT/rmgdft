@@ -324,20 +324,13 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
     int tid = Th->get_thread_tid();
     if(tid < 0) tid = 0;
     if(tid == 0) tid = omp_get_thread_num();
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
         double *pp = (double *)pwave->host_bufs[tid];
         PadR2C(psi_i, psi_j, pp);
         pwave->FftForward(pp, (std::complex<double> *)p, true, false, true);
         GpuEleMul(gfac_dev_packed, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse((std::complex<double> *)p, pp, false, true, true);
         UnpadR2C(pp, p);
-#elif HIP_ENABLED
-        std::complex<double> *pp = (std::complex<double> *)pwave->host_bufs[tid];
-        for(size_t idx=0;idx < pwave->global_basis;idx++) pp[idx] = std::complex<double>(psi_i[idx]*psi_j[idx], 0.0);
-        pwave->FftForward(pp, (std::complex<double> *)workbuf, true, false, true);
-        GpuEleMul(gfac_dev, (std::complex<double> *)pwave->dev_bufs[tid], pwave->global_basis, pwave->streams[tid]);
-        pwave->FftInverse((std::complex<double> *)workbuf, pp, false, true, true);
-        for(size_t idx=0;idx < pwave->global_basis;idx++) p[idx] = std::real(pp[idx]);
 #else
         double *pp = (double *)pwave->host_bufs[tid];
         std::complex<double> *ppp = (std::complex<double> *)pp;
@@ -356,20 +349,13 @@ template <class T> void Exxbase<T>::fftpair_gamma(double *psi_i, double *psi_j, 
     if(tid < 0) tid = 0;
     if(tid == 0) tid = omp_get_thread_num();
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
         float *pp = (float *)pwave->host_bufs[tid];
         PadR2C((double *)psi_i, (double *)psi_j, pp);
         pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
         GpuEleMul(gfac_dev_packed, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis_packed, pwave->streams[tid]);
         pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
         UnpadR2C(pp, workbuf);
-#elif HIP_ENABLED
-        std::complex<float> *pp = (std::complex<float> *)pwave->host_bufs[tid];
-        for(size_t idx=0;idx < pwave->global_basis;idx++) pp[idx] = std::complex<float>(psi_i[idx]*psi_j[idx], 0.0);
-        pwave->FftForward(pp, (std::complex<float> *)workbuf, true, false, true);
-        GpuEleMul(gfac_dev, (std::complex<float> *)pwave->dev_bufs[tid], pwave->global_basis, pwave->streams[tid]);
-        pwave->FftInverse((std::complex<float> *)workbuf, pp, false, true, true);
-        for(size_t idx=0;idx < pwave->global_basis;idx++) workbuf[idx] = std::real(pp[idx]);
 #else
         float *pp = (float *)pwave->host_bufs[tid];
         std::complex<float> *ppp = (std::complex<float> *)pp;
@@ -560,159 +546,158 @@ template <> void Exxbase<double>::Vexx(double *vexx, bool use_float_fft)
         }
     }
 
-        int my_rank = G.get_rank();
-        int npes = G.get_NPES();
+    int my_rank = G.get_rank();
+    int npes = G.get_NPES();
 
-        double *atbuf;
-        MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
-        double *vexx_global = new double[pwave->pbasis]();
+    double *atbuf;
+    MPI_Alloc_mem(pwave->pbasis*sizeof(double), MPI_INFO_NULL, &atbuf);
+    double *vexx_global = new double[pwave->pbasis]();
 
-        // Write serial wavefunction files. May need to do some numa optimization here at some point
-        RmgTimer *RT1 = new RmgTimer("5-Functional: Exx writewfs");
-        WriteWfsToSingleFile();
-        delete RT1;
+    // Write serial wavefunction files. May need to do some numa optimization here at some point
+    RmgTimer *RT1 = new RmgTimer("5-Functional: Exx writewfs");
+    WriteWfsToSingleFile();
+    delete RT1;
 
-        std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt0";
-        serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
-        if(serial_fd < 0)
-            throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
+    std::string filename = wavefile + "_spin"+std::to_string(pct.spinpe) + "_kpt0";
+    serial_fd = open(filename.c_str(), O_RDONLY, (mode_t)0600);
+    if(serial_fd < 0)
+        throw RmgFatalException() << "Error! Could not open " << filename << " . Terminating.\n";
 
-        MPI_Request req=MPI_REQUEST_NULL;
-        MPI_Status mrstatus;
-        double tvexx_RMS = 0.0;
-        int flag=0;
+    MPI_Request req=MPI_REQUEST_NULL;
+    MPI_Status mrstatus;
+    double tvexx_RMS = 0.0;
+    int flag=0;
 
 
-        // Compute start and stop of inner orbitals
-        int start = 0;
-        int block = nstates_occ / npes;
-        int rem = nstates_occ % npes;
-        int stop = 0;
-        for(int rank = 0;rank < npes;rank++)
+    // Compute start and stop of inner orbitals
+    int start = 0;
+    int block = nstates_occ / npes;
+    int rem = nstates_occ % npes;
+    int stop = 0;
+    for(int rank = 0;rank < npes;rank++)
+    {
+        stop = start + block;
+        if(rem)
         {
-            stop = start + block;
-            if(rem)
-            {
-                stop++;
-                rem--;
-            }
-            if(rank == my_rank) break;
-            start = stop;
+            stop++;
+            rem--;
         }
+        if(rank == my_rank) break;
+        start = stop;
+    }
 
 
-        // Read block of inner orbitals into array for reuse
-        size_t jlength = (size_t)(stop - start) * (size_t)pwave->pbasis;
-        double *jpsi = new double[jlength];
-        lseek(serial_fd, (off_t)start * (off_t)pwave->pbasis * sizeof(double), SEEK_SET);
-        size_t bytes_read = read(serial_fd, jpsi, jlength*sizeof(double));
-        if(bytes_read < 0)
+    // Read block of inner orbitals into array for reuse
+    size_t jlength = (size_t)(stop - start) * (size_t)pwave->pbasis;
+    double *jpsi = new double[jlength];
+    lseek(serial_fd, (off_t)start * (off_t)pwave->pbasis * sizeof(double), SEEK_SET);
+    size_t bytes_read = read(serial_fd, jpsi, jlength*sizeof(double));
+    if(bytes_read < 0)
+    {
+        throw RmgFatalException() << "error in Vexx outer read = " << "\n";
+    }
+
+    // Set up outer orbitals with readahead
+    size_t rah = 8;
+    size_t length = rah * (size_t)pwave->pbasis * sizeof(double);
+    readahead(serial_fd, 0, length);
+    lseek(serial_fd, 0, SEEK_SET);
+    double *psi_ibuf=new double[rah*pwave->pbasis];
+
+    for(int i=0;i < nstates;i++)
+    {
+
+        if(!(i%rah))
         {
-            throw RmgFatalException() << "error in Vexx outer read = " << "\n";
-        }
-
-        // Set up outer orbitals with readahead
-        size_t rah = 8;
-        size_t length = rah * (size_t)pwave->pbasis * sizeof(double);
-        readahead(serial_fd, 0, length);
-        lseek(serial_fd, 0, SEEK_SET);
-        double *psi_ibuf=new double[rah*pwave->pbasis];
-
-        for(int i=0;i < nstates;i++)
-        {
-   
-            if(!(i%rah))
+            size_t bytes_read = read(serial_fd, psi_ibuf, rah*pwave->pbasis * sizeof(double));
+            if(bytes_read < 0)
             {
-                size_t bytes_read = read(serial_fd, psi_ibuf, rah*pwave->pbasis * sizeof(double));
-                if(bytes_read < 0)
-                {
-                    throw RmgFatalException() << "error in Vexx inner read." << "\n";
-                }
+                throw RmgFatalException() << "error in Vexx inner read." << "\n";
             }
-            readahead(serial_fd, (off_t)(i+rah)*pwave->pbasis*sizeof(double), length);
-            double *psi_i = psi_ibuf + (i%rah) * pwave->pbasis;
-            RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
+        }
+        readahead(serial_fd, (off_t)(i+rah)*pwave->pbasis*sizeof(double), length);
+        double *psi_i = psi_ibuf + (i%rah) * pwave->pbasis;
+        RmgTimer *RT1 = new RmgTimer("5-Functional: Exx potential fft");
 #pragma omp parallel for schedule(dynamic)
-            for(int j = start;j < stop;j++)
-            {
+        for(int j = start;j < stop;j++)
+        {
 #if CUDA_ENABLED
-                gpuSetDevice(ct.cu_dev);
+            gpuSetDevice(ct.cu_dev);
 #endif
 #if HIP_ENABLED
-                gpuSetDevice(ct.hip_dev);
+            gpuSetDevice(ct.hip_dev);
 #endif
-                int omp_tid = omp_get_thread_num();
-//                if(i > 0 && omp_tid==0) MPI_Test(&req, &flag, &mrstatus);
+            int omp_tid = omp_get_thread_num();
 #pragma omp critical(part6)
-                if(i > 0) MPI_Test(&req, &flag, &mrstatus);
+            if(i > 0) MPI_Test(&req, &flag, &mrstatus);
 
-                double *p = (double *)pvec[omp_tid];
-                double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
+            double *p = (double *)pvec[omp_tid];
+            double *psi_j = &jpsi[(size_t)(j-start)*(size_t)pwave->pbasis];
 
-                if(use_float_fft)
-                {
-                    float *w = (float *)wvec[omp_tid];
-                    fftpair_gamma(psi_i, psi_j, p, w, gfac, vexx_global);
-#pragma omp critical(part3)
-                    {
-                        for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                            vexx_global[idx] += scale * w[idx] * psi_j[idx];
-                    }
-                }
-                else
-                {
-                    double *w = (double *)wvec[omp_tid];
-                    fftpair_gamma(psi_i, psi_j, p, w, gfac, vexx_global);
-#pragma omp critical(part4)
-                    {
-                        for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
-                            vexx_global[idx] += scale * p[idx] * psi_j[idx];
-                    }
-                }
-            }
-
-            delete RT1;
-
-            // We wait for communication from previous row to finish and then copy it into place
-            MPI_Wait(&req, &mrstatus);
-            if(i)
+            if(use_float_fft)
             {
-                if(i < nstates_occ)
+                float *w = (float *)wvec[omp_tid];
+                fftpair_gamma(psi_i, psi_j, p, w, gfac, vexx_global);
+#pragma omp critical(part3)
                 {
-                    double t1 = 0.0;
-                    double *old_vexx = &vexx[(size_t)(i-1) * (size_t)pbasis];
-                    for(int idx=0;idx < pbasis;idx++) t1 += (atbuf[idx] - old_vexx[idx])*(atbuf[idx] - old_vexx[idx]);
-                    tvexx_RMS += t1;
+                    for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                        vexx_global[idx] += scale * w[idx] * psi_j[idx];
                 }
-                memcpy(&vexx[(size_t)(i-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
             }
-
-            // Remap so we can use MPI_Reduce_scatter
-            Remap(vexx_global, atbuf);
-
-            // Zero out vexx_global so it can be used for accumulation in the next iteration of the loop.
-            std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
-            MPI_Ireduce_scatter(MPI_IN_PLACE, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, &req);
+            else
+            {
+                double *w = (double *)wvec[omp_tid];
+                fftpair_gamma(psi_i, psi_j, p, w, gfac, vexx_global);
+#pragma omp critical(part4)
+                {
+                    for(size_t idx = 0;idx < (size_t)pwave->pbasis;idx++) 
+                        vexx_global[idx] += scale * p[idx] * psi_j[idx];
+                }
+            }
         }
 
-        delete [] psi_ibuf;
-        delete [] jpsi;
+        delete RT1;
 
-        // Wait for last transfer to finish and then copy data to correct location
+        // We wait for communication from previous row to finish and then copy it into place
         MPI_Wait(&req, &mrstatus);
-        memcpy(&vexx[(size_t)(nstates-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
+        if(i)
+        {
+            if(i < nstates_occ)
+            {
+                double t1 = 0.0;
+                double *old_vexx = &vexx[(size_t)(i-1) * (size_t)pbasis];
+                for(int idx=0;idx < pbasis;idx++) t1 += (atbuf[idx] - old_vexx[idx])*(atbuf[idx] - old_vexx[idx]);
+                tvexx_RMS += t1;
+            }
+            memcpy(&vexx[(size_t)(i-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
+        }
 
-        scale = (double)nstates_occ*(double)G.get_GLOBAL_BASIS(1);
-        MPI_Allreduce(MPI_IN_PLACE, &tvexx_RMS, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
-        MPI_Allreduce(MPI_IN_PLACE, &tvexx_RMS, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
-        vexx_RMS[ct.exx_steps] += sqrt(tvexx_RMS / scale);
-        ct.vexx_rms = vexx_RMS[ct.exx_steps];
+        // Remap so we can use MPI_Reduce_scatter
+        Remap(vexx_global, atbuf);
 
-        MPI_Barrier(G.comm);
-        close(serial_fd);
+        // Zero out vexx_global so it can be used for accumulation in the next iteration of the loop.
+        std::fill(vexx_global, vexx_global + pwave->pbasis, 0.0);
+        MPI_Ireduce_scatter(MPI_IN_PLACE, atbuf, recvcounts.data(), MPI_DOUBLE, MPI_SUM, G.comm, &req);
+    }
 
-        delete [] vexx_global;
-        MPI_Free_mem(atbuf);
+    delete [] psi_ibuf;
+    delete [] jpsi;
+
+    // Wait for last transfer to finish and then copy data to correct location
+    MPI_Wait(&req, &mrstatus);
+    memcpy(&vexx[(size_t)(nstates-1) * (size_t)pbasis], atbuf, pbasis * sizeof(double));
+
+    scale = (double)nstates_occ*(double)G.get_GLOBAL_BASIS(1);
+    MPI_Allreduce(MPI_IN_PLACE, &tvexx_RMS, 1, MPI_DOUBLE, MPI_SUM, this->G.comm);
+    MPI_Allreduce(MPI_IN_PLACE, &tvexx_RMS, 1, MPI_DOUBLE, MPI_SUM, pct.spin_comm);
+    vexx_RMS[ct.exx_steps] += sqrt(tvexx_RMS / scale);
+    ct.vexx_rms = vexx_RMS[ct.exx_steps];
+
+    MPI_Barrier(G.comm);
+    close(serial_fd);
+
+    delete [] vexx_global;
+    MPI_Free_mem(atbuf);
 
     for(int tid=0;tid < ct.OMP_THREADS_PER_NODE;tid++)
     {
