@@ -62,6 +62,9 @@
     #include <hip/hip_vector_types.h>
     #include <rocfft.h>
     #include <rocsolver.h>
+    #if MAGMA_LIBS
+        #include <magma_v2.h>
+    #endif
 #endif
 
 #if LINUX
@@ -638,6 +641,10 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
 #if HIP_ENABLED
     rocfft_setup();
     rocsolver_create_handle(&ct.roc_handle);
+#if MAGMA_LIBS
+    magma_init();
+    magma_setdevice(ct.hip_dev);
+#endif
 #endif
 
 #endif

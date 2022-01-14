@@ -3,6 +3,7 @@ Subdiag.cpp
 Subdiag_Elpa.cpp
 Subdiag_Lapack.cpp
 Subdiag_Cusolver.cpp
+Subdiag_Magma.cpp
 Subdiag_Scalapack.cpp
 Subdiag_Rocsolver.cpp
 FoldedSpectrum.cpp

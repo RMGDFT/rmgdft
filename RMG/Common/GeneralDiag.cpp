@@ -47,6 +47,12 @@
 #include "transition.h"
 #include "blas.h"
 
+#if HIP_ENABLED
+#if MAGMA_LIBS
+    #include <magma_v2.h>
+#endif
+#endif
+
 #if CUDA_ENABLED
 #if MAGMA_LIBS
     #include <magma.h>
@@ -91,24 +97,25 @@ int GeneralDiag(KpointType *A, KpointType *B, double *eigs, KpointType *V, int N
 #if CUDA_ENABLED
   #if (CUDA_VERSION_MAJOR < 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR < 1))
         case SUBDIAG_CUSOLVER:
-  #endif
-#endif
-#if HIP_ENABLED
-        case SUBDIAG_ROCSOLVER:
-#endif
-        case SUBDIAG_SCALAPACK:
             info = GeneralDiagScaLapack(A, B, eigs, V, N, M, ld);
             break;
-#if MAGMA_LIBS && CUDA_ENABLED
-        case SUBDIAG_MAGMA:
-                info = GeneralDiagMagma(A, B, eigs, V, N, M, ld);
-#endif
-#if CUDA_ENABLED
+  #endif
   #if (CUDA_VERSION_MAJOR > 10) || ((CUDA_VERSION_MAJOR == 10) && (CUDA_VERSION_MINOR > 0))
         case SUBDIAG_CUSOLVER:
             info = GeneralDiagCusolver(A, B, eigs, V, N, M, ld);
             break;
   #endif
+#endif
+
+        // Rocsolver perf is so bad just redirect to scalapack by default
+        case SUBDIAG_ROCSOLVER:
+        case SUBDIAG_SCALAPACK:
+            info = GeneralDiagScaLapack(A, B, eigs, V, N, M, ld);
+            break;
+#if MAGMA_LIBS
+        case SUBDIAG_MAGMA:
+            info = GeneralDiagMagma(A, B, eigs, V, N, M, ld);
+            break;
 #endif
 
         default:
@@ -442,8 +449,8 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
         for(int i = 0;i < N*ld;i++) Bsave[i] = B[i];
 
         int itype = 1, ione = 1;
-        int lwork = 3 * N * N + 6 * N;
-        //int lwork = 6 * N * N + 6 * N + 2;
+        //int lwork = 3 * N * N + 6 * N;
+        int lwork = 6 * N * ld + 6 * N + 2;
         double *work = (double *)RmgMallocHost(lwork * sizeof(KpointType));
 
         if(M == N) {
@@ -453,10 +460,11 @@ int GeneralDiagMagma(KpointType *A, KpointType *B, double *eigs, KpointType *V, 
         else if(N > M) {
             magma_dsygvdx (itype, MagmaVec, MagmaRangeI, MagmaLower, N, (double *)A, ld, (double *)B, ld,
                     vx, vx, ione, M,  &eigs_found, eigs, work, lwork, iwork, liwork, &info);
+//magma_dsygvdx_2stage(itype, MagmaVec, MagmaRangeI,MagmaLower,N,(double *)A,ld,(double *)B,ld, vx, vx,
+//ione, M, &eigs_found, eigs, work,lwork,iwork,liwork,&info);		
+
             for(int ix=0;ix < N*ld;ix++) V[ix] = A[ix];
         }
-
-
         RmgFreeHost(work);
 
         for(int i=0;i < N*ld;i++) A[i] = Asave[i];
