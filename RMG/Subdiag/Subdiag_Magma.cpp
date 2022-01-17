@@ -136,7 +136,7 @@ fflush(NULL);
             int lwork = 3 * num_states * num_states + 8 * num_states;
             lwork = std::max(lwork, 128000);
             double *work;
-            hipMalloc((void **)&work, lwork * sizeof(KpointType));
+            hipMallocManaged((void **)&work, lwork * sizeof(KpointType));
             DsygvdDriver((double *)eigvectors_gpu, (double *)Sij_gpu, eigs_gpu, work, lwork, num_states, num_states);
             hipFree(work);
 

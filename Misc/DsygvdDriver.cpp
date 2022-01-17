@@ -68,6 +68,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
     int *iwork = new int[liwork];
 
     magma_dsygvd(itype, MagmaVec, MagmaLower, n, (double *)A, ld, (double *)B, ld, eigs, work, worksize, iwork, liwork, &info);
+
 //    double vl = 0.0, vu = 0.0;
 //    int eigs_found;
 //    magma_dsygvdx_2stage(itype, MagmaVec, MagmaRangeAll, MagmaLower, n,
