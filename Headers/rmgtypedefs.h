@@ -117,6 +117,7 @@ typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
 #endif
     #include <hip/hip_runtime.h>
     #define gpuError_t hipError_t
+    #define gpublasStatus_t hipblasStatus_t
     #define gpuMemcpyKind hipMemcpyKind
     #define gpuMemcpyHostToHost hipMemcpyHostToHost
     #define gpuMemcpyHostToDevice hipMemcpyHostToDevice
@@ -133,6 +134,7 @@ typedef struct {int species; int ip; int l; int m; int proj_index;} PROJ_INFO;
 
 #elif CUDA_ENABLED
     #define gpuError_t cudaError_t
+    #define gpublasStatus_t cublasStatus_t
     #define gpuMemcpyKind cudaMemcpyKind
     #define gpuMemcpyHostToHost cudaMemcpyHostToHost
     #define gpuMemcpyHostToDevice cudaMemcpyHostToDevice

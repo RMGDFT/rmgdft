@@ -561,6 +561,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         }
         cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[pct.local_rank]);
         cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
+        ct.gpublas_handle = ct.cublas_handle;
 #endif
 #if HIP_ENABLED
         ct.hip_dev = ct.gpu_device_ids[pct.local_rank];
@@ -569,6 +570,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
+        ct.gpublas_handle = ct.hipblas_handle;
 #endif
 
     }
@@ -590,6 +592,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 }
                 cublasXtDeviceSelect(ct.cublasxt_handle, 1, &ct.gpu_device_ids[next_gpu]);
                 cublasXtSetBlockDim(ct.cublasxt_handle, 2048);
+                ct.gpublas_handle = ct.cublas_handle;
 #endif
 #if HIP_ENABLED
                 ct.hip_dev = ct.gpu_device_ids[next_gpu];
@@ -598,6 +601,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
                 if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
                     rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
                 }
+                ct.gpublas_handle = ct.hipblas_handle;
 #endif
             }
             next_gpu++;
@@ -621,6 +625,7 @@ void InitIo (int argc, char **argv, std::unordered_map<std::string, InputKey *>&
         if( HIPBLAS_STATUS_SUCCESS != hipblasCreate(&ct.hipblas_handle) ) {
             rmg_error_handler (__FILE__, __LINE__, "HIPBLAS: Handle not created\n");
         }
+        ct.gpublas_handle = ct.hipblas_handle;
 #endif
     }
 

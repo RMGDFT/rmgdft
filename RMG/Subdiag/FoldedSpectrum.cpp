@@ -122,7 +122,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     // Do the submatrix along the diagonal to get starting values for folded spectrum
     //--------------------------------------------------------------------
     RT2 = new RmgTimer("4-Diagonalization: fs: submatrix");
-    hipMemcpy2D ( G, n_win*sizeof(double), &A[n_start*n + n_start], n*sizeof(double), n_win*sizeof(double), n_win, hipMemcpyDefault); 
+    gpuMemcpy2D ( G, n_win*sizeof(double), &A[n_start*n + n_start], n*sizeof(double), n_win*sizeof(double), n_win, gpuMemcpyDefault); 
 
 #else
     double *Vdiag = new double[n];
@@ -169,10 +169,10 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     GpuNegate(G, n_win, Vdiag, 1, n_win);
     int i1=0, ione = 1;
     for(int i = 0;i < n_win;i++) if((i + n_start) == eig_start) i1 = i;
-    hipblasStatus_t custat;
-    custat = hipblasDdgmm(ct.hipblas_handle, HIPBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n);
+    gpublasStatus_t custat;
+    custat = gpublasDdgmm(ct.gpublas_handle, GPUBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n);
     DeviceSynchronize();
-    RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
+    RmgGpuError(__FILE__, __LINE__, custat, "Problem executing gpublasDdgmm.");
 #else
     // Make sure same sign convention is followed by all eigenvectors
     for(int ix = 0;ix < n_win;ix++) {
