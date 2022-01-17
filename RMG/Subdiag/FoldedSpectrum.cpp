@@ -93,12 +93,12 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
                         n_start, n_win, fs_eigstart, fs_eigstop, fs_eigcounts, 1);
 
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     DeviceSynchronize();
     RT1 = new RmgTimer("4-Diagonalization: fs: folded");
     double *Vdiag, *tarr;
-    cudaMallocManaged((void **)&Vdiag, n * sizeof(double));
-    cudaMallocManaged((void **)&tarr, n * sizeof(double));
+    gpuMallocManaged((void **)&Vdiag, n * sizeof(double));
+    gpuMallocManaged((void **)&tarr, n * sizeof(double));
 
     gpuMemcpy(Bsave, B, n*n*sizeof(double), gpuMemcpyDefault);
 
@@ -112,8 +112,8 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
     // Zero out matrix of eigenvectors (V) and eigenvalues n. G is submatrix storage
     KpointType *V, *G;
-    cudaMallocManaged((void **)&V, n * n * sizeof(KpointType));
-    cudaMallocManaged((void **)&G, n_win * n_win * sizeof(KpointType));
+    gpuMallocManaged((void **)&V, n * n * sizeof(KpointType));
+    gpuMallocManaged((void **)&G, n_win * n_win * sizeof(KpointType));
     GpuFill((double *)V, n*n, 0.0);
     double *n_eigs = new double[n]();
 
@@ -122,7 +122,7 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     // Do the submatrix along the diagonal to get starting values for folded spectrum
     //--------------------------------------------------------------------
     RT2 = new RmgTimer("4-Diagonalization: fs: submatrix");
-    cudaMemcpy2D ( G, n_win*sizeof(double), &A[n_start*n + n_start], n*sizeof(double), n_win*sizeof(double), n_win, cudaMemcpyDefault); 
+    hipMemcpy2D ( G, n_win*sizeof(double), &A[n_start*n + n_start], n*sizeof(double), n_win*sizeof(double), n_win, hipMemcpyDefault); 
 
 #else
     double *Vdiag = new double[n];
@@ -163,14 +163,14 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
         DsyevdDriver(G, &eigs[n_start], work, lwork, n_win, n_win);
 
     // Store the eigen vector from the submatrix
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     DeviceSynchronize();
     GpuFill(Vdiag, n, 1.0);
     GpuNegate(G, n_win, Vdiag, 1, n_win);
     int i1=0, ione = 1;
     for(int i = 0;i < n_win;i++) if((i + n_start) == eig_start) i1 = i;
-    cublasStatus_t custat;
-    custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n);
+    hipblasStatus_t custat;
+    custat = hipblasDdgmm(ct.hipblas_handle, HIPBLAS_SIDE_RIGHT, n_win, eig_step, &G[i1*n_win], n_win, &Vdiag[i1], ione, &V[(i1 + n_start)*n + n_start], n);
     DeviceSynchronize();
     RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDdgmm.");
 #else
@@ -205,13 +205,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 
     // Apply folded spectrum to this PE's range of eigenvectors
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     DeviceSynchronize();
 #endif
     RT2 = new RmgTimer("4-Diagonalization: fs: iteration");
     if(ct.folded_spectrum_iterations)
         FoldedSpectrumIterator(A, n, &eigs[eig_start], eig_stop - eig_start, &V[eig_start*n], -0.5, ct.folded_spectrum_iterations, driver);
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     DeviceSynchronize();
 #endif
     delete(RT2);
@@ -231,13 +231,13 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
     // Gram-Schmidt ortho for eigenvectors.
     RT2 = new RmgTimer("4-Diagonalization: fs: Gram-Schmidt");
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     DeviceSynchronize();
 #endif
 
     FoldedSpectrumOrtho(n, eig_start, eig_stop, fs_eigcounts, fs_eigstart, V, B, Asave, Bsave, driver, fs_comm);
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
     DeviceSynchronize();
     gpuMemcpy(A, V, (size_t)n*(size_t)n*sizeof(double), gpuMemcpyDefault);
     //memcpy(A, V, (size_t)n*(size_t)n*sizeof(double));
@@ -249,11 +249,11 @@ int FoldedSpectrum(BaseGrid *Grid, int n, KpointType *A, int lda, KpointType *B,
 
 
     delete(RT1);
-#if CUDA_ENABLED
-    cudaFree(G);
-    cudaFree(V);
-    cudaFree(tarr);
-    cudaFree(Vdiag);
+#if CUDA_ENABLED || HIP_ENABLED
+    gpuFree(G);
+    gpuFree(V);
+    gpuFree(tarr);
+    gpuFree(Vdiag);
 #else
     delete [] G;
     delete [] V;

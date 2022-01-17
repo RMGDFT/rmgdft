@@ -58,6 +58,25 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 }
 
 #elif HIP_ENABLED
+#if MAGMA_LIBS
+#include <magma_v2.h>
+
+void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
+{
+    int itype = 1, info;
+    int liwork = 6*n;
+    int *iwork = new int[liwork];
+
+    magma_dsygvd(itype, MagmaVec, MagmaLower, n, (double *)A, ld, (double *)B, ld, eigs, work, worksize, iwork, liwork, &info);
+//    double vl = 0.0, vu = 0.0;
+//    int eigs_found;
+//    magma_dsygvdx_2stage(itype, MagmaVec, MagmaRangeAll, MagmaLower, n,
+//             (double *)A, ld, (double *)B, ld, vl, vu, 1, n, &eigs_found,
+//    eigs, work, worksize, iwork, liwork, &info);
+
+    delete [] iwork;
+}
+#else
 #include <rocsolver.h>
 
 void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize, int n, int ld)
@@ -78,6 +97,7 @@ void DsygvdDriver(double *A, double *B, double *eigs, double *work, int worksize
 
     gpuFree(devInfo);
 }
+#endif
 
 #else
 

@@ -184,12 +184,15 @@ template <typename DataType> void RmgGemm(char *transa, char *transb, int m, int
     hiperr = hipPointerGetAttributes(&attr, A);
     bool a_dev = false;
     if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) a_dev = true;
+
     hiperr = hipPointerGetAttributes(&attr, B);
     bool b_dev = false;
     if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) b_dev = true;
+
     hiperr = hipPointerGetAttributes(&attr, C);
     bool c_dev = false;
     if(hiperr == hipSuccess && attr.memoryType == hipMemoryTypeDevice) c_dev = true;
+
     hipblasStatus_t hipstat;
     hipblasOperation_t hip_transA = HIPBLAS_OP_N, hip_transB = HIPBLAS_OP_N;
 

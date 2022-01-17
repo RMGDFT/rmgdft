@@ -69,7 +69,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     bool use_folded = ((ct.use_folded_spectrum && (ct.scf_steps > 6)) || (ct.use_folded_spectrum && (ct.runflag == RESTART)));
 
 #if SCALAPACK_LIBS
-    // For folded spectrum start with scalapack if available since cusolver is slow on really large problems
+    // For folded spectrum start with scalapack if available since magma is slow on really large problems
     if(ct.use_folded_spectrum && (ct.scf_steps <= 6)  && (ct.runflag != RESTART) && (num_states > 10000))
         return Subdiag_Scalapack (kptr, Aij, Bij, Sij, eigs, eigvectors);
 #endif
@@ -78,15 +78,16 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
     static int call_count, folded_call_count;
     if(use_folded)
     {
-        DiagTimer = new RmgTimer("4-Diagonalization: cusolver folded");
+        DiagTimer = new RmgTimer("4-Diagonalization: magma folded");
         folded_call_count++;
-        rmg_printf("\nDiagonalization using folded cusolver for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
+        rmg_printf("\nDiagonalization using folded magma for step=%d  count=%d\n\n",ct.scf_steps, folded_call_count); 
     }
     else
     {
-        DiagTimer = new RmgTimer("4-Diagonalization: cusolver");
+        DiagTimer = new RmgTimer("4-Diagonalization: magma");
         call_count++;
-        rmg_printf("\nDiagonalization using cusolver for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
+        rmg_printf("\nDiagonalization using magma for step=%d  count=%d\n\n",ct.scf_steps, call_count); 
+fflush(NULL);
     }
     
     // Magma is not parallel across MPI procs so only have the local master proc on a node perform
@@ -124,7 +125,7 @@ char * Subdiag_Magma (Kpoint<KpointType> *kptr, KpointType *Aij, KpointType *Bij
             hipMalloc((void **)&work, lwork * sizeof(KpointType));
             hipMallocManaged((void **)&Aij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
             hipMallocManaged((void **)&Bij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
-            FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors_gpu, num_states, (double *)Sij_gpu, num_states, (double *)Aij_gpu, (double *)Bij_gpu, eigs_gpu, work, lwork, iwork, liwork, SUBDIAG_CUSOLVER);
+            FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors_gpu, num_states, (double *)Sij_gpu, num_states, (double *)Aij_gpu, (double *)Bij_gpu, eigs_gpu, work, lwork, iwork, liwork, SUBDIAG_MAGMA);
             hipFree(Bij_gpu);
             hipFree(Aij_gpu);
             hipFree(work);

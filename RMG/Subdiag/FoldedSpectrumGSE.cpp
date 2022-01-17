@@ -44,7 +44,11 @@
 #if CUDA_ENABLED
     #include <cuda.h>
     #include <cuda_runtime_api.h>
-    #include <cublas_v2.h>
+    #include <hipblas_v2.h>
+#endif
+
+#if HIP_ENABLED
+    #include <hipblas.h>
 #endif
 
 // Used to convert the generalized eigenvalue problem A*x = lambda*B*x into standard form
@@ -73,17 +77,17 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
 
 
-#if CUDA_ENABLED
+#if CUDA_ENABLED || HIP_ENABLED
 
-    cublasStatus_t custat;
+    hipblasStatus_t custat;
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: fs: GSE-setup");
     DataType *T1, *D;
-    cudaMallocManaged((void **)&D, n * sizeof(DataType));
-    cudaMallocManaged((void **)&T1, n * n * sizeof(DataType));
+    hipMallocManaged((void **)&D, n * sizeof(DataType));
+    hipMalloc((void **)&T1, n * n * sizeof(DataType));
     double *unitvector, *tvector;
-    cudaMallocManaged((void **)&unitvector, n*sizeof(double));
-    cudaMallocManaged((void **)&tvector, n*sizeof(double));
-    cublasDcopy(ct.cublas_handle, n, B, n+1, tvector, 1);
+    hipMallocManaged((void **)&unitvector, n*sizeof(double));
+    hipMallocManaged((void **)&tvector, n*sizeof(double));
+    hipblasDcopy(ct.hipblas_handle, n, B, n+1, tvector, 1);
     DeviceSynchronize();
     for(int ix = 0;ix < n;ix++) D[ix] = 1.0 / tvector[ix]; 
     DeviceSynchronize();
@@ -95,7 +99,7 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // Initial starting guess goes in Z and is just the identity
     GpuFill((double *)&Z[istart*n], istep*n, 0.0);
     GpuFill((double *)unitvector, n, 1.0);
-    cublasDcopy(ct.cublas_handle, istep, unitvector, 1, (double *)&Z[istart*n], istep+1);
+    hipblasDcopy(ct.hipblas_handle, istep, unitvector, 1, (double *)&Z[istart*n], istep+1);
 
     //for(int st1 = istart;st1 < istop;st1++){
     //    for(int st2 = 0;st2 < n;st2++) Z[st1*n + st2] = ZERO_t;
@@ -108,9 +112,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
     // (I - D-1 * B)
     double negrone = -1.0;
     double rone = 1.0;
-    custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_LEFT, n, n, B, n, D, 1, T1, n);
-    custat = cublasDscal(ct.cublas_handle, n*n, &negrone, T1, 1);
-    custat = cublasDaxpy(ct.cublas_handle, n, &rone, unitvector, 1, T1, n+1);
+    custat = hipblasDdgmm(ct.hipblas_handle, HIPBLAS_SIDE_LEFT, n, n, B, n, D, 1, T1, n);
+    custat = hipblasDscal(ct.hipblas_handle, n*n, &negrone, T1, 1);
+    custat = hipblasDaxpy(ct.hipblas_handle, n, &rone, unitvector, 1, T1, n+1);
 
 //#pragma omp for schedule(static, 1) nowait
 //    for(int st1 = 0;st1 < n;st1++){
@@ -120,13 +124,13 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 //    }
 //    for(int ix = 0;ix < n;ix++) T1[ix*n + ix] += 1.0;
 
-    cudaFree(tvector);
-    cudaFree(unitvector);
+    hipFree(tvector);
+    hipFree(unitvector);
     delete(RT1);
 
     RT1 = new RmgTimer("4-Diagonalization: fs: GSE-Second term");
     // Compute D^(-1) * B * I and store in B
-    custat = cublasDdgmm(ct.cublas_handle, CUBLAS_SIDE_LEFT, n, istep, &A[istart*n], n, D, 1, &B[istart*n], n);
+    custat = hipblasDdgmm(ct.hipblas_handle, HIPBLAS_SIDE_LEFT, n, istep, &A[istart*n], n, D, 1, &B[istart*n], n);
 //#pragma omp for schedule(static, 1) nowait
 //    for(int st1 = istart;st1 < istop;st1++){
 //        for(int st2 = 0;st2 < n;st2++){
@@ -141,16 +145,16 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
     // outer loop over steps
     int device = -1;
-    cudaGetDevice(&device);
+    hipGetDevice(&device);
     DeviceSynchronize();
     for(int step = 0;step < iterations;step++) {
 
             RmgGemm(trans_n, trans_n, n, istep, n, ONE_t, T1, n, &Z[istart*n], n, ZERO_t, &A[istart*n], n);
             // Finally generate Z(step+1) = (I - D-1 * B) * Z(step) + D^(-1) * B * X 
             //for(int ix=0;ix < n*n;ix++) Z[ix] = A[ix] + B[ix];
-            custat = cublasDgeam(ct.cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, istep, &ONE_t, 
+            custat = hipblasDgeam(ct.hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_N, n, istep, &ONE_t, 
                                  &A[istart*n], n, &ONE_t, &B[istart*n], n, &Z[istart*n], n);
-            RmgGpuError(__FILE__, __LINE__, custat, "Problem executing cublasDgeam.");
+            RmgGpuError(__FILE__, __LINE__, custat, "Problem executing hipblasDgeam.");
 //#pragma omp for schedule(static, 1) nowait
 //            for(int st1 = istart;st1 < istop;st1++){
 //                for(int st2 = 0;st2 < n;st2++){
@@ -161,9 +165,9 @@ void FoldedSpectrumGSE(DataType *A, DataType *B, DataType *Z, int n, int istart,
 
     }
     DeviceSynchronize();
-    gpuMemPrefetchAsync ( Z, n*n*sizeof(double), cudaCpuDeviceId, NULL);
-    cudaFree(T1);
-    cudaFree(D);
+    gpuMemPrefetchAsync ( Z, n*n*sizeof(double), hipCpuDeviceId, NULL);
+    hipFree(T1);
+    hipFree(D);
 
     delete(RT1);
 #else

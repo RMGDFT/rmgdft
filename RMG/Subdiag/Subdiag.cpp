@@ -253,7 +253,19 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
 
     UnPackSqToTr("L", nstates, Hij, nstates, Bij);
     UnPackSqToTr("L", nstates, Sij, nstates, global_matrix1);
+    int blocksize = 16;
 
+    // Fill in upper triangle of S
+#pragma omp parallel for
+    for (int i = 0; i < nstates; i += blocksize) {
+        for (int j = i; j < nstates; j += blocksize) {
+            for (int row = i; row < i + blocksize && row < nstates; row++) {
+                for (int col = j; col < j + blocksize && col < nstates; col++) {
+                    Sij[col*nstates+row]=Sij[row*nstates+col];
+                }
+            }
+        }
+    }
     delete(RT1);
 
     // Dispatch to correct subroutine, eigs will hold eigenvalues on return and global_matrix1 will hold the eigenvectors.
@@ -267,7 +279,11 @@ tmp_arrayT:  A|psi> + BV|psi> + B|beta>dnm<beta|psi> */
             trans_b = Subdiag_Lapack (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
         // Redirect to scalapack for now
+#if MAGMA_LIBS
         case SUBDIAG_MAGMA:
+            trans_b = Subdiag_Magma (this, Hij, Bij, Sij, eigs, global_matrix1);
+            break;
+#endif
         case SUBDIAG_SCALAPACK:
             trans_b = Subdiag_Scalapack (this, Hij, Bij, Sij, eigs, global_matrix1);
             break;
