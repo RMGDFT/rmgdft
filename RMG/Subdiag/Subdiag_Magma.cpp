@@ -105,8 +105,8 @@ fflush(NULL);
     gpuMallocManaged((void **)&eigvectors_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
     gpuMallocManaged((void **)&Sij_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType));
     gpuMallocManaged((void **)&eigs_gpu, (size_t)num_states * sizeof(KpointType));
-    gpuMemcpy(eigvectors_gpu, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), hipMemcpyDefault);
-    gpuMemcpy(Sij_gpu, Sij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), hipMemcpyDefault);
+    gpuMemcpy(eigvectors_gpu, Aij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), gpuMemcpyDefault);
+    gpuMemcpy(Sij_gpu, Sij, (size_t)num_states * (size_t)num_states * sizeof(KpointType), gpuMemcpyDefault);
 
 
     RmgTimer *RT1 = new RmgTimer("4-Diagonalization: dsygvx/zhegvx/folded");
@@ -122,13 +122,13 @@ fflush(NULL);
             int lwork = num_states * num_states / 3 + num_states;
             lwork = std::max(lwork, 128000);
             double *work, *Aij_gpu, *Bij_gpu;
-            hipMalloc((void **)&work, lwork * sizeof(KpointType));
-            hipMallocManaged((void **)&Aij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
-            hipMallocManaged((void **)&Bij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
+            gpuMallocManaged((void **)&work, lwork * sizeof(KpointType));
+            gpuMallocManaged((void **)&Aij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
+            gpuMallocManaged((void **)&Bij_gpu, (size_t)num_states * (size_t)num_states * sizeof(double));
             FoldedSpectrum<double> (kptr->G, num_states, (double *)eigvectors_gpu, num_states, (double *)Sij_gpu, num_states, (double *)Aij_gpu, (double *)Bij_gpu, eigs_gpu, work, lwork, iwork, liwork, SUBDIAG_MAGMA);
-            hipFree(Bij_gpu);
-            hipFree(Aij_gpu);
-            hipFree(work);
+            gpuFree(Bij_gpu);
+            gpuFree(Aij_gpu);
+            gpuFree(work);
 
         }
         else {
@@ -136,9 +136,9 @@ fflush(NULL);
             int lwork = 3 * num_states * num_states + 8 * num_states;
             lwork = std::max(lwork, 128000);
             double *work;
-            hipMallocManaged((void **)&work, lwork * sizeof(KpointType));
+            gpuMallocManaged((void **)&work, lwork * sizeof(KpointType));
             DsygvdDriver((double *)eigvectors_gpu, (double *)Sij_gpu, eigs_gpu, work, lwork, num_states, num_states);
-            hipFree(work);
+            gpuFree(work);
 
         }
 
@@ -155,11 +155,11 @@ fflush(NULL);
     delete [] ifail;
     delete RT1;
 
-    hipMemcpy(eigvectors, eigvectors_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType), hipMemcpyDefault);
-    hipMemcpy(eigs, eigs_gpu, (size_t)num_states * sizeof(double), hipMemcpyDefault);
-    hipFree(eigs_gpu);
-    hipFree(Sij_gpu);
-    hipFree(eigvectors_gpu);
+    gpuMemcpy(eigvectors, eigvectors_gpu, (size_t)num_states * (size_t)num_states * sizeof(KpointType), gpuMemcpyDefault);
+    gpuMemcpy(eigs, eigs_gpu, (size_t)num_states * sizeof(double), gpuMemcpyDefault);
+    gpuFree(eigs_gpu);
+    gpuFree(Sij_gpu);
+    gpuFree(eigvectors_gpu);
 
     // end if is_local_master
 
