@@ -157,6 +157,14 @@ double app8_del2_gpu(const double * __restrict__ a,
     dim3 Grid, Block;
     double retval = -(205.0 / 72.0) * (h2x + h2y + h2z);
 
+    double xside = Rmg_L->get_xside();
+    double yside = Rmg_L->get_yside();
+    double zside = Rmg_L->get_zside();
+
+    h2x = h2x * h2x * xside * xside;
+    h2y = h2y * h2y * yside * yside;
+    h2z = h2z * h2z * zside * zside;
+
     if(!(dimy % 16) && !(dimz % 32))
     {
         Grid.x = dimy / 16;
