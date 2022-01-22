@@ -34,8 +34,11 @@
 #include <iostream>
 
 #define IMAGES 4
+#define BLOCK_LENGTH 16
 
-template <typename T, int BLOCKX, int BLOCKY, int n>
+
+
+template <typename T>
 __global__ void app8_del2_kernel(const T * __restrict__ a, 
                                                 T *b, 
                                                 const int dimx,
@@ -47,11 +50,11 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
 
 {
 
-    __shared__ double aslice[BLOCKX + 2*IMAGES][BLOCKY + 2*IMAGES];
-//    extern __shared__ __align__(sizeof(T)) unsigned char sbuf[];
-    T *slice = reinterpret_cast<T *>(&aslice[0][0]);
-    int islice = BLOCKY + 2*IMAGES;
-    int limit = dimx * dimy * dimz;
+    extern __shared__ __align__(sizeof(T)) unsigned char sbuf[];
+    T *slice = reinterpret_cast<T *>(sbuf);
+
+//    T *slice = reinterpret_cast<T *>(aslice);
+    int islice = blockDim.y + 2*IMAGES;
 
     T a1(205.0/72.0);
     T ONE_T(1.0);
@@ -161,10 +164,10 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
 }
 
 
-template double app8_del2_gpu(const float * , float *, int, int, int, float, float, float, hipStream_t);
+template double app8_del2_gpu(const float * , float *, int, int, int, double, double, double, hipStream_t);
 template double app8_del2_gpu(const double * , double *, int, int, int, double, double, double, hipStream_t);
-template double app8_del2_gpu(const std::complex<float> * , std::complex<float> *, int, int, int, std::complex<float>, std::complex<float>, std::complex<float>, hipStream_t);
-template double app8_del2_gpu(const std::complex<double> * , std::complex<double> *, int, int, int, std::complex<double>, std::complex<double>, std::complex<double>, hipStream_t);
+template double app8_del2_gpu(const std::complex<float> * , std::complex<float> *, int, int, int, double, double, double, hipStream_t);
+template double app8_del2_gpu(const std::complex<double> * , std::complex<double> *, int, int, int, double, double, double, hipStream_t);
 
 template <typename T>
 double app8_del2_gpu(const T * __restrict__ a, 
@@ -172,129 +175,28 @@ double app8_del2_gpu(const T * __restrict__ a,
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   T h2x,
-                   T h2y,
-                   T h2z,
+                   double h2x,
+                   double h2y,
+                   double h2z,
                    hipStream_t cstream)
 {
     dim3 Grid, Block;
     T ONE_T(1.0);
     T fac(205.0/72.0);
-h2x = ONE_T/h2x;
-h2y = ONE_T/h2y;
-h2z = ONE_T/h2z;
-    double retval = -std::real(fac * (h2x + h2y + h2z));
+    T h2x_t(h2x);
+    T h2y_t(h2y);
+    T h2z_t(h2z);
+h2x_t = ONE_T/h2x_t;
+h2y_t = ONE_T/h2y_t;
+h2z_t = ONE_T/h2z_t;
+    double retval = -std::real(fac * (h2x_t + h2y_t + h2z_t));
 
-    if(!(dimy % 16) && !(dimz % 32))
-    {
-        Grid.x = dimy / 16;
-        Block.x = 16;
-        Grid.y = dimz / 32;
-        Block.y = 32;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 16, 32, 40*40*8 >), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-    }
-    if(!(dimy % 4) && !(dimz % 64))
-    {
-        Grid.x = dimy / 4;
-        Block.x = 4;
-        Grid.y = dimz / 64;
-        Block.y = 64;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 4, 64, 12*72*8 >), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-#if 0
-    if(!(dimy % 8) && !(dimz % 64))
-    {
-        Grid.x = dimy / 8;
-        Block.x = 8;
-        Grid.y = dimz / 64;
-        Block.y = 64;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 8, 64>), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 8) && !(dimz % 32))
-    {
-        Grid.x = dimy / 8;
-        Block.x = 8;
-        Grid.y = dimz / 32;
-        Block.y = 32;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 8, 32>), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 16) && !(dimz % 16))
-    {
         Grid.x = dimy / 16;
         Block.x = 16;
         Grid.y = dimz / 16;
         Block.y = 16;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 16, 16>), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 16) && !(dimz % 24))
-    {
-        Grid.x = dimy / 16;
-        Block.x = 16;
-        Grid.y = dimz / 24;
-        Block.y = 24;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 16, 24>), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 24) && !(dimz % 16))
-    {
-        Grid.x = dimy / 24;
-        Block.x = 24;
-        Grid.y = dimz / 16;
-        Block.y = 16;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 24, 16>), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 24) && !(dimz % 24))
-    {
-        Grid.x = dimy / 24;
-        Block.x = 24;
-        Grid.y = dimz / 24;
-        Block.y = 24;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 24, 24>), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 10) && !(dimz % 10))
-    {
-        Grid.x = dimy / 10;
-        Block.x = 10;
-        Grid.y = dimz / 10;
-        Block.y = 10;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 10, 10>), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 8) && !(dimz % 8))
-    {
-        Grid.x = dimy / 8;
-        Block.x = 8;
-        Grid.y = dimz / 8;
-        Block.y = 8;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 8, 8>), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-    if(!(dimy % 12) && !(dimz % 12))
-    {
-        Grid.x = dimy / 12;
-        Block.x = 12;
-        Grid.y = dimz / 12;
-        Block.y = 12;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 12, 12>), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-#endif
-    if(!(dimy % 15) && !(dimz % 15))
-    {
-        Grid.x = dimy / 15;
-        Block.x = 15;
-        Grid.y = dimz / 15;
-        Block.y = 15;
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T, 15, 35, 24*24*8 >), Grid, Block, 0, cstream, a, b, dimx, dimy, dimz, h2x, h2y, h2z);
-        return retval;
-    }
-//printf("Missed  %d  %d\n", dimy, dimz);
+        int smem_siz = (BLOCK_LENGTH + 2*IMAGES)*(BLOCK_LENGTH + 2*IMAGES)*sizeof(T);
+        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T>), Grid, Block, smem_siz, cstream, a, b, dimx, dimy, dimz, h2x_t, h2y_t, h2z_t);
     return retval;
 }
 #endif

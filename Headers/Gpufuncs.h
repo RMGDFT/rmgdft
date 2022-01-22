@@ -85,9 +85,9 @@ double app8_del2_gpu(const T * __restrict__ a,
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   T h2x,
-                   T h2y,
-                   T h2z,
+                   double h2x,
+                   double h2y,
+                   double h2z,
                    hipStream_t cstream);
 #endif
 
