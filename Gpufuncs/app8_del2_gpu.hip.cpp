@@ -34,8 +34,6 @@
 #include <iostream>
 
 #define IMAGES 4
-#define BLOCK_LENGTH 16
-
 
 
 template <typename T>
@@ -44,53 +42,26 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
                                                 const int dimx,
                                                 const int dimy,
                                                 const int dimz,
-                                                const T h2x,
-                                                const T h2y,
-                                                const T h2z)
+                                                const fdparms_o8<T> c)
 
 {
 
     extern __shared__ __align__(sizeof(T)) unsigned char sbuf[];
     T *slice = reinterpret_cast<T *>(sbuf);
 
-//    T *slice = reinterpret_cast<T *>(aslice);
-    int islice = blockDim.y + 2*IMAGES;
-
-    T a1(205.0/72.0);
-    T ONE_T(1.0);
-    T EIGHT_T(8.0);
-    T FIVE_T(5.0);
-    T T15_T(315.0);
-    T T560_T(560.0);
-
-    T c0 = -(a1) * (h2x + h2y + h2z);
-    T c1x = EIGHT_T * h2x / FIVE_T;
-    T c2x = -ONE_T * h2x / FIVE_T;;
-    T c3x = EIGHT_T * h2x / T15_T;
-    T c4x = -ONE_T * h2x / T560_T;
-
-    T c1y = EIGHT_T * h2y / FIVE_T;
-    T c2y = -ONE_T * h2y / FIVE_T;
-    T c3y = EIGHT_T * h2y / T15_T;
-    T c4y = -ONE_T * h2y / T560_T;
-
-    T c1z = EIGHT_T * h2z / FIVE_T;
-    T c2z = -ONE_T * h2z / FIVE_T;
-    T c3z = EIGHT_T * h2z / T15_T;
-    T c4z = -ONE_T * h2z / T560_T;
-
     // iy and iz map to the x and y coordinates of the thread
     // within a block
-    int iy = blockIdx.x * blockDim.x + threadIdx.x;
-    int iz = blockIdx.y * blockDim.y + threadIdx.y;
+    const int iy = blockIdx.x * (blockDim.x-2*IMAGES) + threadIdx.x;
+    const int iz = blockIdx.y * (blockDim.y-2*IMAGES) + threadIdx.y;
 
     // thread y-index into shared memory tile
-    int ty = threadIdx.x + IMAGES;
-    int tz = threadIdx.y + IMAGES;
+    const int ty = threadIdx.x;
+    const int tz = threadIdx.y;
 
-    int in_idx = (iy + IMAGES)*(dimz + 2*IMAGES) + iz + IMAGES;
+    int in_idx = iy*(dimz + 2*IMAGES) + iz;
     int in_stride = (dimy + 2*IMAGES) * (dimz + 2*IMAGES);
-    int out_idx = iy*dimz + iz;
+
+    int out_idx = (iy-IMAGES)*dimz + (iz-IMAGES);
     int out_stride = dimy*dimz;
 
     T acc_b4 = 0.0;
@@ -119,45 +90,38 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
         acc_a4 = a[in_idx];
 
         __syncthreads();
-
-        // Update the data slice in shared memory
-        if(threadIdx.x < IMAGES)
-        {
-            slice[threadIdx.x*islice + tz] = a[in_idx - IMAGES*in_stride - IMAGES*(dimz+2*IMAGES)];
-            slice[(threadIdx.x+blockDim.x+IMAGES)*islice + tz] = a[in_idx - IMAGES*in_stride + blockDim.x*(dimz+2*IMAGES)];
-        }
-        if(threadIdx.y < IMAGES)
-        {
-            slice[ty*islice + threadIdx.y] = a[in_idx - IMAGES*in_stride - IMAGES];
-            slice[ty*islice + threadIdx.y+blockDim.y+IMAGES] = a[in_idx - IMAGES*in_stride + blockDim.y];
-        }
-
-        slice[ty*islice + tz] = acc;
+        slice[threadIdx.x*blockDim.y + threadIdx.y] = acc;
         __syncthreads();
 
         in_idx += in_stride;
 
-        T tsum =      c4z*slice[ty*islice+tz-4] + c4z*slice[ty*islice+tz+4] +
-                      c3z*slice[ty*islice+tz-3] + c3z*slice[ty*islice+tz+3] +
-                      c2z*slice[ty*islice+tz-2] + c2z*slice[ty*islice+tz+2] +
-                      c1z*slice[ty*islice+tz-1] + c1z*slice[ty*islice+tz+1] +
-                      c4y*slice[(ty-4)*islice+tz] + c4y*slice[(ty+4)*islice+tz] +
-                      c3y*slice[(ty-3)*islice+tz] + c3y*slice[(ty+3)*islice+tz] +
-                      c2y*slice[(ty-2)*islice+tz] + c2y*slice[(ty+2)*islice+tz] +
-                      c1y*slice[(ty-1)*islice+tz] + c1y*slice[(ty+1)*islice+tz];
+        if((threadIdx.x >= IMAGES) &&
+           (threadIdx.y >= IMAGES) &&
+           (threadIdx.x < (blockDim.x-IMAGES)) &&
+           (threadIdx.y < (blockDim.y-IMAGES)))
+        {
+                T tsum =      c.gmt4z*slice[ty*blockDim.y+tz-4] + c.gpt4z*slice[ty*blockDim.y+tz+4] +
+                              c.gmt3z*slice[ty*blockDim.y+tz-3] + c.gpt3z*slice[ty*blockDim.y+tz+3] +
+                              c.gmt2z*slice[ty*blockDim.y+tz-2] + c.gpt2z*slice[ty*blockDim.y+tz+2] +
+                              c.gmt1z*slice[ty*blockDim.y+tz-1] + c.gpt1z*slice[ty*blockDim.y+tz+1] +
+                              c.gmt4y*slice[(ty-4)*blockDim.y+tz] + c.gpt4y*slice[(ty+4)*blockDim.y+tz] +
+                              c.gmt3y*slice[(ty-3)*blockDim.y+tz] + c.gpt3y*slice[(ty+3)*blockDim.y+tz] +
+                              c.gmt2y*slice[(ty-2)*blockDim.y+tz] + c.gpt2y*slice[(ty+2)*blockDim.y+tz] +
+                              c.gmt1y*slice[(ty-1)*blockDim.y+tz] + c.gpt1y*slice[(ty+1)*blockDim.y+tz];
+                // Write back the results
 
-        // Write back the results
-
-        b[out_idx] = tsum +
-                      c4x * acc_b4 +
-                      c3x * acc_b3 +
-                      c2x * acc_b2 +
-                      c1x * acc_b1 +
-                      c0 * acc +
-                      c1x * acc_a1 +
-                      c2x * acc_a2 +
-                      c3x * acc_a3 +
-                      c4x * acc_a4;
+                b[out_idx] = tsum +
+                              c.gmt4x * acc_b4 +
+                              c.gmt3x * acc_b3 +
+                              c.gmt2x * acc_b2 +
+                              c.gmt1x * acc_b1 +
+                              c.a0 * acc +
+                              c.gpt1x * acc_a1 +
+                              c.gpt2x * acc_a2 +
+                              c.gpt3x * acc_a3 +
+                              c.gpt4x * acc_a4;
+        }
+        //__syncthreads();
         out_idx += out_stride;
     }                   /* end for */
 
@@ -186,17 +150,51 @@ double app8_del2_gpu(const T * __restrict__ a,
     T h2x_t(h2x);
     T h2y_t(h2y);
     T h2z_t(h2z);
-h2x_t = ONE_T/h2x_t;
-h2y_t = ONE_T/h2y_t;
-h2z_t = ONE_T/h2z_t;
+    h2x_t = ONE_T/h2x_t;
+    h2y_t = ONE_T/h2y_t;
+    h2z_t = ONE_T/h2z_t;
     double retval = -std::real(fac * (h2x_t + h2y_t + h2z_t));
 
-        Grid.x = dimy / 16;
-        Block.x = 16;
-        Grid.y = dimz / 16;
-        Block.y = 16;
-        int smem_siz = (BLOCK_LENGTH + 2*IMAGES)*(BLOCK_LENGTH + 2*IMAGES)*sizeof(T);
-        hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T>), Grid, Block, smem_siz, cstream, a, b, dimx, dimy, dimz, h2x_t, h2y_t, h2z_t);
+    fdparms_o8<T> c;
+    T a0 = -T(205.0/72.0) * (h2x_t + h2y_t + h2z_t);
+    T c1x = T(8.0) * h2x_t / T(5.0);
+    T c2x = -T(1.0) * h2x_t / T(5.0);
+    T c3x = T(8.0) * h2x_t / T(315.0);
+    T c4x = -T(1.0) * h2x_t / T(560.0);
+
+    T c1y = T(8.0) * h2y_t / T(5.0);
+    T c2y = -T(1.0) * h2y_t / T(5.0);
+    T c3y = T(8.0) * h2y_t / T(315.0);
+    T c4y = -T(1.0) * h2y_t / T(560.0);
+
+    T c1z = T(8.0) * h2z_t / T(5.0);
+    T c2z = -T(1.0) * h2z_t / T(5.0);
+    T c3z = T(8.0) * h2z_t / T(315.0);
+    T c4z = -T(1.0) * h2z_t / T(560.0);
+
+    c.a0 = a0;
+    c.gpt1x = c.gmt1x = c1x;
+    c.gpt2x = c.gmt2x = c2x;
+    c.gpt3x = c.gmt3x = c3x;
+    c.gpt4x = c.gmt4x = c4x;
+
+    c.gpt1y = c.gmt1y = c1y;
+    c.gpt2y = c.gmt2y = c2y;
+    c.gpt3y = c.gmt3y = c3y;
+    c.gpt4y = c.gmt4y = c4y;
+
+    c.gpt1z = c.gmt1z = c1z;
+    c.gpt2z = c.gmt2z = c2z;
+    c.gpt3z = c.gmt3z = c3z;
+    c.gpt4z = c.gmt4z = c4z;
+
+    Grid.x = dimy/8;
+    Block.x = 16;
+    Grid.y = dimz / 8;
+    Block.y = 16;
+    int smem_siz = (Block.x + 2*IMAGES)*(Block.y + 2*IMAGES)*sizeof(T);
+    hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T>), Grid, Block, smem_siz, cstream, a, b, dimx, dimy, dimz,c);
+
     return retval;
 }
 #endif

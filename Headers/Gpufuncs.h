@@ -4,6 +4,7 @@
 
 template <typename T>
 struct fdparms_o8 {
+    T a0;
     T gpt1x;
     T gpt2x;
     T gpt3x;
