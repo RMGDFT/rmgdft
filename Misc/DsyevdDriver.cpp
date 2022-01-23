@@ -56,8 +56,7 @@ void DsyevdDriver(double *A, double *eigs, double *work, int worksize, int n, in
     gpuFree(devInfo);
 }
 
-//#elif HIP_ENABLED  -- all options suck right now so use cpu
-#elif 0
+#elif HIP_ENABLED
 #include <rocsolver.h>
 
 void DsyevdDriver_rocsolver(double *A, double *eigs, double *work, int worksize, int n, int ld);
@@ -112,13 +111,13 @@ void DsyevdDriver_magma(double *A, double *eigs, double *work, int worksize, int
     int liwork = 6*n;
     int *iwork = new int[liwork];
 
-//    magma_dsyevd(  MagmaVec, MagmaLower, n, A, ld, eigs,
-//                              work,  worksize,
-//                              iwork, liwork,
-//                              &info );
-double vl = 0.0, vu = 0.0;
-magma_dsyevdx_2stage(MagmaVec, MagmaRangeAll,
-MagmaLower, n, A, ld, vl, vu, 1, n, &eigs_found, eigs, work, worksize, iwork, liwork, &info);
+    magma_dsyevd(  MagmaVec, MagmaLower, n, A, ld, eigs,
+                              work,  worksize,
+                              iwork, liwork,
+                              &info );
+//double vl = 0.0, vu = 0.0;
+//magma_dsyevdx_2stage(MagmaVec, MagmaRangeAll,
+//MagmaLower, n, A, ld, vl, vu, 1, n, &eigs_found, eigs, work, worksize, iwork, liwork, &info);
 
     delete [] iwork;
 }
