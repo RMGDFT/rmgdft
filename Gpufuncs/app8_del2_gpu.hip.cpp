@@ -32,6 +32,8 @@
 #include <unistd.h>
 #include "Gpufuncs.h"
 #include <iostream>
+#include <vector>
+void GetPrimeFactors(std::vector<int>& factors, int val, int stop);
 
 #define IMAGES 4
 
@@ -62,7 +64,6 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
     int in_stride = (dimy + 2*IMAGES) * (dimz + 2*IMAGES);
 
     int out_idx = (iy-IMAGES)*dimz + (iz-IMAGES);
-    int out_stride = dimy*dimz;
 
     T acc_b4 = 0.0;
     T acc_b3 = a[in_idx];in_idx += in_stride;
@@ -74,8 +75,15 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
     T acc_a3 = a[in_idx];in_idx += in_stride;
     T acc_a4 = a[in_idx];in_idx += in_stride;
 
-    __syncthreads();
+    // All threads load array to shared memory. This bool is
+    // used to identify which threads compute and write results
+    bool execute = ((threadIdx.x >= IMAGES) &&
+           (threadIdx.y >= IMAGES) &&
+           (threadIdx.x < (blockDim.x-IMAGES)) &&
+           (threadIdx.y < (blockDim.y-IMAGES)));
 
+    __syncthreads();
+T *p = &slice[threadIdx.x*blockDim.y + threadIdx.y];
     for (int ix = 0; ix < dimx; ix++)
     {
         // Advance the central point data
@@ -95,10 +103,7 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
 
         in_idx += in_stride;
 
-        if((threadIdx.x >= IMAGES) &&
-           (threadIdx.y >= IMAGES) &&
-           (threadIdx.x < (blockDim.x-IMAGES)) &&
-           (threadIdx.y < (blockDim.y-IMAGES)))
+        if(execute)
         {
                 T tsum =      c.gmt4z*slice[ty*blockDim.y+tz-4] + c.gpt4z*slice[ty*blockDim.y+tz+4] +
                               c.gmt3z*slice[ty*blockDim.y+tz-3] + c.gpt3z*slice[ty*blockDim.y+tz+3] +
@@ -109,7 +114,6 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
                               c.gmt2y*slice[(ty-2)*blockDim.y+tz] + c.gpt2y*slice[(ty+2)*blockDim.y+tz] +
                               c.gmt1y*slice[(ty-1)*blockDim.y+tz] + c.gpt1y*slice[(ty+1)*blockDim.y+tz];
                 // Write back the results
-
                 b[out_idx] = tsum +
                               c.gmt4x * acc_b4 +
                               c.gmt3x * acc_b3 +
@@ -121,80 +125,37 @@ __global__ void app8_del2_kernel(const T * __restrict__ a,
                               c.gpt3x * acc_a3 +
                               c.gpt4x * acc_a4;
         }
-        //__syncthreads();
-        out_idx += out_stride;
+        out_idx += dimy*dimz;
     }                   /* end for */
 
 }
 
 
-template double app8_del2_gpu(const float * , float *, int, int, int, double, double, double, hipStream_t);
-template double app8_del2_gpu(const double * , double *, int, int, int, double, double, double, hipStream_t);
-template double app8_del2_gpu(const std::complex<float> * , std::complex<float> *, int, int, int, double, double, double, hipStream_t);
-template double app8_del2_gpu(const std::complex<double> * , std::complex<double> *, int, int, int, double, double, double, hipStream_t);
+template void app8_del2_gpu(const float * , float *, int, int, int, const fdparms_o8<float> &, hipStream_t);
+template void app8_del2_gpu(const double * , double *, int, int, int, const fdparms_o8<double> &, hipStream_t);
+template void app8_del2_gpu(const std::complex<float> * , std::complex<float> *, int, int, int, const fdparms_o8<std::complex<float>> &, hipStream_t);
+template void app8_del2_gpu(const std::complex<double> * , std::complex<double> *, int, int, int, const fdparms_o8<std::complex<double>> &, hipStream_t);
 
 template <typename T>
-double app8_del2_gpu(const T * __restrict__ a, 
+void app8_del2_gpu(const T * __restrict__ a, 
                    T *b, 
                    const int dimx,
                    const int dimy,
                    const int dimz,
-                   double h2x,
-                   double h2y,
-                   double h2z,
+                   const fdparms_o8<T> &c,
                    hipStream_t cstream)
 {
     dim3 Grid, Block;
-    T ONE_T(1.0);
-    T fac(205.0/72.0);
-    T h2x_t(h2x);
-    T h2y_t(h2y);
-    T h2z_t(h2z);
-    h2x_t = ONE_T/h2x_t;
-    h2y_t = ONE_T/h2y_t;
-    h2z_t = ONE_T/h2z_t;
-    double retval = -std::real(fac * (h2x_t + h2y_t + h2z_t));
+    std::vector<int> xf, yf;
+    GetPrimeFactors(xf, dimx, 19);
+    GetPrimeFactors(yf, dimy, 19);
 
-    fdparms_o8<T> c;
-    T a0 = -T(205.0/72.0) * (h2x_t + h2y_t + h2z_t);
-    T c1x = T(8.0) * h2x_t / T(5.0);
-    T c2x = -T(1.0) * h2x_t / T(5.0);
-    T c3x = T(8.0) * h2x_t / T(315.0);
-    T c4x = -T(1.0) * h2x_t / T(560.0);
+    Grid.x = dimy/10;
+    Block.x = 18;
+    Grid.y = dimz / 10;
+    Block.y = 18;
+    int smem_siz = Block.x*Block.y*sizeof(T);
+    hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T>), Grid, Block, smem_siz, cstream, a, b, dimx, dimy, dimz, c);
 
-    T c1y = T(8.0) * h2y_t / T(5.0);
-    T c2y = -T(1.0) * h2y_t / T(5.0);
-    T c3y = T(8.0) * h2y_t / T(315.0);
-    T c4y = -T(1.0) * h2y_t / T(560.0);
-
-    T c1z = T(8.0) * h2z_t / T(5.0);
-    T c2z = -T(1.0) * h2z_t / T(5.0);
-    T c3z = T(8.0) * h2z_t / T(315.0);
-    T c4z = -T(1.0) * h2z_t / T(560.0);
-
-    c.a0 = a0;
-    c.gpt1x = c.gmt1x = c1x;
-    c.gpt2x = c.gmt2x = c2x;
-    c.gpt3x = c.gmt3x = c3x;
-    c.gpt4x = c.gmt4x = c4x;
-
-    c.gpt1y = c.gmt1y = c1y;
-    c.gpt2y = c.gmt2y = c2y;
-    c.gpt3y = c.gmt3y = c3y;
-    c.gpt4y = c.gmt4y = c4y;
-
-    c.gpt1z = c.gmt1z = c1z;
-    c.gpt2z = c.gmt2z = c2z;
-    c.gpt3z = c.gmt3z = c3z;
-    c.gpt4z = c.gmt4z = c4z;
-
-    Grid.x = dimy/8;
-    Block.x = 16;
-    Grid.y = dimz / 8;
-    Block.y = 16;
-    int smem_siz = (Block.x + 2*IMAGES)*(Block.y + 2*IMAGES)*sizeof(T);
-    hipLaunchKernelGGL(HIP_KERNEL_NAME(app8_del2_kernel<T>), Grid, Block, smem_siz, cstream, a, b, dimx, dimy, dimz,c);
-
-    return retval;
 }
 #endif

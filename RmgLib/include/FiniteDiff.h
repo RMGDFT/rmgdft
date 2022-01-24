@@ -43,6 +43,7 @@
 #include "Lattice.h"
 #include "TradeImages.h"
 #include "boundary_conditions.h"
+#include "GpuAlloc.h"
 
 template <typename RmgType>
 void CPP_app_cir_driver (Lattice *L, TradeImages *T, RmgType * a, RmgType * b, int dimx, int dimy, int dimz, int order);
@@ -157,6 +158,9 @@ public:
     template <typename RmgType>
     double app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
                                    double gridhx, double gridhy, double gridhz, double *kvec);
+    template <typename RmgType>
+    double app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
+                                   double gridhx, double gridhy, double gridhz, double *kvec, bool use_gpu, gpuStream_t stream);
 
 };
 #endif
