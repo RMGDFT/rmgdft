@@ -2988,13 +2988,17 @@ template <typename RmgType>
 double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
                double gridhx, double gridhy, double gridhz, double *kvec)
 {
-    return FiniteDiff::app8_combined(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false, 0);
+    return FiniteDiff::app8_combined(a, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, false);
 }
 
 template <typename RmgType>
 double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict__ b, int dimx, int dimy, int dimz,
-               double gridhx, double gridhy, double gridhz, double *kvec, bool use_gpu, gpuStream_t stream)
+               double gridhx, double gridhy, double gridhz, double *kvec, bool use_gpu)
 {
+    BaseThread *Th = BaseThread::getBaseThread(0);
+    int tid = Th->get_thread_tid();
+    if(tid < 0) tid = 0;
+
     double xside = L->get_xside();
     double yside = L->get_yside();
     double zside = L->get_zside();
@@ -3140,7 +3144,7 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
             if(use_gpu)
             {
                 /* Return the diagonal component of the operator */
-                app8_del2_gpu(a, b, dimx, dimy, dimz, c, stream);
+                app8_del2_gpu(a, b, dimx, dimy, dimz, c, tid);
                 return (double)std::real(t0);
             }
 

@@ -81,13 +81,13 @@ void GpuNegate(double *dx, int incx, double *dy, int incy, int n);
 void GpuEleMul(double *dx, std::complex<double> *dy, int n, hipStream_t stream);
 void GpuEleMul(double *dx, std::complex<float> *dy, int n, hipStream_t stream);
 template <typename T>
-void app8_del2_gpu(const T * __restrict__ a,
+void app8_del2_gpu(T * __restrict__ a,
                    T *b,
                    const int dimx,
                    const int dimy,
                    const int dimz,
                    const fdparms_o8<T> &c,
-                   hipStream_t cstream);
+                   int tid);
 #endif
 
 #endif
