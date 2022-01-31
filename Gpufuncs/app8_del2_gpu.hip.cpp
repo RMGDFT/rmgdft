@@ -1,4 +1,3 @@
-#include "hip/hip_runtime.h"
 /*
  *
  * Copyright 2018 The RMG Project Developers. See the COPYRIGHT file 
