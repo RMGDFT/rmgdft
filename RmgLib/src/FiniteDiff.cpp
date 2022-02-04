@@ -3141,12 +3141,14 @@ double FiniteDiff::app8_combined(RmgType * __restrict__ a, RmgType * __restrict_
         case ORTHORHOMBIC_PRIMITIVE:
         case TETRAGONAL_PRIMITIVE:
 
+#if HIP_ENABLED
             if(use_gpu)
             {
                 /* Return the diagonal component of the operator */
                 app8_del2_gpu(a, b, dimx, dimy, dimz, c, tid);
                 return (double)std::real(t0);
             }
+#endif
 
             for (int ix = 4; ix < dimx + 4; ix++)
             {

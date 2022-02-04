@@ -72,7 +72,7 @@ set(LIB_TYPE STATIC)
   CUDA_ADD_LIBRARY(Gpufuncs ${LIB_TYPE}
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuNegate.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/gramsch_update_psi_gpu.cu
-  ${PROJECT_SOURCE_DIR}/Gpufuncs/app8_del2_gpu.cu
+#  ${PROJECT_SOURCE_DIR}/Gpufuncs/app8_del2_gpu.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuEleMul.cu
   ${PROJECT_SOURCE_DIR}/Gpufuncs/GpuFill.cu)
 
@@ -80,8 +80,8 @@ endif(RMG_CUDA_ENABLED)
 
 if(RMG_HIP_ENABLED)
 set(MY_HIPCC_OPTIONS "-fPIE -ffast-math")
-set_source_files_properties(GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp gramsch_update_psi_gpu.hip.cpp app8_del2_gpu.hip.cpp PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
-hip_add_library(Gpufuncs GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp gramsch_update_psi_gpu.hip.cpp app8_del2_gpu.hip.cpp HIPCC_OPTIONS ${MY_HIPCC_OPTIONS})
+set_source_files_properties(jacobi_eigenvalue.hip.cpp GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp gramsch_update_psi_gpu.hip.cpp app8_del2_gpu.hip.cpp PROPERTIES HIP_SOURCE_PROPERTY_FORMAT 1)
+hip_add_library(Gpufuncs jacobi_eigenvalue.hip.cpp GpuEleMul.hip.cpp GpuFill.hip.cpp GpuNegate.hip.cpp gramsch_update_psi_gpu.hip.cpp app8_del2_gpu.hip.cpp HIPCC_OPTIONS ${MY_HIPCC_OPTIONS})
 include_directories("${RMG_SOURCE_DIR}/Headers/")
 endif(RMG_HIP_ENABLED)
 
