@@ -59,6 +59,8 @@ template double ApplyAOperator<std::complex<float> >(Lattice *, TradeImages *, s
 template double ApplyAOperator<std::complex<double> >(Lattice *, TradeImages *, std::complex<double> *, std::complex<double> *, int, int, int, double, double, double, int);
 
 
+void *rbufs[MAX_RMG_THREADS];
+
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, double *kvec)
 {
@@ -76,7 +78,6 @@ double ApplyAOperator (DataType *a, DataType *b, double *kvec)
 
 }
 
-void *rbufs[64];
 
 template <typename DataType>
 double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, double gridhx, double gridhy, double gridhz, int order, double *kvec)
@@ -84,10 +85,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
     BaseThread *Th = BaseThread::getBaseThread(0);
     int tid = Th->get_thread_tid();
     if(tid < 0) tid = 0;
-if(!rbufs[tid])
-{
-    gpuMallocManaged((void **)&rbufs[tid], 8000000);
-}
+
 
     if(ct.kohn_sham_ke_fft || Rmg_L.get_ibrav_type() == None)
     {
@@ -132,35 +130,37 @@ if(!rbufs[tid])
         double fd_diag = FD.app8_del2 (ptr, ptr, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         return 2.0*fd_diag;
     }
+
     double cc = 0.0;
     FiniteDiff FD(&Rmg_L, ct.alt_laplacian);
-    int sbasis = (dimx + order) * (dimy + order) * (dimz + order);
+    int sbasis = (pct.coalesce_factor*Rmg_G->get_PX0_GRID(1) + order) * (dimy + order) * (dimz + order);
+    size_t alloc = (sbasis + 64) * sizeof(double);
+    if(!ct.is_gamma) alloc *= 2;
     int images = order / 2;
-    size_t alloc = (sbasis + 64) * sizeof(DataType);
-//    DataType *rptr;
+
+    // Allocate per thread buffers if not done yet
+    if(!rbufs[tid])
+    {
+#if HIP_ENABLED || CUDA_ENABLED
+        gpuMallocHost((void **)&rbufs[tid], alloc);
+#else
+        MPI_Alloc_mem(alloc, MPI_INFO_NULL, &rbufs[tid]);
+#endif
+    }
+    DataType *rptr = (DataType *)rbufs[tid];
+
     int special = ((Rmg_L.get_ibrav_type() == HEXAGONAL) ||
                    (Rmg_L.get_ibrav_type() == HEXAGONAL2) || 
                    (Rmg_L.get_ibrav_type() == ORTHORHOMBIC_PRIMITIVE) || 
                    (Rmg_L.get_ibrav_type() == CUBIC_PRIMITIVE) ||
                    (Rmg_L.get_ibrav_type() == TETRAGONAL_PRIMITIVE));
 
-    // while alloca is dangerous it's very fast for small arrays and the 110k limit
-    // is fine for linux and 64bit power
-    if(alloc <= 110592)
-    {
- //       rptr = (DataType *)alloca(alloc);
-    }
-    else
-    {
-//        rptr = new DataType[sbasis + 64];
-    }
-
 
 
     if(!special || (Rmg_L.get_ibrav_type() == HEXAGONAL) || (Rmg_L.get_ibrav_type() == HEXAGONAL2))
-        Rmg_T->trade_imagesx (a, (DataType *)rbufs[tid], dimx, dimy, dimz, images, FULL_TRADE);
+        Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, FULL_TRADE);
     else
-       Rmg_T->trade_imagesx (a, (DataType *)rbufs[tid], dimx, dimy, dimz, images, CENTRAL_TRADE);
+       Rmg_T->trade_imagesx (a, rptr, dimx, dimy, dimz, images, CENTRAL_TRADE);
 
 
     // Handle special combined operator first
@@ -171,43 +171,42 @@ if(!rbufs[tid])
         if(ct.use_gpu_fd)
         {
             if(ct.verbose) RTA = new RmgTimer("GPUFD");
-            cc = FD.app8_combined((DataType *)rbufs[tid], (DataType *)b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, true);
+            cc = FD.app8_combined(rptr, (DataType *)b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec, true);
             if(ct.verbose) delete RTA;
         }
         else
         {
             if(ct.verbose) RTA = new RmgTimer("CPUFD");
-            cc = FD.app8_combined ((DataType *)rbufs[tid], b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
+            cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
             if(ct.verbose) delete RTA;
         }
 #else
         if(ct.verbose) RTA = new RmgTimer("CPUFD");
-        cc = FD.app8_combined ((DataType *)rbufs[tid], b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
+        cc = FD.app8_combined (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz, kvec);
         if(ct.verbose) delete RTA;
 #endif
 
-//        if(alloc > 110592) delete [] rptr;
         return cc;
     }
 
     // First apply the laplacian
     if(order == APP_CI_SIXTH) {
         if(!special)
-            cc = FiniteDiffLap ((DataType *)rbufs[tid], b, dimx, dimy, dimz, LC);
+            cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
         else
-            cc = FD.app6_del2 ((DataType *)rbufs[tid], b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            cc = FD.app6_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else if(order == APP_CI_EIGHT) {
         if(!special)
-            cc = FiniteDiffLap ((DataType *)rbufs[tid], b, dimx, dimy, dimz, LC);
+            cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
         else
-            cc = FD.app8_del2 ((DataType *)rbufs[tid], b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            cc = FD.app8_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else if(order == APP_CI_TEN) {
         if(!special)
-            cc = FiniteDiffLap ((DataType *)rbufs[tid], b, dimx, dimy, dimz, LC);
+            cc = FiniteDiffLap (rptr, b, dimx, dimy, dimz, LC);
         else
-            cc = FD.app10_del2 ((DataType *)rbufs[tid], b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            cc = FD.app10_del2 (rptr, b, dimx, dimy, dimz, gridhx, gridhy, gridhz);
     }
     else {
 
@@ -226,9 +225,9 @@ if(!rbufs[tid])
 
 
         if(special)
-            FD.app_gradient_eighth ((DataType *)rbufs[tid], gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
+            FD.app_gradient_eighth (rptr, gx, gy, gz, dimx, dimy, dimz, gridhx, gridhy, gridhz);
         else
-            FiniteDiffGrad((DataType *)rbufs[tid], gx, gy, gz, dimx, dimy, dimz, LC);
+            FiniteDiffGrad((DataType *)rptr, gx, gy, gz, dimx, dimy, dimz, LC);
 
         // if complex orbitals compute dot products as well
         std::complex<double> I_t(0.0, 1.0);
@@ -254,8 +253,6 @@ if(!rbufs[tid])
         delete [] gy;
         delete [] gx;
     }
-
-//    if(alloc > 110592) delete [] rptr;
 
     return cc;
 
