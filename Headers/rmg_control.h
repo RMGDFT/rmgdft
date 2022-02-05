@@ -359,6 +359,9 @@ public:
     int force_grad_order;
     bool kohn_sham_ke_fft;
 
+    // Flag indicating whether or not to use gpu finite differencing for the hamiltonian
+    bool use_gpu_fd;
+
     /* This is the max of nldim for any species cubed */
     int max_nlpoints;
     int max_lpoints;
