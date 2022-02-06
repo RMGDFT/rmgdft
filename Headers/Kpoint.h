@@ -39,6 +39,37 @@
 #include "RmgParallelFft.h"
 #include "LdaU.h"
 #include <mpi.h>
+#include <boost/pool/pool.hpp>
+
+//char *rmg_pool_malloc(const size_t bytes);
+// Used for kalloc
+char inline *rmg_pool_malloc(const size_t bytes)
+    {
+    #if HIP_ENABLED
+        void *ptr;
+        hipHostMalloc(&ptr, bytes, hipHostMallocNumaUser);
+        return reinterpret_cast<char *>(ptr);
+    #else
+        return reinterpret_cast<char *>(std::malloc(bytes));
+    #endif
+    }
+
+
+struct rmg_user_allocator
+{
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+
+    static char * malloc(const size_t bytes)
+    {return reinterpret_cast<char *>(rmg_pool_malloc(bytes)); }
+    static void free(char * const block)
+#if HIP_ENABLED
+    { hipHostFree(block); }
+#else
+    { std::free(block); }
+#endif
+};
+
 
 template <typename KpointType> class Kpoint {
 
@@ -158,6 +189,11 @@ public:
 
     // Highest occupied orbital
     int highest_occupied;
+
+    // We make this static since only one kpoint runs at a time and a work memory pool
+    // can be shared between kpoints.
+    static std::vector<boost::pool<rmg_user_allocator> *> kalloc;
+
 
 private:
 
