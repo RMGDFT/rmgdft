@@ -167,7 +167,7 @@ double ApplyAOperator (DataType *a, DataType *b, int dimx, int dimy, int dimz, d
     if(special && (order == APP_CI_EIGHT))
     {
         RmgTimer *RTA=NULL;
-#if HIP_ENABLED
+#if HIP_ENABLED || CUDA_ENABLED
         if(ct.use_gpu_fd)
         {
             if(ct.verbose) RTA = new RmgTimer("GPUFD");
